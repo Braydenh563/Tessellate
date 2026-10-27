@@ -259,12 +259,13 @@ licence while you are there.
 ## Embeddings
 
 The **embedding** model for search by meaning (`BAAI/bge-small-en-v1.5`) runs
-inside Tessellate and downloads itself the first time it is needed, along with
-the `sentence-transformers` package it needs (several hundred MB, and more on
-Windows, where it brings torch). Settings, Search and index, Search engine
+inside Tessellate and downloads after your yes, along with the `fastembed`
+package it needs (ONNX Runtime, no PyTorch; about 130 MB in all). The first saved note asks once; Settings, Search and
+index, Download search by meaning turns it on later, and search uses keywords
+until then. Settings, Search and index, Search engine
 names whichever one is actually loaded. No Ollama pull is required, and you can
 switch to an Ollama embedding model (`nomic-embed-text` is the usual choice)
-later, with an automatic re-index. The built-in model holds about 650 MB in
+later, with an automatic re-index. The built-in model holds about 300 MB in
 memory while the app is open; with Ollama it lives in Ollama instead.
 
 An embedding model is not a chat model, and changing one does not change

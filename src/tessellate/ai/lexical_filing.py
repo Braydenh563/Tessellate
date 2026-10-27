@@ -122,12 +122,22 @@ _QUOTED = re.compile(r"\"[^\"\n]*\"|“[^“”\n]*”")
 _BLOCKQUOTE = re.compile(r"^\s*>.*$", re.MULTILINE)
 
 
+#: A fenced code block (``` or ~~~): its identifiers and language name say
+#: nothing about the subject ("python" and "print" under a biology note made
+#: it #software).
+_FENCED = re.compile(r"^[ \t>]*(```|~~~)[^\n]*\n.*?(?:^[ \t>]*\1[^\n]*$|\Z)", re.MULTILINE | re.DOTALL)
+
+
 def clean(content: str) -> str:
     """The note's own words: no image address, no link target, no OCR
-    footer, and nothing in quotation marks or a blockquote (somebody else's
-    words) unless the quotation is most of the note: a pasted message, "From
-    the coach's email: ...", is what the note is about."""
+    footer, no fenced code, and nothing in quotation marks or a blockquote
+    (somebody else's words) unless the quotation is most of the note: a
+    pasted message, "From the coach's email: ...", is what the note is about.
+    Code is dropped unless it is most of the note, which is then about code."""
     out = _IMAGE.sub(" ", content or "")
+    prose = _FENCED.sub(" ", out)
+    if len(tokens(prose)) >= len(tokens(out)) - len(tokens(prose)):
+        out = prose
     out = _LINK.sub(r"\1", out)
     out = _BOILERPLATE.sub(" ", out)
     unquoted = _BLOCKQUOTE.sub(" ", _QUOTED.sub(" ", out))
@@ -213,11 +223,8 @@ def suggest_categories_explained(
     session: Session, content: str, exclude_entry_id: int | None = None, limit: int = 3
 ) -> list[tuple[str, str]]:
     """`suggest_categories` with each one's why ("" for a recent one)."""
-    out: list[tuple[str, str]] = []
     decision = decide(session, content, exclude_entry_id)
-    for candidate in decision.ranked:
-        if candidate.score > 0:
-            out.append((candidate.name, candidate.why))
+    out: list[tuple[str, str]] = [(c.name, c.why) for c in decision.ranked if c.score > 0]
     if len(out) < limit:
         recent = session.execute(
             select(Category.name)
@@ -793,7 +800,7 @@ def _category_aggregates(corpus, names, scope, scope_key):  # noqa: ANN001, ANN2
     sums: dict[str, dict[str, float]] = {}
     profiles: dict[str, dict[str, float]] = {}
     held: dict[str, int] = {}
-    for _entry_id, doc in corpus.docs.items():
+    for doc in corpus.docs.values():
         if doc.board or not scope(doc):
             continue
         name = names.get(doc.category_id, UNCATEGORISED)

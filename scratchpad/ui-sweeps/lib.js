@@ -33,6 +33,7 @@ async function boot(opts={}) {
   //: `opts.args` are extra Chromium flags (the captions sweep's fake
   //: microphone: --use-fake-device-for-media-stream and a WAV to play).
   const browser = await chromium.launch({
+    ...(process.env.HEADED ? { headless: false } : {}),
     ...(process.env.SCROLLBARS ? { ignoreDefaultArgs: ["--hide-scrollbars"] } : {}),
     ...(opts.args ? { args: opts.args } : {}),
   });

@@ -33,7 +33,7 @@ def test_a_save_with_the_server_gone_is_held_and_sent_later():
     assert 'quickNote: ["/js/quick-note.js",' in code
     assert '"noteOutboxAdd", "flushNoteOutbox"' in code
     # Loaded on the boot timer with the Clear controls (INBOX 466).
-    timer = re.search(r"setTimeout\(\(\) => \[([^\]]*)\]\.forEach\(\(name\) => ensureModule\(name\)\), 3000\);", code)
+    timer = re.search(r"setTimeout\(\(\) => \[([^\]]*)\]\.forEach\((?:\(name\) => ensureModule\(name\)|ensureModule)\), 3000\);", code)
     assert timer and '"quickNote"' in timer.group(1) and '"fieldClear"' in timer.group(1)
     assert "if (await heldOffline(error, body, contentBox, titleBox)) return;" in code
     assert "flushNoteOutbox(); // notes kept on this device" in code

@@ -412,6 +412,32 @@ function quickAddAsk(field) {
   return true;
 }
 
+//: **A day asked its time stays asked** (dog2 item 7; CHAT_PLAN decision 50
+//: keeps the question, so nothing is guessed). The day is held on the field;
+//: an answer that is only a time (“5pm”) joins it, and a different phrase
+//: that replaces it is told what was left out, never silently dropped.
+function qaHold(field, slots, text) {
+  const state = qaFields.get(field);
+  if (!state) return;
+  state.held = slots.date && !slots.time ? { title: slots.title, date: slots.date, text } : null;
+}
+
+function qaResume(field, slots, text) {
+  const state = qaFields.get(field);
+  const held = state?.held;
+  if (!held || !slots || text === held.text) return slots;
+  state.held = null;
+  //: Only a time was said: the reading's own day (tomorrow) is a guess, the held day is not.
+  const said = qaSpans(state).map((span) => span.kind);
+  if (slots.time && !slots.seconds && !said.includes("date") && !said.includes("datetime")) {
+    const joined = { ...slots, date: held.date, title: /^(at )?\d{1,2}(:\d{2})?\s*(am|pm)?$/i.test(slots.title) ? held.title : slots.title || held.title, joined: true };
+    joined.due = qaDue(joined);
+    return joined;
+  }
+  toast(`Left out “${held.text}”: it had no time. Type it again with one to keep it.`, "info");
+  return slots;
+}
+
 function quickAddClear(field) {
   const state = qaFields.get(field);
   if (!state) return;
@@ -424,6 +450,7 @@ function quickAddClear(field) {
   state.off.clear();
   state.on.clear();
   state.answered = false;
+  state.held = null;
   for (const old of state.row.querySelectorAll(".qa-chip")) old.remove();
   qaSetAsk(state, "");
 }
@@ -437,12 +464,18 @@ async function magicAddReminder() {
   const input = $("reminder-magic");
   const status = $("reminder-magic-status");
   const text = input.value.trim();
-  if (!text) return;
+  if (!text) {
+    status.classList.add("error");
+    status.textContent = "Type what to remind you of first, like “pay rent on the 1st at 9am”.";
+    input.focus();
+    return;
+  }
   status.classList.remove("error");
   quickAddAttach(input, "reminder", { after: $("reminder-magic-row") });
-  const slots = await quickAddSlots(input);
-  if (slots && quickAddAsk(input)) {
-    status.textContent = "";
+  const slots = qaResume(input, await quickAddSlots(input), text);
+  if (slots && !slots.joined && quickAddAsk(input)) {
+    qaHold(input, slots, text);
+    status.textContent = qaMissing(qaFields.get(input));
     return;
   }
   setLabel(status, "ph:spin Adding…");
@@ -461,6 +494,7 @@ async function magicAddReminder() {
     quickAddClear(input);
     reminderMadeUndo(reminder);
     status.textContent = `Added “${reminder.text}”: ${relativeWhen(reminder.due_at)}. Edit it below if needed.`;
+    if (reminder.duplicate) toast(`You already had “${reminder.text}” at that time, so there are now two.`, "info");
     askNotificationPermission();
     loadReminders();
   } catch (error) {

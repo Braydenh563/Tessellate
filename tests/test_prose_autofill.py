@@ -52,7 +52,7 @@ def run(calls: list) -> list:
         + "\nconst NOW = new Date(2026, 8, 24, 14, 5);\n"
         "const ctx = (extra) => ({ now: NOW, locale: 'en-GB', slug: mdHeadingId, ...extra });\n"
         "const fns = {docLorem, docFillTable, docFillSig, docSmartPunct, docPairInput, docPairBackspace,"
-        " docFillToken, docFillGhost, docListEnter};\n"
+        " docFillToken, docFillGhost, docListEnter, docListExitText, docBulletRetype, docFenceCloseIndent};\n"
         "fns.toc = (text) => docFillToc(text, mdHeadingId);\n"
         "fns.date = (kind, locale) => docFillDate(kind, NOW, locale);\n"
         "fns.options = (before, after, extra) => docFillOptions(docFillToken(before, after), ctx(extra || {}))"
@@ -225,6 +225,40 @@ def test_enter_on_an_empty_item_ends_the_list_or_steps_out_a_level() -> None:
     assert top == "" and task == "" and numbered == ""
     assert nested == "- " and deep == "    - [ ] " and tab == "- "
     assert full is None and text is None, "an item with words in it continues as before"
+
+
+@node
+def test_retyping_a_dash_on_an_empty_bullet_does_not_nest() -> None:
+    plain, indented, star, other_key, filled, three = run([
+        ["docBulletRetype", "- -", " "],
+        ["docBulletRetype", "  - -", " "],
+        ["docBulletRetype", "* -", " "],
+        ["docBulletRetype", "- -", "x"],
+        ["docBulletRetype", "- a -", " "],
+        ["docBulletRetype", "- - -", " "],
+    ])
+    assert plain == "- " and indented == "  - " and star == "* "
+    assert other_key is None and filled is None, "only the space after a second dash collapses"
+    assert three is None, "a thematic break typed as '- - -' is left alone"
+
+
+@node
+def test_a_closing_fence_returns_to_the_opening_fence_indent() -> None:
+    drifted, fine, no_fence, closed_already, tilde, mismatch, info, inline = run([
+        ["docFenceCloseIndent", ["```", "    code"], "    ```"],
+        ["docFenceCloseIndent", ["```", "code"], "```"],
+        ["docFenceCloseIndent", ["text"], "    ```"],
+        ["docFenceCloseIndent", ["```", "x", "```", "text"], "    ```"],
+        ["docFenceCloseIndent", ["~~~", "    x"], "    ~~~"],
+        ["docFenceCloseIndent", ["~~~", "x"], "    ```"],
+        ["docFenceCloseIndent", ["```python", "    x"], "    ```"],
+        ["docFenceCloseIndent", ["use ```x``` here", "  y"], "    ```"],
+    ])
+    assert drifted == "" and fine is None and no_fence is None
+    assert closed_already is None, "a fence that opens a new block is not a closer"
+    assert tilde == "" and mismatch is None
+    assert info == "", "an opening fence may carry an info string"
+    assert inline is None
 
 
 # --- shortcodes ----------------------------------------------------------------
@@ -400,3 +434,16 @@ def test_smart_punctuation_is_a_preference_off_by_default(client) -> None:
     assert client.get("/preferences").json()["smart_punctuation"] is False
     assert client.put("/preferences", json={"smart_punctuation": True}).json()["smart_punctuation"] is True
     assert client.get("/preferences").json()["smart_punctuation"] is True
+
+
+@node
+def test_ending_a_list_leaves_the_blank_line_after_it() -> None:
+    under_item, under_blank, first_line, nested = run([
+        ["docListExitText", "", "- b"],
+        ["docListExitText", "", ""],
+        ["docListExitText", "", None],
+        ["docListExitText", "- ", "- b"],
+    ])
+    assert under_item == "\n", "dog2 item 6: a heading typed next must not sit flush against the list"
+    assert under_blank == "" and first_line == ""
+    assert nested == "- ", "stepping out one level keeps the bullet"

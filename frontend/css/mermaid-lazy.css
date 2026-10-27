@@ -1,0 +1,68 @@
+/* Mermaid diagrams (mermaid-draw.js, loaded with it by LAZY_MODULES.mermaid).
+   A fence is drawn as a picture: an <img> of the finished SVG, which carries
+   its own colours and its own ground, so it reads the same in a print and in
+   a saved file as on screen. Wider than the page only by scrolling sideways. */
+
+/* The diagram frame is laid out (Mermaid measures text in it) but never seen:
+   off to the side and invisible, not display: none. */
+.mermaid-frame {
+  position: fixed;
+  top: 0;
+  inset-inline-start: -200vw;
+  width: 75rem;
+  block-size: 56rem;
+  border: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.md-mermaid {
+  margin: var(--space-4) 0;
+  overflow-x: auto;
+  color: var(--ink);
+}
+
+.md-mermaid-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: var(--radius-md);
+}
+
+/* A fixed height while the frame draws, so the page does not jump when the
+   picture arrives (Live measures the widget once, then again when it fills). */
+.md-mermaid-pending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 10rem;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.md-mermaid-pending::before {
+  content: "Drawing the diagram";
+}
+
+.cm-md-mermaid {
+  cursor: text;
+}
+
+/* The reason a fence stayed code, under the code block. */
+.md-mermaid-reason {
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* The fence waits behind its figure while the frame draws; a failed one shows. */
+.code-block[data-mermaid-state="pending"] {
+  display: none;
+}
+
+@media print {
+  .md-mermaid {
+    break-inside: avoid;
+  }
+}

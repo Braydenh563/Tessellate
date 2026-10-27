@@ -55,6 +55,8 @@ STYLE = re.compile(r'<link[^>]*rel="stylesheet"[^>]*href="(/[^"?]+)(?:\?[^"]*)?"
 #: note-edit-panels.js: 588,354, so the cap is back below 589,100.
 #: 2026-10-10, bootdiet: `featureCatalog` moved to app-features.js (lazy, with the
 #: palette bundle), after Brief 80 took the boot to 588,728; measured 582,849.
+#: 2026-10-25, composer2: bg-art.js (20 KB) became the lazy `bgArt` bundle,
+#: boot measured 568,431, so about 20 KB of room; the cap is unchanged.
 BOOT_JS_CAP = 588_400
 #: 2026-10-10 INBOX 767: the no-model notice's row and phone grid cost 58
 #: gzipped bytes, paid for by the blank lines of 08-consistency.css (61), so
@@ -63,7 +65,11 @@ BOOT_JS_CAP = 588_400
 #: drops comment-leftover lines"): measured 178,351, so the cap comes down
 #: from 183,300. The same session's menu row fit, toast stack and credits
 #: rows took it to 178,530; the cap is that with 470 bytes of room.
-BOOT_CSS_CAP = 179_000
+#: 2026-10-27: the Reminders row's always-drawn ⋯ and the gap that keeps the
+#: time off it cost 54 gzipped bytes (head 178,997, now 179,051) and the head
+#: had 3 to spare; there is no lazy file for a row that draws at boot, so the
+#: cap rises by 100.
+BOOT_CSS_CAP = 179_100
 
 
 def _served_gzip(url: str) -> int:

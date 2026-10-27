@@ -325,6 +325,10 @@ class PreferencesBody(BaseModel):
     #: a Python weekday, 0 Monday to 6 Sunday).
     week_start: Literal["auto", "monday", "saturday", "sunday"] | None = None
     week_start_locale: int | None = Field(default=None, ge=0, le=6)
+    #: Which half of the year "summer" and "last winter" mean: the person's
+    #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
+    season_hemisphere: Literal["auto", "north", "south"] | None = None
+    season_locale: str | None = Field(default=None, max_length=35)
     #: Minutes of no use after which the search-by-meaning model is dropped from
     #: memory (decision 62; it loads again on the next search or save). 0 keeps it.
     embedder_idle_unload_minutes: int | None = Field(default=None, ge=0, le=1440)
@@ -361,6 +365,7 @@ class PreferencesBody(BaseModel):
     #: the names the writer put away with "Never offer a link to this name".
     #: The list is bounded because a client writes to it freely.
     link_offers: bool | None = None
+    check_link_text: bool | None = None
     link_offer_ignored: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=500)
     #: Autocorrect in the note boxes, the chat and Ask composers and the
     #: titles (Brief 94, autocorrect.js). On by default, unlike the line above:
@@ -787,6 +792,8 @@ def _preferences_from(config) -> dict:
         "composer_voice": config.get_preference("composer_voice", "natural"),
         "week_start": config.get_preference("week_start", "auto"),
         "week_start_locale": config.get_preference("week_start_locale", 0),
+        "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
+        "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
         "insight_level": config.get_preference("insight_level", "one"),
         "writing_dictionary": config.get_preference("writing_dictionary", []),
@@ -794,6 +801,7 @@ def _preferences_from(config) -> dict:
         "grammar_check": config.get_preference("grammar_check", True),
         "smart_punctuation": config.get_preference("smart_punctuation", False),
         "link_offers": config.get_preference("link_offers", True),
+        "check_link_text": config.get_preference("check_link_text", False),
         "link_offer_ignored": config.get_preference("link_offer_ignored", []),
         "autocorrect": config.get_preference("autocorrect", True),
         "display_name": config.get_preference("display_name", ""),
@@ -840,7 +848,13 @@ def _preferences_from(config) -> dict:
         "update_beta": config.get_preference("update_beta", False) is True,
         "searxng_url": config.get_preference("searxng_url", ""),
         "searxng_autostart": config.get_preference("searxng_autostart", False),
-        "semantic_auto_install": config.get_preference("semantic_auto_install", True),
+        "semantic_auto_install": config.get_preference("semantic_auto_install", False),
+        "semantic_choice_made": config.get_preference("semantic_choice_made", False) is True,
+        #: The old engine's copy of the model is here, the new one's is not:
+        #: the welcome card's question says the engine moved (semantic-notice.js).
+        "semantic_engine_moved": (
+            None if config.get_preference("semantic_choice_made", False) else deps.get_model_manager().semantic_engine_moved()
+        ),
         "search_provider": websearch.normalise_provider(
             config.get_preference("search_provider", websearch.DEFAULT_PROVIDER)
         ),
@@ -1026,9 +1040,13 @@ def _validated_context_windows(value: object) -> dict[str, int | None]:
 #: Another device may move one only the safe way (the value given), or not at
 #: all (None): the owner, 2026-10-11, "I need maximum trust ... proper
 #: security for the lan". `searxng_url` aims this computer at any address on
-#: its own network; `export_save_dir` picks where files land on its disk.
+#: its own network; `export_save_dir` picks where files land on its disk;
+#: `backup_copy_dir` where every backup is copied (on Windows a UNC path
+#: there is an SMB connection carrying the owner's sign-in, lansec-1025).
 _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "export_save_dir": None,
+    "backup_copy_dir": None,
+    "update_beta": False,
     "searxng_url": None,
     "update_channel": None,
     "show_console_on_startup": None,
@@ -1080,6 +1098,27 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
     """One validated preference written, with the side effects its key carries."""
     value = _validated_preference(key, value)
     config.set_preference(key, value)
+    if key in ("season_hemisphere", "season_locale"):
+        from tessellate.ai import recognise
+
+        recognise.configure_hemisphere(
+            config.get_preference("season_hemisphere", "auto"), config.get_preference("season_locale", "")
+        )
+    if key == "semantic_auto_install":
+        # Either answer settles the ask-once question (frontend/js/semantic-notice.js).
+        config.set_preference("semantic_choice_made", True)
+        if value:
+            # A yes starts the download now, as a visible task, rather than
+            # at the next save: reset the "not allowed" state, embed once,
+            # then fill the notes saved while the question was open.
+            service = deps.get_embeddings()
+            service.reset_failure_state()
+            from tessellate.ai import embeddings
+            from tessellate.core import jobs
+
+            jobs.enqueue(
+                "embed-warm", embeddings.warm_then_backfill, service, deps.get_db().session, name="search by meaning"
+            )
     if key in ("update_check_enabled", "auto_update_enabled"):
         # Either switch is an answer to the ask-once question (routes_update).
         config.set_preference("update_choice_made", True)
@@ -1163,7 +1202,7 @@ SETTINGS_FILE_VERSION = 1
 #: not a choice a person would carry to another one: the detected time zone, a
 #: folder path on this disk, and the one-time "seen it" flags.
 _NOT_EXPORTED = frozenset(
-    {"timezone", "week_start_locale", "export_save_dir", "backup_copy_dir", "console_view_intro_seen", "tray_hide_explained"}
+    {"timezone", "week_start_locale", "season_locale", "export_save_dir", "backup_copy_dir", "console_view_intro_seen", "tray_hide_explained"}
 )
 
 
@@ -1463,24 +1502,23 @@ def list_skills() -> dict:
     from tessellate.api.routes_debug import shown_path
 
     config = deps.get_config()
-    catalog = []
     #: Phase E, decision 2: on a small model, a skill measured below the bar
     #: is labelled with why, rather than offered and hoped.
     rates = skills.measured_rates() if _small_class(config) else {}
-    for skill in skills.catalog(config, set(tools.TOOLS)):
-        # "This one changes things" is a different question from "this one
-        # uses tools", and the UI marks it as such. A skill with steps but no
-        # declared tools could do anything, so it counts.
-        catalog.append(
-            {
-                **skill,
-                "changes": bool(set(skill["tools"]) & tools.WRITE_TOOLS)
-                or (not skill["tools"] and bool(skill["steps"])),
-                "needs_larger_model": skills.larger_model_reason(skill["name"], rates) if rates else "",
-                #: Runs with no model, composed from the notes (O7, `ai/skill_composer.py`).
-                "composer": skill_composer.can_run(skill),
-            }
-        )
+    # "This one changes things" is a different question from "this one
+    # uses tools", and the UI marks it as such. A skill with steps but no
+    # declared tools could do anything, so it counts.
+    catalog = [
+        {
+            **skill,
+            "changes": bool(set(skill["tools"]) & tools.WRITE_TOOLS)
+            or (not skill["tools"] and bool(skill["steps"])),
+            "needs_larger_model": skills.larger_model_reason(skill["name"], rates) if rates else "",
+            #: Runs with no model, composed from the notes (O7, `ai/skill_composer.py`).
+            "composer": skill_composer.can_run(skill),
+        }
+        for skill in skills.catalog(config, set(tools.TOOLS))
+    ]
     where = skill_folder.folder(config)
     return {
         "skills": catalog,
@@ -2098,6 +2136,18 @@ class EmbeddingChoiceBody(BaseModel):
     id: str = Field(max_length=80)
 
 
+def _legacy_search_files(backend: str, model: str) -> dict:
+    """The old engine's files Settings offers to remove: only once the new
+    build of the model search uses is in place (or search runs on Ollama), so
+    nothing is taken away while it is still the way back to a working search."""
+    if backend != "ollama" and not embedmodels.is_downloaded(model):
+        return {"files": [], "engine": None}
+    engine = extras.legacy_engine()
+    if engine is not None:
+        engine = {**engine, "size": embedmodels.size_in_words(engine["bytes"])}
+    return {"files": embedmodels.legacy_files(), "engine": engine}
+
+
 @router.get("/embedding-models/choices")
 def embedding_model_choices() -> dict:
     """Settings, Models' list (INBOX 700): every model on offer with its
@@ -2122,6 +2172,9 @@ def embedding_model_choices() -> dict:
             row["downloaded"] = row["model"] in pulled or f"{row['model']}:latest" in pulled
     return {
         "choices": choices,
+        #: The previous engine's files (PyTorch weights, and in a packaged app
+        #: the packages), offered for removal once nothing needs them.
+        "legacy": _legacy_search_files(backend, model),
         #: Where the built-in models are kept, said in words under the list.
         "cache": str(embedmodels.cache_root()),
         #: Already on this computer, outside the catalogue (the owner's
@@ -2210,6 +2263,22 @@ def download_embedding_model(model_id: str, reinstall: bool = False) -> dict:
     else:
         started, message = embedmodels.start(model_id)
     return {"started": started, "message": message}
+
+
+@router.delete("/embedding-models/legacy/{item_id}", dependencies=[Depends(this_computer_only)])
+def remove_legacy_search_files(item_id: str) -> dict:
+    """Remove the previous engine's files: one catalogue model's PyTorch copy
+    by its allowlist id, or "engine" for the packages in a packaged app's
+    extras folder. Refused until the new model is in place."""
+    manager = deps.get_model_manager()
+    model = manager.embedding_st_model()
+    if manager.embedding_backend() != "ollama" and not embedmodels.is_downloaded(model):
+        return {"removed": False, "message": "Download the new search model first: the old files stay until it is here."}
+    if item_id == "engine":
+        started, message = extras.remove_legacy_engine()
+        return {"removed": started, "message": message}
+    removed, message = embedmodels.remove_legacy(item_id)
+    return {"removed": removed, "message": message}
 
 
 @router.delete("/embedding-models/{model_id}", dependencies=[Depends(this_computer_only)])

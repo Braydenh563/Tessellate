@@ -145,6 +145,10 @@ function syncDocFileType({ prose = true } = {}) {
   //: to prose, plain text or a CSV. The pair swap in one place, so a
   //: document never shows both or neither.
   $("doc-code-format")?.classList.toggle("hidden", type.previewable || ["txt", "csv"].includes(type.ext));
+  //: And the prose-only rows of the ⋯ menu: the image bundle, the Word file
+  //: (`docCodeExportRefused`) and the heading map, which reads `#` lines. Print
+  //: stays: a code file prints its own listing (`docCodePrintFill`).
+  for (const id of ["doc-export-zip", "doc-export-docx", "doc-map-headings"]) $(id)?.classList.toggle("hidden", docIsCodeFile());
   $("doc-code-run")?.classList.toggle("hidden", !docRunnable(type));
   docRunSyncAvailability(type);
   //: Wrapping and whitespace are about a file that does not wrap by itself:
@@ -232,6 +236,37 @@ document.addEventListener("click", (event) => {
   menu.open = false;
 });
 
+//: The formatting strip's menus (Highlight, Insert, the note strips' copies)
+//: shut on a press anywhere outside them, the editor included: `<details>`
+//: has no outside-press of its own and the click rule above is for the dock's
+//: kebab, so a menu opened over the page stayed open while you typed
+//: ("the highlight dropdown does not close on an outside press"). Capture,
+//: because the editor's own mousedown handling stops the event bubbling. The
+//: colour sheets are lists on `<body>`; a press in one is not outside.
+//: The slash menu, pressed away from: a bare "/" that opened it is not text
+//: the writer meant, so it comes back out. Capture, because the menu's own
+//: outside-press (editor.js) closes it and forgets the box before this runs.
+//: One with a word after it stays.
+document.addEventListener(
+  "mousedown",
+  (event) => {
+    const { open, textarea, trigger } = editorMenuState;
+    if (!open || trigger !== "/" || !textarea || $("editor-menu")?.contains(event.target)) return;
+    const bare = editorTokenAt(textarea, "/");
+    if (bare && !bare.fragment) setTimeout(() => editorSplice(textarea, bare.start, bare.start + 1, ""), 0);
+  },
+  true
+);
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    const open = document.querySelectorAll("details.doc-toolbar-menu[open]");
+    if (!open.length || event.target.closest?.(".select-menu, .action-menu")) return;
+    for (const menu of open) if (!menu.contains(event.target)) menu.open = false;
+  },
+  true
+);
+
 //: **Five download rows into one** (INBOX 262, the owner: "I want to combine
 //: the "download as" options in it into a sub menu in that dropdown ... like
 //: the ones in the meatball dropdowns in the your notes page").
@@ -304,11 +339,11 @@ foldDocMenuGroup("ph:download-simple Download or print", [
   "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
 foldDocMenuGroup("ph:layout Editor and layout", [
-  "doc-format-toggle", "doc-width-menu", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
+  "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
 ]);
 foldDocMenuGroup("ph:pencil-simple While you write", [
-  "doc-dim-others", "doc-typewriter", "doc-serif", "doc-margin-reader", "doc-autocorrect-row", "doc-complete-row",
+  "doc-paste-special", "doc-dim-others", "doc-typewriter", "doc-serif", "doc-margin-reader", "doc-autocorrect-row", "doc-complete-row",
 ]);
 
 // --- which of the four views is showing ----------------------------------------
@@ -342,11 +377,24 @@ let docView = "source";
 //: markdown one restores the view the person actually chose.
 const docViewState = { held: false, tableGrips: null };
 
+//: One-time reset (owner, 2026-10-25: Live should be the default, but their
+//: browser held "source" from before). A view stored before this version key
+//: existed is dropped once, so Live shows; every choice made afterwards is
+//: kept, because the key is written in the same breath.
+const DOC_VIEW_VERSION_KEY = "doc-view-mode-v";
+const DOC_VIEW_VERSION = "2";
+function docViewMigrate() {
+  if (prefs.has(DOC_VIEW_VERSION_KEY)) return;
+  prefs.remove(DOC_VIEW_KEY);
+  prefs.set(DOC_VIEW_VERSION_KEY, DOC_VIEW_VERSION);
+}
+
 //: The view a markdown document opens in when it is not holding one: the
 //: stored choice, else Live (Rendered on a phone, Phase 11 item 6).
 function docDefaultView() {
   let stored = null;
   try {
+    docViewMigrate();
     stored = prefs.get(DOC_VIEW_KEY, null);
   } catch {
     stored = null;
@@ -539,9 +587,12 @@ function cmSurface(view, meta = null) {
     get value() { return this.text; },
     set value(next) { this.text = next; },
     get selectionStart() { return view.state.selection.main.from; },
-    set selectionStart(at) { this.setSelection(at, this.selectionEnd); },
+    //: A textarea's rule: moving one end past the other drags it along.
+    //: Without it start=12 then end=21 built 12..10, stored as 10..12, and
+    //: Ctrl+B on nothing left `**bold text` selected (dogfood item 2).
+    set selectionStart(at) { this.setSelection(at, Math.max(at, this.selectionEnd)); },
     get selectionEnd() { return view.state.selection.main.to; },
-    set selectionEnd(at) { this.setSelection(this.selectionStart, at); },
+    set selectionEnd(at) { this.setSelection(Math.min(at, this.selectionStart), at); },
     get classList() { return view.dom.classList; },
     get dataset() { return view.dom.dataset; },
     get scrollTop() { return view.scrollDOM.scrollTop; },
@@ -647,6 +698,9 @@ function docText() {
 //: reaches CodeMirror once it is mounted.
 function docSurfaceById(id) {
   if (id === "doc-content") return docSurface();
+  //: A board box being typed in has no element id (whiteboard.js, K24).
+  const board = wbEditorSurfaceById(id);
+  if (board) return board;
   //: A note box that has mounted the engine (Phase 8) answers as its view for
   //: the same reason: the toolbar above it must write where the words are.
   const box = $(id);
@@ -722,6 +776,8 @@ function setDocView(mode) {
   $("doc-preview").classList.toggle("hidden", !docPreviewShowing());
   $("doc-panes").classList.toggle("split", docView === "split");
   $("doc-panes").classList.toggle("reading", docView === "rendered");
+  //: Nothing to format while reading (dogfood item 17); a code file never has the strip.
+  $("doc-toolbar")?.classList.toggle("hidden", docView === "rendered" || !type.previewable);
 
   if (docView !== "rendered" && !docViewState.held) lastEditView = docView;
   for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #doc-view-menu [data-doc-view]")) {
@@ -770,6 +826,7 @@ function setDocView(mode) {
 }
 
 async function loadDocuments(selectId = null) {
+  warmDocumentEngine();
   //: Placeholders while it loads (INBOX 435 (6)); cleared on either answer.
   const sideList = document.getElementById("doc-list");
   showSkeletons(sideList, 4, "li");
@@ -819,7 +876,12 @@ const RECENT_DOCS_SHOWN = 8;
 function renderDocList() {
   const list = $("doc-list");
   list.replaceChildren();
-  const shown = docs.slice(0, RECENT_DOCS_SHOWN);
+  //: Last edited first, whatever order the list was fetched in: a save
+  //: moves the row to the top without a refetch.
+  const recent = [...docs].sort(
+    (a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")) || b.id - a.id
+  );
+  const shown = recent.slice(0, RECENT_DOCS_SHOWN);
   if (currentDoc && !shown.some((d) => d.id === currentDoc.id)) {
     const open = docs.find((d) => d.id === currentDoc.id);
     if (open) shown[shown.length - 1] = open;
@@ -956,6 +1018,7 @@ async function openDocument(id) {
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
   if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
   //: CodeMirror rather than into the fallback and then into a view mounted a
@@ -1860,19 +1923,58 @@ function docTemplateFill(template) {
 //: maps, so a deleted one's number is not reused while a higher one exists.
 // DOC-UNTITLED-BEGIN
 function docUntitledName(titles) {
-  const pattern = /^untitled document (\d{1,6})$/i;
+  //: The bare "Untitled document" is number one; the next is "... 2".
+  const pattern = /^untitled document(?: (\d{1,6}))?$/i;
   let top = 0;
   for (const title of titles || []) {
     const match = pattern.exec(String(title || "").trim());
-    if (match) top = Math.max(top, Number(match[1]));
+    if (match) top = Math.max(top, match[1] ? Number(match[1]) : 1);
   }
-  return `Untitled document ${top + 1}`;
+  return top ? `Untitled document ${top + 1}` : "Untitled document";
+}
+
+//: A document nobody touched: still named by the app (or not at all), still empty. The only
+//: kind that is dropped on leaving; one word of text keeps it (dog3-1026 D20).
+function docIsUntouched(title, text) {
+  return /^(?:untitled(?: document)?(?: \d{1,6})?)?$/i.test(String(title || "").trim()) && !String(text || "").trim();
 }
 // DOC-UNTITLED-END
 const docNextName = () => docUntitledName(docs.map((d) => d.title));
 
+//: Leaving a document that was made and never written in (a keystroke in the
+//: title, then undone; New, then another document) bins it, so the list does
+//: not fill with "Untitled document N". Anything with a word in it stays.
+async function docDropIfUntouched(nextId = null) {
+  const doc = currentDoc;
+  // Only a document made in this session: an older empty "Untitled document N" is the owner's.
+  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  currentDoc = null;
+  docs = docs.filter((d) => d.id !== doc.id);
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  renderDocList();
+}
+
+//: **A blank document is not made until it is written in** (dog1-1025 item
+//: 16, decided): the editor opens empty and the first keystroke in the title
+//: or the text creates the row (`ensureDocumentExists`), so cancelling or
+//: walking away leaves nothing behind. A template has content, so it posts.
+async function startBlankDocument() {
+  const seq = ++docOpenSeq;
+  docRememberPositionNow();
+  if (docDirty) await saveDocument({ silent: true });
+  await docDropIfUntouched();
+  await ensureDocEditor();
+  if (seq !== docOpenSeq) return;
+  showNoDocument();
+  syncDocFileType({ prose: false });
+  docDirty = false;
+  renderDocList();
+  $("doc-title").focus();
+}
+
 async function createDocument(template = null) {
-  const body = template ? docTemplateFill(template) : { title: docNextName(), content: "" };
+  if (!template) return startBlankDocument();
+  const body = docTemplateFill(template);
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
@@ -2017,6 +2119,8 @@ function showDocTemplatePreview(template) {
 
 // Guards against creating several documents from one fast burst of typing.
 let creatingDocument = null;
+// Ids `ensureDocumentExists` made since the page loaded; the only ones `docDropIfUntouched` may bin.
+const docsMadeThisSession = new Set();
 
 async function ensureDocumentExists() {
   if (currentDoc) return currentDoc;
@@ -2024,9 +2128,10 @@ async function ensureDocumentExists() {
   creatingDocument = (async () => {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: docNextName(), content: "" }),
+      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
     });
     currentDoc = doc;
+    docsMadeThisSession.add(doc.id);
     docs.unshift({ ...doc });
     // The list gains an "Untitled" row the moment this returns, so show the
     // same name in the title box, otherwise the document you're typing into
@@ -2206,6 +2311,8 @@ function renderDocStats() {
   const button = $("doc-word-goal");
   const label = $("doc-goal-label");
   if (!button || !label) return;
+  //: A word-count goal is for writing: a code file has no use for one.
+  button.classList.toggle("hidden", docIsCodeFile());
   button.setAttribute("aria-pressed", String(goal > 0));
   button.classList.toggle("has-findings", goal > 0 && words >= goal);
   if (!goal) {
@@ -2727,6 +2834,8 @@ const DOC_COMMANDS = [
     run: () => wrapDocSelection("**", "bold text") },
   { id: "italic", icon: "ph:text-italic", label: "Italic", keys: "Ctrl+I",
     run: () => wrapDocSelection("*", "italic text") },
+  { id: "underline", icon: "ph:text-underline", label: "Underline", keys: "Ctrl+U",
+    run: () => applyMarkdown("underline") },
   { id: "strike", icon: "ph:text-strikethrough", label: "Strike through", keys: "Ctrl+Shift+S",
     run: () => wrapDocSelection("~~", "struck through") },
   { id: "code", icon: "ph:code", label: "Inline code", keys: "Ctrl+E",
@@ -2746,6 +2855,8 @@ const DOC_COMMANDS = [
     run: () => docBlockMoveCommand(-1) },
   { id: "move-block-down", icon: "ph:arrow-down", label: "Move the block at the caret down: a paragraph, list item, table or section", keys: "Alt+↓",
     run: () => docBlockMoveCommand(1) },
+  { id: "turn-into", icon: "ph:swap", label: "Turn into: paragraph, heading, list, to-do, quote, callout or code", keys: "none", prose: true,
+    run: () => docTurnIntoMenu() },
   { id: "ul", icon: "ph:list-bullets", label: "Bulleted list", keys: "Ctrl+Shift+8", run: () => applyMarkdown("ul") },
   { id: "ol", icon: "ph:list-numbers", label: "Numbered list", keys: "Ctrl+Shift+7", run: () => applyMarkdown("ol") },
   { id: "task", icon: "ph:check-square", label: "Task list", keys: "Ctrl+Shift+9", run: () => applyMarkdown("task") },
@@ -2765,6 +2876,56 @@ const DOC_COMMANDS = [
     run: () => docRunControl("doc-dim-others", "Dimming") },
   { id: "serif", icon: "ph:text-aa", label: "Serif reading face", keys: "none",
     run: () => docRunControl("doc-serif", "The serif face") },
+  { id: "copy-formatted", icon: "ph:copy", label: "Copy as formatted text, to paste into Word or an email", keys: "none", prose: true,
+    run: () => docCopyFormatted() },
+  { id: "paste-special", icon: "ph:clipboard-text", label: "Paste special: plain text, Markdown source, code, quote, table, link or checklist", keys: "none",
+    run: () => docPasteSpecialMenu() },
+  { id: "paste-plain", icon: "ph:clipboard-text", label: "Paste as plain text", keys: "Ctrl+Shift+V",
+    run: () => docPasteSpecial("plain") },
+  { id: "paste-source", icon: "ph:file-code", label: "Paste as Markdown source, no conversion", keys: "none",
+    run: () => docPasteSpecial("source") },
+  { id: "paste-match", icon: "ph:text-indent", label: "Paste matching the surrounding text, list marks and quotes carried on", keys: "none",
+    run: () => docPasteSpecial("match") },
+  { id: "paste-code", icon: "ph:code-block", label: "Paste as a code block", keys: "none",
+    run: () => docPasteSpecial("code") },
+  { id: "paste-quote", icon: "ph:quotes", label: "Paste as a quote", keys: "none",
+    run: () => docPasteSpecial("quote") },
+  { id: "paste-table", icon: "ph:table", label: "Paste as a table, from a spreadsheet or CSV", keys: "none",
+    run: () => docPasteSpecial("table") },
+  { id: "paste-link", icon: "ph:link", label: "Paste as a link, over the selected words", keys: "none",
+    run: () => docPasteSpecial("link") },
+  { id: "paste-checklist", icon: "ph:check-square", label: "Paste as a checklist, one line per item", keys: "none",
+    run: () => docPasteSpecial("checklist") },
+  { id: "text-size", icon: "ph:text-aa", label: "Text size: small, medium or large", keys: "none", prose: true,
+    run: () => docRunControl("doc-text-size", "Text size") },
+  { id: "line-spacing", icon: "ph:arrows-vertical", label: "Line spacing: compact, comfortable or relaxed", keys: "none", prose: true,
+    run: () => docRunControl("doc-line-spacing", "Line spacing") },
+  { id: "stats", icon: "ph:chart-bar", label: "Document statistics: words, reading ease, repeated words", keys: "none",
+    run: () => docRunTextTool("stats") },
+  { id: "case-upper", icon: "ph:text-aa", label: "Selection to UPPER CASE", keys: "none",
+    run: () => docRunTextTool("upper") },
+  { id: "case-lower", icon: "ph:text-aa", label: "Selection to lower case", keys: "none",
+    run: () => docRunTextTool("lower") },
+  { id: "case-title", icon: "ph:text-aa", label: "Selection to Title Case", keys: "none",
+    run: () => docRunTextTool("title") },
+  { id: "case-sentence", icon: "ph:text-aa", label: "Selection to Sentence case", keys: "none",
+    run: () => docRunTextTool("sentence") },
+  { id: "sort-asc", icon: "ph:sort-ascending", label: "Sort the selected lines A to Z", keys: "none",
+    run: () => docRunTextTool("sort-asc") },
+  { id: "sort-desc", icon: "ph:sort-descending", label: "Sort the selected lines Z to A", keys: "none",
+    run: () => docRunTextTool("sort-desc") },
+  { id: "unique", icon: "ph:funnel", label: "Remove duplicate lines from the selection", keys: "none",
+    run: () => docRunTextTool("unique") },
+  { id: "number-headings", icon: "ph:list-numbers", label: "Number the headings (1, 1.1, 1.2)", keys: "none", prose: true,
+    run: () => docRunTextTool("number-headings") },
+  { id: "unnumber-headings", icon: "ph:list-numbers", label: "Remove the heading numbers", keys: "none", prose: true,
+    run: () => docRunTextTool("unnumber-headings") },
+  { id: "date-iso", icon: "ph:calendar-blank", label: "Insert today's date (2026-10-26)", keys: "none",
+    run: () => docRunTextTool("date-iso") },
+  { id: "date-long", icon: "ph:calendar-blank", label: "Insert today's date in words", keys: "none",
+    run: () => docRunTextTool("date-long") },
+  { id: "time", icon: "ph:clock", label: "Insert the time", keys: "none",
+    run: () => docRunTextTool("time") },
   { id: "goal", icon: "ph:target", label: "Set a word goal", keys: "none",
     run: () => docRunControl("doc-word-goal", "The word goal") },
   { id: "ai", icon: "ph:sparkle", label: "Ask Atlas to edit this document", keys: "none",
@@ -2907,7 +3068,7 @@ function docPaletteCommands() {
   }
   if (tab !== "documents" || !currentDoc) return [];
   const code = !docFileType().previewable;
-  return DOC_COMMANDS.filter((command) => command.run && (!command.code || code)).map((command) => ({
+  return DOC_COMMANDS.filter((command) => command.run && (!command.code || code) && (!command.prose || !code)).map((command) => ({
     group: "This document",
     label: `${command.icon} ${command.label}`,
     keys: command.keys === "none" ? "" : command.keys,
@@ -3821,6 +3982,72 @@ function renderDocPreview() {
   layerDocWikiLinks(preview);
   docLayerImageOptions(preview);
   docRenderMermaidIn(preview);
+  docWireReadTasks(preview, text);
+}
+
+//: **Tick a task in the Read view.** The renderer draws every task box
+//: disabled (it is shared with notes and chat, which have no source to write
+//: back to). Here the document is open, so the Nth box is matched to the Nth
+//: task line of the text, outside the properties and any code fence, and
+//: switched on only when the counts agree: a box that cannot be traced to its
+//: line stays as it was rather than ticking the wrong one.
+const DOC_READ_TASK = /^(\s*[-*+]\s+)\[([ xX])\](\s)/;
+
+function docTaskLines(text) {
+  const lines = String(text).split("\n");
+  const out = [];
+  let at = 0;
+  let fence = null;
+  let i = 0;
+  const fm = docFrontmatterParse(text);
+  if (fm) {
+    const cut = docFrontmatterStrip(text);
+    const skipped = text.length - cut.length;
+    while (at < skipped && i < lines.length) {
+      at += lines[i].length + 1;
+      i += 1;
+    }
+  }
+  for (; i < lines.length; i += 1) {
+    const line = lines[i];
+    const mark = line.match(/^\s*(```+|~~~+)/);
+    if (mark) {
+      if (!fence) fence = mark[1][0];
+      else if (mark[1][0] === fence) fence = null;
+    } else if (!fence && DOC_READ_TASK.test(line)) {
+      out.push({ from: at, line });
+    }
+    at += line.length + 1;
+  }
+  return out;
+}
+
+function docWireReadTasks(preview, text) {
+  const boxes = [...preview.querySelectorAll("li.md-task > input[type=checkbox]")];
+  if (!boxes.length) return;
+  const tasks = docTaskLines(text);
+  if (tasks.length !== boxes.length) return;
+  boxes.forEach((box, n) => {
+    box.disabled = false;
+    box.dataset.docTask = String(n);
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
+  if (preview.dataset.taskWired === "1") return;
+  preview.dataset.taskWired = "1";
+  preview.addEventListener("change", (event) => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement) || box.dataset.docTask === undefined) return;
+    const surface = docSurface();
+    const task = docTaskLines(surface?.text ?? "")[Number(box.dataset.docTask)];
+    const match = task && task.line.match(DOC_READ_TASK);
+    if (!match) {
+      box.checked = !box.checked;
+      return;
+    }
+    const at = task.from + match[1].length + 1;
+    surface.replaceRange(at, at + 1, box.checked ? "x" : " ");
+    box.setAttribute("aria-label", box.checked ? "Done" : "Not done");
+  });
 }
 
 //: **The document, rendered, with its columns side by side.** `renderMarkdown`
@@ -4340,6 +4567,26 @@ function docTakeTabEscape() {
 //: "- al|pha" plus Tab gave "- al  pha").
 const DOC_LIST_LINE = /^([ \t]*)([-*+]|\d+[.)])(\s)/;
 
+//: The number an ordered item at `indent` columns should carry, from the
+//: lines above `start`: its previous sibling's plus one, or 1 when a shallower
+//: line (the parent) or a break in the list comes first. Deeper lines are the
+//: sibling's children and are skipped over.
+function docOrderedNumberAt(value, start, indent) {
+  const above = value.slice(0, Math.max(0, start - 1)).split("\n");
+  for (let i = above.length - 1; i >= 0; i--) {
+    const line = above[i];
+    if (!line.trim()) continue;
+    const m = /^([ \t]*)(?:(\d+)[.)]|[-*+])\s/.exec(line);
+    if (!m) {
+      if (/^\s/.test(line)) continue;
+      return 1;
+    }
+    if (m[1].length > indent) continue;
+    return m[1].length === indent && m[2] ? Number(m[2]) + 1 : 1;
+  }
+  return 1;
+}
+
 function docCanOutdent(box) {
   if (!box) return false;
   if (box.selectionEnd > box.selectionStart) return true;
@@ -4375,8 +4622,14 @@ function indentDocSelection(box, outdent) {
       next = leading.slice(Math.min(leading.length, unit.length));
     }
     if (next === leading) return; // nothing to remove: the caller lets Tab go
-    docReplaceRange(box, start, start + leading.length, next);
-    const moved = next.length - leading.length;
+    //: A numbered item that changes level takes its place in the new list:
+    //: indented under "1. a" it is the first of a nested list ("1."), and
+    //: brought back out it is the parent's next number. Left alone it kept
+    //: "2." in a list of one, which renders as "2." and counts from there.
+    const digits = /^\d+/.exec(text.slice(leading.length))?.[0] || "";
+    const number = digits ? String(docOrderedNumberAt(box.value, start, next.length)) : "";
+    docReplaceRange(box, start, start + leading.length + digits.length, next + number);
+    const moved = next.length - leading.length + number.length - digits.length;
     const at = Math.max(start + next.length, caret + moved);
     box.setSelectionRange(at, at);
     markDocDirty();
@@ -5076,6 +5329,20 @@ function docTableStepRow(table, row, delta) {
   return r;
 }
 
+//: The way out of a table below: the edits and the caret. The caret lands
+//: after one blank line, added when missing: text on the very next line
+//: would be read as one more row. `dropLast` first removes the last row,
+//: for Enter on an empty one (Notion and Google Docs do the same);
+//: Ctrl+Enter keeps every row, in Source too.
+function docTableExitEdit(table, text, dropLast) {
+  const end = table.to;
+  const from = dropLast ? table.rows[table.rows.length - 1].from - 1 : end;
+  const lead = Math.min(2, /^\n*/.exec(text.slice(end))[0].length);
+  const changes = dropLast ? [{ from, to: end, insert: "" }] : [];
+  if (lead < 2) changes.push({ from: end + lead, to: end + lead, insert: "\n".repeat(2 - lead) });
+  return { changes, anchor: from + 2 };
+}
+
 //: A cell's text as markdown can hold it: one line, and a pipe escaped so it
 //: stays inside its cell rather than opening a new one. An already escaped
 //: pipe is kept as it is.
@@ -5302,6 +5569,19 @@ function docTableCaretTo(context, row, col) {
   return true;
 }
 
+//: Leave a table downwards through `docTableExitEdit`, the way out as data.
+function docTableExit(view, table, dropLast) {
+  const out = docTableExitEdit(table, view.state.doc.toString(), dropLast);
+  view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
+  return true;
+}
+
+function docTableCtrlEnter(view) {
+  const context = docTableContext();
+  if (!context || context.surface.kind !== "codemirror" || context.surface.view !== view) return false;
+  return docTableExit(view, context.table, false);
+}
+
 //: **Enter and the arrows in a Live table** (INBOX 425 i: "tables are still
 //: really annoying to use and edit in the documents live view"). Measured
 //: before this in `scratchpad/ui-sweeps/doctablework.js`: ArrowDown from the
@@ -5326,6 +5606,14 @@ function docTableKeyMove(view, key) {
   if (!context || context.surface.kind !== "codemirror" || context.surface.view !== view) return false;
   const { table, cell } = context;
   if (key === "Enter") {
+    const last = table.rows[table.rows.length - 1];
+    if (cell.row === table.rows.length - 1 && table.rows.length > 2 && !last.cells.some((c) => c.trim())) return docTableExit(view, table, true);
+    //: A row typed by hand ends with its closing pipe: Enter there is the
+    //: plain newline, so the next line is typed rather than found inside a
+    //: cell (typed line by line, `| --- |` then Enter used to add an empty
+    //: row and park the next line inside it).
+    const line = view.state.doc.lineAt(sel.head);
+    if (sel.head === line.to && line.text.trimEnd().endsWith("|")) return false;
     const next = docTableStepRow(table, cell.row, 1);
     if (next !== null) return docTableCaretTo(context, next, cell.col);
     const rows = table.rows.length;
@@ -5337,20 +5625,8 @@ function docTableKeyMove(view, key) {
   if (moved.head !== sel.head && landed && landed.row === cell.row && landed.col === cell.col) return false;
   const next = docTableStepRow(table, cell.row, down ? 1 : -1);
   if (next !== null) return docTableCaretTo(context, next, cell.col);
+  if (down) return docTableExit(view, table, false);
   const doc = view.state.doc;
-  if (down) {
-    if (table.to < doc.length) {
-      view.dispatch({ selection: { anchor: table.to + 1 }, scrollIntoView: true });
-    } else {
-      view.dispatch({
-        changes: { from: table.to, insert: "\n\n" },
-        selection: { anchor: table.to + 2 },
-        scrollIntoView: true,
-        userEvent: "input",
-      });
-    }
-    return true;
-  }
   if (table.from > 0) {
     view.dispatch({ selection: { anchor: table.from - 1 }, scrollIntoView: true });
   } else {
@@ -5411,6 +5687,7 @@ function docTablePasteEvent(event, view) {
     userEvent: "input.paste",
     scrollIntoView: true,
   });
+  docPasteOfferTable(view, sel.from, before + table + after, data.getData("text/plain"));
   return true;
 }
 
@@ -5430,8 +5707,39 @@ function docTablePasteEvent(event, view) {
 // (a heading, emphasis, a list, a link, a quote, code, a picture, a table):
 // a code editor's copy is coloured spans and divs, and turning those into
 // paragraphs would break the code it was copying.
-const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]/i;
+const DOC_RICH_TAGS = /<(h[1-6]|strong|b|em|i|a\s[^>]*href|ul|ol|blockquote|pre|code|img|table|del|s)[\s>]|mso-list/i;
+//: **Emphasis kept only in a span's style counts too** (dog3d-1026:7: a lone
+//: `<span style="font-weight:700">` arrived as plain text, because no tag in
+//: the list above was in it). Not when the copy is code: an editor's copy is a
+//: monospace, `white-space: pre` block whose coloured spans are sometimes bold
+//: or italic, and those must stay code.
+const DOC_RICH_STYLE = /font-weight\s*:\s*(bold|bolder|[6-9]00)\b|font-style\s*:\s*italic/i;
+const DOC_CODE_HTML = /white-space\s*:\s*pre|font-family\s*:[^;"]*(mono|consolas|courier|menlo)/i;
+
+function docHtmlIsRich(html) {
+  return DOC_RICH_TAGS.test(html) || (DOC_RICH_STYLE.test(html) && !DOC_CODE_HTML.test(html));
+}
+
 let docPastePlain = false;
+
+//: **Word's lists are paragraphs, not lists.** A pasted bullet from Word is a
+//: `<p>` with `mso-list: l0 level2 lfo1` and a hidden marker span
+//: (`mso-list: Ignore`) holding the bullet or "1.", so neither tag test saw a
+//: list and "· item" arrived as plain text. Returns the Markdown line, indented
+//: by the item's level, or "" for any other paragraph.
+function docWordListLine(el, styleOf, inline) {
+  const list = styleOf(el, "mso-list");
+  if (!list || list === "none") return "";
+  const level = Number(/level(\d+)/.exec(list)?.[1] || 1);
+  //: The marker span is nested (`<span Symbol><span mso-list:Ignore>`), so it
+  //: is found by its style wherever it sits, read, and taken out.
+  const marks = [...el.querySelectorAll("[data-mm-style]")].filter((c) => styleOf(c, "mso-list") === "ignore");
+  const mark = marks.map((c) => c.textContent).join("");
+  marks.forEach((c) => c.remove());
+  const number = /^\s*(\d+)[.)]/.exec(mark)?.[1] || (/^\s*[a-z]{1,4}[.)]/i.test(mark) ? "1" : "");
+  const text = [...el.childNodes].map(inline).join("").replace(/\s+/g, " ").trim();
+  return text ? `${"  ".repeat(Math.max(0, level - 1))}${number ? `${number}.` : "-"} ${text}` : "";
+}
 
 function docHtmlToMarkdown(html) {
   //: `style` renamed before parsing: the page's CSP refuses an inline style
@@ -5503,6 +5811,7 @@ function docHtmlToMarkdown(html) {
       for (const sub of li.children) if (/^(UL|OL)$/.test(sub.nodeName)) list(sub, depth + 1);
     }
   };
+  let wordRun = -1;
   const block = (el) => {
     let run = "";
     const flush = () => {
@@ -5523,8 +5832,16 @@ function docHtmlToMarkdown(html) {
         continue;
       }
       flush();
+      const wordItem = tag === "P" ? docWordListLine(child, styleOf, inline) : "";
       const heading = /^H([1-6])$/.exec(tag);
-      if (heading) {
+      if (wordItem) {
+        //: Word's list paragraphs run together as one tight list.
+        if (wordRun === out.length - 1) out[wordRun] += `\n${wordItem}`;
+        else {
+          out.push(wordItem);
+          wordRun = out.length - 1;
+        }
+      } else if (heading) {
         const text = inline(child).replace(/\s+/g, " ").trim();
         if (text) out.push(`${"#".repeat(Number(heading[1]))} ${text}`);
       } else if (tag === "UL" || tag === "OL") {
@@ -5566,7 +5883,7 @@ function docRichPasteEvent(event, view) {
   docPastePlain = false;
   if (plain || view.dom.classList.contains("doc-content-code")) return false;
   const html = event.clipboardData?.getData("text/html") || "";
-  if (!html || !DOC_RICH_TAGS.test(html)) return false;
+  if (!html || !docHtmlIsRich(html)) return false;
   const markdown = docHtmlToMarkdown(html);
   if (!markdown) return false;
   event.preventDefault();
@@ -5578,6 +5895,7 @@ function docRichPasteEvent(event, view) {
     userEvent: "input.paste",
     scrollIntoView: true,
   });
+  docPasteOfferRich(view, sel.from, markdown, event.clipboardData.getData("text/plain"));
   return true;
 }
 
@@ -5983,7 +6301,7 @@ function docTableGripsPlugin(CM) {
         const addCol = put("doc-table-add doc-table-add-col", "add-col", 0,
           { x: lastCol.x + lastCol.w - band, y: geo.box.top - band, w: band, h: band }, "Add a column at the end");
         const addRow = put("doc-table-add doc-table-add-row", "add-row", 0,
-          { x: geo.box.left, y: geo.box.bottom, w: band, h: band }, "Add a row at the end");
+          { x: geo.box.left, y: geo.box.bottom + 2, w: band, h: band }, "Add a row at the end");
         this.layer.appendChild(this.line);
       }
 
@@ -7879,7 +8197,102 @@ function docMathToken(token, tokens, state) {
   return { tag: "mo", text: token.value };
 }
 
+//: **Matrices and case splits** (DOCUMENTS_PLAN row 16, the equation
+//: editor's templates). The fences each environment wears, open then close;
+//: `matrix` has none and `cases` only the brace on its left.
+const DOC_MATH_FENCES = Object.assign(Object.create(null), {
+  matrix: ["", ""], pmatrix: ["(", ")"], bmatrix: ["[", "]"], Bmatrix: ["{", "}"],
+  vmatrix: ["|", "|"], Vmatrix: ["‖", "‖"], cases: ["{", ""], aligned: ["", ""], array: ["", ""],
+});
+
+//: Accents over their argument, as `mover`: what each one draws.
+const DOC_MATH_ACCENTS = Object.assign(Object.create(null), { vec: "→", hat: "^", bar: "‾", overline: "‾", tilde: "~", dot: "˙", ddot: "¨" });
+
+//: The three tables below have no prototype: a name typed in a note (`\toString`,
+//: `\begin{constructor}`) must not find an Object.prototype member.
+//: TeX's spaces, as their width in ems: `\,` was a printed comma before.
+const DOC_MATH_SPACES = Object.assign(Object.create(null), { ",": "0.17em", ":": "0.22em", ";": "0.28em", "!": "0em", quad: "1em", qquad: "2em" });
+
+//: The letters of a braced name (`{pmatrix}`), consumed; "" when there is none.
+function docMathBracedName(tokens, state) {
+  if (!tokens[state.at] || tokens[state.at].kind !== "{") return "";
+  state.at += 1;
+  let name = "";
+  while (state.at < tokens.length && tokens[state.at].kind !== "}") {
+    name += tokens[state.at].value || "";
+    state.at += 1;
+  }
+  if (state.at < tokens.length) state.at += 1;
+  return name;
+}
+
+//: The tokens of one environment's body split into rows of cells, at `&`
+//: and `\\` outside any brace or inner environment; stops after its `\end`.
+function docMathCells(tokens, state) {
+  const rows = [[[]]];
+  let depth = 0;
+  while (state.at < tokens.length) {
+    const token = tokens[state.at];
+    state.at += 1;
+    const cmd = token.kind === "cmd" ? token.value : null;
+    if (cmd === "end" && depth === 0) {
+      docMathBracedName(tokens, state);
+      break;
+    }
+    if (token.kind === "{" || cmd === "begin") depth += 1;
+    if (token.kind === "}" || cmd === "end") depth -= 1;
+    const row = rows[rows.length - 1];
+    if (depth === 0 && token.kind === "op" && token.value === "&") row.push([]);
+    else if (depth === 0 && cmd === "\\") rows.push([[]]);
+    else row[row.length - 1].push(token);
+  }
+  return rows;
+}
+
+function docMathEnvironment(tokens, state) {
+  const name = docMathBracedName(tokens, state);
+  const rows = docMathCells(tokens, state).filter((row) => row.some((cell) => cell.length));
+  const table = {
+    tag: "mtable",
+    attrs: name === "cases" ? { columnalign: "left" } : undefined,
+    kids: rows.map((row) => ({
+      tag: "mtr",
+      kids: row.map((cell) => ({ tag: "mtd", kids: [docMathRow(docMathNodes(cell, { at: 0 }))] })),
+    })),
+  };
+  const [open, close] = DOC_MATH_FENCES[name] || ["", ""];
+  if (!open && !close) return table;
+  const kids = [];
+  if (open) kids.push({ tag: "mo", text: open });
+  kids.push(table);
+  if (close) kids.push({ tag: "mo", text: close });
+  return { tag: "mrow", kids };
+}
+
+//: The commands that take arguments and draw a structure, other than the
+//: fraction and the root; null when `name` is not one of them.
+function docMathStructure(name, tokens, state) {
+  if (name === "begin") return docMathEnvironment(tokens, state);
+  if (name === "end") {
+    docMathBracedName(tokens, state);
+    return { tag: "mrow", kids: [] };
+  }
+  if (name === "binom") {
+    const top = docMathArgument(tokens, state);
+    const bottom = docMathArgument(tokens, state);
+    return { tag: "mrow", kids: [{ tag: "mo", text: "(" }, { tag: "mfrac", attrs: { linethickness: "0" }, kids: [top, bottom] }, { tag: "mo", text: ")" }] };
+  }
+  if (DOC_MATH_ACCENTS[name]) {
+    const base = docMathArgument(tokens, state);
+    return { tag: "mover", attrs: { accent: "true" }, kids: [base, { tag: "mo", text: DOC_MATH_ACCENTS[name] }] };
+  }
+  if (name in DOC_MATH_SPACES) return { tag: "mspace", attrs: { width: DOC_MATH_SPACES[name] } };
+  return null;
+}
+
 function docMathCommand(name, tokens, state) {
+  const structure = docMathStructure(name, tokens, state);
+  if (structure) return structure;
   if (name === "frac" || name === "dfrac" || name === "tfrac") {
     const top = docMathArgument(tokens, state);
     const bottom = docMathArgument(tokens, state);
@@ -7961,11 +8374,17 @@ function docMathNodes(tokens, state) {
 //: objects so this can be tested without a browser and built with
 //: `createElementNS` in one.
 function docMathTree(tex, display = false) {
-  const kids = docMathNodes(docMathTokens(tex), { at: 0 });
+  //: `\tag{1}` is TeX's own equation number, taken off the formula and kept
+  //: beside the tree (`label`) for the display box to set at the right edge.
+  //: Display only: an inline formula has nowhere to put one.
+  const found = display ? /\\tag\*?\{([^{}]{1,24})\}/.exec(tex) : null;
+  const body = found ? tex.replace(found[0], "") : tex;
+  const kids = docMathNodes(docMathTokens(body), { at: 0 });
   return {
     tag: "math",
     attrs: { display: display ? "block" : "inline" },
     kids: [docMathRow(kids.length ? kids : [{ tag: "mtext", text: "" }])],
+    label: found ? found[1].trim() : "",
   };
 }
 
@@ -8000,7 +8419,17 @@ function docMathElement(node) {
 }
 
 function docMathRender(tex, display = false) {
-  return docMathElement(docMathTree(tex, display));
+  const tree = docMathTree(tex, display);
+  const math = docMathElement(tree);
+  if (!tree.label) return math;
+  //: A numbered equation: the formula centred, its number at the right edge.
+  const box = document.createElement("span");
+  box.className = "md-math-numbered";
+  const number = document.createElement("span");
+  number.className = "md-math-number";
+  number.textContent = `(${tree.label})`;
+  box.append(math, number);
+  return box;
 }
 
 //: The compartment decision 3 names: Live is this editor with the markdown
@@ -8431,7 +8860,11 @@ function docLivePlugin(CM) {
     toDOM() {
       const host = document.createElement("span");
       host.className = this.display ? "cm-md-math cm-md-math-block" : "cm-md-math";
-      host.appendChild(docMathRender(this.tex, this.display));
+      try {
+        host.appendChild(docMathRender(this.tex, this.display));
+      } catch {
+        host.textContent = this.tex;
+      }
       return host;
     }
   }
@@ -8764,6 +9197,12 @@ function docLivePlugin(CM) {
                 widget: new DocTaskWidget(/[xX]/.test(marker), node.from, node.to),
               }).range(node.from, node.to)
             );
+            //: The space after `]` goes with the dash's: a space's width is the
+            //: font's, so it left the first line's words 0.35em past the
+            //: list's hanging indent and a wrapped line fell back under the
+            //: box. With it hidden the box (a fixed 1.6em, `.cm-md-task-hit`) is the
+            //: whole 1.6em lead, and the wrap lines up under the words.
+            if (doc.sliceString(node.to, node.to + 1) === " ") ranges.push(hidden.range(node.to, node.to + 1));
             return false;
           }
           //: **Lists, which the live view drew as plain text.** Measured
@@ -8834,6 +9273,15 @@ function docLivePlugin(CM) {
                 ranges.push(
                   Decoration.replace({ widget: new DocBulletWidget() }).range(from, to)
                 );
+                //: The space after it goes: the bullet is a fixed 1.6em box, so
+                //: the first line's words start exactly where a wrapped line's
+                //: do (a space is the font's width, which left them 11px apart).
+                if (doc.sliceString(to, to + 1) === " ") ranges.push(hidden.range(to, to + 1));
+              } else if (/^\d+[.)]$/.test(mark[1]) && !touched(line.from, line.to)) {
+                //: A number and its space share a box at least 1.6em wide, so a
+                //: short number's wrap lines up as the bullet's does.
+                const space = doc.sliceString(to, to + 1) === " " ? 1 : 0;
+                ranges.push(Decoration.mark({ class: "cm-md-li-mark cm-md-li-num" }).range(from, to + space));
               } else {
                 ranges.push(Decoration.mark({ class: "cm-md-li-mark" }).range(from, to));
               }
@@ -9700,29 +10148,25 @@ function docColumnsArrowKeymap(CM) {
 
 
 // -----------------------------------------------------------------------------
-// Mermaid flowcharts, drawn by this file (DOCUMENTS_PLAN decision 20.3, 20.6)
+// Mermaid fences (DOCUMENTS_PLAN decisions 3 and 6, BACKLOG steps 8 and 12b)
 // -----------------------------------------------------------------------------
 //
-//: **A ```mermaid fence that is a flowchart draws as one**, in Read, in Live
-//: (while the caret is outside it), in a print and in the HTML export, with
-//: no library: the fully-local rule keeps Mermaid's 2.6 MB bundle out of
-//: `frontend/vendor/`, and a flowchart is the one Mermaid diagram most notes
-//: carry. The subset (decision 20.6): `flowchart` or `graph` with TD, TB, BT,
-//: LR or RL; nodes as `id`, `id[text]`, `id(text)`, `id([text])`,
-//: `id((text))`, `id{text}` and `id{{text}}`, text optionally in quotes; links
-//: `-->`, `---`, `-.->`, `-.-`, `==>` and `===`, labelled `-->|text|` or
-//: `-- text -->`, chained (`a --> b --> c`) and fanned (`a & b --> c`);
-//: `%%` comments; `style`, `classDef`, `class`, `linkStyle` and `click` lines
-//: are read and ignored. Anything else (a subgraph, another diagram type, a
-//: line it cannot read) leaves the fence as the code it is, so nothing is
-//: ever drawn half right.
+//: **Every ```mermaid fence is drawn by Mermaid itself**, in Read (so in a print
+//: and the HTML export) and in Live while the caret is outside the fence. The
+//: library is vendored (`frontend/vendor/mermaid/`) and lives in a hidden
+//: same-origin frame that the lazy `mermaid` module (mermaid-draw.js) creates
+//: on the first fence; nothing of it is in the boot scripts. This file only
+//: hands a fence over (`docRenderMermaidIn`, the Live widget below) and waits
+//: for the picture when a page is printed or saved.
 //:
-//: The region is pure (no DOM): `mermaidFlowParse` reads the text,
-//: `mermaidFlowLayout` places it in layers (ranks by longest path with the
-//: cycles' back links reversed, a few barycentre sweeps to order each layer,
-//: each layer centred), and `mermaidFlowSvgTree` describes the SVG as plain
-//: objects, which `docMermaidSvg` turns into elements. Node runs the region
-//: (`tests/test_doc_mermaid.py`).
+//: What stays here is the small in-house flowchart reader, pure and node-tested
+//: (`tests/test_doc_mermaid.py`): `mermaidFlowParse` reads a flowchart fence
+//: into nodes and links (flowchart or graph, TD, TB, BT, LR or RL, seven
+//: shapes, six link kinds, labels, chains, fans) and `mermaidFlowLayout`
+//: places it in layers (ranks by longest path with the cycles' back links
+//: reversed, barycentre sweeps, each layer centred). They no longer draw
+//: anything; the diagram verifier and a board import are what they are kept
+//: for. Anything the reader does not read whole is still handed to Mermaid.
 // DOC-MERMAID-BEGIN
 const MERMAID_SHAPES = [
   ["([", "])", "stadium"], ["((", "))", "circle"], ["{{", "}}", "hexagon"],
@@ -9986,104 +10430,32 @@ function mermaidFlowLayout(graph, measure = (t) => t.length * 7.4) {
   }
   return { x0: Math.floor(x0), y0: Math.floor(y0), width: Math.ceil(width - x0), height: Math.ceil(height - y0), boxes, lines };
 }
-
-//: The SVG as plain objects: `{ tag, attrs, kids, text }`.
-function mermaidFlowSvgTree(graph, layout, label = "Flowchart") {
-  const el = (tag, attrs = {}, kids = [], text = null) => ({ tag, attrs, kids, text });
-  const kids = [el("title", {}, [], label)];
-  const marker = el("marker", { id: "md-mermaid-arrow", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" },
-    [el("path", { d: "M0 0 L10 5 L0 10 z", fill: "currentColor" })]);
-  kids.push(el("defs", {}, [marker]));
-  for (const line of layout.lines) {
-    const attrs = { d: line.d, class: `md-mermaid-edge md-mermaid-${line.style}`, fill: "none", stroke: "currentColor", "stroke-width": line.style === "thick" ? "2.5" : "1.4" };
-    if (line.style === "dotted") attrs["stroke-dasharray"] = "4 4";
-    if (line.arrow) attrs["marker-end"] = "url(#md-mermaid-arrow)";
-    kids.push(el("path", attrs));
-  }
-  for (const b of layout.boxes) {
-    const x = b.x - b.w / 2;
-    const y = b.y - b.h / 2;
-    const common = { class: `md-mermaid-node md-mermaid-${b.shape}`, fill: "Canvas", stroke: "currentColor", "stroke-width": "1.4" };
-    let shape;
-    if (b.shape === "diamond") shape = el("path", { ...common, d: `M${b.x} ${y} L${x + b.w} ${b.y} L${b.x} ${y + b.h} L${x} ${b.y} z` });
-    else if (b.shape === "circle") shape = el("circle", { ...common, cx: b.x, cy: b.y, r: b.w / 2 });
-    else if (b.shape === "hexagon") {
-      const k = Math.min(14, b.w / 4);
-      shape = el("path", { ...common, d: `M${x + k} ${y} L${x + b.w - k} ${y} L${x + b.w} ${b.y} L${x + b.w - k} ${y + b.h} L${x + k} ${y + b.h} L${x} ${b.y} z` });
-    } else {
-      const r = b.shape === "stadium" ? b.h / 2 : b.shape === "round" ? 10 : 3;
-      shape = el("rect", { ...common, x, y, width: b.w, height: b.h, rx: r, ry: r });
-    }
-    kids.push(shape);
-    kids.push(el("text", { x: b.x, y: b.y, "text-anchor": "middle", "dominant-baseline": "central", fill: "currentColor", class: "md-mermaid-text" }, [], b.text));
-  }
-  for (const line of layout.lines) {
-    if (!line.label) continue;
-    const w = line.label.length * 6.6 + 10;
-    kids.push(el("rect", { x: line.mid.x - w / 2, y: line.mid.y - 9, width: w, height: 18, rx: 3, fill: "Canvas", class: "md-mermaid-label-bg" }));
-    kids.push(el("text", { x: line.mid.x, y: line.mid.y, "text-anchor": "middle", "dominant-baseline": "central", fill: "currentColor", class: "md-mermaid-label" }, [], line.label));
-  }
-  return el("svg", {
-    xmlns: "http://www.w3.org/2000/svg", viewBox: `${layout.x0 || 0} ${layout.y0 || 0} ${layout.width} ${layout.height}`,
-    width: layout.width, height: layout.height, role: "img", "aria-label": label, class: "md-mermaid-svg",
-  }, kids);
-}
-
-//: The words a screen reader hears for a flowchart: its links, in order.
-function mermaidFlowSummary(graph) {
-  const name = new Map(graph.nodes.map((n) => [n.id, n.text]));
-  const said = graph.edges.slice(0, 12).map((e) => `${name.get(e.from)} to ${name.get(e.to)}${e.label ? ` (${e.label})` : ""}`);
-  const more = graph.edges.length > 12 ? `, and ${graph.edges.length - 12} more` : "";
-  return `Flowchart of ${graph.nodes.length} step${graph.nodes.length === 1 ? "" : "s"}${said.length ? `: ${said.join("; ")}${more}` : ""}`;
-}
 // DOC-MERMAID-END
 
-//: The tree as elements: `createElementNS` and `textContent`, never markup,
-//: so a node's text can hold anything and stays text.
-function docMermaidSvg(source) {
-  const graph = mermaidFlowParse(source);
-  if (!graph) return null;
-  let measure;
-  try {
-    const ctx = document.createElement("canvas").getContext("2d");
-    ctx.font = "13px system-ui, sans-serif";
-    measure = (t) => ctx.measureText(t).width;
-  } catch {
-    measure = undefined;
-  }
-  const layout = mermaidFlowLayout(graph, measure);
-  const tree = mermaidFlowSvgTree(graph, layout, mermaidFlowSummary(graph));
-  const NS = "http://www.w3.org/2000/svg";
-  const build = (node) => {
-    const made = document.createElementNS(NS, node.tag);
-    for (const [k, v] of Object.entries(node.attrs)) if (k !== "xmlns") made.setAttribute(k, String(v));
-    if (node.text != null) made.textContent = node.text;
-    for (const kid of node.kids) made.appendChild(build(kid));
-    return made;
-  };
-  return build(tree);
+//: Read (and so the print and the HTML export, which are drawn from it): each
+//: mermaid fence is handed to the lazy `mermaid` module (mermaid-draw.js), which
+//: asks the diagram frame and swaps the fence for its picture; one the parser
+//: refuses stays the code block with the reason under it. The promise is kept
+//: so an export or a print can wait for the pictures before it saves the page.
+function docRenderMermaidIn(container) {
+  if (!container.querySelector('.code-block code[data-lang="mermaid"]')) return;
+  docPhase2State.mermaidDrawn = ensureModule("mermaid")
+    .then((ok) => (ok ? mermaidDrawIn(container) : null))
+    .catch(() => null);
 }
 
-//: Read (and so the print and the HTML export, which are drawn from it):
-//: each mermaid fence that reads whole becomes its figure; the rest stay code.
-function docRenderMermaidIn(container) {
-  for (const code of container.querySelectorAll('.code-block code[data-lang="mermaid"]')) {
-    const svg = docMermaidSvg(code.textContent);
-    if (!svg) continue;
-    const block = code.closest(".code-block");
-    const figure = document.createElement("figure");
-    figure.className = "md-mermaid";
-    if (block.dataset.srcLine) figure.dataset.srcLine = block.dataset.srcLine;
-    figure.appendChild(svg);
-    block.replaceWith(figure);
-  }
+//: Resolves when the pictures of the page being saved or printed are in.
+async function docMermaidWhenDrawn() {
+  await docPhase2State.mermaidDrawn;
+  //: Only a page that loaded the module has pictures to wait for.
+  if (await lazyModuleLoads.get("mermaid")) await mermaidSettled();
 }
 
 //: Live: a mermaid fence the caret is outside of is its figure, through a
 //: state field for the reason the columns block gives (a replace that spans
 //: line breaks may not come from a plugin). Pressing the figure puts the
 //: caret on the fence's first line, which shows the text to edit.
-const docPhase2State = { mermaidFieldCache: null, imageRefocus: null, printSheet: null };
+const docPhase2State = { mermaidDrawn: Promise.resolve(), mermaidReady: false, mermaidFieldCache: null, imageRefocus: null, printSheet: null };
 
 function docMermaidBlocks(text) {
   const blocks = [];
@@ -10096,8 +10468,11 @@ function docMermaidBlocks(text) {
 
 function docMermaidField(CM) {
   if (docPhase2State.mermaidFieldCache) return docPhase2State.mermaidFieldCache;
-  const { StateField } = CM.state;
+  const { StateField, StateEffect } = CM.state;
   const { Decoration, EditorView, WidgetType } = CM.view;
+  //: Sent when a fence the frame refused is known, so the field draws it as the
+  //: code it is (with the reason) instead of leaving a figure that never fills.
+  const recheck = StateEffect.define();
   class DocMermaidWidget extends WidgetType {
     constructor(source, from) {
       super();
@@ -10107,15 +10482,28 @@ function docMermaidField(CM) {
     eq(other) {
       return other.source === this.source && other.from === this.from;
     }
+    //: What CodeMirror assumes for a widget it has not measured; the figure's
+    //: placeholder is about this tall (mermaid-lazy.css), so the page does not jump.
+    get estimatedHeight() {
+      return 160;
+    }
     ignoreEvent(event) {
       return event.type !== "mousedown";
     }
     toDOM(view) {
       const figure = document.createElement("figure");
-      figure.className = "md-mermaid cm-md-mermaid";
-      const svg = docMermaidSvg(this.source);
-      if (svg) figure.appendChild(svg);
+      figure.className = "md-mermaid cm-md-mermaid md-mermaid-pending";
       figure.title = "Press to edit the diagram's text";
+      //: Async: the placeholder holds the room, then the picture replaces it
+      //: and the editor measures the widget again.
+      ensureModule("mermaid").then((ok) => {
+        if (!ok) return;
+        docPhase2State.mermaidReady = true;
+        mermaidFill(figure, this.source, (result) => {
+          if (result.svg) view.requestMeasure();
+          else view.dispatch({ effects: recheck.of(this.source) });
+        });
+      });
       figure.addEventListener("mousedown", (event) => {
         event.preventDefault();
         const at = Math.min(this.from + 4, view.state.doc.length);
@@ -10125,21 +10513,42 @@ function docMermaidField(CM) {
       return figure;
     }
   }
+  class DocMermaidReason extends WidgetType {
+    constructor(reason) {
+      super();
+      this.reason = reason;
+    }
+    eq(other) {
+      return other.reason === this.reason;
+    }
+    toDOM() {
+      const note = document.createElement("p");
+      note.className = "md-mermaid-reason";
+      note.textContent = `Could not draw this diagram: ${this.reason}`;
+      return note;
+    }
+  }
   const build = (state) => {
     const text = state.doc.toString();
     if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
     const sel = state.selection.main;
     const ranges = [];
     for (const block of docMermaidBlocks(text)) {
+      //: A reason exists only once the module drew here (the widget above).
+      const reason = docPhase2State.mermaidReady ? mermaidFailure(block.source) : "";
+      //: A fence the frame refused stays the code it is, with its reason under it.
+      if (reason) {
+        ranges.push(Decoration.widget({ widget: new DocMermaidReason(reason), block: true, side: 1 }).range(block.to));
+        continue;
+      }
       if (sel.from <= block.to && sel.to >= block.from) continue;
-      if (!mermaidFlowParse(block.source)) continue;
       ranges.push(Decoration.replace({ widget: new DocMermaidWidget(block.source, block.from), block: true }).range(block.from, block.to));
     }
     return Decoration.set(ranges, true);
   };
   docPhase2State.mermaidFieldCache = StateField.define({
     create: (state) => build(state),
-    update: (value, tr) => (tr.docChanged || tr.selection ? build(tr.state) : value),
+    update: (value, tr) => (tr.docChanged || tr.selection || tr.effects.some((e) => e.is(recheck)) ? build(tr.state) : value),
     provide: (field) => EditorView.decorations.from(field),
   });
   return docPhase2State.mermaidFieldCache;
@@ -10821,6 +11230,7 @@ const MD_ACTIONS = {
   clearformat: { custom: "clearformat" },
   //: The one icon and emoji picker (MINDMAP_PLAN decision 46).
   emoji: { custom: "emoji" },
+  equation: { custom: "equation" },
   ul: { line: "- " },
   ol: { line: "1. " },
   task: { line: "- [ ] " },
@@ -10903,6 +11313,60 @@ const MD_ACTIONS = {
 // would have been the third place in this app to independently decide what
 // `**` means: see MD_ACTIONS' own comment and editor.js's "/" menu, which
 // are already deliberately kept to one dialect.
+//: **A line prefix is a switch, not a stack.** The heading, list, task and
+//: quote buttons used to put their marker in front of whatever the line
+//: already began with, so H2 on a heading did nothing,
+//: Numbered on a bullet gave `1. - x` and H1 on `## x` gave `# ## x`. A
+//: second press on the same kind takes it off (every other editor's toggle);
+//: a different kind of the same family (heading, list) replaces it; a quote
+//: marker is its own layer and stays put under either. Blank lines in a
+//: multi-line selection are left blank; a numbered list counts 1, 2, 3.
+const MD_LINE_KINDS = {
+  h1: ["heading", "# "], h2: ["heading", "## "], h3: ["heading", "### "],
+  h4: ["heading", "#### "], h5: ["heading", "##### "], h6: ["heading", "###### "],
+  ul: ["list", "- "], ol: ["list", "1. "], task: ["list", "- [ ] "], quote: ["quote", "> "],
+};
+const MD_LINE_QUOTE = /^(?:>[ \t]?)+/;
+const MD_LINE_HEAD = /^( *)(#{1,6}[ \t]+)?(?:(?:([-*+])|(\d+[.)]))[ \t]+(\[[ xX]\][ \t]+)?)?/;
+
+//: What a line (past any quote marker) already is: "h1".."h6", "ul", "ol",
+//: "task" or "".
+function mdLineKind(rest) {
+  const m = MD_LINE_HEAD.exec(rest);
+  if (m[2]) return `h${m[2].trim().length}`;
+  if (m[4]) return "ol";
+  if (m[3]) return m[5] ? "task" : "ul";
+  return "";
+}
+
+function mdLinePrefixEdit(block, kind) {
+  const [family, marker] = MD_LINE_KINDS[kind];
+  const lines = block.split("\n");
+  const live = lines.filter((line) => line.trim());
+  const one = lines.length === 1;
+  const split = (line) => {
+    const lead = MD_LINE_QUOTE.exec(line)?.[0] || "";
+    return [lead, line.slice(lead.length)];
+  };
+  const has = (line) => {
+    const [lead, rest] = split(line);
+    return family === "quote" ? Boolean(lead) : mdLineKind(rest) === kind;
+  };
+  const off = (live.length > 0 || one) && (live.length ? live : lines).every(has);
+  let count = 0;
+  return lines.map((line) => {
+    if (!line.trim() && !one) return line;
+    const [lead, rest] = split(line);
+    if (family === "quote") return off ? rest : lead ? line : marker + line;
+    const head = MD_LINE_HEAD.exec(rest)[0];
+    const body = rest.slice(head.length);
+    if (off) return lead + body;
+    count += 1;
+    const indent = family === "list" ? /^ */.exec(rest)[0] : "";
+    return `${lead}${indent}${kind === "ol" ? `${count}. ` : marker}${body}`;
+  }).join("\n");
+}
+
 function applyMarkdown(kind, boxId = "doc-content") {
   const action = MD_ACTIONS[kind];
   const box = docSurfaceById(boxId);
@@ -10929,6 +11393,12 @@ function applyMarkdown(kind, boxId = "doc-content") {
     const anchor = document.querySelector(`[data-md-target="${boxId}"] [data-md="emoji"]`)
       || (boxId === "doc-content" ? document.querySelector('#doc-toolbar [data-md="emoji"]') : null);
     editorPickGlyph(box, anchor);
+    return;
+  }
+  if (action.custom === "equation") {
+    //: The guided equation editor (math-editor.js, DOCUMENTS_PLAN 16); from a
+    //: closed Insert menu it centres, as the picker above does.
+    openMathEditor({ target: box });
     return;
   }
   //: **Undo and redo go through the browser's own history, deliberately.**
@@ -11009,21 +11479,34 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.pre) {
+    //: A second press takes the pair off, as Bold does: the selection sits
+    //: inside the pair, or is the pair with its words.
+    const post = action.post || "";
+    if (selected && value.slice(start - action.pre.length, start) === action.pre && value.slice(end, end + post.length) === post) {
+      box.value = value.slice(0, start - action.pre.length) + selected + value.slice(end + post.length);
+      box.setSelectionRange(start - action.pre.length, end - action.pre.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
+    if (selected.length > action.pre.length + post.length && selected.startsWith(action.pre) && selected.endsWith(post)) {
+      const bare = selected.slice(action.pre.length, selected.length - post.length);
+      box.value = value.slice(0, start) + bare + value.slice(end);
+      box.setSelectionRange(start, start + bare.length);
+      finishMarkdownEdit(box, boxId);
+      return;
+    }
     const body = selected || action.placeholder || "";
     insertAround(box, start, end, action.pre, action.post || "", body, action.pre.length);
     finishMarkdownEdit(box, boxId);
     return;
   }
   if (action.line) {
-    // Prefix every selected line, or the current one when nothing is selected.
+    // Every selected line, or the current one when nothing is selected.
     const lineStart = value.lastIndexOf("\n", start - 1) + 1;
     const lineEnd = end + (value.slice(end).indexOf("\n") === -1 ? 0 : value.slice(end).indexOf("\n"));
-    const target = value.slice(lineStart, Math.max(lineEnd, end)) || "";
-    const prefixed = target
-      .split("\n")
-      .map((line) => (line.startsWith(action.line) ? line : action.line + line))
-      .join("\n");
-    box.value = value.slice(0, lineStart) + prefixed + value.slice(Math.max(lineEnd, end));
+    const to = Math.max(lineEnd, end);
+    const prefixed = mdLinePrefixEdit(value.slice(lineStart, to), kind);
+    box.value = value.slice(0, lineStart) + prefixed + value.slice(to);
     box.setSelectionRange(lineStart, lineStart + prefixed.length);
   } else if (action.custom === "link") {
     const label = selected || "link text";
@@ -11185,6 +11668,16 @@ function wrapDocSelection(marker, placeholder = "", boxId = "doc-content") {
   finishMarkdownEdit(box, boxId);
 }
 
+//: One file name for every export: the server's rule (`_safe_filename`)
+//: written once more for the formats the browser builds itself, so a
+//: document is "Sleep-essay" as .md, .zip, .docx and .html alike.
+function docExportName(title, ext) {
+  //: A code file's title is its file name ("app.py"): the dot stays, so the
+  //: download is "app.py.html" and not "apppy.html".
+  const cleaned = String(title || "").replace(/[^\p{L}\p{N}_\s.-]/gu, "").replace(/\.{2,}/g, ".").replace(/^\.+/, "").trim() || "document";
+  return `${cleaned.replace(/[\s_]+/g, "-").slice(0, 60)}.${ext}`;
+}
+
 //: **One download, four routes to it.** The markdown, the bundle and the Word
 //: file are the same three steps (ask the server, read the filename off the
 //: header, save the blob) and differed only in the path, which is how the
@@ -11212,13 +11705,31 @@ async function downloadDocumentExport(path, fallbackName) {
   }
 }
 
+//: A code file: no rendered form, and not the plain text or CSV a Word file or
+//: an image bundle still makes sense for. Its Download as .py is the file.
+function docIsCodeFile() {
+  const type = docFileType();
+  return !type.previewable && !["txt", "csv"].includes(type.ext);
+}
+
+//: The prose exports (images bundle, Word) turn markdown into something; a
+//: code file has no markdown, so they say so rather than saving a mangled file
+//: (the palette reaches these through a button the menu has hidden).
+function docCodeExportRefused(what) {
+  if (!docIsCodeFile()) return false;
+  toast(`${what} is for writing. A code file downloads as itself: use Download as .${docFileType().ext}.`, "info");
+  return true;
+}
+
 function exportDocumentBundle() {
+  if (docCodeExportRefused("The image bundle")) return;
   return downloadDocumentExport("export.zip", "document.zip");
 }
 
 //: Written in the browser by documents-word.js (Brief 42), loaded on the
 //: first press: no server extra to install, so no 501.
 async function exportDocumentDocx() {
+  if (docCodeExportRefused("The Word export")) return;
   if (!(await lazyScript("/js/documents-word.js"))) return toast("The Word writer could not be loaded.", true, { action: ["Try again", exportDocumentDocx] });
   return docWordExport();
 }
@@ -11372,9 +11883,8 @@ details.callout[open] > .callout-head::before { content: "\\25BE\\2002"; }
   font-size: 0.85rem;
 }
 .md-mermaid { margin: 1.2em 0; overflow-x: auto; color: var(--ink); }
-.md-mermaid svg { display: block; max-width: 100%; height: auto; margin: 0 auto; font: 13px system-ui, sans-serif; }
-.md-mermaid .md-mermaid-node, .md-mermaid .md-mermaid-label-bg { fill: var(--ground); }
-.md-mermaid .md-mermaid-label { font-size: 12px; }
+.md-mermaid img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.md-mermaid-reason { color: var(--muted); font-size: 0.85em; }
 `;
 
 function docExportEscape(text) {
@@ -11542,6 +12052,15 @@ async function docExportInlineImages(root) {
 async function exportDocumentHtml() {
   if (!currentDoc) return;
   const status = $("doc-status");
+  //: No rendered form means the preview is empty: the page came out as the
+  //: title line alone. The source goes in as preformatted text instead.
+  if (!docFileType().previewable) {
+    const source = docSurface()?.value ?? currentDoc.content ?? "";
+    const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
+    const html = docExportHtmlDocument(currentDoc.title, `<pre><code>${docExportEscape(source)}</code></pre>`, savedOn);
+    await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
+    return;
+  }
   //: The remarks travel as footnotes, exactly as they do in a PDF: a document
   //: handed to somebody carries what was said about it rather than dropping it
   //: silently. Set before `withDocPreviewShown`, which renders on the way in.
@@ -11552,15 +12071,18 @@ async function exportDocumentHtml() {
   });
   withDocPreviewShown(async (restore) => {
     try {
+      await docMermaidWhenDrawn();
       const clone = $("doc-preview").cloneNode(true);
       clone.removeAttribute("id");
       clone.removeAttribute("class");
+      //: A saved file outlives this page's blob: URLs, so each diagram goes in as
+      //: a data: URL of its own SVG, before the image pass below can drop it.
+      if (await lazyModuleLoads.get("mermaid")) mermaidInlineForExport($("doc-preview"), clone);
       docExportClean(clone);
       const images = await docExportInlineImages(clone);
       const savedOn = `${currentDoc.title || "Untitled"} · exported ${new Date().toLocaleDateString()}`;
       const html = docExportHtmlDocument(currentDoc.title, clone.innerHTML, savedOn);
-      const name = (currentDoc.title || "document").replace(/[^\w. -]+/g, "").trim() || "document";
-      await saveFile(`${name}.html`, new Blob([html], { type: "text/html" }));
+      await saveFile(docExportName(currentDoc.title, "html"), new Blob([html], { type: "text/html" }));
       if (images.dropped) {
         toast(`Saved. ${images.dropped} image(s) could not be embedded and are named in the text.`);
       }
@@ -11612,20 +12134,81 @@ function docPrintIsOurs() {
   }
 }
 
+//: The lines a code file prints: one row per line, and the newline that ends
+//: the last one is not a row of its own.
+function docCodePrintRows(text) {
+  const value = String(text || "").replace(/\r\n?/g, "\n");
+  if (!value) return [];
+  const rows = value.split("\n");
+  if (rows[rows.length - 1] === "") rows.pop();
+  return rows;
+}
+
+//: **A code file prints as code** (the owner's dogfood, 2026-10-26: "no print
+//: or export path for code files"). It has no rendered form, so the preview
+//: pane that every prose print goes through is filled with a listing instead:
+//: one row per line, the line number in a column of its own, the text
+//: monospaced and wrapping inside its row. The same pane, the same page setup
+//: and the same `printing-doc` rules (the editor, the dock and the panels go),
+//: so Ctrl+P and the menu's Print or save as PDF put the same page on paper.
+//: Measured before: a plain Ctrl+P printed the live editor, 1408px wide and
+//: only as much of a long file as the editor had drawn.
+function docCodePrintFill() {
+  const rows = docCodePrintRows(docText());
+  const listing = document.createElement("div");
+  listing.className = "doc-code-print";
+  //: The number column is as wide as the last number, set on each row (the
+  //: stylesheet's own 3ch is the width before it is known).
+  const columns = `${String(rows.length).length}ch minmax(0, 1fr)`;
+  const frame = document.createDocumentFragment();
+  rows.forEach((line, index) => {
+    const row = document.createElement("div");
+    row.className = "doc-code-print-line";
+    row.style.gridTemplateColumns = columns;
+    const number = document.createElement("span");
+    number.className = "doc-code-print-no";
+    number.textContent = String(index + 1);
+    const text = document.createElement("span");
+    text.className = "doc-code-print-text";
+    text.textContent = line;
+    row.append(number, text);
+    frame.appendChild(row);
+  });
+  listing.appendChild(frame);
+  $("doc-preview").replaceChildren(listing);
+  document.body.classList.add("printing-code");
+}
+
+function docCodePrintClear() {
+  document.body.classList.remove("printing-code");
+  $("doc-preview").replaceChildren();
+}
+
+//: The start of a plain Ctrl+P: the page the print will show, and the class
+//: that lets the print stylesheet take the application away.
+function docPrintBegin() {
+  if (docIsCodeFile()) {
+    docCodePrintFill();
+    docPrintRestore = docCodePrintClear;
+  } else {
+    const wasView = docView;
+    if (docView !== "rendered") {
+      setDocView("rendered");
+      docPrintRestore = () => setDocView(wasView);
+    }
+    renderDocPreview();
+  }
+  //: A plain Ctrl+P prints on the page last chosen (decision 7).
+  docApplyPrintSetup();
+  document.body.classList.add("printing-doc");
+}
+
 window.addEventListener("beforeprint", () => {
   //: Already set means the Export menu started this print and has its own
   //: cleanup, including the footnotes it asked for. Left alone entirely.
   if (document.body.classList.contains("printing-doc")) return;
   if (!docPrintIsOurs()) return;
-  const wasView = docView;
-  if (docView !== "rendered") {
-    setDocView("rendered");
-    docPrintRestore = () => setDocView(wasView);
-  }
-  renderDocPreview();
-  //: A plain Ctrl+P prints on the page last chosen (decision 7).
-  docApplyPrintSetup();
-  document.body.classList.add("printing-doc");
+  docPrintBegin();
 });
 
 window.addEventListener("afterprint", () => {
@@ -11796,6 +12379,20 @@ function docPrintSetupDialog() {
   });
 }
 
+//: The menu's print of a code file: the listing in the preview pane, the
+//: print class on for as long as the browser's dialog is open.
+function docCodePrintNow() {
+  docCodePrintFill();
+  document.body.classList.add("printing-doc");
+  const cleanup = () => {
+    document.body.classList.remove("printing-doc");
+    docCodePrintClear();
+    window.removeEventListener("afterprint", cleanup);
+  };
+  window.addEventListener("afterprint", cleanup);
+  setTimeout(() => window.print(), 150);
+}
+
 // PDF via the browser's own print dialog: it renders the preview exactly as
 // shown and every platform already has "Save as PDF" there. Bundling a PDF
 // engine would add a heavy dependency to produce a worse-looking result.
@@ -11804,6 +12401,8 @@ async function exportDocumentPdf() {
   const setup = await docPrintSetupDialog();
   if (!setup) return;
   docApplyPrintSetup(setup);
+  //: A code file has no rendered form to show: it prints its listing.
+  if (docIsCodeFile()) return docCodePrintNow();
   //: Set *before* `withDocPreviewShown`, which renders the pane on the way in:
   //: the whole point of the flag is that the render it triggers is the one that
   //: carries the footnotes (DOCUMENTS_PLAN Phase 5 item 1, "exported as
@@ -11821,7 +12420,8 @@ async function exportDocumentPdf() {
       window.removeEventListener("afterprint", cleanup);
     };
     window.addEventListener("afterprint", cleanup);
-    setTimeout(() => window.print(), 150);
+    //: A diagram still being drawn would print as its placeholder.
+    docMermaidWhenDrawn().then(() => setTimeout(() => window.print(), 150));
   });
 }
 
@@ -13475,6 +14075,85 @@ docBoxEl().addEventListener("scroll", (event) => {
 // leaving "green" showing afterwards would claim a state that does not exist.
 const MD_COLOURS = ["yellow", "green", "blue", "pink", "purple", "orange", "red", "grey"];
 
+//: **A run** (INBOX 1403): `{{size=24 font=serif ink=red hl=yellow|words}}`, the
+//: size, face, text colour and highlight of just those words, written in the
+//: text itself like `==x==` so save, search, undo, export and the AI all read
+//: it with no new column. The grammar is one alternative of `INLINE_MD` and
+//: `INLINE_MD_LEGACY` (notes-list.js, at boot); what draws and edits it is
+//: here, in the Library's scripts, out of the boot budget. Every value is
+//: checked on the way out of the text (`mdRunParse`): a size is 8 to 200, a
+//: face is one of `MD_RUN_FONTS` (the board's Font row builds from it), a
+//: colour one of `MD_COLOURS`.
+const MD_RUN = /\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/;
+const MD_RUN_FONTS = Object.freeze({
+  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+  mono: 'ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace',
+  wide: 'Verdana, "DejaVu Sans", Geneva, sans-serif',
+  hand: '"Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive',
+});
+
+function mdRunParse(spec) {
+  const out = {};
+  for (const pair of String(spec).trim().split(/\s+/)) {
+    const [key, value] = pair.split("=");
+    if (key === "size" && /^\d{1,3}$/.test(value) && value >= 8 && value <= 200) out.size = Number(value);
+    else if (key === "font" && Object.prototype.hasOwnProperty.call(MD_RUN_FONTS, value)) out.font = value;
+    else if ((key === "ink" || key === "hl") && MD_COLOURS.includes(value)) out[key] = value;
+  }
+  return out;
+}
+
+//: The attributes as the text between `{{` and `|`, in one fixed order so the
+//: same run is always the same characters.
+function mdRunFormat(attrs) {
+  return ["size", "font", "ink", "hl"].filter((key) => attrs[key] !== undefined && attrs[key] !== null).map((key) => `${key}=${attrs[key]}`).join(" ");
+}
+
+//: A run's element and the element its words go into, `[node, host]`. Classes
+//: for the colours (the stylesheet has a theme-aware rule for each), CSSOM for
+//: the size and face, never a `style` attribute (the CSP rejects one). A
+//: highlight is a `<mark>`, whose own `color: inherit` would beat a text
+//: colour on the same element, so the colour sits on a span inside it.
+function mdRunNode(spec) {
+  const attrs = mdRunParse(spec);
+  const node = document.createElement(attrs.hl ? "mark" : "span");
+  if (attrs.hl) node.classList.add("text-highlight", `text-highlight-${attrs.hl}`);
+  if (attrs.size) node.style.fontSize = `${attrs.size}px`;
+  if (attrs.font) node.style.fontFamily = MD_RUN_FONTS[attrs.font];
+  if (!attrs.ink) return [node, node];
+  const host = attrs.hl ? node.appendChild(document.createElement("span")) : node;
+  host.classList.add("text-ink", `text-ink-${attrs.ink}`);
+  return [node, host];
+}
+
+//: **A colour pick on text that is already coloured switches the colour.**
+//: Reported: blue picked on yellow text "shows markdown" (`==blue|==x====`).
+//: The mark around the selection, or the one the selection is exactly, is
+//: replaced rather than wrapped again. Yellow is the highlight's default and
+//: needs no prefix, so `==x==` says the same as `==yellow|x==`. Returns the
+//: range to replace, its text and where the selection goes after.
+function mdColourEdit(value, start, end, kind, colour) {
+  const mark = kind === "ink" ? "++" : "==";
+  const open = kind === "ink" ? `++${colour}|` : colour === "yellow" ? "==" : `==${colour}|`;
+  const picked = value.slice(start, end);
+  //: The marks on this line that the selection sits inside (or is): the whole
+  //: mark takes the new colour, whatever part of its words was selected.
+  const lineFrom = value.lastIndexOf("\n", start - 1) + 1;
+  const lineTo = value.indexOf("\n", end) === -1 ? value.length : value.indexOf("\n", end);
+  const marks = kind === "ink" ? /\+\+[a-z]+\|((?:(?!\+\+).)+)\+\+/g : /==(?:[a-z]+\|)?((?:(?!==).)+)==/g;
+  const line = value.slice(lineFrom, lineTo);
+  let hit;
+  while ((hit = marks.exec(line)) !== null) {
+    const from = lineFrom + hit.index;
+    const to = from + hit[0].length;
+    if (from <= start && end <= to) {
+      return { from, to, insert: open + hit[1] + mark, selFrom: from + open.length, selTo: from + open.length + hit[1].length };
+    }
+  }
+  const text = picked || (kind === "ink" ? "coloured text" : "highlighted");
+  return { from: start, to: end, insert: open + text + mark, selFrom: start + open.length, selTo: start + open.length + text.length };
+}
+
 //: **The rest of the Obsidian toolbar, built once and mounted into both
 //: editors.** Asked for by name (PKM-er/obsidian-editing-toolbar), for the
 //: notes composer *and* the documents editor, "both in what tools are there,
@@ -13569,7 +14248,18 @@ function mountEditorToolbarExtras(bar) {
     return el;
   };
   bar.appendChild(sep());
+  //: **A pair is one flex item.** Undo and redo (and outdent and indent) are
+  //: one decision; the strip wraps between items, and at 1440 it wrapped
+  //: between Undo and Redo, leaving Redo alone at the start of row two.
+  let pair = null;
   for (const spec of EDITOR_TOOLBAR_BUTTONS) {
+    if (!pair || pair.children.length > 1) {
+      pair = document.createElement("span");
+      pair.className = "doc-toolbar-pair";
+      pair.setAttribute("role", "group");
+      pair.dataset.mdExtra = "1";
+      bar.appendChild(pair);
+    }
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.md = spec.md;
@@ -13577,7 +14267,7 @@ function mountEditorToolbarExtras(bar) {
     button.title = spec.title;
     button.setAttribute("aria-label", spec.title);
     setLabel(button, spec.icon);
-    bar.appendChild(button);
+    pair.appendChild(button);
   }
   for (const menu of EDITOR_TOOLBAR_MENUS) {
     const details = document.createElement("details");
@@ -13617,6 +14307,27 @@ function mountEditorToolbarExtras(bar) {
   }
 }
 
+//: A toolbar is one Tab stop (dog2 item 21: Tab from the note title walked 16
+//: buttons before the editor). The focused control is the stop; Left and Right
+//: move between the visible ones.
+function wireToolbarRoving(bar) {
+  const all = () => [...bar.querySelectorAll("button, select, summary")];
+  const rove = (to) => all().forEach((el) => { el.tabIndex = el === to ? 0 : -1; });
+  rove(bar.querySelector("button"));
+  bar.addEventListener("focusin", (event) => {
+    if (all().includes(event.target)) rove(event.target);
+  });
+  bar.addEventListener("keydown", (event) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+    if (!step || event.target.tagName === "SELECT") return;
+    const shown = all().filter((el) => !el.disabled && el.getClientRects().length);
+    const next = shown[shown.indexOf(event.target) + step];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+  });
+}
+
 //: Wire one formatting strip to its textarea: mount the shared extras
 //: (Block menu, colours, …), then every `button[data-md]` and colour
 //: select. Split out of `initMarkdownToolbars` so the note edit form can
@@ -13626,6 +14337,7 @@ function mountEditorToolbarExtras(bar) {
 function wireMarkdownToolbar(bar) {
   const boxId = bar.dataset.mdTarget || "doc-content";
   mountEditorToolbarExtras(bar);
+  wireToolbarRoving(bar);
   //: **Delegated, not one listener per button.** The dropdown menus are
   //: built by the mount above and, in the note edit form, the whole strip
   //: is a *clone*: so per-button listeners covered whatever existed at
@@ -13642,6 +14354,9 @@ function wireMarkdownToolbar(bar) {
     const button = event.target.closest("button[data-md]");
     if (!button || !bar.contains(button)) return;
     applyMarkdown(button.dataset.md, boxId);
+    //: A menu row is finished once chosen (dogfood item 15).
+    const menu = button.closest("details.doc-toolbar-menu");
+    if (menu) menu.open = false;
   });
   for (const select of bar.querySelectorAll("select[data-md-colour]")) {
     const kind = select.dataset.mdColour;
@@ -13659,17 +14374,10 @@ function wireMarkdownToolbar(bar) {
       if (!colour) return;
       const box = docSurfaceById(boxId);
       if (!box) return;
-      const { selectionStart: start, selectionEnd: end, value } = box;
-      const selected = value.slice(start, end) || (kind === "ink" ? "coloured text" : "highlighted");
-      // Yellow is the highlight's default, so it needs no colour prefix -
-      // and writing one would put `==yellow|x==` in the note where `==x==`
-      // says the same thing.
-      const open = kind === "ink"
-        ? `++${colour}|`
-        : colour === "yellow" ? "==" : `==${colour}|`;
-      const close = kind === "ink" ? "++" : "==";
-      box.value = value.slice(0, start) + open + selected + close + value.slice(end);
-      box.setSelectionRange(start + open.length, start + open.length + selected.length);
+      const edit = mdColourEdit(box.value, box.selectionStart, box.selectionEnd, kind, colour);
+      if (typeof box.replaceRange === "function") box.replaceRange(edit.from, edit.to, edit.insert);
+      else box.value = box.value.slice(0, edit.from) + edit.insert + box.value.slice(edit.to);
+      box.setSelectionRange(edit.selFrom, edit.selTo);
       finishMarkdownEdit(box, boxId);
     });
   }
@@ -13759,6 +14467,7 @@ function openDocPhoneInsert() {
 }
 
 $("doc-phone-insert").addEventListener("click", openDocPhoneInsert);
+$("doc-phone-turn").addEventListener("click", (event) => docTurnIntoMenu("doc-content", event.currentTarget));
 
 // NOTE-SURFACE-BEGIN
 //: =========================================================================
@@ -13880,6 +14589,9 @@ function noteSurfaceExtensions(CM, host, options) {
     host.noteReadOnlySlot.of(host.noteReadOnlyExtensions(host.readOnly)),
     //: The same whole-line copy and cut the document has (INBOX 652).
     CM.state.Prec.high(docLineClipboardExtension(CM)),
+    //: Bullets that do not nest when retyped, fences that close at their own
+    //: indent, Enter on an empty item ending the list (dogfood round 1).
+    docListFenceExtensions(CM, false),
     //: Grammar rides with the rendering: the note's own list (PROSE-TOOLS,
     //: `noteGrammarPlugin`).
     host.noteLiveSlot.of(noteSourceWanted() && NOTE_SOURCE_HOSTS.has(host.id) ? [] : live),
@@ -13907,6 +14619,7 @@ function noteSurfaceExtensions(CM, host, options) {
     CM.view.placeholder(host.placeholder || ""),
     //: This app's chords first, so Ctrl+B is bold in a note for the same
     //: reason it is bold in a document.
+    docRedoChord(CM),
     CM.view.keymap.of([
       //: The host's own keys first (Phase 8c): a box whose Enter means "done"
       //: says so on the element, and a table row cannot carry a closure over
@@ -14360,6 +15073,12 @@ function initMarkdownToolbars() {
 initMarkdownToolbars();
 
 $("doc-word-goal").addEventListener("click", promptDocWordGoal);
+$("doc-counts")?.addEventListener("click", () => docRunTextTool("stats"));
+$("doc-counts")?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  docRunTextTool("stats");
+});
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
   const goal = Math.max(0, Math.round(Number($("doc-word-goal-input").value)) || 0);
@@ -14654,6 +15373,71 @@ function docRestoreReading() {
 
 docRestoreReading();
 
+//: **Text size and line spacing for prose** (docs3-1026). Word and Google
+//: Docs both have them; here they are two cycling rows in the menu, set once
+//: and remembered, because the same window is a half-screen beside a lecture
+//: one day and a full screen the next. Classes on the tab, drawn by
+//: library-lazy.css for prose only: a code file keeps its own metrics, which
+//: the gutter arithmetic depends on.
+const DOC_TEXT_SIZES = ["small", "medium", "large"];
+const DOC_LINE_SPACINGS = ["compact", "comfortable", "relaxed"];
+
+function docCycleChoice(list, current) {
+  return list[(list.indexOf(current) + 1) % list.length];
+}
+
+function applyDocTypography(size, spacing) {
+  const tab = $("tab-documents");
+  for (const name of DOC_TEXT_SIZES) tab?.classList.toggle(`doc-size-${name}`, name === size);
+  for (const name of DOC_LINE_SPACINGS) tab?.classList.toggle(`doc-spacing-${name}`, name === spacing);
+  const sizeLabel = $("doc-text-size-label");
+  if (sizeLabel) sizeLabel.textContent = `Text size: ${size}`;
+  const spacingLabel = $("doc-line-spacing-label");
+  if (spacingLabel) spacingLabel.textContent = `Line spacing: ${spacing}`;
+}
+
+function docTypographyNow() {
+  const tab = $("tab-documents");
+  return {
+    size: DOC_TEXT_SIZES.find((n) => tab?.classList.contains(`doc-size-${n}`)) || "medium",
+    spacing: DOC_LINE_SPACINGS.find((n) => tab?.classList.contains(`doc-spacing-${n}`)) || "comfortable",
+  };
+}
+
+function docStepTypography(which) {
+  const now = docTypographyNow();
+  const size = which === "size" ? docCycleChoice(DOC_TEXT_SIZES, now.size) : now.size;
+  const spacing = which === "spacing" ? docCycleChoice(DOC_LINE_SPACINGS, now.spacing) : now.spacing;
+  try {
+    prefs.set("doc-text-size", size);
+    prefs.set("doc-line-spacing", spacing);
+  } catch {
+    // A private window can refuse storage; the choice still applies for now.
+  }
+  applyDocTypography(size, spacing);
+}
+
+$("doc-text-size")?.addEventListener("click", () => docStepTypography("size"));
+$("doc-paste-special")?.addEventListener("click", () => docPasteSpecialMenu());
+$("doc-line-spacing")?.addEventListener("click", () => docStepTypography("spacing"));
+
+function docRestoreTypography() {
+  let size = "medium";
+  let spacing = "comfortable";
+  try {
+    const savedSize = prefs.get("doc-text-size", null);
+    const savedSpacing = prefs.get("doc-line-spacing", null);
+    if (DOC_TEXT_SIZES.includes(savedSize)) size = savedSize;
+    if (DOC_LINE_SPACINGS.includes(savedSpacing)) spacing = savedSpacing;
+  } catch {
+    // Nothing stored: the defaults are the app's own.
+  }
+  applyDocTypography(size, spacing);
+}
+
+docRestoreTypography();
+
+
 //: **Focus mode.** Asked for as part of "the ultimate editor", and again by
 //: the owner as "a document full screen mode so there is more space"
 //: (INBOX 425 i), which is how it was found to have had no visible way in:
@@ -14756,6 +15540,8 @@ function toggleDocFocus(force) {
   const on = typeof force === "boolean" ? force : !tab.classList.contains("doc-focus");
   tab.classList.toggle("doc-focus", on);
   tab.classList.remove("doc-focus-idle");
+  //: The suggestions panel's grip is offered in the mode as well (INBOX 1408).
+  applyDocProseDock();
   try {
     if (on) sessionStorage.setItem(DOC_FOCUS_KEY, "1");
     else sessionStorage.removeItem(DOC_FOCUS_KEY);
@@ -14999,7 +15785,7 @@ document.addEventListener("keydown", (event) => {
   const menuOpen = [...document.querySelectorAll('[role="menu"], .cm-tooltip')]
     .some((el) => el.getClientRects().length > 0);
   if (menuOpen) return;
-  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, #doc-find-bar, .cm-search")) return;
+  if (event.target instanceof Element && event.target.closest("#doc-prose-panel, #doc-find-bar, .cm-search, .cm-goto-line")) return;
   //: The sidebar panel is the innermost layer, so it takes the first Escape
   //: and the mode leaves on the next. The focus goes to its toggle only when
   //: it was inside the panel, which is about to stop being drawn.
@@ -15211,11 +15997,17 @@ function docToolbarMode() {
       prefs.set(DOC_TOOLBAR_MODE_MIGRATED_KEY, "1");
       return "wrap";
     }
-    return stored === "row" ? "row" : "wrap";
+    if (stored === "row" || stored === "wrap") return stored;
+    //: No stored choice and a narrow window: one row (143 px wrapped, 59 px
+    //: here at 700 px wide; dogfood item 10). The toggle always wins.
+    return window.matchMedia?.(DOC_TOOLBAR_NARROW)?.matches ? "row" : "wrap";
   } catch {
     return "wrap"; // private mode: the safe shape, since it never clips
   }
 }
+
+const DOC_TOOLBAR_NARROW = "(max-width: 760px)";
+window.matchMedia?.(DOC_TOOLBAR_NARROW)?.addEventListener?.("change", () => applyDocToolbarMode(docToolbarMode()));
 
 function applyDocToolbarMode(mode) {
   const row = mode === "row";
@@ -15460,6 +16252,9 @@ function toggleDocToolbar() {
   const collapsed = !docToolbarCollapsed();
   setDocToolbarCollapsed(collapsed);
   if (!collapsed) $("doc-toolbar")?.querySelector("button:not([hidden])")?.focus({ preventScroll: true });
+  //: Hiding it from inside it must not strand the keyboard on <body>: the
+  //: focused button just vanished, and the next keystroke went nowhere.
+  else if (!document.activeElement || document.activeElement === document.body) docSurface()?.focus();
 }
 
 //: One strip's wrap/collapse group. Split out of the loop below so a bar that
@@ -16071,7 +16866,10 @@ function docToolbarMarksAt(CM, state) {
   //: Bold reads as off at the exact moment a writer is still typing the word.
   //: Asking for the node on the left is what makes "keep typing in bold" and
   //: "the button says bold" the same answer.
-  let node = syntaxTree(state).resolveInner(state.selection.main.head, -1);
+  const head = state.selection.main.head;
+  //: A blank line is inside nothing: resolving left of it lands in the item above.
+  if (!state.doc.lineAt(head).text.trim()) return marks;
+  let node = syntaxTree(state).resolveInner(head, -1);
   while (node) {
     const mark = DOC_TOOLBAR_MARKS[node.name];
     if (mark) marks.add(mark);
@@ -16116,11 +16914,42 @@ function docLineCount(text) {
   return textCounts(value).lines + (value.endsWith("\n") ? 0 : 1);
 }
 
+//: What a code file's status bar says: the lines, the characters and the
+//: language, in that order. Words and a reading time are about prose; a
+//: `.py` file has neither a reader nor a word count worth a bar's room. The
+//: same two counters as the prose line (`docLineCount`, `textCounts`).
+function docCodeCountsText(text, label) {
+  const lines = docLineCount(text);
+  const { chars } = textCounts(String(text || ""));
+  return [`${lines.toLocaleString()} line${lines === 1 ? "" : "s"}`, `${chars.toLocaleString()} char${chars === 1 ? "" : "s"}`, label]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+const DOC_COUNTS_TITLE_PROSE = "Characters, words, lines and roughly how long this takes to read. Press for the full statistics";
+const DOC_COUNTS_TITLE_CODE = "Lines, characters and the language. Press for the full statistics";
+
+//: A code file's counts, drawn. Decided the way `docProseChord` decides: by the
+//: file type's own `previewable`, through `docIsCodeFile`, so a `.txt` or a
+//: `.csv` keeps the prose line it is read as.
+function renderDocCodeCounts(counts) {
+  const text = docText();
+  counts.textContent = docCodeCountsText(text, docFileType().label);
+  counts.title = DOC_COUNTS_TITLE_CODE;
+  if (docFocusOn()) {
+    const lines = docLineCount(text);
+    docSetStatusText($("doc-focus-words"), lines ? `${lines.toLocaleString()} line${lines === 1 ? "" : "s"}` : "");
+    docSetStatusText($("doc-focus-title"), $("doc-title")?.value.trim() || "Untitled");
+  }
+}
+
 //: The counts. A whole-document pass, which is why it is scheduled rather
 //: than run on the keystroke (see `scheduleDocFacts`).
 function renderDocCounts() {
   const counts = $("doc-counts");
   if (!counts) return;
+  if (docIsCodeFile()) return renderDocCodeCounts(counts);
+  counts.title = DOC_COUNTS_TITLE_PROSE;
   //: **A remark is not prose you wrote for a reader**, so it is not in the
   //: count, the character total or the reading time. Measured on a 128-word
   //: document with two comments in it: 134 words counted before this, 128
@@ -16224,7 +17053,10 @@ const DOC_PROSE_RULES = [
   },
   {
     id: "space-before-punctuation",
-    test: /\s+([,.;:!?])/g,
+    //: Not before `![[embed]]`: that `!` is the embed's own, not punctuation.
+    //: Nor before a dotfile or an extension (" .gitignore", " .env"): the dot
+    //: opens a name there (INBOX 1407).
+    test: /\s+([,.;:!?])(?!\[\[)(?!(?<=\.)[A-Za-z0-9])/g,
     message: "A space before punctuation",
     fix: (match) => match.trim(),
   },
@@ -16249,6 +17081,18 @@ const DOC_PROSE_RULES = [
     test: /([,;:])\1+/g,
     message: "Punctuation repeated",
     fix: (match) => match[0],
+  },
+  {
+    id: "confusion",
+    //: your/you're, the one confusion Harper let through on the fixture
+    //: (`tests/grammar_fixture_1026.json`): "Your going to love it", "your
+    //: not late", "your welcome". Only the forms that cannot be possessive
+    //: ("your going to", "your not", "your welcome." closing a clause),
+    //: because "your welcome mat" and "your right to vote" are fine. No `fix`:
+    //: the answer is offered and never applied by Fix all.
+    test: /\b[Yy]our(?= (?:going to|gonna|not|supposed to|able to|ready to)\b| welcome(?:[.,!?]|\s*$| to\b))/gm,
+    message: "“your” here is probably “you’re”",
+    alternatives: (match) => [match[0] === "Y" ? "You’re" : "you’re"],
   },
   {
     id: "spelling",
@@ -16346,6 +17190,12 @@ const DOC_EXTRA_WORDS = [
   //: The tools this app talks to by name. They appear in its own screens, so
   //: they will appear in notes about them.
   "gmail", "markitdown", "nomic", "ollama", "qwen", "searxng", "tesseract",
+  //: INBOX 1407: the words an interface note uses (a draggable, resizable
+  //: panel with scrollbars and a debounce) and the file names' own parts,
+  //: found by the false-positive fixture `tests/grammar_fixture_1407.json`.
+  "backoff", "clickable", "cron", "debounce", "draggable", "gitignore",
+  "hoverable", "makefile", "pytest", "resizable", "scrollbars", "searchable",
+  "sortable", "txt", "md", "bat",
 ];
 
 let docWordlist = null;
@@ -16410,7 +17260,9 @@ function docLoadWordlist() {
 //: here is refused because flagging it would be wrong far more often than it
 //: would be right, and a checker that cries wolf is one that gets turned off.
 function docSpellable(text, word, start, end) {
-  if (word.length < 2) return false;
+  //: Nor a run of more than 40 letters: that is a pasted token or a hash, and
+  //: generating its one-edit neighbours aborted node on a 100,000-letter run.
+  if (word.length < 2 || word.length > 40) return false;
   //: An acronym (API, HTTP, NASA) is not in any word list and is not a typo.
   if (word === word.toUpperCase()) return false;
   //: An internal capital means an identifier or a product name: Tessellate,
@@ -16431,7 +17283,44 @@ function docSpellable(text, word, start, end) {
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
+  //: A dotfile (" .gitignore", ".env"): a dot that opens a name, with nothing
+  //: but space or the line's start before it (INBOX 1407).
+  if (before === "." && (start < 2 || /\s/.test(text[start - 2]))) return false;
+  //: A short piece of a hyphenated word is a fragment of a compound that the
+  //: word list holds whole or not at all: the "Fi" of Wi-Fi, the "x" of x-ray.
+  //: Longer pieces ("anti-inflamatory") are still checked.
+  if (word.length <= 3 && ((before === "-" && /[A-Za-z]/.test(text[start - 2] || "")) || (after === "-" && /[A-Za-z]/.test(text[end + 1] || "")))) {
+    return false;
+  }
   return true;
+}
+
+//: **A name is not a misspelling.** A capitalised word that is not the first
+//: of its sentence is a person, a place or a product ("Okafor", "Priya",
+//: "Aroha", "Zeynep", "Siobhan": 8 of the 13 false spelling marks on the
+//: fixture), and no word list holds them. The first word of a sentence, a list
+//: item, a heading or a table cell is capitalised whatever it is, so it keeps
+//: the check but only where the checker has one confident correction
+//: (`docSpellConfident`): "Recieve the report" is still caught, "Priya will
+//: send" is not. What this gives up: a typo in a capitalised word in the
+//: middle of a sentence ("Reveiw" in a title-case line) is not marked; adding
+//: names to the dictionary was the only other answer and it never ends.
+//: The exception is a swap of two letters that makes exactly one real word
+//: ("Reveiw" is "Review", no name is spelled by swapping two letters of a
+//: common word), which `docSpellTransposed` answers.
+//: Returns "" for a word that is not capitalised.
+function docSpellNameKind(text, word, start) {
+  if (!/^[A-Z]/.test(word)) return "";
+  //: Only the last 120 characters are read: a one-line document of 100,000
+  //: characters made `lastIndexOf("\n")` scan back to its start for every
+  //: capitalised word (measured: 24 ms became 277 ms).
+  const window = text.slice(Math.max(0, start - 120), start);
+  const newline = window.lastIndexOf("\n");
+  const lead = newline >= 0 ? window.slice(newline + 1) : window;
+  const atLineHead = newline >= 0 || start <= 120;
+  const opens = atLineHead && /^[ \t]*(?:(?:[#>*+|-]+|\d+[.)]|\[[ xX]\])[ \t]*)*["'“‘(*_]*$/.test(lead);
+  const afterStop = /[.!?]["')”’*_\]]*[ \t]+["'“‘(*_]*$/.test(lead);
+  return opens || afterStop ? "initial" : "name";
 }
 
 //: Is this a word? Asked only of things `docSpellable` has already allowed.
@@ -16592,6 +17481,20 @@ function docSpellConfident(word) {
   return null;
 }
 
+//: Is this word one swap of two letters from exactly one real word? The test a
+//: capitalised word in mid-sentence has to pass to be called a typo and not a
+//: name (`docSpellNameKind`).
+function docSpellTransposed(word) {
+  if (!docWordlist) return false;
+  const lower = docSpellRoot(word);
+  if (lower.length < DOC_CONFIDENT_MIN) return false;
+  let swaps = 0;
+  for (const [candidate, rank] of docEditsOnce(lower)) {
+    if (rank === DOC_EDIT_SWAP && docWordlist.has(candidate)) swaps += 1;
+  }
+  return swaps === 1;
+}
+
 //: One answer per word rather than per occurrence. A document says the same
 //: word many times, the answers cannot change between two of them inside one
 //: pass, and the generation above is the most expensive thing the checker
@@ -16642,11 +17545,36 @@ const DOC_PROSE_SKIP = [
   //: on its way out and not worth a finding, and the markers are syntax.
   /\{--[\s\S]*?--\}/g,
   /\{\+\+|\+\+\}/g,
+  //: **Things that are not prose** (INBOX 1357, K11; measured on
+  //: `tests/grammar_fixture_1026.json`): an email address, a file path and a
+  //: file name, and a unit written after a number. Harper read `/etc/nginx/
+  //: conf.d` as "config" and `uni` as a negative prefix, and called "min" and
+  //: "mL" words to fix; the dictionary read the host of an address.
+  /(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, // an email address
+  /(?<![\w/.:])(?:~|\.{1,2})?(?:\/[\w.\-@+~%]+)+\/?/g, // /etc/hosts, ~/notes/a.md
+  /(?<![\w/.-])[\w.-]+(?:\/[\w.-]+){2,}\/?/g, // src/app/main.py
+  /(?<![\w/-])[\w-]+\/[\w-]+\.[A-Za-z0-9]{1,5}\b/g, // docs/readme.md
+  /\b[A-Za-z]:\\[^\s"'<>|]*/g, // C:\Users\me\notes.txt
+  /(?<![\w-])[\w-]+\.(?:md|txt|pdf|png|jpe?g|gif|svg|csv|docx?|xlsx?|pptx?|html?|css|js|ts|py|json|ya?ml|toml|sh|zip)\b/gi, // a file name
+  //: A unit straight after a number is a unit and not a word: 10 min, 2 h,
+  //: 250 ms, 15 mL, 5 km, 3 x 4, 10am, 3rd, 90%, 37 °C. The number is not
+  //: masked, the unit is; a unit with no number before it is prose.
+  /(?<=\d)[ \u00a0]?(?:min|mins|h|hr|hrs|sec|secs|s|ms|ns|kg|g|mg|km|m|cm|mm|ml|l|kb|mb|gb|tb|khz|mhz|ghz|hz|kw|w|v|mv|ma|px|pt|dpi|fps|rpm|mph|lb|lbs|oz|ft|kcal|cal|kj|mol|db|x|am|pm|st|nd|rd|th)\b/gi,
+  /(?<=\d)[ \u00a0]?(?:%|°[CFKcfk]?|℃|℉)/g,
 ];
+
+//: **The words of a link** are the writer's label for an address, a name or a
+//: phrase pasted from somewhere ("something" in the owner's capture, K11), not
+//: a sentence of theirs, so they are skipped like the address beside them.
+//: `[text](address)`, `[text][ref]` and `![alt](source)`; not a `[[wiki link]]`
+//: (masked above) and not a `[ ]` checkbox, which no `(` or `[` follows.
+//: Settings, Writing, "Check link text" turns the check back on.
+const DOC_PROSE_SKIP_LINK_TEXT = [/!?\[(?!\[)[^\][\n]*\](?=\([^)\n]*\)|\[[^\]\n]*\])/g];
 
 function docProseSkipMask(text) {
   const mask = new Uint8Array(text.length);
-  for (const source of DOC_PROSE_SKIP) {
+  const sources = docCheckLinkText() ? DOC_PROSE_SKIP : DOC_PROSE_SKIP.concat(DOC_PROSE_SKIP_LINK_TEXT);
+  for (const source of sources) {
     //: A fresh regex per pass, for the reason the rules' own loop gives:
     //: `lastIndex` survives on a shared object and silently skips half the
     //: document on every second call.
@@ -16698,6 +17626,7 @@ function docProseFindings(text) {
         end: match.index + match[0].length,
         text: match[0],
         replacement: rule.fix ? rule.fix(match[0]) : null,
+        ...(rule.alternatives ? { alternatives: rule.alternatives(match[0]) } : {}),
       });
     }
   }
@@ -16751,8 +17680,11 @@ function docProseFindings(text) {
     //: takes it back is worse than one that waits.
     if (!docWordlistReady()) continue;
     if (!docSpellable(text, hit[0], hit.index, hit.index + hit[0].length)) continue;
+    const nameKind = docSpellNameKind(text, hit[0], hit.index);
+    if (nameKind === "name" && (docWordKnown(hit[0]) || !docSpellTransposed(hit[0]))) continue;
     const looked = docSpellLookup(hit[0]);
     if (looked.known) continue;
+    if (nameKind === "initial" && !looked.sure) continue;
     //: The candidate list is *not* computed here. It costs the square of the
     //: work of one edit when one edit finds nothing, and computing it for
     //: every unknown word on every pass put `docProseFindings` at 29ms over a
@@ -16782,10 +17714,21 @@ function docProseFindings(text) {
   //: Long sentences, measured over the prose only. Code fences and headings
   //: are skipped: a fenced block has no sentences, and a heading that runs
   //: long is a heading, not a run-on.
-  let index = 0;
-  for (const chunk of text.split(/\n\s*\n/)) {
-    const at = index;
-    index += chunk.length + 2;
+  //: Headings, list items and table rows are blanked first (same length, so
+  //: every offset holds): "- a, b and c" run together over a pasted list was
+  //: one 90-word sentence, and a list item is not a sentence anyway (K4b).
+  const sentences = docStructuralBlank(text);
+  const paragraphBreak = /\n[ \t]*\n/g;
+  const chunks = [];
+  let last = 0;
+  let split;
+  while ((split = paragraphBreak.exec(sentences)) !== null) {
+    chunks.push([last, split.index]);
+    last = split.index + split[0].length;
+  }
+  chunks.push([last, sentences.length]);
+  for (const [at, to] of chunks) {
+    const chunk = sentences.slice(at, to);
     if (/^\s*(?:```|~~~|#|\||>)/.test(chunk)) continue;
     let cursor = 0;
     for (const sentence of chunk.split(/(?<=[.!?])\s+/)) {
@@ -16796,7 +17739,7 @@ function docProseFindings(text) {
           message: `${words} words in one sentence`,
           start: at + cursor,
           end: at + cursor + sentence.length,
-          text: sentence,
+          text: text.slice(at + cursor, at + cursor + sentence.length),
           replacement: null,
         });
       }
@@ -16875,8 +17818,11 @@ function docCodeSpellFindings(text) {
       continue;
     }
     if (!docSpellable(masked, hit[0], at, at + hit[0].length)) continue;
+    const nameKind = docSpellNameKind(masked, hit[0], at);
+    if (nameKind === "name" && (docWordKnown(hit[0]) || !docSpellTransposed(hit[0]))) continue;
     const looked = docSpellLookup(hit[0]);
     if (looked.known) continue;
+    if (nameKind === "initial" && !looked.sure) continue;
     found.push({
       ...base,
       message: looked.sure ? `“${hit[0]}” is probably “${looked.sure}”` : `“${hit[0]}” is not in the dictionary`,
@@ -16887,6 +17833,11 @@ function docCodeSpellFindings(text) {
 }
 
 let docProseFound = [];
+//: "Hide all suggestions for now": the marks, the count and the list go quiet
+//: for this sitting without touching the Settings switch or the dismissed
+//: list. Not stored, like a dismissal, so it can never be forgotten about.
+const docProse = { hidden: false, panelView: "list" };
+//: "list" is the suggestions, "dismissed" is the ones put away in this document.
 
 function renderDocProse() {
   const chip = $("doc-prose");
@@ -16905,10 +17856,13 @@ function renderDocProse() {
   docProseFound = isCode
     ? docCodeSpellFindings(text)
     : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  if (docProse.hidden) docProseFound = [];
   chip.hidden = isCode;
-  count.textContent = docProseFound.length
-    ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
-    : "No suggestions";
+  count.textContent = docProse.hidden
+    ? "Suggestions hidden"
+    : docProseFound.length
+      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
+      : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
   //: A fresh set of findings means a fresh set of marks. The engine is told
@@ -16960,7 +17914,7 @@ const DOC_FIX_ALL_NEVER = new Set(["ai", "link-offer"]);
 //: note as far as the eye is concerned, and both are answered the same way.
 function docFindingKind(finding) {
   if (finding.rule === "spelling") return "spelling";
-  if (finding.rule === "grammar") return "grammar";
+  if (finding.rule === "grammar" || finding.rule === "confusion") return "grammar";
   if (finding.rule === "ai") return "ai";
   if (DOC_ACCESS_RULES.has(finding.rule)) return "access";
   if (finding.rule === "repeat") return "repeat";
@@ -17025,6 +17979,19 @@ function docProseHeader() {
   const right = docProseDockSide() === "right";
   const more = kebabMenu([
     makeMenuItem("ph:sparkle Check with AI", "Read for what the rules can't catch", () => docAiReview()),
+    makeMenuItem(
+      docProse.hidden ? "ph:eye Show suggestions" : "ph:eye-slash Hide all suggestions",
+      docProse.hidden ? "Underline and list suggestions again" : "Hide every underline and the list until you show them again",
+      () => docProseSetHidden(!docProse.hidden)
+    ),
+    makeMenuItem(
+      `ph:arrow-counter-clockwise Dismissed (${docProseDismissed().length})`,
+      "The suggestions you put away in this document, to bring back",
+      () => {
+        docProse.panelView = "dismissed";
+        renderDocProsePanel();
+      }
+    ),
     makeMenuItem("ph:book-open-text Dictionary", "The words you have told this to accept", () => openDocDictionary()),
     //: Where the panel sits (`applyDocProseDock`); not offered where there is
     //: no choice (a narrow window, focus mode's side panel).
@@ -17044,6 +18011,83 @@ function docProseHeader() {
   tools.appendChild(tool("ph:x", "Close the suggestions", () => closeDocProsePanel(), "icon-only doc-prose-close"));
   head.appendChild(tools);
   return head;
+}
+
+function docProseSetHidden(hidden) {
+  docProse.hidden = hidden;
+  docProse.panelView = "list";
+  renderDocProse();
+  renderDocProsePanel();
+}
+
+//: The keys in `docProseIgnored` that belong to this document, as rows.
+//: A key is `<doc>:<rule>:<text>`; the first two parts hold no colon.
+function docProseDismissed() {
+  const scope = `${currentDoc && currentDoc.id ? currentDoc.id : "unsaved"}:`;
+  const rows = [];
+  for (const key of docProseIgnored) {
+    if (!key.startsWith(scope)) continue;
+    const rest = key.slice(scope.length);
+    const cut = rest.indexOf(":");
+    if (cut < 0) continue;
+    rows.push({ key, rule: rest.slice(0, cut), text: rest.slice(cut + 1) });
+  }
+  return rows;
+}
+
+//: What the panel shows instead of the list: the hidden notice, or the
+//: dismissed list with a Restore on each row.
+function docProseSideView() {
+  const wrap = document.createElement("div");
+  wrap.className = "doc-prose-side";
+  const line = document.createElement("p");
+  line.className = "muted doc-prose-side-line";
+  wrap.appendChild(line);
+  if (docProse.panelView === "dismissed") {
+    const rows = docProseDismissed();
+    line.textContent = rows.length
+      ? "Put away in this document. Restore one to see it again."
+      : "Nothing dismissed in this document.";
+    const back = smallButton("ph:arrow-left Back", "Back to the suggestions", () => {
+      docProse.panelView = "list";
+      renderDocProsePanel();
+    });
+    back.classList.add("ghost");
+    const list = document.createElement("ul");
+    list.className = "doc-prose-dismissed";
+    for (const row of rows) {
+      const item = document.createElement("li");
+      item.className = "row doc-prose-dismissed-row";
+      const word = document.createElement("span");
+      word.className = "doc-prose-dismissed-text";
+      word.textContent = row.text;
+      word.title = `${row.rule}: ${row.text}`;
+      const restore = smallButton("ph:arrow-counter-clockwise Restore", `Show “${row.text}” again`, () => {
+        docProseIgnored.delete(row.key);
+        if (docProseDismissed().length === 0) docProse.panelView = "list";
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      restore.classList.add("ghost");
+      item.append(word, restore);
+      list.appendChild(item);
+    }
+    wrap.append(back, list);
+    if (rows.length > 1) {
+      const all = smallButton("ph:arrow-counter-clockwise Restore all", "Show every dismissed suggestion again", () => {
+        for (const row of rows) docProseIgnored.delete(row.key);
+        renderDocProse();
+        renderDocProsePanel();
+      });
+      all.classList.add("ghost");
+      wrap.appendChild(all);
+    }
+    return wrap;
+  }
+  line.textContent = "Suggestions are hidden. The underlines and this list are off until you show them.";
+  const show = smallButton("ph:eye Show suggestions", "Underline and list suggestions again", () => docProseSetHidden(false));
+  wrap.appendChild(show);
+  return wrap;
 }
 
 function closeDocProsePanel() {
@@ -17080,6 +18124,11 @@ function renderDocProsePanel() {
   //: "there's no close x button." A panel whose only exit is the control that
   //: opened it is a panel you have to remember how to leave, and the empty
   //: state was the one view where that was most likely.
+  if (docProse.hidden || docProse.panelView === "dismissed") {
+    panel.appendChild(docProseHeader());
+    panel.appendChild(docProseSideView());
+    return;
+  }
   const aiStatus = docAiCheckStatus();
   if (!docProseFound.length) {
     panel.appendChild(docProseHeader());
@@ -17733,6 +18782,11 @@ function docCompleteKeydown(event, box) {
   //: and "type lorem and press enter" is the ask it exists for. Escape, then
   //: Enter, is still a plain new line.
   const chosen = docCompleteMatches[docCompleteIndex];
+  //: In a table cell Tab moves cells and never takes a word (dogfood item 8).
+  if (event.key === "Tab" && docTableContext(box)) {
+    hideDocComplete();
+    return false;
+  }
   if (event.key === "Tab" || (event.key === "Enter" && chosen?.fill && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey)) {
     event.preventDefault();
     applyDocComplete(box, chosen);
@@ -18310,21 +19364,47 @@ function docOpenSuggestAtPoint(target, point) {
   return Boolean(docOpenSuggestAtCaret(box, point));
 }
 
+//: **The editor's own menu, last of the three.** Not for Shift+right-click
+//: (the browser's menu: native spelling, Look up, Translate), not for a code
+//: file (its own handler), not for the plain-textarea fallback. A press outside
+//: the selection moves the caret there first, as a native menu would. A word
+//: the app flagged keeps its suggestion popover, which is asked first.
+function docEditorMenuAtPoint(event, point) {
+  if (event.shiftKey || !(event.target instanceof Element)) return false;
+  const surface = docToolsBoxFor(event.target);
+  const view = surface && surface.view;
+  if (!view || view.dom.classList.contains("doc-content-code") || typeof docEditorMenuItems !== "function") return false;
+  const sel = view.state.selection.main;
+  const at = view.posAtCoords(point);
+  if (at != null && (at < sel.from || at > sel.to)) view.dispatch({ selection: { anchor: at } });
+  openMenuAtPoint(docEditorMenuItems(view, point.x, point.y), "Document editor actions", point.x, point.y, view.contentDOM);
+  return true;
+}
+
 //: The table's menu goes first (`docTableMenuAtPoint`, below), and takes the
 //: press from the caret-level suggestion: the one this listener opens on any
 //: press in a box with something to say. A misspelt word keeps its own. One
 //: listener, because the long-press twin below is one call (a lint counts both).
 document.addEventListener("contextmenu", (event) => {
   const point = { x: event.clientX, y: event.clientY };
-  if (docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point)) {
+  if (
+    docTableMenuAtPoint(event.target, point.x, point.y) ||
+    docOpenSuggestAtPoint(event.target, point) ||
+    docEditorMenuAtPoint(event, point)
+  ) {
     event.preventDefault();
   }
 });
+//: The hold does not open the editor's own menu (`docEditorMenuAtPoint`): on a
+//: phone a hold in text is how a word gets selected, with the browser's handles.
+//: The menu answers the contextmenu event a device sends, and the phone bar and
+//: selection bar carry Turn into.
 if (typeof wireLongPress === "function") {
   wireLongPress(
     document,
     (event, point) =>
-      docTableMenuAtPoint(event.target, point.x, point.y) || docOpenSuggestAtPoint(event.target, point),
+      docTableMenuAtPoint(event.target, point.x, point.y) ||
+      docOpenSuggestAtPoint(event.target, point),
     { selector: ".doc-flag, .cm-finding, .cm-content, .doc-table-grip, textarea" }
   );
 }
@@ -18577,6 +19657,16 @@ $("doc-link-offers")?.addEventListener("change", async (event) => {
   DOC_LINK_OFFERS.findings = [];
   renderDocProse();
 });
+//: Link text (K11): the same preference as Settings, Writing. The grammar
+//: answer is thrown away because what it keeps depends on the switch.
+$("doc-check-link-text")?.addEventListener("change", async (event) => {
+  prefsCache = await apiJson("/preferences", {
+    method: "PUT",
+    body: JSON.stringify({ check_link_text: event.currentTarget.checked }),
+  }).catch(() => prefsCache);
+  docGrammarCache = { text: null, findings: [] };
+  renderDocProse();
+});
 $("doc-grammar-check")?.addEventListener("change", async (event) => {
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -18758,12 +19848,20 @@ function applyDocProseDock() {
   if (!panel || !panes || !bar) return;
   const right = docProseDockSide() === "right";
   const handle = docProseResizeHandle();
+  const focus = $("tab-documents")?.classList.contains("doc-focus") === true;
   if (right) {
     if (panel.parentElement !== panes) panes.append(handle, panel);
     docProseApplyWidth(docProseSavedWidth());
-  } else if (panel.previousElementSibling !== bar) {
-    bar.after(panel);
+  } else {
+    //: In focus mode the panel is a fixed side panel whatever side was chosen,
+    //: so it has the grip and the remembered width too (INBOX 1408); the grip
+    //: is fixed there, so it only has to sit before the panel.
     handle.remove();
+    if (panel.previousElementSibling !== bar) bar.after(panel);
+    if (focus) {
+      panel.before(handle);
+      docProseApplyWidth(docProseSavedWidth());
+    }
   }
   panes.classList.toggle("doc-prose-right", right);
   panel.classList.toggle("doc-prose-right", right);
@@ -19986,6 +21084,8 @@ async function openDocDictionary() {
   if (smart) smart.checked = !!(prefsCache && prefsCache.smart_punctuation === true);
   const linkOffers = $("doc-link-offers");
   if (linkOffers) linkOffers.checked = docLinkOfferEnabled();
+  const linkText = $("doc-check-link-text");
+  if (linkText) linkText.checked = docCheckLinkText();
   if (!dialog.open) dialog.showModal();
   search?.focus();
 }
@@ -20233,6 +21333,26 @@ function docRedo() {
 // first: this file must never be able to tell which one it is talking to.
 
 const DOC_CM_BUNDLE = "/vendor/codemirror/codemirror.min.js";
+
+//: **Warm on idle** (perf-1026): the Documents list is the signal that a
+//: document is about to open, so the editor bundle (about 140 ms to evaluate)
+//: is loaded in a spare moment and the checker's files are fetched into the
+//: HTTP cache, rather than both on the first open. Never on a phone or a
+//: metered connection, where the bytes cost more than the wait.
+let docWarmed = false;
+function warmDocumentEngine() {
+  const link = navigator.connection || {};
+  if (docWarmed || link.saveData || window.matchMedia("(max-width: 720px)").matches) return;
+  docWarmed = true;
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 400));
+  idle(() => {
+    loadCodeMirror();
+    for (const href of DOC_GRAMMAR_FILES.slice(1)) {
+      const el = Object.assign(document.createElement("link"), { rel: "prefetch", href });
+      document.head.appendChild(el);
+    }
+  }, { timeout: 2000 });
+}
 
 //: The in-flight load, so two documents opened quickly do not inject two
 //: script tags. Reset to null on failure, so a later attempt can retry after
@@ -21101,6 +22221,11 @@ function docCmTheme(CM) {
       //: than the punctuation, and left in the document so it can be
       //: selected, deleted and typed over like any other character.
       ".cm-md-li-mark": { color: "var(--muted)" },
+      //: `textIndent: 0`: an inline-block is a block container, so it inherits
+      //: the line's hanging `-1.6em` and drew its own glyph 24px left of its
+      //: box (bullet 44px from the words, half outside the page at 720).
+      ".cm-md-li-bullet": { display: "inline-block", width: "1.6em", textIndent: "0" },
+      ".cm-md-li-num": { display: "inline-block", minWidth: "1.6em", textIndent: "0" },
       //: **A quotation's bar has to be seen to do its job** (17c). It was
       //: `--border`, a 10% ink that composites to 1.2:1 on the page, so a
       //: quotation read as a paragraph set in grey. Half the muted ink is a
@@ -21306,7 +22431,7 @@ function docCmTheme(CM) {
       //: muted ink, because it is part of the same control.
       ".cm-md-callout-fold": { fontSize: "0.9em", opacity: "0.8" },
       ".cm-md-callout-label [data-doc-callout-fold]": { cursor: "pointer" },
-      ".cm-md-task-hit": { marginRight: "0.4em", cursor: "pointer" },
+      ".cm-md-task-hit": { cursor: "pointer" },
       ".cm-md-image": { maxWidth: "100%", borderRadius: "var(--radius-sm)" },
       ".cm-md-image-under": { display: "block", marginTop: "var(--space-2)" },
 
@@ -21577,12 +22702,33 @@ function docCmHighlight(CM) {
   return docCmHighlightCache;
 }
 
+//: **Ctrl+Shift+Z is redo, whatever the key reports.** Shift+Z arrives as
+//: `key: "z"` with Caps Lock on, and the keymap then matched Mod-z (undo):
+//: dogfood item 1. A binding cannot see the event, so a DOM handler.
+function docRedoChord(CM) {
+  return CM.state.Prec.highest(CM.view.EditorView.domEventHandlers({
+    keydown: (event, view) => {
+      if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || event.altKey) return false;
+      if (event.key.toLowerCase() !== "z") return false;
+      event.preventDefault();
+      CM.commands.redo(view);
+      return true;
+    },
+  }));
+}
+
 //: The chords the fallback textarea's own `keydown` handler carries, as a
 //: keymap instead. They cannot simply be re-attached to CodeMirror's DOM: it
 //: is a contenteditable with its own key handling and its own IME support, so
 //: a listener bolted onto it would fight the editor rather than extend it.
 //: Same behaviour and the same order (the shifted S before the plain one, for
 //: the reason that handler's own comment gives).
+function docProseChord(run) {
+  if (!docFileType().previewable) return false;
+  run();
+  return true;
+}
+
 function docCmKeymap(CM) {
   const surface = () => docSurface();
   return [
@@ -21590,6 +22736,7 @@ function docCmKeymap(CM) {
     //: anything that would treat a row as a line of text; each declines
     //: (returns false) everywhere that is not a Live table cell.
     { key: "Enter", run: (view) => docTableKeyMove(view, "Enter") },
+    { key: "Mod-Enter", run: (view) => docTableCtrlEnter(view) },
     { key: "ArrowDown", run: (view) => docTableKeyMove(view, "ArrowDown") },
     { key: "ArrowUp", run: (view) => docTableKeyMove(view, "ArrowUp") },
     //: A markdown document moves a block, not a line (`docBlockMoveEdit`); a
@@ -21629,22 +22776,35 @@ function docCmKeymap(CM) {
       },
     },
     { key: "Mod-/", run: () => { toggleDocComment(surface()); return true; } },
-    { key: "Mod-Shift-s", run: () => { wrapDocSelection("~~", "struck through"); return true; } },
+    //: The chords below write markdown syntax. In a code file they decline
+    //: (`docProseChord`), so Ctrl+B does not wrap a Python line in `**` and
+    //: the engine's own binding for the key answers instead.
+    { key: "Mod-Shift-s", run: () => docProseChord(() => { wrapDocSelection("~~", "struck through"); }) },
     { key: "Mod-s", run: () => { saveDocument(); return true; } },
-    { key: "Mod-b", run: () => { wrapDocSelection("**", "bold text"); return true; } },
-    { key: "Mod-i", run: () => { wrapDocSelection("*", "italic text"); return true; } },
-    { key: "Mod-e", run: () => { wrapDocSelection("`"); return true; } },
-    { key: "Mod-1", run: () => { applyMarkdown("h1"); return true; } },
-    { key: "Mod-2", run: () => { applyMarkdown("h2"); return true; } },
-    { key: "Mod-3", run: () => { applyMarkdown("h3"); return true; } },
+    { key: "Mod-b", run: () => docProseChord(() => { wrapDocSelection("**", "bold text"); }) },
+    { key: "Mod-i", run: () => docProseChord(() => { wrapDocSelection("*", "italic text"); }) },
+    //: Underline, the one chord every word processor shares. CodeMirror binds
+    //: Mod-u to "undo selection", which on a prose page just collapses the
+    //: selection and reads as the key being dead.
+    { key: "Mod-u", run: () => docProseChord(() => { applyMarkdown("underline"); }) },
+    { key: "Mod-e", run: () => docProseChord(() => { wrapDocSelection("`"); }) },
+    { key: "Mod-1", run: () => docProseChord(() => { applyMarkdown("h1"); }) },
+    { key: "Mod-2", run: () => docProseChord(() => { applyMarkdown("h2"); }) },
+    { key: "Mod-3", run: () => docProseChord(() => { applyMarkdown("h3"); }) },
     //: Google Docs' list chords; the base key is read, so Shift's `*` is 8.
-    { key: "Mod-Shift-8", run: () => { applyMarkdown("ul"); return true; } },
-    { key: "Mod-Shift-7", run: () => { applyMarkdown("ol"); return true; } },
-    { key: "Mod-Shift-9", run: () => { applyMarkdown("task"); return true; } },
+    { key: "Mod-Shift-8", run: () => docProseChord(() => { applyMarkdown("ul"); }) },
+    { key: "Mod-Shift-7", run: () => docProseChord(() => { applyMarkdown("ol"); }) },
+    { key: "Mod-Shift-9", run: () => docProseChord(() => { applyMarkdown("task"); }) },
     //: One gesture, one entry point: `toggleDocFindBar` opens the engine's
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field.
+    //: VS Code's Go to line. A code file only; CodeMirror's own binding for
+    //: the key (find next) stays for prose and on F3.
+    { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
+    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).
@@ -21772,6 +22932,7 @@ function docCmExtensions(CM) {
     CM.view.placeholder(docPlaceholderText || ""),
     //: This app's chords first, then CodeMirror's own defaults, so a binding
     //: the editor already had wins over the library's.
+    docRedoChord(CM),
     CM.view.keymap.of([
       ...docCmKeymap(CM),
       ...CM.search.searchKeymap,
@@ -21798,8 +22959,12 @@ function docCmExtensions(CM) {
         docTabEscapes = false;
         return docTableCellClick(event, view);
       },
-      paste: (event, view) => docTablePasteEvent(event, view) || docRichPasteEvent(event, view),
     }),
+    //: Ahead of the markdown language's own paste-a-URL-as-a-link, which would
+    //: take a web address over selected words first and leave no paste chip.
+    CM.state.Prec.high(CM.view.EditorView.domEventHandlers({
+      paste: (event, view) => docTablePasteEvent(event, view) || docSmartPasteEvent(event, view) || docRichPasteEvent(event, view),
+    })),
     CM.view.EditorView.updateListener.of(docCmUpdate),
     //: **The browser's own spellcheck, and the one condition it stays on
     //: under.** CodeMirror turns it off by default, and for a code editor
@@ -22053,6 +23218,7 @@ function docGuardGlobalShortcuts(host) {
   host.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.length !== 1) return;
+    typingBurst.at = performance.now();
     event.stopPropagation();
   });
 }

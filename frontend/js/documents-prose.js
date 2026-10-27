@@ -164,17 +164,93 @@ function docGrammarOutside(text) {
   return (lint) => !spans.some(([from, to]) => lint.start < to && lint.end > from);
 }
 
+//: **The writer's switch for the words of a link** (Settings, Writing, "Check
+//: link text"; the dictionary dialog). Off unless turned on: a link's label is
+//: a name or a pasted title more often than a sentence (K11).
+function docCheckLinkText() {
+  return typeof prefsCache === "object" && prefsCache !== null && prefsCache.check_link_text === true;
+}
+
+//: Lines that are structure rather than sentences: a heading, a list item (also
+//: a task) and a table row. A list item is a fragment by design, so the rules
+//: that judge sentences (length, "does not start with a capital letter",
+//: house-style nags) have nothing to say about one (K4b: a pasted list had its
+//: lines underlined whole). A grammar error inside one is still an error.
+const DOC_STRUCTURAL_LINE = /^[ \t]*(?:#{1,6}[ \t]|(?:[-*+]|\d+[.)])[ \t]|\|)[^\n]*/gm;
+
+function docStructuralMask(text) {
+  const mask = new Uint8Array(text.length);
+  const pattern = new RegExp(DOC_STRUCTURAL_LINE.source, DOC_STRUCTURAL_LINE.flags);
+  let match;
+  while ((match = pattern.exec(text)) !== null) mask.fill(1, match.index, match.index + match[0].length);
+  return mask;
+}
+
+//: The text with every structural line blanked to spaces, same length, so an
+//: offset into it is an offset into the text.
+function docStructuralBlank(text) {
+  const pattern = new RegExp(DOC_STRUCTURAL_LINE.source, DOC_STRUCTURAL_LINE.flags);
+  return text.replace(pattern, (line) => " ".repeat(line.length));
+}
+
+//: Harper kinds that judge a sentence, dropped inside a structural line.
+const DOC_GRAMMAR_SENTENCE_KINDS = new Set(["Readability", "Style", "Formatting", "Miscellaneous"]);
+//: A sentence that opens with a lower-case abbreviation is fine: "e.g. the".
+const DOC_GRAMMAR_ABBREVIATION = /^(?:e\.g|i\.e|etc|vs|cf|approx|ca|resp)\b/i;
+
+//: Whether one of Harper's lints is worth showing. Each line is a class the
+//: fixture measured, not a case (`tests/test_grammar_classes_1026.py`).
+function docGrammarKeeps(lint, span, structural, text) {
+  //: An identifier in prose: `docSurface`, `parse_document`, `getItems`.
+  if (lint.kind === "Typo" && /[a-z][A-Z]|[_\d]/.test(span)) return false;
+  //: A word this app already knows (its list, its extra words, the writer's
+  //: dictionary) is not a typo whatever Harper's smaller list says:
+  //: "draggable" was offered as "drag gable" (INBOX 1407). Before the first
+  //: list loads `docWordKnown` says yes, which drops these too; Harper's
+  //: Typo lints come back with the next pass.
+  if (lint.kind === "Typo" && /^[A-Za-z]+$/.test(span) && docWordKnown(span)) return false;
+  const message = String(lint.message || "");
+  //: A file name's extension is not a new sentence: "start.bat", "run.bat.".
+  if (/does not start with a capital letter/i.test(message) && /[A-Za-z0-9]\./.test(text.slice(Math.max(0, lint.start - 2), lint.start))) {
+    return false;
+  }
+  //: A dotfile after a space (" .gitignore") reads to Harper as the end of a
+  //: sentence with a stray space.
+  if (/unnecessary space/i.test(message) && /^\.[A-Za-z0-9]/.test(text.slice(lint.end))) return false;
+  //: "These words would go better together" asks to join a tech term
+  //: ("cron job" to "cronjob"); a style nag, and the writer's term is theirs.
+  if (/go better together/i.test(message)) return false;
+  //: Harper's "use too" for "to": right when "to" ends the clause ("me to,"),
+  //: wrong when a word follows it ("back to normal", "back to the start").
+  if (/use\W+too\b/i.test(message) && /^to$/i.test(span) && /^[ \t]*[A-Za-z0-9]/.test(text.slice(lint.end))) return false;
+  //: "Sam" is not S.A.M.: the dictionary lists some names as all-caps words.
+  if (/all-caps/i.test(message) && /^[A-Z][a-z]/.test(span)) return false;
+  if (/does not start with a capital letter/i.test(message)) {
+    if (structural || DOC_GRAMMAR_ABBREVIATION.test(span)) return false;
+  }
+  if (structural && DOC_GRAMMAR_SENTENCE_KINDS.has(lint.kind)) return false;
+  return true;
+}
+
 //: Harper's lints as this app's findings. `replacement` stays null on
 //: purpose: "Fix all" applies without asking, and a grammar suggestion is a
 //: judgement, so it is always offered and never applied in bulk.
+//:
+//: The skip mask is applied here, not by each caller, so the document and the
+//: note boxes drop the same things: a lint that starts in code, an address, a
+//: path, an email, a unit after a number, or (unless "Check link text" is on)
+//: the words of a link.
 function docGrammarFindings(lints, text) {
   const out = [];
   const outside = docGrammarOutside(text);
+  const skip = docProseSkipMask(text);
+  const structure = docStructuralMask(text);
   for (const lint of lints || []) {
     if (DOC_GRAMMAR_SKIP_KINDS.has(lint.kind)) continue;
     if (!(lint.end > lint.start) || lint.end > text.length) continue;
-    if (!outside(lint)) continue;
+    if (!outside(lint) || skip[lint.start] === 1) continue;
     const span = text.slice(lint.start, lint.end);
+    if (!docGrammarKeeps(lint, span, structure[lint.start] === 1, text)) continue;
     const alternatives = [];
     for (const suggestion of lint.suggestions || []) {
       const option = suggestion.kind === "InsertAfter" ? span + suggestion.text : suggestion.text;
@@ -232,12 +308,12 @@ function docProseRemap(findings, from, to) {
 //: on the first document opened (or typed into) with grammar on.
 function docGrammarRequest(text) {
   if (!text || !text.trim()) return;
-  if (!docGrammarEnabled() || docGrammarAsking !== null || docGrammarCache.text === text) return;
+  if (!docGrammarEnabled() || docGrammarAsking !== null || (docGrammarCache.text === text && docGrammarCache.linkText === docCheckLinkText())) return;
   docGrammarAsking = text;
   docGrammarAsk(text).then((lints) => {
     docGrammarAsking = null;
     if (lints === null) return renderDocProse();
-    docGrammarCache = { text, findings: docGrammarFindings(lints, text) };
+    docGrammarCache = { text, findings: docGrammarFindings(lints, text), linkText: docCheckLinkText() };
     renderDocProse();
   });
 }
@@ -1754,6 +1830,12 @@ function docPairBackspace(before, after) {
 //: Enter. Returns the line's new text, or null when the line is not an empty
 //: item (the keymap's continuation then runs as before).
 function docListEnter(line) {
+  //: An empty quote line ends the quote the same way (a nested one steps out
+  //: a level); the keymap's own answer left `>` and a fresh `> ` under it.
+  if (/^(?:>[ \t]?)+$/.test(line)) {
+    const depth = line.split(">").length - 1;
+    return depth > 1 ? "> ".repeat(depth - 1) : "";
+  }
   const m = /^(\s*)(?:[-*+]|\d{1,9}[.)])(?: \[[ xX]\])? ?$/.exec(line);
   if (!m) return null;
   const indent = m[1];
@@ -1762,6 +1844,43 @@ function docListEnter(line) {
   if (indent.endsWith("\t")) return line.slice(1);
   const step = indent.length >= 4 && indent.length % 4 === 0 ? 4 : 2;
   return line.slice(Math.min(step, indent.length));
+}
+//: **Ending a list leaves the blank line after it** (dog2 item 6). The empty
+//: item became an empty line directly under the last item, so a heading or a
+//: fence typed next sat flush against the list. `next` is `docListEnter`'s
+//: answer and `prev` the line above; only a top-level exit under a real line
+//: gets the extra newline, so the caret lands one line below a blank one.
+function docListExitText(next, prev) {
+  return next === "" && typeof prev === "string" && prev.trim() !== "" ? "\n" : next;
+}
+//: **Retyping "- " on an auto-bullet does not nest** (dogfood item 3). `before`
+//: is the line up to the caret with the dash already typed ("- -"), `typed`
+//: the space. Returns the line to keep ("- "), or null.
+function docBulletRetype(before, typed) {
+  if (typed !== " ") return null;
+  const m = /^(\s*)([-*+]) [-*+]$/.exec(before);
+  return m ? `${m[1]}${m[2]} ` : null;
+}
+
+//: **A closing fence goes back to the opening fence's indent** (dogfood item
+//: 4: Enter kept the code's indent). `above` is the lines before, `line` the
+//: current one. Returns the indent it should have, or null.
+function docFenceCloseIndent(above, line) {
+  const close = /^(\s*)(`{3,}|~{3,})$/.exec(line);
+  if (!close) return null;
+  let open = null;
+  for (const text of above) {
+    const f = /^(\s*)(`{3,}|~{3,})(.*)$/.exec(text);
+    if (!f) continue;
+    if (!open) {
+      if (f[2][0] === "`" && f[3].includes("`")) continue;
+      open = { indent: f[1], ch: f[2][0], len: f[2].length };
+    } else if (f[2][0] === open.ch && f[2].length >= open.len && !f[3].trim()) {
+      open = null;
+    }
+  }
+  if (!open || close[2][0] !== open.ch || close[2].length < open.len) return null;
+  return close[1] === open.indent ? null : open.indent;
 }
 // PROSE-FILL-END
 
@@ -1781,8 +1900,8 @@ function docSmartPunctOn() {
 //: Inside a fenced or indented code block, inline code or raw HTML, by the
 //: parse. The pure functions above see one line; this is the part only the
 //: tree knows.
-function docInCodeAt(CM, state, pos) {
-  if (docFileType().ext !== "md") return false;
+function docInCodeAt(CM, state, pos, anyHost = false) {
+  if (!anyHost && docFileType().ext !== "md") return false;
   let node = CM.language.syntaxTree(state).resolveInner(pos, -1);
   for (let k = 0; node && k < 6; node = node.parent, k += 1) {
     if (/^(FencedCode|CodeBlock|InlineCode|CodeText|HTMLBlock)$/.test(node.name)) return true;
@@ -1908,17 +2027,18 @@ function docProseGhostPlugin(CM) {
 
 //: Backspace in an empty pair, and Enter on an empty list item, ahead of the
 //: editor's own.
-function docProsePairKeymap(CM) {
+function docProsePairKeymap(CM, anyHost = false) {
   return CM.state.Prec.high(CM.view.keymap.of([{
     key: "Enter",
     run: (view) => {
-      if (!docProseFillOn() || docFileType().ext !== "md") return false;
+      if (!anyHost && (!docProseFillOn() || docFileType().ext !== "md")) return false;
       const range = view.state.selection.main;
       if (!range.empty || view.state.selection.ranges.length > 1) return false;
       const line = view.state.doc.lineAt(range.head);
-      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head)) return false;
-      const next = docListEnter(line.text);
-      if (next === null) return false;
+      if (range.head !== line.to || docInCodeAt(CM, view.state, range.head, anyHost)) return false;
+      const exit = docListEnter(line.text);
+      if (exit === null) return false;
+      const next = docListExitText(exit, line.number > 1 ? view.state.doc.line(line.number - 1).text : null);
       view.dispatch({
         changes: { from: line.from, to: line.to, insert: next },
         selection: { anchor: line.from + next.length },
@@ -1946,7 +2066,981 @@ function docProsePairKeymap(CM) {
   }]));
 }
 
+//: **List and fence typing, for documents and note boxes.** A note has no file
+//: type, and a fence being closed is inside the block the parse sees as open,
+//: so neither guard applies. Enter on an empty item is the document's own
+//: (`docProsePairKeymap`); notes get it here.
+function docListFenceExtensions(CM, inDocument) {
+  //: A document only in markdown; a note box always (it has no file type).
+  const on = () => !inDocument || (docProseFillOn() && docFileType().ext === "md");
+  const input = CM.view.EditorView.inputHandler.of((view, from, to, text) => {
+    if (view.composing || text.length !== 1 || !on()) return false;
+    const state = view.state;
+    if (state.selection.ranges.length > 1 || from !== to) return false;
+    const line = state.doc.lineAt(from);
+    if (to !== line.to) return false;
+    const before = line.text.slice(0, from - line.from);
+    const dup = docBulletRetype(before, text);
+    if (dup !== null && !docInCodeAt(CM, state, from, true)) {
+      view.dispatch({
+        changes: { from: line.from + dup.length, to: from },
+        selection: { anchor: line.from + dup.length },
+        userEvent: "input.type",
+      });
+      return true;
+    }
+    if (text === "`" || text === "~") {
+      const above = [];
+      for (let n = 1; n < line.number; n += 1) above.push(state.doc.line(n).text);
+      const indent = docFenceCloseIndent(above, before + text);
+      if (indent !== null) {
+        const lead = /^\s*/.exec(line.text)[0].length;
+        view.dispatch({
+          changes: [{ from: line.from, to: line.from + lead, insert: indent }, { from, insert: text }],
+          selection: { anchor: from + indent.length - lead + 1 },
+          userEvent: "input.type",
+        });
+        return true;
+      }
+    }
+    return false;
+  });
+  return inDocument ? [input] : [input, docProsePairKeymap(CM, true)];
+}
+
 //: Everything above, as one set of extensions for `docProseToolExtensions`.
 function docProseFillExtensions(CM) {
-  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM)];
+  return [docProseInputHandler(CM), docProseGhostPlugin(CM), docProsePairKeymap(CM), docListFenceExtensions(CM, true)];
+}
+
+// -----------------------------------------------------------------------------
+// Text tools: change case, sort and de-duplicate lines, number the headings,
+// the date, and the document's statistics (DOCUMENTS_PLAN, docs3-1026)
+// -----------------------------------------------------------------------------
+//
+// The owner: "did you improve and upgrade the documents editor?" Read against
+// Google Docs and Word, the editor had no Change case, no Sort, no heading
+// numbers, no date insert and no Word-count dialog (readability, speaking time,
+// the words a draft leans on). All are pure functions over text; the editor
+// reaches them through `DOC_COMMANDS` (palette) and the status bar's count.
+
+const DOC_STOP_WORDS = new Set(
+  ("that this with from have were been they them then than their there what when which would could should about into " +
+    "your will just also more some very only over such each other these those while where being because").split(" ")
+);
+
+//: Small words a title leaves lower-case unless first or last.
+const DOC_TITLE_SMALL = new Set("a an and as at but by for in nor of on or the to up via vs".split(" "));
+
+function docTitleCase(text) {
+  const parts = text.split(/(\s+)/);
+  const wordIdx = parts.map((p, i) => (/\S/.test(p) ? i : -1)).filter((i) => i >= 0);
+  const last = wordIdx[wordIdx.length - 1];
+  return parts
+    .map((part, i) => {
+      if (!/\S/.test(part)) return part;
+      const lower = part.toLowerCase();
+      if (i !== wordIdx[0] && i !== last && DOC_TITLE_SMALL.has(lower)) return lower;
+      return lower.replace(/[a-zÀ-ɏ]/, (c) => c.toUpperCase());
+    })
+    .join("");
+}
+
+function docSentenceCase(text) {
+  let start = true;
+  let out = "";
+  for (const ch of text.toLowerCase()) {
+    if (start && /[a-zÀ-ɏ]/.test(ch)) {
+      out += ch.toUpperCase();
+      start = false;
+    } else {
+      out += ch;
+      if (/[.!?\n]/.test(ch)) start = true;
+      else if (/[^\s"'(\[*_]/.test(ch)) start = false;
+    }
+  }
+  return out;
+}
+
+//: Lines sorted for a person, not a machine: "item 2" before "item 10", and
+//: accents beside their letters. Blank lines sort first and stay.
+function docSortLines(text, descending) {
+  const lines = text.split("\n");
+  const sorted = lines.slice().sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+  return (descending ? sorted.reverse() : sorted).join("\n");
+}
+
+function docUniqueLines(text) {
+  const seen = new Set();
+  return text
+    .split("\n")
+    .filter((line) => {
+      const key = line.trim().toLowerCase();
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join("\n");
+}
+
+const DOC_TEXT_TRANSFORMS = {
+  upper: (t) => t.toUpperCase(),
+  lower: (t) => t.toLowerCase(),
+  title: docTitleCase,
+  sentence: docSentenceCase,
+  "sort-asc": (t) => docSortLines(t, false),
+  "sort-desc": (t) => docSortLines(t, true),
+  unique: docUniqueLines,
+};
+
+//: Numbers the headings "1", "1.1", "1.2.1", or takes the numbers off again.
+//: The words are the text, so the numbers are written into it: they survive
+//: export, print and a Word file, which a display-only counter would not. A
+//: lone first `#` is the document's title and keeps no number. Fenced code and
+//: the frontmatter are left alone. Idempotent: running it twice renumbers.
+const DOC_HEADING_NUMBER = /^(#{1,6})\s+(?:\d+(?:\.\d+)*\.?\s+)?(.*\S.*)$/;
+
+function docNumberHeadings(text, on) {
+  const lines = text.split("\n");
+  const rows = docHeadingRows(lines);
+  const levels = rows.map((r) => r.level);
+  const skipTitle = levels.filter((l) => l === 1).length === 1 && levels[0] === 1;
+  const floor = skipTitle ? 2 : 1;
+  const counters = [0, 0, 0, 0, 0, 0];
+  for (const row of rows) {
+    if (row.level < floor) {
+      lines[row.index] = `${"#".repeat(row.level)} ${row.title}`;
+      continue;
+    }
+    counters[row.level - 1] += 1;
+    for (let d = row.level; d < 6; d += 1) counters[d] = 0;
+    const path = counters.slice(floor - 1, row.level).map((n) => n || 1).join(".");
+    lines[row.index] = `${"#".repeat(row.level)} ${on ? `${path} ` : ""}${row.title}`;
+  }
+  return lines.join("\n");
+}
+
+function docHeadingRows(lines) {
+  const rows = [];
+  let fence = "";
+  let front = lines[0] === "---";
+  lines.forEach((line, index) => {
+    if (front) {
+      if (index > 0 && line === "---") front = false;
+      return;
+    }
+    const mark = /^\s*(```|~~~)/.exec(line);
+    if (mark) fence = !fence ? mark[1] : fence === mark[1] ? "" : fence;
+    if (fence || mark) return;
+    const m = DOC_HEADING_NUMBER.exec(line);
+    if (m) rows.push({ index, level: m[1].length, title: m[2] });
+  });
+  return rows;
+}
+
+function docDateText(kind, now = new Date()) {
+  const pad = (n) => String(n).padStart(2, "0");
+  if (kind === "time") return `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  if (kind === "long") return now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+//: Prose only: fences, frontmatter, comments, images, link targets, bare URLs
+//: and the markers that are not words, so the statistics describe what is read.
+function docPlainText(text) {
+  return String(text || "")
+    .replace(/^---\n[\s\S]*?\n---\n/, "")
+    .replace(/(```|~~~)[\s\S]*?(\1|$)/g, " ")
+    .replace(/%%[\s\S]*?%%/g, " ")
+    .replace(/!\[[^[\]\n]*\]\([^()\n]*\)/g, " ")
+    .replace(/\[([^[\]\n]*)\]\([^()\n]*\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/^\s{0,3}(#{1,6}|[-*+>]|\d+[.)])\s+(\[[ xX]\]\s+)?/gm, "")
+    .replace(/[*_~`=|]+/g, " ");
+}
+
+function docSyllables(word) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  const groups = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "").match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
+
+function docTopWords(words, limit) {
+  const tally = new Map();
+  for (const word of words) {
+    const w = word.toLowerCase();
+    if (w.length < 4 || DOC_STOP_WORDS.has(w) || /\d/.test(w)) continue;
+    tally.set(w, (tally.get(w) || 0) + 1);
+  }
+  return [...tally].filter(([, n]) => n > 1).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit);
+}
+
+const DOC_WORD_RE = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
+
+function docStatistics(text) {
+  const raw = String(text || "");
+  const plain = docPlainText(raw);
+  const words = plain.match(DOC_WORD_RE) || [];
+  const sentences = plain.split(/(?<=[.!?])\s+|\n{2,}/).filter((s) => /[\p{L}\p{N}]/u.test(s));
+  const sentenceWords = sentences.map((s) => (s.match(DOC_WORD_RE) || []).length);
+  const syllables = words.reduce((n, w) => n + docSyllables(w), 0);
+  const perSentence = sentences.length ? words.length / sentences.length : 0;
+  const perWord = words.length ? syllables / words.length : 0;
+  const ease = words.length ? Math.max(0, Math.min(100, 206.835 - 1.015 * perSentence - 84.6 * perWord)) : 0;
+  const grade = words.length ? Math.max(0, 0.39 * perSentence + 11.8 * perWord - 15.59) : 0;
+  return {
+    words: words.length,
+    chars: [...raw].length,
+    charsNoSpaces: [...raw.replace(/\s/g, "")].length,
+    sentences: sentences.length,
+    paragraphs: plain.split(/\n{2,}/).filter((p) => p.trim()).length,
+    headings: docHeadingRows(raw.split("\n")).length,
+    readMinutes: words.length / 238,
+    speakMinutes: words.length / 130,
+    longest: sentenceWords.length ? Math.max(...sentenceWords) : 0,
+    perSentence,
+    ease,
+    grade,
+    top: docTopWords(words, 5),
+  };
+}
+
+function docMinutesLabel(minutes) {
+  if (!minutes) return "0 min";
+  if (minutes < 1) return "under a min";
+  return minutes < 60 ? `${Math.round(minutes)} min` : `${Math.floor(minutes / 60)} h ${Math.round(minutes % 60)} min`;
+}
+
+function docEaseLabel(ease) {
+  const bands = [[90, "very easy"], [70, "easy"], [60, "plain"], [50, "fairly hard"], [30, "hard"], [0, "very hard"]];
+  return bands.find(([floor]) => ease >= floor)[1];
+}
+
+function docStatsRows(s) {
+  const n = (v) => v.toLocaleString();
+  const rows = [
+    ["Words", n(s.words)],
+    ["Characters", `${n(s.chars)} (${n(s.charsNoSpaces)} without spaces)`],
+    ["Sentences", n(s.sentences)],
+    ["Paragraphs", n(s.paragraphs)],
+    ["Headings", n(s.headings)],
+    ["Reading time", docMinutesLabel(s.readMinutes)],
+    ["Speaking time", docMinutesLabel(s.speakMinutes)],
+  ];
+  if (s.words >= 30) {
+    rows.push(
+      ["Reading ease", `${Math.round(s.ease)} of 100, ${docEaseLabel(s.ease)}`],
+      ["Grade level", s.grade.toFixed(1)],
+      ["Longest sentence", `${n(s.longest)} words`]
+    );
+  }
+  if (s.top.length) rows.push(["Most repeated", s.top.map(([w, c]) => `${w} (${c})`).join(", ")]);
+  return rows;
+}
+
+function docOpenStatistics() {
+  const dialog = $("doc-stats-dialog");
+  const list = $("doc-stats-list");
+  if (!dialog || !list) return;
+  const box = docSurface();
+  const whole = docCommentStrip(box?.text ?? "");
+  const picked = box && box.selectionEnd > box.selectionStart ? box.text.slice(box.selectionStart, box.selectionEnd) : "";
+  $("doc-stats-scope").textContent = picked ? "The selection" : "The whole document";
+  list.replaceChildren();
+  for (const [label, value] of docStatsRows(docStatistics(picked || whole))) {
+    const dt = document.createElement("dt");
+    dt.textContent = label;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    list.append(dt, dd);
+  }
+  dialog.showModal();
+}
+
+//: Replaces only the span that differs, so the caret and the undo step stay
+//: small and a whole-document tool does not jump the page.
+function docApplyWholeText(box, next) {
+  const before = box.text;
+  if (next === before) return false;
+  let head = 0;
+  while (head < before.length && head < next.length && before[head] === next[head]) head += 1;
+  let tail = 0;
+  while (tail < before.length - head && tail < next.length - head && before[before.length - 1 - tail] === next[next.length - 1 - tail]) tail += 1;
+  docReplaceRange(box, head, before.length - tail, next.slice(head, next.length - tail));
+  return true;
+}
+
+function docRunTextTool(id) {
+  const box = docSurface();
+  if (!box) return;
+  if (id === "stats") return docOpenStatistics();
+  if (id.startsWith("date-") || id === "time") {
+    docReplaceRange(box, box.selectionStart, box.selectionEnd, docDateText(id === "time" ? "time" : id.slice(5)));
+    return;
+  }
+  if (id === "number-headings" || id === "unnumber-headings") {
+    const on = id === "number-headings";
+    const changed = docApplyWholeText(box, docNumberHeadings(box.text, on));
+    toast(changed ? (on ? "Headings numbered." : "Heading numbers removed.") : "No headings to change.", "info");
+    return;
+  }
+  const from = box.selectionStart;
+  const to = box.selectionEnd;
+  if (to <= from) {
+    toast("Select some text first.", "info");
+    return;
+  }
+  const next = DOC_TEXT_TRANSFORMS[id](box.text.slice(from, to));
+  docReplaceRange(box, from, to, next);
+  box.setSelectionRange?.(from, from + next.length);
+}
+
+//: **Copy as formatted text.** A plain copy of a note puts Markdown on the
+//: clipboard, which Word, Gmail and Canvas paste as asterisks and hashes. This
+//: renders the selection (or the whole page) the way Read view does, strips
+//: what the HTML download strips, and puts both forms on the clipboard: the
+//: rich one for an editor that understands it, the Markdown for one that does
+//: not. Local images are not carried (their addresses mean nothing outside the
+//: app); the HTML download embeds them.
+async function docCopyFormatted() {
+  const box = docSurface();
+  if (!box) return;
+  const picked = box.selectionEnd > box.selectionStart ? box.text.slice(box.selectionStart, box.selectionEnd) : "";
+  const source = docCommentStrip(picked || box.text);
+  const holder = document.createElement("div");
+  renderMarkdown(holder, source);
+  docExportClean(holder);
+  for (const img of holder.querySelectorAll("img")) {
+    if (!/^(https?:|data:)/i.test(img.getAttribute("src") || "")) img.remove();
+  }
+  const html = holder.innerHTML;
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([source], { type: "text/plain" }),
+      }),
+    ]);
+    toast(picked ? "Selection copied with its formatting." : "Document copied with its formatting.", "info");
+  } catch {
+    toast("The browser would not let the app write to the clipboard.", "info");
+  }
+}
+
+// --- Shared clipboard readings --------------------------------------------------
+//
+// The reading of a clipboard's text that does not depend on where it lands:
+// rows and columns, a web address, list marks, an indented outline. The
+// document editor's paste options use them below and the board's use them from
+// whiteboard-commands.js (wbpaste-1026); they live here because this file loads
+// before both in the `library` bundle and app.js's gzip cap leaves no room for
+// another script line. Pure, so node tests them (tests/test_doc_paste.py).
+
+// PASTE-CORE-START
+const PASTE_URL = /^(?:https?:\/\/[^\s<>]+|mailto:[^\s<>]+)$/i;
+const PASTE_BULLET = /^\s*(?:[-*+•·▪●○◦]|\d+[.)]|\[[ xX]\])\s+/;
+
+//: A clipboard's text with the line ends and spaces a web page or Word leaves
+//: behind taken out: CRLF to LF, non-breaking spaces to spaces, no trailing
+//: spaces, no trailing newline.
+function pasteClean(text) {
+  return String(text || "").replace(/\r\n?/g, "\n").replace(/ /g, " ").replace(/[ \t]+$/gm, "").replace(/\n+$/, "");
+}
+
+function pasteUrl(text) {
+  const value = String(text || "").trim();
+  return PASTE_URL.test(value) ? value : "";
+}
+
+function pasteLinkLabel(url) {
+  if (/^mailto:/i.test(url)) return url.slice(7);
+  const m = /^https?:\/\/(?:www\.)?([^/?#]+)/i.exec(url);
+  return m ? m[1] : url;
+}
+
+function pasteLines(text) {
+  return pasteClean(text).split("\n").filter((line) => line.trim());
+}
+
+//: Rows from comma- or tab-separated text, quotes honoured (a quoted cell may
+//: hold the delimiter, a doubled quote and a line break).
+function pasteParseDelimited(text, delim) {
+  const rows = [[]];
+  let cell = "";
+  let quoted = false;
+  const body = String(text).replace(/\r\n?/g, "\n");
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (quoted) {
+      if (ch !== '"') cell += ch;
+      else if (body[i + 1] === '"') { cell += '"'; i++; }
+      else quoted = false;
+    } else if (ch === '"' && !cell) quoted = true;
+    else if (ch === delim) { rows[rows.length - 1].push(cell); cell = ""; }
+    else if (ch === "\n") { rows[rows.length - 1].push(cell); cell = ""; rows.push([]); }
+    else cell += ch;
+  }
+  if (cell || rows[rows.length - 1].length) rows[rows.length - 1].push(cell);
+  while (rows.length && !rows[rows.length - 1].length) rows.pop();
+  return rows.map((row) => row.map((c) => c.replace(/\s*\n\s*/g, " ").trim()));
+}
+
+//: Rows and columns from a spreadsheet copy (tabs) or a CSV (commas, and then
+//: only when every row has the same number of cells). Null for anything else.
+function pasteGrid(text) {
+  const clean = String(text || "").replace(/\r\n?/g, "\n").replace(/\n+$/, "");
+  if (!clean.trim()) return null;
+  const tabbed = clean.includes("\t");
+  const rows = pasteParseDelimited(clean, tabbed ? "\t" : ",");
+  if (!tabbed && (rows.length < 2 || rows[0].length < 2 || rows.some((r) => r.length !== rows[0].length))) return null;
+  return rows.some((r) => r.length > 1) ? rows : null;
+}
+
+//: A line's list mark taken off: a bullet, a number or a checkbox.
+function pasteStripMark(line) {
+  return String(line || "").replace(PASTE_BULLET, "").trim();
+}
+
+//: Lines with their depth, for an indented list: a tab is one level, and
+//: leading spaces count by the smallest step the text uses (2 or 4), so a
+//: copy from an editor with either indent reads the same. Depth never jumps
+//: by more than one below its parent. Marks are taken off.
+function pasteOutline(text) {
+  const rows = pasteClean(text).split("\n").filter((line) => line.trim()).map((line) => {
+    const lead = /^[ \t]*/.exec(line)[0];
+    return { cols: lead.replace(/\t/g, "    ").length, text: pasteStripMark(line) };
+  }).filter((row) => row.text);
+  const steps = rows.map((r) => r.cols).filter((c) => c > 0);
+  const unit = steps.length ? Math.min(...steps) : 4;
+  const out = [];
+  for (const row of rows) {
+    const want = Math.round(row.cols / unit);
+    const cap = out.length ? out[out.length - 1].depth + 1 : 0;
+    out.push({ depth: Math.max(0, Math.min(want, cap)), text: row.text });
+  }
+  return out;
+}
+// PASTE-CORE-END
+
+// --- paste options and Paste special (docpaste-1026) --------------------------
+//
+// **Paste is as good as Word's.** The owner: "What about different paste
+// options on the document editor??" Before this a paste was one thing: rich
+// HTML became Markdown, everything else went in as typed, and the only
+// alternative was Ctrl+Shift+V beforehand. Now a paste that changed form (rich
+// to Markdown, several lines, rows and columns, a web address) leaves a small
+// chip at the caret offering the other readings of the same clipboard, and
+// Paste special in the document menu and the palette applies one on purpose.
+// The pure half runs in node (tests/test_doc_paste.py); the wiring is checked
+// as text and driven by scratchpad/ui-sweeps/docpaste.js.
+
+// DOC-PASTE-PURE-START
+const DOC_PASTE_LANGS = [
+  ["json", /^\s*[[{][\s\S]*[\]}]\s*$/],
+  ["python", /^\s*(?:def |import |from \w+ import |class \w+.*:|if __name__)/m],
+  ["sql", /^\s*(?:select|insert into|update|delete from|create table)\b/i],
+  ["bash", /^\s*(?:\$ |#!\/bin\/|sudo |git |npm |pip |cd )/m],
+  ["html", /^\s*<(?:!doctype|html|div|p|span|ul|a)\b[\s\S]*>/i],
+  ["css", /[\w.#-]+\s*\{[^}]*:[^}]*\}/],
+  ["javascript", /\b(?:const|let|function|console\.log)\b|=>/],
+];
+
+function docPasteGuessLang(text) {
+  const hit = DOC_PASTE_LANGS.find(([lang, re]) => {
+    if (lang !== "json") return re.test(text);
+    try { return re.test(text) && Boolean(JSON.parse(text)); } catch { return false; }
+  });
+  return hit ? hit[0] : "";
+}
+
+//: A fence longer than any run of backticks inside, so code that holds a fence
+//: stays whole.
+function docPasteFence(text, lang) {
+  let size = 3;
+  for (const run of text.match(/`+/g) || []) size = Math.max(size, run.length + 1);
+  const fence = "`".repeat(size);
+  return `${fence}${lang || ""}\n${text}\n${fence}`;
+}
+
+//: The prefix of the line the caret is on that a pasted second line should
+//: carry: a quote's ">" or a list item's hanging indent.
+function docPasteMatch(text, linePrefix) {
+  const lines = pasteClean(text).split("\n");
+  const m = /^(\s*(?:>\s?)+)|^(\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?)/.exec(linePrefix || "");
+  if (!m) return lines.join("\n");
+  const lead = m[1] ? m[1].replace(/\s*$/, " ") : " ".repeat(m[2].length);
+  return lines.map((line, i) => (i && line.trim() ? lead + line : line)).join("\n");
+}
+
+//: Block spacing: a table, a fence or a list needs its own lines. `kind` is
+//: "block" (a blank line either side) or "lines" (a line break either side).
+function docPasteBlockPad(doc, from, to, kind) {
+  const lineStart = doc.lastIndexOf("\n", from - 1) + 1;
+  const lineEnd = doc.indexOf("\n", to) === -1 ? doc.length : doc.indexOf("\n", to);
+  const textBefore = doc.slice(lineStart, from).trim();
+  const textAfter = doc.slice(to, lineEnd).trim();
+  const above = lineStart > 0 ? doc.slice(doc.lastIndexOf("\n", lineStart - 2) + 1, lineStart - 1).trim() : "";
+  const below = lineEnd < doc.length ? doc.slice(lineEnd + 1, doc.indexOf("\n", lineEnd + 1) === -1 ? doc.length : doc.indexOf("\n", lineEnd + 1)).trim() : "";
+  const gap = kind === "block" ? "\n\n" : "\n";
+  return {
+    before: textBefore ? gap : above && kind === "block" ? "\n" : "",
+    after: textAfter ? gap : below && kind === "block" ? "\n" : "",
+  };
+}
+
+const DOC_PASTE_MODES = {
+  plain: (text) => pasteClean(text),
+  source: (text) => String(text || "").replace(/\r\n?/g, "\n"),
+  code: (text) => {
+    const body = pasteClean(text);
+    return body ? docPasteFence(body, docPasteGuessLang(body)) : "";
+  },
+  quote: (text) => pasteLines(text).map((line) => `> ${line}`).join("\n"),
+  checklist: (text) => pasteLines(text).map((line) => `- [ ] ${line.replace(PASTE_BULLET, "").trim()}`).join("\n"),
+  table: (text) => {
+    const grid = pasteGrid(text);
+    return grid ? docTableFromGrid(grid.map((row) => row.map(docTableEscapeCell))) : "";
+  },
+  link: (text, ctx) => {
+    const url = pasteUrl(text);
+    return url ? `[${ctx.selected || pasteLinkLabel(url)}](${url})` : "";
+  },
+  match: (text, ctx) => docPasteMatch(text, ctx.linePrefix),
+};
+
+//: Block modes get their own lines; the rest go in where the caret is.
+const DOC_PASTE_PAD = { code: "block", table: "block", quote: "lines", checklist: "lines" };
+
+//: What `mode` writes for this clipboard text, padded for the document around
+//: the range it replaces. Empty when the clipboard cannot be read that way.
+function docPasteTransform(mode, text, doc, from, to) {
+  const ctx = {
+    selected: doc.slice(from, to).replace(/\s+/g, " ").trim(),
+    linePrefix: doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from),
+  };
+  const out = DOC_PASTE_MODES[mode]?.(text, ctx) || "";
+  if (!out || !DOC_PASTE_PAD[mode]) return out;
+  const pad = docPasteBlockPad(doc, from, to, DOC_PASTE_PAD[mode]);
+  return pad.before + out + pad.after;
+}
+// DOC-PASTE-PURE-END
+
+const DOC_PASTE_LABELS = {
+  keep: "Keep formatting",
+  text: "Text only",
+  match: "Match surrounding",
+  asis: "Keep as pasted",
+  table: "As a table",
+  checklist: "As a checklist",
+  quote: "As a quote",
+  code: "As a code block",
+  link: "As a link",
+  url: "Web address only",
+};
+const DOC_PASTE_KEYS = { keep: "k", text: "t", match: "m", asis: "k", table: "a", checklist: "c", quote: "q", code: "b", link: "l", url: "u" };
+const DOC_PASTE_SPECIAL = [
+  ["plain", "Paste as plain text"],
+  ["source", "Paste as Markdown source, no conversion"],
+  ["match", "Paste matching the surrounding text"],
+  ["code", "Paste as a code block"],
+  ["quote", "Paste as a quote"],
+  ["table", "Paste as a table, from a spreadsheet or CSV"],
+  ["link", "Paste as a link"],
+  ["checklist", "Paste as a checklist, one line per item"],
+];
+
+//: The mode the next real paste applies (Paste special when the browser would
+//: not let the app read the clipboard itself).
+let docPasteArmed = "";
+//: The open chip: {view, from, to, current, variants, el, ctrl}.
+let docPasteChip = null;
+
+function docPasteVariant(id, text) {
+  return { id, key: DOC_PASTE_KEYS[id], label: DOC_PASTE_LABELS[id], text };
+}
+
+function docPasteChipClose() {
+  const chip = docPasteChip;
+  if (!chip) return;
+  docPasteChip = null;
+  chip.el.remove();
+  document.removeEventListener("keydown", chip.onKey, true);
+  document.removeEventListener("keyup", chip.onKeyUp, true);
+  document.removeEventListener("mousedown", chip.onMouse, true);
+  chip.view.scrollDOM.removeEventListener("scroll", chip.onScroll);
+  window.removeEventListener("resize", chip.onScroll);
+}
+
+function docPasteChipPlace(chip) {
+  const at = chip.view.coordsAtPos(chip.to);
+  const box = chip.view.scrollDOM.getBoundingClientRect();
+  if (!at || at.bottom < box.top || at.top > box.bottom) {
+    chip.el.classList.add("hidden");
+    return;
+  }
+  chip.el.classList.remove("hidden");
+  const w = chip.el.offsetWidth;
+  const h = chip.el.offsetHeight;
+  const left = Math.max(8, Math.min(at.left, window.innerWidth - w - 8));
+  const below = at.bottom + 6;
+  const top = below + h > window.innerHeight - 8 ? Math.max(8, at.top - h - 6) : below;
+  chip.el.style.left = `${left}px`;
+  chip.el.style.top = `${top}px`;
+}
+
+//: Swap the pasted range for another reading. One undo step; the chip stays so
+//: the writer can try another. A range that no longer holds what was pasted
+//: (the document moved under it) closes the chip instead of guessing.
+function docPasteChoose(chip, variant) {
+  const { view } = chip;
+  const now = chip.variants.find((v) => v.id === chip.current);
+  if (!now || view.state.doc.sliceString(chip.from, chip.to) !== now.text) {
+    docPasteChipClose();
+    return;
+  }
+  docUndoBreak();
+  view.dispatch({
+    changes: { from: chip.from, to: chip.to, insert: variant.text },
+    selection: { anchor: chip.from + variant.text.length },
+    userEvent: "input.paste",
+    scrollIntoView: true,
+  });
+  chip.to = chip.from + variant.text.length;
+  chip.current = variant.id;
+  view.focus();
+  docPasteChipPlace(chip);
+}
+
+function docPasteChipMenu(chip) {
+  const rect = chip.el.getBoundingClientRect();
+  const items = chip.variants
+    .filter((v) => v.id !== chip.current)
+    .map((v) => ({ label: `${v.label} (${v.key.toUpperCase()})`, run: () => docPasteChoose(chip, v) }));
+  openMenuAtPoint(items, "Paste options", rect.left, rect.bottom + 2);
+}
+
+function docPasteMenuOpen() {
+  return Boolean(document.querySelector(".pointer-menu-host .action-menu:not(.hidden)"));
+}
+
+//: Keys while the chip is up. Ctrl on its own opens the menu (as Word's does);
+//: with the menu open a variant's letter picks it; Escape or any other key is
+//: the writer going back to writing.
+function docPasteChipKey(chip, event) {
+  if (event.key === "Control") {
+    chip.ctrl = !event.repeat;
+    return;
+  }
+  chip.ctrl = false;
+  if (["Shift", "Alt", "Meta"].includes(event.key)) return;
+  const inMenu = event.target instanceof Element && event.target.closest(".action-menu");
+  if (inMenu || docPasteMenuOpen()) {
+    const hit = !event.ctrlKey && !event.metaKey && chip.variants.find((v) => v.id !== chip.current && v.key === event.key.toLowerCase());
+    if (hit) {
+      event.preventDefault();
+      closeActionMenus();
+      docPasteChoose(chip, hit);
+    }
+    return;
+  }
+  docPasteChipClose();
+}
+
+function docPasteOffer(view, from, to, current, variants) {
+  docPasteChipClose();
+  if (variants.length < 2) return;
+  const el = document.createElement("div");
+  el.className = "doc-paste-chip";
+  const opener = smallButton("ph:clipboard-text Paste options", "Paste options: other ways to paste this (Ctrl)", () => docPasteChipMenu(chip));
+  opener.setAttribute("aria-haspopup", "menu");
+  el.appendChild(opener);
+  document.body.appendChild(el);
+  const chip = { view, from, to, current, variants, el, ctrl: false };
+  chip.onKey = (event) => docPasteChipKey(chip, event);
+  chip.onKeyUp = (event) => {
+    if (event.key === "Control" && chip.ctrl) docPasteChipMenu(chip);
+    chip.ctrl = false;
+  };
+  chip.onMouse = (event) => {
+    if (!el.contains(event.target) && !(event.target instanceof Element && event.target.closest(".action-menu"))) docPasteChipClose();
+  };
+  chip.onScroll = () => docPasteChipPlace(chip);
+  document.addEventListener("keydown", chip.onKey, true);
+  document.addEventListener("keyup", chip.onKeyUp, true);
+  document.addEventListener("mousedown", chip.onMouse, true);
+  view.scrollDOM.addEventListener("scroll", chip.onScroll, { passive: true });
+  window.addEventListener("resize", chip.onScroll);
+  docPasteChip = chip;
+  docPasteChipPlace(chip);
+}
+
+function docPasteWrite(view, from, to, text) {
+  docUndoBreak();
+  view.dispatch({
+    changes: { from, to, insert: text },
+    selection: { anchor: from + text.length },
+    userEvent: "input.paste",
+    scrollIntoView: true,
+  });
+}
+
+//: The variants a multi-line or tabular clipboard offers, in the order a
+//: writer reaches for them. Each is the text that would replace the pasted
+//: range, already padded for the document around it.
+function docPasteTextVariants(plain, doc, from, to) {
+  const asis = String(plain).replace(/\r\n?/g, "\n");
+  const out = [docPasteVariant("asis", asis)];
+  for (const mode of ["table", "checklist", "quote", "code"]) {
+    const text = docPasteTransform(mode, plain, doc, from, to);
+    if (text && text !== asis) out.push(docPasteVariant(mode, text));
+  }
+  return out;
+}
+
+//: Two or more rows of the same two or more tab-separated cells, and not
+//: every row led by a tab (that is indented code, not a sheet).
+function docPasteIsTsvGrid(plain) {
+  const rows = String(plain).replace(/\r\n?/g, "\n").replace(/\n+$/, "").split("\n").map((r) => r.split("\t"));
+  return rows.length >= 2 && rows[0].length >= 2 && rows.every((r) => r.length === rows[0].length) && !rows.every((r) => r[0] === "");
+}
+
+function docPasteIsLinewise(plain) {
+  return typeof DOC_LINE_CLIP !== "undefined" && DOC_LINE_CLIP.text && plain === DOC_LINE_CLIP.text;
+}
+
+//: A web address over selected words makes a link; with nothing selected it is
+//: pasted bare and the chip offers the link form.
+function docPasteUrlEvent(event, view, url, plain) {
+  const sel = view.state.selection.main;
+  const doc = view.state.doc.toString();
+  const selected = doc.slice(sel.from, sel.to);
+  event.preventDefault();
+  if (selected.trim() && !selected.includes("\n")) {
+    const link = docPasteTransform("link", url, doc, sel.from, sel.to);
+    docPasteWrite(view, sel.from, sel.to, link);
+    docPasteOffer(view, sel.from, sel.from + link.length, "link", [docPasteVariant("link", link), docPasteVariant("url", plain.trim())]);
+    return true;
+  }
+  docPasteWrite(view, sel.from, sel.to, plain.trim());
+  const link = docPasteTransform("link", url, doc, sel.from, sel.to);
+  docPasteOffer(view, sel.from, sel.from + plain.trim().length, "url", [docPasteVariant("url", plain.trim()), docPasteVariant("link", link)]);
+  return true;
+}
+
+//: The handler between the table's and the rich one's: Paste special's armed
+//: mode, a web address, and plain text of several lines or rows.
+function docSmartPasteEvent(event, view) {
+  const armed = docPasteArmed;
+  docPasteArmed = "";
+  const data = event.clipboardData;
+  const plain = data?.getData("text/plain") || "";
+  const sel = view.state.selection;
+  if (!plain || view.state.readOnly || sel.ranges.length !== 1 || view.dom.classList.contains("doc-content-code")) return false;
+  if (armed) {
+    docPasteSpecialApply(view, armed, plain);
+    event.preventDefault();
+    return true;
+  }
+  if (docPastePlain || docPasteIsLinewise(plain)) return false;
+  const url = pasteUrl(plain);
+  if (url) return docPasteUrlEvent(event, view, url, plain);
+  const html = data.getData("text/html") || "";
+  if (html && docHtmlIsRich(html)) return false;
+  if (pasteLines(plain).length < 2) return false;
+  const { from, to } = sel.main;
+  let variants = docPasteTextVariants(plain, view.state.doc.toString(), from, to);
+  //: Tab-separated rows in a rectangle (a spreadsheet copied with no HTML
+  //: table) become the table; the chip's other rows put the text back.
+  const tabbed = docPasteIsTsvGrid(plain) && variants.find((v) => v.id === "table");
+  if (tabbed) variants = [tabbed, ...variants.filter((v) => v !== tabbed)];
+  event.preventDefault();
+  docPasteWrite(view, from, to, variants[0].text);
+  docPasteOffer(view, from, from + variants[0].text.length, tabbed ? "table" : "asis", variants);
+  return true;
+}
+
+//: After a rich paste became Markdown (documents.js): the other two readings.
+function docPasteOfferRich(view, from, markdown, plain) {
+  const doc = view.state.doc.toString();
+  const prefix = doc.slice(doc.lastIndexOf("\n", from - 1) + 1, from);
+  const text = pasteClean(plain || "");
+  const match = docPasteMatch(text, prefix);
+  const variants = [docPasteVariant("keep", markdown)];
+  if (text && text !== markdown) variants.push(docPasteVariant("text", text));
+  if (match && match !== text && match !== markdown) variants.push(docPasteVariant("match", match));
+  docPasteOffer(view, from, from + markdown.length, "keep", variants);
+}
+
+//: After a spreadsheet's rows became a table outside one (documents.js).
+function docPasteOfferTable(view, from, inserted, plain) {
+  const raw = String(plain).replace(/\r\n?/g, "\n");
+  docPasteOffer(view, from, from + inserted.length, "table", [docPasteVariant("table", inserted), docPasteVariant("text", raw)]);
+}
+
+function docPasteSpecialApply(view, mode, text) {
+  const sel = view.state.selection.main;
+  const doc = view.state.doc.toString();
+  const out = docPasteTransform(mode, text, doc, sel.from, sel.to);
+  if (!out) {
+    const why = { table: "Nothing on the clipboard reads as rows and columns.", link: "The clipboard does not hold a web address." };
+    toast(why[mode] || "Nothing to paste.", "info");
+    return false;
+  }
+  docPasteChipClose();
+  docPasteWrite(view, sel.from, sel.to, out);
+  return true;
+}
+
+//: Paste special. Reads the clipboard when the browser allows it; otherwise the
+//: next Ctrl+V applies the mode, so it works with no permission at all.
+async function docPasteSpecial(mode) {
+  const view = docSurface()?.view;
+  if (!view || view.dom.classList.contains("doc-content-code")) {
+    toast("Paste special works in a document, not in a code file.", "info");
+    return;
+  }
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    text = "";
+  }
+  view.focus();
+  if (text) {
+    docPasteSpecialApply(view, mode, text);
+    return;
+  }
+  docPasteArmed = mode;
+  const label = DOC_PASTE_SPECIAL.find(([id]) => id === mode)?.[1] || "Paste special";
+  toast(`Press Ctrl+V: ${label.toLowerCase()}.`, "info");
+}
+
+//: The document menu's Paste special row: the seven modes as one menu, opened
+//: at the caret (the document menu has closed by the time it draws).
+function docPasteSpecialMenu() {
+  const view = docSurface()?.view;
+  const at = view?.coordsAtPos(view.state.selection.main.head);
+  openMenuAtPoint(
+    DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, run: () => docPasteSpecial(id) })),
+    "Paste special",
+    at ? at.left : window.innerWidth / 2,
+    at ? at.bottom + 4 : window.innerHeight / 3
+  );
+}
+
+//: **Turn into** (Notion's block menu): the block at the caret, or every line
+//: the selection touches, becomes a paragraph, heading, list, task, quote,
+//: callout or code block from one place. The markers come from `MD_ACTIONS`
+//: (the one table that decides what `#` and `- [ ]` mean); what this adds is
+//: the step the toolbar buttons lack, taking the old marker off first, so a
+//: heading turned into a list is a list and not `- ## text`. One edit, so
+//: one undo.
+const DOC_TURN_INTO = [
+  ["paragraph", "ph:text-t Paragraph"],
+  ["h1", "ph:text-h-one Heading 1"],
+  ["h2", "ph:text-h-two Heading 2"],
+  ["h3", "ph:text-h-three Heading 3"],
+  ["ul", "ph:list-bullets Bulleted list"],
+  ["ol", "ph:list-numbers Numbered list"],
+  ["task", "ph:check-square To-do list"],
+  ["quote", "ph:quotes Quote"],
+  ["callout", "ph:warning-circle Callout"],
+  ["codeblock", "ph:code-block Code block"],
+];
+const DOC_BLOCK_MARK = /^(\s*)(?:#{1,6} |[-*+] \[[ xX]\] |[-*+] |\d+[.)] |> \[![\w-]+\][+-]? ?|>+ ?)/;
+
+function docTurnIntoLines(lines, kind) {
+  const plain = lines.map((line) => line.replace(DOC_BLOCK_MARK, "$1"));
+  const spec = MD_ACTIONS[kind === "callout" ? "quote" : kind];
+  if (kind === "paragraph") return plain;
+  if (kind === "codeblock") return ["```", ...plain, "```"];
+  const marked = plain.map((line) => (line.trim() ? spec.line + line : line));
+  if (kind === "callout") {
+    const at = marked.findIndex((line) => line.trim());
+    //: The title line of `> [!note] `, taken from the callout row of the table.
+    if (at >= 0) marked[at] = MD_ACTIONS.callout.block + marked[at].slice(spec.line.length);
+    else marked.push(MD_ACTIONS.callout.block.trimEnd());
+  }
+  return marked;
+}
+
+function docTurnInto(kind, boxId = "doc-content") {
+  const box = docSurfaceById(boxId);
+  if (!box || !DOC_TURN_INTO.some(([id]) => id === kind)) return;
+  const { selectionStart: from, selectionEnd: to, value } = box;
+  const start = value.lastIndexOf("\n", from - 1) + 1;
+  const stop = value.indexOf("\n", to > from && value[to - 1] === "\n" ? to - 1 : to);
+  const end = stop === -1 ? value.length : stop;
+  const before = value.slice(0, start).split("\n").filter((line) => /^\s*(```|~~~)/.test(line)).length;
+  if (before % 2 || /^\s*(```|~~~)/.test(value.slice(start, end))) {
+    toast("Move out of the code block first.", "info");
+    return;
+  }
+  docUndoBreak();
+  const next = docTurnIntoLines(value.slice(start, end).split("\n"), kind).join("\n");
+  box.value = value.slice(0, start) + next + value.slice(end);
+  box.setSelectionRange(start, start + next.length);
+  finishMarkdownEdit(box, boxId);
+}
+
+//: The menu, from the app's pointer-menu recipe. Opened from the selection
+//: bar (under its button), the palette (at the caret) or the right-click menu.
+function docTurnIntoMenu(boxId = "doc-content", x = null, y = null) {
+  const box = docSurfaceById(boxId);
+  //: A button as the anchor: hung under it, or above it on the phone's foot bar.
+  if (x instanceof Element) {
+    const rect = x.getBoundingClientRect();
+    const foot = Boolean(x.closest(".doc-phone-bar"));
+    [x, y] = [rect.left, foot ? rect.top - 8 : rect.bottom + 4];
+  }
+  let at = null;
+  if (x == null && box?.view) at = box.view.coordsAtPos(box.view.state.selection.main.head);
+  openMenuAtPoint(
+    DOC_TURN_INTO.map(([id, label]) => ({ label, run: () => docTurnInto(id, boxId) })),
+    "Turn into",
+    x ?? (at ? at.left : window.innerWidth / 2),
+    y ?? (at ? at.bottom + 4 : window.innerHeight / 3)
+  );
+}
+
+//: **The editor's own right-click menu** (docs6-1026: "paste options on right-click").
+//: Cut, Copy, Paste, the Paste special modes, Turn into, Select all. Opened by
+//: `docEditorMenuAtPoint` (documents.js) after the table's menu and the
+//: suggestion popover have declined; Shift+right-click keeps the browser's.
+async function docEditorPaste(view) {
+  let text = "";
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    toast("The browser blocked reading the clipboard. Press Ctrl+V instead.", "info");
+    view.focus();
+    return;
+  }
+  view.focus();
+  if (!text) return;
+  //: One undo step: the break keeps this paste from merging into typing.
+  docUndoBreak();
+  view.dispatch(view.state.replaceSelection(text.replace(/\r\n?/g, "\n")));
+}
+
+function docEditorMenuItems(view, x, y) {
+  const [cut, copy] = docClipboardMenuItems(view);
+  return [
+    { ...cut, label: "Cut" },
+    { ...copy, label: "Copy" },
+    { label: "Paste", group: "Clipboard", title: "Paste the clipboard as plain text", run: () => docEditorPaste(view) },
+    ...DOC_PASTE_SPECIAL.map(([id, label]) => ({ label, group: "Paste special", run: () => docPasteSpecial(id) })),
+    { label: "Turn into", group: "Block", title: "Change the block to a heading, list, quote or code", run: () => docTurnIntoMenu("doc-content", x, y) },
+    {
+      label: "Select all",
+      group: "Block",
+      run: () => {
+        view.dispatch({ selection: { anchor: 0, head: view.state.doc.length } });
+        view.focus();
+      },
+    },
+  ];
 }

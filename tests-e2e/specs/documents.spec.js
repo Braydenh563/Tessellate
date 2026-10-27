@@ -22,10 +22,10 @@ test("Library, Create, New document makes a new document, not the last one opene
   await page.locator(".rich-picker-row", { hasText: "New document" }).click();
   await expect(page.locator("#tab-documents")).toBeVisible();
   const title = `Packing plan ${Date.now() % 100000}`;
-  // The title box is focused and selected for a new document, which names
-  // itself "Untitled document N" (INBOX 739).
+  // The title box is focused and empty: a new document is only made on its
+  // first edit (dogfood 1025 item 16), so a cancelled one leaves no row.
   await expect(page.locator("#doc-title")).toBeFocused();
-  await expect(page.locator("#doc-title")).toHaveValue(/^Untitled document \d+$/);
+  await expect(page.locator("#doc-title")).toHaveValue("");
   await page.keyboard.insertText(title);
   await page.locator('#tab-documents .cm-content[aria-label="Document text"]').click();
   await page.keyboard.insertText("Passports, chargers, the rail pass.");

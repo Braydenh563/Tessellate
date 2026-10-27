@@ -422,7 +422,7 @@ def test_it_can_be_petted_tossed_and_watches_a_near_pointer() -> None:
     # let-go is a drop; its eyes stay on a near pointer, and with Faces
     # follow the pointer off a pointer passing is not followed.
     build = _fn("nameMarkBuddyBuild")
-    assert "}, NMB_PET_MS);" in build and "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in build
+    assert "}, NMB_PET_MS);" in build and "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in build
     assert "Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED" in build
     pet = _fn("nameMarkBuddyPet")
     assert "nameMarkBuddyStill()" in pet and "15000" in pet
@@ -584,7 +584,7 @@ def test_reduce_actions_and_atlas_stances_at_rest():
     # Fewer is a third, except in its large view, where it is watched.
     assert "if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;" in decide
     assert "if (stance && (!nmb.atlasLook || nmb.atlasLook !== stance.look)) w = 0;" in decide
-    for stance, look in (("fold", "masculine"), ("hip", "masculine"), ("clasp", "feminine"), ("sway", "feminine")):
+    for stance, look in (("hips", "masculine"), ("hip", "masculine"), ("clasp", "feminine"), ("sway", "feminine")):
         assert f'{stance}: {{ ms:' in AV and f'look: "{look}" }}' in AV
         assert f"#nm-buddy.nmb-act-{stance} " in CSS08
 
@@ -955,12 +955,85 @@ def test_it_lies_down_to_sleep_where_there_is_room_and_moves_by_its_look() -> No
     # button dozes where it is; a 160px walk as you takes 898ms masculine and
     # 754 feminine (a deeper and a lighter bob), Atlas's float 788 and 662.
     act = _fn("nameMarkBuddyAct")
-    assert 'if (act === "nap" && !nameMarkBuddyActOff("lie") && nameMarkBuddyLieRoom()) act = "lie";' in act
+    assert 'const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";' in act
+    assert 'if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";' in act
     assert "nameMarkBuddyLieRoom()" in _fn("nameMarkBuddyTick")
     assert 'if (nmb.pose !== "stand" || nmb.legs' in _fn("nameMarkBuddyLieRoom")
+
+
+def test_it_lies_only_where_its_whole_body_is_on_its_perch() -> None:
+    # K25, the owner: "my companion shadow is wrong, the hair is showing from
+    # the behind the hat, and it is hanging off the ui element it is perched
+    # on". Measured on the board's tool dock (332 to 1108px, 1440 wide): lying
+    # from its left end it reached 18px past the dock's left edge (only its
+    # legs on it), while the shadow sat under its standing feet and the dark
+    # glow 37px above the body. Now the side that fits is chosen (head right
+    # there: 338 to 430), the shadow and glow are centred on the body (within
+    # 2px), and the hair above a hat's brim is not drawn.
+    room = _fn("nameMarkBuddyLieRoom")
+    assert "const NMB_LIE_SPAN = { left: [-42, 70], right: [-6, 106] };" in AV
+    assert "return left >= lo && right <= hi && !obstacles.some(" in room
+    assert 'buddy.dataset.lie = "r"' in _fn("nameMarkBuddyLieDown")
+    assert 'buddy.dataset.atlasVariant = side === "left" ? "1" : "0";' in _fn("nameMarkBuddyLieDown")
+    assert "if (x < lo || x > hi) continue;" in _fn("nameMarkBuddyStepAside")
+    assert '#nm-buddy.nmb-act-lie[data-lie="r"] .nm-buddy-char { transform: translate(-34px, -30px) rotate(90deg); }' in CSS08
+    assert '[data-pose="lie"][data-atlas-variant="1"])::before { left: -26px; right: -2px;' in CSS08
+    assert "var(--atl-v1)); right: calc(-46px" not in CSS08
+    # Hair under a hat: clipped at the brim; under the nightcap, its crown
+    # is a piece of its own, hidden while the cap shows; no cap over a hat.
+    assert "const NM_HAT_BRIM = {" in AV and ".nmc-hair-crown, " in AV
+    assert "hairUnder(back, backHair);" in AV and "hairUnder(torso, frontHair);" in AV
+    assert "if (capSlot) {" in AV
+    assert ":not(.nmb-cap-off) .nmc-hair-crown," in CSS08
     assert "NMB_GAIT_PACE[buddy.dataset.gait]" in _fn("nameMarkBuddyGo")
     assert '&[data-gait="masculine"].nmb-walking .nm-buddy-char { animation: nmb-bob-heavy' in CSS08
     assert '&[data-gait="feminine"].nmb-walking .nm-buddy-char { animation: nmb-bob-light' in CSS08
+
+
+def test_asleep_reads_as_asleep_without_the_zs() -> None:
+    # K25b, the owner: "my character is sleeping but i cant tell other than
+    # for the zzzz". Measured asleep before: head 10deg, eyes open (the blink
+    # loop's `transform` outranked the sleep rule's scaleY), shades still on,
+    # hanging arms-up. Now (sleep.js probe, 1440 and 720, both themes): head
+    # 14deg with a breathing bob, eyes `scale: 1 0.12`, shades 10px up, and
+    # hanging by one hand with the sloth sway (slowed, not stopped, under
+    # reduced motion, as its other loops are: the switch decides).
+    sleepy = "#nm-buddy:is(.nmb-sleep, .nmb-act-nap, .nmb-act-lie)"
+    assert f"{sleepy} .nm-buddy-head {{ rotate: 14deg; }}" in CSS08
+    assert f"{sleepy} .nm-blinks {{ scale: 1 0.12; }}" in CSS08
+    assert ".name-mark .nm-blinks {\n  animation: none;\n  transform: scaleY(0.12)" not in CSS08
+    for state, k in (("night", "0.72"), ("drowsy", "0.55")):
+        assert f"#nm-buddy.nmb-{state} .name-mark .nm-blinks {{ scale: 1 {k}; }}" in CSS08
+    assert f"{sleepy} .nmc-lids {{ opacity: 1; }}" in CSS08
+    assert f"{sleepy} .nm-eyewear {{ translate: 0 -10px; }}" in CSS08
+    assert '[data-pose="hang"]:is(.nmb-act-scratch, .nmb-sleep)) .nmb-hold-r { opacity: 0; }' in CSS08
+    assert '&[data-pose="hang"].nmb-sleep .nm-buddy-char { animation: nmb-sloth 9s ease-in-out infinite; }' in CSS08
+    assert ".nm-char .nm-buddy-head { animation: nm-breathe 6.4s ease-in-out infinite; }" in CSS08
+    # The shades sit on the face, so they tilt with it (K14 too).
+    assert 'make("g", { class: "nm-eyewear" }, head)' in AV
+    assert ".nm-eyewear, .nmc-lids`" in AV
+
+
+def test_accessories_go_with_the_face_and_a_book_is_held_in_the_hands() -> None:
+    # K14, the owner: "the sunglasses and accessories dont move with the
+    # face", "now hes wearing two sets of glasses", and the book "below
+    # them which doesnt make sense". Measured (read.js probe, 1440 light and
+    # 720 dark): reading glasses gone under worn shades (null), shown
+    # without; the "me" book at the hands in front of the belly (figure y 55
+    # to 70, hands at y 68.5 with the arms in 30deg); Atlas's book in front
+    # of the body at its hands (y 52 to 60, hands at y 56), not under its feet.
+    assert "if (eyes.length === 2 && !eyewear) {" in AV
+    for prop in ("eyepatch", "ninjamask"):
+        block = AV[AV.index(f'if (props.includes("{prop}")') :][:600]
+        assert ", top)" not in block.split("\n  }")[0], prop
+    assert 'make("path", { d: "M17 55 L32 58 L47 55 L47 67 L32 70 L17 67 Z"' in AV
+    assert "#nm-buddy:is(.nmb-act-read, .nmb-reading) .nmb-arm-r { transform: rotate(30deg); }" in CSS08
+    assert "#nm-buddy:is(.nmb-reading, .nmb-act-read) .nmp-book," in CSS08
+    atlas = (ROOT / "frontend" / "js" / "atlas.js").read_text(encoding="utf-8")
+    assert "atlasBookProp(back.fill)" not in atlas and "atlasBookProp(frontAt.fill);" in atlas
+    book = atlas[atlas.index("function atlasBookProp(") :][:900]
+    ys = [float(y) for y in re.findall(r"cy: ([\d.]+)", book)]
+    assert ys and all(50 <= y <= 60 for y in ys), ys
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -1106,8 +1179,8 @@ def test_sleep_holds_through_input_moves_and_tab_switches() -> None:
     css = CSS08
     assert ":is(.nm-atlas.atl-easing, #nm-buddy.nmb-easing .nm-atlas) :is(.atl-eye-open," in css
     assert "#nm-buddy.nmb-pout .nm-atlas {" in css and "#nm-buddy.nmb-grumpy .nm-atlas {" in css
-    # Grumpy comes down through a pout.
-    assert "nameMarkBuddyPout(buddy, 5000);" in AV
+    # Grumpy comes down through a short pout (INBOX 1402: a sulk is brief).
+    assert "nameMarkBuddyPout(buddy, 2000);" in AV
 
 
 def test_out_of_sight_never_cancels_the_tab_follow() -> None:
@@ -1189,7 +1262,7 @@ def test_the_atlas_hooks_are_wired() -> None:
     assert 'nameMarkBuddyFrames(buddy, ["curl-1", "curl"]);' in _fn("nameMarkBuddyCurlUp")
     assert "nameMarkBuddyKeepFrame(buddy);" in _fn("nameMarkBuddyMoveTo")
     assert "buddy.dataset.atlasVariant = String(nameMarkBuddyPickVariant(3," in _fn("nameMarkBuddyMoveTo")
-    assert 'if (act === "lie") nameMarkBuddyLieDown(buddy);' in _fn("nameMarkBuddyAct")
+    assert 'if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);' in _fn("nameMarkBuddyAct")
     assert "nameMarkBuddyCurlUp(buddy)" in _fn("nameMarkBuddyTick") and "nameMarkBuddyGetUp(buddy)" in _fn("nameMarkBuddyWake")
     assert "if (/^(lie|curl)/.test(buddy.dataset.pose || \"\")) buddy.dataset.pose = nmb.pose;" in _fn("nameMarkBuddyHalt")
     assert "#nm-buddy.nmb-act-lie:has(.atl-figure-box) .nm-buddy-char { transform: none; }" in CSS08
@@ -1679,9 +1752,12 @@ def test_nothing_runs_behind_the_lock_and_an_idle_page_is_not_polled() -> None:
     # touched, under the lock screen too, and Atlas's tail asked for a frame
     # sixty times a second at rest.
     poll = AV[AV.index("const NMB_CHECK_IDLE_MS") :]
-    poll = poll[: poll.index("}, 1500);")]
+    poll = poll[: poll.index("\nnmbTickArm(1500);\n")]
     assert "nameMarkBuddyCurtained()" in poll and "document.hidden" in poll
-    assert "!nmb.checkDue" in poll and "NMB_CHECK_IDLE_MS" in poll
+    assert "nmb.checkDue" in poll and "NMB_CHECK_IDLE_MS" in poll
+    # Battery (INBOX 1351): armed, not a fixed 1.5s interval; hidden arms nothing.
+    assert "setInterval" not in poll and "document.hidden ? 0 : setTimeout" in poll
+    assert "is-idle" in poll
     assert "nameMarkBuddyLockSync();" in _fn("nameMarkBuddyBuild")
     assert '"none"' in _fn("nameMarkBuddyLockSync")
     life = (ROOT / "frontend" / "js" / "atlas-life.js").read_text(encoding="utf-8")
@@ -1774,3 +1850,13 @@ def test_a_flight_frame_never_restyles_the_whole_figure():
     throw = frontend_text("companion-throw.js")
     assert avatars.count("nameMarkBuddySway(buddy,") + throw.count("nameMarkBuddySway(buddy,") >= 5
     assert 'setProperty("--nmb-sway"' not in throw
+
+
+def test_marks_hold_still_after_two_minutes_without_input_unless_busy() -> None:
+    # Battery (INBOX 1351): an infinite breathe keeps the compositor producing
+    # frames on a page nobody touches.
+    css = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
+    at = css.index(".is-idle .emblem-art")
+    rule = css[css.rindex("\n", 0, at) : css.index("{", at)]
+    assert ":not(.is-busy)" in rule and 'data-motion="reduced"' in rule
+    assert "NMB_IDLE_MARK_MS = 120000" in AV and 'classList.remove("is-idle")' in AV

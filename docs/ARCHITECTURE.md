@@ -36,8 +36,8 @@ These are the constraints that shaped every decision. When in doubt, they win.
    opt-in features can reach the internet, web search and the update check:
    web search is off by default, the update check waits for the answer to a
    question the first start asks once, and both are clearly marked. The rest is a short list of
-   one-off downloads that you start (a model, an optional package) or that the
-   search model makes on first use; [PRIVACY.md](PRIVACY.md) lists them all and
+   one-off downloads that you start (a model, an optional package) or say yes to
+   (the search model, asked once); [PRIVACY.md](PRIVACY.md) lists them all and
    Settings, Privacy records every connection the app makes. When web search
    *is* on it is built to reveal as little as possible: an ordinary
    browser User-Agent rather than one naming the app, no cookie jar, no
@@ -386,12 +386,16 @@ Tessellate/
 │   ├── whiteboard-commands.js · whiteboard-format.js · whiteboard-library.js ·
 │   │   whiteboard-interchange.js # the board's command table, Format panel,
 │   │                        #   object library, and Mermaid/SVG/outline in and out
+│   ├── mermaid-frame.js · mermaid-draw.js # every ```mermaid fence: a hidden same-origin
+│   │                        #   frame (own policy) runs vendor/mermaid, loaded on first use
+│   ├── task-steps.js · gesture-kit.js · lag-watch.js · screen-context.js # task steps,
+│   │                        #   shared pointer gestures, the slow-frame log, what the Guide sees
 │   ├── sw.js · manifest.webmanifest # PWA
 │   ├── css/                 # eleven files, 00-tokens-shell to 10-responsive;
 │   │                        #   index.html's <link> order is load-bearing; and
-│   │                        #   three lazy sheets (icon-picker, library-lazy,
-│   │                        #   nav-history-lazy) fetched with their scripts
-│   └── vendor/              # d3 v7, p5, CodeMirror, Phosphor icons, the
+│   │                        #   lazy sheets (icon-picker, library-lazy,
+│   │                        #   nav-history-lazy, mermaid-lazy, glass-controls-lazy, math-editor-lazy, web-lazy) fetched with their scripts
+│   └── vendor/              # d3 v7, p5, CodeMirror, Mermaid 12.2.0, Phosphor icons, the
 │                            #   spelling wordlist: local, never a CDN
 ├── tests/                   # pytest; every AI call faked (tests/fakes.py)
 ├── tests-e2e/               # the Playwright smoke suite CI runs
@@ -511,7 +515,7 @@ job is not a task, and a screen that accumulates them is the Logs screen.
 `ai/tools/` (a package now: `__init__.py` plus `categories.py`,
 `documents.py`, `files.py`, `whiteboard.py`, `_common.py`, split out once the
 registry outgrew one file) defines a registry the chat model can call:
-**65 tools**. Read-only tools run inline; the **destructive** ones (marked
+**72 tools**. Read-only tools run inline; the **destructive** ones (marked
 ⚠️ below) emit a confirmation event to the UI instead of executing. The
 registry's `destructive` flag is the one list: a change after a turn has read
 text from outside (a web page, a clipped or imported note) waits for the same
@@ -569,6 +573,14 @@ notebook's structure rather than only search it
 instead of guessing which note you meant; `compress_chat` ·
 `save_user_preference`: a standing instruction ("always answer in British
 English") remembered across conversations
+
+*Help, sums and checks:* `search_help`: how a feature or setting works, from the Guide;
+`calculate`: a sum, percentage, unit or currency conversion, or count of days, worked out the
+way the app does; `check_answer`: a draft answer against its sources, naming any number or
+name they do not contain
+
+*Proposing a change:* `propose_act` (one change in the person's words, shown as a card they
+confirm) and `move_notes` (into a category or a space; the app asks first)
 
 *Online (opt-in, off by default):* `web_search` · `read_url`
 
@@ -1162,8 +1174,8 @@ its JSON API, and `websearch.probe_searxng` returns True against it.
 - **Chat model:** any model installed in **[Ollama](https://ollama.com)**
   (default `llama3.2`). Talked to over the local REST API via
   `ai/ollama_client.py`. Used by the janitor, librarian, and agent.
-- **Embeddings:** default `BAAI/bge-small-en-v1.5` via `sentence-transformers`
-  (auto-downloads on first use). **Nothing user-facing may hard-code that
+- **Embeddings:** default `BAAI/bge-small-en-v1.5` via `fastembed` (its ONNX
+  build, `Qdrant/bge-small-en-v1.5-onnx-Q`, downloaded after a yes). **Nothing user-facing may hard-code that
   name**: it was `all-MiniLM-L6-v2` once, and the Models screen went on
   saying so long after it changed, so the only way to find out what was
   really running was to watch it download in the log. Ask
@@ -1381,7 +1393,7 @@ style, optional AI profile, …) live in `data/preferences.json`, managed by
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 830 files, 9,200+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 12,400+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,

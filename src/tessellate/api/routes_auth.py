@@ -23,10 +23,11 @@ import re
 import secrets
 import threading
 import time
+import urllib.parse
 from pathlib import Path
 
 import bcrypt
-from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -100,10 +101,23 @@ _active_tokens: dict[str, list[float]] = {}
 # A ticket lives exactly as long as its session: it names one, and the gate
 # checks that session is still live on every use.
 MEDIA_COOKIE = "memorymap_media"
-MEDIA_COOKIE_PATHS = ("/media", "/files")
+# `/mermaid-frame` too: the diagram frame is a page load, which sends no header.
+MEDIA_COOKIE_PATHS = ("/media", "/files", "/mermaid-frame")
 # ticket -> the session token it was issued for
 _media_tickets: dict[str, str] = {}
 register_cache_reset(_media_tickets.clear)
+
+# The desktop window's "Open in a new tab" hands the link to the system
+# browser, a different cookie jar with no media cookie (the owner,
+# 2026-10-27: the tab said "The app is locked"). A one-file link carries a
+# `once` ticket instead: it opens that one path only, for two minutes, while
+# its session lives; never the session token, never the API. Reusable inside
+# its life because a PDF viewer asks for ranges more than once.
+MEDIA_LINK_SECONDS = 120
+# ticket -> (decoded path, expiry, session token)
+_media_links: dict[str, tuple[str, float, str]] = {}
+register_cache_reset(_media_links.clear)
+_MEDIA_LINK_PATH = re.compile(r"/(?:media|files)/[A-Za-z0-9._~%/-]+")
 # Module state, not app state, so `deps.reset_app_state()` (the thing every
 # test's `app_state` fixture calls) threw the database away and kept the
 # tokens. Any test that ran `/auth/setup` before `test_account.py` in the same
@@ -246,7 +260,8 @@ def _from_this_computer(request: Request) -> bool:
         return False
     if any(name in request.headers for name in _FORWARDING_HEADERS):
         return False
-    return (request.url.hostname or "") in _LOOPBACK_HOSTS
+    hostname = request.url.hostname or ""
+    return hostname in _LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
 
 
 def _auto_session_allowed(request: Request, session: Session, config: ConfigManager) -> bool:
@@ -351,6 +366,24 @@ def _client_key(request: Request | None) -> str:
     return request.client.host or "unknown"
 
 
+def _bucket(client: str) -> str:
+    """The throttle's key for a client address (lansec-1025). An IPv6 device
+    chooses its own address inside the network's /64 (privacy addresses do
+    it hourly), so a guesser keyed by the full address earned five free
+    tries per address it made up: it is keyed by the /64. An IPv4 address
+    that arrived as `::ffff:a.b.c.d` is the IPv4 address."""
+    try:
+        address = ipaddress.ip_address(client.split("%", 1)[0])
+    except ValueError:
+        return client
+    mapped = getattr(address, "ipv4_mapped", None)
+    if mapped is not None:
+        return str(mapped)
+    if address.version == 6 and not address.is_loopback:
+        return str(ipaddress.ip_network(f"{address}/64", strict=False))
+    return str(address)
+
+
 def _wait_left(failures: list[float], allowance: int, now: float) -> float:
     """Seconds of wait this list of failures has earned, 0 when none."""
     if failures and now - failures[-1] > _FAILURE_WINDOW:
@@ -364,6 +397,7 @@ def _wait_left(failures: list[float], allowance: int, now: float) -> float:
 
 def _refuse_if_throttled(client: str = "unknown") -> None:
     """429 while inside the wait a run of wrong passwords has earned."""
+    client = _bucket(client)
     now = time.time()
     own = _failed_by_client.get(client)
     remaining = max(
@@ -383,6 +417,7 @@ def _refuse_if_throttled(client: str = "unknown") -> None:
 
 
 def _unlock_failed(client: str = "unknown") -> None:
+    client = _bucket(client)
     now = time.time()
     _failed_unlocks.append(now)
     _failed_by_client.setdefault(client, []).append(now)
@@ -392,6 +427,7 @@ def _unlock_failed(client: str = "unknown") -> None:
 
 
 def _unlock_succeeded(client: str = "unknown") -> None:
+    client = _bucket(client)
     # The global list too: whoever got the password right is the owner, and
     # a backstop that outlived the owner's own unlock would be the lockout
     # this change exists to remove. Other clients' own buckets are kept.
@@ -587,8 +623,10 @@ def require_unlock_media(
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
     memorymap_media: str | None = Cookie(default=None),
+    once: str | None = Query(default=None),
 ) -> None:
-    """Same gate as `require_unlock`, plus the media cookie.
+    """Same gate as `require_unlock`, plus the media cookie (or a one-file
+    link, `MEDIA_LINK_SECONDS`).
 
     For the handful of routes a plain `<img src>` points at directly
     (`/media/{filename}`, `/files/{attachment_id}` and their page and preview
@@ -603,6 +641,10 @@ def require_unlock_media(
         return
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     token = x_auth_token or _media_tickets.get(memorymap_media or "")
+    if not token and once:
+        path, expires, link_token = _media_links.get(once, ("", 0.0, ""))
+        if path == request.scope.get("path") and time.time() < expires:
+            token = link_token
     if not _token_valid(token, idle_ttl):
         raise HTTPException(status_code=401, detail="The app is locked. Unlock it first.")
 
@@ -912,6 +954,24 @@ def media_session(request: Request, response: Response, x_auth_token: str | None
     """
     _grant_media(request, response, x_auth_token or "")
     return {"ok": True}
+
+
+class MediaLinkIn(BaseModel):
+    path: str = Field(max_length=512)
+
+
+@router.post("/media-link", dependencies=[Depends(require_unlock)])
+def media_link(body: MediaLinkIn, x_auth_token: str | None = Header(default=None)) -> dict:
+    """A two-minute link to one `/media` or `/files` path (see MEDIA_LINK_SECONDS)."""
+    path = urllib.parse.unquote(body.path)
+    if not _MEDIA_LINK_PATH.fullmatch(body.path) or "/.." in path or "//" in path:
+        raise HTTPException(status_code=422, detail="Only a picture or file of this notebook can open in a tab.")
+    now = time.time()
+    for stale in [t for t, (_, expires, _) in _media_links.items() if expires <= now]:
+        del _media_links[stale]
+    ticket = secrets.token_urlsafe(32)
+    _media_links[ticket] = (path, now + MEDIA_LINK_SECONDS, x_auth_token or "")
+    return {"url": f"{body.path}?once={ticket}"}
 
 
 @router.post("/auto-session")
@@ -1294,6 +1354,7 @@ def forget_device(device_id: str, request: Request, config: ConfigManager = Depe
 
 
 WATCH_SECONDS = 25.0
+WATCH_SLICE_SECONDS = 5.0
 
 
 @router.get("/lan-watch", dependencies=[Depends(require_unlock)])
@@ -1301,14 +1362,12 @@ async def lan_watch(request: Request, since: int = -1, config: ConfigManager = D
     """This computer's window waits here for a device to ask, or the network
     to change, so its notice comes at once rather than at the next poll. No
     thread is held while it waits."""
-    import asyncio
-
     _require_this_computer(request)
     deadline = time.monotonic() + WATCH_SECONDS
-    while lantrust.version() == since and time.monotonic() < deadline:
-        if await request.is_disconnected():
+    #: Woken by the change itself; the slices only let a closed tab end the wait.
+    while time.monotonic() < deadline and not await request.is_disconnected():
+        if await lantrust.wait_version_change(since, min(WATCH_SLICE_SECONDS, deadline - time.monotonic())):
             break
-        await asyncio.sleep(0.5)
     trust = lantrust.status()
     serving = not netbind.is_loopback_bind() and trust["reason"] != "off"
     return {

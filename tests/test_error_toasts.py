@@ -131,9 +131,6 @@ EXPECTED = {
     'questions-view.js': [
         '"Reading is paused in Settings, What it learned."',
     ],
-    'selection.js': [
-        '"Extracting notes needs the local AI."',
-    ],
     'settings-controls.js': [
         '"No skills found in that file."',
         '"No personas found in that file."',
@@ -160,7 +157,7 @@ EXPECTED = {
         '"Give the look a name first."',
         '`You can keep ${MAX_CUSTOM_THEMES} saved looks: delete one first.`',
     ],
-    'sheets-selects.js': [
+    'gesture-kit.js': [
         '"An empty answer isn\'t a correction: delete the message instead."',
     ],
     'shell-reminders.js': [
@@ -219,6 +216,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'media.js': {
+        '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
+    },
     'statistics.js': {
         '"Couldn\'t open that."': 'opening what a chart point or tile counts failed',
         '"Couldn\'t change the range."': 'the growth chart request for a new range failed',
@@ -242,6 +242,7 @@ FAULTS = {
     },
     'graph-canvas.js': {
         '"The moved notes were not pinned where you left them."': 'the pin save after a group drag failed: the places shown are not the places kept',
+        '"The pins were not saved."': 'the selection bar\'s Pin or Unpin write failed: the pins shown are not the pins kept',
     },
     'library.js': {
         '`The topic was not renamed: ${e?.message || e}.`': 'the rename request failed: the name shown is not the name kept',
@@ -258,7 +259,7 @@ FAULTS = {
     'lightbox-actions.js': {
         '"Couldn\'t load the Library gallery."': 'loading the gallery failed',
     },
-    'menus.js': {
+    'gesture-kit.js': {
         '"Couldn\'t read this note."': 'reading a note failed',
     },
     'note-properties.js': {
@@ -294,6 +295,7 @@ FAULTS = {
 #: Calls whose second argument is computed. Each is pinned to what it computes.
 DYNAMIC = {
     "status.js": {"isError"},  # agentActivityNotice and toast(): passes the caller's flag through
+    "media.js": {"isError"},  # the sketch pad's host toast: passes the pad's flag through (a failed save is red)
     "ai-tools.js": {'!/already running/i.test(error.message || "")'},  # a 409 "already running" is plain
     #: A failed request is red; the server's own refusal (started or removed false) is a plain notice.
     "settings-packages.js": {'result.failed ? true : result.started ? false : "info"', 'result.failed ? true : result.removed ? false : "info"'},

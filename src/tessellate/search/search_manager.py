@@ -98,11 +98,13 @@ def recent_entries(session: Session, limit: int = RECENT_FALLBACK_LIMIT) -> list
     )
 
 
-def entries_between(session: Session, since, until, limit: int = 40) -> list[Entry]:
+def entries_between(session: Session, since, until, limit: int = 40, archived: bool = False) -> list[Entry]:
     """Non-deleted, non-private entries written from `since` to `until`
     (days, both kept), newest first: what "what did I do last week" is
     about (CHAT_PLAN decision 31, recall by time), every note of the window
-    rather than the five a similarity search would rank."""
+    rather than the five a similarity search would rank. Archived notes are
+    left out, as in every count, unless the question asks for them
+    (`archived=True`: only those; composer plan, "Decisions made")."""
     from datetime import datetime, time, timedelta
 
     start = datetime.combine(since, time(0))
@@ -115,6 +117,7 @@ def entries_between(session: Session, since, until, limit: int = 40) -> list[Ent
                 Entry.is_private == False,  # noqa: E712
                 Entry.created_at >= start,
                 Entry.created_at < end,
+                Entry.archived_at.is_not(None) if archived else Entry.archived_at.is_(None),
             )
             .order_by(Entry.created_at.desc(), Entry.id.desc())
             .limit(limit)
@@ -272,10 +275,42 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
         if term in vocabulary:
             corrected.append(term)
             continue
-        near = [w for w in vocabulary if abs(len(w) - len(term)) <= 2]
-        close = difflib.get_close_matches(term, near, n=1, cutoff=CORRECT_CUTOFF)
-        corrected.append(close[0] if close else term)
+        close = _near_words(term, vocabulary)
+        # The vocabulary holds porter stems ("lectur"), which no one wrote; the
+        # correction offered, and searched, is a word a note really uses.
+        real = _word_for_stem(session, close[0], term) if close else None
+        corrected.append(real or term)
     return corrected
+
+
+def _near_words(term: str, vocabulary: list[str]) -> list[str]:
+    """The vocabulary word closest to a misspelt term, as a one-item list.
+
+    The vocabulary holds porter stems, which are shorter than the word typed
+    ("respir" for "respiraton"), so a stem is also compared with the typed
+    word cut to just past the stem's length."""
+    best, best_ratio = None, CORRECT_CUTOFF
+    for word in vocabulary:
+        if abs(len(word) - len(term)) > 2 and not (len(word) >= CORRECT_MIN_LEN and len(word) < len(term)):
+            continue
+        for typed in {term, term[: len(word) + 1]}:
+            ratio = difflib.SequenceMatcher(None, typed, word).ratio()
+            if ratio >= best_ratio:
+                best, best_ratio = word, ratio
+    return [best] if best else []
+
+
+def _word_for_stem(session: Session, stem: str, typed: str) -> str | None:
+    """A whole word from a note that starts with `stem`, the one
+    nearest the typed word; None when no note holds one."""
+    rows = session.execute(
+        text("SELECT content FROM entries WHERE content LIKE :p LIMIT 40"),
+        {"p": f"%{stem}%"},
+    ).all()
+    found = re.compile(rf"\b{re.escape(stem)}\w*", re.IGNORECASE)
+    words = {m.lower() for row in rows for m in found.findall(row.content or "")}
+    nearest = difflib.get_close_matches(typed, sorted(words), n=1, cutoff=0)
+    return nearest[0] if nearest else None
 
 
 #: The stopword list and the term splitter both moved to `search/query.py`,
@@ -458,7 +493,7 @@ def semantic_search(
     # never recalibrated.
     #
     # Rather than guess a new fixed number for BGE specifically, unverified
-    # in this sandbox, which cannot run sentence-transformers at all per
+    # in this sandbox, which ran no local embedding engine at all per
     # CLAUDE.md: this adds a second, *relative* floor from the query's own
     # score distribution: a candidate has to beat what an unrelated note
     # typically scores for THIS query, not just clear an absolute number

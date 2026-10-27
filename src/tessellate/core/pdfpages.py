@@ -31,7 +31,11 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
+from collections import OrderedDict
 from pathlib import Path
+
+from tessellate.core.deps import register_cache_reset
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +118,9 @@ def page_count(path: Path) -> int:
         return 0
 
 
-def _render_one(page, path: Path, index: int, *, greyscale: bool) -> bytes | None:
+def _render_one(
+    page, path: Path, index: int, *, greyscale: bool, scale: float = RENDER_SCALE
+) -> bytes | None:
     """One already-open `pdfium` page to PNG bytes, or None if it is too
     large to render safely. Shared by `render_pages` (the vision-OCR batch)
     and `render_page` (one page, for the viewer) so the pixel-limit check
@@ -122,13 +128,13 @@ def _render_one(page, path: Path, index: int, *, greyscale: bool) -> bytes | Non
     import io
 
     width, height = page.get_size()
-    if (width * RENDER_SCALE) * (height * RENDER_SCALE) > MAX_PIXELS:
+    if (width * scale) * (height * scale) > MAX_PIXELS:
         logger.info(
             "skipping page %d of %r: %dx%d at %.1fx exceeds the pixel limit",
-            index + 1, path.name, width, height, RENDER_SCALE,
+            index + 1, path.name, width, height, scale,
         )
         return None
-    image = page.render(scale=RENDER_SCALE).to_pil()
+    image = page.render(scale=scale).to_pil()
     try:
         buffer = io.BytesIO()
         if greyscale:
@@ -138,7 +144,11 @@ def _render_one(page, path: Path, index: int, *, greyscale: bool) -> bytes | Non
             # colour: a person reading their own document is not paying a
             # token budget the way a model prompt is.
             image = image.convert("L")
-        image.save(buffer, format="PNG", optimize=True)
+        #: **No recompression pass.** `optimize=True` was 340 of the 456 ms a
+        #: page took (measured, a letter page at 2x) for 3% fewer bytes, spent
+        #: under `_pdfium_lock`, which every other page and the page count wait
+        #: for: 24 rail thumbnails held a page view for three seconds.
+        image.save(buffer, format="PNG")
         return buffer.getvalue()
     finally:
         image.close()
@@ -164,32 +174,94 @@ def render_pages(path: Path, limit: int = MAX_PAGES) -> list[bytes]:
         return []
 
     pages: list[bytes] = []
-    # Closed inside the lock, for the reason `render_page` gives below: a
-    # close outside it races another thread's open in pdfium's global state.
-    try:
-        with _pdfium_lock:
-            document = pdfium.PdfDocument(str(path))
-            try:
-                for index in range(min(len(document), max(0, limit))):
+    #: **One page per hold of the lock, not the whole batch** (attach-1026 O2,
+    #: the owner: "I think it waits for rapid ocr or tesserract to read the
+    #: whole document first before loading the other pages"). The document was
+    #: opened once and all eight pages rendered inside one `with`, so a page
+    #: view or a rail thumbnail waited behind the lot (~3.6 s measured, 456 ms a
+    #: page). Each page now opens, draws and closes the document under its own
+    #: hold (opening is ~0.1 ms), and the thread yields between pages so a
+    #: waiting viewer takes its turn instead of being barged past.
+    count = min(page_count(path), max(0, limit))
+    for index in range(count):
+        try:
+            with _pdfium_lock:
+                # Closed inside the lock, for the reason `render_page` gives
+                # below: a close outside it races another thread's open in
+                # pdfium's global state.
+                document = pdfium.PdfDocument(str(path))
+                try:
                     page = document[index]
                     try:
                         png = _render_one(page, path, index, greyscale=True)
-                        if png is not None:
-                            pages.append(png)
                     finally:
                         page.close()
-            finally:
-                try:
-                    document.close()
-                except Exception:  # noqa: BLE001  # nothing left to release
-                    logger.debug("closing %r after rasterising failed", path, exc_info=True)
-    except Exception as exc:  # noqa: BLE001  # see the docstring
-        logger.info("couldn't rasterise %r: %s", path, exc)
-        return pages
+                finally:
+                    try:
+                        document.close()
+                    except Exception:  # noqa: BLE001  # nothing left to release
+                        logger.debug("closing %r after rasterising failed", path, exc_info=True)
+            if png is not None:
+                pages.append(png)
+        except Exception as exc:  # noqa: BLE001  # see the docstring
+            logger.info("couldn't rasterise %r: %s", path, exc)
+            return pages
+        time.sleep(0.001)
     return pages
 
 
-def render_page(path: Path, index: int) -> bytes | None:
+#: Pages already drawn, so a page seen again (the rail, a flip back, the
+#: regions request that draws the same page to read it) costs a dictionary
+#: look-up instead of a render behind the lock. Keyed by the file's identity
+#: (path, mtime, size), so a replaced file is never served stale. Bounded by
+#: bytes, least recently used first; one answer over the whole budget is not
+#: kept.
+_CACHE_BYTES = 48 * 1024 * 1024
+_page_cache: OrderedDict[tuple, bytes] = OrderedDict()
+_page_cache_bytes = 0
+_page_cache_lock = threading.Lock()
+
+#: A rail thumbnail: a quarter of the width, a sixteenth of the pixels, which
+#: is ~7 ms a page where the full page is ~116 ms.
+THUMB_SCALE = RENDER_SCALE / 4
+
+
+def _cache_get(key: tuple) -> bytes | None:
+    with _page_cache_lock:
+        png = _page_cache.get(key)
+        if png is not None:
+            _page_cache.move_to_end(key)
+        return png
+
+
+def _cache_put(key: tuple, png: bytes) -> None:
+    global _page_cache_bytes
+    if len(png) > _CACHE_BYTES:
+        return
+    with _page_cache_lock:
+        old = _page_cache.pop(key, None)
+        if old is not None:
+            _page_cache_bytes -= len(old)
+        _page_cache[key] = png
+        _page_cache_bytes += len(png)
+        while _page_cache_bytes > _CACHE_BYTES and _page_cache:
+            _, dropped = _page_cache.popitem(last=False)
+            _page_cache_bytes -= len(dropped)
+
+
+def _cache_clear() -> None:
+    global _page_cache_bytes
+    with _page_cache_lock:
+        _page_cache.clear()
+        _page_cache_bytes = 0
+
+
+#: Dropped with the app's singletons, so one test's pages never answer the next
+#: (review, 2026-10-27; tests used to clear it by hand).
+register_cache_reset(_cache_clear)
+
+
+def render_page(path: Path, index: int, thumb: bool = False) -> bytes | None:
     """One page, by number, as PNG bytes, for *viewing* a PDF rather than
     reading it with a model. Kept apart from `render_pages`/`MAX_PAGES`
     deliberately: that cap exists to bound vision-model cost (a model reads
@@ -219,6 +291,15 @@ def render_page(path: Path, index: int) -> bytes | None:
         import pypdfium2 as pdfium
     except ImportError:
         return None
+    try:
+        stat = path.stat()
+        key = (str(path), stat.st_mtime_ns, stat.st_size, safe_index, bool(thumb))
+    except OSError:
+        key = None
+    if key is not None:
+        hit = _cache_get(key)
+        if hit is not None:
+            return hit
 
     # The document is closed INSIDE the lock. It used to be closed in an
     # outer `finally`, after the `with` had released the lock, so one thread
@@ -237,9 +318,15 @@ def render_page(path: Path, index: int) -> bytes | None:
                     return None
                 page = document[safe_index]
                 try:
-                    return _render_one(page, path, safe_index, greyscale=False)
+                    png = _render_one(
+                        page, path, safe_index, greyscale=False,
+                        scale=THUMB_SCALE if thumb else RENDER_SCALE,
+                    )
                 finally:
                     page.close()
+                if png is not None and key is not None:
+                    _cache_put(key, png)
+                return png
             finally:
                 try:
                     document.close()

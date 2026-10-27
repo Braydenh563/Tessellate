@@ -1077,9 +1077,13 @@ open; the decisions stay.
    so a ` ```mermaid ` fence renders as code with its language label;
    BACKLOG 29c's "already renders" is corrected. A flowchart-subset parser
    (the audit's D3) is the way in if it is built, not a vendored bundle.
-   **Reopened by the owner, 2026-10-06**: mermaid.js is to be vendored and
-   lazy-loaded; BACKLOG, "Diagrams: mermaid as the interchange format",
-   steps 8 to 13.
+   **Reopened by the owner, 2026-10-06, and built 2026-10-27: mermaid now
+   draws.** mermaid.js 12.2.0 is vendored (`frontend/vendor/mermaid/`) and
+   lazy-loaded inside a hidden same-origin frame (`/mermaid-frame`, a route
+   whose response carries its own policy, so the app's `style-src 'self'` is
+   unchanged); every kind draws in Read, Live, a print, the HTML export, chat
+   and Ask, as an image of the finished SVG. BACKLOG, "Diagrams: mermaid as
+   the interchange format", steps 9 to 13 stay open.
 4. **A hidden formatting toolbar always shows its way back** (INBOX 574,
    2026-10-05): the dock's Formatting button while it is hidden (not on a
    phone, which formats from the thumb bar), Ctrl+Shift+X, the ⋯ row and
@@ -1090,7 +1094,12 @@ open; the decisions stay.
    line on screen, the break itself in a print and in the HTML export, the
    "/" menu's Page break in a document (not in a note, which is not
    printed as pages). Page size, margins and page numbers are decision 7.
-6. **A flowchart fence draws as one, by a parser of our own** (2026-10-05,
+6. **A flowchart fence draws as one, by a parser of our own** (2026-10-05;
+   **superseded 2026-10-27 for drawing: Mermaid draws every kind, flowcharts
+   included, see decision 3; `mermaidFlowParse` and `mermaidFlowLayout` stay
+   as the pure reader the verifier and board import use, and the SVG-tree and
+   `docMermaidSvg` drawing path is gone**; the rest of this item is the
+   reader's record,
    the audit's D3, inside decision 3's terms). `mermaidFlowParse`,
    `mermaidFlowLayout` and `mermaidFlowSvgTree` (documents.js, the
    `DOC-MERMAID` region, node-tested): `flowchart` or `graph` in any of the
@@ -1515,21 +1524,29 @@ Read from the code against Notion and Obsidian. Sizes S, M, L. Nothing here is b
 1. Video and audio embed from a link or a local file in a note (Notion "Embed", Obsidian `![[file.mp4]]`) - M.
 2. Citations: a reference list built from footnote-style keys (Obsidian citations plugin) - M.
 3. A block's own link (heading links exist in documents.js; a paragraph's does not, to verify) - S.
-4. "Turn into" is in documents.js; check it reaches lists, callouts and code from the bubble toolbar - S.
+4. Built 2026-10-26 (docs5-1026): see HISTORY.md, "Moved from the plans, 2026-10-26 (docs5-1026)".
 5. Synced blocks: one block shown in two notes, edited in either - L.
 6. A database view of notes by property (Notion, Obsidian Bases): table, board, calendar - L.
 7. Inline date and reminder mention that creates a reminder (Notion "@date") - S.
 8. Page cover and icon picker parity with Notion's gallery - S.
 9. Web clipper fields on a note's properties - M.
 10. Canvas block: a board embedded and editable in place - M.
-11. Equation numbering and cross-reference - S.
+11. Equation cross-reference (`\eqref`, a number that follows the equation); numbering by `\tag{n}` is built (HISTORY, docs5-1026) - S.
 12. Table: column sort, filter row, formulas - M.
-13. Reading mode: the note full width without chrome, with a progress line (check Focus mode first) - S. Remembered heading folds already exist (`docOutlineFoldStore`).
+13. Built 2026-10-26 (docs5-1026): the Read view takes a progress line; see HISTORY.md.
 14. Template variables exist (documents.js, documents-codekit.js); check they cover time and the cursor place - S.
 15. Export a note as a slide deck from its headings - M.
+16. **The owner, 2026-10-26, verbatim:** "can you add an easier and guided way to write out mathematical equations and symbols like with word or desmos?" A guided equation editor over the existing TeX renderer (`docMathRender`, documents.js): Insert equation (slash menu, Ctrl+K, a toolbar row, Alt+= as Word), a live-preview box where typing `x^2`, `sqrt`, `/`, `pi`, `>=`, `alpha` becomes structure (Desmos and Word linear format: `a/b` becomes a fraction, the caret moves into slots, Tab to the next slot), a symbol palette in groups (Greek, operators, relations, arrows, sets, calculus, matrices) with a search, structure templates (fraction, root, power, subscript, sum, integral, limit, matrix, cases), inline or display, the TeX written into the note so it stays plain text, editable by clicking the rendered equation. No heavy library: own parser or a small vendored one under its licence, lazy-loaded, measured against the boot cap - M. Owner: docs7 (Opus, design). **Decided by the owner, 2026-10-26:** writing first, then a graph block (y = f(x), sliders, lazy-loaded) as its own step; the editor works in Documents, Notes, whiteboard text and the Chat/Ask box (one shared lazy module, each surface a thin caller). **The writing step is built** (HISTORY, "Moved from the plans, 2026-10-26 (docs7-1026)"). Open: the graph block; opening the editor by a click on a rendered equation (today the caret in it and Alt+= or /equation); a Ctrl+K palette row.
+17. **The owner, 2026-10-26, verbatim (screenshot: Notes "Capture a thought", source view showing `<u>underlined</u>` with line numbers):** "also the note capture doesnt have view options, I want it to use the live view by dafault and then the user can change it if they want." The note composer gets the Documents view switch (Live, Source, Read), Live by default, the choice remembered per device (prefs) - S/M. Owner: notecap (Sonnet), check the running app first.
+18. **The owner, 2026-10-26, verbatim:** "can the user name code blocks or set it as a language and then the code editor can work for that language withing the bllock??" A fenced block's language (and an optional title, ```` ```python title="fit.py" ````) chosen from a picker on the block, the block edited with that language's highlighting, indentation, brackets and completion (the code-file engine in documents-code.js, scoped to the block), in Documents and the note composer - M. Owner: after notecap; check first what the fence highlighter already does.
 
 ## Placed from INBOX, 2026-10-19
 
 - INBOX 1325. **The owner, 2026-10-19, verbatim.** "should thumbnails be stores for documents in the document editor as well for the library page??"
      Recommendation (taken): no stored raster for documents. A board is a drawing, so only a picture tells boards apart; a document is text, and its Library row already shows a live 240-character opening (`routes_documents._preview`) that is current on every save, theme-correct and costs no writes. Instead: a page-shaped card (heading, first lines, first embedded image as the cover) drawn from data the list already has. Next: build the page-shaped card in the Library Documents list.
 
+
+## Placed from INBOX, 2026-10-27
+
+- INBOX 1407 (Harper false positives): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".
+- INBOX 1408 (focus-mode sidebars resizable): built 2026-10-27, see HISTORY.md "Moved from the plans, 2026-10-27 (docs-1027)".

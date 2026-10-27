@@ -187,37 +187,35 @@ def _tags(text: str) -> list[str]:
 
 
 #: Words a time said first may open with ("on Friday at 9 remind me to ...").
-_TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "in ", "monday", "tuesday",
-               "wednesday", "thursday", "friday", "saturday", "sunday")
+# The reminder phrase reader lives with the parser (`reminder_parser.reminder_head`)
+# so `reminder_suggest` can share it without importing this module.
+_reminder_head = reminder_parser.reminder_head
+
+
+def _without_lead(text: str, leads: tuple[str, ...], *, once: bool = True) -> str:
+    for lead in leads:
+        if text.lower().startswith(lead):
+            text = text[len(lead):]
+            if once:
+                break
+    return text
 
 
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
-    low = text.lower()
-    cut = low.find(" remind me ")
-    if 0 < cut <= 40 and low.startswith(_TIME_FIRST):
-        #: The time said first is said last, where the time readers look.
-        text = f"{text[cut + 1:]} {text[:cut]}"
-        low = text.lower()
-    head = None
-    for word in ("remind me", "set me a reminder", "set a reminder", "make a reminder",
-                 "add a reminder", "create a reminder", "new reminder", "reminder",
-                 "don't let me forget", "dont let me forget", "do not let me forget"):
-        if low == word or low.startswith(word + " ") or low.startswith(word + ":"):
-            head = word
-            break
+    text, head = _reminder_head(text)
     if head is None:
         return None
     rest = text[len(head):].strip(" :,-")
     if head == "remind me" and _ASKING.match(rest):
         return None
     about = rest.lower().startswith("about ")
-    for lead in ("to ", "2 ", "about ", "that ", "for "):
-        if rest.lower().startswith(lead):
-            rest = rest[len(lead):]
-            break
+    rest = _without_lead(rest, ("to ", "2 ", "about ", "that ", "for "))
     if not rest:
         return None
+    rest = reminder_parser.unhedged(rest)
     parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
+    if parsed is not None:
+        parsed = {**parsed, "text": reminder_parser.without_conditions(parsed["text"]) or parsed["text"]}
     if parsed is None:
         if about:
             # "Remind me about my trip" with no time is a question as often
@@ -226,9 +224,7 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
         due, said, words = when.resolve("tomorrow", now), False, rest
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
-    for lead in ("to ", "about ", "that ", "for "):
-        if words.lower().startswith(lead):
-            words = words[len(lead):]
+    words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
     said_words = words.strip(" ,.;:-")
     if rest[:1].islower():
         #: As typed: the time parser raises the first letter for the stored
@@ -791,12 +787,12 @@ def not_done(skipped: list[dict]) -> str:
     return "Not done: " + ", ".join(said) + "."
 
 
-def summarise_done(labels: list[str], skipped: list[dict]) -> str:
+def summarise_done(labels: list[str], skipped: list[dict], say=None) -> str:  # noqa: ANN001
     """The one line a run ends with: what was done, then what was not."""
     #: A tool's label may open with its icon ("ph:trash Moved note 13 ..."),
     #: which the page draws only at the start of a line: taken off here.
     done = "; ".join(re.sub(r"^ph:[\w-]+\s+", "", label).rstrip(".") for label in labels if label)
-    line = f"Done: {done}." if done else "Nothing was changed."
+    line = (say(done) if say else f"Done: {done}.") if done else "Nothing was changed."
     return f"{line} {not_done(skipped)}".strip()
 
 
@@ -1128,7 +1124,7 @@ def _bin_reminder(session: Session, args: dict) -> dict:
     return {"binned": int(args["reminder_id"])}
 
 
-def run(session: Session, steps: list[dict], skipped: list[dict] | None = None) -> dict:
+def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a confirmed card's steps: {"summary", "undo", "open"?, "ok"}.
 
     Every step is tried even when one fails, and each failure is a "Not done"
@@ -1166,7 +1162,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None) 
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened
-    summary = summarise_done([str(r.get("label") or n.replace("_", " ")) for n, _a, r in done], failed)
+    summary = summarise_done([str(r.get("label") or n.replace("_", " ")) for n, _a, r in done], failed, say)
     out = {
         "ok": bool(done),
         "summary": summary,

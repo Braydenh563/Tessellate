@@ -614,8 +614,6 @@ header#top-bar select,
 :root[data-glass="off"] button.ghost,
 :root[data-glass="off"] #tab-bar button,
 :root[data-glass="off"] .library-card,
-:root[data-glass="off"] .sketch-toolbar,
-:root[data-glass="off"] .sketch-foot,
 :root[data-glass="off"] .chat-toolbar,
 :root[data-glass="off"] .graph-toolbar,
 :root[data-glass="off"] .library-toolbar,
@@ -648,7 +646,7 @@ header#top-bar select,
 :root[data-glass="off"] .graph-fullscreen,
 :root[data-glass="off"] .library-image-menu-list,
 :root[data-glass="off"] .library-image-tile,
-:root[data-glass="off"] .library-image-tile .library-image-menu-btn,
+:root[data-glass="off"] .library-image-tile .library-image-actions > .menu-wrap > button.ghost,
 :root[data-glass="off"] #global-find-bar,
 :root[data-glass="off"] #status-clock-detail,
 :root[data-glass="off"] .answer,
@@ -1171,9 +1169,6 @@ header#top-bar select,
   justify-content: space-between;
   gap: var(--space-2);
 }
-.web-recent-clear {
-  font-size: var(--text-xs);
-}
 /* A recent search and its own remove: the row takes the room, the remove is
    always there (muted): a control found only by hovering is not learnable. */
 .web-recent-row {
@@ -1485,68 +1480,6 @@ header#top-bar select,
   .web-reader .web-reader-title {
     font-size: var(--text-body);
   }
-}
-
-/* Reader view: article typography at a comfortable measure, and nothing
-   drawn round it. The measure is the documents page's (`--doc-measure`, in
-   `ch` so it counts characters of the face on screen). */
-.web-reader-text {
-  flex: 0 0 auto;
-  font-size: var(--text-lg);
-  line-height: 1.65;
-  color: var(--ink);
-}
-
-.web-reader-text p {
-  margin: 0 0 var(--space-5);
-}
-
-/* The page's own heading depth, preserved rather than flattened. The scale is
-   the rendered Markdown's (`.markdown-body .md-h*`), in `em` of the reader's
-   own size. */
-.web-reader-text .reader-heading {
-  margin: var(--space-7) 0 var(--space-2);
-  line-height: 1.3;
-  font-weight: 700;
-}
-
-.web-reader-text h3.reader-heading {
-  font-size: 1.25em;
-}
-
-.web-reader-text h4.reader-heading {
-  font-size: 1.1em;
-}
-
-.web-reader-text h5.reader-heading,
-.web-reader-text h6.reader-heading {
-  font-size: 1em;
-  color: var(--muted);
-}
-
-.web-reader-text ul {
-  margin: 0 0 var(--space-5);
-  padding-left: var(--space-7);
-}
-
-.web-reader-text li {
-  margin-bottom: var(--space-1);
-}
-
-.web-reader-text blockquote {
-  margin: var(--space-5) 0;
-  padding: var(--space-1) 0 var(--space-1) var(--space-6);
-  border-left: 3px solid var(--accent);
-  color: var(--muted);
-}
-
-.web-reader-text pre {
-  white-space: pre-wrap;
-  margin: 0 0 var(--space-5);
-  padding: var(--space-5);
-  background: var(--chip-bg);
-  border-radius: var(--radius-md);
-  font-size: var(--text-md);
 }
 
 /* --- dashboard quick links ------------------------------------------------- */
@@ -2286,7 +2219,8 @@ header#top-bar select,
    are both a labelled row of chips appended to the same bubble, and giving
    them two different looks would make one turn's footer read as two unrelated
    widgets. */
-.chat-followups {
+.chat-followups,
+.chat-reminder-offer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2954,18 +2888,21 @@ button.answer-figure-open {
   min-width: 0;
 }
 
-#tab-reminders .entry-actions {
+/* The row's ⋯ is always drawn (it is the way into everything else, and a
+   control that only exists under the pointer cannot be reached by a plain
+   click); the snoozes and Edit come in with the pointer or the focus. */
+#tab-reminders .entry-actions > :not(.menu-wrap) {
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
 
-#tab-reminders li:hover .entry-actions,
-#tab-reminders li:focus-within .entry-actions {
+#tab-reminders li:hover .entry-actions > :not(.menu-wrap),
+#tab-reminders li:focus-within .entry-actions > :not(.menu-wrap) {
   opacity: 1;
 }
 
 @media (hover: none) {
-  #tab-reminders .entry-actions {
+  #tab-reminders .entry-actions > :not(.menu-wrap) {
     opacity: 1;
   }
 }
@@ -3195,9 +3132,9 @@ button.answer-figure-open {
   }
 }
 
-/* Off screen, held where it is (`watchEmblemVisibility`). Last, and as
+/* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
-:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art.is-paused:not(.is-still) :is(.emblem-float, .emblem-shadow-breathe, .emblem-rise, .emblem-cell-c, .emblem-shadow) {
+:root:not([data-motion="reduced"]):not([data-ui-motion="off"]) :is(.emblem-art.is-paused, .is-idle .emblem-art:not(.is-busy)):not(.is-still) :is(.emblem-float, .emblem-shadow-breathe, .emblem-rise, .emblem-cell-c, .emblem-shadow) {
   animation-play-state: paused;
 }
 

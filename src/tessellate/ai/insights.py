@@ -28,6 +28,13 @@ re-hedged: "Golf is a hobby of yours (confirmed by you, 10 October)." Not
 right records a "dismiss_insight" correction; that insight and its
 near-variants (the same rule about the same subject, whatever the count or
 the dates) are not shown again. `key` is what makes two lines variants.
+
+Done (INBOX 1412). A plan line also carries a third verdict: the plan is
+finished. It removes the confirmed fact (soft delete) and records a
+"dismiss_insight" of reason "done", so the plan and its variants never show
+again, said once as "Marked done". A later note sharing the plan's words
+(the rule `drift` already uses) retires a confirmed drift fact the same way
+(`retire_followed`), so "still open" is not said after the owner wrote it was done.
 """
 
 from __future__ import annotations
@@ -189,9 +196,8 @@ def contrast(notes: list[dict], today: date) -> list[Insight]:
         written = _written(note)
         if written is None:
             continue
-        for fact in factgraph.facts(note):
-            if fact.kind == "preference" and fact.attrs.get("object"):
-                said.append((written, note, fact))
+        said.extend((written, note, fact) for fact in factgraph.facts(note)
+                    if fact.kind == "preference" and fact.attrs.get("object"))
     said.sort(key=lambda row: row[0])
     out: list[Insight] = []
     for i, (first_day, first_note, first) in enumerate(said):
@@ -296,6 +302,7 @@ def from_session(session, today: date, limit: int = 3) -> list[Insight]:  # noqa
         {"id": e.id, "content": e.content or "", "created_at": e.created_at.date().isoformat() if e.created_at else "", "tags": manager.entry_tags(e)}
         for e in rows
     ]
+    retire_followed(session, notes, today)
     known = memory(session)
     return [i for i in notebook(notes, today, limit + len(known.dismissed)) if key(i) not in known.dismissed][:limit]
 
@@ -376,7 +383,7 @@ def memory(session) -> Memory:  # noqa: ANN001
         except ValueError:
             continue
         if payload.get("key"):
-            confirmed[payload["key"]] = {"line": row.text, "id": row.id, "measured": payload.get("measured", "")}
+            confirmed[payload["key"]] = {"line": row.text, "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or []}
     return Memory(frozenset(dismissed - set(confirmed)), confirmed)
 
 
@@ -419,6 +426,57 @@ def dismiss(session, body: dict) -> dict:  # noqa: ANN001
     the_key = key(insight)
     learning.record(session, kind="dismiss_insight", subject={"key": the_key}, from_value=insight.text, excerpt=insight.text)
     return {"key": the_key}
+
+
+def _retire(session, keys: set[str]) -> int:  # noqa: ANN001
+    """Soft-delete the confirmed facts under these keys; how many went."""
+    import json
+
+    from sqlalchemy import select
+
+    from tessellate.core.database import DerivedFact, utcnow
+
+    gone = 0
+    for row in session.scalars(select(DerivedFact).where(DerivedFact.kind == CONFIRMED_KIND, DerivedFact.deleted_at.is_(None))):
+        try:
+            the_key = json.loads(row.payload or "{}").get("key")
+        except ValueError:
+            continue
+        if the_key in keys:
+            row.deleted_at = utcnow()
+            gone += 1
+    return gone
+
+
+def done(session, body: dict) -> dict:  # noqa: ANN001
+    """Done: the plan is finished. The confirmed fact (if any) is removed and
+    the plan, with its variants, is never shown again."""
+    from tessellate.ai import learning
+
+    insight = _from_payload(body)
+    if insight.rule != "drift":
+        raise ValueError("Only a plan can be marked done.")
+    the_key = key(insight)
+    _retire(session, {the_key})
+    learning.record(session, kind="dismiss_insight", subject={"key": the_key, "reason": "done"}, from_value=insight.text, excerpt=insight.text)
+    session.flush()
+    return {"key": the_key, "said": "Marked done"}
+
+
+def retire_followed(session, notes: list[dict], today: date) -> int:  # noqa: ANN001
+    """A confirmed "still open" plan that a later note now follows up (the
+    words `drift` matches on) is no longer said: its fact is removed. Needs
+    the plan's own note among `notes`, so a limited window never retires it."""
+    known = memory(session)
+    open_keys = {key(i) for i in drift(notes, today)}
+    ids = {n["id"] for n in notes}
+    stale = set()
+    for the_key, info in known.confirmed.items():
+        if not the_key.startswith("drift:") or the_key in open_keys:
+            continue
+        if info.get("note_ids") and all(i in ids for i in info["note_ids"]):
+            stale.add(the_key)
+    return _retire(session, stale) if stale else 0
 
 
 def as_row(insight: Insight, known: Memory | None = None) -> dict:

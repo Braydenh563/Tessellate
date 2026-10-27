@@ -864,6 +864,7 @@ function toastStack(box, change) {
   //: the stack hangs from the top.
   for (const t of [...box.children]) if (!before.has(t) && top) box.prepend(t);
   toastLayout(box);
+  if (box.id === "toast-box") toastYield();
   const cs = getComputedStyle(box);
   const ms = parseFloat(cs.getPropertyValue("--ui-base")) * 1000;
   if (!ms || toastReduced()) return;
@@ -947,15 +948,24 @@ document.addEventListener("keydown", (e) => lockFieldWants(e)?.focus(), true);
 //: Tab stop under it on six tabs). Fades and lets clicks through until focus
 //: moves off it; focus inside the toast itself never counts, nor the body
 //: (the first-Tab reset focuses it, and its box covers every toast).
-document.addEventListener("focusin", (e) => {
+//: A lasting toast (no timer: a question kept up until it is answered) also
+//: steps aside for the buttons of the form or section being worked in: at
+//: 1280 by 720 the search-by-meaning question sat on the composer's Save
+//: and Save as draft for as long as it went unanswered (E2E first-run,
+//: 2026-10-27). Checked again when a toast arrives over a focused control.
+function toastYield(target = document.activeElement) {
   const box = $("toast-box");
-  if (!box?.children.length || box.contains(e.target) || e.target === document.body) return box?.classList.remove("is-yielding");
-  const r = e.target.getBoundingClientRect();
+  if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
+  const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+  const focused = target.getBoundingClientRect();
+  //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
+  const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+    return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));
   }));
-});
+}
+document.addEventListener("focusin", (e) => toastYield(e.target));
 
 //: **Where a toast goes** (INBOX 470): inside the open modal dialog while
 //: there is one, because a modal makes everything outside it inert and draws
@@ -1084,6 +1094,7 @@ function toast(message, isError = false, { exempt = false, action = null } = {})
   }, 0);
   const box = toastHost();
   if (toastMerge(box, key, action?.[1] || null)) return;
+  if (typeof nmbTickArm === "function") nmbTickArm(300); // the perch check looks at a toast soon
   //: An error makes the companion jump (avatars.js).
   if (isError && typeof nameMarkBuddyCue === "function") nameMarkBuddyCue("startle", "error");
   const note = document.createElement("div");
@@ -1394,6 +1405,14 @@ const INSIGHT_VERDICT_ITEMS = [
   { verdict: "dismiss", label: "ph:x Not right", title: "Not right: never show this or anything like it again" },
 ];
 
+//: Done is for a plan line (INBOX 1412); a confirmed one keeps only it.
+const INSIGHT_DONE_ITEM = { verdict: "done", label: "ph:check-circle Done", title: "This plan is finished: stop saying it is open" };
+
+function insightVerdictItems({ rule, confirmed } = {}) {
+  const base = confirmed ? [] : INSIGHT_VERDICT_ITEMS;
+  return rule === "drift" ? [...base, INSIGHT_DONE_ITEM] : base;
+}
+
 function insightSend(insight, verdict) {
   return apiJson(`/insights/${verdict}`, { method: "POST", body: JSON.stringify(insight) });
 }
@@ -1405,7 +1424,7 @@ function insightVerdicts(insight, onDone, send = insightSend) {
   group.className = "insight-verdicts";
   group.setAttribute("role", "group");
   group.setAttribute("aria-label", "Is this right?");
-  for (const item of INSIGHT_VERDICT_ITEMS) {
+  for (const item of insightVerdictItems(insight)) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `insight-verdict is-${item.verdict}`;
@@ -1413,7 +1432,7 @@ function insightVerdicts(insight, onDone, send = insightSend) {
     setLabel(button, item.label);
     button.addEventListener("click", () =>
       send(insight, item.verdict)
-        .then((result) => onDone?.(item.verdict === "confirm" ? "confirmed" : "dismissed", result))
+        .then((result) => onDone?.(item.verdict === "confirm" ? "confirmed" : item.verdict === "done" ? "done" : "dismissed", result))
         .catch((error) => toast(error.message, true))
     );
     group.appendChild(button);
@@ -1429,7 +1448,17 @@ function insightLine(insight, text, onDone, extraClass = "", send = insightSend)
   const words = document.createElement("span");
   words.className = "insight-text";
   words.textContent = text;
-  line.append(words, insightVerdicts(insight, (verdict, result) => onDone?.(line, verdict, result), send));
+  //: A plan confirmed in place keeps its Done, as after a reload (the
+  //: surfaces replace the row's words on Confirm, which drops the pair).
+  const attach = (about) =>
+    line.append(
+      insightVerdicts(about, (verdict, result) => {
+        onDone?.(line, verdict, result);
+        if (verdict === "confirmed" && about.rule === "drift") attach({ ...about, confirmed: true });
+      }, send)
+    );
+  line.append(words);
+  attach(insight);
   return line;
 }
 
@@ -1723,7 +1752,12 @@ async function loadMostUsed() {
     // note beginning "# Groceries" rendered the literal "# Groceries", the
     // same gap the dashboard's mini-lists had, here too since this list uses
     // the same two-function combination.
-    const flat = stripFrontmatter(entry.content).replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "");
+    //: A picture's markdown is not words: cut at 25 characters it showed as a
+    //: raw `![Sketch...` (dog3-1026 row 15).
+    const flat = stripFrontmatter(entry.content)
+      .replace(/!\[[^\]\n]*\]\([^)\n]*\)/g, "")
+      .replace(/^\s*(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+\.\s+)/gm, "")
+      .trim() || "Picture";
     const { text: sliced, truncated } = safeMdSlice(flat, 25);
     renderInlineMarkdown(text, sliced, [], true);
     if (truncated) text.appendChild(document.createTextNode("…"));
@@ -1789,11 +1823,10 @@ function resetStatusCadence() {
 }
 
 // The Ollama embedding model offered as a one-click fallback when the
-// built-in (sentence-transformers) engine can't load: asked for directly,
-// after a real support-bundle report: the built-in engine needs
-// sentence-transformers, which isn't bundled (see CLAUDE.md/requirements.txt
-//, installing it has broken past sessions, and a packaged Windows build
-// excludes torch on purpose), so a fresh install with no working Python on
+// built-in (fastembed) engine can't load: asked for directly, after a real
+// support-bundle report: the built-in engine needs fastembed, which isn't
+// bundled (a packaged build excludes it on purpose, see
+// packaging/windows/tessellate.spec), so a fresh install with no working Python on
 // PATH for Settings -> Packages to fall back to has no way to make the
 // built-in engine work at all. nomic-embed-text: small, well-known, and
 // exactly what Settings -> Models' own "quick fix" sentence already named
@@ -2828,7 +2861,15 @@ function renderSettings() {
     ollamaLine.textContent = "The model server is slow to answer. Showing the last answer.";
     ollamaLine.className = "status is-checking";
   }
+  //: K13: with no model, the line says what answers instead (ai/composer.py).
+  if (aiIsOff()) {
+    ollamaLine.textContent = `${ollamaLine.textContent.replace(/\.$/, "")}. Until a model is connected, Atlas answers with its built-in composer: from your notes, no AI.`;
+  }
   renderBackendPicker(status);
+  //: The one-time question before search by meaning is downloaded
+  //: (semantic-notice.js, lazy): opened while the server says it is owed,
+  //: closed once it is answered.
+  if (status.semantic_offer || lazyModuleLoads.has("semanticNotice")) semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved);
   const embeddingError = $("embedding-error");
   embeddingError.classList.toggle("hidden", !status.embedding_error);
   //: A missing optional package arrives as a sentence the backend wrote for
@@ -2948,8 +2989,6 @@ async function refreshBackgroundTasks() {
     tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
   }
   noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
-  const auto = backgroundTasks.find((t) => t.auto);
-  if (auto || lazyModuleLoads.has("semanticNotice")) semanticInstallNotice(auto);
   renderStatusBar();
   // One fetch, not two: the panel renders from this payload rather than asking
   // again a few milliseconds later.

@@ -73,11 +73,27 @@ PICTO_OR_TYPO = re.compile(_cls(*_PICTO, *_TYPO) + "+")
 #: file. A block entry `("block:const NAME", reason)` passes every line from
 #: that declaration to the first line that ends a statement.
 ALLOWED: dict[str, list[tuple[str, str]]] = {
+    "frontend/js/math-editor.js": [
+        (
+            "block:const MATH_EDITOR_SYMBOLS",
+            "the equation editor's symbol tiles: each glyph is the TeX symbol it inserts "
+            "(\\cdots draws as the midline ellipsis), document content rather than an icon",
+        ),
+        (
+            'replace(/\\{\\}/g, "{□}")',
+            "the preview's empty-slot box inside a TeX string, drawn by the math renderer, not the UI",
+        ),
+    ],
     "frontend/js/documents-prose.js": [
         (
             "block:const DOC_EMOJI_SOURCE",
             "the Markdown :shortcode: table (user content: `:fire:` renders an emoji); "
             "marked unslop-ignore in the file",
+        ),
+        (
+            "const PASTE_BULLET",
+            "the bullet marks a pasted list arrives with (Word, Docs, web pages), "
+            "matched to be stripped; never drawn",
         ),
     ],
     "frontend/js/icon-picker.js": [

@@ -38,6 +38,39 @@ function wbThumbRound(v) {
   return Math.round(v * 10) / 10;
 }
 
+//: **How a template's topics are drawn, read from the template's own data**
+//: (K15, the owner: the Career plan preview showed a root box over four
+//: chevron topics, each with two bars, and the map it built was plain boxes).
+//: The root's shape is `payload.root.shape`, a branch's and a leaf's are their
+//: nodes' `data.shape`: the same values the map draws, so the picture and the
+//: built map cannot disagree. A saved branch that carries none is the default
+//: rounded card.
+function wbThumbLook(entry, branches) {
+  const first = branches[0] || {};
+  return {
+    root: entry?.payload?.root?.shape || "rounded",
+    branch: first.data?.shape || "rounded",
+    leaf: branches.find((b) => b.children?.length)?.children[0].data?.shape || "rounded",
+  };
+}
+
+//: One topic as the picture draws it, by its shape: the box shapes a card is
+//: (rounded, box, pill, ellipse), the phase arrow, the bar a word sits on
+//: (underline) and nothing but the word (plain, drawn as a dot).
+function wbThumbShapePart(shape, cx, cy, w, h) {
+  const R = wbThumbRound;
+  const x = cx - w / 2, y = cy - h / 2;
+  if (shape === "ellipse") return { tag: "ellipse", a: { cx: R(cx), cy: R(cy), rx: R(w / 2), ry: R(h / 2) } };
+  if (shape === "chevron") {
+    const tip = Math.min(2.5, w / 4);
+    return { tag: "path", a: { d: `M ${R(x)} ${R(y)} L ${R(x + w - tip)} ${R(y)} L ${R(x + w)} ${R(cy)} L ${R(x + w - tip)} ${R(y + h)} L ${R(x)} ${R(y + h)} Z` } };
+  }
+  if (shape === "underline") return { tag: "rect", a: { x: R(x), y: R(y + h - 1.2), width: R(w), height: 1.2, rx: 0.6 } };
+  if (shape === "none") return { tag: "circle", a: { cx: R(cx), cy: R(cy), r: 1.5 } };
+  const rx = shape === "pill" ? h / 2 : shape === "rect" ? 0 : Math.min(2, h / 2);
+  return { tag: "rect", a: { x: R(x), y: R(y), width: R(w), height: R(h), rx: R(rx) } };
+}
+
 //: **A map template's picture, drawn from its own tree** (the owner: "these
 //: all look the same"; every tile was one root and three branches). The
 //: branch count, each branch's children and the template's `shape` decide
@@ -52,6 +85,7 @@ function wbMapThumbSpec(entry) {
   const kids = branches.map((b) => Math.min(4, (b.children || []).length));
   const n = Math.max(1, branches.length);
   const shape = ["radial", "two-sided", "fishbone", "fork", "phases", "tiers"].includes(entry?.shape) ? entry.shape : "tree";
+  const look = wbThumbLook(entry, branches);
   const lines = [];
   const boxes = [];
   //: **Each branch wears its own colour** (a map's branches are coloured by
@@ -62,10 +96,13 @@ function wbMapThumbSpec(entry) {
   let hue = -1;
   const tone = (cls) => (hue < 0 ? cls : `${cls} wb-thumb-b${hue % 10}`);
   const line = (d) => lines.push({ tag: "path", cls: tone("wb-thumb-line"), a: { d } });
+  //: The shape a part is drawn in is its role's: the root's, a leaf's, or a
+  //: branch's.
+  const shapeOf = (cls) => (cls === "wb-thumb-root" ? look.root : cls.includes("leaf") ? look.leaf : look.branch);
   const box = (cx, cy, w, h, cls = "wb-thumb-node") => boxes.push({
-    tag: "rect", cls: cls === "wb-thumb-root" ? cls : tone(cls), a: { x: R(cx - w / 2), y: R(cy - h / 2), width: R(w), height: R(h), rx: R(Math.min(2, h / 2)) },
+    ...wbThumbShapePart(shapeOf(cls), cx, cy, w, h), cls: cls === "wb-thumb-root" ? cls : tone(cls),
   });
-  const leaf = (cx, cy) => boxes.push({ tag: "circle", cls: tone("wb-thumb-leaf"), a: { cx: R(cx), cy: R(cy), r: 1.5 } });
+  const leaf = (cx, cy) => box(cx, cy, 6, 2.6, look.leaf === "none" ? "wb-thumb-leaf" : "wb-thumb-leafbox");
   //: A stroke inside a box where its words would be, so a tier reads as labelled.
   const label = (cx, cy, w) => boxes.push({ tag: "path", cls: "wb-thumb-label", a: { d: `M ${R(cx - w / 2)} ${R(cy)} L ${R(cx + w / 2)} ${R(cy)}` } });
   if (!branches.length) {
@@ -151,10 +188,9 @@ function wbMapThumbSpec(entry) {
     line(`M 32 9.5 L 32 13 M ${R(centres[0])} 13 L ${R(centres[n - 1])} 13`);
     branches.forEach((_, i) => {
       hue = i;
-      const x = 2 + i * (w + 1.5), cx = centres[i];
+      const cx = centres[i];
       line(`M ${R(cx)} 13 L ${R(cx)} 17`);
-      const notch = i ? 2.5 : 0;
-      boxes.push({ tag: "path", cls: tone("wb-thumb-node"), a: { d: `M ${R(x)} 17 L ${R(x + w - 2.5)} 17 L ${R(x + w)} 21.5 L ${R(x + w - 2.5)} 26 L ${R(x)} 26 L ${R(x + notch)} 21.5 Z` } });
+      box(cx, 21.5, w, 9);
       for (let k = 0; k < kids[i]; k += 1) box(cx, 30 + k * 4, w * 0.6, 2.4, "wb-thumb-leafbox");
     });
     box(32, 6, 16, 7, "wb-thumb-root");
@@ -353,6 +389,12 @@ function wbTemplateChoices(kind) {
   return out;
 }
 
+//: A search word matches a template's name, its line of help or any tag.
+function wbTemplateMatches(choice, query) {
+  const text = [choice.name, choice.hint, ...(choice.entry?.tags || [])].join(" ").toLowerCase();
+  return query.split(/\s+/).every((word) => text.includes(word));
+}
+
 function wbTemplatePicture(choice, kind) {
   if (!choice.entry) return wbThumbSvg(wbBlankThumbSpec(kind));
   const entry = choice.entry;
@@ -386,8 +428,9 @@ async function wbOpenTemplateGallery(kind = "board") {
   const list = document.getElementById("wb-template-list");
   const preview = document.getElementById("wb-template-preview");
   const nameField = document.getElementById("wb-template-name");
+  const search = document.getElementById("wb-template-search");
   const tabs = document.getElementById("wb-template-kind");
-  if (!dialog || !list || !preview || !nameField || !tabs) return null;
+  if (!dialog || !list || !preview || !nameField || !tabs || !search) return null;
   const [, untitled] = await Promise.all([wbLoadLibrary(), wbUntitledNames()]);
   let chosen = null;
   let choices = [];
@@ -418,6 +461,25 @@ async function wbOpenTemplateGallery(kind = "board") {
     //: the value, selected when the dialog opens, so typing replaces it.
     if (!nameField.dataset.typed) nameField.value = choice.ref ? choice.name : untitled[kind === "map" ? "map" : "board"];
   };
+  const slots = new Map();
+  let seen = null;
+  const drawSlot = (slot) => {
+    const choice = slots.get(slot);
+    slots.delete(slot);
+    if (!choice || !slot.isConnected) return;
+    const art = wbTemplatePicture(choice, kind);
+    art.classList.add("wb-template-choice-art");
+    slot.replaceWith(art);
+  };
+  const watchSlots = () => {
+    seen?.disconnect();
+    slots.clear();
+    seen = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver((hits) => {
+          for (const hit of hits) if (hit.isIntersecting) { seen.unobserve(hit.target); drawSlot(hit.target); }
+        }, { root: list, rootMargin: "120px" })
+      : null;
+  };
   const row = (choice) => {
     const li = document.createElement("li");
     li.setAttribute("role", "presentation");
@@ -427,8 +489,16 @@ async function wbOpenTemplateGallery(kind = "board") {
     button.setAttribute("role", "radio");
     button.setAttribute("aria-checked", "false");
     button.dataset.ref = String(choice.ref);
-    const art = wbTemplatePicture(choice, kind);
-    art.classList.add("wb-template-choice-art");
+    //: **A row's picture is drawn when the row is seen** (the owner's order,
+    //: 2026-10-26: lightweight, fast). Sixty-five rows' SVGs built on open
+    //: was the dialog's long task; a slot the size of the picture holds the
+    //: place and the observer below swaps the picture in.
+    const art = document.createElement("span");
+    art.className = "wb-template-choice-slot";
+    art.dataset.ref = String(choice.ref);
+    slots.set(art, choice);
+    seen?.observe(art);
+    if (!seen) drawSlot(art);
     const words = document.createElement("span");
     words.className = "wb-template-choice-words";
     const name = document.createElement("strong");
@@ -455,22 +525,25 @@ async function wbOpenTemplateGallery(kind = "board") {
   };
   const fill = () => {
     list.replaceChildren();
+    watchSlots();
     for (const tab of tabs.querySelectorAll("[role='tab']")) {
       const on = tab.dataset.value === kind;
       tab.setAttribute("aria-selected", on ? "true" : "false");
       tab.tabIndex = on ? 0 : -1;
     }
     nameField.placeholder = untitled[kind === "map" ? "map" : "board"];
-    choices = wbTemplateChoices(kind);
-    list.append(row(choices[0]));
+    const query = (search?.value || "").trim().toLowerCase();
+    choices = wbTemplateChoices(kind).filter((c) => !query || !c.ref || wbTemplateMatches(c, query));
+    if (!query) list.append(row(choices[0]));
+    if (query && !choices.length) list.append(heading("No template matches. Clear the search to see them all."));
     for (const [key, words] of [...WB_TEMPLATE_PURPOSES, ["yours", "Yours"]]) {
-      const group = choices.filter((c) => c.group === key);
+      const group = choices.filter((c) => c.group === key && c.ref);
       if (!group.length) continue;
       list.append(heading(words));
       for (const choice of group) list.append(row(choice));
     }
     list.scrollTop = 0;
-    choose(choices[0]);
+    if (choices.length) choose(choices[0]);
   };
   let settle;
   const done = new Promise((resolve) => {
@@ -481,6 +554,8 @@ async function wbOpenTemplateGallery(kind = "board") {
     dialog.close();
     settle(make ? { name, kind, ref: chosen?.ref || null } : null);
   };
+  search.value = "";
+  search.oninput = () => fill();
   nameField.value = "";
   delete nameField.dataset.typed;
   nameField.oninput = () => {

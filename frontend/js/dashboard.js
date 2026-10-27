@@ -512,7 +512,10 @@ async function renderDashSubmessage() {
     atlasStreak(streak);
     nameMarkBuddyStreak(streak);
   }
-  const pattern = patterns?.patterns?.[0];
+  //: A different pattern each day, not always the first (the owner, 2026-10-26:
+  //: "I keep seeing this one pattern and nothing else").
+  const found = patterns?.patterns || [];
+  const pattern = found[Math.floor(Date.now() / 86400000) % (found.length || 1)];
   if (pattern) bits.push(["patterns", "Pattern: ", pattern.text]);
   //: One span per fact, its separator inside it, so a view can fold one fact
   //: away whole: the Focused hero's glance says what is due (INBOX 675), and
@@ -741,7 +744,10 @@ function renderNameNudge(greetingEl) {
   const existing = document.getElementById("dash-name-nudge");
   if (existing) existing.remove();
   const name = ((prefsCache && prefsCache.display_name) || "").trim();
+  //: Not while the Get started card is, or is about to be, up: it carries the same
+  //: offer and removes this one when it lands, which moved the page 32px.
   if (name || prefs.get("nameNudgeDismissed", null) === "1") return;
+  if (!prefs.get("getStartedHidden", null) && !prefs.get("firstStepsHidden", null)) return;
 
   const wrap = document.createElement("span");
   wrap.id = "dash-name-nudge";
@@ -1944,13 +1950,18 @@ function dashFillingSkeleton(grid, count) {
   //: fill in after this is placed and push the grid down, which left the
   //: placeholder over them with their text showing through (owner,
   //: 2026-10-12). Cheap: two reads and two writes a frame for a second.
+  //: By `translate`, which the compositor moves without a layout: writing
+  //: `top` here counted as 0.077 of layout shift at boot.
+  const top0 = grid.offsetTop;
+  //: Read after a paint (INBOX 1419): in a timer it landed while the widgets
+  //: filling in had left the layout dirty, and each read laid the page out.
   const follow = () => {
     if (!outline.isConnected) return;
-    const top = `${grid.offsetTop}px`;
-    const left = `${grid.offsetLeft}px`;
-    if (outline.style.top !== top) outline.style.top = top;
-    if (outline.style.left !== left) outline.style.left = left;
-    setTimeout(follow, 80);
+    afterFrames(() => setTimeout(() => {
+      if (!outline.isConnected) return;
+      outline.style.translate = `0 ${grid.offsetTop - top0}px`;
+      setTimeout(follow, 80);
+    }, 0), 1);
   };
   setTimeout(follow, 80);
   return outline;
@@ -2739,7 +2750,7 @@ async function startArt(holder) {
       //: minutes (bg-art.js stamps every input), and goes on at the next
       //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
       //: script every ten seconds, for a drift no one was watching.
-      if (!reduceMotion && !glide && !fade && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
+      if (!reduceMotion && !glide && !fade && typeof bgArtLastInput === "number" && performance.now() - bgArtLastInput > BG_ART_IDLE_MS) {
         p.noLoop();
         //: Stamped, so a listener left over from an earlier rest does nothing.
         const rested = (p.rested = performance.now());
@@ -3300,21 +3311,11 @@ async function renderDigestWidget(outer) {
   } else if (digestPromise) {
     runGeneration(); // one is already running (from before a tab switch)
   } else {
+    //: Never gated on a model (owner-1026b K3): with none, the server
+    //: composes the week from the notes' own rows (`activity.week`), and a
+    //: model, once on, writes the next one.
     const generate = smallButton("Generate this week's digest", "", runGeneration, false);
-    //: Built here rather than in `index.html`, so it carries the reason on
-    //: itself and then asks the one gate to read it (INBOX 203). It used to
-    //: carry its own copy of the check and its own sentence, which said "start
-    //: Ollama" to somebody running llama.cpp; `syncModelGatedControls` owns
-    //: that wording for every AI control in the app, this one included.
-    generate.dataset.needsModel = "The weekly digest is written by the local AI";
-    //: UX-12 (audit 2026-10-05): the reason was only a `title` on a disabled
-    //: button, which a keyboard cannot focus and a phone cannot hover. The
-    //: same line and Settings link as Ask and Chat, kept by the status poll.
-    const offline = document.createElement("div");
-    offline.className = "ai-offline-note notice hidden";
-    offline.dataset.offlineLine = "No model connected, so the digest cannot be written yet.";
-    body.append(generate, offline);
-    syncModelGatedControls();
+    body.append(generate);
   }
 }
 
@@ -3400,7 +3401,7 @@ async function renderRemindersWidget(body) {
     at.className = "dash-reminder-when muted";
     at.textContent = when;
     li.append(what, at);
-    if (typeof relativeWhen === "function") li.title = relativeWhen(reminder.due_at);
+    li.title = relativeWhen(reminder.due_at);
     if (due < new Date()) li.classList.add("overdue");
     li.addEventListener("click", () => switchTab("reminders"));
     ul.appendChild(li);
@@ -3752,7 +3753,7 @@ async function renderRandomShuffle(body) {
           .catch(() => wrap.remove());
         img.addEventListener("click", () => {
           openLightbox(
-            images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a) })),
+            images.map((a) => ({ filename: a.filename, getUrl: () => attachmentObjectUrl(a), openUrl: `/files/${a.id}` })),
             images.indexOf(attachment)
           );
         });

@@ -50,10 +50,12 @@ def _capture_group_count(pattern: str) -> int:
     return len(re.findall(r"(?<!\\)\((?!\?)", pattern))
 
 
-def test_inline_md_still_has_twelve_capture_groups():
+def test_inline_md_still_has_fourteen_capture_groups():
     """The canary. If this number moves, an alternative was added or removed
-    and every index in the replacer below has shifted with it."""
-    assert _capture_group_count(_inline_md()) == 12
+    and every index in the replacer below has shifted with it. Twelve until
+    c4c3982 added the styled span `{{size=..|text}}` as g13/g14 at the end,
+    which shifts nothing and which the replacer reads (m[14])."""
+    assert _capture_group_count(_inline_md()) == 14
 
 
 def test_the_preview_reads_the_text_groups_not_the_colour_groups():
@@ -69,7 +71,7 @@ def test_the_preview_reaches_the_image_and_link_groups():
     """g9/g10 are the image's alt and url, g11/g12 the link's text and url.
     Not reaching them is what put the literal "undefined" in a preview."""
     used = set(re.findall(r"m\[(\d+)\]", _preview_replacer()))
-    for group in ("9", "10", "11"):
+    for group in ("9", "10", "11", "14"):
         assert group in used, f"m[{group}] is never read, so that branch returns undefined"
 
 

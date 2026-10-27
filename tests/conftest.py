@@ -206,9 +206,12 @@ def capture_post(monkeypatch):
 
 
 @pytest.fixture
-def openai_client():
-    """An `OpenAICompatClient` that can never reach the network."""
+def openai_client(tmp_path, monkeypatch):
+    """An `OpenAICompatClient` that can never reach the network. Its requests
+    log a job run, so the data dir is a scratch one, never the repo's."""
     from tessellate.ai.openai_client import OpenAICompatClient
+
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
 
     c = OpenAICompatClient(base_url="http://localhost:1234/v1")
     c._catalog = []

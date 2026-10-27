@@ -243,6 +243,16 @@ const EMBLEM_SLOTS = [
 ];
 
 function renderBrandLogo() {
+  //: Until the page has loaded the calls become one, after it: drawing needs
+  //: to know which slots have a box, which lays the whole page out in the
+  //: middle of the scripts (INBOX 1419: 58 and 80ms at 4x CPU).
+  if (document.readyState !== "complete") {
+    if (!renderBrandLogo.waits) {
+      renderBrandLogo.waits = 1;
+      window.addEventListener("load", () => setTimeout(renderBrandLogo, 0), { once: true });
+    }
+    return;
+  }
   for (const [id, size, animate] of EMBLEM_SLOTS) {
     const holder = document.getElementById(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);
@@ -261,10 +271,10 @@ function renderBrandLogo() {
 const emblemPending = new Map();
 
 function renderEmblemWhenShown(holder, size, animate) {
-  if (holder.getClientRects().length || typeof IntersectionObserver === "undefined") {
+  if (holder.getClientRects().length) {
     emblemPending.delete(holder);
     emblemState.lazyObserver?.unobserve(holder);
-    renderEmblem(holder, size, { animate });
+    setTimeout(renderEmblem, 0, holder, size, { animate });
     return;
   }
   if (!emblemState.lazyObserver) {
@@ -286,13 +296,6 @@ function renderEmblemWhenShown(holder, size, animate) {
 }
 
 // --- wiring --------------------------------------------------------------------
-
-// Enter anywhere in the change-password form submits it.
-for (const id of ["account-current", "account-new", "account-confirm"]) {
-  $(id).addEventListener("keydown", (e) => {
-    if (e.key === "Enter") changePassword();
-  });
-}
 
 // --- the notifications centre's controls (§36E) -----------------------------
 $("notif-btn").addEventListener("click", () => {
@@ -576,8 +579,9 @@ function initNotesSubtabHeightToken() {
     //: stylesheet's value standing until there is a real one.
     if (h > 0) page.style.setProperty("--notes-sticky-top", `${h}px`);
   };
+  //: No first call of its own: an observer reports a new target at once, and
+  //: there the layout is clean (a direct read forced the page's first layout).
   new ResizeObserver(write).observe(strip);
-  write();
 }
 
 initNotesSubtabHeightToken();

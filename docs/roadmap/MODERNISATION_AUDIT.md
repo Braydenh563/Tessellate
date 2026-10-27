@@ -25,7 +25,7 @@ row id and stops** rather than restating it.
 Three kinds of claim appear below and they are labelled, every time:
 
 - **Measured.** A number produced this session by a script in
-  [`scratchpad/audit/`](../../scratchpad/audit/) against a real Chromium and a
+  [`scratchpad/audit/`](../../scratchpad/audit) against a real Chromium and a
   real uvicorn (`--port 8791`, `TESSELLATE_DATA_DIR=/tmp/audit-data`, fresh
   profile, 40 seeded notes). The script that produced each number is named.
 - **Read.** A `file:line` in this repo.

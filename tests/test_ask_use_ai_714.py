@@ -1,4 +1,4 @@
-"""The Ask header's "Use AI" switch (INBOX 714, part 2).
+"""The Ask header's "Use AI" control (INBOX 714, part 2; a chip since K6).
 
 The owner, 2026-10-06, of the "AI | From your notes" segmented pill beside the
 Ask title: "that ai/from your notes toggle looks out of place and i dont like
@@ -35,63 +35,69 @@ def _ask_header() -> str:
     return HTML[start : HTML.index('id="ask-source-help"', start)]
 
 
-def test_the_pill_is_gone_and_one_switch_row_stands_in_its_place():
+def _controls() -> str:
+    start = HTML.index('class="ask-controls"')
+    return HTML[start : HTML.index('id="ask-btn"', start)]
+
+
+def test_the_pill_is_gone_and_one_switch_stands_in_the_input_row():
+    # K34 (2026-10-26): a compact pill switch beside the answer-length select,
+    # neutral (unchecked, enabled) until the first model status lands.
     header = _ask_header()
-    assert "ask-source-seg" not in header
-    assert "data-answer-from" not in header
-    assert "From your notes</button>" not in header
-    match = re.search(r'<label class="ask-use-ai"[^>]*>(.*?)</label>', header, re.S)
-    assert match, "the header has no label.ask-use-ai"
+    assert "ask-source-seg" not in header and "ask-use-ai" not in header
+    controls = _controls()
+    match = re.search(r'<label class="checkbox-label ask-ai-switch"[^>]*>(.*?)</label>', controls, re.S)
+    assert match, "the control row has no AI switch label"
     inner = match.group(1)
-    assert 'type="checkbox"' in inner and 'id="ask-use-ai"' in inner
-    assert "<span>Use AI</span>" in inner
-    # In the right-hand control group, ahead of its '?' popover trigger.
-    assert header.index("ask-header-actions") < header.index('class="ask-use-ai"')
-    assert header.index('class="ask-use-ai"') < header.index('data-help-for="ask-source-help"')
+    assert 'type="checkbox"' in inner and 'id="ask-use-ai"' in inner and 'role="switch"' in inner
+    assert "disabled" not in inner and "checked" not in inner
+    assert "<span>AI</span>" in inner
+    assert controls.index('id="ask-use-ai"') < controls.index('id="ask-mode-select"')
+    assert header.index("ask-header-actions") < header.index('data-help-for="ask-source-help"')
 
 
 def test_the_help_popover_names_the_switch_and_says_what_off_means():
     start = HTML.index('id="ask-source-help"')
     popover = HTML[start : HTML.index("</div>", start)]
-    assert "Use AI" in popover
+    assert "switch labelled AI" in popover
     assert "From your notes" in popover
     assert "AI | From your notes" not in popover
 
 
-def test_the_switch_keeps_the_stored_choice_and_gives_the_reason_when_no_model_runs():
+def test_the_switch_keeps_the_stored_choice_and_names_the_cause_when_no_model_runs():
     assert 'const ASK_ANSWER_FROM_KEY = "ask-answer-from";' in COMPOSE
     assert 'prefs.set(ASK_ANSWER_FROM_KEY, box.checked ? "ai" : "notes")' in COMPOSE
     assert 'prefs.get(ASK_ANSWER_FROM_KEY) === "notes" ? "notes" : "ai"' in COMPOSE
     assert "box.disabled = off;" in COMPOSE
-    assert "ASK_AI_OFF_REASON" in COMPOSE
+    # Neutral until the first status: nothing is drawn before it lands.
+    assert "if (!modelStatus) return;" in COMPOSE
+    # The three causes, each from the status, the first with the server's URL.
+    assert "is not answering" in COMPOSE and "s.base_url" in COMPOSE
+    assert "has no models pulled" in COMPOSE
+    assert 'is not installed' in COMPOSE and "s.chat_model" in COMPOSE
     assert "data-answer-from" not in COMPOSE
 
 
-def test_the_switch_is_in_every_list_of_the_pill_switch_recipe():
-    css = _css("06-timeline-dialogs.css")
-    for state in ("", "::after", ":hover", ":checked", ":checked::after", ":disabled"):
-        assert f'.ask-use-ai input[type="checkbox"]{state}' in css, state
-
-
-def test_the_row_is_a_control_high_row_on_the_header_line():
-    css = _css("01-forms-settings.css")
-    rule = re.search(r"\n\.ask-use-ai \{([^}]*)\}", css)
-    assert rule, "no .ask-use-ai rule"
-    assert "min-height: max(var(--control-h), var(--target-min))" in rule.group(1)
-    assert "align-items: center" in rule.group(1)
+def test_the_switch_wears_the_pill_switch_recipe_and_the_chip_rules_are_gone():
+    forms = _css("01-forms-settings.css")
+    #: The switch's own rules are lazy with ask-compose.js (boot CSS cap).
+    assert "#ask-use-ai" not in forms and ".ask-ai-switch {" in _css("ask-compose-lazy.css")
+    assert ".ask-use-ai" not in _css("06-timeline-dialogs.css")
+    assert "#ask-use-ai" not in _css("10-responsive.css")
     assert ".ask-source-seg" not in _css("10-responsive.css")
 
 
 def test_every_help_surface_names_the_switch():
     source = Path(help_topics_more.__file__).read_text(encoding="utf-8")
     chat = Path(help_chat.__file__).read_text(encoding="utf-8")
-    assert "Ask on the Notes tab has a Use AI switch" in source
-    assert "Notes tab, Ask, the Use AI switch" in source
-    assert "Turn Use AI off beside the title." in source
-    assert "Its Use AI switch " in chat
+    assert "Ask on the Notes tab has an AI switch beside its answer-length picker" in source
+    assert "Notes tab, Ask, the AI switch" in source
+    assert "Turn the AI switch off beside the answer length." in source
+    assert "Its AI switch " in chat
     for text in (source, chat):
         assert "AI and From your notes switch" not in text
         assert "AI, or From your notes" not in text
+        assert "Use AI button" not in text
 
 
 def test_the_switch_is_drawn_from_the_first_status_not_the_preload():
@@ -103,3 +109,12 @@ def test_the_switch_is_drawn_from_the_first_status_not_the_preload():
     assert status.index('"No model connected. Ask shows the matching records below."') < status.index(
         'ensureModule("askCompose");'
     )
+
+
+def test_the_switch_pill_leaves_room_round_its_content():
+    """The owner, 2026-10-27 (INBOX 1411): "this pill is very tight to the
+    content". The hover and focus fill is a pill; at 4px inline padding its
+    round end touched the switch's track."""
+    css = _css("ask-compose-lazy.css")
+    rule = re.search(r"(?m)^\.ask-ai-switch \{([^}]*)\}", css).group(1)
+    assert "padding-inline: var(--space-2) var(--space-3);" in rule

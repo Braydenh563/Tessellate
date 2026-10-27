@@ -33,7 +33,10 @@ DEFAULT_VOICE = "natural"
 
 
 def voice_of(value: object) -> str:
-    """`value` as a voice name: anything unknown is the default."""
+    """`value` as a voice name: anything unknown is the default. The composed
+    voices' "formal" (a persona's cue) reads the professional lines."""
+    if value == "formal":
+        return "professional"
     return value if value in VOICES else DEFAULT_VOICE
 
 
@@ -311,6 +314,8 @@ OVERVIEW_PHRASES = {
     "ov_shared_end": " of these notes.",
     "ov_more_a": "Plus ",
     "ov_more_b": " more.",
+    "ov_filed": " are filed under it",
+    "ov_filed_one": " is filed under it",
     "ov_also": "Also",
     "ov_reads": ", reading ",
     "ov_next_who": "Who is ",

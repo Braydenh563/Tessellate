@@ -69,6 +69,11 @@
      "source": "https://phosphoricons.com"
     },
     {
+     "name": "Mermaid",
+     "licence": "MIT",
+     "source": "https://mermaid.js.org"
+    },
+    {
      "name": "Mammoth",
      "licence": "BSD-2-Clause",
      "source": "https://github.com/mwilliamson/mammoth.js"

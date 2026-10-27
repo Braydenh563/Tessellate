@@ -43,8 +43,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
-from tessellate.ai import janitor, librarian
-from tessellate.ai import offline
+from tessellate.ai import janitor, librarian, no_model_text, offline
 from tessellate.ai.embeddings import EmbeddingService, cosine_similarity
 from tessellate.ai.links import _clean_reason, _is_vague_reason
 from tessellate.ai.model_manager import ModelManager
@@ -98,24 +97,22 @@ SPLIT_SYSTEM_PROMPT = (
     '"the note text"}, ...]}'
 )
 
-#: See `drafter.offline_message` and `ai/offline.py`: the way out depends on
-#: whether Ollama is installed at all, which a constant cannot know.
+#: With no model the text is split by its own headings and paragraphs
+#: (`no_model_text.split_notes`, owner-1026b K3), so the preview is a real
+#: split rather than one note, and says who did it.
 def offline_message() -> str:
     return offline.offline_message(
-        "The AI isn't running, so this couldn't be split or linked, it's "
-        "shown as one plain note below."
+        "No model is connected, so this was split by its headings and "
+        "paragraphs. Read each note before saving."
     )
 
 
 #: Kept for anything still importing the name.
-OFFLINE_MESSAGE = (
-    "The AI isn't running, so this couldn't be split or linked, it's shown "
-    "as one plain note below. Start Ollama and try again for a real split."
-)
+OFFLINE_MESSAGE = offline_message()
 
 SPLIT_FAILED_MESSAGE = (
-    "The AI couldn't split this cleanly, so it's shown as one note, edit "
-    "it below, or save it as is."
+    "The AI couldn't split this cleanly, so it was split by its headings "
+    "and paragraphs instead. Read each note before saving."
 )
 
 
@@ -272,6 +269,58 @@ def find_related(
     return related
 
 
+def _plain_split(text: str) -> list[ExtractedNote]:
+    return [ExtractedNote(title=p.title, content=p.content) for p in no_model_text.split_notes(text, MAX_EXTRACT_NOTES)]
+
+
+def _split(text, embeddings, model_manager, ollama, ollama_running):  # noqa: ANN001, ANN202
+    """(the notes, the message): the model's split, or the plain cut by
+    headings and paragraphs when none runs or its split fails."""
+    if not ollama_running:
+        return _plain_split(text), offline_message()
+    try:
+        return merge_near_duplicates(propose_split(text, model_manager, ollama), embeddings), ""
+    except (OllamaError, ValueError) as exc:
+        logger.info("extraction split failed, falling back to the plain cut: %s", exc)
+        return _plain_split(text), SPLIT_FAILED_MESSAGE
+
+
+def _link(source: str, target: str, preview: str, reason: str, kind: str) -> dict:
+    return {"source_ref": source, "target_ref": target, "target_preview": preview, "reason": reason, "kind": kind}
+
+
+def _plain_links(notes: list[ExtractedNote], source_entries: list) -> list[dict]:
+    """The links that are true without a model: each part came from the
+    selected notes, and the parts are one text."""
+    links = [
+        _link(f"n{i}", f"existing:{entry.id}", _short_preview(entry.content), "Taken from this note's text", "source")
+        for i in range(len(notes))
+        for entry in source_entries
+    ]
+    links += [_link(f"n{i}", f"n{i + 1}", "", "Parts of the same text", "sibling") for i in range(len(notes) - 1)]
+    return links
+
+
+def _model_links(session, notes, source_entries, embeddings, model_manager, ollama) -> list[dict]:  # noqa: ANN001
+    links: list[dict] = []
+    exclude_ids = {e.id for e in source_entries}
+    for i, note in enumerate(notes):
+        ref = f"n{i}"
+        for entry in source_entries:
+            reason = _reason_for(note.content, entry.content, model_manager, ollama)
+            if reason is not None:
+                links.append(_link(ref, f"existing:{entry.id}", _short_preview(entry.content), reason, "source"))
+        links.extend(
+            _link(ref, f"existing:{related['entry_id']}", related["preview"], related["reason"], "related")
+            for related in find_related(session, note.content, embeddings, model_manager, ollama, exclude_ids)
+        )
+    for i in range(len(notes) - 1):
+        reason = _reason_for(notes[i].content, notes[i + 1].content, model_manager, ollama)
+        if reason is not None:
+            links.append(_link(f"n{i}", f"n{i + 1}", "", reason, "sibling"))
+    return links
+
+
 def build_extraction(
     session: Session,
     text: str,
@@ -312,18 +361,7 @@ def build_extraction(
             source_entries.append(entry)
 
     ollama_running = ollama.is_running()
-    message = ""
-    if not ollama_running:
-        notes = [ExtractedNote(title="", content=text)]
-        message = offline_message()
-    else:
-        try:
-            notes = propose_split(text, model_manager, ollama)
-            notes = merge_near_duplicates(notes, embeddings)
-        except (OllamaError, ValueError) as exc:
-            logger.info("extraction split failed, falling back to one note: %s", exc)
-            notes = [ExtractedNote(title="", content=text)]
-            message = SPLIT_FAILED_MESSAGE
+    notes, message = _split(text, embeddings, model_manager, ollama, ollama_running)
 
     proposals = []
     for i, note in enumerate(notes):
@@ -340,43 +378,12 @@ def build_extraction(
             "filed_by": filed_by,
         })
 
-    links: list[dict] = []
-    if ollama_running:
-        exclude_ids = {e.id for e in source_entries}
-        for i, note in enumerate(notes):
-            ref = f"n{i}"
-            for entry in source_entries:
-                reason = _reason_for(note.content, entry.content, model_manager, ollama)
-                if reason is None:
-                    continue
-                links.append({
-                    "source_ref": ref,
-                    "target_ref": f"existing:{entry.id}",
-                    "target_preview": _short_preview(entry.content),
-                    "reason": reason,
-                    "kind": "source",
-                })
-            for related in find_related(
-                session, note.content, embeddings, model_manager, ollama, exclude_ids
-            ):
-                links.append({
-                    "source_ref": ref,
-                    "target_ref": f"existing:{related['entry_id']}",
-                    "target_preview": related["preview"],
-                    "reason": related["reason"],
-                    "kind": "related",
-                })
-        for i in range(len(notes) - 1):
-            reason = _reason_for(notes[i].content, notes[i + 1].content, model_manager, ollama)
-            if reason is None:
-                continue
-            links.append({
-                "source_ref": f"n{i}",
-                "target_ref": f"n{i + 1}",
-                "target_preview": "",
-                "reason": reason,
-                "kind": "sibling",
-            })
+    if message:
+        links = _plain_links(notes, source_entries)
+    elif ollama_running:
+        links = _model_links(session, notes, source_entries, embeddings, model_manager, ollama)
+    else:
+        links = []
 
     return {
         "notes": proposals,

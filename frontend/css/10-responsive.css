@@ -296,6 +296,31 @@ header#top-bar[data-scrolled="1"],
   transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
     display var(--ui-exit) linear allow-discrete;
 }
+/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
+   Panels that hang off an opener and show by `.hidden` took no part in the
+   fade and grow (audit: `animation: none`), so they take the same two rules.
+   In-flow panels are not here: a fade does not cure the shift. */
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup):not(.hidden) {
+  --menu-origin-x: 100%;
+  --menu-origin-y: 0%;
+  transform-origin: var(--menu-origin-x) var(--menu-origin-y);
+  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
+}
+:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu):not(.hidden) {
+  --menu-origin-x: 0%;
+}
+:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
+  --menu-origin-y: 100%;
+}
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup).hidden {
+  opacity: 0;
+  scale: 0.96;
+  pointer-events: none;
+  transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
+    display var(--ui-exit) linear allow-discrete;
+}
 /* --- dark glass reads flatter, and here is which half of it does ----------
    The owner: "glass looks better on light mode and not dark but idk if thats
    an actual thing or if the values are different." It is an actual thing, and
@@ -1038,6 +1063,11 @@ header#top-bar[data-scrolled="1"],
      beside "Timeline" ran 68px into the Options menu at 390). */
   .dock .dock-identity > .dock-chip {
     flex: 0 1000 auto;
+  }  /* A short title that the actions would crush ("Recordings" in 57px sat
+     under the Captions button at 420: halfwindow.js, 17x24 over) keeps its
+     own width, and the actions wrap to the row below instead. */
+  .dock[data-dock-name="library-recordings"]:has(.dock-find) .dock-identity {
+    min-width: max-content;
   }
 }
 /* --- a zone that cannot shrink says so, instead of spilling ---------------
@@ -1523,7 +1553,10 @@ header#top-bar[data-scrolled="1"],
   }
   /* No auto margin: the time before it has one (08-consistency.css), and
      two in one row split the room, which moved the time on every card. */
-  #entry-list > li .entry-actions {
+  /* The end cluster (time and menu) is the meta line's last item, in the
+     flow: absolute against the meta line (the swipe's transform makes it the
+     containing block) it stood the ⋯ on the note's time. */
+  #entry-list > li :is(.entry-actions, .entry-meta-end) {
     position: static;
     margin-left: 0;
     background: none;
@@ -1531,6 +1564,13 @@ header#top-bar[data-scrolled="1"],
   }
   #entry-list > li .entry-actions > :not(.menu-wrap) {
     display: none;
+  }
+  /* The 44px touch floor made the menu button taller than the meta line it
+     sits in, so it hung 21px below the card's corner (owner, "half off the
+     corner"). It is the line's own height here, as the table meatball is. */
+  #entry-list > li .menu-wrap > button {
+    min-height: 0;
+    height: var(--control-h);
   }
   /* The list is the page: the card that framed it on a desktop is a second
      frame inside the window's own, and cost each row 33px of its width. */
@@ -1900,6 +1940,16 @@ header#top-bar[data-scrolled="1"],
 .sheet-card-page > .note-page-bar {
   display: flex;
 }
+/* The mode segment's touch floor holds wherever `.seg button` takes it (under
+   820 or on a coarse pointer), not only under 600: at 720 the two buttons
+   measured 65.7x42 and 80x42 (touch.js, 2026-10-26). */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .chat-dock-controls .seg {
+    min-height: var(--target-min);
+    align-items: stretch;
+    border-width: 0;
+  }
+}
 /* --- Phase 11 item 3: the chat composer on a phone ---------------------------
    04-chat-dock-appearance.css's 820 band wraps the composer, with a reason
    from when the row held four icon buttons and Send: squeezed beside them the
@@ -1934,11 +1984,6 @@ header#top-bar[data-scrolled="1"],
      family") left the two buttons 42px inside the 44px shell (touch.js at
      390, 2026-10-10: 65.7x42 and 80x42, the sweep's only control findings);
      the border draws nothing, so here the cells are the well. */
-  .chat-dock-controls .seg {
-    min-height: var(--target-min);
-    align-items: stretch;
-    border-width: 0;
-  }
   /* The model picker keeps the touch floor too (measured 30px beside the
      44px segment), and goes after the segment and the gear rather than
      before them: the mode is the control that must be on screen when the
@@ -2176,12 +2221,7 @@ header#top-bar[data-scrolled="1"],
     order: 9;
     flex: 1 1 100%;
     min-width: 0;
-  }
-  /* Ask's Use AI switch (INBOX 688, 714) takes the first line with its '?':
-     beside History it left the '?' stranded at the line's end and History
-     on a line of its own. */
-  #ask .ask-header-actions > .ask-use-ai {
-    flex: 1 1 auto;
+    max-width: none;
   }
 }
 /* --- the lightbox on a phone (INBOX 430) ------------------------------------

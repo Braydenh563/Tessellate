@@ -143,7 +143,7 @@ def test_a_greeting_is_answered_by_the_app_when_answering_from_notes(ai_client, 
     answer at all; it gets the app's own reply, as Chat with no model does.
     With the model answering, the Ask box still hints (test_ask_focus)."""
     out = _ask(ai_client, "hey", notes_only=True, use_tools=False, answer_from="notes")
-    assert "hint" not in out and out["text"] in composer.SOCIAL["greeting"]
+    assert "hint" not in out and out["text"].strip() and "!" not in out["text"]  # the app answers in its own composed welcome (CHAT_PLAN 1353), not one stored line
 
 
 class _NeedleStandIn:

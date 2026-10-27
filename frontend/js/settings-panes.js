@@ -583,60 +583,6 @@ for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
   });
 }
 
-async function changePassword() {
-  const status = $("account-status");
-  const current = $("account-current").value;
-  const next = $("account-new").value;
-  const confirmed = $("account-confirm").value;
-  status.classList.remove("error");
-
-  // Checked here as well as on the server, so a typo costs a moment rather
-  // than a password you didn't mean to set.
-  if (!current || !next) {
-    status.classList.add("error");
-    status.textContent = "Fill in your current and new password.";
-    return;
-  }
-  if (next !== confirmed) {
-    status.classList.add("error");
-    status.textContent = "The two new passwords don't match.";
-    return;
-  }
-  if (next.length < 8) {
-    status.classList.add("error");
-    status.textContent = "A new password needs at least 8 characters.";
-    return;
-  }
-
-  status.textContent = "Changing…";
-  try {
-    const result = await apiJson("/auth/change-password", {
-      method: "POST",
-      body: JSON.stringify({ current_password: current, new_password: next }),
-      // A 401 here means "wrong current password", not "your session died".
-      ownsAuthErrors: true,
-    });
-    // Changing the password invalidates every token, including this tab's.
-    // The server hands back a fresh one so the change doesn't log you out of
-    // the screen you just used to make it. Key must match authToken().
-    prefs.set("token", result.token);
-    $("account-current").value = "";
-    $("account-new").value = "";
-    $("account-confirm").value = "";
-    status.textContent = result.warning || "Password changed.";
-    if (result.pin_cleared) status.textContent += " Your PIN was removed; set it up again if you want one.";
-    toast(
-      result.other_sessions_ended
-        ? `Password changed. ${result.other_sessions_ended} other session(s) were signed out.`
-        : "Password changed."
-    );
-    renderAccount().catch(() => {});
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-  }
-}
-
 let prefsCache = null;
 // Set by savePrefs() to the PUT's own promise while it is in flight, and
 // awaited here first (INBOX 73, see savePrefs' own comment): without this,
@@ -687,6 +633,10 @@ async function reportTimezone() {
   if (weekDay !== null && !(prefsCache && prefsCache.week_start_locale === weekDay)) {
     body.week_start_locale = weekDay;
   }
+  //: The browser's language and region, so "automatic" seasons can follow
+  //: it (southern for en-AU, en-NZ, en-ZA ...) when a call carries no locale.
+  const tag = String(navigator.language || "").slice(0, 35);
+  if (tag && !(prefsCache && prefsCache.season_locale === tag)) body.season_locale = tag;
   if (!Object.keys(body).length) return;
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -740,7 +690,7 @@ async function renderPrefs() {
   if (prefsSaveInFlight) await prefsSaveInFlight.catch(() => {});
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
-  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? true;
+  $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
   //: The saved look, and its controls (avatars.js).
   if (typeof setOwnNameMarkStyle === "function") {
     setOwnNameMarkStyle(prefsCache.avatar_style || {});
@@ -753,6 +703,7 @@ async function renderPrefs() {
   $("pref-style").value = prefsCache.communication_style;
   $("pref-voice").value = prefsCache.composer_voice;
   $("pref-week-start").value = prefsCache.week_start || "auto";
+  $("pref-season-hemisphere").value = prefsCache.season_hemisphere || "auto";
   $("pref-insight").value = prefsCache.insight_level || "one";
   $("pref-profile").value = prefsCache.user_profile;
   $("pref-profile-enabled").checked = prefsCache.profile_enabled;
@@ -767,6 +718,7 @@ async function renderPrefs() {
   $("pref-smart-punctuation").checked = prefsCache.smart_punctuation === true;
   $("pref-autocorrect").checked = prefsCache.autocorrect !== false;
   $("pref-link-offers").checked = prefsCache.link_offers !== false;
+  $("pref-check-link-text").checked = prefsCache.check_link_text === true;
   $("prefs-status").textContent = "";
   //: The fields now hold what the server holds, so nothing is unsaved: this
   //: also covers the reopen, since `showSettingsSection` re-renders.
@@ -952,6 +904,7 @@ async function savePrefs(options = {}) {
       smart_punctuation: $("pref-smart-punctuation").checked,
       autocorrect: $("pref-autocorrect").checked,
       link_offers: $("pref-link-offers").checked,
+      check_link_text: $("pref-check-link-text").checked,
     };
     // INBOX 73: "'Mute notifications except reminders' toggle disables
     // itself when the settings close." Reproduced two ways with Playwright
@@ -1133,7 +1086,7 @@ function setZoom(percent) {
   if (slider) slider.value = next;
   const readout = $("zoom-value");
   if (readout) readout.textContent = `${next}%`;
-  applyAppearance();
+  applyZoomVar();
   return next;
 }
 
@@ -1268,9 +1221,7 @@ function flashRevealed(target) {
   return shown;
 }
 
-//: A row's declaration, turned into the `run` the three lists call. The
-//: order matters only for a row that wrongly carries two, which the test
-//: refuses.
+//: A row's declaration, turned into the `run` the three lists call.
 function catalogueRun(row) {
   if (typeof row.run === "function") return row;
   let run = () => {};
@@ -1279,6 +1230,47 @@ function catalogueRun(row) {
   else if (typeof row.act === "function") run = row.act;
   return { ...row, run };
 }
+
+//: **The popup tools, one registry** (INBOX K27): the palette, Tools and
+//: features, the shortcuts dialog's Tools list, both "/" menus and the Guide
+//: read it; tests/test_popup_tools.py fails for a tool missing from any.
+const POPUP_TOOLS = [
+  {
+    id: "equation", name: "Equation", icon: "ph:function", group: "Capture & notes",
+    keywords: "equation math maths formula symbol fraction greek matrix integral latex alt word",
+    about: "Build a formula with a live preview; Alt+= opens it in a note, document, board text, Chat or Ask box.",
+    keys: "Alt+=", where: "Equation, in text boxes",
+    guide: "equation-editor", open: () => ensureModule("appPalette").then(() => popupToolEquation()),
+  },
+  {
+    id: "calculator", name: "Calculator", icon: "ph:calculator", group: "Ask & chat",
+    keywords: "calculator calc sum maths math work out percent convert units currency keypad",
+    about: "Sums, percentages and unit or currency conversions, with no model; /calc does the same in a chat.",
+    keys: "/calc", where: "Calculator, or type it in Chat",
+    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator()),
+  },
+  {
+    id: "convert", name: "Convert units", icon: "ph:ruler", group: "Ask & chat",
+    keywords: "convert conversion unit units miles km kg pounds celsius fahrenheit litres currency",
+    about: "Length, weight, temperature, volume and currency, with no model; the Calculator's second tab.",
+    keys: "/calc", where: "Convert units, in the Calculator",
+    guide: "calculator", open: () => ensureModule("replyKit").then(() => openCalculator("", "convert")),
+  },
+  {
+    id: "timer", name: "Start a timer", icon: "ph:timer", group: "Plan & focus",
+    keywords: "timer countdown pomodoro alarm",
+    about: "25 minutes on the status bar, or type timer 10 minutes.",
+    keys: "Ctrl+K", where: "Start a timer",
+    guide: "timer", open: () => ensureModule("utilities").then(() => startUtilityTimer(25)),
+  },
+  {
+    id: "stopwatch", name: "Start a stopwatch", icon: "ph:timer", group: "Plan & focus",
+    keywords: "stopwatch count up",
+    about: "Counts up on the status bar.",
+    keys: "Ctrl+K", where: "Start a stopwatch",
+    guide: "timer", open: () => ensureModule("utilities").then(() => startStopwatch()),
+  },
+];
 
 function paletteCommands() {
   //: **The documents editor's own commands, at the top, while one is open**
@@ -1505,9 +1497,7 @@ function paletteCommands() {
     //: The small tools (Brief 89, UI_MODERNISATION utilities rows 2 to 4):
     //: "timer 10 minutes" and "insert template ..." also build their own rows
     //: from the words (`utilityPaletteRows`, app-palette.js).
-    { label: "ph:calculator Calculator", keywords: "calculator calc sum maths math work out percent convert units currency keypad", about: "Sums, percentages and unit or currency conversions, worked out by the app; /calc does the same in a chat.", act: () => ensureModule("replyKit").then(() => openCalculator()) },
-    { label: "ph:timer Start a timer", keywords: "timer countdown pomodoro minutes alarm", about: "25 minutes on the status bar, or type “timer 10 minutes”. Press it to stop.", act: () => ensureModule("utilities").then(() => startUtilityTimer(25)) },
-    { label: "ph:timer Start a stopwatch", keywords: "stopwatch count up how long time it", about: "Counts up on the status bar. Press it to stop.", act: () => ensureModule("utilities").then(() => startStopwatch()) },
+    ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
     { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaught)) },
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },

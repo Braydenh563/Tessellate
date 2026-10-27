@@ -415,9 +415,7 @@ function renderSpaceMenu() {
   }
   if (iconEl) iconEl.className = `ph ${current ? current.icon : "ph-circles-four"}`;
   //: Past twelve spaces the menu is typed to (row 1643, `listFilter`).
-  if (typeof listFilter === "function") {
-    listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(#space-create-open)" })?.refresh();
-  }
+  listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(#space-create-open)" })?.refresh();
 }
 
 function closeSpaceMenu() {

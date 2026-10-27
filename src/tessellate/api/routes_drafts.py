@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import drafter
+from tessellate.ai import drafter, no_model_text
 from tessellate.core import activity, deps
 from tessellate.core.database import Entry
 
@@ -146,11 +146,12 @@ def compose_draft_stream(
 
 @router.post("/title")
 def draft_title(body: TitleBody) -> dict:
-    """A suggested title for a finished draft ("" when unavailable)."""
+    """A suggested title for a finished draft ("" when unavailable). With no
+    model it is taken from the draft's own words (`no_model_text.draft_title`,
+    owner-1026b K3) and `by` says so."""
+    ollama = deps.get_ollama()
+    if not ollama.is_running():
+        return {"title": no_model_text.draft_title(body.draft), "by": "composer"}
     return {
-        "title": drafter.suggest_title(
-            body.draft,
-        deps.get_model_manager().for_feature("writing"),
-        deps.get_ollama(),
-        )
+        "title": drafter.suggest_title(body.draft, deps.get_model_manager().for_feature("writing"), ollama)
     }

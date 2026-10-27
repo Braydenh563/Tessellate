@@ -35,7 +35,7 @@ import re
 import sys
 import zlib
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import NamedTuple
@@ -114,6 +114,7 @@ _BASE = {
     "has_parts": "it has {count} sections: {names}",
     "still_list": "you still need to {items}",
     "a_list": "a list: {items}",
+    "a_list_asked": "questions to ask: {items}",
     "told_self": ("you told yourself to", "you reminded yourself to"),
     "drift_woven": "though no later note says how that went",
     "meaning_loading": "The search by meaning is still loading, so this read your words only; ask again in a few seconds.",
@@ -151,6 +152,17 @@ _BASE = {
 #: times running (B6).
 VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
     "natural": {
+        #: Chosen by the question's own number (`_SEEDED`), so the same
+        #: closing line is not under every answer ("responses are exactly the
+        #: same", the owner, 2026-10-25).
+        "only_note": ("It's your only note on that so far.",
+                      "That is the only note you have on it so far.",
+                      "So far this is your only note on it.",
+                      "You have just the one note on that so far."),
+        "only_one": ("It's your only note on {topic} so far.",
+                     "That is the only note you have on {topic} so far.",
+                     "So far this is your only note on {topic}.",
+                     "You have just the one note on {topic} so far."),
         "overview": ("You have {count} about {topic}, {span}.",
                      "There are {count} about {topic}, {span}.",
                      "{Count} about {topic}, {span}.",
@@ -243,6 +255,11 @@ def _gap(days: int) -> str:
     return f"about {realise.count_word(months)} months" if months < 12 else "over a year"
 
 
+#: Phrases worded by the question as well as the turn: the same question says
+#: the same thing, a different one does not.
+_SEEDED = frozenset({"only_note", "only_one"})
+
+
 class _Phrases(dict):
     """`PHRASES[key]` in the voice of the answer being written; a capital
     `{Count}` or `{Topic}` in a phrase is that value with a capital letter."""
@@ -250,7 +267,8 @@ class _Phrases(dict):
     def __getitem__(self, key: str) -> str:
         said = VOICES.get(_VOICE.get(), {}).get(key) or _BASE[key]
         if isinstance(said, tuple):
-            said = said[_TURN.get() % len(said)]
+            at = _SEED.get() + _TURN.get() if key in _SEEDED else _TURN.get()
+            said = said[at % len(said)]
         return _Capitals(said)
 
 
@@ -337,18 +355,23 @@ _CUES: tuple[tuple[str, re.Pattern], ...] = (
 #: landed, whatever the note is called.
 _STRONG_CUES = 4
 #: Words that frame a topic without saying anything about it.
-_FRAME_WORDS = frozenset(composer._stem(w) for w in "look looking new idea ideas thought thinking about some".split())
+#: Stemmed on first use, not at import: the first stem builds the spelling-pair
+#: table (about 0.3s), which a launch that never composes should not pay.
+def _stems(words: str) -> "Callable[[], frozenset[str]]":
+    return lru_cache(maxsize=1)(lambda: frozenset(composer._stem(w) for w in words.split()))
+
+
+_FRAME_WORDS = _stems("look looking new idea ideas thought thinking about some")
 #: Words a question asks with that are not its subject ("what have I learned
 #: in psych" is about psych; "when are my uni days" about uni).
-_ASKING = frozenset(
-    composer._stem(w)
-    for w in "learned learnt saved save written wrote noted kept think thought know day days week weeks time times "
-    "thing things stuff note notes plan plans going".split()
+_ASKING = _stems(
+    "learned learnt saved save written wrote noted kept think thought know day days week weeks time times "
+    "thing things stuff note notes plan plans going"
 )
 
 #: Verbs a question names its subject with ("spend on groceries"): never the
 #: subject's missing word.
-_VERBS = frozenset(composer._stem(w) for w in "spend spent buy get make do go like want need try see say use pay cost".split())
+_VERBS = _stems("spend spent buy get make do go like want need try see say use pay cost")
 
 _ASKS = {
     "compare": re.compile(r"^\s*(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
@@ -361,7 +384,9 @@ _ASKS = {
     "overview": re.compile(
         r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
         r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat do my notes say\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
-        r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b",
+        r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|"
+        #: "what about social connections" asks for the lot (INBOX 1420).
+        r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b",
         re.I,
     ),
 }
@@ -379,6 +404,7 @@ _THIS = re.compile(
     r"(?:summari[sz]e|sum up|recap|give me the gist of|what(?:'s| is| are) the (?:gist|main points) of)"
     r"(?: (?:this|it|these|this note|the note|this page|this category|what(?:'s| is| i have) open))?"
     r"|what(?:'s| is) (?:this|it) about|what does (?:this|it) say|tl;? ?dr"
+    r"|what(?:'s| is) (?:the )?(?:main|key|big|core) (?:point|idea|takeaway)s?(?: of (?:this|it))?|(?:the )?(?:main|key) (?:points?|ideas?|takeaways?)|(?:key )?take-?aways?"
     r")(?: for me| please)?$",
     re.I,
 )
@@ -451,6 +477,23 @@ class _Out:
     framed: bool = False
 
 
+_KIND_NOUN = {"document": "document", "board": "board", "map": "mind map", "picture": "picture"}
+
+
+def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
+    """"Fact, from your note of 3 March." for a note; a document, board or
+    map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
+    ..., from your note of an undated day" for a document)."""
+    noun = _KIND_NOUN.get(getattr(view, "kind", "note") or "note")
+    #: "... that work in most settings:, from your note" (INBOX 1420).
+    fact = fact.rstrip().rstrip(":;,").rstrip()
+    if noun and view.title:
+        return f"{fact}, from your {noun} **{view.title}**."
+    if view.written is None:
+        return f"{fact}, from one of your notes."
+    return PHRASES["from_note"].format(fact=fact, day=_day(view.written, today))
+
+
 def _day(d: date | None, today: date) -> str:
     if d is None:
         return "an undated day"
@@ -507,7 +550,7 @@ def _lower_first(text: str, names: set[str]) -> str:
     if not first:
         return text
     word = first.group(0)
-    if word == "I" or word.lower() in names or (len(word) > 1 and word[1:].isupper()):
+    if word == "I" or word.lower() in names or any(c.isupper() for c in word[1:]):
         return text
     if re.match(r"[A-Z][\w'-]* (?!(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day|January|February|March|April|May|June|July|August|September|October|November|December)[A-Z][\w'-]* [A-Z]", text):
         #: "Dune Part Two", "Gym Routine Overview": three capitals in a row are
@@ -585,7 +628,7 @@ def _pin(text: str, written: date) -> str:
     #: "Trimmed my first bowl today", written 2 September, is "on 2
     #: September"; under that day's own label the day is dropped (`_lines`).
     for found in reversed(_spans(text, written)):
-        if found.kind in ("date", "datetime") and found.text.lower() in _DEICTIC:
+        if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
             text = f"{text[:found.start].rstrip()} on {_day(day, today)}{text[found.end:]}"
     return text
@@ -593,6 +636,8 @@ def _pin(text: str, written: date) -> str:
 
 #: The words for the day a note was written, said as that day once read:
 #: the recogniser gives the day each means from the note's own date.
+#: "Tomorrow" is said as its day too once that day is past (INBOX 1357, class
+#: D: "tomorrow you pick up your student card" from a July note).
 _DEICTIC = frozenset(("today", "tonight", "yesterday"))
 
 
@@ -685,12 +730,17 @@ class _Split(NamedTuple):
     titled: bool = False
 
 
+#: "It's in four phases: the Opener, ..." is a sentence leading into its
+#: list, not a heading: never "Your It's in four phases note" (INBOX 1420).
+_CLAUSE_HEAD = re.compile(r"(?:it|this|that|there|they|we|i|he|she|you)(?:'s|'re|'m|’s| is| are| was| were| has| have| had)\b", re.I)
+
+
 def _split_label(text: str) -> _Split:
     """A sentence's own heading ("Study plan: ...") and the rest. "Watched
     Dune Part Two: 7 out of 10" names what was done, not a heading: the
     sentence stays whole ("you watched Dune Part Two")."""
     head = _PREFIX.match(text)
-    if head and _WORK.match(head.group(1)):
+    if head and (_WORK.match(head.group(1)) or _CLAUSE_HEAD.match(head.group(1))):
         head = None
     if head and len(head.group(1).split()) <= 5:
         return _Split(head.group(1).strip(), head.group(2), True, True, True)
@@ -700,9 +750,25 @@ def _split_label(text: str) -> _Split:
     return _Split("", text, False, bool(head))
 
 
+def _node_split(view: composer.NoteView, sentence: composer.Sentence) -> _Split | None:
+    """A map's node or a board's card is its own text, whole: "IaaS: renting
+    servers" is one node, not the heading "IaaS" over a sentence (the owner's
+    "**Service models:**" over a mind map). None for anything else."""
+    if view.kind in ("map", "board") and sentence.kind == "item":
+        return _Split("", sentence.text.strip().rstrip(".!"), False, False)
+    return None
+
+
+_CONDITION = re.compile(r"(?:^|,\s*)(?:if|when|whenever|once|unless|in case)\b[^,]*$", re.I)
+
+
 def _action_of(body: str) -> tuple[str, str]:
     """The to-do a sentence ends with, split from what it says: (action, body)."""
     acted = _ACTION.search(body)
+    if acted and acted.start(1) > 0 and _CONDITION.search(body[: acted.start()].rstrip(" ,;")):
+        #: "If she mentions a trip, ask what the best part was" is advice:
+        #: split, it left "For example, if she mentions a trip." (INBOX 1420).
+        return "", body
     if acted and acted.start(1) > 0:
         return acted.group(1).strip(), body[: acted.start()].rstrip(" ,;")
     if acted and acted.start(1) == 0 and re.search(r"\b(on|by|before) (mon|tues|wednes|thurs|fri|satur|sun)day\b", body, re.I):
@@ -724,8 +790,11 @@ def _cue_for(piece: str, fixed: str, label: str, own: bool, note_label: str) -> 
     return fixed or (label if own else "") or strong or note_label or next((name for name, cue in _CUES if cue.search(piece)), "")
 
 
-def _said_piece(piece: str, cue: str, written: date | None, pinned, last: bool) -> str:  # noqa: ANN001
-    said = _tidy(_second_person(piece), written)
+def _said_piece(piece: str, cue: str, written: date | None, pinned, last: bool, asked: bool = False) -> str:  # noqa: ANN001
+    #: A listed question is a line to ask someone ("I like your jacket,
+    #: where is it from?"): its "I" and its "this week" are the asker's,
+    #: never "you like your jacket" or "the week of 20 July" (INBOX 1420).
+    said = _tidy(piece, None) if asked else _tidy(_second_person(piece), written)
     if cue == "Your week":
         said = re.sub(r"\b(?:are|is) (on|every)\b", r"\1", said)
     if cue == "What you want":
@@ -740,7 +809,7 @@ def _only_the_subject(body: str, own: bool, subject: set[str] | None) -> bool:
     question, so it says nothing."""
     if not subject or own or len(body.split()) > 7:
         return False
-    content = {composer._stem(w) for w in composer._words(body)} - _FRAME_WORDS
+    content = {composer._stem(w) for w in composer._words(body)} - _FRAME_WORDS()
     return bool(content) and all(any(composer._holds(st, {w}) for st in subject) for w in content)
 
 
@@ -758,7 +827,8 @@ def _sentence_facts(view: composer.NoteView, s, split: _Split, note_label: str, 
             #: written, and misleading said now with no day.
             continue
         cue = _cue_for(piece, fixed, split.label, split.own, note_label)
-        said = _said_piece(piece, cue, view.written, pinned, n == len(pieces) - 1)
+        asked = s.kind == "item" and str(s.text).rstrip().endswith("?")
+        said = _said_piece(piece, cue, view.written, pinned, n == len(pieces) - 1, asked)
         if said:
             heading = bool(cue and ((split.own and split.headed and cue == split.label) or cue == note_label))
             out.append(Fact(view, s, cue, said, _tidy(action, view.written) if n == 0 else "", heading=heading))
@@ -774,6 +844,18 @@ def _picture_of(view: composer.NoteView) -> Fact | None:
 def _left_out(view: composer.NoteView, s, known) -> bool:  # noqa: ANN001
     """A picture's sentences are said as one fact; one the person marked wrong is not said."""
     return s.kind in ("picture", "picture_text") or bool(known and known.is_wrong(view.id, s.text))
+
+
+_IT_IS = re.compile(r"^it(?:'s|’s| is)\s+", re.I)
+
+
+def _its_title(view: composer.NoteView, text: str, i: int) -> str:
+    """A titled note's first "It's in four phases" said with what "it" is:
+    "your Complete Social Skills Guide is in four phases" (INBOX 1420)."""
+    if i or not view.titled or not view.title or not _IT_IS.match(text):
+        return text
+    name = re.sub(r"^(?:the|a|an|my|your)\s+", "", view.title, flags=re.I)
+    return f"your {name} is " + text[_IT_IS.match(text).end():]
 
 
 def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = None) -> list[Fact]:
@@ -794,7 +876,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
         if _left_out(view, s, known):
             continue
         pinned = known.pinned_on(view.id, s.text) if known else None
-        split = _split_label(s.text.strip().rstrip(".!"))
+        split = _node_split(view, s) or _split_label(_its_title(view, s.text.strip().rstrip(".!"), i))
         if i == 0 and split.titled:
             note_label = split.label
         out += _sentence_facts(view, s, split, note_label, subject, pinned)
@@ -802,7 +884,7 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
 
 
 def _subject(question: str) -> list[str]:
-    return [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING]
+    return [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING()]
 
 
 def _pool(v: composer.NoteView) -> set[str]:
@@ -827,7 +909,7 @@ def _unanswerable(stems: list[str], views: list[composer.NoteView]) -> bool:
     """"the weather on Mars": a subject word no note holds is a question
     the notes cannot answer, and the composer says which word is missing."""
     everywhere = set().union(*(_pool(v) for v in views))
-    return any(st not in _VERBS and not composer._holds(st, everywhere) for st in stems)
+    return any(st not in _VERBS() and not composer._holds(st, everywhere) for st in stems)
 
 
 def _members(question: str, views: list[composer.NoteView]) -> list[composer.NoteView]:
@@ -974,19 +1056,52 @@ def _recent(written: date | None, today: date | None) -> str:
 _SHORTHAND = re.compile(r"^(?!(?:you|your|at|in|on|with|after|before|from|for|during|to|by|this|last|next|the day)\b)[a-z]", re.I)
 
 
-def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> tuple[str, str]:
-    """A day's line is said as that day, not under it (the owner,
-    2026-10-11: no label lines), the time since the last one first."""
+_HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s+)?", re.I)
+_WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
+
+
+def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
+    """The line's lead: the time since the line before, a recent day, or its date."""
     gap = (written - before).days if i and before and written else 0
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
-    lead = recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
-    if _SHORTHAND.match(line_body) and not _FINITE.search(line_body.split(",")[0]):
+    return recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
+
+
+def _cleaned_body(line_body: str, label: str) -> str:
+    """The note's words with its own date, a pasted "however" and a "here are" opener taken out."""
+    #: A note that opens on its own day ("on 21 September, you have work")
+    #: already has it in the lead: kept, it read "on 21 September, on 21
+    #: September, you have work", and the present tense went unshifted.
+    line_body = re.sub(rf"^on {re.escape(label)},?\s*", "", line_body, flags=re.I) or line_body
+    #: A pasted summary's "however" answers text that is not there (1420).
+    line_body = re.sub(r",\s*however,", "", line_body)
+    #: "Here are some refined ... starters" is what was saved, not said.
+    return _HERE_ARE.sub(lambda m: "you saved " + (m.group(1) or ""), line_body, count=1)
+
+
+def _said_as_written(line_body: str, i: int) -> str:
+    """The body as reported speech: shorthand noted, a statement about something else written, else retold."""
+    #: "What your notes leave out is how ...": a clause of its own, its verb late.
+    asked_clause = bool(_WH_SUBJECT.match(line_body) and _FINITE.search(line_body))
+    if _SHORTHAND.match(line_body) and not _FINITE.search(line_body.split(",")[0]) and not asked_clause:
         #: "golf practice after work, hit a bucket ...": shorthand with no
         #: verb is what the person wrote down, never a dated fragment.
-        line_body = f"{_pick('noted', i)} {line_body}"
-    line_body = lead[0].upper() + lead[1:] + _reported(line_body, i)
+        return f"{_pick('noted', i)} {line_body}"
+    if _SHORTHAND.match(line_body) and not _CLAUSE_HEAD.match(line_body):
+        #: "by 20 July, Cloud computing is the delivery of ...": a statement
+        #: about something else is what the person wrote (INBOX 1420).
+        return _REPORTS[i % len(_REPORTS)] + _lower_first(line_body, _NAMES.get())
+    return _reported(line_body, i)
+
+
+def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> tuple[str, str]:
+    """A day's line is said as that day, not under it (the owner,
+    2026-10-11: no label lines), the time since the last one first."""
+    lead = _dated_lead(label, i, by_day, written, before)
+    reported = _said_as_written(_cleaned_body(line_body, label), i)
+    line_body = lead[0].upper() + lead[1:] + reported
     return line_body, line_body + _relate(line_body, by_day)
 
 
@@ -1158,9 +1273,17 @@ def _reported(body: str, i: int) -> str:
     if past and not _PRESENT.match(said):
         verb = past.group(2)
         said = f"you had{past.group(1)} {_PAST_PARTICIPLE.get(verb, verb)}" + said[past.end():]
+    #: The note's later sentences were written that day too ("You need to
+    #: finish your IT assignment, which is due on Friday"): shifted alike.
+    head, *rest = re.split(r"(?<=[.!?]) (?=You\b)", said)
+    said = " ".join([_backshift(head)] + ["Y" + _backshift("y" + more[1:])[1:] for more in rest])
+    return _REPORTS[i % len(_REPORTS)] + said
+
+
+def _backshift(said: str) -> str:
     for pattern, repl in _BACKSHIFT:
         said = pattern.sub(repl, said)
-    return _REPORTS[i % len(_REPORTS)] + said
+    return recogniser.as_of_then(said)
 
 
 _PINNED = re.compile(r" \(you pinned this as true, [^)]+\)")
@@ -1353,9 +1476,23 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
             out += ", though you're " + body
         elif body.lower().startswith("going to "):
             out += ", and you're " + body
+        elif out.rstrip().endswith(("?", "!")) or _a_sentence(out) or _a_sentence(body):
+            #: "That's fascinating; What drew you to it?; you've always ..."
+            #: ran sentences together (INBOX 1420): a sentence ends.
+            out = out.rstrip() + ("" if out.rstrip().endswith(("?", "!", ".")) else ".") + " " + body[:1].upper() + body[1:]
         else:
             out += "; " + body
     return out
+
+
+_SUBJECT_START = re.compile(r"^(?:i|you|we|he|she|they|it|that|this|there|what|how|why|who|when|where)(?:'\w+|’\w+)?\b", re.I)
+
+
+def _a_sentence(body: str) -> bool:
+    """A body that is a whole sentence (a subject and its verb, or a
+    question), not a list entry: joined by a stop, never a ";"."""
+    body = body.strip()
+    return body.endswith("?") or bool(_SUBJECT_START.match(body) and (_FINITE.search(body) or re.match(r"\w+(?:'|’)\w+", body)))
 
 
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
@@ -1409,6 +1546,9 @@ def _row(said: str, fact: Fact) -> dict:
         "end": fact.sentence.end,
         "score": 1.0,
         "digest": True,
+        #: The source's kind, so a closing line reads a document's id in its
+        #: own table (INBOX 1357).
+        "kind": getattr(fact.view, "kind", "note"),
     }
 
 
@@ -1423,18 +1563,41 @@ def _missing(members: list[composer.NoteView]) -> str:
     return ""
 
 
-def _offer(facts: list[Fact]) -> dict | None:
+#: A question about what is open or due, where any to-do is on topic.
+_ABOUT_TASKS = re.compile(r"\b(?:to ?do|left|remaining|outstanding|need|should|must|due|deadline|homework|tasks?|remind\w*)\b", re.I)
+
+
+_ABOUT_TIME = re.compile(r"\b(?:when|what (?:day|time|date))\b", re.I)
+
+
+def _on_topic(action: str, asked: str) -> bool:
+    """Whether a to-do is what the question is about: it asks what is open or
+    due, or asks when something happens that the to-do names ("when is the
+    tutor meeting" offers "ask the tutor on Thursday"). A definition
+    ("what is the Krebs cycle") offers nothing, even beside a to-do on it."""
+    if _ABOUT_TASKS.search(asked):
+        return True
+    if not _ABOUT_TIME.search(asked):
+        return False
+    words = {composer._stem(w) for w in re.findall(r"[a-z]{4,}", action.lower())}
+    return bool(words & {composer._stem(w) for w in re.findall(r"[a-z]{4,}", asked.lower())})
+
+
+def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     """One thing to do next, from the notes' own to-dos: the one with a day
-    first ("ask the tutor on Thursday"), then something still to book."""
+    first ("ask the tutor on Thursday"), then something still to book. With
+    `asked`, only a to-do the question is about (`_on_topic`)."""
     #: A day in a to-do is the note's day ("ask the tutor on Thursday",
     #: written 4 August, was 6 August): one gone by is not offered for this
     #: Thursday (the owner, 2026-10-11: relative time resolved everywhere).
     actions = [_asked_about(_still_ahead(a, f.view.written), f.body) for f in facts if (a := _task_of(f))]
+    if asked is not None:
+        actions = [a for a in actions if _on_topic(a, asked)]
     actions.sort(key=lambda a: not any(s.kind in ("date", "datetime") for s in _spans(a, None)))
     if not actions:
         for f in facts:
             still = _STILL_TO.search(f.sentence.text)
-            if still:
+            if still and (asked is None or _on_topic(f"{still.group(2)} {still.group(1)}", asked)):
                 actions.append(f"{still.group(2).lower()} the {still.group(1).lower()}")
     if not actions:
         return None
@@ -1679,7 +1842,7 @@ def _heading_sections(view: composer.NoteView) -> str:
     """The shape of a note in markdown sections, two or more, or ""."""
     content = str(view.note.get("content") or "")
     _, start = composer._title(content)
-    heads = [m.group(1).strip() for line in content[start:].splitlines() if (m := composer._HEADING.match(line))]
+    heads = [h for line in content[start:].splitlines() if (h := composer._heading_text(line)) is not None]
     if len(heads) < 2:
         return ""
     labelled = [_split_label(h) for h in heads]
@@ -1776,6 +1939,10 @@ def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shap
     if sort.tasks:
         return [Fact(view, sort.tasks[0].sentence, "", PHRASES["still_list"].format(items=_listed(sort.tasks)), sort.tasks[0].action)]
     if sort.items and not chosen and not sort.labelled and not material:
+        if all(f.body.rstrip().endswith("?") for f in sort.items):
+            #: "a list: how did that go?, what happened next? And ..." (1420).
+            asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in sort.items]
+            return [Fact(view, sort.items[0].sentence, "", PHRASES["a_list_asked"].format(items=_listed(asked)))]
         return [Fact(view, sort.items[0].sentence, "", PHRASES["a_list"].format(items=_listed(sort.items)))]
     return []
 
@@ -2023,7 +2190,8 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
         hits = sum(1 for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
-        return (bool(cue and cue.search(f.sentence.text)), hits, -f.sentence.order)
+        #: Between sources that say it equally well, the one the search ranked first.
+        return (bool(cue and cue.search(f.sentence.text)), hits, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -2047,7 +2215,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
         #: a label the answer gave the fact ("How it went") does not.
         out.lines.append(f"From your {lead.label[0].lower() + lead.label[1:]} note, {_day(lead.view.written, today)}: {body}.")
     else:
-        out.lines.append(PHRASES["from_note"].format(fact=body[0].upper() + body[1:], day=_day(lead.view.written, today)))
+        out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
     out.rows.append(_row(body, lead))
 
 
@@ -2101,8 +2269,19 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     return True
 
 
+class _WhenCue:
+    """What a "when" answer leads with: a habit's weekdays, or a sentence that
+    holds a day as the recogniser reads one ("Exam on 12 November", where the
+    old month pattern wanted "in November")."""
+
+    _DAYS = re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b", re.I)
+
+    def search(self, text: str) -> bool:
+        return bool(self._DAYS.search(text)) or any(s.kind in ("date", "datetime", "range") for s in _spans(text, None))
+
+
 _SINGLE_CUES = {
-    "when": re.compile(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bin (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*", re.I),
+    "when": _WhenCue(),
     "count": re.compile(r"\$\s?\d|\d"),
     "opinion": _RATING,
 }
@@ -2118,7 +2297,7 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
         _say_fact(out, lead, today, question)
         return [f for f in rest if f.view.id == lead.view.id]
     said = days.group(0).strip(" ,")
-    out.lines.append(PHRASES["from_note"].format(fact=said[0].upper() + said[1:], day=_day(lead.view.written, today)))
+    out.lines.append(_from_source(lead.view, said[0].upper() + said[1:], today))
     out.rows.append(_row(said, lead))
     rest = [f for f in rest if re.search(r"\b(mon|tues|wednes|thurs|fri|satur|sun)days\b|\bafternoons\b|\bmornings\b|\bevenings\b", f.sentence.text, re.I)]
     return [Fact(f.view, f.sentence, "Also on your week", f.body, f.action) for f in rest]
@@ -2205,11 +2384,23 @@ def _single_close(out: _Out, kind: str, rest: list[Fact], members) -> None:  # n
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
 
 
+_TASKY = re.compile(r"\b(?:to-?do|tasks?|checklist|left|open|unfinished)\b", re.I)
+
+
+def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[Fact]:
+    """An unticked checklist item is not a fact about the thing asked
+    (composer5: "what is the Krebs cycle" listing "read chapter 4")."""
+    if kind != "fact" or lead.sentence.kind == "task" or _TASKY.search(question):
+        return rest
+    return [f for f in rest if f.sentence.kind != "task"]
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
     lead = _best(facts, question, _SINGLE_CUES.get(kind))
     if lead is None:
         return
     rest = [f for f in facts if f is not lead]
+    rest = _drop_tasks(kind, lead, rest, question)
     if kind == "when":
         rest = _single_when(out, lead, rest, question, today)
     elif kind == "opinion":
@@ -2491,7 +2682,9 @@ def _finish(out: _Out, kind: str, asked: str, members: list, facts: list[Fact], 
     elif kind in ("overview", "likes"):
         _confirmed_first(out, asked, members, learned)
         _volunteer(out, asked, members, notes, today, insight, learned)
-    out.offer = out.offer or _offer(facts) or _kind_offer(kind, asked, members, facts, today, out)
+    #: A fact answer ("what is the Krebs cycle") offers a to-do only when it is
+    #: about it; an overview of notes that hold an open task still offers it.
+    out.offer = out.offer or _offer(facts, asked if kind == "fact" else None) or _kind_offer(kind, asked, members, facts, today, out)
     return _result(out, kind, asked)
 
 
@@ -2501,6 +2694,18 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     views = _begin(question, asked, notes, today, voice, turn, known)
     wants_context = bool(set(composer._words(asked)) & {composer._stem(t) for t in CONTEXT_TAGS})
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
+
+
+def _defining_first(asked: str, members: list) -> list:
+    """The note that says what the subject is ("Cloud computing is the
+    delivery of ...") leads, ahead of a passing mention the search ranked
+    higher (INBOX 1420: "it missed my main note about what cloud computing is")."""
+    terms = composer.subject_terms(clean(asked))
+    if not terms or len(members) < 2:
+        return members
+    said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in terms) + r"\s+(?:is|are|means|refers to)\b", re.I)
+    defining = [v for v in members if any(said.match(x.text) for x in v.sentences[:2])]
+    return defining[:1] + [v for v in members if v not in defining[:1]] if defining else members
 
 
 def _pick_members(asked: str, views: list, wants_context: bool) -> list:
@@ -2519,6 +2724,17 @@ def _tie_closing(out: _Out, asked: str, members: list, other: str, others: list)
     out.next.append(PHRASES["tie_chip"].format(topic=topic, category=other))
 
 
+def _kind_if_mine(asked: str) -> str | None:
+    """The question's kind, or None when the digest should not answer it: an
+    empty question, or two things named ("Lisbon vs Porto", "how does A differ
+    from B"), which the composer's side-by-side answers; a digest of the best
+    note would say one side and drop the other."""
+    if not asked:
+        return None
+    kind = kind_of(asked)
+    return None if kind != "compare" and composer.compare_sides(asked) else kind
+
+
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -2528,9 +2744,9 @@ def answer(
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or date.today()
     asked = clean(question)
-    if not asked:
+    kind = _kind_if_mine(asked)
+    if kind is None:
         return None
-    kind = kind_of(asked)
     views, wants_context = _scope(question, asked, notes, today, voice, turn, known)
     if not views:
         return None
@@ -2539,7 +2755,7 @@ def answer(
     early = _early(out, kind, asked, question, views, today)
     if early is not _ORDINARY:
         return early
-    members = _pick_members(asked, views, wants_context)
+    members = _defining_first(asked, _pick_members(asked, views, wants_context))
     tie = _tie(asked, members) if members and kind == "overview" else None
     members = tie[0] if tie else members
     facts = [f for v in members for f in _facts(v, names, set(_subject(asked)))]
@@ -2674,7 +2890,9 @@ def _weave_drift(out: _Out, plan: str) -> bool:
 
 def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) -> None:  # noqa: ANN001
     """The open note: its facts under their labels."""
-    title = _tidy(str(v.note.get("title") or "")) or (facts[0].label if facts[0].label else "")
+    #: The heading `read_note` found: the note dict carries no `title` of its own
+    #: (the 22-10 bug doc: "Your untitled note of 25 October" over a titled note).
+    title = _tidy(str(v.note.get("title") or (v.title if v.titled else ""))) or (facts[0].label if facts[0].label else "")
     category = str(v.note.get("category") or "").strip()
     where = f", in {category}" if category and category.lower() != "uncategorised" else ""
     title = title.lower() if title and title not in names else title or "untitled"
@@ -3034,9 +3252,21 @@ def _result(out: _Out, kind: str, question: str) -> dict:
 _WEB_ASK = re.compile(r"^(?:(?:hey|hi|ok|okay),? )?(?:(?:can|could|will) (?:you|u) )?(?:(?:please|pls|plz) )?(?:search (?:the )?(?:web|internet|online) (?:for|about)|search up|look up|google|find (?:on|from) the web|web search(?: for)?)\s+", re.I)
 
 
-def web_query(question: str) -> str:
-    """What to search for: the turn without its "can you search the web for"."""
-    return clean(_WEB_ASK.sub("", clean(question))) or question
+#: A question whose answer depends on where the person is ("the weather
+#: today", "pharmacies near me") and that names no place itself.
+_LOCAL = re.compile(r"\b(?:weather|forecast|temperature|rain(?:ing)?|sunrise|sunset|near me|nearby|open now)\b", re.I)
+_NAMES_PLACE = re.compile(r"\b(?:in|at|for|near) (?-i:[A-Z])\w+")
+
+
+def web_query(question: str, place: str = "") -> str:
+    """What to search for: the turn without its "can you search the web for",
+    and, for a local question that names no place, the person's own place
+    (their timezone's city), so "what's the weather like today" is not
+    searched as if from nowhere. `place` comes from settings, never typed."""
+    asked = clean(_WEB_ASK.sub("", clean(question))) or question
+    if place and _LOCAL.search(asked) and not _NAMES_PLACE.search(asked) and place.lower() not in asked.lower():
+        asked = f"{asked.rstrip(' ?.!')} {place}"
+    return asked
 
 
 def _page_span(view, row: dict | None, terms: set[str]) -> str:  # noqa: ANN001

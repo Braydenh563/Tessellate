@@ -52,6 +52,10 @@ renderWebClip();
 //: **The web panel's reader** (moved from chat.js for the boot scripts' gzip
 //: ratchet; chat.js's `openWebReader` loads this file and calls it).
 async function showWebReader(url) {
+  //: The reader's typography and the Analyse block live in web-lazy.css, not
+  //: in the boot sheets (the boot gzip ratchet has no room); app.js's
+  //: LAZY_MODULES entry stays as it was for the same reason.
+  const styled = lazyScript("/css/web-lazy.css");
   const status = $("web-status");
   status.classList.remove("error");
   status.textContent = "Opening…";
@@ -71,6 +75,7 @@ async function showWebReader(url) {
   if (!webRequestEnd(controller)) return;
   webReaderPage = page;
   readerBookmarkMark(false);
+  clearWebAnalysis();
   status.textContent = "";
   $("web-reader-title").textContent = page.title || page.domain;
   const length = page.read_minutes
@@ -120,12 +125,149 @@ async function showWebReader(url) {
       box.appendChild(el);
     }
   }
+  await styled;
   $("web-search-history").classList.add("hidden");
   $("web-reader").classList.remove("hidden");
   //: The reader is the pane's one scroller, so a new page starts at its top.
   $("web-reader").scrollTop = 0;
   $("web-reader-back").focus({ preventScroll: true });
 }
+
+//: Analyse this page: the composer's reading of the page already open, with
+//: no model and no request to the web (POST /websearch/analyse takes the
+//: blocks the reader holds). Key points are the page's own sentences, key
+//: terms are marked in the text, and each section is a jump to its heading.
+//: The terms are marked with <mark> nodes made by createElement: the page is
+//: untrusted, so none of its text is ever parsed as markup.
+function clearWebAnalysis() {
+  const box = $("web-reader-analysis");
+  box.replaceChildren();
+  box.classList.add("hidden");
+  const button = $("web-reader-analyse");
+  button.setAttribute("aria-pressed", "false");
+  for (const mark of [...$("web-reader-text").querySelectorAll("mark.reader-term")]) {
+    mark.replaceWith(document.createTextNode(mark.textContent));
+  }
+  $("web-reader-text").normalize();
+}
+
+function markWebTerms(terms) {
+  const escaped = terms
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .filter(Boolean);
+  if (!escaped.length) return;
+  const pattern = new RegExp(`\\b(${escaped.join("|")})\\b`, "gi");
+  const walker = document.createTreeWalker($("web-reader-text"), NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const text = node.nodeValue;
+    pattern.lastIndex = 0;
+    if (!pattern.test(text)) continue;
+    pattern.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    for (const m of text.matchAll(pattern)) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const mark = document.createElement("mark");
+      mark.className = "reader-term";
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.replaceWith(frag);
+  }
+}
+
+async function analyseWebPage() {
+  const page = webReaderPage;
+  const box = $("web-reader-analysis");
+  const button = $("web-reader-analyse");
+  if (!page) return;
+  // A second press puts the page back as it was.
+  if (button.getAttribute("aria-pressed") === "true") {
+    clearWebAnalysis();
+    return;
+  }
+  let found;
+  try {
+    const blocks = (page.blocks || []).map((b) => ({
+      type: b.type,
+      level: b.level || null,
+      text: String(b.text || "").slice(0, 5000),
+    }));
+    found = await apiJson("/websearch/analyse", {
+      method: "POST",
+      body: JSON.stringify({ blocks: blocks.slice(0, 2500) }),
+    });
+  } catch (error) {
+    toast(error.message || "Could not analyse this page.");
+    return;
+  }
+  if (webReaderPage !== page) return;
+  box.replaceChildren();
+  const addHeading = (text) => {
+    const h = document.createElement("h5");
+    h.className = "reader-analysis-title";
+    h.textContent = text;
+    box.appendChild(h);
+  };
+  if (!found.key_points.length && !found.terms.length && !found.sections.length) {
+    const none = document.createElement("p");
+    none.className = "muted";
+    none.textContent = "There is not enough text on this page to analyse.";
+    box.appendChild(none);
+  }
+  if (found.key_points.length) {
+    addHeading("Key points");
+    const list = document.createElement("ul");
+    for (const point of found.key_points) {
+      const li = document.createElement("li");
+      li.textContent = point;
+      list.appendChild(li);
+    }
+    box.appendChild(list);
+  }
+  if (found.terms.length) {
+    addHeading("Key terms");
+    const row = document.createElement("div");
+    row.className = "row reader-analysis-terms";
+    for (const term of found.terms) {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip";
+      chip.textContent = term;
+      row.appendChild(chip);
+    }
+    box.appendChild(row);
+    markWebTerms(found.terms);
+  }
+  if (found.sections.length) {
+    addHeading("Sections");
+    const list = document.createElement("ul");
+    list.className = "reader-analysis-sections";
+    for (const section of found.sections) {
+      const li = document.createElement("li");
+      const jump = document.createElement("button");
+      jump.type = "button";
+      jump.className = "link-button";
+      jump.textContent = section.title;
+      jump.addEventListener("click", () => {
+        const heading = $("web-reader-text").querySelectorAll(".reader-heading")[section.n];
+        if (heading) heading.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+      });
+      li.appendChild(jump);
+      list.appendChild(li);
+    }
+    box.appendChild(list);
+  }
+  box.classList.remove("hidden");
+  button.setAttribute("aria-pressed", "true");
+}
+
+//: Wired here, not in wiring.js: the reader opens only once this module is in
+//: (chat.js loads it first), so the button cannot be pressed before this runs.
+$("web-reader-analyse").addEventListener("click", analyseWebPage);
 
 //: The reader's Save as note (moved from chat.js with the reader: its button
 //: is on screen only once `showWebReader` has drawn a page).

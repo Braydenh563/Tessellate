@@ -158,7 +158,8 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
     assert card["label"] == "Remind you on Friday at 9: call the dentist", phrase
     assert card["items"] == [f"#{dentist.id} Dentist"]
     assert card["steps"][0]["arguments"]["note_id"] == dentist.id
-    assert out["text"] == "Done: remind you on Friday at 9: call the dentist."
+    #: Said back in the composer's words (CHAT_PLAN 1353), the card's label exact.
+    assert out["text"].endswith("remind you on Friday at 9: call the dentist.") and "!" not in out["text"], out["text"]
     assert "call the dentist" in phrase.lower()
     reminder = session.scalars(select(Reminder)).one()
     assert reminder.entry_id == dentist.id and reminder.due_at.strftime("%a %H:%M") == "Fri 09:00"

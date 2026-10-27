@@ -291,6 +291,8 @@ const GC_LABEL_LANDMARK_SHARE = 0.35;
 //: A note with this many links is a hub, named at the overview of a grouped
 //: map besides each category's best-connected note (INBOX 693).
 const GC_LABEL_HUB_DEGREE = 5;
+const GC_LABEL_NARROW_W = 600;
+const GC_LABEL_NARROW_CUT = 14;
 //: How far a non-neighbour dims while something is hovered (§5 Phase 1).
 const GC_DIM_ALPHA = 0.2;
 
@@ -376,6 +378,22 @@ const GC_EDGE_TINTED = { link: 0.55, thread: 0.6, entity: 0.55, document: 0.55 }
 //: kind's width and opacity (the line pass in `gcDraw`, INBOX 693).
 const GC_CROSS_WIDTH = 0.65;
 const GC_CROSS_ALPHA = 0.5;
+//: **A hub's spokes are straight and quiet** (INBOX 1400 and 1306, the owner:
+//: "a brown hub with many crossing edges", "feels very messy"). On the 36-note
+//: seed one note held 24 of 64 links and 39 of 64 crossings, its spokes drawn
+//: as 24 bows fanning across every cluster. A note is a hub at
+//: `gcHubSpokeMin` links (three times the map's mean, never under
+//: `GC_HUB_SPOKES`); its lines run straight, so they read as rays from one
+//: place, and a ray to another category is drawn at `GC_HUB_SPOKE_ALPHA` of
+//: the quiet bridge, until the pointer is on the hub or its far end.
+const GC_HUB_SPOKES = 8;
+const GC_HUB_SPOKE_ALPHA = 0.55;
+function gcHubSpokeMin(degrees) {
+  const list = Array.from(degrees || []).filter((d) => Number.isFinite(d));
+  if (!list.length) return Infinity;
+  const mean = list.reduce((a, b) => a + b, 0) / list.length;
+  return Math.max(GC_HUB_SPOKES, Math.ceil(mean * 3));
+}
 // GRAPH-SIM-BEGIN
 //: **Similarity is a backbone, not every pair** (INBOX 412, the owner: "when
 //: I tick similarity on the graph, this happens, is there a way to make it
@@ -851,7 +869,7 @@ function gcArrows(s = gcTab) {
 //: the edge keeps for its render. Every other caller gets a fresh point.
 function gcBowPoint(a, b, out = null, side = null) {
   const point = out || { x: 0, y: 0 };
-  if (a._straight || (a._cluster != null && a._cluster !== b._cluster)) {
+  if (a._straight || a._hub || b._hub || (a._cluster != null && a._cluster !== b._cluster)) {
     point.x = (a.x + b.x) / 2;
     point.y = (a.y + b.y) / 2;
     return point;
@@ -903,7 +921,7 @@ function gcEdgeLook(edge, a, b, simLo, simHi, epoch) {
     ((a._cluster != null && a._cluster !== b._cluster) ||
       (a._bridgeCat != null && b._bridgeCat != null && a._bridgeCat !== b._bridgeCat));
   edge._quietStyle = edge._cross
-    ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA }
+    ? { ...style, width: style.width * GC_CROSS_WIDTH, alpha: style.alpha * GC_CROSS_ALPHA * (a._hub || b._hub ? GC_HUB_SPOKE_ALPHA : 1) }
     : style;
 }
 
@@ -986,7 +1004,11 @@ function gcEnsureCanvas(s = gcTab) {
       //: person moved keeps its middle in the middle, so a panel opening or
       //: closing beside it never leaves the map off to one side.
       if (s.zoom && s.svg && before.w && before.h && s.nodes?.length) {
-        if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
+        if (!s.userZoomed && s.size === "full" && wasReal && !graphAutoFitOn()) s.userZoomed = true;
+        //: A tree, radial or arc is framed by `frameTree`, as on first draw;
+        //: the force fit read the arc's dots alone and overshot (1920x1080).
+        if (!s.userZoomed && s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc, !wasReal);
+        else if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
         else s.svg.call(s.zoom.translateBy, (s.dims.w - before.w) / 2 / s.transform.k, (s.dims.h - before.h) / 2 / s.transform.k);
       }
       gcRequestDraw(s);
@@ -1509,9 +1531,10 @@ function gcShowTopic(topic, colour) {
   const actions = document.createElement("div");
   actions.className = "row graph-topic-actions";
   const say = (row) => {
-    summary.textContent = row.summary + (row.source === "terms" ? " (No local model answered, so this is what the notes share.)" : "");
+    //: No model answered: the composer's extractive summary, said so (K8).
+    summary.textContent = (row.source === "terms" ? "Summary (no AI): " : "") + row.summary;
   };
-  const ask = smallButton("ph:sparkle Summarise", "Ask your local model for one sentence about these notes", async () => {
+  const ask = smallButton("ph:sparkle Summarise", "One sentence about these notes: your local model writes it, or the composer does when none answers", async () => {
     const controller = new AbortController();
     gcTopicAsk = controller;
     setBusy(ask, true, "Summarising…");
@@ -1851,6 +1874,14 @@ function gcRefitForPanels(s) {
   if (s.userZoomed || s.intro || !s.zoom || !s.svg || !s.nodes?.length) return;
   if (s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
   else if (s.fittedOnce) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+}
+
+//: Auto-fit turned back on: with it off a resize marks the camera as moved for good
+//: (`userZoomed`), so the switch clears that and frames the map again.
+function gcAutoFitTurnedOn(s = gcTab) {
+  if (!s) return;
+  s.userZoomed = false;
+  gcRefitForPanels(s);
 }
 
 //: **A computed layout moves in from the map that was there** (the owner,
@@ -2936,6 +2967,10 @@ function gcDraw(s = gcTab) {
     s.fitCheck = 0;
     gcBalanceFit(s, placedLabels, left);
   }
+  if (s.revealAfterFit && !(s.fitCheck > 0)) {
+    s.revealAfterFit = false;
+    gcReveal(s);
+  }
 
   // --- the pointed-at note's similarity scores -------------------------------
   //: Kumu's focus and Obsidian's hover both answer "what is this one joined
@@ -2999,6 +3034,7 @@ function gcDraw(s = gcTab) {
 
   ctx.restore();
   gcHoverCardFrame(s);
+  if (s === gcTab && typeof graphPopupId !== "undefined" && graphPopupId !== null) placeGraphPopup();
   s.timing.lastFrame = performance.now() - started;
   s.timing.frames += 1;
   // **Only a frame with something in it stops the clock.** A frame drawn
@@ -3324,7 +3360,17 @@ function gcLabelText(node, s = gcTab) {
   //: A hub (four links or more) has the room of its own halo and is the name
   //: the map is read by, so it keeps ten characters more than the crowd.
   const hub = (s.adj.get(node.id) || { size: 0 }).size >= 4;
-  const limit = s.tree ? (s.tree.arc ? 12 : s.tree.radial ? 16 : 30) : hub ? 36 : 26;
+  //: **A phone's names are shorter** (INBOX 1400: at the fit a 390 px map
+  //: named 2 of 36 notes, `gm.js`): a 26-character name is 170 px there, near
+  //: half the map's width, and the room pass turned nearly all of them away.
+  //: Below `GC_LABEL_NARROW_W` the cut is `GC_LABEL_NARROW_CUT` characters
+  //: (a hub's a few more); the whole name is on hover and in the panel.
+  const narrow = !s.tree && s.dims && s.dims.w < GC_LABEL_NARROW_W;
+  const limit = s.tree
+    ? s.tree.arc ? 12 : s.tree.radial ? 16 : 30
+    : narrow
+      ? GC_LABEL_NARROW_CUT + (hub ? 6 : 0)
+      : hub ? 36 : 26;
   const text = node.preview || "";
   const pointed = !s.tree && (node.id === s.hoveredId || node.id === gcKeyboardId(s));
   const cut = gcLabelCut(text, pointed ? GC_LABEL_FULL : limit);
@@ -3993,18 +4039,25 @@ function gcArmTouchLasso(event, x, y, s = gcTab) {
   }
 }
 
+//: A rectangle's four corners from its start and the pointer (K10: Shift and
+//: drag is a box; a straight drag as a freehand loop encloses nothing).
+function gcBoxPoints(from, to) {
+  return [from, [to[0], from[1]], to, [from[0], to[1]]];
+}
+
 function gcWireLasso(s = gcTab) {
   s.canvas.addEventListener("pointerdown", (event) => {
     if (!event.shiftKey || event.button) return;
     const [x, y] = gcWorldPoint(event, s);
     if (gcNodeAtWorld(x, y, s)) return;
-    s.lasso = { points: [[x, y]] };
+    s.lasso = { points: [[x, y]], box: true, from: [x, y] };
     s.canvas.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
   s.canvas.addEventListener("pointermove", (event) => {
     if (!s.lasso) return;
-    s.lasso.points.push(gcWorldPoint(event, s));
+    if (s.lasso.box) s.lasso.points = gcBoxPoints(s.lasso.from, gcWorldPoint(event, s));
+    else s.lasso.points.push(gcWorldPoint(event, s));
     gcRequestDraw(s);
   });
   const finish = (event) => {
@@ -4068,6 +4121,42 @@ function gcSelectionChanged(s = gcTab) {
   s.selected = new Set(live);
   dock.classList.toggle("hidden", !live.length);
   count.textContent = `${live.length} selected`;
+  //: Pins hold in the force layout only: the others compute every position.
+  const force = s.layoutKind === "force";
+  for (const id of ["graph-selection-pin", "graph-selection-unpin"]) {
+    const button = document.getElementById(id);
+    if (!button) continue;
+    button.disabled = !force;
+    button.title = force
+      ? (id.endsWith("unpin") ? "Let the selected notes move freely again (undoable)" : "Hold the selected notes where they are (undoable)")
+      : "Pins only hold in the Force layout";
+  }
+}
+
+//: Pin or unpin every selected note in one step (K10): one undo, one write.
+//: The same bookkeeping as `gcTogglePin`, for a set.
+function gcPinSelection(s, pinned) {
+  const changes = [];
+  for (const node of gcSelectedNodes(s)) {
+    if (node.isGroup || (node.fx != null) === pinned) continue;
+    const before = node.graph_pin_x == null ? null : { x: node.graph_pin_x, y: node.graph_pin_y };
+    node.fx = pinned ? node.x : null;
+    node.fy = pinned ? node.y : null;
+    gcPost(pinned ? { type: "pin", id: node.id, x: node.x, y: node.y } : { type: "unpin", id: node.id }, s);
+    node.graph_pin_x = pinned ? node.fx : null;
+    node.graph_pin_y = pinned ? node.fy : null;
+    changes.push({ id: node.id, before, after: pinned ? { x: node.x, y: node.y } : null });
+  }
+  gcRequestDraw(s);
+  if (!changes.length) return toast(pinned ? "Those notes are already pinned." : "None of those notes are pinned.");
+  const saved = changes.filter((c) => /^(document:)?\d+$/.test(String(c.id)));
+  const write = pinned
+    ? apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins: saved.map((c) => ({ id: c.id, x: c.after.x, y: c.after.y })) }) })
+    : Promise.all(saved.map((c) => graphPinSave(c.id, null, null)));
+  if (saved.length) write.catch(() => toast("The pins were not saved.", true));
+  const words = `${changes.length} note${changes.length === 1 ? "" : "s"}`;
+  graphPinStep(pinned ? `Pinned ${words}` : `Unpinned ${words}`, changes);
+  toast(pinned ? `Pinned ${words}.` : `Unpinned ${words}.`);
 }
 
 function gcSelectedNodes(s = gcTab) {
@@ -4081,6 +4170,8 @@ function gcWireSelectionDock(s = gcTab) {
     gcSelectionChanged(s);
     gcRequestDraw(s);
   });
+  on("graph-selection-pin", () => gcPinSelection(s, true));
+  on("graph-selection-unpin", () => gcPinSelection(s, false));
   on("graph-selection-tag", async () => {
     const nodes = gcSelectedNodes(s);
     if (!nodes.length) return;
@@ -4690,6 +4781,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
       //: one skipped frame's worth of pool.
       if (message.epoch !== s.epoch) return;
       if (message.type === "tick") {
+        s.ticksSeen = (s.ticksSeen || 0) + 1;
         s.alpha = message.alpha;
         s.ticks = message.ticks || 0;
         s.tickMs = message.tickMs || 0;
@@ -4767,7 +4859,8 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
             //: (k 2.5, the clamp, on 60 notes).
             gcGlideFinish(s);
             fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
-            gcReveal(s);
+            s.fitTicks = s.ticksSeen;
+            gcRevealAfterBalance(s);
           } else if (message.alpha < 0.08) {
             gcSetAutoFitDone(s, true);
             if (!s.userZoomed) {
@@ -4787,7 +4880,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
           if (graphMinimapTick % 8 === 0) graphMinimapQueuePaint();
         }
       } else if (message.type === "frame") {
-        gcFrameIntro(s, message.positions);
+        gcFrameIntro(s, message.positions, message.start);
       } else if (message.type === "end") {
         //: At rest is where the last tick said: the glide is finished here,
         //: not by the next paint, so the fit below frames the final shape.
@@ -4799,12 +4892,15 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         if (s.size === "full") graphMinimapQueuePaint();
         if (!gcAutoFitDone(s) && s.nodes.length) {
           gcSetAutoFitDone(s, true);
-          fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          //: Nothing moved since the first fit (the settled map as the one
+          //: frame, less motion): framing it again from the guess undid its
+          //: balance, a hop just after the cut-in.
+          if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
         } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
           fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
         }
         s.fitAgainAtEnd = false;
-        gcReveal(s);
+        if (!s.revealAfterFit) gcReveal(s);
         // GRAPH_PLAN Phase 5: the settle a restored view's unplaced notes
         // forced is over, so the notes it held still (`viewSeed.freezeIds`,
         // below) are released the same way a drag's freeze is: `thaw`, no
@@ -4826,6 +4922,8 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   }
   s.fittedOnce = false;
   s.intro = false;
+  s.ticksSeen = 0;
+  s.fitTicks = -1;
   //: Hidden until the first fit (the owner, 2026-10-07: "the crazy starting
   //: zoom in on the graph before it fits"): the first frames drew at the
   //: default camera. Shown at that fit, or after 4 s whatever happens (a
@@ -4896,6 +4994,10 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
     //: worker's `INTRO_HOLD`), unless the reader asked for less motion: they
     //: get the settled map at once, as before.
     intro: !gcStill() && !restoring,
+    //: Behind the first fade the playback starts near the settled map
+    //: (the worker's `BLOOM`); on a map already showing, from where its
+    //: notes stand.
+    bloom: hidden,
   };
   //: **A layout that already settled is held, not settled again** (INBOX
   //: 424c/d). Every visit to the Graph tab refetched the map and restarted
@@ -4986,10 +5088,26 @@ function gcCachedPositions(s) {
   }
 }
 
-function gcFrameIntro(s, positions) {
+function gcFrameIntro(s, positions, start) {
   if (gcAutoFitDone(s) || !s.nodes.length || positions.length < s.nodes.length * 2) return;
   s.fittedOnce = true;
   s.intro = true;
+  //: The playback's first frame is where the notes are drawn from the
+  //: reveal on: a glide from where the canvas last had them (the starting
+  //: spiral, behind the fade) was a 327 px jump in its first frame.
+  if (start && start.length >= s.nodes.length * 2) {
+    s.nodes.forEach((node, i) => {
+      if (node === s.dragNode) return;
+      node.x = start[i * 2];
+      node.y = start[i * 2 + 1];
+      node._toX = undefined;
+      node._toY = undefined;
+    });
+    s.gliding = false;
+    s.glideMs = 0;
+    s.quadtreeDirty = true;
+    gcRequestDraw(s);
+  }
   const target = s.nodes.map((node, i) => ({ x: positions[i * 2], y: positions[i * 2 + 1], r: node.r }));
   //: Instant behind the fade of a first open; on a map already showing, the
   //: camera eases to the new frame while the notes move.
@@ -5392,6 +5510,8 @@ async function renderGraphCanvas(s = gcTab) {
     node._bridgeCat = !s.tree && gcIsNote(node) ? node.category || "" : null;
     node._straight = Boolean(shape) && shape !== "organic";
   }
+  const hubMin = gcHubSpokeMin(nodes.filter((node) => !node.isGroup).map((node) => node._links));
+  for (const node of nodes) node._hub = !s.tree && !node.isGroup && node._links >= hubMin;
   //: Titles two notes or more share (INBOX 1300 C41, two "Ice Breakers:"
   //: with nothing to tell them apart): `gcLabelText` adds where each is.
   const titleCount = new Map();
@@ -5813,8 +5933,14 @@ function graphRenderStats(data, nodes, edges, colourMode, layoutKind) {
             : layoutKind === "treemap"
               ? "each category's area in proportion to its notes."
               : "";
+  //: Notes with nothing joined to them draw as loose dots with no word on
+  //: why (dog3-1026 row 17): say so, and say how to join two.
+  const unlinked = noteCount > 0 && !edges.some((edge) => edge.kind === "link" || edge.kind === "thread");
+  if (unlinked) parts.push("no links yet");
   line.textContent = parts.join(" · ");
-  line.title = shape;
+  line.title = unlinked
+    ? "No note is linked to another yet. Open a note's link button to join two, or select two notes here and press Link."
+    : shape;
   graphSyncLayoutChip(layoutKind);
 }
 
@@ -6285,6 +6411,23 @@ function gcArriving(s, on) {
   box.classList.toggle("graph-arriving", on);
   clearTimeout(s.arrivingTimer);
   if (on) s.arrivingTimer = setTimeout(() => box.classList.remove("graph-arriving"), 6000);
+}
+
+//: Shown once the first fit has balanced on the names it drew
+//: (`gcBalanceFit`, hidden, so instant): shown at the guess, the balance was a
+//: 3.5% zoom hop 50 ms after the first paint (36 notes, less motion, where the
+//: reveal is a cut). The draw that balances reveals (`gcDraw`); the
+//: timer is for a draw that never comes.
+function gcRevealAfterBalance(s) {
+  if (s.canvas?.style.opacity !== "0") return gcReveal(s);
+  s.revealAfterFit = true;
+  gcRequestDraw(s);
+  clearTimeout(s.revealTimer);
+  s.revealTimer = setTimeout(() => {
+    if (!s.revealAfterFit) return;
+    s.revealAfterFit = false;
+    gcReveal(s);
+  }, 250);
 }
 
 function gcReveal(s) {

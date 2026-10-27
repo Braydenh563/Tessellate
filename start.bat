@@ -224,6 +224,18 @@ REM  relaunch below AND reach "python -m tessellate", which reads it in
 REM  __main__.py. One variable, two readers, no argument plumbing.
 set "TESSELLATE_PORT=!MM_PORT!"
 set "MM_URL=http://localhost:!MM_PORT!"
+REM  TESSELLATE_LOCAL_NAME=tessellate opens http://tessellate.localhost:PORT
+REM  instead: browsers resolve any *.localhost to this computer themselves, so
+REM  the name needs no DNS, hosts file or admin rights. A new name is a new
+REM  origin, so sign-in and per-browser settings start fresh once.
+if defined TESSELLATE_LOCAL_NAME (
+  echo !TESSELLATE_LOCAL_NAME!| findstr /r /x "[a-z0-9-][a-z0-9-]*" >nul 2>&1
+  if errorlevel 1 (
+    echo TESSELLATE_LOCAL_NAME takes letters, digits and hyphens; using localhost.
+  ) else (
+    set "MM_URL=http://!TESSELLATE_LOCAL_NAME!.localhost:!MM_PORT!"
+  )
+)
 
 if /i "!MM_ACTION!"=="help" (
   call :help
@@ -608,26 +620,7 @@ if not exist "%VENV_PY%" (
     goto :fail
   )
   echo        Using !PYTHON! to create the virtual environment...
-  REM  Opt-in only: share the system's packages (a CUDA torch already installed)
-  REM  instead of a second copy. An environment variable, not a flag, as in
-  REM  start.sh: the flag-order lint wants both launchers to carry the same flags.
-  REM  Refused with a reason when the system torch is outside requirements.txt's
-  REM  range; scripts\system_site_packages.py decides.
-  set "MM_VENV_ARGS="
-  if "%TESSELLATE_SYSTEM_SITE_PACKAGES%"=="1" (
-    set "MM_SSP_ANSWER="
-    for /f "usebackq delims=" %%A in (`!PYTHON! scripts\system_site_packages.py 2^>nul`) do set "MM_SSP_ANSWER=%%A"
-    !PYTHON! scripts\system_site_packages.py >nul 2>nul
-    if errorlevel 1 (
-      set "MM_SSP_REASON=!MM_SSP_ANSWER:refuse: =!"
-      echo        Not sharing the system packages: !MM_SSP_REASON!.
-      echo        Building the usual self-contained environment instead.
-    ) else (
-      set "MM_VENV_ARGS=--system-site-packages"
-      echo        Sharing this computer's installed packages ^(TESSELLATE_SYSTEM_SITE_PACKAGES=1^).
-    )
-  )
-  !PYTHON! -m venv !MM_VENV_ARGS! .venv
+  !PYTHON! -m venv .venv
   if errorlevel 1 (
     call :status !MM_STEP_PYTHON! "Python" "Could not create .venv" "failed"
     set "MM_FAIL_MSG=Could not create the virtual environment."
@@ -705,7 +698,7 @@ if "!NEED_INSTALL!"=="1" (
   REM  `--quiet` and a full `> log 2>&1` redirect used to hide pip's own
   REM  progress entirely - reported directly ("I hate that I can't see
   REM  what's going on and why it is taking so long"), and this is a real
-  REM  multi-minute install (sentence-transformers, and torch on Windows).
+  REM  multi-minute install (the app's packages, and ONNX Runtime for search by meaning).
   REM  Dropping `--quiet` and only redirecting stderr lets pip's own
   REM  "Collecting X / Downloading X (NN%%)" lines print live to the
   REM  console while errors still land in the log for the network-vs-real

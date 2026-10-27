@@ -155,7 +155,7 @@ def test_saving_a_sketch_uploads_it_as_media():
     Only a MediaUpload is captioned, OCR'd, read by a vision model, or listed
     in the gallery."""
     source = app_js_text()
-    block = source.split("async function saveSketch()")[1].split("\n}")[0]
+    block = source.split("async function saveSketch(blob, caption)")[1].split("\n}")[0]
     assert '"/media/upload"' in block
     # The old path, in code rather than in the comment explaining why it went.
     code = "\n".join(

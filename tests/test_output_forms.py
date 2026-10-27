@@ -85,7 +85,8 @@ def test_chat_with_no_model_runs_the_read_and_sends_the_chart(ai_client, fake_ol
     events = _stream(ai_client, "list my tags")
     assert next(e for e in events if e["type"] == "meta")["raw_results"] == []
     answer = "".join(e.get("delta", "") for e in events if e["type"] == "answer")
-    assert answer.startswith("You have three tags; health has the most notes (2).")
+    #: Every tag named while they are few (INBOX 1357, class I), most used first.
+    assert answer.startswith("You have three tags: #health (2), "), answer
     charts = [e["chart"] for e in events if e["type"] == "chart"]
     assert charts and charts[0]["by"] == "tag" and charts[0]["total"] == 4
     table = "".join(e.get("delta", "") for e in _stream(ai_client, "what reminders do I have") if e["type"] == "answer")

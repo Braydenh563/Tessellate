@@ -93,7 +93,7 @@ def test_unpin_all_releases_every_pinned_node(client):
 
     resp = client.post("/graph/unpin-all")
     assert resp.status_code == 200
-    assert resp.json() == {"unpinned": 2}
+    assert resp.json()["unpinned"] == 2 and len(resp.json()["released"]) == 2
 
     nodes = {n["id"]: n for n in client.get("/graph").json()["nodes"]}
     assert nodes[a["id"]]["graph_pin_x"] is None
@@ -107,7 +107,7 @@ def test_unpin_all_is_a_no_op_when_nothing_is_pinned(client):
     _save(client, "an ordinary note")
     resp = client.post("/graph/unpin-all")
     assert resp.status_code == 200
-    assert resp.json() == {"unpinned": 0}
+    assert resp.json() == {"unpinned": 0, "released": []}
 
 
 def test_a_lone_coordinate_is_refused_not_guessed(client):

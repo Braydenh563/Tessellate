@@ -343,7 +343,13 @@ function glideStrip(strip) {
   //: closing above the chosen row moves the row and not its size, so neither
   //: observer saw it and the fill stayed where the row had been (measured: 20
   //: px under it after an 18 px insert).
-  new MutationObserver(() => place(true)).observe(strip, {
+  //: Placed a frame later, not in the mutation's microtask: there it read
+  //: the new page's layout before the click's own work had finished, and the
+  //: frame laid it out a second time (INBOX 1419: 100 to 250ms at 4x CPU).
+  let queued = 0;
+  new MutationObserver(() => {
+    queued ||= setTimeout(() => ((queued = 0), place(true)), 16);
+  }).observe(strip, {
     attributes: true,
     attributeFilter: ["class", "aria-selected", "aria-current"],
     childList: true,
@@ -803,10 +809,11 @@ function notePreviewText(content) {
       // m[4] is the optional colour group and was being read as the text.
       // Verified against the live pattern: g1 code, g2 bold, g3 strike,
       // g4 highlight colour, g5 highlight text, g6 ++colour, g7 ++text,
-      // g8 italic, g9/g10 image alt+url, g11/g12 link text+url.
+      // g8 italic, g9/g10 image alt+url, g11/g12 link text+url, g13/g14 run
+      // attributes+words (a run previews as its words).
       (...m) =>
         m[1] ?? m[2] ?? m[3] ?? m[5] ?? m[7] ?? m[8] ??
-        (m[10] !== undefined ? m[9] || "image" : m[11])
+        (m[10] !== undefined ? m[9] || "image" : m[14] !== undefined ? notePreviewText(m[14]) : m[11])
     );
 }
 
@@ -1090,8 +1097,8 @@ function reminderItem(reminder, label) {
 
   const due = document.createElement("span");
   due.className = "entry-date";
-  due.textContent = relativeWhen(reminder.due_at); // "in 2 hours" / "3 days ago"
-  due.title = whenText(reminder.due_at); // exact on hover
+  //: The day and clock, then how far off (dog2 item 8).
+  due.textContent = `${parseServerTime(reminder.due_at)?.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · ${relativeWhen(reminder.due_at)}`;
   row.appendChild(due);
 
   const actions = document.createElement("span");
@@ -1168,6 +1175,20 @@ function reminderItem(reminder, label) {
       run: () => downloadFromApi(`/reminders/${reminder.id}/export.ics`, `reminder-${reminder.id}.ics`),
       group: "go",
     },
+    //: The same event on a provider's own add-event page, filled in. The
+    //: server only builds the address (`GET /reminders/{id}/calendar-links`);
+    //: nothing is sent anywhere until this press opens the page, and a
+    //: private note's words are never in it.
+    {
+      label: "ph:google-logo Add to Google Calendar",
+      run: () => openCalendarPage(reminder.id, "google"),
+      group: "go",
+    },
+    {
+      label: "ph:microsoft-outlook-logo Add to Outlook",
+      run: () => openCalendarPage(reminder.id, "outlook"),
+      group: "go",
+    },
     { label: "ph:trash Delete", run: deleteReminder, group: "remove", danger: true }
   );
   actions.appendChild(kebabMenu(menuItems, `Actions for the reminder “${reminder.text}”`, { vertical: true }));
@@ -1184,6 +1205,24 @@ function reminderItem(reminder, label) {
     li.appendChild(linkRow);
   }
   return li;
+}
+
+//: Opens a reminder in Google Calendar's or Outlook's add-event page, in a new
+//: tab that cannot reach back. The tab is opened on the press, before the
+//: address is fetched, or a pop-up blocker refuses it; `noopener` in the
+//: features would return no handle to point at the address, so the link back
+//: is cut by hand.
+async function openCalendarPage(id, provider) {
+  const tab = window.open("about:blank", "_blank");
+  if (tab) tab.opener = null;
+  try {
+    const links = await apiJson(`/reminders/${id}/calendar-links`);
+    if (tab) tab.location.href = links[provider];
+    else window.open(links[provider], "_blank", "noopener,noreferrer");
+  } catch (error) {
+    tab?.close();
+    toast(error.message || "Couldn't open the calendar page.", true);
+  }
 }
 
 //: **What a reminder is about, and the way to it** (WORLD_CLASS_PLAN 1.3,
@@ -1213,25 +1252,12 @@ function relativeWhen(iso) {
   const when = parseServerTime(iso);
   if (!when) return "";
   const diff = when.getTime() - Date.now();
-  const future = diff >= 0;
   const mins = Math.abs(diff) / 60000;
-  if (mins < 0.75) return future ? "now" : "just now";
-  let value;
-  let unit;
-  if (mins < 60) {
-    value = Math.round(mins);
-    unit = "minute";
-  } else if (mins / 60 < 24) {
-    value = Math.round(mins / 60);
-    unit = "hour";
-  } else if (mins / 60 / 24 < 7) {
-    value = Math.round(mins / 60 / 24);
-    unit = "day";
-  } else {
-    return when.toLocaleDateString();
-  }
+  if (mins < 0.75) return diff >= 0 ? "now" : "just now";
+  const [amount, unit] = mins < 60 ? [mins, "minute"] : mins < 1440 ? [mins / 60, "hour"] : mins < 10080 ? [mins / 1440, "day"] : mins < 86400 ? [mins / 10080, "week"] : [mins / 43200, "month"];
+  const value = Math.round(amount);
   const label = `${value} ${unit}${value === 1 ? "" : "s"}`;
-  return future ? `in ${label}` : `${label} ago`;
+  return diff >= 0 ? `in ${label}` : `${label} ago`;
 }
 
 // Convert an ISO timestamp to the value a <input type=datetime-local> wants.

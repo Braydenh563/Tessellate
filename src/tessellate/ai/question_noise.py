@@ -419,6 +419,15 @@ _STRAY_HEAD = re.compile(r"^\s*[\\|`~^]+(?=\w)")
 _RUN_OF_SPACES = re.compile(r"[ \t]{2,}")
 
 
+_ARCHIVED_WORD = re.compile(r"\barchived\b", re.I)
+
+
+def asks_archived(question: str) -> bool:
+    """Whether the question is about archived notes ("archived notes from last
+    week"); any other list or count leaves them out."""
+    return bool(_ARCHIVED_WORD.search(question or ""))
+
+
 def _strip_stray_tail(text: str) -> str:
     """The trailing stray keys off a text, by a scan from the end rather than a
     regex: an anchored-at-the-end pattern rescans a long run of backslashes

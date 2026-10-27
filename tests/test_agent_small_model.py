@@ -343,7 +343,11 @@ def test_an_announced_but_untaken_action_is_asked_once_more(ai_client, fake_olla
     asked "How many notes are in Work?", the model replied "To count notes in
     the Work category, I will use the count_notes function" and called
     nothing; the turn ended there, so every prompt read as answered and none
-    was. A reply that only announces an action is nudged once to take it."""
+    was. A reply that only announces an action is nudged once to take it.
+
+    Asked here as an errand, not that count: with a model up a count is now
+    the model's from the app's own figure (`_fact_events`, 2026-10-27), so
+    that turn no longer depends on the model taking a tool."""
     replies = iter(["I'll count the notes in the Work category for you.", "There are 3 notes in Work."])
     original = fake_ollama.chat_tools
 
@@ -353,7 +357,7 @@ def test_an_announced_but_untaken_action_is_asked_once_more(ai_client, fake_olla
 
     fake_ollama.chat_tools = scripted
     body = ai_client.post(
-        "/chat/stream", json={"question": "how many notes are in Work?", "use_tools": True}
+        "/chat/stream", json={"question": "go through Work for me", "use_tools": True}
     ).text
     answer = "".join(
         json.loads(line)["delta"]

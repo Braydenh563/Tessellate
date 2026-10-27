@@ -110,7 +110,9 @@ def test_no_network_and_no_app_imports():
             names |= {a.name.split(".")[0] for a in node.names}
         elif isinstance(node, ast.ImportFrom) and node.module:
             names.add(node.module.split(".")[0])
-    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing"}, names
+    # contextlib and contextvars (2026-10-27): the call's locale for season words
+    # rides a ContextVar; both are stdlib with no I/O, so the intent stands.
+    assert names <= {"__future__", "re", "dataclasses", "datetime", "typing", "contextlib", "contextvars"}, names
 
 
 def test_the_unit_table_has_150_units():

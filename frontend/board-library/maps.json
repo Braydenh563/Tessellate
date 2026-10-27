@@ -21,39 +21,66 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Plan",
+      "data": {
+       "shape": "chevron"
+      },
       "children": [
        {
         "text": "Goal",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Scope",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Build",
+      "data": {
+       "shape": "chevron"
+      },
       "children": [
        {
         "text": "First milestone",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Test",
+      "data": {
+       "shape": "chevron"
+      },
       "children": []
      },
      {
       "text": "Launch",
+      "data": {
+       "shape": "chevron"
+      },
       "children": []
      },
      {
       "text": "Review",
+      "data": {
+       "shape": "chevron"
+      },
       "children": []
      }
     ]
@@ -75,34 +102,58 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Why it matters",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Milestones",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "First",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Second",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Habits",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Obstacles",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "How I will measure it",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -124,40 +175,67 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Before",
+      "data": {
+       "shape": "chevron"
+      },
       "children": [
        {
         "text": "Invite people",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Book a place",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "On the day",
+      "data": {
+       "shape": "chevron"
+      },
       "children": [
        {
         "text": "Schedule",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "After",
+      "data": {
+       "shape": "chevron"
+      },
       "children": [
        {
         "text": "Thank people",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Budget",
+      "data": {
+       "shape": "chevron"
+      },
       "children": []
      }
     ]
@@ -179,34 +257,58 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
     "nodes": [
      {
       "text": "Where",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "When",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Getting there",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Where to stay",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Things to do",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "A first idea",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Packing",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      }
     ]
@@ -227,43 +329,73 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Options",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Option A",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Option B",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Option C",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "What matters",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Cost",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Time",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Risks",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "What would change my mind",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -284,29 +416,50 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "pill"
+    },
     "nodes": [
      {
       "text": "Pros",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "A reason for",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Another reason for",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Cons",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "A reason against",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Another reason against",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
@@ -329,39 +482,66 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "pill"
+    },
     "nodes": [
      {
       "text": "Strengths",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "What you do well",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Weaknesses",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "Where you fall short",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Opportunities",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "What you could use",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Threats",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "What could get in the way",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
@@ -385,35 +565,59 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "People",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Skills",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Process",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Steps",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Tools",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Materials",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Surroundings",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -435,31 +639,52 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Agenda",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "First item",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Decisions",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Actions",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Who, what, by when",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Open questions",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -481,30 +706,51 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
     "nodes": [
      {
       "text": "Wins",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Lessons",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Loose ends",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Next week",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "Top three",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Energy",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      }
     ]
@@ -525,35 +771,59 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
     "nodes": [
      {
       "text": "Ideas",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "First idea",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        },
        {
         "text": "Second idea",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Questions",
+      "data": {
+       "shape": "pill"
+      },
       "children": [
        {
         "text": "What do I not know yet?",
+        "data": {
+         "shape": "none"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Themes",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      },
      {
       "text": "Next steps",
+      "data": {
+       "shape": "pill"
+      },
       "children": []
      }
     ]
@@ -575,34 +845,58 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Key ideas",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "A definition",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "An example",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Questions",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Connections",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Practice",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Sources",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -623,30 +917,51 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "The main idea",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Key points",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "First point",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Second point",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Quotes",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "What I will do with it",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -668,35 +983,59 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Thesis",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "First argument",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Evidence",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Second argument",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "Evidence",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Counterpoint",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Conclusion",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      }
     ]
@@ -718,39 +1057,1582 @@
    ],
    "template": "map",
    "payload": {
+    "root": {
+     "shape": "rounded"
+    },
     "nodes": [
      {
       "text": "Basics",
+      "data": {
+       "shape": "rounded"
+      },
       "children": [
        {
         "text": "First lesson",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Second lesson",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        },
        {
         "text": "Third lesson",
+        "data": {
+         "shape": "underline"
+        },
         "children": []
        }
       ]
      },
      {
       "text": "Practice",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Resources",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Milestones",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
      },
      {
       "text": "Mistakes to avoid",
+      "data": {
+       "shape": "rounded"
+      },
       "children": []
+     }
+    ]
+   }
+  },
+  {
+   "key": "lecture-map",
+   "kind": "branch",
+   "name": "Lecture notes",
+   "hint": "The topic, its key ideas, examples and questions",
+   "purpose": "learn",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "lecture",
+    "notes",
+    "class",
+    "study"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Key ideas",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Idea 1",
+        "data": {
+         "shape": "underline"
+        },
+        "children": [
+         {
+          "text": "D",
+          "data": {
+           "shape": "underline"
+          },
+          "children": [
+           {
+            "text": "e",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "t",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "a",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "i",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "l",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "text": "Idea 2",
+        "data": {
+         "shape": "underline"
+        },
+        "children": [
+         {
+          "text": "D",
+          "data": {
+           "shape": "underline"
+          },
+          "children": [
+           {
+            "text": "e",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "t",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "a",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "i",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "l",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "text": "Idea 3",
+        "data": {
+         "shape": "underline"
+        },
+        "children": [
+         {
+          "text": "D",
+          "data": {
+           "shape": "underline"
+          },
+          "children": [
+           {
+            "text": "e",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "t",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "a",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "i",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           },
+           {
+            "text": "l",
+            "data": {
+             "shape": "underline"
+            },
+            "children": []
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "text": "Examples",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Case 1",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Case 2",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Questions",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "To ask",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "To look up",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Summary",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": []
+     }
+    ]
+   }
+  },
+  {
+   "key": "revision-map",
+   "kind": "branch",
+   "name": "Revision plan",
+   "hint": "Subjects, topics to cover and how you will revise",
+   "purpose": "learn",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "revision",
+    "exam",
+    "study",
+    "subjects"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
+    "nodes": [
+     {
+      "text": "Subject 1",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Subject 2",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Subject 3",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Methods",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Flashcards",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Past papers",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Teach someone",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "exam-map",
+   "kind": "branch",
+   "name": "Exam preparation",
+   "hint": "What is tested, what you know and what to practise",
+   "purpose": "learn",
+   "shape": "tiers",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "exam",
+    "preparation",
+    "study",
+    "test"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Format",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Date and room",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Marks",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Know well",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Practise",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Topic",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Past paper",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Day before",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Sleep",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Kit ready",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "research-map",
+   "kind": "branch",
+   "name": "Research project",
+   "hint": "Question, sources, method, findings and write-up",
+   "purpose": "learn",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "research",
+    "project",
+    "dissertation",
+    "sources"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Question",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Why it matters",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Sources",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Books",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Papers",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Interviews",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Method",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Steps",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Findings",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Result",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Write-up",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Draft",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Edit",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Submit",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "presentation-map",
+   "kind": "branch",
+   "name": "Presentation",
+   "hint": "Message, sections, visuals and rehearsal",
+   "purpose": "plan",
+   "shape": "tiers",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "presentation",
+    "talk",
+    "slides",
+    "speech"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Message",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "One sentence",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Opening",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Hook",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Middle",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Point 1",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Point 2",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Point 3",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Close",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Ask",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Thanks",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Rehearse",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Timing",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Questions",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "group-map",
+   "kind": "branch",
+   "name": "Group project",
+   "hint": "Who does what, by when, and how you will meet",
+   "purpose": "plan",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "group",
+    "project",
+    "team",
+    "assignment"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Tasks",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Research",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Writing",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Slides",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Name: role",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Name: role",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Dates",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Draft",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Final",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Meetings",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "When",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Where",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "goals-map",
+   "kind": "branch",
+   "name": "Personal goals",
+   "hint": "Work, health, money, people and learning",
+   "purpose": "plan",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "goals",
+    "personal",
+    "life",
+    "year"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
+    "nodes": [
+     {
+      "text": "Work",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Next step",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Health",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Next step",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Money",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Next step",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Next step",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Learning",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Next step",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "routine-map",
+   "kind": "branch",
+   "name": "Daily routine",
+   "hint": "Morning, study, meals, exercise and wind-down",
+   "purpose": "plan",
+   "shape": "two-sided",
+   "layout": "tree-both",
+   "tags": [
+    "template",
+    "routine",
+    "day",
+    "habits",
+    "schedule"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "pill"
+    },
+    "nodes": [
+     {
+      "text": "Morning",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Wake",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Breakfast",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Study",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Block 1",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Block 2",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Meals",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Lunch",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Dinner",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Exercise",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Walk",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Evening",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Free time",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Wind down",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Screens off",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Bed",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "career-map",
+   "kind": "branch",
+   "name": "Career plan",
+   "hint": "Where you are, where to, skills and next steps",
+   "purpose": "plan",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "career",
+    "job",
+    "future",
+    "skills"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Now",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Skills",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Experience",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Aim",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Role",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Employer",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Gaps",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Skill to learn",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Steps",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "This month",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "This year",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "reading-map",
+   "kind": "branch",
+   "name": "Reading list",
+   "hint": "Topics, the books under each and what to read first",
+   "purpose": "learn",
+   "shape": "tree",
+   "layout": "tree-right",
+   "tags": [
+    "template",
+    "reading",
+    "books",
+    "list",
+    "library"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Topic 1",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Book",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Book",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Topic 2",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Book",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Book",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Read first",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Title",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Notes",
+      "data": {
+       "shape": "rounded"
+      },
+      "children": [
+       {
+        "text": "Quotes",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Ideas",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "habits-map",
+   "kind": "branch",
+   "name": "Healthy habits",
+   "hint": "Sleep, food, movement, mind and people",
+   "purpose": "plan",
+   "shape": "radial",
+   "layout": "radial",
+   "tags": [
+    "template",
+    "health",
+    "habits",
+    "wellbeing",
+    "sleep"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "ellipse"
+    },
+    "nodes": [
+     {
+      "text": "Sleep",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Bedtime",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Food",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Water",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Meals",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Movement",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Walk",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Stretch",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Mind",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Breaks",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       },
+       {
+        "text": "Journal",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "People",
+      "data": {
+       "shape": "pill"
+      },
+      "children": [
+       {
+        "text": "Call a friend",
+        "data": {
+         "shape": "none"
+        },
+        "children": []
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "moving-map",
+   "kind": "branch",
+   "name": "Moving house",
+   "hint": "Before, packing, the day and after",
+   "purpose": "plan",
+   "shape": "phases",
+   "layout": "tree-down",
+   "tags": [
+    "template",
+    "moving",
+    "house",
+    "home",
+    "checklist"
+   ],
+   "template": "map",
+   "payload": {
+    "root": {
+     "shape": "rounded"
+    },
+    "nodes": [
+     {
+      "text": "Before",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Notice",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Quotes",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Packing",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Boxes",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Labels",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "Moving day",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Keys",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Van",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
+     },
+     {
+      "text": "After",
+      "data": {
+       "shape": "chevron"
+      },
+      "children": [
+       {
+        "text": "Post",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       },
+       {
+        "text": "Utilities",
+        "data": {
+         "shape": "underline"
+        },
+        "children": []
+       }
+      ]
      }
     ]
    }

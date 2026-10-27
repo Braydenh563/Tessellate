@@ -11,6 +11,7 @@ from __future__ import annotations
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from tessellate.core import deps
@@ -213,6 +214,30 @@ def searxng_stop(session: Session = Depends(get_session)) -> dict:
     manager.log_action(session, "edited", "preferences", detail="searxng stopped")
     session.commit()
     return {"running": False, **result}
+
+
+class _Block(BaseModel):
+    type: str = Field(default="p", max_length=20)
+    level: int | None = Field(default=None, ge=1, le=6)
+    text: str = Field(default="", max_length=5000)
+
+
+class AnalyseBody(BaseModel):
+    blocks: list[_Block] = Field(default_factory=list, max_length=2500)
+
+
+@router.post("/websearch/analyse")
+def web_analyse(body: AnalyseBody) -> dict:
+    """A fetched page's key points, key terms and sections, read by the
+    composer's rules with no model (`ai/page_analysis.py`). It takes the
+    blocks the reader already holds and fetches nothing, so it needs no web
+    switch: nothing goes out."""
+    from tessellate.ai import page_analysis
+
+    found = page_analysis.analyse([b.model_dump() for b in body.blocks])
+    #: `n` is the section's place among the page's headings, which is how the
+    #: panel finds the heading it drew (the nth `.reader-heading`).
+    return {**found, "sections": [{**s, "n": n} for n, s in enumerate(found["sections"])]}
 
 
 @router.get("/websearch/read")

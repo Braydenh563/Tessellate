@@ -102,7 +102,7 @@ def test_only_open_licences_are_one_press():
 
 
 def test_a_choice_resolves_only_from_the_allowlist():
-    assert embedmodels.resolve_choice("bge-m3") == ("sentence-transformers", "BAAI/bge-m3")
+    assert embedmodels.resolve_choice("bge-m3") == ("fastembed", "BAAI/bge-m3")
     assert embedmodels.resolve_choice("ollama:bge-m3") == ("ollama", "bge-m3")
     assert embedmodels.resolve_choice("ollama:embeddinggemma") is None
     assert embedmodels.resolve_choice("BAAI/bge-m3") is None
@@ -163,7 +163,7 @@ def test_search_keeps_the_old_vectors_until_the_new_set_is_complete(ai_client, f
     assert deps.get_model_manager().embedding_st_model() == "BAAI/bge-m3"
     assert _staged_count() == 0
     body = ai_client.get("/embedding-models/choices").json()
-    assert body["current"] == {"backend": "sentence-transformers", "model": "BAAI/bge-m3"}
+    assert body["current"] == {"backend": "fastembed", "model": "BAAI/bge-m3"}
 
 
 def test_stop_leaves_the_old_model_in_use(ai_client, fake_embeddings, monkeypatch):

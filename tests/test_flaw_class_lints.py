@@ -35,7 +35,6 @@ THREAD_SITES = {
     "ai/janitor.py": 1,  # the filing deadline: runs *on* the model lane, so it cannot queue there
     # ai/model_manager.py: 0 since Brief 9, model downloads run on the pool's `download` lane
     "api/app.py": 1,
-    "api/routes_models.py": 1,  # the runner's model list off the request thread, one per runner (a status poll never waits on it); the capability probe moved onto the pool 2026-10-05
     "api/routes_update.py": 2,
     "core/embedmodels.py": 1,
     "core/background.py": 1,  # the registry: `start` is the one place a registered thread begins

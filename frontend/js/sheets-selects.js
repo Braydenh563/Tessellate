@@ -107,6 +107,10 @@ function applySidebarWidth(aside, width, { remember = true } = {}) {
   // reacting rather than the user choosing.
   if (remember) prefs.set(`sidebarWidth:${aside.id}`, String(clamped));
   aside.style.setProperty("--saved-width", `${clamped}px`);
+  //: The documents list as focus mode's side panel is not a grid column, so
+  //: its width is the page's own property (INBOX 1408): one number, the one
+  //: the windowed editor's grip sets, held to 40vw as the stylesheet holds it.
+  if (aside.id === "doc-sidebar") aside.closest("#tab-documents")?.style.setProperty("--doc-focus-sidebar-w", `min(${clamped}px, 40vw)`);
 
   if (layoutIsStacked()) {
     aside.parentElement.style.removeProperty("grid-template-columns");
@@ -1323,7 +1327,7 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   menu.setAttribute("role", "menu");
 
   const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
-    if (window.matchMedia(PHONE_ACTION_SHEET).matches && typeof openSheet === "function") {
+    if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
       openKebabSheet(menu, opener, ariaLabel);
       return;
     }
@@ -1934,84 +1938,6 @@ function editedMarker() {
   return tag;
 }
 
-// Editing questions has worked for a while; answers were fixed forever, so a
-// model that got one detail wrong left you regenerating the whole thing and
-// hoping. Editing in place keeps the rest of the thread intact.
-function editChatAnswer(handles, turnIndex, current) {
-  if (handles.bubble.querySelector(".answer-editor")) return; // already open
-  const editor = document.createElement("div");
-  editor.className = "answer-editor";
-  const box = document.createElement("textarea");
-  box.value = current;
-  box.rows = Math.min(20, Math.max(4, current.split("\n").length + 1));
-  box.setAttribute("aria-label", "Edit this answer");
-
-  const target = handles.timeline.answerElement();
-  const finish = (markdown) => {
-    editor.remove();
-    target.classList.remove("hidden");
-    if (markdown !== null) handles.timeline.replaceAnswer(markdown);
-  };
-
-  const save = document.createElement("button");
-  save.className = "small";
-  save.type = "button";
-  save.textContent = "Save";
-  save.addEventListener("click", async () => {
-    const next = box.value.trim();
-    if (!next) {
-      toast("An empty answer isn't a correction: delete the message instead.", "info");
-      return;
-    }
-    if (chatConv.id) {
-      const priorAnswer = chatConv.turns[turnIndex]?.answer;
-      const chatId = chatConv.id;
-      try {
-        await apiJson(`/conversations/${chatConv.id}/turns/${turnIndex}/answer`, {
-          method: "PUT",
-          body: JSON.stringify({ content: next }),
-        });
-      } catch (error) {
-        toast(error.message, true);
-        return; // leave the editor open rather than losing the edit
-      }
-      if (priorAnswer != null) {
-        pushRequestUndo(
-          "Edited an answer",
-          `/conversations/${chatId}/turns/${turnIndex}/answer`,
-          "PUT",
-          { content: priorAnswer },
-          { content: next },
-          () => (chatConv?.id === chatId ? openConversation(chatId) : null)
-        );
-      }
-    }
-    if (chatConv.turns[turnIndex]) chatConv.turns[turnIndex].answer = next;
-    finish(next);
-    if (!handles.bubble.querySelector(".edited-marker")) {
-      handles.bubble.insertBefore(
-        editedMarker(),
-        handles.bubble.querySelector(".msg-actions")
-      );
-    }
-    toast("Answer updated.");
-  });
-
-  const cancel = document.createElement("button");
-  cancel.className = "ghost small";
-  cancel.type = "button";
-  cancel.textContent = "Cancel";
-  cancel.addEventListener("click", () => finish(null));
-
-  const row = document.createElement("div");
-  row.className = "row";
-  row.append(save, cancel);
-  editor.append(box, row);
-  target.classList.add("hidden");
-  target.after(editor);
-  box.focus();
-}
-
 async function openConversation(id) {
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
@@ -2269,7 +2195,7 @@ async function loadChatSuggestions() {
   const label = document.createElement("span");
   label.className = "muted";
   //: UX-07: with no model a chip goes to Notes, Ask, and says so.
-  label.textContent = aiIsOff() ? "Try in Notes, Ask:" : "Try asking:";
+  label.textContent = aiIsOff() ? "Try in Ask:" : "Try asking:";
   box.appendChild(label);
   for (const question of picks) {
     //: No model: the chips go to Notes, Ask, like the dashboard's Ask tile
@@ -2432,37 +2358,6 @@ function personaNamesNow() {
   return [...new Set([...Object.keys(builtinPersonas()), ...custom])];
 }
 
-
-// A second, independent picker (asked for directly): the dashboard greeting
-// otherwise always spoke in whichever persona Chat had active, with no way
-// to give the notebook's own front page a different voice. "" means "no
-// override" and falls back to active_persona server-side, same clear-with-
-// empty-string convention display_name/dashboard_persona already share.
-function renderDashboardPersonaSelect(names) {
-  const select = $("dashboard-persona-select");
-  const current = (prefsCache && prefsCache.dashboard_persona) || "";
-  select.replaceChildren();
-  const sameAsChat = document.createElement("option");
-  sameAsChat.value = "";
-  sameAsChat.textContent = "Same as Chat";
-  select.appendChild(sameAsChat);
-  for (const name of names) {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  }
-  //: A saved name that is no longer in the list (the built-in was
-  //: "Librarian" before it became Atlas; a custom persona can be deleted)
-  //: left the select with no selected option, which the enhanced opener
-  //: drew as an empty box with a chevron (the owner, 2026-09-14: "this
-  //: dashboard welcome message persona dropdown box is broken visually").
-  //: The old built-in reads as the new one; anything else unknown reads as
-  //: "Same as Chat", which is what the server falls back to as well.
-  const wanted = personaDisplayName(current) === current || current === "Librarian" ? personaDisplayName(current) : current;
-  select.value = names.includes(wanted) ? wanted : "";
-  paintDashboardPersonaMark();
-}
 
 //: "Same as Chat" follows Chat's picker, so its face does too.
 document.addEventListener("change", (event) => {

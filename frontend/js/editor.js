@@ -72,6 +72,12 @@ const EDITOR_SURFACES = {
 //:
 //: Returns null, not "note", for anything that is not an editing surface, so
 //: callers can tell "not a surface" from "a note".
+//: Whether the open document is a code file (no rendered form). The one guard
+//: for documents.js's `docFileType`, which is not loaded until Documents opens.
+function editorDocIsCode() {
+  return typeof docFileType === "function" && !docFileType().previewable;
+}
+
 function editorSurfaceKind(box) {
   //: A surface, an element, or a node inside CodeMirror. The last of those is
   //: why this can no longer be a `instanceof HTMLTextAreaElement` check:
@@ -210,6 +216,8 @@ function editorHintPlaceholder(box) {
   //: has the room and reads better with the hint under the prompt; the chat
   //: bar is one row by design, and there the hint joins the sentence.
   const tall = (Number(box.getAttribute("rows")) || 1) > 2;
+  //: The joined hint is 492px of text: cut ("Press / for bl") in the box a 700px window leaves.
+  if (!tall && innerWidth < 800) return;
   const joined = tall
     ? (current ? `${current}\n${EDITOR_MENU_HINT}.` : `${EDITOR_MENU_HINT}.`)
     : (current ? `${current}  ${EDITOR_MENU_HINT}.` : `${EDITOR_MENU_HINT}.`);
@@ -343,7 +351,8 @@ function editorFuzzyMatch(label, query) {
   return hits;
 }
 
-//: Rank rows for a query, best first, stable within a tier: a label that
+//: Rank rows for a query, best first, stable within a tier: a label equal
+//: to it ("table" finds Table before Table of contents), a label that
 //: starts with it, a word in the label that does, a keyword that does, the
 //: label containing it, a keyword containing it, and last the letters in
 //: order anywhere in the label ("twcl" finds Two columns). No query keeps the
@@ -356,7 +365,8 @@ function editorFuzzyRank(rows, query) {
     const label = String(row.label || "").toLowerCase();
     const keywords = (row.keywords || []).map((k) => String(k).toLowerCase());
     let score = -1;
-    if (label.startsWith(needle)) score = 0;
+    if (label === needle) score = 0;
+    else if (label.startsWith(needle)) score = 0.5;
     else if (label.split(/[\s-]+/).some((word) => word.startsWith(needle))) score = 1;
     else if (keywords.some((k) => k.startsWith(needle))) score = 2;
     else if (label.includes(needle)) score = 3;
@@ -668,9 +678,11 @@ function chatCommands() {
     { id: "chat-attach-file", primary: true, group: "Attach", icon: "ph:paperclip", label: "A file", hint: "from the Library", keywords: ["attach", "file", "pdf", "spreadsheet"], run: pick("files") },
     { id: "chat-attach-image", group: "Attach", icon: "ph:image", label: "An image", hint: "from the Library", keywords: ["attach", "image", "picture", "photo", "sketch"], run: pick("images") },
     { id: "chat-upload", primary: true, group: "Attach", icon: "ph:upload-simple", label: "Upload something new", hint: "any file", keywords: ["upload", "new", "file", "attach"], run: press("attach-image") },
-    { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: press("web-search-toggle") },
+    { id: "chat-web", primary: true, group: "This message", icon: "ph:globe", label: "Web search", hint: "toggle", keywords: ["web", "search", "online", "internet"], run: afterPress(() => toggleWebSearch()) },
     { id: "chat-plan", primary: true, group: "This message", icon: "ph:compass", label: "Plan first", hint: "toggle", keywords: ["plan", "steps", "think"], run: press("chat-plan") },
     { id: "chat-skills", primary: true, group: "This message", icon: "ph:lightning", label: "Skills", hint: "run a saved skill", keywords: ["skill", "skills", "run", "workflow"], run: press("chat-skills-btn") },
+    { id: "chat-equation", group: "This message", icon: "ph:function", label: "Equation", hint: "build a formula, Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol"], run: afterPress(() => openMathEditor({ target: document.getElementById("chat-input") })) },
+    ...POPUP_TOOLS.filter((t) => t.id !== "equation").map((tool) => ({ id: `chat-tool-${tool.id}`, group: "This message", icon: tool.icon, label: tool.name, hint: "opens a panel", keywords: tool.keywords.split(" "), run: afterPress(() => tool.open()) })),
     ...chatSlashRows(afterPress),
     { id: "chat-mode-agent", group: "Mode", icon: "ph:strategy", label: "Agent mode", hint: "let it act on the notebook", keywords: ["agent", "mode", "tools", "act"], run: mode("agent") },
     { id: "chat-mode-chat", group: "Mode", icon: "ph:sparkle", label: "Ask mode", hint: "answer only", keywords: ["ask", "chat", "mode", "answer"], run: mode("chat") },
@@ -925,6 +937,12 @@ function editorBlockRows(context) {
   }
   add({ id: "math", group: "Media", icon: "ph:function", label: "Maths block", about: "A formula on its own line, typeset", keys: "$$ ... $$", keywords: ["math", "maths", "formula", "equation", "latex", "tex", "block"], sample: "$$ e^{i\\pi} + 1 = 0 $$", run: (t) => editorBlock(t, "$$ ", "x^2 + y^2 = z^2", " $$") });
   add({ id: "math-inline", group: "Media", icon: "ph:math-operations", label: "Inline maths", about: "A formula inside a sentence", keys: "$ ... $", keywords: ["math", "inline", "formula", "latex", "tex"], run: act("math") });
+  //: DOCUMENTS_PLAN 16: the guided editor (math-editor.js, lazy), Word's Alt+=.
+  add({ id: "equation", group: "Media", icon: "ph:function", label: "Equation", about: "Build a formula from a palette, with a live preview", keys: "Alt+=", keywords: ["equation", "math", "maths", "formula", "symbol", "fraction", "greek", "matrix", "integral"], run: (t) => openMathEditor({ target: t }) });
+  //: The other popup tools (settings-panes.js `POPUP_TOOLS`): a row each, so "/calc" and "/convert" find them in a note too.
+  for (const tool of POPUP_TOOLS.filter((t) => t.id !== "equation")) {
+    add({ id: `tool-${tool.id}`, group: "Media", icon: tool.icon, label: tool.name, about: tool.about.split(";")[0], keys: tool.keys, keywords: tool.keywords.split(" "), run: () => tool.open() });
+  }
 
   // --- Embeds: other things in this notebook, and the web. ------------------
   add({ id: "wikilink", group: "Embeds", icon: "ph:link", label: "Link to a note", about: "Pick a note, document or board to link", keys: "[[", keywords: ["link", "note", "wiki", "reference", "connect", "document"], run: (t) => { editorApplyAction(t, { insert: "[[" }); editorOpenMenu(t, "[["); } });
@@ -1677,6 +1695,10 @@ function editorRefreshMenu() {
 function editorHandleInput(textarea) {
   if (!textarea) return;
   if (!editorSurfaceKind(textarea)) return;
+  //: A code file's "/" is a comment or a path and "[[" is an index: neither
+  //: opens a menu of headings and links (INBOX 1400 dogfood: a `//` comment
+  //: at a line start raised "Heading 1" over a .sql file).
+  if (editorSurfaceFor(textarea)?.id === "doc-content" && editorDocIsCode()) return;
 
   if (editorMenuState.open && editorMenuState.textarea === textarea) {
     editorRefreshMenu();
@@ -1868,6 +1890,7 @@ const SELECTION_BAR_ACTIONS = [
   { md: "link", label: "ph:link", title: "Link" },
   { md: "h2", label: "ph:text-h", title: "Heading" },
   { md: "quote", label: "ph:quotes", title: "Quote" },
+  { turn: true, label: "ph:swap", title: "Turn into" },
   //: **Not a formatting action, and it says so with a rule beside it.**
   //: REDESIGN.md §R7.1 item 1, quoted from the request: *"able to highlight
   //: text and say something in the chat and the agent gets the context of
@@ -1917,6 +1940,7 @@ function selectionBarElement() {
       button.dataset.modelOffer = "Ask Atlas about this selection, beside it, answers from your notes without one.";
     }
     if (action.md) button.dataset.md = action.md;
+    if (action.turn) button.dataset.turn = "1";
     button.title = action.title;
     button.setAttribute("aria-label", action.title);
     setLabel(button, action.label);
@@ -1927,6 +1951,10 @@ function selectionBarElement() {
       event.preventDefault();
       const textarea = selectionBarState.textarea;
       if (!textarea) return;
+      if (action.turn) {
+        if (typeof docTurnIntoMenu === "function") docTurnIntoMenu(textarea.id, button);
+        return;
+      }
       if (action.ask) {
         askAboutSelection(textarea);
         selectionBarHide();
@@ -1976,9 +2004,10 @@ function selectionBarShow(textarea) {
   //: where every one of them would write markdown into the code). A code
   //: document keeps the two actions that mean something there, ask Atlas and
   //: rewrite in place; the formatting eight and their rule are hidden.
-  const code = editorSurfaceKind(textarea) === "document"
-    && typeof docFileType === "function" && docFileType().previewable === false;
-  for (const button of bar.querySelectorAll("[data-md], .selection-bar-rule")) button.hidden = code;
+  const code = editorSurfaceKind(textarea) === "document" && editorDocIsCode();
+  for (const button of bar.querySelectorAll("[data-md], [data-turn], .selection-bar-rule")) button.hidden = code;
+  const turn = bar.querySelector("[data-turn]");
+  if (turn && !code) turn.hidden = typeof docTurnIntoMenu !== "function";
   //: **Never a second copy of the phone's formatting bar.** Below 600 the
   //: document has its own bar at the foot (`#doc-phone-bar`, a `.thumb-bar`),
   //: and this one drew the same Bold, Italic, Heading and Link again over the
@@ -1992,6 +2021,7 @@ function selectionBarShow(textarea) {
     const onFoot = new Set([...foot.querySelectorAll("[data-md]")].map((b) => b.dataset.md));
     for (const button of bar.querySelectorAll("[data-md]")) button.hidden = onFoot.has(button.dataset.md);
   }
+  if (typeof wbSelectionBarFit === "function") wbSelectionBarFit(bar, textarea);
   bar.classList.remove("hidden");
   //: Anchored to the *start* of the selection, which is where the eye is when
   //: a selection is made left-to-right, and measured after the bar is visible
@@ -2288,7 +2318,7 @@ async function offerToCreateWikiTarget(name) {
 
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: wanted, content: `# ${wanted}\n\n` }),
+      body: JSON.stringify({ title: wanted, content: "" }),
     });
     // Keep the resolver's cache honest, or the link stays unresolved until
     // something else happens to refetch documents.
@@ -2538,7 +2568,7 @@ function inlineAiDescribeScope() {
 }
 
 function inlineAiIsCode() {
-  return inlineAiState.textarea?.id === "doc-content" && typeof docFileType === "function" && !docFileType().previewable;
+  return inlineAiState.textarea?.id === "doc-content" && editorDocIsCode();
 }
 
 //: **With no model the bar stays, disabled, with the reason** (DOCUMENTS_PLAN

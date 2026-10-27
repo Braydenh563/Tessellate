@@ -55,6 +55,8 @@ TAG_PHRASE_VOTE = 0.2
 #: names in this many different phrases ("gym" and "squat" are Fitness; "eggs"
 #: alone is not Cooking).
 NEW_TOPIC_PHRASES = 2
+#: Topics too broad to be a tag beside a specific one.
+GENERIC_TOPICS = frozenset({"Education", "Learning", "Study"})
 #: The title and first line's words count this many times in the note.
 LEAD_WEIGHT = 2.0
 #: A tag on a note this one links to, or that links to it.
@@ -133,7 +135,8 @@ def _purpose_grounds(tag: str, content: str) -> list[str]:
 
 
 def grounds(
-    tag: str, content: str, hits: dict[str, list[str]] | None = None, note_stems: set[str] | None = None
+    tag: str, content: str, hits: dict[str, list[str]] | None = None, note_stems: set[str] | None = None,
+    own: str | None = None,
 ) -> list[str]:
     """What in `content` backs `tag`, or [] when nothing does (decision 5: a
     tag is never proposed on a note that contains none of its words). Every
@@ -142,7 +145,8 @@ def grounds(
     its neighbours share: that vote was the Study bug."""
     from tessellate.ai import taxonomy
 
-    own = clean(content)
+    #: `own`: the cleaned text, once per note when many tags are weighed.
+    own = clean(content) if own is None else own
     words = tag_words(tag)
     note_stems = stems(tokens(own)) if note_stems is None else note_stems
     if words and all(stem(word) in note_stems for word in words):
@@ -175,7 +179,7 @@ def grounded(content: str, tags: list[str], limit: int = TAG_LIMIT) -> list[str]
     own = clean(content)
     hits = taxonomy.topic_hits(own)
     note_stems = stems(tokens(own))
-    return [tag for tag in tags if grounds(tag, content, hits, note_stems)][:limit]
+    return [tag for tag in tags if grounds(tag, content, hits, note_stems, own)][:limit]
 
 
 @dataclass
@@ -431,12 +435,10 @@ def filled(session: Session, content: str, tags: list[str], have: list[str], lim
     return [*tags, *new_topics(session, content, [*have, *tags])[:room]] if room > 0 else tags
 
 
-def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
-    """Tags for the subjects `content` names (the pack's topics, in at least
-    `NEW_TOPIC_PHRASES` different phrases, most phrases first) that the
-    notebook has not used and `taken` does not hold: the new-tag suggestions
-    with no model to coin one. A sensitive subject (an illness, a debt) is
-    never offered as a tag the person did not choose."""
+def _named_topics(content: str) -> dict[str, int]:
+    """The pack's topics `content` names in enough different phrases, with
+    their phrase counts; a sensitive subject is left out, and so is a generic
+    one (Education) when the note names a subject of its own."""
     from tessellate.ai import taxonomy
 
     sensitive = taxonomy.sensitive_topics()
@@ -444,6 +446,20 @@ def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
         topic: len(set(phrases)) for topic, phrases in _read(content).hits.items()
         if topic not in sensitive and not re.search(r"[&/]", topic) and len(set(phrases)) >= NEW_TOPIC_PHRASES
     }
+    #: Every note in a student's notebook is "education": it is offered only
+    #: when the note names no subject of its own (Mathematics, Biology).
+    if any(topic not in GENERIC_TOPICS for topic in named):
+        named = {topic: n for topic, n in named.items() if topic not in GENERIC_TOPICS}
+    return named
+
+
+def new_topics(session: Session, content: str, taken: list[str]) -> list[str]:
+    """Tags for the subjects `content` names (the pack's topics, in at least
+    `NEW_TOPIC_PHRASES` different phrases, most phrases first) that the
+    notebook has not used and `taken` does not hold: the new-tag suggestions
+    with no model to coin one. A sensitive subject (an illness, a debt) is
+    never offered as a tag the person did not choose."""
+    named = _named_topics(content)
     if not named:
         return []
     with lexical_filing._corpus_lock:

@@ -122,7 +122,8 @@ def test_it_comes_down_on_a_ledge_under_its_path_and_never_through_one() -> None
 def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
     assert "nameMarkBuddyReleaseVelocity(drag.samples || [], event?.timeStamp ?? performance.now())" in build
-    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world);" in build
+    # The flight and its landing are planned at the release (`companionThrowPlan`, 2026-10-27).
+    assert "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in build
     throw = _fn("nameMarkBuddyThrow")
     # One requestAnimationFrame, its step capped so a hidden tab resumes in
     # place, drawn by `nameMarkBuddyPut` (a transform) and a rotate.
@@ -131,7 +132,7 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     assert "nameMarkBuddyPut(buddy, Math.round(s.x), Math.round(s.y));" in throw
     assert ".style.left" not in throw and ".style.top" not in throw
     # Reduce motion: the same flight worked out at once, then a crossfade.
-    assert "if (nameMarkBuddyNoTravel()) {" in throw
+    assert "const still = nameMarkBuddyNoTravel();" in _fn("companionThrowPlan") and "if (plan.still) {" in throw
     # A grab or any other move ends the flight where it is.
     assert "nmb.flight?.stop();" in _fn("nameMarkBuddyMoveTo")
     land = _fn("nameMarkBuddyThrowLand")
@@ -141,9 +142,13 @@ def test_the_flight_is_one_frame_loop_on_transforms_and_lands_as_a_drop() -> Non
     spot = _fn("nameMarkBuddyThrowSpot")
     assert "nameMarkBuddyDrop(s.x, s.y)" in spot and "nameMarkBuddyChoose" not in land + spot
     assert "spots[tab] = nameMarkBuddySpotFor(spot);" in land
-    # Any landing on a surface it cannot stand on steps along it, never up to
-    # the top bar (seed 2 of throwfates.js; INBOX 1302 widened it from splats).
-    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, reach)" in spot
+    # Any landing on a surface it cannot stand on steps along it a little way,
+    # never up to the top bar (seed 2 of throwfates.js; INBOX 1302 widened it
+    # from splats); further than that, the nearest open air (INBOX 1402: it
+    # went "across the screen" along the bar, so the reach is no longer the
+    # window's width).
+    assert "s.on && spot.y < s.y - 40" in spot and "nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR)" in spot
+    assert "nameMarkBuddyLandNear(s.x, s.y, spot)" in spot and "innerWidth" not in spot
     assert "nameMarkBuddyToss" not in AV
 
 
@@ -184,6 +189,7 @@ def _drop(obstacles: str):
             'function nameMarkBuddyTab() { return "chat"; }',
             "function nameMarkBuddyObstacles() { return OBS; }",
             "function nameMarkBuddyEdges() { return []; }",
+            "function nameMarkBuddyLedges() { return { top: null, bottom: null }; }",
             "function nameMarkBuddyYoursObstacles(o) { return o; }",
             "function nameMarkBuddyStepAside(spot) { return spot; }",
             "function nameMarkBuddyHits(x, y, pose, obs) { return obs.some((b) => x < b.right && x + NMB_W > b.left && y < b.bottom && y + NMB_H > b.top); }",

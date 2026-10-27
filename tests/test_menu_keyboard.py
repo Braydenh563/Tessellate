@@ -55,7 +55,8 @@ def test_moving_a_menu_does_not_drop_its_focus() -> None:
 
 def test_closing_a_focused_menu_hands_the_focus_back() -> None:
     body = _function(APP, "function closeActionMenus(")
-    assert "opener.focus(" in body, "a menu closed with the focus inside it drops it to body"
+    # The opener, or the element a point-opened menu names (`_returnFocusTo`).
+    assert "back.focus(" in body and "_returnFocusTo" in body and ": opener;" in body, "a menu closed with the focus inside it drops it to body"
 
 
 def test_details_menus_and_markup_menus_answer_the_arrows() -> None:

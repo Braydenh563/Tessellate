@@ -55,7 +55,7 @@ def test_the_router(message, expected):
 )
 def test_the_reply_kind(message, kind):
     assert composer.social_kind(message, intent.classify(message)) == kind
-    assert composer.social(message, intent.classify(message)) in composer.SOCIAL[kind]
+    assert composer.social(message, intent.classify(message)) in composer.social_surfaces(kind)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +190,16 @@ def test_the_weather_is_said_not_known_never_guessed():
 
 
 def test_a_utility_is_worked_out_even_with_a_model_running(ai_client, fake_ollama, session):
+    """Worked out by the engine, model or not. Changed 2026-10-27 (decision 75,
+    the owner: the model writes every answer when it runs): the result now
+    goes to the model as a fact (`_fact_events`), and a reply without the
+    figure, as the fake's is, leaves the engine's sentence with no model named
+    under it (the latest `meta`). The model-written case is
+    `tests/test_model_writes_facts_1027.py`."""
     out = _ask(ai_client, "what is 12 * 7", use_tools=False)
+    assert "84" in json.dumps(fake_ollama.chat_calls[-1])
     assert out["text"] == "12 * 7 is 84."
-    assert out["meta"][0]["answered_by"] is None
+    assert out["meta"][-1]["answered_by"] is None
     assert fake_ollama.librarian_reply not in out["text"]
 
 
@@ -212,8 +219,10 @@ def test_recall_by_time_reads_every_note_of_the_window(client, session):
     old.created_at = now - timedelta(days=60)
     session.commit()
     out = _ask(client, "what did I do last week", notes_only=True, use_tools=False, answer_from="notes")
-    assert out["text"].startswith("You wrote seven notes last week, newest first:"), out["text"]
-    assert "**Day 6**" in out["text"] and "**Old**" not in out["text"]
+    #: Since owner-1026b K20 the answer is the activity recap (every kind,
+    #: grouped by day); the window still holds every note of it and no other.
+    assert out["text"].startswith("Last week (") and "you made seven notes:" in out["text"], out["text"]
+    assert all(f"**Day {i}**" in out["text"] for i in range(7)) and "**Old**" not in out["text"]
 
 
 # Utilities worked out with no model and no search (CHAT_PLAN A1). The eval

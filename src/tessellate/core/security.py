@@ -143,7 +143,10 @@ class HostCheckMiddleware:
                 if name == b"host":
                     host = value.decode("latin-1")
                     break
-            if (host is None and off_loopback) or (host is not None and not netbind.host_allowed(host)):
+            if (host is None and off_loopback) or (
+                host is not None
+                and not netbind.host_allowed(host, on_loopback=netbind.arrived_on_loopback(server))
+            ):
                 response = JSONResponse(
                     status_code=421,
                     content={"detail": "This address does not name this computer."},
@@ -510,6 +513,35 @@ def build_csp(script_hashes: list[str]) -> str:
         "frame-src": "'self' blob:",
     }
     return "; ".join(f"{name} {value}" for name, value in directives.items())
+
+
+#: The policy the diagram frame's own response carries (`/mermaid-frame`, which
+#: draws every ```mermaid fence). Mermaid writes a <style> element and style=
+#: attributes, which the app's `style-src 'self'` refuses, and relaxing that
+#: for the whole app would trade the notebook's protection for a viewer feature.
+#: The frame is a separate document with a policy of its own instead:
+#: - `style-src 'unsafe-inline'`: the point, harmless in a document that holds
+#:   only the drawing library and the diagram text the parent sent.
+#: - `script-src 'self'`: the vendored library and our message script, both
+#:   external, no inline script and no eval.
+#: - `img-src data:`, `font-src 'self'`: nothing else may be fetched
+#:   (`default-src 'none'` catches the rest, connect-src included).
+#: - `frame-ancestors 'self'`: named because `default-src 'none'` would
+#:   otherwise forbid the app framing it; see HTML_PREVIEW_CSP's comment.
+MERMAID_FRAME_CSP = (
+    "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; "
+    "font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
+)
+
+#: The frame's page. No inline script: the main policy hashes inline scripts,
+#: and this response carries a policy of its own.
+MERMAID_FRAME_HTML = (
+    '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+    "<title>Diagram frame</title></head><body>"
+    '<script src="/vendor/mermaid/mermaid.min.js"></script>'
+    '<script src="/js/mermaid-frame.js"></script>'
+    "</body></html>"
+)
 
 
 class CspForPage:

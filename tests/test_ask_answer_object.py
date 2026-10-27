@@ -271,7 +271,7 @@ def test_the_open_note_toggle_scopes_the_run_to_what_is_open():
     #: palette stays open while you move around the app.
     start = APP.index("async function cmdPaletteAsk(")
     ask = APP[start : APP.index("\n}\n", start)]
-    assert "...agentScopeForRun(text)" in ask
+    assert "agentScopeForRun(text)" in ask and "...agentScope," in ask  # resolved at send (attach-1026 named it)
 
 
 def test_the_toggle_never_offers_to_use_nothing():

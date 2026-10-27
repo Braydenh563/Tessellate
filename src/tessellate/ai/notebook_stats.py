@@ -42,6 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
+from tessellate.ai import spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
@@ -67,8 +68,10 @@ class StatAnswer:
     offer: dict | None = None
 
 
-def _visible(query):
-    """Live notes only: binned and private notes are nobody's statistics.
+def _visible(query, archived: bool = False):
+    """Live notes only: binned and private notes are nobody's statistics, and
+    an archived note is in no count unless the question asks for archived
+    ones (`archived=True`, "how many archived notes").
 
     Private notes are excluded for the reason the rest of the app excludes
     them: a count that changes when a note is made private is a count that
@@ -76,9 +79,8 @@ def _visible(query):
     """
     #: `is_board` too: a mind map is an `Entry` whose text is its title, and
     #: "how many notes do I have" counted it (the Notes list does not).
-    return query.where(
-        Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False)
-    )
+    query = query.where(Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.is_board.is_(False))
+    return query if archived else query.where(Entry.archived_at.is_(None))
 
 
 def _tags_of(raw: str) -> list[str]:
@@ -91,8 +93,11 @@ def _tags_of(raw: str) -> list[str]:
 
 def _plural(n: int, word: str) -> str:
     #: "10 categorys" was said in the overview (INBOX 801's NOTEBOOK STATS).
+    #: "0 distinct tags" was said of nothing: none is "no", then the plural.
     if n == 1:
         return f"{n} {word}"
+    if n == 0:
+        return f"no {_plural(2, word)[2:]}"
     return f"{n} {word[:-1]}ies" if word.endswith("y") and word[-2:-1] not in "aeiou" else f"{n} {word}s"
 
 
@@ -106,7 +111,7 @@ def _plural(n: int, word: str) -> str:
 _TAG_WORDS = r"tags?"
 _CATEGORY_WORDS = r"categor(?:y|ies)|folders?|spaces?"
 _MOST = r"most|top|common|commonest|frequent|popular|biggest|largest|main"
-_COUNT = r"how many|how much|number of|count of|total"
+_COUNT = r"how many|how much|number of|count (?:of|my|the)|total"
 
 
 #: **Every word the matchers below actually look for.**
@@ -185,7 +190,9 @@ def _despell(text: str) -> str:
 
     def fix(match: re.Match) -> str:
         word = match.group(0)
-        if len(word) < _SPELLING_MIN_LENGTH or word in known:
+        #: A word the dictionary lists is meant: "estates" is 0.83 close to
+        #: "stats" and turned a history question into a note count.
+        if len(word) < _SPELLING_MIN_LENGTH or word in known or spelling.is_word(word, strict=True):
             return word
         swap = _transposition_of(word, known)
         if swap:
@@ -208,7 +215,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
     return bool(
         re.search(_TAG_WORDS, text)
         or re.search(_CATEGORY_WORDS, text)
-        or re.search(r"\bnotes?\b|\bdocuments?\b|notebook", text)
+        or re.search(r"\bnotes?\b|\bdocuments?\b|notebook|\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text)
         #: The topics added alongside the spelling pass. Without these the
         #: pre-filter rejected "how many words have I written" before any
         #: matcher saw it: a question the module now answers exactly, refused
@@ -218,6 +225,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
         or re.search(r"\bstat(?:istic)?s\b", text)
+        or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
 
 
@@ -243,16 +251,15 @@ def answer(message: str, session: Session) -> StatAnswer | None:
     if not text or not looks_like_a_question_about_the_notebook(text):
         return None
 
-    if _asks(text, _TAG_WORDS, _MOST):
-        return _top_tags(session)
-    if _asks(text, _CATEGORY_WORDS, _MOST):
-        return _top_categories(session)
-    if _asks(text, r"untagged|no tags|without (?:a )?tags?|missing tags?"):
-        return _untagged(session)
-    if _asks(text, _COUNT, _TAG_WORDS):
-        return _tag_count(session)
-    if _asks(text, _COUNT, _CATEGORY_WORDS):
-        return _category_count(session)
+    for ask, reader in _FIRST_RULES:
+        if ask(text):
+            return reader(session)
+    counted = _counted(text, message, session) if re.search(_COUNT, text) else None
+    if counted is not None:
+        return counted
+    for ask, reader in _COUNT_RULES:
+        if ask(text):
+            return reader(session)
     #: "How many notes are about Harbor" counts the notes on a subject, which
     #: retrieval finds and the composer counts ("At least four of your notes
     #: mention Harbor"); answering it "You have 77 notes" dropped the subject
@@ -266,29 +273,36 @@ def answer(message: str, session: Session) -> StatAnswer | None:
         return _recent_count(session, window)
     if _asks(text, _COUNT, r"\bnotes?\b") and not _SUBJECT_AFTER.search(text):
         return _note_count(session)
-    if _asks(text, _COUNT, r"\bdocuments?\b"):
-        return _document_count(session)
-    if _asks(text, r"\bmost linked|linked (?:to )?the most|best connected|most connect"):
-        return _most_linked(session)
-    if _asks(text, r"orphan|unlinked|not linked|no links"):
-        return _orphans(session)
-    if _asks(text, r"when do i|busiest|most active|what time|which day"):
-        return _busiest(session)
-    #: --- added with the spelling pass, because "improve" was the other half
-    #: of the same request. Each one is a question people ask about a notebook
-    #: that retrieval answers badly for the same reason the rest do: it is a
-    #: question about the collection, not about any note in it.
-    if _asks(text, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"):
-        return _top_subjects(session)
-    if _asks(text, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"):
-        return _word_count(session)
-    if _asks(text, r"longest|biggest|largest", r"\bnotes?\b"):
-        return _longest_notes(session)
-    if _asks(text, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"):
-        return _stale_notes(session)
-    if _asks(text, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"):
-        return _tag_pairs(session)
+    for ask, reader in _LATER_RULES:
+        if ask(text):
+            return reader(session)
     return _whole_notebook(text, session)
+
+
+def _counted(text: str, message: str, session: Session) -> StatAnswer | None:
+    """A count of notes narrowed by a filter or named by a category or tag, or
+    of boards and maps, reminders and open items; None for the rest."""
+    from tessellate.ai import notebook_tasks, recognise
+
+    tasks = None if _SUBJECT_AFTER.search(text) else notebook_tasks.answer(text, session, utcnow(), _visible, recognise.ahead_window(text))
+    if tasks is not None:
+        return StatAnswer(*tasks[:2], tasks[2])
+    if re.search(r"\bnotes?\b|\b(?:pinned|archived|checklists?)\b", text):
+        return _narrowed_count(text, message, session) or _named_count(text, session) or _mention_count(text, session)
+    if re.search(r"\b(?:white)?boards?\b|\b(?:mind ?)?maps?\b", text):
+        return _board_count(session, text)
+    return None
+
+
+def _narrowed_count(text: str, message: str, session: Session) -> StatAnswer | None:
+    """A count narrowed by link state, tag or category (and a window with
+    them), `ai/notebook_filters.py`; None when nothing narrows it."""
+    from tessellate.ai import notebook_filters
+
+    names = list(session.scalars(select(Category.name)))
+    narrowed = notebook_filters.read(text, message or "", names, _window(text), lambda value: _window(value) is not None)
+    said = notebook_filters.count(session, narrowed, _visible)
+    return None if said is None else StatAnswer("filtered-count", said[0], said[1])
 
 
 def _whole_notebook(text: str, session: Session) -> StatAnswer | None:
@@ -319,6 +333,13 @@ _PLAIN = frozenset(
 )
 
 
+def _no_repeats(notes: int) -> str:
+    """No word is shared yet: "more than one of your 1 note" is not a sentence."""
+    if notes == 1:
+        return "You have only one note, so no word comes up in more than one yet."
+    return f"No word comes up in more than one of your {_plural(notes, 'note')} yet."
+
+
 def _top_subjects(session: Session) -> StatAnswer:
     """What the notebook is most about, by what it is filed under first (its
     tags, then its categories) and, with neither, by the words the most notes
@@ -337,7 +358,7 @@ def _top_subjects(session: Session) -> StatAnswer:
         words.update({w for w in re.findall(r"[a-z][a-z'-]{2,}", str(content or "").lower()) if w not in _PLAIN})
     top = [(w, n) for w, n in words.most_common(5) if n >= 2]
     if not top:
-        return StatAnswer("subjects", f"No word comes up in more than one of your {_plural(len(rows), 'note')} yet.")
+        return StatAnswer("subjects", _no_repeats(len(rows)))
     listed = ", ".join(f"“{w}” ({_plural(n, 'note')})" for w, n in top)
     return StatAnswer("subjects", f"The words the most notes use are {listed}.", [{"label": w, "count": n} for w, n in top])
 
@@ -378,11 +399,16 @@ def _top_categories(session: Session) -> StatAnswer:
 def _untagged(session: Session) -> StatAnswer:
     rows = session.scalars(_visible(select(Entry.tags))).all()
     without = sum(1 for raw in rows if not _tags_of(raw))
+    facts = [{"label": "untagged", "count": without}, {"label": "total", "count": len(rows)}]
+    if not rows:
+        return StatAnswer("untagged", "You have no notes yet.", facts)
+    if not without:
+        return StatAnswer("untagged", "Every note has a tag.", facts)
     return StatAnswer(
         "untagged",
-        f"{_plural(without, 'note')} out of {len(rows)} have no tags."
-        + (" Filing those would make them much easier to find." if without else ""),
-        [{"label": "untagged", "count": without}, {"label": "total", "count": len(rows)}],
+        f"{_plural(without, 'note')} out of {len(rows)} {'has' if without == 1 else 'have'} no tags."
+        " Filing those would make them much easier to find.",
+        facts,
     )
 
 
@@ -391,7 +417,7 @@ def _tag_count(session: Session) -> StatAnswer:
     distinct = {tag for raw in rows for tag in _tags_of(raw)}
     return StatAnswer(
         "tag-count",
-        f"You are using {_plural(len(distinct), 'distinct tag')}.",
+        f"You are using {_plural(len(distinct), 'distinct tag')}." if distinct else "You are not using any tags yet.",
         [{"label": "tags", "count": len(distinct)}],
     )
 
@@ -405,6 +431,75 @@ def _category_count(session: Session) -> StatAnswer:
     )
 
 
+def _notes_per_category(session: Session) -> StatAnswer:
+    rows = session.execute(
+        _visible(
+            select(Category.name, func.count(Entry.id))
+            .join(Category, Category.id == Entry.category_id)
+            .group_by(Category.name)
+        ).order_by(func.count(Entry.id).desc(), Category.name)
+    ).all()
+    if not rows:
+        return StatAnswer("categories", "None of your notes are filed in a category yet.")
+    listed = ", ".join(f"{name} ({n})" for name, n in rows)
+    return StatAnswer(
+        "categories",
+        f"Notes per category: {listed}.",
+        [{"label": name, "count": n} for name, n in rows],
+    )
+
+
+def _named_count(text: str, session: Session) -> StatAnswer | None:
+    """"How many travel notes" / "how many notes are in Work": the count for
+    one category or tag the question names, or None when it names neither."""
+    names = session.execute(
+        _visible(
+            select(Category.name, func.count(Entry.id))
+            .join(Category, Category.id == Entry.category_id)
+            .group_by(Category.name)
+        )
+    ).all()
+    for name, n in sorted(names, key=lambda r: -len(r[0])):
+        if re.search(rf"(?<!\w){re.escape(name.lower())}(?!\w)", text):
+            return StatAnswer(
+                "category-count",
+                f"You have {_plural(n, 'note')} in {name}.",
+                [{"label": name, "count": n}],
+            )
+    counts = Counter(tag.lower() for raw in session.scalars(_visible(select(Entry.tags))).all() for tag in _tags_of(raw))
+    for tag, n in sorted(counts.items(), key=lambda r: -len(r[0])):
+        if re.search(rf"(?<!\w){re.escape(tag)}(?!\w)", text):
+            return StatAnswer("tag-count", f"{_plural(n, 'note')} are tagged {tag}.".replace("1 notes are", "1 note is"), [{"label": tag, "count": n}])
+    return None
+
+
+#: "how many work notes", "number of zebra notes": the word before "notes".
+#: The text is read with single spaces, so nothing here runs over a run of them.
+_WORD_NOTES = re.compile(r"\b(?:how many|number of|count|total)(?: of)?(?: (?:my|the|all|our|your))? ([a-z][a-z'-]{1,29}) notes?\b")
+#: Words before "notes" that say which kind or how many, not what they say.
+_KIND_WORDS = frozenset(
+    """new newest old oldest recent latest last first total all my the your our any every some few many more most other another
+    long longest short shortest big small empty blank private public deleted binned untitled titled tagged untagged linked unlinked
+    pinned unpinned archived live active open closed done total saved written whole entire single separate different distinct
+    unique individual personal""".split()
+)
+
+
+def _mention_count(text: str, session: Session) -> StatAnswer | None:
+    """"How many work notes" when no tag or folder is called work: the notes
+    whose title or text has the word, and the answer says so, so it is never
+    read as the notebook's total. None when the word is a kind (new, long),
+    a day or window, or the question names a subject after the notes."""
+    found = _WORD_NOTES.search(" ".join(text.split()))
+    word = found.group(1) if found else ""
+    if not word or word in _KIND_WORDS or _SUBJECT_AFTER.search(text) or _window(word) is not None:
+        return None
+    said = re.compile(rf"(?<!\w){re.escape(word)}(?:s|es)?(?!\w)", re.I)
+    n = sum(1 for body in session.scalars(_visible(select(Entry.content))) if said.search(body or ""))
+    said_n = f"{_plural(n, 'note')} mention{'s' if n == 1 else ''} {word}." if n else f"None of your notes mention {word}."
+    return StatAnswer("mention-count", said_n, [{"label": word, "count": n}])
+
+
 def _note_count(session: Session) -> StatAnswer:
     total = session.scalar(_visible(select(func.count(Entry.id)))) or 0
     return StatAnswer(
@@ -412,6 +507,20 @@ def _note_count(session: Session) -> StatAnswer:
         f"You have {_plural(total, 'note')}.",
         [{"label": "notes", "count": total}],
     )
+
+
+def _board_count(session: Session, text: str) -> StatAnswer:
+    """How many boards, or mind maps, the notebook holds (a map is a board
+    whose settings say so)."""
+    maps = bool(re.search(r"\bmaps?\b", text))
+    rows = session.scalars(
+        select(Entry.board_settings).where(
+            Entry.is_board.is_(True), Entry.deleted_at.is_(None), Entry.is_private.is_(False), Entry.archived_at.is_(None)
+        )
+    ).all()
+    total = sum(1 for raw in rows if ('"type": "map"' in (raw or "") or '"type":"map"' in (raw or "")) == maps)
+    word = "mind map" if maps else "board"
+    return StatAnswer("board-count", f"You have {_plural(total, word)}.", [{"label": word + "s", "count": total}])
 
 
 def _document_count(session: Session) -> StatAnswer:
@@ -464,10 +573,15 @@ def _orphans(session: Session) -> StatAnswer:
         linked.add(target)
     ids = session.scalars(_visible(select(Entry.id))).all()
     alone = [entry_id for entry_id in ids if entry_id not in linked]
+    facts = [{"label": "unlinked", "count": len(alone)}, {"label": "total", "count": len(ids)}]
+    if not ids:
+        return StatAnswer("orphans", "You have no notes yet.", facts)
+    if not alone:
+        return StatAnswer("orphans", "Every note is linked to another.", facts)
     return StatAnswer(
         "orphans",
-        f"{_plural(len(alone), 'note')} out of {len(ids)} are not linked to anything else.",
-        [{"label": "unlinked", "count": len(alone)}, {"label": "total", "count": len(ids)}],
+        f"{_plural(len(alone), 'note')} out of {len(ids)} {'is' if len(alone) == 1 else 'are'} not linked to anything else.",
+        facts,
     )
 
 
@@ -492,6 +606,28 @@ def _busiest(session: Session) -> StatAnswer:
     )
 
 
+#: A month said in a question (lower-cased for reading) is written back with its capital.
+_MONTH_WORD = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b")
+
+
+def _window_words(words: str, grain: str, first: date, last: date | None = None) -> str:
+    """How a counted window is said back: "in March 2026", "in the first week
+    of October", "last summer", "on Friday", "from 24 to 30 September"."""
+    low = words.lower()
+    if low.startswith(("before ", "until ", "till ", "after ")):
+        return words
+    if grain == "day" and last not in (None, first):
+        return _MONTH_WORD.sub(lambda m: m.group(0).capitalize(), words if low.startswith(("from ", "between ", "since ")) else "from " + words)
+    if grain == "month" and (low.startswith(("in ", "during ")) or _MONTH_WORD.match(low)):
+        return first.strftime("in %B %Y")
+    if grain in ("season", "week", "half") and not low.startswith(("in ", "during ", "since ", "this ", "last ", "next ", "over ", "throughout ", "through ", "from ", "for ")):
+        the = "" if low.startswith("the ") or (grain == "season" and re.search(r"\d{4}", low)) else "the "
+        return "in " + the + words
+    if not low.startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
+        return ("in the " if low.startswith(("past ", "previous ")) else "on ") + words
+    return words
+
+
 def _window(text: str) -> tuple[datetime, datetime, str] | None:
     """(start, end, words) of the first day or span of days the question
     names, on the UTC calendar the notes are stamped with; None for none."""
@@ -504,11 +640,7 @@ def _window(text: str) -> tuple[datetime, datetime, str] | None:
         first, last, grain = found.value if found.kind == "range" else (found.value, found.value, "day")
         if not isinstance(first, date):
             continue
-        words = found.text.strip()
-        if grain == "month" and words.lower().startswith(("in ", "during ")):
-            words = first.strftime("in %B %Y")
-        elif not words.lower().startswith(("in ", "since ", "on ", "this ", "last ", "today", "yesterday")):
-            words = ("in the " if words.lower().startswith(("past ", "previous ")) else "on ") + words
+        words = _window_words(found.text.strip(), grain, first, last)
         start = datetime.combine(first, time(0), now.tzinfo)
         end = min(datetime.combine(last, time(23, 59, 59), now.tzinfo), now)
         return (start, end, words) if start < end else None
@@ -1007,3 +1139,36 @@ def page(session: Session, now: datetime, usage_summary: dict, first_day: int = 
             "uses": sum(int(f.get("count") or 0) for f in features),
         },
     }
+
+
+#: Questions about the collection, first match wins, each (does it ask, what
+#: answers). Below the readers they name, so each is named directly. Three tables because a named count and a windowed count sit
+#: between them, in this order.
+_FIRST_RULES = (
+    (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
+    (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
+    (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
+    (
+        lambda t: _asks(t, _COUNT, r"\bnotes?\b")
+        and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),
+        _notes_per_category,
+    ),
+)
+_COUNT_RULES = (
+    (lambda t: _asks(t, _COUNT, _TAG_WORDS), _tag_count),
+    (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), _category_count),
+)
+#: Added with the spelling pass, because "improve" was the other half of the
+#: same request: each is a question about the collection, not about any note
+#: in it, which retrieval answers badly.
+_LATER_RULES = (
+    (lambda t: _asks(t, _COUNT, r"\bdocuments?\b"), _document_count),
+    (lambda t: _asks(t, r"\bmost linked|linked (?:to )?the most|best connected|most connect"), _most_linked),
+    (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), _orphans),
+    (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), _busiest),
+    (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
+    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), _word_count),
+    (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
+    (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
+    (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),
+)

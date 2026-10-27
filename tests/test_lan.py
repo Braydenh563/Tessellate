@@ -247,7 +247,7 @@ def test_a_phones_request_waits_for_this_computer_before_the_semantic_install(mo
     service = object.__new__(embeddings.EmbeddingService)
     service._auto_install_attempted = False
     service._models = SimpleNamespace(_config=SimpleNamespace(get_preference=lambda key, default=None: True))
-    missing = ModuleNotFoundError("No module named 'sentence_transformers'")
+    missing = ModuleNotFoundError("No module named 'fastembed'")
     with origin.acting_for(True):
         service._maybe_auto_install_missing_package(missing)
     assert started == [] and origin.has_deferred() and service._auto_install_attempted is False
@@ -616,6 +616,54 @@ def test_a_bracketed_ipv6_host_header_names_this_computer():
     assert netbind.host_allowed("[::1]:8000")
     assert netbind.host_allowed("[2001:db8::5]:8000")
     assert not netbind.host_allowed("evil.example:8000")
+
+
+@pytest.mark.usefixtures("_clean")
+def test_a_localhost_name_is_this_computer_only_on_loopback(monkeypatch):
+    """`tessellate.localhost` is the friendly name `TESSELLATE_LOCAL_NAME`
+    gives (no DNS, no admin rights). Only that one name, and only on a
+    request that arrived on loopback (lansec-1025): a browser that sends a
+    `*.localhost` lookup to the network's DNS (a hostile cafe resolver) could
+    otherwise point `evil.localhost` at this computer's LAN address and
+    rebind, so off loopback, or under any other name, it is a 421."""
+    from tessellate.core import security
+
+    monkeypatch.setattr(security, "_notebook_has_password", lambda: True)
+    monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    assert not netbind.host_allowed("tessellate.localhost:8000", on_loopback=True)
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
+    assert netbind.local_name() == "tessellate.localhost"
+    assert netbind.host_allowed("tessellate.localhost:8000", on_loopback=True)
+    assert not netbind.host_allowed("tessellate.localhost:8000")
+    assert not netbind.host_allowed("evil.localhost:8000", on_loopback=True)
+    assert not netbind.host_allowed("notes.tessellate.localhost", on_loopback=True)
+    assert not netbind.host_allowed("localhost.evil.example:8000", on_loopback=True)
+    assert not netbind.host_allowed("evillocalhost:8000", on_loopback=True)
+    assert _through_host_check(("127.0.0.1", 8000), "tessellate.localhost:8000") == (None, True)
+    assert _through_host_check(("::ffff:127.0.0.1", 8443), "tessellate.localhost:8443") == (None, True)
+    assert _through_host_check(("192.168.1.9", 8443), "tessellate.localhost:8443") == (421, False)
+    assert _through_host_check(("127.0.0.1", 8000), "evil.localhost:8000") == (421, False)
+    # The LAN port's plain-http redirect never sends a phone to a .localhost name.
+    from tessellate.core import lanserve
+
+    head = b"GET / HTTP/1.1\r\nHost: tessellate.localhost:8443\r\n\r\n"
+    assert lanserve.redirect_response(head, 8443).startswith(b"HTTP/1.1 400")
+
+
+@pytest.mark.usefixtures("_clean")
+def test_the_local_name_counts_as_this_computer(client, app_state, monkeypatch):
+    """Sign-in off, the friendly name gets its password-free session as
+    127.0.0.1 does; any other `*.localhost` name does not."""
+    from starlette.requests import Request
+
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "tessellate")
+
+    def request(host: str) -> Request:
+        return Request({"type": "http", "method": "GET", "path": "/", "headers": [(b"host", host.encode())],
+                        "client": ("127.0.0.1", 5000), "server": ("127.0.0.1", 8000), "scheme": "http"})
+
+    assert routes_auth._from_this_computer(request("tessellate.localhost:8000"))
+    assert not routes_auth._from_this_computer(request("evil.localhost:8000"))
 
 
 @pytest.mark.usefixtures("_clean")
@@ -1682,6 +1730,21 @@ def test_the_authority_vouches_only_for_this_network(tmp_path):
 
 
 @pytest.mark.usefixtures("_no_live_listener")
+def test_a_reused_authority_key_is_made_private_again(tmp_path):
+    """lansec-1025: `ensure` re-tightened the server key on every start but
+    not the authority's key or the folder, so a copy loosened by a restore,
+    a sync tool or an older build stayed readable while it was reused."""
+    lancert.ensure(tmp_path, NAMES)
+    folder = lancert.paths(tmp_path)[0].parent
+    _ca, ca_key = lancert.authority_paths(tmp_path)
+    os.chmod(ca_key, 0o700)
+    os.chmod(folder, 0o500)
+    lancert.ensure(tmp_path, NAMES)
+    assert stat.S_IMODE(os.stat(ca_key).st_mode) == 0o600
+    assert stat.S_IMODE(os.stat(folder).st_mode) == 0o700
+
+
+@pytest.mark.usefixtures("_no_live_listener")
 def test_a_new_private_address_keeps_the_authority_the_phone_trusts(tmp_path):
     first = lancert.ensure(tmp_path, ["localhost", "192.168.1.9"])
     second = lancert.ensure(tmp_path, ["localhost", "192.168.1.9", "192.168.1.77"])
@@ -2203,3 +2266,41 @@ def test_a_phone_cannot_allow_the_network_it_is_on(trust_lan_app):
     assert refused.status_code == 403 and refused.json()["detail"] == REFUSAL
     assert lantrust.load(lantrust_dir(trust_lan_app))["networks"] == []
     assert _trust_here(trust_lan_app).post("/auth/lan-networks/allow", json={"current_password": PASSWORD}).status_code == 200
+
+
+def test_local_name_opens_a_localhost_name(monkeypatch):
+    from tessellate import __main__ as entry
+
+    monkeypatch.delenv("TESSELLATE_LOCAL_NAME", raising=False)
+    assert entry.page_host() == "127.0.0.1"
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "Tessellate")
+    assert entry.page_host() == "tessellate.localhost"
+    monkeypatch.setenv("TESSELLATE_LOCAL_NAME", "evil.example/x")
+    assert entry.page_host() == "127.0.0.1"
+
+
+# --- idle cost (INBOX 1351): the watch waits on the change, not on a timer -----
+
+
+def test_the_watch_wakes_on_a_change_and_not_before():
+    async def run():
+        since = lantrust.version()
+        waiting = asyncio.ensure_future(lantrust.wait_version_change(since, 5))
+        await asyncio.sleep(0.05)
+        assert not waiting.done()
+        with lantrust._lock:
+            lantrust._bump()
+        assert await asyncio.wait_for(waiting, 1) is True
+        assert not lantrust._waiters
+        assert await lantrust.wait_version_change(lantrust.version(), 0.05) is False
+
+    asyncio.run(run())
+
+
+def test_the_watch_route_does_not_poll_and_the_window_pauses_when_hidden():
+    import inspect
+
+    from tessellate.api import routes_auth
+
+    assert "asyncio.sleep" not in inspect.getsource(routes_auth.lan_watch)
+    assert "document.hidden" in _js("lan-watch.js").split("async function lanWatch()", 1)[1]

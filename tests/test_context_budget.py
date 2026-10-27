@@ -249,7 +249,7 @@ class _Models:
         return "m"
 
     def embedding_backend(self):
-        return "sentence-transformers"
+        return "fastembed"
 
 
 def _note(session, content="a note"):

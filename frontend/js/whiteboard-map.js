@@ -318,9 +318,9 @@ function wbMapDrawn(data, field) {
 //: app runs on, since nothing here is fetched: a font that is not installed
 //: would be a choice that visibly does nothing.
 const WB_MAP_FONTS = Object.freeze({
-  serif: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
-  mono: 'ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace',
-  wide: 'Verdana, "DejaVu Sans", Geneva, sans-serif',
+  serif: MD_RUN_FONTS.serif,
+  mono: MD_RUN_FONTS.mono,
+  wide: MD_RUN_FONTS.wide,
 });
 
 function wbMapFontStack() {
@@ -850,7 +850,9 @@ const WB_MAP_THEME_GROUPS = [
     fields: [
       { key: "shape", label: "Box", kind: "select", options: [
         ["", "Rounded"], ["pill", "Pill"], ["rect", "Box"],
-        ["ellipse", "Ellipse"], ["none", "Plain"],
+        ["ellipse", "Ellipse"], ["circle", "Circle"], ["hexagon", "Hexagon"],
+        ["diamond", "Diamond"], ["cloud", "Cloud"], ["chevron", "Chevron"],
+        ["underline", "Underline"], ["none", "Plain"],
       ] },
       { key: "spine", label: "Edge bar", kind: "select", options: [
         ["", "Solid bar"], ["dashed", "Dashed bar"], ["none", "No bar"],
@@ -905,6 +907,7 @@ async function wbMapSetThemeNow(patch) {
     if ("palette" in patch) await wbRefreshMapState();
     wbApplyMapFont();
     renderWhiteboardNow();
+    wbSyncMapLinkStyle();
     //: New gaps mean new places: the whole map, laid out again.
     if ("spacing" in patch && wbMapLayout() !== "free") await wbMapTidy({ quiet: true });
     const selected = wbSelectedMapNode();
@@ -1045,7 +1048,7 @@ const WB_MAP_LEVEL_ROWS = [
   { key: "font_size", label: "Size", number: true, options: [["12", "S"], ["14", "M"], ["17", "L"], ["22", "XL"], ["28", "XXL"]] },
   { key: "bold", label: "Bold", bool: true },
   { key: "italic", label: "Italic", bool: true },
-  { key: "shape", label: "Box", options: [["rounded", "Rounded"], ["pill", "Pill"], ["rect", "Box"], ["ellipse", "Ellipse"], ["none", "Plain"]] },
+  { key: "shape", label: "Box", options: [["rounded", "Rounded"], ["pill", "Pill"], ["rect", "Box"], ["ellipse", "Ellipse"], ["circle", "Circle"], ["hexagon", "Hexagon"], ["diamond", "Diamond"], ["cloud", "Cloud"], ["chevron", "Chevron"], ["underline", "Underline"], ["none", "Plain"]] },
   { key: "spine", label: "Edge bar", options: [["solid", "Solid bar"], ["dashed", "Dashed bar"], ["none", "No bar"]] },
   { key: "fill", label: "Fill", options: [["solid", "Solid colour"], ["tint", "Tinted"], ["none", "No fill"]] },
   { key: "edge_width", label: "Line into it", options: [["thin", "Thin line"], ["normal", "Line"], ["thick", "Thick line"]] },
@@ -2820,6 +2823,90 @@ function wbMapDropTargetAt(d, clientX, clientY) {
   return null;
 }
 
+//: **Reorder by dragging** (XMind, MindNode): a topic let go between two of
+//: its siblings, in a layout that stacks them, takes that place, shown while
+//: it is held by a line across the gap. The axis the siblings run along, per
+//: layout; the rest (radial, Free, the column layouts) keep the drag a pin.
+const WB_MAP_SLOT_AXIS = { "tree-right": "y", "tree-left": "y", "tree-both": "y", "logic-right": "y", "tree-down": "x", org: "x" };
+
+//: The gap among its siblings the pointer is in, or null: off the siblings'
+//: band, a trunk, or the place it already has.
+function wbMapSiblingSlotAt(d, clientX, clientY) {
+  if (!wbIsMap() || !WB_MAP_KINDS.has(d.kind)) return null;
+  const index = wbMapIndex();
+  const node = index.byId.get(d.id);
+  const parent = node && index.byId.get(node.parent_id);
+  const layout = node?._bl || wbMapLayout();
+  const axis = WB_MAP_SLOT_AXIS[layout];
+  if (!parent || !axis) return null;
+  const [bx, by] = wbClientToBoard(clientX, clientY);
+  const point = { x: bx, y: by };
+  const box = (o) => ({ ...wbMapNodeSize(o), x: o.x, y: o.y });
+  const hidden = wbMapConcealed(index);
+  const pc = box(parent).x + box(parent).w / 2;
+  const showing = wbMapSiblingsOf(index, node).filter((o) => !hidden.has(o.id));
+  //: Both sides of a trunk are one list; the side the pointer is on is the one meant.
+  const side = layout === "tree-both" ? showing.filter((o) => o.id === node.id || (o.x + box(o).w / 2 < pc) === (bx < pc)) : showing;
+  const [along, size, cross, span] = axis === "y" ? ["y", "h", "x", "w"] : ["x", "w", "y", "h"];
+  //: In the order they are drawn, which a laid-out branch shares with its keys.
+  //: The dragged one counts from where it was picked up.
+  const home = (o) => (o !== node ? o[along] : (along === "y" ? d._dragOriginY : d._dragOriginX) ?? o[along]);
+  side.sort((p, q) => home(p) - home(q));
+  const others = side.filter((o) => o.id !== node.id);
+  if (!others.length) return null;
+  const lo = Math.min(...others.map((o) => o[cross])), hi = Math.max(...others.map((o) => o[cross] + box(o)[span]));
+  const first = others[0], last = others[others.length - 1];
+  const reach = Math.max(...others.map((o) => box(o)[size]));
+  if (point[cross] < lo - 24 || point[cross] > hi + 24) return null;
+  if (point[along] < first[along] - reach || point[along] > last[along] + box(last)[size] + reach) return null;
+  const at = others.filter((o) => o[along] + box(o)[size] / 2 < point[along]).length;
+  const before = others[at - 1] || null, after = others[at] || null;
+  const mine = side.indexOf(node);
+  if ((side[mine - 1] || null) === before && (side[mine + 1] || null) === after) return null;
+  const gap = before && after ? (before[along] + box(before)[size] + after[along]) / 2
+    : before ? before[along] + box(before)[size] + 8 : after[along] - 8;
+  const line = axis === "y" ? { x1: lo, y1: gap, x2: hi, y2: gap } : { x1: gap, y1: lo, x2: gap, y2: hi };
+  return { parentId: parent.id, key: wbMapKeyBetween(before, after), line };
+}
+
+//: The line across the gap, in the overlay so it draws over the topics.
+function wbMapShowSlotCue(slot) {
+  let cue = document.getElementById("wb-map-slot-cue");
+  if (!slot) {
+    cue?.remove();
+    return;
+  }
+  if (!cue) {
+    cue = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    cue.id = "wb-map-slot-cue";
+    cue.setAttribute("class", "wb-map-slot-cue");
+    cue.setAttribute("pointer-events", "none");
+    document.getElementById("wb-overlay-zoom-group")?.appendChild(cue);
+  }
+  for (const [k, v] of Object.entries(slot.line)) cue.setAttribute(k, String(v));
+}
+
+//: The drop: the topic takes the slot's key, loses a pin it had (it was
+//: placed by the layout now), and the branch is laid out again, all one Undo
+//: step from where the drag picked it up (`origins`).
+async function wbMapDropAmongSiblings(d, slot, origins) {
+  const index = wbMapIndex();
+  const before = new Map(index.nodes.map((o) => [o.id, WB_KIND_INFO.object.payload(o)]));
+  for (const [id, at] of origins) Object.assign(before.get(id) || {}, at);
+  const { pinned: _pin, ...rest } = d.data || {};
+  d.data = { ...rest, order: slot.key };
+  await wbSaveObject(d);
+  await wbMapTidy({ onlyBranch: wbMapTidyBranchScope(slot.parentId), quiet: true });
+  renderWhiteboardNow();
+  const entries = [];
+  for (const obj of wbMapIndex().nodes) {
+    const was = before.get(obj.id);
+    if (was && (was.x !== obj.x || was.y !== obj.y || was.data !== obj.data)) entries.push({ action: "move", kind: "object", id: obj.id, before: was });
+  }
+  if (entries.length) wbPushUndo(entries.length === 1 ? entries[0] : { action: "batch", entries });
+  wbAnnounce("Moved to that place among its siblings.");
+}
+
 //: The highlight, and the one place it is cleared. A class rather than an
 //: inline style: the CSP rejects `style=` and a drop cue that silently did
 //: nothing is the fourth shape CLAUDE.md §6 lists.
@@ -2834,6 +2921,7 @@ function wbMapShowDropTarget(id) {
 }
 
 function wbMapClearDropTarget() {
+  wbMapShowSlotCue(null);
   if (wbMapDropTargetId == null) return;
   document.querySelector(`.wb-object[data-id="${wbMapDropTargetId}"]`)
     ?.classList.remove("wb-map-drop-target");
@@ -3221,9 +3309,70 @@ window.addEventListener("pointercancel", wbClearMapNodeSizeCache, true);
 //: down. `radial` and `free` have no fixed direction, so the axis is chosen
 //: per edge from whichever delta is larger, which is what makes a radial map's
 //: edges leave a node on the side the child is actually on.
+//: A topic dragged beside its parent in a map that grows down: a line out of
+//: the parent's bottom into the child's top would double back (the owner,
+//: 2026-10-26: "refuses to connect to the side"), so it joins side to side.
+//: Only when the two are about level; a level of a tree is always further apart.
+function wbMapBesideParent(parent, p, child, c) {
+  const gapX = Math.max(child.x - (parent.x + p.w), parent.x - (child.x + c.w));
+  const gapY = Math.max(child.y - (parent.y + p.h), parent.y - (child.y + c.h));
+  return gapX > 0 && gapY < Math.min(p.h, c.h) / 2;
+}
+
+//: **A line's end pinned to a side** (K31, the owner: "I want to be able to
+//: have more say in which sides the connections come from and to"). On the
+//: child, like the rest of the line: `edge_from` is the parent's side the
+//: line leaves, `edge_to` the child's side it enters. Each side is its
+//: midpoint as two fractions of the box and its outward normal; a midpoint
+//: is on the boundary of every topic shape (ellipse, diamond, hexagon,
+//: circle and cloud touch their box there), so a pinned end meets the shape.
+const WB_MAP_SIDES = Object.freeze({
+  top: [0.5, 0, 0, -1],
+  right: [1, 0.5, 1, 0],
+  bottom: [0.5, 1, 0, 1],
+  left: [0, 0.5, -1, 0],
+});
+
+function wbMapSidePoint(node, size, side) {
+  const [fx, fy] = WB_MAP_SIDES[side];
+  return { x: node.x + size.w * fx, y: node.y + size.h * fy };
+}
+
+//: The side of `node` that faces a point: the larger of the two offsets
+//: from its centre, each over the box's own size, so a wide topic is not
+//: read as facing up for a point only a little above its end.
+function wbMapFacingSide(node, size, x, y) {
+  const dx = (x - (node.x + size.w / 2)) / (size.w || 1);
+  const dy = (y - (node.y + size.h / 2)) / (size.h || 1);
+  if (Math.abs(dx) >= Math.abs(dy)) return dx < 0 ? "left" : "right";
+  return dy < 0 ? "top" : "bottom";
+}
+
+//: Both ends with at least one pinned. The end left on Auto faces the
+//: pinned one's point, so a line pinned to a parent's top still arrives at
+//: whichever side of the child looks back at it.
+function wbMapPinnedAnchors(parent, p, child, c, from, to) {
+  let s1 = from;
+  let s2 = to;
+  if (!s1) {
+    const b = wbMapSidePoint(child, c, s2);
+    s1 = wbMapFacingSide(parent, p, b.x, b.y);
+  }
+  if (!s2) {
+    const a = wbMapSidePoint(parent, p, s1);
+    s2 = wbMapFacingSide(child, c, a.x, a.y);
+  }
+  const a = wbMapSidePoint(parent, p, s1);
+  const b = wbMapSidePoint(child, c, s2);
+  return { horizontal: s1 === "left" || s1 === "right", pinned: true, s1, s2, x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+}
+
 function wbMapEdgeAnchors(parent, child, mapLayout) {
   const p = wbMapNodeSize(parent);
   const c = wbMapNodeSize(child);
+  const from = WB_MAP_SIDES[child?.data?.edge_from] ? child.data.edge_from : null;
+  const to = WB_MAP_SIDES[child?.data?.edge_to] ? child.data.edge_to : null;
+  if (from || to) return wbMapPinnedAnchors(parent, p, child, c, from, to);
   //: Inside a branch with its own structure, that structure's lines, and its
   //: top topic is the "root" the column layouts measure from.
   const layout = child._bl || mapLayout;
@@ -3250,6 +3399,8 @@ function wbMapEdgeAnchors(parent, child, mapLayout) {
   }
   if (layout === "radial" || layout === "free" || layout === "fishbone") {
     horizontal = Math.abs(child.x - parent.x) >= Math.abs(child.y - parent.y);
+  } else if (!horizontal && layout !== "timeline" && wbMapBesideParent(parent, p, child, c)) {
+    horizontal = true;
   }
   if (horizontal) {
     const leftward = child.x + c.w / 2 < parent.x + p.w / 2;
@@ -3353,8 +3504,17 @@ function wbMapEdgeCubic(a, child) {
   // curve leaves the parent square to its own edge and arrives square to
   // the child's, which is what makes a column of siblings read as one
   // branch rather than a fan of straight lines crossing each other.
-  const c0 = a.horizontal ? { x: mx, y: a.y1 } : { x: a.x1, y: my };
-  const c1 = a.horizontal ? { x: mx, y: a.y2 } : { x: a.x2, y: my };
+  let c0 = a.horizontal ? { x: mx, y: a.y1 } : { x: a.x1, y: my };
+  let c1 = a.horizontal ? { x: mx, y: a.y2 } : { x: a.x2, y: my };
+  //: A pinned end leaves square to its own side, whichever pair of sides
+  //: it joins (right to top is a quarter turn, not an S).
+  if (a.pinned) {
+    const reach = Math.max(24, Math.hypot(a.x2 - a.x1, a.y2 - a.y1) / 2);
+    const [, , ux1, uy1] = WB_MAP_SIDES[a.s1];
+    const [, , ux2, uy2] = WB_MAP_SIDES[a.s2];
+    c0 = { x: a.x1 + ux1 * reach, y: a.y1 + uy1 * reach };
+    c1 = { x: a.x2 + ux2 * reach, y: a.y2 + uy2 * reach };
+  }
   const w = wbMapEdgeWaypoint(a, child);
   if (w.bent) {
     const dx = (w.x - mx) * (4 / 3);
@@ -3377,6 +3537,75 @@ function wbMapEdgeElbowTurn(a, w) {
   return { x: hold(w.x, a.x1, a.x2), y: hold(w.y, a.y1, a.y2) };
 }
 
+//: An elbow as its corner points, every leg on an axis (K31). Unpinned, the
+//: three legs it has always drawn. Pinned, each end leaves along its own
+//: side: two sides across one another meet at one corner; two sides on
+//: one axis cross at the turn, or, both facing the same way (right to
+//: right), run out past the further end first so the line never cuts back
+//: through a topic.
+const WB_MAP_ELBOW_STUB = 20;
+
+function wbMapElbowPoints(a, w) {
+  const p0 = { x: a.x1, y: a.y1 };
+  const p1 = { x: a.x2, y: a.y2 };
+  const turn = wbMapEdgeElbowTurn(a, w);
+  if (!a.pinned) {
+    return a.horizontal
+      ? [p0, { x: turn.x, y: a.y1 }, { x: turn.x, y: a.y2 }, p1]
+      : [p0, { x: a.x1, y: turn.y }, { x: a.x2, y: turn.y }, p1];
+  }
+  const [, , ux1, uy1] = WB_MAP_SIDES[a.s1];
+  const [, , ux2, uy2] = WB_MAP_SIDES[a.s2];
+  const h1 = ux1 !== 0;
+  const h2 = ux2 !== 0;
+  if (h1 !== h2) return h1 ? [p0, { x: a.x2, y: a.y1 }, p1] : [p0, { x: a.x1, y: a.y2 }, p1];
+  if (h1) {
+    let x = turn.x;
+    if (ux1 === ux2) x = ux1 > 0 ? Math.max(a.x1, a.x2) + WB_MAP_ELBOW_STUB : Math.min(a.x1, a.x2) - WB_MAP_ELBOW_STUB;
+    return [p0, { x, y: a.y1 }, { x, y: a.y2 }, p1];
+  }
+  let y = turn.y;
+  if (uy1 === uy2) y = uy1 > 0 ? Math.max(a.y1, a.y2) + WB_MAP_ELBOW_STUB : Math.min(a.y1, a.y2) - WB_MAP_ELBOW_STUB;
+  return [p0, { x: a.x1, y }, { x: a.x2, y }, p1];
+}
+
+//: The elbow's `d`: straight legs (`L`) with each corner rounded by a
+//: quarter of a curve (`Q`, the corner as its control), the radius held to
+//: half of the shorter leg so a short leg is never overshot.
+const WB_MAP_ELBOW_RADIUS = 10;
+
+function wbMapElbowD(points) {
+  const pts = points.filter((pt, i) => i === 0 || pt.x !== points[i - 1].x || pt.y !== points[i - 1].y);
+  let d = `M${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length - 1; i += 1) {
+    const prev = pts[i - 1];
+    const at = pts[i];
+    const next = pts[i + 1];
+    const inLen = Math.hypot(at.x - prev.x, at.y - prev.y);
+    const outLen = Math.hypot(next.x - at.x, next.y - at.y);
+    const r = Math.min(WB_MAP_ELBOW_RADIUS, inLen / 2, outLen / 2);
+    if (!r) continue;
+    const ax = at.x - ((at.x - prev.x) / inLen) * r;
+    const ay = at.y - ((at.y - prev.y) / inLen) * r;
+    const bx = at.x + ((next.x - at.x) / outLen) * r;
+    const by = at.y + ((next.y - at.y) / outLen) * r;
+    d += ` L${ax} ${ay} Q${at.x} ${at.y} ${bx} ${by}`;
+  }
+  const end = pts[pts.length - 1];
+  return `${d} L${end.x} ${end.y}`;
+}
+
+//: Where the elbow's handle sits: on its crossing leg, at the turn.
+function wbMapElbowHandle(a, w) {
+  const pts = wbMapElbowPoints(a, w);
+  if (pts.length === 3) return pts[1];
+  const turn = wbMapEdgeElbowTurn(a, w);
+  const sideways = a.pinned ? WB_MAP_SIDES[a.s1][2] !== 0 : a.horizontal;
+  return sideways
+    ? { x: pts[1].x, y: turn.y }
+    : { x: turn.x, y: pts[1].y };
+}
+
 //: How far apart a line's two controls sit, in board units. The `+` is 24
 //: units across and the handle 14, so 26 is the first number at which neither
 //: covers the other at any zoom (both live in the zoomed layer and scale
@@ -3392,7 +3621,15 @@ const WB_MAP_EDGE_CONTROL_GAP = 26;
 function wbMapEdgeHandlePoint(parent, child, layout) {
   const a = wbMapEdgeAnchors(parent, child, layout);
   const w = wbMapEdgeWaypoint(a, child);
-  if (wbMapEdgeStyle(child) === "elbow") return wbMapEdgeElbowTurn(a, w);
+  const style = wbMapEdgeStyle(child);
+  if (style === "elbow") return wbMapElbowHandle(a, w);
+  //: A pinned curve need not pass through the anchors' midpoint (a quarter
+  //: turn bows away from it), so its handle is the curve's own middle.
+  if (a.pinned && style !== "straight") {
+    const c = wbMapEdgeCubic(a, child);
+    const mid = wbMapCubicAt(0.5, c.p0, c.c0, c.c1, c.p1);
+    return { x: mid.x, y: mid.y };
+  }
   return { x: w.x, y: w.y };
 }
 
@@ -3430,12 +3667,7 @@ function wbMapEdgePathD(parent, child, layout) {
       ? `M${a.x1} ${a.y1} L${w.x} ${w.y} L${a.x2} ${a.y2}`
       : `M${a.x1} ${a.y1} L${a.x2} ${a.y2}`;
   }
-  if (style === "elbow") {
-    const turn = wbMapEdgeElbowTurn(a, w);
-    return a.horizontal
-      ? `M${a.x1} ${a.y1} L${turn.x} ${a.y1} L${turn.x} ${a.y2} L${a.x2} ${a.y2}`
-      : `M${a.x1} ${a.y1} L${a.x1} ${turn.y} L${a.x2} ${turn.y} L${a.x2} ${a.y2}`;
-  }
+  if (style === "elbow") return wbMapElbowD(wbMapElbowPoints(a, w));
   const c = wbMapEdgeCubic(a, child);
   return `M${c.p0.x} ${c.p0.y} C${c.c0.x} ${c.c0.y} ${c.c1.x} ${c.c1.y} ${c.p1.x} ${c.p1.y}`;
 }
@@ -3697,6 +3929,7 @@ function wbUpdateMapEdges(edges) {
     // always the centreline, which is what a person is actually pointing at.
     el.setAttribute("d", wbMapEdgeIsRibbon(child) ? wbMapRibbonD(parent, child, layout) : d);
     if (el._wbHitTwin) el._wbHitTwin.setAttribute("d", d);
+    if (el._wbEnds) wbMapPlaceEdgeEnds(el, wbMapEdgeEndPoints(parent, child, layout));
     if (el._wbHandle) {
       const point = wbMapEdgeHandlePoint(parent, child, layout);
       el._wbHandle.setAttribute("cx", String(point.x));
@@ -3837,6 +4070,7 @@ function wbMapEdgeGeometry(parent, child, layout, colors) {
   const className = classes.join(" ");
   const d = ribbon ? wbMapRibbonD(parent, child, layout) : line;
   const grip = wbMapEdgeHandlePoint(parent, child, layout);
+  const ends = wbMapEdgeEndPoints(parent, child, layout);
   const colour = colors.get(child.id) || "";
   //: What the line says (§12.1 items 3 and 4), at the curve's own middle.
   //: `wbMapEdgeHandlePoint` rather than the anchors' own midpoint: for an
@@ -3849,8 +4083,8 @@ function wbMapEdgeGeometry(parent, child, layout, colors) {
   const lx = grip.x + ldx;
   const ly = grip.y + ldy;
   return {
-    className, d, line, grip, colour, label, lx, ly,
-    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${colour}|${label}|${lx},${ly}`,
+    className, d, line, grip, ends, colour, label, lx, ly,
+    paint: `${className}|${d}|${line}|${grip.x},${grip.y}|${ends.from.x},${ends.from.y},${ends.to.x},${ends.to.y}|${colour}|${label}|${lx},${ly}`,
   };
 }
 
@@ -3913,6 +4147,24 @@ function wbMapEdgeElement(parentId, childId) {
   handle.appendChild(gripTitle);
   wbWireMapEdgeHandle(handle, parentId, childId);
   wrap.appendChild(handle);
+  //: **The line's two ends** (K31): shown with the waypoint, dragged round a
+  //: topic to pin the side the line leaves or enters, double-clicked to put
+  //: that end back on Auto. Kept on the path so a drag frame moves them with
+  //: no lookup.
+  path._wbEnds = ["from", "to"].map((end) => {
+    const grip = document.createElementNS(NS, "circle");
+    grip.setAttribute("class", "wb-map-edge-end");
+    grip.setAttribute("r", "6");
+    grip.dataset.end = end;
+    const tip = document.createElementNS(NS, "title");
+    tip.textContent = end === "from"
+      ? "Drag round the topic above to choose the side this line leaves · double-click for Auto"
+      : "Drag round this topic to choose the side this line enters · double-click for Auto";
+    grip.appendChild(tip);
+    wbWireMapEdgeEnd(grip, parentId, childId, end);
+    wrap.appendChild(grip);
+    return grip;
+  });
   //: On the group, not on the hit stroke: a right-click and a hold belong to
   //: the *line*, and the line now has two targets in it. Wired on the stroke
   //: alone, the ring stopped opening wherever the handle was, since the
@@ -4004,6 +4256,11 @@ function wbMapEdgeApply(wrap, geom) {
   const handle = wrap.querySelector(".wb-map-edge-handle");
   handle.setAttribute("cx", String(geom.grip.x));
   handle.setAttribute("cy", String(geom.grip.y));
+  wbMapPlaceEdgeEnds(path, geom.ends);
+  for (const grip of path._wbEnds || []) {
+    if (geom.colour) grip.style.setProperty("--wb-map-edge-colour", geom.colour);
+    else grip.style.removeProperty("--wb-map-edge-colour");
+  }
   if (geom.colour) handle.style.setProperty("--wb-map-edge-colour", geom.colour);
   else handle.style.removeProperty("--wb-map-edge-colour");
   let text = wrap.querySelector(".wb-map-edge-label");
@@ -4059,6 +4316,12 @@ function wbMapEdgePlusPoint(parent, child, layout) {
     // The leg the turn sits on, which is the one that crosses the edge's axis.
     dx = a.horizontal ? 0 : a.x2 - a.x1;
     dy = a.horizontal ? a.y2 - a.y1 : 0;
+    if (a.pinned) {
+      //: The leg the handle is on, read off the corners themselves.
+      const pts = wbMapElbowPoints(a, wbMapEdgeWaypoint(a, child));
+      dx = pts[2].x - pts[1].x;
+      dy = pts[2].y - pts[1].y;
+    }
     room = Math.hypot(dx, dy);
   } else if (style === "straight") {
     const w = wbMapEdgeWaypoint(a, child);
@@ -4438,6 +4701,7 @@ async function wbMapAddChild(parentId, { order = null } = {}) {
     renderWhiteboardNow();
     selectWbItem("object", created.id);
     wbMapEditNode(created.id, { now: true });
+    wbMapRevealTopic(created);
   } finally {
     wbRenderRelease();
     wbSyncMapEdgeHandles();
@@ -4496,7 +4760,7 @@ document.addEventListener("paste", (event) => {
   const text = data.getData("text/plain") || "";
   if (!text.trim()) return;
   event.preventDefault();
-  wbRecordGesture(wbMapPasteText, [text]);
+  wbMapPasteWithChip(text);
 });
 
 // MAP-DOC-BEGIN
@@ -4536,6 +4800,50 @@ function wbMapTreeMarkdown(roots, mapTitle) {
   return { title, body: out.join("\n").replace(/\n{3,}/g, "\n\n").trim() };
 }
 // MAP-DOC-END
+
+//: **One branch out of the map** (XMind's Copy as text, MindNode's export of
+//: a selection): the topic and everything under it as the same Markdown
+//: outline the whole map writes, the topic as its title. From the server's
+//: tree, so the order and the notes are the ones the exports use.
+async function wbMapCopyBranchOutline(id) {
+  const boardId = window.currentBoardId;
+  if (!boardId || id == null) return false;
+  let tree;
+  try {
+    tree = await apiJson(`/whiteboard/boards/${boardId}/tree`);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "read this map" }), true);
+    return false;
+  }
+  const find = (list) => {
+    for (const n of list || []) {
+      if (n.id === id) return n;
+      const hit = find(n.children);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const node = find(tree.roots);
+  if (!node) return false;
+  const { title, body } = wbMapTreeMarkdown([node]);
+  const copied = await copyToClipboard(body ? `# ${title}\n\n${body}\n` : `# ${title}\n`);
+  if (copied) toast(`Copied “${title}” and its branch as an outline.`);
+  return copied;
+}
+
+//: The export dialog for this branch alone: the branch is the selection, so
+//: the picture formats take only it (the outline formats are the whole map's).
+function wbMapExportBranch(id) {
+  const index = wbMapIndex();
+  const hidden = wbMapConcealed(index);
+  const branch = wbMapSubtree(index, id).filter((o) => !hidden.has(o.id));
+  if (!branch.length) return;
+  clearWbSelection();
+  for (const o of branch) wbMultiSelection.add(wbMultiKey("object", o.id));
+  wbApplySelectionHighlight();
+  wbUpdateSelectionBar();
+  wbExportBoard();
+}
 
 //: The menu row and the palette row: written, saved as a new document that
 //: opens with a card of the map at its head (the board embed, so the
@@ -4605,6 +4913,8 @@ function mapPaletteCommands() {
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
     row("This topic", "ph:text-align-left Summarise this branch", () => wbMapSummariseBranch(node));
+    row("This topic", "ph:copy Copy this branch as an outline", () => wbMapCopyBranchOutline(node.id));
+    row("This topic", "ph:export Export this branch…", () => wbMapExportBranch(node.id));
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
   }
   row("This map", "ph:plus-circle Add a top-level topic", () => wbMapAddChild(null));
@@ -4923,6 +5233,51 @@ async function wbMapOutdent(id) {
   }
 }
 
+//: **Ctrl+Enter: a parent topic** (XMind's Insert parent topic, which the map
+//: lacked): a new topic takes this one's place among its siblings and this
+//: one, with its branch, goes under it. The centre has no place to give up.
+//: One Undo step: the move, whatever the tidy shifted, and the create.
+async function wbMapInsertParent(id) {
+  const boardId = window.currentBoardId;
+  const index = wbMapIndex();
+  const node = index.byId.get(id);
+  if (!boardId || !node) return null;
+  const parentId = node.parent_id != null && index.byId.has(node.parent_id) ? node.parent_id : null;
+  if (parentId === null && wbMapLevels(index).get(id) === 0) {
+    toast("The centre has no parent: add a topic beside it instead.");
+    return null;
+  }
+  const rows = new Map(index.nodes.map((n) => [n.id, WB_KIND_INFO.object.payload(n)]));
+  const created = await wbMapCreateNode({ parentId });
+  if (!created) return null;
+  //: Folded into the batch below, so one Ctrl+Z takes both back.
+  if (wbUndoStack[wbUndoStack.length - 1]?.action === "create") wbUndoStack.pop();
+  created.data = { ...created.data, order: wbMapOrderKey(node) };
+  await wbSaveObject(created);
+  try {
+    const moved = await apiJson(`/whiteboard/boards/${boardId}/nodes/${id}/move`, {
+      method: "PUT",
+      body: JSON.stringify({ parent_id: created.id }),
+    });
+    Object.assign(node, moved);
+  } catch (err) {
+    toast(err.message || voiceLine("failed", { what: "move that topic" }), true);
+  }
+  await wbMapTidyBranch(parentId);
+  //: Undo runs these in order: the topic goes back before its new parent goes.
+  const history = [{ action: "reparent", kind: "object", id, parentId }];
+  for (const now of wbMapIndex().nodes) {
+    const row = rows.get(now.id);
+    if (row && (row.x !== now.x || row.y !== now.y)) history.push({ action: "move", kind: "object", id: now.id, before: row });
+  }
+  history.push({ action: "create", kind: "object", id: created.id });
+  wbPushUndo({ action: "batch", entries: history });
+  selectWbItem("object", created.id);
+  renderWhiteboardNow();
+  wbMapEditNode(created.id);
+  return created;
+}
+
 //: The arrows, in tree terms rather than screen terms: up/down are the
 //: siblings either side, left is the parent and right is the first child.
 //:
@@ -4959,16 +5314,63 @@ function wbMapNavigate(id, key) {
   // the key having done nothing, so the scroll has to happen; recentring on
   // every arrow instead makes the whole map lurch under you while you are
   // simply walking a branch you can already see, which is worse than either.
-  const el = document.querySelector(`.wb-object[data-id="${target.id}"]`);
+  wbMapRevealTopic(target);
+  return true;
+}
+
+//: Does a client rectangle reach outside the one it should sit in.
+function wbRectEscapes(node, view) {
+  return node.left < view.left || node.right > view.right || node.top < view.top || node.bottom > view.bottom;
+}
+
+//: **Bring a topic into view, only when it is out of it** (the arrow keys'
+//: rule above, and a new topic's: dogfood 2026-10-25 item 12, where Tab put a
+//: child at x~1265 past the window's edge and the view stayed). Measured
+//: against the canvas the board's own chrome leaves free, not the whole
+//: container, so a topic under the top bar or the dock counts as hidden.
+function wbMapRevealTopic(item) {
+  const el = document.querySelector(`.wb-object[data-id="${item.id}"]`);
   const container = document.getElementById("whiteboard-container");
-  if (el && container) {
-    const node = el.getBoundingClientRect();
-    const view = container.getBoundingClientRect();
-    const offScreen = node.left < view.left || node.right > view.right
-      || node.top < view.top || node.bottom > view.bottom;
-    const box = offScreen ? wbItemBBox("object", target) : null;
-    if (box) wbCenterOn(box, { animate: true });
+  if (!el || !container) return false;
+  const free = typeof wbVisibleCanvasRect === "function" ? wbVisibleCanvasRect() : container.getBoundingClientRect();
+  if (!wbRectEscapes(el.getBoundingClientRect(), free)) return false;
+  const box = wbItemBBox("object", item);
+  if (!box) return false;
+  //: With its parent when the two fit side by side (dog2 item 12): centring
+  //: the child alone slid the root under the left rail at 700, so the topic
+  //: you branched from left the screen as its child arrived.
+  const parentItem = item.parent_id != null ? (wbState.objects || []).find((o) => o.id === item.parent_id) : null;
+  const pBox = parentItem ? wbItemBBox("object", parentItem) : null;
+  const k = d3.zoomTransform(container).k || 1;
+  const area = wbFreeArea(container);
+  const both = pBox && {
+    minX: Math.min(box.minX, pBox.minX), minY: Math.min(box.minY, pBox.minY),
+    maxX: Math.max(box.maxX, pBox.maxX), maxY: Math.max(box.maxY, pBox.maxY),
+  };
+  const fits = both && (both.maxX - both.minX) * k <= area.right - area.left - 32 && (both.maxY - both.minY) * k <= area.bottom - area.top - 32;
+  const want = fits ? both : box;
+  //: **The least move that brings it in, not a recentre** (mapdog-1026: Tab
+  //: three levels deep centred the new topic and the root was left 16px from
+  //: the window's edge, a 627px pan). Each axis slides only as far as the
+  //: topic (with its parent) needs, to a 24px margin inside the free area, so
+  //: what was on screen mostly stays where it was. A view too small to read
+  //: still eases up to a legible zoom, which is `wbCenterOn`'s job.
+  if (k < 0.55) {
+    wbCenterOn(want, { animate: true });
+    return true;
   }
+  const t = d3.zoomTransform(container);
+  const m = 24;
+  const slide = (lo, hi, a0, a1) => {
+    let d = 0;
+    if (hi > a1 - m) d = a1 - m - hi;
+    if (lo + d < a0 + m) d = a0 + m - lo;
+    return d;
+  };
+  const dx = slide(t.x + k * want.minX, t.x + k * want.maxX, area.left, area.right);
+  const dy = slide(t.y + k * want.minY, t.y + k * want.maxY, area.top, area.bottom);
+  if (!dx && !dy) return false;
+  d3.select(container).transition().duration(300).call(wbZoom.transform, d3.zoomIdentity.translate(t.x + dx, t.y + dy).scale(t.k));
   return true;
 }
 
@@ -6152,7 +6554,14 @@ function wbMapCrossLinkLook(parsed) {
     return { line, d: line, ribbon: false, colour, width: 3 };
   }
   const style = wbMapTheme().edge_style || "curve";
-  const ghost = { ...target, data: { edge_style: style === "elbow" ? "elbow" : style } };
+  //: An end dropped on one of a topic's side ports keeps that side (K31):
+  //: a board anchor is two fractions of the box, and a port on an edge's
+  //: middle names the side the map's own pinned ends use.
+  const sideOf = (f) => (!f ? null : f.y <= 0 ? "top" : f.y >= 1 ? "bottom" : f.x <= 0 ? "left" : f.x >= 1 ? "right" : null);
+  const ghost = {
+    ...target,
+    data: { edge_style: style, edge_from: sideOf(parsed.sourceAnchor), edge_to: sideOf(parsed.targetAnchor) },
+  };
   const line = wbMapEdgePathD(source, ghost, layout);
   const ribbon = wbMapEdgeIsRibbon(ghost);
   return {
@@ -6343,7 +6752,7 @@ const WB_MAP_CHOICE_REDRAWS = [];
 const WB_MAP_PICK_GLYPHS = {
   "wb-map-align": { "": "ph:magic-wand", auto: "ph:magic-wand", left: "ph:text-align-left", center: "ph:text-align-center", right: "ph:text-align-right" },
   "wb-map-strip-icon": { "": "ph:prohibit" },
-  "wb-map-shape": { "": "svg:rounded", rounded: "svg:rounded", pill: "svg:pill", rect: "svg:rect", ellipse: "svg:ellipse", none: "svg:plain" },
+  "wb-map-shape": { "": "svg:rounded", rounded: "svg:rounded", pill: "svg:pill", rect: "svg:rect", ellipse: "svg:ellipse", circle: "svg:circle", hexagon: "svg:hexagon", diamond: "svg:diamond", cloud: "svg:cloud", chevron: "svg:chevron", underline: "svg:underline", none: "svg:plain" },
   "wb-map-spine": { "": "svg:bar", solid: "svg:bar", dashed: "svg:bar-dashed", none: "svg:bar-none" },
   "wb-map-fill": { "": "svg:fill-none", none: "svg:fill-none", self: "svg:fill-tint", branch: "svg:fill-branch", solid: "svg:fill-solid" },
   "wb-map-effect": { "": "svg:fill-none", none: "svg:fill-none", shadow: "svg:effect-shadow", glow: "svg:effect-glow" },
@@ -6359,6 +6768,12 @@ const WB_MAP_PICK_SHAPES = {
   pill: [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 4.5 }]],
   rect: [["rect", { x: 2, y: 2.5, width: 16, height: 9 }]],
   ellipse: [["ellipse", { cx: 10, cy: 7, rx: 8, ry: 5 }]],
+  circle: [["circle", { cx: 10, cy: 7, r: 5.5 }]],
+  hexagon: [["path", { d: "M5 2h10l3.5 5-3.5 5H5L1.5 7z" }]],
+  diamond: [["path", { d: "M10 1.5L18.5 7 10 12.5 1.5 7z" }]],
+  cloud: [["path", { d: "M6 12a3.5 3.5 0 0 1-.6-7 4.5 4.5 0 0 1 8.6-.6A3.5 3.5 0 1 1 15 12z" }]],
+  chevron: [["path", { d: "M2 2.5h11.5l4.5 4.5-4.5 4.5H2z" }]],
+  underline: [["path", { d: "M4 6h9" }], ["path", { d: "M2 11h16", "stroke-width": 2.5 }]],
   plain: [["path", { d: "M4 5.5h12M4 8.5h8" }]],
   bar: [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4.5v5", "stroke-width": 2.5 }]],
   "bar-dashed": [["rect", { x: 2, y: 2.5, width: 16, height: 9, rx: 2 }], ["path", { d: "M4 4v6", "stroke-width": 2.5, "stroke-dasharray": "1.6 1.4", "stroke-linecap": "butt" }]],
@@ -6436,7 +6851,11 @@ function wbMapIsFollow(option) {
 function wbMapPickRow(select) {
   const row = document.createElement("div");
   row.className = "wb-map-picks";
-  if (select.id === "wb-map-strip-icon") row.classList.add("is-grid");
+  //: A row of more than seven previews is a palette, six to a row like the
+  //: icon slot's: nine shapes in one run never wrapped and the last two (Cloud,
+  //: Plain) sat past the menu's edge, unreachable (measured at 1440: row
+  //: 306px in a 220px cell).
+  if (select.id === "wb-map-strip-icon" || select.options.length > 7) row.classList.add("is-grid");
   row.setAttribute("role", "group");
   row.setAttribute("aria-label", select.getAttribute("aria-label") || "");
   const press = (value) => {
@@ -7748,7 +8167,7 @@ const WB_MAP_STYLE_KEYS = [
   //: four for the same reason: it is written from the line itself onto the
   //: node, and a branch copied without it comes out drawn differently from the
   //: one it was copied from.
-  "edge_bend", "edge_slide",
+  "edge_bend", "edge_slide", "edge_from", "edge_to",
 ];
 
 //: What a copy carries that "back to the branch" must **not** drop: a picture
@@ -8156,6 +8575,19 @@ function wbSyncMapEdgeHandles() {
     if (!want.has(handle)) handle.classList.remove("is-shown");
   }
   for (const handle of want) if (!handle.classList.contains("is-shown")) handle.classList.add("is-shown");
+  //: **The selected topic's lines are drawn last** (K31): SVG takes the
+  //: pointer in paint order, and a sibling line sharing a leg (an elbow's
+  //: trunk, a stack of topics under one another) lay over this line's end
+  //: grips, so they could be seen and not pressed. Moved only when not
+  //: already at the end; the next render puts the tree order back first.
+  const wraps = new Set([...want].map((handle) => handle.parentNode).filter(Boolean));
+  let at = group.lastElementChild;
+  let last = 0;
+  while (at && wraps.has(at)) {
+    last += 1;
+    at = at.previousElementSibling;
+  }
+  if (last < wraps.size) for (const wrap of wraps) group.appendChild(wrap);
   //: **The selected topic's own lines lend their middle to its grips**
   //: (MINDMAP_PLAN 15, row 3): their mid-line `+` sat under the add row and
   //: the waypoint handle (`deepen72a.js`, 4 overlaps at 1440, 8 at 390), so a
@@ -8263,6 +8695,105 @@ async function wbMapStraightenEdge(node) {
   if (!node) return;
   if (!node.data?.edge_bend && !node.data?.edge_slide) return;
   await wbMapSetNodeStyle(node, { edge_bend: null, edge_slide: null });
+  renderWhiteboardNow();
+}
+
+//: Where a line's two end grips sit: a step out from each end along its
+//: side's normal, so the grip is clear of the topic and of the buttons a
+//: selected topic wears beside it (its add rail reaches 35 units out, its
+//: fold chevron 15; both are HTML above the line layer and took the press
+//: at 12). A third of the line at most, so the two grips never cross.
+const WB_MAP_END_OUT = 42;
+
+function wbMapEdgeEndPoints(parent, child, layout) {
+  const a = wbMapEdgeAnchors(parent, child, layout);
+  const s1 = a.s1 || wbMapFacingSide(parent, wbMapNodeSize(parent), a.x1, a.y1);
+  const s2 = a.s2 || wbMapFacingSide(child, wbMapNodeSize(child), a.x2, a.y2);
+  const step = Math.min(WB_MAP_END_OUT, Math.hypot(a.x2 - a.x1, a.y2 - a.y1) / 3);
+  const out = (x, y, side) => {
+    const [, , ux, uy] = WB_MAP_SIDES[side];
+    return { x: x + ux * step, y: y + uy * step };
+  };
+  return { from: out(a.x1, a.y1, s1), to: out(a.x2, a.y2, s2) };
+}
+
+function wbMapPlaceEdgeEnds(path, ends) {
+  const [from, to] = path._wbEnds || [];
+  if (!from || !to || !ends) return;
+  from.setAttribute("cx", String(ends.from.x));
+  from.setAttribute("cy", String(ends.from.y));
+  to.setAttribute("cx", String(ends.to.x));
+  to.setAttribute("cy", String(ends.to.y));
+}
+
+//: Dragging one end grip round its topic (K31). The side is the one the
+//: pointer faces from the topic's centre, so the end snaps from side to side
+//: as the hand goes round; per frame only this line is redrawn, from the
+//: cached box sizes (no layout read), and the write lands once, on the drop,
+//: as one Undo step through `wbMapSetNodeStyle`.
+function wbWireMapEdgeEnd(grip, parentId, childId, end) {
+  const field = end === "from" ? "edge_from" : "edge_to";
+  grip.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const index = wbMapIndex();
+    const parent = index.byId.get(parentId);
+    const child = index.byId.get(childId);
+    if (!parent || !child) return;
+    const node = end === "from" ? parent : child;
+    const size = wbMapNodeSize(node);
+    const container = document.getElementById("whiteboard-container");
+    const k = container ? d3.zoomTransform(container).k : 1;
+    const startX = Number(grip.getAttribute("cx"));
+    const startY = Number(grip.getAttribute("cy"));
+    const edges = wbMapEdgesFor(childId).filter((edge) => edge.parent.id === parentId);
+    const before = child.data?.[field] ?? null;
+    let side = null;
+    grip.classList.add("is-dragging");
+    grip.setPointerCapture?.(event.pointerId);
+    const move = (moveEvent) => {
+      const x = startX + (moveEvent.clientX - event.clientX) / k;
+      const y = startY + (moveEvent.clientY - event.clientY) / k;
+      const next = wbMapFacingSide(node, size, x, y);
+      if (next === side) return;
+      side = next;
+      child.data = { ...child.data, [field]: side };
+      wbUpdateMapEdges(edges);
+    };
+    const done = async () => {
+      grip.removeEventListener("pointermove", move);
+      grip.removeEventListener("pointerup", done);
+      grip.removeEventListener("pointercancel", done);
+      grip.classList.remove("is-dragging");
+      if (!side) return;
+      //: Back to what it was before the save, so the undo snapshot holds the
+      //: old side (the waypoint drag's own INBOX 658 lesson).
+      child.data = { ...child.data, [field]: before };
+      if (side !== before) await wbMapSetNodeStyle(child, { [field]: side });
+      renderWhiteboardNow();
+    };
+    grip.addEventListener("pointermove", move);
+    grip.addEventListener("pointerup", done);
+    grip.addEventListener("pointercancel", done);
+  });
+  //: A press on a grip is not a click on the canvas: without this the
+  //: canvas took it as one and dropped the selection the grip was shown for.
+  grip.addEventListener("click", (event) => event.stopPropagation());
+  grip.addEventListener("dblclick", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const child = wbMapIndex().byId.get(childId);
+    if (!child?.data?.[field]) return;
+    await wbMapSetNodeStyle(child, { [field]: null });
+    renderWhiteboardNow();
+  });
+}
+
+//: Both ends of the line into a topic back on Auto: the topic menu's row.
+async function wbMapAutoEdgeEnds(node) {
+  if (!node || (!node.data?.edge_from && !node.data?.edge_to)) return;
+  await wbMapSetNodeStyle(node, { edge_from: null, edge_to: null });
   renderWhiteboardNow();
 }
 
@@ -8589,6 +9120,7 @@ function wbSyncMapChrome() {
     picker.hidden = !isMap;
     picker.value = wbMapLayout();
   }
+  wbSyncMapLinkStyle(isMap);
   //: Phase 5's own chrome. All of it is a *view* of the map, so it is synced
   //: from the same place the layout picker is rather than from wherever each
   //: happened to be changed: the failure this avoids is a control that reports
@@ -8612,6 +9144,12 @@ function wbSyncMapChrome() {
     const row = numbered.closest(".wb-menu-row");
     if (row) row.hidden = !isMap;
   }
+  const dim = document.getElementById("wb-map-dim");
+  if (dim) {
+    dim.checked = Boolean(isMap && wbMapDim.on);
+    const row = dim.closest(".wb-menu-row");
+    if (row) row.hidden = !isMap;
+  }
   //: The group itself as well as its rows: on a board it held nothing but
   //: its own heading, a group of zero rows drawn between two that have some.
   const mapSection = document.getElementById("wb-view-map-section");
@@ -8628,6 +9166,23 @@ function wbSyncMapChrome() {
 //: settings are compared before and after, whatever the act wrote.
 function wbMapSetLayout(...args) {
   return wbRecordGesture(wbMapSetLayoutNow, args);
+}
+
+//: **The map's line style, beside its layout** (K31). The theme's own
+//: `edge_style`, which the theme dialog's Branch line, Shape already wrote:
+//: the owner, in Free, could not find it. Shown as what the lines draw,
+//: so a logic chart's elbow (`WB_MAP_LAYOUT_EDGE`) reads as Elbow; picking
+//: that default stores nothing. One Undo step (`wbMapSetTheme`).
+function wbSyncMapLinkStyle(isMap = wbIsMap()) {
+  const select = document.getElementById("wb-map-link-style");
+  if (!select) return;
+  select.hidden = !isMap;
+  if (isMap) select.value = wbMapTheme().edge_style || WB_MAP_LAYOUT_EDGE[wbMapLayout()] || "curve";
+}
+
+function wbMapSetLinkStyle(value) {
+  const fallback = WB_MAP_LAYOUT_EDGE[wbMapLayout()] || "curve";
+  return wbMapSetTheme({ edge_style: value === fallback ? null : value });
 }
 
 async function wbMapSetLayoutNow(layout) {
@@ -9879,6 +10434,31 @@ function wbMapSetMarkerFilter(key) {
 
 //: After every render (`wbMapAfterRender`): a class on each topic the filter
 //: leaves out, and the bar that says a filter is on.
+//: **Dim all but the selected branch** (MindNode's focus mode, the XMind and
+//: MindNode audit's item 3): the View menu's switch. The selected topic, all
+//: under it and the path up to its trunk stay lit; with nothing selected
+//: nothing is dimmed. The marker filter, when both are on, wins: it was
+//: asked for by name. Per viewer and per visit, not saved with the map.
+const wbMapDim = { on: false };
+
+function wbMapSetDim(on) {
+  wbMapDim.on = Boolean(on);
+  const box = document.getElementById("wb-map-dim");
+  if (box) box.checked = wbMapDim.on;
+  wbMapPaintMarkerFilter();
+  wbAnnounce(wbMapDim.on ? "Dimming all but the selected branch." : "Every branch lit again.");
+}
+
+//: The ids lit by the dimming, or null when it dims nothing.
+function wbMapDimLit(index) {
+  if (!wbMapDim.on || wbMultiSelection.size > 1) return null;
+  const node = typeof wbSelectedMapNode === "function" ? wbSelectedMapNode() : null;
+  if (!node || !index.byId.has(node.id)) return null;
+  const lit = new Set(wbMapSubtree(index, node.id).map((o) => o.id));
+  for (let up = index.byId.get(node.parent_id); up && !lit.has(up.id); up = index.byId.get(up.parent_id)) lit.add(up.id);
+  return lit;
+}
+
 function wbMapPaintMarkerFilter() {
   const bar = document.getElementById("wb-map-filter");
   const on = Boolean(wbMarkerUi.filter) && wbIsMap();
@@ -9892,21 +10472,30 @@ function wbMapPaintMarkerFilter() {
   }
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
-  container.classList.toggle("wb-map-filtering", on);
-  if (!on) {
+  const index = wbIsMap() ? wbMapIndex() : null;
+  const lit = on ? null : index && wbMapDimLit(index);
+  container.classList.toggle("wb-map-filtering", on || Boolean(lit));
+  if (!on && !lit) {
     for (const el of container.querySelectorAll(".wb-map-filtered-out")) el.classList.remove("wb-map-filtered-out");
     return;
   }
-  for (const node of wbMapIndex().nodes) {
+  const out = (node) => (on ? !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter) : !lit.has(node.id));
+  for (const node of index.nodes) {
     const el = container.querySelector(`.wb-object[data-id="${node.id}"]`);
-    if (el) el.classList.toggle("wb-map-filtered-out", !wbMapMarkerKeys(node.data).includes(wbMarkerUi.filter));
+    if (el) el.classList.toggle("wb-map-filtered-out", out(node));
+  }
+  //: A line goes with the topic it leads into, so a lit branch is not tied
+  //: to the rest by full-strength lines.
+  for (const el of container.querySelectorAll(".wb-map-edge[data-child], .wb-map-edge-label[data-child]")) {
+    const node = index.byId.get(Number(el.dataset.child));
+    el.classList.toggle("wb-map-filtered-out", Boolean(node && out(node)));
   }
 }
 
 //: What follows every render of a map: the outline and the marker filter.
 function wbMapAfterRender() {
   wbOutlineSync();
-  if (wbMarkerUi.filter || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
+  if (wbMarkerUi.filter || wbMapDim.on || document.getElementById("whiteboard-container")?.classList.contains("wb-map-filtering")) {
     wbMapPaintMarkerFilter();
   }
 }

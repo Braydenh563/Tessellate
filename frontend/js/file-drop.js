@@ -102,6 +102,13 @@ function fileDropEnter() {
   fileDrop.timer = setTimeout(fileDropHide, FILE_DROP_QUIET_MS * 2);
 }
 
+//: Opens Library on one of its two file sub-tabs (the bell's stored `go.media`
+//: does the same, notifications.js).
+async function showLibraryMedia(kind) {
+  await switchTab("library");
+  document.querySelector(`#library-subtabs [data-media-kind="${kind}"]`)?.click();
+}
+
 async function fileDropImport(files) {
   if (!files.length) {
     fileDropHide();
@@ -113,6 +120,7 @@ async function fileDropImport(files) {
   const media = files.filter((file) => FILE_DROP_MEDIA.test(file.name));
   const other = files.filter((file) => !FILE_DROP_MEDIA.test(file.name));
   let added = 0;
+  const lands = new Set();
   try {
     for (const file of media) {
       const form = new FormData();
@@ -123,18 +131,21 @@ async function fileDropImport(files) {
         const made = await (await api.upload("/media/upload", form)).json().catch(() => null);
         pushUploadUndo(`Added “${file.name}”`, "/media", made, () => (typeof renderLibraryImagesGallery === "function" ? renderLibraryImagesGallery() : undefined));
         added++;
+        lands.add(/\.pdf$/i.test(file.name) ? "files" : "images");
       } catch (error) {
         toast(`${file.name}: ${error.message}`, true);
       }
     }
     if (added) {
+      //: A PDF lives under Library > Files, a picture under Images: the notice
+      //: and its bell row both open the sub-tab the drop actually filled.
+      const where = lands.size === 1 && lands.has("files") ? "files" : "images";
+      const noun = where === "files" ? ["PDF", "PDFs"] : ["picture or PDF", "pictures or PDFs"];
       toastAction(
-        added === 1 ? "Added 1 picture or PDF to your Library." : `Added ${added} pictures or PDFs to your Library.`,
+        `Added ${added} ${noun[added === 1 ? 0 : 1]} to your Library.`,
         "Show",
-        async () => {
-          await switchTab("library");
-          document.querySelector('#library-subtabs [data-media-kind="images"]')?.click();
-        }
+        () => showLibraryMedia(where),
+        { go: { tab: "library", media: where } },
       );
       if (typeof renderLibraryImagesGallery === "function") renderLibraryImagesGallery();
     }

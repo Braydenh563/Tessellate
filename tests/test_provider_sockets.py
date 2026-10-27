@@ -26,6 +26,13 @@ import pytest
 from tessellate.ai.ollama_client import OllamaClient
 from tessellate.ai.openai_client import OpenAICompatClient
 
+
+@pytest.fixture(autouse=True)
+def _scratch_data_dir(tmp_path, monkeypatch):
+    """A request logs a job run under the data dir: a scratch one, never the repo's."""
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+
+
 ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -62,345 +62,100 @@ function highlighterBlend(backdropIsDark) {
   return backdropIsDark ? HIGHLIGHTER_STYLE.blendOnDark : HIGHLIGHTER_STYLE.blendOnLight;
 }
 
-// The pad's one place for "what is the brush right now", so the drag path and
-// the single-click dot cannot drift apart: the five lines that make a
-// highlighter a highlighter were written out twice before this.
-function sketchApplyBrush(context) {
-  const isHighlighter = sketchTool === "highlighter";
-  const erasing = sketchPen.eraser && sketchTool === "pen";
-  context.lineCap = isHighlighter ? HIGHLIGHTER_STYLE.lineCap : "round";
-  context.lineJoin = isHighlighter ? HIGHLIGHTER_STYLE.lineJoin : "round";
-  context.globalCompositeOperation = erasing
-    ? "destination-out"
-    : isHighlighter
-      ? highlighterBlend(false)
-      : "source-over";
-  context.globalAlpha = isHighlighter ? HIGHLIGHTER_STYLE.alpha : 1.0;
-  context.strokeStyle = sketchPen.color;
-  context.lineWidth = isHighlighter
-    ? highlighterWidth(sketchPen.size)
-    : (erasing ? sketchPen.size * 4 : sketchPen.size);
+// --- Quick sketch: the app's half ---------------------------------------------------
+//
+// The pad itself is sketch-pad.js and sketch-pad.css, loaded on the first
+// open: a self-contained paint pad (INBOX 1352) that asks the app for
+// everything through the one host object below, so it can also run on a
+// page of its own (tools/sketch-standalone/). What stays here is what
+// only the app can do: save as a note, the toast and confirm dialogs, the
+// stored preferences, the menu and help recipes and the highlighter's table.
+
+let sketchHostObject = null;
+
+function sketchHost() {
+  sketchHostObject ||= {
+    title: "Quick sketch",
+    save: saveSketch,
+    toast: (message, isError = false) => toast(message, isError),
+    confirm: (message, options) => confirmDialog(message, options),
+    prefs: {
+      get: (key, fallback) => prefs.json(`sketch-pad-${key}`, fallback),
+      set: (key, value) => prefs.setJSON(`sketch-pad-${key}`, value),
+    },
+    highlighter: HIGHLIGHTER_STYLE,
+    menu: (items, label) => kebabMenu(items, label),
+    wireHelp: (button, panel) => wireHelpPopover(button, panel),
+    singleKeys: () => (typeof singleKeysOn === "function" ? singleKeysOn() : true),
+    close: hideSketchOverlay,
+  };
+  return sketchHostObject;
 }
 
-//: **A highlighter is one translucent band, so it is painted once.** Reported
-//: three times now, most recently as "it doesnt act as it should and looks
-//: messy", and the previous two fixes were both real and both incomplete
-//: because they treated the alpha rather than the compositing.
-//:
-//: Each segment used to be its own `stroke()` at 0.35. That is correct for
-//: one segment and wrong for a stroke: consecutive segments overlap at every
-//: joint, a 16px band advancing 6px per pointer event covers each pixel about
-//: three times, and 1-(1-0.35)^3 is 0.73. Measured on a straight drag against
-//: white: coverage 0.80 where the tool asks for 0.35, running from 0.725 to
-//: 0.824 down the band (the chain of darker lozenges that reads as "messy"),
-//: and a stroke crossing its own line went 0.576 to 0.824.
-//:
-//: So the points are collected and the whole polyline is drawn on a layer of
-//: its own at full opacity, then that layer is composited onto the canvas
-//: once, at the stroke's alpha. Overlaps inside the layer are opaque-over-
-//: opaque, which changes nothing, and the single composite is the only place
-//: alpha is applied. This is what the whiteboard gets for free by drawing one
-//: SVG path with `stroke-opacity`, and it is why the two look different.
-//:
-//: The in-progress stroke repaints from the snapshot each frame, which is the
-//: same thing the rect, circle and arrow tools already do here.
-let sketchStrokePoints = [];
-let sketchLayerCanvas = null;
-
-//: The layer, sized to the canvas it will be blitted onto. Kept between
-//: strokes rather than allocated per pointerdown: it is one full-size buffer
-//: and a sketch is a burst of strokes.
-function sketchStrokeLayer(canvas) {
-  if (!sketchLayerCanvas) sketchLayerCanvas = document.createElement("canvas");
-  if (sketchLayerCanvas.width !== canvas.width) sketchLayerCanvas.width = canvas.width;
-  if (sketchLayerCanvas.height !== canvas.height) sketchLayerCanvas.height = canvas.height;
-  const layer = sketchLayerCanvas.getContext("2d");
-  layer.setTransform(1, 0, 0, 1, 0, 0);
-  layer.clearRect(0, 0, sketchLayerCanvas.width, sketchLayerCanvas.height);
-  return layer;
-}
-
-//: Draw the whole highlighter stroke as it stands: the snapshot back, the
-//: polyline onto the layer at full opacity, the layer onto the canvas at the
-//: stroke's alpha. Called from every move and once more on the release.
-function sketchPaintHighlighter(context) {
-  const canvas = context.canvas;
-  const last = sketchHistory[sketchHistory.length - 1];
-  context.save();
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  if (last) context.putImageData(last, 0, 0);
-  else context.clearRect(0, 0, canvas.width, canvas.height);
-  context.restore();
-  if (sketchStrokePoints.length === 0) return;
-
-  const layer = sketchStrokeLayer(canvas);
-  //: **No transform on the layer.** `sketchPointer` already returns canvas
-  //: pixels, not CSS pixels: it divides by the element's own rect and
-  //: multiplies by `canvas.width`. Scaling them again put every highlighter
-  //: stroke away from the pointer by `(1 - width/rectWidth)` of its distance
-  //: from the origin, which on the pad's 820px canvas in an 850px box was
-  //: 15px left and 9px up at the middle of the board, and would overshoot the
-  //: other way on any window that draws the canvas smaller than its buffer.
-  //: Measured: the stroke's box came back at x 276 to 514 for a drag whose
-  //: centre was canvas x 410.
-  layer.lineCap = HIGHLIGHTER_STYLE.lineCap;
-  layer.lineJoin = HIGHLIGHTER_STYLE.lineJoin;
-  layer.globalAlpha = 1;
-  layer.strokeStyle = sketchPen.color;
-  layer.lineWidth = highlighterWidth(sketchPen.size);
-  layer.beginPath();
-  const [first, ...rest] = sketchStrokePoints;
-  layer.moveTo(first.x, first.y);
-  //: A single point is a dab, not a line, and `lineTo` to the same place
-  //: draws nothing at all: the nudge is what every one-click mark in this
-  //: file uses.
-  if (rest.length === 0) layer.lineTo(first.x + 0.01, first.y);
-  for (const point of rest) layer.lineTo(point.x, point.y);
-  layer.stroke();
-
-  context.save();
-  context.setTransform(1, 0, 0, 1, 0, 0);
-  //: `highlighterBlend(false)`: the layer is blitted onto the strokes canvas,
-  //: which sits over the paper canvas rather than holding it, so what this
-  //: blend sees behind it is the other strokes and never the paper. See the
-  //: table's own note.
-  context.globalCompositeOperation = highlighterBlend(false);
-  context.globalAlpha = HIGHLIGHTER_STYLE.alpha;
-  context.drawImage(sketchLayerCanvas, 0, 0);
-  context.restore();
-}
-
-let sketchPen = { color: "#3b82f6", size: 4, eraser: false };
-let sketchDrawing = false;
-let sketchDirty = false;
-let sketchTool = "pen"; // "pen", "rect", "circ", "arrow", "text"
-let sketchHistory = [];
-let sketchRedoStack = [];
-let sketchStartX = 0;
-let sketchStartY = 0;
-
-function sketchSaveSnapshot() {
-  const canvas = $("sketch-canvas");
-  const ctx = canvas.getContext("2d");
-  sketchHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-  if (sketchHistory.length > 30) sketchHistory.shift();
-  sketchRedoStack = [];
-}
-
-// §37G: an image the user brought in to annotate over, an `ImageBitmap`, or
-// null for a blank page. Lives on its own layer (`#sketch-bg-canvas`) below
-// the pen strokes (`#sketch-canvas`), so Clear and the eraser can affect the
-// strokes without touching it.
-let sketchBackgroundImage = null;
-
-function sketchContext() {
-  return $("sketch-canvas").getContext("2d");
-}
-
-// Redraws the background layer from scratch: white, then the uploaded image
-// (if any) scaled to fit inside the canvas without cropping or stretching.
-// Called after every change to `sketchBackgroundImage`, rather than patched
-// in place, because "fit inside and centre" isn't otherwise idempotent.
-// A reachable background colour, asked for directly, the canvas painted a
-// hardcoded white fill with nothing that could change it, and a CSS
-// background on the canvas *element* would have done nothing either: this
-// fill is opaque pixels drawn into the canvas's own bitmap, which sits in
-// front of (and fully hides) whatever the element's CSS background is.
-// Persisted the same way the whiteboard's own board colour is (a
-// `localStorage` key, not a preference, a look, not notebook data).
-const SKETCH_BG_KEY = "sketch-bg-color";
-let sketchBgColor = prefs.get(SKETCH_BG_KEY, null) || "#ffffff";
-
-function sketchDrawBackground() {
-  const canvas = $("sketch-bg-canvas");
-  const context = canvas.getContext("2d");
-  context.fillStyle = sketchBgColor;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  const img = sketchBackgroundImage;
-  if (!img) return;
-  const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-  const w = img.width * scale;
-  const h = img.height * scale;
-  context.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
-}
-
-function openSketch() {
+//: `options.image` (a Blob) goes under the ink and `options.caption` into
+//: the caption: the Annotate action on a picture (attachment-actions.js).
+async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
+  const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
+  if (!loaded.every(Boolean) || !window.SketchPad) {
+    toast("Couldn't open the sketch pad.", true);
+    return;
+  }
   $("sketch-overlay").classList.remove("hidden");
-  $("sketch-close").focus();
-  sketchBackgroundImage = null;
-  $("sketch-bg-color-picker").value = sketchBgColor;
-  sketchDrawBackground();
-  const canvas = $("sketch-canvas");
-  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-  sketchDirty = false;
-  sketchHistory = [];
-  sketchRedoStack = [];
-  sketchTool = "pen";
-  // The tool state and the buttons that show it were reset separately, which
-  // is to say the buttons were not reset at all: closing the pad with the
-  // eraser held left `sketchPen.eraser` true and the eraser lit, and the next
-  // open declared `sketchTool = "pen"` above while the eraser button kept its
-  // `.active` ring and the eraser kept erasing. Both halves move together.
-  sketchPen.eraser = false;
-  for (const button of document.querySelectorAll("#sketch-toolbar .ghost.icon-button")) {
-    button.classList.toggle("active", button.id === "sketch-tool-pen");
-  }
-  syncSketchSizeReadout();
-  lazyScript("/js/sketch-pad.js").then(() => {
-    sketchTogglePalette(false);
-    sketchShowInk(sketchPen.color);
-  });
-  $("sketch-status").textContent = "";
+  window.SketchPad.open($("sketch-card"), sketchHost(), options);
 }
 
-// The number beside the width slider. It is written from the input's own value
-// rather than from `sketchPen.size` so that it cannot drift from what the
-// slider is showing, which is the one thing it exists to report.
-function syncSketchSizeReadout() {
-  const slider = $("sketch-size");
-  $("sketch-size-value").textContent = slider.value;
-}
-
-async function sketchUploadImage(file) {
-  if (!file) return;
-  const status = $("sketch-status");
-  try {
-    sketchBackgroundImage = await createImageBitmap(file);
-    sketchDrawBackground();
-    sketchDirty = true; // an image is as much a change as a pen stroke
-    status.textContent = "";
-  } catch {
-    status.textContent = "Couldn't load that image.";
-  }
-}
-
+//: Asks the pad first: a drawing not yet saved is confirmed before it goes.
 async function closeSketch() {
-  if (sketchDirty && !(await confirmDialog("Close without saving your sketch?"))) return;
+  if (window.SketchPad?.isOpen()) {
+    await window.SketchPad.requestClose();
+    return;
+  }
+  hideSketchOverlay();
+}
+
+function hideSketchOverlay() {
   $("sketch-overlay").classList.add("hidden");
   overlayReturnFocus?.focus?.();
   overlayReturnFocus = null;
 }
 
-function sketchPointer(event) {
-  const canvas = $("sketch-canvas");
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: ((event.clientX - rect.left) / rect.width) * canvas.width,
-    y: ((event.clientY - rect.top) / rect.height) * canvas.height,
-  };
-}
-
-let sketchMoved = false;
-
-function sketchEnd(event) {
-  if (sketchDrawing && !sketchMoved && event && (event.type === "pointerup" || event.type === "click")) {
-    const context = sketchContext();
-    //: A dab with the highlighter goes through the same painter a drag does,
-    //: so a press that never moved leaves exactly the alpha every other
-    //: highlighter mark leaves.
-    if (sketchTool === "highlighter") {
-      sketchStrokePoints = [{ x: sketchStartX, y: sketchStartY }];
-      sketchPaintHighlighter(context);
-      sketchStrokePoints = [];
-      sketchDrawing = false;
-      return;
-    }
-    sketchApplyBrush(context);
-
-    if (sketchTool === "pen") {
-      context.beginPath();
-      context.moveTo(sketchStartX, sketchStartY);
-      context.lineTo(sketchStartX, sketchStartY + 0.1);
-      context.stroke();
-    } else if (sketchTool === "rect") {
-      context.lineWidth = sketchPen.size;
-      context.beginPath();
-      const s = sketchPen.size * 10 + 20;
-      context.rect(sketchStartX - s/2, sketchStartY - s/2, s, s);
-      context.stroke();
-    } else if (sketchTool === "circ") {
-      context.lineWidth = sketchPen.size;
-      context.beginPath();
-      const r = sketchPen.size * 5 + 10;
-      context.arc(sketchStartX, sketchStartY, r, 0, 2 * Math.PI);
-      context.stroke();
-    } else if (sketchTool === "arrow") {
-      context.lineWidth = sketchPen.size;
-      const len = sketchPen.size * 10 + 20;
-      context.beginPath();
-      context.moveTo(sketchStartX - len/2, sketchStartY);
-      context.lineTo(sketchStartX + len/2, sketchStartY);
-      context.stroke();
-      const headLen = sketchPen.size * 3 + 5;
-      context.beginPath();
-      context.moveTo(sketchStartX + len/2, sketchStartY);
-      context.lineTo(sketchStartX + len/2 - headLen * Math.cos(Math.PI / 6), sketchStartY - headLen * Math.sin(Math.PI / 6));
-      context.moveTo(sketchStartX + len/2, sketchStartY);
-      context.lineTo(sketchStartX + len/2 - headLen * Math.cos(-Math.PI / 6), sketchStartY - headLen * Math.sin(-Math.PI / 6));
-      context.stroke();
-    }
-  }
-  sketchDrawing = false;
-}
-
-async function saveSketch() {
-  const status = $("sketch-status");
-  status.textContent = "Saving…";
-  const caption =
-    $("sketch-caption").value.trim() ||
-    `Sketch: ${new Date().toLocaleDateString()}`;
-  try {
-    // Strokes and any uploaded image live on separate canvases (§37G); the
-    // saved PNG has to be both together, composited onto a throwaway canvas
-    // rather than either layer alone.
-    const composite = document.createElement("canvas");
-    composite.width = $("sketch-canvas").width;
-    composite.height = $("sketch-canvas").height;
-    const compositeContext = composite.getContext("2d");
-    compositeContext.drawImage($("sketch-bg-canvas"), 0, 0);
-    compositeContext.drawImage($("sketch-canvas"), 0, 0);
-    const blob = await new Promise((resolve) => composite.toBlob(resolve, "image/png"));
-
-    // **Through `/media/upload`, not `/entries/{id}/files`.** A sketch used
-    // to be saved as an *attachment*, which is a different table and a
-    // different pipeline: attachments are files hanging off a note, and only
-    // `MediaUpload` rows are captioned, OCR'd, read by a vision model, or
-    // listed in the Library's gallery. So a drawing was the one image in this
-    // app that none of that ever touched, reported directly: "add captioning
-    // and vision and ocr for sketches the user draws and saves as well".
-    //
-    // Uploading first and referencing the result in the note's markdown is
-    // exactly what dropping an image into the note editor already does, so
-    // this is now the same path rather than a second one: the picture appears
-    // inline in the note, in the gallery, and in `media_process`'s queue.
-    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-    const form = new FormData();
-    form.append("file", blob, `sketch-${stamp}.png`);
-    const uploaded = await apiJson("/media/upload", {
-      method: "POST",
-      headers: authHeaders(),
-      body: form,
-    });
-    // The caption stays the note's own first line, it is what the person
-    // typed and what the note is called. The image follows it.
-    const entry = await apiJson("/entries", {
-      method: "POST",
-      body: JSON.stringify({
-        content: `${caption}\n\n![${caption}](${uploaded.url})`,
-        category: "Sketches",
-      }),
-    });
-    if (!entry?.id) throw new Error("Couldn't save the sketch note.");
-    pushEntryCreateUndo(entry, "Saved a sketch");
-    sketchDirty = false;
-    $("sketch-overlay").classList.add("hidden");
-    $("sketch-caption").value = "";
-    toast("Sketch saved to your notebook.");
-    loadEntries().catch(() => {});
-  } catch (error) {
-    status.textContent = error.message;
-  }
+//: The pad hands over the finished picture (paper, picture and ink as one
+//: PNG) and the caption; a throw shows its message in the pad's status line.
+async function saveSketch(blob, caption) {
+  // **Through `/media/upload`, not `/entries/{id}/files`.** A sketch used
+  // to be saved as an *attachment*, which is a different table and a
+  // different pipeline: attachments are files hanging off a note, and only
+  // `MediaUpload` rows are captioned, OCR'd, read by a vision model, or
+  // listed in the Library's gallery. So a drawing was the one image in this
+  // app that none of that ever touched, reported directly: "add captioning
+  // and vision and ocr for sketches the user draws and saves as well".
+  //
+  // Uploading first and referencing the result in the note's markdown is
+  // exactly what dropping an image into the note editor already does, so
+  // this is now the same path rather than a second one: the picture appears
+  // inline in the note, in the gallery, and in `media_process`'s queue.
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const form = new FormData();
+  form.append("file", blob, `sketch-${stamp}.png`);
+  const uploaded = await apiJson("/media/upload", {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+  // The caption stays the note's own first line, it is what the person
+  // typed and what the note is called. The image follows it.
+  const entry = await apiJson("/entries", {
+    method: "POST",
+    body: JSON.stringify({
+      content: `${caption}\n\n![${caption}](${uploaded.url})`,
+      category: "Sketches",
+    }),
+  });
+  if (!entry?.id) throw new Error("Couldn't save the sketch note.");
+  pushEntryCreateUndo(entry, "Saved a sketch");
+  toast("Sketch saved to your notebook.");
+  loadEntries().catch(() => {});
 }
 
 // --- Wave H: voice capture (local Whisper) ------------------------------------------
@@ -606,7 +361,8 @@ async function toggleDictation(button, targetInput) {
 
 // --- Wave H: read-aloud (the browser's local voices) --------------------------------
 
-function speakText(text) {
+//: `button` shows a stop icon and `aria-pressed` while it speaks (INBOX 1423).
+function speakText(text, button = null) {
   if (!("speechSynthesis" in window)) {
     toast("This browser has no text-to-speech voices.", "info");
     return;
@@ -617,6 +373,16 @@ function speakText(text) {
   }
   if (!text.trim()) return;
   const utterance = new SpeechSynthesisUtterance(text);
+  if (button) {
+    const rest = button.innerHTML;
+    const paint = (on) => {
+      button.setAttribute("aria-pressed", String(on));
+      if (on) setLabel(button, "ph:stop");
+      else button.innerHTML = rest;
+    };
+    utterance.addEventListener("start", () => paint(true));
+    for (const type of ["end", "error"]) utterance.addEventListener(type, () => paint(false));
+  }
   //: Read aloud is sound this app makes, so the companion can hear it.
   if (typeof nameMarkBuddySound === "function") {
     utterance.addEventListener("start", () => nameMarkBuddySound("speech", true));

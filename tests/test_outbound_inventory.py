@@ -57,7 +57,7 @@ INVENTORY = {
     "api/routes_update.py": ("api.github.com and the release download", "update_check_enabled (off until the ask-once question is answered yes) or a Check for updates / Install click"),
     "core/embedmodels.py": (
         "huggingface.co (an allowlisted model, or the metadata and files of a repo typed into Pull a model by name)",
-        "an Install, Reinstall or Pull click in Settings",
+        "an Install, Reinstall or Pull click in Settings, or a yes to the one-time question about search by meaning",
     ),
     "core/extra_downloads.py": ("the pinned URL of an allowlisted extra, sha256 checked", "an Install click in Settings, Extras"),
     "core/privacy_http.py": ("whatever its caller names; records each destination on the privacy receipt", "its callers' triggers"),
@@ -132,6 +132,12 @@ def _is_local(host: str) -> bool:
 def test_a_booted_app_reaches_nothing_beyond_this_computer(app_state, monkeypatch):
     """A fresh notebook, started and used: every connection attempt and every
     name lookup is recorded, and none may leave loopback."""
+    #: The search model no longer downloads on a note's first save: it waits
+    #: for a yes (the owner, 2026-10-27), so this needs no environment switch
+    #: and a machine without the model stays on keywords. Before, it passed
+    #: where the model was cached and reached huggingface.co where it was not
+    #: (CI, 2026-10-26) unless the variable was set.
+    monkeypatch.delenv("TESSELLATE_NO_AUTO_INSTALL", raising=False)
     attempts: list[str] = []
     real_connect = socket.socket.connect
     real_getaddrinfo = socket.getaddrinfo

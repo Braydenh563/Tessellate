@@ -41,9 +41,21 @@ const linters = new Map();
 //: opposite of this app's own copy rule, sentence case everywhere (CLAUDE.md
 //: standing order 6, DESIGN.md "Voice"): it flagged every heading of a
 //: document written the way the app writes, four of the six suggestions on
-//: the README's focus-mode shot. Every other rule keeps Harper's default.
+//: the README's focus-mode shot. Every other rule keeps Harper's default,
+//: except the classes below (INBOX 1357, `tests/test_grammar_classes_1026.py`,
+//: measured on `tests/grammar_fixture_1026.json`):
+//:   - `NumericRangeEnDash`: "10-20 min" and "pp. 34-51" are written with a
+//:     hyphen in every note; 8 of 77 clean fixture lines were underlined.
+//:   - `OxfordComma`: a house style rather than an error; it put a mark on
+//:     "milk, eggs and bread".
+//:   - `ToDoHyphen` and `ForYourInformation`: "TODO" and "FYI" are what a
+//:     notebook says.
+//:   - every `Expand*` rule: they ask for "minimum" for "min", "configuration"
+//:     for "config", "seconds" for "sec" and so on. Abbreviations are how
+//:     notes are written (owner K4b: "10-20 min" read as "minimum").
 //: `tests/test_prose_tools.py` runs this worker in node and holds it.
-const HARPER_RULES_OFF = ["UseTitleCase"];
+const HARPER_RULES_OFF = ["UseTitleCase", "NumericRangeEnDash", "OxfordComma", "ToDoHyphen", "ForYourInformation"];
+const HARPER_RULE_PREFIXES_OFF = ["Expand"];
 
 //: The five dialects Harper ships (VC6): the setting's value to its name.
 const DIALECTS = {
@@ -68,6 +80,9 @@ async function linterFor(name) {
       //: this build treats a key that is missing.
       const config = made.get_lint_config_as_object();
       for (const rule of HARPER_RULES_OFF) config[rule] = false;
+      for (const rule of Object.keys(config)) {
+        if (HARPER_RULE_PREFIXES_OFF.some((prefix) => rule.startsWith(prefix))) config[rule] = false;
+      }
       made.set_lint_config_from_object(config);
       return made;
     });

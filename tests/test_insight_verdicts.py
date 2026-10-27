@@ -113,3 +113,77 @@ def test_the_route_says_the_insight_and_sends_it_for_its_buttons(client, session
     said = [i for e in out.get("grounding", []) for i in e.get("insights", [])]
     assert [i["key"] for i in said] == ["recurrence:golf"]
     assert "hobby forming" in out["text"]
+
+
+# --- Done on a plan line (INBOX 1412) ------------------------------------------------------
+
+PLAN = [
+    {"id": 1, "content": "# Study\n\nI plan to lock-in for my assignments this term.", "created_at": "2026-09-01", "tags": []},
+]
+
+
+def _drift_row(session):
+    session.add(Entry(id=1, content=PLAN[0]["content"]))
+    session.flush()
+    found = insights.drift(PLAN, TODAY)
+    assert found
+    return found[0]
+
+
+def test_done_removes_the_confirmed_fact_and_hides_the_plan(session):
+    row = _drift_row(session)
+    body = {"rule": row.rule, "text": row.text, "note_ids": row.note_ids, "slots": row.slots}
+    insights.confirm(session, body, TODAY)
+    session.flush()
+    assert insights.key(row) in insights.memory(session).confirmed
+    assert insights.done(session, body)["said"] == "Marked done"
+    session.flush()
+    known = insights.memory(session)
+    assert insights.key(row) not in known.confirmed and insights.key(row) in known.dismissed
+
+
+def test_done_is_for_plans_only(session):
+    import pytest
+
+    with pytest.raises(ValueError):
+        insights.done(session, {"rule": "recurrence", "text": "x", "note_ids": [1], "slots": {}})
+
+
+def test_a_later_note_retires_a_confirmed_drift_fact(session):
+    row = _drift_row(session)
+    body = {"rule": row.rule, "text": row.text, "note_ids": row.note_ids, "slots": row.slots}
+    insights.confirm(session, body, TODAY)
+    session.flush()
+    assert insights.retire_followed(session, PLAN, TODAY) == 0
+    later = [*PLAN, {"id": 2, "content": "Finished: I did lock-in for my assignments.", "created_at": "2026-10-10", "tags": []}]
+    assert insights.retire_followed(session, later, TODAY) == 1
+    session.flush()
+    assert insights.key(row) not in insights.memory(session).confirmed
+
+
+# --- Done in the browser (INBOX 1412, driven on :8796, 2026-10-27) --------------------------
+
+
+def _js(name: str) -> str:
+    from pathlib import Path
+
+    return (Path(__file__).resolve().parent.parent / "frontend" / "js" / name).read_text(encoding="utf-8")
+
+
+def test_chat_shows_the_insight_rows_a_digest_answer_hid():
+    """A digest answer hides its grounding holder (`renderAnswerGrounding`), and
+    the rows were appended into it: Confirm, Not right and Done were in the DOM
+    at 0x0 (measured: `.answer-grounding.hidden` held all three buttons)."""
+    chat = _js("chat-attach.js")
+    after = chat[chat.index("groundingHolder.appendChild(line);") :][:400]
+    assert 'groundingHolder.classList.remove("hidden")' in after
+
+
+def test_a_plan_confirmed_in_place_keeps_its_done():
+    """Confirm replaced the row's words and dropped the pair; only a reload
+    brought Done back (measured in Tidy: buttons [] after Confirm, ["Done"]
+    after reload)."""
+    status = _js("status.js")
+    line = status[status.index("function insightLine(") :][:1100]
+    assert 'verdict === "confirmed" && about.rule === "drift"' in line
+    assert "attach({ ...about, confirmed: true })" in line

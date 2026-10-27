@@ -625,12 +625,10 @@ function filterSettings(term) {
     : matches
       ? `${matches} section${matches === 1 ? "" : "s"}`
       : "Nothing matches that";
-  // One match is not ambiguous, so show it rather than making the user click
-  // the single remaining button.
-  if (matches === 1 && !settingsFound) {
-    const only = buttons.find((b) => !b.classList.contains("hidden"));
-    if (only) showSettingsSection(only.dataset.section);
-  }
+  // The first match is shown rather than leaving the pane on what it was
+  // (dog2 item 18: "phone" listed results over the Models pane).
+  const first = settingsFound ? findSettings(query, 1)[0]?.section : buttons.find((b) => !b.classList.contains("hidden"))?.dataset.section;
+  if (first) showSettingsSection(first);
 }
 
 function closeSettingsModal() {
@@ -1486,6 +1484,9 @@ const APPEARANCE_DEFAULTS = {
   // up without a second trip to Settings; unchecking #glass-sheen-toggle
   // afterward turns just the sheen back off without touching glass itself.
   "glass-sheen": "off",
+  // Icon buttons in the same glass (css/glass-controls-lazy.css, fetched only
+  // while this is on), and only while the glass look itself is on.
+  "glass-controls": "off",
   // The flat looks' soft ground light (owner: "maybe it can be togglable").
   "page-wash": "on",
   // 0-100, how strong the sheen reads when it's on: its own dial, separate
@@ -2076,6 +2077,12 @@ function hexToRgbParts(hex) {
 // mode's ink, so a pick that already reads is returned as it is.
 const ACCENT_MIN_RATIO = 4.5;
 
+//: Relative luminance of an [r, g, b] triple; bg-art.js (lazy) uses it too.
+function bgLuma(rgb) {
+  const lin = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+}
+
 function hexRatio(a, b) {
   const lum = (hex) => {
     const parts = hexToRgbParts(hex);
@@ -2262,7 +2269,12 @@ DENSITY_SHORT.addEventListener("change", () => {
 //: baseline and needs no font's metrics. Measured again when Settings
 //: changes the font (`applyAppearance`, below). Here and not in app.js, whose
 //: gzipped size is a ratchet; nothing calls it before this file loads.
+//: Re-measured only when the font or the loaded faces change (INBOX 1415).
+const labelOptics = { key: "" };
 function measureLabelOptics() {
+  const key = `${document.documentElement.dataset.font}${document.fonts?.size}${document.fonts?.status}`;
+  if (key === labelOptics.key) return;
+  labelOptics.key = key;
   const probe = document.createElement("div");
   probe.setAttribute("aria-hidden", "true");
   for (const [key, value] of [["position", "fixed"], ["top", "0"], ["left", "0"], ["visibility", "hidden"],
@@ -2298,6 +2310,11 @@ function measureLabelOptics() {
 measureLabelOptics();
 document.fonts?.ready?.then(measureLabelOptics);
 
+//: Zoom alone, so a keypress writes one property (INBOX 1415).
+function applyZoomVar() {
+  document.documentElement.style.setProperty("--zoom", Number(appearancePref("zoom")) / 100);
+}
+
 function applyAppearance() {
   const root = document.documentElement;
   root.dataset.fontsize = appearancePref("fontsize");
@@ -2312,6 +2329,8 @@ function applyAppearance() {
   // what the page shows, not what the person chose.
   root.dataset.glass = perf ? "off" : appearancePref("glass");
   root.dataset.glassSheen = appearancePref("glass-sheen");
+  root.dataset.glassControls = appearancePref("glass-controls");
+  if (appearancePref("glass-controls") === "on") ensureModule("glassControls");
   root.dataset.pageWash = appearancePref("page-wash");
   root.style.setProperty("--glass-sheen-strength", Number(appearancePref("glass-sheen-strength")) / 100);
   root.dataset.themePreset = activeThemePreset();
@@ -2335,7 +2354,7 @@ function applyAppearance() {
   root.style.setProperty("--radius", `${appearancePref("radius")}px`);
   root.style.setProperty("--glass-blur", `${appearancePref("glass-blur")}px`);
   root.style.setProperty("--glass-opacity", Number(appearancePref("glass-opacity")) / 100);
-  root.style.setProperty("--zoom", Number(appearancePref("zoom")) / 100);
+  applyZoomVar();
   root.style.setProperty("--border-style", appearancePref("border-style", "solid"));
   // Belt and braces over the two fixes above. A custom property will happily
   // hold the string "NaN"; it is only invalid where it gets *used*, which here
@@ -2589,6 +2608,8 @@ function renderAppearance() {
   $("glass-row").classList.toggle("disabled-row", perfModeOn());
   $("reduce-motion-row").classList.toggle("disabled-row", perfModeOn());
   $("glass-sheen-toggle").checked = appearancePref("glass-sheen") === "on";
+  $("glass-controls-toggle").checked = appearancePref("glass-controls") === "on";
+  $("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   if ($("page-wash-toggle")) $("page-wash-toggle").checked = appearancePref("page-wash") === "on";
   $("glass-sheen-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
   $("glass-sheen-strength").value = appearancePref("glass-sheen-strength");
@@ -2661,6 +2682,10 @@ function renderProgressMotionHint() {
 function renderBgStyleHint() {
   const hint = $("bg-style-hint");
   if (!hint) return;
+  if (typeof bgArtStrains !== "function") {
+    ensureModule("bgArt").then((ok) => ok && renderBgStyleHint());
+    return;
+  }
   const style = bgArtStyle();
   let text = "";
   if ((style === "microbes" || style === "mycelium")) {
@@ -2852,7 +2877,7 @@ function resetAppearance() {
   for (const key of [
     "fontsize", "font", "density", "glass", "perf", "motion", "ui-motion", "reply-motion", "progress-motion", "avatar-motion", "avatar-follow", "avatar-buddy", "avatar-buddy-size", "avatar-buddy-actions", "atlas-style", "assistant-avatar", "atlas-look", "face-look", "dash-mark", "bg-intensity", "accent",
     "contrast", "bgArt", "theme", "radius", "glass-blur", "glass-opacity",
-    "glass-sheen", "glass-sheen-strength", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
+    "glass-sheen", "glass-sheen-strength", "glass-controls", "page-wash", "bg-style", "bg-motion", "palette", "themePreset",
     "accent-custom", "page-bg", "custom-css", "zoom",
   ]) {
     prefs.remove(key);
@@ -2881,7 +2906,8 @@ function resetAppearance() {
 // one in Preferences now. A no-op for every other style and when nothing
 // changed.
 function bgArtRefreshSeed() {
-  if (bgArtSeedUsed === null || !bgArtOn()) return;
+  //: bg-art.js not fetched: nothing has been drawn from a seed.
+  if (typeof bgArtSeedUsed === "undefined" || bgArtSeedUsed === null || !bgArtOn()) return;
   if (bgArtSeedUsed !== bgArtSeedText()) startBgArt();
 }
 
@@ -2890,7 +2916,8 @@ function bgArtOn() {
 }
 
 function stopBgArt() {
-  bgArtHalt();
+  //: Nothing to halt until bg-art.js has been fetched.
+  if (typeof bgArtHalt === "function") bgArtHalt();
 }
 
 // Which generative background to paint. Persisted like the other
@@ -2918,6 +2945,10 @@ const BG_ART_INFO = {
 function renderBgStyleGrid() {
   const grid = $("bg-art-style");
   if (!grid) return;
+  if (typeof BG_ART_COST === "undefined") {
+    ensureModule("bgArt").then((ok) => ok && renderBgStyleGrid());
+    return;
+  }
   if (!grid.childElementCount) {
     const order = [...BG_ART_STYLES].sort((a, b) => BG_ART_COST[a] - BG_ART_COST[b]);
     for (const name of order) {
@@ -3038,6 +3069,10 @@ function startBgArt() {
     perfModeOn() ||
     batteryModeOn() ||
     (bgMotion !== "moving" && reducedMotionWanted());
+  if (typeof bgArtRun !== "function") {
+    ensureModule("bgArt").then((ok) => ok && startBgArt());
+    return;
+  }
   const bgStyle = bgArtStyle();
   //: No p5: the art draws on its own canvas (bg-art.js), so it mounts at
   //: once, including the one boot-time call to this function that used to
@@ -3134,6 +3169,10 @@ $("glass-sheen-toggle").addEventListener("change", (e) => {
   prefs.set("glass-sheen", e.target.checked ? "on" : "off");
   applyAppearance();
   $("glass-sheen-strength-row")?.classList.toggle("disabled-row", !e.target.checked);
+});
+$("glass-controls-toggle").addEventListener("change", (e) => {
+  prefs.set("glass-controls", e.target.checked ? "on" : "off");
+  applyAppearance();
 });
 $("glass-sheen-strength").addEventListener("input", (e) => {
   prefs.set("glass-sheen-strength", e.target.value);
@@ -3477,7 +3516,7 @@ $("log-level").addEventListener("change", renderActiveLogView);
 $("log-requests").addEventListener("change", renderActiveLogView);
 //: **A finished task's log** (Background tasks' history, its Logs button):
 //: Logs, with the filter set to the most particular words the row has, the
-//: package or model in its brackets ("sentence-transformers"), else the
+//: package or model in its brackets ("fastembed"), else the
 //: model it names, else its label. A log line names what it worked on, not
 //: the sentence the row says, so the brackets are tried first.
 function taskLogButton(item) {

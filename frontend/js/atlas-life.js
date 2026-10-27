@@ -451,8 +451,8 @@ const ATLAS_PROP_LOOPS = [
   //: Ground props: the book's right page lifts from the spine and its left
   //: settles, its stars twinkle; the map rocks on its lower corner, its
   //: stars twinkle; the coil breathes about its middle.
-  [".nmp-book .atl-prop-page:nth-of-type(2)", [31, 90.2], [{ scale: "1 1" }, { scale: "1 0.86" }, { scale: "1 1" }], 1700, 0],
-  [".nmp-book .atl-prop-page:nth-of-type(1)", [31, 90.2], [{ scale: "1 1" }, { scale: "1 0.95" }, { scale: "1 1" }], 2300, 0],
+  [".nmp-book .atl-prop-page:nth-of-type(2)", [31, 59.3], [{ scale: "1 1" }, { scale: "1 0.86" }, { scale: "1 1" }], 1700, 0],
+  [".nmp-book .atl-prop-page:nth-of-type(1)", [31, 59.3], [{ scale: "1 1" }, { scale: "1 0.95" }, { scale: "1 1" }], 2300, 0],
   [".nmp-book .atl-node-dot", null, [{ opacity: 1 }, { opacity: 0.3 }, { opacity: 1 }], 1600, 0.2],
   [".nmp-map", [42, 92.4], [{ rotate: "0deg" }, { rotate: "1.6deg" }, { rotate: "0deg" }, { rotate: "-1.2deg" }, { rotate: "0deg" }], 3800, 0],
   [".nmp-map .atl-node-dot", null, [{ opacity: 1 }, { opacity: 0.3 }, { opacity: 1 }], 1800, 0.25],

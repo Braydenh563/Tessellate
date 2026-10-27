@@ -1760,6 +1760,10 @@ input.md-task-inline:disabled,
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--ink);
+  /* A 200-character heading with no space ran past the card and was cut at
+     its edge, no wrap and no ellipsis, at 720 (dog3-1026 row 16); the body
+     below it already breaks anywhere. */
+  overflow-wrap: anywhere;
 }
 .entry-content {
   margin: 0 0 0.4rem;
@@ -2864,36 +2868,20 @@ li.link-source {
 .ask-header-actions {
   gap: var(--space-3);
   align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
 }
-/* **Use AI** (INBOX 714): one compact switch row in the header's control group,
-   on the app's pill-switch recipe (06-timeline-dialogs.css lists
-   `.ask-use-ai input` with the others). It replaced a two-segment pill that
-   "doesnt feel modern and professional". One control high (`--control-h`) and
-   centred on the header line like the History button and the model select
-   beside it; the input is the switch and is not clipped. Greyed with a reason
-   when no model runs (ask-compose.js). */
-.ask-use-ai {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  /* The touch floor is `--target-min` (44px below 820), the height History and
-     the '?' take there; on a desktop `--control-h` wins. */
-  min-height: max(var(--control-h), var(--target-min));
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-  cursor: pointer;
+#ask > .row.space-between {
+  flex-wrap: wrap;
 }
-.ask-use-ai.is-off {
-  color: var(--muted);
-  cursor: not-allowed;
-}
-/* The AI's mark beside its word (INBOX 723, DESIGN.md "AI and agent icons"):
-   the sparkle every AI control wears, sat close to "Use AI" rather than a
-   gap's width away, so the switch reads as switch, then label. */
-.ask-use-ai .ask-use-ai-mark {
-  margin-inline-end: calc(var(--space-1) - var(--space-2));
+/* `.card > .row.space-between > .row` pins a header's group to its content
+   width (0 0 auto), which let Ask's five controls run 26px past the card at
+   700. This group may shrink and wrap instead. */
+#ask > .row.space-between > .ask-header-actions {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 #ask-history-toggle {
   position: relative;

@@ -22,7 +22,7 @@ def _body(name: str) -> str:
 
 
 def test_the_documents_ai_controls_answer_rather_than_refuse():
-    for control in ("doc-ai", "doc-extract"):
+    for control in ("doc-ai", "doc-ai-run", "draft-compose", "draft-refine", "chat-plan", "template-draft"):
         tag = re.search(rf'<button id="{control}"[^>]*>', INDEX).group(0)
         assert "data-needs-model=" in tag and 'data-model-offer="' in tag, control
 

@@ -84,37 +84,6 @@ function taskElapsed(seconds) {
   return `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`;
 }
 
-//: One line per package of a bulk action: waiting, in hand, done or not.
-//: Shared with the bundle rows in Settings, Packages (settings-packages.js).
-const TASK_STEP_ICONS = {
-  queued: "ph:hourglass-medium",
-  running: "ph:spin",
-  completed: "ph:check-circle",
-  failed: "ph:warning",
-  skipped: "ph:minus-circle",
-  cancelled: "ph:stop-circle",
-};
-const TASK_STEP_WORDS = { queued: "waiting", running: "installing", completed: "done" };
-function taskSteps(steps) {
-  const list = document.createElement("ul");
-  list.className = "task-steps";
-  for (const step of steps) {
-    const li = document.createElement("li");
-    li.className = `task-step is-${step.outcome}`;
-    setLabel(li, `${TASK_STEP_ICONS[step.outcome] || "ph:info"} ${step.label}: ${step.word || TASK_STEP_WORDS[step.outcome] || step.outcome}`);
-    if (step.message) li.title = step.message;
-    //: pip reports no fraction, so the package in hand has an indeterminate bar.
-    if (step.outcome === "running") {
-      const bar = document.createElement("progress");
-      bar.className = "task-progress task-step-bar";
-      bar.setAttribute("aria-label", step.label);
-      li.appendChild(bar);
-    }
-    list.appendChild(li);
-  }
-  return list;
-}
-
 // What has stopped, newest first. Separate from the running list on purpose:
 // mixing them means a finished job and a running one look alike at a glance,
 // and the question this screen answers most often is "is it still going?".
@@ -334,87 +303,6 @@ function placeChatModelPanel() {
 window.addEventListener("resize", placeChatModelPanel);
 window.addEventListener("scroll", placeChatModelPanel, true);
 
-async function openChatModelPanel() {
-  const name = modelStatus && modelStatus.chat_model;
-  const panel = $("chat-model-panel");
-  if (!panel || !name) return;
-  panel.replaceChildren();
-  const head = document.createElement("div");
-  head.className = "row space-between chat-model-panel-head";
-  const title = document.createElement("strong");
-  title.textContent = name;
-  title.className = "chat-model-panel-name";
-  head.appendChild(title);
-  const close = smallButton("ph:x", "Close", () => panel.classList.add("hidden"));
-  close.classList.add("icon-only");
-  head.appendChild(close);
-  panel.appendChild(head);
-
-  const list = document.createElement("dl");
-  list.className = "chat-model-facts";
-  const loading = document.createElement("p");
-  loading.className = "muted";
-  setLabel(loading, "ph:spin Reading the model's own specification…");
-  panel.append(list, loading);
-  panel.classList.remove("hidden");
-  placeChatModelPanel();
-
-  const spec = await apiJson(`/models/spec?name=${encodeURIComponent(name)}`).catch(() => null);
-  //: The panel was measured empty a moment ago; it is a different height now.
-  placeChatModelPanel();
-  loading.remove();
-  if (!spec) {
-    const failed = document.createElement("p");
-    failed.className = "muted";
-    //: Named as a *backend* silence rather than a model fault: the usual cause
-    //: is that Ollama is not running, and "unknown" with no reason sends
-    //: people looking at the wrong thing.
-    failed.textContent =
-      "The backend didn't answer. This needs the model runner to be up, everything else in this panel comes from it.";
-    panel.appendChild(failed);
-    return;
-  }
-  const fact = (label, value, why) => {
-    if (value === null || value === undefined || value === "") return;
-    const dt = document.createElement("dt");
-    dt.textContent = label;
-    const dd = document.createElement("dd");
-    dd.textContent = String(value);
-    if (why) dd.title = why;
-    list.append(dt, dd);
-  };
-  fact("Family", spec.family, "The architecture this model is built on");
-  fact("Size", spec.parameters, "How many parameters it has");
-  fact("Quantisation", spec.quantisation, "How much its weights were compressed to fit in memory");
-  if (spec.context_length) {
-    fact(
-      "Declared window",
-      `${compactTokens(spec.context_length)} tokens`,
-      "What the model says it can hold"
-    );
-  }
-  if (spec.usable_context) {
-    fact(
-      "Used here",
-      `${compactTokens(spec.usable_context)} tokens`,
-      "What this app actually runs it at, often lower on purpose, to leave room for the key/value cache"
-    );
-  }
-  //: Tri-state, and rendered as three states. `null` means this backend does
-  //: not say, and drawing that as "No" would be a confident lie about a model
-  //: that works fine: the endpoint's own docstring makes the same point.
-  const flag = (value) => (value === null || value === undefined ? "Not reported" : value ? "Yes" : "No");
-  fact("Can call tools", flag(spec.supports_tools), "Whether agent mode can work with this model");
-  fact("Can show its reasoning", flag(spec.supports_thinking));
-  fact("Can see images", flag(spec.supports_vision), "Whether it can read a picture or a scanned page");
-
-  const change = smallButton("ph:gear Change the model", "Open Settings → Models", () => {
-    panel.classList.add("hidden");
-    openSettingsModal("models", "chat-model-select");
-  });
-  panel.appendChild(change);
-}
-
 $("chat-active-model")?.addEventListener("click", () => {
   if ($("chat-active-model").dataset.offline) {
     openSettingsModal("models");
@@ -629,12 +517,9 @@ function syncFeatureModelSelects() {
     //: install check reads "unknown" as installed, so a disconnected app still
     //: said "Inherited: llama3.2" under the no-model banner (the owner: "if an
     //: ai model isnt connected, it shouldnt show a model being used right??").
-    const disconnected = modelStatus?.ollama_running === false;
-    const inherited = disconnected
-      ? `Inherited: ${shortModelName(row.inherits)} (not connected)`
-      : isInstalled
-        ? `Inherited: ${shortModelName(row.inherits)}`
-        : `Inherited: ${shortModelName(row.inherits)} (not installed)`;
+    const inherited = modelStatus?.ollama_running === false
+      ? "No model connected"
+      : `Inherited: ${shortModelName(row.inherits)}${isInstalled ? "" : " (not installed)"}`;
     fillModelSelect(
       select,
       names,
@@ -726,20 +611,20 @@ function renderEmbeddingPicker(status) {
     status.embedding_backend === "ollama"
       ? `${builtinName}, downloaded once on first use`
       : `${builtinName}, in use`;
-  //: The built-in model needs the sentence-transformers package, which the
-  //: app installs by itself, once, the first time it is needed: a download
-  //: of several hundred MB that needs the internet. Said here, with the
+  //: The built-in model needs the fastembed package, which the app installs
+  //: by itself, once, the first time it is needed (after a yes): a download
+  //: of about 60 MB that needs the internet. Said here, with the
   //: alternative that needs neither Python packages nor that download.
   const note = $("builtin-embed-note");
   if (note) {
     let text = "";
     if (status.builtin_embedding_installing) {
       text =
-        "Installing sentence-transformers for the built-in model. This happens once and " +
-        "can take several minutes. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
+        "Installing fastembed for the built-in model. This happens once and " +
+        "takes a minute or so. Prefer not to wait? Pick nomic-embed-text from Ollama below.";
     } else if (status.builtin_embedding_installed === false) {
       text =
-        "The built-in model needs sentence-transformers, which the app installs by itself " +
+        "The built-in model needs fastembed, which the app installs by itself " +
         "the first time it is needed if the switch below is on (a one-time download that needs the internet). " +
         "Or pick nomic-embed-text from Ollama below instead.";
     }
@@ -1078,7 +963,7 @@ const MIRRORED_UI_EXTRAS = [
   "graph-size",
   "graph-options-open",
   "graph-trace-open",
-  // The options panel's four folds, keyed `graph-fold-<the section's id>` by
+  // The options panel's folds, keyed `graph-fold-<the section's id>` by
   // `initGraphOptionFolds` far below. Written out rather than spread from a
   // constant beside that function: this array is read at module level and the
   // constant would be declared hundreds of lines later, which is the
@@ -1087,6 +972,9 @@ const MIRRORED_UI_EXTRAS = [
   "graph-fold-graph-groups-section",
   "graph-fold-graph-minimap-section",
   "graph-fold-graph-display",
+  "graph-fold-graph-filter-section",
+  "graph-fold-graph-toggle-group",
+  "graph-fold-graph-temporal",
   "wb-bg-color",
 ];
 
@@ -1332,7 +1220,7 @@ window.addEventListener("storage", lookFromOtherWindow);
 // the UI so "why isn't the theme's colour showing?" has a visible answer.
 const OVERRIDABLE_KEYS = [
   "theme", "palette", "accent", "accent-custom", "page-bg", "font", "fontsize",
-  "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "page-wash",
+  "density", "radius", "glass", "glass-blur", "glass-opacity", "glass-sheen", "glass-controls", "page-wash",
   "glass-sheen-strength", "bg-style", "bg-motion", "bg-intensity", "zoom",
 ];
 

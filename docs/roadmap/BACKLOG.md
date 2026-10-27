@@ -1182,6 +1182,7 @@ palettes."
   separately. **(needs Opus)**: an OS-level hotkey in the desktop window,
   untestable in this sandbox.
   **Next:** pywebview has no global hotkey, so this needs a new Python dependency (a `keyboard`-style hook) and the tray's `_new_note` (`__main__.py:2046`) as the target; a new dependency is the owner's call (FIX_COMMON rule 2). The tray's "New note" already does the one-click half.
+  **The owner, 2026-10-27, verbatim** (screenshots: the ChatGPT desktop pet, a small pixel creature at the screen corner over the taskbar, with a Settings / Hide Mini menu): "is it possible to have the companion be like a corner thing that can actually show on the user's main screen outside of the app if they dont have th ewindow open?? like the chatgpt pets and then if the user clicks it they there can be a window to quick add a note, quick searchm or to open the app window." Plan: a second pywebview window in `--desktop` mode (frameless, on top, transparent where the platform allows, else a small rounded card), shown while the main window is in the tray; it draws the chosen companion; a click opens Quick note, Quick search, Open Tessellate; right-click Settings, Hide. No new dependency (pywebview and the tray's `_new_note` exist). Needs the owner's go and a Windows check (untestable here).
 
 ---
 
@@ -2598,11 +2599,7 @@ is large; never in the boot scripts or their gzip budget), with
 `test_no_innerhtml_interpolation` rule). The in-house flowchart parser stays
 as the board import path (`wbMermaidParse`) and the verifier in step 5.
 
-8. **Every Mermaid kind renders** where Markdown renders: documents, chat,
-   Ask answers, note previews and the print view: flowchart, sequence, class,
-   state, ER, Gantt, timeline, mind map, pie, quadrant, journey, git graph.
-   Themed from the app's tokens (light, dark, high contrast), re-drawn on a
-   theme switch.
+8. ~~**Every Mermaid kind renders** where Markdown renders.~~ **Built** for documents (Read, Live, print, HTML export), chat and Ask replies (HISTORY.md, "Moved from the plans, 2026-10-27 (mermaid)"). **Open:** note previews (notes render through the editor surface, not `renderMarkdown`).
 9. **A Mermaid editor**: a Live and Split view for a fence (source beside the
    drawing, errors inline with the line), snippets per kind from the "/" menu,
    and a "Diagram" block in the document toolbar.
@@ -2626,11 +2623,7 @@ as the board import path (`wbMermaidParse`) and the verifier in step 5.
     mind map branch (through their Mermaid form). Every proposal passes the
     step 5 verifier before it is shown.
 12b. **Diagrams in chat, Ask and documents** (the owner: "as well as the
-    documents"): a ` ```mermaid ` block in any document (Read, Live, Split and
-    print), chat message, Ask answer or agent reply is drawn (step 8), with Copy, Download
-    (SVG, PNG, `.mmd`), Open in whiteboard and Insert into a document under
-    its ⋯ menu; a block that fails to parse shows as code with the parser's
-    one-line reason.
+    documents"): ~~a ` ```mermaid ` block is drawn, and a block that fails to parse shows as code with the parser's one-line reason~~ **Built** (HISTORY.md, "Moved from the plans, 2026-10-27 (mermaid)"). **Open:** Copy, Download (SVG, PNG, `.mmd`), Open in whiteboard and Insert into a document under the figure's ⋯ menu, and Split view's drawing.
 12c. **A diagram maker in the whiteboard** (the owner, 2026-10-06, verbatim:
     "a specialise diagram maker in the whiteboard with assisted and easier
     creation"). A third board kind beside Board and Mind map, "Diagram",
@@ -2654,10 +2647,11 @@ as the board import path (`wbMermaidParse`) and the verifier in step 5.
     - **Accessible**: every shape reachable by arrow keys along its links, a
       text outline of the diagram for screen readers, labels never below the
       4.5:1 contrast line.
-13. **Tests and guards**: a lazy-load test (not in `app_js_files`), a
-    vendored-file licence notice test, a CSP test that no inline style or
-    script is injected, and a sweep that renders one of each kind in light
-    and dark with no console errors.
+12d. **INBOX 1410, the owner 2026-10-27, verbatim:** "can the ai and composer make mermaid diagrams?? cna it be
+    wired and integrated into all the main features?? a way for the user to easily build and edit them?"
+    Placed here: steps 9 (editor), 10 (boards and maps), 12 and 12a (the AI and composer draft and edit
+    through the verifier), 12b (every surface) and 12c (diagram maker) are that ask; next, step 8 now built.
+13. ~~**Tests and guards**~~ **Built** (`tests/test_mermaid_frame.py`: lazy, licence row, the frame's own CSP with the page CSP unchanged, the message protocol; `scratchpad/ui-sweeps/mermaid.js`: one of each kind in light and dark, no console errors).
 
 ### Related, and cheap: finish the rendering story
 
@@ -4401,5 +4395,31 @@ Owner's list, in one place (each is also logged above where it has detail):
 
 - **MCP over HTTP with a scoped token (B52):** today `mcp_server.py` is stdio only, with no network listener, OAuth or token (trust is the local process, like `tessellate.db`). The owner wants a link to hand to Claude or another AI, easy Docker setup, and a token that limits which notes and tools that client sees. Design first: an HTTP (streamable) transport on the app's port behind a per-client token the person creates in Settings, scopes (categories, tags, read-only or read-write, no private notes), a revoke button, a log of what each client did; OAuth only if a remote client such as claude.ai requires it. The destructive-tools exclusion stays.
 - **Managed local server instead of localhost (B28):** research a stable local name and port (a hosts entry or mDNS name such as tessellate.local, a fixed port with a fallback, an optional service install) and what it costs in the packaged build; no code until the owner picks.
-- **Composer rows from the same list** are in `agent-remaining/composer-1017.md` (the Opus brief): Chat and the needle path on Ask's engine, Guide intent, type tolerance, wording and Harper, slash commands, the AI actions with no model, magic add, digest and patterns, tool naming and ranking, facts over time.
+- **Composer rows from the same list** are in `archive/agent-remaining/composer-1017.md` (the Opus brief): Chat and the needle path on Ask's engine, Guide intent, type tolerance, wording and Harper, slash commands, the AI actions with no model, magic add, digest and patterns, tool naming and ranking, facts over time.
 - **Placed in their plans, from the same list:** document templates, snippets with drag, manage mode and live-view tables (DOCUMENTS_PLAN); diagram elements and templates, draw.io-style pan, a document viewer object (WHITEBOARD_PLAN); the timeline as a calendar (TIMELINE_PLAN Phase 5); more workflows (AGENT_SKILLS_REFORM); profile avatar life and the hardware card for suggested models (BACKLOG, this section's heirs).
+
+1401. **The owner, 2026-10-27, verbatim.** "Should needle come packaged or vendored by default with the repo?? Should we use any other vendored small models like system-one laya or CDMS? Idk just a thought". Recommendation, taken: needle stays out of the repository (decision of 699: a 36 MB native engine plus weights per platform; pinned SHA-256 download, network symbols refused at install). Open as a build row: the Windows installer may carry it as an optional "offline bundle" so a fresh install needs no download. Laya stays not adopted (391: below a plain baseline zero-shot, weak past 20 labels, 512-token context). "system-one" and "CDMS" are not identified in this repo: the owner to name the projects before they are assessed (licence, size, an eval set showing a gap).
+
+## Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`)
+
+- **A span is matched to any gap in the facts, not the row it names:** "Rent is due in 4 days" passes when some other pair of dates is four days apart. Pair a span with the nearest named row before accepting it.
+- **Counts are pooled per noun:** a breakdown's row count (4 in Work) is accepted as the total (12), and the total as a row count. Tie a figure to its label or row when the reply names one.
+- **The noun is found only within three words:** "4 really big important reminders" has no noun, so 4 passes when it is any count in the facts. Widen the look-ahead to the clause.
+
+## Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups)
+
+Pin retrieval, the model-side social brief and the Chat closing decision: built 1cd81bf, see HISTORY.
+
+- Plan Done (1412) driven in Chromium and weekend reminders tested (21 cases): built e95b59f and 0f57c47. Not driven: the Ask box's Done path (shares `insightLine`).
+- Mermaid frame sandbox (review 2026-10-27, low, defence in depth): `sandbox="allow-scripts"` gives the frame an opaque origin, so its script loads lose the media cookie (SameSite) and the frame would 401; needs a ticketed script URL and `event.source` checks on both sides, driven in a browser. Mitigated today by `securityLevel: "strict"`, `htmlLabels: false`, the frame CSP and the blob `<img>`.
+- Calendar web links carry a plain note's opening as the details (`routes_reminders.calendar_links`, by design, `tests/test_reminder_calendar_links*.py`); the review asks whether that text should leave the machine or the menu should say so. Owner's call.
+- pdfpages page cache is not cleared on lock (registered with the singleton reset since 2026-10-27; routes are gated).
+
+## Placed from INBOX, 2026-10-27 (next PR)
+
+- 1416. **The owner, 2026-10-27, verbatim.** "also I wan the companion to have more biological actions, better, more and varied transitions between body potiotons, physical potions, behaviours and more. using its limbs, chaneges in head, tail, legs arms accessories etc. make it all very detailed and biological and natural". Recommendation: first fix the throw smoothness (agent on it in PR 204), then a pose graph in avatars.js: every pose change goes through a transition clip (no snaps), limbs, head, tail and accessories each get secondary motion (overlap, follow-through, settle), idle behaviours drawn from a weighted list (stretch, scratch, look around, sit, yawn, tail flick) with reduced motion honoured; measured by a per-frame sweep (p95 under 16 ms, zero snaps over 8 px).
+- 1417. **The owner, 2026-10-27, verbatim.** "if I make different spaces for different projects, and then Im in the all spaces space, dows the ai and composer have the ability and comprehension to be able to take that in as context and use with when relevant??" Answered: in All spaces the AI and composer read notes from every space not hidden from All, but nothing tells them which space a note is in (the workspace filter is a query criterion only, `core/database.py` `_add_workspace_filter`; no space name reaches a prompt or the composer). Recommendation: each cited note carries its space name in the model's context and the composer's lines when the view is All spaces; a question naming a space ("in my uni space") scopes retrieval to it; answers group by space when the sources span several.
+- 1339. **The owner, 2026-10-19, verbatim** (screenshot, dark: an Ask answer "You have ten notes about courses & study, 17 July to 15 October." whose theme paragraph reads "Your university notes share #university: your uni days this week are Tuesday, Cloud computing is the delivery of computing, I had three lectures for my cloud, ... and you linked your uni days this week are Tuesday to I had three lectures for my cloud.", while the dated lines below correctly say "On 17 July, your uni days the week of 13 July are Tuesday and Thursday."; Matching records cards beside it). "it is not this week anymore like said at the top of the composer"
+  For the next PR. Recommendation: the theme summary and link phrases go through the same relative-time rewrite as the dated lines ("this week" in a 17 July note becomes "the week of 13 July"); the summary also reads as clipped title fragments joined by commas, so it should name the shared theme and two or three topics, not chain note openings.
+- 1338. **The owner, 2026-10-19, verbatim** (screenshot, dark: a "Use AI" switch, off, with a sparkle icon and a "?" button). "this button should be disabled when the ai isnt available"
+  For the next PR. Recommendation: the switch is disabled with the reason as its description (no model set up) while no model is reachable, and comes back on its own when one is.

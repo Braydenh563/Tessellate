@@ -66,10 +66,10 @@ def preview(session: Session, parsed: dict, note_ids: list[int] | None = None) -
     return commands.plan(session, parsed, note_ids)
 
 
-def run(session: Session, steps: list[dict], skipped: list[dict] | None = None) -> dict:
+def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a card's steps through the agent's tools; the result carries the
-    inverse steps Undo runs."""
-    return commands.run(session, steps, skipped)
+    inverse steps Undo runs. `say` words the "Done" line (the composer's)."""
+    return commands.run(session, steps, skipped, say)
 
 
 def inverse(intent: str) -> str:

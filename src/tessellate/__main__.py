@@ -32,6 +32,16 @@ logger = logging.getLogger("tessellate.launcher")
 HOST = "127.0.0.1"  # local only: this is a private app
 
 
+def page_host() -> str:
+    """The name the window and browser open: `HOST`, or `<name>.localhost`
+    when `TESSELLATE_LOCAL_NAME` gives one. Browsers resolve every
+    `*.localhost` to loopback themselves (RFC 6761), so the friendly name
+    needs no DNS, hosts file or admin rights; the server still binds `HOST`."""
+    from tessellate.core import netbind
+
+    return netbind.local_name() or HOST
+
+
 def _port_from_env(raw: str | None = None) -> int:
     """The port the server binds, from TESSELLATE_PORT, default 8000.
 
@@ -102,9 +112,9 @@ _LOADING_HTML = """<!doctype html>
     gap: 18px; height: 100%; background: #12141c; color: #e7e9ee;
     font: 14px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
   }
-  .mark { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 600; }
+  .mark { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; }
   .mark svg { width: 46px; height: 46px; display: block; }
-  .tagline { color: #9aa1ad; font-size: 12px; margin-top: -10px; }
+  .tagline { color: #9aa1ad; font-size: 12px; margin-top: -12px; }
   /* The step list, the same one scripts/splash.ps1 draws before this
      window exists, so the handoff from that window to this one looks
      like the same list carrying on rather than a restart. */
@@ -1037,7 +1047,7 @@ def _boot_and_swap(window) -> None:
         # every launch 1.5s slower, and the missing splash it was aimed at is
         # the pre-Python one, which this page cannot be.
         _mark_start_step_done(window)
-        window.load_url(f"http://{HOST}:{PORT}")
+        window.load_url(f"http://{page_host()}:{PORT}")
         _focus_window(window)
     else:
         try:
@@ -1719,7 +1729,7 @@ def _open_window_onto(port: int) -> None:
     tray, no loading page (the server is already up). Shares the running
     window's storage, since the saved sign-in and theme belong to the one
     address both windows open. Closing it ends this process only."""
-    url = f"http://{HOST}:{port}"
+    url = f"http://{page_host()}:{port}"
     try:
         import webview
     except ImportError:
@@ -1731,7 +1741,7 @@ def _open_window_onto(port: int) -> None:
     from tessellate.core.config import resolved_data_dir
 
     window = webview.create_window(
-        "Tessellate Notes", url=url, width=1200, height=800, min_size=(420, 500), text_select=True
+        "Tessellate", url=url, width=1200, height=800, min_size=(420, 500), text_select=True
     )
     storage = resolved_data_dir() / "webview"
     storage.mkdir(parents=True, exist_ok=True)
@@ -1842,7 +1852,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
     _claim_notebook()
     _splash_status("Opening the window...")
     window = webview.create_window(
-        "Tessellate Notes",
+        "Tessellate",
         html=_loading_html(),
         width=1200,
         height=800,
@@ -2646,7 +2656,7 @@ def _capture() -> int:
     if state != "live":
         print("Tessellate is not running on this notebook. Start it, then capture again.")
         return 1
-    webbrowser.open(f"http://{HOST}:{running.port}/capture.html", new=1)
+    webbrowser.open(f"http://{page_host()}:{running.port}/capture.html", new=1)
     return 0
 
 
@@ -2753,7 +2763,7 @@ def main() -> None:
             # One server per data directory in browser mode as well: the
             # launcher scripts already open a browser onto a copy on their
             # own port, and this covers a copy on another port.
-            print(f"Tessellate is already running on this notebook: http://{HOST}:{running.port}")
+            print(f"Tessellate is already running on this notebook: http://{page_host()}:{running.port}")
             return
         _run_server_holding_lock()
 

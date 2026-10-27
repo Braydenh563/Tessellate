@@ -525,13 +525,13 @@ function pickMediaDialog() {
 
 // Turn the selection into a reminder, through the same parser the Reminders
 // tab's "magic add" box uses: not a second one.
-async function remindFromSelection(text) {
+async function remindFromSelection(text, entryId = null) {
   try {
     const reminder = await apiJson("/reminders/parse", {
       method: "POST",
       // Our clock, so "tomorrow evening" resolves against the time the user
       // can see rather than the server's UTC: same as magicAddReminder.
-      body: JSON.stringify({ text, tz_offset_minutes: -new Date().getTimezoneOffset() }),
+      body: JSON.stringify({ text, tz_offset_minutes: -new Date().getTimezoneOffset(), entry_id: entryId }),
     });
     reminderMadeUndo(reminder);
     toast(`Reminder set: ${relativeWhen(reminder.due_at)}.`);
@@ -586,11 +586,22 @@ function wrapFieldSelection(field, before, after) {
   el.setSelectionRange(start + before.length, start + before.length + text.length);
 }
 
+//: The note a selection was made in, so its reminder links back to it: the
+//: Notes list row holding the selection (or the editor field inside it), else
+//: the note page on a phone. null elsewhere (chat, a document), where the
+//: reminder stands alone.
+function selectionNoteId() {
+  const node = selectionPopupField?.el || window.getSelection()?.anchorNode;
+  const el = node && (node.nodeType === 1 ? node : node.parentElement);
+  const row = el?.closest?.("#entry-list li[data-id], .note-page-list li[data-id]");
+  return row ? Number(row.dataset.id) || null : null;
+}
+
 function selectionMenuItems() {
   const text = selectionPopupText;
   const source = selectionPopupSource;
-  const aiOff = modelStatus ? modelStatus.ollama_running === false : false;
-
+  //: Read now, while the selection stands: a press on the menu clears it.
+  const noteId = selectionNoteId();
   const items = [];
 
   // **Where highlighting is discovered** ("I still dont know how to highlight
@@ -667,30 +678,16 @@ function selectionMenuItems() {
         renderEntries();
       });
     }),
-    makeMenuItem("ph:bell Set a reminder", "Read a reminder out of the selection", () =>
-      remindFromSelection(text)
+    makeMenuItem("ph:bell Set a reminder", "Read a reminder out of the selection, linked to this note", () =>
+      remindFromSelection(text, noteId)
     )
   );
 
-  // AI-only, and disabled rather than hidden when the model is off, the same
-  // convention `data-needs-model` applies to every other AI action, so the
-  // capability stays discoverable and the reason is on the item itself.
-  // (That attribute is read from the markup by `syncModelGatedControls`, and
-  // these items are built fresh on every open, so they carry the state
-  // directly instead.)
+  // Never gated on a model (owner-1026b K3): with none, the preview splits
+  // the text by its own headings and paragraphs and says so.
   items.push(
-    makeMenuItem(
-      "ph:scissors Extract notes…",
-      aiOff
-        ? `Extracting notes needs the local AI. ${AI_OFFLINE_HINT}.`
-        : "Split this into one or more linked notes, with a preview first",
-      () => {
-        if (aiOff) {
-          toast("Extracting notes needs the local AI.", "info");
-          return;
-        }
-        openExtractPreview(text);
-      }
+    makeMenuItem("ph:scissors Extract notes…", "Split this into one or more linked notes, with a preview first", () =>
+      openExtractPreview(text)
     ),
     makeMenuItem("ph:chat-circle Ask Atlas about this", "Start a chat about the selection", () => {
       switchTab("chat");
@@ -898,6 +895,10 @@ function initSelectionPopup() {
   // still feels instant rather than delayed by the debounce.
   document.addEventListener("mouseup", (event) => {
     if (event.target.closest(".selection-popup")) return;
+    //: Letting go of the companion (pointer-captured, so it is the target)
+    //: selects nothing, and the read below forced a layout of 15 to 30ms in
+    //: the frame its throw was planned.
+    if (event.target.closest("#nm-buddy")) return;
     selectionPointerPoint = { x: event.clientX, y: event.clientY };
     syncSelectionPopup();
   });

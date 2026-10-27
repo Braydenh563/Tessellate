@@ -302,7 +302,8 @@ def test_a_fit_goes_into_the_canvas_the_person_can_see():
     assert 'const WB_FIT_OCCLUDERS = ["#wb-topbar", "#wb-tools-panel", "#wb-sidebar", "#wb-format"];' in js
     fit = _slice(js, "wbZoomToFit", 1800)
     assert "wbFreeArea(container)" in fit and "container.getBoundingClientRect()" not in fit
-    assert "wbFit.on = true" in fit
+    # Zoom to the selection (Shift+2) fits without refitting; every other fit refits.
+    assert "refit = true }" in fit and "wbFit.on = refit" in fit
     center = _slice(js, "wbCenterOn", 900)
     assert "wbFreeArea(container)" in center
     zoom = _slice(js, "handleWbZoom", 400)

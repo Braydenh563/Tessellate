@@ -52,6 +52,7 @@ LIBRARY_KEYS = {
     "Python standard library table": "pystdlib",
     "Atkinson Hyperlegible": "atkinson",
     "Mammoth": "mammoth",
+    "Mermaid": "mermaid",
     "docx": "docx",
     "draw.io stencils": "stencils",
     #: A download extra (Settings, Packages), not vendored JS: the engine, its
@@ -868,6 +869,20 @@ def mammoth_report(scripts: dict[str, str]) -> Report:
     return Report("mammoth", "Mammoth", list(MAMMOTH_API), called, {}, ["read in documents-word.js, a .docx brought into the Library"])
 
 
+#: Mermaid's public API (mermaid.esm default export), read in mermaid-frame.js.
+MERMAID_API = [
+    "initialize", "render", "parse", "run", "init", "detectType", "registerExternalDiagrams",
+    "registerLayoutLoaders", "registerIconPacks", "setParseErrorHandler", "contentLoaded",
+    "getRegisteredDiagramsMetadata", "mermaidAPI",
+]
+
+
+def mermaid_report(scripts: dict[str, str]) -> Report:
+    text = scripts.get("mermaid-frame.js", "")
+    called = [name for name in MERMAID_API if re.search(rf"\bmermaid\.{name}\b", text)]
+    return Report("mermaid", "Mermaid", list(MERMAID_API), called, {}, ["read in mermaid-frame.js, the diagram frame"])
+
+
 def docx_report(scripts: dict[str, str]) -> Report:
     text = scripts.get("documents-word.js", "")
     called = [name for name in DOCX_API if re.search(rf"\bD\.{name}\b", text)]
@@ -1043,6 +1058,7 @@ def collect() -> dict[str, Report]:
         flashtext_report(sources),
         stencils_report(scripts),
         mammoth_report(scripts),
+        mermaid_report(scripts),
         docx_report(scripts),
         translate_report(scripts),
     ]

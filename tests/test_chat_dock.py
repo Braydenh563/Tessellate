@@ -262,3 +262,14 @@ def test_agent_with_no_model_says_it_runs_the_apps_tools_only():
     assert "function showAgentNoModelHint(" in js and 'prefs.has("agentNoModelHint")' in js
     html = re.sub(r"<!--.*?-->", "", INDEX.read_text(encoding="utf-8"), flags=re.S)
     assert 'id="chat-agent-hint"' in html and 'role="status"' in html
+
+
+def test_web_on_with_the_panel_shut_opens_the_panel_rather_than_turning_off():
+    """The owner, 2026-10-26: with Web on, seeing the panel took off-then-on."""
+    wiring = (INDEX.parent / "js" / "wiring.js").read_text()
+    body = wiring[wiring.index("async function toggleWebSearch("):]
+    early = body[: body.index("const next =")]
+    assert "openFirst &&" in early and 'classList.contains("hidden")' in early and "toggleWebPanel(true);\n    return;" in early
+    # The button opens the panel first; the palette row always toggles.
+    handler = wiring[wiring.index('$("web-search-toggle").addEventListener'):][:300]
+    assert "toggleWebSearch({ openFirst: true })" in handler

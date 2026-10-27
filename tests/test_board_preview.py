@@ -304,3 +304,39 @@ def test_a_caption_steps_around_sketched_shapes_too():
     js = app_js_text()
     assert '    drawn.push({ item, x: nx, y: ny, w: size.w, h: size.h });' in js
     assert 'row.item.kind !== "sketch")' in js
+
+
+def test_a_straight_link_previews_as_a_line_between_what_it_joins(client):
+    """dog2 item 14: a link has no `d`, so it fell to the default box at the
+    origin and drew as a pen scribble. It is a line from one joined shape's
+    centre to the other's, and a rising one says so."""
+    board = client.post("/whiteboard/boards", json={"name": "Joined"}).json()
+
+    def sketch(data):
+        made = client.post(
+            "/whiteboard/sketches",
+            json={"board_id": board["id"], "x": 0, "y": 0, "z": 5, "data": data},
+        )
+        assert made.status_code in (200, 201), made.text
+        return made.json()["id"]
+
+    a = sketch('{"d": "M100 400 L220 400 L220 460 L100 460 Z", "shape": "rect"}')
+    b = sketch('{"d": "M500 100 L620 100 L620 160 L500 160 Z", "shape": "rect"}')
+    sketch(
+        '{"type": "link-straight", "sourceId": %d, "sourceKind": "sketch", '
+        '"targetId": %d, "targetKind": "sketch", "color": "#111111"}' % (a, b)
+    )
+    sketch('{"type": "link-straight", "sourceId": 99999, "sourceKind": "sketch", "targetPoint": {"x": 1, "y": 2}}')
+    # Level: centre (160, 430) to a free end at (700, 432).
+    sketch('{"type": "link-straight", "sourceId": %d, "sourceKind": "sketch", "targetPoint": {"x": 700, "y": 432}}' % a)
+
+    items = _row(client, board["id"])["preview_items"]
+    shapes = sorted(item.get("shape") for item in items)
+    # The dangling link (its source is gone) is left out, never a scribble.
+    assert shapes == ["line-flat", "line-rise", "rect", "rect"], items
+    line = next(item for item in items if item.get("shape") == "line-rise")
+    assert line["color"] == "#111111"
+    # Centre (160, 430) to centre (560, 130): it starts at the left shape's
+    # middle, so its box begins inside the left rectangle, not at the origin.
+    left = min((item for item in items if item.get("shape") == "rect"), key=lambda i: i["x"])
+    assert line["x"] > left["x"] and line["y"] < left["y"] + left["h"]

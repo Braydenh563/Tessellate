@@ -188,7 +188,11 @@ def _inferred(text: str) -> tuple[str, str] | None:
     for name, pattern in _INFERRED:
         found = pattern.search(text)
         if found:
-            return name, (found.group(1) if found.re.groups and found.group(1) else "")
+            arg = found.group(1) if found.re.groups and found.group(1) else ""
+            if name == "oldest" and not arg and not found.group(0).lower().endswith("notes"):
+                #: "my oldest note" is one note (INBOX 1357, class E: it listed five).
+                arg = "1"
+            return name, arg
     return None
 
 

@@ -1,30 +1,37 @@
-// semantic-notice.js: the first-time notice for search by meaning's automatic
-// install. Lazy (app.js `LAZY_MODULES.semanticNotice`), fetched by
-// `refreshBackgroundTasks` (status.js) only when /tasks lists an install the
-// app started itself (`auto: true`, core/extras.py), so the boot scripts carry
-// a few lines of it and nothing else.
+// semantic-notice.js: the one-time question before search by meaning is
+// downloaded. Lazy (app.js `LAZY_MODULES.semanticNotice`), reached from the
+// model status poll (status.js) only when /models/status says `semantic_offer`
+// (a save wanted the model, nothing is on this computer and the question is
+// still open), so the boot scripts carry a few lines of it and nothing else.
 //
-// The owner: "the user should be able to cancel or refuse the auto install of
-// sentence transformers when first downloading the app". The install is about
-// 2 GB and needs the internet, so the app says so the first time it begins one,
-// in DESIGN.md's toast recipe (a toast with its action and a close, kept up
-// until it is answered because the message stays true until the install ends),
-// and offers "Don't install". That cancels the job (POST /tasks/cancel), turns
-// the preference off (Settings, Search and index) and says what that left, with
-// an Undo that turns it back on and starts the install by hand.
+// The owner, 2026-10-27: nothing downloads without a yes. The model came from
+// huggingface.co on the first saved note, unasked. Now the app asks once, in
+// DESIGN.md's toast recipe (a toast with its actions and a close, kept up
+// until it is answered because the message stays true until then). Download
+// says yes and starts it as a Background task; No thanks, or closing the
+// notice, says no. Either answer is kept (`semantic_choice_made`, set by the
+// server when `semantic_auto_install` is written) and the question is not
+// asked again; Settings, Search and index holds the switch either way, and
+// search uses keywords meanwhile, with nothing shown as an error.
+
+//: What the question says. `moved` is the server's `semantic_engine_moved`
+//: (set when the old PyTorch copy of the model is on this computer): the
+//: engine changed, so say what the one download replaces and whether the
+//: notes are read again.
+function semanticQuestionText(moved) {
+  if (!moved) {
+    return "Search by meaning needs a one-time download of about 130 MB from huggingface.co and pypi.org. Keyword search works meanwhile.";
+  }
+  const notes =
+    moved.vectors === "kept"
+      ? "Your notes keep their search data and nothing is embedded again."
+      : "Your notes are read again in the background once it is here.";
+  return `The search engine moved. A one-time download of ${moved.download} from huggingface.co and pypi.org replaces the old one. ${notes} Keyword search works meanwhile.`;
+}
 
 //: The open notice and whether this page has shown one. A host object, not
 //: two top-level lets (tests/test_global_scope_ratchet.py).
 const SEMANTIC_NOTICE = { note: null, shown: false };
-const SEMANTIC_NOTICE_KEY = "mm-semantic-notice-seen";
-
-function semanticNoticeSeenBefore() {
-  try {
-    return prefs.get(SEMANTIC_NOTICE_KEY, "") === "1";
-  } catch (error) {
-    return false;
-  }
-}
 
 async function semanticSetAutoInstall(on) {
   prefsCache = await apiJson("/preferences", {
@@ -35,97 +42,86 @@ async function semanticSetAutoInstall(on) {
   if (box) box.checked = on;
 }
 
-async function semanticDecline(task) {
+async function semanticAnswer(on) {
   try {
-    await semanticSetAutoInstall(false);
-    await apiJson("/tasks/cancel", {
-      method: "POST",
-      body: JSON.stringify({ kind: "extra", name: task.name || "semantic" }),
-    });
+    await semanticSetAutoInstall(on);
   } catch (error) {
     toast(error.message, true);
     return;
   }
-  refreshBackgroundTasks();
+  if (on) {
+    toast("Downloading search by meaning in the background.");
+    refreshBackgroundTasks();
+    return;
+  }
   toastAction(
-    "Search by meaning will not be installed. Search uses keywords. Change this in Settings, Search and index.",
+    "Search uses keywords. Turn on Download search by meaning in Settings, Search and index whenever you like.",
     "Undo",
-    async () => {
-      try {
-        await semanticSetAutoInstall(true);
-        await apiJson("/extras/semantic/install", { method: "POST" });
-        toast("Installing search by meaning in the background.");
-        refreshBackgroundTasks();
-      } catch (error) {
-        toast(error.message, true);
-      }
-    },
+    () => semanticAnswer(true),
     { go: { settings: "searchindex", focus: "pref-semantic-auto-install" } }
   );
 }
 
-//: Called on every poll that lists an automatic install, and once with null
-//: when the notice is open and the install has gone (finished, failed or
-//: stopped elsewhere), which closes it.
-function semanticInstallNotice(task) {
+//: Called on every status poll with the server's `semantic_offer` (and its
+//: `semantic_engine_moved`), and with
+//: false when the notice is open and the question has been answered
+//: elsewhere (Settings), which closes it.
+function semanticOffer(offered, moved) {
   const open = SEMANTIC_NOTICE.note;
-  if (!task) {
+  if (!offered) {
     if (open && open.isConnected) dismissToast(open);
     SEMANTIC_NOTICE.note = null;
     return;
   }
-  if (SEMANTIC_NOTICE.shown || semanticNoticeSeenBefore()) return;
+  if (SEMANTIC_NOTICE.shown) return;
   SEMANTIC_NOTICE.shown = true;
-  try {
-    prefs.set(SEMANTIC_NOTICE_KEY, "1");
-  } catch (error) {
-    // The in-memory flag still holds for this page.
-  }
   const note = document.createElement("div");
   note.className = "toast semantic-install-toast";
   const text = document.createElement("span");
   text.className = "toast-msg";
-  text.textContent =
-    "Installing search by meaning (about 2 GB). Keyword search works meanwhile.";
-  const decline = document.createElement("button");
-  decline.type = "button";
-  decline.className = "small toast-action";
-  decline.textContent = "Don't install";
-  decline.addEventListener("click", () => {
+  text.textContent = semanticQuestionText(moved);
+  const answer = (on) => {
     dismissToast(note);
     SEMANTIC_NOTICE.note = null;
-    semanticDecline(task);
-  });
-  note.append(text, toastActions(decline), toastCloseButton(note, null));
+    semanticAnswer(on);
+  };
+  const yes = document.createElement("button");
+  yes.type = "button";
+  yes.className = "small toast-action";
+  yes.textContent = "Download";
+  yes.addEventListener("click", () => answer(true));
+  const no = document.createElement("button");
+  no.type = "button";
+  no.className = "small toast-action";
+  no.textContent = "No thanks";
+  no.addEventListener("click", () => answer(false));
+  const close = toastCloseButton(note, null);
+  //: Closing is a no, the answer that touches nothing (as the update question).
+  close.addEventListener("click", () => semanticSetAutoInstall(false).catch(() => {}));
+  note.append(text, toastActions(yes, no), close);
   const host = toastHost();
   toastStack(host, () => host.appendChild(note));
   SEMANTIC_NOTICE.note = note;
 }
 
-//: The same choice on the welcome card (onboarding.js), where the first
+//: The same question on the welcome card (onboarding.js), where the first
 //: diagnostics are read: the package is missing, so say what happens and let
-//: the person decide before the app starts the download. One button that
-//: states the other answer to the one the preference holds now.
+//: the person decide before anything is downloaded. Only while the question
+//: is open; an answered one is Settings' to change.
 async function semanticOnboardingOffer(box) {
   const prefs = await apiJson("/preferences", { silent: true }).catch(() => null);
   if (!prefs || !box.isConnected || $("onboarding-overlay").classList.contains("hidden")) return;
-  const refusing = prefs.semantic_auto_install !== false;
+  if (prefs.semantic_choice_made || prefs.semantic_auto_install) return;
   const button = smallButton(
-    refusing ? "Don't install search by meaning" : "Install search by meaning",
-    refusing
-      ? "Search by meaning is a one-time download of about 2 GB. Skip it and search uses keywords."
-      : "Search uses keywords now. Install search by meaning (about 2 GB, once) in the background.",
+    "Download search by meaning",
+    prefs.semantic_engine_moved
+      ? semanticQuestionText(prefs.semantic_engine_moved)
+      : "A one-time download of about 130 MB from huggingface.co and pypi.org. Until then search uses keywords.",
     async () => {
       button.disabled = true;
       try {
-        await semanticSetAutoInstall(!refusing);
-        if (refusing) {
-          await apiJson("/tasks/cancel", { method: "POST", body: JSON.stringify({ kind: "extra", name: "semantic" }) });
-          button.textContent = "Search by meaning will not be installed";
-        } else {
-          await apiJson("/extras/semantic/install", { method: "POST" });
-          button.textContent = "Installing in the background";
-        }
+        await semanticSetAutoInstall(true);
+        button.textContent = "Downloading in the background";
       } catch (error) {
         button.disabled = false;
         toast(error.message, true);

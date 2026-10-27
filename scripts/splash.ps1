@@ -175,20 +175,23 @@ try {
 
   $form                 = New-Object System.Windows.Forms.Form
   $form.FormBorderStyle = "None"
-  $form.StartPosition   = "CenterScreen"
+  # Placed before it shows (the owner, 2026-10-26: "a little visual loading
+  # glitch on startup"): CenterScreen centred it on the whole screen and a
+  # Shown handler then moved it above the taskbar, a visible jump. Now it is
+  # centred in the working area of the screen under the pointer from the start.
+  $form.StartPosition   = "Manual"
   $form.Size            = New-Object System.Drawing.Size($WIDTH, $HEIGHT)
+  $area = [System.Windows.Forms.Screen]::FromPoint([System.Windows.Forms.Cursor]::Position).WorkingArea
+  $form.Location = New-Object System.Drawing.Point(
+    [int]($area.X + [Math]::Max(0, ($area.Width - $WIDTH) / 2)),
+    [int]($area.Y + [Math]::Max(0, ($area.Height - $HEIGHT) / 2)))
   $form.BackColor       = $bg
   $form.TopMost         = $true
   $form.ShowInTaskbar   = $true
-  $form.Text            = "Starting Tessellate Notes"
-  # Centred in the working area (above the taskbar) at the size it keeps; on
-  # a screen shorter than the window its top stays on screen.
-  $form.Add_Shown({
-    $area = [System.Windows.Forms.Screen]::FromControl($form).WorkingArea
-    $left = [int]($area.X + [Math]::Max(0, ($area.Width - $form.Width) / 2))
-    $top  = [int]($area.Y + [Math]::Max(0, ($area.Height - $form.Height) / 2))
-    $form.Location = New-Object System.Drawing.Point($left, $top)
-  })
+  $form.Text            = "Starting Tessellate"
+  # Invisible until the first status read has filled the rows and the bar
+  # (the Shown handler below), so the first frame is never an empty card.
+  $form.Opacity         = 0
   $form.Region          = New-RoundRegion $WIDTH $HEIGHT 18
   # Double buffered (C38, the owner: "the splash popup flickers quite a bit").
   # `DoubleBuffered` is a protected property, so it is set through reflection;
@@ -221,13 +224,9 @@ try {
 
   $centre = [System.Drawing.ContentAlignment]::MiddleCenter
 
-  # The name with a small "notes" beside it (the owner, 2026-10-12: the
-  # name alone read like a game), drawn as one lockup: two Labels padded
-  # their text differently and sat "notes" off the name's baseline, with a
-  # gap wider than a word space (owner, 2026-10-12: "looks awkward").
-  # One panel draws both on a shared baseline, a word space apart.
+  # The name alone, centred under the mark and over the tagline (the owner,
+  # 2026-10-27: the small word beside it made the lockup lopsided).
   $titleFont = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]17), ([System.Drawing.FontStyle]::Bold)
-  $noteFont  = New-Object System.Drawing.Font -ArgumentList "Segoe UI", ([float]12)
   $title           = New-Object System.Windows.Forms.Panel
   $title.Location  = New-Object System.Drawing.Point(0, 94)
   $title.Size      = New-Object System.Drawing.Size($WIDTH, 34)
@@ -235,20 +234,16 @@ try {
   $title.Add_Paint({
     param($sender, $e)
     $g = $e.Graphics
-    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+    # Greyscale antialiasing: ClearType's colour fringes showed round the
+    # bold name on this transparent panel (the owner, 2026-10-26: "that
+    # notes on the tessellate isnt clean for the splash").
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
     $fmt = [System.Drawing.StringFormat]::GenericTypographic
     $nameW = $g.MeasureString("Tessellate", $titleFont, 1000, $fmt).Width
-    $noteW = $g.MeasureString("notes", $noteFont, 1000, $fmt).Width
-    $gap   = $g.MeasureString(" ", $noteFont).Width * 0.6
-    $x = ($WIDTH - $nameW - $gap - $noteW) / 2
-    # Baseline: the cell ascent in pixels, per font.
-    $asc = { param($f) $f.SizeInPoints * $g.DpiY / 72 * $f.FontFamily.GetCellAscent($f.Style) / $f.FontFamily.GetEmHeight($f.Style) }
-    $base = 2 + (& $asc $titleFont)
-    $inkBrush  = New-Object System.Drawing.SolidBrush $ink
-    $noteBrush = New-Object System.Drawing.SolidBrush $muted
-    $g.DrawString("Tessellate", $titleFont, $inkBrush, [float]$x, [float]($base - (& $asc $titleFont)), $fmt)
-    $g.DrawString("notes", $noteFont, $noteBrush, [float]($x + $nameW + $gap), [float]($base - (& $asc $noteFont)), $fmt)
-    $inkBrush.Dispose(); $noteBrush.Dispose()
+    $x = ($WIDTH - $nameW) / 2
+    $inkBrush = New-Object System.Drawing.SolidBrush $ink
+    $g.DrawString("Tessellate", $titleFont, $inkBrush, [float]$x, [float]2, $fmt)
+    $inkBrush.Dispose()
   })
 
   $tag             = New-Object System.Windows.Forms.Label
@@ -716,7 +711,7 @@ try {
 
   $timer          = New-Object System.Windows.Forms.Timer
   $timer.Interval = 250
-  $timer.Add_Tick({
+  $refresh = {
     try {
       if ((Get-Date) -gt $deadline) { $form.Close(); return }
       if (-not (Test-Path -LiteralPath $StatusFile)) {
@@ -777,6 +772,13 @@ try {
       if ($failedStep.Count -gt 0) { Show-ErrorCard $failedStep[0] } else { Set-Layout }
     } catch {
     }
+  }
+  $timer.Add_Tick($refresh)
+  $form.Add_Shown({
+    & $refresh
+    $st.shown = $st.target
+    $barFill.Width = [int]([Math]::Max(4, $BAR_W * $st.shown))
+    $form.Opacity = 1
   })
   $timer.Start()
 

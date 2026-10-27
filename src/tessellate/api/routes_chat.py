@@ -21,7 +21,7 @@ import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from itertools import chain
 from pathlib import Path
 from typing import Annotated, Literal
@@ -33,7 +33,8 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import budget as run_budget, capability, composer, composer_digest, composer_frame, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
     agent,
@@ -64,6 +65,7 @@ from tessellate.ai.grounding import (
     support as grounding_support,
 )
 from tessellate.ai.ollama_client import OllamaError
+from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
 from tessellate.core import activity, deps, docview, model_gate
 from tessellate.core.database import (
@@ -87,6 +89,7 @@ from tessellate.core.imagesize import image_size
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry import manager
 from tessellate.entry.manager import UNCATEGORISED
+from tessellate.search import engine
 from tessellate.search import chunks as search_chunks
 from tessellate.search import search_manager
 from sqlalchemy import func
@@ -372,8 +375,18 @@ class PlanRun(BaseModel):
     steps: list[str] = Field(min_length=1, max_length=skills.MAX_STEPS)
 
 
+class ScreenBody(BaseModel):
+    """What the person is looking at and just did, sent small and local with an
+    Ask, Chat or Guide request (`ai/composer_aware.py`). Ids, not names: the
+    server names a note or document only when it is a plain one."""
+
+    tab: str | None = Field(default=None, max_length=40)
+    open_doc_id: int | None = None
+    actions: list[str] = Field(default_factory=list, max_length=10)
+
+
 class ChatRequest(BaseModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=20000)
     #: Answer from the notebook as it stood at the end of this day
     #: (WORLD_CLASS_PLAN I5, row 23). Read, never act: the turn runs without
     #: tools, which would read and change the notebook as it is now.
@@ -522,10 +535,16 @@ class ChatRequest(BaseModel):
     #: Literal, because the switch's stored value reaches here as read off the
     #: device and an unknown word must mean the default, not a 422.
     answer_from: str | None = Field(default=None, max_length=16)
+    #: A side fetch of the other answer to the question just asked (K26: the
+    #: Ask box's "From your notes" under an AI answer): read-only, so it is
+    #: not saved as a second turn in Ask history, and always the composed one.
+    peek: bool = False
     #: "Try again" on the same question (CHAT_PLAN decision 34): the how-many-
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
     attempt: int = Field(default=0, ge=0, le=10_000)
+    #: The screen and the last few actions (composer awareness, 2026-10-25).
+    screen: ScreenBody | None = None
 
 
 def _apply_scope(session: Session, body: ChatRequest) -> None:
@@ -572,6 +591,13 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
             body.note_ids = [body.open_note_id]
         elif body.open_category:
             body.note_ids = _category_note_ids(session, body.open_category)
+    elif body.open_note_id and composer_open.kind(body.question):
+        #: "What's left to do?" with a note open is about that note (the
+        #: 22-10 bug doc: Ask gave one reply for every note), unless the
+        #: question names something the note does not hold.
+        opened = _attached_notes(session, [body.open_note_id])
+        if opened and composer_open.reads_note(body.question, {"content": opened[0].content}):
+            body.note_ids = [body.open_note_id]
     else:
         names = list(session.execute(select(Category.name)).scalars())
         named = composer_digest.named_category(body.question, names)
@@ -913,6 +939,49 @@ def _attached_documents(session: Session, document_ids: list[int]) -> list[Docum
 ATTACHED_FILE_CHARS = 12000
 
 
+#: The words of a title that do not name it: a kind, or too common to.
+_TITLE_FILLER = frozenset(
+    "a an the my of on in for and to with board boards whiteboard map maps mind mindmap document documents doc docs "
+    "note notes untitled new copy".split()
+)
+_KIND_SAID = re.compile(r"\b(?:(?:white)?boards?|mind ?maps?|maps?|documents?|docs?)\b", re.I)
+
+
+def _title_words(text: str) -> set[str]:
+    return {w.rstrip("s") for w in re.findall(r"[a-z0-9]+", (text or "").lower()) if len(w) > 2}
+
+
+def _named_sources(session: Session, question: str) -> tuple[list, list[int]]:
+    """Documents, boards and maps the question names by their title (INBOX
+    1357, class F: "what's on my revision board" found nothing, because the
+    note search reads notes only). A title counts as named when every word
+    of it that names it is in the question, and the question either says a
+    kind ("board", "map", "document") or the title has two such words, so a
+    one-word title does not match every question that uses the word. At most
+    three; the newest first."""
+    asked = _title_words(question)
+    if not asked or len(question or "") > 300:
+        return [], []
+    says_kind = bool(_KIND_SAID.search(question or ""))
+
+    def named(title: str) -> bool:
+        words = {w for w in _title_words(title) if w not in {f.rstrip("s") for f in _TITLE_FILLER}}
+        return bool(words) and words <= asked and (says_kind or len(words) >= 2)
+
+    documents = [
+        d for d in session.scalars(
+            select(Document).where(Document.deleted_at.is_(None)).order_by(Document.updated_at.desc()).limit(400)
+        ) if named(d.title or "")
+    ][:3]
+    boards = [
+        e.id for e in session.scalars(
+            select(Entry).where(Entry.is_board == True, Entry.is_deleted == False, Entry.is_private == False)  # noqa: E712
+            .order_by(Entry.created_at.desc()).limit(400)
+        ) if named(manager.extract_title(e.content) or "")
+    ][:3]
+    return documents, boards
+
+
 def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
     """The Library files the user attached, as note-shaped context rows.
 
@@ -999,16 +1068,21 @@ def _attached_boards(session: Session, board_ids: list[int]) -> list[dict]:
         outline = "\n".join(lines) if lines else "(empty: no nodes yet)"
         if len(outline) > ATTACHED_MAP_CHARS:
             outline = outline[:ATTACHED_MAP_CHARS] + "\n[…truncated]"
+        #: A board is said as a board (INBOX 744: "a board must say board").
+        is_map = board_type == "map"
         found.append(
             {
                 "id": board_id,
                 "content": (
-                    f"Mind map: {title}\n"
-                    f"({len(objects)} node{'' if len(objects) == 1 else 's'}, "
-                    f"laid out as a {board_type})\n\n{outline}"
+                    f"{'Mind map' if is_map else 'Board'}: {title}\n"
+                    f"({len(objects)} {'node' if is_map else 'item'}{'' if len(objects) == 1 else 's'}"
+                    + (f", laid out as a {board_type})" if is_map else ")") + f"\n\n{outline}"
                 ),
-                "category": "Mind map",
-                "kind": "map",
+                "category": "Mind map" if is_map else "Board",
+                "kind": "map" if is_map else "board",
+                #: Its own day, so a newer note on the same thing is not
+                #: set aside for a board that says none (`supersede`).
+                "created_at": entry.created_at.isoformat() if entry.created_at else None,
                 "attached": True,
                 "connected": False,
                 "match_info": None,
@@ -1031,7 +1105,8 @@ def _outline_into(nodes: list[dict], depth: int, out: list[str]) -> None:
     """
     for node in nodes:
         text = node["text"] or "(untitled)"
-        mark = "" if node["kind"] == "topic" else f" [{node['kind']}]"
+        #: A plain text box says nothing by its kind; a shape or a link does.
+        mark = "" if node["kind"] in ("topic", "text") else f" [{node['kind']}]"
         out.append(f"{'  ' * depth}- {text}{mark}")
         _outline_into(node["children"], depth + 1, out)
 
@@ -1472,8 +1547,15 @@ def _worked_out(question: str):
     Translating is a model's job when one runs: that one is chat."""
     from tessellate.ai import utilities
 
+    kind = utilities.kind_of(question)
+    if kind == "weather" and (deps.get_ollama().is_running() or utilities.web_on()):
+        #: "The weather is not something this app knows" is the answer only with
+        #: no model and no web; with either, the turn is a general question and
+        #: goes to them (the owner, 2026-10-27: a weather follow-up came back
+        #: from the composer with a model up and Web on).
+        return intent.NOTES, None
     worked = None
-    if utilities.kind_of(question) != "translate" or not deps.get_ollama().is_running():
+    if kind != "translate" or not deps.get_ollama().is_running():
         now = user_now(deps.get_config())
         worked = composer.compose(question, [], today=now.date(), now=now.replace(tzinfo=None))
     if worked and worked["shape"] == "utility":
@@ -1494,6 +1576,17 @@ def _from_records(question: str, session: Session):
     return records.answer(question, session, now=user_now(config), data_dir=config.data_dir)
 
 
+def _activity(session: Session, question: str):
+    """**What the person did in a window, every kind** (owner-1026b K20):
+    notes, documents, boards, maps and reminders made, edited, binned or
+    ticked off, read from the rows (`ai/activity.py`); None when the
+    question is not an own-activity question with a window."""
+    from tessellate.ai import activity
+
+    now = user_now(deps.get_config())
+    return activity.answer(question, session, now=now) or activity.boards(question, session, now)
+
+
 def _computed_answer(session: Session, question: str, detected: str, as_of, attached: list) -> tuple[str, object]:  # noqa: ANN001
     #: **A question about the notebook's shape is answered by counting it**
     #: ("what are my most common tags", "categories with the most notes").
@@ -1504,6 +1597,9 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     #: rows; the model still writes the sentence when it runs (the answer is
     #: handed to it as ground truth), and with the model stopped the computed
     #: sentence is a complete answer on its own.
+    stats = _activity(session, question) if as_of is None and not attached else None
+    if stats is not None:
+        return intent.NOTES, stats
     stats = notebook_stats.answer_chat(question, session) if detected == intent.NOTES and as_of is None else None
     if detected == intent.UTILITY:
         detected, stats = _worked_out(question)
@@ -1518,7 +1614,7 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
     #: which five notes ranked by likeness never were.
     asked = composer.plan(question, user_now(deps.get_config()).date())
     if asked.kind == "recall" and asked.window:
-        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1])
+        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=question_noise.asks_archived(question))
         found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
     elif asked.window and found.entries:
         #: **A subject inside a window keeps the window** (1324): "what did I
@@ -1531,6 +1627,23 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
             found.when_phrase = found.when_phrase or asked.window_phrase
 
 
+def _with_each_side(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """A comparison needs both things in hand: a search for "Lisbon vs Porto"
+    can fill its few slots with one side, so each side is searched on its own
+    and the best of each is added."""
+    sides = composer.compare_sides(question)
+    if not sides:
+        return entries
+    merged = list(entries)
+    seen = {e.id for e in merged}
+    for side in sides:
+        for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
+            if entry.id not in seen:
+                seen.add(entry.id)
+                merged.append(entry)
+    return merged
+
+
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
@@ -1540,6 +1653,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         locale=locale,
     )
     entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
+    entries = _with_each_side(session, question, entries, locale)
     found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
@@ -1660,6 +1774,7 @@ def _document_row(document) -> dict:  # noqa: ANN001
     return {
         "id": document.id,
         "content": f"{document.title}\n\n{document.content}",
+        "created_at": document.created_at.isoformat() if document.created_at else None,
         "category": "Document",
         "kind": "document",
         "attached": True,
@@ -1778,6 +1893,89 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
         note["match_info"] = match_info.get(note["id"])
 
 
+def _named_rows(session: Session, question: str) -> list[dict]:
+    """A document, board or map the question names by title, read first as
+    itself (not as an attachment the person picked)."""
+    named_docs, named_boards = _named_sources(session, question)
+    #: Said by its title and words, as a note is (`_board_rows`).
+    boards = _board_rows(_attached_boards(session, named_boards))
+    named = [_document_row(d) for d in named_docs] + boards
+    for row in named:
+        row["attached"] = False
+        row["named"] = True
+    return named
+
+
+#: How many boards, maps and documents a question's words may bring in.
+MATCHED_SOURCES = 3
+
+
+def _holds_every(text: str, terms: list[str]) -> bool:
+    """Every term is a word (or the start of one) in `text`."""
+    words = re.findall(r"[a-z0-9]+", (text or "").lower())
+    return all(any(w.startswith(t.lower()) for w in words) for t in terms)
+
+
+def _board_rows(boards: list[dict], terms: list[str] | None = None) -> list[dict]:
+    """Attached-board rows said as notes are: the title and its words, without
+    the "Mind map: X (4 nodes)" head that is for a model. With `terms`, only
+    those holding every term."""
+    kept = []
+    for row in boards:
+        head, _, outline = row["content"].partition("\n\n")
+        title = head.split(": ", 1)[-1].splitlines()[0]
+        if terms is not None and not _holds_every(f"{title} {outline}", terms):
+            continue
+        row["content"] = f"# {title}\n\n{outline}"
+        kept.append(row)
+    return kept
+
+
+def _holding(session: Session, hits: list, terms: list[str], skip: set[tuple[str, int]]) -> tuple[list, list[int]]:
+    """The documents and board ids among search `hits` not yet in, a document
+    kept only where its text holds every term."""
+    docs, boards = [], []
+    for hit in hits:
+        if ("document" if hit.kind == "document" else "board", hit.ref_id) in skip:
+            continue
+        doc = session.get(Document, hit.ref_id) if hit.kind == "document" else None
+        if doc is not None and doc.deleted_at is None and _holds_every(f"{doc.title} {doc.content}", terms):
+            docs.append(doc)
+        elif hit.kind != "document":
+            boards.append(hit.ref_id)
+    return docs, boards
+
+
+def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -> list[dict]:
+    """Boards, maps and documents whose own words hold the question's words
+    (composer work list 1: "tell me about IaaS" found nothing when IaaS was a
+    node on a map, because the note search reads notes). Found by the one
+    search index, then kept only where every term is really in the text, so a
+    partial match does not bring a source in. Read as the named ones are, so
+    the answer says the kind ("on your Cloud map"). `skip` holds
+    (document or board, id) pairs already in."""
+    terms = [t for t in search_manager._meaningful_terms(question or "") if t not in composer._ASKING_WORDS]  # noqa: SLF001
+    if not terms or len(question or "") > 300:
+        return []
+    hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)
+    docs, boards = _holding(session, hits, terms, skip)
+    rows = [_document_row(d) for d in docs] + _board_rows(_attached_boards(session, boards), terms)
+    for row in rows:
+        row["attached"] = False
+        row["named"] = True
+    return rows[:MATCHED_SOURCES]
+
+
+def _with_sources(session: Session, question: str, notes: list[dict], mode: str) -> list[dict]:
+    """The notes with the boards, maps and documents the question names or
+    whose words hold it. Where the note search found nothing by its words, a
+    source that holds them leads; where it did, the notes lead and it follows."""
+    named = _named_rows(session, question)
+    taken = {("document" if r["kind"] == "document" else "board", r["id"]) for r in named}
+    matched = _matched_rows(session, question, taken)
+    return named + (matched + notes if mode in ("recent", "none") else notes + matched)
+
+
 def _prepare(
     session: Session,
     question: str,
@@ -1790,6 +1988,7 @@ def _prepare(
     surface: str = ASK_SURFACE,
     as_of: "date | None" = None,
     locale: str | None = None,
+    skip_search: bool = False,
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -1798,6 +1997,7 @@ def _prepare(
     nothing to search for, and searching anyway is what made "hey" come back
     with a list of notes.
     """
+    recognise.note_locale(locale)  # the browser's own language and region: which half of the year "summer" is
     attached = _attached_notes(session, note_ids or [])
     attached_docs = _attached_documents(session, document_ids or [])
     attached_files = _attached_files(session, file_ids or [])
@@ -1805,11 +2005,17 @@ def _prepare(
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
     detected, stats = _computed_answer(session, question, detected, as_of, attached)
     found = _Found(detected=detected, stats=stats)
-    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
-    _rewind_as_of(session, question, found, as_of, locale)
+    #: `skip_search`: the app's own reader has already answered this turn (a
+    #: plan, a countdown, a quiz), so the search and the hydration of every
+    #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
+    if not skip_search:
+        _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
+        _rewind_as_of(session, question, found, as_of, locale)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
+    if not (attached or attached_docs or attached_files or attached_boards or skip_search) and found.stats is None and as_of is None:
+        notes = _with_sources(session, question, notes, found.mode)
     config = deps.get_config()
 
     # Every entry this question surfaced counts as "used".
@@ -2129,6 +2335,9 @@ class _StreamRequest:
     #: The whole of a question longer than `composer.PLAN_CHARS`, which only the
     #: model and the saved turn read; `question` is what the app plans over.
     full_question: str | None = None
+    #: Why the web search could not run this turn ("" when it ran): the
+    #: reply then names the service and links its setting (`composer_web`).
+    web_down: str = ""
 
 
 def _in_full(req: _StreamRequest) -> str:
@@ -2152,6 +2361,18 @@ def _answer_voice() -> str:
     except Exception:  # noqa: BLE001  # no preference is the default voice
         return "natural"
     return value if value in ("natural", "professional", "playful", "plain") else "natural"
+
+
+def _chat_voice(req: _StreamRequest) -> str:
+    """The voice this turn is composed in: the Settings choice, unless it is
+    the default and the chat's persona asks for another by its own words
+    ("a witty pirate" is playful, a precise archivist formal; CHAT_PLAN
+    1353). The built-in persona asks for nothing."""
+    chosen = _answer_voice()
+    prompt = req.persona_prompt
+    if chosen != "natural" or not prompt or str(prompt).startswith(str(librarian.DEFAULT_PERSONA)):
+        return chosen
+    return composer_compose.persona_cue(prompt) or chosen
 
 
 def _insight_level() -> str:
@@ -2228,6 +2449,7 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
         composed = composer.compose(
             req.question, prepared["notes"], today=user_now(deps.get_config()).date(), recent=recent, embed=embed,
             voice=_composer_voice(),
+            register=_chat_voice(req),
         )
         packed = composer.brief(req.question, prepared["notes"], recent=recent, embed=embed, composed=composed)
     except Exception:  # noqa: BLE001  # the model answers from the notes as they are
@@ -2291,6 +2513,13 @@ def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
     return pages
 
 
+def _home_place(config) -> str:  # noqa: ANN001
+    """The person's city, read off their reported timezone ("Australia/Brisbane"
+    is Brisbane), for a local web search; "" for none or a bare zone (UTC)."""
+    name = str(config.get_preference("timezone", "") or "").strip()
+    return name.rsplit("/", 1)[-1].replace("_", " ") if "/" in name and not name.startswith("Etc/") else ""
+
+
 def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] | None:
     """An answer composed from web pages (CHAT_PLAN decision 37, the second
     half): the search the agent's `web_search` uses, the top pages read as
@@ -2301,10 +2530,11 @@ def _web_answer(req: _StreamRequest, question: str) -> tuple[dict, list[dict]] |
     config = deps.get_config()
     searxng_url, provider = websearch.settings_from(config)
     try:
-        results = websearch.search_web(composer_digest.web_query(question), limit=5, searxng_url=searxng_url or None, provider=provider)
+        results = websearch.search_web(composer_digest.web_query(question, _home_place(config)), limit=5, searxng_url=searxng_url or None, provider=provider)
     except websearch.WebSearchError as exc:
         #: One line: a refused optional service (SearXNG not running) is not a bug.
         logging.getLogger("tessellate.chat").info("chat: web search failed for a composed answer: %s", exc)
+        req.web_down = str(exc)
         return None
     pages = _web_pages(websearch, results)
     if not pages:
@@ -2391,23 +2621,25 @@ def _count_lead(result: dict, args: dict, counted: str) -> str:
     return lead
 
 
-def _counted_lead(req: _StreamRequest, asked: str) -> str:
-    """"how many notes do I have about work": a figure, not a quote."""
+def _counted_lead(req: _StreamRequest, asked: str) -> tuple[str, dict]:
+    """"how many notes do I have about work": a figure, not a quote, with
+    the counts it was said from (`fact_check.result_counts`)."""
     from tessellate.ai import tools as agent_tools
 
     counted = composer_lists.counted_filing(asked)
     if counted is None:
-        return ""
+        return "", {}
     for args in ({"category": counted}, {"tag": counted}) if counted else ({},):
         result = agent_tools.execute_tool(req.session, "count_notes", args)
         if isinstance(result, dict) and (result.get("total") or result.get("count")) and not result.get("error"):
-            return _count_lead(result, args, counted)
-    return ""
+            return _count_lead(result, args, counted), fact_check.result_counts("count_notes", result)
+    return "", {}
 
 
-def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
+def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> tuple[str, str, dict]:
     """"list my work notes": the Work notes, or the notes tagged work
-    (ledger row 442); a name that is neither is the composer's."""
+    (ledger row 442), as (lead, the list under it, its counts); a name that
+    is neither is the composer's ("", "", {})."""
     from tessellate.ai import commands, tool_say
     from tessellate.ai import tools as agent_tools
 
@@ -2416,26 +2648,51 @@ def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> str:
         args = {key: filed}
         result = agent_tools.execute_tool(req.session, "list_notes", args)
         if isinstance(result, dict) and result.get("total_matching"):
-            return tool_say.say("list_notes", result, args, now.date())["text"]
-    return ""
+            said = tool_say.say("list_notes", result, args, now.date())
+            return said["lead"], "\n\n".join(p for p in (said["body"], said["chips"]) if p), fact_check.result_counts("list_notes", result)
+    return "", "", {}
+
+
+def _said_events(lead: str, rest: str = "", counts: dict | None = None) -> list[dict]:
+    """An engine answer as its lead and, apart, the list under it: the same
+    text as one answer, but a model that writes the lead (decision 75) keeps
+    the list as the engine drew it (`_fact_events`, the `attached` flag),
+    and its words are checked against the counts the lead was said from
+    (`counts`). Both marks are the server's own, taken off in `_relay_events`."""
+    if not lead:
+        return [{"type": "answer", "delta": rest}] if rest else []
+    first = {"type": "answer", "delta": lead, **({"counts": counts} if counts else {})}
+    return [first, *([{"type": "answer", "delta": f"\n\n{rest}", "attached": True}] if rest else [])]
 
 
 def _filed_or_counted_events(req: _StreamRequest, asked: str, now: datetime) -> list[dict]:
     """A filed listing or a count of notes, said from the tool's figures;
     empty when the sentence is neither."""
-    text = _filed_said(req, asked, now) or _counted_lead(req, asked)
-    return [{"type": "answer", "delta": text}] if text else []
+    lead, rest, counts = _filed_said(req, asked, now)
+    if lead:
+        return _said_events(lead, rest, counts)
+    lead, counts = _counted_lead(req, asked)
+    return _said_events(lead, counts=counts)
 
 
 def _reminder_window(asked: str, now: datetime) -> tuple | None:
-    """(phrase, first day, last day) of the window a reminders question names."""
-    window = composer.plan(asked, now.date())
+    """(phrase, first day, last day) of the window a reminders question names.
+    What is due is read forwards (`composer_plan.window`: "tomorrow", "next
+    week", "on friday", "the next 3 days", "this week" to Sunday); a window
+    in the past ("last week") is the recall plan's."""
+    today = now.date()
+    window = composer.plan(asked, today)
+    ahead = composer_plan.window(asked, today)
+    if ahead:
+        start, end, phrase = ahead
+        #: "this week" keeps the days already gone: what was due on Monday
+        #: and is still waiting is this week's.
+        if phrase in ("this week", "this month") and window.window and window.window_phrase == phrase:
+            start = min(start, window.window[0])
+        return phrase, start, end
     if not (window.window and window.window_phrase):
         return None
     start, end = window.window
-    if window.window_phrase == "this week":
-        #: A recall window stops at today; what is due runs to Sunday.
-        end = max(end, start - timedelta(days=start.weekday()) + timedelta(days=6))
     return window.window_phrase, start, end
 
 
@@ -2473,8 +2730,10 @@ def _tool_read_events(req: _StreamRequest, notes: list | None = None) -> list[di
             drawn = None
     said = tool_say.say(got.tool, result, say_args, now.date())
     chart = drawn["chart"] if drawn else None
-    parts = (said["lead"], "" if chart else said["body"], said["chips"])
-    out = [{"type": "answer", "delta": "\n\n".join(p for p in parts if p)}]
+    #: A window's rows are the count the engine said ("You have 2 reminders
+    #: this week", or none), not the whole list's total.
+    counts = fact_check.said_counts(said["lead"]) if "within" in say_args else fact_check.result_counts(got.tool, result)
+    out = _said_events(said["lead"], "\n\n".join(p for p in ("" if chart else said["body"], said["chips"]) if p), counts)
     if chart:
         out.append({"type": "chart", "chart": chart})
     return out
@@ -2537,21 +2796,45 @@ def _reply_seed(req: _StreamRequest) -> tuple[list[str], str]:
     return recent, f"{salt}:{date.today().isoformat()}:{req.body.attempt}"
 
 
+def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
+    """The composed welcome for a hello (CHAT_PLAN 1353), or empty when the
+    day's numbers cannot be read (the stored greetings answer then)."""
+    try:
+        return chat_extra.welcome_line(
+            req.session, user_now(deps.get_config()).replace(tzinfo=None), question=req.question,
+            voice=_chat_voice(req), seed=seed, said=recent,
+        )
+    except Exception:  # noqa: BLE001  # the stored greetings answer
+        logging.getLogger("tessellate.chat").exception("chat: the composed welcome failed")
+        return ""
+
+
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     """The app's own reply to small talk (INBOX 741), never echoing the last
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
-    return composer.social(
+    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning"):
+        #: A hello is answered with a welcome built from the day (CHAT_PLAN 1353).
+        welcome = _welcome(req, seed, recent)
+        if welcome:
+            sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+            invite = _newest_word(req.session)
+            asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else ""
+            return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+    said = composer.social(
         req.question,
         prepared["intent"],
         str(last.get("answer") or ""),
         str(last.get("question") or ""),
-        voice=_composer_voice(),
+        voice=_chat_voice(req),
         recent=recent,
         seed=seed,
         invite=_newest_word(req.session),
     )
+    #: A hello also says what the app can see (composer awareness).
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    return f"{said}\n\n{sees}" if sees else said
 
 
 def _newest_word(session: Session) -> str:
@@ -2606,6 +2889,58 @@ def _app_said(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list
     if _nothing_open(req.body):
         return [{"type": "answer", "delta": composer_digest.PHRASES["nothing_open"]}]
     return None
+
+
+def _offer_events(found: dict) -> list[dict]:
+    """A reply with the one button it offers (an `open` offer: the setting)."""
+    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
+    if found.get("offer"):
+        events.append({"type": "offer", "offer": found["offer"]})
+    return events
+
+
+def _search_service() -> tuple[str, str]:
+    """(SearXNG address, provider) as Settings has them, for a failure's wording."""
+    from tessellate.search import websearch
+
+    try:
+        return websearch.settings_from(deps.get_config())
+    except Exception:  # noqa: BLE001  # an unreadable setting is no address
+        return "", ""
+
+
+def _link_events(req: _StreamRequest, url: str) -> list[dict]:
+    """A pasted link to be read (`composer_web`): fetched and told back when
+    web access is on, else the setting that allows it. Never a notes search."""
+    from tessellate.search import websearch
+
+    if not _web_allowed(req):
+        return _offer_events(composer_web.web_off(url))
+    try:
+        page = websearch.fetch_readable_cached(url)
+    except websearch.WebSearchError as exc:
+        return _offer_events(composer_web.unreadable(url, str(exc)))
+    return _offer_events(composer_web.page_summary(page, url))
+
+
+def _suggest_events(found: dict) -> list[dict]:
+    events: list[dict] = [{"type": "answer", "delta": found["text"]}]
+    if found["asks"]:
+        events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": found["asks"]}})
+    return events
+
+
+def _newest_titles(session: Session, count: int = 4) -> list[str]:
+    """The names of the newest notes, newest first, for a choice to open one."""
+    from tessellate.ai.tools._common import _visible
+
+    rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
+    titles: list[str] = []
+    for (content,) in rows:
+        title = composer._title(str(content or ""))[0].strip()
+        if title and title not in titles:
+            titles.append(title[:60])
+    return titles[:count]
 
 
 #: The stats kinds that ask about the notebook as a whole, which carry the
@@ -2679,6 +3014,112 @@ def _exact_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     return None
 
 
+def _fact_events(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[dict]:
+    """**The engine's facts, the model's words** (CHAT_PLAN decision 75; the
+    owner, 2026-10-27: "I want the ai to be able to do what the composer can
+    do but better"). The engine's exact answer (`_exact_events`: a count, a
+    worked sum, the app's records, a read tool's rows) goes to the model as
+    facts (`librarian.build_facts_messages`); the model writes the reply, and
+    the engine's own parts ride under it unchanged: the list it drew (the
+    `attached` answer), its chart, its panel, its offer.
+
+    The reply is held until it is checked, never streamed then withdrawn: a
+    reply of one or two sentences, against a figure the person may act on.
+    Prose that states a figure the facts lack, or a count without its figure,
+    or a model that fails, leaves the engine's own answer, with no model named
+    under it (a second `meta`, which every client reads as the latest)."""
+    engine = list(_exact_events(req, prepared, True) or [])
+    answers = [e for e in engine if e.get("type") == "answer"]
+    listed = [{"type": "answer", "delta": e["delta"]} for e in answers if e.get("attached")]
+    listed = listed or (_stats_listed(prepared["stats"]) if prepared["stats"] is not None else [])
+    facts = "".join(str(e.get("delta") or "") for e in answers)
+    counts = _engine_counts(prepared, answers)
+    messages = librarian.build_facts_messages(
+        _in_full(req), facts, style=prepared["style"], profile=prepared["profile"], history=req.history,
+        persona_prompt=req.persona_prompt, mode=req.mode,
+    )
+    held = _held_reply(req, messages)
+    prose = trim_assistant_padding(held["prose"]).strip()
+    needs_figure = prepared["stats"] is not None and not listed
+    if facts and fact_check.keeps(prose, facts, req.question or "", counts, needs_figure, user_now(deps.get_config())):
+        yield from held["thinking"]
+        yield from _model_said(prose, listed, engine, held["stats"])
+        return
+    yield from _engine_stands(req, prepared, t, engine, held)
+
+
+def _engine_stands(req: _StreamRequest, prepared: dict, t: _Turn, engine: list, held: dict) -> Iterator[dict]:
+    """A refused or failed reply: the engine's own answer, a `meta` naming no
+    model, and what the reply cost, with no model named either (the badge and
+    the facts line read `stats.model` first, `chat-attach.js`, `palette.js`)."""
+    if held["prose"]:
+        logging.getLogger("tessellate.chat").warning("chat: the model's words did not keep to the app's answer, which stands")
+    t.will_answer = False
+    yield _meta_event(req, prepared, t)
+    yield from engine
+    if held["stats"] is not None:
+        yield {k: v for k, v in held["stats"].items() if k != "model"}
+
+
+#: Rows that sum a count up rather than list what was counted ("untagged",
+#: "total"): a figure for the words, not a list to show.
+_SUMMARY_ROWS = {"total", "untagged", "unlinked"}
+
+
+def _stats_listed(stats: dict) -> list[dict]:
+    """A statistic that is itself a list, as the list to show under the
+    model's words (`_fact_events`): the lines under a first line that leads
+    into them ("You have 3 boards, last changed first:"), or its named rows
+    ("- Work (3)"). Not a sum's "Read as ..." line, which explains, not lists.
+    The no-model answer stays the engine's own (`_stats_events`)."""
+    first, _sep, rest = str(stats.get("text") or "").partition("\n")
+    if first.rstrip().endswith(":") and rest.strip():
+        return [{"type": "answer", "delta": "\n\n" + rest.strip()}]
+    rows = [r for r in stats.get("facts") or [] if isinstance(r, dict) and r.get("label") and isinstance(r.get("count"), int)]
+    if len(rows) < 2 or any(str(r["label"]).lower() in _SUMMARY_ROWS for r in rows):
+        return []
+    return [{"type": "answer", "delta": "\n\n" + "\n".join(f"- {r['label']} ({r['count']})" for r in rows)}]
+
+
+def _engine_counts(prepared: dict, answers: list) -> dict:
+    """What the engine counted, by noun: the counts carried from the tool
+    result (`_said_events`), the statistic's rows, and the counted statements
+    of its own lead sentences (never the list under them, never a date)."""
+    return fact_check.merged(
+        *(e.get("counts") or {} for e in answers),
+        *(fact_check.said_counts(str(e.get("delta") or "")) for e in answers if not e.get("attached")),
+        fact_check.rows_counts(prepared["stats"]) if prepared["stats"] is not None else {},
+    )
+
+
+def _model_said(prose: str, listed: list, engine: list, stats: dict | None) -> Iterator[dict]:
+    """The model's words, then the engine's list, chart, panel and offer."""
+    yield {"type": "answer", "delta": prose}
+    yield from listed
+    yield from (e for e in engine if e.get("type") != "answer")
+    if stats is not None:
+        yield stats
+
+
+def _held_reply(req: _StreamRequest, messages: list) -> dict:
+    """The model's reply, held whole until it is checked: its words, its
+    thinking (shown only with words that are kept), its token counts. A model
+    that fails leaves no words."""
+    held: dict = {"prose": "", "thinking": [], "stats": None}
+    try:
+        for piece in req.ollama.chat_stream(req.model_manager.chat_model(), messages, req.mode):
+            if "thinking_delta" in piece:
+                held["thinking"].append({"type": "thinking", "delta": piece["thinking_delta"]})
+            elif "stats" in piece:
+                held["stats"] = {"type": "stats", **piece["stats"]}
+            else:
+                held["prose"] += piece.get("content_delta") or ""
+    except OllamaError as exc:
+        logging.getLogger("tessellate.chat").warning("chat: the model could not say the app's answer: %s", safe_value(exc))
+        held["prose"] = ""
+    return held
+
+
 def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     """A subject-less question about a time with no note in it ("what did I
     write last month"), said as that with where the notes are; for any
@@ -2700,6 +3141,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
         last.date() if last else None,
         voice=_composer_voice(),
         seed=req.question or "",
+        register=_chat_voice(req),
     )
 
 
@@ -2799,7 +3241,14 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
         mode=req.mode,
         images=req.images,
         #: Decision 75: the capability line reaches the model as a fact.
-        context=_capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+        context="\n".join(
+            part
+            for part in (
+                _capability_answer(req, ollama_running) if _asks_capability(req, prepared) else "",
+                composer_aware.model_context(_awareness(req)) if req.body.screen else "",
+            )
+            if part
+        ),
     )
 
 
@@ -2816,6 +3265,11 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
     # nothing to look at" (same fix as `librarian.answer`'s own guard).
+    unknown = None if req.images_raw else composer_suggest.unknown_action(
+        req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+    if unknown is not None and not ollama_running:
+        #: An instruction nothing understood is not a search for its words.
+        return _suggest_events(unknown)
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
@@ -2849,6 +3303,47 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
         return None
 
 
+def _told_sources(req: _StreamRequest, current: list, today) -> str:  # noqa: ANN001
+    """The sentences the earlier answers drew on, as the notes wrote them,
+    found by where they sit in the notes (composer work list 4). An answer
+    that put a sentence in its own words ("the week of 13 July" for "this
+    week") is not found in its text, so "tell me more" quoted it again; its
+    grounding rows say which sentence it was. The earlier questions are
+    answered again over the same notes for their rows only."""
+    by_id = {n.get("source_id", n.get("id")): str(n.get("content") or "") for n in current}
+    told: list[str] = []
+    for question in _asked_before(req):
+        try:
+            result = composer_digest.answer(question, current, today=today, voice=_answer_voice()) or composer.compose(
+                question, current, today=today, voice=_composer_voice(), now=user_now(deps.get_config()).replace(tzinfo=None)
+            )
+        except Exception:  # noqa: BLE001  # the words of the earlier answers still stand
+            logging.getLogger("tessellate.chat").exception("chat: an earlier question could not be answered again for its sources")
+            continue
+        for row in result.get("grounding") or []:
+            told.extend(_row_source(by_id, part) for part in [row, *(row.get("parts") or [])])
+    return "\n".join(t for t in told if t)
+
+
+def _asked_before(req: _StreamRequest) -> list[str]:
+    """The questions of the last three turns as they stood, a "more" being
+    the question it leans on, once each."""
+    asked: list[str] = []
+    for turn in composer._standing([t for t in (req.history or [])[-3:] if str(t.get("question") or "").strip()]):
+        if turn["question"] not in asked and not composer._MORE.match(turn["question"]):
+            asked.append(turn["question"])
+    return asked
+
+
+def _row_source(by_id: dict, row: dict) -> str:
+    """A grounding row's sentence as its note wrote it (by place), or as the
+    row quotes it."""
+    content = by_id.get(row.get("note_id"), "")
+    if content and "start" in row and "end" in row:
+        return content[row["start"]:row["end"]]
+    return str(row.get("source") or "")
+
+
 def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, today) -> dict:  # noqa: ANN001
     #: The conversation the history describes (decisions 34 and 35): its
     #: turn and salt word this answer, a retry ("Try again") rewords it,
@@ -2861,8 +3356,9 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
         today=today,
         recent=str(prepared.get("search_mode") or "").endswith("recent"),
         embed=_composer_embed(),
-        said=follow.said if follow else "",
+        said="\n".join([follow.said, _told_sources(req, current, today)]) if follow and follow.kind == "more" else follow.said if follow else "",
         voice=_composer_voice(),
+        register=_chat_voice(req),
         #: The turn before's answer, so this one opens differently (INBOX 741).
         previous=str(req.history[-1].get("answer") or "") if req.history else "",
         now=user_now(deps.get_config()).replace(tzinfo=None),
@@ -2877,6 +3373,18 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
     )
 
 
+def _open_note_answer(req: _StreamRequest, follow, current: list, today):  # noqa: ANN001, ANN202
+    """The open note's own answer to "what's left", "when is it due", "who is
+    involved" (`ai/composer_open.py`): short, and different for every note."""
+    opened = req.body.open_note_id
+    if follow or not opened or len(current) != 1 or current[0].get("id") != opened:
+        return None
+    if not composer_open.reads_note(req.question, current[0]):
+        return None
+    dialogue = composer.Dialogue.from_history(req.history)
+    return composer.open_note_answer(req.question, current[0], today=today, salt=dialogue.salt)
+
+
 def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     """The composer's result with the follow-up it answered, the notes it read
     and the older ones those replaced."""
@@ -2889,7 +3397,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     today = user_now(deps.get_config()).date()
     #: O11: a newer note on the same thing is the current one.
     current, older = _current_notes(req, prepared["notes"])
-    result = _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
+    result = _open_note_answer(req, follow, current, today) or _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today) or result
@@ -2921,6 +3429,98 @@ def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
     }
 
 
+def _open_title(session: Session, body: ChatRequest) -> str:
+    """The title of the plain note or document open, "" for anything else: a
+    private, binned or board note is never named (composer_aware's rule)."""
+    from tessellate.ai.tools._common import _visible
+
+    if body.screen and body.screen.open_doc_id:
+        doc = session.query(Document.title).filter(Document.id == body.screen.open_doc_id, Document.deleted_at.is_(None)).first()
+        if doc and str(doc[0] or "").strip():
+            return str(doc[0]).strip()
+    if body.open_note_id:
+        row = session.query(Entry.content).filter(Entry.id == body.open_note_id, *_visible()).first()
+        if row:
+            return composer._title(str(row[0] or ""))[0].strip()[:60]
+    return ""
+
+
+def _chat_topic(history: list[dict]) -> str:
+    """What the last question in this chat was about: its first search term of
+    four letters or more that the answer to it also used, or "". A word the
+    answer never touched ("left", "write", "week") is the question's frame,
+    not its subject (blind test round 2, finding 2)."""
+    from tessellate.search import query as query_understanding
+
+    for turn in reversed(history or []):
+        answer = str(turn.get("answer") or "").lower()
+        for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
+            if len(term) >= 4 and term.isalpha() and term.lower() in answer:
+                return term
+    return ""
+
+
+def _awareness(req: _StreamRequest) -> composer_aware.Awareness:
+    screen = req.body.screen
+    return composer_aware.build(
+        tab=screen.tab if screen else None,
+        open_title=_open_title(req.session, req.body) if (screen or req.body.open_note_id) else "",
+        actions=screen.actions if screen else None,
+        topic=_chat_topic(req.history),
+    )
+
+
+def _cited_titles(session: Session, result: dict) -> list[str]:
+    """The titles of the notes an answer drew on, in the order it cited them."""
+    from tessellate.ai.tools._common import _visible
+
+    #: (kind, id): a document's id is another table's, and reading it as a
+    #: note's named an unrelated note in the closing line (INBOX 1357).
+    ids: list[tuple[str, int]] = []
+    for row in result.get("grounding") or []:
+        try:
+            key = ("document" if row.get("kind") == "document" else "entry", int(row.get("note_id")))
+        except (TypeError, ValueError):
+            continue
+        if key not in ids:
+            ids.append(key)
+    titles: list[str] = []
+    for kind, nid in ids[:3]:
+        if kind == "document":
+            doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
+            title = str(doc[0] or "").strip()[:60] if doc else ""
+        else:
+            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+            title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
+        if title:
+            titles.append(title)
+    return titles
+
+
+def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> str:
+    """The closing line (`composer_aware.closing` when the screen is known,
+    else `composer_tone.closing`), left off by Quick and by an answer that
+    already ends in a question or an offer to press."""
+    if size == "short" or text.rstrip().endswith("?"):
+        return text
+    recent, seed = _reply_seed(req)
+    #: Seeded by the question too, so two questions in one chat do not end in
+    #: the same line, and a line the last replies already hold is passed over.
+    seed = f"{seed}:{req.question}"
+    #: An answer scoped to the open note or category does not close on the
+    #: notebook's newest note, which may be about something else entirely.
+    #: Nor on a note the answer never used ("what caused ww1" ended with an
+    #: offer to open the Biology note): a closer names a note the answer cited.
+    newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
+    #: A cited note is called the newest only when it is (INBOX 1357, class
+    #: K: "Your latest note is Hello" named the oldest note).
+    is_newest = cited is None or bool(newest and newest == _newest_titles(req.session, 1)[:1])
+    line = (composer_aware.closing(_awareness(req), seed, recent, asked=req.question or "", cited=cited or ()) if req.body.screen else "") or composer_tone.closing(
+        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or "", newest=is_newest
+    )
+    return f"{text}\n\n{line}" if line else text
+
+
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
     """**A composed answer** (INBOX 688): the notes' own sentences, chosen
     by the question's shape and laid out as an answer, every clause a
@@ -2934,23 +3534,52 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     word passages under an apology: the composer quotes whole sentences
     under the same rule. A running model still answers every Chat turn."""
     result, follow, current, older = _composed_result(req, prepared)
-    if not result["grounding"] and not ollama_running and _web_allowed(req):
-        web = _web_answer(req, follow.question if follow else req.question)
-        if web:
-            return list(_web_events(*web))
-    text = result["text"]
-    if not result["grounding"] and not follow and personal.general(req.question or ""):
-        #: "what's the capital of France": the world, not the notes, and
-        #: said so rather than "nothing in your notes about capital".
-        text = personal.general_reply(_web_allowed(req))
-    if not result["grounding"] and prepared.get("meaning_loading"):
-        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    #: The open note said it holds none ("This note does not give a date"): a
+    #: finished answer, not a miss to send to the web or to "general knowledge".
+    said_none = str(result.get("shape") or "").startswith("open_")
+    missed = not result["grounding"] and not said_none
+    if missed:
+        redirected = _missed_events(req, follow, ollama_running)
+        if redirected is not None:
+            return redirected
+    text = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
     if result["grounding"]:
         events.append(_composed_grounding_event(req, result))
     return events
+
+
+def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> str:  # noqa: ANN001
+    text = result["text"]
+    if missed and not follow and personal.general(req.question or ""):
+        #: "what's the capital of France": the world, not the notes, and
+        #: said so rather than "nothing in your notes about capital".
+        text = personal.general_reply(_web_allowed(req))
+    if missed and prepared.get("meaning_loading"):
+        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    size = composer_tone.length(_resolve_mode(req.body.mode))
+    if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
+        text = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
+    return text
+
+
+def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | None:  # noqa: ANN001
+    """The composer found nothing: ask what was meant (an unknown action), or
+    turn to the web when it is on; None leaves the composer's own words."""
+    if not follow and not ollama_running and not req.images_raw:
+        unknown = composer_suggest.unknown_action(
+            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+        if unknown is not None:
+            return _suggest_events(unknown)
+    if not ollama_running and _web_allowed(req):
+        web = _web_answer(req, follow.question if follow else req.question)
+        if web:
+            return list(_web_events(*web))
+        if req.web_down:
+            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
+    return None
 
 
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
@@ -2962,6 +3591,8 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         web = _web_answer(req, req.question)
         if web:
             return list(_web_events(*web))
+        if req.web_down:
+            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:
@@ -3081,7 +3712,32 @@ def _plain_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> 
     if own is not None:
         yield from own
         return
+    yield from _pre_answer_events(req, prepared)
     yield from _model_stream_events(req, prepared, messages)
+
+
+def _pre_answer_events(req: _StreamRequest, prepared: dict) -> list[dict]:
+    """**What the composer says before a model, offered to the model's turn**
+    (K26, the owner: "the ai should be able to do just as much"): the personal
+    digest ("where do I live"), a place in the app, a capability, drawn as a
+    card above the AI text and never in place of it. Ask box only, where the
+    card is drawn; a counted answer never gets here (`_exact_events`)."""
+    if not req.body.notes_only or req.body.peek:
+        return []
+    try:
+        said = _app_said(req, prepared, True)
+        if said is None:
+            #: Only the personal digest: `composer_digest` answers nearly every
+            #: question, so as a card it would repeat the composed answer.
+            own = personal.answer(req.question, lambda: personal.notes_of(req.session), user_now(deps.get_config()).date())
+            said = [{"type": "answer", "delta": own["text"]}] if own else None
+    except Exception:  # noqa: BLE001  # the model answers on its own
+        logging.getLogger("tessellate.chat").exception("chat: the pre-answer card failed")
+        return []
+    if not said or said[0].get("type") != "answer":
+        return []
+    offer = next((e["offer"] for e in said if e.get("type") == "offer"), None)
+    return [{"type": "panel", "panel": "pre_answer", "text": said[0]["delta"], **({"offer": offer} if offer else {})}]
 
 
 #: An act asked in the Ask box, which looks things up: said where to do it.
@@ -3137,11 +3793,13 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
     planned = acts.preview(req.session, parsed, req.body.note_ids)
     card = planned.get("card")
     if card and planned.get("run"):
-        done = acts.run(req.session, card["steps"], card.get("skipped"))
+        mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
+        done = acts.run(req.session, card["steps"], card.get("skipped"), lambda what: composer_compose.frame("act_done", mood, what=f"{what[:1].lower()}{what[1:]}"))
         if done["ok"] and parsed["intent"] == "reminder":
             #: Said as the card says it (INBOX 734): "Done: remind you on
             #: Friday at 9: call the dentist."
-            done["summary"] = f"Done: {card['label'][:1].lower()}{card['label'][1:]}."
+            what = f"{card['label'][:1].lower()}{card['label'][1:]}"
+            done["summary"] = composer_compose.frame("act_card", mood, what=what)
         yield {"type": "answer", "delta": done["summary"]}
         yield {**card, "done": True, "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
         return
@@ -3190,15 +3848,53 @@ _BULK_DELETE = re.compile(
 )
 
 
+def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list[dict] | None:  # noqa: ANN001
+    """What the app's own engine says before an act or a note search, when it
+    answers this turn (no model, or From your notes): a study, plan or sum
+    reader, a pasted link, an open-ended ask. None leaves the turn to the rest."""
+    if req.images_raw or not _app_answers(req, ollama_running):
+        return None
+    question = req.question or ""
+    if not req.skill:
+        found = chat_extra.events(
+            req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
+            seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
+            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
+            voice=_chat_voice(req),
+        )
+        if found is not None:
+            return found
+    link = composer_web.url_in(question)
+    if link and composer_web.reads_link(question):
+        return _link_events(req, link)
+    if composer_suggest.open_ended(question):
+        #: "do smth cool", "open a note": ask what was meant, with choices.
+        return _suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1]))
+    return None
+
+
 def _first_events(req: _StreamRequest, prepared: dict, ollama_running: bool, tools_only: bool) -> Iterator[dict]:
     """The turn's events before the agent is asked: an act, a starter the
     engine answers with no model, or the plain answer."""
     if _BULK_DELETE.match(" ".join((req.question or "").split())):
+        #: A refusal in fixed words, model or none: the guard is the point.
         return iter([{"type": "answer", "delta": (
             "I will not delete everything in one go. Name one note instead, for example “delete the boiler note”: "
             "it waits for your Confirm, and Undo brings it back."
         )}])
+    own = prepared.get("early_events")
+    if own is not None:
+        #: The app's own reader wrote it (a plan, a countdown, a quiz): its
+        #: times and counts are worked here, so no note is expected to hold them.
+        prepared["app_first"] = True
+        return iter(own)
     if prepared["intent"] == intent.ACT:
+        #: Kept the engine's with a model up, deliberately (decision 75's one
+        #: exception): an act with no tools to hand (Chat's Ask mode, the Ask
+        #: box) is done, not discussed, and its confirmation is the card's own
+        #: line. With tools, `_plan_turn` gives the act to the agent instead.
+        #: `_facts_turn` never takes an act, even one whose words also count,
+        #: but a read said as one ("list my work notes", `_note_tool_read`).
         return _act_events(req, prepared)
     starter = _starter_read(req, ollama_running or tools_only)
     if starter:
@@ -3355,25 +4051,18 @@ def _spoken_act(req: _StreamRequest) -> str | None:
     return resolved[0]
 
 
-def _lists_reminders(req: _StreamRequest) -> bool:
-    """A reminder, task or due question ("what reminders do I have", "whats
-    due this week"): answered from the reminders themselves with a model up
-    too (decision 75, the model must not do worse than the composer). A
-    1.5B model read the notes and said "two reminders" when there were
-    three; a list is exact data, like a count, so it is never retold."""
-    from tessellate.ai import act_registry, question_noise, reading
+def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
+    """A read tool's answer (decision 59) is the whole notebook's, so the
+    notes retrieval found are not its sources. Read with a model up too: a
+    list is exact data, like a count, and the model is handed it as facts to
+    say (`_fact_events`, decision 75) rather than reading the notes and
+    miscounting (a 1.5B model said "two reminders" when there were three,
+    2026-10-12). Not for a skill, whose steps read their own way.
 
-    if req.skill:
-        return False
-    asked = question_noise.repair(question_noise.tidy(req.question or ""))
-    got = reading.read(asked, now=user_now(deps.get_config()))
-    return got.tool == "list_reminders" and got.intent not in act_registry.ACTS
-
-
-def _note_tool_read(req: _StreamRequest, prepared: dict, ollama_running: bool) -> None:
-    """A read tool answered with no model (decision 59) is the whole
-    notebook's, so the notes retrieval found are not its sources."""
-    if prepared["stats"] is None and prepared["intent"] != intent.ACT and (not ollama_running or _lists_reminders(req)):
+    An act is the act's own (`_first_events`), except a read said as one
+    ("list my work notes") with a model up to say it: that is facts too."""
+    reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
+    if prepared["stats"] is None and reads and not req.skill:
         prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
@@ -3409,7 +4098,7 @@ def _checks_grounding(prepared: dict, agentic: bool, composing: bool, conversati
     numbers are counts of rows, in no note, and "Heads up: I could not find
     96 in your notes" under "You have 96 notes" was the check misreading it
     (Brief 89)."""
-    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read")
+    return not agentic and not composing and not conversational and prepared["stats"] is None and not prepared.get("tool_read") and not prepared.get("app_first")
 
 
 def _engine_answers(req: _StreamRequest, prepared: dict) -> bool:
@@ -3453,6 +4142,8 @@ class _Turn:
     composing: bool = False
     conversational: bool = False
     will_answer: bool = False
+    #: The engine has the exact answer and a model says it (`_fact_events`).
+    facts: bool = False
     agentic: bool = False
     #: B30: the seconds each stage landed at, for "Why this answer".
     started: float = 0.0
@@ -3484,7 +4175,9 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     composer answers (Ask's From your notes, or any turn with no model), and
     only with a turn before it: a model reads the history itself, and the
     routing (`_composed`) is unchanged by it."""
+    recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
+    early = _app_first_events(req, follow, req.ollama.is_running())
     prepared = _prepare(
         req.session,
         _searched_question(req, follow),
@@ -3504,16 +4197,19 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         surface=ASK_SURFACE if (req.body.notes_only or not req.use_tools) else AGENT_SURFACE,
         as_of=None if req.skill else req.body.as_of,
         locale=req.body.locale,
+        skip_search=early is not None,
     )
     prepared["follow_on"] = follow
+    prepared["early_events"] = early
     return prepared
 
 
 def _is_composing(prepared: dict, composed: bool, ollama_running: bool, tools_only: bool) -> bool:
     """A turn with no model, no tool fallback and notes to quote is composed in
     `_plain_events` whatever surface asked (INBOX 725): labelled so, and its
-    quotes are never trimmed or re-grounded."""
-    return composed or (
+    quotes are never trimmed or re-grounded. So is one the app's own reader
+    answered before any search (a plan, a countdown, the week's notes)."""
+    return composed or prepared.get("early_events") is not None or (
         not ollama_running
         and not tools_only
         and prepared["stats"] is None
@@ -3543,13 +4239,105 @@ def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
         #: same, and it can ask and plan (decision 38 is for no model).
         prepared["intent"] = intent.NOTES
     t.composed = _composed(req, t.ollama_running)
-    _note_tool_read(req, prepared, t.ollama_running)
+    _note_tool_read(req, prepared, t)
     t.tools_provider = _tools_provider(req, prepared, t.ollama_running)
     t.tools_only = t.tools_provider is not req.ollama
     t.composing = _is_composing(prepared, t.composed, t.ollama_running, t.tools_only)
     t.conversational = not intent.needs_retrieval(prepared["intent"])
-    t.will_answer = _will_answer(req, prepared, t)
+    t.facts = _facts_turn(req, prepared, t)
+    t.will_answer = t.facts or _will_answer(req, prepared, t)
     return t
+
+
+def _facts_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
+    """Whether a model writes this turn from the engine's exact answer (CHAT_PLAN
+    decision 75; the owner, 2026-10-27: "why is it responding as the composer
+    when my ai is in use??"): a count, a worked sum, the app's records or a
+    read tool's rows, with a model up, on every surface but the Ask box's From
+    your notes (`_composed`). Not a skill run, which reads its own way.
+
+    Not "nothing matched" (`_no_notes_events`): the check on the model's words
+    (`fact_check.keeps`) reads figures, and that answer has none, so a model
+    saying "here is what I found" over it could not be caught. With tools (the
+    popup agent, Chat's Agent mode) the agent has that turn and can search."""
+    if not t.ollama_running or t.composed or req.skill:
+        return False
+    if _asks_change(req.question or "") or (prepared["intent"] == intent.ACT and not prepared.get("tool_read")):
+        #: "save my first note" read as the first-note count: a request to do
+        #: something is never a figure to say. With tools it is the agent's,
+        #: which has the tools to do it; with none it is the act's own path
+        #: (`_first_events`), done rather than discussed, on every mode. A
+        #: read said as an act ("list my work notes") is facts (`_note_tool_read`).
+        return False
+    return prepared["stats"] is not None or bool(prepared.get("tool_read"))
+
+
+#: The words before a request ("can you please", "hey, could you"), any
+#: number of them, then the verb of a change, then its object (`_asks_change`).
+_LEAD_IN = re.compile(
+    r"^\s*(?:(?:please|pls|plz|kindly|hey|hi|ok|okay|so|now|just|can you|could you|would you|will you|go ahead and)\b[\s,]*)*",
+    re.I,
+)
+_CHANGE_VERB = re.compile(
+    r"(?:save|create|make|add(?!\s+(?:up|together)\b)|write|draft|delete|remove|bin|move|tag|untag|rename|pin|unpin|set|"
+    r"link|unlink|file|archive|restore|edit|update|change|mark|tick|complete|merge|split|tidy|clean|clear|put|jot)\b"
+    r"(?:\s+(?:up|down|off|away|out)\b)?",
+    re.I,
+)
+#: "remind me" is a change only with what to be reminded of or when
+#: ("remind me to call mum", "remind me tomorrow"), not "remind me how many".
+#: A time phrase straight after it is the recogniser's to find (the one
+#: reader of date words, tests/test_one_reader.py).
+_REMIND = re.compile(r"remind\s+me\s+(?:to|at|in|on|by|every|before|after)\b", re.I)
+_REMIND_ME = re.compile(r"remind\s+me\s+", re.I)
+#: "remind me about my first note", "remind me of ..." name what to be
+#: reminded of; "remind me of what is due" asks (`_QUESTION_WORDS`).
+_REMIND_OF = re.compile(r"remind\s+me\s+(?:about|of)\s+(?!(?:how|what|when|where|which|who|whether|why)\b)\w", re.I)
+#: What a change can be done to: the app's things, or a word pointing at one.
+_CHANGE_OBJECTS = {
+    "note", "notes", "entry", "entries", "reminder", "reminders", "task", "tasks", "to-do", "to-dos", "todo", "todos",
+    "tag", "tags", "label", "labels", "category", "categories", "folder", "folders", "document", "documents", "doc",
+    "docs", "file", "files", "pdf", "pdfs", "board", "boards", "map", "maps", "link", "links", "skill", "skills",
+    "page", "pages", "checklist", "checklists", "item", "items", "it", "them", "this", "that", "these", "those",
+    "everything",
+    #: What of a note a change is done to ("change the title of my first note").
+    "title", "name", "body", "text", "date", "contents", "content", "description", "summary", "colour", "color",
+}
+#: After an object, the word that makes it a figure asked for ("clean my
+#: notes count", "mark my reminders count"), not a thing to change.
+_COUNT_WORDS = {"count", "counts", "total", "totals", "number", "tally", "size", "length"}
+#: Words that end the object before a thing is named ("set of tags", "make
+#: sense of", "update on", "add three and four", "update me on").
+_OBJECT_STOPS = {
+    "of", "on", "in", "for", "about", "with", "and", "or", "me", "us", "how", "what", "when", "where",
+    "which", "who", "whether", "why", "is", "are", "do", "does", "i",
+}
+
+
+def _asks_change(question: str) -> bool:
+    """Whether a sentence asks for a change, not a figure (`_facts_turn`): an
+    imperative verb whose object, within four words and before a stop, is a
+    thing the app can change ("save my first note", "tag it work"). "to" and
+    "from" are passed ("add to my first note"); "of" is a stop unless a part
+    of a note was named first ("change the title of my first note").
+    "tag cloud of my notes", "file count", "clean my notes count" and "add
+    three and four" name none."""
+    start = _LEAD_IN.match(question).end()
+    if _REMIND.match(question, start) or _REMIND_OF.match(question, start):
+        return True
+    remind = _REMIND_ME.match(question, start)
+    if remind and any(at == 0 for at, _, _ in recognise.find(question[remind.end():])):
+        return True
+    verb = _CHANGE_VERB.match(question, start)
+    if not verb:
+        return False
+    words = re.findall(r"[a-z]+(?:-[a-z]+)*|\d+", question[verb.end():].lower())[:5]
+    for i, word in enumerate(words[:4]):
+        if word in _CHANGE_OBJECTS:
+            return not (i + 1 < len(words) and words[i + 1] in _COUNT_WORDS)
+        if word in _OBJECT_STOPS:
+            return False
+    return False
 
 
 def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
@@ -3591,6 +4379,8 @@ def _choose_events(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
     Small talk never goes near the agent: "hey" is not a request to do
     anything, and handing it a toolbox invites it to invent an errand."""
+    if t.facts:
+        return _fact_events(req, prepared, t), None
     events = _first_events(req, prepared, t.ollama_running, t.tools_only)
     can_agent = (
         not t.composed
@@ -3681,7 +4471,8 @@ def _relay_events(req: _StreamRequest, prepared: dict, t: _Turn, events) -> Iter
             kind = payload.get("type")
             _note_kind(t, kind, payload)
             if kind == "answer":
-                payload = {**payload, "delta": scrubber.feed(payload.get("delta") or "")}
+                #: `attached` and `counts` are the server's own marks (`_said_events`), not the client's.
+                payload = {**{k: v for k, v in payload.items() if k not in ("attached", "counts")}, "delta": scrubber.feed(payload.get("delta") or "")}
                 if not payload["delta"]:
                     continue
             else:
@@ -3750,6 +4541,7 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
             user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
             *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
         ],
+        question=req.question or "",
     )
     if t.model_checks["unbacked"]:
         heads = source_check.heads_up(t.model_checks["unbacked"])
@@ -3796,7 +4588,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     grounding, grounding_event = _ground_final(req, prepared, t)
     if grounding_event is not None:
         yield _event(grounding_event)
-    if req.body.notes_only and t.answer_text:
+    if req.body.notes_only and t.answer_text and not req.body.peek:
         _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
@@ -3891,6 +4683,8 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     {"type":"answer", "delta": "..."}     (one or more)
     {"type":"done"}
     """
+    if body.peek:
+        body.answer_from = "notes"
     _apply_scope(session, body)
     _apply_open(session, body)
     ollama = deps.get_ollama()

@@ -38,8 +38,8 @@ pip install -e .            # editable install, do not forget the dot
 Run the app with `python -m tessellate` and open <http://localhost:8000>, or use
 `./start.sh` (`start.bat` on Windows), which does all of the above.
 
-`requirements.txt` includes `sentence-transformers`, which brings PyTorch (about
-2 GB). The test suite fakes every embedding and does not need it. If you only want
+`requirements.txt` includes `fastembed`, which brings ONNX Runtime (about
+60 MB). The test suite fakes every embedding and does not need it. If you only want
 to run the tests, install the packages by hand, as `CLAUDE.md` section 7 lists them.
 
 ## Before you open a PR
@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 9,200+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: 12,400+ tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work

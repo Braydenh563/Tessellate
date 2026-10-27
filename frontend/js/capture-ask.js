@@ -285,12 +285,16 @@ async function loadCaptureDocuments() {
 // Ask for a title and start an empty document. Shared by the capture box and
 // the note card's "Add to a document", so both offer the same thing.
 async function createDocumentNamed(suggestion = "") {
-  const title = await promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  const asking = promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  //: Create with nothing typed closed the dialog and said nothing (dog2 item
+  //: 15); `required` makes it say so (promptDialog checks the field's validity).
+  document.querySelector(".prompt-card input").required = true;
+  const title = await asking;
   if (!title) return null;
   try {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title, content: `# ${title}\n\n` }),
+      body: JSON.stringify({ title, content: "" }),
     });
     offerCreateUndo(doc);
     return doc; // the documents tab refetches on switch, so nothing to sync
@@ -1140,6 +1144,8 @@ const CITATION_INLINE_TAGS = new Set(["STRONG", "EM", "B", "I", "A", "CODE", "MA
 function citationInsertionPoint(node, offset, targets) {
   let end = offset + 1;
   while (end < node.data.length && CITATION_CLOSING.test(node.data[end])) end += 1;
+  //: An emoticon ends its sentence with the words (INBOX 1420: "for a bit9 :(").
+  end += (/^ ?[:;=]-?[()DPp]+/.exec(node.data.slice(end)) || [""])[0].length;
   if (end < node.data.length) {
     const tail = node.splitText(end);
     return { parent: tail.parentNode, before: tail };
@@ -2555,6 +2561,7 @@ async function streamChatEvents({
   onWebSources,
   onWhy,
   onOffer,
+  peek,
   attempt,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
@@ -2570,7 +2577,7 @@ async function streamChatEvents({
   //: The Ask box's answer switch (INBOX 688, ask-compose.js): "notes" asks
   //: for the answer composed from the notes; the server composes anyway when
   //: no model runs, so an unset switch needs no reading here.
-  if (notesOnly) Object.assign(body, { notes_only: true, answer_from: prefs.get("ask-answer-from") });
+  if (notesOnly) Object.assign(body, { notes_only: true, peek, answer_from: prefs.get("ask-answer-from") });
   // The deliberately-closed-set case (Trace's "Generate story from path"):
   // retrieval must not add notes beyond the ones the caller attached.
   if (attachedNotesOnly) body.attached_notes_only = true;
@@ -2579,6 +2586,7 @@ async function streamChatEvents({
   //: What is open (CHAT_PLAN B10), read by the server only for a question
   //: about "this" ("Summarise this"), never to change any other answer.
   Object.assign(body, askOpenContext());
+  body.screen = await screenContext(notesOnly ? "ask" : "");
   //: Row 23: the notebook as it stood at the end of that day (`as_of`).
   if (asOf) body.as_of = asOf;
   // A reply to the agent's own question ("yes", "ok") reads as small talk to
@@ -2955,11 +2963,18 @@ async function askQuestion(preset) {
   askTrailPending = null;
   renderAskTrail();
   lastQuestion = question;
+  //: A chip, a follow-up or Retry asks without typing: the box shows it
+  //: anyway (K29, "I forgot instantly"), the one place the question is said;
+  //: a "You asked:" line above the answer said it twice (INBOX 1301).
+  if (preset != null) questionBox.value = question;
 
   // A new answer is coming, hide the suggestion/recent chips and the
   // per-answer action buttons until it lands.
   $("suggested-questions").classList.add("hidden");
-  hide("retry-btn", "copy-btn", "speak-btn", "ask-answer-more");
+  hide("copy-btn", "speak-btn", "ask-answer-more");
+  //: Regenerate stays and shows the ring while it runs (INBOX 1423).
+  const retryBtn = $("retry-btn");
+  if (!retryBtn.classList.contains("hidden")) setBusy(retryBtn, true, "");
   askKept = null;
   setAsking(true);
   status.classList.remove("error");
@@ -2969,6 +2984,7 @@ async function askQuestion(preset) {
   const thinkingBox = thinkingFoldIn(thinkingHost);
   const thinkingText = thinkingBox.querySelector(".thinking");
   answerBox.textContent = "";
+  $("ask-pre").textContent = $("ask-notes").textContent = "";
   //: A counting or trend question gets its chart beside the answer
   //: (WORLD_CLASS_PLAN section 17 row 4): asked in parallel, from the
   //: records, so it lands whether or not the model answers.
@@ -3242,7 +3258,7 @@ async function askQuestion(preset) {
       placeAnswerFigures(answerBox, answerMeta, question);
       renderAskAnswerFoot(answer, answerMeta);
       ensureModule("askCompose").then(() => renderAskInsights(groundedInsights)).catch(() => {});
-      ensureModule("askCompose").then(() => renderAskWhy(answerWhy)).catch(() => {});
+      ensureModule("askCompose").then(() => { renderAskWhy(answerWhy); renderAskBoth(question, answerMeta, answerPanels); }).catch(() => {});
       if (answerOffer) ensureModule("askCompose").then(() => digestOffer(answerBox, answerOffer)).catch(() => {});
       if (answerPanels.length) drawAnswerPanels(answerBox, answerPanels);
       //: `composed`, and `match_info` for each record's reason (INBOX 1310,
@@ -3282,6 +3298,7 @@ async function askQuestion(preset) {
     // an answer that stopped arriving is worse than never showing one.
     answerBox.classList.remove("is-streaming", "is-generating");
     progress?.remove();
+    setBusy($("retry-btn"), false);
     askController = null;
     setAsking(false);
     // The question used to be cleared here, which left an answer on screen with
@@ -3297,7 +3314,7 @@ function retryAnswer() {
 }
 
 async function copyAnswer() {
-  if (await copyToClipboard($("ai-answer").textContent)) toast("Answer copied.");
+  if (await copyToClipboard($("ai-answer").textContent, $("copy-btn"))) toast("Answer copied.");
 }
 
 // --- suggested questions (Round 1) ----------------------------------------------
@@ -3336,6 +3353,9 @@ async function loadAskHistoryBadge() {
     badge.classList.add("hidden");
     return;
   }
+  //: The first answer ticks Get started's third step even when the person
+  //: left for the dashboard before it finished (E2E first-run, 2026-10-27).
+  if (stats.total === 1) renderFirstStepsLazy();
   badge.textContent = stats.total > 99 ? "99+" : String(stats.total);
   badge.classList.remove("hidden");
 }

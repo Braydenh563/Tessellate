@@ -67,9 +67,11 @@ class Finding:
 # --- source check and grounding --------------------------------------------------
 
 
-def source_check(answer: str, sources: list[str]) -> list[str]:
-    """The numbers and names in `answer` that none of `sources` contains."""
-    return _source_check.unbacked_claims(answer or "", _source_check.Sources([s for s in sources if s]))
+def source_check(answer: str, sources: list[str], question: str = "") -> list[str]:
+    """The numbers and names in `answer` that none of `sources` contains. A
+    `question` about a date, a time or a reminder lets the answer's own
+    computed figures through (`source_check.Sources`)."""
+    return _source_check.unbacked_claims(answer or "", _source_check.Sources([s for s in sources if s], question))
 
 
 def grounding_marks(answer: str, rows: list[dict]) -> dict:
@@ -117,22 +119,19 @@ def maxims(result: dict, question: str = "", notes: list[dict] | None = None) ->
     found: list[Finding] = []
     # quantity: one fact once.
     quotes = [str(p[1]).strip().rstrip(".").lower() for p in parts if p[0] == "quote"]
-    for q in {q for q in quotes if quotes.count(q) > 1}:
-        found.append(Finding("quantity", "quote said twice", q[:80]))
+    found.extend(Finding("quantity", "quote said twice", q[:80]) for q in {q for q in quotes if quotes.count(q) > 1})
     seen: dict[str, int] = {}
     for sentence, value in _measures_by_sentence(parts):
         if value in seen and seen[value] != sentence and value not in ("1",):
             found.append(Finding("quantity", "measured value said twice", value))
         seen.setdefault(value, sentence)
     # quality: numbers only where a fact or the question put them.
-    for part in parts:
-        if part[0] in APP_KINDS and _values(str(part[1])):
-            found.append(Finding("quality", "number in the app's own words", str(part[1])[:80]))
+    found.extend(Finding("quality", "number in the app's own words", str(part[1])[:80])
+                 for part in parts if part[0] in APP_KINDS and _values(str(part[1])))
     # relation: every quote is a grounded sentence of a note the answer cites.
     cited = {row.get("note_id") for row in result.get("grounding") or []}
-    for part in parts:
-        if part[0] == "quote" and len(part) > 2 and part[2] is not None and part[2] not in cited:
-            found.append(Finding("relation", "quote with no grounding row", str(part[1])[:80]))
+    found.extend(Finding("relation", "quote with no grounding row", str(part[1])[:80])
+                 for part in parts if part[0] == "quote" and len(part) > 2 and part[2] is not None and part[2] not in cited)
     # manner: how the words read.
     for before, after in zip(parts, parts[1:]):
         if before[0] == "template" and _COMMA_END.search(str(before[1])) and after[0] in ("quote", "template"):
@@ -155,11 +154,10 @@ def maxims(result: dict, question: str = "", notes: list[dict] | None = None) ->
     app_text = "".join(str(p[1]) for p in parts if p[0] in APP_KINDS)
     if _SHOUT.search(app_text):
         found.append(Finding("manner", "exclamation or Oops", app_text[:60]))
-    for match in _DOUBLED.finditer(text):
-        found.append(Finding("manner", "doubled space or stop", text[max(0, match.start() - 20):match.end() + 20]))
-    for sentence in _app_sentences(parts):
-        if len(sentence.split()) > MAX_APP_WORDS:
-            found.append(Finding("manner", "app sentence over forty words", sentence[:80]))
+    found.extend(Finding("manner", "doubled space or stop", text[max(0, m.start() - 20):m.end() + 20])
+                 for m in _DOUBLED.finditer(text))
+    found.extend(Finding("manner", "app sentence over forty words", sentence[:80])
+                 for sentence in _app_sentences(parts) if len(sentence.split()) > MAX_APP_WORDS)
     return found
 
 
@@ -231,11 +229,11 @@ def report(result: dict, question: str = "", notes: list[dict] | None = None) ->
     }
 
 
-def check_model_answer(answer: str, sources: list[str], rows: list[dict] | None = None) -> dict:
+def check_model_answer(answer: str, sources: list[str], rows: list[dict] | None = None, question: str = "") -> dict:
     """The same checks on a model's answer, which has no parts: its numbers and
     names against what it drew on, its grounding, and the manner rules that
     read text alone. {"unbacked", "support", "findings", "ok"}."""
-    unbacked = source_check(answer, sources)
+    unbacked = source_check(answer, sources, question)
     findings = [Finding("quality", "not in the sources", claim) for claim in unbacked]
     if _SHOUT.search(answer or ""):
         findings.append(Finding("manner", "exclamation or Oops", (answer or "")[:60]))

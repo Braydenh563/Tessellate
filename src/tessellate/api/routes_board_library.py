@@ -41,7 +41,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.routes_whiteboard import (
@@ -50,7 +50,11 @@ from tessellate.api.routes_whiteboard import (
     MAP_REFERENCE_KINDS,
     MAP_TOPIC_KIND,
     MEDIA_URL_RE,
+    WhiteboardObjectBase,
     WhiteboardObjectData,
+    WhiteboardSketchBase,
+    _require_board,
+    _require_object_data,
     _board_settings,
     _object_state,
     _on_current_layer,
@@ -68,6 +72,7 @@ from tessellate.core.database import (
     BoardLibraryMark,
     Entry,
     MediaUpload,
+    WhiteboardNode,
     WhiteboardObject,
     WhiteboardSketch,
     utcnow,
@@ -130,15 +135,57 @@ def _clean_number(value: Any, default: float = 0.0) -> float:
     return number if math.isfinite(number) and abs(number) < 1e7 else default
 
 
-def _clean_element(payload: dict) -> dict:
-    """An element payload as stored: known kinds, bounded sizes, object data
-    through the board's own validator, links only between items it holds."""
-    items = payload.get("items")
-    if not isinstance(items, list) or not items:
-        raise _fail("A saved selection needs at least one item.")
-    if len(items) > MAX_PAYLOAD_ITEMS:
-        raise _fail(f"A library item holds at most {MAX_PAYLOAD_ITEMS} things.")
-    clean, keys = [], set()
+def _clean_sketch_item(raw: dict, item: dict[str, Any]) -> None:
+    """A drawing's path data, without the links and references a copy must not carry."""
+    data = raw.get("data")
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except ValueError:
+            raise _fail("A drawing's data is not JSON.") from None
+    if not isinstance(data, dict) or not isinstance(data.get("d", ""), str):
+        raise _fail("A drawing needs its path.")
+    data.pop("sourceId", None)
+    data.pop("targetId", None)
+    data.pop("library_ref", None)
+    if len(json.dumps(data)) > MAX_SKETCH_DATA_CHARS:
+        raise _fail("One drawing in this item is too large.")
+    item.update(kind="sketch", data=data)
+
+
+def _clean_object_item(raw: dict, item: dict[str, Any]) -> None:
+    """A text, picture or frame, its data through the board's own validator."""
+    kind = raw.get("type")
+    if kind not in OBJECT_TYPES:
+        raise _fail(f"A library item holds text, pictures and frames, not {kind}.")
+    data = dict(raw.get("data") or {})
+    data.pop("library_ref", None)
+    data.pop("comments", None)
+    try:
+        checked = WhiteboardObjectData(**data).model_dump(exclude_none=True)
+    except ValueError as err:
+        logger.info("board library: an item did not validate: %s", err)
+        raise _fail("An item's data is not valid.") from None
+    if kind == "image" and not MEDIA_URL_RE.match(checked.get("url") or ""):
+        raise _fail("A picture in the library is one of this notebook's uploads.")
+    item.update(
+        kind="object", type=kind, data=checked,
+        x=_clean_number(raw.get("x")), y=_clean_number(raw.get("y")),
+        w=max(20.0, min(4000.0, _clean_number(raw.get("w"), 200))),
+        h=max(20.0, min(4000.0, _clean_number(raw.get("h"), 120))),
+    )
+    rotation = raw.get("rotation")
+    if rotation is not None:
+        item["rotation"] = max(-360.0, min(360.0, _clean_number(rotation)))
+
+
+#: How each kind of item is cleaned; a kind not here is refused.
+_ITEM_CLEANERS = {"sketch": _clean_sketch_item, "object": _clean_object_item}
+
+
+def _clean_items(items: list, keys: set) -> list[dict]:
+    """The items of an element payload, each with a unique key; fills `keys`."""
+    clean: list[dict] = []
     for raw in items:
         if not isinstance(raw, dict):
             raise _fail("Each item is an object.")
@@ -150,49 +197,19 @@ def _clean_element(payload: dict) -> dict:
         item: dict[str, Any] = {"key": key, "z": int(_clean_number(raw.get("z"), 0))}
         if isinstance(group, str) and group:
             item["group"] = group[:40]
-        if raw.get("kind") == "sketch":
-            data = raw.get("data")
-            if isinstance(data, str):
-                try:
-                    data = json.loads(data)
-                except ValueError:
-                    raise _fail("A drawing's data is not JSON.") from None
-            if not isinstance(data, dict) or not isinstance(data.get("d", ""), str):
-                raise _fail("A drawing needs its path.")
-            data.pop("sourceId", None)
-            data.pop("targetId", None)
-            data.pop("library_ref", None)
-            if len(json.dumps(data)) > MAX_SKETCH_DATA_CHARS:
-                raise _fail("One drawing in this item is too large.")
-            item.update(kind="sketch", data=data)
-        elif raw.get("kind") == "object":
-            kind = raw.get("type")
-            if kind not in OBJECT_TYPES:
-                raise _fail(f"A library item holds text, pictures and frames, not {kind}.")
-            data = dict(raw.get("data") or {})
-            data.pop("library_ref", None)
-            data.pop("comments", None)
-            try:
-                checked = WhiteboardObjectData(**data).model_dump(exclude_none=True)
-            except ValueError as err:
-                logger.info("board library: an item did not validate: %s", err)
-                raise _fail("An item's data is not valid.") from None
-            if kind == "image" and not MEDIA_URL_RE.match(checked.get("url") or ""):
-                raise _fail("A picture in the library is one of this notebook's uploads.")
-            item.update(
-                kind="object", type=kind, data=checked,
-                x=_clean_number(raw.get("x")), y=_clean_number(raw.get("y")),
-                w=max(20.0, min(4000.0, _clean_number(raw.get("w"), 200))),
-                h=max(20.0, min(4000.0, _clean_number(raw.get("h"), 120))),
-            )
-            rotation = raw.get("rotation")
-            if rotation is not None:
-                item["rotation"] = max(-360.0, min(360.0, _clean_number(rotation)))
-        else:
+        kind = raw.get("kind")
+        cleaner = _ITEM_CLEANERS.get(kind) if isinstance(kind, str) else None
+        if cleaner is None:
             raise _fail("An item is a drawing or an object.")
+        cleaner(raw, item)
         clean.append(item)
+    return clean
+
+
+def _clean_links(raw_links: list, keys: set) -> list[dict]:
+    """Links between items this payload holds, each a straight link at least."""
     links = []
-    for raw in payload.get("links") or []:
+    for raw in raw_links:
         if not isinstance(raw, dict) or raw.get("from") not in keys or raw.get("to") not in keys:
             continue
         data = raw.get("data") if isinstance(raw.get("data"), dict) else {}
@@ -200,6 +217,20 @@ def _clean_element(payload: dict) -> dict:
         if not str(data.get("type", "")).startswith("link-"):
             data["type"] = "link-straight"
         links.append({"from": raw["from"], "to": raw["to"], "data": data})
+    return links
+
+
+def _clean_element(payload: dict) -> dict:
+    """An element payload as stored: known kinds, bounded sizes, object data
+    through the board's own validator, links only between items it holds."""
+    items = payload.get("items")
+    if not isinstance(items, list) or not items:
+        raise _fail("A saved selection needs at least one item.")
+    if len(items) > MAX_PAYLOAD_ITEMS:
+        raise _fail(f"A library item holds at most {MAX_PAYLOAD_ITEMS} things.")
+    keys: set = set()
+    clean = _clean_items(items, keys)
+    links = _clean_links(payload.get("links") or [], keys)
     box = payload.get("box") if isinstance(payload.get("box"), dict) else {}
     return {
         "box": {"w": max(1.0, _clean_number(box.get("w"), 100)), "h": max(1.0, _clean_number(box.get("h"), 100))},
@@ -236,33 +267,23 @@ def _clean_branch(payload: dict) -> dict:
     return {"nodes": [walk(n, 0) for n in roots]}
 
 
-def _clean_payload(kind: str, payload: Any) -> dict:
-    if kind not in ITEM_KINDS:
-        raise _fail(f"A library item is one of: {', '.join(ITEM_KINDS)}.")
-    if not isinstance(payload, dict):
-        raise _fail("A library item's payload is an object.")
-    if len(json.dumps(payload)) > MAX_PAYLOAD_BYTES:
-        raise _fail("This is too large for the library (512 KB at most).")
-    for url in _media_urls(payload):
-        if not MEDIA_URL_RE.match(url):
-            raise _fail("A picture in the library is one of this notebook's uploads.")
-    if kind in ("element", "shape", "preset"):
-        return _clean_element(payload)
-    if kind == "branch":
-        return _clean_branch(payload)
-    if kind == "style":
-        style = payload.get("style") if isinstance(payload.get("style"), dict) else {}
-        clean = {k: v for k, v in style.items() if k in STYLE_KEYS and isinstance(v, (str, int, float, bool))}
-        if not clean:
-            raise _fail("A saved style needs at least one property.")
-        target = payload.get("target") if payload.get("target") in ("shape", "line", "text", "link") else "shape"
-        return {"target": target, "style": clean}
-    if kind == "palette":
-        colours = [c.lower() for c in payload.get("colours") or [] if isinstance(c, str) and HEX_RE.match(c)]
-        if not colours:
-            raise _fail("A palette needs at least one #rrggbb colour.")
-        return {"colours": list(dict.fromkeys(colours))[:16]}
-    # template
+def _clean_style(payload: dict) -> dict:
+    style = payload.get("style") if isinstance(payload.get("style"), dict) else {}
+    clean = {k: v for k, v in style.items() if k in STYLE_KEYS and isinstance(v, (str, int, float, bool))}
+    if not clean:
+        raise _fail("A saved style needs at least one property.")
+    target = payload.get("target") if payload.get("target") in ("shape", "line", "text", "link") else "shape"
+    return {"target": target, "style": clean}
+
+
+def _clean_palette(payload: dict) -> dict:
+    colours = [c.lower() for c in payload.get("colours") or [] if isinstance(c, str) and HEX_RE.match(c)]
+    if not colours:
+        raise _fail("A palette needs at least one #rrggbb colour.")
+    return {"colours": list(dict.fromkeys(colours))[:16]}
+
+
+def _clean_template(payload: dict) -> dict:
     board = payload.get("board") if isinstance(payload.get("board"), dict) else {}
     out: dict[str, Any] = {"board": {
         "type": board.get("type") if board.get("type") in ("board", "map") else "board",
@@ -284,6 +305,26 @@ def _clean_payload(kind: str, payload: Any) -> dict:
     if "element" not in out and "branch" not in out:
         raise _fail("A template needs something on it.")
     return out
+
+
+#: One cleaner per kind of library item; `template` is the one left over.
+_PAYLOAD_CLEANERS = {
+    "element": _clean_element, "shape": _clean_element, "preset": _clean_element,
+    "branch": _clean_branch, "style": _clean_style, "palette": _clean_palette,
+}
+
+
+def _clean_payload(kind: str, payload: Any) -> dict:
+    if kind not in ITEM_KINDS:
+        raise _fail(f"A library item is one of: {', '.join(ITEM_KINDS)}.")
+    if not isinstance(payload, dict):
+        raise _fail("A library item's payload is an object.")
+    if len(json.dumps(payload)) > MAX_PAYLOAD_BYTES:
+        raise _fail("This is too large for the library (512 KB at most).")
+    for url in _media_urls(payload):
+        if not MEDIA_URL_RE.match(url):
+            raise _fail("A picture in the library is one of this notebook's uploads.")
+    return _PAYLOAD_CLEANERS.get(kind, _clean_template)(payload)
 
 
 def _clean_tags(tags: Any) -> list[str]:
@@ -340,8 +381,26 @@ def _builtin_index() -> dict[str, dict]:
             continue
         key = data.get("key", path.stem)
         for entry in data.get("items") or []:
+            if isinstance(entry.get("payload"), dict):
+                entry = {**entry, "payload": {**entry["payload"], "items": drawings_under_cards(entry["payload"].get("items") or [])}}
             out[f"{key}/{entry['key']}"] = {**entry, "set": SHAPE_SET_NAMES.get(key, data.get("name", path.stem))}
     return out
+
+
+def drawings_under_cards(items: list) -> list:
+    """A stencil drawn when drawings were one layer under every card keeps
+    that look (WHITEBOARD_PLAN decision 43, the owner 2026-10-27: "each
+    stroke stacks"). The built-in sets give a drawing z 5 and a card z 1, so
+    with one order a shape would now cover the words on it: its drawings
+    move under its lowest card, their own order kept. A stencil with no card
+    or no drawing, or drawings already under the cards, is unchanged."""
+    zs = lambda rows: [int(i.get("z") or 0) for i in rows]  # noqa: E731
+    drawings = [i for i in items if isinstance(i, dict) and i.get("kind") == "sketch"]
+    cards = [i for i in items if isinstance(i, dict) and i.get("kind") != "sketch" and i.get("type") != "frame"]
+    if not drawings or not cards or max(zs(drawings)) < min(zs(cards)):
+        return items
+    shift = max(zs(drawings)) - min(zs(cards)) + 1
+    return [{**i, "z": int(i.get("z") or 0) - shift} if i in drawings else i for i in items]
 
 
 @lru_cache(maxsize=1)
@@ -1045,10 +1104,54 @@ def _place_branch(db: Session, board_id: int | None, payload: dict, body: PlaceB
     #: (it has no parent); several go under a new centre named after the
     #: template, so a map has the one trunk it is built around.
     if parent is None and len(nodes) > 1 and _map_has_no_centre(db, board_id):
-        nodes = [{"text": (name or "Map").strip()[:200] or "Map", "children": nodes}]
+        #: A built-in template says how its centre is drawn (`payload.root`,
+        #: K15): the preview shows a root box or an oval, so the map built
+        #: from it does too.
+        nodes = [{"text": (name or "Map").strip()[:200] or "Map", "data": dict(payload.get("root") or {}), "children": nodes}]
     for node in nodes:
         add(node, parent.id if parent is not None else None, 1 if parent is not None else 0)
     return {"sketches": [], "objects": made}
+
+
+def _band_tops(db: Session, board_id: int | None, made: dict) -> tuple[int, list[int]]:
+    """The highest z already on the board among the drawings and cards (one
+    band since decision 43: notes, boxes, pictures, tables and strokes), and
+    the frames' z values, leaving out the rows just placed."""
+    here = (lambda col: col.is_(None)) if board_id is None else (lambda col: col == board_id)
+    sketch_top = db.scalar(
+        select(func.max(WhiteboardSketch.z)).where(here(WhiteboardSketch.board_id), WhiteboardSketch.id.not_in({r.id for r in made["sketches"]}))
+    )
+    note_top = db.scalar(select(func.max(WhiteboardNode.z)).where(here(WhiteboardNode.board_id)))
+    others = db.scalars(
+        select(WhiteboardObject).where(here(WhiteboardObject.board_id), WhiteboardObject.id.not_in({r.id for r in made["objects"]}))
+    ).all()
+    top = max([0, sketch_top or 0, note_top or 0, *[o.z or 0 for o in others if o.kind != "frame"]])
+    return top, [o.z or 0 for o in others if o.kind == "frame"]
+
+
+def _stack_on_top(db: Session, board_id: int | None, made: dict) -> None:
+    """Put placed rows on top of what is already on the board, keeping the
+    stencil's own order among them (wb5).
+
+    A stencil carries small fixed z values (a drawing 5, a card 1, a link 1),
+    so a placement landed under, or tied with, anything already drawn above
+    them. The board's stacking (`wbStackOrder` in whiteboard.js) is two
+    bands: frames, then drawings and cards together (decision 43); each
+    placed row takes the next z of its band in the stencil's order (z, then
+    drawings before cards, as a tie paints), frames under the frames already
+    there, as one drawn by hand does (`wbStackNewZ`)."""
+    top, frame_zs = _band_tops(db, board_id, made)
+    rank = {"sketch": 0, "object": 2}
+    by_stencil = lambda pair: (pair[1].z or 0, rank[pair[0]], pair[1].id)  # noqa: E731
+    frames = sorted((("object", r) for r in made["objects"] if r.kind == "frame"), key=by_stencil)
+    rest = sorted([*(("sketch", r) for r in made["sketches"]), *(("object", r) for r in made["objects"] if r.kind != "frame")], key=by_stencil)
+    for rows, first in (
+        (frames, (min(frame_zs) - len(frames)) if frame_zs else 0),
+        (rest, top + 1),
+    ):
+        for i, (_, row) in enumerate(rows):
+            row.z = first + i
+    db.flush()
 
 
 def _onto_current_layer(db: Session, board_id: int | None, made: dict) -> None:
@@ -1090,6 +1193,7 @@ def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get
             made = {"sketches": [], "objects": []}
     else:
         raise _fail("A style or a palette is applied to what is selected, not placed.")
+    _stack_on_top(db, target, made)
     _onto_current_layer(db, target, made)
     events.record(
         db, "placed", "board", target, f"{entry_data.get('name', 'item')} placed"[:80],
@@ -1109,6 +1213,115 @@ def place_library_item(board_id: int, body: PlaceBody, db: Session = Depends(get
         "name": entry_data.get("name"),
         "sketches": [{"id": s.id, "board_id": s.board_id, "data": s.data, "x": s.x, "y": s.y, "z": s.z, "group_id": s.group_id} for s in made["sketches"]],
         "objects": [_object_to_out(o).model_dump(mode="json") for o in made["objects"]],
+    }
+
+
+MAX_PASTE_ITEMS = 500
+
+
+class PasteItem(BaseModel):
+    """One copied thing. `key` is the client's name for it, so a copied link
+    can name the two ends (`src`, `dst`) without knowing their new ids."""
+
+    key: str = Field(min_length=1, max_length=40)
+    object: WhiteboardObjectBase | None = None
+    sketch: WhiteboardSketchBase | None = None
+    src: str | None = Field(default=None, max_length=40)
+    dst: str | None = Field(default=None, max_length=40)
+
+
+class PasteBody(BaseModel):
+    items: list[PasteItem] = Field(min_length=1, max_length=MAX_PASTE_ITEMS)
+
+
+def _point_link_ends(parsed: dict, item: PasteItem, keys: dict[str, tuple[str, int]]) -> None:
+    """Point a copied link's ends at the rows its pasted ends became."""
+    for end, key in (("source", item.src), ("target", item.dst)):
+        if key and key in keys:
+            parsed[f"{end}Kind"], parsed[f"{end}Id"] = keys[key]
+
+
+def _paste_object(db: Session, target: int | None, item: PasteItem, keys: dict[str, tuple[str, int]]) -> WhiteboardObject:
+    b = item.object
+    _require_object_data(b)
+    row = WhiteboardObject(
+        kind=b.kind, board_id=target, x=b.x, y=b.y, z=b.z, width=b.width, height=b.height,
+        rotation=b.rotation, group_id=b.group_id,
+        data=json.dumps(_on_current_layer(db, target, b.data.model_dump(mode="json", exclude_none=True)), separators=(",", ":")),
+    )
+    db.add(row)
+    db.flush()
+    keys[item.key] = ("object", row.id)
+    return row
+
+
+def _paste_sketch(db: Session, target: int | None, item: PasteItem, keys: dict[str, tuple[str, int]]) -> WhiteboardSketch:
+    b = item.sketch
+    try:
+        parsed = json.loads(b.data)
+    except ValueError:
+        parsed = None
+    data = b.data
+    if isinstance(parsed, dict):
+        _point_link_ends(parsed, item, keys)
+        data = json.dumps(_on_current_layer(db, target, parsed))
+    row = WhiteboardSketch(board_id=target, data=data, x=b.x, y=b.y, z=b.z, group_id=b.group_id)
+    db.add(row)
+    db.flush()
+    keys[item.key] = ("sketch", row.id)
+    return row
+
+
+def _process_pasted_images(db: Session, made_objects: list) -> None:
+    from tessellate.core import media_process
+
+    for o in made_objects:
+        if o.kind == "image":
+            media_process.process_referenced_uploads(db, deps.get_config().data_dir / "media", o.data)
+
+
+def _record_paste(db: Session, board_id: int, made_sketches: list, made_objects: list) -> None:
+    """One event for the paste, then one per row made, so each undoes alone."""
+    events.record(db, "placed", "board", board_id, "pasted items",
+                  payload={"after": {"sketches": [s.id for s in made_sketches], "objects": [o.id for o in made_objects]}})
+    for s in made_sketches:
+        events.record(db, "created", "whiteboard_sketch", s.id, f"drawing on board {board_id} (paste)",
+                      payload={"after": _sketch_state(s)})
+    for o in made_objects:
+        events.record(db, "created", "whiteboard_object", o.id, f"{o.kind} on board {board_id} (paste)",
+                      payload={"after": _object_state(o)})
+
+
+@router.post("/whiteboard/boards/{board_id}/paste", status_code=201)
+def paste_board_items(board_id: int, body: PasteBody, db: Session = Depends(get_session)) -> dict:
+    """**A paste is one request** (WHITEBOARD_PLAN 1355): the copied objects
+    and sketches are made in one transaction, then each copied link is made
+    with its two ends pointed at the new rows, so a fifty-item paste is one
+    round trip rather than fifty and a link between copies stays a link.
+    `keys` maps each item's client key to its new kind and id."""
+    target = None if board_id == 0 else board_id
+    _require_board(db, target)
+    keys: dict[str, tuple[str, int]] = {}
+    made_objects, made_sketches = [], []
+
+    # Links last: their ends have to exist before they can point at them.
+    # An object has no ends: a stray src or dst is ignored, never a silent drop.
+    made_objects.extend(_paste_object(db, target, item, keys) for item in body.items if item.object)
+    for linked in (False, True):
+        made_sketches.extend(
+            _paste_sketch(db, target, item, keys)
+            for item in body.items
+            if item.sketch and bool(item.src or item.dst) == linked
+        )
+    _record_paste(db, board_id, made_sketches, made_objects)
+    db.commit()
+    for row in made_sketches + made_objects:
+        db.refresh(row)
+    _process_pasted_images(db, made_objects)
+    return {
+        "keys": {k: {"kind": v[0], "id": v[1]} for k, v in keys.items()},
+        "sketches": [{"id": s.id, "board_id": s.board_id, "data": s.data, "x": s.x, "y": s.y, "z": s.z, "group_id": s.group_id} for s in made_sketches],
+        "objects": [_object_to_out(o).model_dump(mode="json") for o in made_objects],
     }
 
 

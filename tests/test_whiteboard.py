@@ -393,6 +393,15 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the Format panel's line and letter spacing (wb3, INBOX 1355).
+        "line_height": None,
+        "letter_spacing": None,
+        # Added with the Format panel's box rows (wb5): corners, padding, shadow offset and blur.
+        "radii": None,
+        "pad": None,
+        "shadow_x": None,
+        "shadow_y": None,
+        "shadow_blur": None,
         # Added with the text-box formatting controls; None until set.
         "align": None,
         "valign": None,
@@ -401,6 +410,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "font_family": None,
         "underline": None,
         "strike": None,
+        # Added with the mind map's pinned line ends (K31); None until pinned.
+        "edge_from": None,
+        "edge_to": None,
         # Added with mindmaps (MINDMAP_PLAN.md Phase 1). A text box is not a
         # map node, so all three stay None, asserted rather than omitted
         # because this test's whole job is to catch a field that silently
@@ -471,6 +483,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # A table's cells and header row (canvasdepth2); None on a text box.
         "cells": None,
         "header": None,
+        # And a table's column widths (wb5).
+        "col_widths": None,
         # Its custom properties, the Format panel's Data tab (canvasdepth2).
         "props": None,
         "page": None,

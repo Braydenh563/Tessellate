@@ -100,3 +100,22 @@
 #backup-list > li .chip.item-label:not(.is-yours, .is-ok, .is-warn) {
   color: var(--ink);
 }
+
+/* The jump list says the pane's name, so the phone band hides the title
+   (`.jump-echo`). A pane whose dock held only that title was left a blank
+   bordered bar under the nav (Settings, Models at half width; the owner's
+   22-10 screenshot). With nothing left in it the dock goes too. */
+#settings-modal .settings-section > .dock:has(> .dock-identity > h3.jump-echo:only-child):not(:has(> :not(.dock-identity))) {
+  display: none;
+}
+
+/* Hover tints the chip's border, not a second box (K28); lazy with Settings for the boot CSS cap. */
+.shortcut-list button.shortcut-key:is(:hover, :focus-visible) {
+  background: transparent;
+}
+.shortcut-list .shortcut-key:is(:hover, :focus-visible) kbd {
+  border-color: var(--accent);
+}
+
+/* An Extras skeleton is about a package row's height (K21). */
+.extras-list > .skeleton { height: calc(var(--control-h-lg) * 5.5); }

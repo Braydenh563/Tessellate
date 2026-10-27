@@ -309,7 +309,7 @@ def test_stats_gives_the_four_counts_in_one_line(client):
         #: Decision 70's gold Q3: count and span first, bold labels, one offer.
         assert result.text.startswith("You have 2 notes, all from ")
         assert not [ln for ln in result.text.splitlines() if ln.startswith("**")], result.text
-        assert "You also have 0 documents and 2 distinct tags." in result.text
+        assert "You also have no documents and 2 distinct tags." in result.text
         assert result.text.endswith("Open Statistics for the full picture?")
         assert result.offer == {"kind": "open", "label": "Open Statistics for the full picture?", "surface": "statistics"}
 
@@ -336,3 +336,23 @@ def test_a_count_over_a_window_counts_the_window(client):
         result = notebook_stats.answer("how many notes did I write today", session)
         assert result.kind == "recent-count" and result.text == "You have written 1 note today."
         assert notebook_stats.answer("how many notes do I have", session).text.startswith("You have 2 notes")
+
+
+def test_a_real_word_is_not_spelt_into_the_statistics_word(client):
+    """"when did the estates general meet" was read as a question about the
+    notebook's stats ("estates" is 0.83 close to "stats"), so a history
+    question got a note count (dog3-1026 row 10)."""
+    with _session() as session:
+        _note(session, "Estates General met on 5 May 1789")
+        for ask in ("when did the estates general meet", "what is the estates general?", "who wrote my notes on states"):
+            result = notebook_stats.answer(ask, session)
+            assert result is None, ask
+        assert notebook_stats.answer("show my notes statisics", session) is not None
+
+
+def test_the_closing_line_quotes_a_note_with_its_first_letter_capital():
+    from tessellate.ai import composer_tone
+
+    for seed in ("a", "b", "c", "d", "e", "f"):
+        line = composer_tone.closing(recent=["robespierre led the committee"], seed=seed)
+        assert "robespierre" not in line and "Robespierre led the committee" in line, line

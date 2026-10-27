@@ -141,7 +141,6 @@ THREAD_SITES = {
     "search/searxng_manager.py": "infrastructure: the SearXNG output pump",
     "search/searxng_install.py": "collect: searxng",
     "api/routes_update.py": "collect: app-update",
-    "api/routes_models.py": "collect: pull",
     "api/app.py": "jobruns: backup",
     "__main__.py": "infrastructure: the server and the tray icon",
     "core/jobs.py": "collect: job- kinds (the pool) and its heartbeat",

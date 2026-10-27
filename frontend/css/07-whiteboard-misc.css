@@ -13,6 +13,17 @@
 .wb-object:active {
   cursor: grabbing;
 }
+/* A picture fills its box and keeps its aspect (K16/K19): without this it drew
+   at its natural size, so a pasted image shrunk to the view overflowed a
+   smaller selection box and a resize changed the box but not the picture. */
+.wb-object-image > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  pointer-events: none;
+}
 /* A frame (WHITEBOARD_PLAN decision 14): an edge and a title with nothing in
    between, so the shapes on the drawing layer below the card layer show
    through it. Its inside lets the pointer through to the board, so a press
@@ -89,6 +100,9 @@
   max-width: calc(100% - 2 * var(--space-4));
 }
 .wb-present-count {
+  /* Fixed, so the arrows beside it never move between pages (INBOX K32). */
+  flex: none;
+  width: min(20rem, 50vw);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1120,6 +1134,13 @@ body.has-agent-monitor #timeline-scroll {
      sketch pad. The token also carries the responsive step for free. */
   padding: var(--space-4) var(--card-pad-x);
   border-bottom: 1px solid var(--border-light);
+}
+/* The popup agent's staged files: the card's own inset, a strip of
+   `attachmentChip`s (DESIGN.md "A file waiting on the next message"). */
+.command-palette-attachments {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: var(--space-3) var(--card-pad-x) 0;
 }
 /* **Centred by its own box, not by the glyph's inline baseline.** Reported:
    the popup agent's icon and input row read as misaligned. Measured: the
@@ -3058,6 +3079,32 @@ dialog::backdrop {
   padding-inline: var(--space-3);
   margin-bottom: 0;
 }
+/* **At half a window the field wraps above its controls** (the owner's 22-10
+   list: "redesign Ask at half width"). The field gave up its width first and
+   was left about 150px wide beside a length picker, two icon buttons and Ask.
+   Its basis is now a width worth typing in: when the row cannot hold that and
+   the controls, the controls drop to a second line at the right, and on a
+   wide window nothing changes. No width query: the wrap is the flex row's. */
+.ask-composer {
+  flex-wrap: wrap;
+}
+/* With its focus states: the shared interior rule above names them, so a
+   bare selector here lost to it while typing, the field took its full width
+   (flex-basis auto, width 100%), and pressing Ask blurred it and pulled the
+   button 65px up between press and release, so the click missed. */
+.ask-composer > #question,
+.ask-composer > #question:focus,
+.ask-composer > #question:focus-visible {
+  flex: 1 1 14rem;
+}
+/* The controls are one flex item, so a row that cannot hold them beside a
+   field worth typing in moves them down as a group. */
+.ask-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
 /* The answer-length picker was squashed to "Det…", it is a real choice
    with real words in it, and an ellipsis where the word "Detailed" should
    be is not a control anyone can read. A floor wide enough for the longest
@@ -3135,6 +3182,8 @@ dialog::backdrop {
 .ask-query-row select,
 .ask-query-row button:not(.menu-item) {
   height: var(--control-h);
+  /* The touch floor: Ask was 36px beside 44px icon buttons below 820. */
+  min-height: var(--target-min);
   padding-block: 0;
   margin: 0;
 }
@@ -4048,8 +4097,12 @@ button.icon-button:not(.ghost):not(.active):not(.status-item):not(.tool-btn):not
   background: var(--ghost-btn-bg-hover);
   color: var(--error);
 }
-/* A disclosure row reads as a control at rest, not only under the pointer. */
-summary:not(.icon-only):not(.icon-button) {
+/* A disclosure row reads as a control at rest, not only under the pointer.
+   Not the answer folds (`.fold-summary`: Grounded in, Why this answer,
+   Thinking; `.chat-sources-summary`: Sources), which sit in a card that
+   already frames them and are flat: Sources was the one boxed pill among
+   them (INBOX 1350, "feels out of place"). */
+summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summary) {
   /* `button.ghost`'s quiet recipe (01-forms-settings.css): a faint tint and
      the measured hairline, grey only under the pointer. */
   background: var(--btn-quiet-bg);
@@ -4445,7 +4498,9 @@ summary:not(.icon-only):not(.icon-button) {
      half of the board to its right. */
   left: 0;
   right: 0;
-  width: min(44rem, 92%);
+  /* Clear of the sidebar rail on both sides, so the centred offer's first
+     tile is not under the rail (dog3 item 21: 34px of it at 720). */
+  width: min(44rem, calc(100% - 9rem));
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -4485,6 +4540,17 @@ summary:not(.icon-only):not(.icon-button) {
   margin: 0;
   font-size: var(--text-sm);
   text-align: center;
+}
+/* A phone has no rail beside the offer: it takes the board's width. Its
+   hint line goes too: with it the offer ran 35px under the selected topic's
+   own bar (dog3 item 21, 390x844); the creation toast says the same. */
+@media (max-width: 599.98px) {
+  .wb-map-templates {
+    width: 92%;
+  }
+  .wb-map-first-hint {
+    display: none;
+  }
 }
 /* **The offer must not cover the thing it is an offer about.** Measured at
    390x844 on a new map: the old card wrapped to 335x237 at the top of the
@@ -4626,7 +4692,10 @@ img.board-minimap {
 .library-list .library-board-card .library-card-menu {
   margin-left: auto;
 }
-.board-minimap-card,
+/* `rect.`: a stored thumbnail is an <img> carrying the size class
+   `board-minimap-card` (pick-row.js `mapRaster`), and this rule faded the
+   whole picture to 0.55, grey on the light theme (the owner, 2026-10-27). */
+rect.board-minimap-card,
 .board-minimap-object {
   fill: var(--accent);
   opacity: 0.55;
@@ -4712,13 +4781,13 @@ img.board-minimap {
    board's ghost is not lifted either. Pointer and keyboard name the same
    marks by class, in one rule: a `:has(:focus-visible)` before a bare `rect`
    or `path` is an unkeyed rule (tests/test_has_invalidation.py). */
-.library-board-card:hover .board-minimap-card,
+.library-board-card:hover rect.board-minimap-card,
 .library-board-card:hover .board-minimap-object,
 .library-board-card:hover .board-minimap-image,
 .library-board-card:hover .board-minimap-image-mark,
 .library-board-card:hover .board-minimap-edge,
 .library-board-card:hover .board-minimap-sketch,
-.library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-card,
+.library-board-card:is(:focus-visible, :has(:focus-visible)) rect.board-minimap-card,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-object,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-image,
 .library-board-card:is(:focus-visible, :has(:focus-visible)) .board-minimap-image-mark,
@@ -5995,7 +6064,8 @@ button.connection-row:is(:hover, :focus-visible) {
   -webkit-backdrop-filter: none;
   max-width: none;
   margin: 0;
-  padding-block: calc(var(--control-h-lg) + 2 * var(--space-5)) 0;
+  /* Clears the bar (54px tall at the touch floor). */
+  padding-block: calc(2rem + max(var(--control-h-lg), var(--target-min))) 0;
 }
 /* The floating dock. A `.card.glass` pill, the recipe for a panel floating
    over a surface, parked at the top centre of the window. Hidden whenever the
@@ -6173,7 +6243,6 @@ button.connection-row:is(:hover, :focus-visible) {
   pointer-events: auto;
   visibility: visible;
 }
-#tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-resize,
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-collapse-toggle,
 #tab-documents.doc-focus.doc-focus-sidebar .doc-sidebar > .sidebar-rail-name {
   display: none;
@@ -6198,7 +6267,7 @@ button.connection-row:is(:hover, :focus-visible) {
 /* On a phone the floating dock is one line with no room for words: the
    toggles keep their icon, and their name is the `aria-label` and title
    they carry at every width. */
-@media (max-width: 599.98px) {
+@media (max-width: 819.98px) {
   /* Four toggles and the way out beside the facts is 29px more than a 390
      window holds at the desktop gap (INBOX 453 (1) added the fifth), so the
      pill tightens its gaps and its leading pad here. */
@@ -7209,20 +7278,47 @@ button.connection-row:is(:hover, :focus-visible) {
     flex-shrink: 0;
   }
 }
+/* The rename field takes the picker's place (renameCurrentBoard), so it must
+   not be taller than the picker: with the page's input margin (9.6px under
+   it) the bar grew 10px and the whole header dropped 5px while a board was
+   renamed (dog3 item 19). */
+.wb-topbar .wb-name-field {
+  margin: 0;
+  padding-block: 0;
+  height: auto;
+  align-self: stretch;
+  min-width: 0;
+  max-width: 100%;
+}
 /* The map's chip is one short word; the picker beside it gives way first. */
 .wb-topbar #wb-map-chip {
   flex: none;
 }
 @media (max-width: 76rem) {
+  /* Visually hidden, not display:none: the word stays the button's accessible
+     name (dog3 item 21: it was the tooltip's description, 'Undo, select,
+     duplicate, delete', for Edit). */
   .wb-topbar #wb-add-note .wb-menu-label {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 /* Narrow boards: the menus keep their carets and the Library its icon;
    the words go, so the bar stays one row down to ~40rem. */
 @media (max-width: 56rem) {
   .wb-topbar .wb-menu-label {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .wb-topbar .wb-menu-toggle {
     padding-inline: var(--space-2);
@@ -7417,9 +7513,16 @@ button.connection-row:is(:hover, :focus-visible) {
      - the rule in 06-timeline-dialogs.css said so already, but the
      edge-hugging `bottom` further up this file (same specificity, later)
      had silently won the cascade. Measured: dock/zoom overlap at 640px. */
-  /* No room for a zoom cluster above a full-width dock on a 480px-tall
-     window (it met the three-row top bar); zoom stays on Ctrl+wheel /
-     pinch and in the View menu's Zoom rows. */
+  .whiteboard-floating-panel.bottom-right {
+    bottom: calc(var(--space-2) + var(--wb-h-tools) + var(--space-3));
+  }
+}
+/* The zoom cluster rides above the full-width dock (06-timeline-dialogs.css);
+   only a window too short to clear the top bar drops it, where zoom stays on
+   Ctrl+wheel / pinch and in the View menu. It used to go at every width under
+   820px, so a half-screen window had no zoom level (measured: display none at
+   720x900 and 390x844). */
+@media (max-width: 819.98px) and (max-height: 520px) {
   .whiteboard-floating-panel.bottom-right {
     display: none;
   }
@@ -8497,10 +8600,13 @@ input[type="file"] {
    square swatch beside seven round controls. Same disc the board's pickers
    are, at the strip's own control height. */
 .wb-map-strip input[type="color"].wb-color-picker {
-  width: 1.75rem;
-  height: 1.75rem;
-  min-width: 1.75rem;
-  min-height: 1.75rem;
+  /* The touch floor, as every other strip control (1.75rem at a desk, 44px
+     under 820): it was 28px beside 44px buttons on a phone (INBOX 1354
+     item 5). */
+  width: var(--target-min);
+  height: var(--target-min);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
   padding: 0;
   margin: 0;
   border: 2px solid var(--muted);
@@ -8530,6 +8636,10 @@ input[type="file"] {
    1.75rem control height so it sits on the same line as the colour well. */
 .wb-map-strip .wb-menu-toggle {
   height: 1.75rem;
+  /* `button.small`'s floor (32px) beat the height above, so the three doors
+     stood 4px taller than the well and the steppers (INBOX 1354 item 5);
+     the touch floor still lifts all of them to 44 under 820. */
+  min-height: var(--target-min);
   gap: var(--space-1);
   padding-inline: var(--space-2);
   font-size: var(--text-sm);
@@ -9963,23 +10073,24 @@ header#top-bar {
     row-gap: var(--space-3);
   }
 }
-/* The compact row (Open, Link, ⋯; `renderGraphPopupActions`): one line at any
+/* The worded row (Open, Focus, Pin, Link, ⋯; on a phone Open, Link, ⋯;
+   `renderGraphPopupActions`, INBOX 1400): one line at any
    width that gets it, the ⋯ at the far end so the two worded buttons sit
    together and the menu sits where a thumb rests. */
-.graph-popup-actions.is-compact {
+.graph-popup-actions {
   justify-content: stretch;
   flex-wrap: nowrap;
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown {
+.graph-popup-actions .graph-popup-tool-shown {
   flex: 1 1 auto;
   min-width: 0;
   gap: var(--space-2);
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown > .menu-wrap {
+.graph-popup-actions .graph-popup-tool-shown > .menu-wrap {
   margin-left: auto;
 }
-.graph-popup-actions.is-compact .graph-popup-tool-shown > button:not(.icon-only) {
-  padding-inline: var(--space-4);
+.graph-popup-actions .graph-popup-tool-shown > button:not(.icon-only) {
+  padding-inline: var(--space-3);
 }
 @media (max-width: 599.98px) {
   :root {
@@ -10277,14 +10388,8 @@ header#top-bar {
   }
 }
 /* --- the dashboard's quick actions stop wrapping --------------------------
-   Measured at 390: `.dash-quicklinks` was **459px tall for two children**.
-   Each child is a labelled row of shortcut buttons, and at 390 each row wrapped
-   to four and five lines, so the two groups between them pushed the first
-   dashboard widget to y=877 on an 844px screen. Nothing on the Dashboard was
-   visible without scrolling, and the cause was one flex row allowed to wrap.
-   One scrolling row each, the same recipe the Notes and Library strips take
-   at this width, and for the same reason: a row of equal shortcuts is a thing
-   you scan sideways, not a paragraph. */
+   At 390 the two shortcut groups wrapped to 459px and pushed the first widget
+   below the fold; one scrolling row each, as the Notes and Library strips. */
 @media (max-width: 599.98px) {
   .launch-row {
     flex-wrap: nowrap;
@@ -10297,31 +10402,13 @@ header#top-bar {
   .launch-row > * {
     flex: 0 0 auto;
   }
-  /* **And the one that is a grid has to be told twice.** The rule above was
-     written for a flex row, and `.launch-row-start` (the "Start something"
-     tiles) is `display: grid` with `repeat(auto-fit, minmax(min(14rem, 100%),
-     1fr))`, so `flex-wrap` and `flex` meant nothing to it and only the
-     `overflow-x` landed. Measured at 390 today: 364.4px of room, a 6.4px gap
-     and a 14rem track, so two columns need 370.4px and `auto-fit` falls back
-     to one by six pixels. Five tiles at 60px became a 323px tower, and with
-     the greeting, the stats strip and the toolbar above it the first
-     dashboard widget started at y=870 on an 844px screen: nothing on the
-     Dashboard was above the fold, which is exactly the report the rule above
-     was written to fix, still true for three quarters of the height it was
-     measuring.
-     Back to a flex row here, so it takes the same scrolling treatment its
-     sibling row already takes. `min(15rem, 82%)` rather than `auto`: a tile
-     keeps the width its two lines of copy were set for, and the 18% left
-     over shows the edge of the next one, which is the only thing that tells
-     a reader sideways is a direction. */
+  /* The "Start something" row is a grid elsewhere, so it is made a flex row
+     here to take the same scrolling. */
   .launch-row-start {
     display: flex;
   }
-  /* **Two tiles fit, the third shows its edge** (libr-1011: "the second
-     tile sits past the viewport"). It was `min(15rem, 82%)`, so at 390 the
-     second tile started at 259px and showed 105 of its 240; 44% puts two whole
-     tiles in the 364px row and 28px of the third, which is still the only
-     thing that says sideways is a direction. */
+  /* Two whole tiles in the 364px row and the third's edge, the only cue that
+     sideways is a direction (libr-1011). */
   .launch-row-start > * {
     flex: 0 0 min(15rem, 44%);
   }
@@ -10343,11 +10430,6 @@ header#top-bar {
   .dash-hero-emblem {
     width: var(--control-h-lg);
     height: var(--control-h-lg);
-  }
-  /* Two lines held for the greeting: saving a name made it wrap, 82 to 118px
-     at 390, and moved everything below. */
-  .dash-greeting {
-    min-height: 2lh;
   }
 }
 /* --- the settings jump list ----------------------------------------------
@@ -11752,6 +11834,16 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   width: 100%;
   min-width: 0;
 }
+/* Several small numbers under one row name (shadow offset and blur, the four
+   corner radii): two columns, each label as wide as its own word. */
+.wb-fmt-quad {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-2);
+}
+.wb-fmt-quad .wb-fmt-num {
+  grid-template-columns: auto minmax(0, 1fr);
+}
 .wb-fmt-commands {
   display: flex;
   flex-direction: column;
@@ -11797,13 +11889,6 @@ button.finder-row:is(:focus-visible, :has(:focus-visible)) {
   stroke: var(--accent);
   stroke-width: 1.5px;
   cursor: copy;
-  pointer-events: auto;
-}
-.wb-link-label-handle {
-  fill: var(--card);
-  stroke: var(--accent);
-  stroke-width: 1.5px;
-  cursor: ew-resize;
   pointer-events: auto;
 }
 /* Clone and connect: an arrow a little outside each side of the one

@@ -20,7 +20,7 @@ from typing import Callable
 
 from datetime import timedelta
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import librarian, skills, toolrank, toolwords
@@ -826,7 +826,9 @@ def _count_notes(session: Session, args: dict) -> dict:
     # Total + per-category breakdown entirely in SQL.
     rows = session.execute(
         select(Category.name, func.count(Entry.id))
-        .outerjoin(Entry, (Entry.category_id == Category.id) & (Entry.is_deleted == False) & (Entry.is_private == False))  # noqa: E712
+        #: The same notes `_visible` counts everywhere else: boards and maps
+        #: counted here said "Uni (5)" beside /categories' "Uni (3)" (INBOX 1357).
+        .outerjoin(Entry, and_(Entry.category_id == Category.id, *_visible()))
         .group_by(Category.name)
     ).all()
     # Uncategorised entries (category_id IS NULL) aren't in the join above.
@@ -846,7 +848,9 @@ def _list_categories(session: Session, args: dict) -> dict:
     # SQL aggregation: no Python-side row iteration needed.
     rows = session.execute(
         select(Category.name, func.count(Entry.id))
-        .outerjoin(Entry, (Entry.category_id == Category.id) & (Entry.is_deleted == False) & (Entry.is_private == False))  # noqa: E712
+        #: The same notes `_visible` counts everywhere else: boards and maps
+        #: counted here said "Uni (5)" beside /categories' "Uni (3)" (INBOX 1357).
+        .outerjoin(Entry, and_(Entry.category_id == Category.id, *_visible()))
         .group_by(Category.name)
         .having(func.count(Entry.id) > 0)
         .order_by(Category.name)
@@ -1798,6 +1802,22 @@ def _set_reminder(session: Session, args: dict) -> dict:
     }
 
 
+#: What a reminder linked to a private note is called to a model and in chat:
+#: its words may be the note's own (a reminder made from a selection), and a
+#: private note's words never leave it (the .ics and calendar-link rule,
+#: `routes_reminders._event_details`). The Reminders tab still shows them.
+PRIVATE_REMINDER = "A reminder on a private note"
+
+
+def private_note_ids(session: Session, ids: list) -> set[int]:
+    """Which of these note ids are private (`PRIVATE_REMINDER`; the day's
+    activity reads it too, `ai/activity.py`)."""
+    wanted = {i for i in ids if i is not None}
+    if not wanted:
+        return set()
+    return set(session.scalars(select(Entry.id).where(Entry.id.in_(wanted), Entry.is_private.is_(True))).all())
+
+
 def _list_reminders(session: Session, args: dict) -> dict:
     """A page of reminders, soonest first, like every other list tool.
 
@@ -1820,10 +1840,11 @@ def _list_reminders(session: Session, args: dict) -> dict:
     rows = session.scalars(
         select(Reminder).where(*filters).order_by(Reminder.due_at).limit(limit).offset(offset)
     ).all()
+    private = private_note_ids(session, [r.entry_id for r in rows])
     reminders = [
         {
             "id": r.id,
-            "text": r.text,
+            "text": PRIVATE_REMINDER if r.entry_id in private else r.text,
             "due_at": r.due_at.isoformat(),
             "done": r.done,
             "note_id": r.entry_id,
@@ -4843,62 +4864,82 @@ def _coerce_array(value: object, schema: dict) -> tuple[object, bool]:
     return out, True
 
 
+def _coerce_integer(value: object, schema: dict) -> tuple[object, bool]:
+    if isinstance(value, bool):
+        return value, False
+    if isinstance(value, int):
+        return value, True
+    if isinstance(value, float) and value.is_integer():
+        return int(value), True
+    if isinstance(value, str) and _INT_TEXT.fullmatch(value.strip()):
+        return int(value.strip().lstrip("#")), True
+    return value, False
+
+
+def _coerce_number(value: object, schema: dict) -> tuple[object, bool]:
+    if isinstance(value, bool):
+        return value, False
+    # Finite only: "nan" and "inf" parse as floats, and a handler that
+    # compares or divides by one misbehaves without saying so (sweep 1004).
+    if isinstance(value, int):
+        return value, True
+    if isinstance(value, float):
+        return (value, True) if math.isfinite(value) else (value, False)
+    try:
+        number = float(str(value).strip())
+    except ValueError:
+        return value, False
+    return (number, True) if math.isfinite(number) else (value, False)
+
+
+def _coerce_boolean(value: object, schema: dict) -> tuple[object, bool]:
+    if isinstance(value, bool):
+        return value, True
+    word = str(value).strip().lower()
+    if word in _TRUE_WORDS or word in _FALSE_WORDS:
+        return word in _TRUE_WORDS, True
+    return value, False
+
+
+def _coerce_string(value: object, schema: dict) -> tuple[object, bool]:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        value = str(value)
+    if not isinstance(value, str):
+        return value, False
+    enum = schema.get("enum")
+    if enum and value not in enum:
+        folded = {str(e).lower(): e for e in enum}
+        hit = folded.get(value.strip().lower())
+        return (hit, True) if hit is not None else (value, False)
+    return value, True
+
+
+def _coerce_object(value: object, schema: dict) -> tuple[object, bool]:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (ValueError, RecursionError):  # a runaway nesting is a bad argument
+            return value, False
+    return value, isinstance(value, dict)
+
+
+#: How a value is read as each schema type; a type not here passes as it is.
+_COERCERS = {
+    "integer": _coerce_integer,
+    "number": _coerce_number,
+    "boolean": _coerce_boolean,
+    "string": _coerce_string,
+    "array": _coerce_array,
+    "object": _coerce_object,
+}
+
+
 def _coerce(value: object, schema: dict) -> tuple[object, bool]:
     """(value as the schema's type, True), or (value, False) when it cannot be
     read as that type without guessing."""
     kind = schema.get("type")
-    if kind == "integer":
-        if isinstance(value, bool):
-            return value, False
-        if isinstance(value, int):
-            return value, True
-        if isinstance(value, float) and value.is_integer():
-            return int(value), True
-        if isinstance(value, str) and _INT_TEXT.fullmatch(value.strip()):
-            return int(value.strip().lstrip("#")), True
-        return value, False
-    if kind == "number":
-        if isinstance(value, bool):
-            return value, False
-        # Finite only: "nan" and "inf" parse as floats, and a handler that
-        # compares or divides by one misbehaves without saying so (sweep 1004).
-        if isinstance(value, int):
-            return value, True
-        if isinstance(value, float):
-            return (value, True) if math.isfinite(value) else (value, False)
-        try:
-            number = float(str(value).strip())
-        except ValueError:
-            return value, False
-        return (number, True) if math.isfinite(number) else (value, False)
-    if kind == "boolean":
-        if isinstance(value, bool):
-            return value, True
-        word = str(value).strip().lower()
-        if word in _TRUE_WORDS or word in _FALSE_WORDS:
-            return word in _TRUE_WORDS, True
-        return value, False
-    if kind == "string":
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            value = str(value)
-        if not isinstance(value, str):
-            return value, False
-        enum = schema.get("enum")
-        if enum and value not in enum:
-            folded = {str(e).lower(): e for e in enum}
-            hit = folded.get(value.strip().lower())
-            return (hit, True) if hit is not None else (value, False)
-        return value, True
-    if kind == "array":
-        return _coerce_array(value, schema)
-    if kind == "object":
-        if isinstance(value, str):
-            try:
-                value = json.loads(value)
-            except (ValueError, RecursionError):  # a runaway nesting is a bad argument
-                return value, False
-        return value, isinstance(value, dict)
-    return value, True
+    coercer = _COERCERS.get(kind) if isinstance(kind, str) else None
+    return (value, True) if coercer is None else coercer(value, schema)
 
 
 def _describe_param(key: str, schema: dict) -> str:

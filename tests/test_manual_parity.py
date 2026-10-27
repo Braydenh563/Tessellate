@@ -128,7 +128,9 @@ UTILITIES = {
     "stopwatch": ("utility-tools.js", "function startStopwatch()", "the palette's Start a stopwatch", "timer"),
     "stop the clock": ("utility-tools.js", '$("status-timer").addEventListener("click", stopUtilityClock);', "the status bar's timer chip", "timer"),
     "no-model badge": ("reply-kit.js", "function replyByHelpPanel(kind)", "the From your notes badge", "ask-chat"),
-    "calculator": ("reply-kit.js", 'function openCalculator(input = "")', "the palette's Calculator, or /calc", "calculator"),
+    "calculator": ("reply-kit.js", 'function openCalculator(input = "", mode = "work")', "the palette's Calculator, or /calc", "calculator"),
+    "convert units": ("settings-panes.js", 'id: "convert", name: "Convert units"', "the palette's Convert units", "calculator"),
+    "equation": ("settings-panes.js", 'id: "equation", name: "Equation"', "the palette's Equation, Alt+=, or /equation", "equation-editor"),
     "count words": ("utility-tools.js", "function countSelection(caught)", "the palette's Count words", "count-words"),
     "live captions": ("captions.js", "async function startLiveCaptions(opts = {})", "the palette's Live captions", "live-captions"),
     "translate this": ("translate.js", "async function translateCaught(caught)", "the palette's Translate this", "translate-offline"),
@@ -155,9 +157,15 @@ def test_every_utility_has_its_way_in_and_a_guide_topic():
     #: in-place help; the Statistics page and Settings, Templates also have a
     #: '?' popover (`data-help-for`).
     panes = (FRONTEND / "js" / "settings-panes.js").read_text(encoding="utf-8")
-    for label in ("Statistics", "Calculator", "Start a timer", "Start a stopwatch", "Count words", "Live captions"):
+    for label in ("Statistics", "Count words", "Live captions"):
         row = next((line for line in panes.splitlines() if 'label: "ph:' in line and f' {label}"' in line), "")
         assert "about:" in row, f"the palette's {label} row has no line of help"
+    #: The timer and stopwatch rows come from `POPUP_TOOLS` (INBOX K27), whose
+    #: entries carry the same `about`.
+    tools = panes.split("const POPUP_TOOLS = [", 1)[1].split("\n];", 1)[0]
+    for label in ("Start a timer", "Start a stopwatch"):
+        entry = next((block for block in tools.split("\n  },") if f'name: "{label}"' in block), "")
+        assert "about:" in entry, f"the palette's {label} row has no line of help"
     html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     assert 'data-help-for="templates-help"' in html and "insert template" in html.split('id="templates-help"', 1)[1][:1200]
 
@@ -228,3 +236,16 @@ def test_the_open_packages_button_and_the_transcript_and_strip_controls_are_in_t
     assert "Open Packages button" in text and "Open Packages button" in html
     assert "Shift-click picks a run of" in text
     assert "Dates beside the strip" in text and "Dates beside the strip" in html
+
+
+def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so() -> None:
+    """INBOX 1400: Physics, Show, Display, Filter, Time, Groups and Minimap each
+    carry a '?' (`data-help-for`) in their head, and the Guide's graph topic
+    tells a reader that the sections have one."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    for help_id in ("physics", "show", "display", "filter", "time", "groups", "minimap"):
+        assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
+    assert "beside its name" in body and "Minimap" in body

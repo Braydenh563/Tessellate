@@ -70,7 +70,10 @@ def _kinds(runs):
 def test_thrown_up_at_the_top_bar_it_sometimes_catches_it_and_hangs() -> None:
     runs = _run("many(200, 600, 400, 0.3, -2.4)")
     kinds = _kinds(runs)
-    assert 50 <= kinds.get("hang", 0) <= 110, kinds
+    # K12, the owner: "every time I throw the companion to the roof it just
+    # bounces off": 0.4 odds above 0.35px/ms caught about 80 of 200; now 0.55
+    # above 0.2, about 100.
+    assert 85 <= kinds.get("hang", 0) <= 125, kinds
     # The rest bounce off it as before (down on the floor, or in the air when
     # the flight's time is up, which the drop then places).
     assert kinds.get("floor", 0) + kinds.get("air", 0) >= 60, kinds
@@ -103,6 +106,44 @@ def test_reaching_for_an_edge_at_the_top_of_the_arc_catches_it() -> None:
     world = "{ ...W, ledges: [{ left: 300, right: 900, y: 300 }] }"
     runs = _run(f"many(120, 560, 420, 0, -0.42, {world})")
     assert _kinds(runs).get("climb", 0) >= 20, _kinds(runs)
+
+
+@needs_node
+def test_falling_just_past_a_panel_end_a_hand_may_catch_it_and_pull_up() -> None:
+    # K12, the owner: "catch a higher or lower ui element and perch on that".
+    # Dropped 15px past the panel's right end: about half catch its edge,
+    # hang from that end and pull themselves up on to it.
+    world = "{ ...W, ledges: [{ left: 300, right: 900, y: 300 }] }"
+    runs = _run(f"many(200, 915, 100, 0, 0.1, {world})")
+    kinds = _kinds(runs)
+    assert 70 <= kinds.get("grab", 0) <= 130, kinds
+    for r in runs:
+        if r["kind"] == "grab":
+            assert r["x"] == 900 and r["y"] == 384 and r["at"] == [900, 300]
+    # Farther out than a hand reaches, it falls past.
+    assert "grab" not in _kinds(_run(f"many(100, 940, 100, 0, 0.1, {world})"))
+
+
+@needs_node
+def test_sliding_off_a_panel_end_it_may_nearly_fall_and_catch_on() -> None:
+    # K12, the owner: "nearly slip off a ui element but manage to grab on and
+    # pull itself up". Landed near the end and sliding off it.
+    world = "{ ...W, ledges: [{ left: 300, right: 900, y: 300 }] }"
+    runs = _run(f"many(200, 860, 280, 0.4, 0.05, {world})")
+    kinds = _kinds(runs)
+    assert 90 <= kinds.get("slip", 0) <= 150, kinds
+    for r in runs:
+        if r["kind"] == "slip":
+            assert r["x"] == 900 and r["y"] == 384 and r["at"] == [900, 300]
+    assert kinds.get("floor", 0) + kinds.get("air", 0) >= 40, kinds
+
+
+def test_each_catch_hangs_a_rolled_while_and_pulls_up_from_the_lazy_css() -> None:
+    hold = _fn(THROW, "companionThrowHold")
+    assert "COMPANION_THROW_CLIMB_MS * (0.8 + rand() * 0.8)" in hold
+    assert 'const COMPANION_THROW_PULLS = ["climb", "grab", "slip"];' in THROW
+    assert "char.style.animationDuration = `${fate.ms}ms`;" in THROW
+    assert "animation: nmb-slip-pull 520ms" in CSS
 
 
 @needs_node
@@ -168,9 +209,10 @@ def test_the_throw_is_lazy_and_boot_only_opens_the_door() -> None:
 
 
 def test_reduce_motion_gets_the_plain_flight_and_no_fates() -> None:
-    throw = _fn(THROW, "nameMarkBuddyThrow")
-    still = throw[throw.index("if (nameMarkBuddyNoTravel()) {") : throw.index("const char =")]
-    assert "nameMarkBuddyFlightStep(s, 16, world, feel)" in still and "companionThrowStep" not in still
+    # The plan (2026-10-27) steps the plain flight when motion is reduced, the fates otherwise.
+    plan = _fn(THROW, "companionThrowPlan")
+    assert "const still = nameMarkBuddyNoTravel();" in plan
+    assert "s = still ? nameMarkBuddyFlightStep(s, 16, world, feel) : companionThrowStep(" in plan
 
 
 def test_the_moments_are_transforms_on_the_figure_and_block_nothing() -> None:
@@ -186,9 +228,11 @@ def test_the_moments_are_transforms_on_the_figure_and_block_nothing() -> None:
 
 def test_a_throw_that_lands_on_a_surface_stays_on_it():
     """INBOX 1302: thrown onto the bottom bar where it cannot stand, it went up
-    to the top bar; now it steps along the surface it landed on, however far."""
+    to the top bar; now it steps along the surface it landed on. INBOX 1402:
+    "however far" took it 224 to 320px along the bar, so a little way along
+    it, and past that the nearest open air (tests/test_companion_land_1402.py)."""
     spot = _fn(AV, "nameMarkBuddyThrowSpot")
     assert 'fate?.kind === "splat"' not in spot
-    assert "if (s.on && spot.y < s.y - 40)" in spot and "innerWidth" in spot
+    assert "if (s.on && spot.y < s.y - 40)" in spot and "NMB_LAND_NEAR" in spot and "innerWidth" not in spot
     assert "far = 320" in _fn(AV, "nameMarkBuddyStepAside")
     assert "Math.max(320, reach)" in _fn(AV, "nameMarkBuddyDrop")

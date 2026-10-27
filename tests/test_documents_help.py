@@ -20,6 +20,7 @@ INDEX = (Path(__file__).resolve().parents[1] / "frontend" / "index.html").read_t
 #: The one phrase the dock's help uses for each ⋯ menu row, by id.
 DOCK_MENU_WORDS = {
     "doc-format-toggle": "formatting toolbar",
+    "doc-paste-special": "Paste special",
     "doc-connections": "Connections",
     "doc-history": "History",
     "doc-replace-everywhere": "Replace in every document",
@@ -33,6 +34,8 @@ DOCK_MENU_WORDS = {
     "doc-export-docx": ".docx",
     "doc-export-pdf": "PDF",
     "doc-width-menu": "page width",
+    "doc-text-size": "text size",
+    "doc-line-spacing": "line spacing",
     "doc-toolbar-mode": "toolbar row",
     "doc-code-wrap-row": "wrap",
     "doc-whitespace-row": "whitespace",

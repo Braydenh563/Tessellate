@@ -652,6 +652,17 @@ def test_a_word_that_exists_is_never_corrected(client):
     assert body.get("corrected") in (None, "")
 
 
+def test_a_correction_is_a_word_the_notes_use_not_its_stem(client):
+    """Dogfood round 1, item 19: "lecure 5" said "showing results for
+    'lectur 5'". The index holds porter stems, and the closest stem to the
+    typo is not a word anyone wrote; the correction is the word in the note."""
+    client.post("/entries", json={"content": "Lecture 5 covered sorting"})
+    client.post("/entries", json={"content": "Lectures resume on Monday"})
+    body = client.get("/search", params={"q": "lecure 5"}).json()
+    assert body["corrected"] == "lecture 5", body.get("corrected")
+    assert body["hits"], "the corrected word still finds the notes"
+
+
 def test_nothing_close_is_still_nothing(client):
     client.post("/entries", json={"content": "Dentist appointment on Friday"})
     body = client.get("/search", params={"q": "xylophone"}).json()

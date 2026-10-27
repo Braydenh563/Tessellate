@@ -66,18 +66,26 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "throw the companion", "flick the companion", "throwing the companion",
             "companion splat", "companion climbs", "companion hangs from the top bar",
-            "companion went off the screen", "companion lies down",
+            "companion went off the screen", "companion lies down", "companion slips off",
+            "companion went off the top", "companion tumbles",
         ),
         "body": (
             "Throw the corner companion by letting go of it while it is still "
             "moving fast. It flies, bounces off the window's edges and stays "
             "where it lands, and now and then something else happens: it "
             "catches the top bar and hangs from it, grabs a panel's top edge "
-            "and climbs on, splats against a side of the window and slides "
+            "and climbs on, catches the end of a panel as it falls past or "
+            "slides off one and pulls itself up, splats against a side of the "
+            "window and slides "
             "down to the panel below, or goes off one side and comes back on "
-            "the other. Once down it settles in its own way: sitting with its "
+            "the other. How you throw it chooses: a soft toss lands near, a hard "
+            "one sideways can go far or into a corner, and a hard one upwards "
+            "can leave the top of the window and fall back in. A panel only "
+            "catches it when it comes down slowly, and it may land, slide off "
+            "or tumble and get up. Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "
-            "from the bar. Wherever it ends, it never covers a button. With "
+            "from the bar. Wherever it ends, it never covers a button: come "
+            "down on one and it moves only to the nearest clear place. With "
             "Reduce motion on, it simply appears where it lands."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
@@ -92,7 +100,7 @@ MORE_TOPICS: list[dict] = [
             "Atlas is the assistant inside Tessellate. It answers questions from your notes and cites them, "
             "files new notes, sets reminders, finds, tags, moves and links notes (a change that cannot be "
             "taken back waits for your Confirm), and opens the part of the app you name. Ask lives in Notes, "
-            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab. With no model connected it "
+            "Chat has its own tab, and Ctrl+Shift+A opens it over any tab, where its paperclip, a drop or a paste adds files as chips. With no model connected it "
             "answers from your notes by itself."
         ),
         "badge": {"label": "Chat", "tab": "chat"},
@@ -266,14 +274,18 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
-            "general settings",
+            "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
         ),
         "body": (
-            "Settings, General. Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
+            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
+            "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February). "
+            "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
-            "quotes and dashes in documents, and offers to turn a named note or document into a link "
+            "quotes and dashes in documents, Check link text (spelling and grammar skip the words "
+            "of a link unless it is on), and offers to turn a named note or document into a link "
             "(switch them off there, or press Never offer a link to this name on one offer; Offer them "
             "again brings every kept name back). Answer style moved to Settings, "
             "Personas, and Search relevance to Settings, Search and index."
@@ -291,18 +303,18 @@ MORE_TOPICS: list[dict] = [
             "files missing", "model files incomplete",
             "rebuild search index", "search index", "search is wrong",
             "too many results", "too few results", "search feels too strict",
-            "install search by meaning automatically", "dont install", "refuse install",
-            "cancel install", "sentence-transformers", "2 gb download",
+            "download search by meaning", "no thanks", "refuse download", "turn on search by meaning",
+            "cancel install", "fastembed", "130 mb download", "search model download",
         ),
         "body": (
             (
-                "Settings, Search and index. Search engine: the built-in one (recommended, about 650 MB "
+                "Settings, Search and index. Search engine: the built-in one (recommended, about 300 MB "
                 "of memory while the app is open) or an Ollama embedding model such as nomic-embed-text. "
-                "The built-in one needs the sentence-transformers package (about 2 GB with PyTorch), "
-                "which Tessellate installs in the background the first time it is needed, with a notice "
-                "that says so and a Don't install button; the switch Install search by meaning "
-                "automatically turns that off, and search then uses keywords until you press Install in "
-                "Settings, Packages. Changing the engine re-reads every note in the background "
+                "The built-in one needs the fastembed package (ONNX Runtime, no PyTorch) and a small model "
+                "from huggingface.co, about 130 MB in all. Nothing is downloaded without a yes: the first time a "
+                "save needs it Tessellate asks once, with Download and No thanks, and search uses "
+                "keywords until you say yes. The switch Download search by meaning turns it on later, "
+                "or off again, and Settings, Packages keeps a manual Install. Changing the engine re-reads every note in the background "
                 "(Background tasks shows it, with Stop) and search keeps using the current model until "
                 "the new one has read every note. Embedding models lists the choices, from MiniLM "
                 "(smallest, fastest) and BGE Small (the default) to multilingual ones (Multilingual E5, "
@@ -318,6 +330,27 @@ MORE_TOPICS: list[dict] = [
                 "search stops finding notes you know are there. Search relevance: Minimum similarity and "
                 "Above-average margin; raise them for fewer, surer results, lower them if search feels "
                 "too strict, and Reset to default undoes both."
+            )
+        ),
+        "badge": {"label": "Search and index", "section": "searchindex"},
+    },
+    {
+        "id": "search-engine-moved",
+        "keywords": (
+            "search engine moved", "engine moved", "upgraded from pytorch", "old search engine",
+            "pytorch", "torch", "sentence-transformers", "old search files", "old model files",
+            "remove old models", "free disk space", "why download again", "download again",
+        ),
+        "body": (
+            (
+                "After an upgrade from a version that ran search by meaning on PyTorch, the question about "
+                "downloading it says the engine moved. The old model files do not work with the new engine, "
+                "so it is one download (about 130 MB for BGE Small) that replaces them, asked first, with "
+                "keyword search working meanwhile. Notes made with BGE Small or Multilingual E5 Small keep "
+                "their search data; notes made with any other model are read again in the background. Once "
+                "the new model is ready, Settings, Search and index, Old search files lists the old model "
+                "folders with their sizes and Remove deletes one; in the packaged app it also removes PyTorch "
+                "and sentence-transformers. Nothing else changes."
             )
         ),
         "badge": {"label": "Search and index", "section": "searchindex"},
@@ -347,6 +380,23 @@ MORE_TOPICS: list[dict] = [
             "the whole."
         ),
         "badge": {"label": "Answer style", "section": "personas", "target": "pref-style"},
+    },
+    {
+        "id": "wrap-lines",
+        "keywords": (
+            "wrap lines", "wrap text", "wrap a table", "wrap code", "wrap a code block",
+            "table scrolls sideways", "code scrolls sideways", "long lines in code",
+            "wide table", "horizontal scroll", "don't wrap",
+        ),
+        "body": (
+            "A wide table or a code block in an answer (and in a note's Read view) "
+            "scrolls sideways. The Wrap lines button in the card's top bar, beside "
+            "Copy, breaks the long lines instead, so nothing scrolls; Don't wrap "
+            "(the same button, pressed) puts the scrolling back, which is what you "
+            "want for code you mean to paste. Tables and code remember their own "
+            "choice for the next one."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
     },
     {
         "id": "background-tasks",
@@ -920,7 +970,8 @@ MORE_TOPICS: list[dict] = [
         "body": (
             "The calculator works out sums, percentages and conversions with no "
             "model, the same way /calc does. Open it from the command palette "
-            "(Ctrl+K, Calculator), by typing /calc with nothing after it, or "
+            "(Ctrl+K, Calculator, or Convert units for the conversion tab; both "
+            "are also in the / menu), by typing /calc with nothing after it, or "
             "with Open the calculator under an answer that worked something "
             "out. Work out takes a sum typed or keyed (12 * (3 + 4), 15% of 80, "
             "5 km to miles), shows the result as you type and says how it read "
@@ -973,7 +1024,7 @@ MORE_TOPICS: list[dict] = [
             "first note. Remove the sample notes moves them all to the bin, where "
             "Restore brings one back, and takes away the categories they made. The steps leave once all three are done and "
             "the sample notes are gone. Mark all as done ticks every step and puts the card away; Hide Get started "
-            "hides the card and the dock's Get started button. Customise, Show Get started, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
+            "hides the card and the dock's Get started button. Settings > Help (Show Get started), Customise, the hide notice's Show again or the palette (Ctrl+K, Show Get started) brings them back. "
             "Until then the dashboard's Get started menu (beside Customise) lists the same three, ticked as "
             "they are done, with Take the tour and Replay the welcome, and the same checklist "
             "is the first row of the notifications bell until all three are done."
@@ -1600,7 +1651,7 @@ MORE_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
-            #: INBOX 688, 714: the Ask box's Use AI switch.
+            #: INBOX 688, 714: the Ask box's AI switch (K34).
             "id": "answers-from-notes",
             "keywords": (
                 "from your notes", "answer without ai", "no ai answer", "answer with no model",
@@ -1610,8 +1661,8 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 (
-                    "Ask on the Notes tab has a Use AI switch beside its title. On, your model writes the "
-                    "answer; off, the answer is From your notes, with no AI. It opens with the answer, or for"
+                    "Ask on the Notes tab has an AI switch beside its answer-length picker. On, your model writes the "
+                    "answer, with From your notes under it; off, the answer is From your notes, with no AI. It opens with the answer, or for"
                     " a topic with how many notes and over which days (You have four notes about uni, 17 July"
                     " to 4 August), then tells each note in a sentence (In your first psych lecture you "
                     "learned ...) or under a bold label, one source mark that lights its note. It says what "
@@ -1629,7 +1680,7 @@ MORE_TOPICS.extend(
                     "which of your words none of the notes found mention. The badge by the name says who "
                     "wrote it (From your notes, a model's name, or Composer); hover or click it for what "
                     "that means. The No model connected line above the Chat box "
-                    "and the Ask box has a close button (the small x at its end): it hides that line until "
+                    "and the Ask box has a close button: it hides that line until "
                     "the next time you start the app, a new session, and connecting a model in Settings, "
                     "Models always brings the answers back. Hide it for good under Model backend."
                 )
@@ -1880,6 +1931,8 @@ MORE_TOPICS.extend(
             "keywords": (
                 "sticky", "sticky note", "stickies", "note colour", "note color", "sticky colour",
                 "text box or note", "text box vs sticky", "paper colour",
+                "bold in a sticky", "format a text box", "selection bar on a board",
+                "text size for some words", "different font for some words", "colour some words", "highlight colour on a board",
             ),
             "body": (
                 "Sticky notes and text boxes on a board. A sticky (N, or the note "
@@ -1891,7 +1944,16 @@ MORE_TOPICS.extend(
                 "menu, Box. The folded corner can be switched off for one note (Format "
                 "panel, Folded corner) or as the board's default (View, Folded sticky "
                 "corners). Each change is one Undo step. Typing in either, / offers "
-                "lists, a to-do, headings, links and an emoji, and [[ links a note."
+                "lists, a to-do, headings, links and an emoji, and [[ links a note. "
+                "To format part of the text while typing, select words: the "
+                "selection bar offers bold, italic, strike, highlight, code, link "
+                "and a list, and Ctrl+B, Ctrl+I and Ctrl+K work too. Text style (Aa) on that "
+                "bar sets a size, a font, a text colour and a highlight for the "
+                "selected words only, kept in the text as {{size=24|words}}; its "
+                "last button opens the Format panel's Text tab for the whole box. "
+                "The box keeps "
+                "markdown and shows it rendered once you finish (Format panel, "
+                "Rendered markdown, to see the marks)."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2041,7 +2103,7 @@ MORE_TOPICS.extend(
                 "code panel beside the editor, a sheet on a phone. The Assistant "
                 "tab works on the selected lines, or the whole file: Explain, Fix "
                 "(the problem at the caret), Write tests, Refactor, or a question "
-                "typed below them. A change comes back as a diff: Apply puts it in "
+                "typed below them (sent empty, it flags the field). A change comes back as a diff: Apply puts it in "
                 "the editor, where one Ctrl+Z takes it out, and Reject leaves the "
                 "file alone. With no model, Fix applies the quick fix, the tools "
                 "row (Quick fix, Format, Run tests, Find usages) works as it is, "
@@ -2055,7 +2117,7 @@ MORE_TOPICS.extend(
                 "first (Show every language for the rest); the search matches "
                 "names, tags and languages, and #io matches the tag io. A row "
                 "inserts at the caret, or drag a row into the text and it lands where a "
-                "bar shows (the text scrolls at its top and bottom edge); one Ctrl+Z takes it out; built-in rows "
+                "bar shows; one Ctrl+Z takes it out; built-in rows "
                 "have stops that Tab walks. The panel's Save keeps the selected "
                 "code: #words in the name you give become its tags. Each of your "
                 "own rows has a menu to insert, rename or retag, and delete; "
@@ -2143,6 +2205,7 @@ TOPIC_META: dict[str, dict] = {
     "learned": {"title": "What it learned", "path": "Settings, What it learned"},
     "general-settings": {"title": "General settings", "path": "Settings, General"},
     "search-index": {"title": "Search and index", "path": "Settings, Search and index"},
+    "search-engine-moved": {"title": "Old search files", "path": "Settings, Search and index, Old search files"},
     "answer-style": {"title": "Answer style", "path": "Settings, Personas, Answer style"},
     "background-tasks": {"title": "Background tasks", "path": "Settings, Background tasks"},
     "health": {"title": "Health", "path": "Settings, About, Health"},
@@ -2172,6 +2235,7 @@ TOPIC_META: dict[str, dict] = {
     "document-history": {"title": "A document's history", "path": "A document's ... menu, History"},
     "writing-checks": {"title": "Spelling, grammar and wording", "path": "The document editor"},
     "notebook-questions": {"title": "Questions about your notebook", "path": "Chat tab, or Ask on the Notes tab"},
+    "studyhelp": {"title": "Study help with no model", "path": "Chat tab, or Ask on the Notes tab"},
     "contradictions": {"title": "Notes that disagree", "path": "Dashboard tab"},
     "write-with-atlas": {"title": "Writing room", "path": "Notes tab, Writing room"},
     "search": {"title": "Searching everything", "path": "Ctrl+P, or the dashboard's search box"},
@@ -2201,9 +2265,13 @@ TOPIC_META: dict[str, dict] = {
     "board-templates": {"title": "Board and map templates", "path": "Library tab, Boards & maps, New, From a template"},
     "board-format": {"title": "The board's Format panel", "path": "A board, Ctrl+Shift+P or the selection's More menu"},
     "board-connectors": {"title": "Connector bends, connection points and importing diagrams", "path": "A board, Insert, Mermaid, draw.io or board SVG"},
+    "board-diagram-tools": {"title": "Diagram tools: zoom to the selection, tidy as a tree, change a shape, link a shape, shrink text to fit", "path": "A board, Arrange, View, or a selection's More"},
+    "board-paste": {"title": "Paste on a board or map: options and Paste special", "path": "A board, Edit, Paste special"},
     "mind-map-controls": {"title": "Mind map keys and controls", "path": "Library tab, Boards & maps"},
     "documents-controls": {"title": "Document editor keys and controls", "path": "Library tab, Documents"},
     "documents-features": {"title": "Document editor features", "path": "Library tab, Documents"},
+    "documents-paste": {"title": "Paste options and Paste special", "path": "Library tab, Documents, document menu"},
+    "documents-turn-into": {"title": "Turn into: change a block to a heading, list, quote or code", "path": "Library tab, Documents, select text, Turn into"},
     "mind-map-features": {"title": "Mind map features", "path": "Library tab, Boards & maps"},
     "mind-map-import-export": {"title": "Mind map templates, import and export", "path": "Library tab, Boards & maps"},
     "mind-map-study": {"title": "Study the map", "path": "Library tab, Boards & maps, a map's board menu"},
@@ -2213,10 +2281,12 @@ TOPIC_META: dict[str, dict] = {
     "sticky-notes": {"title": "Sticky notes and text boxes", "path": "A board's tool dock, Add"},
     "callouts": {"title": "Callouts", "path": "Library tab, Documents"},
     "graph-controls": {"title": "Graph keys and controls", "path": "Graph tab"},
-    "graph-display": {"title": "More graph controls", "path": "Graph tab, the gear"},
+    "graph-display": {"title": "More graph controls", "path": "Graph tab, Options"},
+    "graph-options-help": {"title": "What the Options sections do", "path": "Graph tab, Options"},
     "properties": {"title": "Note properties and types", "path": "a note's ⋯, Properties; or the command palette, Note types"},
     "entities": {"title": "People and things", "path": "Graph tab, an entity; or the command palette, People and things"},
     "chat-controls": {"title": "Chat keys and controls", "path": "Chat tab"},
+    "wrap-lines": {"title": "Wrap lines in tables and code", "path": "Chat tab, a table or code block"},
     "notes-controls": {"title": "Notes keys, filters and selection", "path": "Notes tab"},
     "library-controls": {"title": "Library controls", "path": "Library tab"},
     "timeline-controls": {"title": "Timeline controls", "path": "Timeline tab"},
@@ -2238,8 +2308,8 @@ TOPIC_META: dict[str, dict] = {
     "addresses": {"title": "Every view has an address", "path": "The browser's address bar"},
     "bookmarks": {"title": "Bookmarks", "path": "Library tab, Bookmarks"},
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
-    "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the Use AI switch", "steps": (
-        "Open Ask on the Notes tab.", "Turn Use AI off beside the title.", "Ask: the answer is quoted from your notes, with no AI.")},
+    "answers-from-notes": {"title": "Answers from your notes, no AI", "path": "Notes tab, Ask, the AI switch", "steps": (
+        "Open Ask on the Notes tab.", "Turn the AI switch off beside the answer length.", "Ask: the answer is quoted from your notes, with no AI.")},
     "follow-up-trail": {"title": "Where a follow-up came from", "path": "Chat tab, or Ask in the Notes tab, under an answer"},
     "why-this-answer": {"title": "Why this answer", "path": "Notes tab, Ask, under an answer"},
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
@@ -2264,7 +2334,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "command-palette", "find-anything", "find-a-place", "search", "addresses", "settings-overview", "settings-reset", "install-app", "name",
     )),
     ("Writing notes", (
-        "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "notes-controls",
+        "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
         "notes-list", "note-history", "links", "favourites", "templates",
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
     )),
@@ -2272,24 +2342,24 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions",
+        "ask-chat", "answers-from-notes", "chat-controls", "wrap-lines", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
-        "documents", "documents-controls", "documents-features", "callouts", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
+        "documents", "documents-controls", "documents-features", "documents-paste", "documents-turn-into", "callouts", "equation-editor", "document-history", "writing-checks", "code-files", "code-completions", "code-run",
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-paste", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-callouts", "board-current-layer", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
         "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
-        "graph", "graph-controls", "graph-display", "entities", "properties", "timeline", "timeline-controls", "reminders",
+        "graph", "graph-controls", "graph-display", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",
         "reminders-controls", "dashboard", "dashboard-controls", "patterns", "notifications", "spaces", "statistics",
     )),
     ("Small tools", (
@@ -2301,7 +2371,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
-        "search-index", "packages",
+        "search-index", "search-engine-moved", "packages",
     )),
     ("Privacy and your data", (
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",
@@ -2316,7 +2386,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
 #: (`ai/act_registry.py`, CHAT_PLAN decision 53), so a new act is in the Guide the
 #: moment it is in the registry, and a renamed one cannot drift.
 #: The Guide's gaps from the engine probe (CHAT_PLAN section 2, the help
-#: row; `agent-remaining/engine-probe-1010.md`): the phone, two computers,
+#: row; `archive/agent-remaining/engine-probe-1010.md`): the phone, two computers,
 #: encryption, deleting your data and sharing a note had no topic of their
 #: own. `tests/test_guide_gaps.py` holds the probe's table at 1.0.
 MORE_TOPICS.extend([
@@ -2471,6 +2541,28 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "mind-map-lines",
+        "keywords": (
+            "straight lines on a map", "map line style", "lines arent straight", "curved lines",
+            "elbow lines", "which side a line leaves", "side of a topic", "line end side",
+            "pin a line to a side", "topic shape", "hexagon topic", "diamond topic", "cloud topic",
+            "circle topic", "chevron topic", "underline topic", "core idea shape",
+        ),
+        "body": (
+            "Beside a map's Layout picker, the line style picker draws every line "
+            "Curved, Straight or Elbow (right angles with rounded corners); a "
+            "topic's own line Shape in its strip still wins. Point at a line, or "
+            "select a topic, and each end of its line shows a hollow dot: drag it "
+            "round the topic to choose the side the line leaves or enters, in any "
+            "layout, and it stays on that side when either topic moves. "
+            "Double-click the dot, or the topic's menu, Lines, Line ends: back to "
+            "Auto, to let the layout choose again. A topic's Box picker offers "
+            "Rounded, Pill, Box, Ellipse, Circle, Hexagon, Diamond, Cloud, Chevron, Underline and "
+            "Plain, the words kept inside the shape. Ctrl+Z undoes each change."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "mind-map-callouts",
         #: No "votes": one typo from "notes", so "unlink two notes" read as this topic; "vote" matches its plural.
         "keywords": (
@@ -2510,6 +2602,21 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-keyboard-create",
+        "keywords": (
+            "keyboard only board", "make a sticky with the keyboard", "enter on a board",
+            "place a text box without a mouse", "edit a sticky with enter", "board without a mouse",
+        ),
+        "body": (
+            "Making and writing on a board without a pointer: press N, T or F to hold "
+            "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
+            "of the view. Tab walks the items; Enter on a selected "
+            "text box or sticky puts the caret at the end of its words, and Enter on a "
+            "selected shape writes in it. Escape leaves the words."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-hand-drawn",
         "keywords": (
             "hand-drawn", "hand drawn", "sketchy", "rough lines", "excalidraw look",
@@ -2535,9 +2642,10 @@ MORE_TOPICS.extend([
             "three cells, the first a header. Double-click a cell to type in it; "
             "Tab and Shift+Tab go to the next and previous cell, Enter keeps the "
             "words, Escape drops them. Right-click the table for Add a row below or "
-            "above, Add a column to the right or left, Delete this row or column "
-            "(at the cell you pressed last) and First row as a header. Resize it "
-            "by its handles; every cell keeps an equal share."
+            "above, Add a column to the right or left, Widen or Narrow this column, "
+            "Equal column widths, Delete this row or column (at the cell you "
+            "pressed last) and First row as a header. Resize it by its handles; "
+            "columns share the width equally until you widen or narrow one."
         ),
         "badge": {"label": "Library", "tab": "library"},
     },
@@ -2591,7 +2699,9 @@ TOPIC_META.update({
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
+    "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},
     "mind-map-structure": {"title": "A structure per branch", "path": "A map topic's menu, Structure"},
+    "mind-map-lines": {"title": "Map line style, line ends and topic shapes", "path": "A map, Layout, the line style picker"},
     "mind-map-callouts": {"title": "Callouts, labels and stamps on a topic", "path": "A map topic's menu, Topic"},
 })
 
@@ -2692,7 +2802,9 @@ MORE_TOPICS.append({
         "pattern on the dashboard's line to see the notes behind it; Notes, Tidy "
         "lists every pattern whole. Its ... menu has Confirm, which says it as a "
         "fact from then on, and Not right, which never shows it or anything like "
-        "it again."
+        "it again. A plan still open also has Done: it removes your Confirm and "
+        "never shows that plan again, and a later note that shares the plan's "
+        "words does the same on its own."
     ),
     "badge": {"label": "Dashboard", "tab": "dashboard"},
 })
@@ -2723,3 +2835,63 @@ TOPIC_META["slash-commands"] = {"title": "Slash commands", "path": "Chat tab, ty
 
 
 TOPIC_META["patterns"] = {"title": "Patterns", "path": "The dashboard's line under the greeting, and Notes, Tidy"}
+
+
+#: INBOX 1352: the quick sketch pad rebuilt as a paint pad (sketch-pad.js).
+MORE_TOPICS.append({
+    "id": "quick-sketch",
+    "keywords": (
+        "quick sketch", "sketch pad", "draw a picture", "paint", "drawing tools",
+        "brush", "pencil", "eraser", "highlighter", "bucket fill", "paint bucket",
+        "eyedropper", "colour picker", "draw a rectangle", "draw a circle",
+        "polygon", "annotate a picture", "draw on a picture", "download png",
+    ),
+    "body": (
+        "Quick sketch (q, Ctrl+Shift+K, or Sketch on the dashboard) is a paint "
+        "pad. The tools are down the left, each with a letter: S select, P "
+        "pencil, B brush, H highlighter, E eraser, L line, A arrow, R "
+        "rectangle, O ellipse, G polygon, T text, F fill, I colour picker. A "
+        "shape is drawn corner to corner; Shift makes it a square or circle "
+        "and snaps a line to 45 degrees, Alt draws it from the centre, and "
+        "Escape cancels it; with the Text tool Escape places the text. The "
+        "bar holds the ink and fill colours (X swaps them), the palette and "
+        "a custom colour, the size ([ and ] change it; for Text it is the "
+        "text size), outline, fill or both for shapes, Undo, Redo (Ctrl+Shift+Z "
+        "or Ctrl+Y), Clear and a More menu (a picture under the ink, the paper "
+        "colour). On a narrow window the palette, size and style are under "
+        "Colour, size and style. Ctrl and the wheel zoom, 0 fits the page. "
+        "Save as note adds the sketch to a new note once something is drawn; "
+        "Download PNG saves the picture; a picture's Annotate opens it here."
+    ),
+    "badge": {"label": "Notes", "tab": "notes"},
+})
+TOPIC_META["quick-sketch"] = {"title": "Quick sketch", "path": "Notes, the sketch button; q or Ctrl+Shift+K anywhere"}
+
+
+#: DOCUMENTS_PLAN 16: the guided equation editor (math-editor.js).
+MORE_TOPICS.append({
+    "id": "equation-editor",
+    "keywords": (
+        "equation", "equations", "equation editor", "write an equation",
+        "maths", "math", "formula", "fraction", "square root", "greek letter",
+        "symbol", "integral", "matrix", "latex", "tex", "alt+=", "alt equals",
+    ),
+    "body": (
+        "The equation editor opens from /equation in a note, a document, a "
+        "board's text or the Chat box, from a document's Insert menu, or with "
+        "Alt+= there and in the Ask box (the same as Word's Alt+=); Ctrl+K, "
+        "Equation opens it over the box you were in, and the shortcuts list "
+        "has it under Tools. Type it plainly: a/b makes a "
+        "fraction, ^ and _ a power or a subscript, and a space or an operator "
+        "steps out of one; alpha, pi, sqrt, sum or sin become the symbol after "
+        "a space, and >=, != and -> one sign. Tab goes to the next empty box; "
+        "Backspace straight after a change undoes it. The palette inserts "
+        "Greek, operators, relations, arrows, sets, calculus and structures "
+        "such as a root, an integral, a limit, a matrix or cases, with a live "
+        "preview. Inline sits in the sentence, Display on its own line; "
+        "Ctrl+Enter inserts. It writes TeX between dollar signs, so the note "
+        "stays plain text; with the cursor in an equation it opens to edit it."
+    ),
+    "badge": {"label": "Library", "tab": "library"},
+})
+TOPIC_META["equation-editor"] = {"title": "Equation editor", "path": "Type /equation, or Alt+=, in a note, a document, a board's text or Chat"}

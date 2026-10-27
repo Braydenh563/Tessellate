@@ -13,8 +13,8 @@ up routes and the `EmbeddingService` singleton, cost numpy's own import
 had anything worth embedding yet.
 
 Each of those four files now imports numpy inside the specific functions and
-methods that call `np.*`, the same shape `_load_st_model` in
-`ai/embeddings.py` already used for `sentence_transformers` (a heavy,
+methods that call `np.*`, the same shape `_load_builtin_model` in
+`ai/embeddings.py` already used for its engine, `fastembed` (a heavy,
 optional import deferred to the one place that needs it) and `__main__.py`
 uses for `uvicorn`/`create_app`. `from __future__ import annotations` is
 already present in all four files, so every remaining module-level `np.`

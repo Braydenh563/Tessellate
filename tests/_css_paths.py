@@ -55,6 +55,8 @@ CSS_FILES = [
     CSS_DIR / "tidy-lazy.css",
     #: The Graph tab's late styles (`LAZY_MODULES.graph`, 2026-10-10).
     CSS_DIR / "graph-lazy.css",
+    #: The web reader's typography (`LAZY_MODULES` web reader, composer-1025).
+    CSS_DIR / "web-lazy.css",
     #: An answer composed from the notes (loaded by ask-compose.js, CHAT_PLAN
     #: decision 33): the quote style of a sentence said from a note.
     CSS_DIR / "ask-compose-lazy.css",
@@ -106,10 +108,18 @@ CSS_FILES = [
     CSS_DIR / "settings-controls-lazy.css",
     #: The density strip's year and month labels (timeline-ticks.js loads it).
     CSS_DIR / "timeline-ticks-lazy.css",
+    #: Quick sketch, the self-contained pad (media.js `openSketch` loads it).
+    CSS_DIR / "sketch-pad.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).
     CSS_DIR / "companion-throw-lazy.css",
+    #: The guided equation editor (lazy-entries.js `mathEditor`, DOCUMENTS_PLAN 16).
+    CSS_DIR / "math-editor-lazy.css",
+    #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).
+    CSS_DIR / "mermaid-lazy.css",
+    #: Settings, Appearance, Glass controls: icon buttons in glass (lazy-entries.js `glassControls`, INBOX 1409).
+    CSS_DIR / "glass-controls-lazy.css",
 ]
 
 

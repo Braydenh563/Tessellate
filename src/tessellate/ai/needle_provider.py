@@ -64,6 +64,8 @@ from datetime import datetime
 from collections.abc import Iterator
 from pathlib import Path
 
+from tessellate.ai import composer_compose as compose
+from tessellate.ai import needle_control
 from tessellate.ai.provider import Provider, ProviderError, normalise_tool_calls
 
 #: Written into the environment before the engine loads (see the docstring).
@@ -74,13 +76,6 @@ MODEL_NAME = "needle3"
 
 #: needle's calls are short; this bounds a runaway decode.
 MAX_NEW_TOKENS = 256
-
-#: The reply for a request no offered tool fits: needle returns no calls
-#: rather than a guess, and there is no model here to write anything else.
-NO_TOOL_FITS = (
-    "None of my tools fits that, and a written answer needs a model server "
-    "such as Ollama (Settings, Models)."
-)
 
 _lock = threading.Lock()
 _engine: _Engine | None = None
@@ -257,7 +252,7 @@ def _names_a_tool(arguments: object, offered: dict) -> bool:
     return any(name and name in words for name in offered)
 
 
-def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
+def _cleaned_calls(calls: list, schemas: list[dict], text: str, strict: bool = True) -> list[dict]:
     """needle's calls with their arguments cleaned (INBOX 801: "NOTEBOOK
     STATS" called search_notes with an empty query): every string tidied, an
     empty search query given the request's topic, and a call still missing a
@@ -270,7 +265,9 @@ def _cleaned_calls(calls: list, schemas: list[dict], text: str) -> list[dict]:
         if _names_a_tool(call.get("arguments"), offered):
             continue
         args = _cleaned_arguments(call.get("arguments") or {}, offered[call["name"]].get("parameters") or {}, text)
-        if args is not None:
+        #: A decided act keeps a call missing a slot: the composer fills or asks.
+        if args is not None or not strict:
+            args = args if args is not None else dict(call.get("arguments") or {})
             out.append({"function": {"name": call["name"], "arguments": args}})
     return out
 
@@ -328,6 +325,17 @@ def _calls_before(messages: list[dict], results: int) -> list[tuple[str, dict]]:
     return out
 
 
+def voice_now() -> str:
+    """The voice the person picked for the composer (Settings, Chat); the
+    default voice when no preference can be read."""
+    try:
+        from tessellate.core import deps
+
+        return str(deps.get_config().get_preference("composer_voice", "natural"))
+    except Exception:  # noqa: BLE001  # no config in a bare test or a fresh process
+        return "natural"
+
+
 def _said_by_one(name: str, words: str, args: dict | None = None) -> str:
     from tessellate.ai import tool_say
 
@@ -339,7 +347,17 @@ def _said_by_one(name: str, words: str, args: dict | None = None) -> str:
         result = None
     if not isinstance(result, dict):
         return "Done."
-    return tool_say.say(name, result, args or {}, datetime.now().date())["text"]
+    #: The composer words the acts it decides itself (`needle_control.confirm`).
+    mood = compose.mood_of("", voice=voice_now(), seed=words, intent="act")
+    return needle_control.confirm(name, result, args or {}, mood) or tool_say.say(name, result, args or {}, datetime.now().date())["text"]
+
+
+def _usable_schemas(tools: list[dict] | None) -> list[dict]:
+    """The tool schemas needle may be shown: the ones that work without a model."""
+    return [
+        t["function"] for t in tools or []
+        if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
+    ]
 
 
 class NeedleProvider(Provider):
@@ -395,18 +413,22 @@ class NeedleProvider(Provider):
             # reply is what they said, in order, since the last request.
             return self._reply(_said_by_tools(messages) or "Done.", [], started)
 
-        text = next(
+        text = request_of(next(
             (_text(m.get("content")) for m in reversed(messages) if m.get("role") == "user"), ""
-        )
-        text = request_of(text)
-        schemas = [
-            t["function"] for t in tools or []
-            if isinstance(t, dict) and t.get("function") and t["function"].get("name") not in NOT_WITHOUT_A_MODEL
-        ]
-        schemas = shortlist(schemas, text)
-        answer = self._engine().complete(_date_fact(), json.dumps(schemas), text)
-        raw_calls = _cleaned_calls(answer.get("function_calls") or [], schemas, text)
-        return self._reply("" if raw_calls else NO_TOOL_FITS, raw_calls, started, answer)
+        ))
+        schemas = _usable_schemas(tools)
+        mood = compose.mood_of(text, voice=voice_now(), seed=text, intent="act")
+        decided = needle_control.decide(text, {s.get("name") for s in schemas})
+        #: The composer decides; needle is shown only the decided tool and
+        #: fills its slots (`ai/needle_control.py`).
+        shown = needle_control.offer(schemas, decided) if decided else shortlist(schemas, text)
+        answer = self._engine().complete(_date_fact(), json.dumps(shown), text)
+        raw_calls = _cleaned_calls(answer.get("function_calls") or [], shown, text, strict=not decided)
+        if decided:
+            verdict = needle_control.validate(decided, raw_calls, text, datetime.now(), mood)
+            raw_calls = [needle_control.call_for(decided, verdict.call)] if verdict.call else []
+            return self._reply(verdict.say, raw_calls, started, answer)
+        return self._reply("" if raw_calls else needle_control.nothing_fits(mood), raw_calls, started, answer)
 
     def chat_tools_stream(
         self,

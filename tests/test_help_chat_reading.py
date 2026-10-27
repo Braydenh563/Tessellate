@@ -48,4 +48,5 @@ def test_the_offline_guide_answers_first_in_chats_help_line():
     reply = help_chat.offline_answer(question)["content"]
     line, _ = composer.help_line(question, help_chat.topics_for(question))
     assert reply.startswith(line)
-    assert reply.rstrip().endswith(help_chat.OFFLINE_LEAD)
+    #: INBOX 1414: the "From the help" byline says where it came from, so the text does not.
+    assert help_chat.OFFLINE_LEAD not in reply

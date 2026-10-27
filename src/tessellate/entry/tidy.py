@@ -829,8 +829,8 @@ def _apply_merge_categories(session, chosen: list[dict]) -> tuple[int, dict]:  #
             fold = session.get(Category, int(fold_id))
             if fold is None:
                 continue
-            for entry in session.scalars(select(Entry).where(Entry.category_id == fold.id, Entry.is_deleted == False)):  # noqa: E712
-                moved.append({"id": entry.id, "category": fold.name, "user_filed": bool(entry.user_filed)})
+            held = session.scalars(select(Entry).where(Entry.category_id == fold.id, Entry.is_deleted == False))  # noqa: E712
+            moved.extend({"id": entry.id, "category": fold.name, "user_filed": bool(entry.user_filed)} for entry in held)
             for topic in taxonomy.name_topics(fold.name):
                 correction = learning.record(session, kind="alias", subject={"topic": topic}, from_value=fold.name, to_value=keep.name)
                 aliases.append(correction.id)
@@ -964,13 +964,18 @@ def apply(session, key: str, ids: list[str], level: str | None = None) -> dict: 
     }
 
 
-def _undo_payload(session, undo: dict) -> int:  # noqa: ANN001
+def _undo_links(session, undo: dict) -> int:  # noqa: ANN001
     restored = 0
     for item in undo.get("links", []):
         link = session.get(EntryLink, item["id"])
         if link is not None and link.reason == item["now"]:
             link.reason = item["reason"]
             restored += 1
+    return restored
+
+
+def _undo_unlinked(session, undo: dict) -> int:  # noqa: ANN001
+    restored = 0
     for item in undo.get("unlinked", []):
         source, target = session.get(Entry, item["source"]), session.get(Entry, item["target"])
         if source is None or target is None:
@@ -980,8 +985,17 @@ def _undo_payload(session, undo: dict) -> int:  # noqa: ANN001
             origin=item["origin"], reason_confidence=item["reason_confidence"],
         )
         restored += made is not None
-    if undo.get("tags"):
-        restored += len(manager.undo_tag_edit(session, {int(k): v for k, v in undo["tags"].items()}))
+    return restored
+
+
+def _undo_tags(session, undo: dict) -> int:  # noqa: ANN001
+    if not undo.get("tags"):
+        return 0
+    return len(manager.undo_tag_edit(session, {int(k): v for k, v in undo["tags"].items()}))
+
+
+def _undo_moved(session, undo: dict) -> int:  # noqa: ANN001
+    restored = 0
     for item in undo.get("moved", []):
         entry = session.get(Entry, item["id"])
         if entry is None:
@@ -989,37 +1003,74 @@ def _undo_payload(session, undo: dict) -> int:  # noqa: ANN001
         manager.update_entry(session, entry, category_name=item["category"])
         entry.user_filed = item["user_filed"]
         restored += 1
+    return restored
+
+
+def _restore_binned(session, entry_id: int) -> bool:  # noqa: ANN001
+    """Bring one binned note back; False when it is gone or was never binned."""
+    entry = session.get(Entry, entry_id)
+    if entry is not None and entry.is_deleted:
+        manager.restore_entry(session, entry)
+        return True
+    return False
+
+
+def _undo_merged(session, undo: dict) -> int:  # noqa: ANN001
+    restored = 0
     for item in undo.get("merged", []):
         keeper = session.get(Entry, item["keeper"])
         if keeper is not None:
             manager.update_entry(session, keeper, content=item["content"], tags=item["tags"])
         for entry_id in item["binned"]:
-            entry = session.get(Entry, entry_id)
-            if entry is not None and entry.is_deleted:
-                manager.restore_entry(session, entry)
+            _restore_binned(session, entry_id)
         restored += 1
-    for entry_id in undo.get("binned", []):
-        entry = session.get(Entry, entry_id)
-        if entry is not None and entry.is_deleted:
-            manager.restore_entry(session, entry)
-            restored += 1
-    for item in undo.get("renamed", []):
-        from tessellate.core.database import Category
+    return restored
 
+
+def _undo_binned(session, undo: dict) -> int:  # noqa: ANN001
+    return sum(_restore_binned(session, entry_id) for entry_id in undo.get("binned", []))
+
+
+def _undo_renamed(session, undo: dict) -> int:  # noqa: ANN001
+    from tessellate.core.database import Category
+
+    restored = 0
+    for item in undo.get("renamed", []):
         category = session.get(Category, item["id"])
         if category is not None and category.name == item["to"]:
             manager.rename_category(session, category.id, item["from"])
             restored += 1
+    return restored
+
+
+def _undo_aliases(session, undo: dict) -> int:  # noqa: ANN001
+    """Forget the corrections a tidy run taught; they do not count as restored notes."""
     for alias_id in undo.get("aliases", []):
         row = session.get(AuditLog, alias_id)
         if row is not None and row.action == "correction":
             session.delete(row)
+    return 0
+
+
+def _undo_done(session, undo: dict) -> int:  # noqa: ANN001
+    restored = 0
     for reminder_id in undo.get("done", []):
         reminder = session.get(Reminder, reminder_id)
         if reminder is not None and reminder.done:
             reminder.done = False
             restored += 1
     return restored
+
+
+#: The parts of a tidy run's undo record, put back in this order.
+_UNDO_STEPS = (
+    _undo_links, _undo_unlinked, _undo_tags, _undo_moved, _undo_merged,
+    _undo_binned, _undo_renamed, _undo_aliases, _undo_done,
+)
+
+
+def _undo_payload(session, undo: dict) -> int:  # noqa: ANN001
+    return sum(step(session, undo) for step in _UNDO_STEPS)
 
 
 def undo(session, undo_id: int) -> dict:  # noqa: ANN001

@@ -363,6 +363,12 @@ def _read_window(remainder: str, today: date, locale: str | None, operator_dates
     soft = False
     if operator_dates:
         return remainder, since, until, phrase, soft
+    #: "March 20th last year" and "since last spring" before the rules that
+    #: would take a "last year" off them.
+    dated = recognise.class_window(remainder, today)
+    if dated is not None:
+        since, until, phrase, start, end = dated
+        return (remainder[:start] + " " + remainder[end:]).strip(), since, until, phrase, soft
     found = recognise.question_range(remainder, today)
     if found is not None:
         since, until, phrase, start, end, soft = found

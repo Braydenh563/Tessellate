@@ -112,7 +112,7 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     conversions"."""
     kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
     assert "calculator: (event) => replyCalcPanel(event)" in kit
-    assert 'function openCalculator(input = "")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
+    assert 'function openCalculator(input = "", mode = "work")' in kit and 'name: "calculator"' in kit and "openSheet({" in kit
     #: Accessible: a live result, a keypad that is one Tab stop walked by the
     #: arrows, keys named for what they do, a mode switch that says which is on.
     assert 'out.setAttribute("aria-live", "polite")' in kit
@@ -123,8 +123,10 @@ def test_the_calculator_is_one_sheet_reached_three_ways():
     #: "/calc" alone opens it; the palette has a row with its line of help.
     assert "if (!event.input) requestAnimationFrame(() => openCalculator());" in kit
     panes = (JS / "settings-panes.js").read_text(encoding="utf-8")
-    row = next(line for line in panes.splitlines() if 'label: "ph:calculator Calculator"' in line)
-    assert "about:" in row and 'ensureModule("replyKit").then(() => openCalculator())' in row
+    #: The row now comes from the `POPUP_TOOLS` registry (K27), which the
+    #: palette, Features, the "/" menus and the Guide all read.
+    entry = panes[panes.index('id: "calculator", name: "Calculator"'):][:600]
+    assert "about:" in entry and 'ensureModule("replyKit").then(() => openCalculator())' in entry
 
 
 def test_a_note_a_reply_gives_is_previewed_on_every_surface():
@@ -220,7 +222,7 @@ def test_the_no_model_badge_opens_a_help_popover_1344():
     assert "wireHelpPopover(chip, panel);" in kit
     assert "function replyByHelpPanel(" in kit and "written without an AI model" in kit
     assert "(hover: hover)" in kit
-    assert "Use AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
+    assert "switch labelled AI" in kit[kit.index("function replyByHelpPanel(") :].split("\n}\n", 1)[0]
     css = (ROOT / "frontend" / "css" / "reply-kit-lazy.css").read_text(encoding="utf-8")
     assert "button.reply-by" in css
 
@@ -237,3 +239,12 @@ def test_the_slash_menu_clears_the_agent_popup_overlay_1333a():
     assert "z-index: 2550;" in rule
     overlay = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     assert "z-index: 2000;" in overlay
+
+
+def test_the_badge_panel_waits_inside_the_head_not_between_the_bubbles_blocks():
+    #: Measured 2026-10-27: the hidden panel after the head broke
+    #: `.msg-role:has(+ .agent-steps)` and the bubble grew 2.4px on hover.
+    kit = (JS / "reply-kit.js").read_text(encoding="utf-8")
+    body = kit[kit.index("function replyByline(") :].split("\n}\n", 1)[0]
+    assert "head.appendChild(panel);" in body
+    assert "head.after(panel)" not in body

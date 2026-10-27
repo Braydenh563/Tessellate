@@ -52,6 +52,8 @@ async function lanWatch() {
   lanWatchState.running = true;
   try {
     for (;;) {
+      //: A hidden window asks nothing (battery): it asks again when shown.
+      while (document.hidden) await new Promise((wake) => document.addEventListener("visibilitychange", wake, { once: true }));
       let next = "again";
       try {
         next = await lanWatchOnce();

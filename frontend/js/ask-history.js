@@ -218,6 +218,8 @@ async function viewAskHistoryTurn(id) {
   $("ask-idle")?.classList.add("hidden");
   $("ask-status").textContent = "";
   show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
+  //: The head buttons' pressed states live in its CSS (INBOX 1423).
+  ensureModule("askCompose").catch(() => {});
 }
 
 async function toggleAskHistoryPin(id, pinned) {

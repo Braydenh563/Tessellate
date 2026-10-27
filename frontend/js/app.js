@@ -1619,15 +1619,15 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
         button.type = "button";
         setLabel(button, option.label);
         button.dataset.value = option.value;
-        if (option.title) button.title = option.title;
+        button.title = option.title || "";
         button.classList.toggle("active", option.value === chosen);
-        button.setAttribute("aria-pressed", option.value === chosen ? "true" : "false");
+        button.setAttribute("aria-pressed", String(option.value === chosen));
         button.addEventListener("click", () => {
           chosen = option.value;
           for (const sibling of segRow.querySelectorAll("button")) {
             const on = sibling.dataset.value === chosen;
             sibling.classList.toggle("active", on);
-            sibling.setAttribute("aria-pressed", on ? "true" : "false");
+            sibling.setAttribute("aria-pressed", String(on));
           }
           // Straight back to the name: choosing the kind is a detour on the
           // way to typing, not the end of the interaction.
@@ -1649,22 +1649,10 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
       resolve(segment ? { text: answer, choice: chosen } : answer);
     };
     const onKey = (event) => {
-      // Captured, so a shortcut elsewhere cannot fire underneath the dialog, 
-      // the same reason confirmDialog captures.
-      //
-      // **preventDefault, not just stopPropagation.** Reported: pressing
-      // Enter after typing a title looked like it "did nothing" - the title
-      // was in fact saved (a real POST fired), but the dialog immediately
-      // reopened empty, so the user only ever saw a blank prompt sitting
-      // there. `close()` below returns focus to whatever triggered the
-      // dialog - here, the "+ New document" button - synchronously, *while
-      // this Enter keypress is still in flight*. Stopping propagation keeps
-      // the keydown from reaching the input as a target, but the browser
-      // still owes this physical key its native activation behaviour, and
-      // now that behaviour lands on the button that just regained focus:
-      // its own "Enter activates the focused button" default action fires,
-      // clicking it again and opening a second, blank dialog. preventDefault
-      // is what tells the browser this key press is spoken for.
+      // Captured, so a shortcut elsewhere cannot fire underneath the dialog.
+      // preventDefault, not just stopPropagation: close() hands focus back to
+      // the opener while this Enter is still in flight, and the browser would
+      // then click that button again and open a second, blank dialog.
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -1672,16 +1660,17 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
       } else if (event.key === "Enter") {
         event.preventDefault();
         event.stopPropagation();
-        close(input.value.trim());
+        input.reportValidity() && close(input.value.trim());
       }
     };
+    //: Create with nothing typed said nothing (dog2 item 15).
 
     const returnFocus = document.activeElement;
     const row = document.createElement("div");
     row.className = "row confirm-actions";
     row.append(
       smallButton("Cancel", "Cancel", () => close("")),
-      smallButton(confirmLabel, confirmLabel, () => close(input.value.trim()), false)
+      smallButton(confirmLabel, confirmLabel, () => input.reportValidity() && close(input.value.trim()), false)
     );
     card.append(head, input);
     if (segField) card.append(segField);
@@ -2161,13 +2150,13 @@ const LAZY_ENTRY_POINTS = {
   atlasMotion: ["atlasBlinkStart", "atlasRigAttach", "atlasRigWake"],
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
   //: Opened, asked or drawn for their effect; `openHelpChat`'s close is read by no caller.
-  helpChat: ["openHelpChat", "askAtlas", "renderAtlasStarters"],
+  helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
   batchSpace: ["batchMoveToSpace"],
   notifications: ["openNotifications"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
   tidy: ["openTidySheet"],
-  semanticNotice: ["semanticInstallNotice", "semanticOnboardingOffer"],
+  semanticNotice: ["semanticOffer", "semanticOnboardingOffer"],
   questionsView: ["initQuestionsView", "loadQuestions"],
   //: 2026-10-05, the next six: async or unread, reached by a gesture.
   reveal: ["revealFeature", "packagesNoticeOpen"],
@@ -2245,4 +2234,4 @@ function installStandIns(table) {
 installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search"].forEach((name) => ensureModule(name)), 3000);
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "library"].forEach(ensureModule), 3000);

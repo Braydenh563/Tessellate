@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_overview, composer_parts, composer_replies, composer_tables, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.search import query as query_understanding
@@ -133,6 +133,7 @@ PHRASES: dict[str, str] = {
     "para": "\n\n",
     "line": "\n",
     "bullet": "- ",
+    "indent": "  ",
     "task_done": "- [x] ",
     "task_open": "- [ ] ",
     "bold": "**",
@@ -284,6 +285,9 @@ PHRASES: dict[str, str] = {
     "none_tagged": "No note found is tagged ",
     # A source that is not a note says its kind in its citation (decision 37):
     # "[board **Harbor board**]".
+    "your_board_cap": "Your board",
+    "your_map_cap": "Your mind map",
+    "your_document_cap": "Your document",
     "kind_board": "board ",
     "kind_map": "map ",
     "kind_document": "document ",
@@ -337,6 +341,7 @@ PHRASES: dict[str, str] = {
 PHRASES.update(composer_tables.OVERVIEW_PHRASES)
 PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
+PHRASES.update(composer_open.PHRASES)
 
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of
@@ -392,7 +397,7 @@ SHAPES = ("what", *(name for name, _ in _SHAPE_RULES), "recent")
 #: question wraps its subject in ("feel", "say") are here too, so the closing
 #: line never reports "feel" as a word no note mentions.
 _ASKING_WORDS = frozenset(
-    """about all any anything compare comparison difference differences
+    """about all any anything define defines definition meaning compare comparison difference differences
     between versus vs latest status progress update updates newest recent
     recently most current currently tell say says said know think thought
     feel felt get got go went make made want need like much many number
@@ -707,16 +712,42 @@ _COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 def _bare_side(side: str) -> str:
     """One side of a comparison without the noun that names the notes:
     "Lisbon notes" is Lisbon (1324)."""
-    side = side.strip(" ,")
-    return re.sub(r"\s+(?:notes?|entries)$", "", side, flags=re.I).strip(" ,") or side
+    side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
+    # Word steps, not `\s+(?:notes?|entries)$`: that regex is quadratic on a run
+    # of whitespace (CodeQL py/polynomial-redos).
+    head, _, last = side.rstrip().rpartition(" ")
+    if head and last.casefold() in ("note", "notes", "entries"):
+        side = head
+    return side.strip(" ,") or side
+
+
+_SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
+#: Strongest first: "Trip to Lisbon and Trip to Porto" splits at "and", the
+#: "to" belongs to the first trip's name.
+_SIDE_PRIORITY = (r"and", r"vs\.?", r"versus", r"with", r"to")
+
+
+def _clean_split(span: str) -> tuple[str, str] | None:
+    for word in _SIDE_PRIORITY:
+        hit = re.search(rf"\s{word}\s", span, re.I)
+        if hit and span[: hit.start()].strip() and span[hit.end():].strip():
+            return span[: hit.start()], span[hit.end():]
+    return None
 
 
 def compare_sides(question: str) -> tuple[str, str] | None:
     """The two things a comparison names, as typed: ("Lisbon", "Porto")."""
     for pattern in _COMPARE_SIDES:
-        match = pattern.search(rephrase(question))
+        text = rephrase(question)
+        match = pattern.search(text)
         if match:
-            a, b = (_bare_side(match.group(k)) for k in ("a", "b"))
+            raw_a, raw_b = match.group("a"), match.group("b")
+            if _SIDE_CONNECTOR.search(f" {raw_a} ") or _SIDE_CONNECTOR.search(f" {raw_b} "):
+                span = text[match.start("a"): match.end("b")]
+                clean = _clean_split(span.strip(" ?.!"))
+                if clean:
+                    raw_a, raw_b = clean
+            a, b = (_bare_side(s) for s in (raw_a, raw_b))
             if subject_terms(a) and subject_terms(b):
                 return a, b
     return None
@@ -742,6 +773,9 @@ class Sentence:
     done: bool | None = None
     order: int = 0
     score: float = 0.0
+    #: How far a list item is indented under the one before it (a map's
+    #: children, an outline's sub-points); 0 for everything else.
+    depth: int = 0
     #: Sentences of other notes that say the same thing, dropped so the answer
     #: says it once, and counted: "(Your notes say this three times.)".
     echoes: list = field(default_factory=list)
@@ -780,7 +814,9 @@ class NoteView:
         return self.note["id"]
 
 
-_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.*)$")
+#: Only a heading's marks: the text after them is read in code, as a pattern
+#: running on to the line's end backtracks over runs of whitespace (CodeQL).
+_HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
 _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[[ xX]\]\s+)?")
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
@@ -806,10 +842,15 @@ LEAD_INS_BARE = (
 )
 _LEAD_IN = "|".join(re.escape(w) for w in sorted(LEAD_INS, key=len, reverse=True))
 _LEAD_IN_BARE = "|".join(re.escape(w) for w in sorted(LEAD_INS_BARE, key=len, reverse=True))
-_DISCOURSE = re.compile(
-    rf"^(?:(?:{_LEAD_IN})(?:\s+(?:{_LEAD_IN}))*\s*[,:]\s+|(?:{_LEAD_IN_BARE})\s+(?=(?-i:[a-z])))+(?=\S)",
-    re.I,
-)
+#: Compiled on first use, for the cold-import budget (`recognise._window_words`).
+@functools.cache
+def _discourse() -> re.Pattern[str]:
+    return re.compile(
+        rf"^(?:(?:{_LEAD_IN})(?:\s+(?:{_LEAD_IN}))*\s*[,:]\s+|(?:{_LEAD_IN_BARE})\s+(?=(?-i:[a-z])))+(?=\S)",
+        re.I,
+    )
+
+
 _WRITTEN = re.compile(r"(\d{1,2}) (" + "|".join(_MONTHS) + r") (\d{4})")
 _MARKS = re.compile(r"[*_`]")
 
@@ -832,15 +873,53 @@ def _written(note: dict) -> date | None:
         return None
 
 
+def _heading_text(line: str) -> str | None:
+    """A heading line's text ("" for a bare "# "), or None for another line."""
+    lead = _HEADING_LEAD.match(line)
+    return line[lead.end() :].rstrip("\r\n").strip() if lead else None
+
+
+#: A line that is only bold ("**After making an initial connection**") is a
+#: heading the person made without "#" (INBOX 1420): a name, never a sentence.
+_BOLD_LINE = re.compile(r"[ \t]{0,3}(\*\*|__)(?=\S)([^*_\n]{1,80}?)\1:?[ \t]*\r?\n?$")
+#: "Follow- Up" as typed on a phone: the hyphen's word goes on (INBOX 1420).
+_SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+_BOLD_STARS = re.compile(r"\*\*(?=\S)([^*\n]+?)(?<=\S)\*\*")
+_BOLD_UNDERS = re.compile(r"__(?=\S)([^_\n]+?)(?<=\S)__")
+#: A short first line ending in a colon, with lines under it: "Ice Breakers:"
+#: over its list is the note's name (INBOX 1420).
+_COLON_TITLE = re.compile(r"([^\s:.!?][^:.!?\n]{0,48}?):$")
+
+
+def bold_line(line: str) -> str | None:
+    """A wholly bold line's words, or None for another line."""
+    found = _BOLD_LINE.match(line)
+    return found.group(2).strip() if found else None
+
+
+def plain_words(text: str) -> str:
+    """A note's words without its emphasis marks or a split hyphen: what the
+    page shows, which is what an answer says."""
+    #: One pass per mark, each inner run unable to cross its own mark: linear
+    #: on a line of unclosed marks (CodeQL's polynomial-regex alert).
+    text = _BOLD_STARS.sub(r"\1", _BOLD_UNDERS.sub(r"\1", text)).replace("**", "")
+    return _SPLIT_HYPHEN.sub("-", text)
+
+
 def _title(content: str) -> tuple[str, int]:
     """The note's name and where its body starts: its first heading, or, with
     none, its first few words (the body then starts at the top, so those words
     are quotable too)."""
     end = content.find("\n")
     first = content if end == -1 else content[:end]
-    heading = _HEADING.match(first)
-    if heading:
-        name = _MARKS.sub("", heading.group(1)).strip().strip("#").strip()
+    heading = _heading_text(first)
+    if heading is None:
+        heading = bold_line(first)
+    if heading is None and end != -1 and content[end:].strip():
+        colon = _COLON_TITLE.match(first.strip(" \t"))
+        heading = colon.group(1) if colon and len(colon.group(1).split()) <= 6 else None
+    if heading is not None:
+        name = plain_words(_MARKS.sub("", heading).strip().strip("#").strip())
         if name:
             return name, len(content) if end == -1 else end
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
@@ -850,17 +929,23 @@ def _title(content: str) -> tuple[str, int]:
     return (name + "…" if len(words) > UNTITLED_WORDS else name), 0
 
 
+def _depth(line: str) -> int:
+    """A list item's nesting: two columns of indent a level, tabs as four."""
+    flat = line.expandtabs(4).rstrip("\r\n")
+    return min((len(flat) - len(flat.lstrip(" "))) // 2, 4)
+
+
 def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: bool | None) -> Sentence | None:
     """One sentence, trimmed as the rule allows, its offsets moved to match."""
     raw = content[start:end]
     start += len(raw) - len(raw.lstrip())
     raw = raw.strip()
-    discourse = _DISCOURSE.match(raw)
+    discourse = _discourse().match(raw)
     if discourse:
         start += discourse.end()
         raw = raw[discourse.end():]
     end = start + len(raw)
-    text = " ".join(raw.split())
+    text = plain_words(" ".join(raw.split()))
     if not text:
         return None
     if len(text) > MAX_QUOTE_CHARS:
@@ -884,7 +969,33 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
 #: (INBOX 725, 7) and is introduced as one: "The picture in **Sketches**
 #: shows ...", never as the person's sentence.
 _PICTURES_HEAD = "[Pictures in this note"
-_PICTURE_LINE = re.compile(r"^\s*-\s+[^:\n]+:\s+(?:shows (?P<caption>.+?))?(?:;?\s*text in it: \"(?P<text>.+?)\")?\]?\s*$")
+_PICTURE_TEXT_LEAD = 'text in it: "'
+
+
+def _picture_groups(line: str) -> dict[str, tuple[str, int]] | None:
+    """The caption and the text one picture line holds, each with where it
+    starts in the line, or None for another line. Read by hand: a pattern for
+    it backtracks over runs of whitespace (CodeQL)."""
+    dash = len(line) - len(line.lstrip())
+    colon = line.find(":", dash)
+    if line[dash : dash + 1] != "-" or not line[dash + 1 : dash + 2].isspace() or colon < dash + 3:
+        return None
+    if not line[colon + 1 : colon + 2].isspace():
+        return None
+    at = colon + 1 + len(line[colon + 1 :]) - len(line[colon + 1 :].lstrip())
+    end = len(line.rstrip())
+    end -= line[:end].endswith("]")
+    rest, groups = line[at:end], {"caption": ("", 0), "text": ("", 0)}
+    lead = rest.find(_PICTURE_TEXT_LEAD) if rest.endswith('"') else -1
+    if lead != -1 and lead + len(_PICTURE_TEXT_LEAD) < len(rest) - 1:
+        groups["text"] = (rest[lead + len(_PICTURE_TEXT_LEAD) : -1], at + lead + len(_PICTURE_TEXT_LEAD))
+        rest = rest[:lead].rstrip()
+        rest = rest[:-1] if rest.endswith(";") else rest
+    if rest.startswith("shows ") and len(rest) > len("shows "):
+        groups["caption"] = (rest[len("shows ") :], at + len("shows "))
+    elif rest:
+        return None
+    return groups
 
 
 #: A captioning model's frame around what a picture shows ("The image
@@ -893,9 +1004,24 @@ _PICTURE_LINE = re.compile(r"^\s*-\s+[^:\n]+:\s+(?:shows (?P<caption>.+?))?(?:;?
 _CAPTION_FRAME = re.compile(
     r"^(?:the|this)\s+(?:image|picture|photo|photograph|screenshot)\s+(?:contains|shows|depicts|is of|is)\s+(?=\S)", re.I
 )
-#: The lines of a picture's text as the route joins them (" / "), and a
-#: numbered list run into one line ("1. Offline search 2. Tags").
-_PICTURE_TEXT_BREAK = re.compile(r"\s+/\s+|\s+(?=\d{1,2}[.)]\s)")
+_LIST_NUMBER = re.compile(r"\d{1,2}[.)]\s")
+
+
+def _picture_text_breaks(text: str) -> list[tuple[int, int]]:
+    """Where a picture's text breaks into lines: a lone "/" with space each side
+    (the route joins its lines with " / "), and the space before a "2." of a
+    numbered list run into one line ("1. Offline search 2. Tags"). Found run by
+    run of whitespace: one pattern for both backtracks over the runs (CodeQL)."""
+    runs, breaks, cursor = [m.span() for m in re.finditer(r"\s+", text)], [], 0
+    for i, (start, end) in enumerate(runs):
+        if start < cursor:
+            continue
+        if text[end : end + 1] == "/" and i + 1 < len(runs) and runs[i + 1][0] == end + 1:
+            breaks.append((start, runs[i + 1][1]))
+            cursor = runs[i + 1][1]
+        elif _LIST_NUMBER.match(text[end : end + 4]):
+            breaks.append((start, end))
+    return breaks
 
 
 def _picture_spans(group: str, text: str) -> list[tuple[int, str]]:
@@ -905,28 +1031,28 @@ def _picture_spans(group: str, text: str) -> list[tuple[int, str]]:
         frame = _CAPTION_FRAME.match(text)
         return [(frame.end() if frame else 0, text[frame.end():] if frame else text)]
     spans, cursor = [], 0
-    for brk in [*_PICTURE_TEXT_BREAK.finditer(text), None]:
-        end = brk.start() if brk else len(text)
+    for brk in [*_picture_text_breaks(text), None]:
+        end = brk[0] if brk else len(text)
         piece = text[cursor:end]
         lead = len(piece) - len(piece.lstrip())
         number = re.match(r"\d{1,2}[.)]\s+", piece[lead:])
         lead += number.end() if number else 0
         spans.append((cursor + lead, piece[lead:].strip()))
-        cursor = brk.end() if brk else end
+        cursor = brk[1] if brk else end
     return spans
 
 
 def _picture_units(view: NoteView, content: str, line_start: int, line: str) -> None:
-    match = _PICTURE_LINE.match(line.rstrip("\r\n"))
-    if not match:
+    groups = _picture_groups(line.rstrip("\r\n"))
+    if not groups:
         return
     for group, kind in (("caption", "picture"), ("text", "picture_text")):
-        whole = match.group(group) or ""
+        whole, at = groups[group]
         for offset, text in _picture_spans(group, whole):
             text = text.strip()
             if len(text.split()) < 2:
                 continue
-            start = line_start + match.start(group) + offset
+            start = line_start + at + offset
             words = _words(text)
             if words:
                 view.sentences.append(Sentence(view.id, view.rank, start, start + len(text), text, words, kind))
@@ -958,6 +1084,11 @@ def source_kind(note: dict) -> str:
     if kind in ("note", "board", "map", "document", "file", "web"):
         return kind
     return _SOURCE_CATEGORIES.get(str(note.get("category") or "").strip().lower(), "note")
+
+
+def _not_prose(line: str, stripped: str) -> bool:
+    """A heading, a bold-only line, a picture or a table row: no sentence of the note's."""
+    return _heading_text(line) is not None or bold_line(line) is not None or stripped.startswith(("![", "|"))
 
 
 def read_note(note: dict, rank: int) -> NoteView | None:
@@ -994,39 +1125,45 @@ def read_note(note: dict, rank: int) -> NoteView | None:
         if stripped.startswith("```"):
             in_fence = not in_fence
             continue
-        if in_fence or not stripped or _HEADING.match(line) or stripped.startswith(("![", "|")):
+        if in_fence or not stripped or _not_prose(line, stripped):
             continue
-        line_end = line_start + len(line.rstrip("\r\n"))
-        if _PICTURE_ITEM.match(line):
-            #: "- shed.jpg: shows a wet wooden roof": a picture's caption
-            #: listed in the note is content, read as the picture's
-            #: (decision 37; the owner: "note captions arent counted").
-            _picture_units(view, content, line_start, line)
-            continue
-        item = _ITEM.match(line)
-        if item:
-            box = item.group(2)
-            unit = _unit(
-                view, content, line_start + item.end(), line_end,
-                "task" if box else "item",
-                None if not box else box.strip("[] \t").lower() == "x",
-            )
-            if unit:
-                view.sentences.append(unit)
-            continue
-        body = line_start + (len(line) - len(line.lstrip(" >")))
-        cursor = body
-        for match in _SPLIT.finditer(content, body, line_end):
-            unit = _unit(view, content, cursor, match.end(1), "prose", None)
-            if unit:
-                view.sentences.append(unit)
-            cursor = match.end()
-        unit = _unit(view, content, cursor, line_end, "prose", None)
-        if unit:
-            view.sentences.append(unit)
+        _line_units(view, content, line_start, line)
     for i, sentence in enumerate(view.sentences):
         sentence.order = i
     return view
+
+
+def _line_units(view: NoteView, content: str, line_start: int, line: str) -> None:
+    """The units of one body line: a picture's caption, a list item, or prose sentences."""
+    line_end = line_start + len(line.rstrip("\r\n"))
+    if _PICTURE_ITEM.match(line):
+        #: "- shed.jpg: shows a wet wooden roof": a picture's caption
+        #: listed in the note is content, read as the picture's
+        #: (decision 37; the owner: "note captions arent counted").
+        _picture_units(view, content, line_start, line)
+        return
+    item = _ITEM.match(line)
+    if item:
+        box = item.group(2)
+        unit = _unit(
+            view, content, line_start + item.end(), line_end,
+            "task" if box else "item",
+            None if not box else box.strip("[] \t").lower() == "x",
+        )
+        if unit:
+            unit.depth = _depth(line)
+            view.sentences.append(unit)
+        return
+    body = line_start + (len(line) - len(line.lstrip(" >")))
+    cursor = body
+    for match in _SPLIT.finditer(content, body, line_end):
+        unit = _unit(view, content, cursor, match.end(1), "prose", None)
+        if unit:
+            view.sentences.append(unit)
+        cursor = match.end()
+    unit = _unit(view, content, cursor, line_end, "prose", None)
+    if unit:
+        view.sentences.append(unit)
 
 
 # --- scoring --------------------------------------------------------------------
@@ -1611,6 +1748,10 @@ def _count_word(n: int) -> str:
 #: openers and joins are chosen again; empty outside a conversation, where the
 #: same question gets the same words every time.
 _SESSION: contextvars.ContextVar[str] = contextvars.ContextVar("composer_session", default="")
+#: The chat's own voice (natural, professional, playful or plain, a persona's
+#: cue included) while `compose` runs: the no-answer is composed in it
+#: (composer8). Empty means the two registers the callers already pass.
+_REGISTER: contextvars.ContextVar[str] = contextvars.ContextVar("composer_register", default="")
 #: What the person said of insights (decision 60, `insights.Memory`), set by
 #: `compose` for one answer: dismissed ones are not said, confirmed ones are
 #: said as their own word.
@@ -1811,9 +1952,30 @@ def _list_sentence(out: _Answer, items: list[Sentence], terms: list[str]) -> Non
     for i, s in enumerate(items):
         if i:
             out.t("and" if i == len(items) - 1 else "comma")
-        shown = s.text[0].lower() + s.text[1:] if lower else s.text
+        shown = decap(s.text) if lower else s.text
         out.q(s, terms, shown)
     out.t("stop")
+
+
+def _your_kind(view: NoteView) -> str:
+    """"Your note", or "Your board", "Your mind map", "Your document" for a
+    source that is not a note (INBOX 744: "a board must say board")."""
+    return f"your_{view.kind}_cap" if view.kind in ("board", "map", "document") else "your_note_cap"
+
+
+def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
+    """What introduces a list: "Your note **Reading list** lists ", or "It
+    also lists " when the answer already named the note."""
+    if lead == "opening" and _unlike_before(out, ["your_note_cap", "in_cap"])[0] == "in_cap":
+        #: "In **Reading list** you listed four: ...", after a turn that
+        #: opened "Your note ...".
+        out.t("in_cap").name(view).t("you_listed")
+    elif lead == "opening":
+        if view.titled:
+            out.t(_your_kind(view), "space")
+        out.name(view, cap=True).t("lists")
+    else:
+        out.t("it_lists")
 
 
 def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list[str], lead: str) -> None:
@@ -1824,7 +1986,7 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
         done, total = out.count(sum(1 for s in tasks if s.done)), out.count(len(tasks))
         if lead == "opening":
             if view.titled:
-                out.t("your_note_cap", "space")
+                out.t(_your_kind(view), "space")
             out.name(view, cap=True).t("has").m(done).t("checklist_of").m(total).t("checklist_items_done")
         else:
             out.t("checklist").m(done).t("checklist_of").m(total).t("checklist_done")
@@ -1834,16 +1996,10 @@ def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list
                 out.t("line")
             out.item(s, terms)
         return
-    if lead == "opening" and _unlike_before(out, ["your_note_cap", "in_cap"])[0] == "in_cap":
-        #: "In **Reading list** you listed four: ...", after a turn that
-        #: opened "Your note ...".
-        out.t("in_cap").name(view).t("you_listed")
-    elif lead == "opening":
-        if view.titled:
-            out.t("your_note_cap", "space")
-        out.name(view, cap=True).t("lists")
-    else:
-        out.t("it_lists")
+    _list_lead(out, view, lead)
+    if composer_tree.nested(items):
+        composer_tree.write(out, items, terms)
+        return
     out.m(out.count(len(items)))
     if _fusable(items):
         out.t("colon")
@@ -2218,40 +2374,62 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     out.t("stop")
 
 
-def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for) -> bool:  # noqa: ANN001
-    """A line that counts each side, each side its own short list, then what
-    speaks of both."""
-    a_terms, b_terms = subject_terms(sides[0]), subject_terms(sides[1])
-    a_stems, b_stems = {_stem(t) for t in a_terms}, {_stem(t) for t in b_terms}
-    a_pick = select("compare", a_terms, views, limit=6, meaning=meaning_for(a_terms))
-    b_pick = select("compare", b_terms, views, limit=6, meaning=meaning_for(b_terms))
-    both = [s for s in a_pick if b_stems & set(s.words)][:2]
-    a_only = [s for s in a_pick if not (b_stems & set(s.words))][:3]
-    b_only = [s for s in b_pick if not (a_stems & set(s.words))][:3]
-    if not (a_only or b_only):
-        return False
-    counts = [len({s.note_id for s in picks}) for picks in (a_only, b_only)]
+def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]) -> list[NoteView]:
+    return [v for v in views if (own_stems - other_stems) & {_stem(w) for w in v.title_words}]
+
+
+def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
+    """Each side's sentences as (terms, stems, own notes, picks); a note named
+    for a side belongs to it even when its sentences never repeat the name
+    ("Trip to Lisbon": "Flights booked for 3 December"), and a sentence in the
+    other side's note that mentions this side is still the other side's."""
+    terms = [subject_terms(label) for label in sides]
+    stems = [{_stem(t) for t in ts} for ts in terms]
+    own = [_own_notes(stems[0], stems[1], views), _own_notes(stems[1], stems[0], views)]
+    if set(map(id, own[0])) & set(map(id, own[1])):
+        own = [[], []]
+    picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in (0, 1)]
+    #: A note the person named is read from its top, not by which of its
+    #: sentences repeat the name.
+    picks = [[s for v in own[i] for s in v.sentences[:3]] or picks[i] for i in (0, 1)]
+    return terms, stems, own, picks
+
+
+def _compare_lead(out: _Answer, sides: tuple[str, str], counts: list[int]) -> None:
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
             out.t("and")
         out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
+
+
+def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for) -> bool:  # noqa: ANN001
+    """A line that counts each side, each side its own short list, then what
+    speaks of both."""
+    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
+    a_only = [s for s in picks[0] if own[0] or not (stems[1] & set(s.words))][:3]
+    b_only = [s for s in picks[1] if own[1] or not (stems[0] & set(s.words))][:3]
+    #: What speaks of both is not a line already said under a side.
+    both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
+    if not (a_only or b_only):
+        return False
+    _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the two headings that say it.
     out.t("stop")
-    for label, picks, side_terms in ((sides[0], a_only, a_terms), (sides[1], b_only, b_terms)):
+    for label, side, side_terms in ((sides[0], a_only, terms[0]), (sides[1], b_only, terms[1])):
         out.t("para", "bold").asked(label).t("bold")
         #: The lead said each side's count ("one mentions Lisbon and two
         #: mention Porto"); the heading does not say it again (decision 52).
-        if not picks:
+        if not side:
             out.t("line").t("side_none")
             continue
-        for s in picks:
+        for s in side:
             out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
-            out.t("line").item(s, a_terms + b_terms).cite(out.views[s.note_id], again=True)
+            out.t("line").item(s, terms[0] + terms[1]).cite(out.views[s.note_id], again=True)
     return True
 
 
@@ -3419,23 +3597,23 @@ _INVITE_KINDS = ("greeting", "morning", "test", "unclear")
 INVITES = {
     "natural": (
         "Your newest note mentions {subject}: ask “what did I write about {subject}” to pick up from there.",
-        "Lately you've been writing about {subject}, if you'd like to pick that back up.",
-        "Your last note was about {subject}, so “what did I write about {subject}” is a good place to start.",
-        "Picking up where you left off: try “what did I write about {subject}”.",
-        "The last thing you wrote touched on {subject}. Ask about it and I'll pull the notes.",
+        "Lately you've been writing about {subject}; ask about it if you'd like to pick that back up.",
+        "Your last note was about {subject}, so ask “what did I write about {subject}” to start there.",
+        "Picking up where you left off: ask “what did I write about {subject}”.",
+        "The last thing you wrote touched on {subject}. Ask about it and I'll find the notes.",
         "If it helps, “what did I write about {subject}” brings back your newest note.",
-        "Your notes most recently turned to {subject}; I can go through them with you.",
-        "Carry on from your latest note with “what did I write about {subject}”.",
+        "Your notes most recently turned to {subject}; ask and I'll go through them with you.",
+        "Carry on from your latest note: ask “what did I write about {subject}”.",
     ),
     "professional": (
         "The most recent note concerns {subject}; ask “what did I write about {subject}” to review it.",
-        "The latest entry mentions {subject}. A question about it will bring up the notes.",
-        "Your most recent entry refers to {subject}; it can be reviewed on request.",
+        "The latest entry mentions {subject}; ask about it to bring up the notes.",
+        "Your most recent entry refers to {subject}; ask to review it.",
         "To continue, ask “what did I write about {subject}”.",
-        "The newest note relates to {subject}, should you wish to return to it.",
-        "Recent entries mention {subject}; a question about it retrieves them.",
-        "Ask “what did I write about {subject}” to see the most recent entry.",
-        "The last entry recorded was about {subject}.",
+        "The newest note relates to {subject}; ask about it to return to it.",
+        "Recent entries mention {subject}; ask about it to retrieve them.",
+        "To see the most recent entry, ask “what did I write about {subject}”.",
+        "The last entry recorded was about {subject}; ask to see it.",
     ),
 }
 
@@ -3477,23 +3655,44 @@ def social(
     kind = social_kind(message, intent)
     line = _social_line(message, kind, previous, last_question, voice, recent, seed)
     if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
-        said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
-        line = f"{line} {_pick(f'{message}|{invite}', f'invite:{seed}', list(INVITES[said])).format(subject=invite)}"
+        line = f"{line} {invitation(message, invite, voice, seed)}"
     return line
+
+
+def invitation(message: str, subject: str, voice: str, seed: str) -> str:
+    """The invitation built on a word of the newest note (`INVITES`)."""
+    said = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
 def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001
     """The stored opener of `kind`, and a next step after an acknowledgement."""
     recent = [r for r in recent if r] or ([previous] if previous else [])
     professional = composer_tables.voice_of(voice) == "professional"
-    lines = (SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind]
-    #: A composed line never ends on a sentence one of the last few ended on.
-    lines = [x for x in lines if not composer_parts.repeats_tail(x, recent[-phrasing.RECENT:])] or lines
-    line = phrasing.choose(lines, f"social:{kind}:{message}", recent, seed or _SESSION.get())
+    if f"social_{kind}" in composer_lines.FRAMES:
+        #: Composed in the voice and mood of the turn (CHAT_PLAN 1353).
+        mood = composer_compose.mood_of(message, voice=voice, seed=f"{seed or _SESSION.get()}|{message}")
+        line = phrasing.choose(composer_compose.eligible(f"social_{kind}", mood), f"social:{kind}:{message}", recent, seed or _SESSION.get())
+    else:
+        line = _stored_social(message, kind, professional, recent, seed)
     subject = _asked_span(last_question, subject_terms(last_question)) if last_question else ""
     if kind in _NEXT_STEP_KINDS and subject and len(subject) <= 40:
         line = f"{line} {_next_step(line, message, subject, professional)}"
     return line
+
+
+def social_surfaces(kind: str, professional: bool = False) -> list[str]:
+    """Every line `social` can say for `kind`: the stored ones, and for the
+    kinds the composition layer words every sentence it can build."""
+    built = [x.text for x in composer_compose.surfaces(f"social_{kind}")] if f"social_{kind}" in composer_lines.FRAMES else []
+    return [*(SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind], *built]
+
+
+def _stored_social(message: str, kind: str, professional: bool, recent: list[str], seed: str) -> str:
+    lines = (SOCIAL_PROFESSIONAL if professional else SOCIAL)[kind]
+    #: A composed line never ends on a sentence one of the last few ended on.
+    lines = [x for x in lines if not composer_parts.repeats_tail(x, recent[-phrasing.RECENT:])] or lines
+    return phrasing.choose(lines, f"social:{kind}:{message}", recent, seed or _SESSION.get())
 
 
 def _next_step(line: str, message: str, subject: str, professional: bool) -> str:
@@ -3543,9 +3742,13 @@ _SHAPE_KIND = {
 _WHY = re.compile(r"^\s*(?:why|how come|what (?:made|makes|caused|causes)|explain why)\b", re.I)
 _RECALL = re.compile(
     r"\bwhat (?:did|have|had) (?:i|we) (?:do|did|done|write|wrote|written|get up to|work on|worked on|note|noted|been up to)\b"
+    r"|\bwhat (?:did|have|had) (?:i|we) (?:add|added|save|saved|make|made|jot|jotted|capture|captured)\b"
+    r"|\banything (?:i|we) (?:added|saved|made|wrote|noted|jotted|did|captured)\b|\bdid (?:i|we) (?:add|write|save|make|note|jot) anything\b"
     r"|\bwhat happened\b|\bwhat was i (?:doing|up to)\b|\bwhat(?:'s| is| was) (?:been )?going on\b|\banything (?:new|happen)\b",
     re.I,
 )
+#: The verbs of such a question, which are not subjects to search for.
+_RECALL_VERBS = frozenset("add added save saved make made jot jotted capture captured anything write wrote note noted".split())
 _INSIGHT = re.compile(r"\b(?:patterns?|habits?|trends?|keeps? coming up|how often do i|what do i (?:keep|always))\b", re.I)
 _RECOMMEND = re.compile(r"^\s*(?:what|which) should (?:i|we)\b|^\s*should (?:i|we)\b|\brecommend|\bsuggest(?:ion)?s?\b", re.I)
 _TAGGED = re.compile(r"\b(?:tagged(?: with)?|with the tags?|under the tags?)\s+#?([\w-]{1,40})|(?<![\w&])#([A-Za-z][\w-]{0,39})", re.I)
@@ -3582,6 +3785,13 @@ def _time_phrase(question: str) -> str:
     return found[0][2] if found else ""
 
 
+def _plan_phrase(question: str, terms: list[str]) -> str:
+    """The question's time phrase, or "" for a bare "recently" with no subject:
+    "what did I write recently" asks for the newest notes, not a fortnight."""
+    phrase = _time_phrase(question)
+    return "" if not terms and rec.is_lately(phrase) else phrase
+
+
 #: What the planner reads of a question. Its passes cost words x length, so a
 #: 20,000-character paste took 38 s; the model still gets the whole question.
 PLAN_CHARS = 2000
@@ -3591,14 +3801,8 @@ def _planned_text(question: str | None) -> str:
     return (question or "")[:PLAN_CHARS]
 
 
-def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
-    """The query plan for `question` on `today` (the person's own day), read
-    from its first `PLAN_CHARS` characters."""
-    question = _planned_text(question)
-    today = today or date.today()
-    utility = utilities.kind_of(question)
-    shape = "recent" if recent else classify(question, embed)
-    terms = subject_terms(question)
+def _plan_constraints(question: str, terms: list[str]) -> tuple[dict, list[str], str | None]:
+    """The tags and source kind a question names, and its terms without them."""
     constraints: dict = {}
     tags = [a or b for a, b in _TAGGED.findall(question or "")]
     if tags:
@@ -3612,22 +3816,64 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
             break
     if source_kind:
         constraints["source_kind"] = source_kind
-    phrase = _time_phrase(question)
-    span = when_words.span(phrase, today, "past") if phrase else None
-    if span and span[0] > today:
-        span = None
+    return constraints, terms, source_kind
+
+
+def _plan_kind(question: str, utility: str | None, shape: str, spanned: bool, has_terms: bool) -> str:
     if utility and utility != "until_note":
-        kind = "utility"
-    elif span and not terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
-        kind = "recall"
-    elif _INSIGHT.search(question or ""):
-        kind = "insight"
-    elif _RECOMMEND.search(question or ""):
-        kind = "recommendation"
-    elif shape == "explain":
-        kind = "why" if _WHY.match(rephrase(question)) else "how"
-    else:
-        kind = _SHAPE_KIND.get(shape, "fact")
+        return "utility"
+    if spanned and not has_terms and (_RECALL.search(question or "") or shape in ("what", "recent", "list")):
+        return "recall"
+    if _INSIGHT.search(question or ""):
+        return "insight"
+    if _RECOMMEND.search(question or ""):
+        return "recommendation"
+    if shape == "explain":
+        return "why" if _WHY.match(rephrase(question)) else "how"
+    return _SHAPE_KIND.get(shape, "fact")
+
+
+def _subject_left(question: str, terms: list[str], phrase: str) -> bool:
+    """Whether the question has a subject besides its time phrase. A window
+    still ahead ("May next year") is dropped when it has ("my trip next
+    month" is notes about the trip, written now) and kept when it has none
+    ("what did I write in May next year": nothing yet, said as that)."""
+    said = set(phrase.lower().split())
+    left = [t for t in terms if t.lower() not in said]
+    return bool([t for t in left if t.lower() not in _RECALL_VERBS] if _RECALL.search(question or "") else left)
+
+
+def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
+    """The window the phrase names (None for none, or for one still ahead
+    that sits beside a subject) and the subject terms left once the phrase's
+    own words are taken out."""
+    span = when_words.span(phrase, today, "past") if phrase else None
+    if span and span[0] > today and _subject_left(question, terms, phrase):
+        return None, terms
+    if span:
+        #: "what did I write on Monday": the day is the window, not a subject
+        #: to search the notes for (the phrase's own words, "monday", go).
+        said = set(phrase.lower().split())
+        terms = [t for t in terms if t.lower() not in said]
+        if _RECALL.search(question or ""):
+            terms = [t for t in terms if t.lower() not in _RECALL_VERBS]
+        if question_noise.asks_archived(question):
+            terms = [t for t in terms if t.lower() != "archived"]  # a state of the notes, not a subject
+    return span, terms
+
+
+def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
+    """The query plan for `question` on `today` (the person's own day), read
+    from its first `PLAN_CHARS` characters."""
+    question = _planned_text(question)
+    today = today or date.today()
+    utility = utilities.kind_of(question)
+    shape = "recent" if recent else classify(question, embed)
+    terms = subject_terms(question)
+    constraints, terms, source_kind = _plan_constraints(question, terms)
+    phrase = _plan_phrase(question, terms)
+    span, terms = _plan_window(question, terms, phrase, today)
+    kind = _plan_kind(question, utility, shape, bool(span), bool(terms))
     return Plan(
         kind=kind,
         shape=shape,
@@ -3640,6 +3886,52 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
         length=length_wish(question),
         utility=utility,
     )
+
+
+#: A message this short that names one of the app's own tools ("timer",
+#: "countdown", "pomodoro") is a request for the tool as much as a search.
+_FEATURE_WORDS = 3
+
+
+def _feature_instead(question: str, absent: list[str]) -> dict | None:
+    """Nothing in the notes, and a two- or three-word message that names an
+    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
+    say the notes are silent on it in one clause, then how to use the feature
+    from the Guide's topic. None for anything longer or no topic."""
+    words = re.findall(r"[a-z]+", (question or "").lower())
+    if not words or len(words) > _FEATURE_WORDS:
+        return None
+    from tessellate.ai import help_chat
+
+    best = help_line(question, help_chat.topics_for(question or ""))
+    if best is None:
+        return None
+    #: The thing asked for is named in the help line itself: "spare key
+    #: where" is a lost key, not the keyboard shortcuts (test_composer_eval_741).
+    #: Outside the line's own examples: "who is Sam" is a person, not the
+    #: Names tool whose help line quotes "Sam" and "Sam Lee" as its example;
+    #: "what about running?" is a follow-up, not the Follow-up trail topic
+    #: that gives it in brackets as one.
+    line = re.sub(r"\"[^\"]*\"|“[^”]*”|‘[^’]*’|\([^)]*\)", " ", best[0])
+    wanted = absent or [w for w in words if len(w) >= 4]
+    if not wanted or not all(re.search(rf"\b{re.escape(w)}", line, re.I) for w in wanted):
+        return None
+    said = absent[0] if absent else " ".join(words)
+    #: The feature first: "Nothing in your notes mentions timer" was a
+    #: not-found answer to a request for the timer (INBOX 1357, class B).
+    lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
+    return _result([("template", lead), ("help", best[0], best[1])], "help")
+
+
+def decap(text: str) -> str:
+    """`text` with its first letter lowered for the middle of a sentence,
+    unless its first word is a name by its shape: "I", or a capital after
+    the first letter ("IaaS", "iPhone", "GPU"). INBOX 1357: a map's items
+    were said as "iaaS, paaS and saaS"."""
+    first = re.match(r"[A-Za-z][\w'-]*", text or "")
+    if first and (first.group(0) in ("I", "I'm", "I've", "I'd", "I'll") or any(c.isupper() for c in first.group(0)[1:])):
+        return text
+    return text[:1].lower() + text[1:]
 
 
 def _help_answer(question: str) -> dict | None:
@@ -3698,20 +3990,8 @@ def _help_pairs(question: str) -> set[str]:
     return {f"{typed[i]} {typed[i + 1]}" for i in range(len(typed) - 1) if content[i] and content[i + 1]}
 
 
-def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
-    """The one sentence of the best topic that answers a how-to (its step
-    sentence sharing the most of the question's words) and the topic's id:
-    Chat's help register and the Guide's first line (decision 59, step 4),
-    so help and chat say it in one voice. None with no topic."""
-    if not topics:
-        return None
-    topic = topics[0]
-    body = str(topic.get("body") or "")
-    from tessellate.ai import help_chat
-
-    sentences = help_chat.help_sentences(body)
-    if not sentences:
-        return None
+def _help_ask(question: str, topic: dict) -> dict:
+    """What a question asks of one topic, for scoring its sentences."""
     #: Every word of the question counts here, "note" included: the asking
     #: words that are noise in a notebook ("note") name the control in Help.
     wanted = set(_words(question))
@@ -3721,27 +4001,103 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     #: led with Tidy up duplicates, since "notes" outweighed a halved "export".
     verb = _help_verb(question)
     named = set(_words(str(topic.get("id", "")).replace("-", " "))) - {verb}
-    #: Two content words side by side in the question and the sentence are
-    #: the control's name ("back up", "hide unlinked"): half a word more.
-    pairs = _help_pairs(question)
+    doing = {verb, *_HELP_DOING.get(verb, ())} if verb else set()
+    return {"wanted": wanted, "named": named, "pairs": _help_pairs(question), "doing": doing}
 
-    def shared(line: str) -> float:
-        #: A word and its longer form ("remind", "reminder") are one word here;
-        #: a verb of the same doing ("make" for "set") is half a word (INBOX
-        #: 787: "how do I make a reminder" led with how the tab is laid out).
-        have = set(_words(line))
-        def one(w: str, h: str) -> bool:
-            return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
 
-        hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(one(w, h) for h in have))
-        kin = sum(1 for w in wanted if not any(one(w, h) for h in have) and any(one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
-        said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
-        return hits + 0.5 * kin + 0.5 * sum(1 for p in pairs if f" {p} " in said)
+def _help_have(line: str, doing: set[str]) -> set[str]:
+    """The stems a sentence says. The doing asked in a past form describes, it
+    does not instruct: "how do I change the widgets" led with the Dashboard's
+    inventory sentence, on "what changed" and "edited" (the owner,
+    2026-10-27), over the one that says how ("Edit layout and Widgets")."""
+    return {_stem(w) for w in query_understanding.search_terms(line) if not (w.endswith("ed") and any(d.startswith(_stem(w)) for d in doing))}
 
-    #: A later sentence must say more to lead: the topic opens on its point
-    #: ("Link one note to another by typing [[" over the Suggestions sheet,
-    #: which says "link" and "notes" too: the Guide's gold, 2026-10-11).
-    return max(sentences, key=lambda line: (shared(line) - 0.05 * sentences.index(line), -sentences.index(line))), str(topic.get("id", ""))
+
+def _help_one(w: str, h: str) -> bool:
+    """A word and its longer form ("remind", "reminder") are one word here."""
+    return h == w or (min(len(h), len(w)) >= 5 and (h.startswith(w) or w.startswith(h)))
+
+
+def _help_shared(line: str, ask: dict) -> float:
+    """How much of the question a sentence says: a word each, a weak or topic
+    word less, a verb of the same doing ("make" for "set") half a word (INBOX
+    787: "how do I make a reminder" led with how the tab is laid out), two
+    content words side by side ("back up", "hide unlinked": the control's
+    name) half a word more."""
+    wanted, named = ask["wanted"], ask["named"]
+    have = _help_have(line, ask["doing"])
+    hits = sum(0.25 if w in _HELP_WEAK else 0.5 if w in named else 1 for w in wanted if any(_help_one(w, h) for h in have))
+    kin = sum(1 for w in wanted if not any(_help_one(w, h) for h in have) and any(_help_one(g, h) for g in _HELP_DOING.get(w, ()) for h in have))
+    said = " " + " ".join(re.findall(r"[a-z0-9]+", line.lower())) + " "
+    return hits + 0.5 * kin + 0.5 * sum(1 for p in ask["pairs"] if f" {p} " in said)
+
+
+def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
+    """The line that says the most; a later one must say more to lead (the
+    topic opens on its point: "Link one note to another by typing [[" over
+    the Suggestions sheet, which says "link" and "notes" too: the Guide's
+    gold, 2026-10-11). `doing` is the extra a line earns for saying the verb
+    asked, which picks among the clauses of one sentence."""
+    def score(line: str) -> float:
+        verb = bool(ask["doing"]) and any(_stem(d) in _help_have(line, set()) for d in ask["doing"])
+        return _help_shared(line, ask) + (doing if verb else 0.0) - 0.05 * lines.index(line)
+
+    return max(lines, key=lambda line: (score(line), -lines.index(line)))
+
+
+def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
+    """The one sentence of the best topic that answers a how-to (its step
+    sentence sharing the most of the question's words) and the topic's id:
+    Chat's help register and the Guide's first line (decision 59, step 4),
+    so help and chat say it in one voice. None with no topic."""
+    if not topics:
+        return None
+    topic = topics[0]
+    from tessellate.ai import help_chat
+
+    sentences = help_chat.help_sentences(str(topic.get("body") or ""))
+    if not sentences:
+        return None
+    ask = _help_ask(question, topic)
+    lead = _help_best(sentences, ask)
+    #: A lead is a line, not an inventory (INBOX 1406: "how do I see what
+    #: changed" got a 134-word sentence): over the budget, its best clause.
+    if len(lead.split()) > _HELP_LEAD_WORDS:
+        clauses = _clauses(lead)
+        if len(clauses) > 1:
+            lead = _help_best(clauses, ask, doing=0.5)
+    return lead, str(topic.get("id", ""))
+
+
+#: The longest sentence the Guide and Chat lead with whole.
+_HELP_LEAD_WORDS = 40
+
+
+def _semicolon_parts(sentence: str) -> list[str]:
+    """A sentence cut at its `;` outside brackets and quotes."""
+    parts, depth, quote, start = [], 0, False, 0
+    for i, ch in enumerate(sentence):
+        depth = max(0, depth + (ch in "([") - (ch in ")]"))
+        quote ^= ch in "\"“”"
+        if ch == ";" and not depth and not quote:
+            parts.append(sentence[start:i])
+            start = i + 1
+    return [*parts, sentence[start:]]
+
+
+def _clauses(sentence: str) -> list[str]:
+    """A sentence's `;` clauses outside brackets and quotes, each a sentence
+    of its own (capital first, its stop kept): "(a busy week; Tidy lists
+    them)" is one thought, not two. One too short to answer alone belongs to
+    the clause before."""
+    out: list[str] = []
+    for part in (p.strip() for p in _semicolon_parts(sentence)):
+        if len(part.split()) < 5 and out:
+            out[-1] += "; " + part
+        elif part:
+            out.append(part)
+    ended = [c if c.endswith((".", "!", "?")) else c + "." for c in out]
+    return [c[:1].upper() + c[1:] for c in ended]
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:
@@ -3781,7 +4137,7 @@ RECALL_NOTES = 8
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
-    inside = sorted((v for v in views if v.sentences and _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
+    inside = sorted((v for v in views if _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
     said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
@@ -3794,10 +4150,30 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
             out.name(view).dated(view)
         else:
             out.t("list_from").m(out.day(view.written))
-        out.t("colon")
         #: A picture's note as what it shows and its words; a note's
         #: heading with the sentence after it (INBOX 787).
-        _overview_line(out, composer_overview.best_line(view.sentences, set()), set())
+        units = composer_overview.best_line(view.sentences, set()) or _label_line(view)
+        if not units:
+            out.t("stop")
+            continue
+        out.t("colon")
+        _overview_line(out, units, set())
+
+
+def _label_line(view: NoteView) -> list[Sentence]:
+    """The first line under the heading of a note with no quotable sentence
+    (its body is a label such as "Blockers: none."): listing by date needs a
+    day and a name, not a claim, so the line stands in for the sentence."""
+    content = str(view.note.get("content") or "")
+    offset = 0
+    for line in content.splitlines(keepends=True):
+        start, offset = offset, offset + len(line)
+        if not line.strip() or _heading_text(line) is not None or line.strip().startswith(("```", "![", "|")):
+            continue
+        item = _ITEM.match(line)
+        unit = _unit(view, content, start + (item.end() if item else 0), start + len(line.rstrip("\r\n")), "item", None)
+        return [unit] if unit else []
+    return []
 
 
 # --- the overview of a topic (INBOX 787) ------------------------------------------
@@ -3809,6 +4185,15 @@ OVERVIEW_PER_THEME = 4
 #: The subject is a name ("Jake"): the lead says where it comes up, and
 #: its notes are not grouped (each is about them already).
 _PERSON = re.compile(r"^[A-Z][\w'-]+$")
+
+
+def _with_matched(found: list[NoteView], views: list[NoteView]) -> tuple[list[NoteView], int]:
+    """K30: the records the search matched count too (by meaning, not only by
+    the category); with any, the count filed under it, for the lead (else 0)."""
+    matched = [v for v in views if v not in found and v.note.get("match_info")]
+    if not matched:
+        return found, 0
+    return sorted([*found, *matched], key=lambda v: v.rank), len(found)
 
 
 def _overview_answer(
@@ -3829,12 +4214,13 @@ def _overview_answer(
     found = composer_overview.members(stems, views, _holds, head)
     if len(found) < 2 or not _overview_over_broad(question, stems, views):
         return None
+    found, filed = _with_matched(found, views)
     out = _Answer({v.id: v for v in views}, today)
     out.voice, out.question, out.subject = composer_tables.voice_of(voice), question, stems
     #: No joining words twice in a conversation (decision 25).
     out.used = set(dialogue.used) if dialogue is not None else set()
     themes = [] if _PERSON.match(subject) else composer_overview.themes(found, stems, _stem, views)
-    _overview_lead(out, question, subject, found, themes)
+    _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
     if len(found) > shown:
@@ -3895,7 +4281,7 @@ def _span_of(out: _Answer, views: list[NoteView]) -> None:
         out.t("ov_span_a").m(first).t("ov_span_b").m(last)
 
 
-def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteView], themes: list) -> None:
+def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteView], themes: list, filed: int = 0) -> None:
     """The first sentence answers: how many notes, over which days, and the
     thread most of them share."""
     said = _as_typed(subject, question)
@@ -3911,6 +4297,8 @@ def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteVi
         return
     out.t("ov_lead_a").m(out.count(len(found))).t("ov_lead_b").asked(said)
     _span_of(out, found)
+    if filed:
+        out.t("semicolon").m(out.count(filed)).t("ov_filed" if filed > 1 else "ov_filed_one")
     if themes:
         label, held = themes[0]
         out.t("semicolon").term(label, held[0]).t("ov_theme_mid").m(out.count(len(held))).t("ov_theme_end")
@@ -3982,7 +4370,7 @@ def _overview_list(out: _Answer, units: list[Sentence], terms: list[str]) -> Non
         if n:
             out.t("and" if n == len(units) - 1 else between)
         text = s.text.rstrip(".")
-        out.q(s, terms, text[0].lower() + text[1:] if lower else text)
+        out.q(s, terms, decap(text) if lower else text)
     out.t("stop")
 
 
@@ -4073,6 +4461,17 @@ def _did_you_mean(unsure: list[dict]) -> list[list[tuple]]:
     return [[("template", PHRASES["did_you_mean_a"]), ("corrected", unsure[0]["alternative"]), ("template", PHRASES["did_you_mean_b"])]]
 
 
+def _as_phrase(absent: list[str], question: str) -> list[str]:
+    """Words side by side in the question said as the one phrase they are:
+    “quantum chromodynamics”, not “quantum” or “chromodynamics” (INBOX
+    1357, class H)."""
+    if len(absent) > 1:
+        joined = " ".join(absent)
+        if joined.lower() in " ".join(re.findall(r"[\w'-]+", (question or "").lower())):
+            return [joined]
+    return absent
+
+
 def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     """The question's words no note found holds, when that is all of them:
     what a no-answer can name ("No note found mentions “gym”.")."""
@@ -4161,13 +4560,33 @@ _EMPTY_WINDOW_SPAN = {
         "The notebook begins on {first}.",
     ),
 }
+#: The terse and playful chat voices say the same two things their own way
+#: (composer8): a persona that asks for either is heard on an empty window too.
+_EMPTY_WINDOW["terse"] = (
+    "Nothing {when}.", "No notes {when}.", "Empty {when}.", "{When}: nothing.", "Nothing written {when}.", "No entries {when}.", "Blank {when}.", "{When}: no notes.",
+)
+_EMPTY_WINDOW["playful"] = (
+    "Not a word written {when}.", "{When}, the pages stayed blank.", "The notebook was quiet {when}.", "Crickets {when}.",
+    "Nothing in the notebook {when}, not even a doodle.", "{When} left no ink behind.", "The pages are bare {when}.", "No scribbles {when}.",
+)
+_EMPTY_WINDOW_SPAN["terse"] = ("Notes run {first} to {last}.", "Earliest: {first}.", "Starts {first}.", "From {first}.")
+_EMPTY_WINDOW_SPAN["playful"] = (
+    "The ink starts on {first} and ends on {last}.", "Your first page is dated {first}.", "The notebook begins on {first}, so look there.", "Everything starts on {first}.",
+)
+_EMPTY_WINDOW_ONE = {
+    "natural": "All your notes are from {first}.", "professional": "Every entry is dated {first}.",
+    "terse": "All from {first}.", "playful": "Every page is from {first}.",
+}
 
 
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
-                 today: date | None = None) -> str:
+                 today: date | None = None, register: str = "") -> str:
     """A time window with no note in it, said as that, and where the notes
-    are (`first` and `last` written days; None for an empty notebook)."""
+    are (`first` and `last` written days; None for an empty notebook).
+    `register` is the chat's own voice (a persona's cue included)."""
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
+    if register:
+        voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
     today = today or date.today()
     when = window_said(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
@@ -4178,7 +4597,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
 
     if first == last:
-        span = ("All your notes are from {first}." if voice == "natural" else "Every entry is dated {first}.").format(first=day(first))
+        span = _EMPTY_WINDOW_ONE[voice].format(first=day(first))
     else:
         span = _pick(seed or when, "empty_window_span", list(_EMPTY_WINDOW_SPAN[voice])).format(first=day(first), last=day(last))
     return f"{lead} {span}"
@@ -4198,7 +4617,9 @@ def _nothing(
         out = _Answer({}, date.today())
         out.voice = composer_tables.voice_of(voice)
     parts: list[tuple] = [("template", PHRASES[out.voiced("nothing")])]
-    if absent:
+    if _REGISTER.get():
+        parts = _nothing_parts(out, _REGISTER.get(), absent or [])
+    elif absent:
         #: Measured over the notes found: the words asked about that none of
         #: them holds, said before the question back.
         parts = [("template", PHRASES[out.voiced("none_found")])]
@@ -4220,6 +4641,26 @@ def _nothing(
     }
 
 
+def _nothing_parts(out: "_Answer", register: str, absent: list[str]) -> list[tuple]:
+    """The no-answer composed in the chat's voice and mood (composer8): a
+    head and a tail, or, naming the words no note holds, a lead, those words
+    and a tail; never the opening one of the last answers used."""
+    seen = [x for x in (*(out.recent or []), out.previous) if x]
+    mood = composer_compose.mood_of(out.question, voice=register, seed=f"{_SESSION.get()}|{out.question}", said=seen)
+    if not absent:
+        text = composer_compose.pick(composer_compose.surfaces("social_nothing"), "nothing", mood)
+        return [("template", text.text if text else PHRASES[out.voiced("nothing")])]
+    lead = composer_compose.pick(composer_lines.NONE_FOUND_LEADS, "none_found", mood)
+    tail = composer_compose.pick(composer_lines.SOCIAL_TAILS["nothing"], "nothing_ask", mood)
+    parts: list[tuple] = [("template", lead.text if lead else PHRASES[out.voiced("none_found")])]
+    for i, word in enumerate(absent[:3]):
+        if i:
+            parts.append(("template", PHRASES["or"]))
+        parts += [("template", PHRASES["open_quote"]), ("asked", word), ("template", PHRASES["close_quote"])]
+    parts += [("template", PHRASES["stop"]), ("template", PHRASES["space"]), ("template", tail.text if tail else PHRASES[out.voiced("nothing_ask")])]
+    return parts
+
+
 def compose(
     question: str,
     notes: list[dict],
@@ -4237,6 +4678,7 @@ def compose(
     prefer: str = "",
     resolved: bool = False,
     learned=None,  # noqa: ANN001
+    register: str = "",
 ) -> dict:
     """`{"text", "grounding", "support", "shape", "parts", "next", "next_parts"}`
     for one question.
@@ -4272,6 +4714,7 @@ def compose(
             question, dialogue, salt=salt, turn=turn, said=said, prefer=prefer, previous=previous, resolved=resolved
         )
     token = _SESSION.set(f"{salt}:{turn}" if (salt or turn) else "")
+    registered = _REGISTER.set(register)
     #: `learned`: what the person said of insights (`insights.memory`).
     known = _LEARNED.set(learned)
     words = _note_words(notes)
@@ -4283,6 +4726,7 @@ def compose(
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
     finally:
         _SESSION.reset(token)
+        _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
     #: A how-to the notes have nothing on that plainly names the app ("how do
@@ -4505,7 +4949,8 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     if not chosen:
         if _bare_title(out, terms, views_list) is not None:
             return _result(out.parts, shape, out.rows)
-        return _nothing(shape, unsure, voice, [_as_typed(w, question) for w in _absent(typed, views_list)], out)
+        absent = _as_phrase([_as_typed(w, question) for w in _absent(typed, views_list)], question)
+        return _feature_instead(question, absent) or _nothing(shape, unsure, voice, absent, out)
     if wish == "brief":
         chosen = [s for s in chosen if s.note_id == chosen[0].note_id]
         broad = False
@@ -4760,3 +5205,17 @@ def _brief_text(view: NoteView, content: str, by_note: dict[int, list[Sentence]]
 
 
 act_registry.help_sentence = help_line
+
+
+def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") -> dict | None:
+    """The open note's answer to `question` as a composer result, or None
+    when the question is not one of this module's kinds."""
+    ask = composer_open.kind(question)
+    if ask not in ("left", "when", "who"):
+        return None
+    view = read_note(note, 0)
+    if view is None:
+        return None
+    out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
+    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who}[ask](out, view, question, salt)
+    return _answer_dict(out, "open_" + ask, question, [], [view], [])

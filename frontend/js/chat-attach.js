@@ -259,6 +259,75 @@ let lastChatAttachments = [];
 let attachedImages = [];
 let lastChatImageAttachments = [];
 
+//: **The one attachment chip** (DESIGN.md "An attachment chip"; Chat's images,
+//: documents and files and the popup agent's staged files all build it here).
+//: A tile (the picture, or the kind's glyph), the name with its extension kept
+//: when the stem is cut, one facts line, a bar while it uploads, a round x.
+//: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
+//: facts line then says why).
+function attachmentChip({ name, size, thumb, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
+  const chipEl = document.createElement("span");
+  chipEl.className = "chip attachment-chip att-chip";
+  chipEl.dataset.state = state;
+  chipEl.title = title || name;
+  let tile;
+  if (thumb) {
+    tile = document.createElement("img");
+    tile.src = thumb;
+    tile.alt = "";
+  } else {
+    tile = document.createElement("i");
+    tile.className = `ph ${attachmentIconClass("", name) || "ph-file"}`;
+    tile.setAttribute("aria-hidden", "true");
+  }
+  tile.classList.add("att-chip-tile");
+  const ext = attachmentExt(name);
+  const stem = document.createElement("span");
+  stem.className = "att-chip-stem";
+  stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
+  const nameEl = document.createElement("span");
+  nameEl.className = "att-chip-name";
+  nameEl.append(stem);
+  if (ext) {
+    const extEl = document.createElement("span");
+    extEl.className = "att-chip-ext";
+    extEl.textContent = `.${ext}`;
+    nameEl.append(extEl);
+  }
+  const facts = document.createElement("span");
+  facts.className = "att-chip-facts";
+  const kind = fileKindLabel("", name);
+  facts.textContent =
+    state === "uploading"
+      ? `Uploading ${Math.round(progress * 100)}%`
+      : state === "error"
+        ? error || "Could not attach"
+        : [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+  const body = document.createElement("span");
+  body.className = "att-chip-body";
+  body.append(nameEl, facts);
+  chipEl.append(tile, body);
+  if (state === "uploading") {
+    const bar = document.createElement("progress");
+    bar.className = "att-chip-bar";
+    bar.max = 100;
+    bar.value = Math.round(progress * 100);
+    bar.setAttribute("aria-label", `Uploading ${name}`);
+    chipEl.append(bar);
+  }
+  if (onRemove) {
+    const remove = document.createElement("button");
+    remove.className = "att-chip-x";
+    remove.type = "button";
+    setLabel(remove, "ph:x");
+    remove.title = removeTitle || `Remove “${name}”`;
+    remove.setAttribute("aria-label", remove.title);
+    remove.addEventListener("click", onRemove);
+    chipEl.append(remove);
+  }
+  return chipEl;
+}
+
 function renderImageAttachments() {
   const box = $("chat-image-attachments");
   if (!box) return;
@@ -266,40 +335,29 @@ function renderImageAttachments() {
   box.classList.toggle("hidden", attachedImages.length === 0);
   $("attach-image")?.classList.toggle("has-attachments", attachedImages.length > 0);
   for (const image of attachedImages) {
-    const chipEl = document.createElement("span");
-    // Reuses the note-composer's own image-attachment look
-    // (04-chat-dock-appearance.css) rather than inventing a second one.
-    chipEl.className = "chip attachment-chip attachment-chip-image";
-    const thumb = document.createElement("img");
     // A staged image has no server url yet, its bytes are local, so the
     // object URL is what draws it. `mediaSrc` is still right for one already
     // uploaded: a plain <img> never attaches X-Auth-Token.
-    thumb.src = image.objectUrl || mediaSrc(image.url);
-    thumb.alt = "";
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = "Remove this image";
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", async () => {
-      attachedImages = attachedImages.filter((img) => img.key !== image.key);
-      // An object URL is a document-lifetime reference to a Blob: dropping the
-      // array entry alone leaks the image's bytes for as long as the tab is
-      // open.
-      if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
-      renderImageAttachments();
-      announce(`Removed image. ${attachedImages.length} image(s) attached.`);
-      // Nothing to tell the server about: a staged image has never been
-      // uploaded (see `attachImageFiles`). The delete call that used to live
-      // here existed because attaching uploaded immediately, so removing had
-      // to clean up after it, staging removes the need rather than the
-      // symptom. An image that *is* already on the server (a regenerate
-      // re-using an earlier message's attachments) keeps its id and is left
-      // alone, because the sent message still references it.
-    });
-    chipEl.append(thumb, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: image.name || "Image",
+        size: image.file?.size,
+        thumb: image.objectUrl || mediaSrc(image.url),
+        removeTitle: "Remove this image",
+        onRemove: () => {
+          attachedImages = attachedImages.filter((img) => img.key !== image.key);
+          // An object URL is a document-lifetime reference to a Blob:
+          // dropping the array entry alone leaks the bytes while the tab is open.
+          if (image.objectUrl) URL.revokeObjectURL(image.objectUrl);
+          renderImageAttachments();
+          announce(`Removed image. ${attachedImages.length} image(s) attached.`);
+          // A staged image was never uploaded (see `attachImageFiles`), so
+          // there is nothing to tell the server. One already on the server (a
+          // regenerate re-using an earlier message) is left alone: the sent
+          // message still references it.
+        },
+      }),
+    );
   }
 }
 
@@ -424,11 +482,11 @@ async function keepUnreadableChatFile(file, error) {
   toastAction(
     `Kept “${file.name}” in your Library, ${error?.message || "its text could not be read"}`,
     "Show it",
-    () => {
-      switchTab("library");
-      if (typeof renderLibrary === "function") renderLibrary();
+    async () => {
+      await switchTab("library");
+      document.querySelector('#library-subtabs [data-media-kind="files"]')?.click();
     },
-    { go: { tab: "library" } },
+    { go: { tab: "library", media: "files" } },
   );
   return true;
 }
@@ -544,26 +602,17 @@ function renderFileAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedFiles.length === 0);
   for (const file of attachedFiles) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:paperclip ${file.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    //: Through `setLabel`, like every other close in the app. It was a typed
-    //: U+2715, written as an escape, which is how it passed the glyph lint
-    //: while nine other close buttons were being converted.
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${file.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedFiles = attachedFiles.filter((f) => f.id !== file.id);
-      renderFileAttachments();
-      announce(`Removed attachment. ${attachedFiles.length} file(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: file.name,
+        removeTitle: `Don't send “${file.name}” with this message`,
+        onRemove: () => {
+          attachedFiles = attachedFiles.filter((f) => f.id !== file.id);
+          renderFileAttachments();
+          announce(`Removed attachment. ${attachedFiles.length} file(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -656,23 +705,17 @@ function renderDocumentAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:file-text ${document_.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${document_.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
-      renderDocumentAttachments();
-      announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      attachmentChip({
+        name: document_.name,
+        removeTitle: `Don't send “${document_.name}” with this message`,
+        onRemove: () => {
+          attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
+          renderDocumentAttachments();
+          announce(`Removed attachment. ${attachedDocuments.length} document(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -1316,7 +1359,7 @@ function openNotePicker() {
   panel.classList.remove("hidden");
   $("attach-note").setAttribute("aria-expanded", "true");
   renderNotePickerList();
-  if (window.matchMedia(PHONE_TABS).matches && typeof openSheet === "function") {
+  if (window.matchMedia(PHONE_TABS).matches) {
     const home = { parent: panel.parentElement, next: panel.nextSibling };
     //: The sheet's own head already carries a title and a Close; this
     //: panel's `.dialog-head` (built for the floating popover) would only
@@ -1567,7 +1610,14 @@ async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
   const typed = chatTidyTyped((preset ?? input.value).trim());
-  if (!typed) return;
+  if (!typed) {
+    //: Pressing Send on an empty box did nothing at all (dog3-1026 row 12).
+    if (preset == null) {
+      toast("Type a message first.");
+      input.focus();
+    }
+    return;
+  }
 
   // Plan mode is applied here, on the way out, rather than by whatever control
   // was pressed: so Send, Enter and a suggestion chip all get planned when the
@@ -1840,7 +1890,7 @@ async function chatSendTurn(preset, opts = {}) {
   let toolsUnsupportedEvent = null;
   // Whether the user pressed Stop. An empty answer they asked for needs no
   // explanation; one they didn't ask for does.
-  let stopped = false;
+  let miss, stopped = false;
   // Set when the agent ends its turn by handing the job to a saved skill.
   // The run can't start from inside the stream, this turn is still holding
   // the input box and the conversation, so it is remembered and started
@@ -1867,7 +1917,7 @@ async function chatSendTurn(preset, opts = {}) {
   chatController = new AbortController();
   const controller = chatController;
   //: The app's mark lifts its cells while a turn runs (phone-shell.js).
-  if (typeof syncEmblemBusy === "function") syncEmblemBusy();
+  syncEmblemBusy();
   //: Atlas looks up to think while a turn runs (avatars.js).
   if (typeof setAtlasMood === "function") setAtlasMood("thinking");
 
@@ -2053,11 +2103,14 @@ async function chatSendTurn(preset, opts = {}) {
         //: Each insight line the answer said carries Confirm and Not right
         //: (CHAT_PLAN decision 60), under the answer, one row each.
         for (const insight of event.insights || []) {
-          if (insight.confirmed) continue;
+          if (insight.confirmed && insight.rule !== "drift") continue;
           const line = insightLine(insight, insight.in_answer ? (insight.rule === "drift" ? "Is that open plan right?" : "Is that pattern right?") : `Pattern: ${insight.short}.`, (row, verdict, result) => {
-            row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : "Not right: it will not be shown again.";
+            row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : verdict === "done" ? "Marked done" : "Not right: it will not be shown again.";
           }, "muted");
           groundingHolder.appendChild(line);
+          //: A digest answer hides this holder (its marks are inline), and the
+          //: rows are not citations: show it for them.
+          groundingHolder.classList.remove("hidden");
         }
       },
       onPlan: (event) => {
@@ -2305,6 +2358,7 @@ async function chatSendTurn(preset, opts = {}) {
       //: (owner, 2026-10-17: the old fixed line said nothing). A message
       //: too long to be a sentence, or none, falls back to a line that still
       //: says what to do next.
+      miss = error instanceof TypeError;
       const said = String(error && error.message ? error.message : "").trim();
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
@@ -2364,7 +2418,7 @@ async function chatSendTurn(preset, opts = {}) {
     if (chatController === controller) {
       chatController = null;
       stopChatTimer();
-      if (typeof syncEmblemBusy === "function") syncEmblemBusy();
+      syncEmblemBusy();
       // The turn is over: it is saved (or about to be) and a reload of this
       // thread will render it like any other. Re-attaching these nodes after
       // that point would show it twice.
@@ -2403,6 +2457,7 @@ async function chatSendTurn(preset, opts = {}) {
     meta,
     toolEvents,
     touched: [...touchedItems.values()],
+    grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
@@ -2548,10 +2603,9 @@ async function chatSendTurn(preset, opts = {}) {
     if (!stopped && !handoff && !asked) {
       const note = document.createElement("p");
       note.className = "muted";
-      note.textContent =
-        "The model finished without writing anything. That usually means it ran " +
-        "out of context or the model is struggling with this question, try again, " +
-        "or rephrase it.";
+      note.textContent = miss
+        ? "Can't reach the app. Is it open?"
+        : "The model wrote nothing. Try again, or ask it another way.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
       bubble.appendChild(
@@ -2705,6 +2759,59 @@ async function chatSendTurn(preset, opts = {}) {
   // saved, and this is a second model call. See offerFollowups. A composed
   // answer (no model running) brings its own next questions (INBOX 725).
   offerFollowups(bubble, question, answerRaw, meta?.composed ? composedNext : null);
+  offerReminder(bubble, question);
+}
+
+// --- "Make this a reminder" under the answer to a dated intention ------------
+//
+// "I need to call the dentist on Friday" is a reminder said aloud (the owner,
+// 2026-10-27; CHAT_PLAN decision 79). `POST /reminders/suggest` reads the
+// message by rules alone, so the chip is the same with a model up or down,
+// and it makes nothing: one press creates, with the usual Undo. Like the
+// follow-ups it is fired after the turn is saved, never awaited, silent on
+// every failure, and only drawn if its bubble is still on screen.
+async function offerReminder(bubble, question) {
+  if (!bubble || !question) return;
+  let found = null;
+  try {
+    const read = await apiJson("/reminders/suggest", {
+      method: "POST",
+      silent: true,
+      body: JSON.stringify({ text: String(question).slice(0, 4000), tz_offset_minutes: -new Date().getTimezoneOffset() }),
+    });
+    found = read?.suggestion || null;
+  } catch {
+    return; // an offer that fails is no offer, not an error on a fine answer
+  }
+  if (!found || !bubble.isConnected) return;
+  bubble.querySelector(":scope > .chat-reminder-offer")?.remove();
+  const row = document.createElement("div");
+  row.className = "chat-reminder-offer";
+  const offer = chip(`ph:alarm Make this a reminder: ${found.text}, ${relativeWhen(found.due_at)}`, "", async () => {
+    offer.classList.add("hidden");
+    try {
+      const made = await apiJson("/reminders", {
+        method: "POST",
+        body: JSON.stringify({
+          text: found.text,
+          due_at: found.due_at,
+          priority: found.priority || "normal",
+          recurring: found.recurring || "none",
+          alert_minutes: found.alert_minutes ?? null,
+        }),
+      });
+      reminderMadeUndo(made);
+      loadReminders();
+      row.replaceChildren(Object.assign(document.createElement("span"), { className: "muted", textContent: `Reminder set: ${relativeWhen(made.due_at)}.` }));
+    } catch (error) {
+      offer.classList.remove("hidden");
+      toast(error.message || "Couldn't make that reminder.", true);
+    }
+  });
+  offer.title = "Makes a reminder from what you wrote; nothing is made until you press this";
+  row.appendChild(offer);
+  bubble.appendChild(row);
+  chatScrollToEnd();
 }
 
 // --- "what to ask next" chips under a finished answer -------------------------

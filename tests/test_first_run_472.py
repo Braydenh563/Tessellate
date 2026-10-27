@@ -187,7 +187,8 @@ def test_first_setup_says_it_needs_the_internet_once():
     js = frontend_text("onboarding.js")
     assert "The first setup downloads the search model and the packages you chose" in js
     assert "after that Tessellate works offline." in js
-    assert extras.download_mb(extras.EXTRAS_BY_ID["semantic"]) == 2000
+    # fastembed replaced torch on 2026-10-27: the search extra is about 60 MB, not 2 GB.
+    assert extras.download_mb(extras.EXTRAS_BY_ID["semantic"]) == 60
     assert extras.download_mb(extras.EXTRAS_BY_ID["documents"]) > 0
     for doc in ("README.md", "docs/INSTALL.md"):
         assert "A first install needs the internet once." in (ROOT / doc).read_text(encoding="utf-8")

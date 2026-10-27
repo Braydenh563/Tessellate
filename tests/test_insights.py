@@ -137,7 +137,9 @@ def test_the_patterns_route(client, session):
 def test_the_today_line_route_composes_and_rotates(client, session):
     from tessellate.entry import manager
 
-    assert client.get("/insights/today-line").json()["text"] == ""
+    #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
+    empty = client.get("/insights/today-line").json()
+    assert empty["kind"] == "welcome" and empty["text"] and "Spice drawer" not in empty["text"]
     for content in ("# Boiler\n\nRing the landlord about the boiler.", "# Spice drawer\n\nSort the spice drawer."):
         manager.create_entry(session, content)
     session.commit()

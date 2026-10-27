@@ -1,0 +1,701 @@
+/* Quick sketch's styles (sketch-pad.js builds the markup; loaded with it by
+   `openSketch`, media.js, out of the boot sheets). Every value is a token of
+   00-tokens-shell.css, so the pad is the app's own surface in the app and,
+   with that sheet linked, the same surface on its own page
+   (tools/sketch-standalone/). Rules are on the pad's `sp-` classes and
+   restate what the app's `.ghost`, `.dock` and `.dialog-head` give, so the
+   pad looks the same with or without the rest of the app's CSS. */
+
+/* --- the dialog ------------------------------------------------------------ */
+#sketch-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-6);
+  /* The `.modal-overlay` tier (01-forms-settings.css): the confirm dialog a
+     close raises is a `.modal-overlay` appended later, so it stacks above
+     this by DOM order. */
+  z-index: 1010;
+}
+#sketch-overlay.hidden {
+  display: none;
+}
+/* A paint window, not a form: it takes the room it is given, so the page
+   is as large as the window allows and a half-screen window still fits. */
+#sketch-card {
+  display: flex;
+  flex-direction: column;
+  width: min(72rem, 100%);
+  height: min(56rem, 100%);
+  max-height: 100%;
+  /* Not `.card`'s 16px bottom margin: centred in the overlay it pushed the
+     head 8px above a phone's screen. */
+  margin: 0;
+  overflow: hidden;
+  background: var(--modal-bg);
+}
+
+/* --- the pad ------------------------------------------------------------------ */
+.sp-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  color: var(--ink);
+}
+.sp-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+}
+.sp-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+.sp-head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* One square icon button for every control: the ghost recipe (no face at
+   rest, the ghost tint under the pointer), the selected tool the filled
+   recipe ("a selected toggle is the filled recipe: on is the accent"). */
+.sp-root .sp-btn {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: max(var(--control-h-lg), var(--target-min));
+  height: max(var(--control-h-lg), var(--target-min));
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  /* An icon button at rest is muted, as everywhere in the app; it inks
+     under the pointer and fills when it is on. */
+  color: var(--muted);
+  font-size: var(--text-body);
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color var(--ui-fast) var(--ease-out);
+}
+.sp-root .sp-btn:hover {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
+}
+.sp-root .sp-btn:focus-visible,
+.sp-root .sp-viewport:focus-visible,
+.sp-root .sp-well:focus-visible,
+.sp-root .sp-swatch:focus-visible,
+.sp-root .sp-custom:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.sp-root .sp-btn.active,
+.sp-root .sp-btn[aria-expanded="true"]:not(.graph-help-toggle) {
+  background: var(--accent-surface);
+  color: var(--on-accent);
+}
+
+/* --- the bar: colours, size and style, the sheet ------------------------------ */
+.sp-bar {
+  --control-h: var(--control-h-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--field-inset);
+  border-radius: var(--radius-inner);
+}
+.sp-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.sp-actions {
+  position: relative;
+  margin-inline-start: auto;
+  gap: var(--space-1);
+}
+/* The paper's colour input: kept in the layout, under the More button, because
+   the browser opens a colour picker at its input's box, and a display: none
+   input has none, so the picker landed in the window's top left corner. */
+.sp-picker-anchor {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.sp-colours {
+  gap: var(--space-3);
+}
+.sp-wells {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* Two wells, the one the palette writes to ringed: the ink (lines, text,
+   the bucket) and the fill (inside a shape). */
+.sp-root .sp-well {
+  width: var(--target-min);
+  height: var(--target-min);
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  border: 1px solid var(--control-edge);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.sp-well.active {
+  box-shadow: 0 0 0 2px var(--modal-bg-opaque), 0 0 0 4px var(--accent);
+}
+.sp-swatches {
+  display: grid;
+  grid-template-columns: repeat(6, var(--target-min));
+  gap: var(--space-1);
+}
+.sp-recent {
+  grid-template-columns: repeat(3, var(--target-min));
+}
+/* The app's target floor, as every other control: 28px, 44 under 820 and
+   on a finger (it was 24, the WCAG minimum, under DESIGN's floor). */
+.sp-swatch {
+  width: var(--target-min);
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px var(--control-edge);
+  cursor: pointer;
+}
+/* The dialog touch floor (07-whiteboard-misc.css, under 820) would stretch a
+   disc into an oval; its target is the spacing round it. */
+#sketch-overlay .sp-root button:is(.sp-swatch, .sp-well) {
+  min-width: 0;
+  min-height: 0;
+}
+.sp-swatch.active {
+  box-shadow: 0 0 0 2px var(--modal-bg-opaque), 0 0 0 4px var(--accent);
+}
+.sp-custom {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--target-min);
+  height: var(--target-min);
+  border: 1px dashed var(--control-edge);
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  cursor: pointer;
+}
+.sp-custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+/* Forced colours paint every background the system's: the swatches and
+   wells were all one colour and the ring (a shadow) was gone. The colour is
+   the content here, so it is kept, and the one that is on is outlined. */
+@media (forced-colors: active) {
+  .sp-swatch,
+  .sp-well {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+  .sp-swatch.active,
+  .sp-well.active,
+  .sp-root .sp-btn.active {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+/* The size: a slider and the number it is on, as one tonal field. */
+.sp-size {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: max(var(--control-h-lg), var(--target-min));
+  padding-inline: var(--space-3);
+  background: var(--ghost-btn-bg);
+  border: 1px solid var(--ghost-btn-border);
+  border-radius: var(--radius-md);
+}
+.sp-size input {
+  width: 5rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.sp-size-value {
+  min-width: 1.25rem;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+}
+.sp-modes {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+/* The palette, size and style: on the bar from 820 up, a popover under
+   "Colour, size and style" below it (the narrow rules at the end). */
+.sp-style {
+  display: contents;
+}
+.sp-root .sp-btn.sp-style-toggle {
+  display: none;
+}
+
+/* The menu the pad draws when the page has none (standalone only; in the
+   app the More button is a `kebabMenu`). */
+.sp-menu-wrap {
+  position: relative;
+}
+.sp-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-1));
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 14rem;
+  padding: var(--space-2);
+  background: var(--modal-bg-opaque);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.sp-menu.hidden {
+  display: none;
+}
+.sp-menu-row {
+  display: block;
+  width: 100%;
+  min-height: var(--target-min);
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sp-menu-row:is(:hover, :focus-visible) {
+  background: var(--ghost-btn-bg);
+}
+.sp-menu-row.danger {
+  color: var(--error);
+}
+
+/* --- tools and page ---------------------------------------------------------------- */
+.sp-body {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--space-3);
+  min-height: 0;
+}
+/* The tools down the left, as in every paint program, in four groups told
+   apart by a hairline: pick, draw, shapes, marks. */
+.sp-rail {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  overflow-y: auto;
+  background: var(--field-inset);
+  border-radius: var(--radius-inner);
+}
+.sp-rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.sp-rail-group + .sp-rail-group {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+.sp-viewport {
+  display: flex;
+  /* A zero basis: with `auto` the page's own size was the basis, so on a
+     phone (the body a column) a zoom grew the viewport and a refit then
+     read a different room (34% at open, 35% after + and 0). */
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-3);
+  background: var(--field-inset);
+  border-radius: var(--radius-inner);
+  overscroll-behavior: contain;
+}
+/* `margin: auto` centres the page while it fits and gives way to scrolling
+   when a zoom makes it larger than the window. */
+.sp-stage {
+  position: relative;
+  flex: none;
+  margin: auto;
+  box-shadow: var(--shadow-md);
+  /* Its text box's layer stays inside it, under the bar's menus. */
+  isolation: isolate;
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+}
+.sp-stage[data-tool="select"] {
+  cursor: default;
+}
+.sp-stage[data-tool="text"] {
+  cursor: text;
+}
+.sp-stage[data-tool="fill"],
+.sp-stage[data-tool="picker"] {
+  cursor: cell;
+}
+.sp-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sp-preview,
+.sp-ring {
+  pointer-events: none;
+}
+/* The brush's width under the pointer: a dark and a light ring, seen on any
+   paper. */
+.sp-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 1px var(--modal-bg-opaque);
+  will-change: transform;
+}
+.sp-ring.hidden {
+  display: none;
+}
+.sp-text-editor {
+  position: absolute;
+  white-space: pre;
+  z-index: 2;
+  min-width: 2ch;
+  margin: 0;
+  padding: 0 var(--space-1);
+  border: 1px dashed var(--accent);
+  border-radius: 0;
+  background: transparent;
+  font-family: inherit;
+  line-height: 1.25;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  box-shadow: none;
+}
+
+/* --- status and foot ------------------------------------------------------------------ */
+/* One row of a fixed height whatever it says: the message is the flexible
+   part and is cut short rather than wrapping. */
+.sp-status {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  min-height: max(var(--control-h-lg), var(--target-min));
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.sp-readout {
+  flex: none;
+  min-width: 5rem;
+}
+.sp-readout:empty {
+  min-width: 0;
+}
+.sp-zoom {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+}
+.sp-root .sp-zoom-value {
+  min-width: 3.5rem;
+  min-height: var(--target-min);
+  margin: 0;
+  padding: 0 var(--space-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.sp-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.sp-foot .sp-caption {
+  flex: 1 1 12rem;
+  min-width: 0;
+  height: max(var(--control-h-lg), var(--target-min));
+  margin: 0;
+}
+.sp-message {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sp-message.sp-error {
+  color: var(--error);
+}
+.sp-foot :is(.sp-download, .sp-save) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--control-h-lg);
+  min-height: var(--target-min);
+  margin: 0;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--accent-surface);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* Nothing drawn yet: dimmed as a disabled button is, still pressable, and
+   the press says "Draw something first". */
+.sp-foot .sp-save[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Beside Save as note, Download is the quiet one: the ghost recipe. */
+.sp-foot .sp-download.ghost {
+  border-color: var(--ghost-btn-border);
+  background: none;
+  color: var(--ink);
+  font-weight: 500;
+}
+.sp-foot .sp-download.ghost:hover,
+.sp-foot .sp-download.ghost:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg);
+}
+.sp-foot .sp-download:only-of-type,
+.sp-foot .sp-download:last-child {
+  margin-inline-start: auto;
+}
+
+/* --- help ---------------------------------------------------------------------------- */
+/* In the app the panel is the help popover (`wireHelpPopover`); on its own
+   page it hangs under the head. */
+.sp-help:not(.help-popover) {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 2;
+  width: min(30rem, 100%);
+  max-height: 60vh;
+  overflow: auto;
+  padding: var(--space-4);
+  background: var(--modal-bg-opaque);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.sp-help.hidden {
+  display: none;
+}
+/* The thirteen keys in two columns, then one line per area. */
+.sp-help-keys {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+.sp-help-areas {
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+}
+.sp-help-areas li + li {
+  margin-top: var(--space-1);
+}
+.sp-help kbd {
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.sp-hidden {
+  display: none;
+}
+.sp-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- narrow windows ------------------------------------------------------------------------- */
+/* A phone: the whole screen, the tools a row over the page. */
+/* The app's touch floor (44 under 820 and on a finger), stated here too so
+   the pad's buttons keep it on a page of its own. */
+@media (max-width: 819.98px), (pointer: coarse) {
+  .sp-root {
+    --target-min: 2.75rem;
+  }
+}
+/* The palette, size and style fold into one popover under the bar. */
+@media (max-width: 819.98px) {
+  .sp-bar {
+    position: relative;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .sp-root .sp-btn.sp-style-toggle {
+    display: inline-grid;
+  }
+  .sp-style {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: 100%;
+    padding: var(--space-3);
+    background: var(--modal-bg-opaque);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+  .sp-style:not(.open) {
+    display: none;
+  }
+}
+/* Thirteen tools at 44px are taller than the page on a half-width or short
+   window (662 against 558 at 720x900, Fill and the picker cut off): two
+   columns per group there. */
+@media (min-width: 600px) and (max-width: 819.98px), (min-width: 600px) and (max-height: 799.98px), (min-width: 600px) and (pointer: coarse) {
+  .sp-rail-group {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: var(--space-1);
+  }
+}
+@media (max-width: 599.98px) {
+  #sketch-overlay {
+    padding: 0;
+  }
+  #sketch-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+  .sp-root {
+    gap: var(--space-2);
+  }
+  .sp-bar {
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+  }
+  .sp-colours,
+  .sp-actions {
+    gap: var(--space-1);
+  }
+  .sp-actions {
+    margin-inline-start: 0;
+  }
+  .sp-body {
+    flex-direction: column;
+  }
+  /* A phone has room for every tool in two rows; a row that scrolls
+     sideways hides the last tools behind the edge. */
+  .sp-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-1) var(--space-2);
+    overflow: visible;
+  }
+  /* The groups give way so the thirteen wrap as two rows, not three. */
+  .sp-rail-group {
+    display: contents;
+  }
+  .sp-rail {
+    padding: var(--space-1);
+  }
+  .sp-viewport {
+    padding: var(--space-2);
+  }
+  .sp-status {
+    gap: var(--space-2);
+  }
+  .sp-readout {
+    min-width: 0;
+  }
+  .sp-readout[data-sp="dims"] {
+    display: none;
+  }
+  /* The foot is one row: the caption, Download as its glyph, Save. */
+  .sp-foot {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+  }
+  .sp-foot .sp-caption {
+    flex-basis: 0;
+  }
+  .sp-foot .sp-download {
+    flex: none;
+    width: var(--target-min);
+    padding: 0;
+    justify-content: center;
+  }
+  .sp-download-label {
+    display: none;
+  }
+  .sp-foot .sp-save {
+    flex: none;
+  }
+}

@@ -1,4 +1,4 @@
-"""The engine probe's bugs P1 to P8 (docs/roadmap/agent-remaining/engine-probe-1010.md),
+"""The engine probe's bugs P1 to P8 (docs/roadmap/archive/agent-remaining/engine-probe-1010.md),
 each as the route answered it on 2026-10-10 and as it must answer now.
 
 Route-level where the bug was the route's (`/chat/stream`, the Ask box's From

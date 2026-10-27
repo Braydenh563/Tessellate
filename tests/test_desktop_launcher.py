@@ -207,7 +207,7 @@ def test_desktop_launcher_still_starts_the_window(monkeypatch, tmp_path):
     launcher._run_desktop()
 
     assert calls["create_window"] is not None
-    assert calls["create_window"]["title"] == "Tessellate Notes"
+    assert calls["create_window"]["title"] == "Tessellate"
     assert calls["start"] is not None
     # The window opens on the loading placeholder, not the real server URL, 
     # see the loading-window tests below for the handoff itself.

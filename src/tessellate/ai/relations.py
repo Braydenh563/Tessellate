@@ -115,32 +115,13 @@ def _rarity(n: int, rare: float, few: float, some: float) -> float:
     return rare if n <= 2 else few if n <= 5 else some
 
 
-def recognise(
+def _collect_shared(
     notes: dict[int, NoteFacts],
     edges: list[tuple[int, int]],
     mentions: list[tuple[str, int]],
-    similar: list[tuple[int, int, float]],
-    exclude: set[frozenset[int]],
-    weights: dict[str, float] | None = None,
-) -> list[Candidate]:
-    """Every pair with evidence at or over `MIN_CONFIDENCE`, best first.
-
-    `edges` are the explicit connections (links and threads): they make the
-    neighbour signal and are themselves excluded. `mentions` is
-    `(entity name, note id)`. `similar` is cosine pairs already over the bar.
-    `exclude` is pairs never to offer (linked, threaded, dismissed).
-    `weights` scales each signal by what accepting and dismissing taught
-    (`learning.signal_weights`, GRAPH_PLAN KG9); a missing signal is 1.0.
-    """
-    weights = weights or {}
-
-    def worth(signal: str, p: float) -> float:
-        return min(CAPS[signal], p * weights.get(signal, 1.0))
-
-    #: Pairs are `(low, high)` tuples until the end: a frozenset and a
-    #: Candidate per pair cost 2.4 s at 10k notes for pairs nearly all of
-    #: which fall under the bar. Only the survivors become Candidates.
-    banned = {tuple(sorted(pair)) for pair in exclude if len(pair) == 2}
+    banned: set[tuple[int, ...]],
+) -> dict[str, dict[tuple[int, int], list[tuple[float, str]]]]:
+    """Per signal, each pair of notes and the things (with weights) that tie them."""
     shared: dict[str, dict[tuple[int, int], list[tuple[float, str]]]] = {
         "entities": defaultdict(list), "neighbours": defaultdict(list), "tags": defaultdict(list),
     }
@@ -182,17 +163,66 @@ def recognise(
     for tag, members in by_tag.items():
         if 2 <= len(members) <= TAG_HUB:
             pairs_of(members, "tags", _rarity(len(members), 0.35, 0.25, 0.15), tag)
+    return shared
 
-    miss: dict[tuple[int, int], float] = defaultdict(lambda: 1.0)
-    for signal, table in shared.items():
-        for key, hits in table.items():
-            miss[key] *= 1.0 - worth(signal, _noisy_or([w for w, _ in hits], CAPS[signal]))
+
+def _cosine_pairs(
+    similar: list[tuple[int, int, float]], notes: dict[int, NoteFacts], banned: set[tuple[int, ...]]
+) -> dict[tuple[int, int], float]:
+    """The first cosine score of each offerable pair of known notes."""
     cosine: dict[tuple[int, int], float] = {}
     for a, b, score in similar:
         key = (a, b) if a < b else (b, a)
         if a == b or key in banned or a not in notes or b not in notes or key in cosine:
             continue
         cosine[key] = score
+    return cosine
+
+
+def _written_apart(first, second) -> str | None:  # noqa: ANN001
+    """Words for two notes written within `TIME_WINDOW_MINUTES` of each other, else None."""
+    if not (first and second):
+        return None
+    minutes = abs((first - second).total_seconds()) / 60
+    if minutes > TIME_WINDOW_MINUTES:
+        return None
+    return "written the same minute" if minutes < 1 else f"written {round(minutes)} minutes apart"
+
+
+def recognise(
+    notes: dict[int, NoteFacts],
+    edges: list[tuple[int, int]],
+    mentions: list[tuple[str, int]],
+    similar: list[tuple[int, int, float]],
+    exclude: set[frozenset[int]],
+    weights: dict[str, float] | None = None,
+) -> list[Candidate]:
+    """Every pair with evidence at or over `MIN_CONFIDENCE`, best first.
+
+    `edges` are the explicit connections (links and threads): they make the
+    neighbour signal and are themselves excluded. `mentions` is
+    `(entity name, note id)`. `similar` is cosine pairs already over the bar.
+    `exclude` is pairs never to offer (linked, threaded, dismissed).
+    `weights` scales each signal by what accepting and dismissing taught
+    (`learning.signal_weights`, GRAPH_PLAN KG9); a missing signal is 1.0.
+    """
+    weights = weights or {}
+
+    def worth(signal: str, p: float) -> float:
+        return min(CAPS[signal], p * weights.get(signal, 1.0))
+
+    #: Pairs are `(low, high)` tuples until the end: a frozenset and a
+    #: Candidate per pair cost 2.4 s at 10k notes for pairs nearly all of
+    #: which fall under the bar. Only the survivors become Candidates.
+    banned = {tuple(sorted(pair)) for pair in exclude if len(pair) == 2}
+    shared = _collect_shared(notes, edges, mentions, banned)
+
+    miss: dict[tuple[int, int], float] = defaultdict(lambda: 1.0)
+    for signal, table in shared.items():
+        for key, hits in table.items():
+            miss[key] *= 1.0 - worth(signal, _noisy_or([w for w, _ in hits], CAPS[signal]))
+    cosine = _cosine_pairs(similar, notes, banned)
+    for key, score in cosine.items():
         miss[key] *= 1.0 - worth("similarity", score)
 
     #: Time can only lift a pair already this close to the bar.
@@ -201,14 +231,9 @@ def recognise(
     kept: list[Candidate] = []
     for key, missed in miss.items():
         a, b = key
-        when = None
-        if 1.0 - missed >= lift:
-            first, second = notes[a].created_at, notes[b].created_at
-            if first and second:
-                minutes = abs((first - second).total_seconds()) / 60
-                if minutes <= TIME_WINDOW_MINUTES:
-                    when = "written the same minute" if minutes < 1 else f"written {round(minutes)} minutes apart"
-                    missed *= 1.0 - time_p
+        when = _written_apart(notes[a].created_at, notes[b].created_at) if 1.0 - missed >= lift else None
+        if when:
+            missed *= 1.0 - time_p
         if 1.0 - missed < MIN_CONFIDENCE:
             continue
         candidate = Candidate(a, b)

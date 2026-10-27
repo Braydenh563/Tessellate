@@ -667,36 +667,6 @@
 .row :is(h2, h3, h4).flush {
   margin: 0;
 }
-/* The pen swatches paint themselves from the colour they select, so the
-   value lives in one place per pen rather than two. */
-.sketch-color[data-color="#3b82f6"] {
-  background: #3b82f6;
-}
-/* Blue */
-.sketch-color[data-color="#ef4444"] {
-  background: #ef4444;
-}
-/* Red */
-.sketch-color[data-color="#22c55e"] {
-  background: #22c55e;
-}
-/* Green */
-.sketch-color[data-color="#eab308"] {
-  background: #eab308;
-}
-/* Yellow */
-.sketch-color[data-color="#a855f7"] {
-  background: #a855f7;
-}
-/* Purple */
-.sketch-color[data-color="#111827"] {
-  background: #111827;
-}
-/* Black */
-.sketch-color[data-color="#f9fafb"] {
-  background: #f9fafb;
-}
-/* White */
 /* The "N earlier records dropped" line above the log list. Styled as a
    caution rather than an error: the log is working, it is just not the whole
    story, and a red banner would read as a fault in the app being diagnosed. */
@@ -1246,6 +1216,11 @@
 .library-create-list {
   margin: var(--space-3) calc(var(--space-2) * -1) 0;
   padding: 0;
+}
+/* A choice is read in full: at 390 five of the seven descriptions ended in
+   an ellipsis (dog3-1026 row 22), so here they wrap to a second line. */
+.library-create-list .rich-picker-about {
+  white-space: normal;
 }
 /* --- the Ask box explaining itself (§35A) ----------------------------------
    Shown when someone types a greeting into a box that searches notes. It is
@@ -2168,8 +2143,7 @@
    switching something on. `.sr-only` stays excluded: that is the variant
    whose visible control is drawn by a sibling. */
 .checkbox-label>input[type="checkbox"]:not(.sr-only),
-.wb-snap-label input[type="checkbox"],
-.ask-use-ai input[type="checkbox"] {
+.wb-snap-label input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   /* A control's own size: not a spacing token, and it must not move with the
@@ -2261,8 +2235,7 @@
 .check-row input[type="checkbox"]::after,
 .semantic-toggle input[type="checkbox"]::after,
 .checkbox-label>input[type="checkbox"]:not(.sr-only)::after,
-.wb-snap-label input[type="checkbox"]::after,
-.ask-use-ai input[type="checkbox"]::after {
+.wb-snap-label input[type="checkbox"]::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -2286,7 +2259,6 @@
 .semantic-toggle input[type="checkbox"]:hover,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):hover,
 .wb-snap-label input[type="checkbox"]:hover,
-.ask-use-ai input[type="checkbox"]:hover,
 .settings-section label>input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .setting-check input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .tools-toggle input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
@@ -2294,8 +2266,7 @@
 .check-row input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .semantic-toggle input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
 .checkbox-label>input[type="checkbox"]:not(.sr-only):is(:focus-visible, :has(:focus-visible)),
-.wb-snap-label input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)),
-.ask-use-ai input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)) {
+.wb-snap-label input[type="checkbox"]:is(:focus-visible, :has(:focus-visible)) {
   border-color: var(--ink);
 }
 .settings-section label>input[type="checkbox"]:checked,
@@ -2305,8 +2276,7 @@
 .check-row input[type="checkbox"]:checked,
 .semantic-toggle input[type="checkbox"]:checked,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):checked,
-.wb-snap-label input[type="checkbox"]:checked,
-.ask-use-ai input[type="checkbox"]:checked {
+.wb-snap-label input[type="checkbox"]:checked {
   background: var(--accent);
   border-color: var(--accent);
 }
@@ -2317,14 +2287,12 @@
 .check-row input[type="checkbox"]:checked::after,
 .semantic-toggle input[type="checkbox"]:checked::after,
 .checkbox-label>input[type="checkbox"]:not(.sr-only):checked::after,
-.wb-snap-label input[type="checkbox"]:checked::after,
-.ask-use-ai input[type="checkbox"]:checked::after {
+.wb-snap-label input[type="checkbox"]:checked::after {
   transform: translateY(-50%) translateX(0.85rem);
   background: #fff;
 }
 .checkbox-label>input[type="checkbox"]:not(.sr-only):disabled,
-.wb-snap-label input[type="checkbox"]:disabled,
-.ask-use-ai input[type="checkbox"]:disabled {
+.wb-snap-label input[type="checkbox"]:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }

@@ -117,7 +117,7 @@ async function toggleFaded(entry) {
   row.className = "entry-links";
   const label = document.createElement("span");
   label.className = "muted";
-  const items = (answer && answer.items) || [];
+  const items = ((answer && answer.items) || []).filter((item) => (item.age_days || 0) >= 3);
   //: Three states, not two, exactly as `toggleReferences` has them: "nothing
   //: is faded near this" and "we could not ask" are different facts, and the
   //: second has a third cause of its own here (a notebook under

@@ -433,6 +433,47 @@ def build_conversational_messages(
     return messages
 
 
+#: **The app's facts, the model's words** (CHAT_PLAN decision 75; the owner,
+#: 2026-10-27: "I want the ai to be able to do what the composer can do but
+#: better"). A count, a due list or a worked sum is exact data the app read
+#: from its own rows; the model is asked to say it, never to recount it.
+FACTS_BRIEF = (
+    "The app has already worked out the answer from the user's own records; "
+    "it is in the <<<data>>> block below. Answer from it in one or two warm, "
+    "plain sentences. Never change, add or drop a number, a date or a name. "
+    "Any list in it is shown under your reply, so do not repeat it row by row."
+)
+#: The facts' share of the prompt: the lead and the first rows of a list are
+#: what a sentence needs; the whole list is drawn under the reply anyway.
+FACTS_MAX_CHARS = 1_500
+
+
+def build_facts_messages(
+    question: str,
+    facts: str,
+    style: str = "friendly",
+    profile: str = "",
+    history: list[dict] | None = None,
+    persona_prompt: str | None = None,
+    mode: str | None = None,
+) -> list[dict]:
+    """The prompt for a turn the app's engine has the exact answer to (a
+    count, the due list, a worked sum): the persona, `FACTS_BRIEF`, and the
+    facts fenced as quoted data, cut to `FACTS_MAX_CHARS`."""
+    from tessellate.ai.fence import fence
+
+    persona = (persona_prompt or DEFAULT_PERSONA).strip()
+    style_hint = STYLE_HINTS.get(style, STYLE_HINTS["friendly"])
+    profile_hint = f" About the user: {profile.strip()}" if profile.strip() else ""
+    said = facts.strip()
+    if len(said) > FACTS_MAX_CHARS:
+        said = said[:FACTS_MAX_CHARS].rsplit("\n", 1)[0].rstrip() + "\n…"
+    messages = [{"role": "system", "content": f"{persona} {FACTS_BRIEF} {style_hint}{profile_hint}{length_hint(mode)}{clock_hint()}"}]
+    messages.extend(history_messages(history))
+    messages.append({"role": "user", "content": f"{fence('app facts', said)}\n\nMy question: {question}"})
+    return messages
+
+
 def _written_hint(note: dict) -> str:
     """" (written Tuesday 22 September 2026)", or "" when the caller did not
     date the note. See the comment where `build_messages` uses it."""

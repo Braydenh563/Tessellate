@@ -2398,9 +2398,11 @@ def test_a_folded_group_of_settings_is_the_shared_disclosure_recipe() -> None:
         "group of settings is `details.settings-fold` (DESIGN.md, the recipe "
         "index), and this count may only fall"
     )
-    assert graph_folds == 5, (
-        "the graph options panel's five tuned-once sections (Physics, Display, "
-        "Filter, Groups, Minimap) are folds; see GRAPH_PLAN.md, 'Decision made, 2026-09-20', "
+    assert graph_folds == 7, (
+        "the graph options panel's seven sections that are set once and left "
+        "(Physics, Show, Display, Filter, Time, Groups, Minimap) are folds, so "
+        "the panel fits its cap with every fold closed (INBOX 1400); see "
+        "GRAPH_PLAN.md, 'Decision made, 2026-09-20', "
         "'Decision made, 2026-10-04: a Filter fold' "
         "and 'Decision made, 2026-10-04: a Display fold'"
     )
@@ -2466,7 +2468,6 @@ CANVAS_GRIPS = (
     ".wb-link-bend-handle",
     ".wb-link-waypoint-handle",
     ".wb-link-waypoint-add",
-    ".wb-link-label-handle",
     ".wb-clone-grip",
     ".wb-map-edge-handle",
 )
@@ -4352,6 +4353,74 @@ def test_a_menu_fades_out_through_the_one_class_every_close_path_sets() -> None:
     assert "function menuExitMs(menu)" in menus
 
 
+#: INBOX 1415: the floating panels that opened and closed between two frames
+#: (audit: computed `animation: none`, `transition: all 0s`) now take the
+#: menu's two rules. A new floating panel shown by `.hidden` joins this list.
+FLOATING_PANELS = (
+    ".space-menu", ".notif-panel", "#status-clock-detail", ".nav-history-menu", ".chat-model-panel",
+    ".global-find-bar", ".note-picker-panel", ".chat-skills-panel", ".chat-dock-more-panel", ".graph-popup",
+)
+
+
+def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    enter = css.index(":is(.space-menu, .notif-panel,")
+    enter_block = css[enter : css.index("}", enter)]
+    assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;" in enter_block
+    assert ":not(.hidden)" in enter_block.split("{")[0]
+    leave = css.index(").hidden {\n  opacity: 0;\n  scale: 0.96;", enter)
+    head = css[css.rindex(":is(", 0, leave) : leave]
+    leave_block = css[leave : css.index("}", leave)]
+    assert "opacity var(--ui-exit) var(--ease-out)" in leave_block
+    assert "display var(--ui-exit) linear allow-discrete" in leave_block
+    assert "pointer-events: none;" in leave_block
+    for sel in FLOATING_PANELS:
+        assert sel in enter_block.split("{")[0], f"{sel} must grow in with the menu recipe"
+        assert sel in head, f"{sel} must leave with the menu recipe"
+
+
+def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
+    """INBOX 1415, measured with every request failing (a fresh load, then each
+    Library sub-view): Boards, Images, Contents, Bookmarks and Documents drew
+    "No ... yet" over a full notebook and Recordings printed the server's raw
+    line. Each now takes `surfaceFailed` (a plain line and Try again) and
+    `surfaceRecovered`. Not here: the chat list, the notes list's skeleton
+    rows and the skills list, whose fixes are in boot scripts that sit at the
+    gzip ratchet (OPEN.md)."""
+    js = "\n".join(
+        (ROOT / "frontend" / "js" / name).read_text(encoding="utf-8")
+        for name in ("library.js", "whiteboard.js", "meetings.js")
+    )
+
+    def body(start: str, length: int = 5200) -> str:
+        at = js.index(start)
+        return js[at : at + length]
+
+    assert 'surfaceFailed(empty, "images"' in body("async function renderLibraryImagesGallery(", 9000)
+    assert 'surfaceFailed(empty, "contents", renderContents)' in body("async function renderContents(")
+    assert 'surfaceFailed(empty, "bookmarks", renderBookmarks)' in body("async function renderBookmarks(")
+    assert 'surfaceFailed(empty, "documents", renderLibraryDocuments)' in body("async function renderLibraryDocuments(")
+    assert 'surfaceFailed(empty, "boards"' in body("function drawLibraryBoardsGallery(")
+    assert 'surfaceFailed(failed, "recordings", renderRecordings)' in body("async function renderRecordings(", 1500)
+    assert "error.message" not in body("async function renderRecordings(", 1200), "no raw server line on the page"
+
+
+def test_the_dashboard_does_not_move_itself_while_it_loads() -> None:
+    """INBOX 1415, layout shift at boot measured with a PerformanceObserver
+    (`layout-shift`): 0.105 at boot, 0.077 of it the loading outline moving by
+    `top` every 80ms to follow the grid, and 32px of the greeting lost when the
+    Get started card removed the "Add your name" offer after the page had
+    painted. The outline follows by `translate` (no layout), and the offer is
+    not drawn while the card that carries it is, or is about to be, up."""
+    dash = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    at = dash.index("function dashFillingSkeleton(")
+    body = dash[at : dash.index("\n}\n", at)]
+    assert "outline.style.translate" in body
+    assert "outline.style.top =" not in body and "outline.style.left =" not in body
+    nudge = dash[dash.index("function renderNameNudge(") :][:700]
+    assert 'prefs.get("getStartedHidden", null)' in nudge and 'prefs.get("firstStepsHidden", null)' in nudge
+
+
 def test_a_locked_load_is_not_logged_as_a_failure() -> None:
     """The lock screen is the expected state at boot, not a failed load: the
     browser log used to open with `WARN browser: [notes] could not load:
@@ -5205,8 +5274,11 @@ def test_the_no_model_notice_is_one_row_on_the_notice_recipe() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     for ident in ("chat-offline", "ask-offline", "draft-offline", "command-palette-offline"):
         assert re.search(rf'id="{ident}" class="ai-offline-note notice hidden"', html), ident
+    #: The dashboard's digest built one too until owner-1026b K3, when the
+    #: digest stopped needing a model; any offline box it builds is the recipe's.
     dashboard = with_pieces("dashboard.js")
-    assert 'offline.className = "ai-offline-note notice hidden"' in dashboard
+    built = re.findall(r'offline\.className = "([^"]+)"', dashboard)
+    assert all(c == "ai-offline-note notice hidden" for c in built), built
 
     #: One short sentence per surface (under 90 characters), no exclamation mark.
     sentences = re.findall(r'renderAiOfflineNotice\(\s*\$\("[a-z-]+"\),\s*"([^"]+)"', status)
@@ -5298,7 +5370,17 @@ def test_every_button_answers_hover_with_the_same_quiet_box() -> None:
     ), "the icon button's hover fill is gone from 01-forms-settings.css"
     bad = []
     for name, sels, body in _served_rules():
-        hits = [s for s in sels if ":hover" in s and re.search(r"\.icon-(only|button)\b", _NOT.sub("", s))]
+        #: `:not(:hover)` is a rest rule, not a hover rule; and the image tile's
+        #: chip sits on a photograph, where a translucent quiet box vanishes on a
+        #: white one (2026-10-27), so its lit states are opaque by design
+        #: (tests/test_small_fixes_1027.py pins them).
+        hits = [
+            s
+            for s in sels
+            if ":hover" in _NOT.sub("", s)
+            and re.search(r"\.icon-(only|button)\b", _NOT.sub("", s))
+            and ".library-image-tile .library-image-actions" not in s
+        ]
         if not hits:
             continue
         values = re.findall(r"(?:^|;)\s*background(?:-color)?\s*:\s*([^;]+)", body)
@@ -5968,3 +6050,143 @@ def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
         text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
         for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
             assert name not in text, f"{name} in {boot}.css: the viewer's chrome is lazy"
+
+
+def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
+    """DESIGN.md, "A file waiting on the next message" (attach-1026 A1): the
+    chip is built in exactly one function; Chat's images, documents and files
+    and the popup agent's staged files all call it, and no surface hand-builds
+    a second file chip (the old `attachment-chip-image` card is gone)."""
+    attach = frontend_text("chat-attach.js")
+    assert attach.count("function attachmentChip(") == 1
+    builder = attach[attach.index("function attachmentChip(") :][:2600]
+    for needle in (
+        '"att-chip-stem"',
+        '"att-chip-ext"',
+        '"att-chip-facts"',
+        'document.createElement("progress")',
+        '"att-chip-x"',
+        'setAttribute("aria-label", remove.title)',
+        "attachmentIconClass(",
+        "formatFileSize(",
+    ):
+        assert needle in builder, needle
+    for fn in ("renderImageAttachments", "renderFileAttachments", "renderDocumentAttachments"):
+        body = attach[attach.index(f"function {fn}(") :][:1800]
+        assert "attachmentChip(" in body, fn
+    assert "attachmentChip(" in frontend_text("palette.js")
+    assert "attachment-chip-image" not in frontend_text("chat-attach.js")
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    stem = css[css.index(".att-chip-stem {") :][:200]
+    assert "text-overflow: ellipsis" in stem
+    ext = css[css.index(".att-chip-ext {") :][:120]
+    assert "flex: 0 0 auto" in ext
+    assert "min-width: var(--target-min)" in css[css.index(".att-chip-x {") :][:400]
+    # A staged file is not uploaded before Send, and a failed send deletes
+    # what it already uploaded (A2).
+    palette = frontend_text("palette.js")
+    commit = palette[palette.index("async function agentCommitFiles(") :][:1800]
+    assert 'method: "DELETE"' in commit
+    assert "agentStageFiles(" in frontend_text("settings-wiring.js")
+
+
+# --- A growing field is capped, and its foot stays in view (INBOX 1357) ---------
+# The owner: "fix the class, not the case". Save went off the screen once a
+# note passed 18 to 30 lines; the capture box had a cap of its own (an
+# `#capture`-only rule) while the note edit form, the same `.note-composer`
+# shell and the same editor, grew to 1,630px with Save 29px below a 900px
+# window. Browser half: type 60 lines into the field and compare the foot's
+# `getBoundingClientRect().bottom` with the window's, at 1440x900 and 390x844.
+
+_SHEETS = ROOT / "frontend" / "css"
+
+# How each editor in `NOTE_SURFACES` (documents.js) is kept from pushing its
+# foot away. A new key fails until it is placed here, which is the point.
+_SURFACE_BOUND = {
+    "entry-content": "composer",
+    "entry-edit-content": "composer",
+    "graph-popup-content": "size",
+    "graph-new-content": "size",
+    "draft-text": "column",
+    "draft-thoughts": "column",
+    "wb-card-editor": "size",
+}
+# Content-derived `rows` (a textarea sized to its text) and the selector the
+# cap is on. A new file with `.rows = Math.` fails until it is placed.
+_ROWS_BOUND = {
+    "chat-edit.js": ".msg-edit textarea",
+    "gesture-kit.js": ".answer-editor textarea",
+    "whiteboard.js": ".wb-comments-box",
+}
+
+
+def _sheet_rule(sheet: str, selector: str) -> str:
+    css = (_SHEETS / sheet).read_text(encoding="utf-8")
+    for sel, body in _rules(css):
+        if selector in [s.strip() for s in sel.split(",")]:
+            return body
+    raise AssertionError(f"{selector} has no rule in {sheet}")
+
+
+def test_a_growing_field_has_one_cap_and_every_composer_uses_it() -> None:
+    cap = _sheet_rule("library-lazy.css", ".note-composer .note-surface-stretch .cm-editor .cm-scroller")
+    assert "max-height: min(22rem, 45vh)" in cap
+    # The per-id rule is the case-fix this replaced; it must not return.
+    assert "#capture .note-surface-stretch" not in (_SHEETS / "library-lazy.css").read_text(encoding="utf-8")
+
+
+def test_every_note_editor_says_how_it_is_bounded() -> None:
+    documents = frontend_text("documents.js")
+    table = documents[documents.index("const NOTE_SURFACES = {") :]
+    table = table[: table.index("\n};")]
+    ids = set(re.findall(r'^\s+"([a-z-]+)": \{ size:', table, flags=re.M))
+    assert ids == set(_SURFACE_BOUND), (
+        "NOTE_SURFACES changed: place the new editor in _SURFACE_BOUND and make sure its foot "
+        "cannot be pushed out of view (DESIGN.md, 'A growing field is capped')"
+    )
+    sized = (_SHEETS / "09-editor.css").read_text(encoding="utf-8")
+    assert "max-height: 18rem" in sized and "max-height: 22rem" in sized  # size: inline / box
+
+
+def test_a_textarea_sized_from_its_text_is_capped() -> None:
+    found = {p.name for p in JS if re.search(r"\.rows = Math\.", p.read_text(encoding="utf-8"))}
+    assert found == set(_ROWS_BOUND), f"content-derived rows in {sorted(found)}: cap it and place it in _ROWS_BOUND"
+    for selector in _ROWS_BOUND.values():
+        assert "max-height: min(22rem, 45vh)" in _sheet_rule("library-lazy.css", selector)
+
+
+def test_the_foot_under_a_growing_field_is_pinned_to_the_scroll() -> None:
+    for sheet, selector in (
+        ("library-lazy.css", ".note-edit-foot"),
+        ("library-lazy.css", "#capture .capture-commit-row"),
+        ("graph-lazy.css", ".graph-popup-saverow:has(#graph-popup-save:not(.hidden))"),
+    ):
+        body = _sheet_rule(sheet, selector)
+        assert "position: sticky" in body and "bottom: 0" in body, selector
+
+
+def test_the_popups_save_row_stands_above_the_action_dock() -> None:
+    """INBOX 1421: both are sticky at the panel's foot, the Save row one z-index
+    higher, so at `bottom: 0` it was drawn over the dock (Save 36px inside it,
+    measured 567 against a dock top of 531). The offset is the dock's own
+    height, which `placeGraphPopup` writes (CSSOM: a custom property would cost a token)."""
+    graph = (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
+    place = graph[graph.index("function placeGraphPopup(") :]
+    place = place[: place.index("\n}\n")]
+    assert "saveRow.style.bottom" in place and "dock.offsetHeight" in place
+    dock = _sheet_rule("04-chat-dock-appearance.css", ".graph-popup-actions")
+    assert "position: sticky" in dock and "z-index: 1" in dock
+
+
+def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> None:
+    """INBOX 1403: part of a card's text is a run in the text, set from the
+    selection bar's Text style through the colour popover's own element."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    docs = (ROOT / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    board = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert "**A run**" in design and "wbOpenRunMenu" in design, "DESIGN.md lost the text-run recipe"
+    style = docs[docs.index("function mdRunNode(") : docs.index("\n}\n", docs.index("function mdRunNode(")) + 3]
+    assert "setAttribute" not in style, "a run's size and face are CSSOM: the CSP rejects a style attribute"
+    menu = board[board.index("async function wbOpenRunMenu(") : board.index("function wbBulletTextLines(")]
+    assert "wbColourMenu()" in menu and "swatchPicker(" in menu, "a run's menu is the colour popover, not a hand-built one"
+    assert "createElement(\"div\")" not in menu.replace("const box = document.createElement(\"div\");", ""), "a hand-built menu shell"

@@ -405,8 +405,13 @@ def ensure(data_dir: Path, names: list[str] | None = None) -> CertInfo:
             and info.not_after - _now() > RENEW_BEFORE:
         absent = missing_names(info, wanted)
         if not absent:
-            _private(info.cert_path)
-            _private(info.key_path)
+            #: Every start, not only at creation: a restore, a sync tool or an
+            #: older build may have loosened them, and the authority key is
+            #: the one that matters most (lansec-1025).
+            with contextlib.suppress(OSError, NotImplementedError):
+                os.chmod(info.cert_path.parent, 0o700)
+            for path in (info.cert_path, info.key_path, *authority_paths(data_dir)):
+                _private(path)
             return info
         log.info("LAN certificate made again: it did not name %s", ", ".join(absent))
     return generate(data_dir, wanted, authority=authority)

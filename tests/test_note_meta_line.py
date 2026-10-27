@@ -69,7 +69,7 @@ def test_the_time_is_the_lines_last_fact_everywhere():
     # One auto margin on the phone's line (the time's), not two: two split the
     # room and moved the time on every card.
     phone = _css("10-responsive.css")
-    actions = phone[phone.index("#entry-list > li .entry-actions {\n    position: static;"):][:120]
+    actions = phone[phone.index("#entry-list > li :is(.entry-actions, .entry-meta-end) {\n    position: static;"):][:120]
     assert "margin-left: 0;" in actions
     assert "#entry-list > li .entry-meta > .entry-date {\n  margin-inline-start: auto;" in _css("08-consistency.css")
 

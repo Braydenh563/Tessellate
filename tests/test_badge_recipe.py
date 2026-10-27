@@ -221,7 +221,7 @@ def test_a_badge_with_no_text_is_hidden():
     # so they are what the rule is for; a space inside would defeat :empty.
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert '<span id="answered-by" class="chip item-label answer-model"></span>' in html
-    assert '<span id="search-mode" class="chip"></span>' in html
+    assert '<span id="search-mode" class="chip item-label"></span>' in html
 
 
 def test_a_backup_row_label_takes_the_ink_not_muted_on_its_tint():

@@ -160,7 +160,9 @@ def test_a_model_the_catalog_does_not_describe_falls_back_to_what_we_know():
     assert c.context_length("qwen3") == known_context("qwen3")
 
 
-def test_an_unknown_model_on_a_silent_server_is_budgeted_at_the_default():
+def test_an_unknown_model_on_a_silent_server_is_budgeted_at_the_default(tmp_path, monkeypatch):
+    #: The lookup writes under the data dir (the serial guard caught the repo's).
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
     c = OpenAICompatClient(base_url="http://localhost:1234/v1")
     c._catalog = []
     c._props = {}
@@ -587,7 +589,9 @@ def test_the_ollama_env_var_still_wins_when_no_url_is_set(app_state):
 
     app_state.set_preference("llm_provider", "ollama")
     app_state.set_preference("llm_base_url", "")
-    assert deps.build_llm_client(app_state).base_url == app_state.ollama_url.rstrip("/")
+    #: "localhost" is asked as 127.0.0.1 (the IPv4 loopback test below).
+    want = app_state.ollama_url.rstrip("/").replace("//localhost", "//127.0.0.1")
+    assert deps.build_llm_client(app_state).base_url == want
 
 
 # --- the trap §6 named ------------------------------------------------------
@@ -1013,3 +1017,15 @@ def test_it_never_guesses_between_two_plausible_tools():
     assert provider_module.resolve_tool_name("thing_note", _NAMES) == "thing_note"
     assert provider_module.resolve_tool_name("", _NAMES) == ""
     assert provider_module.resolve_tool_name(None, _NAMES) is None
+
+
+def test_ollama_on_localhost_is_asked_on_the_ipv4_loopback():
+    """The owner, 2026-10-26: Ollama running but the app said no model. On
+    Windows a refused ::1 (what "localhost" tries first) outlasts the 1 s
+    connect wait; Ollama listens on 127.0.0.1."""
+    from tessellate.ai.ollama_client import OllamaClient
+
+    assert OllamaClient("http://localhost:11434").base_url == "http://127.0.0.1:11434"
+    assert OllamaClient("http://LOCALHOST:11434/").base_url == "http://127.0.0.1:11434"
+    assert OllamaClient("http://localhostx:1").base_url == "http://localhostx:1"
+    assert OllamaClient("http://192.168.1.2:11434").base_url == "http://192.168.1.2:11434"

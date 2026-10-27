@@ -10,16 +10,16 @@ already, and downloading another is the slow, online part of switching.
 reads it), the old sentence-transformers cache, Ollama's model list when
 Ollama is running (its local API, which `list_models` already calls), and LM
 Studio's models folder. A read-only walk of folders and a few small JSON
-files: nothing is imported (no torch, no sentence-transformers), nothing is
+files: nothing is imported (no fastembed, no ONNX Runtime), nothing is
 written, nothing leaves the machine.
 
-**Use only for what the engine loads as it is.** A Hugging Face snapshot in
-sentence-transformers' format (`modules.json` or
-`config_sentence_transformers.json`, with weights) is loaded by repo id from
-the cache, offline. One whose `config.json` names its own Python code
-(`auto_map`) is listed and refused: Tessellate never runs a repository's code.
-The old sentence-transformers cache and LM Studio's GGUF files are listed
-with why they cannot be used, and what would.
+**Use only for what the engine loads as it is.** A Hugging Face snapshot of
+an embedding model (sentence-transformers' `modules.json` or a Pooling config)
+with an ONNX export and its tokenizer is loaded from the cache, offline, by
+fastembed. One with PyTorch weights only is listed with why not, and so is one
+whose `config.json` names its own Python code (`auto_map`): Tessellate never
+runs a repository's code. The old sentence-transformers cache and LM Studio's
+GGUF files are listed with why they cannot be used, and what would.
 
 A repo id here comes from a folder name on this disk, never from a request:
 `POST /embedding-models/use` sends `found:<repo>` and the server scans again
@@ -69,11 +69,32 @@ def _snapshot(repo_dir: Path) -> Path | None:
 def _has_weights(snap: Path) -> bool:
     try:
         return any(
-            p.suffix in (".safetensors", ".bin") and p.name.startswith(("model", "pytorch_model"))
+            p.suffix in (".safetensors", ".bin", ".onnx") and p.name.startswith(("model", "pytorch_model"))
             for p in snap.rglob("*")
         )
     except OSError:
         return False
+
+
+def _has_onnx(snap: Path) -> bool:
+    """An ONNX export fastembed can run, with the tokenizer it reads."""
+    has_model = (snap / "onnx" / "model.onnx").is_file() or (snap / "model.onnx").is_file()
+    return has_model and (snap / "tokenizer.json").is_file()
+
+
+def _is_embedding_model(snap: Path) -> bool:
+    return any((snap / name).is_file() for name in ("modules.json", "config_sentence_transformers.json", "1_Pooling/config.json"))
+
+
+def _why_not(snap: Path) -> str:
+    """Why the built-in engine cannot load this snapshot, or "" when it can."""
+    if not _has_weights(snap):
+        return "Only part of it is here (no weights); a download that stopped half way."
+    if _needs_own_code(snap):
+        return "It needs Python code from its own repository to load, which Tessellate never runs."
+    if not _has_onnx(snap):
+        return "It has PyTorch weights only; the built-in engine runs ONNX exports. Pick it from the list above, or use it in Ollama."
+    return ""
 
 
 def _needs_own_code(snap: Path) -> bool:
@@ -93,26 +114,24 @@ def _hub_rows() -> list[dict]:
         repos = sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("models--"))
     except OSError:
         return rows
+    #: The catalogue's repos and the ONNX builds it fetches them from: the
+    #: catalogue row already says whether those are downloaded.
+    listed = set(embedmodels.EMBED_MODELS_BY_REPO) | {
+        model.onnx.source for model in embedmodels.EMBED_MODELS if model.onnx is not None
+    }
     for repo_dir in repos:
         repo = repo_dir.name[len("models--") :].replace("--", "/", 1)
-        if repo in embedmodels.EMBED_MODELS_BY_REPO:
-            continue  # the catalogue row says it is downloaded
-        snap = _snapshot(repo_dir)
-        if snap is None:
+        snap = _snapshot(repo_dir) if repo not in listed else None
+        #: Not an embedding model as far as anything here can tell.
+        if snap is None or not _is_embedding_model(snap):
             continue
-        st_format = (snap / "modules.json").is_file() or (snap / "config_sentence_transformers.json").is_file()
-        if not st_format:
-            continue  # not an embedding model as far as anything here can tell
-        why = ""
-        if not _has_weights(snap):
-            why = "Only part of it is here (no weights); a download that stopped half way."
-        elif _needs_own_code(snap):
-            why = "It needs Python code from its own repository to load, which Tessellate never runs."
-        rows.append(_row(f"found:{repo}", "sentence-transformers", repo, repo, "Hugging Face cache", why))
+        rows.append(_row(f"found:{repo}", embedmodels.BUILTIN_BACKEND, repo, repo, "Hugging Face cache", _why_not(snap)))
     return rows
 
 
 def _legacy_rows() -> list[dict]:
+    from tessellate.core import embedmodels
+
     rows = []
     root = _sentence_transformers_home()
     try:
@@ -125,7 +144,7 @@ def _legacy_rows() -> list[dict]:
         name = folder.name.replace("_", "/", 1)
         rows.append(
             _row(
-                f"found-legacy:{folder.name}", "sentence-transformers", "", name, "Old sentence-transformers cache",
+                f"found-legacy:{folder.name}", embedmodels.BUILTIN_BACKEND, "", name, "Old sentence-transformers cache",
                 "In the cache older versions of sentence-transformers used, which Tessellate does not load from. "
                 "Use the same model from the list above, or download it once.",
             )

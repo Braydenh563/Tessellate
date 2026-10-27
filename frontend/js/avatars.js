@@ -1294,7 +1294,12 @@ const NM_MARK_PARTS = [
   ".nm-wave", ".nm-wing", ".nm-tentacle", ".nm-foot", ".nm-flame", ".nm-tail", ".nm-tails", ".nm-starfield",
   ".nm-aura", ".nm-earring",
 ].join(", ");
-const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow`;
+const NM_FIGURE_PARTS = `${NM_MARK_PARTS}, .nmb-leg, .nmb-arm, .nmb-hold, .nm-buddy-head, .nmp, .nmp-lantern-glow, .nmc-shadow, .nmc-hair-crown, .nm-eyewear, .nmc-lids`;
+//: Where a covering hat's brim meets the head, in drawing units: the hair
+//: above it is under the hat (K25). The nightcap's is the line along its
+//: band, a little under the band's middle so the band covers the seam.
+const NM_HAT_BRIM = { beanie: 14, cap: 11, cowboy: 11, hat: 10, gnome: 11, chefhat: 8, tricorn: 7 };
+const NM_NIGHTCAP_BRIM = "M-40 17 L8 17 L20 12 L32 10.5 L46 11 L58 15 L104 15";
 const NM_FACE_CACHE_CAP = 160;
 const nameMarkFaceCache = new Map();
 let nameMarkMeasureHost = null;
@@ -1886,20 +1891,40 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     make("path", { d: `M${x} ${y0} L${x} ${y1}`, stroke: fill, "stroke-width": 4, "stroke-linecap": "round" }, g);
     return g;
   };
+  //: **Hair under a hat** (K25, the owner: "the hair is showing from
+  //: behind the hat"): under a hat that covers the crown, nothing of the
+  //: hair above its brim is drawn; under the nightcap, which comes and
+  //: goes, the hair above its band is a piece of its own
+  //: (`nmc-hair-crown`) that the CSS hides while the cap shows.
+  const brimAt = creature?.gnomeHat ? NM_HAT_BRIM.gnome : NM_HAT_BRIM[worn.find((p) => NM_HAT_BRIM[p])];
+  const capSlot = full && !hatOn;
+  const brimLine = brimAt ? `M-40 ${brimAt} L104 ${brimAt}` : capSlot ? NM_NIGHTCAP_BRIM : "";
+  if (brimLine) {
+    make("path", { d: `${brimLine} L104 120 L-40 120 Z` }, make("clipPath", { id: id("hb") }, defs));
+    if (!brimAt) make("path", { d: `${brimLine} L104 -40 L-40 -40 Z` }, make("clipPath", { id: id("hc") }, defs));
+  }
+  const hairUnder = (parent, draw) => {
+    if (!brimLine) return draw(parent);
+    draw(make("g", { "clip-path": `url(#${id("hb")})` }, parent));
+    if (!brimAt) draw(make("g", { class: "nmc-hair-crown", "clip-path": `url(#${id("hc")})` }, parent));
+  };
   //: Behind the head: the back layer in the shade, a ponytail, locs, a bun.
-  if (hairStyle?.back) hairShape(hairStyle.back, back, hairShade);
-  if (hairStyle?.tail) hairShape(hairStyle.tail, back);
-  if (hairStyle?.locs) for (const [x, y0, y1] of hairStyle.locs) lock(x, y0, y1, hairShade, back);
-  if (hairStyle?.backCurls) {
-    for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, back);
-    for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairShade }, back);
-  }
-  if (hairStyle?.bun && !hatOn) {
-    const [cx, cy, r] = hairStyle.bun;
-    make("circle", { cx, cy, r, fill: hairColour, stroke: hairLine, "stroke-width": LW }, back);
-    make("path", { d: `M${cx - r * 0.55} ${cy + r * 0.1} C${cx - r * 0.4} ${cy - r * 0.6} ${cx + r * 0.5} ${cy - r * 0.6} ${cx + r * 0.55} ${cy}`, fill: "none", stroke: hairShade, "stroke-width": 0.9, "stroke-linecap": "round" }, back);
-    make("path", { d: `M${cx - r * 0.6} ${cy - r * 0.35} Q${cx - r * 0.2} ${cy - r * 0.85} ${cx + r * 0.3} ${cy - r * 0.8}`, fill: "none", stroke: hairLit, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-opacity": 0.8 }, back);
-  }
+  const backHair = (parent) => {
+    if (hairStyle?.back) hairShape(hairStyle.back, parent, hairShade);
+    if (hairStyle?.tail) hairShape(hairStyle.tail, parent);
+    if (hairStyle?.locs) for (const [x, y0, y1] of hairStyle.locs) lock(x, y0, y1, hairShade, parent);
+    if (hairStyle?.backCurls) {
+      for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, parent);
+      for (const [cx, cy, r] of hairStyle.backCurls) make("circle", { cx, cy, r, fill: hairShade }, parent);
+    }
+    if (hairStyle?.bun && !hatOn) {
+      const [cx, cy, r] = hairStyle.bun;
+      make("circle", { cx, cy, r, fill: hairColour, stroke: hairLine, "stroke-width": LW }, parent);
+      make("path", { d: `M${cx - r * 0.55} ${cy + r * 0.1} C${cx - r * 0.4} ${cy - r * 0.6} ${cx + r * 0.5} ${cy - r * 0.6} ${cx + r * 0.55} ${cy}`, fill: "none", stroke: hairShade, "stroke-width": 0.9, "stroke-linecap": "round" }, parent);
+      make("path", { d: `M${cx - r * 0.6} ${cy - r * 0.35} Q${cx - r * 0.2} ${cy - r * 0.85} ${cx + r * 0.3} ${cy - r * 0.8}`, fill: "none", stroke: hairLit, "stroke-width": 1.6, "stroke-linecap": "round", "stroke-opacity": 0.8 }, parent);
+    }
+  };
+  hairUnder(back, backHair);
   if (creature?.mane) {
     const mane = creature.mane === "rainbow" ? null : creature.mane;
     if (mane) {
@@ -2031,38 +2056,41 @@ function drawCharacter(seed, size = 20, mode = "mark") {
   if (creature?.sideEars) for (const sx of [-1, 1]) shape("path", { d: `M${32 + sx * 26} 26 L${32 + sx * (34 + creature.sideEars * 4)} 18 L${32 + sx * 26} 34 Z`, fill: base }, torso);
   if (beast?.gills) for (const sx of [-1, 1]) for (const dy of [-5, 0, 5]) outlined(`M${32 + sx * 26} ${30 + dy} L${32 + sx * 34} ${27 + dy * 1.6}`, beast.gills, 2.4, torso);
   // The front hair.
-  if (hairStyle) {
-    //: The fringe's shadow on the forehead: its own shape two units
-    //: lower, in the skin's shade, clipped to the head.
-    make("path", { d: hairStyle.sides || hairStyle.front, transform: "translate(0 2)", fill: nmMix(base, "#000000", 0.22), "fill-opacity": 0.45 }, make("g", { "clip-path": `url(#${id("c")})` }, torso));
-    //: A shaved layer reads as the hair colour thinned over the skin.
-    if (hairStyle.sides) make("path", { d: hairStyle.sides, fill: nmMix(hairColour, base, 0.35), stroke: hairLine, "stroke-width": LW * 0.6, "stroke-linejoin": "round" }, torso);
-    hairShape(hairStyle.front, torso, hairStyle.shaved ? nmMix(hairColour, base, 0.3) : hairColour);
-    const texture = (d, colour, width, opacity) => make("path", { d, fill: "none", stroke: colour, "stroke-width": width, "stroke-opacity": opacity, "stroke-linecap": "round", "stroke-linejoin": "round" }, torso);
-    if (hairStyle.curls) {
-      //: One cloud of curls with one outline round the outside: every
-      //: curl's outline first, then every curl's fill over them, so the
-      //: line only shows where the cloud meets the page or the face. A
-      //: small arc in the shade on every other curl is the texture.
-      for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, torso);
-      for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairColour }, torso);
-      if (!mini) hairStyle.curls.forEach(([cx, cy, r], i) => {
-        if (i % 2 === 0) texture(`M${cx - r * 0.5} ${cy + r * 0.1} Q${cx - r * 0.1} ${cy + r * 0.6} ${cx + r * 0.45} ${cy + r * 0.2}`, hairShade, 0.9, 0.75);
-      });
-    }
-    if (hairStyle.frontLocs) {
-      for (const [x, y0, y1] of hairStyle.frontLocs) {
-        lock(x, y0, y1, hairColour, torso);
-        if (!mini) for (let y = y0 + 5; y < y1; y += 6) texture(`M${x - 2} ${y} Q${x} ${y + 1.2} ${x + 2} ${y}`, hairShade, 0.8, 0.8);
+  const frontHair = (parent) => {
+    if (hairStyle) {
+      //: The fringe's shadow on the forehead: its own shape two units
+      //: lower, in the skin's shade, clipped to the head.
+      make("path", { d: hairStyle.sides || hairStyle.front, transform: "translate(0 2)", fill: nmMix(base, "#000000", 0.22), "fill-opacity": 0.45 }, make("g", { "clip-path": `url(#${id("c")})` }, parent));
+      //: A shaved layer reads as the hair colour thinned over the skin.
+      if (hairStyle.sides) make("path", { d: hairStyle.sides, fill: nmMix(hairColour, base, 0.35), stroke: hairLine, "stroke-width": LW * 0.6, "stroke-linejoin": "round" }, parent);
+      hairShape(hairStyle.front, parent, hairStyle.shaved ? nmMix(hairColour, base, 0.3) : hairColour);
+      const texture = (d, colour, width, opacity) => make("path", { d, fill: "none", stroke: colour, "stroke-width": width, "stroke-opacity": opacity, "stroke-linecap": "round", "stroke-linejoin": "round" }, parent);
+      if (hairStyle.curls) {
+        //: One cloud of curls with one outline round the outside: every
+        //: curl's outline first, then every curl's fill over them, so the
+        //: line only shows where the cloud meets the page or the face. A
+        //: small arc in the shade on every other curl is the texture.
+        for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairLine, stroke: hairLine, "stroke-width": LW * 2 }, parent);
+        for (const [cx, cy, r] of hairStyle.curls) make("circle", { cx, cy, r, fill: hairColour }, parent);
+        if (!mini) hairStyle.curls.forEach(([cx, cy, r], i) => {
+          if (i % 2 === 0) texture(`M${cx - r * 0.5} ${cy + r * 0.1} Q${cx - r * 0.1} ${cy + r * 0.6} ${cx + r * 0.45} ${cy + r * 0.2}`, hairShade, 0.9, 0.75);
+        });
       }
+      if (hairStyle.frontLocs) {
+        for (const [x, y0, y1] of hairStyle.frontLocs) {
+          lock(x, y0, y1, hairColour, parent);
+          if (!mini) for (let y = y0 + 5; y < y1; y += 6) texture(`M${x - 2} ${y} Q${x} ${y + 1.2} ${x + 2} ${y}`, hairShade, 0.8, 0.8);
+        }
+      }
+      if (hairStyle.part) texture(hairStyle.part, hairShade, 1.1, 0.9);
+      if (hairStyle.line) texture(hairStyle.line, base, 1.4, 1);
+      if (!mini) for (const d of hairStyle.strands || []) texture(d, hairShade, 0.9, 0.7);
+      if (hairStyle.bun && !hatOn) make("ellipse", { cx: 32, cy: 2.4, rx: 4.4, ry: 1.8, fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, parent);
+      if (hairStyle.tail) make("ellipse", { cx: 52, cy: 10, rx: 2.2, ry: 3, transform: "rotate(-30 52 10)", fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, parent);
+      if (hairStyle.shine) texture(hairStyle.shine, hairLit, 2.2, 0.85);
     }
-    if (hairStyle.part) texture(hairStyle.part, hairShade, 1.1, 0.9);
-    if (hairStyle.line) texture(hairStyle.line, base, 1.4, 1);
-    if (!mini) for (const d of hairStyle.strands || []) texture(d, hairShade, 0.9, 0.7);
-    if (hairStyle.bun && !hatOn) make("ellipse", { cx: 32, cy: 2.4, rx: 4.4, ry: 1.8, fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, torso);
-    if (hairStyle.tail) make("ellipse", { cx: 52, cy: 10, rx: 2.2, ry: 3, transform: "rotate(-30 52 10)", fill: pair.cloth[0], stroke: nmLineFor(pair.cloth[0]), "stroke-width": 0.8 }, torso);
-    if (hairStyle.shine) texture(hairStyle.shine, hairLit, 2.2, 0.85);
-  }
+  };
+  hairUnder(torso, frontHair);
   if (creature?.snakeHair) for (const x of [14, 24, 34, 44, 52]) outlined(`M${x} 10 C${x - 4} 2 ${x + 4} -2 ${x} -8`, creature.snakeHair, 3, torso);
   if (creature?.topknot) shape("circle", { cx: 32, cy: 0, r: 6, fill: creature.topknot }, torso);
   //: A soft sheen on a bare crown, top left, the gloss Atlas's gel has
@@ -2317,7 +2345,15 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const [lx, ly] = eyes[0];
     const [rx2] = eyes[1];
     const rim = { glasses: "#2b2a33", squareglasses: "#2b2a33", monocle: "#b8860b", goggles: "#6b4a2f", threed: "#f5f4ef", starglasses: "#e36fa6", heartglasses: "#e8364f", visor: "#3fd0e0", shades: "#1c1b22" }[eyewear] || "#2b2a33";
-    const g = make("g", { class: "nm-eyewear" }, top);
+    //: On the face, not the crown: it goes with the head's tilt and turn
+    //: (K14, the owner: "the sunglasses ... dont move with the face"). A
+    //: figure in shades has no eyes drawn under them, so it has closed lids
+    //: of its own, shown only asleep, when the shades go up (K25b).
+    if (full && eyeStyle === "shades") {
+      const lids = make("g", { class: "nmc-lids" }, head);
+      for (const [x, y] of eyes) stroke(`M${x - 3.6} ${y - 0.6} Q${x} ${y + 3} ${x + 3.6} ${y - 0.6}`, lids, 2);
+    }
+    const g = make("g", { class: "nm-eyewear" }, head);
     if (eyewear === "visor") make("rect", { x: 9, y: ly - 5, width: 46, height: 10, rx: 5, fill: "#3fd0e0", "fill-opacity": 0.75, stroke: "#1b7f8c", "stroke-width": 1.2 }, g);
     else if (eyewear === "shades") {
       for (const x of [lx, rx2]) make("path", { d: `M${x - 6} ${ly - 3.5} L${x + 6} ${ly - 3.5} L${x + 5} ${ly + 3} Q${x} ${ly + 5.5} ${x - 5} ${ly + 3} Z`, fill: rim }, g);
@@ -2340,14 +2376,16 @@ function drawCharacter(seed, size = 20, mode = "mark") {
       stroke(`M${lx + 6} ${ly - 0.5} Q32 ${ly - 3} ${rx2 - 6} ${ly - 0.5}`, g, 1.4, rim);
     }
   }
+  //: A patch and a mask are on the face too, with the eyes and mouth they
+  //: cover; hats stay on the crown, which does not turn (K14).
   if (props.includes("eyepatch") && eyes.length === 2) {
     const [x, y] = eyes[1];
-    stroke(`M8 ${y - 9} L56 ${y + 2}`, top, 1.2, "#1c1b22");
-    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, top);
+    stroke(`M8 ${y - 9} L56 ${y + 2}`, head, 1.2, "#1c1b22");
+    make("ellipse", { cx: x, cy: y, rx: 5.6, ry: 5, fill: "#1c1b22" }, head);
   }
   if (props.includes("ninjamask")) {
-    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, top);
-    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, top);
+    make("path", { d: `M6 ${my - 5} C12 ${my - 7} 52 ${my - 7} 58 ${my - 5} L56 ${my + 12} C44 ${my + 18} 20 ${my + 18} 8 ${my + 12} Z`, fill: "#2b2a33", stroke: nmLineFor("#2b2a33"), "stroke-width": LW }, head);
+    make("path", { d: "M6 14 C16 10 48 10 58 14 L58 19 C48 16 16 16 6 19 Z", fill: "#2b2a33" }, head);
   }
   const headwear = props.find((p) => NAME_MARK_HAT_KINDS.includes(p) || ["halo", "horns", "antenna", "headphones", "helmet"].includes(p));
   const gold = "#f5c518";
@@ -2490,11 +2528,15 @@ function drawCharacter(seed, size = 20, mode = "mark") {
     const phones = make("g", { class: "nmp nmp-headphones" }, top);
     make("path", { d: "M7 30 C5 3 59 3 57 30", fill: "none", stroke: "#2b2a33", "stroke-width": 3.2, "stroke-linecap": "round" }, phones);
     for (const x of [5, 59]) make("rect", { x: x - 4.5, y: 23, width: 9, height: 14, rx: 4.5, fill: "#e2574c", stroke: "#2b2a33", "stroke-width": LW }, phones);
-    const cap = make("g", { class: "nmp nmp-nightcap" }, top);
-    make("path", { d: "M9 15 C13 1 30 -5 42 -1 C52 3 59 11 63 24 L57 22 C51 12 41 9 31 11 C23 12 16 14 9 15 Z", fill: "#4f7fd9", stroke: "#23407a", "stroke-width": LW, "stroke-linejoin": "round" }, cap);
-    make("path", { d: "M8 16 C18 9 46 7 58 14", fill: "none", stroke: "#f5f4ef", "stroke-width": 4, "stroke-linecap": "round" }, cap);
-    make("circle", { cx: 63, cy: 24, r: 3.4, fill: "#f5f4ef", stroke: "#9aa0a6", "stroke-width": 1 }, cap);
-    if (eyes.length === 2) {
+    //: Not over a hat it wears already: two hats at once (K14).
+    if (capSlot) {
+      const cap = make("g", { class: "nmp nmp-nightcap" }, top);
+      make("path", { d: "M9 15 C13 1 30 -5 42 -1 C52 3 59 11 63 24 L57 22 C51 12 41 9 31 11 C23 12 16 14 9 15 Z", fill: "#4f7fd9", stroke: "#23407a", "stroke-width": LW, "stroke-linejoin": "round" }, cap);
+      make("path", { d: "M8 16 C18 9 46 7 58 14", fill: "none", stroke: "#f5f4ef", "stroke-width": 4, "stroke-linecap": "round" }, cap);
+      make("circle", { cx: 63, cy: 24, r: 3.4, fill: "#f5f4ef", stroke: "#9aa0a6", "stroke-width": 1 }, cap);
+    }
+    //: Not over glasses it wears already: two pairs at once (K14).
+    if (eyes.length === 2 && !eyewear) {
       const glasses = make("g", { class: "nmp nmp-glasses" }, head);
       for (const [x, y] of eyes) make("circle", { cx: x, cy: y, r: 5.4, fill: "#ffffff", "fill-opacity": 0.18, stroke: "#6b4a2f", "stroke-width": 1.3 }, glasses);
       stroke(`M${eyes[0][0] + 5.4} ${eyes[0][1]} Q32 ${eyes[0][1] - 2.4} ${eyes[1][0] - 5.4} ${eyes[1][1]}`, glasses, 1.2, "#6b4a2f");
@@ -3254,9 +3296,13 @@ const NMB_FACELESS_ACTS = ["blink", "look", "glance", "turn", "land", "shift", "
 //: for feminine), used at rest"). Long, quiet acts, only standing or
 //: floating, only for Atlas and only in the look named: the arms ease into
 //: them (the pose transition) and out again when the act ends, and the sway
-//: is the figure's box on the compositor.
+//: is the figure's box on the compositor. **Hands on the hips, not arms
+//: folded** (INBOX 1402, the owner: "a bored or grumpy gangster with its
+//: facial expressions and arm positioning"): folded across the chest for
+//: 16s at a time was the sulk; both hands to the hips is the same at-ease
+//: stance, open.
 const NMB_STANCES = {
-  fold: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
+  hips: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "masculine" },
   hip: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand"], look: "masculine" },
   clasp: { ms: 16000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
   sway: { ms: 14000, w: 1.4, cool: 40000, poses: ["stand", "float"], look: "feminine" },
@@ -3630,8 +3676,11 @@ function nameMarkBuddyLedges() {
 }
 
 //: Every box it must stay clear of, measured once per placement: the tab's
-//: own controls, the chrome's, and whatever floats over the page.
+//: own controls, the chrome's, and whatever floats over the page. Inside
+//: `nameMarkBuddyMeasureOnce`, measured the first time only.
 function nameMarkBuddyObstacles(tab) {
+  const held = nmb.obstaclesHeld;
+  if (held?.tab === tab) return held.boxes.slice();
   nameMarkBuddyTextCache = new WeakMap();
   const roots = [
     document.getElementById(`tab-${tab}`), document.getElementById("top-bar"), document.getElementById("status-bar"),
@@ -3659,7 +3708,21 @@ function nameMarkBuddyObstacles(tab) {
     const last = msgs.length ? nameMarkBuddyShown(msgs[msgs.length - 1]) : null;
     if (last) boxes.push(last);
   }
+  if (held) Object.assign(held, { tab, boxes: boxes.slice() });
   return boxes;
+}
+
+//: One landing's worth of choosing (`fn`) on one measure of the page: a
+//: throw's landing asked for the obstacles two to four times (the drop, the
+//: step along, the open-air search), 8 to 88ms at 1x CPU on Notes (throw5.js).
+function nameMarkBuddyMeasureOnce(fn) {
+  const outer = nmb.obstaclesHeld;
+  nmb.obstaclesHeld = outer || { tab: null, boxes: null };
+  try {
+    return fn();
+  } finally {
+    nmb.obstaclesHeld = outer;
+  }
 }
 
 //: **Out of the way of a popup** (INBOX 430, the owner: "move out of the
@@ -3693,6 +3756,14 @@ function nameMarkBuddyPopups() {
 function nameMarkBuddyDodge() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nmb.visit) return;
+  //: Not mid-flight or carried: the press that let it go is a click too,
+  //: and its look (a layout read, 7 to 56ms) landed in the flight's frames
+  //: (the owner's lag log, 2026-10-27). Looked at once it is down.
+  if (nmb.flight || buddy.classList.contains("nm-buddy-dragging")) {
+    clearTimeout(nmbDodgeTimer);
+    nmbDodgeTimer = setTimeout(nameMarkBuddyDodge, 400);
+    return;
+  }
   //: The drawn figure's box, not the face button's: the tail and the
   //: skirt hang below the button, and a tour ring under them was missed.
   const face = buddy.querySelector(".nm-figure") || buddy.querySelector(".nm-buddy-face") || buddy;
@@ -3826,9 +3897,11 @@ function nameMarkBuddyShapeAt1(x, y, pose, legs = "") {
   //: still hangs 22px below its seat, from x + 32 to x + 78
   //: (companionchat.js): sitting tucked on the chat's dock it covered the
   //: input by 13px, and reading along an answer it covered Stop by 29.
-  //: Standing, it reaches 6px under its soles (companionchat.js), which
-  //: still fits the chat's dock, whose controls start 13px under its top.
-  if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? 6 : 4) });
+  //: Standing, the tail is tested down to the soles and no further: it
+  //: curls 6px under them (companionchat.js) onto the floor it stands on,
+  //: and counted, that floor's own controls were hit (the status bar's
+  //: buttons start 4.9px under it: 19 of 31 stands along the bar "hit").
+  if (document.querySelector("#nm-buddy .atl-figure-box")) shape.push({ left: x + 30, top: y + drop + 50, right: x + 82, bottom: y + drop + NMB_FEET + (pose === "stand" ? 0 : 4) });
   return shape;
 }
 
@@ -4439,9 +4512,14 @@ function nameMarkBuddyRestore(spot) {
 //: as long as it is there. The spot itself is kept.
 function nameMarkBuddyStepAside(spot, obstacles, far = 320) {
   if (!nameMarkBuddyHits(spot.x, spot.y, spot.pose, obstacles, spot.legs)) return spot;
+  //: Along its own edge, not off the end of it into the air (K25: Atlas
+  //: stepped 96px aside off the board's dock and was then carried away).
+  const along = spot.edge?.type === "top" || spot.edge?.type === "under" ? spot.edge : null;
+  const lo = Math.max(0, along?.left ?? 0);
+  const hi = Math.min(innerWidth, along?.right ?? innerWidth) - NMB_W;
   for (let d = 16; d <= far; d += 16) {
     for (const x of [spot.x - d, spot.x + d]) {
-      if (x < 0 || x > innerWidth - NMB_W) continue;
+      if (x < lo || x > hi) continue;
       if (!nameMarkBuddyHits(x, spot.y, spot.pose, obstacles, spot.legs)) return { ...spot, x };
     }
   }
@@ -4485,7 +4563,11 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   const obstacles = nameMarkBuddyObstacles(tab);
   const edges = nameMarkBuddyEdges(tab);
   const cx = x + NMB_W / 2;
-  const fits = (spot) => spot.x >= 0 && spot.x <= innerWidth - NMB_W && spot.y >= 0 && spot.y <= innerHeight - NMB_H + 8
+  //: Never into the bottom bar (INBOX 1402): a seat on its top edge left the
+  //: 92px box 20px into it, over its buttons, so on the bar it stands.
+  const bar = nameMarkBuddyLedges().bottom;
+  const lowest = bar ? bar.top - NMB_FEET + 1 : innerHeight - NMB_H + 8;
+  const fits = (spot) => spot.x >= 0 && spot.x <= innerWidth - NMB_W && spot.y >= 0 && spot.y <= lowest
     && !nameMarkBuddyHits(spot.x, spot.y, spot.pose, nameMarkBuddyYoursObstacles(obstacles, spot), spot.legs);
   const touch = { sit: NMB_SEAT, stand: NMB_FEET, hang: NMB_GRIP };
   let best = null;
@@ -4530,7 +4612,16 @@ function nameMarkBuddyDrop(x, y, reach = 48) {
   if (fall) return fall;
   //: Nothing under it: it floats, stepped aside from a control; one it cannot
   //: clear (chat's mode switch) gets the nearest good perch instead.
-  const open = nameMarkBuddyStepAside({ kind: "yours", pose: "float", legs: "", x, y }, obstacles);
+  //: Over the bottom bar's buttons (a row with no gap): just above them, a
+  //: few px up, before any step along them or the chooser's perch across
+  //: the screen (INBOX 1402). Over any other control it is still the chooser's.
+  const at = { kind: "yours", pose: "float", legs: "", x, y: Math.min(y, lowest) };
+  if (!nameMarkBuddyHits(at.x, at.y, "float", obstacles)) return at;
+  const onBar = bar && nameMarkBuddyHits(at.x, at.y, "float", obstacles.filter((b) => b.top >= bar.top));
+  for (let up = 8; onBar && up <= 120 && at.y - up >= 0; up += 8) {
+    if (!nameMarkBuddyHits(at.x, at.y - up, "float", obstacles)) return { ...at, y: at.y - up };
+  }
+  const open = nameMarkBuddyStepAside(at, obstacles);
   return nameMarkBuddyHits(open.x, open.y, "float", obstacles) ? nameMarkBuddyChoose(tab, obstacles, [x, y], 4) || open : open;
 }
 
@@ -5287,6 +5378,9 @@ for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "ani
 function nameMarkBuddyCanvasAt(spot, x, y) {
   const board = document.getElementById("whiteboard-container");
   if (spot.edge?.el && !board?.contains(spot.edge.el)) return null;
+  //: A class check first: off its tab, the box below was a forced layout for
+  //: nothing (20 to 30ms in a landing, behind the flight's own writes).
+  if (!board || board.closest(".hidden")) return null;
   const r = nameMarkBuddyShown(board);
   const cx = x + NMB_W / 2;
   const cy = y + NMB_H / 2;
@@ -5337,13 +5431,15 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: after the whole change of move, and what differs eased off with the
   //: lift below, whatever moved it.
   const leaning = char && nmb.hopAnim?.playState === "running" ? Number.parseFloat(getComputedStyle(char).rotate) || 0 : null;
+  //: The board's box is a layout read: before the writes below, not after
+  //: them, where it paid for the restyle they caused (a landing, 20 to 30ms).
+  const board = nameMarkBuddyCanvasAt(spot, x, y);
   nmb.liftAnim?.cancel();
   nmb.glideAnim?.cancel();
   nmb.glideAnim = null;
   nameMarkBuddyPut(buddy, x, y);
   //: Its size for this perch: smaller where it had to fit, its own
   //: elsewhere, eased either way (`nmb-fitting`).
-  const board = nameMarkBuddyCanvasAt(spot, x, y);
   nmb.canvas = !!board;
   document.getElementById("nm-buddy-band")?.classList.toggle("nmb-canvas", nmb.canvas);
   const size = board ? nameMarkBuddyScaleSaved() * nameMarkBuddyCanvasScale(board.__zoom?.k) : spot.fit || nameMarkBuddyScaleSaved();
@@ -5399,7 +5495,9 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
     stop();
     return;
   }
-  nameMarkBuddyBlend(buddy, stop);
+  //: Nothing to hand over when it was neither walking nor poofing (a landing
+  //: from a throw): the blend's reads are two restyles of the rig.
+  if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
   if (buddy.dataset.legs !== (spot.legs || "")) {
     const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
@@ -5959,20 +6057,50 @@ function nameMarkBuddyWorld(tab) {
 //: as your spot on `tab`, the tab it was thrown on. Never the tab's own
 //: choice near there: on Notes with 24 notes, thrown right from x 44 and
 //: left from x 1168, both came down on one dock perch at x 763 (throw.js).
+//: Worked out once, at the release (`companionThrowPlan`), on the surfaces
+//: the release has just indexed for the flight's world, on one measure.
 function nameMarkBuddyThrowSpot(s) {
-  nameMarkBuddyIndexReset();
   let spot = nameMarkBuddyDrop(s.x, s.y);
-  //: Landed where it cannot stand: step along that surface, not up to the top bar (INBOX 1302).
-  if (s.on && spot.y < s.y - 40) {
-    for (const reach of [400, innerWidth]) {
-      const along = nameMarkBuddyDrop(s.x, s.y, reach);
-      if (Math.abs(along.y - s.y) <= 40) {
-        spot = along;
-        break;
-      }
+  //: Landed where it cannot stand: along that surface a little way first,
+  //: not up to the top bar (INBOX 1302); further than that, the nearest
+  //: open air (`nameMarkBuddyLandNear`), never across the screen.
+  if (s.on && spot.y < s.y - 40) spot = nameMarkBuddyDrop(s.x, s.y, NMB_LAND_NEAR);
+  spot = nameMarkBuddyLandNear(s.x, s.y, spot);
+  if (spot.y >= s.y + 2) spot.falls = true;
+  return spot;
+}
+
+//: **It settles where it lands** (INBOX 1402, the owner: "ill trow the
+//: companions sometimes but then it tll fly back to some position
+//: someitmes across the screen"). Measured (throwsettle1402.js, 1280x720):
+//: come down on the window's foot over the bottom bar's buttons, it went
+//: 224 to 256px along the bar to the first place a line search reached,
+//: and from x 938 it went 256px. Where the drop's own choice is further
+//: than `NMB_LAND_NEAR` and is not straight down (a fall is the way it was
+//: going), it takes the nearest open air instead, searched in rings out
+//: from where it landed, up first: just above the bar's buttons, a few px
+//: away. Nothing nearer, the drop's choice stands. Pure geometry: a few
+//: thousand box tests at most, once, on landing.
+const NMB_LAND_NEAR = 96;
+const NMB_LAND_STEP = 8;
+function nameMarkBuddyLandNear(x, y, spot) {
+  const far = Math.hypot(spot.x - x, spot.y - y);
+  if (far <= NMB_LAND_NEAR || (spot.y > y && Math.abs(spot.x - x) <= NMB_LAND_NEAR)) return spot;
+  const obstacles = nameMarkBuddyObstacles(nameMarkBuddyTab());
+  const { top, bottom } = nameMarkBuddyLedges();
+  const lo = top ? top.bottom : 0;
+  const hi = (bottom ? bottom.top : innerHeight) - NMB_FEET;
+  for (let r = NMB_LAND_STEP; r < far; r += NMB_LAND_STEP) {
+    const n = Math.max(8, Math.ceil((2 * Math.PI * r) / 12));
+    //: From straight up, then either side of it in turn, round to down.
+    for (let k = 0; k < n; k += 1) {
+      const a = -Math.PI / 2 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * ((2 * Math.PI) / n);
+      const px = Math.round(x + r * Math.cos(a));
+      const py = Math.round(y + r * Math.sin(a));
+      if (px < 0 || px > innerWidth - NMB_W || py < lo || py > hi) continue;
+      if (!nameMarkBuddyHits(px, py, "float", obstacles)) return { kind: "yours", pose: "float", legs: "", x: px, y: py };
     }
   }
-  if (spot.y >= s.y + 2) spot.falls = true;
   return spot;
 }
 function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
@@ -5980,7 +6108,12 @@ function nameMarkBuddyThrowLand(buddy, s, tab, spot) {
   nmb.placedAt = Date.now();
   nmb.afterLand = true;
   nameMarkBuddyMoveTo(buddy, spot);
-  if (!nmb.anim || nmb.anim.playState !== "running") nameMarkBuddyAct("land");
+  //: Its landing act a frame later, not in this one: the move's restyle and
+  //: the act's were one 27 to 81ms frame (throw5.js), two now. A one-shot
+  //: timer, not a frame request (the wake-source ratchet).
+  setTimeout(() => {
+    if (nmb.spot === spot && !nmb.flight && (!nmb.anim || nmb.anim.playState !== "running")) nameMarkBuddyAct("land");
+  }, 16);
   const spots = nameMarkBuddySpots();
   delete spots["*"];
   spots[tab] = nameMarkBuddySpotFor(spot);
@@ -6325,19 +6458,39 @@ if (typeof MutationObserver === "function" && document.getElementById("lock-over
 //: case the page changed by itself; never in a hidden window or under the
 //: lock.
 const NMB_CHECK_IDLE_MS = 10000;
+//: Armed, not polled (battery, INBOX 1351): one timer that sleeps the full
+//: idle span and shortens only for input or a toast; none in a hidden window.
+const NMB_IDLE_MARK_MS = 120000;
+const nmbClock = { timer: 0, inputAt: Date.now() };
+function nmbTickArm(ms) {
+  clearTimeout(nmbClock.timer);
+  nmbClock.timer = document.hidden ? 0 : setTimeout(nmbTick, ms);
+}
 for (const type of ["pointerdown", "keydown", "wheel", "resize"]) {
   (type === "resize" ? window : document).addEventListener(type, () => {
+    if (type !== "resize") {
+      nmbClock.inputAt = Date.now();
+      document.documentElement.classList.remove("is-idle");
+    }
+    if (!nmb.checkDue) nmbTickArm(1500);
     nmb.checkDue = true;
   }, { passive: true, capture: true });
 }
-setInterval(() => {
-  if (document.hidden || nmb.away || !document.getElementById("nm-buddy") || nameMarkBuddyCurtained()) return;
+document.addEventListener("visibilitychange", () => nmbTickArm(1500));
+function nmbTick() {
   const now = Date.now();
-  if (!nmb.checkDue && !document.querySelector("#toast-box > :not(.hidden)") && now - (nmb.checkedAt || 0) < NMB_CHECK_IDLE_MS) return;
-  nmb.checkDue = false;
-  nmb.checkedAt = now;
-  queueNameMarkBuddyCheck();
-}, 1500);
+  //: Two minutes without input: the marks hold still (CSS `.is-idle`).
+  document.documentElement.classList.toggle("is-idle", now - nmbClock.inputAt > NMB_IDLE_MARK_MS);
+  const toasting = !!document.querySelector("#toast-box > :not(.hidden)");
+  if (!(nmb.away || !document.getElementById("nm-buddy") || nameMarkBuddyCurtained())
+      && (nmb.checkDue || toasting || now - (nmb.checkedAt || 0) >= NMB_CHECK_IDLE_MS)) {
+    nmb.checkDue = false;
+    nmb.checkedAt = now;
+    queueNameMarkBuddyCheck();
+  }
+  nmbTickArm(nmb.checkDue || toasting ? 1500 : NMB_CHECK_IDLE_MS);
+}
+nmbTickArm(1500);
 
 //: Where it is now still does: on screen, not lost, not held off its
 //: panel, not over a control, and on something.
@@ -7031,7 +7184,9 @@ function nameMarkBuddyAct(act, ms) {
   //: can it lay down??"): a nap on a flat place wide enough to lie on is a
   //: lie-down (`lie`, with its pillow and its slow way down and up);
   //: anywhere else it dozes where it is.
-  if (act === "nap" && !nameMarkBuddyActOff("lie") && nameMarkBuddyLieRoom()) act = "lie";
+  //: A lie-down asked for where there is no room for one is a doze.
+  const lieSide = act === "lie" || (act === "nap" && !nameMarkBuddyActOff("lie")) ? nameMarkBuddyLieRoom() : "";
+  if (act === "nap" || act === "lie") act = lieSide ? "lie" : "nap";
   const spec = NAME_MARK_BUDDY_ACTS[act];
   if (act === "glance") nameMarkBuddyAim(nmb.pointer);
   if (act === "look" || act === "nap") nameMarkBuddyRelease();
@@ -7044,7 +7199,7 @@ function nameMarkBuddyAct(act, ms) {
   //: any other act does not, since each style pass here is measurable.
   if (act === was) void buddy.offsetWidth;
   if (NMB_SCENE_ACTS.includes(act)) nameMarkBuddyScene(buddy);
-  if (act === "lie") nameMarkBuddyLieDown(buddy);
+  if (act === "lie") nameMarkBuddyLieDown(buddy, lieSide);
   //: **Never the same twice running** (the owner: "also state variations,
   //: not the exact same animation or mood animation each time"). An act
   //: with variants plays one it did not play last time (`data-variant`, the
@@ -7057,12 +7212,12 @@ function nameMarkBuddyAct(act, ms) {
     buddy.dataset.variant = String(v);
   } else delete buddy.dataset.variant;
   if (act === "tilt") nameMarkBuddyTilt(Math.random() < 0.5 ? -0.7 : 0.7, (ms || spec.ms) - 400);
-  //: **Into an act eased, as out of one** (INBOX 619, the owner: "it still
-  //: snaps between behaviours and no behaviours"). An act's class takes
-  //: over parts whose idle loop was mid-swing, and its first frame put them
-  //: at the act's start in one frame; `nameMarkBuddyBlend` hands each such
-  //: part over from where it was, in `NMB_BLEND_IN_MS`.
-  nameMarkBuddyBlend(buddy, () => buddy.classList.add(`nmb-act-${act}`), NMB_BLEND_IN_MS);
+  //: **Into an act eased** (INBOX 619): parts mid-swing are handed over from
+  //: where they were. Down from a throw nothing swings (its loops restart
+  //: with the flight's end), so the land skips the 8 to 40ms read.
+  const into = () => buddy.classList.add(`nmb-act-${act}`);
+  if (act === "land" && nmb.afterLand) into();
+  else nameMarkBuddyBlend(buddy, into, NMB_BLEND_IN_MS);
   //: A new act starts with its arms (INBOX 469): a small lift and back.
   if (act !== was && !NMB_FACELESS_ACTS.includes(act) && !NMB_RESTING_ACTS.has(act) && !nameMarkBuddyStill()) nameMarkBuddyLimbs(buddy, "cue", 420);
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
@@ -7084,18 +7239,30 @@ function nameMarkBuddyAct(act, ms) {
 }
 
 //: Room to lie down: standing (not tucked, not peeking) on a flat place,
-//: with nothing it must not cover where it would lie, from 30px behind its
-//: box to 12px past it, over its lower half. One obstacle sweep, at the
-//: moment it would lie down.
+//: with nothing it must not cover where it would lie, over its lower half.
+//: Lying, it reaches past its box on one side (`NMB_LIE_SPAN`, px from its
+//: left at size 1, measured: the cap to the soles), and the whole of that
+//: must be on its perch (K25, the owner: "it is hanging off the ui element
+//: it is perched on"; it lay with only its legs on the board's dock). The
+//: side that fits, or either but last time's when both do; "" for none.
+//: One obstacle sweep, at the moment it would lie down.
+const NMB_LIE_SPAN = { left: [-42, 70], right: [-6, 106] };
 function nameMarkBuddyLieRoom() {
-  if (nmb.pose !== "stand" || nmb.legs || nmb.visit || !Number.isFinite(nmb.x)) return false;
+  if (nmb.pose !== "stand" || nmb.legs || nmb.visit || !Number.isFinite(nmb.x)) return "";
   const s = Math.max(0.7, nmb.scale || 1);
-  const box = { left: nmb.x - 30 * s, right: nmb.x + NMB_W + 12 * s, top: nmb.y + NMB_FEET - 36 * s, bottom: nmb.y + NMB_FEET - 2 };
-  if (box.left < 0 || box.right > innerWidth) return false;
   const edge = nmb.spot?.edge;
-  if (edge && edge.right - edge.left < box.right - box.left) return false;
+  const lo = Math.max(0, edge?.left ?? 0);
+  const hi = Math.min(innerWidth, edge?.right ?? innerWidth);
+  const top = nmb.y + NMB_FEET - 36 * s;
+  const bottom = nmb.y + NMB_FEET - 2;
   const obstacles = nameMarkBuddyObstacles(nameMarkBuddyTab());
-  return !obstacles.some((b) => b.right > box.left && b.left < box.right && b.bottom > box.top && b.top < box.bottom);
+  const sides = Object.keys(NMB_LIE_SPAN).filter((side) => {
+    const [a, b] = NMB_LIE_SPAN[side];
+    const left = nmb.x + 32 + (a - 32) * s;
+    const right = nmb.x + 32 + (b - 32) * s;
+    return left >= lo && right <= hi && !obstacles.some((o) => o.right > left && o.left < right && o.bottom > top && o.top < bottom);
+  });
+  return sides.find((side) => side !== nmb.lieSide) || sides[0] || "";
 }
 
 //: How many ways each act can go, and the pick: any but the last one.
@@ -7179,9 +7346,11 @@ function nameMarkBuddyScene(buddy) {
   make("ellipse", { cx: -8, cy: 86, rx: 18, ry: 5, fill: "#e6e0f2" }, pillow);
   const front = layer("front");
   const book = make("g", { class: "nms nms-book" }, front);
-  make("path", { d: "M17 50 L32 53 L47 50 L47 62 L32 65 L17 62 Z", fill: "#b5473a" }, book);
-  make("path", { d: "M19 51 L32 54 L45 51 L45 60 L32 63 L19 60 Z", fill: "#fbf6ea" }, book);
-  make("path", { d: "M32 54 L32 63", stroke: "#c9bfa6", "stroke-width": 1 }, book);
+  //: At its hands, turned in to hold it (the CSS), in front of its belly,
+  //: not under its chin (K14).
+  make("path", { d: "M17 55 L32 58 L47 55 L47 67 L32 70 L17 67 Z", fill: "#b5473a" }, book);
+  make("path", { d: "M19 56 L32 59 L45 56 L45 65 L32 68 L19 65 Z", fill: "#fbf6ea" }, book);
+  make("path", { d: "M32 59 L32 68", stroke: "#c9bfa6", "stroke-width": 1 }, book);
   face.insertBefore(back, char);
   char.after(front);
 }
@@ -7280,11 +7449,17 @@ function nameMarkBuddyFrames(buddy, frames) {
     else nmb.poseSteps.push(setTimeout(set, i * NMB_POSE_FRAME_MS));
   });
 }
-function nameMarkBuddyLieDown(buddy) {
-  if (!nameMarkBuddyHasAtlas(buddy)) return;
-  //: Head to the left or the right, a different way from last time.
-  const v = nameMarkBuddyPickVariant(2, Number(buddy.dataset.atlasVariant ?? -1) % 2);
-  buddy.dataset.atlasVariant = String(v);
+//: Head to the left or the right: the side its perch has room for
+//: (`nameMarkBuddyLieRoom`). Atlas's variant 1 reaches left of its box,
+//: 0 right; a drawn face lies head left, or head right with `data-lie`.
+function nameMarkBuddyLieDown(buddy, side = "left") {
+  nmb.lieSide = side;
+  if (!nameMarkBuddyHasAtlas(buddy)) {
+    if (side === "right") buddy.dataset.lie = "r";
+    else delete buddy.dataset.lie;
+    return;
+  }
+  buddy.dataset.atlasVariant = side === "left" ? "1" : "0";
   nameMarkBuddyFrames(buddy, ["lie-1", "lie-2", "lie"]);
 }
 function nameMarkBuddyCurlUp(buddy) {
@@ -7530,13 +7705,17 @@ function nameMarkBuddyTick() {
 //: nothing between changes. Atlas has its own moods (atlas.js) and only
 //: gets the drift, and only when it is calm. `nmb.exprHold` is the one it
 //: comes back to (sleepy while you are away, intent while it thinks).
+//: A drift is never sourer than the face it leaves (INBOX 1402, "a bored or
+//: grumpy gangster"): a friendly face wanders only among friendly ones (a
+//: calm one went sly a third of the time, arms folded with it), and a sour
+//: one only toward kinder; a scowl is for an event.
 const NMB_EXPR_NEAR = {
-  happy: ["calm", "love", "cute"], calm: ["happy", "sly", "cute"], excited: ["happy", "starstruck"],
-  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "unimpressed"],
-  sly: ["calm", "evil", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
+  happy: ["calm", "love", "cute"], calm: ["happy", "cute"], excited: ["happy", "starstruck"],
+  sad: ["calm", "nervous"], angry: ["unimpressed", "serious"], serious: ["calm", "happy"],
+  sly: ["calm", "cool"], cool: ["sly", "calm"], nervous: ["calm", "confused"], sleepy: ["calm"],
   love: ["happy", "cute"], laughing: ["happy", "excited"], unimpressed: ["serious", "sly"],
   confused: ["calm", "nervous"], cute: ["happy", "uwu"], uwu: ["cute", "happy"], starstruck: ["excited", "happy"],
-  "": ["happy", "calm", "sly"],
+  "": ["happy", "calm", "cute"],
 };
 const NMB_ATLAS_NEAR = ["curious", "happy", "proud", "shy"];
 function nameMarkBuddyExpress(expr, ms = 0, { drift = false } = {}) {
@@ -8024,6 +8203,10 @@ function nameMarkBuddyFeel(delta, now = Date.now()) {
 //: itself (`nmb.pokes` keeps twenty seconds), so after a pause it is a
 //: hello again. `last` is the previous answer, `rand` the draw (a function,
 //: so a test fixes it).
+//: A sulk is brief (INBOX 1402): a scowl only while the poke that called
+//: for it is fresh.
+const NMB_GRUMPY_MS = 8000;
+const NMB_POUT_MS = 3000;
 const NMB_POKE_GENTLE = ["pleased", "curious", "wave"];
 const NMB_POKE_POOL = ["pleased", "playful", "curious", "wave", "spin", "laugh"];
 function nameMarkBuddyClickReaction(asleep, pokes, sinceLast, groggy = false, last = "", rand = Math.random) {
@@ -9093,7 +9276,10 @@ function nameMarkBuddyBuild() {
       const thrown = !!v && Math.hypot(v[0], v[1]) > NMB_TOSS_SPEED && typeof nameMarkBuddyThrow === "function";
       if (thrown) nameMarkBuddyIndexReset();
       const world = thrown && nameMarkBuddyWorld(nameMarkBuddyTab());
-      const landed = !thrown && nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top));
+      //: The whole flight and where it comes down, before any write (companion-throw.js).
+      const plan = thrown && companionThrowPlan(Math.round(box.left), Math.round(box.top), v[0], v[1], world);
+      //: Let go too slowly to fly, it comes down the same way: near, or straight down.
+      const landed = !thrown && nameMarkBuddyMeasureOnce(() => nameMarkBuddyLandNear(box.left, box.top, nameMarkBuddyDrop(Math.round(box.left), Math.round(box.top))));
       buddy.style.translate = "";
       buddy.classList.remove("nm-buddy-dragging");
       clearTimeout(drag.settle);
@@ -9103,7 +9289,7 @@ function nameMarkBuddyBuild() {
       //: **Thrown** (INBOX 882): let go while still moving fast, it flies
       //: (`nameMarkBuddyThrow`).
       if (thrown) {
-        nameMarkBuddyThrow(buddy, v[0], v[1], world);
+        nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);
         face.dataset.dragged = "1";
         drag = null;
         return;
@@ -9190,20 +9376,23 @@ function nameMarkBuddyBuild() {
       if (how === "pout") {
         nameMarkBuddyFeel(-0.15);
         nmb.groggyUntil = Math.max(nmb.groggyUntil || 0, now + 4000);
-        nameMarkBuddyPout(buddy, 6000);
+        nameMarkBuddyPout(buddy, NMB_POUT_MS);
         return;
       }
-      //: **Poked too often** (four times in twenty seconds): grumpy for half
-      //: a minute. It turns away, says so, and will not look at you.
+      //: **Poked too often** (four times in twenty seconds): grumpy, briefly.
+      //: It turns away, says so, and will not look at you. It was half a
+      //: minute and a pout after it, 35s of a scowl (INBOX 1402, the owner:
+      //: "a bored or grumpy gangster ... half the time"): now `NMB_GRUMPY_MS`
+      //: and a short pout on the way back.
       if (how === "grumpy") {
         nameMarkBuddyFeel(-0.4);
-        nmb.grumpyUntil = now + 30000;
+        nmb.grumpyUntil = now + NMB_GRUMPY_MS;
         nmb.mood.sociability = Math.max(0, nmb.mood.sociability - 0.25);
         nameMarkBuddyRelease();
         buddy.classList.remove("nmb-pout");
         nameMarkBuddyEase(buddy, 2400);
         buddy.classList.add("nmb-grumpy");
-        nameMarkBuddyExpress("unimpressed", 30000);
+        nameMarkBuddyExpress("unimpressed", NMB_GRUMPY_MS);
         buddy.dataset.turn = nmb.pointer && nmb.pointer[0] > nmb.x + NMB_W / 2 ? "l" : "r";
         setTimeout(() => {
           //: And it comes down through a pout, not straight back (unless it
@@ -9211,9 +9400,9 @@ function nameMarkBuddyBuild() {
           //: rub has made up already).
           if (!buddy.isConnected || (nmb.rubbedAt || 0) > now) return;
           buddy.classList.remove("nmb-grumpy");
-          nameMarkBuddyPout(buddy, 5000);
+          nameMarkBuddyPout(buddy, 2000);
           if (buddy.dataset.turn && !buddy.classList.contains("nmb-walking")) delete buddy.dataset.turn;
-        }, 30000);
+        }, NMB_GRUMPY_MS);
         nameMarkSay(buddy, ["Hmph.", "Okay, that's enough.", "I'm not talking to you."][Math.floor(Math.random() * 3)]);
         return;
       }

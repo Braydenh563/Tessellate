@@ -543,9 +543,16 @@ function flashCopied(button) {
   // with no trailing text) renders as a bare <i> with empty textContent, so
   // saving/restoring textContent silently wiped the icon back to blank once
   // the checkmark's timeout fired instead of putting it back.
-  const original = button.innerHTML;
+  //: A second press inside 1.2 s keeps the real icon (INBOX 1423).
+  if (!button._copiedWas) button._copiedWas = button.innerHTML;
+  clearTimeout(button._copiedTimer);
   setLabel(button, "ph:check");
-  setTimeout(() => (button.innerHTML = original), 1200);
+  button.classList.add("is-done");
+  button._copiedTimer = setTimeout(() => {
+    button.innerHTML = button._copiedWas;
+    button._copiedWas = null;
+    button.classList.remove("is-done");
+  }, 1200);
 }
 
 async function copyToClipboard(text, button) {
@@ -1841,7 +1848,10 @@ function personaOptions() {
     select.appendChild(option);
   }
   // Also surface the active persona's description on the closed select itself.
-  select.title = describe(active);
+  //: While no model runs the gate (`syncModelGatedControls`) has put the reason
+  //: in the title; the description waits in `enabledTitle` for its return.
+  if (select.dataset.enabledTitle !== undefined) select.dataset.enabledTitle = describe(active);
+  else select.title = describe(active);
   // The full prompt, not the hover excerpt: the preview panel exists precisely so
   // the instructions the model is given aren't a 200-character preview.
   const fullPrompt = (name) =>
@@ -1857,7 +1867,8 @@ function personaOptions() {
   //: persona's mark sits beside it and follows the choice.
   fillPersonaMark($("persona-select-mark"), select.value);
   select.onchange = () => {
-    select.title = describe(select.value);
+    if (select.dataset.enabledTitle !== undefined) select.dataset.enabledTitle = describe(select.value);
+    else select.title = describe(select.value);
     showPrompt(select.value);
     fillPersonaMark($("persona-select-mark"), select.value);
   };

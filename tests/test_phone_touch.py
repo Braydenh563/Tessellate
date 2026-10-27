@@ -64,7 +64,7 @@ def _function(source: str, head: str) -> str:
 
 def _slop(script: str) -> dict:
     body = (
-        "const WB_TOUCH_SLOP = 8;\n"
+        "const WB_TOUCH_SLOP = 8;\nconst WB_CLICK_SLOP = 3;\n"
         + _function(WB, "function wbTouchSlopStep(")
         + _function(WB, "function wbIsSecondTouch(")
         + script
@@ -85,7 +85,7 @@ const steps = [touch(2, 1), touch(3, 2), touch(3, 3), touch(1, 1)].map((e) => wb
 const mg = {};
 console.log(JSON.stringify({
   steps,
-  mouseInstant: wbTouchSlopStep(mg, mouse(1, 0)),
+  mouseInstant: [wbTouchSlopStep(mg, mouse(1, 0)), wbTouchSlopStep(mg, mouse(1, 1)), wbTouchSlopStep(mg, mouse(2, 0))],
   noGesture: wbTouchSlopStep(null, touch(1, 1)),
   zoomedShape: [wbTouchSlopStep({}, touch(5, 0), 0.5), wbTouchSlopStep({}, touch(20, 0), 0.5)],
 }));
@@ -95,7 +95,9 @@ console.log(JSON.stringify({
     assert out["steps"][:2] == [None, None]
     assert out["steps"][2] == {"dx": 8, "dy": 6}
     assert out["steps"][3] == {"dx": 1, "dy": 1}
-    assert out["mouseInstant"] == {"dx": 1, "dy": 0}, "a mouse keeps its instant drag"
+    # INBOX 1354: a mouse gets a 3px slop, so a click that slips 2px is a
+    # click; past it the whole run so far is released, as a finger's is
+    assert out["mouseInstant"] == [None, None, {"dx": 4, "dy": 1}], "a mouse waits 3px, then carries it all"
     assert out["noGesture"] == {"dx": 1, "dy": 1}
     # a shape measures in board units: 5 units at 0.5 scale is 2.5 screen px, 20 is 10
     assert out["zoomedShape"] == [None, {"dx": 20, "dy": 0}]

@@ -105,8 +105,17 @@ REACHED_AFTER_LOAD = {
     #: INBOX 1305: a far move asks for its path when `typeof companionPathPlan
     #: === "function"`; the mind's first tick fetches the bundle, and until
     #: it is here a far move walks.
+    "popupToolEquation": "POPUP_TOOLS' open, which waits on ensureModule('appPalette') before the call",
+    "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
+    "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
+    "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
+    "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
+    "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
+    "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
+    "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
+    "companionThrowPlan": "companionThrow, called by the release only when `thrown`, which is false unless typeof nameMarkBuddyThrow (same bundle) is a function",
     #: Back closing an open overlay (router-overlays.js): preloaded three seconds
     #: after boot; before that Back steps the tab history as it always did. A
     #: stand-in would return a promise, which is truthy, and swallow every Back.
@@ -152,6 +161,7 @@ REACHED_AFTER_LOAD = {
     "askAnswerMenu": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskInsights": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskWhy": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
+    "renderAskBoth": "askCompose, called in the .then of ensureModule('askCompose') in askQuestion",
     "renderAskFollowups": "askCompose, passed to the .then of ensureModule('askCompose') in askQuestion",
     #: B12: an answer's mind map is tidied after `await openWhiteboardBoard`,
     #: which loads the library bundle first (askKeepAsMap, capture-ask.js).

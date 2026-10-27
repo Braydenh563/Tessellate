@@ -111,14 +111,15 @@ function dashPatternBit(bit, pattern) {
     if (subject) showNotesFilter(subject);
     else openTidySheet();
   });
-  if (pattern.confirmed) return;
+  const items = insightVerdictItems(pattern);
+  if (!items.length) return;
   const send = (verdict) =>
     insightSend(pattern, verdict)
       .then(() => renderDashSubmessage())
       .catch((error) => toast(error.message, true));
   bit.appendChild(
     kebabMenu(
-      INSIGHT_VERDICT_ITEMS.map((item) => ({ label: item.label, title: item.title, run: () => send(item.verdict) })),
+      items.map((item) => ({ label: item.label, title: item.title, run: () => send(item.verdict) })),
       "Is this pattern right?"
     )
   );

@@ -28,7 +28,7 @@ _LEAD = re.compile(
     re.I,
 )
 _OVERVIEW = re.compile(
-    r"^(?:what|which things?) (?:can|could|do) (?:you|u|atlas|i) (?:do|help (?:me )?with)(?: (?:here|for me|in (?:this|the) app|on (?:this|the) app|with (?:you|this|it)))?$"
+    r"^(?:what|which things?) (?:else )?(?:can|could|do) (?:you|u|atlas|i)(?: (?:even|actually|really|also|else))? (?:do|help (?:me )?with)(?: (?:here|for me|in (?:this|the) app|on (?:this|the) app|with (?:you|this|it)))?$"
     r"|^what (?:are|r) (?:you|u) (?:able to do|capable of|good at|for)$"
     r"|^what (?:are )?(?:your|atlas'?s?) (?:abilities|capabilities|features|skills|powers|tools)$"
     r"|^(?:what can i (?:ask|say|do)(?: (?:you|here|in (?:this|the) app|on (?:this|the) app))?)$"

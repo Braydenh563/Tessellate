@@ -78,6 +78,125 @@ def _noisy_or(values: list[float]) -> float:
     return 1.0 - miss
 
 
+class _PairFinder:
+    """The pairs of entities that look like one thing, found three ways.
+
+    `found` maps a pair (smaller id first) to its first signal, reason and base
+    confidence; `order` keeps which of the two was offered first, since a part
+    match keeps the longer name whichever id is smaller.
+    """
+
+    def __init__(self, entities: list[EntityFacts], exclude) -> None:  # noqa: ANN001
+        self.exclude = exclude
+        self.toks = {e.id: _tokens(e.name) for e in entities}
+        self.by_id = {e.id: e for e in entities if self.toks[e.id]}
+        self.found: dict[tuple[int, int], tuple[str, str, float]] = {}
+        self.order: dict[tuple[int, int], tuple[int, int]] = {}
+        #: How many longer names each short name sits inside: "Sam" in three full
+        #: names is three guesses, so each is worth less.
+        self.part_of: dict[int, int] = defaultdict(int)
+        self.same: dict[tuple[str, ...], list[int]] = defaultdict(list)
+        self.postings: dict[str, set[int]] = defaultdict(set)
+        for eid, words in self.toks.items():
+            if eid in self.by_id:
+                self.same[tuple(sorted(set(words)))].append(eid)
+                for word in set(words):
+                    self.postings[word].add(eid)
+
+    def add(self, a: int, b: int, signal: str, reason: str, base: float) -> None:
+        key = (a, b) if a < b else (b, a)
+        if key not in self.found and frozenset(key) not in self.exclude:
+            self.found[key] = (signal, reason, base)
+            self.order[key] = (a, b)
+
+    def same_names(self) -> None:
+        by_id = self.by_id
+        for members in self.same.values():
+            for i, a in enumerate(members[:BLOCK_CAP]):
+                for b in members[i + 1:BLOCK_CAP]:
+                    self.add(a, b, "same_name", f"“{by_id[a].name}” and “{by_id[b].name}” are the same name", 0.95)
+
+    def part_names(self) -> None:
+        toks, by_id = self.toks, self.by_id
+        for short, words in toks.items():
+            if short not in by_id or not any(len(t) >= 3 for t in words):
+                continue
+            lists = sorted((self.postings[w] for w in set(words)), key=len)
+            if len(lists[0]) > BLOCK_CAP:
+                continue
+            mine = set(words)
+            for full in set.intersection(*lists):
+                if full != short and mine < set(toks[full]):
+                    self.part_of[short] += 1
+                    self.add(short, full, "part_name", f"“{by_id[short].name}” is part of “{by_id[full].name}”", 0.6)
+
+    def _name_blocks(self) -> list[list[int]]:
+        """Blocks of names that agree on every word but one and on that word's first two letters."""
+        blocks: dict[tuple, list[int]] = defaultdict(list)
+        for eid in self.by_id:
+            words = sorted(set(self.toks[eid]))
+            for i, word in enumerate(words):
+                blocks[(*words[:i], *words[i + 1:], "|" + word[:2])].append(eid)
+        return [m for m in blocks.values() if 2 <= len(m) <= BLOCK_CAP]
+
+    def _comparable(self, a: int, b: int) -> bool:
+        """Whether a pair is still open to a spelling check."""
+        key = (a, b) if a < b else (b, a)
+        if key in self.found or frozenset(key) in self.exclude:
+            return False
+        # "Plan 2025" and "Plan 2026" are two things
+        return not any(ch.isdigit() for t in set(self.toks[a]) ^ set(self.toks[b]) for ch in t)
+
+    def near_names(self) -> None:
+        by_id = self.by_id
+        joined = {eid: " ".join(sorted(self.toks[eid])) for eid in by_id}
+        matcher = SequenceMatcher(None)
+        for members in self._name_blocks():
+            for i, a in enumerate(members):
+                matcher.set_seq2(joined[a])
+                for b in members[i + 1:]:
+                    if not self._comparable(a, b):
+                        continue
+                    matcher.set_seq1(joined[b])
+                    if matcher.real_quick_ratio() < NEAR_RATIO or matcher.quick_ratio() < NEAR_RATIO:
+                        continue
+                    ratio = matcher.ratio()
+                    if ratio >= NEAR_RATIO:
+                        self.add(a, b, "near_name", f"“{by_id[a].name}” and “{by_id[b].name}” are spelled almost the same", ratio * 0.9)
+
+    def row(self, key: tuple[int, int], weights: dict[str, float]) -> dict | None:
+        """The suggestion for one pair, or None when it is not sure enough."""
+        signal, reason, base = self.found[key]
+        a, b = self.order[key]
+        if signal == "part_name" and self.part_of[a] > 1:
+            base *= 0.7
+        signals = [_signal(signal, reason, min(0.95, base * weights.get(signal, 1.0)))]
+        shared = self.by_id[a].notes & self.by_id[b].notes
+        if shared:
+            n = len(shared)
+            together = min(0.9, 0.5 * weights.get("same_note", 1.0))
+            signals.append(_signal("same_note", f"named together in {n} note{'s' if n != 1 else ''}", together))
+        confidence = _noisy_or([s["confidence"] for s in signals])
+        if confidence < MIN_CONFIDENCE:
+            return None
+        ea, eb = self.by_id[a], self.by_id[b]
+        if signal == "part_name":
+            keep, gone = eb, ea
+        else:
+            keep, gone = sorted((ea, eb), key=lambda e: (-len(e.notes), -len(e.name), e.id))
+        return {
+            "keep_id": keep.id,
+            "keep_name": keep.name,
+            "keep_notes": len(keep.notes),
+            "merge_id": gone.id,
+            "merge_name": gone.name,
+            "merge_notes": len(gone.notes),
+            "confidence": round(confidence, 2),
+            "signals": signals,
+            "reason": "; ".join(s["reason"] for s in signals),
+        }
+
+
 def merge_candidates(
     entities: list[EntityFacts],
     exclude: set[frozenset[int]] | frozenset = frozenset(),
@@ -94,101 +213,11 @@ def merge_candidates(
     that word's first two letters ("Jonathan Smith", "Jonathon Smith").
     """
     weights = weights or {}
-    toks = {e.id: _tokens(e.name) for e in entities}
-    by_id = {e.id: e for e in entities if toks[e.id]}
-    found: dict[tuple[int, int], tuple[str, str, float]] = {}
-
-    def add(a: int, b: int, signal: str, reason: str, base: float) -> None:
-        key = (a, b) if a < b else (b, a)
-        if key not in found and frozenset(key) not in exclude:
-            found[key] = (signal, reason, base)
-            order[key] = (a, b)
-
-    order: dict[tuple[int, int], tuple[int, int]] = {}
-    same: dict[tuple[str, ...], list[int]] = defaultdict(list)
-    postings: dict[str, set[int]] = defaultdict(set)
-    for eid, words in toks.items():
-        if eid in by_id:
-            same[tuple(sorted(set(words)))].append(eid)
-            for word in set(words):
-                postings[word].add(eid)
-    for members in same.values():
-        for i, a in enumerate(members[:BLOCK_CAP]):
-            for b in members[i + 1:BLOCK_CAP]:
-                add(a, b, "same_name", f"“{by_id[a].name}” and “{by_id[b].name}” are the same name", 0.95)
-
-    #: How many longer names each short name sits inside: "Sam" in three full
-    #: names is three guesses, so each is worth less.
-    part_of: dict[int, int] = defaultdict(int)
-    for short, words in toks.items():
-        if short not in by_id or not any(len(t) >= 3 for t in words):
-            continue
-        lists = sorted((postings[w] for w in set(words)), key=len)
-        if len(lists[0]) > BLOCK_CAP:
-            continue
-        mine = set(words)
-        for full in set.intersection(*lists):
-            if full != short and mine < set(toks[full]):
-                part_of[short] += 1
-                add(short, full, "part_name", f"“{by_id[short].name}” is part of “{by_id[full].name}”", 0.6)
-
-    blocks: dict[tuple, list[int]] = defaultdict(list)
-    for eid in by_id:
-        words = sorted(set(toks[eid]))
-        for i, word in enumerate(words):
-            blocks[(*words[:i], *words[i + 1:], "|" + word[:2])].append(eid)
-    joined = {eid: " ".join(sorted(toks[eid])) for eid in by_id}
-    matcher = SequenceMatcher(None)
-    for members in blocks.values():
-        if len(members) < 2 or len(members) > BLOCK_CAP:
-            continue
-        for i, a in enumerate(members):
-            matcher.set_seq2(joined[a])
-            for b in members[i + 1:]:
-                key = (a, b) if a < b else (b, a)
-                if key in found or frozenset(key) in exclude:
-                    continue
-                if any(ch.isdigit() for t in set(toks[a]) ^ set(toks[b]) for ch in t):
-                    continue  # "Plan 2025" and "Plan 2026" are two things
-                matcher.set_seq1(joined[b])
-                if matcher.real_quick_ratio() < NEAR_RATIO or matcher.quick_ratio() < NEAR_RATIO:
-                    continue
-                ratio = matcher.ratio()
-                if ratio >= NEAR_RATIO:
-                    add(a, b, "near_name", f"“{by_id[a].name}” and “{by_id[b].name}” are spelled almost the same", ratio * 0.9)
-
-    rows: list[dict] = []
-    for key, (signal, reason, base) in found.items():
-        a, b = order[key]
-        if signal == "part_name" and part_of[a] > 1:
-            base *= 0.7
-        signals = [_signal(signal, reason, min(0.95, base * weights.get(signal, 1.0)))]
-        shared = by_id[a].notes & by_id[b].notes
-        if shared:
-            n = len(shared)
-            together = min(0.9, 0.5 * weights.get("same_note", 1.0))
-            signals.append(_signal("same_note", f"named together in {n} note{'s' if n != 1 else ''}", together))
-        confidence = _noisy_or([s["confidence"] for s in signals])
-        if confidence < MIN_CONFIDENCE:
-            continue
-        ea, eb = by_id[a], by_id[b]
-        if signal == "part_name":
-            keep, gone = eb, ea
-        else:
-            keep, gone = sorted((ea, eb), key=lambda e: (-len(e.notes), -len(e.name), e.id))
-        rows.append(
-            {
-                "keep_id": keep.id,
-                "keep_name": keep.name,
-                "keep_notes": len(keep.notes),
-                "merge_id": gone.id,
-                "merge_name": gone.name,
-                "merge_notes": len(gone.notes),
-                "confidence": round(confidence, 2),
-                "signals": signals,
-                "reason": "; ".join(s["reason"] for s in signals),
-            }
-        )
+    finder = _PairFinder(entities, exclude)
+    finder.same_names()
+    finder.part_names()
+    finder.near_names()
+    rows = [row for key in finder.found if (row := finder.row(key, weights)) is not None]
     rows.sort(key=lambda r: (-r["confidence"], r["keep_id"], r["merge_id"]))
     return rows[:limit]
 

@@ -15,6 +15,7 @@ can do, because those are handed a model that is already on disk.
 from __future__ import annotations
 
 import json
+import re
 import time
 
 from collections.abc import Iterator
@@ -176,6 +177,31 @@ def _is_down(base_url: str) -> bool:
     return True
 
 
+#: How long a server that accepted the connection and then never answered
+#: the probe is taken as off. Unlike a refusal this is not proof, so it only
+#: short-circuits `is_running` (the many liveness checks of one turn), never a
+#: real request. Measured: a silent runner cost 2 s per probe, five or more
+#: probes per turn, 4 to 9 s before the first step (INBOX 1420, askwait-1027).
+QUIET_TTL_SECONDS = 10.0
+PROBE_READ_SECONDS = 1.0
+
+
+def _quiet_key(base_url: str) -> str:
+    return f"quiet:{base_url}"
+
+
+def mark_quiet(base_url: str) -> None:
+    _down_until[_quiet_key(base_url)] = _clock() + QUIET_TTL_SECONDS
+
+
+def is_quiet(base_url: str) -> bool:
+    return _is_down(_quiet_key(base_url))
+
+
+def forget_quiet(base_url: str) -> None:
+    _down_until.pop(_quiet_key(base_url), None)
+
+
 def _note_failure(base_url: str, exc: BaseException) -> None:
     if _is_refusal(exc):
         _mark_down(base_url)
@@ -194,7 +220,12 @@ class OllamaClient(Provider):
         timeout: float = 600.0,
         keep_alive: str = "30m",
     ) -> None:
-        self.base_url = base_url.rstrip("/")
+        #: "localhost" is tried as ::1 first, and Ollama listens on 127.0.0.1
+        #: only; Windows waits about two seconds before it gives up on the
+        #: refused ::1, past the 1 s connect wait, so a running Ollama read as
+        #: off (the owner, 2026-10-26: "I have ollama running but its still
+        #: saying I cant use the ai"). The IPv4 loopback is asked directly.
+        self.base_url = re.sub(r"^(https?://)localhost(?=[:/]|$)", r"\g<1>127.0.0.1", base_url.rstrip("/"), flags=re.I)
         # 120s used to be the default here and was too short by design, not
         # by accident: on modest hardware, loading a model bigger than about
         # 4B parameters into RAM/VRAM for the first time can take well past
@@ -429,16 +460,19 @@ class OllamaClient(Provider):
     def is_running(self) -> bool:
         """Cheap reachability probe: short timeout so the UI never hangs
         just to discover Ollama is off (plan §6.5)."""
-        if _is_down(self.base_url):
+        if _is_down(self.base_url) or is_quiet(self.base_url):
             return False
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, 2))
+            response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, PROBE_READ_SECONDS))
             response.raise_for_status()
             _mark_up(self.base_url)
+            forget_quiet(self.base_url)
             return True
         except requests.RequestException as exc:
             if _is_refusal(exc):
                 _mark_down(self.base_url)
+            else:
+                mark_quiet(self.base_url)
             return False
 
     def loaded_models(self) -> list[str] | None:

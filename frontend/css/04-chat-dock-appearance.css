@@ -800,6 +800,13 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* A flex container draws no ellipsis for its text (it is an anonymous flex
+     item), so a long name was cut mid-letter: scrollWidth 747 in 352
+     (dog3-1026 row 9). A block does; the pencil follows the text inline. */
+  display: block;
+}
+.chat-toolbar #chat-title::after {
+  margin-inline-start: var(--space-2);
 }
 
 /* One line of quiet facts under the title: what the thread has cost, and
@@ -1601,6 +1608,21 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   flex-wrap: nowrap;
 }
 
+/* The head is the drag handle (INBOX 1413); touch-action keeps a finger from
+   scrolling the page instead. Away: the node is out of view, the popup waits. */
+.graph-popup:not(.graph-popup-sheet) .graph-popup-head {
+  cursor: grab;
+  touch-action: none;
+}
+
+.graph-popup.graph-popup-dragging .graph-popup-head {
+  cursor: grabbing;
+}
+
+.graph-popup.graph-popup-away {
+  visibility: hidden;
+}
+
 .graph-popup-ident {
   display: flex;
   flex-wrap: wrap;
@@ -1809,10 +1831,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
-}
-
-.selection-popup.hidden {
-  display: none;
 }
 
 /* The kebab opener only, scoped through `.menu-wrap` on purpose.
@@ -3274,39 +3292,109 @@ span > .chip {
   white-space: nowrap;
 }
 
-/* Bumped from a 1.5rem icon-sized thumbnail, reported directly as needing
-   to read as an actual image preview, not a small generic file-attached
-   icon. Large enough to recognise the picture at a glance, still well
-   short of the note's own composing area. */
-.attachment-chip-image {
-  max-width: 8rem;
-  flex-direction: column;
-  align-items: stretch;
-  padding: var(--space-2);
-  gap: var(--space-2);
+/* **The one attachment chip** (DESIGN.md "An attachment chip"). The owner:
+   "better modern and proffessional this app styled attachment chips". A tile
+   (the picture, or the kind's glyph), the name with its extension kept when
+   the stem is cut, one facts line (kind and size, the upload's percentage, or
+   what went wrong), a thin bar while it uploads and a round x. Chat, the
+   popup agent and any later composer build it with `attachmentChip()`. */
+.att-chip {
+  max-width: 16rem;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  font-weight: 400;
+  position: relative;
 }
-
-.attachment-chip-image img {
-  width: 100%;
-  height: 5rem;
-  object-fit: cover;
+.att-chip-tile {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  aspect-ratio: 1;
   border-radius: var(--radius-sm);
-  cursor: zoom-in;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--text-h3);
+  object-fit: cover;
 }
-
-/* The generic `.attachment-chip > span:first-child` ellipsis rule below
-   never matches here: this chip's actual first child is the <img>, not a
-   span, so the filename span (`:first-child` requires it be both) fell
-   through with no width limit and ran past the 8rem card, reported
-   directly, with a screenshot, as a staged image's filename overflowing
-   its card. Flex's own blockify+stretch (the column layout above) gives
-   this span a definite width already; it only needed the same three
-   overflow properties the sibling rule uses. */
-.attachment-chip-image>span:first-of-type {
-  font-size: var(--text-xs);
+.att-chip-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.att-chip-name {
+  display: flex;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.att-chip-stem {
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.att-chip-ext {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.att-chip-facts {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.att-chip[data-state="error"] {
+  border-color: var(--error);
+}
+.att-chip[data-state="error"] .att-chip-facts {
+  color: var(--error);
+}
+.att-chip-bar {
+  position: absolute;
+  inset: auto var(--space-2) 0;
+  width: auto;
+  height: 3px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  accent-color: var(--accent);
+}
+.att-chip-bar::-webkit-progress-bar {
+  background: transparent;
+}
+.att-chip-bar::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+}
+.att-chip-bar::-moz-progress-bar {
+  background: var(--accent);
+}
+.att-chip-x {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.att-chip-x:is(:hover, :focus-visible) {
+  color: var(--error);
 }
 
 .attachment-remove {
@@ -3931,8 +4019,12 @@ span > .chip {
   gap: var(--space-1);
   min-width: 0;
   /* Room for the kebab, reserved rather than taken - or a long title runs
-     underneath it instead of wrapping clear of it. */
-  padding-right: var(--space-9);
+     underneath it instead of wrapping clear of it. The kebab is a target
+     (44px under a coarse pointer) set `--space-3` in from the row's edge, so
+     the reserve is its width plus that inset and a gap, less the row's own
+     padding: a flat `--space-9` left the 44px one 7px over the meta line at
+     420 (halfwindow.js). */
+  padding-right: max(var(--space-9), calc(var(--target-min) + var(--space-3) + var(--space-2) - var(--space-5)));
 }
 
 .doc-list-title {

@@ -228,18 +228,16 @@ def read(
             cards.append({**base, "kind": "related", "confidence": round(min(0.55, closeness), 2),
                           "reason": "Close in words and meaning." if row["score"] else "Shares words with this paragraph.",
                           "text": f"Related: “{sentence[:160]}”"})
-    for question in _open_questions(session, skip):
-        if facts._local_answer(question.text, paragraph):
-            cards.append({
-                "kind": "answers",
-                "source_entry_id": question.entry_id,
-                "source_span": [question.span_start, question.span_end],
-                "source_text": question.text[:300],
-                "fact_id": question.id,
-                "confidence": 0.65,
-                "reason": "Holds most of what the question asks about.",
-                "text": f"Answers your open question: “{question.text[:160]}”",
-            })
+    cards.extend({
+        "kind": "answers",
+        "source_entry_id": question.entry_id,
+        "source_span": [question.span_start, question.span_end],
+        "source_text": question.text[:300],
+        "fact_id": question.id,
+        "confidence": 0.65,
+        "reason": "Holds most of what the question asks about.",
+        "text": f"Answers your open question: “{question.text[:160]}”",
+    } for question in _open_questions(session, skip) if facts._local_answer(question.text, paragraph))
     dated = _date_card(paragraph, now or datetime.now())
     if dated:
         cards.append(dated)

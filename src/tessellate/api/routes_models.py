@@ -6,6 +6,8 @@ absent turns into flags in /models/status, never an error.
 
 from __future__ import annotations
 
+import functools
+
 import logging
 import threading
 from typing import Literal
@@ -24,7 +26,7 @@ from tessellate.ai.model_manager import (
     SUGGESTED_MODELS,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps, hardware, ocr, security
+from tessellate.core import background, deps, hardware, ocr, security
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
@@ -39,7 +41,9 @@ class ChatModelBody(BaseModel):
 
 
 class EmbeddingBackendBody(BaseModel):
-    backend: Literal["sentence-transformers", "ollama"]
+    #: "sentence-transformers" is the engine's name before fastembed, still
+    #: taken from a page or script that has not reloaded, and read as fastembed.
+    backend: Literal["fastembed", "sentence-transformers", "ollama"]
     model: str | None = None  # required when backend == "ollama"
 
 
@@ -129,7 +133,34 @@ _installed_known: dict[tuple[str, str], list[dict] | None] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
 
 
-def _installed_or_last_known(client) -> list[dict] | None:  # noqa: ANN001
+def prewarm_installed() -> None:
+    """Ask the runner for its model list at launch, on a thread of its own, so
+    the first /models/status and /models/suggested find an answer known
+    (INBOX 1419: both waited 4s for a runner busy loading). Never raises."""
+    try:
+        client = deps.get_ollama()
+        key = _flight_key(client)
+        with _installed_lock:
+            if key in _installed_flights or key in _installed_known:
+                return
+            _start_flight(client, key)
+    except Exception:  # noqa: BLE001  # a warm-up must never stop the launch
+        logging.getLogger(__name__).info("model list warm-up skipped; Settings asks again when opened", exc_info=True)
+
+
+def _start_flight(client, key: tuple[str, str]) -> "_ListFlight":  # noqa: ANN001
+    """Begin the one list request for `key`; the caller holds `_installed_lock`."""
+    flight = _installed_flights[key] = _ListFlight()
+    background.start("models-list", functools.partial(_run_list_flight, client, key, flight))
+    return flight
+
+
+def _flight_key(client) -> tuple[str, str]:  # noqa: ANN001
+    inner = getattr(client, "_client", client)  # the capability wrapper shares its runner's flight
+    return (type(inner).__name__, str(getattr(inner, "base_url", "")))
+
+
+def _installed_or_last_known(client, *, patient: bool = True) -> list[dict] | None:  # noqa: ANN001
     """The runner's installed models: None when it is not answering.
 
     The poll used to make this call itself, so a runner that was merely busy
@@ -144,17 +175,16 @@ def _installed_or_last_known(client) -> list[dict] | None:  # noqa: ANN001
     runner that refuses the connection answers at once, and is reported down
     on that poll.
     """
-    key = (type(client).__name__, str(getattr(client, "base_url", "")))
+    key = _flight_key(client)
     with _installed_lock:
         flight = _installed_flights.get(key)
         if flight is None:
-            flight = _installed_flights[key] = _ListFlight()
-            threading.Thread(
-                target=_run_list_flight, args=(client, key, flight), name="models-list", daemon=True
-            ).start()
+            flight = _start_flight(client, key)
         has_known = key in _installed_known
         last_known = _installed_known.get(key)
-    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known else None)
+    #: `patient=False` (the shortlist) never waits past the budget: sizes fall
+    #: back to the shipped figures, which is better than a 4s blank card list.
+    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known or not patient else None)
     if not flight.done.is_set():
         return last_known
     if flight.error is not None:
@@ -274,6 +304,10 @@ def warm_filing() -> dict:
     from tessellate.api import routes_entries
     from tessellate.core import jobs
 
+    #: The graphics card is read by starting a program (up to 3s, cached five
+    #: minutes): read it now, so Settings' first model list does not wait on it
+    #: (INBOX 1415).
+    background.start("gpu-probe", hardware.detect_gpus)
     ollama = deps.get_ollama()
     #: Only when a model answers: with none the job returned at once, yet
     #: still showed "Warming up the filing model" in the bell and Activity on
@@ -328,6 +362,18 @@ def _model_ready(running: bool, installed: list[dict], provider: str, chat_model
     return running and bool(installed) and (provider != "ollama" or _name_matches(chat_model, installed))
 
 
+def _engine_moved(manager, offered: bool) -> dict | None:  # noqa: ANN001
+    """The old engine's files, only beside the search offer (complexity seed of `status`)."""
+    return manager.semantic_engine_moved() if offered else None
+
+
+def _semantic_offer(embeddings, config) -> bool:  # noqa: ANN001
+    """Whether to ask once about downloading search by meaning (see `status`)."""
+    return bool(
+        getattr(embeddings, "awaiting_consent", False) and not config.get_preference("semantic_choice_made", False)
+    )
+
+
 @router.get("/status")
 def status(session: Session = Depends(get_session)) -> dict:
     """One call that tells the UI everything: is Ollama up, what's
@@ -354,6 +400,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     resolved_vision = manager.resolve_vision_model(ollama, installed) if running else None
 
     config = deps.get_config()
+    semantic_offer = _semantic_offer(embeddings, config)
     provider = str(config.get_preference("llm_provider", "ollama") or "ollama")
     # Judged on every status poll, not only when the address is changed. A
     # warning that appears once and vanishes on the next reload is a warning
@@ -489,15 +536,22 @@ def status(session: Session = Depends(get_session)) -> dict:
         # screenshot, 0.3.31: "Built-in (recommended): mxbai-embed-large").
         "builtin_embedding_model": embeddings_module.DEFAULT_ST_MODEL,
         # Whether the built-in model's package is here, and whether the
-        # one-time install of it is running: the app installs
-        # sentence-transformers by itself the first time the built-in model
-        # is needed, and said so only in the log.
+        # one-time install of it is running: the app installs fastembed by
+        # itself the first time the built-in model is needed (after a yes),
+        # and said so only in the log.
         **_builtin_embedding_install_state(),
         "embedding_ready": embeddings.is_ready(),
         # Lets the UI tell "still loading" from "failed" (pill fix).
         "embedding_warming": embeddings_module.warmup_running(),
         "embedding_warming_failed": embeddings_module.warmup_failed(),
         "embedding_error": embeddings.last_error,
+        #: The one-time offer to download search by meaning: a save wanted it,
+        #: nothing is on this computer, and the question is still unanswered.
+        "semantic_offer": semantic_offer,
+        #: Set when the old engine's copy of the model is on this computer:
+        #: the one-time question then says the engine moved (semantic-notice.js).
+        #: Read only while the question is open: it is a folder listing.
+        "semantic_engine_moved": _engine_moved(manager, semantic_offer),
         "reindex": jobs.reindex_status(),
         "embedding_coverage": _embedding_coverage(session),
         #: How the last search found its notes (`search_manager.last_search`).
@@ -643,9 +697,11 @@ def suggested() -> dict:
     The alternative, asking a registry over the network, is a call this app
     should not make just to draw a settings list.
     """
+    #: The status poll's own list, under its budget (INBOX 1415: asked inline
+    #: here, a busy runner held the shortlist 4.1s).
     installed: dict[str, int] = {}
     try:
-        for model in deps.get_ollama().list_models():
+        for model in _installed_or_last_known(deps.get_ollama(), patient=False) or []:
             size = model.get("size")
             if size:
                 installed[str(model.get("name", ""))] = int(size)
@@ -678,10 +734,27 @@ def _hardware_profile() -> dict:
 
 def _loaded_names() -> set[str]:
     """Models Ollama holds in memory now, without `:latest`; empty when unknown."""
-    try:
-        names = deps.get_ollama().loaded_models() or []
-    except Exception:  # noqa: BLE001  # the backend being off is not an error here
-        names = []
+    #: Under the same short budget as the list: /api/ps is one more call to a
+    #: runner that may be busy loading, and "loaded" only tints a card.
+    box: list[list[str]] = []
+
+    def ask() -> None:
+        try:
+            box.append(deps.get_ollama().loaded_models() or [])
+        except Exception:  # noqa: BLE001  # the backend being off is not an error here
+            box.append([])
+
+    from tessellate.core import jobs
+
+    finished = threading.Event()
+
+    def run() -> None:
+        ask()
+        finished.set()
+
+    jobs.enqueue("model-info", run, name="loaded models")
+    finished.wait(INSTALLED_REFRESH_BUDGET)
+    names = box[0] if box else []
     return {str(n).removesuffix(":latest") for n in names if n}
 
 
@@ -1011,10 +1084,10 @@ def set_embedding_backend(
 
     # Switching backend is a fresh start: drop any cached failure so the
     # switch retries right away and the stale error banner clears at once
-    # instead of lingering for the retry-cooldown (bug: a fixed torch/Ollama
+    # instead of lingering for the retry-cooldown (bug: a fixed install/Ollama
     # still showed the old "search engine problem" until the cooldown lapsed).
     deps.get_embeddings().reset_failure_state()
-    started, message = embedswitch.start(body.backend, model)
+    started, message = embedswitch.start(embedmodels.backend_name(body.backend), model)
     log_action(
         session,
         "edited",

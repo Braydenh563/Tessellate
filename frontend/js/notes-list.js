@@ -459,10 +459,6 @@ const MD_INLINE_MARKS = {
   highlight: "==",
 };
 
-// Inline markdown in note text, deliberately only the inline kind: block
-// markdown (headings, tables, lists) makes a list of notes very tall, and
-// what people type in a note is bold, a little italic, the odd `code`.
-//
 // Code spans match first and are never re-read, so `**x**` in backticks stays
 // literal; `_` italics are left out because snake_case is common in notes.
 // Images and links come after the original four groups so callers keyed to
@@ -476,14 +472,16 @@ const MD_INLINE_MARKS = {
 // excluding their own delimiter. The eight colours are the toolbars' eight
 // (MD_COLOURS, documents.js) and the stylesheet's: a missing one printed its
 // own name ("red|text"). tests/test_highlight_colours.py pins all three.
+// The last alternative is a board text run, `{{size=24 ink=red|words}}`: the
+// grammar is read here, at boot, and drawn by documents.js (`MD_RUN`, `mdRunNode`).
 const INLINE_MD =
-  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)/g;
+  /`([^`\n]+)`|\*\*([^*\n]+?)\*\*|~~([^~\n]+?)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=\n]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+\n]+?)\+\+|\*([^*\n]+?)\*|!\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\[([^\]\n]{0,200})\]\(([^)\n]{1,500})\)|\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/g;
 
 // `appendInline`'s own grammar, before it was merged into renderInlineMarkdown
 // below: adds `__bold__`/`_italic_` and bare `https://…` autolinking, and its
 // Kept textually separate from INLINE_MD so neither caller's matching moves; selected by `options.underscoreSyntax`.
 const INLINE_MD_LEGACY =
-  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)/g;
+  /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|==(?:(yellow|green|blue|pink|purple|orange|red|grey)\|)?([^=]+?)==|\+\+(yellow|green|blue|pink|purple|orange|red|grey)\|([^+]+?)\+\+|\*([^*]+)\*|(?<![\w])_([^_]+)_(?![\w])|!\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|\[([^\]]{0,200})\]\(([^)\s]{1,500})\)|(https?:\/\/[^\s)]+)|\{\{((?:(?:size|font|ink|hl)=[a-z0-9]{1,12} ?){1,4})\|([^}\n]{1,2000}?)\}\}/g;
 
 // Same allowlist an <img src> or <a href> built from note text has to pass:
 // an absolute http(s) URL, or a same-origin relative path (one leading
@@ -907,6 +905,9 @@ function readableUrl(url) {
   return segments.length > 1 ? `${host} / \u2026 / ${last}` : `${host} / ${last}`;
 }
 
+//: A link label worth reading as inline markdown: it holds emphasis or code.
+const LINK_LABEL_MARKUP = /[*_`~=]/;
+
 function renderInlineMarkdown(element, text, terms, compact = false, options = {}) {
   const { underscoreSyntax = false, applyLatex = true } = options;
   // appendInline never cleared `element`, it only ever appended into a
@@ -971,17 +972,17 @@ function appendInlineRun(element, text, terms, compact, options) {
         element.appendChild(before);
       }
     }
-    let code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, bareUrl;
+    let code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, bareUrl, runSpec, runText;
     if (underscoreSyntax) {
       let boldStar, boldUnderscore, italicStar, italicUnderscore;
       [
         , code, boldStar, boldUnderscore, strike, markColour, mark, inkColour, ink, italicStar, italicUnderscore,
-        imageAlt, imageUrl, linkText, linkUrl, bareUrl,
+        imageAlt, imageUrl, linkText, linkUrl, bareUrl, runSpec, runText,
       ] = match;
       bold = boldStar ?? boldUnderscore;
       italic = italicStar ?? italicUnderscore;
     } else {
-      [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl] = match;
+      [, code, bold, strike, markColour, mark, inkColour, ink, italic, imageAlt, imageUrl, linkText, linkUrl, runSpec, runText] = match;
     }
     // Images and links are their own element kinds, not a wrap-in-a-tag like
     // the four above: built and appended directly rather than falling
@@ -1051,6 +1052,11 @@ function appendInlineRun(element, text, terms, compact, options) {
           placeholder.appendChild(dismiss);
           wrapper.replaceWith(placeholder);
         });
+        //: The blank lines before a picture on its own line are the
+        //: markdown's, not the note's: kept, they stacked on the wrapper's own
+        //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
+        const before = element.lastChild?.lastChild || element.lastChild;
+        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
         element.appendChild(wrapper);
       } else {
         element.appendChild(document.createTextNode(match[0]));
@@ -1092,7 +1098,16 @@ function appendInlineRun(element, text, terms, compact, options) {
           //: its address is a real label and is left alone.
           const labelIsTheUrl = !linkText.trim() || linkText.trim() === linkUrl.trim();
           if (labelIsTheUrl) a.title = linkUrl;
-          highlightInto(a, labelIsTheUrl ? (/^https?:/i.test(linkUrl) ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
+          if (!labelIsTheUrl && LINK_LABEL_MARKUP.test(linkText)) {
+            //: `[**Title**](#/note/3)`: the composer's own link for a bold
+            //: title (owner, 2026-10-27: the weekly digest showed the
+            //: asterisks). The label is read as inline text again, so bold,
+            //: italic and code draw inside the link; no bare-URL autolink
+            //: (no link inside a link) and compact (no picture inside one).
+            appendInlineRun(a, linkText, terms, true, { ...options, autolinkBareUrls: false, dismissible: false });
+          } else {
+            highlightInto(a, labelIsTheUrl ? (/^https?:/i.test(linkUrl) ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
+          }
           element.appendChild(a);
         }
       } else {
@@ -1117,6 +1132,17 @@ function appendInlineRun(element, text, terms, compact, options) {
         highlightInto(span, bareUrl, terms);
         element.appendChild(span);
       }
+      cursor = pattern.lastIndex;
+      continue;
+    }
+    //: A run (`{{size=24 ink=red|words}}`, documents.js `mdRunNode`): its words
+    //: are read as inline text again, so bold or a link inside it still draws.
+    //: Drawn plain until the Library's scripts are in (the grammar is here so
+    //: a preview and a search read the words either way).
+    if (runText !== undefined) {
+      const [node, host] = typeof mdRunNode === "function" ? mdRunNode(runSpec) : Array(2).fill(document.createElement("span"));
+      appendInlineRun(host, runText, terms, compact, options);
+      element.appendChild(node);
       cursor = pattern.lastIndex;
       continue;
     }
@@ -2818,15 +2844,42 @@ function showEntrySkeletons() {
 //: what is already there; the list's own render replaces them, and
 //: `clearSkeletons` takes them out on a path that draws nothing (a failed
 //: request). `aria-busy` tells a screen reader the list is on its way.
+//: K1: a skeleton stands for what the last render drew in this container,
+//: as many rows as were on screen then at their mean height (kept per
+//: id), so the swap does not jump. `count` is only the first-visit guess.
 function showSkeletons(container, count = 3, tag = "div") {
   if (!container || container.children.length > 0) return;
+  const seen = container.id && prefs.json("skeleton-seen", {})[container.id];
   container.setAttribute("aria-busy", "true");
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < (seen?.[0] || count); i++) {
     const el = document.createElement(tag);
     el.className = "skeleton";
+    if (seen) el.style.height = `${seen[1]}px`;
     el.setAttribute("aria-hidden", "true");
     container.appendChild(el);
   }
+  //: Real rows and skeletons have different gaps between them, so the
+  //: skeletons are then sized to cover the same span the rows did.
+  const span = seen?.[2];
+  const first = container.firstElementChild;
+  if (span && first) {
+    const drawn = container.lastElementChild.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
+    const height = Math.max(8, seen[1] + (span - drawn) / seen[0]);
+    if (drawn > 0) for (const el of container.children) el.style.height = `${height}px`;
+  }
+}
+
+function skeletonRemember(container) {
+  const rows = [...container.children].filter((el) => !el.classList.contains("skeleton"));
+  //: The mean, not the first row: a group's heading would make every one short.
+  const shown = rows.filter((el) => el.getBoundingClientRect().top < innerHeight);
+  const height = Math.round(shown.reduce((sum, el) => sum + el.offsetHeight, 0) / shown.length);
+  if (!height) return;
+  const seen = prefs.json("skeleton-seen", {});
+  const n = Math.min(shown.length, 30);
+  const span = shown[n - 1].getBoundingClientRect().bottom - shown[0].getBoundingClientRect().top;
+  seen[container.id] = [n, height, Math.round(span)];
+  prefs.setJSON("skeleton-seen", seen);
 }
 
 function clearSkeletons(container) {
@@ -2834,6 +2887,9 @@ function clearSkeletons(container) {
   container.removeAttribute("aria-busy");
   const held = container.querySelectorAll(":scope > .skeleton");
   for (const el of held) el.remove();
+  //: The caller draws its rows right after this in the same task, so a
+  //: microtask sees them (K1; no observer or frame loop, test_frontend_wake_sources).
+  if (held.length && container.id) queueMicrotask(() => skeletonRemember(container));
   //: **What replaces them settles in** (the motion pass, 2026-10-05): the
   //: first rows fade up a step, staggered (`.ui-settle`, 08-consistency.css),
   //: instead of popping in where the skeletons were. Only on this first
@@ -3066,11 +3122,11 @@ async function refreshEntries(ids) {
 //: under the person's cursor. `seen` drops an id already refreshed at the
 //: same `updated_at` (the server's stamp overlaps by two seconds).
 const NOTE_CHANGES_MS = 15_000;
-const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false };
+const noteChanges = { since: "", seen: new Map(), timer: 0, busy: false, quiet: 0 };
 async function followNoteChanges() {
   clearTimeout(noteChanges.timer);
   if (document.hidden) return;
-  noteChanges.timer = setTimeout(followNoteChanges, noteChanges.since ? NOTE_CHANGES_MS : 2000);
+  noteChanges.timer = setTimeout(followNoteChanges, noteChanges.since ? NOTE_CHANGES_MS * (noteChanges.quiet >= 4 ? 2 : 1) : 2000);
   //: The first stamp is taken as soon as there is a session, before the list
   //: has finished loading, so a change made while it loads is not missed.
   if (noteChanges.busy || !authToken() || (noteChanges.since && !entriesComplete)) return;
@@ -3085,6 +3141,8 @@ async function followNoteChanges() {
     const ids = body.ids.filter((id) => id !== editingId && noteChanges.seen.get(id) !== body.stamps[id]);
     if (noteChanges.seen.size > 500) noteChanges.seen.clear();
     for (const id of body.ids) noteChanges.seen.set(id, body.stamps[id]);
+    //: Battery: four empty answers in a row slow the ask to 30 s; a change or a return to the tab restores 15 s.
+    noteChanges.quiet = body.ids.length ? 0 : noteChanges.quiet + 1;
     if (!ids.length) return;
     await refreshEntries(ids);
     if (typeof refreshNotePage === "function") refreshNotePage(ids);
@@ -3094,7 +3152,10 @@ async function followNoteChanges() {
     noteChanges.busy = false;
   }
 }
-document.addEventListener("visibilitychange", followNoteChanges);
+document.addEventListener("visibilitychange", () => {
+  noteChanges.quiet = 0;
+  followNoteChanges();
+});
 followNoteChanges();
 
 //: **What the note list needs to draw a `[[map]]` as a map chip**, fetched
@@ -3527,15 +3588,19 @@ async function renderNotesRail() {
     return;
   }
   const shown = buildConnectionGroups(body, "entries", answer.links);
-  const nearItems = (answer.near && answer.near.items) || [];
+  //: Forgotten takes days: a note written minutes ago is not slipping away
+  //: (dog3-1026 row 14, "Forgotten" on notes seconds old).
+  const nearItems = ((answer.near && answer.near.items) || []).filter((item) => (item.age_days || 0) >= 3);
   if (nearItems.length) body.appendChild(notesRailNearGroup(nearItems));
   //: One chip, the panel head's one fact: how many things this note is
   //: joined to. The forgotten notes are suggestions, not connections, so they
   //: are not counted in it.
-  count.hidden = false;
   //: Unlinked mentions are offers, not links, so they are not counted.
   const linked = shown - (answer.links.mentions || []).length;
   count.textContent = linked === 1 ? "1 link" : `${linked} links`;
+  //: "0 links" over a list of suggestions read as a contradiction; the
+  //: empty line below says it once there is nothing at all (dog3-1026 row 14).
+  count.hidden = !linked;
   if (!shown && !nearItems.length) {
     const empty = document.createElement("p");
     empty.className = "muted notes-rail-note";

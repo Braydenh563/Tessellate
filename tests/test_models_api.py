@@ -30,7 +30,7 @@ def test_status_with_all_ai_down(client):
     assert body["installed_models"] == []
     assert body["chat_model"] == "llama3.2"
     assert body["chat_model_installed"] is None  # unknown while Ollama is off
-    assert body["embedding_backend"] == "sentence-transformers"
+    assert body["embedding_backend"] == "fastembed"
     assert body["embedding_ready"] is False
     assert body["pulls"] == {}
 
@@ -61,7 +61,7 @@ def test_embedding_failure_is_recorded_not_swallowed(app_state, monkeypatch):
     def boom():
         raise RuntimeError("no embedding model available (forced for test)")
 
-    monkeypatch.setattr(service, "_load_st_model", boom)
+    monkeypatch.setattr(service, "_load_builtin_model", boom)
     assert service.embed_text("hello") is None
     assert service.last_error is not None
     assert service.is_ready() is False
@@ -566,3 +566,86 @@ def test_a_start_up_choice_is_said_with_its_reason_until_one_is_picked(client, m
     assert client.get("/models/status").json()["chat_model_chosen_why"] == ""
     js = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
     assert "sayChatModelChosen(modelStatus);" in js and '"Change"' in js.split("function sayChatModelChosen", 1)[1][:900]
+
+
+def test_suggested_shares_the_status_polls_model_list(client, monkeypatch):
+    """INBOX 1415: `/models/suggested` took 4.1s in the owner's lag log. It
+    asked the runner for its model list inline, unbudgeted, while the status
+    poll already keeps that answer: with one known, the shortlist serves it
+    and leaves the refresh to finish on its own thread."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.3)
+    monkeypatch.setattr(routes_models, "_loaded_names", set)
+    release = threading.Event()
+    calls: list[int] = []
+    name = next(iter(routes_models.SUGGESTED_MODELS.values()))[0]["name"]
+
+    def list_models():
+        calls.append(1)
+        if len(calls) > 1:
+            release.wait(30)
+        return [{"name": name, "size": 3 * 1024**3}]
+
+    monkeypatch.setattr(ollama, "list_models", list_models)
+    client.get("/models/suggested")  # nothing known yet: it waits, as the poll does
+    started = time.monotonic()
+    body = client.get("/models/suggested").json()
+    assert time.monotonic() - started < 5  # the refresh is blocked for 30s
+    release.set()
+    entry = next(m for models in body.values() for m in models if m["name"] == name)
+    assert entry["size_source"] == "measured"
+
+
+def test_suggested_does_not_wait_for_a_busy_runner_even_on_the_first_call(client, monkeypatch):
+    """INBOX 1419: /models/suggested took 4.1s on a runner busy loading. With
+    no answer known yet it used to wait for the whole list call; the shortlist
+    now answers from the shipped sizes within the budget, and the launch
+    warm-up has usually filled the list before anyone opens Settings."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.3)
+    release = threading.Event()
+    monkeypatch.setattr(ollama, "list_models", lambda: release.wait(30) or [])
+    monkeypatch.setattr(ollama, "loaded_models", lambda: release.wait(30) or [])
+    started = time.monotonic()
+    body = client.get("/models/suggested")
+    elapsed = time.monotonic() - started
+    release.set()
+    assert body.status_code == 200
+    assert elapsed < 5
+
+
+def test_the_launch_warm_up_fills_the_list_the_first_poll_reads(client, monkeypatch):
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(ollama, "list_models", lambda: [{"name": "model-a", "size": 1}])
+    key = routes_models._flight_key(ollama)
+    routes_models._installed_known.pop(key, None)
+    routes_models.prewarm_installed()
+    deadline = time.monotonic() + 5
+    while key not in routes_models._installed_known and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert routes_models._installed_known[key][0]["name"] == "model-a"
+    # the status poll's capability wrapper shares that flight and its answer
+    assert routes_models._flight_key(routes_models._CachedCapabilities(ollama)) == key

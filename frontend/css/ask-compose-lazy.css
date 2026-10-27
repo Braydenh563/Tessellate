@@ -199,3 +199,44 @@
   gap: var(--space-1);
   margin-block: var(--space-1);
 }
+
+/* **Use AI** (K34), lazy with ask-compose.js (boot CSS cap): the AI switch is a checkbox on the app's pill-switch
+   recipe (06-timeline-dialogs.css, `.checkbox-label`), in the ask input's
+   control row beside the answer-length select. Compact: the label drops the
+   chip border; disabled (no model) the recipe's own 0.45 opacity reads as
+   greyed. The inline padding stays, less at the switch end, whose track is
+   already round: at 4px the hover fill's round end touched the track
+   (INBOX 1411). */
+.ask-ai-switch {
+  flex: 0 0 auto;
+  border-color: transparent;
+  padding-inline: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  cursor: pointer;
+}
+.ask-ai-switch:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+/* **Both answers** (K26): the composer card above a model text and the
+   "From your notes" fold under it. The fold takes the web fold look; only
+   the body and the card spacing are its own. */
+.ask-pre-answer {
+  margin-block-end: var(--space-2);
+}
+
+.from-notes-body {
+  padding: var(--space-2) var(--space-3);
+}
+
+.from-notes-fold[open] > .from-notes-body {
+  border-top: 1px solid var(--border);
+}
+
+/* The Ask head's buttons show a press, an open menu, a toggle, a done tick
+   (INBOX 1423). Lazy with the answer's other pieces: boot CSS is capped. */
+#chat-results .answer-actions .ghost:is(:active, .is-done, [aria-pressed="true"], [aria-expanded="true"]) {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}

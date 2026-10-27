@@ -66,23 +66,37 @@ function wbFmtKind(entry) {
   }
   if (String(parsed?.type || "").startsWith("link-")) return wbLinkTakesLabel(entry.item, parsed) ? "link" : null;
   if (typeof parsed?.d !== "string") return null;
+  //: Ends first (the 22-10 bug doc): a filled end mark closes its own
+  //: subpath with a Z, which `wbShapeLabelKind` read as a closed shape, so a
+  //: line given an End mark became a "shape" here, lost its Start and End
+  //: rows, and could not be turned back into a plain line.
+  if (wbSketchTakesCaps(parsed)) return "arrow";
   if (wbShapeLabelKind(parsed)) return "shape";
-  return wbSketchTakesCaps(parsed) ? "arrow" : "line";
+  return "line";
 }
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "rough", "text", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
+  line: ["stroke", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "alpha", "shadow", "fold", "text", "geometry", "angle", "style-lib", "props"],
-  image: ["alpha", "shadow", "geometry", "angle", "props"],
+  text: ["stroke", "fill", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
-  table: ["alpha", "shadow", "geometry", "props"],
+  table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
 };
+
+//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle): the
+//: line and the words keep theirs. The slider and its number, kept together.
+function wbFmtShowFillAlpha(isMixed, value) {
+  const slider = document.getElementById("wb-fmt-fillalpha");
+  const out = document.getElementById("wb-fmt-fillalpha-out");
+  if (slider && document.activeElement !== slider) slider.value = value;
+  if (out) out.textContent = isMixed ? "Mixed" : `${value}%`;
+}
 
 function wbFmtCanRound(entry) {
   if (entry.kind !== "sketch") return false;
@@ -118,6 +132,12 @@ function wbFmtValue(entry, field) {
     case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
+    //: Empty (not 0) when the item set none, so the field shows the default as a placeholder.
+    case "shx": return (s || o)?.shadow_x ?? "";
+    case "shy": return (s || o)?.shadow_y ?? "";
+    case "shb": return (s || o)?.shadow_blur ?? "";
+    case "r0": case "r1": case "r2": case "r3": return o?.radii?.[Number(field[1])] ?? "";
+    case "pad": return o?.pad ?? "";
     case "rough": return wbDrawsRough(s, false);
     case "route": return wbLinkRouteName(s);
     case "jumps": return WB_JUMP_STYLES.includes(s?.jumps) ? s.jumps : "none";
@@ -136,6 +156,7 @@ function wbFmtValue(entry, field) {
     case "italic": return Boolean(kind === "shape" ? s.label_italic : o.italic);
     case "underline": return Boolean(kind === "shape" ? s.label_underline : o.underline);
     case "strike": return Boolean(kind === "shape" ? s.label_strike : o.strike);
+    case "fit": return Boolean(s?.label_fit);
     case "font": return (kind === "shape" ? s.label_font : o.font_family) || "default";
     case "align": return (kind === "shape" ? s.label_align : o.align) || (kind === "shape" ? "center" : "left");
     //: Words in a shape sit in its middle and a text box's at its top unless
@@ -143,6 +164,9 @@ function wbFmtValue(entry, field) {
     //: centre text").
     case "valign": return (kind === "shape" ? s.label_valign : o.valign) || (kind === "shape" ? "middle" : "top");
     case "ink": return (kind === "shape" ? s.label_color : o.color) || "#1f2430";
+    case "lh": return (kind === "shape" ? s.label_lh : o.line_height) || "";
+    case "ls": return (kind === "shape" ? s.label_ls : o.letter_spacing) || "";
+    case "fillalpha": return Math.round((s?.fillOpacity ?? 1) * 100);
     default: return null;
   }
 }
@@ -542,7 +566,9 @@ function wbFormatSync() {
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
     ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
-    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"],
+    ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
+    ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
+    ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
   ]) {
     if (!takes.has(row)) continue;
     const el = document.getElementById(id);
@@ -570,6 +596,7 @@ function wbFormatSync() {
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
+  if (takes.has("fillstyle")) wbFmtShowFillAlpha(mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -581,6 +608,7 @@ function wbFormatSync() {
     document.getElementById("wb-fmt-italic")?.setAttribute("aria-pressed", pressed("italic", true));
     document.getElementById("wb-fmt-underline")?.setAttribute("aria-pressed", pressed("underline", true));
     document.getElementById("wb-fmt-strike")?.setAttribute("aria-pressed", pressed("strike", true));
+    if (takes.has("fit")) document.getElementById("wb-fmt-fit")?.setAttribute("aria-pressed", pressed("fit", true));
     const fontField = document.getElementById("wb-fmt-font");
     if (fontField && document.activeElement !== fontField) wbFmtShowMixed(fontField, mixed("font"), wbFmtValue(first, "font"));
   }
@@ -822,7 +850,28 @@ onDomReady(() => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
     wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
   });
-  on("wb-fmt-flow", "change", (e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
+  //: A blank box is the default and clears the value; a number is clamped to the
+  //: server's bound. Setting a shadow's shape turns the shadow on, since an
+  //: offset on an item with no shadow shows nothing.
+  const boxNumber = (el, min, max) => (el.value === "" ? undefined : Math.max(min, Math.min(max, Math.round(Number(el.value) || 0))));
+  for (const [id, key, min, max, word] of [["wb-fmt-shx", "shadow_x", -60, 60, "across"], ["wb-fmt-shy", "shadow_y", -60, 60, "down"], ["wb-fmt-shb", "shadow_blur", 0, 60, "blur"]]) {
+    on(id, "change", (e) => {
+      const value = boxNumber(e.target, min, max);
+      wbFmtApply("shadowset", () => ({ [key]: value, shadow: true }), value === undefined ? `Shadow ${word} default.` : `Shadow ${word} ${value}.`);
+    });
+  }
+  on("wb-fmt-pad", "change", (e) => {
+    const value = boxNumber(e.target, 0, 80);
+    wbFmtApply("pad", () => ({ pad: value }), value === undefined ? "Padding default." : `Padding ${value}px.`);
+  });
+  for (const corner of [0, 1, 2, 3]) {
+    on(`wb-fmt-r${corner}`, "change", () => {
+      const radii = [0, 1, 2, 3].map((i) => boxNumber(document.getElementById(`wb-fmt-r${i}`), 0, 200));
+      const set = radii.some((r) => r !== undefined);
+      wbFmtApply("radii", () => ({ radii: set ? radii.map((r) => r ?? 0) : undefined }), set ? "Corner radii set." : "Corner radii default.");
+    });
+  }
+  on("wb-fmt-flow", "change",(e) => wbFmtApply("flow", () => ({ flow: e.target.checked || undefined }), e.target.checked ? "Flow on." : "Flow off."));
   on("wb-fmt-dash", "change", (e) => wbFmtApply("dash", () => ({ dash: e.target.value === "solid" ? undefined : e.target.value }), `Line ${e.target.value}.`));
   on("wb-fmt-fill-on", "change", (e) => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
@@ -866,6 +915,14 @@ onDomReady(() => {
   on("wb-fmt-alpha", "change", (e) => {
     const pct = Math.max(10, Math.min(100, Number(e.target.value) || 100));
     wbFmtApply("alpha", () => ({ alpha: pct >= 100 ? undefined : pct / 100 }), `Opacity ${pct}%.`);
+  });
+  on("wb-fmt-fillalpha", "input", (e) => {
+    const out = document.getElementById("wb-fmt-fillalpha-out");
+    if (out) out.textContent = `${e.target.value}%`;
+  });
+  on("wb-fmt-fillalpha", "change", (e) => {
+    const pct = Math.max(5, Math.min(100, Number(e.target.value) || 100));
+    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch" && wbFmtSketch(entry).fill ? { fillOpacity: pct / 100 } : null), `Fill ${pct}% solid.`);
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
@@ -937,6 +994,17 @@ onDomReady(() => {
       wbFmtApply("text", textPatch(shapeKey, objectKey, next || undefined), `${word} ${next ? "on" : "off"}.`);
     });
   }
+  on("wb-fmt-lh", "change", (e) => {
+    const raw = Number(e.target.value);
+    const lh = raw > 0 ? Math.max(0.8, Math.min(3, Math.round(raw * 20) / 20)) : undefined;
+    wbFmtApply("text", textPatch("label_lh", "line_height", lh), lh ? `Line spacing ${lh}.` : "Line spacing automatic.");
+  });
+  on("wb-fmt-ls", "change", (e) => {
+    const raw = Number(e.target.value);
+    const ls = raw ? Math.max(-5, Math.min(30, Math.round(raw * 2) / 2)) : undefined;
+    wbFmtApply("text", textPatch("label_ls", "letter_spacing", ls), ls ? `Letter spacing ${ls}px.` : "Letter spacing normal.");
+  });
+  on("wb-fmt-fit", "click", () => wbToggleLabelFit());
   on("wb-fmt-align", "click", (e) => {
     const button = e.target.closest("[data-align]");
     if (!button) return;
@@ -977,9 +1045,17 @@ onDomReady(() => {
 //: text box is one step on the stack and an item with no text of its own is
 //: skipped.
 const WB_TEXT_LOOK_KEYS = {
-  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign"],
-  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign"],
+  shape: ["label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_fit", "label_lh", "label_ls"],
+  text: ["font_size", "color", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing"],
 };
+
+//: Shrink to fit, on or off for every selected shape as one step: on unless
+//: every one of them already shrinks.
+function wbToggleLabelFit() {
+  const shapes = wbFmtEntries().filter((e) => wbFmtKind(e) === "shape");
+  const next = !shapes.length || !shapes.every((e) => wbFmtValue(e, "fit"));
+  return wbFmtApply("fit", () => ({ label_fit: next || undefined }), next ? "The text shrinks to fit the shape." : "The text keeps its size.");
+}
 
 function wbClearTextFormat() {
   return wbFmtApply("text", (entry, kind) => {
@@ -1027,34 +1103,37 @@ function wbTurnSelection(degrees = 90) {
   }).then(() => wbScheduleRender());
 }
 
-//: Remove from group: the selected members leave their group, and a group
-//: left with one member is no group (a lone member would still pull a click
-//: onto itself alone).
+//: Remove from group: the selected members leave the innermost group they
+//: are in (groups nest, `wbGroupChain`), and a group left with one member is
+//: no group (a lone member would still pull a click onto itself alone).
 function wbRemoveFromGroup() {
   return wbRecordGesture(async () => {
-    const save = (kind, item) => (kind === "sketch" ? wbSaveSketchProps(item, {}) : kind === "node" ? wbSaveNode(item) : wbSaveObject(item));
     const leaving = wbFmtEntries().filter((e) => e.item.group_id);
     if (!leaving.length) return;
     for (const e of leaving) {
-      e.item.group_id = null;
-      await save(e.kind, e.item);
+      const chain = wbGroupChain(e.item);
+      chain.pop();
+      e.item.group_id = chain.length ? chain.join(WB_GROUP_SEP) : null;
+      await wbSaveGroupMember(e.kind, e.item);
     }
-    const members = new Map();
-    for (const kind of ["sketch", "node", "object"]) {
-      for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (!item.group_id) continue;
-        if (!members.has(item.group_id)) members.set(item.group_id, []);
-        members.get(item.group_id).push([kind, item]);
-      }
-    }
-    for (const list of members.values()) {
-      if (list.length !== 1) continue;
-      list[0][1].group_id = null;
-      await save(list[0][0], list[0][1]);
-    }
+    await wbDropLoneGroups();
     wbAnnounce("Removed from the group.");
     wbUpdateContextBar();
   });
+}
+
+//: Each group id held by one item only is taken off it.
+async function wbDropLoneGroups() {
+  const all = wbItemsWithGroupPrefix([]);
+  const count = new Map();
+  for (const { item } of all) for (const seg of wbGroupChain(item)) count.set(seg, (count.get(seg) || 0) + 1);
+  for (const { kind, item } of all) {
+    const chain = wbGroupChain(item);
+    const kept = chain.filter((seg) => count.get(seg) > 1);
+    if (kept.length === chain.length) continue;
+    item.group_id = kept.length ? kept.join(WB_GROUP_SEP) : null;
+    await wbSaveGroupMember(kind, item);
+  }
 }
 
 //: Copy size and Paste size (draw.io's Alt+Shift+F and V): the width and height
@@ -1095,6 +1174,33 @@ function wbAutoSizeFactors(text, area) {
   return { sx: grow(text.w, area.w), sy: grow(text.h, area.h) };
 }
 
+//: One shape grown until its words fit (never shrinks), from its top-left
+//: corner, keeping its proportions: the words wrap to the shape's width, so
+//: growing only the height made a diamond 733px tall for one sentence; both
+//: sides grow by the root of what is missing and the fit is measured again
+//: (a few rounds at most). Returns whether it changed. Run by the command
+//: and, on its own, when a label is typed into a shape: 80 characters in a
+//: 100x60 rectangle used to be drawn 160px tall across the border.
+async function wbGrowShapeToLabel(sketch) {
+  let changed = false;
+  for (let round = 0; round < 4; round += 1) {
+    const group = document.querySelector(`.sketch-group[data-id="${sketch.id}"]`);
+    const label = group?.querySelector(":scope > .sketch-label");
+    const placed = label ? wbShapeLabelPlace(group, label) : null;
+    const parsed = wbSketchParsedData(sketch);
+    const bbox = parsed?.d ? wbPathBBox(parsed.d) : null;
+    if (!placed || !bbox) break;
+    const words = label.getBBox();
+    const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
+    if (sx === 1 && sy === 1) break;
+    const f = Math.max(sx, Math.sqrt(sy), 1.05);
+    await wbSaveSketchD(sketch, wbTransformPathD(parsed.d, { sx: f, sy: f, anchorX: bbox.minX, anchorY: bbox.minY }));
+    changed = true;
+    renderWhiteboardNow();
+  }
+  return changed;
+}
+
 //: Grow to fit: a shape taller (or wider, for one long word) until its words
 //: fit; a text box or a note card taller until its text does. Never shrinks.
 function wbAutoSizeSelection() {
@@ -1103,16 +1209,7 @@ function wbAutoSizeSelection() {
     for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
       const kind = wbFmtKind(e);
       if (kind === "shape") {
-        const group = document.querySelector(`.sketch-group[data-id="${e.id}"]`);
-        const label = group?.querySelector(":scope > .sketch-label");
-        const placed = label ? wbShapeLabelPlace(group, label) : null;
-        if (!placed) continue;
-        const words = label.getBBox();
-        const { sx, sy } = wbAutoSizeFactors({ w: words.width, h: words.height }, placed.area);
-        const parsed = wbSketchParsedData(e.item);
-        if (sx === 1 && sy === 1) continue;
-        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, { sx, sy, anchorX: e.bbox.minX, anchorY: e.bbox.minY }));
-        grown += 1;
+        if (await wbGrowShapeToLabel(e.item)) grown += 1;
       } else if (kind === "text" || kind === "note") {
         const el = wbItemElement(e.kind, e.id);
         if (!el) continue;
@@ -1122,8 +1219,7 @@ function wbAutoSizeSelection() {
         //: scroll height plus the box's chrome. (`wbCardFitHeight` opens a
         //: note card up the same way; at phone width its answer for a text
         //: box was the clipped height.)
-        const words = el.querySelector(".wb-text-content");
-        const fit = words ? Math.ceil(words.scrollHeight) + Math.max(0, el.offsetHeight - words.offsetHeight) : wbCardFitHeight(el);
+        const fit = el.querySelector(".wb-text-content") ? wbTextFitHeight(el) : wbCardFitHeight(el);
         if (!(fit > current + 1)) continue;
         e.item.height = Math.round(fit);
         if (e.kind === "node") await wbSaveNode(e.item);
@@ -1298,6 +1394,110 @@ function wbTableCells(d) {
   return cells.map((row) => (Array.isArray(row) ? row.map((c) => String(c ?? "")) : [""]));
 }
 
+//: **A table's column widths** (wb5): `data.col_widths`, one relative weight
+//: per column with a mean of 1, so the box's width times a weight over the
+//: column count is that column's width. Absent, or not one weight per column,
+//: reads as equal, so a table made before this is unchanged.
+const WB_TABLE_WEIGHT_MIN = 0.25;
+const WB_TABLE_WEIGHT_MAX = 6;
+
+function wbTableWeights(d) {
+  const cols = wbTableCells(d)[0].length;
+  const w = d.data?.col_widths;
+  const ok = Array.isArray(w) && w.length === cols && w.every((n) => Number.isFinite(n) && n > 0);
+  return ok ? w : Array(cols).fill(1);
+}
+
+//: The weights with column `c` scaled by `factor`, held to the least and most
+//: a column may take and scaled back to a mean of 1 (so the others give way
+//: and the table keeps its width). `null` when nothing would change.
+function wbTableResizeColumn(weights, c, factor) {
+  const next = weights.map((n, i) => (i === c ? Math.min(WB_TABLE_WEIGHT_MAX, Math.max(WB_TABLE_WEIGHT_MIN, n * factor)) : n));
+  const mean = next.reduce((a, n) => a + n, 0) / next.length;
+  const out = next.map((n) => Math.round((n / mean) * 1000) / 1000);
+  return out.every((n, i) => Math.abs(n - weights[i]) < 0.001) ? null : out;
+}
+
+//: Where each column starts, as a share of the width: [0, ..., 1].
+function wbTableColumnEdges(weights) {
+  const sum = weights.reduce((a, n) => a + n, 0);
+  let at = 0;
+  return [0, ...weights.map((n) => (at += n / sum))];
+}
+
+//: **A text box, a sticky or a table, as the export draws it.** The export
+//: drew a text box as its words alone and left a table out of the file, so a
+//: yellow sticky came out as dark text on the board's white and a table as
+//: nothing (SVG, PNG and PDF all read the one SVG). Paint is read off the
+//: drawn element, as a map topic's is, so the theme, the paper and the corners
+//: it really wears travel; an item culled off screen falls back to its data.
+function wbSvgRoundedPath(w, h, radii) {
+  const [a, b, c, d] = radii.map((r) => Math.max(0, Math.min(Number(r) || 0, w / 2, h / 2)));
+  return `M${a} 0H${w - b}A${b} ${b} 0 0 1 ${w} ${b}V${h - c}A${c} ${c} 0 0 1 ${w - c} ${h}H${d}A${d} ${d} 0 0 1 0 ${h - d}V${a}A${a} ${a} 0 0 1 ${a} 0Z`;
+}
+
+function wbSvgBoxRadii(el, data, w, h) {
+  if (!el) return Array.isArray(data?.radii) ? data.radii : [6, 6, 6, 6];
+  const style = getComputedStyle(el);
+  const px = (v, side) => (/%$/.test(v) ? (parseFloat(v) / 100) * side : parseFloat(v) || 0);
+  return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map((corner) => px(style[`border${corner}Radius`], Math.min(w, h)));
+}
+
+function wbSvgBoxBackdrop(el, data, w, h) {
+  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
+  //: A sticky's paper can be a gradient, which has no background colour to read.
+  const fill = paint.fill !== "none" ? paint.fill : paper;
+  if (fill === "none" && !paint.edge) return "";
+  const edge = paint.edge ? ` stroke="${wbSvgEscape(paint.edge)}" stroke-width="1.5"` : "";
+  return `<path d="${wbSvgRoundedPath(w, h, wbSvgBoxRadii(el, data, w, h))}" fill="${wbSvgEscape(fill)}"${edge} />`;
+}
+
+//: **A sticky's folded corner, as the export draws it.** The board paints
+//: it as `::after` (a square in the bottom-right, a hard-stopped gradient:
+//: the board's ground on the outer half, the paper a shade darker on the
+//: inner), so the file had a square-cornered sheet. The two colours are read
+//: off the gradient the browser computed, so the theme and the paper travel;
+//: a sticky with the fold turned off draws none.
+function wbSvgFoldColours(gradient) {
+  const stops = [...String(gradient || "").matchAll(/(rgba?\([^)]*\)|color\([^)]*\))\s+50%/g)].map((m) => m[1]);
+  return stops.length === 2 ? stops : null;
+}
+
+function wbSvgStickyFold(el, w, h) {
+  if (!el?.classList.contains("wb-sticky") || el.classList.contains("wb-no-fold")) return "";
+  const fold = getComputedStyle(el, "::after");
+  const size = parseFloat(fold.width) || 0;
+  const colours = size > 0 && fold.content !== "none" ? wbSvgFoldColours(fold.backgroundImage) : null;
+  const [cut, paper] = (colours || []).map((c) => wbSvgEscape(wbExportColour(c) || c));
+  if (!colours || size > w || size > h) return "";
+  return `<path d="M${w - size} ${h}H${w}V${h - size}Z" fill="${cut}" />` +
+    `<path d="M${w - size} ${h - size}V${h}L${w} ${h - size}Z" fill="${paper}" />`;
+}
+
+function wbSvgTableCell(paint, text, box, size) {
+  const edge = wbSvgEscape(paint.edge || "#9aa3b5");
+  const rect = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${wbSvgEscape(paint.fill)}" stroke="${edge}" stroke-width="1" />`;
+  if (!text) return rect;
+  const lines = wbSvgWrapLines(text, box.w - 12, Math.max(1, Math.floor(box.h / (size * 1.25))), size * 0.55);
+  return rect + wbSvgText(lines, box.x + 6, box.y + size + 4, { fontSize: size, fill: paint.ink, lineHeight: size * 1.25 });
+}
+
+function wbSvgTable(el, obj) {
+  const cells = wbTableCells(obj);
+  const edges = wbTableColumnEdges(wbTableWeights(obj));
+  const box = { h: obj.height / cells.length };
+  const plain = { fill: "#ffffff", edge: "#9aa3b5", ink: "#1f2430" };
+  const cellEl = (r) => el?.querySelector(`.wb-table-cell[data-r="${Math.min(r, cells.length - 1)}"]`);
+  const body = (cellEl(1) && wbExportPaint(cellEl(1))) || plain;
+  const head = obj.data?.header ? (cellEl(0) && wbExportPaint(cellEl(0))) || { ...plain, fill: "#eef1f6" } : body;
+  const size = parseFloat(cellEl(1) && getComputedStyle(cellEl(1)).fontSize) || 14;
+  return cells.map((row, r) => row.map((text, c) => {
+    const x = edges[c] * obj.width;
+    return wbSvgTableCell(r === 0 ? head : body, text, { ...box, x, w: edges[c + 1] * obj.width - x, y: r * box.h }, size);
+  }).join("")).join("");
+}
+
 function wbBuildTable(el, d) {
   el.append("div").attr("class", "wb-table-grid").attr("role", "grid").attr("aria-label", "Table")
     .on("pointerdown", (event) => {
@@ -1319,10 +1519,11 @@ function wbPaintTable(node, d) {
   const grid = node.querySelector(".wb-table-grid");
   if (!grid || grid.querySelector("[contenteditable='true']")) return;
   const cells = wbTableCells(d);
-  const key = JSON.stringify([cells, Boolean(d.data?.header)]);
+  const weights = wbTableWeights(d);
+  const key = JSON.stringify([cells, Boolean(d.data?.header), weights]);
   if (grid.dataset.key === key) return;
   grid.dataset.key = key;
-  grid.style.gridTemplateColumns = `repeat(${cells[0].length}, minmax(0, 1fr))`;
+  grid.style.gridTemplateColumns = weights.map((n) => `minmax(0, ${n}fr)`).join(" ");
   grid.style.gridTemplateRows = `repeat(${cells.length}, minmax(0, 1fr))`;
   grid.classList.toggle("has-header", Boolean(d.data?.header));
   grid.replaceChildren(...cells.flatMap((row, r) => row.map((text, c) => {
@@ -1341,7 +1542,7 @@ async function wbInsertTable(rows = 3, cols = 3) {
   const w = cols * WB_TABLE_COL_W;
   const h = rows * WB_TABLE_ROW_H;
   const cells = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ""));
-  const made = await wbCreateObject("table", { cells, header: true }, cx - w / 2, cy - h / 2, w, h, 2);
+  const made = await wbCreateObject("table", { cells, header: true }, cx - w / 2, cy - h / 2, w, h);
   if (!made) return null;
   clearWbSelection();
   wbHandleItemClick("object", made.id, { shiftKey: false });
@@ -1350,10 +1551,15 @@ async function wbInsertTable(rows = 3, cols = 3) {
 }
 
 //: Writes new cells (and a new size) as one Undo step.
-async function wbSetTable(d, cells, size = null, said = "") {
+//: `widths`: the column weights to keep (undefined leaves them, null clears them).
+async function wbSetTable(d, cells, size = null, said = "", widths = undefined) {
   if (!d || wbIsLocked("object", d)) return;
   wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
   d.data = { ...d.data, cells };
+  if (widths !== undefined) {
+    if (widths) d.data.col_widths = widths;
+    else delete d.data.col_widths;
+  }
   if (size) Object.assign(d, size);
   await wbSaveObject(d);
   wbScheduleRender();
@@ -1431,10 +1637,38 @@ function wbTableReshape(d, axis, at, remove) {
   } else {
     next = cells.map((row) => (remove ? row.filter((_, i) => i !== at) : [...row.slice(0, at), "", ...row.slice(at)]));
   }
-  const share = axis === "row" ? d.height / rows : d.width / cols;
+  //: A column takes the width it has (a removed one gives up its own), a new
+  //: one an average share; the weights go back to a mean of 1 so the others
+  //: keep their pixels.
+  const weights = wbTableWeights(d);
+  const total = weights.reduce((a, n) => a + n, 0);
+  const share = axis === "row" ? d.height / rows : remove ? (d.width * weights[at]) / total : d.width / cols;
   const size = axis === "row" ? { height: Math.max(WB_TABLE_ROW_H / 2, d.height + (remove ? -share : share)) } : { width: Math.max(WB_TABLE_COL_W / 2, d.width + (remove ? -share : share)) };
+  let widths;
+  if (axis === "col" && Array.isArray(d.data?.col_widths)) {
+    const grown = remove ? weights.filter((_, i) => i !== at) : [...weights.slice(0, at), total / cols, ...weights.slice(at)];
+    const mean = grown.reduce((a, n) => a + n, 0) / grown.length;
+    widths = grown.map((n) => Math.round((n / mean) * 1000) / 1000);
+  }
   const word = axis === "row" ? "Row" : "Column";
-  return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`);
+  return wbSetTable(d, next, size, `${word} ${remove ? "removed" : "added"}.`, widths);
+}
+
+//: The column-width rows of the item menu: a quarter wider or narrower at the
+//: cell last pressed (the others give way, the table keeps its width), and
+//: back to equal once any has been set.
+function wbTableWidthRows(d, cells, c, at) {
+  const here = at ? "The column of the cell you pressed" : "The last column; press a cell first to pick another";
+  const set = (factor, said) => () => {
+    const next = wbTableResizeColumn(wbTableWeights(d), c, factor);
+    if (next) wbSetTable(d, wbTableCells(d), null, said, next);
+  };
+  const rows = [
+    ["Widen this column", `${here}, a quarter wider`, set(1.25, "Column widened.")],
+    ["Narrow this column", `${here}, a fifth narrower`, set(0.8, "Column narrowed.")],
+  ];
+  if (Array.isArray(d.data?.col_widths)) rows.push(["Equal column widths", "Every column the same share again", () => wbSetTable(d, cells, null, "Columns equal.", null)]);
+  return rows;
 }
 
 //: The table's rows for the item menu: around the cell last pressed when it
@@ -1452,6 +1686,7 @@ function wbTableMenuRows(d) {
     ["Add a column to the left", `Before ${here} column`, () => wbTableReshape(d, "col", c, false)],
     [at ? "Delete this row" : "Delete the last row", at ? "The row of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "row", r, true)],
     [at ? "Delete this column" : "Delete the last column", at ? "The column of the cell you pressed" : "Press a cell first to pick another", () => wbTableReshape(d, "col", c, true)],
+    ...wbTableWidthRows(d, cells, c, at),
     [d.data?.header ? "Plain first row" : "First row as a header", "Bold on a tint, or like the rest", async () => {
       wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
       d.data = { ...d.data, header: !d.data?.header || undefined };
@@ -1663,10 +1898,19 @@ async function wbOpenColourMenu(input) {
     return;
   }
   const menu = wbColourMenu();
-  //: Fill and Border tabs reopen the menu on the other field, which can be a
-  //: hidden well with no box; placing against it threw the panel to the
-  //: top left. The field it was open on keeps the anchor in that case.
-  const prevOpener = menu.classList.contains("hidden") ? null : menu._escapedOpener;
+  //: **A Fill or Border tab keeps the panel where it is** (the 22-10 bug doc,
+  //: "it moved the popup panel"). The tabs reopen the menu on the other
+  //: field, and placing it against that field moved it: 310px left from the
+  //: rail's ink to the tool's fill, and to the top left when the other well
+  //: had no box (wb1025-colourtabs.js). The 0.6.1 fallback only caught the
+  //: second case. A press on some other well still places it there.
+  const open = !menu.classList.contains("hidden");
+  const partner = open && wbColourState.input ? wbColourPairOf(wbColourState.input) : null;
+  const own = input.getBoundingClientRect();
+  //: And a field with no box (hidden with its group) never anchors it: that
+  //: is a panel at 0,0.
+  const keepAt = open && ((partner && (partner.fillEl === input || partner.borderEl === input)) || !(own.width || own.height))
+    ? menu.getBoundingClientRect() : null;
   wbStopEyedrop();
   wbColourState.input = input;
   const name = wbColourName(input);
@@ -1793,8 +2037,15 @@ async function wbOpenColourMenu(input) {
   menu.classList.remove("hidden");
   input.setAttribute("aria-expanded", "true");
   input.classList.add("wb-colour-target");
-  const anchorBox = input.getBoundingClientRect();
-  placeEscapedMenu(menu, anchorBox.width || anchorBox.height || !prevOpener ? input : prevOpener);
+  if (keepAt) {
+    //: The same corner, pulled back inside the window if the other field's
+    //: rows made the panel taller.
+    const box = menu.getBoundingClientRect();
+    menu.style.left = `${Math.round(Math.max(8, Math.min(keepAt.left, window.innerWidth - 8 - box.width)))}px`;
+    menu.style.top = `${Math.round(Math.max(8, Math.min(keepAt.top, window.innerHeight - 8 - box.height)))}px`;
+  } else {
+    placeEscapedMenu(menu, input);
+  }
   (menu.querySelector('[role="radio"][tabindex="0"]') || menu.querySelector("button"))?.focus({ preventScroll: true });
 }
 

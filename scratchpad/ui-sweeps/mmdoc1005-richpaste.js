@@ -32,6 +32,24 @@ const CASES = [
     want: "const x = 1;",
   },
   {
+    name: "a lone bold span (dog3d-1026:7)",
+    html: '<span style="font-weight:700">Heavy words</span>',
+    plain: "Heavy words",
+    want: "**Heavy words**",
+  },
+  {
+    name: "a lone italic span",
+    html: '<span style="font-style:italic">Soft words</span>',
+    plain: "Soft words",
+    want: "*Soft words*",
+  },
+  {
+    name: "a code copy with a bold token stays plain",
+    html: '<div style="font-family:Consolas,monospace;white-space:pre;"><div><span style="font-weight:bold;color:#569cd6;">const</span> x = 1;</div></div>',
+    plain: "const x = 1;",
+    want: "const x = 1;",
+  },
+  {
     name: "ctrl+shift+v stays plain",
     shift: true,
     html: "<h1>Big</h1><p><b>bold</b></p>",

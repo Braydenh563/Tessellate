@@ -470,15 +470,15 @@ def _add_document_nodes(
                     "graph_pin_y": document.graph_pin_y,
                 }
             )
-        for link in doc_links:
-            if link.document_id in documents:
-                edges.append(
-                    {
-                        "source": f"document:{link.document_id}",
-                        "target": link.entry_id,
-                        "kind": "document",
-                    }
-                )
+        edges.extend(
+            {
+                "source": f"document:{link.document_id}",
+                "target": link.entry_id,
+                "kind": "document",
+            }
+            for link in doc_links
+            if link.document_id in documents
+        )
 
 
 
@@ -1426,6 +1426,20 @@ class TopicSummaryBody(BaseModel):
     terms: list[Annotated[str, Field(max_length=200)]] = Field(default_factory=list, max_length=10)
 
 
+def _extractive_summary(session: Session, rows: list, readable: list, terms: list[str]) -> str:
+    """The no-model summary: shared terms, the date span, and the opening
+    lines of the two most-linked readable notes (a private note lends nothing)."""
+    stamps = [e.created_at for e in rows if e.created_at]
+    leads: list[str] = []
+    if readable:
+        index = paths.build_light(session)
+        ranked = sorted(readable, key=lambda e: (-paths.degree(index, e.id), e.id))
+        leads = [manager.plain_label(e.content, 60) for e in ranked[:2]]
+    return topic_finder.extractive_sentence(
+        len(rows), terms, min(stamps) if stamps else None, max(stamps) if stamps else None, leads
+    )
+
+
 @router.post("/graph/topics/summary")
 def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session)) -> dict:
     """One sentence about a topic's notes, on demand (GRAPH_PLAN KG6).
@@ -1445,14 +1459,13 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
         raise HTTPException(status_code=404, detail="Those notes could not be found.")
     readable = sorted((e for e in rows if not e.is_private), key=lambda e: e.id)
     key = tuple((e.id, str(e.updated_at or e.created_at)) for e in readable)
-    fallback = topic_finder.terms_sentence(len(rows), body.terms)
     with _cache_lock:
         hit = _summaries.get(key)
     if hit:
         return {"summary": hit, "source": "model", "cached": True}
     ollama = deps.get_ollama()
     if not readable or not ollama.is_running():
-        return {"summary": fallback, "source": "terms", "cached": False}
+        return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     lines = []
     for entry in readable[: topic_finder.SUMMARY_NOTES]:
         text = " ".join(manager.readable_content(entry).split())
@@ -1470,7 +1483,7 @@ def topic_summary(body: TopicSummaryBody, session: Session = Depends(get_session
     except Exception:  # noqa: BLE001  # any model failure reads as "no model"
         summary = ""
     if not summary:
-        return {"summary": fallback, "source": "terms", "cached": False}
+        return {"summary": _extractive_summary(session, rows, readable, body.terms), "source": "terms", "cached": False}
     summary = summary[:300]
     with _cache_lock:
         _summaries[key] = summary
@@ -1885,8 +1898,17 @@ def unpin_all_nodes(session: Session = Depends(get_session)) -> dict:
         .filter(Entry.is_deleted == False, Entry.graph_pin_x.is_not(None))  # noqa: E712
         .all()
     )
-    for entry in pinned:
-        entry.graph_pin_x = None
-        entry.graph_pin_y = None
+    held = (
+        session.query(Document)
+        .filter(Document.deleted_at.is_(None), Document.graph_pin_x.is_not(None))
+        .all()
+    )
+    # Every pin cleared, documents and nodes a filter hides included, so the
+    # Undo puts back exactly what this released (K9, K10).
+    released = [{"id": e.id, "x": e.graph_pin_x, "y": e.graph_pin_y} for e in pinned]
+    released += [{"id": f"document:{d.id}", "x": d.graph_pin_x, "y": d.graph_pin_y} for d in held]
+    for row in (*pinned, *held):
+        row.graph_pin_x = None
+        row.graph_pin_y = None
     session.commit()
-    return {"unpinned": len(pinned)}
+    return {"unpinned": len(released), "released": released}

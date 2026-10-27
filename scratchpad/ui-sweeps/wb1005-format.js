@@ -107,14 +107,65 @@ const W = Number(process.env.W || 1440);
   check("the two-item ones are greyed with one item", arrange.muted.includes("align-left") && arrange.muted.includes("group"), arrange.muted);
 
   // Keyboard: the tabs walk with the arrows; Escape closes and returns focus.
-  await page.focus("#wb-format-tab-arrange");
+  await page.click("#wb-format-tab-data");
   await page.keyboard.press("ArrowRight");
   const walked = await page.evaluate(() => document.activeElement?.id);
-  check("Right from the last tab wraps to the first", walked === "wb-format-tab-style", walked);
+  check("Right from the last tab (Data) wraps to the first", walked === "wb-format-tab-style", walked);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(300);
   const closed = await page.evaluate(() => ({ hidden: document.getElementById("wb-format").classList.contains("hidden"), focus: document.activeElement?.id || document.activeElement?.tagName }));
   check("Escape closes the panel and gives the focus to the board", closed.hidden && closed.focus === "whiteboard-container", closed);
+
+  // The box rows (wb5): per-corner radius, padding, shadow offset and blur on a text box.
+  const boxIds = await page.evaluate(async (bid) => {
+    const mk = (content, x) => apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ board_id: bid, kind: "text", x, y: 320, width: 220, height: 100, data: { content } }) });
+    const a = await mk("one", 100), b = await mk("two", 400);
+    await fetchWhiteboardState();
+    renderWhiteboardNow();
+    selectWbItem("object", a.id);
+    return { a: a.id, b: b.id };
+  }, board.id);
+  await page.waitForTimeout(500);
+  await page.keyboard.press("Control+Shift+P");
+  await page.waitForTimeout(600);
+  await page.click("#wb-format-tab-style");
+  await page.waitForTimeout(300);
+  const setBox = async (field, value) => { await page.fill(`#${field}`, String(value)); await page.dispatchEvent(`#${field}`, "change"); await page.waitForTimeout(450); };
+  const boxCss = (oid) => page.evaluate((i) => {
+    const c = getComputedStyle(document.querySelector(`#wb-html-layer .wb-object[data-id="${i}"]`));
+    return { radius: c.borderRadius, pad: c.padding, filter: c.filter };
+  }, oid);
+  await setBox("wb-fmt-r0", 0); await setBox("wb-fmt-r1", 30); await setBox("wb-fmt-r2", 10); await setBox("wb-fmt-r3", 4);
+  await setBox("wb-fmt-pad", 30);
+  await setBox("wb-fmt-shx", 8); await setBox("wb-fmt-shy", 10); await setBox("wb-fmt-shb", 12);
+  let css = await boxCss(boxIds.a);
+  check("four corner radii draw as set (top-left first, clockwise)", css.radius === "0px 30px 10px 4px", css);
+  check("padding draws as set", css.pad === "30px", css);
+  check("shadow offset and blur draw as set, and turn the shadow on", css.filter.includes("8px 10px 12px"), css);
+  await page.evaluate(() => wbUndo());
+  await page.waitForTimeout(800);
+  css = await boxCss(boxIds.a);
+  check("Undo takes back the last row only (blur 12 to the default 4)", css.filter.includes("8px 10px 4px") && css.pad === "30px", css);
+  await page.evaluate(() => wbRedo());
+  await page.waitForTimeout(800);
+  await page.evaluate(() => document.getElementById("wb-copy-style").click());
+  await page.evaluate((id) => selectWbItem("object", id), boxIds.b);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => wbPasteCopiedStyle());
+  await page.waitForTimeout(900);
+  css = await boxCss(boxIds.b);
+  check("Copy style and Paste style carry radii, padding and shadow", css.radius === "0px 30px 10px 4px" && css.pad === "30px" && css.filter.includes("8px 10px 12px"), css);
+  await page.evaluate(async () => { await fetchWhiteboardState(); renderWhiteboardNow(); });
+  await page.waitForTimeout(500);
+  css = await boxCss(boxIds.b);
+  check("they come back from the server after a refetch", css.radius === "0px 30px 10px 4px" && css.pad === "30px", css);
+  const fit = await page.evaluate(() => {
+    const p = document.getElementById("wb-format").getBoundingClientRect();
+    const wide = [...document.querySelectorAll("#wb-format .wb-fmt-quad input")].filter((i) => i.offsetParent && i.getBoundingClientRect().right > p.right + 1);
+    return { inside: p.left >= 0 && p.right <= innerWidth && p.bottom <= innerHeight, wide: wide.map((i) => i.id), hs: document.documentElement.scrollWidth - innerWidth };
+  });
+  check("the panel with the new rows stays inside the view with no sideways scroll", fit.inside && !fit.wide.length && fit.hs <= 0, fit);
+  await page.keyboard.press("Escape");
 
   // A map topic says where its style lives.
   check("no console errors", errors.length === 0, errors);

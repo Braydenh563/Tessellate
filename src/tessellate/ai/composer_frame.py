@@ -165,29 +165,141 @@ def _lower(text: str) -> str:
     words = text.split()
     if len(words) > 1 and any(w[:1].isupper() for w in words[1:3]):
         return text
+    if words and any(c.isupper() for c in words[0][1:]):
+        return text  # "IaaS", "iPhone": a capital inside the word is its shape
     return text[:1].lower() + text[1:] if text[1:2].islower() else text
+
+
+#: What a note's first line is when it is a name: a heading's or bold
+#: marks, the colon after "Ice Breakers:", a split "Follow- Up" (INBOX 1420).
+_MARK = re.compile(r"[*_`]")
+_SPLIT_HYPHEN = re.compile(r"(?<=[A-Za-z])- (?=[A-Z][a-z])")
+_ARTICLE = re.compile(r"(?:the|a|an)\b", re.I)
+#: "Here are some refined, non-corny pickup ... starters that work ...": the
+#: words that present a list, and where the thing presented ends.
+_PRESENTING = re.compile(r"^(?:here(?:'s| is| are)|these are|this is|below are)\s+(?:some|a few|a list of|my|a|an)?\s*", re.I)
+_PRESENTED_END = re.compile(r"\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
+#: Where a long first sentence can end on a whole clause: "I had work today
+#: and a friend was sad | so I stayed with her".
+_CLAUSE_BREAK = re.compile(r"\s+(?:so|but|because|then|and then|which|and)\s+", re.I)
+#: "My uni days this week are Tuesday and Thursday": a sentence about
+#: something is named by its subject, "the note on your uni days this week".
+_SUBJECT_VERB = re.compile(r"^((?:[\w'-]+\s+){0,5}?[\w'-]+)\s+(?:is|are|was|were|means|refers to)\b", re.I)
+_EMOTICON_END = re.compile(r"\s*(?:[:;=][-']?[()DPpOo/|\\]+|<3)\s*$")
+#: The longest first clause a name may quote whole.
+_NAME_WORDS = 7
+_QUOTE_WORDS = 12
+
+
+def _plain(text: str) -> str:
+    return _SPLIT_HYPHEN.sub("-", _MARK.sub("", text)).strip()
+
+
+def _title_of(content: str) -> str:
+    """A first line that names the note ("# Trains", "**The Complete Social
+    Skills Guide**", "Ice Breakers:" over its list), or ""."""
+    lines = content.splitlines()
+    if len(lines) < 2 or not "".join(lines[1:]).strip():
+        return ""
+    first = lines[0].strip()
+    marked = bool(re.match(r"#{1,6}\s|(\*\*|__)\S.*\1:?$", first))
+    name = _plain(re.sub(r"^#{1,6}\s+", "", first)).rstrip(".").rstrip(":").strip()
+    return name if name and len(name.split()) <= (10 if marked else 6) else ""
+
+
+def _titled(title: str) -> str:
+    """"the Trains"; "The Complete Social Skills Guide" keeps its own article."""
+    return title if _ARTICLE.match(title) else f"the {title}"
+
+
+def _whole_clause(clause: str) -> str:
+    """The clause, or the whole part of it before a break, short enough to
+    name a note; "" when no whole part is short enough (never a cut)."""
+    words = clause.split()
+    if len(words) <= _QUOTE_WORDS:
+        return clause
+    for found in reversed(list(_CLAUSE_BREAK.finditer(clause))):
+        head = clause[: found.start()].strip()
+        if 3 <= len(head.split()) <= _QUOTE_WORDS:
+            return head
+    return ""
+
+
+def _dated(note: dict) -> str:
+    raw = str(note.get("created_at") or "")[:10]
+    try:
+        from datetime import date
+
+        day = date.fromisoformat(raw)
+    except ValueError:
+        return "an untitled note"
+    return f"your note of {day.day} {day.strftime('%B')}"
+
+
+def _presented(body: str) -> str:
+    """"Here are some refined, non-corny pickup and conversation starters
+    that work ..." as "your non-corny pickup and conversation starters"."""
+    rest = _PRESENTING.sub("", body, count=1)
+    end = _PRESENTED_END.search(rest)
+    thing = (rest[: end.start()] if end else rest).strip(" ,;")
+    thing = thing.rsplit(",", 1)[-1].strip()
+    return f"your {thing}" if 1 <= len(thing.split()) <= _NAME_WORDS else ""
 
 
 def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     """A note as a list names it: its title, its own label, or what it is
-    about; quoted when it is an instruction ("go to the gym at 9pm")."""
+    about; quoted when it is an instruction ("go to the gym at 9pm") or a
+    sentence of the person's own; never a phrase cut mid-thought (1420)."""
     content = str(note.get("content") or "").strip()
-    first = content.splitlines()[0].strip().rstrip(".") if content else ""
-    #: A heading's own marks are not part of its name: "the # Trains" (1324).
-    first = re.sub(r"^#{1,6}\s+", "", first)
+    title = _title_of(content)
+    if title:
+        return _titled(title)
+    first = _first_line(content)
     head = _PREFIX.match(first)
     category = str(note.get("category") or "").lower()
     if head and len(head.group(1).split()) <= 5 and head.group(1).strip().lower() != category:
         return f"the {lower(head.group(1).strip())} note"
-    if not head and "\n" in content and len(first.split()) <= 6:
-        return f"the {first}"
     body = head.group(2) if head else first
+    return _named_by_subject(body, lower) or _named_by_clause(body, note, lower)
+
+
+def _first_line(content: str) -> str:
+    """The note's first line, plain, without a heading's marks or a closing emoticon."""
+    first = _plain(content.splitlines()[0]).rstrip(".") if content else ""
+    #: A heading's own marks are not part of its name: "the # Trains" (1324).
+    first = re.sub(r"^#{1,6}\s+", "", first)
+    return _EMOTICON_END.sub("", first).rstrip(".")
+
+
+def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001
+    """What the note presents, or the subject its first sentence defines; "" with neither."""
+    if _PRESENTING.match(body):
+        presented = _presented(body)
+        if presented:
+            return presented
+    sentence = re.sub(r",\s*however,", "", re.split(r"(?<=[.!?])\s", body, maxsplit=1)[0])
+    about = _SUBJECT_VERB.match(sentence)
+    if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you)\b", about.group(1), re.I):
+        return "the note on " + re.sub(r"\bmy\b", "your", lower(about.group(1)), flags=re.I)
+    return ""
+
+
+def _named_by_clause(body: str, note: dict, lower) -> str:  # noqa: ANN001
+    """The note's first clause: quoted when an instruction or the person's own sentence, else as a phrase."""
     clause = re.split(r"[,;.!?]", body, maxsplit=1)[0].strip()
     if _IMPERATIVE.match(clause):
         return "“" + lower(clause) + "”"
+    if re.match(r"i\b", clause, re.I):
+        #: The person's own sentence is quoted whole, never cut into a
+        #: different meaning ("I had work today and a friend").
+        whole = _whole_clause(clause)
+        return "“" + whole + "”" if whole else _dated(note)
     clause = _DOING.sub("", clause).strip() or clause
-    words = clause.split()
-    clause = " ".join(words[:7])
+    if len(clause.split()) > _NAME_WORDS:
+        whole = _whole_clause(clause)
+        if not whole or len(whole.split()) > _NAME_WORDS:
+            return _dated(note)
+        clause = whole
     if not re.match(r"(?:the|a|an|my|your)\b", clause, re.I):
         clause = lower(clause)
     return re.sub(r"^my\b", "your", clause, flags=re.I)
@@ -202,10 +314,12 @@ def _names(ids: list[int], by_id: dict[int, dict], lower) -> str:  # noqa: ANN00
 
 
 def _link_said(group: Group, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
+    """"You linked the Trains to the Lisbon note.", its own sentence, so the
+    group's line does not run on through a third "and" (INBOX 1420)."""
     if not group.links:
         return ""
     a, b = group.links[0]
-    return f"you linked {short_name(by_id[a], lower)} to {short_name(by_id[b], lower)}"
+    return f"You linked {short_name(by_id[a], lower)} to {short_name(by_id[b], lower)}."
 
 
 def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str:  # noqa: ANN001
@@ -215,20 +329,21 @@ def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str
     by_id = {n["id"]: n for n in notes}
     names = _names(group.ids, by_id, lower)
     if group.band == "loose":
-        alone = "a note of its own" if len(group.ids) == 1 else "each a note of its own"
-        return f"Also under {topic}, more loosely: {names}, {alone}."
+        return f"More loosely related to {topic}: {names}."
     linked = _link_said(group, by_id, lower)
     theme = f"your {group.name} notes" if group.name else "two of your notes" if len(group.ids) == 2 else "some of your notes"
     joined = "" if group.joined_by == "linked" else group.joined_by
-    if group.joined_by.startswith("share "):
+    if group.band == "closest" and topic == group.name:
+        #: "Closest to conversation, your conversation notes" said it twice.
+        line = f"closest of all are {theme}: {names}" + (f", {joined}" if joined else "")
+    elif group.joined_by.startswith("share "):
         line = f"{theme} {group.joined_by}: {names}"
     else:
         line = f"{theme} go together: {names}" + (f", {joined}" if joined else "")
-    if linked:
-        line += f", and {linked}"
-    lead = f"Closest to {topic}, " if group.band == "closest" else ""
-    line = lead + line
-    return line[:1].upper() + line[1:] + "."
+    if group.band == "closest" and topic != group.name:
+        line = f"Closest to {topic}, {line}"
+    line = line[:1].upper() + line[1:] + "."
+    return f"{line} {linked}" if linked else line
 
 
 def topic_words(question: str) -> str:

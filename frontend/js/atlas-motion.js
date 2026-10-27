@@ -177,7 +177,16 @@ function atlasRigRead(arm) {
 //: out, the forearm now turns up towards the head (a negative bend, down
 //: to `ATLAS_EL_UP`), most for a wave, a little for any lifted arm.
 const ATLAS_EL_UP = -70;
+//: **The bend reads the arm as it is drawn** (INBOX 1402, the owner: "arm
+//: positioning" like "a grumpy gangster"). The shoulder's target is
+//: unwound (`atlasRigFrame`, so a turn past 180 never spins the long way),
+//: and after a few big moves hers sat a whole turn round, -360 to -435
+//: degrees for an arm hanging at 0 to -75; read raw here, that raise
+//: folded the elbow its full 80 degrees, so her left forearm lay across
+//: her body in 14 of 15 moods (atlasrest1402.js, moods). The raise is
+//: taken in -180 to 180 first (180 itself kept: an arm straight up).
 function atlasRigGesture(arm, raise, buddy) {
+  raise = 180 - ((((180 - raise) % 360) + 360) % 360);
   const has = (c) => !!buddy && buddy.classList.contains(c);
   //: The turn of the bend goes over from in to up between 20 and 70
   //: degrees of raise, smoothly, so no target jumps on the way up.
@@ -430,7 +439,7 @@ function atlasRigFrame(rig, now) {
     let [elT] = atlasRigGesture(arm, live ? -at(ATLAS_RIG_DELAY.el)[1] * arm.sgn : raise, buddy);
     let [, wrT] = atlasRigGesture(arm, raise, buddy);
     let sh = shT;
-    if (walking && Math.abs(raise) < 35) {
+    if (walking && Math.abs(((((raise + 180) % 360) + 360) % 360) - 180) < 35) {
       //: Counter-phase: the right arm forward while the left is back.
       const ph = (now / 1000) * 2 * Math.PI * 1.3 + (arm.side === "r" ? 0 : Math.PI);
       const amp = rig.look === "masculine" ? 9 : 6;

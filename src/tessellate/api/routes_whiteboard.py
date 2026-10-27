@@ -49,6 +49,7 @@ router = APIRouter(prefix="/whiteboard", tags=["whiteboard"])
 #: `upload_media` produces (a uuid4 hex plus a short suffix) closes it at the
 #: door; the purge (`manager`) checks containment again.
 MEDIA_URL_RE = re.compile(r"^/media/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$")
+_APP_ROUTE_LINK = re.compile(r"^#/[a-z][a-z-]{0,30}(?:/[A-Za-z0-9_.%-]{1,120}){0,4}$")
 
 #: A sketch is a path list, not an image. Big enough for a page of scribble,
 #: small enough that a runaway client can't fill the disk one PUT at a time.
@@ -135,7 +136,7 @@ MAP_THEME_FIELDS: dict[str, frozenset | type] = {
     "align": frozenset({"left", "center", "right"}),
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "circle", "hexagon", "diamond", "cloud", "chevron", "underline"}),
     "spine": frozenset({"dashed", "none"}),
     "edge_style": frozenset({"curve", "elbow", "straight"}),
     "edge_dashed": bool,
@@ -166,7 +167,7 @@ MAP_LEVEL_FIELDS: dict[str, frozenset | type] = {
     "font_size": int,
     "bold": bool,
     "italic": bool,
-    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded"}),
+    "shape": frozenset({"pill", "rect", "ellipse", "none", "rounded", "circle", "hexagon", "diamond", "cloud", "chevron", "underline"}),
     "spine": frozenset({"dashed", "none", "solid"}),
     "fill": frozenset({"solid", "tint", "none"}),
     "edge_width": frozenset({"thin", "thick", "normal"}),
@@ -357,6 +358,10 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: **A table's column widths** (wb5): one relative weight per column, so
+    #: [2, 1, 1] is a first column twice the others and the box's width the
+    #: sum. Absent means equal; a length other than the columns is refused.
+    col_widths: list[Annotated[float, Field(ge=0.1, le=20)]] | None = Field(default=None, max_length=20)
     #: **Edit data** (draw.io's custom properties; canvasdepth2): up to 30
     #: named values on an item, edited in the Format panel's Data tab.
     props: dict[
@@ -393,7 +398,20 @@ class WhiteboardObjectData(BaseModel):
     #: Where the text sits up and down its box (the owner, 2026-10-10:
     #: "there's no way to vertically centre text"); absent is the top.
     valign: str | None = Field(default=None, pattern="^(middle|bottom)$")
+    #: Line spacing (a multiple of the text size) and the space between
+    #: letters in pixels (the Format panel's Text tab; WHITEBOARD_PLAN 1355).
+    line_height: float | None = Field(default=None, ge=0.8, le=3)
+    letter_spacing: float | None = Field(default=None, ge=-5, le=30)
     md: bool | None = None
+    #: The Format panel's box rows (WHITEBOARD_PLAN 1355, wb5): each corner's
+    #: radius in pixels as top-left, top-right, bottom-right, bottom-left; the
+    #: space between a text box's edge and its words; and the shadow's offset
+    #: and blur (the shadow switch itself is `shadow`). Absent is the default.
+    radii: list[Annotated[int, Field(ge=0, le=200)]] | None = Field(default=None, min_length=4, max_length=4)
+    pad: int | None = Field(default=None, ge=0, le=80)
+    shadow_x: int | None = Field(default=None, ge=-60, le=60)
+    shadow_y: int | None = Field(default=None, ge=-60, le=60)
+    shadow_blur: int | None = Field(default=None, ge=0, le=60)
     #: A map reference node's target: the note / document / file / bookmark id
     #: this node stands for. Only meaningful for `MAP_REFERENCE_KINDS`; a
     #: topic has nothing to point at and leaves it None.
@@ -459,13 +477,17 @@ class WhiteboardObjectData(BaseModel):
     #: four that can be had from a border-radius and a surface. Parallelogram,
     #: trapezoid, cloud and diamond want a clip-path that cuts into the box
     #: the label sits in, which at node size clips the label.
+    #: K31 (the owner: "more shape designs for the core idea nodes") added
+    #: `circle`, `hexagon`, `diamond` and `cloud` without that clip: the
+    #: shape is drawn behind the label and the label is held to its inner
+    #: box (library-lazy.css), so nothing is cut.
     #:
     #: `ellipse` arrived with the core node (item 177 names "rounded
     #: rectangle, pill, ellipse" as a core idea's own shape set) and is
     #: offered to every topic rather than only to a core one: a shape that
     #: appears and disappears from the picker depending on another toggle is
     #: a second rule to remember, and the three shapes are all just a radius.
-    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded)$")
+    shape: str | None = Field(default=None, pattern="^(pill|rect|ellipse|none|rounded|circle|hexagon|diamond|cloud|chevron|underline)$")
     #: A topic's effect (MINDMAP_PLAN §14.4's topic effects): a soft shadow
     #: or a glow in its branch colour; `none` keeps one topic plain on a
     #: level that has one.
@@ -614,6 +636,13 @@ class WhiteboardObjectData(BaseModel):
     #: waypoint dragged past an anchor turns the curve back on itself, which
     #: is a shape nobody asks for and a tangle nobody can undo by dragging.
     edge_slide: float | None = Field(default=None, ge=-0.45, le=0.45)
+    #: **Which sides that line joins** (K31, the owner: "I want to be able to
+    #: have more say in which sides the connections come from and to"):
+    #: `edge_from` is the parent's side it leaves, `edge_to` this topic's side
+    #: it enters. Unset is Auto, the side the layout picks, so a map made
+    #: before these existed draws exactly as it did.
+    edge_from: str | None = Field(default=None, pattern="^(top|right|bottom|left)$")
+    edge_to: str | None = Field(default=None, pattern="^(top|right|bottom|left)$")
     #: **A picture in a topic** (MINDMAP_PLAN.md §12.1 item 2's fourth,
     #: Coggle's text/link/image/icon). The url of something already uploaded
     #: through `/media/upload`, which is the path a board image, a note
@@ -698,8 +727,10 @@ class WhiteboardObjectData(BaseModel):
         if not text:
             return None
         lowered = text.lower()
-        if not lowered.startswith(("http://", "https://", "mailto:")):
-            raise ValueError("A topic's link must be an http, https or mailto address")
+        #: A note link from Link..., A note... is the app's own route hash
+        #: ("#/notes/12", `wbItemLink`); it was refused with 422 (review, 2026-10-27).
+        if not (lowered.startswith(("http://", "https://", "mailto:")) or _APP_ROUTE_LINK.match(text)):
+            raise ValueError("A link must be an http, https or mailto address, or a link to something in this notebook")
         return text
 
 
@@ -826,6 +857,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         )
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
+        if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
+            raise HTTPException(status_code=422, detail="A table needs one width for each of its columns.")
     elif body.kind in MAP_REFERENCE_KINDS and body.data.ref_id is None:
         # A reference node with nothing to reference is the map equivalent of
         # a card pointing at note 9999 (this module's own opening comment): it
@@ -1753,8 +1786,10 @@ def _map_branch_colors(
             colour = inherited
         if colour:
             colors[node_id] = colour
-        for child_id in reversed(children.get(node_id, [])):
-            stack.append((child_id, colour, depth + 1))
+        stack.extend(
+            (child_id, colour, depth + 1)
+            for child_id in reversed(children.get(node_id, []))
+        )
     return colors
 
 
@@ -1967,23 +2002,24 @@ def _preview_items(
 PREVIEW_ASPECT_RANGE = (0.5, 3.0)
 
 
-def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
-    """One preview row per card on the board."""
+def _card_label(entry: Entry | None) -> str:
+    """What is written on a card in a thumbnail: its note's title."""
     from tessellate.entry import manager
 
+    if entry is None or entry.is_private:
+        return ""
+    # A card *is* a note, so its own title (or first words) is what is written
+    # on it. A private note contributes its position and nothing else: the
+    # same rule the Connections block and the Library's file-usage chips follow.
+    text = manager.readable_content(entry)
+    return (manager.extract_title(text) or text.strip().split("\n")[0])[:PREVIEW_LABEL_CHARS]
+
+
+def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
+    """One preview row per card on the board."""
     rows: list[tuple] = []
     for node in db.scalars(select(WhiteboardNode).where(on(WhiteboardNode))):
-        entry = db.get(Entry, node.entry_id)
-        label = ""
-        if entry is not None and not entry.is_private:
-            # A card *is* a note, so its own title (or first words) is what
-            # is written on it. A private note contributes its position and
-            # nothing else: the same rule the Connections block and the
-            # Library's file-usage chips follow.
-            text = manager.readable_content(entry)
-            label = (manager.extract_title(text) or text.strip().split("\n")[0])[
-                :PREVIEW_LABEL_CHARS
-            ]
+        label = _card_label(db.get(Entry, node.entry_id))
         rows.append(
             (
                 float(node.x),
@@ -1998,17 +2034,86 @@ def _card_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
     return rows
 
 
+def _link_preview(data: dict, boxes: dict) -> tuple | None:
+    """A connector's preview row, from the centres of what it joins.
+
+    A link has no path of its own (the canvas computes it from its two ends
+    every render), so it fell through to the default box at the origin and
+    drew as a pen scribble (dog2 item 14: "a straight link draws as a wavy
+    squiggle"). Each end is the joined item's centre, or the free point it
+    stops at; an end that cannot be found leaves the link out rather than
+    drawing it somewhere it is not. `line-rise` is a line that climbs left to
+    right, since a box alone cannot say which diagonal it runs along, and
+    `line-flat` a level one (within 1 in 12), which the thumbnail's minimum
+    block height would otherwise tilt. An upright one is narrow as it is.
+    """
+    ends = []
+    for side in ("source", "target"):
+        point = data.get(f"{side}Point")
+        if isinstance(point, dict) and "x" in point and "y" in point:
+            try:
+                ends.append((float(point["x"]), float(point["y"])))
+                continue
+            except (TypeError, ValueError):
+                return None
+        box = boxes.get((data.get(f"{side}Kind") or "node", data.get(f"{side}Id")))
+        if box is None:
+            return None
+        ends.append((box[0] + box[2] / 2, box[1] + box[3] / 2))
+    (x1, y1), (x2, y2) = ends
+    colour = data.get("color")
+    colour = colour if isinstance(colour, str) and colour else None
+    dx, dy = abs(x2 - x1), abs(y2 - y1)
+    if dy < PREVIEW_SKETCH_MIN or dy * 12 < dx:
+        shape = "line-flat"
+    else:
+        shape = "line-rise" if (x2 - x1) * (y2 - y1) < 0 else "line"
+    return (
+        min(x1, x2),
+        min(y1, y2),
+        max(PREVIEW_SKETCH_MIN, abs(x2 - x1)),
+        max(PREVIEW_SKETCH_MIN, abs(y2 - y1)),
+        shape,
+        colour,
+    )
+
+
 def _sketch_preview_rows(db: Session, on) -> list[tuple]:  # noqa: ANN001
     """One preview row per drawn stroke on the board."""
     rows: list[tuple] = []
+    links: list[dict] = []
+    #: What a connector's ends can be joined to, by (kind, id): a card is
+    #: "node", as the canvas stores it.
+    boxes: dict = {}
+    for node in db.scalars(select(WhiteboardNode).where(on(WhiteboardNode))):
+        boxes[("node", node.id)] = (float(node.x), float(node.y), *_preview_size("card", node.width, node.height))
+    for obj in db.scalars(select(WhiteboardObject).where(on(WhiteboardObject))):
+        boxes[("object", obj.id)] = (
+            float(obj.x),
+            float(obj.y),
+            *_preview_size(obj.kind or "object", obj.width, obj.height),
+        )
     for sketch in db.scalars(select(WhiteboardSketch).where(on(WhiteboardSketch))):
+        try:
+            parsed = json.loads(sketch.data or "{}")
+        except (TypeError, ValueError):
+            parsed = {}
+        if isinstance(parsed, dict) and str(parsed.get("type") or "").startswith("link-"):
+            links.append(parsed)
+            continue
         #: **From the strokes, not from the row.** A sketch's `x`/`y` are 0 for
         #: every stroke the drawing tools make, with the path in absolute board
         #: coordinates, so reading them put every sketch on a board at the
         #: origin at one default size: eight of them measured as eight marks at
         #: one position and one size, which is INBOX 164's single squiggle.
         sx, sy, sw, sh, shape, colour = _sketch_preview(sketch)
+        boxes[("sketch", sketch.id)] = (sx, sy, sw, sh)
         rows.append((sx, sy, "sketch", "", colour, sw, sh, shape))
+    for data in links:
+        row = _link_preview(data, boxes)
+        if row is not None:
+            sx, sy, sw, sh, shape, colour = row
+            rows.append((sx, sy, "sketch", "", colour, sw, sh, shape))
     return rows
 
 
@@ -2273,33 +2378,70 @@ def _preview_fields(db: Session, board_id: int | None) -> dict:
     # Copied on the way out: the cached lists are shared with every later
     # caller, and a response model that a caller mutated in place would poison
     # every board list after it.
-    fp = _thumb_fp(key)
-    stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id) if board_id else None
+    #: The default board has no note behind it, so no id: its file is stored
+    #: under 0 (`DEFAULT_BOARD_THUMB_ID`), the id the client sends for it.
+    stored = board_thumbs.stored_fp(deps.get_config().data_dir, board_id or DEFAULT_BOARD_THUMB_ID)
     return {
         "preview_items": [dict(item) for item in items],
         "preview_edges": [dict(edge) for edge in edges],
         "preview_aspect": aspect,
-        "thumb_v": fp if stored == fp else None,
+        # Labels are read only for a board that has a stored picture to compare.
+        "thumb_v": stored if stored is not None and stored == _thumb_fp(db, key) else None,
     }
 
 
-def _thumb_fp(key: tuple) -> str:
+def _thumb_fp(db: Session, key: tuple) -> str:
     """The fingerprint a raster thumbnail is stored against: the cache key
-    without the database identity, so it survives a restart."""
-    return board_thumbs.fingerprint_hash(key[1:])
+    without the database identity, so it survives a restart.
+
+    The cards' note stamp (`max(Entry.updated_at)`) is swapped for the labels
+    the picture actually shows. That stamp moves on any write to a note (a
+    body edit, a pin, the janitor re-filing it, a tag), none of which changes
+    a card's title, so every such write retired the stored picture and the
+    card fell back to the drawn preview until the board was opened again (the
+    owner, INBOX 1418: "the default board thumbnail keeps getting deleted";
+    a board of drawings only has no such stamp, which is why only boards with
+    note cards lost theirs). The preview cache key keeps the stamp: its miss
+    path is what reads the notes.
+    """
+    scope = key[2]
+    stamps = key[3][:3]
+    node_scope = WhiteboardNode.board_id.is_(None) if scope is None else WhiteboardNode.board_id == scope
+    labels = [
+        _card_label(entry)
+        for entry in db.scalars(
+            select(Entry)
+            .join(WhiteboardNode, WhiteboardNode.entry_id == Entry.id)
+            .where(node_scope)
+            .order_by(WhiteboardNode.id)
+        )
+    ]
+    return board_thumbs.fingerprint_hash((key[1], scope, stamps, key[4], tuple(labels)))
+
+
+#: The default board is the one board with no note, so no id to name it by in
+#: a URL or a file: its thumbnail travels as board 0 (the owner, 2026-10-26:
+#: "the default board doesnt get a thumbnail": the client skipped a falsy id).
+DEFAULT_BOARD_THUMB_ID = 0
+
+
+def _thumb_board(db: Session, board_id: int) -> None:
+    if board_id != DEFAULT_BOARD_THUMB_ID:
+        _board_entry(db, board_id)
 
 
 def _current_thumb_fp(db: Session, board_id: int) -> str:
-    entry = db.get(Entry, board_id)
+    entry = db.get(Entry, board_id) if board_id > 0 else None
     palette_name = (_board_theme(entry).get("palette") if entry else None) or "classic"
-    return _thumb_fp((*_preview_fingerprint(db, board_id), palette_name))
+    scope = board_id if board_id != DEFAULT_BOARD_THUMB_ID else None
+    return _thumb_fp(db, (*_preview_fingerprint(db, scope), palette_name))
 
 
 @router.get("/boards/{board_id}/thumbnail/state")
 def thumbnail_state(board_id: int, db: Session = Depends(get_session)) -> dict:
     """What the client needs to decide whether to draw a thumbnail: the
     board's fingerprint now and the one the stored thumbnail was drawn at."""
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     return {
         "fp": _current_thumb_fp(db, board_id),
         "stored": board_thumbs.stored_fp(deps.get_config().data_dir, board_id),
@@ -2313,7 +2455,7 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
@@ -2343,7 +2485,7 @@ def get_thumbnail(
 ):
     """The stored thumbnail. The `?v=` URL is immutable (a new fingerprint is a
     new URL), so it is cached for a year; without it the ETag still answers 304."""
-    _board_entry(db, board_id)
+    _thumb_board(db, board_id)
     found = board_thumbs.find(deps.get_config().data_dir, board_id)
     if found is None:
         raise HTTPException(status_code=404, detail="That board has no thumbnail yet.")
@@ -2730,7 +2872,9 @@ def duplicate_board(board_id: int, db: Session = Depends(get_session)) -> BoardO
     for sketch in db.scalars(
         select(WhiteboardSketch).where(_board_filter(WhiteboardSketch, board_id))
     ).all():
-        db.add(WhiteboardSketch(board_id=copy.id, data=sketch.data))
+        #: With its z: a stroke stacks with the cards (WHITEBOARD_PLAN
+        #: decision 43), so a copy at z 0 could go under a card it was over.
+        db.add(WhiteboardSketch(board_id=copy.id, data=sketch.data, x=sketch.x, y=sketch.y, z=sketch.z))
 
     # **The copy's tree has to point at the copy.** A row-by-row copy carries
     # `parent_id` verbatim, which would leave every node in the duplicate
@@ -3485,6 +3629,8 @@ MAP_STYLE_FIELDS = (
     "edge_arrow",
     "edge_bend",
     "edge_slide",
+    "edge_from",
+    "edge_to",
     "image",
     "task",
     "note",
@@ -3581,7 +3727,7 @@ def _build_tree(db: Session, objects: list[WhiteboardObject]) -> list[dict]:
             reachable.add(node["id"])
             frontier.extend(node["children"])
 
-    for root in list(roots):
+    for root in roots:
         claim(root)
     for obj in objects:
         if obj.id not in reachable:
@@ -4267,8 +4413,10 @@ def _outline_rows(roots: list[dict]) -> list[tuple[int, dict]]:
             continue
         seen.add(node["id"])
         rows.append((min(depth, MAX_MAP_DEPTH), node))
-        for child in reversed(node["children"]):
-            stack.append((depth + 1, child))
+        stack.extend(
+            (depth + 1, child)
+            for child in reversed(node["children"])
+        )
     return rows
 
 
@@ -4307,8 +4455,10 @@ def _export_tree(root_element, roots: list[dict], build) -> None:
         seen.add(node["id"])
         element = build(parent_element, node)
         below = element if depth < MAX_MAP_DEPTH else parent_element
-        for child in reversed(node["children"]):
-            stack.append((below, depth + 1, child))
+        stack.extend(
+            (below, depth + 1, child)
+            for child in reversed(node["children"])
+        )
 
 
 def _outline_numbers(roots: list[dict]) -> dict:
@@ -4508,6 +4658,8 @@ _FREEMIND_PRIVATE = {
     "edge_arrow": "_edge_arrow",
     "edge_bend": "_edge_bend",
     "edge_slide": "_edge_slide",
+    "edge_from": "_edge_from",
+    "edge_to": "_edge_to",
     "image": "_image",
     "align": "_align",
     #: A task (decision 15): FreeMind's built-in icons have a tick but no
@@ -4548,6 +4700,8 @@ _OPML_PRIVATE = {
     "edge_arrow": "_edge_arrow",
     "edge_bend": "_edge_bend",
     "edge_slide": "_edge_slide",
+    "edge_from": "_edge_from",
+    "edge_to": "_edge_to",
     "image": "_image",
     "task": "_task",
     #: `_note` is the spelling OmniOutliner and Workflowy already write, so

@@ -154,7 +154,7 @@ for (const radio of document.querySelectorAll('input[name="emb-backend"]')) {
     //: taken. It says which backend is *selected*, which is the question the
     //: control is about; whether it is applied is what Apply is for.
     syncEmbeddingPickerState();
-    if (radio.checked && radio.value === "sentence-transformers") applyEmbeddingBackend();
+    if (radio.checked && radio.value === "fastembed") applyEmbeddingBackend();
   });
 }
 $("status-back").addEventListener("click", () => stepTabHistory(-1));
@@ -578,6 +578,10 @@ function saveWhatIsInFront() {
   return;
 }
 
+//: Item 9: a key within 1.5 s of typing in an editor is not a command. The
+//: document editor stops its letters at its host and sets this itself.
+const typingBurst = { at: 0 };
+
 document.addEventListener("keydown", (e) => {
   // **Before anything else.** A locked notebook answers no shortcut, not a
   // chorded one, not a bare one, not a tab jump. Typing is untouched: this
@@ -647,7 +651,7 @@ document.addEventListener("keydown", (e) => {
     $("notif-btn").setAttribute("aria-expanded", "false");
     return;
   }
-  if (e.key === "Escape" && !$("onboarding-overlay").classList.contains("hidden")) {
+  if (e.key === "Escape" && $("onboarding-overlay")?.classList.contains("hidden") === false) {
     closeOnboarding();
     return;
   }
@@ -670,7 +674,8 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape" && !$("sketch-overlay").classList.contains("hidden")) {
-    closeSketch();
+    //: As the palette: an Escape that closed the pad's '?' leaves the pad.
+    if (!e.helpPopoverSpent) closeSketch();
     return;
   }
   if (e.key === "Escape" && !$("meeting-overlay").classList.contains("hidden")) {
@@ -738,10 +743,13 @@ document.addEventListener("keydown", (e) => {
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
   //: letters.
   const singleKeys = singleKeysOn();
+  const now = performance.now();
+  if (typing) typingBurst.at = now;
+  const burst = !typing && e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!typing && !overlayOpen && singleKeys && !boardOwns) {
+  if (!typing && !burst && !overlayOpen && singleKeys && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
       if (bare && matchesShortcut(e, def.keys)) {
@@ -765,7 +773,7 @@ document.addEventListener("keydown", (e) => {
   //:
   //: `typing` still wins over both: a chord that fired while you were
   //: filling in a settings field would eat the letter you meant to type.
-  if (!typing) {
+  if (!typing && !burst) {
     // The second half of the "m" then a letter chord, armed below. Checked
     // first so a stray letter within the window is consumed (matched or
     // not) rather than falling through and re-arming on a later "g".
@@ -1443,7 +1451,7 @@ function buildShortcutList(list) {
     list.appendChild(li);
   }
   //: Thirty-one rows: typed to (row 1643, `listFilter`).
-  if (typeof listFilter === "function") listFilter(list, { label: "Filter shortcuts" })?.refresh();
+  listFilter(list, { label: "Filter shortcuts" })?.refresh();
 }
 
 // While rebinding, this handler runs before everything else and swallows the
@@ -1488,6 +1496,7 @@ function openShortcuts() {
   //: same table so the two cannot disagree"). documents.js is lazily loaded,
   //: so the section says where its contents are rather than sitting empty
   //: when this dialog is opened before that bundle has ever been fetched.
+  ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
   const editorList = $("shortcut-list-documents");
   const editorNote = $("shortcut-list-documents-note");
   if (editorList && typeof renderDocShortcutSheet === "function") {
@@ -1780,9 +1789,7 @@ for (const [id, key] of [["entry-title", "captureDraftTitle"], ["entry-tags", "c
   });
 }
 
-$("sketch-btn").addEventListener("click", openSketch);
-$("sketch-close").addEventListener("click", closeSketch);
-$("sketch-save").addEventListener("click", saveSketch);
+$("sketch-btn").addEventListener("click", () => openSketch());
 // Wave H: dictation + read-aloud.
 $("mic-note").addEventListener("click", () =>
   toggleDictation($("mic-note"), $("entry-content"))
@@ -1790,7 +1797,7 @@ $("mic-note").addEventListener("click", () =>
 $("mic-chat").addEventListener("click", () =>
   toggleDictation($("mic-chat"), $("chat-input"))
 );
-$("speak-btn").addEventListener("click", () => speakText($("ai-answer").textContent));
+$("speak-btn").addEventListener("click", (e) => speakText($("ai-answer").textContent, e.currentTarget));
 
 // PWA (WORLD_CLASS_PLAN decision 49): sw.js caches stamped files, vendored
 // libraries and icons, and shows offline.html when the server is not
@@ -1876,6 +1883,9 @@ document.addEventListener("dragover", (e) => {
   if (e.target.tagName && e.target.tagName.toLowerCase() === 'textarea') {
     e.preventDefault();
     e.target.classList.add("drag-over");
+  } else if (Array.from(e.dataTransfer?.types || []).includes("Files") && fileDropBox(e.target)?.kind === "codemirror") {
+    //: Taken, so the window's drop-to-Library veil does not claim it.
+    e.preventDefault();
   }
 });
 
@@ -1910,6 +1920,15 @@ function _isChatComposer(target) {
 //: listeners run in the capture phase, ahead of the editor's own handling.
 function fileDropBox(el) {
   if (el?.tagName === "TEXTAREA") return el;
+  //: **The document editor is neither** (docdog-1026): its engine sits under
+  //: `#doc-editor`, not `.note-surface`, so a screenshot pasted or a picture
+  //: dropped into a document did nothing at all, while the "/" menu's Image
+  //: row promised both. Its surface answers the same box interface. A code
+  //: document is text, and keeps what it was given.
+  if (el?.closest?.("#doc-editor")) {
+    const surface = window.docSurface?.();
+    return surface && !surface.classList.contains("doc-content-code") ? surface : null;
+  }
   const host = el?.closest?.(".note-surface")?.noteSurfaceHost;
   return host instanceof HTMLTextAreaElement ? host : null;
 }
@@ -1926,7 +1945,13 @@ document.addEventListener("drop", async (e) => {
   e.preventDefault();
   e.stopPropagation();
   box.classList.remove("drag-over");
+  //: Dropped where the pointer is, not where the caret was.
+  if (box.kind === "codemirror") {
+    const at = box.view.posAtCoords({ x: e.clientX, y: e.clientY });
+    if (at !== null) box.setSelection(at);
+  }
 
+  if (box.id === "command-palette-input") return agentStageFiles(Array.from(e.dataTransfer.files));
   if (_isChatComposer(box)) {
     const files = Array.from(e.dataTransfer.files);
     const images = files.filter((f) => f.type.startsWith("image/"));
@@ -1954,9 +1979,15 @@ document.addEventListener("paste", async (e) => {
     }
   }
   if (!files.length) return;
+  //: A spreadsheet or Word copy carries a picture of what it copied beside
+  //: the text; in a document the words win (table and rich paste), and only a
+  //: clipboard with no text at all is a picture to upload.
+  if (box.kind === "codemirror" && e.clipboardData.getData("text/plain")) return;
   // Don't prevent default entirely unless we have files, otherwise normal paste breaks
   e.preventDefault();
   e.stopPropagation();
+
+  if (box.id === "command-palette-input") return agentStageFiles(files);
 
   if (_isChatComposer(box)) {
     const images = files.filter((f) => f.type.startsWith("image/"));

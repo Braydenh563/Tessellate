@@ -123,6 +123,9 @@ def test_the_real_memory_is_a_positive_number_where_the_platform_can_say(monkeyp
 
 def test_the_catalogue_route_carries_what_the_card_shows(ai_client, monkeypatch):
     monkeypatch.setenv("TESSELLATE_RAM_GB", "16")
+    # The free figure is this machine's at test time; a busy runner would read
+    # Tight (free memory can lower a Fits) and the card numbers are the point.
+    monkeypatch.setattr(hardware, "free_memory_gb", lambda: 12.0)
     body = ai_client.get("/models/suggested").json()
     flat = {m["name"]: m for models in body.values() for m in models}
     llama = flat["llama3.2"]

@@ -1508,7 +1508,10 @@ const ATLAS_MOUTHS = {
   //: than `smile`, where sleepy wore `tinyo`, which read as a pout or a kiss
   //: (the owner: "also what is this face").
   rest: { d: "M29.4 37.4Q32 39.3 34.6 37.4" },
-  hmm: { d: "M29.8 38.6Q32.4 37.4 35.2 38.1" },
+  //: Thinking's: lopsided, one corner up (INBOX 1402). It sagged in the
+  //: middle (its handle 0.95 above the corners), so every chat turn wore a
+  //: small frown.
+  hmm: { d: "M29.8 38.3Q32.4 39.4 35.2 37.6" },
   wavy: { d: "M27.8 38.4Q29.2 37 30.6 38.4Q32 39.8 33.4 38.4Q34.8 37 36.2 38.4" },
   frown: { d: "M28.8 39.8Q32 36.8 35.2 39.8" },
   smug: { d: "M28.2 37.6Q32.2 40.2 36.4 35.8" },
@@ -1933,20 +1936,21 @@ function atlasHeadProps(sway, ears, look) {
   atlasMake("path", { class: "atl-prop-rim", d: `M${ATLAS_GEO.eyes[0][0] + 5.6} ${ATLAS_GEO.eyes[0][1] + 0.2}Q31 ${ATLAS_GEO.eyes[0][1] - 1.2} ${ATLAS_GEO.eyes[1][0] - 5.6} ${ATLAS_GEO.eyes[1][1] + 0.2}` }, glasses);
 }
 
-//: Reading (the sprite grid's `reading` cell): an open book of light under
-//: the figure, its pages lit from inside with a small constellation on
-//: them, the tail sweeping under it. Drawn over the tail and under the
-//: legs, so Atlas sits on it; the CSS shows it while a long answer is read.
+//: Reading (the sprite grid's `reading` cell): an open book of light held
+//: in both hands at the chest (the arms turn in, the CSS), its pages lit
+//: from inside with a small constellation on them. Drawn last, over the
+//: body and arms, not under the figure: a book read from below its feet
+//: made no sense (K14). The CSS shows it while a long answer is read.
 function atlasBookProp(layer) {
   const book = atlasGroup(layer, "nmp nmp-book");
-  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 86, rx: 24, ry: 8 }, book);
-  const pageL = "M31 80.6C24 78.4 16 78.8 8.6 81.4C8.2 84.6 8.4 87.8 9 91C16 88.4 24 88 31 90.2Z";
-  const pageR = "M31 80.6C38 78.4 46 78.8 53.4 81.4C53.8 84.6 53.6 87.8 53 91C46 88.4 38 88 31 90.2Z";
+  atlasMake("ellipse", { class: "atl-prop-moon-glow", cx: 31, cy: 56.7, rx: 12, ry: 5 }, book);
+  const pageL = "M31 53.4C27.5 52 23.5 52.3 19.8 53.9C19.6 55.9 19.7 57.9 20 59.8C23.5 58.2 27.5 58 31 59.3Z";
+  const pageR = "M31 53.4C34.5 52 38.5 52.3 42.2 53.9C42.4 55.9 42.3 57.9 42 59.8C38.5 58.2 34.5 58 31 59.3Z";
   for (const d of [pageL, pageR]) atlasMake("path", { class: "atl-prop-page", d }, book);
-  atlasMake("path", { class: "atl-prop-page-edge", d: "M9 91C16 88.4 24 88 31 90.2C38 88 46 88.4 53 91" }, book);
-  atlasMake("path", { class: "atl-thread", d: "M14 84.6L19 82.8L23 85.4L27.6 83.2M35 83.2L40 85.2L44.6 82.6L49 84.8" }, book);
-  for (const [x, y] of [[14, 84.6], [19, 82.8], [23, 85.4], [27.6, 83.2], [35, 83.2], [40, 85.2], [44.6, 82.6], [49, 84.8]]) {
-    atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.55 }, book);
+  atlasMake("path", { class: "atl-prop-page-edge", d: "M20 59.8C23.5 58.2 27.5 58 31 59.3C34.5 58 38.5 58.2 42 59.8" }, book);
+  atlasMake("path", { class: "atl-thread", d: "M22.5 55.9L25 54.8L27 56.4L29.3 55M33 55L35.5 56.2L37.8 54.6L40 56" }, book);
+  for (const [x, y] of [[22.5, 55.9], [25, 54.8], [27, 56.4], [29.3, 55], [33, 55], [35.5, 56.2], [37.8, 54.6], [40, 56]]) {
+    atlasMake("circle", { class: "atl-node-dot", cx: x, cy: y, r: 0.4 }, book);
   }
   return book;
 }
@@ -2114,11 +2118,17 @@ function atlasHead(parent, id, level, look, hairAt = null) {
   for (const eye of ATLAS_GEO.eyes) atlasEye(sway, id, eye, tiny, spec.lashes);
   //: Brows at every size: the tiny bust had none, and a brow is what tells
   //: worried, sad and determined apart at 20px (atlas-lazy.css makes them bold).
+  //: **The inner end no lower than the outer** (INBOX 1402, the owner:
+  //: "atlas looks like a bored or grumpy gangster"): both brows were drawn
+  //: sloping down to the nose, 6 degrees (his) and 11 (hers), a scowl in
+  //: every mood that did not lift them (atlasrest1402.js). Now a soft arch
+  //: whose inner end sits a touch higher, so the rest face is open and a
+  //: mood's knit is the only thing that lowers it.
   for (const [x, y, side] of ATLAS_GEO.brows) {
     const brow = atlasGroup(sway, `atl-brow atl-brow-${side > 0 ? "l" : "r"}`, [x, y]);
     const d = spec.brow === "straight"
-      ? `M${x - 2.8 * side} ${y - 0.1}Q${x} ${y - 0.8} ${x + 2.8 * side} ${y + 0.5}`
-      : `M${x - 2.6 * side} ${y - 0.2}Q${x - 0.3 * side} ${y - 1.9} ${x + 2.6 * side} ${y + 0.8}`;
+      ? `M${x - 2.8 * side} ${y + 0.3}Q${x} ${y - 0.6} ${x + 2.8 * side} ${y + 0.1}`
+      : `M${x - 2.6 * side} ${y + 0.4}Q${x - 0.3 * side} ${y - 1.6} ${x + 2.6 * side} ${y + 0.2}`;
     atlasMake("path", { class: `atl-stroke atl-brow-line atl-brow-${spec.brow}`, d }, brow);
   }
   const [mx, my] = ATLAS_GEO.mouth;
@@ -2237,7 +2247,6 @@ function atlasBody(parent, id, props, look, route = null) {
       mask(atlasTail(tipAt[kind], edge, look), "tip");
     }
     if (!edge && props) {
-      atlasBookProp(back.fill);
       atlasCoilProp(back.fill);
       atlasMapProp(back.fill);
     }
@@ -2481,6 +2490,7 @@ function atlasBody(parent, id, props, look, route = null) {
   }
   if (props) {
     atlasHandProps(arms.r, arms.l, look);
+    atlasBookProp(frontAt.fill);
     //: Startled, a translucent bubble round the whole figure (the
     //: reference's `startle` cell); the CSS shows it.
     const bubble = atlasGroup(frontAt.fill, "nmp nmp-bubble");

@@ -347,20 +347,9 @@ Moved to HISTORY.md ("Moved from the plans, 2026-09-23", CHAT_PLAN.md): the
 fixtures, the passage-scored attribution, the low-support notice and its
 replay on a reopened turn, with every measurement.
 
-### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**, see
-[HISTORY.md](HISTORY.md) "Moved from the plans, 2026-09-13". Gate green
-(`scratchpad/ui-sweeps/chatphase2.js`), with one gate line superseded by the
-owner's own later instructions and said so there.
+### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**; see HISTORY.md "Moved from the plans, 2026-09-13".
 
-### Phase 3: Ask unified, popup agent: **built 2026-09-13**, see
-[HISTORY.md](HISTORY.md) "Moved from the plans, 2026-09-13". Decisions 8, 9,
-11 and 12. Gate green in both halves it has
-(`scratchpad/ui-sweeps/chatphase3.js` for the browser,
-`tests/test_ask_answer_object.py` for the transport). One gate line was
-superseded by the owner's own later instruction and re-run in that form: the
-starters are decision 9's twelve **plus the current tab's two** (INBOX 190,
-decision 14), so the sweep asserts 14 chips in 6 groups with the tab's own
-group first.
+### Phase 3: Ask unified, popup agent: **built 2026-09-13**, decisions 8, 9, 11 and 12; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 4: skills that finish (one session; Brief 13)
 Decisions 10 and 10a to 10h. Built, 2026-09-12: see HISTORY.md, "Moved from
@@ -523,7 +512,7 @@ the numbers. Decisions 30 to 45 stay above: later briefs build on them.
 #### Open from Phase 6 (one line each; the agent's ledger is `agent-remaining/engine-1010.md`)
 
 - The blind panel (decision 40): the owner's rating against the 1 to 3B model on the owner's notebook.
-- Probe P15 (`agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
+- Probe P15 (`archive/agent-remaining/engine-probe-1010.md`): the lead-in chosen after the parts. P10 to P13 and P16 are built: HISTORY.md "Moved from the plans, 2026-10-18 (chat-1018".
 - The currency table's Settings editor (decision 43); the rates are dated and fixed.
 - The model choosing among the engine's numbered readings (decision 45): the readings are listed; with a model running it does not yet pick.
 - The currency table has no preference at all (`utilities.RATES` is a constant), so decision 43's editor has nothing to edit until the table is a preference.
@@ -835,7 +824,6 @@ quality held or better.
     never while the person types.
 29. **The blind test is both**: a fixed sample notebook on every build, and
     the owner and a few friends rating on their own notebooks now and then.
-
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1571,9 +1559,9 @@ catalogue above specifies the engine for chat. This section is the layer under
 every surface: what the research says it should be made of, where it joins each
 surface, the decisions, and the briefs. It remakes nothing decided in 17 to 45.
 "Today" is read from the code and from the probe tables in
-`agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
+`archive/agent-remaining/engine-probe-1010.md`, not observed in the app, except where a
 number is given. The probe tables were re-run on the merged head by F0: every row is
-unchanged (`agent-remaining/found-1010.md` part 2).
+unchanged (`archive/agent-remaining/found-1010.md` part 2).
 
 - (Odysseus, fourth read 2026-10-10) 
 
@@ -1614,7 +1602,7 @@ unchanged (`agent-remaining/found-1010.md` part 2).
 4. **`ai/realise.py`**, the realiser: templates with protected spans, two voices plus help, salt per chat and turn, the variety floor measured. Every system sentence may route through it; chat first, then toasts and empty states surface by surface.
 5. **`ai/validate.py`**, the validators: `source_check`, grounding marks, the maxims lint, slot completeness and the computed-sentence rule, run on the engine's answer and the model's alike.
 
-Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `agent-remaining/found-1010.md`.
+Rule: a surface never reads language itself. `tests/test_one_reader.py` ratchets the count of files outside `recognise.py` and `timewords.py` that compile a date-word or unit pattern, from today's count down to zero. Today's count, measured 2026-10-10 by `scratchpad/reader_count.py` (F0): **6 files** (`ai/when.py`, `ai/reminder_parser.py`, `search/query.py`, `ai/notebook_stats.py`, `api/routes_vision.py` by substring, `ai/composer.py` as a date cue), 0 in `frontend/js`, and no unit reader anywhere; the lines are in `archive/agent-remaining/found-1010.md`.
 
 ### 4. Decisions, 2026-10-10 (not to be remade; numbered after Phase 6's 45)
 
@@ -1867,6 +1855,10 @@ more"; volunteered insight "should be togglable and also dynamic".
     measured gate.
 75. **Model up: it leads, the composer's facts are only labelled context (a test per surface); model down: the composer covers every act** (the owner, 2026-10-11, HANDOVER).
 76. **The engine is Atlas's assistant; Atlas is the model (the owner, 2026-10-17, INBOX 904 B10; amends decision 36).** With no model the composer says it is Atlas's assistant ("I'm Atlas's assistant"), never "I'm Atlas", and says that to talk to Atlas itself a model must be connected (Settings, Models). The capability rundown is composed, not stored (`capability.overview`): an opening that names who is speaking, three groups by default, one line for "briefly", six for "everything", what a model adds, one thing to try; each part has several phrasings and none repeats the last reply. A test message ("test", "testing 123", "is this thing on") is acknowledged as one (`intent.is_test`, social kind `test`); keys pressed at random ("asdkjhfgs", "jkjkjkjk") are said to be that, never taken for a nickname (`intent.is_mash`).
+77. **No model, the Composer studies, plans and counts too (the owner, 2026-10-25, INBOX 1351).** `ai/study.py`, `composer_study.py`, `composer_plan.py`, `composer_calc.py` and `composer_extra.py` answer quiz, flashcards, key terms, section summaries, what is due, plan my week, percentages, date arithmetic, word counts and a small glossary, every clause a note's own words or a measured value. A quiz keeps its state in the dialogue, never the server. "Summarise this" and a named category stay with the digest. "Start it" after a web-search-down reply gives the Docker line and opens the setting; the app never runs Docker. The Ask "You asked:" line stays removed (it repeats the box; `tests/test_composer_form_1301.py`).
+78. **A list of notes by date leaves archived notes out, as a count does (composer classes 1026e, the owner's standing "fix the class", INBOX 1357).** "Notes from 24 to 30 September" and "what did I write last week" list live notes only unless the question says "archived" (then only those): `search_manager.entries_between(archived=...)` for the recall list, `composer_notes._matching` for the "grew by" list, both through `question_noise.asks_archived`; entries_between has one caller, so the filter lives in the function. A month said with "last year", "this year" or "next year" is read whole by `ai/recognise.py`; a window still ahead with no subject answers "nothing yet", with a subject it is dropped. A note that is one "Label: value" line and no heading is listed as Untitled with its line, never named by the label.
+79. **A reminder is offered, never made, wherever it is said (the owner, 2026-10-27, INBOX: "give the option to make a part of a meeting note a reminder, and also maybe suggest it if something similar appears in the chat ... Alerts + Google/Outlook buttons, Meeting actions become reminders").** A chat message that reads as a dated intention to come ("I need to call the dentist on Friday", "don't forget to ... tomorrow at 9am") gets a "Make this a reminder: <words>, <when>" chip under the reply, prefilled by `ai/reminder_suggest.py` through `POST /reminders/suggest`; one press creates it with Undo. Rules only, so the chip is the same with a model up or down (decision 75: the model is never asked); never auto-created; nothing for a question, a past-tense statement, an intention with no day, or words the chat already acts on ("remind me to ..."). The same arrival: a selection in a note is "Set a reminder" linked to that note (`entry_id` on `/reminders/parse`); a meeting's action items already had Remind me (`routes_meetings.remind_action`); a reminder's menu gains Add to Google Calendar and Add to Outlook (`GET /reminders/{id}/calendar-links`, opened by the press, a private note's words never in the address) beside Add to calendar (.ics), whose events all carry a VALARM at the due time or the early alert.
+80. **Seasons follow the locale (the owner, 2026-10-27).** "Summer", "last winter" and "summer 2025" read as December to February in the southern hemisphere (en-AU, en-NZ, en-ZA and the other southern regions `recognise.hemisphere_of` knows) and June to August elsewhere. Settings, General, Seasons overrides it (automatic, northern, southern; `season_hemisphere`), automatic follows the browser's reported locale (`season_locale`) or the call's own; a season with a year starts in that year, so southern "summer 2025" is Dec 2025 to Feb 2026. Tests: `tests/test_season_hemisphere_1027.py` on the fixed clock.
 
 | # | Idea | Gate |
 | --- | --- | --- |
@@ -1898,3 +1890,8 @@ more"; volunteered insight "should be togglable and also dynamic".
 
 Owner: the Atlas agent (brief-assistant, running) builds 70, then B1 to B12
 and B30 to B32; later rows join its remaining list and the queue.
+
+## Placed from INBOX, 2026-10-26 (the owner: the composer composes, everywhere)
+
+1353. **The owner, 2026-10-26, verbatim.** "can you improve and expand on more and more aspects of the composer?? integrate it better into everything, all aspects of the app where it can fit, make it really really good at what it does in those place, make sure all preformed responses have an insane amount of variations but I want the responses to be composed, not just selecting from large preformed responses, each ability should have at least like 20 variations and the best ones should be picked based on context, meaning, user detected emotion, keywords and more. that shoukd happen for all composer responses. the composer bust be insanely good, the welcom messages need improvement, is it possible to make it like the avatar generation where it actually generates language in a different way or speaks in a different way based on the used persona idk. but also needle use needs to be refined a lot more and the composer needs to control needle and be good at using it."
+    Placed: agent `composer6-1026`: (1) a composition layer (clause grammar: opener, body frame, connective, closer, each slot chosen by context, intent, detected emotion, keywords and the persona's voice) so every composer reply is built, not picked, with at least 20 measured distinct surfaces per ability; (2) persona voices that change wording and rhythm the way avatar generation changes the picture; (3) welcome messages rebuilt on it; (4) needle under the composer's control (the composer picks the tool call, needle extracts slots, the composer writes the prose); (5) composer reach into surfaces that still show fixed text. The board half of the same message is WHITEBOARD_PLAN 1354.

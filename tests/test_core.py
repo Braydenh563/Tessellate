@@ -16,7 +16,7 @@ def test_config_creates_data_dir_and_defaults(tmp_path):
     config = ConfigManager(data_dir=tmp_path / "data")
     assert config.data_dir.is_dir()
     assert config.get_preference("chat_model") == "llama3.2"
-    assert config.get_preference("embedding_backend") == "sentence-transformers"
+    assert config.get_preference("embedding_backend") == "fastembed"
     assert config.get_preference("recycle_bin_days") == 30
 
 

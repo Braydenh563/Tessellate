@@ -170,6 +170,68 @@ $("embedding-error-fix").addEventListener("click", runEmbeddingFallback);
 // ---- from phone-shell.js ----
 
 $("account-change").addEventListener("click", changePassword);
+// Enter anywhere in the change-password form submits it.
+for (const id of ["account-current", "account-new", "account-confirm"]) {
+  $(id).addEventListener("keydown", (e) => {
+    if (e.key === "Enter") changePassword();
+  });
+}
+
+//: Here, not in the boot settings-panes.js (the gzip ratchet): Settings is its
+//: only door, and its fields are drawn before this file loads.
+async function changePassword() {
+  const status = $("account-status");
+  const current = $("account-current").value;
+  const next = $("account-new").value;
+  const confirmed = $("account-confirm").value;
+  status.classList.remove("error");
+
+  // Checked here as well as on the server, so a typo costs a moment rather
+  // than a password you didn't mean to set.
+  if (!current || !next) {
+    status.classList.add("error");
+    status.textContent = "Fill in your current and new password.";
+    return;
+  }
+  if (next !== confirmed) {
+    status.classList.add("error");
+    status.textContent = "The two new passwords don't match.";
+    return;
+  }
+  if (next.length < 8) {
+    status.classList.add("error");
+    status.textContent = "A new password needs at least 8 characters.";
+    return;
+  }
+
+  status.textContent = "Changing…";
+  try {
+    const result = await apiJson("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ current_password: current, new_password: next }),
+      // A 401 here means "wrong current password", not "your session died".
+      ownsAuthErrors: true,
+    });
+    // Changing the password invalidates every token, including this tab's.
+    // The server hands back a fresh one so the change doesn't log you out of
+    // the screen you just used to make it. Key must match authToken().
+    prefs.set("token", result.token);
+    $("account-current").value = "";
+    $("account-new").value = "";
+    $("account-confirm").value = "";
+    status.textContent = result.warning || "Password changed.";
+    if (result.pin_cleared) status.textContent += " Your PIN was removed; set it up again if you want one.";
+    toast(
+      result.other_sessions_ended
+        ? `Password changed. ${result.other_sessions_ended} other session(s) were signed out.`
+        : "Password changed."
+    );
+    renderAccount().catch(() => {});
+  } catch (error) {
+    status.classList.add("error");
+    status.textContent = error.message;
+  }
+}
 
 //: "Set up a PIN for this computer" / "Change PIN": the PIN typed twice
 //: here, then the password on the lock card in prompt mode, like the
@@ -573,6 +635,7 @@ $("pref-warm-search-model").addEventListener("change", (e) =>
   setPreference("warm_search_model_at_launch", e.target.checked)
 );
 $("pref-week-start").addEventListener("change", (e) => setPreference("week_start", e.target.value));
+$("pref-season-hemisphere").addEventListener("change", (e) => setPreference("season_hemisphere", e.target.value));
 //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
 //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
 const VOICE_SAMPLES = {
@@ -994,6 +1057,14 @@ $("settings-nav-forward")?.addEventListener("click", () => stepTabHistory(1));
 $("show-guide-btn")?.addEventListener("click", () => {
   closeSettingsModal();
   openOnboarding();
+});
+
+//: The owner, 2026-10-26: "if I hide this getting started button, is there a
+//: way to get it to show again in settings?" Customise and the palette could;
+//: Settings now can too.
+$("show-get-started-btn")?.addEventListener("click", () => {
+  closeSettingsModal();
+  lazyScript("/js/first-run.js").then(() => getStartedShow());
 });
 
 $("about-take-tour")?.addEventListener("click", () => {

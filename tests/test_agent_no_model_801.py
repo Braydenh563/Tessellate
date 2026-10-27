@@ -43,6 +43,12 @@ def _seed(session) -> None:
     session.commit()
 
 
+@pytest.fixture(autouse=True)
+def _scratch_data_dir(tmp_path, monkeypatch):
+    """The needle provider's tests log under the data dir: a scratch one, never the repo's."""
+    monkeypatch.setenv("TESSELLATE_DATA_DIR", str(tmp_path))
+
+
 @pytest.fixture(params=["engine only", "needle installed"])
 def no_model(request, client, session, monkeypatch, app_state):
     """`client` has no model running; the second run also has Needle on disk,

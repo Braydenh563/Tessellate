@@ -771,12 +771,27 @@ class ModelManager:
         return self.resolve_vision_model(ollama, installed)
 
     def embedding_backend(self) -> str:
-        """'sentence-transformers' (built-in default) or 'ollama'."""
-        return self._config.get_preference("embedding_backend", "sentence-transformers")
+        """'fastembed' (built-in default) or 'ollama'. A setting saved before
+        fastembed replaced sentence-transformers reads as the built-in engine
+        (`embedmodels.backend_name`)."""
+        from tessellate.core import embedmodels
+
+        return embedmodels.backend_name(self._config.get_preference("embedding_backend", embedmodels.BUILTIN_BACKEND))
 
     def embedding_model(self) -> str:
         """Only meaningful when the backend is 'ollama'."""
         return self._config.get_preference("embedding_model", "nomic-embed-text")
+
+    def semantic_engine_moved(self) -> dict | None:
+        """Set when this computer holds the old engine's copy of the model
+        search would use but not the new one's (`embedmodels.engine_moved`),
+        so the one-time question can say the engine moved. None otherwise,
+        and for the Ollama backend, which has no download of ours."""
+        from tessellate.core import embedmodels
+
+        if self.embedding_backend() == "ollama":
+            return None
+        return embedmodels.engine_moved(self.embedding_st_model())
 
     def embedding_st_model(self) -> str:
         """The built-in backend's model (INBOX 700), a repo from the allowlist
@@ -803,6 +818,9 @@ class ModelManager:
     def set_embedding_backend(self, backend: str, model: str | None = None) -> None:
         # The caller MUST kick off a re-index after this, vectors from
         # different models are not comparable (§6.5).
+        from tessellate.core import embedmodels
+
+        backend = embedmodels.backend_name(backend)
         self._config.set_preference("embedding_backend", backend)
         if model and backend == "ollama":
             self._config.set_preference("embedding_model", model)

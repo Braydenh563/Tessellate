@@ -173,6 +173,20 @@ def terms_sentence(size: int, terms: list[str]) -> str:
     return f"{size} notes about {joined}."
 
 
+def extractive_sentence(size: int, terms: list[str], first, last, leads: list[str]) -> str:
+    """`terms_sentence` plus what the notes themselves say, with no model:
+    the date span and the opening lines of the most-linked notes. Every word
+    is one the notes or their dates hold (K8: the composer summarises)."""
+    parts = [terms_sentence(size, terms)]
+    if first and last:
+        a, b = first.date().isoformat(), last.date().isoformat()
+        parts.append(f"Written {a}." if a == b else f"Written {a} to {b}.")
+    named = [lead for lead in leads if lead][:2]
+    if named:
+        parts.append("Most linked: " + "; ".join(f"\u201c{lead}\u201d" for lead in named) + ".")
+    return " ".join(parts)
+
+
 #: How much of each note the model reads for a summary, and how many notes:
 #: a topic's titles and opening lines say what it is about; its bodies are a
 #: long prompt for a small model to get lost in.

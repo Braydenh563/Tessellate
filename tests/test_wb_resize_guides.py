@@ -105,4 +105,66 @@ def test_show_less_only_when_collapsing_would_hide_text() -> None:
 def test_each_grip_says_what_its_double_click_does() -> None:
     script = _function("wbResizeHandleTitle") + "console.log(JSON.stringify(['frame','image','text','shape'].map(wbResizeHandleTitle)));"
     frame, image, text, shape = _node(script)
-    assert "fit this edge" in frame and "double-click" not in image and "fits the text" in text and text == shape
+    assert "fit this edge" in frame and "fits the picture" in image and "fits the text" in text and text == shape
+
+
+def test_a_shape_resize_moves_its_grips_and_shows_its_size_live() -> None:
+    """The 22-10 bug doc: a shape's box and anchors stayed at the old size until
+    release, and its resize showed no "W x H" (scratchpad/ui-sweeps/wb1025-resize.js
+    measures both: selection box 164 to 284 wide against a 280 path)."""
+    body = _function("wbDrawSketchHandles")
+    drag = body[body.index('.attr("class", "wb-sketch-resize-handle")') :]
+    assert "placeGrips(live)" in drag
+    assert "wbShowSizeReadout(" in drag
+    assert "wbClearAlignmentGuides()" in drag
+
+
+def test_a_sticker_glyph_follows_its_box_during_the_resize() -> None:
+    """A sticker's glyph is its box; it stayed 46px in a 214px box after release."""
+    start = SOURCE.index("function resizeDrag(handle)")
+    drag = SOURCE[start : SOURCE.index("function objectRotateDrag()", start)]
+    assert "d.data?.sticker" in drag and "wbStickerSize(d)" in drag
+    assert "wbScheduleRender()" in drag[drag.index('.on("end"') :]
+
+
+# K19 / K17 / K16 (owner-1026b)
+
+CSS = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+
+
+def test_only_the_moving_edges_measure_carries_a_badge_and_it_sits_outside_the_handle() -> None:
+    out = _resize([_b(900, 900, 100, 120)], {"x": 0, "y": 0, "w": 100, "h": 117}, "s")
+    marks = [g for g in out["guideLines"] if g["kind"] == "spacing"]
+    assert len(marks) == 2
+    assert sum(1 for g in marks if g.get("label") is False) == 1
+    assert sum(1 for g in marks if g.get("out") is True) == 1
+
+
+def test_the_badge_is_pushed_off_its_line_by_a_screen_distance() -> None:
+    body = _function("wbShowAlignmentGuides")
+    assert "line.label === false" in body
+    assert "line.out" in body and "WB_BADGE_CLEAR_PX" in SOURCE
+
+
+def test_a_picture_fills_its_box_without_stretching() -> None:
+    i = CSS.index(".wb-object-image > img")
+    block = CSS[i : CSS.index("}", i)]
+    for rule in ("width: 100%", "height: 100%", "object-fit: contain", "display: block"):
+        assert rule in block
+
+
+def test_fit_height_follows_the_natural_aspect_at_the_current_width() -> None:
+    out = _node(
+        "const WB_OBJECT_MIN_SIZE = 24;\n"
+        + _function("wbImageFitHeight")
+        + "console.log(JSON.stringify([wbImageFitHeight(3000, 2000, 300), wbImageFitHeight(0, 0, 300), wbImageFitHeight(1000, 10, 100)]));"
+    )
+    assert out == [200, 300, 24]
+
+
+def test_double_clicking_a_picture_grip_fits_it_in_one_undo_step() -> None:
+    assert "wbFitImage(" in SOURCE
+    assert 'owner?.classList.contains("wb-object-image")) return;' not in SOURCE
+    assert _function("wbFitImage").count("wbPushUndo(") == 1
+    assert "double-click fits the picture" in _function("wbResizeHandleTitle")
+    assert _function("wbFitToText").count("wbPushUndo(") >= 2

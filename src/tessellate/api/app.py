@@ -77,6 +77,7 @@ from tessellate.api import (
     routes_graph,
     routes_help,
     routes_insights,
+    routes_lag,
     routes_library,
     routes_maintenance,
     routes_models,
@@ -1186,6 +1187,14 @@ def _start_services() -> Path:
     # dependency container that imports it.
     # INBOX 509: off loads it on first use instead (a lighter start; the
     # first note waits the model's cold load, about 7 s, to be filed).
+    from tessellate.ai import recognise
+
+    #: The season setting and the locale the browser last reported, before the
+    #: first question reads "last summer" (Settings, Calendar, Seasons).
+    recognise.configure_hemisphere(
+        deps.get_config().get_preference("season_hemisphere", "auto"),
+        deps.get_config().get_preference("season_locale", ""),
+    )
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
         embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
         #: The speller's lists and the UK/US pairs (INBOX 895), about a
@@ -1303,6 +1312,7 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_models.router, dependencies=locked)
     app.include_router(routes_settings.router, dependencies=locked)
     app.include_router(routes_maintenance.router, dependencies=locked)
+    app.include_router(routes_lag.router, dependencies=locked)
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.
@@ -1408,6 +1418,27 @@ def _add_system_routes(app: FastAPI, locked: list) -> None:
         copies of the page's own files). Defined here, not in routes_settings,
         because `RevalidatedStatic` lives here and that import would be a cycle."""
         return {"cleared": True, "files": clear_static_cache()}
+
+    @app.get("/mermaid-frame", include_in_schema=False, dependencies=[Depends(routes_auth.require_unlock_media)])
+    def mermaid_frame() -> Response:
+        """The page the diagram frame loads (frontend/js/mermaid-frame.js).
+
+        A route, not a file under frontend/, because it must answer with a
+        policy of its own: the middleware only `setdefault`s the app's policy,
+        so this one wins, and `X-Frame-Options` is relaxed to SAMEORIGIN for the
+        same reason (the app frames it, nothing else may). Behind the media
+        lock like every route (tests/test_every_route_is_locked.py): a frame's
+        load carries the media cookie, not the token header.
+        """
+        return Response(
+            content=security.MERMAID_FRAME_HTML,
+            media_type="text/html; charset=utf-8",
+            headers={
+                "Content-Security-Policy": security.MERMAID_FRAME_CSP,
+                "X-Frame-Options": "SAMEORIGIN",
+                "Cache-Control": "no-cache",
+            },
+        )
 
     @app.get("/health", tags=["system"])
     def health(request: Request) -> dict[str, str | bool]:
@@ -1537,6 +1568,7 @@ def create_app() -> FastAPI:
         # On the pool, not a thread of its own (the THREAD_SITES ratchet in
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
+        routes_models.prewarm_installed()
         jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance")
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a

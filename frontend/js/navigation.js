@@ -352,6 +352,19 @@ document.addEventListener("keydown", (event) => {
   else scope.remove();
 });
 
+//: A ```mermaid fence is drawn by the lazy `mermaid` module (mermaid-draw.js).
+//: After a settle, and only if the block is still on the page: a streaming
+//: reply renders again per chunk, and the blocks it throws away are not drawn.
+//: A block the document editor already took (`data-mermaid-state`) is left.
+function mermaidSoon(block) {
+  setTimeout(() => {
+    if (!block.isConnected || block.dataset.mermaidState) return;
+    ensureModule("mermaid").then((ok) => {
+      if (ok && block.isConnected) mermaidDrawBlock(block);
+    });
+  }, 400);
+}
+
 function renderMarkdown(container, text, depth = 0) {
   container.replaceChildren();
   let lines = unlatex(text).replace(/\r\n/g, "\n").split("\n");
@@ -459,9 +472,17 @@ function renderMarkdown(container, text, depth = 0) {
       save.addEventListener("click", () =>
         saveFile(`code-${Date.now()}.${language || "txt"}`, new Blob([text], { type: "text/plain" }))
       );
+      //: Wrap or scroll (the owner, 2026-10-27), one icon beside Copy; the
+      //: card's `data-wrap` is what the stylesheet reads.
+      const wrap = wrapToggle("code", (on) => {
+        block.dataset.wrap = on ? "on" : "off";
+      });
+      const wrapOn = wrap.remembered();
+      wrap.paint(wrapOn);
+      block.dataset.wrap = wrapOn ? "on" : "off";
       const actions = document.createElement("span");
       actions.className = "code-actions";
-      actions.append(copy, save);
+      actions.append(wrap.button, copy, save);
       bar.append(label, actions);
 
       const pre = document.createElement("pre");
@@ -471,6 +492,7 @@ function renderMarkdown(container, text, depth = 0) {
       pre.appendChild(codeEl);
       block.append(bar, pre);
       container.appendChild(block);
+      if (language === "mermaid") mermaidSoon(block);
       continue;
     }
 
@@ -1036,7 +1058,7 @@ function recordTabVisit(name, section = null, title = "", { refine = false } = {
 //: mirroring it (`routerGo`, router.js), which answers with `popstate` and
 //: lands in `goToTabHistory` below; the stack walks on its own otherwise.
 function stepTabHistory(delta) {
-  if (typeof routerGo === "function" && routerGo(delta)) return;
+  if (routerGo(delta)) return;
   return goToTabHistory(tabHistory.index + delta);
 }
 
@@ -1049,7 +1071,7 @@ async function goToTabHistory(next, { fromBrowser = false } = {}) {
   if (next < 0 || next >= tabHistory.stack.length) return;
   //: A jump from the history menu is a walk through the browser's history
   //: too, for the same reason Back is (`stepTabHistory`).
-  if (!fromBrowser && typeof routerGo === "function" && routerGo(next - tabHistory.index)) return;
+  if (!fromBrowser && routerGo(next - tabHistory.index)) return;
   const entry = tabHistory.stack[next];
   const from = tabHistory.index;
   tabHistory.index = next;
@@ -1757,9 +1779,18 @@ async function confirmLeavingUnsavedWork(name) {
   //: is not a departure; asking about it on every move was the bug. A
   //: document with edits in hand is saved now, and asked about only if
   //: that save fails.
-  if (typeof docDirty === "undefined" || !docDirty) return true;
+  if (typeof docDirty === "undefined") return true;
+  if (!docDirty) {
+    //: A document made by a keystroke and then emptied again (dog3d-1026) is
+    //: binned on leaving, as it already is on New or opening another.
+    await docDropIfUntouched();
+    return true;
+  }
   await saveDocument({ silent: true }).catch(() => {});
-  if (!docDirty) return true;
+  if (!docDirty) {
+    await docDropIfUntouched();
+    return true;
+  }
   const leave = await confirmDialog(
     "Leave without saving?\n\nWhat you were working on here hasn't been saved yet."
   );
@@ -2178,7 +2209,7 @@ $("graph-layout").addEventListener("change", async (event) => {
   // A different layout is a different shape (a radial ring is nothing like
   // a force-directed cloud): re-frame for it, unlike the filter/slider
   // changes that intentionally leave the camera alone.
-  graphAutoFitDone = false;
+  if (prefs.get("graph-autofit", null) !== "0") graphAutoFitDone = false;
   renderGraph();
 });
 

@@ -264,8 +264,26 @@ def _own_names() -> set[str]:
     return {name, short, f"{short}.local"}
 
 
-def host_allowed(host_header: str | None) -> bool:
-    """Is this Host one that names this computer? (the rebinding guard)."""
+#: **The friendly local name** (`TESSELLATE_LOCAL_NAME=tessellate` opens
+#: `http://tessellate.localhost:PORT`). Browsers that follow RFC 6761 answer
+#: every `*.localhost` with loopback themselves; one that hands the lookup to
+#: the network's DNS would let a hostile resolver point `evil.localhost` at
+#: this computer's LAN address and rebind. So the guard accepts the one name
+#: configured, never any other `*.localhost`, and only on a request that
+#: arrived on loopback (lansec-1025).
+LOCAL_NAME_ENV = "TESSELLATE_LOCAL_NAME"
+
+
+def local_name() -> str:
+    """`<name>.localhost` for the configured name, or "" when none is set."""
+    name = os.environ.get(LOCAL_NAME_ENV, "").strip().lower()
+    return f"{name}.localhost" if re.fullmatch(r"[a-z0-9-]{1,63}", name) else ""
+
+
+def host_allowed(host_header: str | None, *, on_loopback: bool = False) -> bool:
+    """Is this Host one that names this computer? (the rebinding guard).
+    `on_loopback`: the request arrived on loopback, the only place the
+    friendly local name (`local_name`) is accepted."""
     if not host_header:
         return True  # HTTP/1.0 or a local tool: nothing to judge, nothing to rebind
     text = host_header.strip().lower()
@@ -275,6 +293,8 @@ def host_allowed(host_header: str | None) -> bool:
         host = text.rsplit(":", 1)[0] if text.count(":") == 1 else text
     if host in _LOOPBACK_NAMES:
         return True
+    if host.endswith(".localhost"):
+        return on_loopback and host == local_name()
     try:
         ipaddress.ip_address(host.split("%", 1)[0])
         return True
@@ -319,6 +339,33 @@ def _proc_v6_addresses() -> list[str]:
     return found
 
 
+def _resolved_addresses(family: int, errors: tuple[type[Exception], ...]):
+    """The addresses this host's name resolves to in one family; none when it has no such name."""
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, family):
+            yield info[4][0]
+    except errors:
+        return  # no resolvable name: the other sources still run
+
+
+def _interface_addresses():
+    """Each Linux interface's own IPv4 address, by `SIOCGIFADDR`."""
+    try:
+        import fcntl
+
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            for _index, name in socket.if_nameindex():
+                try:
+                    packed = fcntl.ioctl(
+                        probe.fileno(), 0x8915, struct.pack("256s", name.encode()[:15])  # SIOCGIFADDR
+                    )
+                except OSError:
+                    continue  # an interface with no IPv4 address
+                yield socket.inet_ntoa(packed[20:24])
+    except (OSError, ImportError):
+        return  # no ioctl here: the hostname addresses are all we can offer
+
+
 def lan_addresses(include_v6: bool | None = None) -> list[str]:
     """This machine's addresses other devices could use, best effort: IPv4
     first, then global and unique-local IPv6 when the bind can answer on
@@ -332,6 +379,7 @@ def lan_addresses(include_v6: bool | None = None) -> list[str]:
     """
     if include_v6 is None:
         include_v6 = dual_stack()
+    linux = sys.platform.startswith("linux")
     found: list[str] = []
     found_v6: list[str] = []
 
@@ -346,35 +394,16 @@ def lan_addresses(include_v6: bool | None = None) -> list[str]:
         elif include_v6 and _usable_v6(ip) and str(ip) not in found_v6:
             found_v6.append(str(ip))
 
-    try:
-        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
-            add(info[4][0])
-    except OSError:
-        pass  # no resolvable hostname: the interface scan below still runs
-    if sys.platform.startswith("linux"):
-        try:
-            import fcntl
-
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
-                for _index, name in socket.if_nameindex():
-                    try:
-                        packed = fcntl.ioctl(
-                            probe.fileno(), 0x8915, struct.pack("256s", name.encode()[:15])  # SIOCGIFADDR
-                        )
-                    except OSError:
-                        continue  # an interface with no IPv4 address
-                    add(socket.inet_ntoa(packed[20:24]))
-        except (OSError, ImportError):
-            pass  # no ioctl here: the hostname addresses above are all we can offer
+    sources = [_resolved_addresses(socket.AF_INET, (OSError,))]
+    if linux:
+        sources.append(_interface_addresses())
     if include_v6:
-        try:
-            for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6):
-                add(info[4][0])
-        except (OSError, AttributeError):
-            pass  # no IPv6 name for this host: the table below may still have some
-        if sys.platform.startswith("linux"):
-            for address in _proc_v6_addresses():
-                add(address)
+        sources.append(_resolved_addresses(socket.AF_INET6, (OSError, AttributeError)))
+        if linux:
+            sources.append(_proc_v6_addresses())
+    for source in sources:
+        for address in source:
+            add(address)
     return found + found_v6
 
 

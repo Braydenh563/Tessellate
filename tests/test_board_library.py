@@ -438,3 +438,46 @@ def test_a_library_tile_draws_what_placing_it_makes():
                 assert tile["stroke-width"] == data["width"]
     dashes = [tile.get("stroke-dasharray") for tile in out["placed"][-2] + out["placed"][-1]]
     assert dashes == out["dash"], dashes
+
+
+def _zs(state):
+    sketches = {s["id"]: s["z"] for s in state["sketches"]}
+    return sketches, {o["id"]: o["z"] for o in state["objects"]}
+
+
+def test_a_placement_lands_on_top_of_what_is_already_there(ai_client):
+    """wb5: a stencil carries z 5 (drawings) and 1 (cards, links); a board
+    already holding higher ones had the placement land under or tied with
+    them. Each band takes the next z, the stencil's own order kept."""
+    board = _board(ai_client)
+    old_sketch = ai_client.post("/whiteboard/sketches", json={"data": json.dumps({"d": _rect(0, 0), "shape": "rect"}), "x": 0, "y": 0, "z": 40, "board_id": board["id"]}).json()
+    old_box = ai_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "old"}, "board_id": board["id"], "x": 0, "y": 0, "z": 30, "width": 100, "height": 60}).json()
+    old_frame = ai_client.post("/whiteboard/objects", json={"kind": "frame", "data": {"content": "f"}, "board_id": board["id"], "x": 0, "y": 0, "z": -3, "width": 100, "height": 60}).json()
+    item = _save(ai_client)
+    for _ in range(2):
+        placed = ai_client.post(f"/whiteboard/boards/{board['id']}/place", json={"item_id": item["id"], "x": 500, "y": 0})
+        assert placed.status_code == 201
+    state = ai_client.get(f"/whiteboard/?board_id={board['id']}").json()
+    sketches, objects = _zs(state)
+    new_sketch = [z for i, z in sketches.items() if i != old_sketch["id"]]
+    new_box = [z for i, z in objects.items() if i not in (old_box["id"], old_frame["id"])]
+    assert min(new_sketch) > sketches[old_sketch["id"]] and len(set(new_sketch)) == len(new_sketch)
+    assert min(new_box) > objects[old_box["id"]] and len(set(new_box)) == len(new_box)
+    #: One band for drawings and cards (decision 43): the whole placement is
+    #: over the old drawing too, and no two placed rows tie.
+    assert min(new_box) > sketches[old_sketch["id"]] and not set(new_box) & set(new_sketch)
+    #: The link (z 1 in the stencil) stays under its two shapes (z 5).
+    first = [s for s in state["sketches"] if s["id"] != old_sketch["id"]][:3]
+    link = next(s for s in first if json.loads(s["data"]).get("type", "").startswith("link-"))
+    assert all(link["z"] < s["z"] for s in first if s is not link)
+
+
+def test_a_placed_frame_goes_under_the_frames_already_there(ai_client):
+    board = _board(ai_client)
+    old = ai_client.post("/whiteboard/objects", json={"kind": "frame", "data": {"content": "f"}, "board_id": board["id"], "x": 0, "y": 0, "z": 4, "width": 100, "height": 60}).json()
+    frame = {"box": {"w": 10, "h": 10}, "items": [{"key": "f", "kind": "object", "type": "frame", "data": {"content": "New"}, "x": 0, "y": 0, "w": 300, "h": 200, "z": 1}], "links": []}
+    item = _save(ai_client, payload=frame)
+    placed = ai_client.post(f"/whiteboard/boards/{board['id']}/place", json={"item_id": item["id"], "x": 0, "y": 0})
+    assert placed.status_code == 201
+    _, objects = _zs(ai_client.get(f"/whiteboard/?board_id={board['id']}").json())
+    assert min(objects.values()) < objects[old["id"]] == 4

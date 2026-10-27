@@ -227,6 +227,18 @@
   }
 }
 
+/* **A table in the Read view is set like the prose around it.** It wore the
+   code block's monospace and `width: 100%`, so a three-word table spread to
+   the page (columns of 113, 249 and 295 px at 1440) and read as source. Body
+   font, columns sized to their content, never wider than the page; full view
+   keeps the chat's own fit and actual-size rules. */
+#doc-preview .md-table-block:not(.is-full) .md-table {
+  font-family: var(--font-sans);
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
 /* **A quotation in the rendered view** (DOCUMENTS_PLAN 17c). The document's
    preview had no rule for `blockquote` at all, so a quotation was the
    browser's default: a 40px indent, the body ink, no bar, and nothing to say
@@ -420,6 +432,8 @@
 .cm-md-task-hit {
   position: relative;
   display: inline-block;
+  /* The list's whole hanging indent, so a wrapped line sits under the words. */
+  width: 1.6em;
   line-height: 1;
   vertical-align: -0.15em;
   /* An inline-block is a block container, so it inherits the list line's
@@ -432,7 +446,7 @@
   content: "";
   position: absolute;
   top: 50%;
-  right: -0.4em;
+  right: 0;
   width: var(--target-min);
   height: 1.6em;
   transform: translateY(-50%);
@@ -1083,34 +1097,6 @@
 
   .doc-margin-cards {
     margin-top: 0;
-  }
-}
-
-/* A Mermaid flowchart drawn by documents.js (DOCUMENTS_PLAN decision 20.6),
-   in Read, in Live and in a print: the ink of the text around it, the boxes
-   on the card so a line never shows through a label, wider than the page
-   only by scrolling sideways. The SVG carries its own fallbacks (Canvas,
-   currentColor) for the HTML export, which has its own stylesheet. */
-.md-mermaid {
-  margin: var(--space-4) 0;
-  overflow-x: auto;
-  color: var(--ink);
-}
-
-.md-mermaid .md-mermaid-node,
-.md-mermaid .md-mermaid-label-bg {
-  fill: var(--card);
-}
-
-@media print {
-  .md-mermaid .md-mermaid-node,
-  .md-mermaid .md-mermaid-label-bg {
-    fill: #fff;
-  }
-
-  .md-mermaid {
-    color: #000;
-    break-inside: avoid;
   }
 }
 

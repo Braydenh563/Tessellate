@@ -431,12 +431,27 @@ def _when(raw: object, today: date) -> str:
 _EMPTY = {"form": None, "text": "", "chart": None}
 
 
+#: Named in the lead up to this many; past it, the most used and a count.
+_NAMED_IN_LEAD = 6
+
+
+def named_lead(rows: list[dict], noun: str, name: str = "name", notes: str = "notes") -> str:
+    """"You have three categories: Uni (3), Hobbies (2) and Personal (2)."
+    Every one named when they are few (INBOX 1357, class I: "list my
+    categories" named only the biggest); past `_NAMED_IN_LEAD`, the most used."""
+    mark = "#" if noun == "tag" else ""
+    said = [f"{mark}{r.get(name)} ({r.get(notes)})" for r in rows]
+    if len(rows) <= _NAMED_IN_LEAD:
+        return f"You have {count_noun(len(rows), noun)}: {join_items(said)}."
+    return f"You have {count_noun(len(rows), noun)}; the most used are {join_items(said[:3])}."
+
+
 def _say_named(tool: str, result: dict, today: date) -> tuple[str, dict]:
     key, noun = ("tags", "tag") if tool == "list_tags" else ("categories", "category")
     rows = _named(result.get(key) or [])
     if not rows:
         return f"You have no {key} yet.", _EMPTY
-    lead = f"You have {count_noun(len(rows), noun)}; {rows[0]['name']} has the most notes ({rows[0]['notes']})."
+    lead = named_lead(rows, noun)
     return lead, render(rows, title=f"Notes per {noun}", by=noun) if len(rows) > 1 else _EMPTY
 
 

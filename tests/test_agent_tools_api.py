@@ -204,7 +204,10 @@ def test_agent_feeds_tool_results_back_to_model(ai_client, fake_ollama):
     _save(ai_client, "buy milk", category="Shopping")
     fake_ollama.tool_script = [[{"name": "count_notes", "arguments": {}}]]
 
-    _stream_events(ai_client, "how many notes do I have?")
+    #: Not a question the engine counts itself: with a model up, "how many
+    #: notes do I have" is the model's from the app's count (`_fact_events`,
+    #: 2026-10-27), and this test is about the agent's own rounds.
+    _stream_events(ai_client, "use your tools to look over my notebook")
 
     # Round 2 must contain a tool message with the count result.
     final_round = fake_ollama.tool_rounds[-1]

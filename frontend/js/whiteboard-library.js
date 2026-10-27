@@ -751,7 +751,7 @@ async function wbLibPlace(entry, at = null, { connect = false, onto = null, grab
             method: "POST",
             body: JSON.stringify({
               data: JSON.stringify({ type: "link-straight", sourceId: was.id, sourceKind: was.kind, targetId: first.id, targetKind, color: wbLibInk(), endCap: "arrow" }),
-              x: 0, y: 0, z: 1, board_id: window.currentBoardId ?? null,
+              x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null,
             }),
           });
           wbState.sketches.push(link);
@@ -819,6 +819,10 @@ async function wbLibNewBoardFrom(entry) {
       body: JSON.stringify({ ...wbLibRefBody(entry.ref), name: name.trim(), ink: wbLibInk() }),
     });
     await openWhiteboardBoard(board.id);
+    //: A template's rows are placed as a ladder; the layout it names is drawn
+    //: once, as the map opens (K15: Career plan said "Tree, downward" over
+    //: a sideways ladder).
+    if (board.type === "map") await wbMapTidyFresh();
     wbBoardMadeStep(board);
     toast(`Started "${board.title}" from ${entry.name}.`);
   } catch (err) {
@@ -1602,10 +1606,10 @@ onDomReady(() => {
 
 // --- Layers (WHITEBOARD_PLAN decision 27; INBOX 557b) ------------------------
 //
-// The board as a tree in paint order, front first: what is drawn in the card
-// layer (cards, text, stickies, pictures), the frames under them, then the
-// drawing layer (shapes, lines, ink, connectors), which this app always
-// paints under the cards. A group is a row with its members under it. Each
+// The board as a tree in paint order, front first: cards, text, stickies,
+// pictures, shapes, lines, ink and connectors in one list (they stack
+// together, decision 43), then the frames under them. A group is a row with
+// its members under it. Each
 // row: the eye (hide, show), the lock (decision 15's flag) and its name; a
 // press selects the item and brings it on screen; a drag, or Alt+Up and
 // Alt+Down, restacks it within its layer; F2 renames; Delete deletes.
@@ -1631,11 +1635,13 @@ function wbLayerEntryByKey(key) {
 function wbLayerRows() {
   const rows = [];
   const layer = (title, entries, held = null) => {
-    entries.sort((a, b) => (b.item.z || 0) - (a.item.z || 0) || b.item.id - a.item.id);
+    //: Top first, in the board's one stack order (`wbStackCompare`).
+    entries.sort((a, b) => wbStackCompare(b, a));
     const groups = new Map();
     const top = [];
     for (const e of entries) {
-      const g = e.item.group_id;
+      //: One row per outermost group: a group inside it moves with it.
+      const g = wbTopGroup(e.item);
       if (g) {
         if (!groups.has(g)) {
           const head = { group: g, members: [] };
@@ -1658,7 +1664,7 @@ function wbLayerRows() {
         rows.push({ ...m, level: 2, name: wbLayerName(m.kind, m.item), holds: inside.length });
         if (inside.length && !wbLayerFoldedFrames.has(m.item.id)) {
           const members = inside.map((key) => wbLayerEntryByKey(key)).filter(Boolean)
-            .sort((a, b) => (b.item.z || 0) - (a.item.z || 0) || b.item.id - a.item.id);
+            .sort((a, b) => wbStackCompare(b, a));
           for (const h of members) rows.push({ ...h, level: 3, name: wbLayerName(h.kind, h.item), held: true });
         }
       }
@@ -1683,9 +1689,10 @@ function wbLayerRows() {
     held.set(frame.item.id, keys);
   }
   const unclaimed = (list) => list.filter((e) => !claimed.has(wbMultiKey(e.kind, e.item.id)));
-  layer("Cards, text and pictures", unclaimed(cards));
+  //: One list for cards and drawings, top first: they stack together
+  //: (decision 43), and frames are under both.
+  layer("Cards and drawings", unclaimed([...cards, ...drawings]));
   if (frames.length) layer("Frames", frames, held);
-  layer("Drawings, shapes and lines", unclaimed(drawings));
   return rows;
 }
 
@@ -2050,7 +2057,7 @@ function wbLayerSelect(li, { zoom = true } = {}) {
     clearWbSelection();
     for (const kind of ["node", "object", "sketch"]) {
       for (const item of wbState[WB_LIST_BY_KIND[kind]] || []) {
-        if (item.group_id === li.dataset.group && !wbIsLocked(kind, item) && !wbItemHidden(kind, item)) wbMultiSelection.add(wbMultiKey(kind, item.id));
+        if (wbTopGroup(item) === li.dataset.group && !wbIsLocked(kind, item) && !wbItemHidden(kind, item)) wbMultiSelection.add(wbMultiKey(kind, item.id));
       }
     }
     wbApplySelectionHighlight();
@@ -2139,13 +2146,13 @@ async function wbLayerRestack(li, target, above) {
   const b = wbLayerEntry(target);
   if (!a || !b || a[1] === b[1]) return;
   const [kind, item] = a;
-  const sameLayer = (kind === "sketch") === (b[0] === "sketch") && (item.kind === "frame") === (b[1].kind === "frame");
-  if (!sameLayer) {
-    toast("Drawings stay under the cards, and frames under both: an item restacks within its own layer.");
+  if (wbStackBand(kind, item) !== wbStackBand(b[0], b[1])) {
+    toast("Frames stay under everything else: a frame restacks among the frames.");
     return;
   }
+  //: Already in the board's stack order, bottom first.
   const peers = wbZOrderStepPeers(kind, item);
-  const order = peers.map((p) => p.row).sort((x, y) => (x.z || 0) - (y.z || 0) || x.id - y.id).filter((r) => r !== item);
+  const order = peers.map((p) => p.row).filter((r) => r !== item);
   const at = order.indexOf(b[1]);
   if (at < 0) return;
   order.splice(above ? at + 1 : at, 0, item);

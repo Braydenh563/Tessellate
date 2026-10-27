@@ -34,7 +34,7 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 #: LAZY_ENTRY_POINTS stand-in, always defined) came out, and four documents.js
 #: lets became fields of two consts (the word list's loading and failed flags,
 #: the dim and typewriter reading modes).
-GUARDS_CAP = 277
+GUARDS_CAP = 276
 TOP_LEVEL_LETS_CAP = 699
 
 

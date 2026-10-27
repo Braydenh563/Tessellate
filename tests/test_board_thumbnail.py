@@ -83,3 +83,42 @@ def test_purge_removes_file(client):
     purged = client.delete(f"/entries/{bid}/purge")
     assert purged.status_code in (200, 204)
     assert board_thumbs.find(data_dir, bid) is None
+
+
+def test_default_board_thumbnail_travels_as_board_zero(client):
+    """The default board has no note and no id; the client sends 0 for it
+    (the owner, 2026-10-26: it only ever showed the schematic fallback)."""
+    row = next(b for b in client.get("/whiteboard/boards").json() if b["id"] is None)
+    assert row["thumb_v"] is None
+    state = _state(client, 0)
+    assert state["stored"] is None
+    assert _put(client, 0, WEBP, fp=state["fp"]).status_code == 200
+    assert client.get(f"/media/board-thumb/0?v={state['fp']}").content == WEBP
+    row = next(b for b in client.get("/whiteboard/boards").json() if b["id"] is None)
+    assert row["thumb_v"] == state["fp"]
+    assert _put(client, -1, WEBP).status_code == 404
+
+
+def test_thumb_survives_a_card_note_write_that_leaves_its_title(client):
+    """INBOX 1418: the thumbnail was fingerprinted on `max(Entry.updated_at)`
+    of the cards' notes, which any write moves (a pin, a body edit, the
+    janitor), so the default board's picture went back to the drawn fallback
+    without the board changing. Only the title is drawn."""
+    note = client.post("/entries", json={"title": "Alpha", "content": "# Alpha\nfirst body"}).json()
+    placed = client.post("/whiteboard/nodes", json={"entry_id": note["id"], "board_id": None, "x": 10, "y": 10})
+    assert placed.status_code == 200, placed.text
+    fp = _state(client, 0)["fp"]
+    assert _put(client, 0, WEBP, fp=fp).status_code == 200
+
+    def default_row():
+        return next(b for b in client.get("/whiteboard/boards").json() if b["id"] is None)
+
+    assert default_row()["thumb_v"] == fp
+    body = client.put(f"/entries/{note['id']}", json={"content": "# Alpha\nsecond body, same title"})
+    assert body.status_code == 200, body.text
+    pinned = client.put(f"/entries/{note['id']}", json={"pinned": True})
+    assert pinned.status_code == 200, pinned.text
+    assert default_row()["thumb_v"] == fp
+    renamed = client.put(f"/entries/{note['id']}", json={"content": "# Beta\nsecond body"})
+    assert renamed.status_code == 200, renamed.text
+    assert default_row()["thumb_v"] is None

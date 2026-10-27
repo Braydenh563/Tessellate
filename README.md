@@ -2,7 +2,7 @@
 
 <img src="frontend/icon-512.png" alt="Tessellate" width="120">
 
-# Tessellate <sub><sup>notes</sup></sub>
+# Tessellate
 
 <i>Your notes, pieced together</i><br>
 <sub>Formerly MemoryMap AI</sub>
@@ -21,7 +21,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-green)](LICENSE)
 
 [![Last commit](https://img.shields.io/github/last-commit/Braydenh563/Tessellate)](https://github.com/Braydenh563/Tessellate/commits/main)
-[![Tests](https://img.shields.io/badge/tests-10%2C200%2B%20offline-brightgreen)](tests)
+[![Tests](https://img.shields.io/badge/tests-12%2C400%2B%20offline-brightgreen)](tests)
 [![Complexity](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/complexity.yml)
 [![Performance](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml/badge.svg)](https://github.com/Braydenh563/Tessellate/actions/workflows/performance.yml)
 
@@ -170,6 +170,9 @@ Open a section for the detail.
   spelling and grammar checks that run on your computer, version history,
   focus mode, and code files with line numbers, the line you are on lightly
   highlighted. A document reopens where you left it.
+- A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
+  more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
+  first use, so it works offline.
 - The Writing room turns rough thoughts into a proper note, or a pasted block
   into several linked notes, before anything is saved.
 - Export a document as Markdown, HTML, PDF or Word, and your notes as JSON,
@@ -365,15 +368,15 @@ version for first-time terminal users.
    Settings, Models.
 3. Write a note, then ask about it in Notes, Ask.
 
-**A first install needs the internet once.** The first setup downloads the search model and the packages you chose; after that Tessellate works offline.
+**A first install needs the internet once.** The first setup downloads the packages you chose; after that Tessellate works offline. Search by meaning is a separate download that waits for your yes.
 
-**The first launch downloads the search model.** Search and filing by meaning
-use a built-in model that needs the `sentence-transformers` package. If it is
-missing, the app installs it the first time it is needed: a one-time download
-of several hundred MB (more on Windows, where it brings torch) that needs the
-internet and can take several minutes. Settings, Search and index, Search
-engine says when it is running. To avoid the download, pull `nomic-embed-text`
-in Ollama and pick it in the same place.
+**Search by meaning asks before it downloads.** Search and filing by meaning
+use a built-in model that needs the `fastembed` package (ONNX Runtime, no
+PyTorch) and a small model from huggingface.co: about 130 MB, once. Nothing is
+fetched until you say yes. The first saved note offers it once (Download or No
+thanks), and Settings, Search and index, Download search by meaning turns it on
+later; until then search uses keywords. To avoid the download, pull
+`nomic-embed-text` in Ollama and pick it in the same place.
 
 ## Requirements and optional extras
 
@@ -386,7 +389,7 @@ in Ollama and pick it in the same place.
 
 | Extra | What it adds |
 | --- | --- |
-| Search by meaning (sentence-transformers) | Matching ideas rather than words; about 2 GB with torch |
+| Search by meaning (fastembed) | Matching ideas rather than words; about 60 MB, plus a 67 MB model |
 | Voice notes (faster-whisper) | Local dictation for the microphone buttons |
 | Desktop window (pywebview) | The app in its own window, and a tray icon on Windows |
 | Import documents (markitdown) | PDF, Word and slide decks become notes |
@@ -475,7 +478,7 @@ share of each against your own notebook.
 | [CHANGELOG](CHANGELOG.md) | What changed, release by release |
 | [SECURITY](SECURITY.md) | How to report a vulnerability |
 
-**Status.** Version 0.6.1. This is a beta (`0.x`). Capture, chat with
+**Status.** Version 0.6.2. This is a beta (`0.x`). Capture, chat with
 checkable answers, the graph, documents, boards and mind maps, the OCR
 workspace, private notes and themes are built and stable, with desktop builds
 for Windows and Linux. Settings, Help has a guided tour of the real controls.
@@ -486,7 +489,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 11,200+ tests, fully offline, every AI call faked
+pytest -n auto                  # 12,400+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

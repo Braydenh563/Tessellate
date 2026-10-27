@@ -78,6 +78,19 @@ const CASES = [
   //: the delimiters they name, in the row they were written in, which is what
   //: MathML stretches on its own.
   ["\\left(x+1\\right)", "math[mrow[mo(() mi(x) mo(+) mn(1) mo())]]"],
+  //: The equation editor's templates (DOCUMENTS_PLAN row 16): a matrix, a
+  //: case split, a binomial, an accent and TeX's spaces, each drawn as the
+  //: structure it names rather than as the words of its commands.
+  ["\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}", "math[mrow[mo(() mtable[mtr[mtd[mi(a)] mtd[mi(b)]] mtr[mtd[mi(c)] mtd[mi(d)]]] mo())]]"],
+  ["\\begin{bmatrix} 1 & 0 \\end{bmatrix}", "math[mrow[mo([) mtable[mtr[mtd[mn(1)] mtd[mn(0)]]] mo(])]]"],
+  ["\\begin{matrix} x \\end{matrix}", "math[mtable[mtr[mtd[mi(x)]]]]"],
+  ["f = \\begin{cases} 1 & x > 0 \\\\ 0 & x \\le 0 \\end{cases}", "math[mrow[mi(f) mo(=) mrow[mo({) mtable[mtr[mtd[mn(1)] mtd[mrow[mi(x) mo(>) mn(0)]]] mtr[mtd[mn(0)] mtd[mrow[mi(x) mo(≤) mn(0)]]]]]]]"],
+  ["\\binom{n}{k}", "math[mrow[mo(() mfrac[mi(n) mi(k)] mo())]]"],
+  ["\\vec{v}", "math[mover[mi(v) mo(→)]]"],
+  ["\\hat{x}", "math[mover[mi(x) mo(^)]]"],
+  ["\\overline{AB}", "math[mover[mrow[mi(A) mi(B)] mo(‾)]]"],
+  ["a\\,b", "math[mrow[mi(a) mspace[] mi(b)]]"],
+  ["a \\quad b", "math[mrow[mi(a) mspace[] mi(b)]]"],
 ];
 
 for (const [tex, want] of CASES) {
@@ -103,7 +116,10 @@ check("inline by default", docMathTree("x").attrs.display === "inline", docMathT
 check("display when asked", docMathTree("x", true).attrs.display === "block", "");
 
 // Nothing in this region may reach for the DOM.
-check("no inline styles", JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
+// An equation number: \tag{n} leaves the formula and rides on the tree, display only.
+check("tag is taken off a display formula", sketch(docMathTree("a \\tag{1}", true)) === sketch(docMathTree("a", true)) && docMathTree("a \\tag{1}", true).label === "1", docMathTree("a \\tag{1}", true).label);
+check("no tag inline", docMathTree("a \\tag{1}", false).label === "", "");
+check("no inline styles",JSON.stringify(docMathTree("\\mathbf{a}")).includes("mathvariant"), "");
 
 // **What is math and what is a price.**
 const MATHS = ["x^2", "a+b", "\\frac{1}{2}", "E=mc^2", "\\pi r^2", "n_1"];
@@ -117,7 +133,7 @@ for (const body of PRICES) {
 
 // Nothing throws, whatever it is handed: an editor renders as you type, so
 // every half-typed formula in the document is an input to this.
-for (const partial of ["\\frac{", "x^", "{", "}", "\\", "\\unknown{x}", "^{}_{}", "$$", "\\sqrt["]) {
+for (const partial of ["\\frac{", "x^", "{", "}", "\\", "\\unknown{x}", "^{}_{}", "$$", "\\sqrt[", "\\begin{", "\\begin{pmatrix} a &", "\\begin{cases} \\begin{matrix} x", "\\end{pmatrix}", "\\vec", "\\binom{"]) {
   let ok = true;
   try {
     docMathTree(partial);

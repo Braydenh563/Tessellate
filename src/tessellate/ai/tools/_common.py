@@ -336,6 +336,23 @@ _READ_MORE = (
 )
 
 
+def board_top_z(session: Session, board_id: int | None) -> int:
+    """The z a new drawing or card takes on a board: one over every stroke
+    and card on it, frames aside (WHITEBOARD_PLAN decision 43: they stack in
+    one order, and a new item lands on top, as `wbStackNewZ` does)."""
+    from tessellate.core.database import WhiteboardNode, WhiteboardObject, WhiteboardSketch
+
+    def here(col):  # noqa: ANN001, ANN202
+        return col.is_(None) if board_id is None else col == board_id
+
+    tops = [
+        session.scalar(select(func.max(WhiteboardSketch.z)).where(here(WhiteboardSketch.board_id))),
+        session.scalar(select(func.max(WhiteboardNode.z)).where(here(WhiteboardNode.board_id))),
+        session.scalar(select(func.max(WhiteboardObject.z)).where(here(WhiteboardObject.board_id), WhiteboardObject.kind != "frame")),
+    ]
+    return max([0, *[t for t in tops if t is not None]]) + 1
+
+
 def _limit_arg(args: dict, default: int, max_limit: int = MAX_LIST_LIMIT) -> int:
     """Clamp whatever the model asked for into the budget. A model that asks
     for 500 notes gets max_limit and is told so by `has_more`."""

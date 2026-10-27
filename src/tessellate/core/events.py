@@ -848,9 +848,7 @@ def undo(
             continue
         target: dict[str, Any] = {}
         for row in reversed(changes):
-            for key, value in row.payload["before"].items():
-                if key in _UNDOABLE_ENTRY_FIELDS:
-                    target[key] = value
+            target.update({k: v for k, v in row.payload["before"].items() if k in _UNDOABLE_ENTRY_FIELDS})
         if created:
             target = {"is_deleted": True, "deleted_at": utcnow().isoformat()}
         if "content" in target and not _readable_now(target["content"]):

@@ -403,6 +403,7 @@ async function submitHelpChatQuestion(question) {
         history: helpChatHistory,
         tab: agentCurrentTab(),
         context: helpChatOnScreenHelp(),
+        actions: (await screenContext()).actions,
       },
     });
     const content = result?.content || "Sorry, I couldn't answer that.";
@@ -790,14 +791,21 @@ let helpChatHome = null;
 
 let helpChatSheetClose = null;
 
+//: The status bar's Guide button: a second press closes the panel rather
+//: than stacking a second sheet.
+function toggleHelpChat() {
+  if (document.querySelector('[data-sheet="guide"]')) helpChatSheetClose?.();
+  else openHelpChat();
+}
+
 function openHelpChat() {
   const group = $("help-chat-group");
   if (!group) return null;
-  //: Already open: a second press (the status button) closes it rather than stacking a second sheet.
-  if (document.querySelector('[data-sheet="guide"]')) {
-    helpChatSheetClose?.();
-    return null;
-  }
+  //: Already open: nothing to do. Opening never closes; the status button
+  //: that does is `toggleHelpChat`. When this toggled, a starter chip pressed
+  //: inside the open Guide shut it before its answer came (the owner,
+  //: 2026-10-27), and so did every "Ask Atlas" and reopen while it was up.
+  if (document.querySelector('[data-sheet="guide"]')) return null;
   helpChatHome = { parent: group.parentNode, next: group.nextSibling };
   const menu = $("help-chat-menu");
   const menuHome = menu ? { parent: menu.parentNode, next: menu.nextSibling } : null;

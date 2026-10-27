@@ -336,7 +336,7 @@ async function replyCalcWork(text) {
   return apiJson(`/utilities/work?q=${encodeURIComponent(asked)}`);
 }
 
-function openCalculator(input = "") {
+function openCalculator(input = "", mode = "work") {
   const existing = document.querySelector('[data-sheet="calculator"]');
   if (existing) {
     const box = existing.querySelector(".calc-input");
@@ -345,17 +345,18 @@ function openCalculator(input = "") {
       box.dispatchEvent(new Event("input"));
     }
     box?.focus();
+    if (mode === "convert") existing.querySelector('.calc-modes [role="tab"]:last-child')?.click();
     return;
   }
   openSheet({
     label: "Calculator",
     sub: "Sums, percentages and conversions, worked out by the app with no model.",
     name: "calculator",
-    build: (card) => replyCalcBuild(card, input),
+    build: (card) => replyCalcBuild(card, input, mode),
   });
 }
 
-function replyCalcBuild(card, input) {
+function replyCalcBuild(card, input, mode = "work") {
   //: A tab strip, not a pill (DESIGN.md, "A popup that chooses a kind").
   const modes = document.createElement("div");
   modes.className = "tabs-line popup-kinds calc-modes";
@@ -393,7 +394,8 @@ function replyCalcBuild(card, input) {
     modes.appendChild(button);
   }
   card.append(modes, work, convert);
-  requestAnimationFrame(() => work.querySelector(".calc-input")?.focus());
+  if (mode === "convert") modes.lastElementChild.click();
+  else requestAnimationFrame(() => work.querySelector(".calc-input")?.focus());
 }
 
 function replyCalcResult() {
@@ -738,7 +740,7 @@ function replyByHelpPanel(kind) {
     REPLY_BY_WHAT[kind] || REPLY_BY_WHAT.notes,
     "Every sentence in a notes answer is quoted from a note and cited. The only words the app adds are the joining ones and the counts and dates it measured. It does not guess, so it can miss what a model would work out.",
     "A model's answer shows the model's name here instead, and its sentences are new wording.",
-    "To use a model, turn on Use AI in Ask when a model is running, or connect one in Settings, Models.",
+    "To use a model, turn on the switch labelled AI in Ask when a model is running, or connect one in Settings, Models.",
   ]) {
     const p = document.createElement("p");
     p.textContent = line;
@@ -799,7 +801,10 @@ function replyByline(head, facts) {
     chip.setAttribute("aria-expanded", "false");
     chip.setAttribute("aria-label", `${said[0]}, written without an AI model. About this badge`);
     head.appendChild(chip);
-    head.after(panel);
+    //: Inside the head, not after it: a hidden panel between the head and the
+    //: steps broke `.msg-role:has(+ .agent-steps)`, so the bubble grew 2.4px
+    //: each time the open panel moved out to <body> (the owner, 2026-10-27).
+    head.appendChild(panel);
     wireHelpPopover(chip, panel);
     replyByHover(chip, panel);
     return;

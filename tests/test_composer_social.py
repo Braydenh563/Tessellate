@@ -37,12 +37,12 @@ EM_DASH = chr(0x2014)
     ],
 )
 def test_each_kind_of_small_talk_gets_a_reply_of_its_own_kind(message, kind):
-    assert composer.social(message) in composer.SOCIAL[kind]
+    assert composer.social(message) in composer.social_surfaces(kind)
 
 
 def test_what_can_you_do_says_what_the_composer_answers():
     reply = composer.social("what can you do", "about_app")
-    assert reply in composer.SOCIAL["about_app"]
+    assert reply in composer.social_surfaces("about_app")
 
 
 def test_the_same_greeting_twice_is_not_answered_the_same_way():

@@ -125,5 +125,5 @@ window.mapRaster = (board, size) =>
     alt: "",
     loading: "lazy",
     decoding: "async",
-    src: `/media/board-thumb/${board.id}?v=${board.thumb_v}`,
+    src: `/media/board-thumb/${board.id ?? 0}?v=${board.thumb_v}`,
   });

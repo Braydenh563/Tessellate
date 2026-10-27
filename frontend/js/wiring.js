@@ -950,7 +950,7 @@ $("status-agent")?.addEventListener("click", () => toggleAgentPalette());
 //: is deferred to the click rather than taken now. The same shape the phone's
 //: More sheet already uses for the same function.
 $("status-guide")?.addEventListener("click", () => {
-  openHelpChat();
+  toggleHelpChat();
 });
 
 $("status-find")?.addEventListener("click", () => openFinder());
@@ -984,32 +984,6 @@ $("graph-refresh").addEventListener("click", () => {
   renderGraph();
 });
 $("graph-export-png")?.addEventListener("click", exportGraphPng);
-// Direct instruction: "I want to be able to unroot and reset the graph to
-// free float if I want with a button." One request releases every pinned
-// node at once (routes_graph.py's unpin_all_nodes) rather than tracking
-// each one down to double-click it individually; renderGraph() afterwards
-// re-fetches from /graph, which is what actually clears fx/fy, the same
-// path #graph-refresh already uses, so a freshly unpinned layout settles
-// through the ordinary simulation rather than a special-cased one.
-$("graph-unpin-all")?.addEventListener("click", async (event) => {
-  // The button rides the Physics fold's own `<summary>` (index.html), so a
-  // press on it is also a press on the disclosure. `preventDefault` cancels
-  // the summary's activation behaviour and nothing else: a `type="button"`
-  // has no default action of its own to lose.
-  event.preventDefault();
-  try {
-    const result = await apiJson("/graph/unpin-all", { method: "POST" });
-    graphHighlightIds = null;
-    await renderGraph();
-    toast(
-      result.unpinned
-        ? `${result.unpinned} note${result.unpinned === 1 ? "" : "s"} released: the layout can move freely again.`
-        : "Nothing was pinned."
-    );
-  } catch (error) {
-    toast(error.message || "Couldn't unpin the graph.", true);
-  }
-});
 $("graph-similarity").addEventListener("change", renderGraph);
 $("graph-entities")?.addEventListener("change", renderGraph);
 $("graph-documents")?.addEventListener("change", renderGraph);
@@ -1476,7 +1450,13 @@ $("chat-plan").addEventListener("click", async () => {
 
 renderPlanToggle();
 
-$("web-search-toggle").addEventListener("click", async () => {
+//: `openFirst` is the button's own click: with web on and the panel shut it opens the
+//: panel rather than turning web off. The palette and slash row pass nothing and always toggle.
+async function toggleWebSearch({ openFirst = false } = {}) {
+  if (openFirst && prefsCache?.web_search_enabled && $("web-panel").classList.contains("hidden")) {
+    toggleWebPanel(true);
+    return;
+  }
   const next = !(prefsCache && prefsCache.web_search_enabled);
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
@@ -1491,7 +1471,10 @@ $("web-search-toggle").addEventListener("click", async () => {
     toggleWebPanel(false);
     toast("Web search off.");
   }
-});
+}
+//: On with the panel shut, a click opens the panel rather than turning web off (the owner,
+//: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
+$("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
 $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
 //: Enter searches; there is no Search button to press. ArrowDown walks from
 //: the field into the results (and ArrowUp from the first result back to the

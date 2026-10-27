@@ -441,7 +441,16 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     ]
     line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
     if not line:
-        return {"text": "", "kind": "none", "sources": []}
+        #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
+        from tessellate.api import chat_extra
+
+        try:
+            now = user_now(deps.get_config()).replace(tzinfo=None)
+            voice = str(deps.get_config().get_preference("composer_voice", "natural") or "natural")
+            text = chat_extra.welcome_line(session, now, voice=voice, seed=f"{seed}:{now.date()}") if not notes else ""
+        except Exception:  # noqa: BLE001  # the page falls back to its counts
+            text = ""
+        return {"text": text, "kind": "welcome" if text else "none", "sources": []}
     return {"text": line["text"].replace("**", ""), "kind": line["kind"], "sources": line["sources"]}
 
 
@@ -480,6 +489,20 @@ def dismiss_insight(body: InsightVerdict, session: Session = Depends(get_session
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     session.commit()
     return done
+
+
+@router.post("/done", status_code=201)
+def done_insight(body: InsightVerdict, session: Session = Depends(get_session)) -> dict:
+    """Done: a plan line is finished. Its confirmed fact is removed and it,
+    with its variants, is not shown again (INBOX 1412)."""
+    from tessellate.ai import insights
+
+    try:
+        result = insights.done(session, body.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    session.commit()
+    return result
 
 
 @router.get("/tag-cloud")
@@ -529,18 +552,17 @@ def on_this_day(session: Session = Depends(get_session)) -> list[dict]:
             .limit(5)
         )
     )
-    matches = []
     category_names = manager.bulk_category_names(session, matched_entries)
-    
-    for entry in matched_entries:
-        matches.append(
-            {
-                "id": entry.id,
-                "content": entry.content,
-                "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
-                "created_at": entry.created_at.isoformat(),
-            }
-        )
+
+    matches = [
+        {
+            "id": entry.id,
+            "content": entry.content,
+            "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
+            "created_at": entry.created_at.isoformat(),
+        }
+        for entry in matched_entries
+    ]
     return matches[:5]
 
 
@@ -678,6 +700,13 @@ def digest_structure_note(session: Session) -> str:
     )
 
 
+def composed_week(session: Session) -> str:
+    """The weekly digest with no model, from the rows (`activity.week`)."""
+    from tessellate.ai import activity
+
+    return activity.week(session, user_now(deps.get_config()))
+
+
 @router.post("/digest/stream")
 def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingResponse:
     """The weekly digest, streamed token by token (NDJSON).
@@ -699,7 +728,9 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
             yield event({"type": "done", "cacheable": True})
             return
         if not ollama.is_running():
-            yield event({"type": "answer", "delta": librarian.OFFLINE_MESSAGE})
+            #: With no model the composer says the week (owner-1026b K3); not
+            #: cached, so a model, once on, writes the next one.
+            yield event({"type": "answer", "delta": composed_week(session)})
             yield event({"type": "done", "cacheable": False})
             return
 
@@ -729,7 +760,10 @@ def weekly_digest_stream(session: Session = Depends(get_session)) -> StreamingRe
                 elif "thinking_delta" in piece:
                     yield event({"type": "thinking", "delta": piece["thinking_delta"]})
         except OllamaError:
-            yield event({"type": "answer", "delta": f"\n\n{librarian.OFFLINE_MESSAGE}"})
+            #: A server up with no model that can answer: the composed week,
+            #: unless the model had already started on its own.
+            said = f"\n\n{librarian.OFFLINE_MESSAGE}" if answer else composed_week(session)
+            yield event({"type": "answer", "delta": said})
             yield event({"type": "done", "cacheable": False})
             return
         #: The greeting and the announcement come off, the same trim and the
@@ -767,10 +801,11 @@ def weekly_digest(session: Session = Depends(get_session)) -> dict:
         }
 
     config = deps.get_config()
-    # Only a genuine AI answer is worth caching, if Ollama is down the
-    # digest is just the offline notice, which should be retried, not
-    # frozen for the day.
+    # Only a genuine AI answer is worth caching: with no model the digest is
+    # the composed week (owner-1026b K3), which a model, once on, replaces.
     ollama_running = deps.get_ollama().is_running()
+    if not ollama_running:
+        return {"digest": composed_week(session), "thinking": None, "cacheable": False}
     digest, thinking = librarian.answer(
         digest_question(session),
         notes,

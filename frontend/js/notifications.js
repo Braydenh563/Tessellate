@@ -36,7 +36,11 @@ async function runNotificationGo(action) {
     if (!found) return toast(`That ${target[2]} is no longer there.`);
     return target[1](action.id);
   }
-  if (action.tab) return switchTab(action.tab);
+  if (!action.tab) return undefined;
+  await switchTab(action.tab);
+  //: Library's Images and Files sub-tabs are two views of one tab.
+  if (action.media) document.querySelector(`#library-subtabs [data-media-kind="${action.media}"]`)?.click();
+  return undefined;
 }
 
 function notificationGoes(action) {

@@ -394,6 +394,14 @@ select.ai-unavailable {
 .thumb-wrap .unlink:is(:focus-visible, :has(:focus-visible)) {
   opacity: 1;
 }
+/* On a pointer device the remove control waits for the picture to be hovered
+   or focused: always drawn, it read as a close button on a sketch's own
+   drawing. Touch has no hover, so it stays drawn there. */
+@media (hover: hover) {
+  .entry-content .thumb-wrap:not(:hover, :focus-within) .unlink {
+    opacity: 0;
+  }
+}
 .entry-content s {
   opacity: 0.65;
 }
@@ -713,8 +721,8 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
    ghost tint under the pointer or the keyboard and the focus ring. A fixed
    column, so the descriptions start on one edge. */
 .shortcut-list button.shortcut-key {
-  justify-content: flex-start;
-  min-width: 7.5rem;
+  justify-content: space-between;
+  min-width: 11rem;
   min-height: var(--target-min);
   padding: 0 var(--space-1);
 }
@@ -858,9 +866,8 @@ button.map-chip:focus-visible {
   box-shadow: var(--glass-shadow);
   backdrop-filter: var(--glass-filter-clear);
   overflow: hidden;
-}
-.editor-menu.hidden {
-  display: none;
+  /* A fade only, each time `.hidden` lifts: it sits at the caret and moves with it. */
+  animation: ui-fade var(--ui-fast) var(--ease-out);
 }
 /* The list: the block menu's one scroller. 22rem holds a tile, a name over a
    one-line description and a short key hint without the description being
@@ -1559,6 +1566,19 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   overflow-x: auto;
   text-align: center;
 }
+/* A numbered display equation, `\tag{1}`: the formula stays centred and its
+   number sits at the right edge of the line. */
+.md-math-numbered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.md-math-number {
+  position: absolute;
+  right: 0;
+  color: var(--muted);
+}
 /* Inline maths, `$x$`: sits in the line of prose it was written in, so it
    takes none of the display block's centring or margin. */
 .md-math-inline {
@@ -2140,6 +2160,11 @@ body.resizing-sidebar {
 /* The group separators are furniture, not controls: they take the strip's
    height as a *rule*, and the sizing rule above must not turn them into 2rem
    blocks. */
+.doc-toolbar-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
 .doc-toolbar .doc-toolbar-sep {
   align-self: center;
   height: calc(var(--control-h) - var(--space-2));
@@ -2596,42 +2621,14 @@ body.resizing-sidebar {
   border-radius: var(--radius-pill);
   background: var(--chip-bg);
 }
-.code-actions > .code-copy {
-  border: 0;
-  border-radius: var(--radius-in-pill);
-  background: transparent;
-  box-shadow: none;
-  color: var(--muted);
-  padding-inline: var(--space-3);
-}
-.code-actions > .code-copy + .code-copy {
-  box-shadow: inset 1px 0 0 var(--border);
-}
-.code-actions > .code-copy:hover,
-.code-actions > .code-copy:focus-visible {
-  background: var(--surface-2);
-  color: var(--ink);
-  box-shadow: none;
-}
-.code-actions > .code-copy + .code-copy:hover,
-.code-actions > .code-copy + .code-copy:focus-visible {
-  box-shadow: inset 1px 0 0 transparent;
-}
-/* **The ⋯ is the second half of that one control, not a chip beside it**
-   (INBOX 188: the table bar is Copy plus a `kebabMenu` now). `kebabMenu`
-   returns its opener inside a `.menu-wrap`, which is what anchors the menu,
-   so the shell's rules above cannot reach the button with a child combinator
-   and it arrived wearing the app's normal ghost chrome: a bordered pill
-   inside a tinted pill. The wrap is made transparent and the opener is given
-   the same treatment its neighbour gets, with the hairline seam moved onto
-   the wrap so the divider still falls between the two items. */
-.code-actions > .menu-wrap {
-  display: inline-flex;
-  align-items: stretch;
-}
-.code-actions > * + .menu-wrap {
-  box-shadow: inset 1px 0 0 var(--border);
-}
+/* **One look for every item of the shell** (the Copy buttons, the wrap toggle,
+   the close X and the ⋯ opener). `kebabMenu` returns its opener inside a
+   `.menu-wrap`, which is what anchors the menu, so the opener is reached
+   through the wrap (INBOX 188: it arrived wearing the app's ghost chrome, a
+   bordered pill inside a tinted pill). The hairline seam falls between every
+   pair of items and sits on the wrap for the ⋯, on the button for the rest;
+   the button under the pointer or the focus drops its own seam. */
+.code-actions > .code-copy,
 .code-actions > .menu-wrap > button {
   border: 0;
   border-radius: var(--radius-in-pill);
@@ -2639,21 +2636,32 @@ body.resizing-sidebar {
   box-shadow: none;
   color: var(--muted);
 }
+.code-actions > .code-copy {
+  padding-inline: var(--space-3);
+}
+.code-actions > .menu-wrap {
+  display: inline-flex;
+  align-items: stretch;
+}
+.code-actions > * + .code-copy,
+.code-actions > * + .menu-wrap {
+  box-shadow: inset 1px 0 0 var(--border);
+}
+.code-actions > .code-copy:hover,
+.code-actions > .code-copy:focus-visible,
 .code-actions > .menu-wrap > button:hover,
 .code-actions > .menu-wrap > button:focus-visible {
   background: var(--surface-2);
   color: var(--ink);
 }
-/* The seam falls between every pair of items in the shell, and the pair the
-   two rules above cannot see is a `.code-copy` following the ⋯ (INBOX 239's
-   close X, which is last in the bar). Written as the general case so the next
-   button appended after the menu gets its divider too. */
-.code-actions > .menu-wrap + .code-copy {
-  box-shadow: inset 1px 0 0 var(--border);
-}
-.code-actions > .menu-wrap + .code-copy:hover,
-.code-actions > .menu-wrap + .code-copy:focus-visible {
+.code-actions > * + .code-copy:hover,
+.code-actions > * + .code-copy:focus-visible {
   box-shadow: inset 1px 0 0 transparent;
+}
+/* A toggle that is on (the wrap switch) reads as the accent's soft fill. */
+.code-actions > .code-copy[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 /* In full view the bar is the panel's title row: it sits still while the
    table scrolls under it. */
@@ -2773,6 +2781,13 @@ body.resizing-sidebar {
   background: none;
   padding: 0;
   font-size: var(--text-md);
+}
+/* Wrapped (the card head's toggle): the long line breaks where it must and
+   nothing scrolls sideways. */
+.code-block[data-wrap="on"] pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
 }
 /* Editing an answer in place. */
 .answer-editor {
@@ -3935,11 +3950,6 @@ button.is-on {
   font-size: var(--text-sm);
   font-weight: 400;
   line-height: 1.3;
-}
-.start-footer {
-  font-size: var(--text-base);
-  max-width: 46rem;
-  margin: 0.4rem auto 0;
 }
 /* Keyboard focus on the map. The graph takes one tab stop and the arrows move
    between notes inside it; without a visible ring there is no way to tell

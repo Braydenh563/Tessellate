@@ -116,3 +116,23 @@ def test_a_mark_comment_finds_the_recording(client):
     rid = _saved("Standup", ["nothing notable"], markers=json.dumps([{"at": 4000, "note": "ask about the pelican budget"}]))
     found = [h for h in _hits(client, "pelican") if h["kind"] == "recording"]
     assert [h["id"] for h in found] == [rid]
+
+
+def test_the_library_list_filters_by_name_or_transcript_and_names_the_line(client):
+    said = _saved("Call one", ["hello there", 'she said "zeppelin" twice', "100% sure"])
+    named = _saved("Zeppelin planning", ["nothing relevant"])
+    _saved("Call three", ["unrelated"])
+    rows = client.get("/recordings", params={"q": "zeppelin"}).json()["recordings"]
+    by_id = {row["id"]: row for row in rows}
+    assert set(by_id) == {said, named}
+    assert by_id[said]["match"] == {"start": 2000, "text": 'she said "zeppelin" twice'}
+    assert by_id[named]["match"] is None
+    quoted = client.get("/recordings", params={"q": 'said "zep'}).json()["recordings"]
+    assert [row["id"] for row in quoted] == [said]
+    # A percent sign is a character, not a wildcard.
+    pct = client.get("/recordings", params={"q": "100%"}).json()["recordings"]
+    assert [row["id"] for row in pct] == [said]
+    assert client.get("/recordings", params={"q": "100%x"}).json()["recordings"] == []
+    plain = client.get("/recordings").json()["recordings"]
+    assert len(plain) >= 3 and all("match" not in row for row in plain)
+    assert client.get("/recordings", params={"q": "zeppelin"}).headers["X-Total-Count"] == "2"

@@ -1,0 +1,29 @@
+/* The page around the pad when it runs on its own. The pad's look comes from
+   00-tokens-shell.css (the app's tokens) and sketch-pad.css; this file only
+   adds the three tokens the app defines in later sheets and lets the pad
+   fill the window; the card's padding, radius and shadow are the app's
+   `.card`. */
+:root {
+  --accent-surface: color-mix(in oklab, var(--accent) 88%, #000 12%);
+  --on-accent: #fff;
+  --radius-inner: max(0px, calc(var(--radius) - var(--space-3)));
+}
+:root[data-mode="dark"] {
+  --accent-surface: var(--accent);
+  --on-accent: #0d1017;
+}
+html,
+body {
+  block-size: 100%;
+  margin: 0;
+}
+body {
+  background: var(--modal-bg-opaque);
+}
+/* No scrim on its own page: the pad is the page. `main` outranks
+   sketch-pad.css, which is linked after this file; a backdrop blur left on
+   measured 67 ms a brush frame at 1440 against 17 without it. */
+main#sketch-overlay {
+  background: none;
+  backdrop-filter: none;
+}

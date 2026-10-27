@@ -475,6 +475,8 @@ accessibility, and learnability") are why.
     and Lasso tools are untouched; touch already pans bare canvas.
     **Reversed** (the owner, 2026-10-19: "we need to revert the left click pan as it clashes with and negates the drag selection tools"): a left-drag with Select draws the selection box again; Pan, Space, the middle and right buttons and the trackpad pan; the preference is removed.
 42. **Turning a frame turns what lies wholly inside it** (the owner, 2026-10-19: "if I rotate a frame, should it also rotate all the elements in that frame??"; yes). Contents are captured at grip-down by `wbFrameContents`, each turns about the frame's centre by the frame's delta (centre rotated, own rotation gains the delta), links follow their ends, Ctrl turns the frame alone, one Undo step; built as `wbFrameTurnOrigin`.
+43. **Each stroke stacks** (the owner, 2026-10-27; supersedes the one-layer order: drawings painted as one SVG layer under every card, BACKLOG's "one real architectural limit" and the three bands of wbz-1026). Drawings (pen, highlighter, shapes, lines, connectors) and cards are one band of `wbStackOrder`, ordered by z; frames stay under everything (decision 14). So Bring forward, Send back, to front and to back move a stroke past cards and a card past strokes, a mixed selection included, and a new stroke takes `wbStackNewZ` on top of both. Render: SVG children take no z-index, so `wbSketchBands` splits the stack into runs of strokes with no card between; the run under every HTML item stays in the base layer (`#wb-zoom-group`), each other run is one `svg.wb-sketch-band` in the card layer with the z-index of its first stroke's stack rank (`wbPlaceSketchBands`, moving only groups out of place). At most one band per card plus one, never one root per stroke; a pan moves the composited card layer and re-bands nothing. The stroke being drawn paints in the overlay layer, over the cards, where it lands. A map keeps every line in the base layer. Export, the hit test, the Layers tab and undo read the same order unchanged (z is the only number written). Migration `c4e8a1f6b2d9`: on each board the drawings move under its lowest non-frame card, their order kept, so an old board looks as it did; saved stencils the same, the built-in stencils when read (`drawings_under_cards`). Measured: `scratchpad/wbz/` (session scratchpad) `perf.js` and `pairs.js`, numbers in CHANGELOG.
+44. **Drawn shapes are selected, the tool returns to Select** (the owner, 2026-10-27: auto-select drawn shapes; the pen keeps its tool). After a rectangle, ellipse, diamond, line, arrow or any other shape tool commits, the new shape is the selection and the tool is Select; the pen and highlighter keep their tool so strokes continue. One undo step removes the shape.
 
 ## Built, 2026-09-09: one surface per panel, and the Arrange section
 
@@ -1491,7 +1493,7 @@ JS-drawn shape classes, the shape picker, and the shortcut gaps in section 11.
    observed (Tessellate is not an Atlassian product); templates are CC BY
    4.0 and each converted template names its source in its library note.
    No THIRD_PARTY.md exists in this tree, so the entry is the NOTICE plus
-   `agent-remaining/drawio-1010.md`.
+   `archive/agent-remaining/drawio-1010.md`.
 6. **Parity rows are corrected here, not in ANALYSIS.md.** The five
    corrections at the top of this section replace the matrix's wrong rows
    (connection points, templates, find, hover arrows, same size) until the
@@ -1673,3 +1675,40 @@ Owner: "stuff like that, dont stop there, find what is missing on the whiteboard
 1340. **The owner, 2026-10-19, verbatim.** "when I go between the mind map and whiteboard, should the board recenter on the main content?" **Built in memory for the session (not saved with the board), 2026-10-19:** `wbBoardViews`, `wbRestoreOrFrameBoard`; a map too big to fit opens at its content corner (`wbMapOpenTarget`); sweep `scratchpad/ui-sweeps/mapopenframe.js`. Saving the view with the board is still open.
      Measured by code reading: a map refits on every open (`wbFrameMapOnOpen`, whiteboard.js:2516, `wbZoomToFit`); a board is not reframed and keeps whatever the shared camera (`wbZoom`, :170) last was, which may be the map's; no view is saved per board. For the next PR. Recommendation: each board and map remembers its own view (pan and zoom, saved with the board); returning restores it; fit to content only on first open, or when nothing would be on screen.
 
+
+## Gap audit against draw.io, 2026-10-25 (wb2)
+
+The owner, 2026-10-25: "upgrade the whiteboard and mindmap; add the features draw.io and others have that the app doesn't". Read from the code (`WB_COMMANDS`, `WB_FMT_ROWS`, the Library panel) against draw.io's Arrange, Edit, View and Format menus; "exists" names where. The five marked "build" are the ones taken for a student's diagrams, in this order.
+
+Exists (no work): connector waypoints and elbow routing (`route`, Bend a line); line jumps at crossings (`jumps`); align, distribute, same size, align to a key object; equal spacing guides; z-order (forward, back, front, back of all); lock; duplicate (Ctrl+D) and copy-and-join arrows; copy, paste and reset style; connector labels; frames and swimlane stencils; layers; shape and icon search in the Library (`wb-lib-search`); grid snap toggle; export or copy the selection; flip; select similar; keep proportions; Edit data; find and replace; Mermaid and draw.io import.
+
+Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, a shape's link and text that shrinks to fit, are built: HISTORY.md, "Moved from the plans, 2026-10-25 (wb2)"):
+6. Dimension lines with a live length (10-19 item 7). M.
+7. Crop a picture to a circle or rounded box (10-19 item 13). M.
+8. BPMN element set (10-19 item 9). M.
+9. Pages inside one board (draw.io's page tabs); boards and frames stand in. L, not planned.
+10. Rulers and units. M, not planned for a student's board.
+
+## Placed from INBOX, 2026-10-26
+
+1352. **The owner, 2026-10-26, verbatim** (screenshot: PaintZ, a dark two-row icon toolbar with file, undo and redo on the left; select, lasso, eraser, picker, pencil, fill, spray, brush, text, line, curve, polygon, rectangle, rounded rectangle and ellipse tools; a line-width dropdown; outline, fill and both toggles; a two-row palette with a large current-colour swatch; fullscreen, info, settings and help on the right; a status bar with canvas size, cursor position and a zoom slider). "hey btw Ive just looked up simple paint web apps asn some of them have A LOT more refined functionality and ui and look soooo much more professional than tessellate. can you use them to update the whiteboard AND quick sketch in both UI/UX as well as functionality, features, quality, utility, how each feature works etc?? look at these repos: https://paintz.app/ (https://github.com/ZMYaro/paintz.git - I also just forked this repo), https://github.com/uthsobcb/ongkon.git, also small things for when the user tries to draw a shape like does it draw from the corner or middle and are all the format object properties that should be there present? do they funtion as they should? are the controls formatted properly?? the whiteboard, mindmap and quicksketch all need a ui improved UX usability and learnability redesign and upgrade"
+    Placed: agent `paint-1026` (Opus, design judgement): audit PaintZ and Ongkon against the board, the map and Quick sketch (tools, shape drawing origin and modifiers, format properties and whether each works, control layout, status bar, palette), a measured gap table in `archive/agent-remaining/paint-1026.md`, then build the top gaps by impact with sweeps. Licence: ideas only unless the source licence allows AGPL inclusion (ANALYSIS.md).
+
+1354. **The owner, 2026-10-26, verbatim** (the board half of CHAT_PLAN 1353). "the whiteboards, mindmap and quicksketch needs a lot better modern and professional ui and ux and design of controls and they need refinement, often I find the actual interaction with objects themselves like rotating them, resizing, moving them, editing them, using the popup tool bars is very finikey and sometimes those popup toolbars stretch nearly the whole width fo the screen. the usage of tools, functionality, learnability, thinsg like active and non active like group changes to ungroup when objects are grouped instead of showing both buttons, can groups be stacked? so if I have 7 items and group 5 but then highlight the grouped 5 and the other two can It group them all again and then if I ungroup them the 5 will also remain grouped?? its all the small features and functions and refinements like these that make or break the functionality and reliabilkity of an application, causing the user to not want to use it as it is unreliable."
+    Placed: added to agent `paint-1026`'s brief: handle hit areas and drag feel (rotate, resize, move, edit), popup toolbar width cap, Group/Ungroup as one state-aware control, nested groups (group of groups; ungrouping the outer keeps the inner).
+
+1355. **The owner, 2026-10-26, verbatim** (follows 1354). "its not just that, its resizing, view, does control +/- zoom in ongenerally or center on a selected or object or group selection?? what about linking, copy and pasting and cutting with multiple objects, using templates, more templates of the mindmapa nd whiteboard, more elements, more things I can do in the formatting panel and tools, a lot of functionality and utility and features are still missing"
+    Measured 2026-10-26: Ctrl+= and Ctrl+- scale by 1.2 and 0.8 about the view's centre (`whiteboard.js` keydown, `wbZoom.scaleBy`), never about the selection; Shift+1 fits the board, Shift+2 (wb2) the selection. Placed: agent `wb3-1026` (Sonnet): zoom about the selection when one exists, multi-object copy, cut and paste (links between copied items kept, offset paste, paste in place), linking, templates (more board and map templates, a picker with previews), more elements (shape library), and the formatting panel's missing properties, measured against draw.io and PaintZ. `paint-1026` keeps interaction, toolbars, groups and Quick sketch.
+
+1356. Board paste options and Paste special: built (`wbpaste-1026`); moved to HISTORY.md, "Moved from the plans, 2026-10-26 (wbpaste-1026)".
+
+## Placed from INBOX, 2026-10-26b
+
+1358. **The owner, 2026-10-26, verbatim.** "also keep improving all the main features like the whitebaord, mindmap and document editor, there are still A LOT of issues with them which keep being missed. as well as missing features or features that dont work properly, both of which I keep easily encountering."
+     Placed: after the current three agents, one dogfood-and-fix agent per surface (whiteboard, mind map, document editor): a blind-tester pass on everyday tasks first (find what is missed, not what is listed), each finding fixed as a class, then the surface's open inventory rows (.claude/inputs/open-inventory-1026.md) by impact. Missing features are measured against the competitor reads in ANALYSIS.md and WORLD_CLASS_PLAN.
+
+## Placed from INBOX, 2026-10-27
+
+1403. Rich text runs on a board card and the ⋯ menu top: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
+
+1404. Drag a connector label by its words: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".

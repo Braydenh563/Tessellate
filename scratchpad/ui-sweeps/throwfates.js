@@ -3,13 +3,15 @@
 // (`companionThrowSeed`) from set places at set speeds, for the companion
 // as "You" and as Atlas, until each outcome has been seen: caught the top
 // bar and hangs; caught a panel's edge and climbed on; splatted on a side
-// and slid down; went off one side and came back on the other. For each it
+// and slid down; went off one side and came back on the other; fell past a
+// ledge's end and caught it (grab); slid off its end and caught on (slip,
+// K12). For each it
 // measures the moment (the class seen, the slide, the x range), where it
 // ended (pose, inside the window, over no control: `nameMarkBuddyHits`),
 // that its frame loop has stopped, and the companion's box size. Then one
 // real-pointer flick (the lazy file arrives with the carry) and, with
 // REDUCED=1 or always as a second pass, Reduce motion: no moments at all.
-// Env: BASE, BUDDY (me|atlas, default both). Prints one JSON line each.
+// Env: BASE, BUDDY (me|atlas, default both), ONLY (outcomes, comma list). Prints one JSON line each.
 const { boot } = require('./lib.js');
 
 async function pass(buddyKind, reduced) {
@@ -37,9 +39,15 @@ async function pass(buddyKind, reduced) {
     climb: ledge ? { x: Math.round((ledge.left + ledge.right) / 2), y: Math.min(world.floor - 10, ledge.y + 84 + 260), vx: 0.05, vy: -2.4 } : null,
     splat: { x: world.right - 420, y: 280, vx: 3.4, vy: -0.4 },
     wrap: { x: world.right - 420, y: 280, vx: 4.4, vy: -0.5 },
+    // K12: falling 15px past the ledge's right end; landed near that end and sliding off it.
+    // (the dashboard's tiles sit 10px apart, so a hand past one end is over
+    // the next: the throw's room keeps only that ledge, `solo`)
+    grab: ledge && ledge.right + 15 < world.right ? { x: Math.round(ledge.right + 15), y: Math.round(ledge.y - 40), vx: 0, vy: 0.1, solo: Math.round(ledge.y) } : null,
+    slip: ledge && ledge.right < world.right ? { x: Math.round(ledge.right - 40), y: Math.round(ledge.y - 20), vx: 0.4, vy: 0.05 } : null,
   };
-  const out = { buddy: buddyKind, reduced, flick, ledge, seen: {} };
+  const out = { buddy: buddyKind, reduced, flick, ledge, ledges: world.ledges.map((l) => [l.left, l.right, l.y].map(Math.round)), seen: {} };
   for (const [want, c] of Object.entries(configs)) {
+    if (process.env.ONLY && !process.env.ONLY.split(',').includes(want)) continue;
     if (!c) { out.seen[want] = { skipped: 'no ledge' }; continue; }
     const tally = {};
     let found = null;
@@ -53,8 +61,9 @@ async function pass(buddyKind, reduced) {
         companionThrowSeed.seed = sd;
         nameMarkBuddyIndexReset();
         const w = nameMarkBuddyWorld(nameMarkBuddyTab());
+        if (cfg.solo) w.ledges = w.ledges.filter((l) => Math.round(l.y) === cfg.solo && l.right < cfg.x && l.right > cfg.x - 40);
         const rec = { classes: new Set(), minX: Infinity, maxX: -Infinity, splatYs: [], frames: 0, boxMax: 0 };
-        const mo = new MutationObserver(() => { for (const c of ['nmb-splat', 'nmb-climb']) if (buddy.classList.contains(c)) rec.classes.add(c); });
+        const mo = new MutationObserver(() => { for (const c of ['nmb-splat', 'nmb-climb', 'nmb-slip']) if (buddy.classList.contains(c)) rec.classes.add(c); });
         mo.observe(buddy, { attributes: true, attributeFilter: ['class'] });
         let raf = 0;
         const sample = () => {

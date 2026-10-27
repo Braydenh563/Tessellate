@@ -52,7 +52,7 @@ def test_a_key_mash_is_a_mash_not_a_name_for_the_assistant(ai_client, session):
     assert "reporting in" not in text.lower() and "asdkjhfgs" not in text.lower(), text
     from tessellate.ai import composer
 
-    assert any(text.startswith(line.split("{")[0]) for line in composer.SOCIAL["unclear"]), text
+    assert any(text.startswith(line.split("{")[0]) for line in composer.social_surfaces("unclear")), text
 
 
 def test_a_test_message_is_acknowledged_as_a_test(ai_client, session):
@@ -64,7 +64,7 @@ def test_a_test_message_is_acknowledged_as_a_test(ai_client, session):
         text = _ask(ai_client, message, notes_only=True, use_tools=False)["text"]
         assert "no mention" not in text.lower() and "nothing in your notes" not in text.lower(), (message, text)
         #: The family's line, and (O5) perhaps an ask about the newest note.
-        assert any(text.startswith(line) for line in composer.SOCIAL["test"] + composer.SOCIAL_PROFESSIONAL["test"]), (message, text)
+        assert any(text.startswith(line) for line in composer.social_surfaces("test") + composer.social_surfaces("test", True)), (message, text)
 
 
 def test_the_capability_rundown_is_composed_and_sized_to_the_request():
@@ -222,7 +222,10 @@ def test_a_hello_ends_on_an_ask_about_the_newest_note(client, session):
     said = {composer.social("good morning", invite="golf", seed=str(i)) for i in range(40)}
     assert len(said) >= 6 and all("golf" in s or s.endswith("?") for s in said), said
     assert sum("golf" in s for s in said) >= 4, said
-    assert "golf" not in composer.social("asdkjhfgs", invite="golf")
+    for n in range(20):
+        base = composer.social("asdkjhfgs", seed=str(n))
+        invited = composer.social("asdkjhfgs", invite="golf", seed=str(n))
+        assert ("golf" in invited) == (not base.endswith("?") and "“" not in base), (base, invited)
     _seed(session)
     texts = [_ask(client, hello, use_tools=False)["text"] for hello in ("hi", "hello", "good morning", "hey there", "morning")]
     assert any("golf" in text for text in texts), texts
