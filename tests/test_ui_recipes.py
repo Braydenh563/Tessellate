@@ -5302,7 +5302,17 @@ def test_every_button_answers_hover_with_the_same_quiet_box() -> None:
     ), "the icon button's hover fill is gone from 01-forms-settings.css"
     bad = []
     for name, sels, body in _served_rules():
-        hits = [s for s in sels if ":hover" in s and re.search(r"\.icon-(only|button)\b", _NOT.sub("", s))]
+        #: `:not(:hover)` is a rest rule, not a hover rule; and the image tile's
+        #: chip sits on a photograph, where a translucent quiet box vanishes on a
+        #: white one (2026-10-27), so its lit states are opaque by design
+        #: (tests/test_small_fixes_1027.py pins them).
+        hits = [
+            s
+            for s in sels
+            if ":hover" in _NOT.sub("", s)
+            and re.search(r"\.icon-(only|button)\b", _NOT.sub("", s))
+            and ".library-image-tile .library-image-actions" not in s
+        ]
         if not hits:
             continue
         values = re.findall(r"(?:^|;)\s*background(?:-color)?\s*:\s*([^;]+)", body)

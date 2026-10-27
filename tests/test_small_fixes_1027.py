@@ -90,7 +90,7 @@ def test_the_image_tile_menu_chip_outranks_the_bare_icon_reset():
     (0,6,1) and drew transparent with a grey glyph. Measured after: panel at
     80% with blur, ink glyph, in both themes; glass off drops the blur."""
     css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
-    sel = '.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {'
+    sel = '.library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not(:hover):not(:focus-visible) {'
     body = css[css.index(sel):]
     body = body[: body.index("}")]
     assert "color: var(--ink);" in body and "background: var(--modal-bg);" in body
@@ -100,6 +100,31 @@ def test_the_image_tile_menu_chip_outranks_the_bare_icon_reset():
     assert "backdrop-filter: var(--glass-filter-clear);" in glass[: glass.index("}")]
     off = (ROOT / "frontend/css/03-dashboard-widgets.css").read_text(encoding="utf-8")
     assert ':root[data-glass="off"] .library-image-tile .library-image-actions > .menu-wrap > button.ghost,' in off
+
+
+def test_the_image_tile_menu_chip_keeps_a_solid_fill_and_an_edge_in_every_lit_state():
+    """The owner, 2026-10-27, dark theme: on a white picture the chip's open
+    state drew a pale lavender square with the light glyph lost in it, because
+    the generic kebab tint (accent at 16%, translucent) let the picture show
+    through. Measured with a white and a black PNG: glyph to fill 1.05 (dark,
+    white picture) and 1.16 (light, black picture); the light chip's hover was
+    white on white (1.0). Hover, focus, open and pressed now take an opaque
+    panel fill, the ink glyph and a two-tone edge (ink border, panel ring)."""
+    css = (ROOT / "frontend/css/library-lazy.css").read_text(encoding="utf-8")
+    head = ".library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only"
+    start = css.index(f"{head}:hover,")
+    block = css[start : css.index("}", start)]
+    for state in (":hover", ":focus-visible", '[aria-expanded="true"]', ".active", '[aria-pressed="true"]'):
+        assert f"{head}{state}" in block, state
+    assert "background: var(--modal-bg-opaque);" in block
+    assert "color: var(--ink);" in block and "border-color: var(--ink);" in block
+    assert "box-shadow: 0 0 0 1px var(--modal-bg-opaque);" in block
+    assert "rgba(" not in block and "#" not in block
+    #: Open or pressed is still opaque: the accent mixes into the opaque panel.
+    tint = css[css.rindex(f'{head}[aria-expanded="true"],\n{head}.active,\n{head}[aria-pressed="true"] {{\n'):]
+    assert "color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque))" in tint[: tint.index("}")]
+    #: The rest rules step aside for the lit states instead of outranking them.
+    assert css.count(":not(:hover):not(:focus-visible) {") >= 2
 
 
 def test_the_guide_leads_with_how_to_change_not_what_changed():
