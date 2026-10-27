@@ -48,7 +48,7 @@ from urllib.parse import urlparse, urlunparse
 # `requests` with redirects held to the configured address (§12, S6).
 from tessellate.ai import provider_http as requests
 
-from tessellate.ai import sampling
+from tessellate.ai import ollama_client, sampling
 from tessellate.ai.provider import (
     Provider,
     ProviderError,
@@ -175,16 +175,20 @@ class OpenAICompatClient(Provider):
     def is_running(self) -> bool:
         """Cheap reachability probe: short timeout so the UI never hangs
         just to discover the server is off."""
+        if ollama_client.is_quiet(self.base_url):
+            return False
         try:
             response = requests.get(
-                f"{self.base_url}/models", headers=self._headers(), timeout=2
+                f"{self.base_url}/models", headers=self._headers(), timeout=(ollama_client.CONNECT_TIMEOUT_SECONDS, ollama_client.PROBE_READ_SECONDS)
             )
+            ollama_client.forget_quiet(self.base_url)
             # 401/403 means "reachable, and it wants a key", which is a
             # configuration problem to report, not an unreachable server. The
             # status pill would otherwise say "offline" about a server that is
             # plainly answering.
             return response.status_code < 500
         except requests.RequestException:
+            ollama_client.mark_quiet(self.base_url)
             return False
 
     def _fetch_catalog(self, refresh: bool = False) -> list[dict]:
