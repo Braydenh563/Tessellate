@@ -67,6 +67,7 @@ MORE_TOPICS: list[dict] = [
             "throw the companion", "flick the companion", "throwing the companion",
             "companion splat", "companion climbs", "companion hangs from the top bar",
             "companion went off the screen", "companion lies down", "companion slips off",
+            "companion went off the top", "companion tumbles",
         ),
         "body": (
             "Throw the corner companion by letting go of it while it is still "
@@ -77,7 +78,11 @@ MORE_TOPICS: list[dict] = [
             "slides off one and pulls itself up, splats against a side of the "
             "window and slides "
             "down to the panel below, or goes off one side and comes back on "
-            "the other. Once down it settles in its own way: sitting with its "
+            "the other. How you throw it chooses: a soft toss lands near, a hard "
+            "one sideways can go far or into a corner, and a hard one upwards "
+            "can leave the top of the window and fall back in. A panel only "
+            "catches it when it comes down slowly, and it may land, slide off "
+            "or tumble and get up. Once down it settles in its own way: sitting with its "
             "legs dangling or kicking, lying down, stretching, or swinging "
             "from the bar. Wherever it ends, it never covers a button: come "
             "down on one and it moves only to the nearest clear place. With "

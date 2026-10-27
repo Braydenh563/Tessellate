@@ -2,9 +2,9 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6652, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6878, test files 1441, tests 12768, plan headings 984.
+Counts: frontend functions 6656, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6878, test files 1441, tests 12774, plan headings 984.
 
-## Frontend functions (6652)
+## Frontend functions (6656)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2704,26 +2704,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `nameMarkViewerNear` | frontend/js/companion-menu.js:473 |
 | `openNameMarkViewer` | frontend/js/companion-menu.js:30 |
 
-### frontend/js/companion-throw.js (16)
+### frontend/js/companion-throw.js (20)
 
 | Name | File:line |
 |---|---|
-| `companionThrowAt` | frontend/js/companion-throw.js:192 |
-| `companionThrowAtTime` | frontend/js/companion-throw.js:246 |
-| `companionThrowClimb` | frontend/js/companion-throw.js:383 |
-| `companionThrowDown` | frontend/js/companion-throw.js:164 |
-| `companionThrowFlat` | frontend/js/companion-throw.js:362 |
-| `companionThrowHold` | frontend/js/companion-throw.js:184 |
-| `companionThrowPlan` | frontend/js/companion-throw.js:223 |
-| `companionThrowRng` | frontend/js/companion-throw.js:57 |
-| `companionThrowSettle` | frontend/js/companion-throw.js:208 |
-| `companionThrowSettleSoon` | frontend/js/companion-throw.js:401 |
-| `companionThrowSide` | frontend/js/companion-throw.js:83 |
-| `companionThrowSlide` | frontend/js/companion-throw.js:120 |
-| `companionThrowStep` | frontend/js/companion-throw.js:73 |
-| `companionThrowUp` | frontend/js/companion-throw.js:140 |
-| `companionThrowWrapOn` | frontend/js/companion-throw.js:102 |
-| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:259 |
+| `companionThrowAim` | frontend/js/companion-throw.js:331 |
+| `companionThrowArrive` | frontend/js/companion-throw.js:131 |
+| `companionThrowAt` | frontend/js/companion-throw.js:278 |
+| `companionThrowAtTime` | frontend/js/companion-throw.js:391 |
+| `companionThrowClimb` | frontend/js/companion-throw.js:529 |
+| `companionThrowDown` | frontend/js/companion-throw.js:250 |
+| `companionThrowFlat` | frontend/js/companion-throw.js:509 |
+| `companionThrowHold` | frontend/js/companion-throw.js:270 |
+| `companionThrowLedges` | frontend/js/companion-throw.js:98 |
+| `companionThrowPick` | frontend/js/companion-throw.js:323 |
+| `companionThrowPlan` | frontend/js/companion-throw.js:354 |
+| `companionThrowRng` | frontend/js/companion-throw.js:59 |
+| `companionThrowSettle` | frontend/js/companion-throw.js:294 |
+| `companionThrowSettleSoon` | frontend/js/companion-throw.js:547 |
+| `companionThrowSide` | frontend/js/companion-throw.js:162 |
+| `companionThrowSlide` | frontend/js/companion-throw.js:203 |
+| `companionThrowStep` | frontend/js/companion-throw.js:76 |
+| `companionThrowUp` | frontend/js/companion-throw.js:223 |
+| `companionThrowWrapOn` | frontend/js/companion-throw.js:185 |
+| `nameMarkBuddyThrow` | frontend/js/companion-throw.js:404 |
 
 ### frontend/js/connections.js (6)
 
@@ -13034,8 +13038,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2704 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2808 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2709 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2813 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -19870,7 +19874,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12768)
+## Tests (12774)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20076,7 +20080,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_stacking.py | 4 |
 | tests/test_companion_throw.py | 8 |
 | tests/test_companion_throw_fates.py | 15 |
-| tests/test_companion_throw_smooth.py | 9 |
+| tests/test_companion_throw_smooth.py | 15 |
 | tests/test_companion_toggle.py | 3 |
 | tests/test_companion_viewer_face.py | 1 |
 | tests/test_companion_viewer_sleep.py | 6 |
@@ -22024,7 +22028,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:301 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:295 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
