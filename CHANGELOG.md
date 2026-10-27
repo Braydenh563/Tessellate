@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+
+## [0.6.2] - 2026-10-27
+- Guide: "how do I pin a note" is answered with pinning a note (it had the Graph's node pin), a PIN for the lock screen no longer matches pinning, and with a model running a greeting, thanks, "who are you" or "that didn't help" is answered in the first person instead of "not sure".
 - Guide: open and social questions are answered in the first person (what can you help me with, who are you, thanks, that didn't help, a vague organise, a request outside the app); a composed answer adds a Where line only when a place is asked for and no longer repeats "From the app's help" (the byline says it); a finished action such as a pin is no longer offered as work to resume, and the next-question suggestion follows the question.
 - Graph: a note's popup follows its note as the map pans, zooms and settles (beside it, flipping side at the edge, hidden while the note is out of view), and its title row drags it to wherever you put it, by mouse or finger, until it is closed.
 - Dates: "last weekend", "this weekend" and "next weekend" are held to the right Saturday and Sunday on every day of the week, and "what did I do last weekend" is held through Chat.

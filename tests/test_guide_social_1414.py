@@ -123,3 +123,41 @@ def test_the_follow_up_comes_from_the_question_or_is_absent():
     assert "how do I tag a note" in on_topic or "tag a note" not in on_topic
     asked = _reply("how do I tag a note")
     assert asked.count("how do I tag a note") == 0
+
+
+# --- Follow-ups, 2026-10-27 (BACKLOG "Placed from the guide round").
+
+
+@pytest.mark.parametrize("question", ["how do I pin a note", "how do I unpin a note", "pin a note"])
+def test_pinning_a_note_is_answered_from_favourites_not_the_graph(question):
+    # Pinning a note is starring it (app.js, `entry.pinned`); the Graph's
+    # "pin a note" keyword used to answer it with the graph's node pin.
+    ids = [t["id"] for t in help_chat.topics_for(question, "notes")]
+    assert ids[0] in ("act-pin", "act-unpin", "favourites") and "graph-controls" not in ids, ids
+
+
+def test_pinning_a_graph_node_still_finds_the_graphs_controls():
+    assert "graph-controls" in [t["id"] for t in help_chat.topics_for("how do I pin a node in the graph", "graph")]
+
+
+@pytest.mark.parametrize("question", ["who are you", "what can you do", "that didn't help", "hi", "thanks"])
+def test_with_a_model_a_social_message_is_briefed_not_left_to_say_not_sure(question):
+    messages, _ = help_chat._prompt_for(question, None, "notes", None)
+    brief = [m["content"] for m in messages if m["role"] == "system" and "social" in m["content"]]
+    assert len(brief) == 1 and help_chat.social_reply(question)["content"] in brief[0]
+
+
+def test_a_question_about_the_app_carries_no_social_brief():
+    messages, _ = help_chat._prompt_for("how do I add a reminder", None, "notes", None)
+    assert not any("is social" in m["content"] for m in messages)
+
+
+def test_chat_closes_with_the_same_closing_so_a_finished_act_is_not_resumed_there_either():
+    # Decided 2026-10-27: a finished act ("Pinned a note") is no more
+    # unfinished in Chat than in the Guide, so Chat keeps the 1414 rule.
+    from pathlib import Path
+
+    routes = (Path(__file__).resolve().parents[1] / "src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
+    assert "composer_aware.closing(_awareness(req), seed, recent)" in routes
+    pinned = composer_aware.build(tab="chat", actions=PINNED)
+    assert not RESUME.search(composer_aware.closing(pinned, "chat-seed"))

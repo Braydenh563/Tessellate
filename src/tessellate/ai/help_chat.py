@@ -824,7 +824,7 @@ HELP_TOPICS: list[dict] = [
         "id": "favourites",
         "keywords": ("favourite", "favorite", "star", "starred", "pin", "pinned"),
         "body": (
-            "Starring a note makes it a favourite, a parallel way to keep "
+            "Starring (pinning) a note makes it a favourite and floats it to the top of the list, a parallel way to keep "
             "important notes close, separate from categories or tags. "
             "Favourites show in the sidebar, filter in the Library, and can "
             "sit in their own Dashboard widget."
@@ -1072,7 +1072,7 @@ HELP_TOPICS.extend(
         },
         {
             "id": "security",
-            "keywords": ("password", "lock", "locked", "lock screen", "security", "sign in", "log in", "private note", "encrypt", "forgot password", "recovery key", "idle", "pin", "quick unlock", "windows hello"),
+            "keywords": ("password", "lock", "locked", "lock screen", "security", "sign in", "log in", "private note", "encrypt", "forgot password", "recovery key", "idle", "pin code", "set a pin", "unlock pin", "my pin", "quick unlock", "windows hello"),
             "body": (
                 "Settings, Account & security: set a password and the notebook "
                 "asks for it when it opens. The lock button in the top bar locks it "
@@ -1987,7 +1987,7 @@ HELP_TOPICS.extend(
             "keywords": (
                 "similarity", "strength slider", "gravity", "spread", "saved view",
                 "save a view", "graph view", "graph options",
-                "display options", "trace", "unpin", "pin a note", "cluster glow", "label background",
+                "display options", "trace", "unpin a node", "pin a node", "pin on the graph", "pin a note on the graph", "cluster glow", "label background",
                 "entities", "hide unlinked", "minimap", "export as png", "lasso",
                 "zoom", "pan", "link reason", "why linked", "connection",
             ),
@@ -2953,6 +2953,20 @@ def _prompt_for(
                     f"The person asking has the {tab} tab open. Prefer the answer "
                     "that applies to what is in front of them, and say which tab "
                     "or setting anything else is on."
+                ),
+            }
+        )
+    #: A greeting, thanks, "who are you" or "that didn't help" matches no
+    #: topic, and the rule above then had the model say it was not sure
+    #: (INBOX 1414 follow-up). The offline reply is the model's brief.
+    social = social_reply(question)
+    if social:
+        messages.append(
+            {
+                "role": "system",
+                "content": (
+                    "This message is social, not about a feature. Reply in the first person in one or "
+                    "two sentences, with no help text, in the spirit of: " + social["content"]
                 ),
             }
         )

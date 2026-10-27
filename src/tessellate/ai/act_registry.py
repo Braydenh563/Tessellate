@@ -294,7 +294,9 @@ ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
     "reminder": ("reminders", "reminders-controls"), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",),
-    "pin": ("favourites",), "unpin": ("favourites",), "find": ("ask-chat",), "summarise": ("ask-chat",),
+    #: Not pin: Favourites says what a pinned note is, not how to pin one, so
+    #: the act's line leads "how do I pin a note" and Favourites follows.
+    "find": ("ask-chat",), "summarise": ("ask-chat",),
     "new_note": ("capture",),
 }
 

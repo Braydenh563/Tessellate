@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6648, frontend ids 2562, CSS sections 504, backend routes 628, backend modules 6822, test files 1435, tests 12727, plan headings 981.
+Counts: frontend functions 6648, frontend ids 2562, CSS sections 504, backend routes 628, backend modules 6822, test files 1435, tests 12732, plan headings 982.
 
 ## Frontend functions (6648)
 
@@ -11375,7 +11375,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `Act` | src/tessellate/ai/act_registry.py:65 |
 | `_listing` | src/tessellate/ai/act_registry.py:191 |
-| `act_topic` | src/tessellate/ai/act_registry.py:302 |
+| `act_topic` | src/tessellate/ai/act_registry.py:304 |
 | `ask_line` | src/tessellate/ai/act_registry.py:142 |
 | `capability_line` | src/tessellate/ai/act_registry.py:129 |
 | `guide_topic` | src/tessellate/ai/act_registry.py:157 |
@@ -12987,37 +12987,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_about_the_guide` | src/tessellate/ai/help_chat.py:2876 |
 | `_act_of` | src/tessellate/ai/help_chat.py:2644 |
-| `_aware` | src/tessellate/ai/help_chat.py:3253 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3079 |
+| `_aware` | src/tessellate/ai/help_chat.py:3267 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3093 |
 | `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2575 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3167 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3183 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3150 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3181 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3197 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3164 |
 | `_keyword_in` | src/tessellate/ai/help_chat.py:2565 |
 | `_keyword_pattern` | src/tessellate/ai/help_chat.py:2497 |
 | `_keyword_regex` | src/tessellate/ai/help_chat.py:2561 |
 | `_matching_topics` | src/tessellate/ai/help_chat.py:2694 |
 | `_meaning_topics` | src/tessellate/ai/help_chat.py:2774 |
 | `_normalise_keys` | src/tessellate/ai/help_chat.py:2520 |
-| `_place` | src/tessellate/ai/help_chat.py:3124 |
-| `_preference` | src/tessellate/ai/help_chat.py:3206 |
+| `_place` | src/tessellate/ai/help_chat.py:3138 |
+| `_preference` | src/tessellate/ai/help_chat.py:3220 |
 | `_prompt_for` | src/tessellate/ai/help_chat.py:2933 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3325 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3339 |
 | `_reading_topics` | src/tessellate/ai/help_chat.py:2666 |
 | `_repaired` | src/tessellate/ai/help_chat.py:2683 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3154 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3215 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3224 |
-| `answer` | src/tessellate/ai/help_chat.py:3405 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3340 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3168 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3229 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3238 |
+| `answer` | src/tessellate/ai/help_chat.py:3419 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3354 |
 | `badges_for` | src/tessellate/ai/help_chat.py:2862 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3235 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3486 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3249 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3500 |
 | `help_listing` | src/tessellate/ai/help_chat.py:2833 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3133 |
-| `names_app` | src/tessellate/ai/help_chat.py:3470 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3271 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3083 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3147 |
+| `names_app` | src/tessellate/ai/help_chat.py:3484 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3285 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3097 |
 | `source_names` | src/tessellate/ai/help_chat.py:2829 |
 | `system_answer` | src/tessellate/ai/help_chat.py:2811 |
 | `topic_title` | src/tessellate/ai/help_chat.py:2797 |
@@ -19809,7 +19809,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12727)
+## Tests (12732)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20390,7 +20390,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_guide_composed_787.py | 18 |
 | tests/test_guide_gaps.py | 3 |
 | tests/test_guide_intent.py | 9 |
-| tests/test_guide_social_1414.py | 12 |
+| tests/test_guide_social_1414.py | 17 |
 | tests/test_hardware_profile.py | 15 |
 | tests/test_harness_evals.py | 3 |
 | tests/test_harness_plan_card.py | 9 |
@@ -21251,7 +21251,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (981)
+## Plan headings (982)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -21829,7 +21829,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:37 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:587 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:589 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -21864,7 +21864,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:364 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:541 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:543 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -22060,6 +22060,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:704 |
 | Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`) | docs/roadmap/BACKLOG.md:4403 |
+| Placed from the guide round, 2026-10-27 (INBOX 1414 follow-ups) | docs/roadmap/BACKLOG.md:4409 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/BACKLOG.md:4153 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/CHAT_PLAN.md:828 |
 | Placed from the owner's list, 2026-10-10 | docs/roadmap/DOCUMENTS_PLAN.md:1456 |
