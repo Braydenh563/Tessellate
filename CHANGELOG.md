@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Reminders: a row's ⋯ is always drawn and takes a plain click, and the date stops a gap short of it (they shared 28px at 1280; now a 6px gap), while the snoozes and Edit still come in on hover.
 - Reminders: the reminder phrase reader moved beside the parser, so the chat suggestion no longer forms an import cycle with the routes.
 - The popup agent has a Send button beside the box (Enter still sends), and the graph Options section chevrons sit a gap short of their "?" instead of touching it.
 - Picture viewer: Open in a new tab works from the desktop window. The system browser has no session there, so it gets a two-minute link to that one file. The lag log no longer counts the other-devices long-poll as a slow request every 25 seconds.

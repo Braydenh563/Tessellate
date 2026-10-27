@@ -2888,18 +2888,21 @@ button.answer-figure-open {
   min-width: 0;
 }
 
-#tab-reminders .entry-actions {
+/* The row's ⋯ is always drawn (it is the way into everything else, and a
+   control that only exists under the pointer cannot be reached by a plain
+   click); the snoozes and Edit come in with the pointer or the focus. */
+#tab-reminders .entry-actions > :not(.menu-wrap) {
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
 
-#tab-reminders li:hover .entry-actions,
-#tab-reminders li:focus-within .entry-actions {
+#tab-reminders li:hover .entry-actions > :not(.menu-wrap),
+#tab-reminders li:focus-within .entry-actions > :not(.menu-wrap) {
   opacity: 1;
 }
 
 @media (hover: none) {
-  #tab-reminders .entry-actions {
+  #tab-reminders .entry-actions > :not(.menu-wrap) {
     opacity: 1;
   }
 }

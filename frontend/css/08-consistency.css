@@ -4479,13 +4479,25 @@ body .chip.item-label,
     right: 0;
     transform: translateY(-50%);
     padding-left: var(--space-2);
-    /* Opaque, so the time under it does not show through: the row's own
-       tint over the card it sits on. */
-    background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
     border-radius: var(--radius-md);
     pointer-events: none;
   }
+  /* **The ⋯ is the strip's one part that is always there** (the owner, on the
+     Reminders row: the kebab sat under the date, both right edges at 1230, and
+     a plain click on it was intercepted until the row was hovered). It takes
+     presses at rest, and the time stops short of it by a gap
+     (1.75rem is the 28px button), so the two never share pixels.
+     The snoozes and Edit still lie over the time while the row is pointed at. */
+  #reminder-groups li .entry-meta > .entry-actions > .menu-wrap {
+    pointer-events: auto;
+  }
+  #reminder-groups li .entry-meta > .entry-date {
+    margin-inline-end: calc(1.75rem + var(--space-2));
+  }
   #reminder-groups li:is(:hover, :focus-within) .entry-meta > .entry-actions {
+    /* Opaque, so the time under it does not show through: the row's own
+       tint over the card it sits on. */
+    background: linear-gradient(var(--surface-2), var(--surface-2)), var(--card);
     pointer-events: auto;
   }
 }
