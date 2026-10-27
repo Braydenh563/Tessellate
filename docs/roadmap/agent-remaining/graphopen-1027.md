@@ -10,7 +10,7 @@
 - Cleanup: no pass begins that would leave the cleanup no time before the cap; a moved note within 2 px of another is parted, else put back (`untangleUntouch`; touching 3 of 12 seeds to 0, a link through a note 0 to 1). `clearanceForce` scans per chord box; `untangleInside` has a hair of slack at the hub ring's edge.
 - Browser, cold open, median of 3 (matrix2): 36 notes 113 to 8 px max per frame, 35 to 0 frames over 20 px, rest 3.2 to 1.1 s after paint; 300 notes 257 to 10 px, 24 to 0, rest 7.5 to 2.8 s.
 
-done: 901868c, bd6e67a, c13e378, b7a852e, and the reveal/still-cap commit.
+done: 901868c, bd6e67a, c13e378, b7a852e, e05b1da (343 graph tests pass serially; gate --staged failed: none).
 
 ## Left
 - Not verified: the feel on a real device, the return-to-tab path (from the map on screen) by eye, maps of 2000 notes.
