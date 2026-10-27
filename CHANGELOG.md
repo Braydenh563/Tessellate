@@ -8,6 +8,7 @@ below). Versioning is `0.x` while the app stabilises.
 ## [Unreleased]
 
 ## [0.6.2] - 2026-10-27
+- Chat: the Confirm, Not right and Done row under an answer that cites a plan is shown (it sat in a hidden holder on a digest answer), and a plan confirmed in place keeps its Done in Chat, the Ask box and Tidy without a reload.
 - Reminders: "remind me this weekend" said on a Sunday is due that day at 9:00 (it was the Saturday already gone, which Chat then asked about again); from Monday to Saturday it is the coming Saturday and "next weekend" the one after, at 9:00.
 - Guide: "how do I pin a note" is answered with pinning a note (it had the Graph's node pin), a PIN for the lock screen no longer matches pinning, and with a model running a greeting, thanks, "who are you" or "that didn't help" is answered in the first person instead of "not sure".
 - Guide: open and social questions are answered in the first person (what can you help me with, who are you, thanks, that didn't help, a vague organise, a request outside the app); a composed answer adds a Where line only when a place is asked for and no longer repeats "From the app's help" (the byline says it); a finished action such as a pin is no longer offered as work to resume, and the next-question suggestion follows the question.

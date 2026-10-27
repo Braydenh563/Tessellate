@@ -1447,7 +1447,17 @@ function insightLine(insight, text, onDone, extraClass = "", send = insightSend)
   const words = document.createElement("span");
   words.className = "insight-text";
   words.textContent = text;
-  line.append(words, insightVerdicts(insight, (verdict, result) => onDone?.(line, verdict, result), send));
+  //: A plan confirmed in place keeps its Done, as after a reload (the
+  //: surfaces replace the row's words on Confirm, which drops the pair).
+  const attach = (about) =>
+    line.append(
+      insightVerdicts(about, (verdict, result) => {
+        onDone?.(line, verdict, result);
+        if (verdict === "confirmed" && about.rule === "drift") attach({ ...about, confirmed: true });
+      }, send)
+    );
+  line.append(words);
+  attach(insight);
   return line;
 }
 
