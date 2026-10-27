@@ -7607,14 +7607,16 @@ Link to another note with [[its first few words]]."></textarea>
            fill group comes first so a shape's two colours sit together; each
            swatch opens the colour well (whiteboard-format.js), which has the
            other one, Same as and Swap. -->
-      <div class="wb-context-group hidden" data-wb-ctx="fill">
-        <label class="wb-context-field" title="The colour inside the shape">
-          <span class="wb-context-label">Fill</span>
-          <input type="color" id="wb-prop-shapefill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour">
-        </label>
-        <label class="wb-snap-label" title="Fill the shape with the colour beside it, instead of just its outline">
-          <input type="checkbox" id="wb-prop-shapefill-on" aria-label="Filled"><span>Filled</span>
-        </label>
+      <div class="wb-context-group hidden" data-wb-ctx="fill" data-fold-label="Fill">
+        <div class="wb-fold-controls">
+          <label class="wb-context-field" title="The colour inside the shape">
+            <span class="wb-context-label">Fill</span>
+            <input type="color" id="wb-prop-shapefill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour">
+          </label>
+          <label class="wb-snap-label" title="Fill the shape with the colour beside it, instead of just its outline">
+            <input type="checkbox" id="wb-prop-shapefill-on" aria-label="Filled"><span>Filled</span>
+          </label>
+        </div>
       </div>
       <!-- A drawn line, arrow or shape, and a text box's own ink: its word
            says which (Border, Line or Text, `wbFillContextBar`). -->
@@ -7631,141 +7633,161 @@ Link to another note with [[its first few words]]."></textarea>
       <!-- Independently per end, and read from the object, never from the
            tool's own default (the plan's section 2 item 4). -->
       <!-- A connector's line shape (Phase B): curved, straight or elbow. -->
-      <div class="wb-context-group hidden" data-wb-ctx="route">
-        <select id="wb-prop-route" aria-label="Line shape" title="Line shape: curved, straight, or elbow (right angles round the shapes)">
-          <option value="curved">Curved</option>
-          <option value="straight">Straight</option>
-          <option value="elbow">Elbow</option>
-        </select>
-        <!-- **Said on screen** (INBOX 819, the owner: nothing on the board says a
-             connector takes a label): it was reachable only by pressing
-             Enter on a selected line. Shown for a board connector alone. -->
-        <button type="button" id="wb-prop-label" class="ghost small" title="Add a label to this connector, or change its words (Enter)" aria-label="Label this connector"><i class="ph ph-tag ph-lead" aria-hidden="true"></i><span>Label</span></button>
+      <div class="wb-context-group hidden" data-wb-ctx="route" data-fold-label="Shape">
+        <div class="wb-fold-controls">
+          <select id="wb-prop-route" aria-label="Line shape" title="Line shape: curved, straight, or elbow (right angles round the shapes)">
+            <option value="curved">Curved</option>
+            <option value="straight">Straight</option>
+            <option value="elbow">Elbow</option>
+          </select>
+          <!-- **Said on screen** (INBOX 819, the owner: nothing on the board says a
+               connector takes a label): it was reachable only by pressing
+               Enter on a selected line. Shown for a board connector alone. -->
+          <button type="button" id="wb-prop-label" class="ghost small" title="Add a label to this connector, or change its words (Enter)" aria-label="Label this connector"><i class="ph ph-tag ph-lead" aria-hidden="true"></i><span>Label</span></button>
+        </div>
       </div>
       <div class="wb-context-group hidden" data-wb-ctx="caps">
-        <select id="wb-prop-startcap" aria-label="Line start style" title="Line start style">
-          <optgroup label="Tessellate">
-            <option value="memorymap" data-menu-class="wb-cap wb-cap-memorymap wb-cap-start">Tessellate</option>
-          </optgroup>
-          <optgroup label="Plain ends">
-            <option value="none" data-menu-class="wb-cap wb-cap-none wb-cap-start">None</option>
-            <option value="arrow" data-menu-class="wb-cap wb-cap-arrow wb-cap-start">Open arrow</option>
-            <option value="triangle" data-menu-class="wb-cap wb-cap-triangle wb-cap-start">Filled triangle</option>
-            <option value="triangle-open" data-menu-class="wb-cap wb-cap-triangle-open wb-cap-start">Open triangle</option>
-            <option value="stealth" data-menu-class="wb-cap wb-cap-stealth wb-cap-start">Stealth arrow</option>
-            <option value="diamond" data-menu-class="wb-cap wb-cap-diamond wb-cap-start">Diamond</option>
-            <option value="diamond-filled" data-menu-class="wb-cap wb-cap-diamond-filled wb-cap-start">Filled diamond</option>
-            <option value="bar" data-menu-class="wb-cap wb-cap-bar wb-cap-start">Bar</option>
-            <option value="circle" data-menu-class="wb-cap wb-cap-circle wb-cap-start">Circle</option>
-            <option value="circle-filled" data-menu-class="wb-cap wb-cap-circle-filled wb-cap-start">Filled circle</option>
-            <option value="square" data-menu-class="wb-cap wb-cap-square wb-cap-start">Square</option>
-            <option value="multiline" data-menu-class="wb-cap wb-cap-multiline wb-cap-start">Multi-line</option>
-            <option value="cross" data-menu-class="wb-cap wb-cap-cross wb-cap-start">Cross</option>
-            <option value="half-arrow" data-menu-class="wb-cap wb-cap-half-arrow wb-cap-start">Half arrow</option>
-            <option value="double-arrow" data-menu-class="wb-cap wb-cap-double-arrow wb-cap-start">Double arrow</option>
-          </optgroup>
-          <optgroup label="Entity-relationship ends">
-            <option value="er-one" data-menu-class="wb-cap wb-cap-er-one wb-cap-start">One</option>
-            <option value="er-one-only" data-menu-class="wb-cap wb-cap-er-one-only wb-cap-start">One and only one</option>
-            <option value="er-zero-one" data-menu-class="wb-cap wb-cap-er-zero-one wb-cap-start">Zero or one</option>
-            <option value="er-many" data-menu-class="wb-cap wb-cap-er-many wb-cap-start">Many (crow's foot)</option>
-            <option value="er-one-many" data-menu-class="wb-cap wb-cap-er-one-many wb-cap-start">One or many</option>
-            <option value="er-zero-many" data-menu-class="wb-cap wb-cap-er-zero-many wb-cap-start">Zero or many</option>
-          </optgroup>
-        </select>
-        <select id="wb-prop-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark">
-          <option value="s">Small</option>
-          <option value="m" selected>Medium</option>
-          <option value="l">Large</option>
-        </select>
-        <select id="wb-prop-endcap" aria-label="Line end style" title="Line end style">
-          <optgroup label="Tessellate">
-            <option value="memorymap" data-menu-class="wb-cap wb-cap-memorymap">Tessellate</option>
-          </optgroup>
-          <optgroup label="Plain ends">
-            <option value="none" data-menu-class="wb-cap wb-cap-none">None</option>
-            <option value="arrow" data-menu-class="wb-cap wb-cap-arrow">Open arrow</option>
-            <option value="triangle" data-menu-class="wb-cap wb-cap-triangle">Filled triangle</option>
-            <option value="triangle-open" data-menu-class="wb-cap wb-cap-triangle-open">Open triangle</option>
-            <option value="stealth" data-menu-class="wb-cap wb-cap-stealth">Stealth arrow</option>
-            <option value="diamond" data-menu-class="wb-cap wb-cap-diamond">Diamond</option>
-            <option value="diamond-filled" data-menu-class="wb-cap wb-cap-diamond-filled">Filled diamond</option>
-            <option value="bar" data-menu-class="wb-cap wb-cap-bar">Bar</option>
-            <option value="circle" data-menu-class="wb-cap wb-cap-circle">Circle</option>
-            <option value="circle-filled" data-menu-class="wb-cap wb-cap-circle-filled">Filled circle</option>
-            <option value="square" data-menu-class="wb-cap wb-cap-square">Square</option>
-            <option value="multiline" data-menu-class="wb-cap wb-cap-multiline">Multi-line</option>
-            <option value="cross" data-menu-class="wb-cap wb-cap-cross">Cross</option>
-            <option value="half-arrow" data-menu-class="wb-cap wb-cap-half-arrow">Half arrow</option>
-            <option value="double-arrow" data-menu-class="wb-cap wb-cap-double-arrow">Double arrow</option>
-          </optgroup>
-          <optgroup label="Entity-relationship ends">
-            <option value="er-one" data-menu-class="wb-cap wb-cap-er-one">One</option>
-            <option value="er-one-only" data-menu-class="wb-cap wb-cap-er-one-only">One and only one</option>
-            <option value="er-zero-one" data-menu-class="wb-cap wb-cap-er-zero-one">Zero or one</option>
-            <option value="er-many" data-menu-class="wb-cap wb-cap-er-many">Many (crow's foot)</option>
-            <option value="er-one-many" data-menu-class="wb-cap wb-cap-er-one-many">One or many</option>
-            <option value="er-zero-many" data-menu-class="wb-cap wb-cap-er-zero-many">Zero or many</option>
-          </optgroup>
-        </select>
-        <select id="wb-prop-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark">
-          <option value="s">Small</option>
-          <option value="m" selected>Medium</option>
-          <option value="l">Large</option>
-        </select>
+        <span class="wb-fold-row" data-fold-label="Start"><span class="wb-fold-controls">
+          <select id="wb-prop-startcap" aria-label="Line start style" title="Line start style">
+            <optgroup label="Tessellate">
+              <option value="memorymap" data-menu-class="wb-cap wb-cap-memorymap wb-cap-start">Tessellate</option>
+            </optgroup>
+            <optgroup label="Plain ends">
+              <option value="none" data-menu-class="wb-cap wb-cap-none wb-cap-start">None</option>
+              <option value="arrow" data-menu-class="wb-cap wb-cap-arrow wb-cap-start">Open arrow</option>
+              <option value="triangle" data-menu-class="wb-cap wb-cap-triangle wb-cap-start">Filled triangle</option>
+              <option value="triangle-open" data-menu-class="wb-cap wb-cap-triangle-open wb-cap-start">Open triangle</option>
+              <option value="stealth" data-menu-class="wb-cap wb-cap-stealth wb-cap-start">Stealth arrow</option>
+              <option value="diamond" data-menu-class="wb-cap wb-cap-diamond wb-cap-start">Diamond</option>
+              <option value="diamond-filled" data-menu-class="wb-cap wb-cap-diamond-filled wb-cap-start">Filled diamond</option>
+              <option value="bar" data-menu-class="wb-cap wb-cap-bar wb-cap-start">Bar</option>
+              <option value="circle" data-menu-class="wb-cap wb-cap-circle wb-cap-start">Circle</option>
+              <option value="circle-filled" data-menu-class="wb-cap wb-cap-circle-filled wb-cap-start">Filled circle</option>
+              <option value="square" data-menu-class="wb-cap wb-cap-square wb-cap-start">Square</option>
+              <option value="multiline" data-menu-class="wb-cap wb-cap-multiline wb-cap-start">Multi-line</option>
+              <option value="cross" data-menu-class="wb-cap wb-cap-cross wb-cap-start">Cross</option>
+              <option value="half-arrow" data-menu-class="wb-cap wb-cap-half-arrow wb-cap-start">Half arrow</option>
+              <option value="double-arrow" data-menu-class="wb-cap wb-cap-double-arrow wb-cap-start">Double arrow</option>
+            </optgroup>
+            <optgroup label="Entity-relationship ends">
+              <option value="er-one" data-menu-class="wb-cap wb-cap-er-one wb-cap-start">One</option>
+              <option value="er-one-only" data-menu-class="wb-cap wb-cap-er-one-only wb-cap-start">One and only one</option>
+              <option value="er-zero-one" data-menu-class="wb-cap wb-cap-er-zero-one wb-cap-start">Zero or one</option>
+              <option value="er-many" data-menu-class="wb-cap wb-cap-er-many wb-cap-start">Many (crow's foot)</option>
+              <option value="er-one-many" data-menu-class="wb-cap wb-cap-er-one-many wb-cap-start">One or many</option>
+              <option value="er-zero-many" data-menu-class="wb-cap wb-cap-er-zero-many wb-cap-start">Zero or many</option>
+            </optgroup>
+          </select>
+          <select id="wb-prop-startsize" class="wb-cap-size" aria-label="Start size" title="Size of the start mark">
+            <option value="s">Small</option>
+            <option value="m" selected>Medium</option>
+            <option value="l">Large</option>
+          </select>
+        </span></span>
+        <span class="wb-fold-row" data-fold-label="End"><span class="wb-fold-controls">
+          <select id="wb-prop-endcap" aria-label="Line end style" title="Line end style">
+            <optgroup label="Tessellate">
+              <option value="memorymap" data-menu-class="wb-cap wb-cap-memorymap">Tessellate</option>
+            </optgroup>
+            <optgroup label="Plain ends">
+              <option value="none" data-menu-class="wb-cap wb-cap-none">None</option>
+              <option value="arrow" data-menu-class="wb-cap wb-cap-arrow">Open arrow</option>
+              <option value="triangle" data-menu-class="wb-cap wb-cap-triangle">Filled triangle</option>
+              <option value="triangle-open" data-menu-class="wb-cap wb-cap-triangle-open">Open triangle</option>
+              <option value="stealth" data-menu-class="wb-cap wb-cap-stealth">Stealth arrow</option>
+              <option value="diamond" data-menu-class="wb-cap wb-cap-diamond">Diamond</option>
+              <option value="diamond-filled" data-menu-class="wb-cap wb-cap-diamond-filled">Filled diamond</option>
+              <option value="bar" data-menu-class="wb-cap wb-cap-bar">Bar</option>
+              <option value="circle" data-menu-class="wb-cap wb-cap-circle">Circle</option>
+              <option value="circle-filled" data-menu-class="wb-cap wb-cap-circle-filled">Filled circle</option>
+              <option value="square" data-menu-class="wb-cap wb-cap-square">Square</option>
+              <option value="multiline" data-menu-class="wb-cap wb-cap-multiline">Multi-line</option>
+              <option value="cross" data-menu-class="wb-cap wb-cap-cross">Cross</option>
+              <option value="half-arrow" data-menu-class="wb-cap wb-cap-half-arrow">Half arrow</option>
+              <option value="double-arrow" data-menu-class="wb-cap wb-cap-double-arrow">Double arrow</option>
+            </optgroup>
+            <optgroup label="Entity-relationship ends">
+              <option value="er-one" data-menu-class="wb-cap wb-cap-er-one">One</option>
+              <option value="er-one-only" data-menu-class="wb-cap wb-cap-er-one-only">One and only one</option>
+              <option value="er-zero-one" data-menu-class="wb-cap wb-cap-er-zero-one">Zero or one</option>
+              <option value="er-many" data-menu-class="wb-cap wb-cap-er-many">Many (crow's foot)</option>
+              <option value="er-one-many" data-menu-class="wb-cap wb-cap-er-one-many">One or many</option>
+              <option value="er-zero-many" data-menu-class="wb-cap wb-cap-er-zero-many">Zero or many</option>
+            </optgroup>
+          </select>
+          <select id="wb-prop-endsize" class="wb-cap-size" aria-label="End size" title="Size of the end mark">
+            <option value="s">Small</option>
+            <option value="m" selected>Medium</option>
+            <option value="l">Large</option>
+          </select>
+        </span></span>
       </div>
-      <div class="wb-context-group hidden" data-wb-ctx="stroke">
-        <select id="wb-prop-dash" aria-label="Dash pattern" title="Dash pattern">
-          <option value="solid">Solid</option>
-          <option value="dashed">Dashed</option>
-          <option value="dotted">Dotted</option>
-        </select>
+      <div class="wb-context-group hidden" data-wb-ctx="stroke" data-fold-label="Dash">
+        <div class="wb-fold-controls">
+          <select id="wb-prop-dash" aria-label="Dash pattern" title="Dash pattern">
+            <option value="solid">Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="dotted">Dotted</option>
+          </select>
+        </div>
       </div>
       <!-- A sticky note's paper: one dropdown button, filled by
            `wbFillPaperPicker` (the owner, 2026-10-10: "note appearances
            arent changable"). Any other colour is the "..." menu's Background. -->
       <div class="wb-context-group hidden wb-paper-group" data-wb-ctx="paper" role="group" aria-label="Note colour"></div>
-      <div class="wb-context-group hidden" data-wb-ctx="text">
-        <label class="wb-context-field" title="Text size">
-          <span class="wb-context-label">Size</span>
-          <input type="number" id="wb-prop-fontsize" aria-label="Text size" title="Text size" min="8" max="200" step="1">
-        </label>
-        <button type="button" id="wb-prop-bold" class="ghost small icon-only" title="Bold the selected text (**)" aria-label="Bold"><strong>B</strong></button>
-        <button type="button" id="wb-prop-italic" class="ghost small icon-only" title="Italicise the selected text (*)" aria-label="Italic"><em>I</em></button>
-        <span id="wb-prop-align" class="wb-inline-controls" role="group" aria-label="Text alignment">
-          <button class="ghost small icon-only" type="button" data-align="left" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>
-          <button class="ghost small icon-only" type="button" data-align="center" title="Centre" aria-label="Centre"><i class="ph ph-text-align-center" aria-hidden="true"></i></button>
-          <button class="ghost small icon-only" type="button" data-align="right" title="Align right" aria-label="Align right"><i class="ph ph-text-align-right" aria-hidden="true"></i></button>
-        </span>
+      <div class="wb-context-group hidden" data-wb-ctx="text" data-fold-label="Text">
+        <div class="wb-fold-controls">
+          <label class="wb-context-field" title="Text size">
+            <span class="wb-context-label">Size</span>
+            <input type="number" id="wb-prop-fontsize" aria-label="Text size" title="Text size" min="8" max="200" step="1">
+          </label>
+          <button type="button" id="wb-prop-bold" class="ghost small icon-only" title="Bold the selected text (**)" aria-label="Bold"><strong>B</strong></button>
+          <button type="button" id="wb-prop-italic" class="ghost small icon-only" title="Italicise the selected text (*)" aria-label="Italic"><em>I</em></button>
+          <span id="wb-prop-align" class="wb-inline-controls" role="group" aria-label="Text alignment">
+            <button class="ghost small icon-only" type="button" data-align="left" title="Align left" aria-label="Align left"><i class="ph ph-text-align-left" aria-hidden="true"></i></button>
+            <button class="ghost small icon-only" type="button" data-align="center" title="Centre" aria-label="Centre"><i class="ph ph-text-align-center" aria-hidden="true"></i></button>
+            <button class="ghost small icon-only" type="button" data-align="right" title="Align right" aria-label="Align right"><i class="ph ph-text-align-right" aria-hidden="true"></i></button>
+          </span>
+        </div>
       </div>
 
       <!-- The eleven arrange actions (decision 3), in the four questions they
            answer: hold these together, line them up, space them out, make them
            the same size. Icon-only with tooltips, never a label with an icon
            drawn through it (INBOX 64). -->
-      <div class="wb-context-group hidden" data-wb-ctx="arrange">
-        <button type="button" id="wb-multi-group" class="ghost small icon-only" title="Group (Ctrl+G)" aria-label="Group"><i class="ph ph-link" aria-hidden="true"></i></button>
-        <button type="button" id="wb-multi-ungroup" class="ghost small icon-only" title="Ungroup (Ctrl+Shift+G)" aria-label="Ungroup"><i class="ph ph-link-break" aria-hidden="true"></i></button>
+      <div class="wb-context-group hidden" data-wb-ctx="arrange" data-fold-label="Group">
+        <div class="wb-fold-controls">
+          <button type="button" id="wb-multi-group" class="ghost small icon-only" title="Group (Ctrl+G)" aria-label="Group"><i class="ph ph-link" aria-hidden="true"></i></button>
+          <button type="button" id="wb-multi-ungroup" class="ghost small icon-only" title="Ungroup (Ctrl+Shift+G)" aria-label="Ungroup"><i class="ph ph-link-break" aria-hidden="true"></i></button>
+        </div>
       </div>
-      <div class="wb-context-group hidden" data-wb-ctx="arrange">
-        <button type="button" id="wb-align-left" class="ghost small icon-only" title="Align left edges" aria-label="Align left edges"><i class="ph ph-align-left-simple" aria-hidden="true"></i></button>
-        <button type="button" id="wb-align-hcenter" class="ghost small icon-only" title="Align horizontal centres" aria-label="Align horizontal centres"><i class="ph ph-align-center-vertical-simple" aria-hidden="true"></i></button>
-        <button type="button" id="wb-align-right" class="ghost small icon-only" title="Align right edges" aria-label="Align right edges"><i class="ph ph-align-right-simple" aria-hidden="true"></i></button>
-        <button type="button" id="wb-align-top" class="ghost small icon-only" title="Align top edges" aria-label="Align top edges"><i class="ph ph-align-top-simple" aria-hidden="true"></i></button>
-        <button type="button" id="wb-align-vcenter" class="ghost small icon-only" title="Align vertical centres" aria-label="Align vertical centres"><i class="ph ph-align-center-horizontal-simple" aria-hidden="true"></i></button>
-        <button type="button" id="wb-align-bottom" class="ghost small icon-only" title="Align bottom edges" aria-label="Align bottom edges"><i class="ph ph-align-bottom-simple" aria-hidden="true"></i></button>
+      <div class="wb-context-group hidden" data-wb-ctx="arrange" data-fold-label="Align">
+        <div class="wb-fold-controls">
+          <button type="button" id="wb-align-left" class="ghost small icon-only" title="Align left edges" aria-label="Align left edges"><i class="ph ph-align-left-simple" aria-hidden="true"></i></button>
+          <button type="button" id="wb-align-hcenter" class="ghost small icon-only" title="Align horizontal centres" aria-label="Align horizontal centres"><i class="ph ph-align-center-vertical-simple" aria-hidden="true"></i></button>
+          <button type="button" id="wb-align-right" class="ghost small icon-only" title="Align right edges" aria-label="Align right edges"><i class="ph ph-align-right-simple" aria-hidden="true"></i></button>
+          <button type="button" id="wb-align-top" class="ghost small icon-only" title="Align top edges" aria-label="Align top edges"><i class="ph ph-align-top-simple" aria-hidden="true"></i></button>
+          <button type="button" id="wb-align-vcenter" class="ghost small icon-only" title="Align vertical centres" aria-label="Align vertical centres"><i class="ph ph-align-center-horizontal-simple" aria-hidden="true"></i></button>
+          <button type="button" id="wb-align-bottom" class="ghost small icon-only" title="Align bottom edges" aria-label="Align bottom edges"><i class="ph ph-align-bottom-simple" aria-hidden="true"></i></button>
+        </div>
       </div>
-      <div class="wb-context-group hidden" data-wb-ctx="arrange">
-        <button type="button" id="wb-distribute-h" class="ghost small icon-only" title="Even gaps, left to right" aria-label="Even gaps, left to right"><i class="ph ph-arrows-horizontal" aria-hidden="true"></i></button>
-        <button type="button" id="wb-distribute-v" class="ghost small icon-only" title="Even gaps, top to bottom" aria-label="Even gaps, top to bottom"><i class="ph ph-arrows-vertical" aria-hidden="true"></i></button>
+      <div class="wb-context-group hidden" data-wb-ctx="arrange" data-fold-label="Spread">
+        <div class="wb-fold-controls">
+          <button type="button" id="wb-distribute-h" class="ghost small icon-only" title="Even gaps, left to right" aria-label="Even gaps, left to right"><i class="ph ph-arrows-horizontal" aria-hidden="true"></i></button>
+          <button type="button" id="wb-distribute-v" class="ghost small icon-only" title="Even gaps, top to bottom" aria-label="Even gaps, top to bottom"><i class="ph ph-arrows-vertical" aria-hidden="true"></i></button>
+        </div>
       </div>
-      <div class="wb-context-group hidden" data-wb-ctx="arrange">
-        <button type="button" id="wb-same-width" class="ghost small icon-only" title="Same width as the widest" aria-label="Same width as the widest"><i class="ph ph-arrows-out-line-horizontal" aria-hidden="true"></i></button>
-        <button type="button" id="wb-same-height" class="ghost small icon-only" title="Same height as the tallest" aria-label="Same height as the tallest"><i class="ph ph-arrows-out-line-vertical" aria-hidden="true"></i></button>
+      <div class="wb-context-group hidden" data-wb-ctx="arrange" data-fold-label="Match size">
+        <div class="wb-fold-controls">
+          <button type="button" id="wb-same-width" class="ghost small icon-only" title="Same width as the widest" aria-label="Same width as the widest"><i class="ph ph-arrows-out-line-horizontal" aria-hidden="true"></i></button>
+          <button type="button" id="wb-same-height" class="ghost small icon-only" title="Same height as the tallest" aria-label="Same height as the tallest"><i class="ph ph-arrows-out-line-vertical" aria-hidden="true"></i></button>
+        </div>
       </div>
-      <div class="wb-context-group hidden" data-wb-ctx="order">
-        <button type="button" id="wb-selbar-back" class="ghost small icon-only" title="Send backward ([)" aria-label="Send backward"><i class="ph ph-arrow-down" aria-hidden="true"></i></button>
-        <button type="button" id="wb-selbar-forward" class="ghost small icon-only" title="Bring forward (])" aria-label="Bring forward"><i class="ph ph-arrow-up" aria-hidden="true"></i></button>
+      <div class="wb-context-group hidden" data-wb-ctx="order" data-fold-label="Order">
+        <div class="wb-fold-controls">
+          <button type="button" id="wb-selbar-back" class="ghost small icon-only" title="Send backward ([)" aria-label="Send backward"><i class="ph ph-arrow-down" aria-hidden="true"></i></button>
+          <button type="button" id="wb-selbar-forward" class="ghost small icon-only" title="Bring forward (])" aria-label="Bring forward"><i class="ph ph-arrow-up" aria-hidden="true"></i></button>
+        </div>
       </div>
       <!-- **Several topics on a map** (INBOX 617): the map's verbs for a
            selection of topics, in the board's arrange and order groups'

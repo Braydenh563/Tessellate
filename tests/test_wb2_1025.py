@@ -26,7 +26,8 @@ def test_context_bar_folds_into_more_before_it_wraps():
     assert fold.index("bar.insertBefore(g") < fold.index("bar.offsetHeight <= 60")
     # Fill and text fold last (INBOX 1354: a phone's text bar was four rows).
     assert 'order: ["order", "stroke", "arrange", "caps", "route", "fill", "text"]' in WB
-    assert ".wb-context-overflow > .wb-context-group:not(.hidden)" in LAZY_CSS
+    # By id since INBOX 1403: the class selector lost to the bar's four-class hairline rule.
+    assert "#wb-context-overflow > .wb-context-group:not(.hidden)" in LAZY_CSS
 
 
 def test_sketch_rotate_turns_its_selection_box_live():
