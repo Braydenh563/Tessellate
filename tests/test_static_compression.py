@@ -101,7 +101,9 @@ PIECE_CAP = 32_000
 #: lazy shared-intake.js and `renderMemorySettings` is in settings-controls.js,
 #: behind stand-ins. App.js 14,045, total 319,920.
 #: And after the model panel, answer edit and Explain row moved to the lazy gesture-kit.js: 318,631.
-TOTAL_CAP = 320_600
+#: Raised 200 for the Done verdict on a plan line (INBOX 1412; measured 320,707, a new
+#: verdict, its wiring in five callers; nothing was removable).
+TOTAL_CAP = 320_800
 
 
 def _served_gzip_size(client, name: str) -> int:

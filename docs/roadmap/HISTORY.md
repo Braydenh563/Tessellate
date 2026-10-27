@@ -7,6 +7,12 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Moved from the plans, 2026-10-27 (patterns-done)
+
+BACKLOG "Placed from INBOX, 2026-10-27 (Patterns and the guide...)", item 1412.
+
+- **INBOX 1412, a confirmed plan line never closed** (the owner: "how do I confirm that a plan is now closed?"). Built: a plan (rule drift) line has a third verdict, Done (`POST /insights/done`, `insights.done`): the confirmed `derived_facts` row is tombstoned, a `dismiss_insight` of reason done keeps the plan and its variants away, said once as "Marked done" (`insightVerdictItems` in status.js; Tidy, Chat, Ask and the dashboard menu). A later note sharing the plan's words (the `drift` rule) retires a confirmed drift fact (`insights.retire_followed`, run by `from_session`). Not on the undo stack: Confirm and Not right are not either. Tests in `tests/test_insight_verdicts.py`; help in the Patterns topic.
+
 ## Moved from the plans, 2026-10-27 (docs-1027)
 
 DOCUMENTS_PLAN "Placed from INBOX, 2026-10-27".

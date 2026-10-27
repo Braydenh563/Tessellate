@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Patterns: a plan line that says it is still open has a third verdict, Done. It removes your Confirm on that plan and the plan, with its variants, is never said again (shown once as Marked done). A later note that shares the plan's words also retires a plan you had confirmed, so Atlas stops saying it is open once you wrote it was done.
 - Quick sketch: a thick arrow ends at its point (the line no longer pokes out past the head), and the paper colour picker opens by the More button, not the window's top left corner. The Ask box's AI switch has room inside its pill.
 - Companion: a drop or throw that comes down at the bottom bar stands above it instead of sitting with its box 20px into the bar and over its buttons, and over the bar's buttons it floats just above them instead of being sent across the screen; Escape no longer throws when the onboarding overlay is gone.
 - Answers from facts: a model reply is refused when "a reminder" or "both reminders" miscounts the facts, or when it states a calendar date (28 Oct, 2026-12-01, Thursday 29) the facts, the question and the clock do not name; clock times stay unchecked.

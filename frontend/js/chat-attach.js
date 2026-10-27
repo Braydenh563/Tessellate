@@ -2103,9 +2103,9 @@ async function chatSendTurn(preset, opts = {}) {
         //: Each insight line the answer said carries Confirm and Not right
         //: (CHAT_PLAN decision 60), under the answer, one row each.
         for (const insight of event.insights || []) {
-          if (insight.confirmed) continue;
+          if (insight.confirmed && insight.rule !== "drift") continue;
           const line = insightLine(insight, insight.in_answer ? (insight.rule === "drift" ? "Is that open plan right?" : "Is that pattern right?") : `Pattern: ${insight.short}.`, (row, verdict, result) => {
-            row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : "Not right: it will not be shown again.";
+            row.textContent = verdict === "confirmed" ? `Confirmed: ${result.line}` : verdict === "done" ? "Marked done" : "Not right: it will not be shown again.";
           }, "muted");
           groundingHolder.appendChild(line);
         }

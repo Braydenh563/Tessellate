@@ -491,6 +491,20 @@ def dismiss_insight(body: InsightVerdict, session: Session = Depends(get_session
     return done
 
 
+@router.post("/done", status_code=201)
+def done_insight(body: InsightVerdict, session: Session = Depends(get_session)) -> dict:
+    """Done: a plan line is finished. Its confirmed fact is removed and it,
+    with its variants, is not shown again (INBOX 1412)."""
+    from tessellate.ai import insights
+
+    try:
+        result = insights.done(session, body.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    session.commit()
+    return result
+
+
 @router.get("/tag-cloud")
 def tag_cloud(session: Session = Depends(get_session)) -> list[dict]:
     """Every tag with its frequency, most-used first, for a weighted cloud.
