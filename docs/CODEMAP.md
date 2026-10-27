@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6743, test files 1414, tests 12547, plan headings 977.
+Counts: frontend functions 6587, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6743, test files 1414, tests 12548, plan headings 977.
 
 ## Frontend functions (6587)
 
@@ -17640,61 +17640,61 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `DownloadState` | src/tessellate/core/embedmodels.py:388 |
-| `EmbedModel` | src/tessellate/core/embedmodels.py:86 |
-| `OllamaEmbedModel` | src/tessellate/core/embedmodels.py:257 |
-| `OnnxBuild` | src/tessellate/core/embedmodels.py:64 |
-| `_begin_download` | src/tessellate/core/embedmodels.py:895 |
-| `_build_from_hub` | src/tessellate/core/embedmodels.py:1070 |
-| `_clear_directory` | src/tessellate/core/embedmodels.py:1102 |
-| `_declared_bytes` | src/tessellate/core/embedmodels.py:513 |
-| `_dir_size` | src/tessellate/core/embedmodels.py:643 |
-| `_file_size` | src/tessellate/core/embedmodels.py:522 |
-| `_folder_for` | src/tessellate/core/embedmodels.py:432 |
-| `_format_refusal` | src/tessellate/core/embedmodels.py:1008 |
-| `_human_size` | src/tessellate/core/embedmodels.py:667 |
-| `_in_use` | src/tessellate/core/embedmodels.py:1150 |
-| `_log` | src/tessellate/core/embedmodels.py:743 |
-| `_looks_like_a_dropped_connection` | src/tessellate/core/embedmodels.py:777 |
-| `_model_dir` | src/tessellate/core/embedmodels.py:472 |
-| `_read_json` | src/tessellate/core/embedmodels.py:595 |
-| `_run_download` | src/tessellate/core/embedmodels.py:781 |
-| `_snapshot_missing` | src/tessellate/core/embedmodels.py:540 |
-| `_snapshots` | src/tessellate/core/embedmodels.py:440 |
-| `_spawn_download` | src/tessellate/core/embedmodels.py:912 |
-| `_typed_build` | src/tessellate/core/embedmodels.py:448 |
-| `_weights_floor` | src/tessellate/core/embedmodels.py:532 |
-| `backend_name` | src/tessellate/core/embedmodels.py:56 |
-| `build_for` | src/tessellate/core/embedmodels.py:458 |
-| `cache_health` | src/tessellate/core/embedmodels.py:554 |
-| `cache_root` | src/tessellate/core/embedmodels.py:414 |
-| `can_download` | src/tessellate/core/embedmodels.py:675 |
-| `cancel` | src/tessellate/core/embedmodels.py:721 |
-| `catalogue` | src/tessellate/core/embedmodels.py:319 |
-| `current` | src/tessellate/core/embedmodels.py:717 |
-| `disk_size_of` | src/tessellate/core/embedmodels.py:501 |
-| `fetch` | src/tessellate/core/embedmodels.py:625 |
-| `hub_metadata` | src/tessellate/core/embedmodels.py:978 |
-| `hub_refusal` | src/tessellate/core/embedmodels.py:1021 |
-| `is_downloaded` | src/tessellate/core/embedmodels.py:494 |
-| `model_folder` | src/tessellate/core/embedmodels.py:467 |
-| `on_download_finished` | src/tessellate/core/embedmodels.py:857 |
-| `parse_typed_name` | src/tessellate/core/embedmodels.py:962 |
-| `pooling_of` | src/tessellate/core/embedmodels.py:603 |
-| `prefix_for` | src/tessellate/core/embedmodels.py:313 |
-| `reinstall` | src/tessellate/core/embedmodels.py:862 |
-| `remove` | src/tessellate/core/embedmodels.py:1078 |
-| `repair` | src/tessellate/core/embedmodels.py:922 |
-| `repair_title` | src/tessellate/core/embedmodels.py:916 |
-| `reset_for_tests` | src/tessellate/core/embedmodels.py:1157 |
-| `resolve_choice` | src/tessellate/core/embedmodels.py:377 |
-| `set_in_use_check` | src/tessellate/core/embedmodels.py:1145 |
-| `snapshot_path` | src/tessellate/core/embedmodels.py:585 |
-| `snapshot_state` | src/tessellate/core/embedmodels.py:476 |
-| `start` | src/tessellate/core/embedmodels.py:879 |
-| `start_typed` | src/tessellate/core/embedmodels.py:1042 |
-| `status` | src/tessellate/core/embedmodels.py:686 |
-| `width_of` | src/tessellate/core/embedmodels.py:614 |
+| `DownloadState` | src/tessellate/core/embedmodels.py:393 |
+| `EmbedModel` | src/tessellate/core/embedmodels.py:91 |
+| `OllamaEmbedModel` | src/tessellate/core/embedmodels.py:262 |
+| `OnnxBuild` | src/tessellate/core/embedmodels.py:69 |
+| `_begin_download` | src/tessellate/core/embedmodels.py:900 |
+| `_build_from_hub` | src/tessellate/core/embedmodels.py:1075 |
+| `_clear_directory` | src/tessellate/core/embedmodels.py:1107 |
+| `_declared_bytes` | src/tessellate/core/embedmodels.py:518 |
+| `_dir_size` | src/tessellate/core/embedmodels.py:648 |
+| `_file_size` | src/tessellate/core/embedmodels.py:527 |
+| `_folder_for` | src/tessellate/core/embedmodels.py:437 |
+| `_format_refusal` | src/tessellate/core/embedmodels.py:1013 |
+| `_human_size` | src/tessellate/core/embedmodels.py:672 |
+| `_in_use` | src/tessellate/core/embedmodels.py:1155 |
+| `_log` | src/tessellate/core/embedmodels.py:748 |
+| `_looks_like_a_dropped_connection` | src/tessellate/core/embedmodels.py:782 |
+| `_model_dir` | src/tessellate/core/embedmodels.py:477 |
+| `_read_json` | src/tessellate/core/embedmodels.py:600 |
+| `_run_download` | src/tessellate/core/embedmodels.py:786 |
+| `_snapshot_missing` | src/tessellate/core/embedmodels.py:545 |
+| `_snapshots` | src/tessellate/core/embedmodels.py:445 |
+| `_spawn_download` | src/tessellate/core/embedmodels.py:917 |
+| `_typed_build` | src/tessellate/core/embedmodels.py:453 |
+| `_weights_floor` | src/tessellate/core/embedmodels.py:537 |
+| `backend_name` | src/tessellate/core/embedmodels.py:61 |
+| `build_for` | src/tessellate/core/embedmodels.py:463 |
+| `cache_health` | src/tessellate/core/embedmodels.py:559 |
+| `cache_root` | src/tessellate/core/embedmodels.py:419 |
+| `can_download` | src/tessellate/core/embedmodels.py:680 |
+| `cancel` | src/tessellate/core/embedmodels.py:726 |
+| `catalogue` | src/tessellate/core/embedmodels.py:324 |
+| `current` | src/tessellate/core/embedmodels.py:722 |
+| `disk_size_of` | src/tessellate/core/embedmodels.py:506 |
+| `fetch` | src/tessellate/core/embedmodels.py:630 |
+| `hub_metadata` | src/tessellate/core/embedmodels.py:983 |
+| `hub_refusal` | src/tessellate/core/embedmodels.py:1026 |
+| `is_downloaded` | src/tessellate/core/embedmodels.py:499 |
+| `model_folder` | src/tessellate/core/embedmodels.py:472 |
+| `on_download_finished` | src/tessellate/core/embedmodels.py:862 |
+| `parse_typed_name` | src/tessellate/core/embedmodels.py:967 |
+| `pooling_of` | src/tessellate/core/embedmodels.py:608 |
+| `prefix_for` | src/tessellate/core/embedmodels.py:318 |
+| `reinstall` | src/tessellate/core/embedmodels.py:867 |
+| `remove` | src/tessellate/core/embedmodels.py:1083 |
+| `repair` | src/tessellate/core/embedmodels.py:927 |
+| `repair_title` | src/tessellate/core/embedmodels.py:921 |
+| `reset_for_tests` | src/tessellate/core/embedmodels.py:1162 |
+| `resolve_choice` | src/tessellate/core/embedmodels.py:382 |
+| `set_in_use_check` | src/tessellate/core/embedmodels.py:1150 |
+| `snapshot_path` | src/tessellate/core/embedmodels.py:590 |
+| `snapshot_state` | src/tessellate/core/embedmodels.py:481 |
+| `start` | src/tessellate/core/embedmodels.py:884 |
+| `start_typed` | src/tessellate/core/embedmodels.py:1047 |
+| `status` | src/tessellate/core/embedmodels.py:691 |
+| `width_of` | src/tessellate/core/embedmodels.py:619 |
 
 ### src/tessellate/core/embedswitch.py (17)
 
@@ -19640,7 +19640,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12547)
+## Tests (12548)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20096,7 +20096,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_failure_remedies.py | 4 |
 | tests/test_failure_ways_out_row33.py | 2 |
 | tests/test_fastembed_engine.py | 9 |
-| tests/test_fastembed_vector_ids.py | 5 |
+| tests/test_fastembed_vector_ids.py | 6 |
 | tests/test_feature_catalog.py | 7 |
 | tests/test_feature_instead_class_1026.py | 3 |
 | tests/test_feature_models.py | 39 |

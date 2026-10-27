@@ -47,10 +47,15 @@ logger = logging.getLogger("tessellate.embedmodels")
 #: and in front of every vector's `model_version` (`ai/embeddings.py`).
 BUILTIN_BACKEND = "fastembed"
 #: What the preference said before fastembed replaced sentence-transformers
-#: (2026-10-27). The same models in the same space (measured: cosine 0.999999
-#: between the two engines' vectors for one text), so a saved setting reads as
-#: the new engine and migration f1b3c5d7e9a2 renames the stored vectors.
+#: (2026-10-27). The same models in the same space, so a saved setting reads as
+#: the new engine; migration f1b3c5d7e9a2 renames the stored vectors of the two
+#: models whose engines were measured equal (its docstring has the numbers) and
+#: the backfill embeds the notes of any other model again.
 LEGACY_BACKENDS = frozenset({"sentence-transformers"})
+#: The models whose vectors from the old engine are kept (renamed, never
+#: embedded again): measured equal to fastembed's. Mirrors the migration's
+#: list (`tests/test_fastembed_vector_ids.py` holds the two together).
+VECTORS_KEPT = ("BAAI/bge-small-en-v1.5", "intfloat/multilingual-e5-small")
 
 
 def backend_name(value: object) -> str:

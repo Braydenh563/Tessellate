@@ -5,8 +5,9 @@ fastembed, same model family).
 Each vector names the engine that made it, search reads only the live
 engine's, and the backfill fills only notes with no vector, so a renamed
 engine would strand every vector for good. The two engines' vectors for one
-text measured cosine 0.999999, so migration f1b3c5d7e9a2 renames them and
-nothing is embedded again; a saved "sentence-transformers" setting reads as
+text measured cosine 0.999999 or better for bge-small and multilingual-e5-small
+(the two renamed; every other model is embedded again by the backfill), so
+migration f1b3c5d7e9a2 renames those and nothing is embedded again; a saved "sentence-transformers" setting reads as
 the new engine.
 """
 
@@ -65,13 +66,31 @@ def _seed(db: Path) -> None:
     try:
         for table in TABLES:
             for entry_id, version in enumerate(
-                ("sentence-transformers:BAAI/bge-small-en-v1.5", "ollama:nomic-embed-text", "sentence-transformers:intfloat/multilingual-e5-small"),
+                (
+                    "sentence-transformers:BAAI/bge-small-en-v1.5",
+                    "ollama:nomic-embed-text",
+                    "sentence-transformers:intfloat/multilingual-e5-small",
+                    "sentence-transformers:BAAI/bge-base-en-v1.5",
+                    "sentence-transformers:sentence-transformers/all-MiniLM-L6-v2",
+                ),
                 start=1,
             ):
                 _insert(con, table, {"entry_id": entry_id, "model_version": version})
         con.commit()
     finally:
         con.close()
+
+
+def test_the_rename_list_is_the_models_that_were_measured():
+    """Adding a model here means comparing both engines on the same texts
+    first (the migration docstring holds the numbers)."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("fastembed_ids", ROOT / "migrations" / "versions" / "f1b3c5d7e9a2_fastembed_vector_ids.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.MEASURED == ("BAAI/bge-small-en-v1.5", "intfloat/multilingual-e5-small")
+    assert tuple(module.MEASURED) == embedmodels.VECTORS_KEPT
 
 
 def test_old_engine_vectors_are_renamed_in_every_table_and_others_are_left(tmp_path):
@@ -84,6 +103,8 @@ def test_old_engine_vectors_are_renamed_in_every_table_and_others_are_left(tmp_p
             "fastembed:BAAI/bge-small-en-v1.5",
             "ollama:nomic-embed-text",
             "fastembed:intfloat/multilingual-e5-small",
+            "sentence-transformers:BAAI/bge-base-en-v1.5",
+            "sentence-transformers:sentence-transformers/all-MiniLM-L6-v2",
         ], table
 
 
@@ -94,6 +115,7 @@ def test_downgrade_gives_the_old_names_back(tmp_path):
     command.upgrade(_config(db), REV)
     command.downgrade(_config(db), BEFORE)
     assert _versions(db, "embeddings")[0] == "sentence-transformers:BAAI/bge-small-en-v1.5"
+    assert _versions(db, "embeddings")[2] == "sentence-transformers:intfloat/multilingual-e5-small"
 
 
 def test_a_second_run_changes_nothing(tmp_path):
