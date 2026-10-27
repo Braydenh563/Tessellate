@@ -905,6 +905,9 @@ function readableUrl(url) {
   return segments.length > 1 ? `${host} / \u2026 / ${last}` : `${host} / ${last}`;
 }
 
+//: A link label worth reading as inline markdown: it holds emphasis or code.
+const LINK_LABEL_MARKUP = /[*_`~=]/;
+
 function renderInlineMarkdown(element, text, terms, compact = false, options = {}) {
   const { underscoreSyntax = false, applyLatex = true } = options;
   // appendInline never cleared `element`, it only ever appended into a
@@ -1095,7 +1098,16 @@ function appendInlineRun(element, text, terms, compact, options) {
           //: its address is a real label and is left alone.
           const labelIsTheUrl = !linkText.trim() || linkText.trim() === linkUrl.trim();
           if (labelIsTheUrl) a.title = linkUrl;
-          highlightInto(a, labelIsTheUrl ? (/^https?:/i.test(linkUrl) ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
+          if (!labelIsTheUrl && LINK_LABEL_MARKUP.test(linkText)) {
+            //: `[**Title**](#/note/3)`: the composer's own link for a bold
+            //: title (owner, 2026-10-27: the weekly digest showed the
+            //: asterisks). The label is read as inline text again, so bold,
+            //: italic and code draw inside the link; no bare-URL autolink
+            //: (no link inside a link) and compact (no picture inside one).
+            appendInlineRun(a, linkText, terms, true, { ...options, autolinkBareUrls: false, dismissible: false });
+          } else {
+            highlightInto(a, labelIsTheUrl ? (/^https?:/i.test(linkUrl) ? readableUrl(linkUrl) : appAddressLabel(linkTarget)) : linkText, terms);
+          }
           element.appendChild(a);
         }
       } else {
