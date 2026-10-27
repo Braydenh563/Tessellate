@@ -65,7 +65,11 @@ BOOT_JS_CAP = 588_400
 #: drops comment-leftover lines"): measured 178,351, so the cap comes down
 #: from 183,300. The same session's menu row fit, toast stack and credits
 #: rows took it to 178,530; the cap is that with 470 bytes of room.
-BOOT_CSS_CAP = 179_000
+#: 2026-10-27: the Reminders row's always-drawn ⋯ and the gap that keeps the
+#: time off it cost 54 gzipped bytes (head 178,997, now 179,051) and the head
+#: had 3 to spare; there is no lazy file for a row that draws at boot, so the
+#: cap rises by 100.
+BOOT_CSS_CAP = 179_100
 
 
 def _served_gzip(url: str) -> int:

@@ -459,9 +459,17 @@ function renderMarkdown(container, text, depth = 0) {
       save.addEventListener("click", () =>
         saveFile(`code-${Date.now()}.${language || "txt"}`, new Blob([text], { type: "text/plain" }))
       );
+      //: Wrap or scroll (the owner, 2026-10-27), one icon beside Copy; the
+      //: card's `data-wrap` is what the stylesheet reads.
+      const wrap = wrapToggle("code", (on) => {
+        block.dataset.wrap = on ? "on" : "off";
+      });
+      const wrapOn = wrap.remembered();
+      wrap.paint(wrapOn);
+      block.dataset.wrap = wrapOn ? "on" : "off";
       const actions = document.createElement("span");
       actions.className = "code-actions";
-      actions.append(copy, save);
+      actions.append(wrap.button, copy, save);
       bar.append(label, actions);
 
       const pre = document.createElement("pre");

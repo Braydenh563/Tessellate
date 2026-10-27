@@ -846,6 +846,39 @@ function boardEmbedMarkdown(board) {
 // nothing.
 const MD_MAX_DEPTH = 4;
 
+//: **Wrap or scroll, per card** (the owner, 2026-10-27: "can you add a button
+//: to toggle wrap text in tables or code blocks??"). A wide table or a long
+//: code line scrolls sideways in a reply, which is right for code you mean to
+//: paste and wrong for prose in a cell, and only the reader knows which this
+//: is. So the head of a code or table card holds one icon toggle beside Copy
+//: (the card head's recipe, DESIGN.md), `aria-pressed` while wrapping, and a
+//: press is remembered per kind (`wrap-code`, `wrap-table`) for the cards
+//: drawn afterwards. Scrolling is the default. `paint` is the only writer of
+//: the button's state, so the pressed look and its title cannot disagree;
+//: `keep()` lets a surface that starts somewhere else (a table's full view,
+//: which starts fitted) press without changing what the next card starts as.
+function wrapToggle(kind, apply, keep = () => true) {
+  const key = `wrap-${kind}`;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small icon-only code-copy wrap-toggle";
+  setLabel(button, "ph:text-align-left");
+  //: A toggle keeps one name and says its state in `aria-pressed`; the title
+  //: is the sighted reader's hint of what a press does.
+  button.setAttribute("aria-label", "Wrap lines");
+  const paint = (on) => {
+    button.setAttribute("aria-pressed", String(on));
+    button.title = on ? "Don't wrap" : "Wrap lines";
+  };
+  button.addEventListener("click", () => {
+    const on = button.getAttribute("aria-pressed") !== "true";
+    paint(on);
+    apply(on);
+    if (keep()) prefs.set(key, on ? "1" : "0");
+  });
+  return { button, paint, remembered: () => prefs.bool(key, false) };
+}
+
 //: **A table the model wrote is something you can take away** (INBOX 172:
 //: "export, copy, or save etc things such as tables, code blocks etc that
 //: the ai generates ... scrollable tables in responses are good but
@@ -1025,26 +1058,31 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   //: in full view fits the panel (INBOX 179's decision, unchanged). One
   //: attribute with the same two values in both places is what makes the
   //: toggle mean the same thing wherever it is pressed.
+  //: The wrap toggle is this attribute's switch (the old "Fit to panel" row
+  //: of the ⋯, now an icon in the head): pressed is `fit`. A press in the
+  //: bubble is remembered for the next table; one in full view is not, since
+  //: full view starts fitted whatever the bubble was.
+  const wrap = wrapToggle(
+    "table",
+    (on) => {
+      //: A table the reader has dragged columns on is in neither state, so the
+      //: toggle takes it back to one, dropping the sizes: the alternative is a
+      //: button that appears to do nothing because the explicit widths win.
+      clearTableSizes();
+      block.dataset.tableView = on ? "fit" : "actual";
+    },
+    () => !block.classList.contains("is-full")
+  );
   const setTableView = (view) => {
     block.dataset.tableView = view;
-    fit.textContent = view === "fit" ? "Actual size" : "Fit to panel";
-    fit.title =
-      view === "fit"
-        ? "Show the table at its natural width, scrolling sideways"
-        : "Fit every column into the width available, wrapping the text";
+    wrap.paint(view === "fit");
   };
-  const fit = button("Actual size", "Show the table at its natural width, scrolling sideways", () => {
-    //: A table the reader has dragged columns on is in neither state, so the
-    //: toggle takes it back to one, dropping the sizes: the alternative is a
-    //: button that appears to do nothing because the explicit widths win.
-    clearTableSizes();
-    setTableView(block.dataset.tableView === "fit" ? "actual" : "fit");
-  });
   const full = button("Full view", "Show this table on its own, at the window's width");
-  //: The bubble's own default, said out loud rather than left as the absence
-  //: of a class: a table in an answer is at its natural width and the block
-  //: scrolls sideways, so the button on offer is "Fit to panel".
-  setTableView("actual");
+  //: The bubble's own start, said out loud rather than left as the absence of
+  //: a class: a table in an answer is at its natural width and scrolls
+  //: sideways unless the reader last chose to wrap.
+  const bubbleView = () => (wrap.remembered() ? "fit" : "actual");
+  setTableView(bubbleView());
   //: **The panel leaves the bubble to be full screen** (reported on the first
   //: cut, with a screenshot: "the table full view is behind a lot of stuff").
   //: A `position: fixed` element is laid out against the nearest ancestor
@@ -1095,7 +1133,7 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
     //: view puts them straight back.
     removeGrips();
     stripTableSizes();
-    setTableView("actual");
+    setTableView(bubbleView());
     if (placeholder && placeholder.parentNode) {
       placeholder.replaceWith(block);
       placeholder = null;
@@ -1151,9 +1189,10 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   //: recipe DESIGN.md's index gives for exactly this (standing order 11)
   //: rather than a second menu shape invented for one bar.
   //:
-  //: `fit` and `full` keep their own elements and their own handlers and are
-  //: re-parented into the menu, so the two places that rewrite their labels
-  //: (the toggle itself, and `leave()`) go on working against the same node.
+  //: `full` keeps its own element and its own handler and its row is a press
+  //: on it, so the two places that rewrite its label (its own click, and
+  //: `leave()`) go on working against the same node. Wrapping left the menu
+  //: for the head (a ⋯ row hides a switch the reader wants to see the state of).
   const actions = document.createElement("span");
   actions.className = "code-actions";
   const menu = kebabMenu(
@@ -1173,7 +1212,6 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
         title: "Save this table as a CSV file in the exports folder",
         run: () => saveFile(`table-${Date.now()}.csv`, new Blob([csv], { type: "text/csv" })),
       },
-      { label: "ph:arrows-horizontal", title: fit.title, run: () => fit.click() },
       { label: "ph:frame-corners", title: full.title, run: () => full.click() },
     ],
     "More table actions"
@@ -1182,28 +1220,24 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   //: already own their wording, so the menu never says "Full view" for a table
   //: that is in full view.
   const menuRows = [...menu.querySelectorAll(".menu-item")];
-  const fitRow = menuRows[3];
-  const fullRow = menuRows[4];
+  const fullRow = menuRows[3];
   const syncMenuLabels = () => {
-    setLabel(fitRow, `ph:arrows-horizontal ${fit.textContent}`);
     setLabel(fullRow, `ph:frame-corners ${full.textContent}`);
   };
   syncMenuLabels();
-  fit.addEventListener("click", syncMenuLabels);
   full.addEventListener("click", syncMenuLabels);
-  //: The two buttons still exist, still carry the state, and are simply not
-  //: in the bar: `leave()` writes to them on Escape, and the menu reads them
-  //: back on the next open.
-  fit.hidden = true;
+  //: The button still exists, still carries the state, and is simply not in
+  //: the bar: `leave()` writes to it on Escape, and the menu reads it back on
+  //: the next open.
   full.hidden = true;
   actions.append(
+    wrap.button,
     button("ph:copy Copy", "Copy the cells, tab-separated, for a spreadsheet", (event) => copyToClipboard(tsv, event.currentTarget)),
     menu,
     //: Last in the bar, which puts it at the panel's top-right corner, where
     //: every other X in this app is. Hidden in a bubble: there is nothing to
     //: close there.
     close,
-    fit,
     full
   );
   bar.append(label, actions);
