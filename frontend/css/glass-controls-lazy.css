@@ -8,12 +8,16 @@
    to 08-consistency.css, which dresses it once, and a button the person has
    chosen (active, pressed, open) keeps its own fill. */
 :root:not([data-glass="off"])[data-glass-controls="on"] button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not([aria-haspopup="menu"]) {
-  background: color-mix(in srgb, var(--panel) 80%, transparent);
   backdrop-filter: var(--glass-filter-clear);
   -webkit-backdrop-filter: var(--glass-filter-clear);
   border-color: var(--divider);
   color: var(--ink);
 }
-:root:not([data-glass="off"])[data-glass-controls="on"] button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not([aria-haspopup="menu"]):hover:not(:disabled) {
-  background: var(--ghost-btn-bg);
+/* The chip's fill only at rest: under the pointer or keyboard focus the
+   ghost button's own hover-and-focus rule (01-forms-settings.css) fills it,
+   so hover and focus stay one state without a comma here. */
+:root:not([data-glass="off"])[data-glass-controls="on"] button.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]):not([aria-haspopup="menu"]):not(:hover:enabled):not(:focus-visible) {
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+  backdrop-filter: var(--glass-filter-clear);
+  -webkit-backdrop-filter: var(--glass-filter-clear);
 }

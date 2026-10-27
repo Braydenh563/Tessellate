@@ -866,9 +866,8 @@ button.map-chip:focus-visible {
   box-shadow: var(--glass-shadow);
   backdrop-filter: var(--glass-filter-clear);
   overflow: hidden;
-}
-.editor-menu.hidden {
-  display: none;
+  /* A fade only, each time `.hidden` lifts: it sits at the caret and moves with it. */
+  animation: ui-fade var(--ui-fast) var(--ease-out);
 }
 /* The list: the block menu's one scroller. 22rem holds a tile, a name over a
    one-line description and a short key hint without the description being

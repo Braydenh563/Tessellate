@@ -24,7 +24,7 @@ from tessellate.ai.model_manager import (
     SUGGESTED_MODELS,
 )
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps, hardware, ocr, security
+from tessellate.core import background, deps, hardware, ocr, security
 from tessellate.core.deps import get_session
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
@@ -279,7 +279,7 @@ def warm_filing() -> dict:
     #: The graphics card is read by starting a program (up to 3s, cached five
     #: minutes): read it now, so Settings' first model list does not wait on it
     #: (INBOX 1415).
-    threading.Thread(target=hardware.detect_gpus, name="gpu-probe", daemon=True).start()
+    background.start("gpu-probe", hardware.detect_gpus)
     ollama = deps.get_ollama()
     #: Only when a model answers: with none the job returned at once, yet
     #: still showed "Warming up the filing model" in the bell and Activity on

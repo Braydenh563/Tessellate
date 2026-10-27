@@ -583,60 +583,6 @@ for (const button of document.querySelectorAll("#privacy-range [data-range]")) {
   });
 }
 
-async function changePassword() {
-  const status = $("account-status");
-  const current = $("account-current").value;
-  const next = $("account-new").value;
-  const confirmed = $("account-confirm").value;
-  status.classList.remove("error");
-
-  // Checked here as well as on the server, so a typo costs a moment rather
-  // than a password you didn't mean to set.
-  if (!current || !next) {
-    status.classList.add("error");
-    status.textContent = "Fill in your current and new password.";
-    return;
-  }
-  if (next !== confirmed) {
-    status.classList.add("error");
-    status.textContent = "The two new passwords don't match.";
-    return;
-  }
-  if (next.length < 8) {
-    status.classList.add("error");
-    status.textContent = "A new password needs at least 8 characters.";
-    return;
-  }
-
-  status.textContent = "Changing…";
-  try {
-    const result = await apiJson("/auth/change-password", {
-      method: "POST",
-      body: JSON.stringify({ current_password: current, new_password: next }),
-      // A 401 here means "wrong current password", not "your session died".
-      ownsAuthErrors: true,
-    });
-    // Changing the password invalidates every token, including this tab's.
-    // The server hands back a fresh one so the change doesn't log you out of
-    // the screen you just used to make it. Key must match authToken().
-    prefs.set("token", result.token);
-    $("account-current").value = "";
-    $("account-new").value = "";
-    $("account-confirm").value = "";
-    status.textContent = result.warning || "Password changed.";
-    if (result.pin_cleared) status.textContent += " Your PIN was removed; set it up again if you want one.";
-    toast(
-      result.other_sessions_ended
-        ? `Password changed. ${result.other_sessions_ended} other session(s) were signed out.`
-        : "Password changed."
-    );
-    renderAccount().catch(() => {});
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-  }
-}
-
 let prefsCache = null;
 // Set by savePrefs() to the PUT's own promise while it is in flight, and
 // awaited here first (INBOX 73, see savePrefs' own comment): without this,

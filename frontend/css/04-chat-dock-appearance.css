@@ -1833,10 +1833,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) brightness(1.04);
 }
 
-.selection-popup.hidden {
-  display: none;
-}
-
 /* The kebab opener only, scoped through `.menu-wrap` on purpose.
    As a bare `.selection-popup button` this also matched every `.menu-item`
    inside the popup's own menu, and won on specificity (0,1,1 against

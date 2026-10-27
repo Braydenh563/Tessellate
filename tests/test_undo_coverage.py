@@ -649,7 +649,7 @@ EXEMPT: dict[str, str] = {
     "settings-packages.js:voiceModelsWire": "job: removes a downloaded dictation model behind a confirm that names the size freed; deletes no user data and it downloads again on the next dictation",
     "settings-models.js:modelUse": "settings: picks the active model",
     "settings-models.js:run": "settings: a setting with its own Reset or the settings history",
-    "settings-panes.js:changePassword": "auth: sign-in, recovery or lock; no user data",
+    "settings-controls.js:changePassword": "auth: sign-in, recovery or lock; no user data",
     "settings-panes.js:reportTimezone": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:savePrefs": "settings: a setting with its own Reset or the settings history",
     "settings-panes.js:saveSearchProvider": "settings: a setting with its own Reset or the settings history",

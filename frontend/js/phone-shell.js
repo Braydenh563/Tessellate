@@ -287,13 +287,6 @@ function renderEmblemWhenShown(holder, size, animate) {
 
 // --- wiring --------------------------------------------------------------------
 
-// Enter anywhere in the change-password form submits it.
-for (const id of ["account-current", "account-new", "account-confirm"]) {
-  $(id).addEventListener("keydown", (e) => {
-    if (e.key === "Enter") changePassword();
-  });
-}
-
 // --- the notifications centre's controls (§36E) -----------------------------
 $("notif-btn").addEventListener("click", () => {
   const open = $("notif-panel").classList.contains("hidden");
