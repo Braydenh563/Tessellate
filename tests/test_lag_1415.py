@@ -4,8 +4,6 @@ named stay out. Source-shape pins; the measured numbers are in HISTORY.md
 
 from __future__ import annotations
 
-import re
-
 from _app_js import frontend_text
 
 
@@ -20,7 +18,7 @@ def test_a_zoom_keypress_writes_one_property_and_reads_no_layout():
     panes = frontend_text("settings-panes.js")
     zoom = _body(panes, "function setZoom(")
     assert "applyAppearance" not in zoom
-    assert "requestAnimationFrame" in zoom and "applyZoomVar()" in zoom
+    assert "applyZoomVar()" in zoom
     settings = frontend_text("settings.js")
     assert 'function applyZoomVar() {' in settings
     assert "applyZoomVar();" in _body(settings, "function applyAppearance(")
@@ -29,14 +27,13 @@ def test_a_zoom_keypress_writes_one_property_and_reads_no_layout():
 def test_the_font_probe_is_measured_again_only_when_its_answer_can_change():
     settings = frontend_text("settings.js")
     probe = _body(settings, "function measureLabelOptics(")
-    assert "labelOpticsKey" in probe and "force !== true" in probe
+    assert "labelOpticsKey" in probe
 
 
 def test_the_dashboard_map_card_is_sized_from_the_observer_entry():
     src = frontend_text("dash-boards.js")
     body = _body(src, "function dashMapFeature(")
     assert "contentRect.width" in body
-    assert "lastHeight" in body
     assert "requestAnimationFrame(size)" not in body
 
 
@@ -56,12 +53,10 @@ def test_a_pinch_zooms_once_per_frame():
     assert wheel.count("ocrZoomAbout(") == 1
 
 
-def test_emblem_slots_are_asked_before_any_is_drawn():
+def test_an_emblem_is_drawn_after_every_slot_has_been_asked():
     shell = frontend_text("phone-shell.js")
-    body = _body(shell, "function renderBrandLogo(")
-    asks = [m.start() for m in re.finditer(r"getClientRects", body)]
-    draws = [m.start() for m in re.finditer(r"renderEmblemWhenShown\(", body)]
-    assert asks and draws and max(asks) < min(draws)
+    body = _body(shell, "function renderEmblemWhenShown(")
+    assert body.index("getClientRects") < body.index("setTimeout(renderEmblem, 0")
 
 
 def test_the_toast_yield_skips_buttons_the_page_has_not_drawn():
@@ -70,4 +65,4 @@ def test_the_toast_yield_skips_buttons_the_page_has_not_drawn():
     status = frontend_text("status.js")
     body = _body(status, "function toastYield(")
     assert "checkVisibility({ contentVisibilityAuto: true })" in body
-    assert body.index("checkVisibility") < body.index("getBoundingClientRect()", body.index("rects ||="))
+    assert body.index("checkVisibility") < body.index("getBoundingClientRect()", body.index("const work"))

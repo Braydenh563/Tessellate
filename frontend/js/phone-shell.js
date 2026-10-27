@@ -243,13 +243,10 @@ const EMBLEM_SLOTS = [
 ];
 
 function renderBrandLogo() {
-  //: All slots asked before any is drawn (INBOX 1415): a draw dirties the next ask.
-  const slots = [];
   for (const [id, size, animate] of EMBLEM_SLOTS) {
     const holder = document.getElementById(id);
-    if (holder) slots.push([holder, size, animate, holder.getClientRects().length > 0]);
+    if (holder) renderEmblemWhenShown(holder, size, animate);
   }
-  for (const [holder, size, animate, shown] of slots) renderEmblemWhenShown(holder, size, animate, shown);
   //: The assistant heads that wear the emblem take the new colour or motion.
   repaintAssistantAvatars(true);
   //: The dashboard hero's mark is no slot above (it is sized by the density
@@ -263,11 +260,11 @@ function renderBrandLogo() {
 //: the hidden ones to repaint when shown, so none shows an old colour.
 const emblemPending = new Map();
 
-function renderEmblemWhenShown(holder, size, animate, shown = holder.getClientRects().length > 0) {
-  if (shown || typeof IntersectionObserver === "undefined") {
+function renderEmblemWhenShown(holder, size, animate) {
+  if (holder.getClientRects().length) {
     emblemPending.delete(holder);
     emblemState.lazyObserver?.unobserve(holder);
-    renderEmblem(holder, size, { animate });
+    setTimeout(renderEmblem, 0, holder, size, { animate });
     return;
   }
   if (!emblemState.lazyObserver) {

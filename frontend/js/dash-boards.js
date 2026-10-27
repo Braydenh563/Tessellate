@@ -51,20 +51,10 @@ function dashMapFeature(board) {
   button.appendChild(caption);
   button.addEventListener("click", () => openWhiteboardBoard(board.id));
   const items = Array.isArray(board.preview_items) ? board.preview_items.length : 0;
-  //: INBOX 1415: width from the observer entry, no write when unchanged.
-  let lastHeight = 0;
-  const size = (width) => {
-    if (!(width > 0)) return;
-    const height = dashMapFeatureHeight(width, board.preview_aspect, items);
-    if (height === lastHeight) return;
-    lastHeight = height;
-    svg.style.height = `${height}px`;
-  };
-  if (typeof ResizeObserver === "function") {
-    new ResizeObserver((entries) => size(entries[entries.length - 1].contentRect.width)).observe(button);
-  } else {
-    requestAnimationFrame(() => size(button.clientWidth));
-  }
+  //: INBOX 1415: the width is the observer entry's, not a layout read.
+  new ResizeObserver(([{ contentRect }]) => {
+    if (contentRect.width > 0) svg.style.height = `${dashMapFeatureHeight(contentRect.width, board.preview_aspect, items)}px`;
+  }).observe(button);
   return button;
 }
 

@@ -4251,9 +4251,8 @@ function ocrFitLiveText() {
   if (!layer) return;
   const range = document.createRange();
   //: Reads then writes (INBOX 1415): a write between reads was a layout per word.
-  const todo = layer.querySelectorAll(".ocr-live-word:not([data-fitted])");
   const fits = [];
-  for (const span of todo) {
+  for (const span of layer.querySelectorAll(".ocr-live-word:not([data-fitted])")) {
     range.selectNodeContents(span);
     const ink = range.getBoundingClientRect().width;
     const room = span.getBoundingClientRect().width;
@@ -7707,13 +7706,9 @@ onDomReady(() => {
     if (!event.ctrlKey) return;
     event.preventDefault();
     //: One zoom per frame (INBOX 1415).
-    if (ocrWheelPending) {
-      ocrWheelPending.deltaY += event.deltaY;
-      ocrWheelPending.clientX = event.clientX;
-      ocrWheelPending.clientY = event.clientY;
-      return;
-    }
-    ocrWheelPending = { deltaY: event.deltaY, clientX: event.clientX, clientY: event.clientY };
+    const queued = ocrWheelPending;
+    ocrWheelPending = { deltaY: event.deltaY + (queued?.deltaY || 0), clientX: event.clientX, clientY: event.clientY };
+    if (queued) return;
     requestAnimationFrame(() => {
       const event = ocrWheelPending;
       ocrWheelPending = null;
