@@ -2365,8 +2365,52 @@ function untangleCleanup() {
   lineGrid.live = false;
   nodeGrid.live = false;
   untangle.margin = 0;
+  untangleUntouch(startX, startY);
   untangle.holding = untangleGlide(startX, startY) > 0;
   return untangle.holding ? 1 : 0;
+}
+
+//: The pushes' last quarter lets the lines win over the spacing, and the
+//: put-back above ignores who moved into the old spot, so a cleanup could leave
+//: two notes touching with nothing ticking after it (`untangle.holding`):
+//: 3 seeds in 12 of tests/test_graph_layout.py's map before 2026-10-27, 0 now
+//: (a link through a note: 0 and 1). A moved note within 2 px of another goes
+//: back to where it rested, until none is (a wider gap put more back on lines);
+//: each round puts at least one note back, so it ends.
+const UNTANGLE_TOUCH = 2;
+function untangleUntouch(startX, startY) {
+  for (let any = true; any; ) {
+    any = false;
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (node.x === startX[i] && node.y === startY[i]) continue;
+      const ri = node.r || 8;
+      for (let j = 0; j < nodes.length; j++) {
+        const other = nodes[j];
+        const need = ri + (other.r || 8) + UNTANGLE_TOUCH;
+        const dx = other.x - node.x;
+        if (other === node || dx >= need || dx <= -need) continue;
+        const dy = other.y - node.y;
+        if (dy >= need || dy <= -need || dx * dx + dy * dy >= need * need) continue;
+        //: Of the two, the one that does not land back on a line, if the other moved too.
+        let back = i;
+        if (other.x !== startX[j] || other.y !== startY[j]) {
+          const x = node.x;
+          const y = node.y;
+          node.x = startX[i];
+          node.y = startY[i];
+          const onLine = untangleOnLine(i);
+          node.x = x;
+          node.y = y;
+          if (onLine) back = j;
+        }
+        nodes[back].x = startX[back];
+        nodes[back].y = startY[back];
+        any = true;
+        break;
+      }
+    }
+  }
 }
 
 // A moved note stays inside its category's reach (the farthest of its notes
@@ -2388,7 +2432,9 @@ function untangleReach() {
 }
 function untangleInside(node) {
   const home = untangle.reach && untangle.reach.get(node.group);
-  return !home || Math.hypot(node.x - home.cx, node.y - home.cy) <= home.far * UNTANGLE_REACH;
+  //: The hub's outer ring is placed on this very edge, so a hair of slack keeps
+  //: it inside whichever way the last bit rounds (one ulp flipped a test).
+  return !home || Math.hypot(node.x - home.cx, node.y - home.cy) <= home.far * UNTANGLE_REACH + 1e-6;
 }
 
 function untangleLayout() {

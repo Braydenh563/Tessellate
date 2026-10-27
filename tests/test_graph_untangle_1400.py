@@ -208,13 +208,19 @@ def test_the_untangle_runs_three_passes_with_the_relax_between_and_never_after_a
     ends them. The notes the passes leave on a line are cleared at the end
     (`test_graph_layout.py` counted 7 on lines after three passes)."""
     assert "const UNTANGLE_PASSES = 3;" in WORKER
-    assert "untangle.passes < untanglePasses() && !dragging) untangle.done = false;" in WORKER
+    # The passes now run back to back out of sight (`settleUntangled`, 2026-10-27
+    # "smooth and flowy"), so the loop that repeats them moved there; there is no
+    # shown relax left for a drag to stop, so the drag marks the cleanup spent too.
+    assert (
+        "while (!untangle.done || (untangle.passes > 0 && untangle.passes < untanglePasses())) {"
+        in WORKER
+    )
     assert "nodes.length > UNTANGLE_BIG ? UNTANGLE_BIG_PASSES : UNTANGLE_PASSES" in WORKER
     assert "untangle.gain < Math.max(2, untangle.total * UNTANGLE_MIN_SHARE)" in WORKER
     # A drag marks the passes spent, so the ease after a drop is never untangled.
     drag = WORKER[WORKER.index('if (message.phase === "start") {') :]
     drag = drag[: drag.index('} else if (message.phase === "move")')]
-    assert "untangle.passes = UNTANGLE_PASSES;" in drag and "untangle.relaxing = false;" in drag
+    assert "untangle.passes = UNTANGLE_PASSES;" in drag and "untangle.cleaned = true;" in drag
     # Anything that lays the map out again starts the count over.
     assert WORKER.count("untangle.passes = 0;") == 3
 

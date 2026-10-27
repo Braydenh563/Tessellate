@@ -53,7 +53,7 @@ const sb = { console, Math, Date, Float32Array, Float64Array, Int32Array, Uint8A
   setTimeout: (fn) => { timers.push(fn); return timers.length; }, clearTimeout: () => {}, setInterval: () => 1, clearInterval: () => {},
   performance: { now: () => Date.now() } };
 sb.self = sb;
-sb.postMessage = (m) => sent.push({ m, passes: vm.runInContext("untangle.passes", sb), cleaned: vm.runInContext("untangle.cleaned", sb) });
+sb.postMessage = (m) => sent.push({ m, passes: vm.runInContext("untangle.passes", sb), cleaned: vm.runInContext("untangle.cleaned", sb), after: Boolean(sb.__starts) });
 sb.importScripts = (u) => vm.runInContext(fs.readFileSync(path.join(root, u.replace(/^\//, "")), "utf8"), sb);
 vm.createContext(sb);
 vm.runInContext(fs.readFileSync(path.join(root, "js", "graph-worker.js"), "utf8"), sb);
@@ -81,13 +81,14 @@ while (timers.length && guard++ < 20000 && !sent.some((s) => s.m.type === "end")
 }
 const kinds = sent.map((s) => s.m.type);
 const ticks = sent.filter((s) => s.m.type === "tick");
-let maxMove = 0, jumps = 0;
+let maxMove = 0, jumps = 0, jumpsAfter = 0;
 for (let f = 1; f < ticks.length; f++) {
   const a = ticks[f - 1].m.positions, b = ticks[f].m.positions;
   let m = 0;
   for (let j = 0; j < b.length; j += 2) m = Math.max(m, Math.hypot(b[j] - a[j], b[j + 1] - a[j + 1]));
   maxMove = Math.max(maxMove, m);
   if (m > 20) jumps++;
+  if (m > 20 && ticks[f - 1].after) jumpsAfter++;
 }
 const last = ticks[ticks.length - 1], intros = ticks.filter((s) => s.m.intro);
 const lastIntro = intros[intros.length - 1];
@@ -98,7 +99,7 @@ console.log(JSON.stringify({
   ticks: ticks.length, intros: intros.length,
   firstTick: { passes: ticks[0].passes, cleaned: ticks[0].cleaned, intro: Boolean(ticks[0].m.intro), alpha: ticks[0].m.alpha },
   lastRunning: last.m.running, ended: kinds[kinds.length - 1] === "end",
-  maxMove, jumps,
+  maxMove, jumps, jumpsAfter,
   landsOnFinal: lastIntro ? Array.from(lastIntro.m.positions).every((v, i) => Math.abs(v - final[i]) < 1e-3) : null,
   frameIsFinal: frame ? Array.from(frame.m.positions).every((v, i) => Math.abs(v - final[i]) < 1e-3) : null,
   startIsFirst: frame && intros.length ? Array.from(frame.m.start).every((v, i) => Math.abs(v - intros[0].m.positions[i]) < 1e-3) : null,
@@ -132,9 +133,10 @@ def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
 
 def test_a_layout_settled_live_is_untangled_out_of_sight_and_glided_to_once() -> None:
     out = _node(OPEN, "live")
-    # One settle out of sight and one glide, never a burst per pass.
+    # One settle out of sight and one glide, never a burst per pass. Before it
+    # the layout runs live from full heat (no warm-up asked), physics only.
     assert out["starts"] == 1 and out["glides"] <= 1, out
-    assert out["jumps"] == 0, out
+    assert out["jumpsAfter"] == 0, out
     assert out["lastRunning"] is False and out["ended"], out
 
 

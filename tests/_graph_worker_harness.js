@@ -68,17 +68,25 @@ sandbox.onmessage({
     alpha: 1,
     warm: scenario.warm === true,
     intro: scenario.intro === true,
+    bloom: scenario.bloom === true,
   },
 });
 let last = null;
 let firstAlpha = null;
-// The warm-up's playback (INBOX 775): the `frame` posted at init, and how
-// many ticks were playback and from what heat the first one came.
-const framed = sent.some((m) => m.type === "frame");
+// The warm-up's playback (INBOX 775): the `frame` it posts, and how many
+// ticks were playback and from what heat the first one came.
+let framed = sent.some((m) => m.type === "frame");
 let introTicks = 0;
 let firstIntroAlpha = null;
+//: The settle out of sight (`pending`) runs in time slices that post nothing
+//: but the frame, so its turns are not counted as ticks; it ends itself
+//: (`PENDING_MAX_MS`), so this loop is bounded.
+const pendingOn = () => vm.runInContext("pending.on", sandbox);
 for (let i = 0; i < (scenario.ticks || 300) && timers.length; i++) {
+  while (timers.length && pendingOn() && !sent.some((m) => m.type === "tick")) timers.shift()();
+  if (!timers.length) break;
   timers.shift()();
+  if (sent.some((m) => m.type === "frame")) framed = true;
   for (const m of sent) {
     if (m.type !== "tick" || !m.intro) continue;
     introTicks += 1;
