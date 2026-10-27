@@ -62,3 +62,33 @@ def test_a_windowed_list_is_checked_against_the_window(ai_client, fake_ollama, s
     """The counts were the whole list's (3) while the engine said the week's (2)."""
     _seed(session)
     assert _kept(ai_client, fake_ollama, question, prose, use_tools) is ok
+
+
+@pytest.mark.parametrize(
+    ("question", "prose", "ok"),
+    [
+        ("how many minutes in 2 hours", "That is 130 minutes.", False),
+        ("how many minutes in 2 hours", "That is 120 minutes.", True),
+        ("how many minutes in 2 hours", "That is 2 hours.", False),
+        ("how many days until christmas", "There are 90 days until Christmas.", False),
+        ("how many days until christmas", "There are 59 days until Christmas.", True),
+        ("how many days until christmas", "Christmas is about 8 weeks away.", True),
+        ("convert 3 hours to minutes", "That's 200 minutes.", False),
+        ("convert 3 hours to minutes", "That's 180 minutes.", True),
+        ("how many weeks until 1 january", "That is 20 weeks.", False),
+        ("how many weeks until 1 january", "That is about 9 weeks.", True),
+        ("how many seconds in a day", "A day is 86,400 seconds.", True),
+        ("how many seconds in a day", "A day is 86,000 seconds.", False),
+    ],
+)
+def test_a_span_the_engine_computed_is_checked(ai_client, fake_ollama, session, question, prose, ok):
+    """A figure before a time unit was never read, so any span stood."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, question, prose) is ok
+
+
+@SURFACES
+def test_a_span_the_engine_did_not_compute_is_the_models(ai_client, fake_ollama, session, use_tools):
+    """Under a list of dated reminders, "in 2 days" is the model's reading."""
+    _seed(session)
+    assert _kept(ai_client, fake_ollama, "what reminders do I have", "You have 3 reminders; pay rent is in 2 days.", use_tools)

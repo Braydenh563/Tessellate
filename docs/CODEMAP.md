@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6729, test files 1410, tests 12511, plan headings 977.
+Counts: frontend functions 6585, frontend ids 2556, CSS sections 504, backend routes 625, backend modules 6734, test files 1410, tests 12513, plan headings 977.
 
 ## Frontend functions (6585)
 
@@ -11209,7 +11209,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6729)
+## Backend modules (6734)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12619,20 +12619,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `offline_message` | src/tessellate/ai/extractor.py:103 |
 | `propose_split` | src/tessellate/ai/extractor.py:142 |
 
-### src/tessellate/ai/fact_check.py (10)
+### src/tessellate/ai/fact_check.py (15)
 
 | Name | File:line |
 |---|---|
-| `_figures` | src/tessellate/ai/fact_check.py:100 |
-| `_kept` | src/tessellate/ai/fact_check.py:199 |
-| `_noun_after` | src/tessellate/ai/fact_check.py:90 |
-| `_noun_of_key` | src/tessellate/ai/fact_check.py:133 |
-| `_value` | src/tessellate/ai/fact_check.py:72 |
-| `keeps` | src/tessellate/ai/fact_check.py:208 |
-| `merged` | src/tessellate/ai/fact_check.py:191 |
-| `result_counts` | src/tessellate/ai/fact_check.py:140 |
-| `rows_counts` | src/tessellate/ai/fact_check.py:176 |
-| `said_counts` | src/tessellate/ai/fact_check.py:123 |
+| `_dated` | src/tessellate/ai/fact_check.py:113 |
+| `_figures` | src/tessellate/ai/fact_check.py:121 |
+| `_is_span` | src/tessellate/ai/fact_check.py:220 |
+| `_kept` | src/tessellate/ai/fact_check.py:240 |
+| `_noun_after` | src/tessellate/ai/fact_check.py:103 |
+| `_noun_of_key` | src/tessellate/ai/fact_check.py:154 |
+| `_says_asked` | src/tessellate/ai/fact_check.py:271 |
+| `_span_kept` | src/tessellate/ai/fact_check.py:229 |
+| `_spans` | src/tessellate/ai/fact_check.py:224 |
+| `_value` | src/tessellate/ai/fact_check.py:85 |
+| `keeps` | src/tessellate/ai/fact_check.py:251 |
+| `merged` | src/tessellate/ai/fact_check.py:212 |
+| `result_counts` | src/tessellate/ai/fact_check.py:161 |
+| `rows_counts` | src/tessellate/ai/fact_check.py:197 |
+| `said_counts` | src/tessellate/ai/fact_check.py:144 |
 
 ### src/tessellate/ai/factgraph.py (18)
 
@@ -19627,7 +19632,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12511)
+## Tests (12513)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20078,7 +20083,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_extras_desktop_locked.py | 5 |
 | tests/test_extras_download.py | 22 |
 | tests/test_f7_pool_moves.py | 2 |
-| tests/test_fact_check_1027.py | 1 |
+| tests/test_fact_check_1027.py | 3 |
 | tests/test_factgraph.py | 11 |
 | tests/test_facts_over_time.py | 10 |
 | tests/test_failure_remedies.py | 4 |

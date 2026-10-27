@@ -7,13 +7,15 @@ A count is a figure attached to a counted noun ("3 reminders", "no notes",
 and row counts of the tool result or the statistic (`result_counts`,
 `rows_counts`) and the counted statements of the engine's own lead sentence
 (`said_counts`). A date ("Mon 2 Nov"), a time ("14:02", "at 9"), an id
-("#/notes/12") and a span ("in 3 days") are never counts, so a digit there
-can neither excuse a miscount nor be one. "one", "no", "none", "nothing" and
-"zero" are figures like any other.
+("#/notes/12") are never counts, so a digit there can neither excuse a
+miscount nor be one. A span ("120 minutes", "59 days") is checked against
+the spans the facts state, in any unit, and stands when they state none.
+"one", "no", "none", "nothing" and "zero" are figures like any other.
 """
 
 from __future__ import annotations
 
+import math
 import re
 
 _UNITS = {
@@ -52,10 +54,21 @@ _WEEKDAYS = {
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
     "mon", "tue", "tues", "wed", "thu", "thur", "thurs", "fri", "sat", "sun",
 }
-#: After a figure, the word that makes it a span or a time, not a count.
-_SPANS = {
-    "second", "seconds", "minute", "minutes", "min", "mins", "hour", "hours", "hr", "hrs", "day", "days", "week",
-    "weeks", "month", "months", "year", "years", "am", "pm", "o'clock", "oclock",
+#: After a figure, the word that makes it a time of day, never a count.
+_CLOCK = {"am", "pm", "o'clock", "oclock"}
+#: After a figure, the unit that makes it a span ("3 days", "120 minutes"),
+#: in minutes. A span is read as (value, "~<minutes>") and checked only
+#: against spans the facts state (`_span_kept`): "in 3 days" under a list
+#: of reminders is the model's, "59 days away" is the engine's.
+_SPAN_MINUTES = {
+    **dict.fromkeys(("second", "seconds", "sec", "secs"), 1 / 60),
+    **dict.fromkeys(("minute", "minutes", "min", "mins"), 1),
+    **dict.fromkeys(("hour", "hours", "hr", "hrs"), 60),
+    **dict.fromkeys(("day", "days"), 1440),
+    **dict.fromkeys(("week", "weeks"), 10080),
+    **dict.fromkeys(("fortnight", "fortnights"), 20160),
+    **dict.fromkeys(("month", "months"), 43830),
+    **dict.fromkeys(("year", "years"), 525960),
 }
 #: Before a figure, the word that makes it a time or a place ("at 9", "#12").
 _BEFORE_TIME = {"at", "#", "/", "no.", "number"}
@@ -97,9 +110,18 @@ def _noun_after(tokens: list[str], i: int) -> str | None:
     return None
 
 
+def _dated(tokens: list[str], i: int) -> bool:
+    """Whether the figure at `i` is a date, a time or a place by its
+    neighbours ("at 9", "2 Nov", "Mon 2", "9 o'clock")."""
+    before = tokens[i - 1] if i else ""
+    after = tokens[i + 1] if i + 1 < len(tokens) else ""
+    return before in _BEFORE_TIME or before in _MONTHS or before in _WEEKDAYS or after in _MONTHS or after in _CLOCK
+
+
 def _figures(text: str) -> list[tuple[str, str | None]]:
-    """Every figure the text says that is not a date, a time, an id or a
-    span, as (value, the noun it counts or None for a bare figure). "no" is
+    """Every figure the text says that is not a date, a time or an id, as
+    (value, the noun it counts, "~<minutes>" for a span, or None for a bare
+    figure). "no" is
     a figure only before a counted noun ("no reminders"), never "No, ..."."""
     tokens = _TOKEN.findall((text or "").lower())
     out: list[tuple[str, str | None]] = []
@@ -109,11 +131,10 @@ def _figures(text: str) -> list[tuple[str, str | None]]:
         value = "0" if token == "no" else _value(token)
         if value is None:
             continue
-        before = tokens[i - 1] if i else ""
-        after = tokens[i + 1] if i + 1 < len(tokens) else ""
-        if before in _BEFORE_TIME or before in _MONTHS or before in _WEEKDAYS or after in _MONTHS or after in _SPANS:
+        if _dated(tokens, i):
             continue
-        noun = _noun_after(tokens, i)
+        after = tokens[i + 1] if i + 1 < len(tokens) else ""
+        noun = f"~{_SPAN_MINUTES[after]}" if after in _SPAN_MINUTES else _noun_after(tokens, i)
         if token == "no" and noun is None:
             continue
         out.append((value, noun))
@@ -125,7 +146,7 @@ def said_counts(text: str) -> dict[str, set[str]]:
     reminders waiting" is {"reminder": {"3"}})."""
     out: dict[str, set[str]] = {}
     for value, noun in _figures(text):
-        if noun and noun != "*":
+        if noun and noun != "*" and not _is_span(noun):
             out.setdefault(noun, set()).add(value)
     return out
 
@@ -196,8 +217,30 @@ def merged(*parts: dict[str, set[str]]) -> dict[str, set[str]]:
     return out
 
 
-def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[str], stated: set[str]) -> bool:
-    """One figure of the prose against the engine's counts (`keeps`)."""
+def _is_span(noun: str | None) -> bool:
+    return bool(noun) and noun.startswith("~")
+
+
+def _spans(text: str) -> list[float]:
+    """The spans a text states, in minutes."""
+    return [float(v) * float(n[1:]) for v, n in _figures(text) if _is_span(n)]
+
+
+def _span_kept(value: str, unit: float, spans: list[float]) -> bool:
+    """Whether a span the prose says is one the facts state, in any unit:
+    "59 days" is "8 weeks" or "about 2 months" too, never "90 days"."""
+    said = float(value)
+    for span in spans:
+        whole = span / unit
+        if abs(said * unit - span) < 1e-6 or said in (math.floor(whole), round(whole), math.ceil(whole)):
+            return True
+    return False
+
+
+def _kept(value: str, noun: str | None, counts: dict[str, set[str]], every: set[str], stated: set[str], spans: list[float]) -> bool:
+    """One figure of the prose against the engine's counts and spans (`keeps`)."""
+    if _is_span(noun):
+        return not spans or _span_kept(value, float(noun[1:]), spans)
     if noun is None:
         return value == "1" or value in every or value in stated
     if counts:
@@ -220,9 +263,22 @@ def keeps(prose: str, facts: str, question: str, counts: dict[str, set[str]], ne
     said = _figures(prose)
     stated = {v for v, _n in _figures(facts)} | {v for v, _n in _figures(question)}
     every = set().union(*counts.values()) if counts else set()
-    if not all(_kept(value, noun, counts, every, stated) for value, noun in said):
+    if not all(_kept(value, noun, counts, every, stated, _spans(facts)) for value, noun in said):
         return False
-    if not needs_figure:
+    return not needs_figure or _says_asked(said, facts, question, every)
+
+
+def _says_asked(said: list[tuple[str, str | None]], facts: str, question: str, every: set[str]) -> bool:
+    """Whether the prose says the figure it was asked for: one of the counts,
+    or a figure or a span the facts state and the question does not ("2
+    hours is 120 minutes" asks for the 120, in any unit but the question's)."""
+    asked = _figures(question)
+    stated = [(v, n) for v, n in _figures(facts) if (v, n) not in asked]
+    asked_for = every or {v for v, n in stated if not _is_span(n)} - {v for v, _n in asked}
+    asked_spans = [float(v) * float(n[1:]) for v, n in stated if _is_span(n)]
+    if not asked_for and not asked_spans:
         return True
-    asked_for = every or ({v for v, _n in _figures(facts)} - {v for v, _n in _figures(question)})
-    return not asked_for or any(value in asked_for for value, _n in said)
+    return any(
+        value in asked_for or (_is_span(noun) and (value, noun) not in asked and _span_kept(value, float(noun[1:]), asked_spans))
+        for value, noun in said
+    )
