@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6882, test files 1442, tests 12782, plan headings 984.
+Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6886, test files 1443, tests 12786, plan headings 984.
 
 ## Frontend functions (6657)
 
@@ -11308,7 +11308,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (6882)
+## Backend modules (6886)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13572,17 +13572,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ollama_binary` | src/tessellate/ai/offline.py:39 |
 | `ollama_hint` | src/tessellate/ai/offline.py:54 |
 
-### src/tessellate/ai/ollama_client.py (7)
+### src/tessellate/ai/ollama_client.py (11)
 
 | Name | File:line |
 |---|---|
-| `OllamaClient` | src/tessellate/ai/ollama_client.py:189 |
+| `OllamaClient` | src/tessellate/ai/ollama_client.py:214 |
 | `_is_down` | src/tessellate/ai/ollama_client.py:170 |
-| `_is_refusal` | src/tessellate/ai/ollama_client.py:185 |
+| `_is_refusal` | src/tessellate/ai/ollama_client.py:210 |
 | `_mark_down` | src/tessellate/ai/ollama_client.py:162 |
 | `_mark_up` | src/tessellate/ai/ollama_client.py:166 |
-| `_note_failure` | src/tessellate/ai/ollama_client.py:180 |
+| `_note_failure` | src/tessellate/ai/ollama_client.py:205 |
+| `_quiet_key` | src/tessellate/ai/ollama_client.py:189 |
 | `describe_http_error` | src/tessellate/ai/ollama_client.py:64 |
+| `forget_quiet` | src/tessellate/ai/ollama_client.py:201 |
+| `is_quiet` | src/tessellate/ai/ollama_client.py:197 |
+| `mark_quiet` | src/tessellate/ai/ollama_client.py:193 |
 
 ### src/tessellate/ai/openai_client.py (2)
 
@@ -19879,7 +19883,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12782)
+## Tests (12786)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19940,6 +19944,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_sees_tags_and_files.py | 5 |
 | tests/test_ask_use_ai_714.py | 7 |
 | tests/test_ask_user.py | 18 |
+| tests/test_ask_wait_1027.py | 4 |
 | tests/test_asset_cache_busting.py | 3 |
 | tests/test_asset_strip.py | 20 |
 | tests/test_atlas_access.py | 6 |
@@ -22034,7 +22039,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:293 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:297 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

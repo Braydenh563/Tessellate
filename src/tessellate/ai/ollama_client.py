@@ -177,6 +177,31 @@ def _is_down(base_url: str) -> bool:
     return True
 
 
+#: How long a server that accepted the connection and then never answered
+#: the probe is taken as off. Unlike a refusal this is not proof, so it only
+#: short-circuits `is_running` (the many liveness checks of one turn), never a
+#: real request. Measured: a silent runner cost 2 s per probe, five or more
+#: probes per turn, 4 to 9 s before the first step (INBOX 1420, askwait-1027).
+QUIET_TTL_SECONDS = 10.0
+PROBE_READ_SECONDS = 1.0
+
+
+def _quiet_key(base_url: str) -> str:
+    return f"quiet:{base_url}"
+
+
+def mark_quiet(base_url: str) -> None:
+    _down_until[_quiet_key(base_url)] = _clock() + QUIET_TTL_SECONDS
+
+
+def is_quiet(base_url: str) -> bool:
+    return _is_down(_quiet_key(base_url))
+
+
+def forget_quiet(base_url: str) -> None:
+    _down_until.pop(_quiet_key(base_url), None)
+
+
 def _note_failure(base_url: str, exc: BaseException) -> None:
     if _is_refusal(exc):
         _mark_down(base_url)
@@ -435,16 +460,19 @@ class OllamaClient(Provider):
     def is_running(self) -> bool:
         """Cheap reachability probe: short timeout so the UI never hangs
         just to discover Ollama is off (plan §6.5)."""
-        if _is_down(self.base_url):
+        if _is_down(self.base_url) or is_quiet(self.base_url):
             return False
         try:
-            response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, 2))
+            response = requests.get(f"{self.base_url}/api/tags", timeout=(CONNECT_TIMEOUT_SECONDS, PROBE_READ_SECONDS))
             response.raise_for_status()
             _mark_up(self.base_url)
+            forget_quiet(self.base_url)
             return True
         except requests.RequestException as exc:
             if _is_refusal(exc):
                 _mark_down(self.base_url)
+            else:
+                mark_quiet(self.base_url)
             return False
 
     def loaded_models(self) -> list[str] | None:
