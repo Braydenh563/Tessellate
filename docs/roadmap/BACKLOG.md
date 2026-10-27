@@ -4399,3 +4399,9 @@ Owner's list, in one place (each is also logged above where it has detail):
 - **Placed in their plans, from the same list:** document templates, snippets with drag, manage mode and live-view tables (DOCUMENTS_PLAN); diagram elements and templates, draw.io-style pan, a document viewer object (WHITEBOARD_PLAN); the timeline as a calendar (TIMELINE_PLAN Phase 5); more workflows (AGENT_SKILLS_REFORM); profile avatar life and the hardware card for suggested models (BACKLOG, this section's heirs).
 
 1401. **The owner, 2026-10-27, verbatim.** "Should needle come packaged or vendored by default with the repo?? Should we use any other vendored small models like system-one laya or CDMS? Idk just a thought". Recommendation, taken: needle stays out of the repository (decision of 699: a 36 MB native engine plus weights per platform; pinned SHA-256 download, network symbols refused at install). Open as a build row: the Windows installer may carry it as an optional "offline bundle" so a fresh install needs no download. Laya stays not adopted (391: below a plain baseline zero-shot, weak past 20 labels, 512-token context). "system-one" and "CDMS" are not identified in this repo: the owner to name the projects before they are assessed (licence, size, an eval set showing a gap).
+
+## Placed from review, 2026-10-27 (counted answers, `fact_check.keeps`)
+
+- **A span is matched to any gap in the facts, not the row it names:** "Rent is due in 4 days" passes when some other pair of dates is four days apart. Pair a span with the nearest named row before accepting it.
+- **Counts are pooled per noun:** a breakdown's row count (4 in Work) is accepted as the total (12), and the total as a row count. Tie a figure to its label or row when the reply names one.
+- **The noun is found only within three words:** "4 really big important reminders" has no noun, so 4 passes when it is any count in the facts. Widen the look-ahead to the clause.
