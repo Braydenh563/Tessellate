@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6898, test files 1445, tests 12806, plan headings 984.
+Counts: frontend functions 6657, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6898, test files 1445, tests 12807, plan headings 984.
 
 ## Frontend functions (6657)
 
@@ -2409,15 +2409,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `askAgainMenu` | frontend/js/ask-history.js:262 |
-| `askHistoryRepaint` | frontend/js/ask-history.js:251 |
+| `askAgainMenu` | frontend/js/ask-history.js:264 |
+| `askHistoryRepaint` | frontend/js/ask-history.js:253 |
 | `askHistoryRow` | frontend/js/ask-history.js:14 |
-| `clearAskHistory` | frontend/js/ask-history.js:297 |
-| `deleteAskHistoryTurn` | frontend/js/ask-history.js:238 |
-| `forgetRecentQuestion` | frontend/js/ask-history.js:274 |
+| `clearAskHistory` | frontend/js/ask-history.js:299 |
+| `deleteAskHistoryTurn` | frontend/js/ask-history.js:240 |
+| `forgetRecentQuestion` | frontend/js/ask-history.js:276 |
 | `loadAskHistoryPage` | frontend/js/ask-history.js:82 |
 | `toggleAskHistoryPanel` | frontend/js/ask-history.js:102 |
-| `toggleAskHistoryPin` | frontend/js/ask-history.js:223 |
+| `toggleAskHistoryPin` | frontend/js/ask-history.js:225 |
 | `viewAskHistoryTurn` | frontend/js/ask-history.js:112 |
 
 ### frontend/js/assistant-avatar.js (1)
@@ -19895,7 +19895,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12806)
+## Tests (12807)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -19949,7 +19949,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_ask_focus.py | 12 |
 | tests/test_ask_from_notes_k26.py | 6 |
 | tests/test_ask_head_714.py | 1 |
-| tests/test_ask_head_press_1423.py | 5 |
+| tests/test_ask_head_press_1423.py | 6 |
 | tests/test_ask_history.py | 17 |
 | tests/test_ask_locale.py | 2 |
 | tests/test_ask_overview_brief.py | 5 |

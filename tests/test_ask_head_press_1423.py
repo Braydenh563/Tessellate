@@ -58,3 +58,9 @@ def test_a_lone_alt_release_is_cancelled_and_a_modifier_use_is_not() -> None:
     # Any other key between press and release clears it, as does the window losing focus.
     assert 'altAlone = e.key === "Alt"' in js
     assert 'addEventListener("blur", () => { altAlone = false; })' in js
+
+
+def test_a_reopened_answer_loads_the_pressed_states_too():
+    js = (ROOT / "frontend/js/ask-history.js").read_text(encoding="utf-8")
+    shown = js.index('show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");')
+    assert 'ensureModule("askCompose")' in js[shown:shown + 200]
