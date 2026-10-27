@@ -386,12 +386,16 @@ Tessellate/
 │   ├── whiteboard-commands.js · whiteboard-format.js · whiteboard-library.js ·
 │   │   whiteboard-interchange.js # the board's command table, Format panel,
 │   │                        #   object library, and Mermaid/SVG/outline in and out
+│   ├── mermaid-frame.js · mermaid-draw.js # every ```mermaid fence: a hidden same-origin
+│   │                        #   frame (own policy) runs vendor/mermaid, loaded on first use
+│   ├── task-steps.js · gesture-kit.js · lag-watch.js · screen-context.js # task steps,
+│   │                        #   shared pointer gestures, the slow-frame log, what the Guide sees
 │   ├── sw.js · manifest.webmanifest # PWA
 │   ├── css/                 # eleven files, 00-tokens-shell to 10-responsive;
 │   │                        #   index.html's <link> order is load-bearing; and
-│   │                        #   three lazy sheets (icon-picker, library-lazy,
-│   │                        #   nav-history-lazy) fetched with their scripts
-│   └── vendor/              # d3 v7, p5, CodeMirror, Phosphor icons, the
+│   │                        #   lazy sheets (icon-picker, library-lazy,
+│   │                        #   nav-history-lazy, mermaid-lazy, glass-controls-lazy, math-editor-lazy, web-lazy) fetched with their scripts
+│   └── vendor/              # d3 v7, p5, CodeMirror, Mermaid 12.2.0, Phosphor icons, the
 │                            #   spelling wordlist: local, never a CDN
 ├── tests/                   # pytest; every AI call faked (tests/fakes.py)
 ├── tests-e2e/               # the Playwright smoke suite CI runs
