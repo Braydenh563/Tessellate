@@ -939,7 +939,7 @@ HELP_TOPICS: list[dict] = [
             "notes\", \"how many notes do I have\", \"how many notes have no "
             "tags\", \"how many pinned notes\", \"how many open tasks\", \"how many "
             "reminders this week\", \"which are my most linked notes\", \"when do I write "
-            "most\", notes from a season or part of a month (\"last summer\", \"the first week of "
+            "most\", notes from a season, which follows your hemisphere (\"last summer\" is December to February in en-AU, en-NZ and en-ZA; Settings, General, Seasons overrides it), or part of a month (\"the first week of "
             "October\", \"the second half of March\"), and notes by the order you made them: \"the first note I ever wrote\", \"my 5th note\", \"my newest note\". These are counted from your data rather than generated, so "
             "the numbers are exact, the answer is instant, and it works even "
             "with no AI model running at all. Private and binned notes are never "

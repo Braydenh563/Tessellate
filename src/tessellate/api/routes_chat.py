@@ -34,6 +34,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import budget as run_budget, capability, composer, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
     agent,
@@ -1989,6 +1990,7 @@ def _prepare(
     nothing to search for, and searching anyway is what made "hey" come back
     with a list of notes.
     """
+    recognise.note_locale(locale)  # the browser's own language and region: which half of the year "summer" is
     attached = _attached_notes(session, note_ids or [])
     attached_docs = _attached_documents(session, document_ids or [])
     attached_files = _attached_files(session, file_ids or [])
@@ -4022,6 +4024,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     composer answers (Ask's From your notes, or any turn with no model), and
     only with a turn before it: a model reads the history itself, and the
     routing (`_composed`) is unchanged by it."""
+    recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
     early = _app_first_events(req, follow, req.ollama.is_running())
     prepared = _prepare(

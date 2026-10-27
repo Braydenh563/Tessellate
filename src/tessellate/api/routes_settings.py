@@ -325,6 +325,10 @@ class PreferencesBody(BaseModel):
     #: a Python weekday, 0 Monday to 6 Sunday).
     week_start: Literal["auto", "monday", "saturday", "sunday"] | None = None
     week_start_locale: int | None = Field(default=None, ge=0, le=6)
+    #: Which half of the year "summer" and "last winter" mean: the person's
+    #: pick, or "auto" to follow the locale the browser reports (`season_locale`).
+    season_hemisphere: Literal["auto", "north", "south"] | None = None
+    season_locale: str | None = Field(default=None, max_length=35)
     #: Minutes of no use after which the search-by-meaning model is dropped from
     #: memory (decision 62; it loads again on the next search or save). 0 keeps it.
     embedder_idle_unload_minutes: int | None = Field(default=None, ge=0, le=1440)
@@ -788,6 +792,8 @@ def _preferences_from(config) -> dict:
         "composer_voice": config.get_preference("composer_voice", "natural"),
         "week_start": config.get_preference("week_start", "auto"),
         "week_start_locale": config.get_preference("week_start_locale", 0),
+        "season_hemisphere": config.get_preference("season_hemisphere", "auto"),
+        "season_locale": config.get_preference("season_locale", ""),
         "embedder_idle_unload_minutes": config.get_preference("embedder_idle_unload_minutes", 60),
         "insight_level": config.get_preference("insight_level", "one"),
         "writing_dictionary": config.get_preference("writing_dictionary", []),
@@ -1087,6 +1093,12 @@ def _apply_preference(config, session: Session, key: str, value) -> None:
     """One validated preference written, with the side effects its key carries."""
     value = _validated_preference(key, value)
     config.set_preference(key, value)
+    if key in ("season_hemisphere", "season_locale"):
+        from tessellate.ai import recognise
+
+        recognise.configure_hemisphere(
+            config.get_preference("season_hemisphere", "auto"), config.get_preference("season_locale", "")
+        )
     if key == "semantic_auto_install":
         # Either answer settles the ask-once question (frontend/js/semantic-notice.js).
         config.set_preference("semantic_choice_made", True)
@@ -1181,7 +1193,7 @@ SETTINGS_FILE_VERSION = 1
 #: not a choice a person would carry to another one: the detected time zone, a
 #: folder path on this disk, and the one-time "seen it" flags.
 _NOT_EXPORTED = frozenset(
-    {"timezone", "week_start_locale", "export_save_dir", "backup_copy_dir", "console_view_intro_seen", "tray_hide_explained"}
+    {"timezone", "week_start_locale", "season_locale", "export_save_dir", "backup_copy_dir", "console_view_intro_seen", "tray_hide_explained"}
 )
 
 

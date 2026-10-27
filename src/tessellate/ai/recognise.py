@@ -28,6 +28,8 @@ pattern, except `entry/timewords.py`, which reads a saved note's own words.
 from __future__ import annotations
 
 import re
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any
@@ -1743,14 +1745,81 @@ def _span_part_of_period(text: str, a: date, tense: str | None) -> Any:
     return None if part is None else (part[0], part[1], unit)
 
 
-_SEASON_START = {"spring": 3, "summer": 6, "autumn": 9, "fall": 9, "winter": 12}
+#: Meteorological seasons by the first month of each. The southern half is
+#: the northern one six months on (the owner, 2026-10-27: summer is December
+#: to February in Sydney, Auckland and Johannesburg).
+_SEASON_START_NORTH = {"spring": 3, "summer": 6, "autumn": 9, "fall": 9, "winter": 12}
+_SEASON_START_SOUTH = {"spring": 9, "summer": 12, "autumn": 3, "fall": 3, "winter": 6}
+_SEASON_START = _SEASON_START_NORTH  # the words a season can be said with, for membership
+
+#: Regions whose people live mostly in the southern hemisphere. Read off the
+#: locale's region ("en-AU", "es_AR"); a bare "af" (Afrikaans) is southern too.
+_SOUTHERN_REGIONS = frozenset(
+    {"au", "nz", "za", "zw", "bw", "na", "ls", "sz", "mz", "zm", "ao", "mg", "ar", "cl", "uy", "py", "bo", "pe", "br", "fj"}
+)
+_SOUTHERN_LANGUAGES = frozenset({"af"})
+
+
+def hemisphere_of(locale: str | None) -> str:
+    """"south" for a locale of a southern region (en-AU, en-NZ, en-ZA ...),
+    "north" for every other and for none."""
+    parts = re.split(r"[-_]", str(locale or "").strip().lower())
+    if parts and parts[0] in _SOUTHERN_LANGUAGES:
+        return "south"
+    return "south" if any(len(p) == 2 and p in _SOUTHERN_REGIONS for p in parts[1:]) else "north"
+
+
+#: The person's season setting ("auto", "north", "south") and the locale the
+#: browser last reported, kept as process state because most callers of the
+#: reader carry no locale (`configure_hemisphere`, from Settings and at start).
+_HEMISPHERE: dict[str, str | None] = {"setting": "auto", "reported": None}
+#: The locale of the call in progress, so the readers below (which take no
+#: locale) see it; none outside a call.
+_CALL_LOCALE: ContextVar[str | None] = ContextVar("recognise_locale", default=None)
+
+
+def configure_hemisphere(setting: str | None, reported_locale: str | None) -> None:
+    """Settings, Calendar, Seasons ("auto", "north", "south") and the locale
+    the browser reported; "auto" follows the call's own locale, then the
+    reported one, then the north."""
+    _HEMISPHERE["setting"] = setting if setting in ("north", "south") else "auto"
+    _HEMISPHERE["reported"] = str(reported_locale) if reported_locale else None
+
+
+def note_locale(locale: str | None) -> None:
+    """The locale a request carried is the freshest report of the person's
+    place (kept in memory only; Settings holds the saved one)."""
+    if locale:
+        _HEMISPHERE["reported"] = str(locale)
+
+
+def _hemisphere() -> str:
+    if _HEMISPHERE["setting"] != "auto":
+        return str(_HEMISPHERE["setting"])
+    return hemisphere_of(_CALL_LOCALE.get() or _HEMISPHERE["reported"])
+
+
+@contextmanager
+def _in_locale(locale: str | None):  # noqa: ANN202
+    """`locale` is the call's own while the block runs (an outer call's stays
+    when this one carries none)."""
+    token = _CALL_LOCALE.set(locale or _CALL_LOCALE.get())
+    try:
+        yield
+    finally:
+        _CALL_LOCALE.reset(token)
+
+
+def _season_first_months() -> dict[str, int]:
+    return _SEASON_START_SOUTH if _hemisphere() == "south" else _SEASON_START_NORTH
+
 _SEASON_RX = re.compile(r"(?:(?:in|during|over|throughout|through) )?(?:the )?(?:(last|this|next|previous|coming|past) )?" + _SEASON_RE + r"(?: (?:of )?(\d{4}))?")
 
 
 def _season_cycles(name: str, a: date) -> list[tuple[date, date]]:
     """Every run of the season near `a`, oldest first (meteorological seasons:
     winter is December to February, starting in the year it is named for)."""
-    firsts = [date(y, _SEASON_START[name], 1) for y in range(a.year - 2, a.year + 2)]
+    firsts = [date(y, _season_first_months()[name], 1) for y in range(a.year - 2, a.year + 2)]
     return [(f, _month_end(_shift_months(f, 2))) for f in firsts]
 
 
@@ -1780,7 +1849,7 @@ def _span_season(text: str, a: date, tense: str | None) -> Any:
         return _MISS
     which, name, year = found.groups()
     if year:
-        first = date(int(year), _SEASON_START[name], 1)
+        first = date(int(year), _season_first_months()[name], 1)
         return first, _month_end(_shift_months(first, 2)), "season"
     cycles = _season_cycles(name, a)
     first, last = _season_pick(which, tense, a, cycles)
@@ -1819,7 +1888,7 @@ def _numbered_year(text: str, a: date) -> str:
     return f"{head} {a.year + _SHIFT[found.group(1)]}"
 
 
-def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, date, str] | None:
+def span(phrase: str, anchor: date, tense: str | None = None, locale: str | None = None) -> tuple[date, date, str] | None:
     """(first day, last day, grain) the phrase names, read against `anchor`,
     or None. `tense` ("past", "future" or None) picks between the Friday
     before and the Friday after: "I met Sam on Friday" in a note is the one
@@ -1830,10 +1899,11 @@ def span(phrase: str, anchor: date, tense: str | None = None) -> tuple[date, dat
     if not text:
         return None
     text = _numbered_year(text, anchor)
-    for reader in _SPAN_READERS:
-        got = reader(text, anchor, tense)
-        if got is not _MISS:
-            return got
+    with _in_locale(locale):
+        for reader in _SPAN_READERS:
+            got = reader(text, anchor, tense)
+            if got is not _MISS:
+                return got
     return None
 
 
@@ -3301,7 +3371,18 @@ def class_window(text: str, today: date) -> tuple[date, date, str, int, int] | N
 
 
 def recognise(
-    text: str, *, now: datetime, locale: str | None = "en-GB", tense: str | None = None, known: dict | None = None,
+    text: str, *, now: datetime, locale: str | None = None, tense: str | None = None, known: dict | None = None,
+    bare_hours: bool = False,
+) -> list[Span]:
+    """Every span `text` reads as, left to right (`_recognise`). `locale`
+    orders a numeric date, picks the temperature scale and the hemisphere a
+    season is read in; none means day first, Celsius and the reported locale."""
+    with _in_locale(locale):
+        return _recognise(text, now=now, locale=locale, tense=tense, known=known, bare_hours=bare_hours)
+
+
+def _recognise(
+    text: str, *, now: datetime, locale: str | None = None, tense: str | None = None, known: dict | None = None,
     bare_hours: bool = False,
 ) -> list[Span]:
     """Every span `text` reads as, left to right; the readings of one

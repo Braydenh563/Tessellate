@@ -1187,6 +1187,14 @@ def _start_services() -> Path:
     # dependency container that imports it.
     # INBOX 509: off loads it on first use instead (a lighter start; the
     # first note waits the model's cold load, about 7 s, to be filed).
+    from tessellate.ai import recognise
+
+    #: The season setting and the locale the browser last reported, before the
+    #: first question reads "last summer" (Settings, Calendar, Seasons).
+    recognise.configure_hemisphere(
+        deps.get_config().get_preference("season_hemisphere", "auto"),
+        deps.get_config().get_preference("season_locale", ""),
+    )
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
         embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
         #: The speller's lists and the UK/US pairs (INBOX 895), about a

@@ -117,6 +117,12 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     # The one-time question has been answered, either way (the same ask-once
     # shape as `update_choice_made`): the notice is not offered again.
     "semantic_choice_made": False,
+    # Which half of the year a season word means ("summer", "last winter"):
+    # "auto" follows the locale the browser reports (`season_locale`; southern
+    # for en-AU, en-NZ, en-ZA and the other southern regions), or the person's
+    # pick, "north" or "south" (ai/recognise.py `configure_hemisphere`).
+    "season_hemisphere": "auto",
+    "season_locale": "",
     # Whisper's options (ai/voice.py `options_from`, Brief 87 step 2): skip
     # the silence and hum around a clip (Silero VAD, no download); a language
     # ("" detects it); names and terms to expect, as Whisper's prompt.

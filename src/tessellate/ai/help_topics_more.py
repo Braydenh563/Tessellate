@@ -268,10 +268,13 @@ MORE_TOPICS: list[dict] = [
         "keywords": (
             "smart quotes", "link offers", "offer links", "auto clear",
             "empty the bin", "delete old chats", "chat history", "mute notifications",
-            "general settings",
+            "general settings", "seasons", "hemisphere", "southern hemisphere", "summer", "winter",
         ),
         "body": (
-            "Settings, General. Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
+            "Settings, General. Calendar: First day of the week, and Seasons, which half of the year "
+            "summer, winter, spring and autumn mean (northern or southern hemisphere; automatic follows "
+            "your language and region, so en-AU, en-NZ and en-ZA read summer as December to February). "
+            "Bin: auto-clear binned notes, documents, reminders and OCR readings after a "
             "number of days. Chat history: delete saved chats after a number "
             "of days (0 keeps every chat; pinned chats are never deleted). "
             "Notifications: mute everything except reminders. Writing: smart "
