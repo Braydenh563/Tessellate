@@ -178,9 +178,6 @@ model in the same place.
 | `--version` | Print the version and exit |
 | `--help` | Show the list and exit |
 
-**Sharing the system's packages (opt-in).** On Windows, `set TESSELLATE_SYSTEM_SITE_PACKAGES=1` and then `start.bat --reinstall` (the Windows launcher is checked as text only; it needs a run on a Windows machine). On Linux and macOS, `TESSELLATE_SYSTEM_SITE_PACKAGES=1 ./start.sh --reinstall` builds `.venv` with `--system-site-packages`, so a torch you already installed system-wide is not downloaded again. It is refused, with the reason printed, when that torch is outside the range in `requirements.txt`.
-The risk is that a system package shadows the one the app was tested with and fails later in a way that looks unrelated; if anything misbehaves, run `./start.sh --reinstall` without the variable.
-
 **If it does not start, run `--doctor` first.** It prints one row per thing
 that can stop a launch, with a tick or a cross and, for a cross, one line on
 what to do: Python's version and path, whether the virtual environment can

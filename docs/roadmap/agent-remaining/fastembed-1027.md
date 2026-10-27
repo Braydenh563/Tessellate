@@ -14,7 +14,7 @@ Scratch (session scratchpad): `fe-venv` (fastembed 0.9.1 and the app's deps), `s
 - Old torch-format folders (`models--BAAI--bge-small-en-v1.5`, safetensors) stay on disk; Remove deletes only the ONNX build's folder (`embedmodels.remove`).
 - A model chosen from this computer with PyTorch weights only now reads as the default; its renamed vectors are stranded until a switch (`model_manager.embedding_st_model`).
 - nomic-embed-text-v1.5 is native in fastembed and could be one press (embedmodels.py nomic row, why_not).
-- Qwen3 and bge-m3 builds untested for real; `scripts/system_site_packages.py` still checks torch, which the app no longer uses.
+- Qwen3 and bge-m3 builds untested for real.
 - done: 75f9be0 (engine, migration, consent copy, docs); next: e2e over HTTP, then hand back.
 - e2e on :8961 with real fastembed (HTTP, no browser): no download before the yes; after it, ready in 5.2 s (5 files, 65 MB); vectors stored as `fastembed:BAAI/bge-small-en-v1.5`, 384 dims; server RSS 623 MB (peak 685 MB); "taxes owed" finds the tax note (0.725).
 - Found, then fixed: a note saved before the yes waited for the next warm-up backfill or periodic pass; the yes now warms the model and backfills (`embeddings.warm_then_backfill`). "cat" and "a pet asleep" miss the kitten note (cosine 0.51, 0.57), below the configured cutoff; vectors match the old engine to 1e-6, so this is not new.

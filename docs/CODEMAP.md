@@ -2,7 +2,7 @@
 
 Generated 2026-10-27 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6588, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6746, test files 1415, tests 12556, plan headings 977.
+Counts: frontend functions 6588, frontend ids 2558, CSS sections 504, backend routes 625, backend modules 6746, test files 1415, tests 12553, plan headings 977.
 
 ## Frontend functions (6588)
 
@@ -19644,7 +19644,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12556)
+## Tests (12553)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20477,6 +20477,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_no_scipy_sklearn_imports.py | 1 |
 | tests/test_no_silent_except.py | 2 |
 | tests/test_no_style_attribute_writes.py | 1 |
+| tests/test_no_system_torch_launcher.py | 4 |
 | tests/test_no_tracked_symlinks.py | 3 |
 | tests/test_no_ui_emoji.py | 3 |
 | tests/test_note_backlinks_kg1.py | 11 |
@@ -20820,7 +20821,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sweep_1004_log_scrub_speed.py | 2 |
 | tests/test_sweep_1004_private_entities.py | 1 |
 | tests/test_syntax_check.py | 18 |
-| tests/test_system_site_packages.py | 7 |
 | tests/test_tab_dblclick_659.py | 2 |
 | tests/test_tab_entry_cost.py | 9 |
 | tests/test_tab_label_width.py | 2 |
