@@ -396,8 +396,20 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
 _WEEK_NAMED = 3
 
 
+#: What a reminder's words keep when the parser lifts its date out ("when I get
+#: home , probably around"): words that only lead into a date.
+_DATE_STUB = re.compile(r"(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
+
+
+def _reminder_words(text: str) -> str:
+    """A reminder's text as the digest says it: no space before a comma and no
+    dangling lead-in to a date that is said beside it."""
+    words = re.sub(r"\s+([,.;:!?])", r"\1", (text or "").strip()[:80])
+    return _DATE_STUB.sub("", words).rstrip(" ,;:") or words
+
+
 def _named(rows: list, today: date, zone) -> str:  # noqa: ANN001
-    said = [f"{(r.text or '').strip()[:80]} ({_say_day(_local(r.due_at, zone).date(), today)})" for r in rows[:_WEEK_NAMED]]
+    said = [f"{_reminder_words(r.text)} (due {_say_day(_local(r.due_at, zone).date(), today)})" for r in rows[:_WEEK_NAMED]]
     more = len(rows) - len(said)
     return "; ".join(said) + (f"; and {_n(more)} more" if more > 0 else "") + "."
 
