@@ -144,19 +144,72 @@ def test_with_no_model_the_engine_still_answers(client, session, fixed_clock, qu
         assert "84" in answer
 
 
+#: The engine's facts for three reminders, one of them on "Mon 2 Nov": a 2
+#: in a date is no count, so it cannot excuse "two reminders" (the review of
+#: 2026-10-27 measured "two", "one", "no", "10" and "30 reminders" passing).
+REMINDER_FACTS = "You have 3 reminders waiting.\n\n| call mum | Mon 2 Nov, 9:00 | #/notes/12 |\n| pay rent | Thu 5 Nov, 10:00 |\n| book dentist | Fri 30 Oct, 11:00 |"
+REMINDER_COUNTS = {"reminder": {"3"}}
+
+
 @pytest.mark.parametrize(
     ("prose", "ok"),
     [
         ("Three things are waiting; call mum is first.", True),
-        ("You have 3 reminders, the first on 28 October at 9:00.", True),
+        ("You have 3 reminders, the first on Monday 2 November at 9:00.", True),
+        ("One of them, call mum, is on Mon 2 Nov.", True),
         ("You have two reminders.", False),
+        ("You have one reminder.", False),
+        ("You have no reminders right now.", False),
+        ("You have 10 reminders.", False),
+        ("You have 30 reminders.", False),
         ("You have 4 reminders.", False),
+        ("Two are waiting, starting Mon 2 Nov.", False),
+        ("Nothing is due.", False),
+        ("You have 3 notes waiting.", False),
+        ("You have 12 reminders.", False),
     ],
 )
-def test_the_fact_check(fixed_clock, monkeypatch, prose: str, ok: bool) -> None:
-    monkeypatch.setattr(routes_chat.deps, "get_config", lambda: None)
-    facts = "You have 3 reminders waiting.\n\n| call mum | Wed 28 Oct, 9:00 |\n| pay rent | Thu 29 Oct, 10:00 |\n| book dentist | Fri 30 Oct, 11:00 |"
-    assert routes_chat._prose_keeps_facts(prose, facts, "What is due?", needs_figure=False) is ok
+def test_the_fact_check(prose: str, ok: bool) -> None:
+    from tessellate.ai import fact_check
+
+    assert fact_check.keeps(prose, REMINDER_FACTS, "What is due?", REMINDER_COUNTS, needs_figure=False) is ok
+
+
+@pytest.mark.parametrize(
+    ("prose", "ok"),
+    [("That comes to 84.", True), ("That comes to 85.", False), ("Twelve sevens.", False), ("It is 84 at 14:02.", True)],
+)
+def test_the_fact_check_of_a_worked_sum(prose: str, ok: bool) -> None:
+    """A sum counts nothing: every figure is one the facts or the question
+    state, and the result must be said; a time is still no figure."""
+    from tessellate.ai import fact_check
+
+    assert fact_check.keeps(prose, "12 × 7 = 84", "what is 12 * 7", {}, needs_figure=True) is ok
+
+
+def test_the_counts_come_from_the_result_not_from_dates() -> None:
+    from tessellate.ai import fact_check
+
+    result = {"reminders": [{"id": 1}, {"id": 2}, {"id": 3}], "total": 3, "offset": 0, "label": "Due"}
+    assert fact_check.result_counts("list_reminders", result) == {"reminder": {"3"}}
+    assert fact_check.said_counts("You have 3 reminders, due Mon 2 Nov at 14:02.") == {"reminder": {"3"}}
+    stats = {"kind": "tag-count", "facts": [{"label": "tags", "count": 4}]}
+    assert fact_check.rows_counts(stats) == {"tag": {"4"}}
+
+
+#: 14:02 on the same Tuesday: a 2 in the clock is no count either.
+AT_14_02 = datetime(2026, 10, 27, 14, 2)
+
+
+@pytest.mark.parametrize("prose", ["You have two reminders.", "You have 2 reminders, the next at 14:02."])
+def test_a_2_in_the_clock_does_not_excuse_two_reminders(ai_client, fake_ollama, session, monkeypatch, prose):
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: AT_14_02)
+    _seed(session)
+    fake_ollama.librarian_reply = prose
+    events, answer = _stream(ai_client, "What is due?", True)
+    assert fake_ollama.chat_calls
+    assert prose not in answer
+    assert _last_meta(events)["answered_by"] is None
 
 
 def test_the_facts_prompt_is_budgeted() -> None:

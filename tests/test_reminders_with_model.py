@@ -15,16 +15,28 @@ case is `tests/test_model_writes_facts_1027.py`.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 
 import pytest
 
 from tessellate.ai import reading, tools
+from tessellate.api import routes_chat
+from tessellate.core.database import Reminder
+
+#: A fixed clock (CLAUDE.md section 8): with the real one, reminders set "in
+#: 3 days" and a minute with a 2 in it changed what the fact check read.
+NOW = datetime(2026, 10, 27, 9, 30)
+
+
+@pytest.fixture(autouse=True)
+def _fixed_clock(monkeypatch):
+    monkeypatch.setattr(routes_chat, "user_now", lambda _config=None: NOW)
 
 
 def _seed(session):
     tools.execute_tool(session, "create_note", {"content": "Reminders: I have two reminders this week", "tags": ["home"]})
-    for text, when in (("call mum", "tomorrow at 9"), ("pay rent", "in 3 days at 10am"), ("book dentist", "in 5 days at 11am")):
-        tools.execute_tool(session, "set_reminder", {"text": text, "when": when})
+    for text, due in (("call mum", datetime(2026, 10, 28, 9)), ("pay rent", datetime(2026, 10, 30, 10)), ("book dentist", datetime(2026, 11, 1, 11))):
+        session.add(Reminder(text=text, due_at=due))
     session.commit()
 
 
