@@ -29,7 +29,8 @@ def _function(source: str, head: str) -> str:
 def test_kept_at_unload_and_on_a_refused_save_and_dropped_by_a_landed_one():
     source = DOCS.read_text(encoding="utf-8")
     assert 'window.addEventListener("pagehide", keepDocEditLocally);' in source
-    save = _function(source, "async function saveDocument(")
+    # The save body moved into docSaveOnce when saves were serialised.
+    save = _function(source, "async function docSaveOnce(")
     landed = save[save.index("currentDoc = saved;") : save.index('$("doc-saved").textContent = "Saved";')]
     assert "forgetDocEditLocally(saved.id)" in landed
     refused = save[save.index('$("doc-saved").textContent = "Not saved";') :]

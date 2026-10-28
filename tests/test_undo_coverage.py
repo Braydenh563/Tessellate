@@ -583,7 +583,7 @@ EXEMPT: dict[str, str] = {
     "documents.js:ensureDocumentExists": "board: creates the document being typed into; the editor's history starts there",
     "documents.js:openDocAiHistory": "inverse: reverts an AI edit from its log, which is itself the undo",
     "documents.js:runDocAiEdit": "read: asks the model for a revision shown for review; accepting it pushes pushDocAiUndo",
-    "documents.js:saveDocument": "board: the document editor's autosave; typing is the editor's own docUndo history",
+    "documents.js:docSaveOnce": "board: the document editor's autosave; typing is the editor's own docUndo history",
     "editor.js:inlineAiSubmit": "read: asks the model for a revision shown for review; accepting it is an editor change with the document's own history",
     "embed-choices.js:embedChoiceInstall": "job: starts or stops work or a model; deletes no user data",
     "embed-choices.js:embedChoiceUninstall": "job: starts or stops work or a model; deletes no user data",

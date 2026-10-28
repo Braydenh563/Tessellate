@@ -2148,7 +2148,12 @@ async function ensureDocumentExists() {
   }
 }
 
+//: Counts edits, so a save that lands knows whether words were typed
+//: while it was in flight (those keep the document dirty).
+let docEditSeq = 0;
+
 function markDocDirty() {
+  docEditSeq += 1;
   // Read off the surface, so they are right even before the save lands: the
   // point of them is live feedback while writing. Scheduled rather than run
   // here, because each is a pass over the whole document, see
@@ -2156,7 +2161,12 @@ function markDocDirty() {
   scheduleDocFacts();
   // No document yet? Typing makes one, then this save proceeds normally.
   if (!currentDoc) {
-    ensureDocumentExists().then(() => markDocDirty());
+    //: A refused create (offline, server down) still says so and keeps the words.
+    ensureDocumentExists().then(() => markDocDirty(), (error) => {
+      $("doc-saved").textContent = "Not saved";
+      $("doc-status").classList.add("error");
+      $("doc-status").textContent = error.message;
+    });
     return;
   }
   docDirty = true;
@@ -2170,9 +2180,37 @@ function markDocDirty() {
 //: rather than asking again every 1.2s of typing behind it.
 let docConflictOpen = false;
 
+//: One save at a time: a second PUT sent while the first is in flight
+//: carries the old base_hash and comes back as a false edit conflict. A save
+//: asked for meanwhile runs once, after, from the new hash; callers waiting
+//: on it (close, switch) resume when that one has landed too.
+let docSaveInFlight = null;
+let docSaveAgain = null;
+
 async function saveDocument({ silent = false } = {}) {
   if (!currentDoc || docConflictOpen) return;
+  if (docSaveInFlight) {
+    docSaveAgain = { silent: silent && (docSaveAgain ? docSaveAgain.silent : true) };
+    await docSaveInFlight;
+    return;
+  }
+  let release;
+  docSaveInFlight = new Promise((resolve) => (release = resolve));
+  try {
+    await docSaveOnce(silent);
+  } finally {
+    docSaveInFlight = null;
+    const again = docSaveAgain;
+    docSaveAgain = null;
+    if (again) await saveDocument(again).catch(() => {});
+    release();
+  }
+}
+
+async function docSaveOnce(silent) {
   clearTimeout(docSaveTimer);
+  const savingId = currentDoc.id;
+  const seqAtStart = docEditSeq;
   //: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
   const title = $("doc-title").value.trim()
     || (/^untitled document \d+$/i.test(currentDoc.title || "") ? currentDoc.title : docNextName());
@@ -2190,8 +2228,22 @@ async function saveDocument({ silent = false } = {}) {
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
       body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
     });
+    //: Switched to another document meanwhile: only the list learns of it.
+    if (!currentDoc || currentDoc.id !== savingId) {
+      docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+      renderDocList();
+      return;
+    }
     currentDoc = saved;
-    docDirty = false;
+    //: Words typed during the request are not in this save: stay dirty, keep the local copy.
+    docDirty = docEditSeq !== seqAtStart;
+    if (docDirty) {
+      keepDocEditLocally();
+      docSetStatusText($("doc-saved"), "Unsaved…");
+      docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+      renderDocList();
+      return;
+    }
     forgetDocEditLocally(saved.id);
     $("doc-saved").textContent = "Saved";
     if (!silent) toast("Document saved.");
@@ -2229,7 +2281,8 @@ async function docResolveConflict(current, mine, silent) {
   if (!currentDoc || currentDoc.id !== current.id) return;
   if (answer === "mine") {
     currentDoc = { ...currentDoc, content_hash: current.content_hash };
-    await saveDocument({ silent });
+    //: Directly, not through saveDocument: this runs inside the save in flight.
+    await docSaveOnce(silent);
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
     docSurface().text = current.content || "";
