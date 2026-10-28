@@ -1161,12 +1161,39 @@ window.addEventListener("pagehide", docRememberPositionNow);
 //: The text is kept on this device at that moment, dropped by the next save
 //: that lands, and offered back the next time that document opens, the same
 //: shape as the note form's kept edit (note-edit-panels.js).
-const DOC_EDIT_KEPT = "doc-edit-draft";
+//: One kept copy per document (audit 1028 D5): a single slot let a failed
+//: save of one document be overwritten by the next. At most five, each for
+//: two weeks and 2 MB (D4): documents carry no private flag and sit as plain
+//: text on this computer's disk already, so a lock keeps them rather than
+//: losing the words it exists to keep.
+const DOC_EDIT_KEPT = "doc-edit-drafts";
+const DOC_KEPT_MAX = 5;
+const DOC_KEPT_DAYS = 14;
+
+function docKeptDrafts() {
+  let all = {};
+  try {
+    all = prefs.json(DOC_EDIT_KEPT, {}) || {};
+  } catch {
+    all = {};
+  }
+  const cutoff = Date.now() - DOC_KEPT_DAYS * 864e5;
+  const stale = Object.keys(all).filter((id) => !(all[id]?.at > cutoff));
+  for (const id of stale) delete all[id];
+  //: Gone from storage too, not only from the offer.
+  if (stale.length) prefs.setJSON(DOC_EDIT_KEPT, all);
+  return all;
+}
 
 function keepDocEditLocally() {
   if (!currentDoc || !docDirty) return;
+  const content = docText();
+  if (content.length > 2e6) return;
   try {
-    prefs.setJSON(DOC_EDIT_KEPT, { id: currentDoc.id, title: $("doc-title").value, content: docText(), at: Date.now() });
+    const all = docKeptDrafts();
+    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now() };
+    const newest = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
+    prefs.setJSON(DOC_EDIT_KEPT, Object.fromEntries(newest.map((kept) => [kept.id, kept])));
   } catch {
     /* storage full or blocked: nothing more can be done at unload */
   }
@@ -1174,8 +1201,11 @@ function keepDocEditLocally() {
 
 function forgetDocEditLocally(id) {
   try {
-    const kept = prefs.json(DOC_EDIT_KEPT, null);
-    if (kept && kept.id === id) prefs.remove(DOC_EDIT_KEPT);
+    const all = docKeptDrafts();
+    if (!(id in all)) return;
+    delete all[id];
+    if (Object.keys(all).length) prefs.setJSON(DOC_EDIT_KEPT, all);
+    else prefs.remove(DOC_EDIT_KEPT);
   } catch {
     /* nothing kept, nothing to forget */
   }
@@ -1188,13 +1218,8 @@ window.addEventListener("pagehide", keepDocEditLocally);
 //: message offers it back, as an edit (Ctrl+Z takes it out again) that the
 //: ordinary autosave then saves.
 function offerKeptDocEdit(doc) {
-  let kept = null;
-  try {
-    kept = prefs.json(DOC_EDIT_KEPT, null);
-  } catch {
-    kept = null;
-  }
-  if (!kept || kept.id !== doc.id) return;
+  const kept = docKeptDrafts()[doc.id];
+  if (!kept) return;
   if (kept.content === doc.content && (kept.title || "") === (doc.title || "")) {
     forgetDocEditLocally(doc.id);
     return;
