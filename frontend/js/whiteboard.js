@@ -385,7 +385,21 @@ const WB_UNDO_MAX = 100;
 // second call pushes a second undo entry and fires a second DELETE for
 // something already gone, and the 404 catch then pops the *wrong* undo
 // entry off the stack (whatever else was pushed in between).
-const wbDeleting = new Set();
+//: A Set that can say when it is empty (audit B9): Undo and Redo wait on it, so
+//: an Undo pressed while a DELETE is in flight cannot restore a row the server
+//: then deletes, and a delete that fails has dropped its entry before Undo runs.
+class WbPendingSet extends Set {
+  #waiting = [];
+  delete(key) {
+    const had = super.delete(key);
+    if (!this.size) for (const resolve of this.#waiting.splice(0)) resolve();
+    return had;
+  }
+  settled() {
+    return this.size ? new Promise((resolve) => this.#waiting.push(resolve)) : Promise.resolve();
+  }
+}
+const wbDeleting = new WbPendingSet();
 
 //: **All three layers pan the same way** ("shapes and links lag behind"): the
 //: SVG groups take a CSS transform like the cards, so the compositor moves
@@ -9182,6 +9196,9 @@ function wbBuildContextMenu(kind) {
       sub("Export this branch…", "A picture or PDF of this topic and everything under it", () =>
         wbMapExportBranch(mapNode.id)
       );
+      if (!(rooted && wbMapLevels(index).get(mapNode.id) === 0)) sub("Move under…", "M: pick the topic to put this branch under", () =>
+        wbMapMoveUnder(mapNode.id)
+      );
       if (!rooted) sub("Cut this topic free of its parent", "It becomes a trunk of its own", () =>
         wbMapSever(mapNode.id)
       );
@@ -11149,6 +11166,7 @@ function wbCommitOpenEdit() {
 }
 
 async function wbUndo() {
+  await wbDeleting.settled();
   wbHistoryFor();
   wbCommitOpenEdit();
   wbUndoParents = [];
@@ -11172,6 +11190,7 @@ async function wbUndo() {
 // `wbUndoStack`, so undo/redo/undo/redo keeps working rather than only
 // ever reversing once.
 async function wbRedo() {
+  await wbDeleting.settled();
   wbHistoryFor();
   wbCommitOpenEdit();
   try {
@@ -16655,6 +16674,11 @@ async function initWhiteboard() {
       //: branch runs only with a map node selected and returns: with a topic
       //: in hand C folds it, with nothing selected C reaches for the
       //: cross-link, which is the only thing C could usefully mean there.
+      if ((e.key === "m" || e.key === "M") && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault();
+        wbMapMoveUnder(mapNode.id);
+        return;
+      }
       if ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         //: **Shift+C connects instead** (§12.5, so that every slot in the ring
