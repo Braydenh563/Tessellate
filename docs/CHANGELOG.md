@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Ask button stays on screen on a phone (audit 1028 S6): the five controls beside the question wrap inside the card, where they ran 38px past a 390px screen.
 - The lock screen is a labelled modal dialog and takes focus when it shows, even over an open dialog, and focus goes back to where it was on unlock (audit 1028 S4).
 - Jumping to a note (palette, graph, links, chat) renders the list through the target before flashing it (audit 1028 S1): a note past the first 60 rows did nothing; one that cannot be found now says so.
 - Typing in a long document no longer serialises its whole undo history on every keystroke (audit 1028 D6): the snapshot is taken once per pause, when the store writes.

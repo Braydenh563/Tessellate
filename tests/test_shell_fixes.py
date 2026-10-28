@@ -26,3 +26,9 @@ def test_lock_screen_is_a_dialog_that_takes_focus():
     js = app_js_text()
     assert "lockReturn ||= document.activeElement;" in js
     assert "lockReturn = lockReturn?.focus()" in js
+
+
+def test_ask_controls_wrap_on_a_phone():
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    rule = css[css.index("\n.ask-controls {") :].split("}", 1)[0]
+    assert "flex-wrap: wrap;" in rule
