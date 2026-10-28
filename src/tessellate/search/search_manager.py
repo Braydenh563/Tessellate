@@ -19,7 +19,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, time, timezone
 
-from sqlalchemy import or_, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import variants
@@ -27,7 +27,7 @@ from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
 )
-from tessellate.core.database import EmbeddingRecord, Entry, link_strength
+from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import query as query_understanding
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
@@ -903,12 +903,45 @@ def _written_at(entry: Entry):
     return written or datetime.min
 
 
-def _within(entry: Entry, since, until) -> bool:
+_WEEKDAY = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
+
+
+def day_mentions(session: Session, since, until, phrase: str = "") -> set[int]:  # noqa: ANN001
+    """Ids of the notes that *mention* the one day asked about, whenever they
+    were written (E6): "what do I have on 3 November" is the Dentist note that
+    says "3 November at 2pm", written weeks before, and "how much did I lift on
+    friday" is the log that says "Friday deadlift 100kg". A mention is a stored
+    date landing on the day, or, for a weekday asked by name, the weekday's
+    name in the text. Empty for a window of more than one day."""
+    if since is None or until is None or since != until:
+        return set()
+    day = since
+    #: Month and day only, whatever the year: "the 3rd of November" read
+    #: without a year lands on last year's, and the note says this year's.
+    found = {
+        row[0]
+        for row in session.execute(
+            select(EntryDate.entry_id).where(func.strftime("%m-%d", EntryDate.at) == f"{day.month:02d}-{day.day:02d}")
+        )
+    }
+    named = _WEEKDAY.search(phrase or "")
+    if named:
+        like = f"%{like_escape(named.group(1).lower())}%"
+        found |= set(session.scalars(select(Entry.id).where(Entry.content.ilike(like, escape=LIKE_ESCAPE))))
+    if not found:
+        return found
+    visible = select(Entry.id).where(
+        Entry.id.in_(found), Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False  # noqa: E712
+    )
+    return set(session.scalars(visible))
+
+
+def _within(entry: Entry, since, until, mentioned=()) -> bool:  # noqa: ANN001
     """Was this note written in the range? Notes with no timestamp are kept, 
     dropping a note because its date is missing would be filtering on an
     absence rather than on a fact."""
     written = getattr(entry, "created_at", None)
-    if written is None:
+    if written is None or getattr(entry, "id", None) in mentioned:
         return True
     day = written.date() if hasattr(written, "date") else written
     if since is not None and day < since:
@@ -946,10 +979,14 @@ class Retrieval:
     #: entries. Best-effort: an id with no entry here matched by whatever
     #: `mode` alone already says (`dated`, `recent`, `attached`, …).
     match_info: dict = None
+    #: Ids that mention the one day asked about (`day_mentions`).
+    mentioned: set = None
 
     def __post_init__(self) -> None:
         if self.match_info is None:
             self.match_info = {}
+        if self.mentioned is None:
+            self.mentioned = set()
 
 
 def retrieve_detailed(
@@ -977,6 +1014,7 @@ def retrieve_detailed(
         when_phrase=found.get("when_phrase", ""),
         category=found.get("category", ""),
         match_info=found.get("match_info", {}),
+        mentioned=found.get("mentioned", set()),
     )
 
 
@@ -1163,7 +1201,7 @@ def _category_notes(session: Session, category_id: int, limit: int) -> list[Entr
     )
 
 
-def _early_answer(session: Session, query: str, asked, limit: int):  # noqa: ANN001
+def _early_answer(session: Session, query: str, asked, limit: int, mentioned=()):  # noqa: ANN001
     """The two questions that are an order or a range, not a subject, or None."""
     #: **"My last note" is an order, not a subject** (the owner at release,
     #: wrapup-0927 10 n: "Show me my last entry" answered with an older
@@ -1179,6 +1217,9 @@ def _early_answer(session: Session, query: str, asked, limit: int):  # noqa: ANN
         # week" is *the notes from last week*, in order. An empty week falls
         # through so the caller still gets recent notes.
         dated = in_range(session, asked.since, asked.until)
+        if mentioned:
+            seen = {e.id for e in dated}
+            dated += [e for e in session.scalars(select(Entry).where(Entry.id.in_(set(mentioned) - seen)))]
         if dated:
             return _without_private(dated)[: max(limit, 10)], "dated"
     return None
@@ -1200,7 +1241,7 @@ def _candidates(session: Session, subject: str, embeddings: EmbeddingService, sc
     return semantic, keyword
 
 
-def _narrow_to_range(semantic, keyword, asked):  # noqa: ANN001
+def _narrow_to_range(semantic, keyword, asked, mentioned=()):  # noqa: ANN001
     """A range alongside a subject narrows the candidates before they are
     ranked, so "the allotment, last week" cannot be answered with a note from
     March that happens to be a better match.
@@ -1212,8 +1253,8 @@ def _narrow_to_range(semantic, keyword, asked):  # noqa: ANN001
     (newest first) and labels; it does not exclude."""
     if asked.has_range and not asked.soft:
         if semantic is not None:
-            semantic = [(entry, score) for entry, score in semantic if _within(entry, asked.since, asked.until)]
-        keyword = [e for e in keyword if _within(e, asked.since, asked.until)]
+            semantic = [(entry, score) for entry, score in semantic if _within(entry, asked.since, asked.until, mentioned)]
+        keyword = [e for e in keyword if _within(e, asked.since, asked.until, mentioned)]
     elif asked.soft:
         # Recency as a tiebreak rather than a gate: of the notes that match the
         # subject, the newer ones come first, which is the whole of what the
@@ -1332,7 +1373,9 @@ def _retrieve(
     found["until"] = asked.until
     found["when_phrase"] = asked.when_phrase
     found["connected"] = set()
-    early = _early_answer(session, query, asked, limit)
+    mentioned = day_mentions(session, asked.since, asked.until, asked.when_phrase) if asked.has_range else set()
+    found["mentioned"] = mentioned
+    early = _early_answer(session, query, asked, limit, mentioned)
     if early is not None:
         return early
 
@@ -1359,9 +1402,16 @@ def _retrieve(
     # changes their score, so looking these up by id later stays correct.
     sem_scores = {entry.id: score for entry, score in semantic} if semantic is not None else {}
     kw_terms = _meaningful_terms(subject)
-    semantic, keyword = _narrow_to_range(semantic, keyword, asked)
+    semantic, keyword = _narrow_to_range(semantic, keyword, asked, mentioned)
 
     entries, mode = _rank(semantic, keyword, limit)
+    if not entries and mentioned:
+        #: The day is the anchor the person gave; their word for the thing
+        #: ("lift" for "deadlift") may not be the note's. The notes that say
+        #: the day are the candidates.
+        dated = list(session.scalars(select(Entry).where(Entry.id.in_(mentioned)).order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
+        if dated:
+            return _without_private(dated), "dated"
     if not entries:
         miss = _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
         if miss is not None:

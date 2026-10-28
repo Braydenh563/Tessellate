@@ -2681,6 +2681,35 @@ def _reading_topics(question: str) -> list[dict]:
     return [own, *topics][:MAX_TOPICS]
 
 
+def _aliased_topics(question: str) -> list[dict]:
+    """The topics a realistic phrasing names (`guide_aliases`, audit 1028
+    E31), best first, then what the keyword rules reached that they did not:
+    "how do I stop the AI" is the chat's Stop, with Models after it."""
+    from tessellate.ai import guide_aliases
+
+    by_id = {topic["id"]: topic for topic in HELP_TOPICS}
+    lowered = _repaired(question).lower()
+    named = [by_id[i] for i in guide_aliases.topic_ids(lowered) if i in by_id]
+    reached = _reading_topics(question)
+    #: A soft row never moves the first answer: it follows what the keywords
+    #: reached, or stands alone when they reached nothing.
+    got = {t["id"] for t in reached}
+    soft = [
+        by_id[i]
+        for name, ids in guide_aliases.intents(lowered)
+        if name not in guide_aliases.HARD and not got & set(ids)
+        for i in ids
+        if i in by_id
+    ]
+    seen: set[str] = set()
+    out: list[dict] = []
+    for topic in [*named, *reached, *soft]:
+        if topic["id"] not in seen:
+            seen.add(topic["id"])
+            out.append(topic)
+    return out[:MAX_TOPICS] if named or soft else []
+
+
 def _repaired(question: str) -> str:
     """The question with its typos put right, once `question_noise` has
     registered its repair (`act_registry.repair`), else as typed."""
@@ -2916,7 +2945,7 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     read = guide_intent.topics(question, tab, {topic["id"]: topic for topic in HELP_TOPICS}, TAB_TOPICS)
     if read:
         return read
-    topics = _reading_topics(question)
+    topics = _aliased_topics(question) or _reading_topics(question)
     if not tab or topics:
         return topics
     seen = {topic["id"] for topic in topics}
@@ -3027,6 +3056,19 @@ OFFLINE_NOTHING_MATCHED = (
     "matches that. Try a word from the feature's own name, a tab name, or "
     "open Settings, Help, which lists every topic."
 )
+
+def _nothing_matched(question: str) -> str:
+    """The no-match line, with the three nearest topic names when the
+    question shares words with any ("Did you mean: ..."): a miss is a short
+    menu, not a dead end (audit 1028 E31)."""
+    from tessellate.ai import guide_aliases
+
+    near = guide_aliases.did_you_mean(question, HELP_TOPICS, topic_title)
+    if not near:
+        return OFFLINE_NOTHING_MATCHED
+    names = ", ".join(topic_title(t) for t in near)
+    return f"{OFFLINE_NOTHING_MATCHED}\n\nDid you mean: {names}?"
+
 
 #: **A greeting is answered as one** (INBOX 787: "hey" was answered with the
 #: open tab's topic, the Dashboard's paragraph, twice). The reply says who is
@@ -3324,7 +3366,7 @@ def offline_answer(
                 "badges": [],
                 "sources": [],
             }
-        return {"content": OFFLINE_NOTHING_MATCHED, "badges": [], "sources": []}
+        return {"content": _nothing_matched(question), "badges": [], "sources": []}
     #: **Composed by default, the help text a tap away** (INBOX 787). The
     #: composed answer is the content; `system` is the topic as written
     #: (INBOX 430's layout), which the client offers as "From the help".

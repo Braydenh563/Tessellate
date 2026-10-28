@@ -295,8 +295,15 @@ def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
     in a line or two, newest first, never the first one alone."""
     lines = [pick(ctx.seed, "multihead", (f"{len(notes)} notes match. The short version of each:", f"Here are your {len(notes)} matching notes, one short paragraph each:")), ""]
     for note in notes:
+        #: One sentence a section drops a short note's second fact (the date
+        #: beside the topic), so a note with a single section gets its first
+        #: four sentences; a long one still gets a line per section.
         parts = study.summary(str(note.get("content") or ""), -1)
-        body = " ".join(" ".join(sents) for _t, sents in parts[:2]) or "Too little in it to summarise."
+        if len(parts) < 2:
+            parts = study.summary(str(note.get("content") or ""), 1)
+        body = " ".join(" ".join(sents) for _t, sents in parts[:3] if sents)
+        body = " ".join(re.split(r"(?<=[.!?])\s+", body)[:4]) if len(parts) < 2 else body
+        body = body or "Too little in it to summarise."
         lines += [f"- {_link(note)}: {body}"]
     return Reply("\n".join(lines))
 

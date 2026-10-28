@@ -60,12 +60,12 @@ def _dated(session: Session) -> list[Entry]:
 def pool(session: Session, question: str, entries: list) -> list:
     """The notes the computed answer for `question` reads, or `entries` when
     it is not one or its pool is empty (the search's own notes then answer)."""
-    which = composer_lists.kind(question)
+    which = composer_lists.computed_kind(question)
     if which == "listed":
         found = _filed(session, *composer_lists.list_target(question))
     elif which == "mentions":
         found = _mentioning(session, question)
-    elif which == "dates":
+    elif which in ("dates", "due_for"):
         found = _dated(session)
     else:
         return entries

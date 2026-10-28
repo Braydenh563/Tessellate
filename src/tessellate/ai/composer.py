@@ -280,6 +280,9 @@ PHRASES: dict[str, str] = {
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
     "recall_none": "Nothing I found was written ",
+    "written_on": " was written on ",
+    "open_nowhere_a": "No checklist in your notes about ",
+    "open_nowhere_b": " has anything left to tick.",
     "bare_a": "Your note ",
     "bare_b": " is only a title so far, with nothing written under it yet.",
     "none_tagged": "No note found is tagged ",
@@ -2694,9 +2697,10 @@ def _body(
 #: "what do I still need to do for X" (ledger row 444).
 _STILL_OPEN = re.compile(
     r"^(?:what(?:'s|s| is| are)?|which)(?: things?| items?| tasks?)?(?: is| are)?(?: still)? "
-    r"(?:open|left(?: to do)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
-    r"(?:on|for|in|from|with) (?P<a>.+)$"
-    r"|^what (?:do|have) i (?:still |got )?(?:have |need |got )?(?:left )?to do (?:on|for|in) (?P<b>.+)$",
+    r"(?:open|left(?: to [a-z]+)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
+    r"(?:on|for|in|from|with|about) (?P<a>.+)$"
+    #: "what do I still need to read for history" (E11): any verb, not only "do".
+    r"|^what (?:else )?(?:do|have|must|should) i (?:still |also |got )?(?:have |need |got |want )?(?:left )?to (?:[a-z']+ ){1,3}?(?:on|for|in|about|from) (?P<b>.+)$",
     re.I,
 )
 
@@ -2709,14 +2713,33 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
     found = _STILL_OPEN.match(asked.rstrip("?."))
     if not found:
         return False
-    wanted = {_stem(w) for w in _words(found.group("a") or found.group("b"))} - {_stem(w) for w in _NOTE_NOUNS}
-    for view in sorted(views, key=lambda v: v.rank):
-        tasks = [s for s in view.sentences if s.kind == "task"]
-        if not tasks or not wanted or not wanted & ({_stem(w) for w in view.title_words} | {_stem(w) for w in view.words}):
-            continue
-        _say_open(out, view, tasks, wanted)
+    subject = found.group("a") or found.group("b")
+    wanted = {_stem(w) for w in _words(subject)} - {_stem(w) for w in _NOTE_NOUNS}
+    if not wanted:
+        return False
+
+    def stems(v: NoteView, wide: bool) -> set[str]:
+        held = {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
+        return held | {_stem(w) for w in v.words} if wide else held
+
+    ranked = sorted(views, key=lambda v: v.rank)
+    #: Named by its filing or heading first ("for uni", "for history"); by any
+    #: word of it only when none is (the old reading).
+    named = [v for v in ranked if wanted <= stems(v, True)] or [v for v in ranked if wanted & stems(v, True)]
+    open_in = [(v, [s for s in v.sentences if s.kind == "task"]) for v in named]
+    open_in = [(v, tasks) for v, tasks in open_in if tasks]
+    if not open_in:
+        if not named:
+            return False
+        #: Nothing to tick on what was named: said, not answered with another
+        #: note's checklist (E11: biology answered with the history sources).
+        out.t("open_nowhere_a").asked(subject.strip(" ?.")).t("open_nowhere_b")
         return True
-    return False
+    for i, (view, tasks) in enumerate(open_in[:3]):
+        if i:
+            out.t("para")
+        _say_open(out, view, tasks, wanted)
+    return True
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:
@@ -3882,6 +3905,11 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     utility = utilities.kind_of(question)
     shape = "recent" if recent else classify(question, embed)
     terms = subject_terms(question)
+    verb = _lead_act_verb(question)
+    if verb:
+        #: The instruction is not a subject: "add" in "add milk to my
+        #: shopping list" matched "add tomatoes" in a recipe (E12).
+        terms = [t for t in terms if t.lower() != verb] or terms
     constraints, terms, source_kind = _plan_constraints(question, terms)
     phrase = _plan_phrase(question, terms)
     span, terms = _plan_window(question, terms, phrase, today)
@@ -4138,7 +4166,13 @@ def _utility(question: str, now: datetime | None, salt: str) -> dict | None:
     return _result(parts, "utility")
 
 
-def _in_window(view: NoteView, window: tuple) -> bool:
+def _in_window(view: NoteView, window: tuple, *, mentions: bool = True) -> bool:
+    """Written in the window, or (E6) saying the day: a note that reads "3
+    November at 2pm" or "Friday deadlift" is on that day for a question about
+    the day, whenever it was written. `mentions=False` is a question about
+    writing ("what did I write on Friday"), which only creation answers."""
+    if mentions and view.note.get("dated_in_window"):
+        return True
     return view.written is not None and window[0] <= view.written <= window[1]
 
 
@@ -4146,10 +4180,15 @@ def _in_window(view: NoteView, window: tuple) -> bool:
 RECALL_NOTES = 8
 
 
+#: A question about the act of writing: only the day a note was made answers it.
+_WROTE_VERB = re.compile(r"\b(?:wrote|write|written|made|created|added|saved|captured|jotted|typed)\b", re.I)
+
+
 def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None:
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
-    inside = sorted((v for v in views if _in_window(v, p.window)), key=lambda v: (v.written, -v.rank), reverse=True)
+    wrote = bool(_WROTE_VERB.search(question or ""))
+    inside = sorted((v for v in views if _in_window(v, p.window, mentions=not wrote)), key=lambda v: (v.written, -v.rank), reverse=True)
     said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
@@ -4850,7 +4889,7 @@ def _checklist_or_until(out: "_Answer", said: object, question: str, views: list
     if said:
         return None
     if _still_open(out, question, views):
-        return _result(out.parts, "list", out.rows)
+        return {**_result(out.parts, "list", out.rows), "answered": not out.rows}
     until = question_noise.repair(question_noise.tidy(" ".join((question or "").split())))
     if utilities.kind_of(until) == "until_note" and _until_note(out, until, views, today):
         return _result(out.parts, "when", out.rows)
@@ -4872,6 +4911,52 @@ def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, 
     if len(parts) > 1:
         return _multi(question, parts, notes, today=today, embed=embed, voice=voice, salt=salt, turn=turn) or None
     return None
+
+
+#: The words that start an act on a note, and the act (`act_registry`).
+_ACT_VERBS = {
+    "rename": "rename", "retitle": "rename", "tag": "tag", "label": "tag", "untag": "untag", "pin": "pin", "unpin": "unpin",
+    "star": "pin", "unstar": "unpin", "delete": "delete", "remove": "delete", "bin": "delete", "trash": "delete",
+    "erase": "delete", "discard": "delete", "link": "link", "unlink": "unlink", "connect": "link", "add": "append",
+    "append": "append", "move": "move", "file": "move",
+}
+_ACT_LEADS = ("please ", "pls ", "can you ", "could you ", "would you ", "will you ", "i want to ", "i'd like to ", "i would like to ", "just ", "ok ", "okay ", "hey ")
+
+
+def _lead_act_verb(question: str) -> str | None:
+    """The act verb a command opens with ("please rename ..."), or None for a
+    question or any other sentence."""
+    text = " ".join((question or "").lower().split()).strip(" .!?")
+    changed = True
+    while changed:
+        changed = False
+        for lead in _ACT_LEADS:
+            if text.startswith(lead):
+                text, changed = text[len(lead):], True
+    first, _, rest = text.partition(" ")
+    if first not in _ACT_VERBS or not rest or len(text.split()) > 14:
+        return None
+    return first
+
+
+def _unfinished_act(question: str, now: datetime) -> dict | None:
+    """A command that starts like an act on a note but names no note or no
+    change ("rename my gym log", "tag my gym log"), which the acts could not
+    read: said with the way to say it, never answered by quoting whichever note
+    shares a word with it (E12: "rename my gym log" quoted the gym note and
+    called "rename" a word no note mentions)."""
+    first = _lead_act_verb(question)
+    if first is None:
+        return None
+    from tessellate.ai import act_registry, commands
+
+    if commands.read(question, now) is not None:
+        return None
+    act = act_registry.ACTS.get(_ACT_VERBS[first])
+    if act is None:
+        return None
+    line = f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
+    return {**_result([("template", line)], "none"), "answered": True}
 
 
 def _note_views(notes: list[dict]) -> list:
@@ -4923,6 +5008,64 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
     return None, views_list
 
 
+#: "When was my gym log written", "what day did I create the pasta recipe",
+#: "what date was the essay started": about the note's own day, not its words.
+_WRITTEN_WHEN = re.compile(
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|started|start|"
+    r"added|add|saved|save|put together|jotted|typed|began|begun)\b",
+    re.I,
+)
+
+
+#: Words that make it a question about the notes' words or ends, not one note's day.
+_NOT_ONE_NOTE = re.compile(r"\b(?:about|mention\w*|says?|said|last|latest|newest|first|ever|any|every|all)\b", re.I)
+
+
+_WHEN_NOISE = frozenset(
+    "day date time created create creating start started starting began begun note notes page entry entries "
+    "made make making added add saved save wrote write written put together jotted typed".split()
+)
+
+
+def asks_written_when(question: str) -> bool:
+    return bool(_WRITTEN_WHEN.search(question or "")) and not _NOT_ONE_NOTE.search(question or "")
+
+
+def _written_when(out: "_Answer", question: str, p, views_list: list):  # noqa: ANN001
+    """The day a named note was written, from its own date (E6: "when was my
+    gym log written" quoted a lift). None unless the question is that shape and
+    one note's name holds what it names."""
+    if p.window or not asks_written_when(question) or not p.terms:
+        return None
+    stems = {_stem(t) for t in p.terms if t.lower() not in _WHEN_NOISE}
+    if not stems:
+        return None
+    best, hits = None, 0
+    for view in views_list:
+        if view.written is None or not view.titled:
+            continue
+        held = sum(1 for t in stems if _holds(t, view.title_words | view.filed_words))
+        if held > hits or (held == hits and held and best is not None and view.rank < best.rank):
+            best, hits = view, held
+    if best is None or hits < len(stems):
+        return None
+    when = best.written
+    out.name(best, cap=True).t("written_on").m(f"{when:%A} {when.day} {when:%B}" + (f" {when.year}" if when.year != out.today.year else "")).t("stop")
+    return {**_result(out.parts, "when", []), "answered": True}
+
+
+_DAY_WORD = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
+
+
+def _day_terms(p, views_list: list) -> list[str]:  # noqa: ANN001
+    """The words a note uses for the one day asked about: the weekday's name,
+    else the month's, when some note here was found by mentioning that day."""
+    if not p.window or p.window[0] != p.window[1] or not any(v.note.get("dated_in_window") for v in views_list):
+        return []
+    named = _DAY_WORD.search(p.window_phrase or "")
+    return [named.group(1).lower()] if named else [p.window[0].strftime("%B").lower()]
+
+
 def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, question: str, meaning, broad: bool, views_list: list) -> None:  # noqa: ANN001
     pair = _disagreement(chosen)
     if _confirmed_lead(out, question, terms):
@@ -4958,6 +5101,14 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
         per_note=1 if broad else MAX_PER_NOTE,
         said=said,
     )
+    if not chosen:
+        #: The day was the anchor and the note says it ("Friday deadlift 100kg"
+        #: for "how much did I lift on friday"): the sentences that say the
+        #: day answer, whatever word the question used for the thing (E6).
+        day = _day_terms(p, views_list)
+        chosen = select(shape, day, views_list, limit=MAX_POINTS, per_note=MAX_PER_NOTE, said=said) if day else []
+        if chosen:
+            terms = day
     if not chosen:
         if _bare_title(out, terms, views_list) is not None:
             return _result(out.parts, shape, out.rows)
@@ -5052,6 +5203,9 @@ def _compose(
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
     if early:
         return early
+    unfinished = None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time()))
+    if unfinished:
+        return unfinished
     notes = _correction_order(notes, prefer, dialogue) if prefer else notes
     views_list = _note_views(notes)
     p = plan(question, today, recent=recent, embed=embed)
@@ -5070,6 +5224,9 @@ def _compose(
     counted = _checklist_or_until(out, said, question, views_list, today)
     if counted is not None:
         return counted
+    dated = _written_when(out, question, p, views_list)
+    if dated is not None:
+        return dated
     decided, views_list = _window_gate(out, p, said, question, shape, views_list)
     if decided is not None:
         return decided

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The answer engine reads dates a note mentions for "what is on" questions, acts without the word "note" ("tag my gym log with fitness"), says when nothing matched instead of quoting the newest notes, and stops repeating the search-by-meaning loading line (audit 1028 E6, E7, E12, E30).
 - Unsaved document words are kept per document, so a second document's failed save no longer replaces the first's, and kept copies go after two weeks (audit 1028 D4, D5).
 - Documents fixes (audit 1028 U7, U8, U10, U11, U43, D7): a code file draws in a monospace face; a new empty document opens in Edit on a phone; Image in the links menu opens a file picker and inserts the uploaded picture (the bare stub is the fallback if the upload fails); the second Insert menu is now "Links and media" and Numbered list moved to Insert; the find panel uses the input radius and its close button is at least 24px (44px on touch); a document over 30,000 characters checks spelling and style in a window around the view, so a 100,000-character pause fell from about 75 ms to 11 ms.
 - The code editor is under New (audit 1028 U6): the Library's Create picker and the command palette have New code file, which opens the template dialog on its Code group.
@@ -34,6 +35,8 @@ below). Versioning is `0.x` while the app stabilises.
 - Restoring a backup zip keeps this computer's model address, "keep the AI on this machine", web search, update and background-task switches (audit 1028 K9): a zip from someone else could point every chat at their server.
 - Security (audit 1028 K2, K3, K7, K8): an attachment's stored name from a restored database can no longer serve, read, stash or delete a file outside the uploads folder (a sibling such as `uploads2` included); unlock guesses sent in parallel count against the throttle while in flight (40 at once passed a five-try check); the session table is read by snapshot so a sweep during an unlock cannot raise.
 - Document autosave sends one save at a time (audit 1028 D1 to D3): a second save sent mid-request carried the old hash and raised a false edit-conflict prompt; words typed during a save were marked saved and lost on close; a refused first save of a new document now says "Not saved".
+- The composer answers lists due for a subject, kind or window, "what is left to read" over several checklists, and a summary of every note on a subject (audit 1028 E11).
+- The Guide places realistic questions (audit 1028 E31): "how do I export to PDF", "stop the AI", "edit my question", "delete all my data", "which model for my laptop", "why is the AI slow" reach their topic, and a miss offers "Did you mean" with the nearest topics.
 
 ## [0.6.2] - 2026-10-27
 - No-model answers read as English on untitled and title-only notes (INBOX 1420): a note is named by what it says, never a cut opening, a doubled "the" or a kept colon; bold marks and bold-only headings no longer show; questions, advice and sentences join as sentences; the note that defines a subject leads; the open-note closing appears only when the answer is about it; a citation goes after an emoticon. Ten graded questions: 26 defects to 0.
