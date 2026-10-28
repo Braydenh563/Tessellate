@@ -92,7 +92,7 @@ def test_a_cancelled_stream_sets_the_stop_flag_and_closes_the_generator():
         try:
             await task
         except asyncio.CancelledError:
-            pass
+            pass  # the cancel is the point: what matters is the stop below
         assert Req.stop.is_set()
         await asyncio.sleep(0.5)
 

@@ -300,12 +300,12 @@ def stop_aware(response, items: Iterator) -> Iterator:  # noqa: ANN001
         try:
             sock = response.raw._fp.fp.raw._sock  # the live socket, if this is a plain one
         except AttributeError:
-            pass
+            pass  # not a plain socket: close() below is all there is
         if sock is not None:
             try:
                 sock.shutdown(2)
             except OSError:
-                pass
+                pass  # already closed by the other side: nothing left to cut
         response.close()
 
     remove = event.add_hook(cut) if hasattr(event, "add_hook") else (lambda: None)
