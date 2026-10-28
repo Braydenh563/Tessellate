@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents fixes (audit 1028 U7, U8, U10, U11, U43, D7): a code file draws in a monospace face; a new empty document opens in Edit on a phone; Image in the links menu opens a file picker and inserts the uploaded picture (the bare stub is the fallback if the upload fails); the second Insert menu is now "Links and media" and Numbered list moved to Insert; the find panel uses the input radius and its close button is at least 24px (44px on touch); a document over 30,000 characters checks spelling and style in a window around the view, so a 100,000-character pause fell from about 75 ms to 11 ms.
 - Whiteboard fixes (audit 1028 B5, B8, B16, B21, U1 to U3, U5): a failed delete now says so and keeps the redo history; dragging an item to the edge no longer replays a fake mouse move to every listener; the eraser tests every sample of a fast touch or pen stroke; link hover paints once a frame; black or white default ink and text re-pick to read at 4.5:1 on the board or sticky behind them; Insert, Sticky note from the keyboard adds a note; a mind map's fold chevron, count and add buttons stay at least 24px (44px on touch) at any zoom.
 - Importing a calendar file no longer freezes the app while it runs (audit 1028 K17): the import ran on the server's event loop.
 - The browser error log route takes at most 30 lines a minute from one device, so a flood cannot push real warnings out of Settings, Logs (audit 1028 K10).

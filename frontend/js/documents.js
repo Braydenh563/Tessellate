@@ -732,7 +732,7 @@ function asSurface(box) {
 }
 // DOC-SURFACE-END
 
-function setDocView(mode) {
+function setDocView(mode, { persist = true } = {}) {
   const type = docFileType();
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
@@ -742,7 +742,7 @@ function setDocView(mode) {
   //: Source in a code file is the file's only editing view, not a choice.
   docViewState.held = !type.previewable && docView === "source";
   try {
-    if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
+    if (persist && !docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
     // change view: the choice just does not survive the reload.
@@ -995,6 +995,10 @@ function showNoDocument() {
   renderDocOutline();
   renderDocProperties();
   renderDocComments();
+  //: **A new empty page opens to write in** (audit 1028 U8). A phone's default
+  //: is Rendered, where the first tap on a blank page did nothing. Not stored:
+  //: the next document still opens the way the person last chose.
+  if (docView === "rendered") setDocView("live", { persist: false });
 }
 
 //: Runs `paint` once the frame with the new text has been drawn, if no later
@@ -11411,6 +11415,55 @@ function mdLinePrefixEdit(block, kind) {
   }).join("\n");
 }
 
+//: **Image opens a picker** (audit 1028 U10; it used to drop a bare
+//: `![image](https://)` and leave the person to find a URL). The file goes to
+//: the media store as a pasted or imported picture does (`/media/upload`) and
+//: the embed is written where the caret was. The old stub is the fallback when
+//: the upload fails, so the button never ends in nothing.
+function docImagePick(box, boxId) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (file) docImageUpload(box, boxId, file);
+  });
+  input.click();
+}
+
+async function docImageUpload(box, boxId, file) {
+  const { selectionStart: start, selectionEnd: end, value } = box;
+  const alt = value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const uploaded = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: form });
+    if (!uploaded || !uploaded.url) throw new Error("no address");
+    docUndoBreak();
+    const at = Math.min(start, box.value.length);
+    const embed = `![${alt}](${uploaded.url})`;
+    box.value = `${box.value.slice(0, at)}${embed}${box.value.slice(Math.min(end, box.value.length))}`;
+    box.setSelectionRange(at + embed.length, at + embed.length);
+    finishMarkdownEdit(box, boxId);
+  } catch {
+    toast("Could not upload that picture. Add its address by hand.", true);
+    docImageStub(box, boxId, start, end);
+  }
+}
+
+//: The address-by-hand form: the selection becomes the *alt text* and the
+//: caret lands on the URL, the same split `link` makes. (The first version
+//: passed the alt text as the body between the two markers and produced
+//: `![cat](cat)`: a picture whose address was its own caption.)
+function docImageStub(box, boxId, start, end) {
+  const alt = box.value.slice(start, end) || "image";
+  const url = "https://";
+  box.value = `${box.value.slice(0, start)}![${alt}](${url})${box.value.slice(end)}`;
+  const at = start + alt.length + 4;
+  box.setSelectionRange(at, at + url.length);
+  finishMarkdownEdit(box, boxId);
+}
+
 function applyMarkdown(kind, boxId = "doc-content") {
   const action = MD_ACTIONS[kind];
   const box = docSurfaceById(boxId);
@@ -11476,17 +11529,7 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.custom === "image") {
-    //: The selection becomes the *alt text* and the caret lands on the URL,
-    //: which is the part still to be typed, the same split `link` above
-    //: makes. The first version passed the alt text as the body between the
-    //: two markers and produced `![cat](cat)`: a picture whose address was
-    //: its own caption. Caught by running it rather than by reading it.
-    const alt = selected || "image";
-    const url = "https://";
-    box.value = `${value.slice(0, start)}![${alt}](${url})${value.slice(end)}`;
-    const at = start + alt.length + 4;
-    box.setSelectionRange(at, at + url.length);
-    finishMarkdownEdit(box, boxId);
+    docImagePick(box, boxId);
     return;
   }
   if (action.custom === "properties") {
@@ -14257,12 +14300,11 @@ const EDITOR_TOOLBAR_MENUS = [
   {
     id: "insert",
     icon: "ph:plus-circle",
-    label: "Insert",
-    title: "Links, images and notes",
+    label: "Links and media",
+    title: "Links to notes and images",
     items: [
       ["wikilink", "Link to a note"],
-      ["image", "Image"],
-      ["ol", "Numbered list"],
+      ["image", "Image…"],
     ],
   },
 ];
@@ -17885,6 +17927,53 @@ let docProseFound = [];
 const docProse = { hidden: false, panelView: "list" };
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
 
+//: **Past this many characters the prose pass reads a window** (audit 1028
+//: D7), centred on what is on screen and cut at blank lines, so the cost of a
+//: pause is the window and not the document. Measured at 100,800 characters:
+//: see docs/roadmap/agent-remaining/docux-1028.md.
+const DOC_PROSE_WINDOW_CHARS = 30000;
+let docProseWin = null;
+let docProseScrollTimer = null;
+
+function docProseWindow(text) {
+  if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
+  let mid = 0;
+  try {
+    const ranges = docCmView ? docCmView.visibleRanges : [];
+    mid = ranges.length ? (ranges[0].from + ranges[ranges.length - 1].to) >> 1 : docCmView ? docCmView.state.selection.main.head : 0;
+  } catch {
+    mid = 0;
+  }
+  let to = Math.min(text.length, Math.max(0, mid - DOC_PROSE_WINDOW_CHARS / 2) + DOC_PROSE_WINDOW_CHARS);
+  let from = Math.max(0, to - DOC_PROSE_WINDOW_CHARS);
+  if (from > 0) {
+    //: Cut at a blank line, and never inside a fence: a window that began in
+    //: the middle of a code block would read its code as prose.
+    const cut = text.lastIndexOf("\n\n", from);
+    from = cut < 0 ? 0 : cut + 2;
+    let open = -1;
+    for (const fence of text.slice(0, from).matchAll(/^(?:```|~~~)/gm)) open = open < 0 ? fence.index : -1;
+    if (open >= 0) from = open;
+  }
+  if (to < text.length) {
+    const cut = text.indexOf("\n\n", to);
+    to = cut < 0 ? text.length : cut;
+  }
+  return { from, to };
+}
+
+//: Scrolling out of the window re-runs the pass once the view settles.
+function docProseScrolled() {
+  if (!docProseWin) return;
+  clearTimeout(docProseScrollTimer);
+  docProseScrollTimer = setTimeout(() => {
+    const ranges = docCmView ? docCmView.visibleRanges : [];
+    if (!ranges.length || !docProseWin) return;
+    const seen = ranges[0].from < docProseWin.from || ranges[ranges.length - 1].to > docProseWin.to;
+    if (seen) renderDocProse();
+  }, 250);
+}
+
 function renderDocProse() {
   const chip = $("doc-prose");
   const count = $("doc-prose-count");
@@ -17899,16 +17988,32 @@ function renderDocProse() {
   const text = docText();
   //: And Check with AI's findings (`docAiFindings`), located afresh in the
   //: text as it is now, so an applied or edited-away one simply goes.
-  docProseFound = isCode
-    ? docCodeSpellFindings(text)
-    : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  //: A long document is checked a window at a time (audit 1028 D7): the pass
+  //: walks every rule and word, and at 100k characters that was a visible
+  //: pause on each 150ms stop. The window follows the view (`docProseScrolled`).
+  const win = isCode ? null : docProseWindow(text);
+  docProseWin = win;
+  if (isCode) docProseFound = docCodeSpellFindings(text);
+  else if (win) {
+    const part = text.slice(win.from, win.to);
+    const near = docProseExtras(part, docProseFindings(part));
+    for (const finding of near) {
+      finding.start += win.from;
+      finding.end += win.from;
+    }
+    docProseFound = near.concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  } else {
+    docProseFound = docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  }
   if (docProse.hidden) docProseFound = [];
   chip.hidden = isCode;
   count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
-      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
-      : "No suggestions";
+      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}${win ? " nearby" : ""}`
+      : win
+        ? "No suggestions nearby"
+        : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
   //: A fresh set of findings means a fresh set of marks. The engine is told
@@ -23199,6 +23304,7 @@ function mountDocEditor(CM) {
     extensions: docCmExtensions(CM),
   });
   docCmView = new CM.view.EditorView({ state, parent: host });
+  docCmView.scrollDOM.addEventListener("scroll", docProseScrolled, { passive: true });
   //: The document-level pipeline, re-registered on the surface that exists
   //: now: the fallback's own `input` listener is on an element the engine has
   //: just taken out of the layout.
