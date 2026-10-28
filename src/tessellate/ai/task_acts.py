@@ -177,9 +177,11 @@ def _candidates(session: Session, kind: str | None, title) -> list[dict]:  # noq
                 Entry.is_private.is_(False),
             ).limit(500)
         ).all()
-        for note in notes:
-            for line in _BOX.finditer(note.content or ""):
-                out.append({"kind": "checklist", "id": note.id, "text": line.group("item"), "line": line.group(0), "where": f"in {title(note)}", "content": note.content})
+        out.extend(
+            {"kind": "checklist", "id": note.id, "text": line.group("item"), "line": line.group(0), "where": f"in {title(note)}", "content": note.content}
+            for note in notes
+            for line in _BOX.finditer(note.content or "")
+        )
     for item in out:
         item["stems"] = _stems(item["text"])
     return out

@@ -14635,18 +14635,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_ask` | src/tessellate/ai/task_acts.py:192 |
+| `_ask` | src/tessellate/ai/task_acts.py:194 |
 | `_candidates` | src/tessellate/ai/task_acts.py:158 |
 | `_complete_rest` | src/tessellate/ai/task_acts.py:103 |
-| `_name` | src/tessellate/ai/task_acts.py:188 |
+| `_name` | src/tessellate/ai/task_acts.py:190 |
 | `_stems` | src/tessellate/ai/task_acts.py:154 |
 | `_task_body` | src/tessellate/ai/task_acts.py:58 |
 | `_unquote` | src/tessellate/ai/task_acts.py:54 |
-| `pick` | src/tessellate/ai/task_acts.py:200 |
-| `plan_complete` | src/tessellate/ai/task_acts.py:226 |
+| `pick` | src/tessellate/ai/task_acts.py:202 |
+| `plan_complete` | src/tessellate/ai/task_acts.py:228 |
 | `read_add` | src/tessellate/ai/task_acts.py:89 |
 | `read_complete` | src/tessellate/ai/task_acts.py:122 |
-| `undo_step` | src/tessellate/ai/task_acts.py:242 |
+| `undo_step` | src/tessellate/ai/task_acts.py:244 |
 
 ### src/tessellate/ai/taxonomy.py (43)
 
@@ -22042,7 +22042,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:35 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:591 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:593 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -22077,7 +22077,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:362 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:545 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:547 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
