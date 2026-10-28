@@ -15186,18 +15186,22 @@ async function initWhiteboard() {
     for (const [panelId, name] of [["topbar", "topbar"], ["tools", "tools"], ["zoom", "zoom"]]) {
       const panel = document.querySelector(`[data-panel-id="${panelId}"]`);
       if (!panel) continue;
-      const publish = () => {
-        const box = panel.getBoundingClientRect();
+      //: The observer's first callback runs right after layout, so the panel
+      //: is read there with no forced layout; a synchronous first `publish()`
+      //: forced the whole board's first layout inside `initWhiteboard`
+      //: (78ms at 4x throttle, INBOX 1426 L5). The listeners (the toasts
+      //: above the dock) are told BEFORE the property is written, so they
+      //: read a clean layout rather than flushing the style change.
+      const publish = (entries) => {
+        const size = entries && entries[0] && entries[0].borderBoxSize && entries[0].borderBoxSize[0];
+        const box = size ? { width: size.inlineSize, height: size.blockSize } : panel.getBoundingClientRect();
+        panel.dispatchEvent(new Event("wb-panel-resize"));
         // A hidden panel measures 0, and a 0 here would collapse the offset
         // of whatever is clearing it right on top of the panel above. The
         // CSS fallbacks stay in charge until there is a real size to use.
         if (box.height > 0) wbPanelMetricsRoot.style.setProperty(`--wb-h-${name}`, `${Math.round(box.height)}px`);
         if (box.width > 0) wbPanelMetricsRoot.style.setProperty(`--wb-w-${name}`, `${Math.round(box.width)}px`);
-        // One observer per panel: others that follow its size (the toasts
-        // above the dock) listen for this rather than adding their own.
-        panel.dispatchEvent(new Event("wb-panel-resize"));
       };
-      publish();
       new ResizeObserver(publish).observe(panel);
     }
   }
@@ -16368,7 +16372,6 @@ async function initWhiteboard() {
     };
     toolsPanel.addEventListener("wb-panel-resize", liftToasts);
     window.addEventListener("resize", liftToasts);
-    liftToasts();
   }
 
   // **The ink swatch on the rail is the drawing colour** (WHITEBOARD_PLAN.md

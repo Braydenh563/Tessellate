@@ -2815,7 +2815,15 @@ function showSkeletons(container, count = 3, tag = "div") {
 function skeletonRemember(container) {
   const rows = [...container.children].filter((el) => !el.classList.contains("skeleton"));
   //: The mean, not the first row: a group's heading would make every one short.
-  const shown = rows.filter((el) => el.getBoundingClientRect().top < innerHeight);
+  //: Rows run down the page, so the walk stops at the first one below the
+  //: fold; measuring every row of a long list read the whole list's layout
+  //: (INBOX 1426 L6, the notes list's 255 to 372ms response frame).
+  const shown = [];
+  for (const el of rows) {
+    if (el.getBoundingClientRect().top >= innerHeight) break;
+    shown.push(el);
+  }
+  if (!shown.length) return;
   const height = Math.round(shown.reduce((sum, el) => sum + el.offsetHeight, 0) / shown.length);
   if (!height) return;
   const seen = prefs.json("skeleton-seen", {});
