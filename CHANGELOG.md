@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Importing a calendar file no longer freezes the app while it runs (audit 1028 K17): the import ran on the server's event loop.
+- The browser error log route takes at most 30 lines a minute from one device, so a flood cannot push real warnings out of Settings, Logs (audit 1028 K10).
 - Spelling and autocorrect leave accented words alone (audit 1028 D8): "café" and "naïve" were split at the accent and the pieces flagged or rewritten.
 - Links read their scheme as a browser does (audit 1028 D14 to D16): "java<tab>script:" and leading control characters no longer pass the link allowlist, opening a document link uses the same allowlist instead of a blocklist, and a pasted address with ")" or spaces is encoded rather than breaking out of its Markdown link.
 - The composer quotes short facts (audit 1028 E5): "Rent 650." or "Wifi: hunter2" was dropped as a two-word fragment, so "how much is my rent" had nothing to answer from.

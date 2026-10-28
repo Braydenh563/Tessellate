@@ -16,6 +16,7 @@ import platform
 import re
 import sys
 import tempfile
+import time
 import zipfile
 from collections.abc import AsyncIterator
 from pathlib import Path
@@ -2307,8 +2308,25 @@ class ClientError(BaseModel):
     kind: str = Field(default="error", max_length=40)
 
 
+#: Lines one client may log per minute (audit 1028 K10): open to the LAN in
+#: LAN mode, so a flood must not push real warnings out of the ring buffer.
+CLIENT_LOG_PER_MINUTE = 30
+_client_log_times: dict[str, list[float]] = {}
+_client_log_clock = time.monotonic
+
+
+def _client_log_allowed(client: str) -> bool:
+    now = _client_log_clock()
+    recent = [t for t in _client_log_times.get(client, ()) if now - t < 60]
+    if len(_client_log_times) > 256:
+        _client_log_times.clear()
+    allowed = len(recent) < CLIENT_LOG_PER_MINUTE
+    _client_log_times[client] = recent + [now] if allowed else recent
+    return allowed
+
+
 @open_router.post("/logs/client", status_code=204)
-def record_client_error(body: ClientError, response: Response) -> None:
+def record_client_error(body: ClientError, request: Request, response: Response) -> None:
     """Put a browser-side failure into the same log everything else uses.
 
     Asked for directly: *"can you make any other erros like what aoppeared on
@@ -2339,7 +2357,7 @@ def record_client_error(body: ClientError, response: Response) -> None:
     What it accepts is bounded instead of authenticated: three short strings,
     length-capped by the schema, appended to a ring buffer that already caps
     itself at `MAX_RECORDS`, reachable only from an origin the CSP pins to
-    `'self'` on a server that binds to localhost. The worst an abuser of it
+    `'self'`, and rate-limited per client (LAN mode reaches it too). The worst an abuser of it
     can do is push older lines out of a 500-record buffer on their own
     machine.
     """
@@ -2351,6 +2369,9 @@ def record_client_error(body: ClientError, response: Response) -> None:
     # buffer and so protects the viewer only; the terminal sees the raw
     # record, which is exactly why this module's own helper exists and says
     # to clean at the call site.
+    response.status_code = 204
+    if not _client_log_allowed(request.client.host if request.client else ""):
+        return
     logger = logging.getLogger("tessellate.browser")
     kind = logbuffer.safe_value(body.kind, limit=40)
     message = logbuffer.safe_value(body.message, limit=logbuffer.MAX_MESSAGE_CHARS)
