@@ -1088,12 +1088,18 @@ async function renderLogs() {
   //: its rows already there and `showSkeletons` leaves them alone.
   showSkeletons($("log-list"), 4, "li");
   const [records, stats] = await Promise.all([
-    apiJson("/logs?limit=500").catch(() => []),
+    apiJson("/logs?limit=500").catch(() => null),
     apiJson("/logs/stats?limit=500").catch(() => null),
   ]);
   clearSkeletons($("log-list"));
-  logStreamCursor = records.length ? records[records.length - 1].seq || 0 : 0;
-  logRecords = [...records.map(serverLogRecord), ...browserLogRecords()];
+  if (!records) {
+    const note = $("logs-dropped");
+    note.textContent = "Could not load the server log. The records from this browser are shown.";
+    note.classList.remove("hidden");
+  }
+  const served = records || [];
+  logStreamCursor = served.length ? served[served.length - 1].seq || 0 : 0;
+  logRecords = [...served.map(serverLogRecord), ...browserLogRecords()];
   sortLogRecords();
   renderLogGap(stats);
   renderActiveLogView();

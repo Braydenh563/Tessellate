@@ -3696,7 +3696,8 @@ function paintFadedNotes(body, items) {
 }
 
 async function renderRandomShuffle(body) {
-  const entries = await dashEntries().catch(() => []);
+  const entries = await loadSurface(body, "your notes", dashEntries);
+  if (!entries) return;
   if (!entries.length) {
     dashEmpty(body, "Save some notes and one will resurface here.", { label: "ph:plus New note", run: "capture" });
     return;
@@ -3799,7 +3800,8 @@ async function renderRandomShuffle(body) {
 // --- weighted tag cloud ------------------------------------------------------
 
 async function renderTagCloudWidget(body) {
-  const tags = await apiJson("/insights/tag-cloud").catch(() => []);
+  const tags = await loadSurface(body, "your tag cloud", () => apiJson("/insights/tag-cloud"));
+  if (!tags) return;
   if (!tags.length) {
     dashEmpty(body, "Tag some notes and your cloud grows here.", { label: "ph:tag Show untagged notes", run: "untagged" });
     return;

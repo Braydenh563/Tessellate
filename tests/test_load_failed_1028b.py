@@ -32,3 +32,23 @@ def test_every_caller_names_a_whole_phrase():
             assert PHRASE.match(phrase), f"{path.name}: {phrase!r} reads badly in 'Could not load ...'"
             assert not re.search(r"\byour (?:the|this|what|your)\b", phrase), phrase
     assert seen >= 20
+
+
+#: W4: `.catch(() => [])` turns a failed load into an empty list, and a surface
+#: then draws "No X yet" for data that is there. A list that renders an empty
+#: state reads through `loadSurface(el, "your X", load)` (Try again) or catches
+#: to `null` and says so. What is left are reads whose empty answer is harmless
+#: (device lists, suggestions, related notes, background probes). This only
+#: goes down.
+SILENT_EMPTY_CAP = 35
+
+
+def test_failed_loads_are_not_turned_into_empty_lists():
+    found = sum(
+        text.count(".catch(() => [])")
+        for text in (path.read_text(encoding="utf-8") for path in JS_DIR.glob("*.js"))
+    )
+    assert found <= SILENT_EMPTY_CAP, (
+        f"{found} `.catch(() => [])` sites, cap {SILENT_EMPTY_CAP}: use loadSurface (navigation.js) "
+        "so a failed read shows Try again rather than an empty state"
+    )

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A failed load of chats, backups, logs, the tag cloud and the notes shuffle says so with Try again instead of an empty state (sweep 1028b W4)
 - Reminders take typed dates and a past date answers inline; one plural helper; failed-load titles read whole (sweep 1028b W2 to W5, W13 to W15, W28, W29)
 - Reminders: the "Remind me to…" box reads its words like the magic box ("Pay rent next tuesday at 9am" is due then, chips show the time first); an empty add or a refused date is one line under the form with the field marked and focused, never an unhandled rejection; the date picker starts at today; the "Remind you when?" question shows once; the snooze label says Tomorrow (sweep 1028b W2, W3, W13, W28, W29).
 - Plurals: one helper, nounCount(n, one, many), in place of 270 hand-made ternaries and templates that always pluralised ("1 more tags", "1 more notifications", "1 words"); a lint holds the rest down; the heatmap summary names the busiest day by date (sweep 1028b W14, W15).

@@ -320,9 +320,10 @@ async function renderBackups() {
   const list = $("backup-list");
   renderBackupCopyRow().catch(() => {});
   showSkeletons(list, 2, "li");
-  const backups = await apiJson("/backups").catch(() => []);
+  const backups = await loadSurface($("backup-schedule"), "your backups", () => apiJson("/backups"));
   clearSkeletons(list);
   list.replaceChildren();
+  if (!backups) return;
   renderBackupSchedule(backups).catch(() => {});
   for (const item of backups) {
     const li = document.createElement("li");

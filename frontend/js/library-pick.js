@@ -52,7 +52,9 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
       const read = source.path === "/files/gallery"
         ? apiPagedList(source.path, 200, { silent: true })
         : apiJson(source.path, { silent: true });
-      const rows = await read.catch(() => []);
+      //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
+      const rows = await read.catch(() => null);
+      if (!rows) return [];
       const list = Array.isArray(rows) ? rows : rows.documents || [];
       cache[kind] = source.keep ? list.filter(source.keep) : list;
       return cache[kind];

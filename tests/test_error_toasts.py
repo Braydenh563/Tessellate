@@ -216,6 +216,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'entity-page.js': {
+        '"Could not load the people and things in your notes. Try again."': 'the entities request failed',
+    },
     'media.js': {
         '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
     },
@@ -279,6 +282,7 @@ FAULTS = {
         '"Couldn\'t reset those settings."': 'resetting settings failed',
     },
     'shell-reminders.js': {
+        '"Could not load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },
