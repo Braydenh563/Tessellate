@@ -1341,6 +1341,7 @@ function paletteCommands() {
     { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
     { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
     { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
+    { label: "ph:code New code file", act: () => LIBRARY_CREATE_BY_KIND.code.run() },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
     // The popup agent (Ctrl+Shift+A) has real capability, it's the same

@@ -4922,6 +4922,7 @@ function mapPaletteCommands() {
     row("This topic", "ph:paint-bucket Paste style onto this topic", () => wbPasteCopiedStyle(), "Ctrl+Alt+V");
     row("This topic", "ph:stack Use this look for its level", () => wbMapUseLookForLevel(node.id));
     row("This topic", "ph:text-align-left Summarise this branch", () => wbMapSummariseBranch(node));
+    if (!(node.parent_id == null && wbMapLevels(wbMapIndex()).get(node.id) === 0)) row("This topic", "ph:arrow-bend-right-down Move under…", () => wbMapMoveUnder(node.id), "M");
     row("This topic", "ph:copy Copy this branch as an outline", () => wbMapCopyBranchOutline(node.id));
     row("This topic", "ph:export Export this branch…", () => wbMapExportBranch(node.id));
     row("This topic", "ph:trash Delete the topic and its branch", () => wbMapDeleteSubtree(node.id), "Delete");
@@ -5240,6 +5241,51 @@ async function wbMapOutdent(id) {
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "move that node" }), true);
   }
+}
+
+//: **Move under…** (audit 1028 U4, WCAG 2.5.7): a branch has a way to a new
+//: parent that is not a drag. A searchable list of every topic it may go under
+//: (not itself or anything in its own branch, not the parent it already has),
+//: then the same `wbMapTransplant` a drop uses, so the cycle check and the one
+//: Undo step are the drag's own. Keys: M; the topic menu, palette and sheet.
+function wbMapMoveUnder(id) {
+  const index = wbMapIndex();
+  const node = index.byId.get(id);
+  if (!node) return;
+  const own = new Set(wbMapSubtree(index, id).map((o) => o.id));
+  const options = index.nodes.filter((n) => !own.has(n.id) && n.id !== node.parent_id);
+  if (!options.length) {
+    toast("There is nowhere else to put this topic.", "info");
+    return;
+  }
+  const shell = pickerDialog({
+    title: "Move under…",
+    about: `Pick the topic that "${wbMapLabel(node) || "this topic"}" and its branch go under.`,
+    placeholder: "Search topics…",
+  });
+  const paint = () => {
+    const term = shell.search.value.trim().toLowerCase();
+    const rows = options.filter((n) => !term || (wbMapLabel(n) || "").toLowerCase().includes(term)).slice(0, 80);
+    if (!rows.length) {
+      const none = document.createElement("li");
+      none.className = "muted entry-pick-about";
+      none.textContent = "No topic matches.";
+      shell.list.replaceChildren(none);
+      return;
+    }
+    shell.list.replaceChildren(...rows.map((n) => {
+      const li = document.createElement("li");
+      const button = richPickerRow({ tag: "button", role: null, icon: "ph:tree-structure", label: wbMapLabel(n) || "Untitled topic" });
+      button.addEventListener("click", () => shell.close(n.id));
+      li.appendChild(button);
+      return li;
+    }));
+  };
+  shell.search.addEventListener("input", paint);
+  paint();
+  new Promise((resolve) => shell.open(resolve)).then((targetId) => {
+    if (targetId != null) wbMapTransplant(node, targetId, false, { via: "menu" });
+  });
 }
 
 //: **Ctrl+Enter: a parent topic** (XMind's Insert parent topic, which the map

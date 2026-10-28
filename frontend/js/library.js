@@ -1995,6 +1995,18 @@ const LIBRARY_CREATE_BY_KIND = {
       await createDocument();
     },
   },
+  //: The code editor under New (audit 1028 U6): it was a 32px icon and a file
+  //: type menu. The documents' template dialog, opened on its Code group.
+  code: {
+    label: "ph:code New code file",
+    run: async () => {
+      await switchTab("documents");
+      $("doc-new-template")?.click();
+      //: The first row under the "Code" heading, chosen and focused by its own click.
+      const heads = [...document.querySelectorAll("#doc-template-list .doc-template-group")];
+      heads.find((h) => h.textContent === "Code")?.nextElementSibling?.querySelector("button")?.click();
+    },
+  },
   chat: {
     label: "ph:plus New chat",
     run: () => {
@@ -2107,6 +2119,7 @@ const LIBRARY_CREATE_BY_KIND = {
 const LIBRARY_CREATE_HINTS = {
   note: ["ph:note-pencil", "A quick thought. Atlas files it and links it for you."],
   document: ["ph:file-text", "A long page: headings, an outline, templates, export."],
+  code: ["ph:code", "A script, a page or a notebook with a Run button."],
   map: ["ph:graph", "A board of note cards you branch with Tab and Enter; each topic is saved as a note."],
   mindmap: ["ph:tree-structure", "A tree of topics round one central idea, with branches you fold and colour."],
   board: ["ph:squares-four", "A canvas of cards, sketches and links you arrange freely."],
@@ -2119,7 +2132,7 @@ const LIBRARY_CREATE_HINTS = {
 //: then the things that arrive from elsewhere. The picker's sentence used to
 //: say "Five kinds of thing", which went stale the day a sixth row was
 //: added; it names no count now, so it cannot drift from the rows under it.
-const LIBRARY_CREATE_ORDER = ["note", "document", "mindmap", "board", "chat", "meeting", "file"];
+const LIBRARY_CREATE_ORDER = ["note", "document", "code", "mindmap", "board", "chat", "meeting", "file"];
 
 //: The kinds that have a chord of their own, by its name in the shortcut
 //: registry: the keycap is read from the live table, so a rebinding shows.
