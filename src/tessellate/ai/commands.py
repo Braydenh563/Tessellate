@@ -1260,6 +1260,17 @@ def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
     return step_undo
 
 
+def _run_one(session: Session, name: str, args: dict, tools) -> dict:  # noqa: ANN001
+    """One step's result: the composer's own steps first, then the tool table."""
+    if name == "start_meeting":
+        return _start_meeting(session, args)
+    if name == "bin_reminder":
+        return _bin_reminder(session, args)
+    if name in task_acts.OWN_STEPS:
+        return task_acts.run_step(session, name, args)
+    return tools.execute_tool(session, name, args)
+
+
 def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a confirmed card's steps: {"summary", "undo", "open"?, "ok"}.
 
@@ -1279,12 +1290,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         if name not in RUNNABLE:
             failed.append({"id": None, "reason": "failed"})
             continue
-        if name == "start_meeting":
-            result = _start_meeting(session, args)
-        elif name == "bin_reminder" or name in task_acts.OWN_STEPS:
-            result = _bin_reminder(session, args) if name == "bin_reminder" else task_acts.run_step(session, name, args)
-        else:
-            result = tools.execute_tool(session, name, args)
+        result = _run_one(session, name, args, tools)
         if "error" in result:
             reason = "private" if "is private" in str(result["error"]) else "failed"
             failed.append({"id": args.get("note_id"), "reason": reason})
