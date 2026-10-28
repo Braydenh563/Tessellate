@@ -13060,52 +13060,52 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:2906 |
-| `_act_of` | src/tessellate/ai/help_chat.py:2645 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:2684 |
-| `_aware` | src/tessellate/ai/help_chat.py:3310 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3136 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2576 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3224 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3240 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3207 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2566 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2498 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2562 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2724 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2804 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2521 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:3060 |
-| `_place` | src/tessellate/ai/help_chat.py:3181 |
-| `_preference` | src/tessellate/ai/help_chat.py:3263 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:2963 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3382 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2667 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2713 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3211 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3272 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3281 |
-| `answer` | src/tessellate/ai/help_chat.py:3462 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3397 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2892 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3292 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3543 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2863 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3190 |
-| `names_app` | src/tessellate/ai/help_chat.py:3527 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3328 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3140 |
-| `source_names` | src/tessellate/ai/help_chat.py:2859 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2841 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2827 |
-| `topics_for` | src/tessellate/ai/help_chat.py:2914 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:2907 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2646 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:2685 |
+| `_aware` | src/tessellate/ai/help_chat.py:3311 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3137 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2577 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3225 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3241 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3208 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2567 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2499 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2563 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2725 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2805 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2522 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:3061 |
+| `_place` | src/tessellate/ai/help_chat.py:3182 |
+| `_preference` | src/tessellate/ai/help_chat.py:3264 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:2964 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3383 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2668 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2714 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3212 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3273 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3282 |
+| `answer` | src/tessellate/ai/help_chat.py:3463 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3398 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2893 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3293 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3544 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2864 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3191 |
+| `names_app` | src/tessellate/ai/help_chat.py:3528 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3329 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3141 |
+| `source_names` | src/tessellate/ai/help_chat.py:2860 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2842 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2828 |
+| `topics_for` | src/tessellate/ai/help_chat.py:2915 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2709 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2813 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2708 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2812 |
 
 ### src/tessellate/ai/inbox.py (8)
 
