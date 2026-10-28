@@ -2448,10 +2448,12 @@ function applyThemeChoice(choice, remember = true) {
   repaintThemeAtOnce(() => {
     if (choice === "system") delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = choice;
-    // Clear any custom background colour when explicitly switching themes,
-    // otherwise the user thinks the theme toggle is broken because the custom
-    // colour is overriding the new theme's native background.
-    if (remember) {
+    // A single hand-picked background is one colour in both modes, so it is
+    // cleared when switching themes: it would override the new theme's native
+    // background and the toggle would look broken. A scheme (`page-bg-dark`
+    // set) is a pair made for both modes and stays: `applyResolvedMode`
+    // picks the one for the mode now showing (audit 1028 S10).
+    if (remember && !prefs.get("page-bg-dark", null)) {
       prefs.remove("page-bg");
       prefs.remove("page-bg-dark");
       applyPageBackground(null);

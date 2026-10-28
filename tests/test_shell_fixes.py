@@ -80,3 +80,9 @@ console.log(JSON.stringify(out));
         "100+ items · 4 months",
         "1+ items · 1 year",
     ]
+
+
+def test_theme_change_keeps_a_background_scheme():
+    js = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    body = js[js.index("function applyThemeChoice(") :].split("\n}\n", 1)[0]
+    assert 'if (remember && !prefs.get("page-bg-dark", null)) {' in body
