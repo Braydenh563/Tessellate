@@ -34,6 +34,8 @@ with its owner named in the entry.
 
 ## Open items
 
+1429. **The owner, 2026-10-28, verbatim:** "also moving the companion and throwing it are still a little slow. also the companion always chooses to jump across the screen and it is very visually distracting. I need it to choose more things, like summoning a portal and walking through it, vanishing in a puff of smoke, walking off the edge of the screen and coming out somehwhere else, ducking below the bottom bar and climbing down from the top and vice versa. more varied biological actions. the companion needs ot be a companion, not something that distracts the user from their work." Placed: companion agent after the 1425 agents (avatars.js, companion-throw.js; ties to lag-1028 L4, `nameMarkBuddyTempo` and `FollowFrame` forced layout per frame).
+
 1428. **The owner, 2026-10-28, verbatim** (screenshot, dark, Windows: the "Sequence diagram (17 items)" board opened at 52% with the diagram cut off at the top left corner and the rest of the canvas empty): "I clicked on the sequence diagram board from the timeline and it didnt fit the content to my screen at all"
 
 1427. **The owner, 2026-10-28, verbatim:** "can you make all popup panels draggable??" then "and resizable?" Recommendation taken (standing order 3): one recipe in DESIGN.md (`panelMovable`), dragged by its head, resized from its corner, keyboard moves for WCAG 2.5.7, size and place kept per panel on this device, a double-click on the head puts it back; on dialogs, popovers and floating panels on a pointer device; phones (under 600 px, coarse pointer) keep sheets. Lint in `tests/test_ui_recipes.py`.
