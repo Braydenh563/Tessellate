@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6677, frontend ids 2563, CSS sections 505, backend routes 628, backend modules 6978, test files 1465, tests 12960, plan headings 985.
+Counts: frontend functions 6677, frontend ids 2563, CSS sections 505, backend routes 628, backend modules 6978, test files 1466, tests 12963, plan headings 985.
 
 ## Frontend functions (6677)
 
@@ -13888,26 +13888,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `Reading` | src/tessellate/ai/reading.py:77 |
 | `Repair` | src/tessellate/ai/reading.py:342 |
 | `_ambiguity` | src/tessellate/ai/reading.py:148 |
-| `_day_phrase` | src/tessellate/ai/reading.py:413 |
-| `_follow_other` | src/tessellate/ai/reading.py:477 |
-| `_follow_pronoun` | src/tessellate/ai/reading.py:494 |
-| `_follow_same` | src/tessellate/ai/reading.py:503 |
-| `_follow_slot` | src/tessellate/ai/reading.py:458 |
+| `_day_phrase` | src/tessellate/ai/reading.py:416 |
+| `_follow_other` | src/tessellate/ai/reading.py:482 |
+| `_follow_pronoun` | src/tessellate/ai/reading.py:499 |
+| `_follow_same` | src/tessellate/ai/reading.py:508 |
+| `_follow_slot` | src/tessellate/ai/reading.py:463 |
 | `_known` | src/tessellate/ai/reading.py:126 |
-| `_leaned_on` | src/tessellate/ai/reading.py:451 |
+| `_leaned_on` | src/tessellate/ai/reading.py:456 |
 | `_plain` | src/tessellate/ai/reading.py:114 |
 | `_read_act` | src/tessellate/ai/reading.py:298 |
 | `_read_dated` | src/tessellate/ai/reading.py:284 |
 | `_read_question` | src/tessellate/ai/reading.py:310 |
-| `_redate` | src/tessellate/ai/reading.py:520 |
+| `_redate` | src/tessellate/ai/reading.py:525 |
 | `_reminder_slots` | src/tessellate/ai/reading.py:173 |
 | `_repeat_slots` | src/tessellate/ai/reading.py:184 |
 | `_resolving` | src/tessellate/ai/reading.py:219 |
-| `_swap_object` | src/tessellate/ai/reading.py:409 |
-| `_turn_object` | src/tessellate/ai/reading.py:398 |
+| `_swap_object` | src/tessellate/ai/reading.py:412 |
+| `_turn_object` | src/tessellate/ai/reading.py:401 |
 | `_weigh` | src/tessellate/ai/reading.py:157 |
 | `band_of` | src/tessellate/ai/reading.py:69 |
-| `follow` | src/tessellate/ai/reading.py:426 |
+| `follow` | src/tessellate/ai/reading.py:429 |
 | `read` | src/tessellate/ai/reading.py:242 |
 | `repair` | src/tessellate/ai/reading.py:359 |
 | `tool_of` | src/tessellate/ai/reading.py:198 |
@@ -20006,7 +20006,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12960)
+## Tests (12963)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20271,6 +20271,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_social_1420.py | 14 |
 | tests/test_composer_study_1025.py | 20 |
 | tests/test_composer_suggest_2210.py | 13 |
+| tests/test_composer_sweep_1028b.py | 3 |
 | tests/test_composer_tables.py | 32 |
 | tests/test_composer_tasks_1028.py | 37 |
 | tests/test_composer_tone_2210.py | 11 |

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: an act that names its own note ("delete the note about lentil soup") never takes the chat's last subject as its own; tested over delete, pin, open, rename, move, tag (sweep 1028b W1).
 - Boards: a board opened from the timeline, a link or the Library fits its content unless its own last view shows half of it; the last board's camera is never kept (INBOX 1428).
 - Boards and maps: the presentation bar shows the page name centred between the arrows as a button; it opens a list of every page (current one marked) that opens upward, so you can jump to any page, and the presentation keys wait while it is open.
 - Composer: tasks as acts (audit 1028 E10) finished: "cancel the dentist task" bins a reminder or removes a checklist line, "snooze the dentist task until Friday" moves a reminder, both asked about when the name fits more than one and both with Undo; a Guide topic, Tasks in Chat, says add, complete, cancel, snooze and undo.
