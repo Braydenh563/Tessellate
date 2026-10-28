@@ -47,3 +47,6 @@ date | item | type | rung | rework | note
 2026-10-27 | guide chip closes panel; how-to lead past forms | bug | opus | 0 | 
 2026-10-27 | picture deleted mid-read StaleDataError | bug | opus | 0 | 
 2026-10-27 | merge fastembed, facts r3, atlas 1402 | merge | opus | 1 | 
+2026-10-28 | E10 tasks as acts | feature | sonnet | 1 | 
+2026-10-28 | help text parity 1028 | docs | sonnet | 0 | 
+2026-10-28 | import cycles in commands.py | bugfix | opus | 0 | 
