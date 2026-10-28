@@ -786,7 +786,7 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
 //: and make it inert: a lock left them readable and the password field
 //: untypeable. They are put away while it shows and back, as they were,
 //: after it, so a half-written dialog loses nothing.
-let lockStash = [];
+const lockStash = [];
 let lockReturn;
 new MutationObserver(() => {
   if ($("lock-overlay").classList.contains("hidden")) {
@@ -794,7 +794,7 @@ new MutationObserver(() => {
     for (const el of lockStash) {
       try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal(); } catch { /* reopened meanwhile */ }
     }
-    lockStash = [];
+    lockStash.length = 0;
   } else {
     lockReturn ||= document.activeElement;
     for (const el of document.querySelectorAll("dialog:modal, :popover-open")) {

@@ -110,7 +110,7 @@
  "whiteboard-map.js::mutation-observer": 2,
  "whiteboard-map.js::raf": 2,
  "whiteboard.js::mutation-observer": 1,
- "whiteboard.js::raf": 21,
+ "whiteboard.js::raf": 22,
  "whiteboard.js::resize-observer": 3,
  "wiring.js::mutation-observer": 1
 }

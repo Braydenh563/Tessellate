@@ -85,7 +85,7 @@ function undoStorePut(key, value) {
     undoStoreTimers.delete(name);
     let plain;
     try {
-      plain = JSON.parse(JSON.stringify(typeof value === "function" ? value() : value));
+      plain = JSON.parse(JSON.stringify(value instanceof Function ? value() : value));
     } catch {
       return;
     }

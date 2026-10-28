@@ -143,7 +143,14 @@ def _strip_comments(text: str) -> str:
     is gone before anything looks for a block.
     """
     text = re.sub(r"^\s*//.*$", "", text, flags=re.M)
-    return re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    #: A quoted string is matched first and kept, so `"image/*"` is not read
+    #: as a block comment opening (it swallowed ten documents.js functions).
+    return re.sub(
+        r"""("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|/\*.*?\*/""",
+        lambda m: m.group(1) or "",
+        text,
+        flags=re.S,
+    )
 
 
 def _body(source: str, signature: str) -> str:

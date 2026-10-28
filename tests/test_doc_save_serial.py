@@ -33,7 +33,7 @@ def _run(steps: str) -> dict:
 let currentDoc = { id: 1, title: "T", content: "a", content_hash: "h0", file_type: "md" };
 let docs = [currentDoc];
 let docDirty = true, docEditSeq = 0, docConflictOpen = false, docSaveTimer = null;
-let docSaveInFlight = null, docSaveAgain = null;
+const docSaveQueue = { inFlight: null, again: null };
 let text = "a";
 const puts = [], pending = [], kept = [], forgot = [];
 const el = { value: "T", textContent: "", classList: { add() {} } };

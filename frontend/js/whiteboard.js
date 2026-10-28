@@ -194,7 +194,7 @@ let wbSelectedItem = null;
 // are built around, and both only ever make sense for exactly one item);
 // this is populated only once a second item joins, via shift-click or a
 // marquee drag.
-let wbMultiSelection = new Set();
+const wbMultiSelection = new Set();
 // `deleteSketch`/`deleteNode` are closures defined fresh inside every
 // `wbScheduleRender()` call; these hold whichever pair is current, so code
 // outside that closure (the Delete-key handler) can still call them.
@@ -9840,14 +9840,14 @@ function wbDefaultInk(color) {
   return c === "#000000" || c === "#ffffff" ? wbReadableInk(c, wbBoardBg()) : color;
 }
 
-let wbBoardBgCache = { sig: "", value: "" };
+const wbBoardBgCache = { sig: "", value: "" };
 function wbBoardBg() {
   const el = document.getElementById("whiteboard-container");
   if (!el) return "";
   const root = document.documentElement;
   let sig = el.style.getPropertyValue("--wb-board-bg");
   for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
-  if (wbBoardBgCache.sig !== sig) wbBoardBgCache = { sig, value: getComputedStyle(el).backgroundColor };
+  if (wbBoardBgCache.sig !== sig) Object.assign(wbBoardBgCache, { sig, value: getComputedStyle(el).backgroundColor });
   //: Transparent says nothing about the board: no remap.
   return /,\s*0\)$/.test(wbBoardBgCache.value) ? "" : wbBoardBgCache.value;
 }

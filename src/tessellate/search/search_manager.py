@@ -22,7 +22,7 @@ from datetime import datetime, time, timezone
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import variants
+from tessellate.ai import recognise, variants
 from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
@@ -903,7 +903,7 @@ def _written_at(entry: Entry):
     return written or datetime.min
 
 
-_WEEKDAY = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
+_WEEKDAY = recognise.WEEKDAY_WORD
 
 
 def day_mentions(session: Session, since, until, phrase: str = "") -> set[int]:  # noqa: ANN001

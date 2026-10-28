@@ -197,6 +197,9 @@ _MONTHS = {
 #: or a weekday (`ai/fact_check.py`), so no second table of them exists.
 MONTH_NAMES = frozenset(_MONTHS)
 WEEKDAY_NAMES = frozenset(_WEEKDAYS) | {"thur"}
+#: A weekday named in full, plural too ("Mondays"), for the readers that
+#: find a day a note says (`composer`, `search_manager`).
+WEEKDAY_WORD = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
 #: A span's unit in minutes, for checking a stated span against the facts
 #: (`ai/fact_check.py`): kept here as the one table of time units.
 SPAN_MINUTES = {

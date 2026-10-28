@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import itertools
 import json
+import logging
 import threading
 import time
 from collections.abc import Callable, Iterator
@@ -62,8 +63,8 @@ class StopEvent(threading.Event):
         for hook in hooks:
             try:
                 hook()
-            except Exception:  # noqa: BLE001 - a failed close must not stop the others
-                pass
+            except Exception as exc:  # noqa: BLE001 - a failed close must not stop the others
+                logging.getLogger("tessellate.activity").debug("stop: a close hook failed: %s", exc)
 
     def add_hook(self, hook: Callable[[], object]) -> Callable[[], None]:
         """Run `hook` when set (now, if already set); returns the remover."""

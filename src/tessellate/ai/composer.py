@@ -5054,7 +5054,7 @@ def _written_when(out: "_Answer", question: str, p, views_list: list):  # noqa: 
     return {**_result(out.parts, "when", []), "answered": True}
 
 
-_DAY_WORD = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
+_DAY_WORD = rec.WEEKDAY_WORD
 
 
 def _day_terms(p, views_list: list) -> list[str]:  # noqa: ANN001

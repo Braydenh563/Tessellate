@@ -210,7 +210,7 @@ function chatTooLong(text, fromBox) {
     "Save as a note and ask about it",
     async () => {
       try {
-        const note = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: text, tags: [] }) });
+        const note = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: text, tags: [], defer_filing: true }) });
         if (fromBox && box.value.trim() === text) {
           box.value = "";
           box.dispatchEvent(new Event("input"));

@@ -917,9 +917,9 @@ function flashEntry(id) {
   const targetPage = resolveNotePage(id);
   if (targetPage) notesCurrentPage = targetPage;
   renderSidebar();
-  pendingJumpId = id; // paint through the target: later rows only exist after a scroll
+  noteEngine.jumpId = id; // paint through the target: later rows only exist after a scroll
   renderEntries();
-  pendingJumpId = null;
+  noteEngine.jumpId = null;
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
     if (!card) return toast("No such note.");

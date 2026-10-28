@@ -4842,8 +4842,8 @@ def _close_quietly(source) -> None:  # noqa: ANN001
     try:
         if close is not None:
             close()
-    except Exception:  # noqa: BLE001 - nothing is left to tell
-        pass
+    except Exception as exc:  # noqa: BLE001 - the turn has ended; nothing waits on this
+        logging.getLogger("tessellate.chat").debug("chat: closing the stopped stream failed: %s", exc)
 
 
 def _stoppable(spend, req):  # noqa: ANN001, ANN202

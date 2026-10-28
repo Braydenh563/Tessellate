@@ -187,7 +187,8 @@ const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space):(?:"[^"]{1,200}"|[^\s"]+))/gi
 //: top-level `let`s): `ids` answers `q`, `pending` is the question in the air,
 //: `capped` says the engine's page (50) was full, `semanticFor` is the box text
 //: the Semantic toggle's results were loaded for, and `rank` their order.
-const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map() };
+//: `jumpId` is set by `flashEntry` while it renders: the first paint must reach that id.
+const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null };
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
@@ -1884,9 +1885,6 @@ function sortEntries(entries) {
 // container-level scroll, without having to find which one this list is in.
 const listWindows = new WeakMap();
 
-//: Set by `flashEntry` while it renders: the first paint must reach this id.
-let pendingJumpId = null;
-
 function renderIncrementally(container, items, buildItem, options = {}) {
   //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
   //: carry on next frame while the sentinel is still near, instead of forty
@@ -1896,7 +1894,7 @@ function renderIncrementally(container, items, buildItem, options = {}) {
   //: fires when the sentinel's intersection *changes*: a sentinel that is
   //: still near after a small chunk never fires again. So `near` keeps the
   //: observer's last answer and the pump runs on frames until it goes false.
-  const at = pendingJumpId == null ? -1 : items.findIndex((x) => (x.id ?? x[0].id) === pendingJumpId);
+  const at = noteEngine.jumpId == null ? -1 : items.findIndex((x) => (x.id ?? x[0].id) === noteEngine.jumpId);
   const { initial = Math.max(60, at + 1), chunk = 40, afterChunk, budgetMs = 0 } = options;
 
   // Tear down the previous run first. Without this a re-render (a keystroke in

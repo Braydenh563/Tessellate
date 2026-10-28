@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def test_flash_entry_renders_through_the_target():
     js = app_js_text()
-    assert "let pendingJumpId = null;" in js
-    assert "pendingJumpId = id;" in js
+    assert "jumpId: null" in js
+    assert "noteEngine.jumpId = id;" in js
     assert "No such note." in js
 
 

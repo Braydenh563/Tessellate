@@ -2210,24 +2210,23 @@ let docConflictOpen = false;
 
 //: One save at a time: a second PUT in flight carried the old base_hash (a
 //: false 409). One asked for meanwhile runs once after (audit 1028 D1).
-let docSaveInFlight = null;
-let docSaveAgain = null;
+const docSaveQueue = { inFlight: null, again: null };
 
 async function saveDocument({ silent = false } = {}) {
   if (!currentDoc || docConflictOpen) return;
-  if (docSaveInFlight) {
-    docSaveAgain = { silent: silent && (docSaveAgain ? docSaveAgain.silent : true) };
-    await docSaveInFlight;
+  if (docSaveQueue.inFlight) {
+    docSaveQueue.again = { silent: silent && (docSaveQueue.again ? docSaveQueue.again.silent : true) };
+    await docSaveQueue.inFlight;
     return;
   }
   let release;
-  docSaveInFlight = new Promise((resolve) => (release = resolve));
+  docSaveQueue.inFlight = new Promise((resolve) => (release = resolve));
   try {
     await docSaveOnce(silent);
   } finally {
-    docSaveInFlight = null;
-    const again = docSaveAgain;
-    docSaveAgain = null;
+    docSaveQueue.inFlight = null;
+    const again = docSaveQueue.again;
+    docSaveQueue.again = null;
     if (again) await saveDocument(again).catch(() => {});
     release();
   }
@@ -11471,8 +11470,19 @@ async function docImageUpload(box, boxId, file) {
     box.setSelectionRange(at + embed.length, at + embed.length);
     finishMarkdownEdit(box, boxId);
   } catch {
-    toast("Could not upload that picture. Add its address by hand.", true);
+    const before = box.value;
     docImageStub(box, boxId, start, end);
+    const stubbed = box.value;
+    //: Try again takes the stub back out first (if it is untouched), so the
+    //: picture lands where the first try would have.
+    const retry = () => {
+      if (box.value === stubbed) {
+        box.value = before;
+        box.setSelectionRange(start, end);
+      }
+      docImageUpload(box, boxId, file);
+    };
+    toast("Could not upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
   }
 }
 
@@ -17949,7 +17959,7 @@ let docProseFound = [];
 //: "Hide all suggestions for now": the marks, the count and the list go quiet
 //: for this sitting without touching the Settings switch or the dismissed
 //: list. Not stored, like a dismissal, so it can never be forgotten about.
-const docProse = { hidden: false, panelView: "list" };
+const docProse = { hidden: false, panelView: "list", win: null, timer: null };
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
 
 //: **Past this many characters the prose pass reads a window** (audit 1028
@@ -17957,8 +17967,6 @@ const docProse = { hidden: false, panelView: "list" };
 //: pause is the window and not the document. Measured at 100,800 characters:
 //: see docs/roadmap/agent-remaining/docux-1028.md.
 const DOC_PROSE_WINDOW_CHARS = 30000;
-let docProseWin = null;
-let docProseScrollTimer = null;
 
 function docProseWindow(text) {
   if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
@@ -17989,12 +17997,12 @@ function docProseWindow(text) {
 
 //: Scrolling out of the window re-runs the pass once the view settles.
 function docProseScrolled() {
-  if (!docProseWin) return;
-  clearTimeout(docProseScrollTimer);
-  docProseScrollTimer = setTimeout(() => {
+  if (!docProse.win) return;
+  clearTimeout(docProse.timer);
+  docProse.timer = setTimeout(() => {
     const ranges = docCmView ? docCmView.visibleRanges : [];
-    if (!ranges.length || !docProseWin) return;
-    const seen = ranges[0].from < docProseWin.from || ranges[ranges.length - 1].to > docProseWin.to;
+    if (!ranges.length || !docProse.win) return;
+    const seen = ranges[0].from < docProse.win.from || ranges[ranges.length - 1].to > docProse.win.to;
     if (seen) renderDocProse();
   }, 250);
 }
@@ -18017,7 +18025,7 @@ function renderDocProse() {
   //: walks every rule and word, and at 100k characters that was a visible
   //: pause on each 150ms stop. The window follows the view (`docProseScrolled`).
   const win = isCode ? null : docProseWindow(text);
-  docProseWin = win;
+  docProse.win = win;
   if (isCode) docProseFound = docCodeSpellFindings(text);
   else if (win) {
     const part = text.slice(win.from, win.to);

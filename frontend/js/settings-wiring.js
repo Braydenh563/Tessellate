@@ -1200,14 +1200,11 @@ function closeOverlaysForChord() {
 //: rows are buttons too (the owner: "make these popup options when I press
 //: m, actual clickable nav buttons"); a click on the dimmed page, Escape and a
 //: second `m` all mean "not this". `role="status"` so a screen reader hears it.
-let chordGuideTimer = null;
-
 //: The panel's builders (`chordGuideEl`, `chordGuideGroup`, `chordGuideKey`,
 //: `showTabJumpHint`) are in chord-guide.js, loaded after boot; see its header.
 function hideChordGuide() {
   const guide = document.getElementById("chord-guide");
   if (!guide) return;
-  window.clearTimeout(chordGuideTimer);
   guide.classList.add("hidden");
 }
 
