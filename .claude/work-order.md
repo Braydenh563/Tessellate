@@ -1,17 +1,15 @@
 mode: continue
-status: stopped (usage: owner's 48% line, 2026-10-27)
+status: running
 max-continues: 40
 max-idle-minutes: 90
-started: 2026-10-25 night
-stop: owner's 48% weekly usage line
+started: 2026-10-28 night
+stop: owner's 62% weekly usage line
 
-- [x] Merge wb, docs, composer agents; gate; push; open PR (PR 204)
-- [x] INBOX 1350: phone/LAN security review + fixes (lansec merged 99cb7a7)
-- [x] INBOX 1350: custom domain write-up + smallest safe build
-- [~] INBOX 1350 + OPEN Shell rows: half-window sweep (shell merged e7ec76c; shell2 running)
-- [ ] Fixer B: dog1-1025.md whiteboard and mind map section (queued for the next free slot)
-- [~] INBOX 1351: dogfood rounds (round 1 done, dog1-1025.md; fixer A running; round 2 after fixes) (blind-tester as a uni student, no model, per surface) then fix agent; repeat until a round finds under 3
-- [ ] INBOX 1351: battery: idle CPU and wakeups with no model, cut polling and timers
-- [ ] Composer round 3 (after composer2)
-- [ ] Second rounds: whiteboard/mindmap draw.io gaps, document editor upgrades, composer expansion
-- [ ] Remaining INBOX items (18), then OPEN.md by impact
+- [ ] Clean-eye audit A: whiteboard + mind map (audit-1028-board.md)
+- [ ] Clean-eye audit B: documents + code editor (audit-1028-docs.md)
+- [ ] Clean-eye audit C: backend security, architecture, perf (audit-1028-backend.md)
+- [ ] Clean-eye audit D: shell, notes, library, dashboard, graph, chat, settings (audit-1028-shell.md)
+- [ ] Compare audits to plans; rank by impact (audit-1028-ranked.md)
+- [ ] Fix batch 1 (top impact), PR
+- [ ] Fix batch 2, PR
+- [ ] Morning summary, retro
