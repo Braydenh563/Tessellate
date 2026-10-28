@@ -2141,6 +2141,15 @@ function wbCoreInkFor(colour) {
   return onDark >= onLight ? WB_CORE_INK_DARK : WB_CORE_INK_LIGHT;
 }
 
+//: The ink itself when it reads on `bg` at 4.5:1, else the one that does.
+function wbReadableInk(ink, bg, min = 4.5) {
+  const a = wbColourChannels(ink), b = wbColourChannels(bg);
+  if (!a || !b) return ink;
+  const la = wbRelativeLuminance(a), lb = wbRelativeLuminance(b);
+  const ratio = (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  return ratio >= min ? ink : (wbCoreInkFor(bg) || ink);
+}
+
 //: The half that changes: label, branch colour, chevron, badge. Runs for
 //: every visible map node on every render, so it does no work that the enter
 //: selection could have done once.
