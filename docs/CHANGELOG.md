@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Text from outside is marked as outside (audit 1028 E4): a Library file attached to a chat, an imported document, and a note carrying picture or file text the app read now start the turn tainted, so write tools ask for a confirm as they do for a clipped web page.
 - Browser Stop now stops the model (audit 1028 E3): a closed tab or an aborted fetch sets the turn's stop flag, which cuts the stream to the model between chunks and while it waits for the first token, so the next question no longer queues behind a turn nobody is waiting for.
 - Regenerate from an earlier answer cuts the saved chat the way the screen is cut (audit 1028 E1): turn 3 of 3 is no longer overwritten by a copy of turn 1. An answer that made a change (a note to self, a reminder, an agent write) asks "Run again" before Regenerate or Edit asks the question a second time (E2).
 - API answers carry `Cache-Control: no-store` (audit 1028 K12): note JSON no longer outlives a lock in a shared phone's back/forward cache or a proxy.
