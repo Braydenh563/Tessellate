@@ -7350,3 +7350,92 @@ input[type="color"].wb-mixed {
 .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-pressed="true"] {
   background: color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque));
 }
+
+/* Find and replace, restyled onto the app's own field recipe rather than
+   left with the library's defaults (DOCUMENTS_PLAN Phase 2 decision 7; lazy since audit 1028, fields on the md radius like every other input). The
+   panel is CodeMirror's own DOM, so this is layout and chrome only: the input
+   and button *shapes* come from the app's existing rules by reusing their
+   selectors here rather than by re-describing them. */
+.doc-editor .cm-panels {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.doc-editor .cm-panels.cm-panels-top {
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-editor .cm-panels.cm-panels-bottom {
+  border-top: 1px solid var(--border);
+}
+
+.doc-editor .cm-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.doc-editor .cm-search .cm-textfield {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  min-width: 12ch;
+}
+
+.doc-editor .cm-search .cm-textfield:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.doc-editor .cm-search .cm-button {
+  background: var(--ghost-btn-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  cursor: pointer;
+}
+
+.doc-editor .cm-search .cm-button:hover,
+.doc-editor .cm-search .cm-button:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.doc-editor .cm-search label {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.doc-editor .cm-search button[name="close"] {
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--space-1);
+  min-width: 24px;
+  min-block-size: 24px;
+}
+
+@media (pointer: coarse) {
+  .doc-editor .cm-search button[name="close"] {
+    min-width: 44px;
+    min-block-size: 44px;
+  }
+}
+
+/* A code file is monospace (audit 1028 U7: the editor drew 14.72px system-ui
+   in .cm-content and the gutter). `--mono` is not a defined token, every other
+   use of it carries the stack as its fallback, so this does too. Outranks the
+   theme's adopted `.cm-scroller` face by specificity. */
+.doc-editor .cm-editor.doc-content-code :is(.cm-content, .cm-gutters) {
+  font-family: var(--mono, ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace);
+}
