@@ -173,7 +173,7 @@ def _existing_attachment(session: Session, attachment_id: int) -> Attachment:
 @media_router.get("/files/{attachment_id}")
 def download_file(attachment_id: int, session: Session = Depends(get_session)) -> FileResponse:
     attachment = _existing_attachment(session, attachment_id)
-    path = deps.get_config().uploads_dir / attachment.stored_name
+    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     #: **Never the type the uploader declared, unless it is a picture or a
@@ -416,8 +416,8 @@ def _attachment_size(session: Session, attachment: Attachment) -> int:
     if attachment.size:
         return attachment.size
     try:
-        size = (deps.get_config().uploads_dir / attachment.stored_name).stat().st_size
-    except OSError:
+        size = _within_dir(deps.get_config().uploads_dir, attachment.stored_name).stat().st_size
+    except (OSError, HTTPException):
         return 0
     if size:
         attachment.size = size
@@ -682,7 +682,7 @@ def attached_file_text(
     file's text would mean writing text back into a format it was never in.
     """
     attachment = _existing_attachment(session, attachment_id)
-    path = deps.get_config().uploads_dir / attachment.stored_name
+    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
     # The scanned-PDF fallback, passed rather than omitted. `docview` has
     # always taken a `vision_reader` and this, its only caller, passed
     # nothing, so the whole path was wired and never once ran: exactly the
@@ -930,7 +930,7 @@ def delete_file(
         config.data_dir,
         "attachment",
         {"row": undo_bin.row_dict(attachment), "notes": changed},
-        {"bytes": config.uploads_dir / attachment.stored_name},
+        {"bytes": _within_dir(config.uploads_dir, attachment.stored_name)},
     )
     manager.delete_attachment(session, attachment, config.uploads_dir)
     out = _to_out(session, entry)
@@ -952,7 +952,7 @@ def restore_file(body: RestoreBody, session: Session = Depends(get_session)) -> 
         raise HTTPException(status_code=409, detail="That file is already back.")
     config.uploads_dir.mkdir(parents=True, exist_ok=True)
     if "bytes" in kept and kept["bytes"].is_file():
-        shutil.move(str(kept["bytes"]), str(config.uploads_dir / row["stored_name"]))
+        shutil.move(str(kept["bytes"]), str(_within_dir(config.uploads_dir, row["stored_name"])))
     session.add(undo_bin.row_from(Attachment, row))
     _put_notes_back(session, payload.get("notes") or {})
     session.commit()
@@ -1122,7 +1122,11 @@ def _within_dir(base_dir: Path, name: str) -> Path:
     lines here is safer than risking that tuning by generalising its name
     or signature for a second, differently-named caller.
     """
-    base = os.path.realpath(str(base_dir))
+    #: The separator is part of `base` (a plain variable, the guard shape
+    #: CodeQL recognises), so a sibling such as `uploads2` does not pass for
+    #: `uploads`, and a stored name from a restored database (audit 1028 K7,
+    #: K8) cannot reach outside the folder.
+    base = os.path.join(os.path.realpath(str(base_dir)), "")
     candidate = os.path.realpath(os.path.join(base, name))
     if not candidate.startswith(base):
         raise HTTPException(status_code=422, detail="That file can't be used.") from None

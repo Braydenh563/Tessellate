@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import logging
 import re
 import threading
@@ -1121,7 +1122,7 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     for attachment in attachments:
         if uploads_dir is not None:
             try:
-                (uploads_dir / attachment.stored_name).unlink(missing_ok=True)
+                _upload_path(uploads_dir, attachment.stored_name).unlink(missing_ok=True)
             except OSError as exc:
                 # The row goes either way, a file that won't delete must not
                 # block the purge: but a folder that has stopped accepting
@@ -1430,11 +1431,23 @@ def attachments_for_entries_bulk(
     return out
 
 
+def _upload_path(uploads_dir: Path, stored_name: str) -> Path:
+    """`uploads_dir / stored_name`, refused (OSError, which every caller
+    already treats as "leave the file") when the name reaches outside the
+    folder: a stored name comes from the database, and a restored database
+    is not trusted (audit 1028 K7)."""
+    base = os.path.join(os.path.realpath(str(uploads_dir)), "")
+    candidate = os.path.realpath(os.path.join(base, stored_name))
+    if not candidate.startswith(base):
+        raise OSError("attachment path outside the uploads folder")
+    return Path(candidate)
+
+
 def delete_attachment(
     session: Session, attachment: Attachment, uploads_dir: Path
 ) -> None:
     try:
-        (uploads_dir / attachment.stored_name).unlink(missing_ok=True)
+        _upload_path(uploads_dir, attachment.stored_name).unlink(missing_ok=True)
     except OSError:
         pass  # a stuck file shouldn't block removing the record
     log_action(session, "detached", "entry", attachment.entry_id, attachment.filename)

@@ -164,11 +164,14 @@ def _sweep_expired(idle_ttl: int) -> None:
     now = time.time()
     dead = [
         token
-        for token, (issued, seen) in _active_tokens.items()
+        # A snapshot, and pop: requests run in the threadpool, and an unlock
+        # on one device mid-sweep on another raised "dictionary changed size
+        # during iteration" or a KeyError (audit 1028 K2).
+        for token, (issued, seen) in list(_active_tokens.items())
         if now - seen > idle_ttl or now - issued > _SESSION_MAX_AGE
     ]
     for token in dead:
-        del _active_tokens[token]
+        _active_tokens.pop(token, None)
     if dead:
         _forget_dead_tickets()
         # The key goes with the last session that gave the password, even
@@ -309,9 +312,10 @@ def _revoke_media(request: Request, response: Response) -> None:
 def _token_valid(token: str | None, idle_ttl: int) -> bool:
     """Is this token live? Using it also keeps it alive."""
     _sweep_expired(idle_ttl)
-    if not token or token not in _active_tokens:
+    entry = _active_tokens.get(token) if token else None
+    if entry is None:
         return False
-    _active_tokens[token][1] = time.time()
+    entry[1] = time.time()
     return True
 
 # Brute-force throttle for unlock attempts. The app binds 127.0.0.1, but a
@@ -345,9 +349,29 @@ _failed_unlocks: list[float] = []  # every failure, from anyone: the backstop
 _failed_by_client: dict[str, list[float]] = {}
 
 
+#: Guesses let through and not yet answered, per client (audit 1028 K3).
+#: The throttle checked before bcrypt and counted after, so forty guesses
+#: sent at once all passed a check that allows five. An attempt in flight
+#: counts as a failure until it is answered; one never answered (a route
+#: that raised for another reason) is dropped after a minute.
+_pending_unlocks: dict[str, list[float]] = {}
+_PENDING_TTL = 60.0
+_throttle_lock = threading.RLock()
+
+
 def _clear_unlock_failures() -> None:
     _failed_unlocks.clear()
     _failed_by_client.clear()
+    _pending_unlocks.clear()
+
+
+def _answered(client: str) -> None:
+    """One in-flight attempt from `client` (already bucketed) has an answer."""
+    pending = _pending_unlocks.get(client)
+    if pending:
+        pending.pop(0)
+        if not pending:
+            _pending_unlocks.pop(client, None)
 
 
 register_cache_reset(_clear_unlock_failures)
@@ -398,14 +422,28 @@ def _wait_left(failures: list[float], allowance: int, now: float) -> float:
 def _refuse_if_throttled(client: str = "unknown") -> None:
     """429 while inside the wait a run of wrong passwords has earned."""
     client = _bucket(client)
-    now = time.time()
-    own = _failed_by_client.get(client)
-    remaining = max(
-        _wait_left(own, _FAILURE_ALLOWANCE, now) if own is not None else 0.0,
-        _wait_left(_failed_unlocks, _GLOBAL_FAILURE_ALLOWANCE, now),
-    )
-    if own is not None and not own:
-        _failed_by_client.pop(client, None)
+    with _throttle_lock:
+        now = time.time()
+        for key in list(_pending_unlocks):
+            kept = [t for t in _pending_unlocks[key] if now - t < _PENDING_TTL]
+            if kept:
+                _pending_unlocks[key] = kept
+            else:
+                del _pending_unlocks[key]
+        own = _failed_by_client.get(client)
+        if own is not None:
+            _wait_left(own, _FAILURE_ALLOWANCE, now)  # forgets a long-quiet run
+        _wait_left(_failed_unlocks, _GLOBAL_FAILURE_ALLOWANCE, now)
+        mine = sorted((own or []) + _pending_unlocks.get(client, []))
+        everyone = sorted(_failed_unlocks + [t for ts in _pending_unlocks.values() for t in ts])
+        remaining = max(
+            _wait_left(mine, _FAILURE_ALLOWANCE, now) if mine else 0.0,
+            _wait_left(everyone, _GLOBAL_FAILURE_ALLOWANCE, now) if everyone else 0.0,
+        )
+        if own is not None and not own:
+            _failed_by_client.pop(client, None)
+        if remaining <= 0:
+            _pending_unlocks.setdefault(client, []).append(now)
     if remaining > 0:
         raise HTTPException(
             status_code=429,
@@ -418,6 +456,12 @@ def _refuse_if_throttled(client: str = "unknown") -> None:
 
 def _unlock_failed(client: str = "unknown") -> None:
     client = _bucket(client)
+    with _throttle_lock:
+        _answered(client)
+        _record_failure(client)
+
+
+def _record_failure(client: str) -> None:
     now = time.time()
     _failed_unlocks.append(now)
     _failed_by_client.setdefault(client, []).append(now)
@@ -428,6 +472,8 @@ def _unlock_failed(client: str = "unknown") -> None:
 
 def _unlock_succeeded(client: str = "unknown") -> None:
     client = _bucket(client)
+    with _throttle_lock:
+        _answered(client)
     # The global list too: whoever got the password right is the owner, and
     # a backstop that outlived the owner's own unlock would be the lockout
     # this change exists to remove. Other clients' own buckets are kept.
