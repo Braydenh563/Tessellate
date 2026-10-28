@@ -49,6 +49,7 @@ OPEN = {
     # tests/test_forgot_password.py holds all three.
     "/auth/recover",
     "/auth/reset",
+    "/auth/reset-code",
     # The LAN authority's public certificate (INBOX 866): iOS installs a
     # profile only from a plain navigation, which carries no token, and every
     # TLS handshake on the LAN port already sends it. Never a key.

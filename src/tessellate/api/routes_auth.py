@@ -41,6 +41,7 @@ from tessellate.core import (
     lantrust,
     netbind,
     password_reset,
+    reset_code,
     pinstore,
     reminder_token,
     security,
@@ -1939,6 +1940,8 @@ class RecoverBody(BaseModel):
 
 class ResetBody(BaseModel):
     confirm: str = Field(default="", max_length=32)
+    #: The six digits the server printed to its terminal (INBOX 1424).
+    code: str = Field(default="", max_length=16)
 
 
 def _refuse_unless_this_computer(request: Request) -> None:
@@ -2091,6 +2094,21 @@ def recover(
     }
 
 
+@router.post("/reset-code")
+def request_reset_code(request: Request, session: Session = Depends(get_session)) -> dict:
+    """Print a six-digit reset code on the server's terminal (INBOX 1424).
+
+    This computer only, like the reset itself. The answer says how long the
+    code lasts and nothing else: the code is never in a response or the log
+    buffer. Asking again replaces the live code, and wrong tries are counted
+    by the login throttle, so asking again does not buy more guesses.
+    """
+    _refuse_unless_this_computer(request)
+    if _get_user(session) is None:
+        raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
+    return {"expires_in": reset_code.issue()}
+
+
 @router.post("/reset")
 def reset(
     body: ResetBody,
@@ -2110,6 +2128,18 @@ def reset(
         raise HTTPException(status_code=400, detail="Type RESET to confirm.")
     if _get_user(session) is None:
         raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
+    # The code is the credential (INBOX 1424): read from the server's own
+    # terminal, so a local program that can only send requests cannot reset.
+    # A wrong one earns the same waits as a wrong password.
+    client = _client_key(request)
+    _refuse_if_throttled(client)
+    if not reset_code.check(body.code):
+        _unlock_failed(client)
+        raise HTTPException(
+            status_code=401,
+            detail="That code is wrong or has run out. Ask for a new one.",
+        )
+    _unlock_succeeded(client)
     password_reset.reset_password(session, config)
     end_every_session()
     _revoke_media(request, response)

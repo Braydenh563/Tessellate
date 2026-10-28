@@ -63,10 +63,9 @@ function wireForgotCard() {
   $("lock-reset-copy").addEventListener("click", (event) =>
     copyToClipboard($("lock-reset-command").textContent, event.currentTarget)
   );
-  //: The button wakes only for the word itself, so a stray Enter cannot reset.
-  $("lock-reset-confirm").addEventListener("input", (event) => {
-    $("lock-reset-submit").disabled = event.target.value.trim() !== "RESET";
-  });
+  $("lock-reset-send").addEventListener("click", requestResetCode);
+  //: The button wakes only for the word and a full code, so a stray Enter cannot reset.
+  for (const id of ["lock-reset-confirm", "lock-reset-code"]) $(id).addEventListener("input", syncResetSubmit);
   $("lock-forgot-card").addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -97,6 +96,7 @@ async function openForgotPassword() {
   $("lock-forgot-remote").classList.toggle("hidden", here);
   $("lock-forgot-paths").classList.toggle("hidden", !here);
   $("lock-reset-submit").disabled = true;
+  $("lock-reset-code").value = "";
   if (here) forgotChoose("key");
   else $("lock-forgot-close").focus();
 }
@@ -158,16 +158,43 @@ async function submitRecovery() {
   });
 }
 
-//: "I don't have it": the terminal command's reset, after the typed word.
+function syncResetSubmit() {
+  const word = $("lock-reset-confirm").value.trim() === "RESET";
+  const code = /^\d{6}$/.test($("lock-reset-code").value.trim());
+  $("lock-reset-submit").disabled = !(word && code);
+}
+
+//: Asks the server to print a code in its own terminal (INBOX 1424). The
+//: answer never carries the code: only someone who can see that terminal can.
+async function requestResetCode() {
+  forgotError("");
+  const button = $("lock-reset-send");
+  setBusy(button, true, "Printing…");
+  try {
+    await apiJson("/auth/reset-code", { method: "POST", ownsAuthErrors: true, silent: true });
+  } catch (error) {
+    forgotError(error.message);
+    return;
+  } finally {
+    setBusy(button, false);
+  }
+  $("lock-reset-code").value = "";
+  $("lock-reset-code").focus();
+  toast("A code is printed in the terminal. It works for 10 minutes.", "info");
+}
+
+//: "I don't have it": the terminal command's reset, after the typed word and the printed code.
 async function submitPasswordReset() {
   forgotError("");
   if ($("lock-reset-confirm").value.trim() !== "RESET") return forgotError("Type RESET to confirm.");
+  const code = $("lock-reset-code").value.trim();
+  if (!/^\d{6}$/.test(code)) return forgotError("Enter the six-digit code from the terminal.");
   const button = $("lock-reset-submit");
   setBusy(button, true, "Resetting…");
   try {
     await apiJson("/auth/reset", {
       method: "POST",
-      body: JSON.stringify({ confirm: "RESET" }),
+      body: JSON.stringify({ confirm: "RESET", code }),
       ownsAuthErrors: true,
       silent: true,
     });

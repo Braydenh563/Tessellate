@@ -252,7 +252,7 @@ terminal:
 python -m tessellate --reset-password
 ```
 
-Both ask you to confirm (type RESET), then clear the password so you can set a
+The terminal command asks you to confirm (type RESET). The lock screen asks for RESET and a six-digit code Tessellate prints in its own terminal. Either way it clears the password so you can set a
 new one. What happens to your notes:
 
 - **Ordinary notes are not encrypted** by your password. Notes, documents,
