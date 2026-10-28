@@ -41,15 +41,15 @@ from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
-VERBS = ("remind", "complete", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
+VERBS = ("remind", "complete", "cancel", "snooze", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "complete": "complete", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "cancel": "cancel", "snooze": "snooze", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete", "cancel", "snooze"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -71,7 +71,7 @@ def __getattr__(name: str) -> str:
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder"}
+     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder", "restore_reminder", "snooze_reminder"}
 )
 
 _MAX_TEXT = 300
@@ -676,6 +676,12 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
 act_registry.typed_reader = read_typed
 
 
+def _time_of(words: str, now: datetime, locale: str | None) -> datetime | None:
+    """A time said after "until" or "to" ("friday", "tomorrow 5pm", "2 hours"),
+    read by the recogniser; a bare length counts from now."""
+    return when.resolve(words, now, locale=locale) or when.resolve("in " + words, now, locale=locale)
+
+
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
@@ -686,7 +692,7 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
     for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
-                   task_acts.read_complete, _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
+                   task_acts.read_complete, task_acts.read_cancel, lambda t: task_acts.read_snooze(t, lambda w: _time_of(w, now, locale)), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -923,6 +929,20 @@ def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) 
     return None
 
 
+def _plan_task(session: Session, parsed: dict) -> dict:
+    """Complete, cancel or snooze the task a sentence names (`task_acts`)."""
+    intent = parsed["intent"]
+    if intent == "cancel":
+        return task_acts.plan_cancel(session, parsed, _card, _title)
+    if intent == "snooze":
+        from tessellate.core import deps
+        from tessellate.core.config import user_now
+
+        now = user_now(deps.get_config()).replace(tzinfo=None)
+        return task_acts.plan_snooze(session, parsed, _card, _title, lambda due: reminder_when(due, now))
+    return task_acts.plan_complete(session, parsed, _card, _title)
+
+
 def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """The card for a reminder, or a task with a day."""
     #: "Remind you on Friday at 9: call the dentist" (INBOX 734): the
@@ -993,8 +1013,8 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
             return into_note
     if intent == "reminder":
         return _plan_reminder(session, parsed, note_ids)
-    if intent == "complete":
-        return task_acts.plan_complete(session, parsed, _card, _title)
+    if intent in ("complete", "cancel", "snooze"):
+        return _plan_task(session, parsed)
     if intent == "new_note":
         steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
         return {
@@ -1220,7 +1240,11 @@ def _bin_reminder(session: Session, args: dict) -> dict:
     from tessellate.api.routes_reminders import delete_reminder
 
     delete_reminder(int(args["reminder_id"]), session)
-    return {"binned": int(args["reminder_id"])}
+    return {
+        "binned": int(args["reminder_id"]),
+        "label": f"Cancelled reminder #{int(args['reminder_id'])}",
+        "undo": {"tool": "restore_reminder", "arguments": {"reminder_id": int(args["reminder_id"])}},
+    }
 
 
 def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
@@ -1257,8 +1281,8 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
             continue
         if name == "start_meeting":
             result = _start_meeting(session, args)
-        elif name == "bin_reminder":
-            result = _bin_reminder(session, args)
+        elif name == "bin_reminder" or name in task_acts.OWN_STEPS:
+            result = _bin_reminder(session, args) if name == "bin_reminder" else task_acts.run_step(session, name, args)
         else:
             result = tools.execute_tool(session, name, args)
         if "error" in result:

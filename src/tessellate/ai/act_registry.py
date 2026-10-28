@@ -96,6 +96,10 @@ _ACTS = (
         "remind me to call mum on Friday at 9", ("text", "due_at"), "bin_reminder"),
     Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits.",
         "tick off buy milk", (), "complete_reminder", stem="Tick off "),
+    Act("cancel", "cancel", "cancel a task", "Names a reminder or a checklist line; a reminder goes to the bin and a checklist line is taken out of its note, at once with Undo.",
+        "cancel the dentist task", (), "restore_reminder", stem="Cancel the task "),
+    Act("snooze", "snooze", "snooze a reminder", "Names a reminder and a new time; it moves at once with Undo. Only reminders have a time, so a checklist line cannot be snoozed.",
+        "snooze the dentist task until Friday", ("due_at",), "snooze_reminder", stem="Snooze the task "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
     Act("untag", "untag", "take a tag off", "Name the tag and the notes; waits for Confirm.",
@@ -182,7 +186,7 @@ def guide_topic() -> dict:
 #: its tool as well as its intent. "navigate" opens a part of the app and
 #: runs no tool.
 ACT_TOOLS: dict[str, str] = {
-    "reminder": "set_reminder", "complete": "complete_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
+    "reminder": "set_reminder", "complete": "complete_reminder", "cancel": "bin_reminder", "snooze": "snooze_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "append": "edit_note",
     "delete": "delete_note", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",
@@ -298,7 +302,7 @@ NO_MODEL_READS = frozenset({
 #: how-to that reads as one of these acts keeps its topic first, the act's
 #: own line next; one whose words reached another topic gets the act first.
 ACT_HELP_TOPICS: dict[str, tuple[str, ...]] = {
-    "reminder": ("reminders", "reminders-controls"), "meeting": ("meetings", "voice"), "link": ("links",),
+    "reminder": ("reminders", "reminders-controls"), "complete": ("tasks",), "cancel": ("tasks",), "snooze": ("tasks",), "meeting": ("meetings", "voice"), "link": ("links",),
     "unlink": ("links",), "tag": ("tags-categories", "tag-manager", "suggested-tags"),
     "untag": ("tags-categories", "tag-manager"), "move": ("tags-categories",), "delete": ("undo-bin",),
     #: Not pin: Favourites says what a pinned note is, not how to pin one, so
