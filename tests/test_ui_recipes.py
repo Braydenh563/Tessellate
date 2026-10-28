@@ -4237,7 +4237,8 @@ def test_presenting_is_one_mode_with_one_bar() -> None:
     assert "return wbStudy.on ? wbMapStudySteps() : wbMapPresentSteps();" in wb
     assert 'id="wb-study-show"' in index and "wbMapEndStudy();" in wb
     assert 'if (item.dataset.wbFn === "present") { wbStartPresenting(); return; }' in wb
-    assert 'id="wb-present-count" class="wb-present-count" aria-live="polite"' in index
+    #: INBOX 1425: the caption cell holds the page picker (a kebabMenu), no longer bare text.
+    assert 'id="wb-present-count" class="wb-present-count wb-present-pick-slot" aria-live="polite"' in index
     assert "#library-view-whiteboard.wb-presenting .wb-topbar," in css
     assert "#library-view-whiteboard.wb-presenting #wb-html-layer," in css
     keys = wb[wb.index("let wbPresent = null;") :]
@@ -6190,3 +6191,20 @@ def test_a_text_run_is_the_documented_recipe_and_never_a_style_attribute() -> No
     menu = board[board.index("async function wbOpenRunMenu(") : board.index("function wbBulletTextLines(")]
     assert "wbColourMenu()" in menu and "swatchPicker(" in menu, "a run's menu is the colour popover, not a hand-built one"
     assert "createElement(\"div\")" not in menu.replace("const box = document.createElement(\"div\");", ""), "a hand-built menu shell"
+
+
+def test_the_present_bar_caption_is_a_page_picker():
+    """INBOX 1425: the caption is a kebabMenu opener (centred, ellipsised, caret) whose
+    rows are every step, the current one aria-current; the presentation's keys wait while
+    it is open and Esc closes it first. The history bar keeps its plain text cell."""
+    wb = (ROOT / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    index = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    body = wb[wb.index("function wbPresentCaption(") : wb.index("//: **A laser pointer while presenting**")]
+    assert 'kebabMenu(items, "Go to a page")' in body and "run: () => wbPresentShow(i)" in body
+    assert 'setAttribute("aria-current", "step")' in body and '"wb-present-pick"' in body
+    keys = wb[wb.index("let wbPresent = null;") :]
+    assert '.action-menu:not(.hidden)' in keys and "closeActionMenus();" in keys
+    assert "text-align: center" in css and "text-overflow: ellipsis" in css
+    assert ".wb-present-pick-caret" in css and "wb-present-pick-slot" in css
+    assert 'id="wb-history-when" class="wb-present-count"' in index

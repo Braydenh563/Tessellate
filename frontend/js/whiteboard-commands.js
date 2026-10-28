@@ -674,7 +674,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:text-aa", label: "Label a line", keys: ["select it, Enter"] },
   ] },
   { title: "View", surface: "both", rows: [
-    { icon: "ph:presentation", label: "Present frames (View menu): next, end", keys: ["arrows", "Esc"] },
+    { icon: "ph:presentation", label: "Present frames (View menu): next, end, page list in the bar", keys: ["arrows", "Esc"] },
     { icon: "ph:keyboard", label: "This sheet", keys: ["?"] },
     { icon: "ph:command", label: "Find any action by name", keys: ["Ctrl+K"] },
   ] },

@@ -111,6 +111,56 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+/* The page picker (INBOX 1425): the count cell holds a kebabMenu whose opener
+   fills it, text centred between the arrows, the caret pinned right so it
+   does not pull the words off centre. The cell keeps its fixed width, so the
+   arrows keep their x; the menu escapes to the body and opens upward. */
+.wb-present-count.wb-present-pick-slot {
+  overflow: visible;
+}
+.wb-present-pick-slot > .menu-wrap {
+  display: block;
+  width: 100%;
+}
+.wb-present-pick {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding-inline: var(--space-7);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.wb-present-pick-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wb-present-pick-caret {
+  position: absolute;
+  inset-inline-end: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.wb-present-pick-check {
+  margin-inline-start: auto;
+}
+.action-menu .menu-item.wb-present-pick-row {
+  font-weight: 600;
+}
+/* A study question the cell would cut takes a line above the buttons. */
+.wb-present-count.wb-present-pick-slot.is-wide {
+  flex: 1 0 100%;
+  order: -1;
+  width: auto;
+}
+.wb-present-pick-slot.is-wide .wb-present-pick-title {
+  white-space: normal;
+  max-height: 9em;
+  overflow-y: auto;
+}
 /* A locked item (WHITEBOARD_PLAN decision 15) lets the pointer through, all
    of it: a sketch's hit path and a frame's title set their own
    `pointer-events`, so the children are named too, and the id keeps this
