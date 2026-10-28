@@ -187,13 +187,20 @@ _APP_NOUNS = frozenset(
 _CLAUSE_WORDS = frozenset("is are was were be been do does did has have had will would should can could that which who what when where why how if whether because".split())
 
 
+#: Words that point at no note in particular ("the old stuff", "everything
+#: from last year"): a title never reads as one, so it is not an act.
+_VAGUE = frozenset({"stuff", "things", "thing", "junk", "bits", "everything", "anything", "something", "rubbish", "clutter", "others", "rest", "ones", "whatever"})
+
+
 def _bare_target(text: str) -> dict | None:
     """A note named by its title alone ("the gym log", "my history essay"),
     for the verbs only a note can take: tag, rename, pin, delete (audit 1028
     E7: every one of them needed the literal word "note"). The notes are
     found later by the words, and no match or several is asked, never run."""
-    phrase = _drop_article(text.strip(" .,'\"“”"))
+    phrase = _drop_article(re.sub(r"\s+(?:please|pls|thanks|thank you|now|for me)\W*$", "", text.strip(), flags=re.I).strip(" .,'\"“”"))
     words = re.findall(r"[\w'’-]+", phrase.lower())
+    if _VAGUE & set(words):
+        return None
     if not 1 <= len(words) <= 6 or words[0].isdigit() or words[-1] in _APP_NOUNS or all(w in _APP_NOUNS for w in words):
         return None
     if _OTHER_KINDS & set(words) or _CLAUSE_WORDS & set(words):

@@ -152,6 +152,9 @@ _DUE_FILLER = frozenset(
 )
 
 
+_DUE_WORD = re.compile(r"\b(?:due|deadlines?|coming up|upcoming)\b", re.I)
+
+
 def due_ask(question: str) -> tuple[list[str], list[str], tuple[str, int] | None] | None:
     """`(subject words, kind-of-date words, time window)` of a "what is due"
     question, or None when it is not one (E11). "what is due for uni" has the
@@ -183,16 +186,28 @@ def kind(question: str) -> str | None:
     if _MENTION.match(q):
         return "mentions"
     due = due_ask(q)
-    if due is not None and (due[0] or due[1]):
-        return "due_for"
     found = _DATES.search(q)
     if found and _only_a_window(found.group("rest")):
         return "dates"
-    if due is not None:
+    #: A due question that names a subject or a kind is not the list of every
+    #: date: `computed_kind` offers it as "due_for", which only answers when
+    #: the notes are filed under that name.
+    if due is not None and not (due[0] or due[1]):
         return "dates"
     if list_target(q):
         return "listed"
     return None
+
+
+def computed_kind(question: str) -> str | None:
+    """`kind`, or "due_for" for a "what is due for uni" question: a shape that
+    is tried on the notes and falls back to the ordinary answer when none is
+    filed under the subject (`_due_for` returns False)."""
+    which = kind(question)
+    if which not in (None, "dates", "listed"):
+        return which
+    due = due_ask(_q(question))
+    return "due_for" if due is not None and (due[0] or due[1]) else which
 
 
 def _day(d: date, today: date) -> str:
@@ -471,7 +486,7 @@ def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     inside = [i for i in items if start <= i[0] <= end]
     label = " ".join([*(w for w in asked.lower().split() if composer._stem(w) in wanted)]) or " ".join(kinds)
     if not inside:
-        if not named or not (subject or kinds):
+        if not named or not (subject or kinds) or not _DUE_WORD.search(asked):
             return False
         out.lines.append(f"Nothing in your {label or 'notes'} notes has a day {said}.")
         return True

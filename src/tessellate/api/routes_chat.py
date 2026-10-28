@@ -2648,7 +2648,7 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
     """A "what is due" question with nothing waiting in Reminders and a day
     ahead in the notes: the notes' computed answer wins over "You have no
     reminders waiting" (CHAT_PLAN Phase 6 P13; measured 2026-10-18)."""
-    if tool != "list_reminders" or composer_lists.kind(req.question or "") not in ("dates", "due_for") or not isinstance(result, dict):
+    if tool != "list_reminders" or composer_lists.computed_kind(req.question or "") not in ("dates", "due_for") or not isinstance(result, dict):
         return False
     if any(not r.get("done") for r in result.get("reminders") or []):
         return False
@@ -3868,7 +3868,7 @@ def _may_digest(prepared: dict, question: str) -> bool:
     """The digest answers unless this is a "newest notes" turn, which keeps
     the composer's: but "all the dates in my notes" reads as newest-first
     and is a computed answer (`ai/composer_lists.py`)."""
-    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.kind(question) is not None
+    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None
 
 
 def _forced_notes(req: _StreamRequest, follow: object) -> bool:
@@ -3880,7 +3880,7 @@ def _forced_notes(req: _StreamRequest, follow: object) -> bool:
         return True
     if not req.body.notes_only:
         return False
-    if composer_lists.kind(req.question) is not None:
+    if composer_lists.computed_kind(req.question) is not None:
         return True
     #: "summarise my gym notes": a look-up, and Ask is where look-ups are
     #: answered, so it is read as the question it is (1324). A find is

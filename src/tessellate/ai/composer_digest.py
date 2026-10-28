@@ -2636,7 +2636,7 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     abbr = glossary.asked(question)
     if abbr and _stands_for(out, abbr, views, today):
         return _result(out, "fact", asked)
-    computed = composer_lists.kind(asked)
+    computed = composer_lists.computed_kind(asked)
     if computed and composer_lists.answer(out, computed, asked, views, today):
         #: A day, a count or a filing worked out from the notes (probes P10
         #: to P13); when the notes do not hold what it needs the ordinary

@@ -379,3 +379,15 @@ def test_dump(ask):
 
 
 DUMP_QS = ["quiz me on my biology notes", "summarise my biology notes", "summarize my biology notes", "flashcards from my biology notes"]
+
+
+@pytest.mark.parametrize("instruction", ["get rid of the old stuff please", "delete all the junk", "bin whatever is left", "remove everything from last year", "trash the rest"])
+def test_a_vague_object_is_not_a_note_title(instruction):
+    from tessellate.ai import acts
+
+    assert acts.parse(instruction, _NOW) is None or "bare" not in str(acts.parse(instruction, _NOW))
+
+
+@pytest.mark.parametrize("question", ["what are the deadlines for the tax return", "what is due for the boiler", "what is the upcoming iPhone release"])
+def test_a_due_question_about_a_name_no_note_is_filed_under_is_answered_as_before(ask, question):
+    assert "Nothing in your" not in ask(question) or "has a day" not in ask(question)
