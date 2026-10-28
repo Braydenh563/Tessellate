@@ -2766,7 +2766,7 @@ MORE_TOPICS.append({
     "title": "Tasks in Chat",
     "keywords": (
         "add a task", "tick off", "complete a task", "cancel a task", "delete a task", "remove a task",
-        "snooze a task", "snooze a reminder", "push back a task", "postpone a task", "undo a task", "tasks in chat",
+        "snooze a task", "push back a task", "postpone a task", "undo a task", "tasks in chat",
     ),
     "badge": {"label": "Chat", "tab": "chat"},
     "body": (

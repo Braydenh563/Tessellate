@@ -93,6 +93,8 @@
     "find": "find my note about the passport",
     "open": "open the note about the boiler",
     "navigate": "open settings",
-    "summarise": "summarise my gym notes"
+    "summarise": "summarise my gym notes",
+    "cancel": "cancel the dentist task",
+    "snooze": "snooze the dentist task until Friday"
   }
 }
