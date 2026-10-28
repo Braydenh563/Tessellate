@@ -27,7 +27,7 @@ from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
 )
-from tessellate.core.database import EmbeddingRecord, Entry, EntryDate, link_strength
+from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import query as query_understanding
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
@@ -926,8 +926,8 @@ def day_mentions(session: Session, since, until, phrase: str = "") -> set[int]: 
     }
     named = _WEEKDAY.search(phrase or "")
     if named:
-        like = f"%{named.group(1).lower()}%"
-        found |= set(session.scalars(select(Entry.id).where(Entry.content.ilike(like))))
+        like = f"%{like_escape(named.group(1).lower())}%"
+        found |= set(session.scalars(select(Entry.id).where(Entry.content.ilike(like, escape=LIKE_ESCAPE))))
     if not found:
         return found
     visible = select(Entry.id).where(
