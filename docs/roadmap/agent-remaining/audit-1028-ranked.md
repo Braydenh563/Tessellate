@@ -8,7 +8,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 2 | D5 | high | single draft slot overwrites a failed save of another document | new | M |
 | 3 | E6 | high | what-is-on-date questions use creation day, not mentioned date | in progress | M |
 | 4 | E7 | high | act grammar needs the literal word note | in progress | M |
-| 5 | E10 | high | no task intents: add to checklist, tick item, complete reminder | new | M |
+| 5 | E10 | high | no task intents: add to checklist, tick item, complete reminder | built (add, complete, cancel, snooze, Undo, Guide topic) | M |
 | 6 | E11 | high | wrong or partial answers on due and reading asks | in progress | M |
 | 7 | E12 | high | no-match fallback quotes newest notes as relevant | in progress | M |
 | 8 | E30 | high | search-by-meaning loading message shown indefinitely | in progress | S |

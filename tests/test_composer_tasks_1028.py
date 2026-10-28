@@ -300,3 +300,204 @@ def test_through_the_route_a_task_is_completed_and_an_ambiguous_one_asks(client,
     _reminder(session, "Dentist check-up")
     asked = _stream(client, "complete the dentist reminder")
     assert not any(e["type"] == "act" for e in asked) and "Which" in _said(asked)
+
+
+# --- cancel, snooze (E10, second half) ---------------------------------------------------------
+
+CANCEL = [
+    ("cancel the dentist task", "dentist", None),
+    ("delete the task buy milk", "buy milk", None),
+    ("remove buy milk from my tasks", "buy milk", None),
+    ("remove buy milk from my to-do list", "buy milk", None),
+    ("delete the buy milk reminder", "buy milk", "reminder"),
+    ("cancel the dentist reminder", "dentist", "reminder"),
+    ("cancel task buy milk", "buy milk", None),
+    ("scrap the buy milk task", "buy milk", None),
+    ("take buy milk off my task list", "buy milk", None),
+    ("please delete the hobsbawm checklist item", "hobsbawm", "checklist"),
+    ("can you remove the dentist to-do", "dentist", None),
+    # the owner's typos
+    ("cancle the dentist task", "dentist", None),
+    ("delte the task buy milk", "buy milk", None),
+    ("remvoe buy milk from my tasks", "buy milk", None),
+]
+
+
+@pytest.mark.parametrize(("sentence", "about", "kind"), CANCEL)
+def test_cancelling_a_task_names_it_in_the_persons_words(sentence, about, kind):
+    got = commands.read_typed(sentence, NOW)
+    assert got and got["intent"] == "cancel", got
+    assert got["about"] == about and got.get("kind") == kind, got
+
+
+NOT_CANCELLING = [
+    ("delete the dentist note", "delete"),
+    ("delete the boiler note", "delete"),
+    ("cancel my subscription", None),
+    ("remove the tag urgent from the boiler note", "untag"),
+    ("delete all my tasks", None),
+    ("what does cancel do", None),
+    ("how do I delete a task?", None),
+]
+
+
+@pytest.mark.parametrize(("sentence", "intent"), NOT_CANCELLING)
+def test_sentences_that_are_not_a_task_cancel_keep_their_reading(sentence, intent):
+    got = commands.read_typed(sentence, NOW)
+    assert (got or {}).get("intent") == intent, got
+
+
+SNOOZE = [
+    ("snooze the dentist task until friday", "dentist", None, FRIDAY_9),
+    ("snooze the dentist reminder until friday", "dentist", "reminder", FRIDAY_9),
+    ("push buy milk to tomorrow 5pm", "buy milk", None, dt.datetime(2026, 10, 29, 17, 0)),
+    ("push back the dentist task to friday", "dentist", None, FRIDAY_9),
+    ("postpone the dentist task to tomorrow", "dentist", None, TOMORROW_9),
+    ("delay buy milk until friday", "buy milk", None, FRIDAY_9),
+    ("move the dentist reminder to friday", "dentist", "reminder", FRIDAY_9),
+    ("reschedule the buy milk task for tomorrow", "buy milk", None, TOMORROW_9),
+    ("can you snooze buy milk till friday", "buy milk", None, FRIDAY_9),
+    ("snoze the dentist task until friday", "dentist", None, FRIDAY_9),
+    ("snooze buy milk until tomorow", "buy milk", None, TOMORROW_9),
+    ("push buy milk to tomorow 5pm", "buy milk", None, dt.datetime(2026, 10, 29, 17, 0)),
+]
+
+
+@pytest.mark.parametrize(("sentence", "about", "kind", "due"), SNOOZE)
+def test_snoozing_a_task_reads_the_name_and_the_time(sentence, about, kind, due):
+    got = commands.read_typed(sentence, NOW)
+    assert got and got["intent"] == "snooze", got
+    assert got["about"] == about and got.get("kind") == kind and got["due_at"] == due, got
+
+
+def test_snoozing_for_a_length_of_time_counts_from_now():
+    got = commands.read_typed("snooze the dentist task for 2 hours", NOW)
+    assert got and got["intent"] == "snooze" and got["due_at"] == NOW + dt.timedelta(hours=2), got
+
+
+NOT_SNOOZING = [
+    ("move the sourdough note to Cooking", "move"),
+    ("move the dentist note to friday", "move"),
+    ("push the code to main", None),
+    ("what does snooze do", None),
+    ("how do I snooze a reminder?", None),
+]
+
+
+@pytest.mark.parametrize(("sentence", "intent"), NOT_SNOOZING)
+def test_sentences_that_are_not_a_snooze_keep_their_reading(sentence, intent):
+    got = commands.read_typed(sentence, NOW)
+    assert (got or {}).get("intent") == intent, got
+
+
+def test_cancelling_a_reminder_bins_it_and_undo_restores_it(session):
+    target = _reminder(session, "Call the dentist")
+    other = _reminder(session, "Buy milk")
+    planned = _go(session, "cancel the dentist task")
+    assert planned["run"] and planned["card"]["steps"][0]["name"] == "bin_reminder"
+    done = acts.run(session, planned["card"]["steps"])
+    session.expire_all()
+    assert done["ok"] and session.get(Reminder, target.id).deleted_at is not None
+    assert session.get(Reminder, other.id).deleted_at is None
+    assert done["undo"][0]["name"] == "restore_reminder"
+    assert acts.run(session, done["undo"])["ok"]
+    session.expire_all()
+    assert session.get(Reminder, target.id).deleted_at is None
+
+
+def test_cancelling_a_checklist_line_removes_it_and_undo_puts_it_back(session):
+    note = manager.create_entry(session, "# History essay\n\nSources:\n- [ ] Hobsbawm chapter 2\n- [ ] Evans chapter 4\n- [x] Marx")
+    session.commit()
+    before = note.content
+    planned = _go(session, "delete the hobsbawm checklist item")
+    step = planned["card"]["steps"][0]
+    assert planned["run"] and step["name"] == "edit_note"
+    done = acts.run(session, planned["card"]["steps"])
+    session.expire_all()
+    after = manager.get_entry(session, note.id).content
+    assert done["ok"] and "Hobsbawm" not in after and "- [ ] Evans chapter 4" in after and "- [x] Marx" in after
+    acts.run(session, done["undo"])
+    session.expire_all()
+    assert manager.get_entry(session, note.id).content == before
+
+
+def test_an_ambiguous_cancel_asks_and_binds_nothing(session):
+    a = _reminder(session, "Call the dentist")
+    b = _reminder(session, "Dentist check-up")
+    planned = _go(session, "cancel the dentist task")
+    assert "card" not in planned and "Which" in planned["line"], planned
+    assert "Call the dentist" in planned["line"] and "Dentist check-up" in planned["line"]
+    session.expire_all()
+    assert session.get(Reminder, a.id).deleted_at is None and session.get(Reminder, b.id).deleted_at is None
+
+
+def test_cancelling_what_is_not_there_says_so(session):
+    _reminder(session, "Buy milk")
+    planned = _go(session, "cancel the dentist task")
+    assert "card" not in planned and "found no" in planned["line"].lower(), planned
+
+
+def test_a_private_checklist_line_is_never_cancelled(session):
+    note = manager.create_entry(session, "# Secret\n\n- [ ] Buy a surprise gift")
+    note.is_private = True
+    session.commit()
+    assert "card" not in _go(session, "remove buy a surprise gift from my tasks")
+
+
+def test_snoozing_a_reminder_moves_its_time_and_undo_puts_it_back(session):
+    target = _reminder(session, "Call the dentist")
+    was = target.due_at
+    planned = _go(session, "snooze the dentist task until friday")
+    assert planned["run"] and planned["card"]["steps"][0]["name"] == "snooze_reminder"
+    done = acts.run(session, planned["card"]["steps"])
+    session.expire_all()
+    assert done["ok"] and session.get(Reminder, target.id).due_at.replace(tzinfo=None) == FRIDAY_9
+    assert done["undo"][0]["name"] == "snooze_reminder"
+    assert acts.run(session, done["undo"])["ok"]
+    session.expire_all()
+    assert session.get(Reminder, target.id).due_at.replace(tzinfo=None) == was
+
+
+def test_snoozing_asks_which_when_two_fit(session):
+    _reminder(session, "Call the dentist")
+    _reminder(session, "Dentist check-up")
+    planned = _go(session, "snooze the dentist task until friday")
+    assert "card" not in planned and "Which" in planned["line"], planned
+
+
+def test_a_checklist_line_cannot_be_snoozed_and_the_answer_says_so(session):
+    manager.create_entry(session, "# History\n\n- [ ] Hobsbawm chapter 2")
+    session.commit()
+    planned = _go(session, "snooze the hobsbawm task until friday")
+    assert "card" not in planned and "only reminders can be snoozed" in planned["line"].lower(), planned
+
+
+def test_snoozing_with_no_readable_time_asks_until_when(session):
+    target = _reminder(session, "Call the dentist")
+    planned = _go(session, "snooze the dentist reminder")
+    assert "card" not in planned and "until when" in planned["line"].lower(), planned
+    session.expire_all()
+    assert session.get(Reminder, target.id).due_at.replace(tzinfo=None) == dt.datetime(2026, 11, 2, 9)
+
+
+def test_snoozing_to_a_time_that_has_passed_is_refused(session):
+    # The run stores with restore=True, past the route's own check, so the plan refuses.
+    target = _reminder(session, "Call the dentist")
+    planned = _go(session, "snooze the dentist task until yesterday")
+    assert "card" not in planned and "passed" in planned["line"], planned
+    session.expire_all()
+    assert session.get(Reminder, target.id).due_at.replace(tzinfo=None) == dt.datetime(2026, 11, 2, 9)
+
+
+def test_through_the_route_a_task_is_cancelled_and_snoozed(client, session, clock):
+    milk = _reminder(session, "Buy milk")
+    dentist = _reminder(session, "Call the dentist")
+    snoozed = _stream(client, "push call the dentist to tomorrow 5pm")
+    assert next(e for e in snoozed if e["type"] == "act")["done"]
+    session.expire_all()
+    assert session.get(Reminder, dentist.id).due_at.replace(tzinfo=None) == dt.datetime(2026, 10, 29, 17, 0)
+    cancelled = _stream(client, "cancel the buy milk task")
+    card = next(e for e in cancelled if e["type"] == "act")
+    assert card["done"] and card["undo"]
+    session.expire_all()
+    assert session.get(Reminder, milk.id).deleted_at is not None

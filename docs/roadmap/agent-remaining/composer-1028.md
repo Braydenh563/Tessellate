@@ -8,6 +8,6 @@ Done (commits on agent/composer-1028, tests in `tests/test_composer_1028.py`, `t
 
 Remaining:
 
-- E10 (tasks as acts): not started. It needs an act in `act_registry.ACTS` over the reminders machinery; one brief row, not built here.
+- E10 (tasks as acts): built. Add, complete, cancel (bin or remove the checklist line) and snooze by name, with the same name matching, ambiguity question and Undo (`ai/task_acts.py`, `tests/test_composer_tasks_1028.py`); Guide topic `tasks`.
 - E31: the alias table has about 50 rows against the brief's 60; the soft rows add phrasings, the hard rows (18) fix measured misses. "Did you mean" fires only when nothing matched, not on a weak keyword match.
 - E32 and E33 (ChatGPT synonyms, lead with the path) are untouched.

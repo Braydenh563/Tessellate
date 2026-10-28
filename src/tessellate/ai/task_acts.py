@@ -126,26 +126,106 @@ def read_complete(text: str) -> dict | None:
     rest = _complete_rest(text)
     if rest is None:
         return None
-    rest = _ON_LIST_TAIL.sub("", _OFF_TAIL.sub("", rest.strip()), count=1).strip()
-    kind = None
-    lead = _LEAD_KIND.match(_ARTICLE.sub("", rest))
-    rest = _ARTICLE.sub("", rest)
+    about, said = _split_kind(_ON_LIST_TAIL.sub("", _OFF_TAIL.sub("", rest.strip()), count=1))
+    return _task_found("complete", about, said)
+
+
+def _split_kind(rest: str) -> tuple[str, str | None]:
+    """(the task's own words, the kind word said with them) for what follows a
+    verb: "the buy milk task" is ("buy milk", "task"), "reminder dentist" is
+    ("dentist", "reminder")."""
+    rest = _ARTICLE.sub("", rest.strip())
+    said = None
+    lead = _LEAD_KIND.match(rest)
     if lead:
-        kind = lead.group("kind").lower()
+        said = lead.group("kind").lower()
         rest = rest[lead.end() :]
     tail = _TAIL_KIND.search(rest)
     if tail:
-        kind = tail.group("kind").lower()
+        said = tail.group("kind").lower()
         rest = rest[: tail.start()]
-    about = _unquote(_ARTICLE.sub("", rest.strip()))
-    if not about or not meaning.words_of(about):
+    return _unquote(_ARTICLE.sub("", rest.strip())), said
+
+
+def _kind_of(said: str | None) -> str | None:
+    """"reminder" or "checklist" when the kind word says which, else None."""
+    if said == "reminder":
+        return "reminder"
+    return "checklist" if said and said.startswith(("check", "list")) else None
+
+
+def _task_found(intent: str, about: str, said: str | None) -> dict | None:
+    if not about or not meaning.words_of(about) or about.lower().startswith(("all ", "every ")):
         return None
-    found: dict = {"intent": "complete", "about": about}
-    if kind == "reminder":
-        found["kind"] = "reminder"
-    elif kind and kind.startswith(("check", "list")):
-        found["kind"] = "checklist"
+    found: dict = {"intent": intent, "about": about}
+    if _kind_of(said):
+        found["kind"] = _kind_of(said)
     return found
+
+
+_CANCEL = re.compile(r"^(?:cancel|delete|remove|scrap|bin|trash|drop|take)\s+(?P<rest>.+)$", re.IGNORECASE)
+#: "buy milk from my tasks", "buy milk off the to-do list"
+_OFF_LIST = re.compile(
+    r"\s+(?:off|from|out of|on)\s+(?:of\s+)?(?:my |the |our )?(?:task list|to-?do list|todo list|tasks|to-?dos|list|checklist)$", re.IGNORECASE
+)
+#: Words after the name that make it a note or something else, not a task.
+_NOT_TASK_TAIL = re.compile(r"\s(?:notes?|tags?|categor(?:y|ies)|documents?|boards?|maps?|meetings?)$", re.IGNORECASE)
+
+
+def read_cancel(text: str) -> dict | None:
+    """The task a sentence cancels ("cancel the dentist task", "remove buy
+    milk from my tasks"), as {"intent": "cancel", "about", "kind"?}. A task
+    must be said as one (a kind word or the list), or "delete the dentist
+    note" and "cancel my subscription" would be read as tasks."""
+    found = _CANCEL.match(text)
+    if not found:
+        return None
+    rest, listed = _OFF_LIST.subn("", found.group("rest").strip(), count=1)
+    if _NOT_TASK_TAIL.search(rest):
+        return None
+    about, said = _split_kind(rest)
+    if not (said or listed) or (text.lower().startswith("take ") and not listed):
+        return None
+    return _task_found("cancel", about, said)
+
+
+_SNOOZE = re.compile(r"^(?P<verb>snooze|postpone|delay|defer|reschedule|push(?: back)?|move)\s+(?P<rest>.+)$", re.IGNORECASE)
+_UNTIL = re.compile(r"\s(?:until|till|til|to|for|by)\s", re.IGNORECASE)
+
+
+def _snooze_split(rest: str, resolve) -> tuple[str, str, object]:  # noqa: ANN001
+    """(the task's words, the time words, the time): the time is read from
+    the last " until / to / for " that reads as one; None, with the words
+    after the last separator kept, when none does."""
+    marks = list(_UNTIL.finditer(rest))
+    for mark in reversed(marks):
+        said = rest[mark.end() :].strip(" .,")
+        due = resolve(said)
+        if due is not None:
+            return rest[: mark.start()].strip(), said, due
+    if marks:
+        return rest[: marks[-1].start()].strip(), rest[marks[-1].end() :].strip(" .,"), None
+    return rest.strip(), "", None
+
+
+def read_snooze(text: str, resolve) -> dict | None:  # noqa: ANN001
+    """The reminder a sentence snoozes, as {"intent": "snooze", "about",
+    "kind"?, "due_at", "said"}; due_at is None when no time reads (asked
+    once). `resolve` reads a time phrase through `ai/recognise.py` (this
+    module reads no dates). "move" needs a kind word, so "move the sourdough
+    note to Cooking" stays a filing; the others need a kind word or a time."""
+    found = _SNOOZE.match(text)
+    if not found:
+        return None
+    words, said_when, due = _snooze_split(found.group("rest"), resolve)
+    if _NOT_TASK_TAIL.search(words):
+        return None
+    about, said = _split_kind(words)
+    verb = found.group("verb").lower()
+    if (verb == "move" and not said) or not (verb == "snooze" or said or due is not None):
+        return None
+    read = _task_found("snooze", about, said)
+    return {**read, "due_at": due, "said": said_when} if read else None
 
 
 # --- matching ---------------------------------------------------------------------------------
@@ -167,7 +247,7 @@ def _candidates(session: Session, kind: str | None, title) -> list[dict]:  # noq
             if row.entry_id in private:
                 continue
             out.append({
-                "kind": "reminder", "id": row.id, "text": row.text,
+                "kind": "reminder", "id": row.id, "text": row.text, "due": row.due_at,
                 "where": f"reminder due {row.due_at.strftime('%a')} {row.due_at.day} {row.due_at.strftime('%b')}",
             })
     if kind in (None, "checklist"):
@@ -239,6 +319,80 @@ def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa:
         ticked = item["content"].replace(item["line"], item["line"].replace("[ ]", "[x]", 1), 1)
         steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": ticked}}]
     return {"line": f"{label}.", "card": card(label, steps), "run": True}
+
+
+def _label(verb: str, item: dict) -> str:
+    return f"{verb} “{item['text']}”" + ("" if item["kind"] == "reminder" else f" ({item['where']})")
+
+
+def _without_line(content: str, line: str) -> str:
+    """`content` with the checklist `line` and its line break taken out."""
+    if line + "\n" in content:
+        return content.replace(line + "\n", "", 1)
+    return content.replace("\n" + line, "", 1) if "\n" + line in content else content.replace(line, "", 1)
+
+
+def plan_cancel(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
+    """The card that bins the reminder named or removes the checklist line
+    named, run at once with Undo (a binned reminder is restored, an edited
+    note put back), or the question that asks which."""
+    item, say = pick(session, parsed, title)
+    if item is None:
+        return {"line": say}
+    label = _label("Cancel", item)
+    if item["kind"] == "reminder":
+        steps = [{"name": "bin_reminder", "arguments": {"reminder_id": item["id"]}}]
+    else:
+        steps = [{"name": "edit_note", "arguments": {"note_id": item["id"], "content": _without_line(item["content"], item["line"])}}]
+    return {"line": f"{label}.", "card": card(label, steps), "run": True}
+
+
+def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None) -> dict:  # noqa: ANN001
+    """The card that moves a reminder's time, run at once with Undo. Only a
+    reminder has a time, so a checklist line is told so; `said_when` says a
+    time against today (`commands.reminder_when`)."""
+    item, say = pick(session, parsed, title)
+    if item is None:
+        return {"line": say}
+    if item["kind"] != "reminder":
+        return {"line": f"Only reminders can be snoozed, and “{item['text']}” is a checklist line ({item['where']}). Set a reminder for it to give it a time."}
+    due = parsed.get("due_at")
+    if due is None:
+        return {"line": f"Until when? Say it like: snooze {parsed['about']} until Friday."}
+    #: The run stores with `restore=True`, which skips the route's past check.
+    if now is not None and due <= now:
+        return {"line": f"That time has passed. Say a later one, like: snooze {parsed['about']} until tomorrow."}
+    label = f"Snooze “{item['text']}” to {said_when(due)}"
+    arguments = {"reminder_id": item["id"], "due_at": due.isoformat(), "was": item["due"].isoformat()}
+    return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}]), "run": True}
+
+
+#: The steps this module runs itself (`commands.run` hands them over).
+OWN_STEPS = frozenset({"restore_reminder", "snooze_reminder"})
+
+
+def run_step(session: Session, name: str, args: dict) -> dict:
+    """Run `restore_reminder` (Undo of a cancel) or `snooze_reminder` through
+    the reminders' own routes: {"label", "undo"}, or {"error"}."""
+    from datetime import datetime
+
+    from fastapi import HTTPException
+
+    from tessellate.api import routes_reminders as rr
+
+    reminder_id = int(args["reminder_id"])
+    try:
+        if name == "restore_reminder":
+            rr.restore_reminder(reminder_id, session)
+            return {"label": f"Restored reminder #{reminder_id}", "undo": {"tool": "bin_reminder", "arguments": {"reminder_id": reminder_id}}}
+        #: restore=True: the time was checked against the person's clock when
+        #: planned, and Undo's old time is usually past (see ReminderUpdate).
+        due = datetime.fromisoformat(str(args["due_at"]))
+        rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=due, restore=True), session)
+    except HTTPException as exc:
+        return {"error": str(exc.detail)}
+    back = {"reminder_id": reminder_id, "due_at": args["was"], "was": args["due_at"]} if args.get("was") else None
+    return {"label": f"Snoozed reminder #{reminder_id}", "undo": {"tool": "snooze_reminder", "arguments": back} if back else None}
 
 
 def undo_step(name: str, args: dict) -> dict | None:

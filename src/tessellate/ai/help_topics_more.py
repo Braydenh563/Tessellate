@@ -2341,7 +2341,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "wrap-lines", "slash-commands", "chat-acts", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -2738,6 +2738,28 @@ MORE_TOPICS.append({
 TOPIC_META["nicknames"] = {"title": "Calling Atlas by any name", "path": "Chat tab"}
 MORE_TOPICS.append(_act_topic())
 TOPIC_META["chat-acts"] = {"title": "Things Chat does for you", "path": "Chat tab"}
+MORE_TOPICS.append({
+    "id": "tasks",
+    "title": "Tasks in Chat",
+    "keywords": (
+        "add a task", "tick off", "complete a task", "cancel a task", "delete a task", "remove a task",
+        "snooze a task", "snooze a reminder", "push back a task", "postpone a task", "undo a task", "tasks in chat",
+    ),
+    "badge": {"label": "Chat", "tab": "chat"},
+    "body": (
+        "A task is a reminder or an open checklist line (- [ ]) in a note, and Chat handles both from one sentence, with no model. "
+        "Add: \"add a task to read chapter 5 tomorrow\" sets a reminder, and asks once for the time if you leave it out. "
+        "Complete: \"tick off buy milk\" or \"mark the dentist task as done\" ticks the reminder or the checklist line. "
+        "Cancel: \"cancel the dentist task\" or \"remove buy milk from my tasks\" puts a reminder in the bin and takes a "
+        "checklist line out of its note. "
+        "Snooze: \"snooze the dentist task until Friday\" or \"push buy milk to tomorrow 5pm\" moves a reminder to the new time; "
+        "a checklist line has no time, so only reminders can be snoozed. "
+        "If more than one task fits the words, Chat asks which one before it changes anything, and a name that fits only in part "
+        "is asked about too. Each of these runs at once with Undo on the card, or Ctrl+Z: a ticked task is reopened, a cancelled "
+        "one comes back from the bin, a snoozed reminder returns to its old time. Small typos in the sentence are read through."
+    ),
+})
+TOPIC_META["tasks"] = {"title": "Tasks in Chat", "path": "Chat tab"}
 
 
 #: Autocorrect outside the editor (Brief 94, INBOX 850): autocorrect.js.
