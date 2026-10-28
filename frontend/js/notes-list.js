@@ -840,8 +840,11 @@ function unlatex(text) {
 // than a live one. Kept beside the renderer that needs it.
 function safeHref(url) {
   const value = String(url || "").trim();
-  if (/^(https?:|mailto:|tel:)/i.test(value)) return value;
-  if (/^[/#?.]/.test(value) || !/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+  //: Read the scheme as a browser does: it drops tabs, newlines and other
+  //: control characters, so "java\tscript:" is "javascript:" (audit 1028 D14).
+  const probe = value.replace(/[\u0000-\u0020\u007f]/g, "");
+  if (/^(https?:|mailto:|tel:)/i.test(probe)) return value;
+  if (/^[/#?.]/.test(probe) || !/^[a-z][a-z0-9+.-]*:/i.test(probe)) return value;
   return "#";
 }
 

@@ -5803,7 +5803,11 @@ function docHtmlToMarkdown(html) {
   const doc = new DOMParser().parseFromString(source, "text/html");
   const safeUrl = (url) => {
     const value = String(url || "").trim();
-    return /^(https?:|mailto:)/i.test(value) || (value.startsWith("/") && !value.startsWith("//")) ? value : "";
+    const ok = /^(https?:|mailto:)/i.test(value) || (value.startsWith("/") && !value.startsWith("//"));
+    //: Spaces, brackets and angle marks percent-encoded: a clipboard address
+    //: with ")" otherwise closed the Markdown link early and the rest ran on
+    //: as text or image options (audit 1028 D16).
+    return ok ? value.replace(/[\s()<>]/g, (c) => encodeURIComponent(c)) : "";
   };
   //: Google Docs wraps a whole copy in `<b style="font-weight:normal">`, and
   //: marks real bold and italic on spans by style rather than by tag.
@@ -5826,7 +5830,7 @@ function docHtmlToMarkdown(html) {
     if (tag === "BR") return "\n";
     if (tag === "IMG") {
       const src = safeUrl(node.getAttribute("src"));
-      return src ? `![${(node.getAttribute("alt") || "").replace(/[[\]]/g, "")}](${src})` : "";
+      return src ? `![${(node.getAttribute("alt") || "").replace(/[[\]|]/g, "")}](${src})` : "";
     }
     let text = [...node.childNodes].map(inline).join("");
     if (tag === "CODE") return text.trim() ? `\`${text.replace(/`/g, "")}\`` : "";
@@ -11050,7 +11054,8 @@ function docOpenWikiTarget(name) {
 //: than handed to the browser.
 function docOpenLink(href) {
   const clean = String(href || "").trim();
-  if (!clean || /^(javascript|data|vbscript):/i.test(clean)) return;
+  //: The same allowlist every rendered link goes through (audit 1028 D15).
+  if (!clean || safeHref(clean) === "#") return;
   //: This app's own address (INBOX 483) opens its view in this window.
   const hash = appAddressHash(clean);
   if (hash) location.hash = hash;
