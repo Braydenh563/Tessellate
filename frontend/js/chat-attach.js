@@ -1657,6 +1657,8 @@ async function chatSendTurn(preset, opts = {}) {
       question = `${question}\n\n${webPageContextBlock(page)}`;
     }
   }
+  //: Over the server's limit: say so, keep the draft (audit 1028 E8).
+  if (question.length > 2e4) return lazyScript("/js/chat-edit.js").then(() => chatTooLong(typed, !preset));
   lastChatQuestion = question;
   if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask
 
@@ -2215,7 +2217,7 @@ async function chatSendTurn(preset, opts = {}) {
           timeline.tool(card.firstElementChild || card);
         }
         if (event.ok) toolsActed = true;
-        if (event.wrote) bubble.dataset.ranWrite = "1";
+        if (event.wrote) bubble.dataset.wrote = "1";
         //: A page the model read opens in place under its step (INBOX 1300
         //: C06): the web fold's reader, the same one a composed answer's
         //: results use. Its search results are the Sources panel's cards.
@@ -2243,11 +2245,9 @@ async function chatSendTurn(preset, opts = {}) {
         renderToolConfirm(card, event);
         //: An act's card is the answer's own (CHAT_PLAN decision 38), under
         //: its line, never folded away in a step group with its Confirm.
-        if (event.type === "act") {
-          timeline.holder.appendChild(card);
-          if (event.done) bubble.dataset.ranWrite = "1"; // a run act wrote at once
-        }
+        if (event.type === "act") timeline.holder.appendChild(card);
         else timeline.tool(card.firstElementChild || card);
+        if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
         status.textContent = "Waiting for your confirmation…";
       },
       onAsk: (event) => {

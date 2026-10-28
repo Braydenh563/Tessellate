@@ -55,7 +55,7 @@ const confirmDialog = async () => {{ confirms++; return {str(confirm).lower()}; 
 const sendChatMessage = (q, o) => {{ sent = [q, o]; }};
 {code}
 const target = host.children.filter((n) => n.role === "assistant")[{regen_index}];
-if ({str(ran_write).lower()}) target.dataset.ranWrite = "1";
+if ({str(ran_write).lower()}) target.dataset.wrote = "1";
 regenerateFrom(target).then(() => process.stdout.write(JSON.stringify({{
   calls, sent, confirms, turns: chatConv.turns.map((t) => t.question), dom: host.children.map((n) => n.text) }})));
 """

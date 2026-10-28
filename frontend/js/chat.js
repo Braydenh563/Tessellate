@@ -606,10 +606,7 @@ function questionForBubble(bubble) {
 //: newest. Everything after the question is removed first, an answer
 //: regenerated in the middle of a thread that keeps the turns built on the old
 //: one is a transcript that contradicts itself.
-function regenerateFromBubble(bubble) {
-  if (chatController) return toast("Wait for the current answer to finish.");
-  return lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
-}
+const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
 
 //: **Rewrite the last answer under a standing instruction**, Odysseus's
 //: "shorter" and "simpler" footer actions.
@@ -658,10 +655,7 @@ async function regenerateLastAnswer() {
   if (!lastChatQuestion || chatController) return;
   const assistantBubbles = $("chat-messages").querySelectorAll(".msg.assistant");
   const lastAssistant = assistantBubbles[assistantBubbles.length - 1];
-  if (lastAssistant?.dataset.ranWrite) {
-    await lazyScript("/js/chat-edit.js");
-    if (!(await confirmRerun(lastAssistant))) return;
-  }
+  if (lastAssistant?.dataset.wrote && !(await lazyScript("/js/chat-edit.js").then(() => confirmRerun(lastAssistant)))) return;
   regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   if (lastAssistant) lastAssistant.remove(); // clear the old answer first
   sendChatMessage(lastChatQuestion, {

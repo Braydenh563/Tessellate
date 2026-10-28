@@ -156,6 +156,7 @@ function showCopyFallback(text) {
 
 //: Regenerate from a given answer (chat.js `regenerateFromBubble` loads this file).
 async function regenerateFrom(bubble) {
+  if (chatController) return toast("Wait for the current answer to finish.");
   const asked = questionForBubble(bubble);
   if (!asked) return toast("There is no question above this answer to re-ask.");
   if (!(await confirmRerun(bubble))) return;
@@ -187,13 +188,37 @@ async function regenerateFrom(bubble) {
 //: **An answer that changed the notebook is not re-run silently.** A composer
 //: act ("note to self buy stamps") or an agent write ran when the answer was
 //: made, and Regenerate or Edit asks the whole question again, so the same
-//: note or reminder would be made twice. `dataset.ranWrite` is set on the
+//: note or reminder would be made twice. `dataset.wrote` is set on the
 //: bubble by the stream (chat-attach.js); the person decides.
 async function confirmRerun(answerBubble) {
-  if (!answerBubble || !answerBubble.dataset || !answerBubble.dataset.ranWrite) return true;
+  if (!answerBubble || !answerBubble.dataset || !answerBubble.dataset.wrote) return true;
   return confirmDialog("This answer changed your notes. Running it again may make the same change twice.", {
     confirmLabel: "Run again",
     danger: false,
   });
 }
 
+//: **A message over the 20,000 character limit** (`ChatRequest.question`). It
+//: used to go out, come back as a 422 the screen blamed on the model, and clear
+//: the box. Now it stays in the box, the sentence names the limit, and the
+//: one way forward that needs no cutting is offered: the text saved as a note
+//: and the note asked about.
+function chatTooLong(text, fromBox) {
+  const box = $("chat-input");
+  toastAction(
+    `That message is ${text.length.toLocaleString()} characters and the limit is 20,000.`,
+    "Save as a note and ask about it",
+    async () => {
+      try {
+        const note = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: text, tags: [] }) });
+        if (fromBox && box.value.trim() === text) {
+          box.value = "";
+          box.dispatchEvent(new Event("input"));
+        }
+        sendChatMessage("Summarise this note.", { noteIds: [note.id] });
+      } catch (error) {
+        toast(error.message || "Couldn't save that as a note.", true);
+      }
+    },
+  );
+}
