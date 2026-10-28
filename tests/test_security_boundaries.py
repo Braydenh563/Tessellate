@@ -953,3 +953,9 @@ def test_origin_null_is_cross_site_for_the_auth_routes(client):
     refused = local.post("/auth/setup", json={"password": PASSWORD}, headers={"Origin": "null"})
     assert refused.status_code == 403
     assert local.get("/auth/status").json()["setup_required"] is True
+
+
+def test_api_json_is_never_stored_by_a_cache(client):
+    """Audit 1028 K12: note JSON must not outlive a lock in a browser or proxy cache."""
+    reply = client.get("/entries?limit=1")
+    assert reply.headers.get("cache-control") == "no-store"

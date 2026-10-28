@@ -645,6 +645,11 @@ class SecurityHeadersMiddleware:
                 if scope.get("scheme") == "https":
                     headers.setdefault("Strict-Transport-Security", "max-age=15552000")
                 headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+                # API answers hold note text: a shared phone's back/forward
+                # cache or a proxy must not keep them after lock (audit 1028
+                # K12). Assets are hash-stamped and keep their own caching.
+                if headers.get("content-type", "").startswith("application/json"):
+                    headers.setdefault("Cache-Control", "no-store")
             await send(message)
 
         await self.app(scope, receive, stamped)
