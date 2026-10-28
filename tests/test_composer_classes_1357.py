@@ -119,7 +119,8 @@ NOT_FOUND = r"could you put it another way|different word|don't mention|do not m
 
 #: Class A, the capability question in any wording (1300 "Wat cna u do??",
 #: K20 "whaty can u do??"): the capability reply, never a note search.
-CAPABILITY = r"Atlas's assistant|I answer from your notes"
+#: The capability answer opens "...works for Atlas" since e343d49; the class is unchanged.
+CAPABILITY = r"Atlas's assistant|works for Atlas|I answer from your notes"
 A_CAPABILITY = [
     "whaty can u do??",
     "wat can u do",
