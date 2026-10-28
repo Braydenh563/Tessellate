@@ -345,7 +345,7 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
   });
   //: The app's stack entry this Undo stands for: callers push it just before
   //: the toast (`pushUndo` then `toastAction`), so it is the top one, now.
-  const top = undoStack[undoStack.length - 1];
+  const top = undoStack.at(-1);
   const stacked = undo && top && Date.now() - top.at < 2000 ? top : null;
   const live = { run, once, used: false, until: undo && !stacked ? Date.now() + NOTICE_UNDO_MS : 0, stacked };
   if (id) noticeLive.set(id, live);
@@ -1008,7 +1008,7 @@ function plainHttpError(status, detail, fallback = "") {
   if (Array.isArray(detail) && detail.length) {
     const first = detail[0] || {};
     const loc = Array.isArray(first.loc) ? first.loc.filter((part) => part !== "body" && part !== "query") : [];
-    const field = loc.length ? String(loc[loc.length - 1]).replace(/_/g, " ") : "";
+    const field = loc.length ? String(loc.at(-1)).replace(/_/g, " ") : "";
     return field ? `Check the ${field} and try again.` : "That was not accepted. Check what you entered and try again.";
   }
   if (fallback) return fallback;
@@ -1562,10 +1562,10 @@ function surfaceHistory(dir = "undo") {
 //: and an act on the stack could only be undone from its toast.
 function appStackIsNewer(dir) {
   if (dir === "redo") {
-    const top = redoStack[redoStack.length - 1];
+    const top = redoStack.at(-1);
     return Boolean(top) && (top.undoneAt || 0) >= (window.docRedoAt?.() || 0);
   }
-  const top = undoStack[undoStack.length - 1];
+  const top = undoStack.at(-1);
   return Boolean(top) && top.at >= (window.docUndoAt?.() || 0);
 }
 

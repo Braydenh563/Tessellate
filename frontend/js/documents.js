@@ -2161,7 +2161,6 @@ function markDocDirty() {
   scheduleDocFacts();
   // No document yet? Typing makes one, then this save proceeds normally.
   if (!currentDoc) {
-    //: A refused create (offline, server down) still says so and keeps the words.
     ensureDocumentExists().then(() => markDocDirty(), (error) => {
       $("doc-saved").textContent = "Not saved";
       $("doc-status").classList.add("error");
@@ -2180,10 +2179,8 @@ function markDocDirty() {
 //: rather than asking again every 1.2s of typing behind it.
 let docConflictOpen = false;
 
-//: One save at a time: a second PUT sent while the first is in flight
-//: carries the old base_hash and comes back as a false edit conflict. A save
-//: asked for meanwhile runs once, after, from the new hash; callers waiting
-//: on it (close, switch) resume when that one has landed too.
+//: One save at a time: a second PUT in flight carried the old base_hash (a
+//: false 409). One asked for meanwhile runs once after (audit 1028 D1).
 let docSaveInFlight = null;
 let docSaveAgain = null;
 
@@ -2228,29 +2225,20 @@ async function docSaveOnce(silent) {
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
       body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
     });
-    //: Switched to another document meanwhile: only the list learns of it.
-    if (!currentDoc || currentDoc.id !== savingId) {
-      docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-      renderDocList();
-      return;
-    }
+    docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+    renderDocList();
+    if (currentDoc?.id !== savingId) return;
     currentDoc = saved;
-    //: Words typed during the request are not in this save: stay dirty, keep the local copy.
-    docDirty = docEditSeq !== seqAtStart;
-    if (docDirty) {
+    //: Typed during the request: still dirty (D2).
+    if ((docDirty = docEditSeq !== seqAtStart)) {
       keepDocEditLocally();
-      docSetStatusText($("doc-saved"), "Unsaved…");
-      docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-      renderDocList();
-      return;
+      return docSetStatusText($("doc-saved"), "Unsaved…");
     }
     forgetDocEditLocally(saved.id);
     $("doc-saved").textContent = "Saved";
     if (!silent) toast("Document saved.");
     //: An open preview shows what was saved (D6).
     docRunAfterSave();
-    docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-    renderDocList();
   } catch (error) {
     if (isEditConflict(error)) {
       await docResolveConflict(error.detail.current, content, silent);
@@ -5804,9 +5792,7 @@ function docHtmlToMarkdown(html) {
   const safeUrl = (url) => {
     const value = String(url || "").trim();
     const ok = /^(https?:|mailto:)/i.test(value) || (value.startsWith("/") && !value.startsWith("//"));
-    //: Spaces, brackets and angle marks percent-encoded: a clipboard address
-    //: with ")" otherwise closed the Markdown link early and the rest ran on
-    //: as text or image options (audit 1028 D16).
+    //: Encoded: a ")" ended the Markdown link early (audit 1028 D16).
     return ok ? value.replace(/[\s()<>]/g, (c) => encodeURIComponent(c)) : "";
   };
   //: Google Docs wraps a whole copy in `<b style="font-weight:normal">`, and
@@ -17339,8 +17325,7 @@ function docSpellable(text, word, start, end) {
   const before = start > 0 && !opened ? text[start - 1] : "";
   const after = end < text.length && !closed ? text[end] : "";
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
-  //: A letter the ASCII word regex stops at (é, ï, ß) means this run is a
-  //: piece of a longer word: "caf" of café, "ve" of naïve (audit 1028 D8).
+  //: Next to é, ï, ß: a piece of a longer word (audit 1028 D8).
   if (/\p{L}/u.test(before) || /\p{L}/u.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
@@ -23936,8 +23921,7 @@ function docHistoryPersist() {
   const field = CM?.commands?.historyField;
   if (typeof undoStorePut !== "function" || !field || !docCmView || docHistoryOwner == null) return;
   try {
-    //: The state is immutable, so holding it is free; serialising the
-    //: whole history waits for the store's pause (audit 1028 D6).
+    //: Serialised at the store's pause, not per keystroke (audit 1028 D6).
     const state = docCmView.state;
     undoStorePut(`doc:${docHistoryOwner}`, () => state.toJSON({ history: field }));
   } catch {

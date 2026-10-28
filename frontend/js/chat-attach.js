@@ -1657,7 +1657,7 @@ async function chatSendTurn(preset, opts = {}) {
       question = `${question}\n\n${webPageContextBlock(page)}`;
     }
   }
-  //: Over the server's limit: say so, keep the draft (audit 1028 E8).
+  // Over the server's limit: say so, keep the draft (audit 1028 E8).
   if (question.length > 2e4) return lazyScript("/js/chat-edit.js").then(() => chatTooLong(typed, !preset));
   lastChatQuestion = question;
   if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask

@@ -653,8 +653,7 @@ async function forkFromBubble(bubble) {
 //: composed from the notes is worded anew (CHAT_PLAN decision 34).
 async function regenerateLastAnswer() {
   if (!lastChatQuestion || chatController) return;
-  const assistantBubbles = $("chat-messages").querySelectorAll(".msg.assistant");
-  const lastAssistant = assistantBubbles[assistantBubbles.length - 1];
+  const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].at(-1);
   if (lastAssistant?.dataset.wrote && !(await lazyScript("/js/chat-edit.js").then(() => confirmRerun(lastAssistant)))) return;
   regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   if (lastAssistant) lastAssistant.remove(); // clear the old answer first
@@ -809,7 +808,7 @@ function renderChatEmptyState() {
     let last = { w: 0, h: 0 };
     let queued = false;
     new ResizeObserver((entries) => {
-      const rect = entries[entries.length - 1].contentRect;
+      const rect = entries.at(-1).contentRect;
       if (Math.abs(rect.width - last.w) < 2 && Math.abs(rect.height - last.h) < 2) return;
       last = { w: rect.width, h: rect.height };
       if (queued) return;

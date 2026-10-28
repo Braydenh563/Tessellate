@@ -812,10 +812,7 @@ function unlatex(text) {
 // image; everywhere smaller gets the same treatment `notePreviewText`
 // already gives one to a plain-text preview.
 //
-// `options` is where appendInline's five real behavioural differences from
-// the note-card grammar live, now that the two hand-rolled parsers (each
-// with its own separately maintained `isRenderableUrl` call, per
-// ROADMAP.md §0/§2) are one function:
+// `options`: appendInline's five differences from the note-card grammar:
 //   - `dismissible` (default true): render an image with the note-card
 //     delete/lightbox chrome. appendInline's callers (chat, documents, table
 //     cells) pass false: there is no note markdown line for a "remove this
@@ -832,17 +829,14 @@ function unlatex(text) {
 //     `.entry-content s` vs `.answer/.bubble-answer/.dash-body del`.
 //   - `applyLatex` (default true): appendInline never ran unlatex() on its
 //     text, so it stays off for that mode to keep behaviour unchanged.
-// Every default matches renderInlineMarkdown's original, options-less
-// behaviour exactly, so no existing call site needs to change.
 // The allow-list for anything a note's own text can turn into an href:
 // web links, mail, this app's own paths and in-page anchors. Everything
 // else (javascript:, data:, vbscript:, file:) becomes a dead link rather
 // than a live one. Kept beside the renderer that needs it.
 function safeHref(url) {
   const value = String(url || "").trim();
-  //: Read the scheme as a browser does: it drops tabs, newlines and other
-  //: control characters, so "java\tscript:" is "javascript:" (audit 1028 D14).
-  const probe = value.replace(/[\u0000-\u0020\u007f]/g, "");
+  // As a browser reads it: controls dropped (audit 1028 D14).
+  const probe = value.replace(/[\0- \x7f]/g, "");
   if (/^(https?:|mailto:|tel:)/i.test(probe)) return value;
   if (/^[/#?.]/.test(probe) || !/^[a-z][a-z0-9+.-]*:/i.test(probe)) return value;
   return "#";
@@ -901,7 +895,7 @@ function readableUrl(url) {
   const host = parsed.hostname.replace(/^www\./i, "");
   const segments = parsed.pathname.split("/").filter(Boolean);
   if (!segments.length) return host;
-  let last = decodeURIComponent(segments[segments.length - 1]);
+  let last = decodeURIComponent(segments.at(-1));
   if (last.length > READABLE_URL_SEGMENT) last = last.slice(0, READABLE_URL_SEGMENT - 1) + "\u2026";
   //: An ellipsis stands in for the middle of a deep path, so "site / … / page"
   //: still says there was more between them.
