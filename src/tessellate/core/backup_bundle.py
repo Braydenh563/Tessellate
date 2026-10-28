@@ -67,6 +67,22 @@ PREFERENCES_MEMBER = "preferences.json"
 #: restore must not be the thing that turns sign-in off or points the export
 #: folder at a path that exists only on the old computer.
 _NOT_BACKED_UP = frozenset({"llm_api_key", "ask_password_on_open", "export_save_dir"})
+#: Settings a restore leaves as they are on this computer (audit 1028 K9):
+#: each one decides where notes may be sent or what code may run, and a zip
+#: from someone else must not point the model at their server, turn off
+#: "keep the AI on this machine", or switch on updates and web search. They
+#: are written in the backup (so an older app still reads it) but not applied.
+KEPT_ON_RESTORE = frozenset(
+    {
+        "llm_base_url",
+        "local_only_ai",
+        "searxng_url",
+        "web_search_enabled",
+        "update_check_enabled",
+        "auto_update_enabled",
+        "autonomous_tasks_enabled",
+    }
+)
 
 
 class BundleError(ValueError):
@@ -225,7 +241,7 @@ def restore_zip(archive_path: Path, db_path: Path, data_dir: Path, keep: int) ->
                 except ValueError:
                     loaded = {}
                 if isinstance(loaded, dict):
-                    preferences = {k: v for k, v in loaded.items() if k not in _NOT_BACKED_UP}
+                    preferences = {k: v for k, v in loaded.items() if k not in _NOT_BACKED_UP | KEPT_ON_RESTORE}
         restored = skipped = 0
         for info in archive.infolist():
             if info.is_dir() or info.filename in (*DB_MEMBERS, PREFERENCES_MEMBER):

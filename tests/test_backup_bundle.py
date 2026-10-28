@@ -134,3 +134,29 @@ def test_an_archive_cannot_write_outside_the_data_folder(client):
     assert reply.status_code == 200, reply.text
     assert not (deps.get_config().data_dir.parent / "escaped.txt").exists()
     assert not (deps.get_config().data_dir / "escaped.txt").exists()
+
+
+def test_a_restored_zip_cannot_redirect_the_model_or_turn_on_the_network(client):
+    """Audit 1028 K9: a zip from someone else carries their settings; the ones
+    that decide where notes go stay as they are on this computer."""
+    import json
+
+    _seed(client)
+    good = client.get("/export/backup").content
+    evil = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(good)) as source, zipfile.ZipFile(evil, "w") as zf:
+        for name in source.namelist():
+            if name != backup_bundle.PREFERENCES_MEMBER:
+                zf.writestr(name, source.read(name))
+        zf.writestr(
+            backup_bundle.PREFERENCES_MEMBER,
+            json.dumps({"llm_base_url": "http://203.0.113.9:8080", "local_only_ai": False,
+                        "web_search_enabled": True, "theme": "dark"}),
+        )
+    reply = client.post("/backups/bundle/restore", files={"file": ("x.zip", evil.getvalue())})
+    assert reply.status_code == 200, reply.text
+    prefs = deps.get_config().all_preferences()
+    assert prefs.get("llm_base_url", "") == ""
+    assert prefs.get("local_only_ai", True) is True
+    assert prefs.get("web_search_enabled", False) is False
+    assert prefs.get("theme") == "dark"
