@@ -427,7 +427,8 @@
         <p>
           Without it, a reset clears the password so you can set a new one.
           Private notes stay sealed for good; a sealed backup still opens
-          with its own password. "Allow other devices on this network" is
+          with its own password. You need a six-digit code that Tessellate
+          prints in the terminal it runs in, valid for ten minutes, one use. "Allow other devices on this network" is
           turned off. Either way it can only be done on this computer.
         </p>
       </div>
@@ -455,8 +456,9 @@
         </div>
         <div id="lock-forgot-reset-pane" class="lock-forgot-pane hidden">
           <p class="muted">
-            A reset keeps notes, documents, boards and settings. Private notes stay
-            sealed; a sealed backup keeps its own password.
+            A reset keeps notes, documents, boards and settings. Private notes are
+            lost for good, because only your password or recovery key opens them;
+            a sealed backup keeps its own password.
           </p>
           <p class="muted">In a terminal, in the app's folder:</p>
           <div class="row lock-forgot-command">
@@ -464,7 +466,12 @@
             <button type="button" id="lock-reset-copy" class="ghost small"
               title="Copy the command" aria-label="Copy the command"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
           </div>
-          <label class="stacked-label" for="lock-reset-confirm">Or reset here: type RESET to confirm</label>
+          <p class="muted">Or reset here. A six-digit code is printed in the terminal where Tessellate is running, so only someone at this computer can reset.</p>
+          <button id="lock-reset-send" type="button" class="ghost lock-forgot-action">Print a code in the terminal</button>
+          <label class="stacked-label" for="lock-reset-code">Code from the terminal</label>
+          <input id="lock-reset-code" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+            maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+          <label class="stacked-label" for="lock-reset-confirm">Type RESET to confirm</label>
           <input id="lock-reset-confirm" type="text" autocomplete="off" spellcheck="false"
             autocapitalize="characters" maxlength="32" placeholder="RESET">
           <button id="lock-reset-submit" type="button" class="danger lock-forgot-action" disabled>Reset password</button>

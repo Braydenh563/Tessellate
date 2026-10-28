@@ -237,7 +237,27 @@ async function pass(theme, width) {
   await measure(page, `${label} card reset path`, '#lock-forgot-card', touch);
   if (!(await page.isDisabled('#lock-reset-submit'))) note(label, 'Reset armed before RESET was typed');
   await page.fill('#lock-reset-confirm', 'RESET');
-  if (await page.isDisabled('#lock-reset-submit')) note(label, 'Reset not armed after RESET');
+  if (!(await page.isDisabled('#lock-reset-submit'))) note(label, 'Reset armed without the code (INBOX 1424)');
+  // The code is read from the server's terminal output (DATA_DIR/server.log), as a person would.
+  const logPath = process.env.SERVER_LOG;
+  const before = logPath ? require('fs').readFileSync(logPath, 'utf8') : '';
+  await page.click('#lock-reset-send');
+  let code = null;
+  for (let i = 0; i < 20 && !code; i++) {
+    await page.waitForTimeout(250);
+    const text = require('fs').readFileSync(logPath, 'utf8').slice(before.length);
+    const m = text.match(/reset code: (\d{6})/);
+    if (m) code = m[1];
+  }
+  if (!code) { note(label, 'no code in the server log'); return; }
+  await page.fill('#lock-reset-code', '000000');
+  await page.click('#lock-reset-submit');
+  await page.waitForTimeout(600);
+  const wrongMsg = await page.textContent('#lock-forgot-error');
+  console.log('  wrong code message:', wrongMsg);
+  if (!/wrong|run out/i.test(wrongMsg)) note(label, 'wrong code gave no message');
+  await page.fill('#lock-reset-code', code);
+  if (await page.isDisabled('#lock-reset-submit')) note(label, 'Reset not armed after RESET and the code');
   await page.click('#lock-reset-submit');
   await page.waitForFunction(() => document.getElementById('lock-overlay').dataset.mode === 'setup', null, { timeout: 15000 });
   if (await page.isVisible('#lock-forgot-card')) note(label, 'the card stayed over setup');
