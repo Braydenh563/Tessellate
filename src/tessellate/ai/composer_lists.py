@@ -128,6 +128,49 @@ def _only_a_window(rest: str | None) -> bool:
     return not recognise.without_ahead_words(left).strip()
 
 
+#: What a "what is due" question asks for besides the time: the kind of date
+#: ("exams") narrows the sentences, the rest names whose notes they come from.
+_DUE_TRIGGER = re.compile(
+    r"\b(?:due|deadlines?|coming up|upcoming|exams?|tests?|quizzes|quiz|assignments?|assessments?|presentations?|"
+    r"hand(?:ed)?[ -]in|submit|submission|turn in|scheduled)\b",
+    re.I,
+)
+_DUE_LEAD = re.compile(
+    r"^(?:(?:please|pls|hey|ok|okay|so|and|right|can you|could you|just)[, ]+)*"
+    r"(?:what(?:'?s)?|which|any|anything|show|list|tell|give|do i have|have i got|i need to know|\w+ (?:deadlines?|exams?|tests?))\b",
+    re.I,
+)
+#: A question about the past or about what a thing is is not a list of dates.
+_DUE_NOT = re.compile(r"\b(?:did|was|were|wrote|written|had|mean|means|about|format|worth|weigh|cover|covers|covered)\b", re.I)
+_KIND_WORDS = frozenset("exam test quiz quizz assignment assessment presentation essay".split())
+_DUE_FILLER = frozenset(
+    "what what's whats which is are do does i have got any anything the my me our show list tell give need know to for of in on at by a an "
+    "this that coming up upcoming due deadline deadlines soon now left please from with and or there it still yet all every scheduled "
+    "hand handed submit submission turn out notes note things thing items item tasks task term semester before until till "
+    "next days day weeks week months month years year fortnight end rest january february march april may june july august "
+    "september october november december monday tuesday wednesday thursday friday saturday sunday".split()
+)
+
+
+def due_ask(question: str) -> tuple[list[str], list[str], tuple[str, int] | None] | None:
+    """`(subject words, kind-of-date words, time window)` of a "what is due"
+    question, or None when it is not one (E11). "what is due for uni" has the
+    subject "uni"; "what exams do I have" the kind "exam"; neither is a list
+    of every date."""
+    q = _q(question)
+    if not q or len(q.split()) > 14 or not _DUE_TRIGGER.search(q) or not _DUE_LEAD.match(q) or _DUE_NOT.search(q):
+        return None
+    window = recognise.ahead_window(q)
+    rest = recognise.without_ahead_words(q)
+    kinds, subject = [], []
+    for word in re.findall(r"[\w'&-]+", rest.lower()):
+        stem = composer._stem(word)
+        if word in _DUE_FILLER or stem in _DUE_FILLER or len(word) < 2 or re.fullmatch(r"\d+(?:st|nd|rd|th)?", word):
+            continue
+        (kinds if stem in _KIND_WORDS else subject).append(stem)
+    return subject, kinds, window
+
+
 def kind(question: str) -> str | None:
     """Which computed shape `question` is, or None."""
     q = _q(question)
@@ -139,8 +182,13 @@ def kind(question: str) -> str | None:
         return "order"
     if _MENTION.match(q):
         return "mentions"
+    due = due_ask(q)
+    if due is not None and (due[0] or due[1]):
+        return "due_for"
     found = _DATES.search(q)
     if found and _only_a_window(found.group("rest")):
+        return "dates"
+    if due is not None:
         return "dates"
     if list_target(q):
         return "listed"
@@ -372,7 +420,76 @@ def _dates(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates}
+_BEFORE = re.compile(r"\b(before|by|until|till)\s+(?:the\s+)?(?:end of\s+)?(?P<when>[a-z0-9 ]{2,24}?)\s*[?.!]*$", re.I)
+
+
+def _due_window(asked: str, window: tuple[str, int] | None, today: date) -> tuple[date, date, str]:
+    """`(first day, last day, how it is said)` of the time a due question
+    names: its own words ("this week", "soon"), a span or day the plan reads
+    ("the next 20 days", "on friday"), or "before / by / until" a day."""
+    from tessellate.ai import composer_plan
+    from tessellate.ai import when as when_words
+
+    if window:
+        said, days = window
+        start = today + timedelta(days=7) if said == "next week" else today
+        return start, _until_day(said, days, today), said
+    bound = _BEFORE.search(asked)
+    span = when_words.span(bound.group("when").strip(), today, "future") if bound else None
+    if bound and span:
+        last = span[0] - timedelta(days=1) if bound.group(1).lower() == "before" else span[1]
+        return today, last, f"{bound.group(1).lower()} {bound.group('when').strip()}"
+    planned = composer_plan.window(asked, today)
+    if planned:
+        return planned[0], planned[1], planned[2]
+    return today, today + timedelta(days=3650), "ahead in your notes"
+
+
+def _filed_words(view) -> set[str]:  # noqa: ANN001
+    """The words the person filed a note under or named it by: its category,
+    tags and heading, as stems."""
+    return {composer._stem(w) for w in (*view.title_words, *view.filed_words)}
+
+
+def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """Every dated sentence ahead in the notes a "what is due for uni" names
+    (their category, tag or heading), or of the kind it names ("exams"), in day
+    order and inside the time it names; False when it names nothing the notes
+    are filed under, so the question is answered as before."""
+    subject, kinds, window = due_ask(asked) or ([], [], None)
+    wanted = set(subject)
+    if wanted:
+        named = [v for v in views if wanted <= _filed_words(v)] or [v for v in views if wanted <= {composer._stem(w) for w in v.words}]
+        if not named:
+            return False
+    else:
+        named = list(views)
+    items = _upcoming(named, today)
+    if kinds:
+        items = [i for i in items if set(kinds) & ({composer._stem(w) for w in i[2].words} | _filed_words(i[1]))]
+    start, end, said = _due_window(asked, window, today)
+    inside = [i for i in items if start <= i[0] <= end]
+    label = " ".join([*(w for w in asked.lower().split() if composer._stem(w) in wanted)]) or " ".join(kinds)
+    if not inside:
+        if not named or not (subject or kinds):
+            return False
+        out.lines.append(f"Nothing in your {label or 'notes'} notes has a day {said}.")
+        return True
+    first, last = _day(inside[0][0], today), _day(inside[-1][0], today)
+    count = realise.count_word(len(inside)).capitalize()
+    header = f"One date is {said}: {first}." if len(inside) == 1 else f"{count} dates are {said} for {label or 'your notes'}, {first} to {last}:"
+    lines = []
+    for day, view, sentence in inside[:SHOWN]:
+        text = _trim(sentence.text)
+        titled = view.title and composer._stem(view.title.split()[0]) not in {composer._stem(w) for w in sentence.words}
+        lines.append((f"{_day(day, today)}: {text}" + (f" ({view.title})" if titled else ""), view, sentence))
+    _block(out, header, lines)
+    if len(inside) > SHOWN:
+        out.lines.append(f"{realise.count_word(len(inside) - SHOWN).capitalize()} more are on the right.")
+    return True
+
+
+_SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for}
 
 
 def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

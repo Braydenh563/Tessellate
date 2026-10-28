@@ -2648,7 +2648,7 @@ def _notes_answer_due(req: _StreamRequest, tool: str, result: object, notes: lis
     """A "what is due" question with nothing waiting in Reminders and a day
     ahead in the notes: the notes' computed answer wins over "You have no
     reminders waiting" (CHAT_PLAN Phase 6 P13; measured 2026-10-18)."""
-    if tool != "list_reminders" or composer_lists.kind(req.question or "") != "dates" or not isinstance(result, dict):
+    if tool != "list_reminders" or composer_lists.kind(req.question or "") not in ("dates", "due_for") or not isinstance(result, dict):
         return False
     if any(not r.get("done") for r in result.get("reminders") or []):
         return False

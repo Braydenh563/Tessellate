@@ -281,6 +281,8 @@ PHRASES: dict[str, str] = {
     "recall_b": ", newest first:",
     "recall_none": "Nothing I found was written ",
     "written_on": " was written on ",
+    "open_nowhere_a": "No checklist in your notes about ",
+    "open_nowhere_b": " has anything left to tick.",
     "bare_a": "Your note ",
     "bare_b": " is only a title so far, with nothing written under it yet.",
     "none_tagged": "No note found is tagged ",
@@ -2695,9 +2697,10 @@ def _body(
 #: "what do I still need to do for X" (ledger row 444).
 _STILL_OPEN = re.compile(
     r"^(?:what(?:'s|s| is| are)?|which)(?: things?| items?| tasks?)?(?: is| are)?(?: still)? "
-    r"(?:open|left(?: to do)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
-    r"(?:on|for|in|from|with) (?P<a>.+)$"
-    r"|^what (?:do|have) i (?:still |got )?(?:have |need |got )?(?:left )?to do (?:on|for|in) (?P<b>.+)$",
+    r"(?:open|left(?: to [a-z]+)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
+    r"(?:on|for|in|from|with|about) (?P<a>.+)$"
+    #: "what do I still need to read for history" (E11): any verb, not only "do".
+    r"|^what (?:else )?(?:do|have|must|should) i (?:still |also |got )?(?:have |need |got |want )?(?:left )?to (?:[a-z']+ ){1,3}?(?:on|for|in|about|from) (?P<b>.+)$",
     re.I,
 )
 
@@ -2710,14 +2713,33 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
     found = _STILL_OPEN.match(asked.rstrip("?."))
     if not found:
         return False
-    wanted = {_stem(w) for w in _words(found.group("a") or found.group("b"))} - {_stem(w) for w in _NOTE_NOUNS}
-    for view in sorted(views, key=lambda v: v.rank):
-        tasks = [s for s in view.sentences if s.kind == "task"]
-        if not tasks or not wanted or not wanted & ({_stem(w) for w in view.title_words} | {_stem(w) for w in view.words}):
-            continue
-        _say_open(out, view, tasks, wanted)
+    subject = found.group("a") or found.group("b")
+    wanted = {_stem(w) for w in _words(subject)} - {_stem(w) for w in _NOTE_NOUNS}
+    if not wanted:
+        return False
+
+    def stems(v: NoteView, wide: bool) -> set[str]:
+        held = {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
+        return held | {_stem(w) for w in v.words} if wide else held
+
+    ranked = sorted(views, key=lambda v: v.rank)
+    #: Named by its filing or heading first ("for uni", "for history"); by any
+    #: word of it only when none is (the old reading).
+    named = [v for v in ranked if wanted <= stems(v, True)] or [v for v in ranked if wanted & stems(v, True)]
+    open_in = [(v, [s for s in v.sentences if s.kind == "task"]) for v in named]
+    open_in = [(v, tasks) for v, tasks in open_in if tasks]
+    if not open_in:
+        if not named:
+            return False
+        #: Nothing to tick on what was named: said, not answered with another
+        #: note's checklist (E11: biology answered with the history sources).
+        out.t("open_nowhere_a").asked(subject.strip(" ?.")).t("open_nowhere_b")
         return True
-    return False
+    for i, (view, tasks) in enumerate(open_in[:3]):
+        if i:
+            out.t("para")
+        _say_open(out, view, tasks, wanted)
+    return True
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:
@@ -4867,7 +4889,7 @@ def _checklist_or_until(out: "_Answer", said: object, question: str, views: list
     if said:
         return None
     if _still_open(out, question, views):
-        return _result(out.parts, "list", out.rows)
+        return {**_result(out.parts, "list", out.rows), "answered": not out.rows}
     until = question_noise.repair(question_noise.tidy(" ".join((question or "").split())))
     if utilities.kind_of(until) == "until_note" and _until_note(out, until, views, today):
         return _result(out.parts, "when", out.rows)

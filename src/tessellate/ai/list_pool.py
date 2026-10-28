@@ -65,7 +65,7 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _filed(session, *composer_lists.list_target(question))
     elif which == "mentions":
         found = _mentioning(session, question)
-    elif which == "dates":
+    elif which in ("dates", "due_for"):
         found = _dated(session)
     else:
         return entries
