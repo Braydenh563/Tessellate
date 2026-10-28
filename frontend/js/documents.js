@@ -23926,7 +23926,10 @@ function docHistoryPersist() {
   const field = CM?.commands?.historyField;
   if (typeof undoStorePut !== "function" || !field || !docCmView || docHistoryOwner == null) return;
   try {
-    undoStorePut(`doc:${docHistoryOwner}`, docCmView.state.toJSON({ history: field }));
+    //: The state is immutable, so holding it is free; serialising the
+    //: whole history waits for the store's pause (audit 1028 D6).
+    const state = docCmView.state;
+    undoStorePut(`doc:${docHistoryOwner}`, () => state.toJSON({ history: field }));
   } catch {
     /* nothing to keep */
   }

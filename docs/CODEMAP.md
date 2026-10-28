@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1448, tests 12817, plan headings 984.
+Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1449, tests 12819, plan headings 984.
 
 ## Frontend functions (6658)
 
@@ -3227,7 +3227,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `archiveDocumentWithUndo` | frontend/js/documents.js:12534 |
 | `asSurface` | frontend/js/documents.js:720 |
 | `attachBookmarkToDocument` | frontend/js/documents.js:1545 |
-| `calloutMenuItems` | frontend/js/documents.js:23991 |
+| `calloutMenuItems` | frontend/js/documents.js:23994 |
 | `chooseDocTemplate` | frontend/js/documents.js:2004 |
 | `clearInlineFormatting` | frontend/js/documents.js:11642 |
 | `closeDocAiPanel` | frontend/js/documents.js:12883 |
@@ -3307,7 +3307,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docCmTheme` | frontend/js/documents.js:21631 |
 | `docCmUpdate` | frontend/js/documents.js:23067 |
 | `docCmViewLanguage` | frontend/js/documents.js:23363 |
-| `docCmViewShown` | frontend/js/documents.js:23939 |
+| `docCmViewShown` | frontend/js/documents.js:23942 |
 | `docCodeCommentAtCaret` | frontend/js/documents.js:4809 |
 | `docCodeCommentRun` | frontend/js/documents.js:4805 |
 | `docCodeCountsText` | frontend/js/documents.js:16974 |
@@ -3695,7 +3695,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `docViewMigrate` | frontend/js/documents.js:386 |
 | `docVisibleTopLine` | frontend/js/documents.js:3752 |
 | `docWatchAppearance` | frontend/js/documents.js:23286 |
-| `docWatchLock` | frontend/js/documents.js:23959 |
+| `docWatchLock` | frontend/js/documents.js:23962 |
 | `docWhereLine` | frontend/js/documents.js:3840 |
 | `docWikiTargetLabel` | frontend/js/documents.js:11006 |
 | `docWireImageEdit` | frontend/js/documents.js:10749 |
@@ -6103,11 +6103,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `undoStoreBoardValue` | frontend/js/undo-store.js:101 |
-| `undoStoreClear` | frontend/js/undo-store.js:94 |
+| `undoStoreBoardValue` | frontend/js/undo-store.js:104 |
+| `undoStoreClear` | frontend/js/undo-store.js:97 |
 | `undoStoreDb` | frontend/js/undo-store.js:32 |
 | `undoStoreGet` | frontend/js/undo-store.js:69 |
-| `undoStorePut` | frontend/js/undo-store.js:78 |
+| `undoStorePut` | frontend/js/undo-store.js:81 |
 | `undoStoreRequest` | frontend/js/undo-store.js:52 |
 
 ### frontend/js/update-dialogs.js (5)
@@ -19908,7 +19908,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12817)
+## Tests (12819)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21201,6 +21201,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_undo_contract.py | 3 |
 | tests/test_undo_coverage.py | 9 |
 | tests/test_undo_store.py | 5 |
+| tests/test_undo_store_lazy.py | 2 |
 | tests/test_uninstall_frees.py | 2 |
 | tests/test_unlock_idempotent.py | 1 |
 | tests/test_unlock_throttle_parallel.py | 3 |
