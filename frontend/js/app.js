@@ -697,7 +697,7 @@ let autoSessionOffered = false;
 let lockedByHand = false;
 let vaultOpen = null;
 let autoSessionPending = null;
-//: The open prompt: `{ submit, resolve, returnFocus }`, or null.
+//: The open prompt: `{ submit, resolve }`, or null.
 let lockPrompt = null;
 
 //: Ask the server for a session without a password. One request at a time,
@@ -720,7 +720,7 @@ function startWithoutPassword() {
 
 function enterWithoutPassword(body) {
   localStorage.setItem("token", body.token);
-  vaultOpen = Boolean(body.vault_open);
+  vaultOpen = !!body.vault_open;
   lockedByHand = false;
   const opening = startApp();
   curtainShell(opening);
@@ -751,7 +751,6 @@ function settleLockPrompt(done) {
   if (overlay.dataset.mode === "prompt") {
     overlay.classList.add("hidden");
     overlay.dataset.mode = "unlock";
-    prompt.returnFocus?.focus?.();
   }
   prompt.resolve(done);
 }
@@ -765,7 +764,7 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
   settleLockPrompt(false);
   const overlay = $("lock-overlay");
   return new Promise((resolve) => {
-    lockPrompt = { submit, resolve, returnFocus: document.activeElement };
+    lockPrompt = { submit, resolve };
     overlay.dataset.mode = "prompt";
     overlay.classList.add("lock-prompt");
     $("lock-title").textContent = title;
@@ -780,7 +779,6 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     $("lock-password").placeholder = "Password"; // a prompt never takes the PIN
     $("lock-password").autocomplete = "current-password";
     overlay.classList.remove("hidden");
-    $("lock-password").focus();
   });
 }
 
@@ -789,17 +787,22 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
 //: untypeable. They are put away while it shows and back, as they were,
 //: after it, so a half-written dialog loses nothing.
 let lockStash = [];
+let lockReturn;
 new MutationObserver(() => {
   if ($("lock-overlay").classList.contains("hidden")) {
+    lockReturn = lockReturn?.focus(); // focus() returns undefined: forgets it too
     for (const el of lockStash) {
       try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal(); } catch { /* reopened meanwhile */ }
     }
     lockStash = [];
   } else {
+    lockReturn ||= document.activeElement;
     for (const el of document.querySelectorAll("dialog:modal, :popover-open")) {
       lockStash.push(el);
       el.popover ? el.hidePopover() : el.close();
     }
+    // Focus goes to the field here, after closing a dialog hands it back to its opener.
+    $("lock-password").focus();
   }
 }).observe($("lock-overlay"), { attributes: true, attributeFilter: ["class"] });
 
@@ -817,7 +820,7 @@ function showLockScreen(setupMode) {
   //: `/auth/setup` derives an encryption key from this password on the spot.
   $("lock-message").textContent = setupMode
     ? "A notebook that runs on this machine. Your notes stay here, and nothing goes online unless you turn it on later."
-    : "Enter your password to unlock your notebook.";
+    : ""; // unlock wording is `lockFieldForPin`'s, below
   //: Four is the backend's own floor (`Field(min_length=4)`,
   //: routes_auth.py), quoted rather than restated so the two cannot drift.
   const note = $("lock-setup-note");
@@ -837,14 +840,13 @@ function showLockScreen(setupMode) {
   // saved password into a first-run "choose a new one" field.
   if (setupMode) $("lock-password").setAttribute("aria-label", "Choose a password");
   $("lock-password").autocomplete = setupMode ? "new-password" : "current-password";
-  $("lock-password").focus();
   if (!setupMode && autoSessionOffered && !lockedByHand) resumeWithoutPassword();
   //: A PIN set or forgotten since the last look (Settings, or five wrong
   //: tries) changes what the field asks for, so the lock asks again.
   if (!setupMode) {
     apiJson("/auth/status", { silent: true })
       .then((status) => {
-        pinHere = Boolean(status?.pin_here);
+        pinHere = !!status?.pin_here;
         if ($("lock-overlay").dataset.mode === "unlock") lockFieldForPin(pinHere);
       })
       .catch(() => {});
@@ -979,10 +981,10 @@ async function initAuth() {
     return;
   }
   $("lock-btn").classList.remove("hidden");
-  pinHere = Boolean(status.pin_here);
+  pinHere = !!status.pin_here;
   // Sign-in off, on this computer: straight in, no lock screen. A token
   // still live is kept by the server; a stale one is replaced.
-  autoSessionOffered = Boolean(status.auto_session);
+  autoSessionOffered = !!status.auto_session;
   if (autoSessionOffered) {
     const started = await startWithoutPassword();
     if (started) {

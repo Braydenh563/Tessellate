@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1450, tests 12820, plan headings 984.
+Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1450, tests 12821, plan headings 984.
 
 ## Frontend functions (6658)
 
@@ -17,48 +17,48 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `api` | frontend/js/app.js:404 |
 | `apiJson` | frontend/js/app.js:646 |
 | `apiPagedList` | frontend/js/app.js:581 |
-| `askPasswordPrompt` | frontend/js/app.js:764 |
+| `askPasswordPrompt` | frontend/js/app.js:763 |
 | `authToken` | frontend/js/app.js:172 |
-| `chip` | frontend/js/app.js:1353 |
-| `chipWords` | frontend/js/app.js:1348 |
+| `chip` | frontend/js/app.js:1355 |
+| `chipWords` | frontend/js/app.js:1350 |
 | `clearApiCache` | frontend/js/app.js:642 |
-| `confirmDialog` | frontend/js/app.js:1441 |
-| `confirmVerb` | frontend/js/app.js:1434 |
-| `ensureModule` | frontend/js/app.js:2006 |
+| `confirmDialog` | frontend/js/app.js:1443 |
+| `confirmVerb` | frontend/js/app.js:1436 |
+| `ensureModule` | frontend/js/app.js:2008 |
 | `enterWithoutPassword` | frontend/js/app.js:721 |
 | `hide` | frontend/js/app.js:168 |
-| `hideBootSplash` | frontend/js/app.js:952 |
-| `initAuth` | frontend/js/app.js:965 |
-| `installStandIns` | frontend/js/app.js:2214 |
+| `hideBootSplash` | frontend/js/app.js:954 |
+| `initAuth` | frontend/js/app.js:967 |
+| `installStandIns` | frontend/js/app.js:2216 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
-| `lazyAssetStamp` | frontend/js/app.js:1945 |
-| `lazyScript` | frontend/js/app.js:1986 |
-| `lockFieldForPin` | frontend/js/app.js:859 |
-| `lockNow` | frontend/js/app.js:926 |
+| `lazyAssetStamp` | frontend/js/app.js:1947 |
+| `lazyScript` | frontend/js/app.js:1988 |
+| `lockFieldForPin` | frontend/js/app.js:861 |
+| `lockNow` | frontend/js/app.js:928 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2041 |
-| `onDomReady` | frontend/js/app.js:1977 |
-| `promptDialog` | frontend/js/app.js:1551 |
-| `purgeLockedContent` | frontend/js/app.js:912 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:2043 |
+| `onDomReady` | frontend/js/app.js:1979 |
+| `promptDialog` | frontend/js/app.js:1553 |
+| `purgeLockedContent` | frontend/js/app.js:914 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1198 |
+| `refreshActiveTab` | frontend/js/app.js:1200 |
 | `refuseStagedUrls` | frontend/js/app.js:232 |
 | `replaceMissingMedia` | frontend/js/app.js:303 |
 | `resumeWithoutPassword` | frontend/js/app.js:731 |
-| `setBusy` | frontend/js/app.js:1393 |
-| `setLabel` | frontend/js/app.js:1267 |
-| `settingsModalOpen` | frontend/js/app.js:1341 |
+| `setBusy` | frontend/js/app.js:1395 |
+| `setLabel` | frontend/js/app.js:1269 |
+| `settingsModalOpen` | frontend/js/app.js:1343 |
 | `settleLockPrompt` | frontend/js/app.js:742 |
 | `show` | frontend/js/app.js:167 |
-| `showLockScreen` | frontend/js/app.js:806 |
-| `smallButton` | frontend/js/app.js:1728 |
-| `spinnerEl` | frontend/js/app.js:1384 |
-| `stagePrimary` | frontend/js/app.js:1377 |
+| `showLockScreen` | frontend/js/app.js:809 |
+| `smallButton` | frontend/js/app.js:1730 |
+| `spinnerEl` | frontend/js/app.js:1386 |
+| `stagePrimary` | frontend/js/app.js:1379 |
 | `stagedImageByUrl` | frontend/js/app.js:200 |
-| `startApp` | frontend/js/app.js:1013 |
+| `startApp` | frontend/js/app.js:1015 |
 | `startWithoutPassword` | frontend/js/app.js:706 |
-| `whenScriptsLoaded` | frontend/js/app.js:1926 |
-| `wireBackdropClose` | frontend/js/app.js:1716 |
+| `whenScriptsLoaded` | frontend/js/app.js:1928 |
+| `wireBackdropClose` | frontend/js/app.js:1718 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
 ### frontend/js/prefs.js (5)
@@ -19908,7 +19908,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12820)
+## Tests (12821)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21040,7 +21040,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_settings_switch_divider.py | 2 |
 | tests/test_settings_weight.py | 3 |
 | tests/test_share_target.py | 3 |
-| tests/test_shell_fixes.py | 1 |
+| tests/test_shell_fixes.py | 2 |
 | tests/test_shell_halfwindow.py | 9 |
 | tests/test_shortcut_chip_pencil.py | 3 |
 | tests/test_shortcut_hints.py | 9 |

@@ -903,7 +903,7 @@ function flashEntry(id) {
   // A draft target needs the Drafts filter ON now that drafts are excluded
   // from every other view (user-reported): otherwise jumping to one from
   // Library's "Open" button would find nothing.
-  draftsOnly = allEntries.some((e) => e.id === id && e.is_draft);
+  draftsOnly = Boolean(opened?.is_draft);
   // Same reason as the line above and the search reset below: a note that is
   // not pinned is filtered out of Favourites, so jumping to one while that
   // filter is on would scroll to nothing.
@@ -922,7 +922,7 @@ function flashEntry(id) {
   pendingJumpId = null;
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
-    if (!card) return toast("Note not found.");
+    if (!card) return toast("No such note.");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
     // Restart the animation even when the same note is jumped to twice in a
