@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Regenerate from an earlier answer cuts the saved chat the way the screen is cut (audit 1028 E1): turn 3 of 3 is no longer overwritten by a copy of turn 1. An answer that made a change (a note to self, a reminder, an agent write) asks "Run again" before Regenerate or Edit asks the question a second time (E2).
 - API answers carry `Cache-Control: no-store` (audit 1028 K12): note JSON no longer outlives a lock in a shared phone's back/forward cache or a proxy.
 - Restoring a backup zip keeps this computer's model address, "keep the AI on this machine", web search, update and background-task switches (audit 1028 K9): a zip from someone else could point every chat at their server.
 - Security (audit 1028 K2, K3, K7, K8): an attachment's stored name from a restored database can no longer serve, read, stash or delete a file outside the uploads folder (a sibling such as `uploads2` included); unlock guesses sent in parallel count against the throttle while in flight (40 at once passed a five-try check); the session table is read by snapshot so a sweep during an unlock cannot raise.

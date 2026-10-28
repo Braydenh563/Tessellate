@@ -2,9 +2,9 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1448, tests 12815, plan headings 984.
+Counts: frontend functions 6660, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1449, tests 12822, plan headings 984.
 
-## Frontend functions (6658)
+## Frontend functions (6660)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -424,88 +424,88 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2209 |
-| `applyCompression` | frontend/js/chat.js:2069 |
-| `askAboutPage` | frontend/js/chat.js:1475 |
+| `aiWritingTrace` | frontend/js/chat.js:2206 |
+| `applyCompression` | frontend/js/chat.js:2066 |
+| `askAboutPage` | frontend/js/chat.js:1472 |
 | `assistantLabel` | frontend/js/chat.js:55 |
 | `assistantMessageActions` | frontend/js/chat.js:165 |
-| `atlasSuggestion` | frontend/js/chat.js:685 |
-| `batteryModeOn` | frontend/js/chat.js:2111 |
-| `bookmarkWebResult` | frontend/js/chat.js:1278 |
-| `buildWebResultRow` | frontend/js/chat.js:1155 |
-| `chatEmptySettle` | frontend/js/chat.js:706 |
+| `atlasSuggestion` | frontend/js/chat.js:682 |
+| `batteryModeOn` | frontend/js/chat.js:2108 |
+| `bookmarkWebResult` | frontend/js/chat.js:1275 |
+| `buildWebResultRow` | frontend/js/chat.js:1152 |
+| `chatEmptySettle` | frontend/js/chat.js:703 |
 | `chatHistoryToSend` | frontend/js/chat.js:39 |
 | `chatMessageActions` | frontend/js/chat.js:68 |
-| `chatTranscriptText` | frontend/js/chat.js:2007 |
+| `chatTranscriptText` | frontend/js/chat.js:2004 |
 | `chatTurnTranscript` | frontend/js/chat.js:128 |
-| `citeWebPage` | frontend/js/chat.js:1532 |
-| `clearChatEmptyState` | frontend/js/chat.js:834 |
-| `clearWebSearchHistory` | frontend/js/chat.js:1346 |
-| `closeWebReader` | frontend/js/chat.js:904 |
+| `citeWebPage` | frontend/js/chat.js:1529 |
+| `clearChatEmptyState` | frontend/js/chat.js:831 |
+| `clearWebSearchHistory` | frontend/js/chat.js:1343 |
+| `closeWebReader` | frontend/js/chat.js:901 |
 | `compactTokens` | frontend/js/chat.js:494 |
-| `compressChatContext` | frontend/js/chat.js:2035 |
+| `compressChatContext` | frontend/js/chat.js:2032 |
 | `continueRunControls` | frontend/js/chat.js:230 |
 | `copyToClipboard` | frontend/js/chat.js:558 |
 | `copyViaTextarea` | frontend/js/chat.js:518 |
-| `copyWebLink` | frontend/js/chat.js:1270 |
-| `fillPersonaMark` | frontend/js/chat.js:1809 |
+| `copyWebLink` | frontend/js/chat.js:1267 |
+| `fillPersonaMark` | frontend/js/chat.js:1806 |
 | `flashCopied` | frontend/js/chat.js:540 |
-| `forkFromBubble` | frontend/js/chat.js:637 |
-| `livingInterval` | frontend/js/chat.js:2195 |
-| `loadResponseModes` | frontend/js/chat.js:1764 |
-| `loadWebSearchHistory` | frontend/js/chat.js:1321 |
+| `forkFromBubble` | frontend/js/chat.js:630 |
+| `livingInterval` | frontend/js/chat.js:2192 |
+| `loadResponseModes` | frontend/js/chat.js:1761 |
+| `loadWebSearchHistory` | frontend/js/chat.js:1318 |
 | `manualPauseControls` | frontend/js/chat.js:276 |
 | `messageMetaLine` | frontend/js/chat.js:344 |
 | `metaItem` | frontend/js/chat.js:310 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1954 |
-| `openWebPageExternally` | frontend/js/chat.js:1266 |
-| `openWebReader` | frontend/js/chat.js:1492 |
-| `personaOptions` | frontend/js/chat.js:1826 |
-| `progressLine` | frontend/js/chat.js:2537 |
-| `progressMotionWanted` | frontend/js/chat.js:2147 |
-| `progressPhaseText` | frontend/js/chat.js:2405 |
-| `pushWebSearchHistory` | frontend/js/chat.js:1330 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1951 |
+| `openWebPageExternally` | frontend/js/chat.js:1263 |
+| `openWebReader` | frontend/js/chat.js:1489 |
+| `personaOptions` | frontend/js/chat.js:1823 |
+| `progressLine` | frontend/js/chat.js:2534 |
+| `progressMotionWanted` | frontend/js/chat.js:2144 |
+| `progressPhaseText` | frontend/js/chat.js:2402 |
+| `pushWebSearchHistory` | frontend/js/chat.js:1327 |
 | `questionForBubble` | frontend/js/chat.js:591 |
-| `reducedMotionWanted` | frontend/js/chat.js:2117 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:1075 |
+| `reducedMotionWanted` | frontend/js/chat.js:2114 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:1072 |
 | `regenerateFromBubble` | frontend/js/chat.js:609 |
-| `regenerateLastAnswer` | frontend/js/chat.js:664 |
+| `regenerateLastAnswer` | frontend/js/chat.js:657 |
 | `removeChatBubble` | frontend/js/chat.js:504 |
-| `renderChatContextMeter` | frontend/js/chat.js:1904 |
-| `renderChatEmptyState` | frontend/js/chat.js:716 |
-| `renderChatTurnCount` | frontend/js/chat.js:1934 |
-| `renderChatUsage` | frontend/js/chat.js:1887 |
-| `renderCompressionState` | frontend/js/chat.js:2082 |
-| `renderModelContextBox` | frontend/js/chat.js:1625 |
-| `renderModelHealthNote` | frontend/js/chat.js:1727 |
-| `renderModelSpec` | frontend/js/chat.js:1655 |
-| `renderWebPageAttachment` | frontend/js/chat.js:1559 |
-| `renderWebPanelMenu` | frontend/js/chat.js:1009 |
-| `renderWebSearchHistory` | frontend/js/chat.js:1355 |
-| `rewriteAnswerWith` | frontend/js/chat.js:628 |
-| `runWebSearch` | frontend/js/chat.js:1390 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2323 |
-| `setResponseMode` | frontend/js/chat.js:1787 |
-| `setWebEngineDot` | frontend/js/chat.js:995 |
-| `setWebSearxngRunning` | frontend/js/chat.js:1060 |
-| `showCompressReview` | frontend/js/chat.js:2057 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2351 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2373 |
-| `stopWebRequest` | frontend/js/chat.js:889 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1879 |
-| `toggleWebPanel` | frontend/js/chat.js:917 |
-| `toolPhaseVerb` | frontend/js/chat.js:2420 |
-| `typingDots` | frontend/js/chat.js:2434 |
-| `webEngineWords` | frontend/js/chat.js:978 |
-| `webPageContextBlock` | frontend/js/chat.js:1590 |
-| `webPageMarkdown` | frontend/js/chat.js:1499 |
-| `webQueryTerms` | frontend/js/chat.js:1142 |
-| `webReaderIsOpen` | frontend/js/chat.js:900 |
-| `webRequestEnd` | frontend/js/chat.js:879 |
-| `webRequestStart` | frontend/js/chat.js:870 |
-| `webResultMark` | frontend/js/chat.js:1121 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2258 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2291 |
+| `renderChatContextMeter` | frontend/js/chat.js:1901 |
+| `renderChatEmptyState` | frontend/js/chat.js:713 |
+| `renderChatTurnCount` | frontend/js/chat.js:1931 |
+| `renderChatUsage` | frontend/js/chat.js:1884 |
+| `renderCompressionState` | frontend/js/chat.js:2079 |
+| `renderModelContextBox` | frontend/js/chat.js:1622 |
+| `renderModelHealthNote` | frontend/js/chat.js:1724 |
+| `renderModelSpec` | frontend/js/chat.js:1652 |
+| `renderWebPageAttachment` | frontend/js/chat.js:1556 |
+| `renderWebPanelMenu` | frontend/js/chat.js:1006 |
+| `renderWebSearchHistory` | frontend/js/chat.js:1352 |
+| `rewriteAnswerWith` | frontend/js/chat.js:621 |
+| `runWebSearch` | frontend/js/chat.js:1387 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2320 |
+| `setResponseMode` | frontend/js/chat.js:1784 |
+| `setWebEngineDot` | frontend/js/chat.js:992 |
+| `setWebSearxngRunning` | frontend/js/chat.js:1057 |
+| `showCompressReview` | frontend/js/chat.js:2054 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2348 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2370 |
+| `stopWebRequest` | frontend/js/chat.js:886 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1876 |
+| `toggleWebPanel` | frontend/js/chat.js:914 |
+| `toolPhaseVerb` | frontend/js/chat.js:2417 |
+| `typingDots` | frontend/js/chat.js:2431 |
+| `webEngineWords` | frontend/js/chat.js:975 |
+| `webPageContextBlock` | frontend/js/chat.js:1587 |
+| `webPageMarkdown` | frontend/js/chat.js:1496 |
+| `webQueryTerms` | frontend/js/chat.js:1139 |
+| `webReaderIsOpen` | frontend/js/chat.js:897 |
+| `webRequestEnd` | frontend/js/chat.js:876 |
+| `webRequestStart` | frontend/js/chat.js:867 |
+| `webResultMark` | frontend/js/chat.js:1118 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2255 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2288 |
 
 ### frontend/js/chat-agent.js (71)
 
@@ -596,36 +596,36 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:738 |
 | `attachedNotes` | frontend/js/chat-attach.js:885 |
 | `attachmentChip` | frontend/js/chat-attach.js:268 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2906 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3237 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2910 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3241 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1406 |
 | `chatQueueShow` | frontend/js/chat-attach.js:1605 |
 | `chatSendTurn` | frontend/js/chat-attach.js:1609 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1576 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:893 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3255 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3259 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:762 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1443 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1391 |
 | `commitExtractPreview` | frontend/js/chat-attach.js:169 |
 | `commitStagedImages` | frontend/js/chat-attach.js:404 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:3012 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3211 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3260 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:3016 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3215 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3264 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:922 |
-| `followupChain` | frontend/js/chat-attach.js:2935 |
-| `followupMatches` | frontend/js/chat-attach.js:2933 |
-| `followupParent` | frontend/js/chat-attach.js:2926 |
-| `followupTrail` | frontend/js/chat-attach.js:2952 |
+| `followupChain` | frontend/js/chat-attach.js:2939 |
+| `followupMatches` | frontend/js/chat-attach.js:2937 |
+| `followupParent` | frontend/js/chat-attach.js:2930 |
+| `followupTrail` | frontend/js/chat-attach.js:2956 |
 | `importChatDocuments` | frontend/js/chat-attach.js:494 |
 | `isImageFile` | frontend/js/chat-attach.js:445 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3139 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3143 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:465 |
-| `markFollowup` | frontend/js/chat-attach.js:2976 |
-| `mountChatTimer` | frontend/js/chat-attach.js:3065 |
-| `newChatConversation` | frontend/js/chat-attach.js:3159 |
+| `markFollowup` | frontend/js/chat-attach.js:2980 |
+| `mountChatTimer` | frontend/js/chat-attach.js:3069 |
+| `newChatConversation` | frontend/js/chat-attach.js:3163 |
 | `noteLabel` | frontend/js/chat-attach.js:899 |
 | `noteNamePlain` | frontend/js/chat-attach.js:959 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1254 |
@@ -637,33 +637,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notePickerRoving` | frontend/js/chat-attach.js:1244 |
 | `notePickerShape` | frontend/js/chat-attach.js:1074 |
 | `notePickerUsedIn` | frontend/js/chat-attach.js:1056 |
-| `offerFollowups` | frontend/js/chat-attach.js:2834 |
-| `offerReminder` | frontend/js/chat-attach.js:2773 |
+| `offerFollowups` | frontend/js/chat-attach.js:2838 |
+| `offerReminder` | frontend/js/chat-attach.js:2777 |
 | `openChatDockMore` | frontend/js/chat-attach.js:1419 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1356 |
-| `paintChatTimer` | frontend/js/chat-attach.js:3078 |
+| `paintChatTimer` | frontend/js/chat-attach.js:3082 |
 | `plainText` | frontend/js/chat-attach.js:937 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3150 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2886 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:3109 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3154 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2890 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:3113 |
 | `renderAttachments` | frontend/js/chat-attach.js:1012 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:649 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:702 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:599 |
-| `renderFollowups` | frontend/js/chat-attach.js:2872 |
+| `renderFollowups` | frontend/js/chat-attach.js:2876 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:331 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:767 |
 | `revalidateSelection` | frontend/js/chat-attach.js:814 |
-| `saveFollowups` | frontend/js/chat-attach.js:2995 |
+| `saveFollowups` | frontend/js/chat-attach.js:2999 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:865 |
 | `sendChatMessage` | frontend/js/chat-attach.js:1585 |
 | `setActiveChoice` | frontend/js/chat-attach.js:945 |
 | `setNoteLabel` | frontend/js/chat-attach.js:969 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1329 |
-| `startChatTimer` | frontend/js/chat-attach.js:3090 |
-| `stopChatTimer` | frontend/js/chat-attach.js:3099 |
+| `startChatTimer` | frontend/js/chat-attach.js:3094 |
+| `stopChatTimer` | frontend/js/chat-attach.js:3103 |
 
 ### frontend/js/sheets-selects.js (51)
 
@@ -2619,12 +2619,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `swatchPicker` | frontend/js/categories-panel.js:968 |
 | `wireManageCategoryKeys` | frontend/js/categories-panel.js:360 |
 
-### frontend/js/chat-edit.js (2)
+### frontend/js/chat-edit.js (4)
 
 | Name | File:line |
 |---|---|
+| `confirmRerun` | frontend/js/chat-edit.js:192 |
 | `editAndResend` | frontend/js/chat-edit.js:19 |
-| `showCopyFallback` | frontend/js/chat-edit.js:109 |
+| `regenerateFrom` | frontend/js/chat-edit.js:158 |
+| `showCopyFallback` | frontend/js/chat-edit.js:112 |
 
 ### frontend/js/chat-tasks.js (7)
 
@@ -11456,77 +11458,77 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `SizeTier` | src/tessellate/ai/agent.py:56 |
-| `_Loop` | src/tessellate/ai/agent.py:2863 |
-| `_Streamed` | src/tessellate/ai/agent.py:2890 |
+| `_Loop` | src/tessellate/ai/agent.py:2866 |
+| `_Streamed` | src/tessellate/ai/agent.py:2893 |
 | `_TurnCard` | src/tessellate/ai/agent.py:169 |
 | `_TurnPlan` | src/tessellate/ai/agent.py:1655 |
 | `_TurnState` | src/tessellate/ai/agent.py:1963 |
 | `_bare_host` | src/tessellate/ai/agent.py:1302 |
-| `_budget_events` | src/tessellate/ai/agent.py:2898 |
+| `_budget_events` | src/tessellate/ai/agent.py:2901 |
 | `_change_category_name` | src/tessellate/ai/agent.py:1090 |
-| `_change_diff` | src/tessellate/ai/agent.py:2361 |
+| `_change_diff` | src/tessellate/ai/agent.py:2364 |
 | `_change_document_id` | src/tessellate/ai/agent.py:1046 |
 | `_change_note_id` | src/tessellate/ai/agent.py:1028 |
 | `_change_reminder_id` | src/tessellate/ai/agent.py:1068 |
 | `_check_sources` | src/tessellate/ai/agent.py:235 |
-| `_claim_notice` | src/tessellate/ai/agent.py:3076 |
+| `_claim_notice` | src/tessellate/ai/agent.py:3079 |
 | `_cleared_page` | src/tessellate/ai/agent.py:1333 |
 | `_clip_strings` | src/tessellate/ai/agent.py:2034 |
 | `_copies_what_was_read` | src/tessellate/ai/agent.py:1588 |
-| `_count_call` | src/tessellate/ai/agent.py:2368 |
-| `_dispatch_call` | src/tessellate/ai/agent.py:2547 |
-| `_dispatch_round` | src/tessellate/ai/agent.py:3171 |
-| `_exhausted_events` | src/tessellate/ai/agent.py:3184 |
-| `_finish_handover` | src/tessellate/ai/agent.py:2318 |
+| `_count_call` | src/tessellate/ai/agent.py:2371 |
+| `_dispatch_call` | src/tessellate/ai/agent.py:2550 |
+| `_dispatch_round` | src/tessellate/ai/agent.py:3174 |
+| `_exhausted_events` | src/tessellate/ai/agent.py:3187 |
+| `_finish_handover` | src/tessellate/ai/agent.py:2321 |
 | `_first_round_tools` | src/tessellate/ai/agent.py:2175 |
 | `_fit_result` | src/tessellate/ai/agent.py:2045 |
 | `_focus` | src/tessellate/ai/agent.py:1635 |
-| `_handoff_refused` | src/tessellate/ai/agent.py:2522 |
+| `_handoff_refused` | src/tessellate/ai/agent.py:2525 |
 | `_hosts_named` | src/tessellate/ai/agent.py:1307 |
 | `_labelled` | src/tessellate/ai/agent.py:247 |
-| `_model_died_events` | src/tessellate/ai/agent.py:2958 |
+| `_model_died_events` | src/tessellate/ai/agent.py:2961 |
 | `_names_an_existing_category` | src/tessellate/ai/agent.py:2153 |
 | `_narrow_keeps` | src/tessellate/ai/agent.py:1683 |
-| `_nudge` | src/tessellate/ai/agent.py:3009 |
-| `_nudge_claim` | src/tessellate/ai/agent.py:3059 |
-| `_nudge_empty` | src/tessellate/ai/agent.py:3018 |
-| `_nudge_intent` | src/tessellate/ai/agent.py:3048 |
-| `_nudge_prose` | src/tessellate/ai/agent.py:3033 |
-| `_one_option_ask` | src/tessellate/ai/agent.py:2510 |
+| `_nudge` | src/tessellate/ai/agent.py:3012 |
+| `_nudge_claim` | src/tessellate/ai/agent.py:3062 |
+| `_nudge_empty` | src/tessellate/ai/agent.py:3021 |
+| `_nudge_intent` | src/tessellate/ai/agent.py:3051 |
+| `_nudge_prose` | src/tessellate/ai/agent.py:3036 |
+| `_one_option_ask` | src/tessellate/ai/agent.py:2513 |
 | `_page_key` | src/tessellate/ai/agent.py:1286 |
 | `_picture_in_hand` | src/tessellate/ai/agent.py:1609 |
 | `_plan_exempt` | src/tessellate/ai/agent.py:1691 |
-| `_plan_writes` | src/tessellate/ai/agent.py:2338 |
-| `_plans` | src/tessellate/ai/agent.py:2354 |
+| `_plan_writes` | src/tessellate/ai/agent.py:2341 |
+| `_plans` | src/tessellate/ai/agent.py:2357 |
 | `_prefetch_outbound` | src/tessellate/ai/agent.py:2082 |
 | `_prepare_turn` | src/tessellate/ai/agent.py:1696 |
 | `_recent_text` | src/tessellate/ai/agent.py:1548 |
 | `_recovery_hint` | src/tessellate/ai/agent.py:681 |
-| `_relay_stream` | src/tessellate/ai/agent.py:2925 |
-| `_replay_message` | src/tessellate/ai/agent.py:3133 |
+| `_relay_stream` | src/tessellate/ai/agent.py:2928 |
+| `_replay_message` | src/tessellate/ai/agent.py:3136 |
 | `_requires_a_call` | src/tessellate/ai/agent.py:2110 |
 | `_result_summary` | src/tessellate/ai/agent.py:750 |
 | `_result_urls` | src/tessellate/ai/agent.py:1312 |
-| `_round_stats` | src/tessellate/ai/agent.py:2994 |
+| `_round_stats` | src/tessellate/ai/agent.py:2997 |
 | `_round_stream` | src/tessellate/ai/agent.py:2223 |
-| `_round_tools` | src/tessellate/ai/agent.py:2917 |
-| `_run_and_record` | src/tessellate/ai/agent.py:2375 |
+| `_round_tools` | src/tessellate/ai/agent.py:2920 |
+| `_run_and_record` | src/tessellate/ai/agent.py:2378 |
 | `_seen_ids` | src/tessellate/ai/agent.py:870 |
-| `_settle_answer` | src/tessellate/ai/agent.py:3110 |
-| `_stream_round` | src/tessellate/ai/agent.py:2973 |
-| `_tidied_arguments` | src/tessellate/ai/agent.py:2485 |
+| `_settle_answer` | src/tessellate/ai/agent.py:3113 |
+| `_stream_round` | src/tessellate/ai/agent.py:2976 |
+| `_tidied_arguments` | src/tessellate/ai/agent.py:2488 |
 | `_tool_event` | src/tessellate/ai/agent.py:2235 |
-| `_tool_events` | src/tessellate/ai/agent.py:2300 |
+| `_tool_events` | src/tessellate/ai/agent.py:2303 |
 | `_tool_sources` | src/tessellate/ai/agent.py:917 |
 | `_touched_items` | src/tessellate/ai/agent.py:807 |
 | `_touched_kind` | src/tessellate/ai/agent.py:789 |
-| `_unsupported_events` | src/tessellate/ai/agent.py:2946 |
-| `_widen_focus` | src/tessellate/ai/agent.py:3154 |
-| `_wrap_up_round` | src/tessellate/ai/agent.py:2825 |
+| `_unsupported_events` | src/tessellate/ai/agent.py:2949 |
+| `_widen_focus` | src/tessellate/ai/agent.py:3157 |
+| `_wrap_up_round` | src/tessellate/ai/agent.py:2828 |
 | `announces_unacted_tool` | src/tessellate/ai/agent.py:298 |
 | `build_agent_messages` | src/tessellate/ai/agent.py:1346 |
-| `plan_now` | src/tessellate/ai/agent.py:2345 |
-| `run_agent` | src/tessellate/ai/agent.py:3206 |
+| `plan_now` | src/tessellate/ai/agent.py:2348 |
+| `run_agent` | src/tessellate/ai/agent.py:3209 |
 | `size_tier` | src/tessellate/ai/agent.py:89 |
 | `tools_guide` | src/tessellate/ai/agent.py:511 |
 | `unsupported_claims` | src/tessellate/ai/agent.py:1219 |
@@ -17572,16 +17574,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BundleError` | src/tessellate/core/backup_bundle.py:72 |
+| `BundleError` | src/tessellate/core/backup_bundle.py:88 |
 | `_db_member` | src/tessellate/core/backup_bundle.py:60 |
-| `_nonce` | src/tessellate/core/backup_bundle.py:76 |
-| `_readable_preferences` | src/tessellate/core/backup_bundle.py:162 |
-| `_safe_target` | src/tessellate/core/backup_bundle.py:174 |
-| `build_zip` | src/tessellate/core/backup_bundle.py:129 |
-| `decrypt_file` | src/tessellate/core/backup_bundle.py:102 |
-| `encrypt_file` | src/tessellate/core/backup_bundle.py:80 |
-| `is_sealed` | src/tessellate/core/backup_bundle.py:97 |
-| `restore_zip` | src/tessellate/core/backup_bundle.py:185 |
+| `_nonce` | src/tessellate/core/backup_bundle.py:92 |
+| `_readable_preferences` | src/tessellate/core/backup_bundle.py:178 |
+| `_safe_target` | src/tessellate/core/backup_bundle.py:190 |
+| `build_zip` | src/tessellate/core/backup_bundle.py:145 |
+| `decrypt_file` | src/tessellate/core/backup_bundle.py:118 |
+| `encrypt_file` | src/tessellate/core/backup_bundle.py:96 |
+| `is_sealed` | src/tessellate/core/backup_bundle.py:113 |
+| `restore_zip` | src/tessellate/core/backup_bundle.py:201 |
 
 ### src/tessellate/core/bgtasks.py (11)
 
@@ -18825,23 +18827,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `HostCheckMiddleware` | src/tessellate/core/security.py:101 |
 | `OriginCheckMiddleware` | src/tessellate/core/security.py:314 |
 | `SecurityHeadersMiddleware` | src/tessellate/core/security.py:595 |
-| `UnsafeUrl` | src/tessellate/core/security.py:893 |
+| `UnsafeUrl` | src/tessellate/core/security.py:898 |
 | `_BodyTooLarge` | src/tessellate/core/security.py:192 |
-| `_backend_addresses` | src/tessellate/core/security.py:707 |
+| `_backend_addresses` | src/tessellate/core/security.py:712 |
 | `_body_limit` | src/tessellate/core/security.py:271 |
 | `_is_same_site` | src/tessellate/core/security.py:58 |
 | `_notebook_has_password` | src/tessellate/core/security.py:302 |
 | `_origin_of` | src/tessellate/core/security.py:44 |
-| `_refuses` | src/tessellate/core/security.py:771 |
-| `_resolve` | src/tessellate/core/security.py:699 |
+| `_refuses` | src/tessellate/core/security.py:776 |
+| `_resolve` | src/tessellate/core/security.py:704 |
 | `_session_is_live` | src/tessellate/core/security.py:297 |
 | `_too_large` | src/tessellate/core/security.py:263 |
-| `assert_public_url` | src/tessellate/core/security.py:954 |
+| `assert_public_url` | src/tessellate/core/security.py:959 |
 | `build_csp` | src/tessellate/core/security.py:448 |
-| `check_backend_url` | src/tessellate/core/security.py:801 |
+| `check_backend_url` | src/tessellate/core/security.py:806 |
 | `inline_script_hashes` | src/tessellate/core/security.py:424 |
-| `is_internal_address` | src/tessellate/core/security.py:897 |
-| `public_addresses` | src/tessellate/core/security.py:921 |
+| `is_internal_address` | src/tessellate/core/security.py:902 |
+| `public_addresses` | src/tessellate/core/security.py:926 |
 | `register_auth` | src/tessellate/core/security.py:292 |
 | `without_userinfo` | src/tessellate/core/security.py:88 |
 
@@ -19908,7 +19910,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12815)
+## Tests (12822)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20003,7 +20005,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_background_registry_shutdown.py | 1 |
 | tests/test_background_rows_keep_their_space.py | 3 |
 | tests/test_backlog_status_rows.py | 6 |
-| tests/test_backup_bundle.py | 8 |
+| tests/test_backup_bundle.py | 9 |
 | tests/test_backup_copy.py | 8 |
 | tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
@@ -20934,6 +20936,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reevaluate.py | 4 |
 | tests/test_reevaluate_private.py | 3 |
 | tests/test_refresh_entries.py | 3 |
+| tests/test_regenerate_truncates.py | 5 |
 | tests/test_regex_whitespace_runs.py | 3 |
 | tests/test_region_read.py | 16 |
 | tests/test_related_elsewhere.py | 9 |
@@ -21009,7 +21012,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_searxng_install.py | 42 |
 | tests/test_searxng_recovery.py | 33 |
 | tests/test_season_hemisphere_1027.py | 14 |
-| tests/test_security_boundaries.py | 59 |
+| tests/test_security_boundaries.py | 60 |
 | tests/test_security_hardening.py | 13 |
 | tests/test_seed_examples.py | 6 |
 | tests/test_select_focus.py | 2 |

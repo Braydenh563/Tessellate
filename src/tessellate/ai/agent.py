@@ -2247,6 +2247,9 @@ def _tool_event(name: str, arguments: dict, result: dict) -> dict:
         "tool": name,
         "label": result.get("label") or name,
         "ok": "error" not in result,
+        #: A write that went through: the chat asks before Regenerate or
+        #: Edit re-runs a turn that made a change (INBOX audit E2).
+        "wrote": name in _WRITE_TOOLS and "error" not in result,
         "error": result.get("error"),
         "arguments": arguments,
         #: Titles, addresses and one line each of what was read, 
