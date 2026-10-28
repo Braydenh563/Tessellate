@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6911, test files 1452, tests 12830, plan headings 984.
+Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6911, test files 1452, tests 12831, plan headings 984.
 
 ## Frontend functions (6658)
 
@@ -10693,7 +10693,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | GET | `list_entries` | src/tessellate/api/routes_entries.py:2396 |
 |  | GET | `list_facts` | src/tessellate/api/routes_learned.py:158 |
 |  | GET | `list_questions` | src/tessellate/api/routes_questions.py:26 |
-|  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:484 |
+|  | GET | `list_reminders` | src/tessellate/api/routes_reminders.py:487 |
 |  | GET | `list_tags` | src/tessellate/api/routes_tags.py:40 |
 |  | GET | `list_types` | src/tessellate/api/routes_relations.py:65 |
 |  | GET | `search` | src/tessellate/api/routes_search.py:59 |
@@ -10709,7 +10709,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_conversation` | src/tessellate/api/routes_conversations.py:430 |
 |  | POST | `create_document` | src/tessellate/api/routes_documents.py:502 |
 |  | POST | `create_entry` | src/tessellate/api/routes_entries.py:743 |
-|  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:529 |
+|  | POST | `create_reminder` | src/tessellate/api/routes_reminders.py:532 |
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:76 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:200 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:972 |
@@ -10909,7 +10909,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/history/{event_id}/restore` | POST | `restore_board` | src/tessellate/api/routes_board_history.py:528 |
 | `/images` | GET | `list_images` | src/tessellate/api/routes_whiteboard.py:2704 |
 | `/import` | POST | `import_document` | src/tessellate/api/routes_documents.py:587 |
-| `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:454 |
+| `/import.ics` | POST | `import_ics` | src/tessellate/api/routes_reminders.py:457 |
 | `/import/app` | POST | `import_app` | src/tessellate/api/routes_import.py:63 |
 | `/import/directory` | POST | `import_directory` | src/tessellate/api/routes_settings.py:3151 |
 | `/import/document` | POST | `import_document` | src/tessellate/api/routes_settings.py:3278 |
@@ -11022,7 +11022,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/on-this-day` | GET | `on_this_day` | src/tessellate/api/routes_insights.py:519 |
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1405 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:470 |
-| `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:623 |
+| `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:626 |
 | `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1111 |
 | `/patterns` | GET | `patterns` | src/tessellate/api/routes_insights.py:404 |
 | `/personas/suggest-thinking-words` | POST | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:189 |
@@ -11120,7 +11120,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/stop` | POST | `stop` | src/tessellate/api/routes_bench.py:249 |
 | `/storage` | GET | `storage_location` | src/tessellate/api/routes_backups.py:43 |
 | `/stream` | POST | `chat_stream` | src/tessellate/api/routes_chat.py:4674 |
-| `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:596 |
+| `/suggest` | POST | `suggest_reminder` | src/tessellate/api/routes_reminders.py:599 |
 | `/suggest-category` | POST | `suggest_category_for_draft` | src/tessellate/api/routes_entries.py:1311 |
 | `/suggest-tags` | POST | `suggest_tags_for_draft` | src/tessellate/api/routes_entries.py:1339 |
 | `/suggested` | GET | `suggested` | src/tessellate/api/routes_models.py:681 |
@@ -11188,7 +11188,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/websearch/searxng/start` | POST | `searxng_start` | src/tessellate/api/routes_websearch.py:136 |
 | `/websearch/searxng/status` | GET | `searxng_status` | src/tessellate/api/routes_websearch.py:122 |
 | `/websearch/searxng/stop` | POST | `searxng_stop` | src/tessellate/api/routes_websearch.py:200 |
-| `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:572 |
+| `/when` | POST | `read_when` | src/tessellate/api/routes_reminders.py:575 |
 | `/whiteboard/boards/{board_id}/paste` | POST | `paste_board_items` | src/tessellate/api/routes_board_library.py:1295 |
 | `/whiteboard/boards/{board_id}/place` | POST | `place_library_item` | src/tessellate/api/routes_board_library.py:1164 |
 | `/{bookmark_id}` | DELETE | `delete_bookmark` | src/tessellate/api/routes_bookmarks.py:183 |
@@ -11293,15 +11293,15 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{key}/apply` | POST | `tidy_apply` | src/tessellate/api/routes_tidy.py:118 |
 | `/{key}/dismiss` | POST | `tidy_dismiss` | src/tessellate/api/routes_tidy.py:104 |
 | `/{key}/undismiss` | POST | `tidy_undismiss` | src/tessellate/api/routes_tidy.py:112 |
-| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:822 |
-| `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:706 |
+| `/{reminder_id}` | DELETE | `delete_reminder` | src/tessellate/api/routes_reminders.py:825 |
+| `/{reminder_id}` | PUT | `update_reminder` | src/tessellate/api/routes_reminders.py:709 |
 | `/{reminder_id}/calendar-links` | GET | `calendar_links` | src/tessellate/api/routes_reminders.py:383 |
-| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:740 |
+| `/{reminder_id}/complete` | POST | `complete_reminder` | src/tessellate/api/routes_reminders.py:743 |
 | `/{reminder_id}/export.ics` | GET | `export_one_ics` | src/tessellate/api/routes_reminders.py:376 |
-| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:797 |
-| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:780 |
-| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:853 |
-| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:843 |
+| `/{reminder_id}/notification-act` | POST | `act_from_notification` | src/tessellate/api/routes_reminders.py:800 |
+| `/{reminder_id}/notification-token` | POST | `notification_token` | src/tessellate/api/routes_reminders.py:783 |
+| `/{reminder_id}/purge` | DELETE | `purge_reminder` | src/tessellate/api/routes_reminders.py:856 |
+| `/{reminder_id}/restore` | POST | `restore_reminder` | src/tessellate/api/routes_reminders.py:846 |
 | `/{session_id}/audio` | POST | `audio` | src/tessellate/api/routes_captions.py:112 |
 | `/{session_id}/stop` | POST | `stop` | src/tessellate/api/routes_captions.py:137 |
 | `/{turn_id}` | DELETE | `delete_ask_turn` | src/tessellate/api/routes_ask_history.py:172 |
@@ -16817,13 +16817,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `MagicAddBody` | src/tessellate/api/routes_reminders.py:64 |
-| `NotificationAct` | src/tessellate/api/routes_reminders.py:790 |
+| `NotificationAct` | src/tessellate/api/routes_reminders.py:793 |
 | `ReminderCreate` | src/tessellate/api/routes_reminders.py:48 |
 | `ReminderUpdate` | src/tessellate/api/routes_reminders.py:75 |
-| `SuggestBody` | src/tessellate/api/routes_reminders.py:591 |
-| `WhenBody` | src/tessellate/api/routes_reminders.py:567 |
-| `_binned` | src/tessellate/api/routes_reminders.py:833 |
-| `_complete` | src/tessellate/api/routes_reminders.py:759 |
+| `SuggestBody` | src/tessellate/api/routes_reminders.py:594 |
+| `WhenBody` | src/tessellate/api/routes_reminders.py:570 |
+| `_binned` | src/tessellate/api/routes_reminders.py:836 |
+| `_complete` | src/tessellate/api/routes_reminders.py:762 |
 | `_event_details` | src/tessellate/api/routes_reminders.py:310 |
 | `_existing` | src/tessellate/api/routes_reminders.py:190 |
 | `_ics_event` | src/tessellate/api/routes_reminders.py:322 |
@@ -16832,7 +16832,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_ics_text` | src/tessellate/api/routes_reminders.py:276 |
 | `_ics_time` | src/tessellate/api/routes_reminders.py:305 |
 | `_import_one` | src/tessellate/api/routes_reminders.py:439 |
-| `_naive_utc` | src/tessellate/api/routes_reminders.py:699 |
+| `_naive_utc` | src/tessellate/api/routes_reminders.py:702 |
 | `_outlook_time` | src/tessellate/api/routes_reminders.py:419 |
 | `_past_and_open` | src/tessellate/api/routes_reminders.py:433 |
 | `_reject_if_in_the_past` | src/tessellate/api/routes_reminders.py:89 |
@@ -16840,23 +16840,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_rule_words` | src/tessellate/api/routes_reminders.py:173 |
 | `_target` | src/tessellate/api/routes_reminders.py:104 |
 | `_to_out` | src/tessellate/api/routes_reminders.py:129 |
-| `act_from_notification` | src/tessellate/api/routes_reminders.py:798 |
+| `act_from_notification` | src/tessellate/api/routes_reminders.py:801 |
 | `calendar_links` | src/tessellate/api/routes_reminders.py:384 |
-| `complete_reminder` | src/tessellate/api/routes_reminders.py:741 |
-| `create_reminder` | src/tessellate/api/routes_reminders.py:530 |
-| `delete_reminder` | src/tessellate/api/routes_reminders.py:823 |
+| `complete_reminder` | src/tessellate/api/routes_reminders.py:744 |
+| `create_reminder` | src/tessellate/api/routes_reminders.py:533 |
+| `delete_reminder` | src/tessellate/api/routes_reminders.py:826 |
 | `export_ics` | src/tessellate/api/routes_reminders.py:368 |
 | `export_one_ics` | src/tessellate/api/routes_reminders.py:377 |
-| `import_ics` | src/tessellate/api/routes_reminders.py:455 |
-| `list_reminders` | src/tessellate/api/routes_reminders.py:485 |
-| `magic_add_reminder` | src/tessellate/api/routes_reminders.py:624 |
-| `notification_token` | src/tessellate/api/routes_reminders.py:781 |
-| `purge_reminder` | src/tessellate/api/routes_reminders.py:854 |
-| `read_when` | src/tessellate/api/routes_reminders.py:573 |
+| `import_ics` | src/tessellate/api/routes_reminders.py:458 |
+| `list_reminders` | src/tessellate/api/routes_reminders.py:488 |
+| `magic_add_reminder` | src/tessellate/api/routes_reminders.py:627 |
+| `notification_token` | src/tessellate/api/routes_reminders.py:784 |
+| `purge_reminder` | src/tessellate/api/routes_reminders.py:857 |
+| `read_when` | src/tessellate/api/routes_reminders.py:576 |
 | `reminder_counts` | src/tessellate/api/routes_reminders.py:213 |
-| `restore_reminder` | src/tessellate/api/routes_reminders.py:844 |
-| `suggest_reminder` | src/tessellate/api/routes_reminders.py:597 |
-| `update_reminder` | src/tessellate/api/routes_reminders.py:707 |
+| `restore_reminder` | src/tessellate/api/routes_reminders.py:847 |
+| `suggest_reminder` | src/tessellate/api/routes_reminders.py:600 |
+| `update_reminder` | src/tessellate/api/routes_reminders.py:710 |
 
 ### src/tessellate/api/routes_resurface.py (7)
 
@@ -19909,7 +19909,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12830)
+## Tests (12831)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20533,7 +20533,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_icon_picker.py | 5 |
 | tests/test_icon_picker_aliases.py | 3 |
 | tests/test_icon_picker_kaomoji.py | 4 |
-| tests/test_ics.py | 6 |
+| tests/test_ics.py | 7 |
 | tests/test_ide_shell_b71.py | 16 |
 | tests/test_import_bin_clock.py | 1 |
 | tests/test_import_dates.py | 4 |

@@ -451,14 +451,17 @@ def _import_one(session: Session, event: ics_import.IcsReminder) -> tuple[str, R
     return verb, reminder
 
 
+#: A plain `def`, run in the threadpool: the parse and one row per event ran
+#: on the event loop and froze every request and stream for the length of a
+#: big calendar (audit 1028 K17).
 @router.post("/import.ics")
-async def import_ics(
+def import_ics(
     file: UploadFile = File(...),
     tz_offset_minutes: int = Form(default=0, ge=-840, le=840),
     session: Session = Depends(get_session),
 ) -> dict:
     """Reminders from a calendar file, with what was skipped and why."""
-    raw = await file.read(ics_import.MAX_BYTES + 1)
+    raw = file.file.read(ics_import.MAX_BYTES + 1)
     if len(raw) > ics_import.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That calendar file is over 2 MB. Export only the reminders and try again.")
     text = raw.decode("utf-8", errors="replace")
