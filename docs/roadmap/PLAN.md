@@ -307,6 +307,6 @@ do this, and what is the one measurement that proves we match it.*
 
 1426. **The owner, 2026-10-28, verbatim:** a server log (Windows, 8:22 to 8:29) pasted without comment, kept in `agent-remaining/lag-1028.md` with the orchestrator's reading (L1 to L7), then: "also look for possible optimisations and lag fixes and where complexity might be high or lots of redrawing or calculations per frame etc" Placed: lag-1028.md L1 to L7, a perf sweep after the 1425 agents.
 
-1427. **The owner, 2026-10-28, verbatim:** "can you make all popup panels draggable??" then "and resizable?" Recommendation taken (standing order 3): one recipe in DESIGN.md (`panelMovable`), dragged by its head, resized from its corner, keyboard moves for WCAG 2.5.7, size and place kept per panel on this device, a double-click on the head puts it back; on dialogs, popovers and floating panels on a pointer device; phones (under 600 px, coarse pointer) keep sheets. Lint in `tests/test_ui_recipes.py`.
+1427. Built: moved to HISTORY.md ("Moved from the plans, 2026-10-28 (panels 1427)").
 
 1429. Built: moved to HISTORY.md ("Moved from the plans, 2026-10-28 (companion 1429)").

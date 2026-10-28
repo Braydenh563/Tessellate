@@ -81,4 +81,6 @@ function initDragSelectEdgeScroll() {
 //: the late bundles three seconds after boot, which is when the watcher
 //: should start; its observers are buffered, so boot's own stalls still count.
 lazyScript("/js/lag-watch.js");
+//: Movable panels (INBOX 1427) ride along with this late bundle (row in lazy-entries.js).
+ensureModule("panelMovable");
 initDragSelectEdgeScroll();

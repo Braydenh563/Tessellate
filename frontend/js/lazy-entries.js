@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
+  panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: Settings, Tasks (chat-tasks.js), About's health block (settings-health.js), Personas (personas-pane.js).
   settingsPanes: ["/js/task-steps.js", "/js/chat-tasks.js", "/js/settings-health.js", "/js/personas-pane.js"],
   //: Improve (improve-panel.js) and a note's re-check and attach actions (lightbox-actions.js).
