@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The composer quotes short facts (audit 1028 E5): "Rent 650." or "Wifi: hunter2" was dropped as a two-word fragment, so "how much is my rent" had nothing to answer from.
 - Commands keep the person's own words (audit 1028 E9): "delete notes about uni" finds the Uni notes rather than notes about "university", and "move all my uni notes" names the uni notes; a word in the notebook is never spelled out as slang.
 - Typing in a long document no longer serialises its whole undo history on every keystroke (audit 1028 D6): the snapshot is taken once per pause, when the store writes.
 - API answers carry `Cache-Control: no-store` (audit 1028 K12): note JSON no longer outlives a lock in a shared phone's back/forward cache or a proxy.

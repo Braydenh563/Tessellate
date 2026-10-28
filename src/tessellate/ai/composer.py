@@ -958,9 +958,21 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     #: A fragment of one or two words ("Booked.", "Ideas") is not a claim and
     #: reads as noise quoted on its own. A list item is read inside its list,
     #: where "Crash reporting" is a whole entry.
-    if not words or (kind == "prose" and len(text.split()) < 3):
+    #: A short line with a figure ("Rent 650.", "Mum 0412 555 019") or a
+    #: "Label: value" shape is a fact, not noise: budgets, numbers and lists
+    #: of values are written that way (audit 1028 E5).
+    if not words or (kind == "prose" and len(text.split()) < 3 and not _short_fact(text)):
         return None
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
+
+
+def _short_fact(text: str) -> bool:
+    """A one- or two-word line that still says something: a word and a
+    figure, or a label and its value."""
+    parts = text.rstrip(".").split()
+    if len(parts) < 2:
+        return False
+    return any(ch.isdigit() for ch in text) or ":" in parts[0]
 
 
 #: The block `routes_chat._media_readings` adds under a note that is mostly
