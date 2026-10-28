@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The command palette field is a combobox over its list and announces the result count (audit 1028 S5); the active row was already tracked with aria-activedescendant.
 - The import toast says what happened (audit 1028 S9): imported, skipped as already here, and failed, and it appears even when nothing new was made (it used to say nothing then).
 - The dashboard line under the greeting counts today's and yesterday's notes in SQL (audit 1028 S8): an import of 130 notes read as 120, the size of the sample the line names notes from.
 - Changing the theme keeps a page background scheme (audit 1028 S10): the light and dark pair stay and the one for the showing mode applies; only a single hand-picked colour, which would override the new theme, is still cleared.

@@ -14787,7 +14787,9 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="palette-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Command palette">
     <div class="card" id="palette-card">
       <input id="palette-input" type="text" placeholder="Run a command or go to a place…"
-        autocomplete="off" aria-label="Command or place" aria-controls="palette-list">
+        autocomplete="off" aria-label="Command or place" aria-controls="palette-list"
+        role="combobox" aria-expanded="true" aria-haspopup="listbox" aria-autocomplete="list">
+      <div id="palette-count" class="visually-hidden" role="status" aria-live="polite"></div>
       <div class="palette-body">
         <ul id="palette-list" class="rich-picker-list" role="listbox" aria-label="Commands and results"></ul>
         <div id="palette-preview" class="rich-picker-preview hidden" aria-hidden="true"></div>

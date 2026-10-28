@@ -710,6 +710,10 @@ function renderPalette(query) {
     li.textContent = "Run a command or go to a place. Type to see matches.";
     list.appendChild(li);
   }
+  //: Only when it changes: arrowing re-renders the list and must not re-announce.
+  const count = $("palette-count");
+  const said = matches.length === 1 ? "1 result" : `${matches.length} results`;
+  if (count.textContent !== said) count.textContent = said;
   paletteLight(rows, matches, abouts);
 }
 

@@ -113,3 +113,14 @@ def test_an_import_that_made_nothing_still_says_what_happened():
     js = (ROOT / "frontend" / "js" / "settings-data.js").read_text(encoding="utf-8")
     body = js[js.index("function undoImport(") :].split("\n}\n", 1)[0]
     assert body.index("toast(importSummary(result))") < body.index("offerUndo(")
+
+
+def test_palette_is_a_combobox_with_a_live_count():
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    start = html.index('<input id="palette-input"')
+    field = html[start : html.index(">", html.index("aria-autocomplete", start))]
+    for attr in ('role="combobox"', 'aria-expanded="true"', 'aria-haspopup="listbox"', 'aria-controls="palette-list"'):
+        assert attr in field
+    assert 'id="palette-count" class="visually-hidden" role="status" aria-live="polite"' in html
+    js = (ROOT / "frontend" / "js" / "app-palette.js").read_text(encoding="utf-8")
+    assert 'aria-activedescendant' in js and "if (count.textContent !== said)" in js
