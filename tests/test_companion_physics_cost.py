@@ -143,7 +143,9 @@ def test_the_release_reads_the_page_before_it_writes_the_companion() -> None:
     build = AV[AV.index("function nameMarkBuddyBuild(") :]
     release = build[build.index("const release = (event) =>") : build.index('face.addEventListener("pointerup", release)')]
     first_write = release.index('buddy.style.translate = ""')
-    assert release.index("const box = buddy.getBoundingClientRect()") < release.index("nameMarkBuddyDrop(") < first_write
+    # INBOX 1429: the box read is gone altogether (the pick-up box plus the pull, no layout read).
+    assert "getBoundingClientRect" not in release
+    assert release.index("const b = drag.box") < release.index("nameMarkBuddyDrop(") < first_write
     assert release.index("nameMarkBuddyWorld(") < first_write
     assert "nameMarkBuddyThrow(buddy, v[0], v[1], world, plan);" in release
     # The whole flight and its landing, planned before the first write (2026-10-27).

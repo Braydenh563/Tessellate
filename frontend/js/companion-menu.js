@@ -5,6 +5,10 @@
 // boot carries stand-ins (`LAZY_ENTRY_POINTS.companionMenu`, app.js) that
 // fetch this file on first use and then call the real function.
 
+//: Its far moves and small acts (companion-travel.js, INBOX 1429) and their sheet come with its mind.
+lazyScript("/css/companion-travel-lazy.css");
+lazyScript("/js/companion-travel.js");
+
 //: **The large view.** A click on a face that is not part of a control
 //: opens it big, animated, with what it was read as, so the joke can be
 //: seen at a size where it lands.

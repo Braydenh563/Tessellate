@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Companion: far moves are calmer and varied (a portal, a puff of smoke, off one edge and in at another, ducking under a bar, a short walk), never the same twice and never the old leap; it wanders less and has four new quiet acts; Reduce motion gives a fade; per-frame layout reads are gone from the follow loop, pacer and drag release (INBOX 1429).
 - Boards: a board opened from the timeline, a link or the Library fits its content unless its own last view shows half of it; the last board's camera is never kept (INBOX 1428).
 - Boards and maps: the presentation bar shows the page name centred between the arrows as a button; it opens a list of every page (current one marked) that opens upward, so you can jump to any page, and the presentation keys wait while it is open.
 - Complexity: eight functions the 1028 merges grew past 15 are split by step, and commands.py plan/run shrink (seed lowered).
