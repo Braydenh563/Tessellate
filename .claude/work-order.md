@@ -10,7 +10,7 @@ stop: owner's 62% weekly usage line
 - [x] Clean-eye audit C: backend security, architecture, perf (audit-1028-backend.md)
 - [x] Clean-eye audit D: shell, notes, library, dashboard, graph, timeline, settings, every action/command (audit-1028-shell.md)
 - [x] Clean-eye audit E: agent (chat, tools, Ask), composer, Guide (audit-1028-agent.md)
-- [ ] Compare audits to plans; rank by impact (audit-1028-ranked.md)
-- [~] Fix batch 1 (top impact), PR 211
-- [ ] Fix batch 2, PR
+- [x] Compare audits to plans; rank by impact (audit-1028-ranked.md)
+- [x] Fix batch 1 (top impact), PR 211
+- [~] Fix batch 2, PR 211 (composer E6-E31 regress fix, U4/U6/B9 running)
 - [ ] Morning summary, retro
