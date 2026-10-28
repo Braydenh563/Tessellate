@@ -41,7 +41,8 @@ async function renderHealthBlock() {
   $("health-checked").textContent = `Checked${asOf}.`;
   const backup = trust.last_backup || {};
   $("health-last-backup").textContent = backup.at ? `${when(backup.at)} · ${backup.name}` : `No backup yet${asOf}`;
-  $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${asOf}`;
+  //: A first count cut short (the folder is large) says "or more"; the next check has the whole.
+  $("health-data-dir").textContent = `${formatFileSize(trust.data_dir_bytes) || "0 B"}${trust.data_dir_bytes_partial ? " or more" : ""}${asOf}`;
   paintIntegrity(trust.integrity);
   const running = trust.running || health.jobs?.running || [];
   jobs.textContent = (running.length ? running.map((job) => job.label).join(", ") : "Nothing running") + asOf;

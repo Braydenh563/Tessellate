@@ -3081,7 +3081,7 @@ function mountChatTimer(bubble) {
 
 function paintChatTimer() {
   const box = chatTimerBox;
-  if (!box) return;
+  if (!box || document.hidden) return; // a hidden tab paints nothing; the next tick catches up
   const seconds = Math.floor((performance.now() - chatTimerStartedAt) / 1000);
   // Plain seconds under a minute, m:ss above it, "97s" is a number you have
   // to convert, and by then it is the interesting case.

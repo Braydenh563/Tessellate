@@ -649,3 +649,98 @@ def test_the_launch_warm_up_fills_the_list_the_first_poll_reads(client, monkeypa
     assert routes_models._installed_known[key][0]["name"] == "model-a"
     # the status poll's capability wrapper shares that flight and its answer
     assert routes_models._flight_key(routes_models._CachedCapabilities(ollama)) == key
+
+
+def test_a_slow_runner_costs_each_poll_the_short_budget_not_two_and_a_half_seconds(client, monkeypatch):
+    """INBOX 1426 L1: `/models/status` took 2.5s on every poll against a runner
+    that answers in 5s, because each poll found no refresh in flight, started
+    one and waited the old budget for it. The hot budget is a fraction of a
+    second, so three polls against a stuck runner cost about a second."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    assert routes_models.INSTALLED_REFRESH_BUDGET <= 0.5
+    release = threading.Event()
+    calls: list[int] = []
+
+    def list_models():
+        calls.append(1)
+        if len(calls) > 1:
+            release.wait(30)
+        return [{"name": "model-a", "size": 1}]
+
+    monkeypatch.setattr(ollama, "list_models", list_models)
+    client.get("/models/status")  # the first answer
+    started = time.monotonic()
+    for _ in range(3):
+        body = client.get("/models/status").json()
+        assert [m["name"] for m in body["installed_models"]] == ["model-a"]
+    elapsed = time.monotonic() - started
+    release.set()
+    assert elapsed < 2.0
+
+
+def test_the_first_poll_against_a_busy_runner_says_checking_instead_of_waiting(client, monkeypatch):
+    """INBOX 1426 L1: four polls in the first six seconds took 3.2 to 5.0s
+    each while the runner loaded the filing model. With nothing known the poll
+    waits the cold budget, then says `ollama_checking` (not "down"), and the
+    answer that lands is served by the next one."""
+    import threading
+    import time
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_COLD_BUDGET", 0.2)
+    routes_models._installed_known.pop(routes_models._flight_key(ollama), None)
+    release = threading.Event()
+    monkeypatch.setattr(ollama, "list_models", lambda: (release.wait(30), [{"name": "model-a", "size": 1}])[1])
+    started = time.monotonic()
+    first = client.get("/models/status").json()
+    assert time.monotonic() - started < 3
+    assert first["ollama_checking"] is True and first["ollama_running"] is False
+    release.set()
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        body = client.get("/models/status").json()
+        if body["ollama_running"]:
+            break
+        time.sleep(0.05)
+    else:
+        raise AssertionError("the answer never landed")
+    assert body["ollama_checking"] is False
+    assert [m["name"] for m in body["installed_models"]] == ["model-a"]
+
+
+def test_the_loaded_models_question_is_asked_once_while_it_is_out(client, monkeypatch):
+    """INBOX 1426 L1: `/models/suggested` asked the runner what it holds in
+    memory on every call, a worker held for the runner's whole timeout each
+    time. One question at a time; the last answer is served meanwhile."""
+    import threading
+
+    from tessellate.ai.ollama_client import OllamaClient
+    from tessellate.api import routes_models
+    from tessellate.core import deps
+
+    ollama = OllamaClient("http://127.0.0.1:9")
+    monkeypatch.setattr(deps, "get_ollama", lambda: ollama)
+    monkeypatch.setattr(routes_models, "INSTALLED_REFRESH_BUDGET", 0.1)
+    monkeypatch.setitem(routes_models._loaded_state, "busy", False)
+    monkeypatch.setitem(routes_models._loaded_state, "answered", False)
+    release = threading.Event()
+    asked: list[int] = []
+    monkeypatch.setattr(ollama, "loaded_models", lambda: (asked.append(1), release.wait(30), ["m:latest"])[2])
+    routes_models._loaded_names()
+    routes_models._loaded_names()
+    routes_models._loaded_names()
+    assert len(asked) == 1
+    release.set()

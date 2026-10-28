@@ -76,6 +76,7 @@ let statusClockDetailTimer = null;
 let statusClockDetailPinned = false;
 
 function paintStatusClockDetail() {
+  if (document.hidden) return; // the next tick after the tab is back repaints
   const now = new Date();
   const dateEl = $("status-clock-detail-date");
   const timeEl = $("status-clock-detail-time");

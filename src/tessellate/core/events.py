@@ -467,6 +467,9 @@ COMPACT_AFTER_DAYS = 90
 #: nothing at all, five took the payloads from 9.89 MB to 1.46 MB.
 COMPACT_KEEP_LAST = 5
 
+#: Entities folded per commit, so the write lock is held for a few of them at a time.
+COMPACT_BATCH = 50
+
 #: Marks a payload the compactor rewrote. On the snapshot event it sits beside
 #: an `after` holding the whole state; on the events behind it, it is the
 #: whole payload, which is what "this row is still a fact, its values are not
@@ -566,24 +569,52 @@ def compact(
     stripping it would lose the only record of what it did.
     """
     cutoff = (now or utcnow()) - timedelta(days=older_than_days)
-    keys = session.execute(
-        select(AuditLog.entity_type, AuditLog.entity_id)
-        .where(
-            AuditLog.entity_id.is_not(None),
-            AuditLog.created_at < cutoff,
-            AuditLog.payload.is_not(None),
+    #: **Only entities with something left to fold are visited** (INBOX 1426
+    #: L1). The old query named every entity with an old event, so every launch
+    #: re-read and re-folded the whole log to write the same bytes: 1.3s of
+    #: Python at start on 30,000 events, the unlock and the first polls waiting
+    #: behind it. A row is work when it is older than the window, past the
+    #: newest `keep_last` of its entity, and not yet stripped or a snapshot.
+    ranked = (
+        select(
+            AuditLog.entity_type.label("entity_type"),
+            AuditLog.entity_id.label("entity_id"),
+            AuditLog.created_at.label("created_at"),
+            AuditLog.payload.label("payload"),
+            func.row_number()
+            .over(partition_by=(AuditLog.entity_type, AuditLog.entity_id), order_by=AuditLog.id.desc())
+            .label("rank"),
         )
-        .distinct()
+        .where(AuditLog.entity_id.is_not(None))
+        .subquery()
+    )
+    keys = session.execute(
+        select(ranked.c.entity_type, ranked.c.entity_id)
+        .where(
+            ranked.c.rank > keep_last,
+            ranked.c.created_at < cutoff,
+            func.json_type(ranked.c.payload) == "object",
+            func.json_extract(ranked.c.payload, f"$.{COMPACTED}").is_(None),
+        )
+        .group_by(ranked.c.entity_type, ranked.c.entity_id)
     ).all()
 
     entities = 0
     stripped = 0
+    pending = 0
     for entity_type, entity_id in keys:
         count = _compact_one(session, entity_type, entity_id, cutoff, keep_last)
         if count:
             entities += 1
             stripped += count
-    if stripped:
+            pending += 1
+        #: Committed in batches: one transaction over every entity held the
+        #: database's write lock for the whole pass, and a note saved at
+        #: start waited it out (the `busy_timeout` is 5s).
+        if pending >= COMPACT_BATCH:
+            session.commit()
+            pending = 0
+    if pending:
         session.commit()
     return {"entities": entities, "events": stripped}
 
