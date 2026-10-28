@@ -16,7 +16,7 @@
 //: The same module holds the bulk dialog for the Notes selection bar: add
 //: tags to, and take tags off, every selected note in one action.
 
-const tagNotesWord = (n) => `${n} note${n === 1 ? "" : "s"}`;
+const tagNotesWord = (n) => nounCount(n, "note");
 
 //: “a”, “b” and “c”; past three, “a”, “b”, “c” and 4 more.
 function tagNamesWords(names) {
@@ -192,7 +192,7 @@ async function removeTagsEverywhere(names) {
   const ok = await confirmDialog(
     names.length === 1
       ? `Remove the tag “${names[0]}” from the ${tagNotesWord(total)} that carry it?\n\nThe notes are untouched.`
-      : `Remove ${names.length} tags (${tagNamesWords(names)}) from every note that carries them?\n\nThe notes are untouched.`,
+      : `Remove ${nounCount(names.length, "tag")} (${tagNamesWords(names)}) from every note that carries them?\n\nThe notes are untouched.`,
     { confirmLabel: "Remove" }
   );
   if (!ok) return;
@@ -374,7 +374,7 @@ function manageCountButton(count, onShow) {
   button.className = "manage-cat-count";
   button.tabIndex = -1;
   button.textContent = String(count);
-  button.title = `Show the ${count} note${count === 1 ? "" : "s"}`;
+  button.title = `Show the ${nounCount(count, "note")}`;
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     onShow();
@@ -541,7 +541,7 @@ async function drawTurnedDown(box) {
     row.className = "manage-suggest-row";
     const names = document.createElement("span");
     names.className = "manage-suggest-names";
-    names.textContent = `${tag}, turned down on ${notes} notes`;
+    names.textContent = `${tag}, turned down on ${nounCount(notes, "note")}`;
     const again = smallButton("ph:arrow-counter-clockwise Offer again", `Suggest ${tag} as before`, async () => {
       try {
         await apiJson("/tags/turned-down/offer-again", { method: "POST", body: JSON.stringify({ tag }) });

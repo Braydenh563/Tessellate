@@ -1119,7 +1119,7 @@ async function wbSaveSelectionToLibrary() {
   const payload = wbLibSelectionPayload();
   if (!payload) return;
   const one = payload.items.length === 1 ? payload.items[0] : null;
-  const guess = one?.data?.label || noteNamePlain(one?.data?.content, 40) || `${payload.items.length} items`;
+  const guess = one?.data?.label || noteNamePlain(one?.data?.content, 40) || nounCount(payload.items.length, "item");
   const name = await promptDialog("Save to the library as", guess, { confirmLabel: "Save" });
   if (!name || !name.trim()) return;
   return wbLibCreate("element", name.trim(), payload);
@@ -1305,7 +1305,7 @@ async function wbLibImportFile(file) {
     const out = await apiJson("/board-library/import", { method: "POST", body: JSON.stringify(body) });
     wbLibPairStep(`Imported the library “${out.library.name}”`, out.library.id, null, { created: true, withItems: true });
     await wbLoadLibrary({ force: true });
-    const extra = [out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${out.dropped_media} picture${out.dropped_media === 1 ? "" : "s"} not in this notebook left out` : ""].filter(Boolean).join(", ");
+    const extra = [out.skipped ? `${out.skipped} skipped` : "", out.dropped_media ? `${nounCount(out.dropped_media, "picture")} not in this notebook left out` : ""].filter(Boolean).join(", ");
     toast(`Imported ${out.items} into "${out.library.name}"${extra ? ` (${extra})` : ""}.`);
   } catch (err) {
     toast(err.message || "Couldn't import that library.", true);
@@ -1575,7 +1575,7 @@ onDomReady(() => {
   document.getElementById("wb-side-map-expand")?.addEventListener("click", () => wbMapExpandAll());
   document.getElementById("wb-side-map-tidy")?.addEventListener("click", async () => {
     const moved = await wbMapTidy({ quiet: true });
-    toast(moved ? `Tidied ${moved} node${moved === 1 ? "" : "s"}.` : "Everything is already where this layout puts it.");
+    toast(moved ? `Tidied ${nounCount(moved, "node")}.` : "Everything is already where this layout puts it.");
   });
   //: The tiles are drawn in the pen's ink (`wbLibThumb`), so a new ink draws
   //: them again, once the picker has settled, where the list was scrolled to.
@@ -1790,7 +1790,7 @@ async function wbMoveSelectionToLayer(layerId) {
   wbScheduleRender();
   wbRenderLayers();
   const name = (wbState.layers || []).find((x) => x.id === layerId)?.name;
-  wbAnnounce(`${undo.length} item${undo.length === 1 ? "" : "s"} ${name ? `moved to ${name}` : "taken off their layer"}.`);
+  wbAnnounce(`${nounCount(undo.length, "item")} ${name ? `moved to ${name}` : "taken off their layer"}.`);
   return undo.length;
 }
 
@@ -2000,7 +2000,7 @@ function wbRenderLayers() {
       li.setAttribute("aria-expanded", folded ? "false" : "true");
       li.classList.add("has-held");
       const fold = wbLayerButton("wb-layer-fold", folded ? "ph-caret-right" : "ph-caret-down",
-        `${folded ? "Show" : "Hide"} the ${row.holds} item${row.holds === 1 ? "" : "s"} in this frame`);
+        `${folded ? "Show" : "Hide"} the ${nounCount(row.holds, "item")} in this frame`);
       fold.removeAttribute("aria-hidden");
       fold.setAttribute("aria-label", fold.title);
       name.textContent = `${row.name} \u00b7 ${row.holds}`;

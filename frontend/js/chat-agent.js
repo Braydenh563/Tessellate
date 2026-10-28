@@ -1290,7 +1290,7 @@ function changeDiff(diff) {
       viewer.appendChild(el);
     }
   }
-  if (diff.more) viewer.append(`${diff.more} more lines changed`);
+  if (diff.more) viewer.append(`${nounCount(diff.more, "more line", "more lines")} changed`);
   return viewer;
 }
 
@@ -1348,7 +1348,7 @@ function planProposalCard(holder, event, run) {
   row.className = "row";
   row.append(
     smallButton("Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
-      card.replaceWith(toolChip(`ph:play Running ${event.steps.length} steps`));
+      card.replaceWith(toolChip(`ph:play Running ${nounCount(event.steps.length, "step")}`));
       run();
     }, false),
     smallButton("Not now", "Run nothing", () => card.replaceWith(toolChip("ph:x Not run: nothing was changed.")))
@@ -2587,7 +2587,7 @@ function renderDraftSources() {
   host.replaceChildren();
   host.classList.toggle("hidden", draftSources.length === 0);
   count.textContent = draftSources.length
-    ? `${draftSources.length} note${draftSources.length === 1 ? "" : "s"} to write from`
+    ? `${nounCount(draftSources.length, "note")} to write from`
     : "";
   for (const source of draftSources) {
     const chip = document.createElement("span");
@@ -2626,7 +2626,7 @@ function renderDraftVersions() {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = `library-chip${version.text === $("draft-text").value ? " active" : ""}`;
-    chip.title = `${version.words} words, ${version.at}`;
+    chip.title = `${nounCount(version.words, "word")}, ${version.at}`;
     chip.textContent = `v${index + 1}`;
     chip.addEventListener("click", () => {
       pushDraftUndo();
@@ -2693,7 +2693,7 @@ function setDraftStatus(text, isError = false) {
 function paneWordCount(id) {
   const text = ($(id)?.value || "").trim();
   const words = text ? text.split(/\s+/).length : 0;
-  return words ? `${words} word${words === 1 ? "" : "s"}` : "";
+  return words ? nounCount(words, "word") : "";
 }
 
 function updateDraftCount() {

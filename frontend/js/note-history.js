@@ -345,7 +345,7 @@ async function undoSkillRun(span, button, onDone) {
   if (!ok) return;
   try {
     const done = await apiJson("/events/undo", { method: "POST", body: JSON.stringify({ ...body, dry_run: false }) });
-    toast(`Put back ${done.undone} note${done.undone === 1 ? "" : "s"}.`);
+    toast(`Put back ${nounCount(done.undone, "note")}.`);
     button?.remove();
     onDone?.();
     await loadEntries().catch(() => {});

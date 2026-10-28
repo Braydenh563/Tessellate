@@ -855,7 +855,7 @@ async function loadDocumentsNow(selectId) {
   //: both. See `surfaceFailed` in navigation.js.
   const loaded = await apiPagedList("/documents", DOCUMENTS_PAGE_SIZE).catch(() => null);
   if (!loaded) {
-    surfaceFailed(document.getElementById("doc-empty"), "documents", () => loadDocuments(selectId));
+    surfaceFailed(document.getElementById("doc-empty"), "your documents", () => loadDocuments(selectId));
     return;
   }
   surfaceRecovered(document.getElementById("doc-empty"));
@@ -922,7 +922,7 @@ function renderDocList() {
     type.textContent = `.${doc.file_type || "md"}`;
     meta.append(
       type,
-      ` · ${doc.words} word${doc.words === 1 ? "" : "s"} · ${relativeTime(doc.updated_at)}`
+      ` · ${nounCount(doc.words, "word")} · ${relativeTime(doc.updated_at)}`
     );
     button.append(title, meta);
     button.addEventListener("click", () => openDocument(doc.id));
@@ -3632,8 +3632,8 @@ function renderDocOutline() {
       //: The chip is a number on a row that is already a link, so the row's
       //: own name has to carry what the number means: a screen reader reading
       //: "Design notes 2/5" is reading a fraction with no unit.
-      button.title = `Jump to “${heading.text}”: ${done} of ${total} tasks done`;
-      chip.setAttribute("aria-label", `${done} of ${total} tasks done`);
+      button.title = `Jump to “${heading.text}”: ${done} of ${nounCount(total, "task")} done`;
+      chip.setAttribute("aria-label", `${done} of ${nounCount(total, "task")} done`);
       button.appendChild(chip);
     }
     button.addEventListener("click", () => jumpToDocLine(heading.line));
@@ -11819,7 +11819,7 @@ async function downloadDocumentExport(path, fallbackName) {
     await saveFile(match ? match[1] : fallbackName, await response.blob());
     const assets = Number(response.headers.get("X-Assets") || 0);
     if (assets > 0) {
-      toast(`Saved with ${assets} image${assets === 1 ? "" : "s"} beside it`);
+      toast(`Saved with ${nounCount(assets, "image")} beside it`);
     }
   } catch (error) {
     $("doc-status").classList.add("error");
@@ -12648,7 +12648,7 @@ function offerCreatedDocsUndo(docs) {
     }
     await loadDocuments(currentDoc?.id);
   };
-  return pushUndo(`Imported ${docs.length} documents`, each("bin"), each("restore"));
+  return pushUndo(`Imported ${nounCount(docs.length, "document")}`, each("bin"), each("restore"));
 }
 
 //: A note's link to this document, either way round. The server answers with
@@ -12837,7 +12837,7 @@ function renderDocAiDiff() {
     ? "No change: the model gave back the same text."
     : count === 1
       ? `One change, +${stat.added} −${stat.removed} lines. Skip it to leave the text as it is.`
-      : `${count} changes, +${stat.added} −${stat.removed} lines. Skip any you don't want.`;
+      : `${nounCount(count, "change")}, +${stat.added} −${stat.removed} lines. Skip any you don't want.`;
   //: Kept across a redraw: toggling the fourth change of eight must not take
   //: the reader back to the first.
   const scroll = view.scrollTop;
@@ -13571,7 +13571,7 @@ const DOC_HISTORY_SOURCES = {
 
 function docHistoryDelta(words) {
   if (!words) return "no change in length";
-  return words > 0 ? `+${words} words` : `${words} words`;
+  return words > 0 ? `+${nounCount(words, "word")}` : nounCount(words, "word");
 }
 
 async function openDocHistory() {
@@ -13679,7 +13679,7 @@ function docHistoryRow(entry) {
   }
   const meta = document.createElement("p");
   meta.className = "muted text-sm";
-  meta.textContent = `${whenText(entry.created_at)} · ${entry.words} words`;
+  meta.textContent = `${whenText(entry.created_at)} · ${nounCount(entry.words, "word")}`;
   //: The opening of the version itself. A row saying only "You, 20 May,
   //: +140 words" makes you open every entry to find the one you want, which
   //: is the work this list is supposed to save.
@@ -13963,7 +13963,7 @@ async function renderDocReplace() {
   docReplace.matches = matches;
   const total = matches.reduce((sum, m) => sum + m.count, 0);
   summary.textContent = matches.length
-    ? `${total} match${total === 1 ? "" : "es"} in ${matches.length} document${matches.length === 1 ? "" : "s"}.`
+    ? `${total} match${total === 1 ? "" : "es"} in ${nounCount(matches.length, "document")}.`
     : "No document has it.";
   for (const match of matches) {
     const row = document.createElement("li");
@@ -13997,8 +13997,8 @@ async function runDocReplace() {
   }
   $("doc-replace-dialog").close();
   offerUndo(
-    `Replaced ${total} in ${after.length} document${after.length === 1 ? "" : "s"}`,
-    `Replaced ${total} in ${after.length} document${after.length === 1 ? "" : "s"}. Undo takes it all back.`,
+    `Replaced ${total} in ${nounCount(after.length, "document")}`,
+    `Replaced ${total} in ${nounCount(after.length, "document")}. Undo takes it all back.`,
     () => docWriteContents(before),
     () => docWriteContents(after)
   );
@@ -17859,7 +17859,7 @@ function docProseFindings(text) {
       if (words > DOC_LONG_SENTENCE_WORDS) {
         found.push({
           rule: "long-sentence",
-          message: `${words} words in one sentence`,
+          message: `${nounCount(words, "word")} in one sentence`,
           start: at + cursor,
           end: at + cursor + sentence.length,
           text: text.slice(at + cursor, at + cursor + sentence.length),
@@ -18043,7 +18043,7 @@ function renderDocProse() {
   count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
-      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}${win ? " nearby" : ""}`
+      ? `${nounCount(docProseFound.length, "suggestion")}${win ? " nearby" : ""}`
       : win
         ? "No suggestions nearby"
         : "No suggestions";
@@ -18128,7 +18128,7 @@ function docProseHeader() {
   const count = document.createElement("span");
   count.className = "doc-prose-count";
   count.textContent = n ? String(n) : "";
-  count.title = `${n} suggestion${n === 1 ? "" : "s"} in this document`;
+  count.title = `${nounCount(n, "suggestion")} in this document`;
   title.appendChild(count);
   head.appendChild(title);
 
@@ -18290,7 +18290,7 @@ function docFocusSyncProse() {
   const button = $("doc-focus-prose");
   if (!button) return;
   const n = docProseFound.length;
-  const words = n ? `${n} suggestion${n === 1 ? "" : "s"}` : "Suggestions";
+  const words = n ? nounCount(n, "suggestion") : "Suggestions";
   const label = $("doc-focus-prose-count");
   if (label) label.textContent = words;
   button.hidden = Boolean($("doc-prose")?.hidden);
@@ -20432,7 +20432,7 @@ function docFindingLabel(finding) {
   const text = finding.text || "";
   if (text.trim()) return text.replace(/\s+/g, " ").slice(0, 48);
   if (/^\n+$/.test(text)) return `${text.length} blank line${text.length === 1 ? "" : "s"}`;
-  return `${text.length} space${text.length === 1 ? "" : "s"}`;
+  return nounCount(text.length, "space");
 }
 
 function docSuggestAlternatives(finding) {
@@ -21199,7 +21199,7 @@ function docAiCheckStatus() {
   wrap.className = "doc-prose-ai";
   wrap.setAttribute("role", "status");
   const n = docAiCheck.items.length;
-  const found = `${n} finding${n === 1 ? "" : "s"}`;
+  const found = nounCount(n, "finding");
   if (docAiCheck.state === "offline") {
     const notice = document.createElement("p");
     notice.className = "notice notice-warn doc-prose-ai-notice";
@@ -21286,7 +21286,7 @@ function renderDocDictionary() {
   const shown = query ? words.filter((word) => word.includes(query)) : words;
   const count = $("doc-dictionary-count");
   if (count) {
-    count.textContent = words.length ? `${words.length} word${words.length === 1 ? "" : "s"}` : "";
+    count.textContent = words.length ? nounCount(words.length, "word") : "";
   }
   //: Add is offered only when there is something new to add: a word typed
   //: that is not already in the list.
@@ -21360,7 +21360,7 @@ async function docDictionaryImport(file) {
   renderDocDictionary();
   renderDocProse();
   toast(fresh.length
-    ? `Added ${fresh.length} word${fresh.length === 1 ? "" : "s"}${incoming.length > fresh.length ? `; ${incoming.length - fresh.length} were already here` : ""}.`
+    ? `Added ${nounCount(fresh.length, "word")}${incoming.length > fresh.length ? `; ${incoming.length - fresh.length} were already here` : ""}.`
     : "Every word in that file is already here.");
 }
 

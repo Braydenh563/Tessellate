@@ -636,7 +636,7 @@ function modelHardwareSentence(hw) {
   else parts.push("no graphics card with memory of its own");
   if (hw.cpu_cores) parts.push(`${hw.cpu_cores} processor core${hw.cpu_cores === 1 ? "" : "s"}`);
   const here = hw.models_installed
-    ? ` ${hw.models_installed} model${hw.models_installed === 1 ? "" : "s"} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
+    ? ` ${nounCount(hw.models_installed, "model")} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
     : "";
   const fixed = hw.override ? " You corrected these numbers." : "";
   return `This computer: ${parts.join(", ")}.${here}${fixed} Each card says whether a model fits.`;

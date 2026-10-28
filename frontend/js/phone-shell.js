@@ -1561,9 +1561,9 @@ function syncPhoneMoreRuns() {
   }
   badge.textContent = String(shown);
   badge.title = due
-    ? `${due} reminder${due === 1 ? "" : "s"} due`
+    ? `${nounCount(due, "reminder")} due`
     : `${runs} agent run${runs === 1 ? "" : "s"}`;
-  more.setAttribute("aria-label", due ? `More: ${due} reminder${due === 1 ? "" : "s"} due` : "More");
+  more.setAttribute("aria-label", due ? `More: ${nounCount(due, "reminder")} due` : "More");
 }
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.

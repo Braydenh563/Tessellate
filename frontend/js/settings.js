@@ -621,9 +621,9 @@ function filterSettings(term) {
   //: The settings themselves, under the field (settings-find.js).
   const settingsFound = typeof renderSettingResults === "function" ? renderSettingResults(query) : 0;
   count.textContent = settingsFound
-    ? `${settingsFound} setting${settingsFound === 1 ? "" : "s"} in ${matches} section${matches === 1 ? "" : "s"}`
+    ? `${nounCount(settingsFound, "setting")} in ${nounCount(matches, "section")}`
     : matches
-      ? `${matches} section${matches === 1 ? "" : "s"}`
+      ? nounCount(matches, "section")
       : "Nothing matches that";
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
@@ -1002,7 +1002,7 @@ function renderLogErrorBadge() {
     link.appendChild(badge);
   }
   badge.textContent = logErrorsSinceOpened > 99 ? "99+" : String(logErrorsSinceOpened);
-  badge.title = `${logErrorsSinceOpened} error${logErrorsSinceOpened === 1 ? "" : "s"} since you last looked at the logs, click to show just those`;
+  badge.title = `${nounCount(logErrorsSinceOpened, "error")} since you last looked at the logs, click to show just those`;
 }
 
 // NDJSON over fetch rather than an EventSource, for one blunt reason:
@@ -1122,7 +1122,7 @@ async function copyLogs() {
   }
   const text = shown.map(logRecordText).join("\n");
   if (await copyToClipboard(text)) {
-    toast(`Copied ${shown.length} record${shown.length === 1 ? "" : "s"}.`);
+    toast(`Copied ${nounCount(shown.length, "record")}.`);
   }
 }
 
@@ -2518,7 +2518,7 @@ function renderThemePresets() {
     note.textContent = `${THEME_PRESETS[active].label} is showing exactly as designed.`;
   } else {
     note.textContent =
-      `${overrides.length} setting${overrides.length === 1 ? "" : "s"} you changed ` +
+      `${nounCount(overrides.length, "setting")} you changed ` +
       `(${overrides.join(", ")}) ${overrides.length === 1 ? "is" : "are"} on top of ` +
       (active ? `the ${THEME_PRESETS[active].label} theme.` : "the default look.");
   }
@@ -3983,7 +3983,7 @@ async function renderLearnedSwitches() {
   if (banner) {
     banner.classList.toggle("hidden", !paused);
     banner.textContent = paused
-      ? `Paused. ${learnedTotal} thing${learnedTotal === 1 ? "" : "s"} already worked out are kept and stay editable below.`
+      ? `Paused. ${nounCount(learnedTotal, "thing")} already worked out are kept and stay editable below.`
       : "";
   }
 }
@@ -4312,8 +4312,8 @@ async function learnedRunNow() {
       const stopped = result.stopped_reason === "budget" ? ", stopped at this run's budget" : "";
       if (note) {
         note.textContent = derived
-          ? `Read ${scanned} note${scanned === 1 ? "" : "s"}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
-          : `Read ${scanned} note${scanned === 1 ? "" : "s"}, nothing new${stopped}.`;
+          ? `Read ${nounCount(scanned, "note")}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
+          : `Read ${nounCount(scanned, "note")}, nothing new${stopped}.`;
       }
       if (derived) renderLearnedList();
     }
@@ -4375,9 +4375,9 @@ function wireLearnedSection() {
 function learnedFromYouText(sum) {
   if (!sum || (!sum.corrections && !sum.notes)) return "";
   const n = Number(sum.corrections) || 0;
-  const head = `Learned from you: ${n} correction${n === 1 ? "" : "s"}.`;
+  const head = `Learned from you: ${nounCount(n, "correction")}.`;
   if (!sum.notes || sum.accuracy == null) return `${head} No notes filed by Atlas yet.`;
-  const over = `over the last ${sum.notes} note${sum.notes === 1 ? "" : "s"} it filed`;
+  const over = `over the last ${nounCount(sum.notes, "note")} it filed`;
   if (sum.earlier != null && sum.later != null) {
     return `${head} Filing accuracy ${sum.earlier}% to ${sum.later}% ${over}.`;
   }

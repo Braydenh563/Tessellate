@@ -865,9 +865,9 @@ function mapCountLabel(board) {
   const sketches = Math.max(0, (board?.sketch_count || 0) - links);
   const objects = board?.object_count || 0;
   const parts = [];
-  if (nodes) parts.push(`${nodes} card${nodes === 1 ? "" : "s"}`);
-  if (links) parts.push(`${links} link${links === 1 ? "" : "s"}`);
-  if (sketches) parts.push(`${sketches} drawing${sketches === 1 ? "" : "s"}`);
+  if (nodes) parts.push(nounCount(nodes, "card"));
+  if (links) parts.push(nounCount(links, "link"));
+  if (sketches) parts.push(nounCount(sketches, "drawing"));
   if (objects) {
     //: **"items", not "images", on a board.** `object_count` is
     //: `count(WhiteboardObject)` with no filter on `kind`
@@ -877,8 +877,8 @@ function mapCountLabel(board) {
     //: widget and in the Library, which is the same class of wrong noun §5
     //: item 12 fixed for a map's nodes and missed here.
     parts.push(isMap
-      ? `${objects} topic${objects === 1 ? "" : "s"}`
-      : `${objects} item${objects === 1 ? "" : "s"}`);
+      ? nounCount(objects, "topic")
+      : nounCount(objects, "item"));
   }
   return parts.length ? parts.join(" · ") : isMap ? "Empty map" : "Empty board";
 }
@@ -1335,7 +1335,7 @@ function fitNoteMetas(metas) {
     }
     more.hidden = !fold.length;
     more.firstChild.textContent = `+${fold.length}`;
-    more.setAttribute("aria-label", `${fold.length} more tags`);
+    more.setAttribute("aria-label", nounCount(fold.length, "more tag", "more tags"));
     more.title = fold.map((el) => `#${el.dataset.tag}`).reverse().join(" ");
     meta.classList.remove("is-measuring");
   }

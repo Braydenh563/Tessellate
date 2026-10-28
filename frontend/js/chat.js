@@ -1406,7 +1406,7 @@ async function runWebSearch() {
   status.replaceChildren();
   const summary = document.createElement("span");
   summary.textContent = results.length
-    ? `${results.length} result${results.length === 1 ? "" : "s"} via ${answered.label}`
+    ? `${nounCount(results.length, "result")} via ${answered.label}`
     : `No results from ${answered.label}: try different words.`;
   status.appendChild(summary);
   if (answered.detail) {

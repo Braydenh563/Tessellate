@@ -122,12 +122,12 @@ function renderSearchEngineHealth(status) {
   const cover = status.embedding_coverage;
   const parts = [state];
   if (reindex && reindex.status === "running" && reindex.total) {
-    parts.push(`indexing ${reindex.done} of ${reindex.total} notes`);
+    parts.push(`indexing ${reindex.done} of ${nounCount(reindex.total, "note")}`);
   } else if (status.embedding_ready && cover && cover.total) {
     parts.push(
       cover.indexed >= cover.total
-        ? `all ${cover.total} notes searchable by meaning`
-        : `${cover.indexed} of ${cover.total} notes searchable by meaning`
+        ? `all ${nounCount(cover.total, "note")} searchable by meaning`
+        : `${cover.indexed} of ${nounCount(cover.total, "note")} searchable by meaning`
     );
   }
   const last = status.last_search?.mode;

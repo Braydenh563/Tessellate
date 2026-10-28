@@ -61,7 +61,7 @@ function renderExtractPreview(body) {
   status.classList.remove("error");
   status.textContent =
     body.message ||
-    `${body.notes.length} note${body.notes.length === 1 ? "" : "s"} proposed: review, then save.`;
+    `${nounCount(body.notes.length, "note")} proposed: review, then save.`;
 
   // Built with createElement, not an `innerHTML` template per iteration.
   // The old version escaped everything correctly, so this is not a security
@@ -231,7 +231,7 @@ async function commitExtractPreview() {
         () => refreshEntries(madeIds)
       );
     }
-    toast(`Saved ${result.notes.length} note${result.notes.length === 1 ? "" : "s"}.`);
+    toast(`Saved ${nounCount(result.notes.length, "note")}.`);
     await loadEntries();
   } catch (error) {
     status.classList.add("error");
@@ -545,7 +545,7 @@ async function importChatDocuments(files) {
   const label =
     made.length === 1
       ? `Added “${first.title}” to your documents.`
-      : `Added ${made.length} files to your documents.`;
+      : `Added ${nounCount(made.length, "file")} to your documents.`;
   toastAction(label, made.length === 1 ? "Open it" : "Show them", () => {
     switchTab("documents");
     if (made.length === 1) openDocument(first.id);
@@ -1085,7 +1085,7 @@ function notePickerShape(source) {
       },
       meta: (row) => {
         const when = relativeTime(row.updated_at);
-        return [notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "")];
+        return [notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "")];
       },
       search: (row) => `${row.title || ""} ${row.preview || ""}`,
       isOn: (row) => attachedDocuments.some((d) => d.id === row.id),

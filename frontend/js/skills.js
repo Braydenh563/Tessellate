@@ -770,7 +770,7 @@ function skillRow(skill) {
     row.appendChild(larger);
   }
   if ((skill.steps || []).length) {
-    row.appendChild(chip(`${skill.steps.length} steps`, "item-fact"));
+    row.appendChild(chip(nounCount(skill.steps.length, "step"), "item-fact"));
   }
   if ((skill.tools || []).length) {
     row.appendChild(chip(`${skill.tools.length} tools`, "item-fact"));
@@ -1376,7 +1376,7 @@ function batchPut(body) {
 }
 
 function batchNoun(ids) {
-  return `${ids.length} note${ids.length === 1 ? "" : "s"}`;
+  return nounCount(ids.length, "note");
 }
 
 async function batchFavourite(on) {
@@ -1448,7 +1448,7 @@ async function batchDelete() {
     for (const id of ids) await api(`/entries/${id}`, { method: "DELETE" });
     await loadEntries();
   };
-  const action = pushUndo(`Moved ${ids.length} note${ids.length === 1 ? "" : "s"} to the bin`, restoreAll, binAll);
+  const action = pushUndo(`Moved ${nounCount(ids.length, "note")} to the bin`, restoreAll, binAll);
   toastAction(`Moved ${ids.length} to the bin.`, "Undo", async () => {
     settleUndoFromToast(action);
     await restoreAll();

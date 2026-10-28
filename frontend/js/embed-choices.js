@@ -159,7 +159,7 @@ function embedChoiceRow(choice, body, now) {
     line.className = "muted task-detail";
     const stage = {
       prepare: "Getting the model ready; the first time it is downloaded.",
-      stage: `${switching.done} of ${switching.total} notes read. Search uses the current model until then.`,
+      stage: `${switching.done} of ${nounCount(switching.total, "note")} read. Search uses the current model until then.`,
       swap: "Swapping the new vectors in.",
       paragraphs: "Reading long notes paragraph by paragraph.",
     }[switching.phase] || "Starting.";

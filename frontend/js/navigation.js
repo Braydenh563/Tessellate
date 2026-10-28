@@ -1241,49 +1241,7 @@ async function openHistoryEntry(entry) {
 //: announced every time a filter clears.
 const _surfaceFailedContents = new WeakMap();
 
-function surfaceFailed(el, what, retry) {
-  if (!el) return;
-  //: Saved once. A second failure while already failed must not capture the
-  //: failure message as "the original contents", which would make the real
-  //: empty state unrecoverable for the rest of the session.
-  if (!_surfaceFailedContents.has(el)) {
-    _surfaceFailedContents.set(el, { nodes: [...el.childNodes], display: el.style.display });
-  }
-  el.classList.add("is-failed");
-  el.classList.remove("hidden");
-  //: **And any inline `display` it is carrying.** The graph's empty state is
-  //: hidden with `style.display = "none"` rather than the class, deliberately
-  //: ("inline display beats every stylesheet rule", graph.js), so removing
-  //: `hidden` left the failure message in the document at 0 by 0 pixels:
-  //: present to every assertion and invisible to every reader. Measured, and
-  //: exactly the kind of fix that reports itself as working.
-  el.style.display = "";
-  el.replaceChildren();
-  const icon = document.createElement("i");
-  icon.className = "ph ph-warning-circle empty-icon";
-  icon.setAttribute("aria-hidden", "true");
-  const title = document.createElement("p");
-  title.className = "empty-title";
-  title.textContent = `Could not load your ${what}`;
-  const body = document.createElement("p");
-  //: Says what is and is not true, because the first thing a person fears
-  //: here is that the notes are gone.
-  body.textContent =
-    "Nothing has been lost: the app could not read its own data just now.";
-  el.append(icon, title, body);
-  if (typeof retry === "function") {
-    const again = document.createElement("button");
-    again.type = "button";
-    again.className = "ghost small";
-    setLabel(again, "ph:arrow-clockwise Try again");
-    again.addEventListener("click", () => {
-      surfaceRecovered(el);
-      retry();
-    });
-    el.appendChild(again);
-  }
-  el.setAttribute("role", "alert");
-}
+//: `surfaceFailed(el, what, retry)` is load-failed.js's (fetched a few seconds after boot).
 
 //: The other half, and the reason the contents are saved rather than rebuilt:
 //: an empty state's markup is written in index.html, per surface, with its own

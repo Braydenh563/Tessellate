@@ -571,7 +571,7 @@ async function renderTimeline() {
   //: and the two used to look identical on screen: "Nothing to plot yet" over
   //: a notebook full of dated notes. See `surfaceFailed`.
   if (!body) {
-    surfaceFailed($("timeline-empty"), "timeline", renderTimeline);
+    surfaceFailed($("timeline-empty"), "your timeline", renderTimeline);
     return;
   }
   surfaceRecovered($("timeline-empty"));
@@ -652,7 +652,7 @@ async function renderTimelineRecall() {
   const seen = new Set();
   for (const memory of timelineRecall.memories) {
     const years = now.getFullYear() - memory.when.getFullYear();
-    const ago = years > 0 ? `${years} year${years === 1 ? "" : "s"} ago` : `${now.getMonth() - memory.when.getMonth() + 12 * years} months ago`;
+    const ago = years > 0 ? `${nounCount(years, "year")} ago` : `${now.getMonth() - memory.when.getMonth() + 12 * years} months ago`;
     if (seen.has(ago) || seen.size >= 3) continue;
     seen.add(ago);
     chips.push(button(`ph:clock-counter-clockwise On this day, ${ago}: ${clipText(memory.title, 30)}`, "Show what you wrote on this date in earlier months and years", range("onthisday")));

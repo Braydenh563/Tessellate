@@ -133,7 +133,7 @@ async function docIdeCompareMenu() {
   const items = entries.length
     ? entries.slice(0, 30).map((entry) => ({
       label: `ph:clock-counter-clockwise ${formatDocHistoryWhen(entry.created_at)}`,
-      title: `${entry.words} words changed`,
+      title: `${nounCount(entry.words, "word")} changed`,
       run: () => docIdeCompareWith(entry.id, formatDocHistoryWhen(entry.created_at)),
     }))
     : [{ label: "ph:info No saved versions yet", disabled: true, run: () => {} }];

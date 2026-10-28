@@ -803,7 +803,7 @@ function toastLayout(box) {
   const count = (cls, text) => Object.assign(document.createElement("span"), { className: cls, textContent: text });
   open.replaceChildren(count("toast-more-rest", `+${rest} more`), count("toast-more-folded", folded.length ? `+${folded.length} more` : "All notifications"));
   open.title = "Open the notifications";
-  open.setAttribute("aria-label", `${rest} more notifications. Open the notifications`);
+  open.setAttribute("aria-label", `${nounCount(rest, "more notification", "more notifications")}. Open the notifications`);
   if (toastAtTop(box)) box.append(more);
   else box.prepend(more);
 }
@@ -2606,7 +2606,7 @@ function renderStatusBar() {
     value: due || open,
     label: due ? "due" : "open",
     title: due
-      ? `${due} reminder${due === 1 ? "" : "s"} due now`
+      ? `${nounCount(due, "reminder")} due now`
       : `${open} open reminder${open === 1 ? "" : "s"}`,
     tone: due ? "due" : "",
   });

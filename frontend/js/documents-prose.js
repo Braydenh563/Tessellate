@@ -1110,7 +1110,7 @@ function docSuggestAll(accept) {
   docSuggestApply(
     view,
     { from: 0, to: before.length, insert: docSuggestResolveAll(before, accept) },
-    `${accept ? "Accepted" : "Rejected"} ${count} change${count === 1 ? "" : "s"}. Ctrl+Z undoes it.`
+    `${accept ? "Accepted" : "Rejected"} ${nounCount(count, "change")}. Ctrl+Z undoes it.`
   );
 }
 
@@ -1142,7 +1142,7 @@ function renderDocSuggestState() {
   const chip = $("doc-suggest-status");
   if (chip) {
     chip.hidden = !on && !count;
-    const changes = `${count} change${count === 1 ? "" : "s"}`;
+    const changes = nounCount(count, "change");
     setLabel(chip, `ph:pencil-simple-line ${on ? `Suggesting, ${changes}` : `${changes} suggested`}`);
     chip.title = count ? "Review the next suggested change" : "Suggestion mode is on: what you type and delete is marked for review";
   }
@@ -1672,7 +1672,7 @@ function docFillOptions(tok, ctx) {
       const t = docFillTable(tok.cols, tok.rows);
       const c = Math.max(1, Math.min(12, tok.cols));
       const r = Math.max(1, Math.min(50, tok.rows));
-      const detail = `A table, ${c} column${c === 1 ? "" : "s"} by ${r} row${r === 1 ? "" : "s"}`;
+      const detail = `A table, ${nounCount(c, "column")} by ${nounCount(r, "row")}`;
       return [{ label: tok.token, detail, text: t.text, select: t.select }];
     }
     case "today":
@@ -1706,7 +1706,7 @@ function docFillOptions(tok, ctx) {
       const toc = docFillToc(ctx.doc, ctx.slug);
       if (!toc) return [];
       const n = toc.trim().split("\n").length;
-      return [{ label: "toc", detail: `Contents, ${n} heading${n === 1 ? "" : "s"}`, text: toc }];
+      return [{ label: "toc", detail: `Contents, ${nounCount(n, "heading")}`, text: toc }];
     }
     case "sig": {
       const sig = docFillSig(ctx.name);

@@ -866,7 +866,7 @@ async function wbJoinSelection(mode) {
     }
   });
   wbScheduleRender();
-  wbAnnounce(`Joined ${plan.length} pair${plan.length === 1 ? "" : "s"}.`);
+  wbAnnounce(`Joined ${nounCount(plan.length, "pair")}.`);
 }
 
 // --- Pasting onto a board or a map, and Paste special (wbpaste-1026) ---

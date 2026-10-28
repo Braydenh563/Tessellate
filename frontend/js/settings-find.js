@@ -501,7 +501,7 @@ function settingsIndexBuild(name) {
   const paint = () => {
     list.classList.toggle("is-open", showAll);
     toggle.setAttribute("aria-expanded", String(showAll));
-    toggle.textContent = showAll ? "Show fewer" : `Show all ${heads.length} sections`;
+    toggle.textContent = showAll ? "Show fewer" : `Show all ${nounCount(heads.length, "section")}`;
   };
   toggle.addEventListener("click", () => {
     showAll = !showAll;
@@ -787,7 +787,7 @@ function helpApplySearch(query) {
   $("help-empty")?.classList.toggle("hidden", !searching || shown + others > 0);
   const status = $("help-search-status");
   if (status) {
-    status.textContent = searching ? `${shown} of ${total} topics` : "";
+    status.textContent = searching ? `${shown} of ${nounCount(total, "topic")}` : "";
     status.classList.toggle("hidden", !searching);
   }
 }

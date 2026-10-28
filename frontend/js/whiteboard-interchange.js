@@ -792,7 +792,7 @@ async function wbImportBoardRows(rows, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  wbAnnounce(`Brought in ${made} item${made === 1 ? "" : "s"} from the file.`);
+  wbAnnounce(`Brought in ${nounCount(made, "item")} from the file.`);
   return made;
 }
 
@@ -839,8 +839,8 @@ async function wbImportMermaid(source, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  const frames = frameIds.size ? ` in ${frameIds.size} frame${frameIds.size === 1 ? "" : "s"}` : "";
-  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${graph.skipped ? `; ${graph.skipped} line${graph.skipped === 1 ? "" : "s"} left out` : ""}.`;
+  const frames = frameIds.size ? ` in ${nounCount(frameIds.size, "frame")}` : "";
+  const said = `Brought in ${graph.nodes.length} shapes${frames} and ${graph.edges.length} connectors${graph.skipped ? `; ${nounCount(graph.skipped, "line")} left out` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return graph.nodes.length;
@@ -929,7 +929,7 @@ async function wbImportMermaidSequence(source, at = wbViewCentre()) {
     }
   });
   renderWhiteboardNow();
-  const said = `Brought in ${n} participant${n === 1 ? "" : "s"} and ${messages} message${messages === 1 ? "" : "s"}${seq.skipped ? `; ${seq.skipped} line${seq.skipped === 1 ? "" : "s"} left out` : ""}.`;
+  const said = `Brought in ${nounCount(n, "participant")} and ${nounCount(messages, "message")}${seq.skipped ? `; ${nounCount(seq.skipped, "line")} left out` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return n;
@@ -1128,7 +1128,7 @@ async function wbImportDrawio(text, at = wbViewCentre()) {
   for (const page of pages) for (const [k, n] of Object.entries(page.plan.dropped)) dropped[k] = (dropped[k] || 0) + n;
   const kept = Object.entries(dropped).map(([k, n]) => `${k} ${n}`).join(", ");
   const said = `Brought in ${items} shapes and ${links} connectors from draw.io`
-    + `${framed ? `, ${pages.length} pages each in a frame of its own` : ""}${kept ? `; not kept: ${kept}` : ""}.`;
+    + `${framed ? `, ${nounCount(pages.length, "page")} each in a frame of its own` : ""}${kept ? `; not kept: ${kept}` : ""}.`;
   wbAnnounce(said);
   toast(said);
   return items;

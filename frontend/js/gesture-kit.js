@@ -179,7 +179,7 @@ async function explainNote(entry) {
   const name = (link) => noteNamePlain(link.preview).slice(0, 80) || "a note";
   const lines = links.map((link) => `“${name(link)}”: ${link.reason ? link.reason : "no reason was given for this link"}.`);
   const about = links.length
-    ? `It links to ${links.length} note${links.length === 1 ? "" : "s"}. ${lines.join(" ")}`
+    ? `It links to ${nounCount(links.length, "note")}. ${lines.join(" ")}`
     : "It links to no other notes yet.";
   speakText(`${words}\n\n${about}`);
   openSheet({
@@ -196,7 +196,7 @@ async function explainNote(entry) {
       text.textContent = words || "This note has no words of its own.";
       const head = document.createElement("p");
       head.className = "muted text-sm";
-      head.textContent = links.length ? `It links to ${links.length} note${links.length === 1 ? "" : "s"}:` : "It links to no other notes yet.";
+      head.textContent = links.length ? `It links to ${nounCount(links.length, "note")}:` : "It links to no other notes yet.";
       body.append(text, head);
       if (links.length) {
         const list = document.createElement("ul");

@@ -168,7 +168,7 @@ async function stopAllActivity() {
     ),
   );
   const stopped = asked.reduce((sum, one) => sum + one, 0);
-  if (stopped) toast(`Asked ${stopped} job${stopped === 1 ? "" : "s"} to stop.`, "info");
+  if (stopped) toast(`Asked ${nounCount(stopped, "job")} to stop.`, "info");
   if (error) toast(error.message, true);
   renderActivity();
 }

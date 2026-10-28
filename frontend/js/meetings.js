@@ -1470,7 +1470,7 @@ async function renderRecordings() {
     const failed = list.appendChild(document.createElement("li"));
     list.replaceChildren(failed);
     failed.className = "empty-state recordings-empty";
-    surfaceFailed(failed, "recordings", renderRecordings);
+    surfaceFailed(failed, "your recordings", renderRecordings);
     return;
   }
   noteRecoveredRecordings(body.recovered);
@@ -1925,7 +1925,7 @@ async function recordingTranscriptFill(rec, audio, list) {
   const buttons = [];
   const sync = () => {
     note.textContent = picked.size
-      ? `${picked.size} line${picked.size === 1 ? "" : "s"} picked`
+      ? `${nounCount(picked.size, "line")} picked`
       : "Shift-click picks a run of lines to copy";
     buttons.forEach((button, i) => {
       const on = picked.has(i);
@@ -2174,7 +2174,7 @@ async function recordingTranscriptionEnded(rec, run, hooks) {
   if (run.state === "done") {
     await hooks.done?.(run);
     if (!here) {
-      recordNotification({ kind: "task", title: `Transcript ready: “${name}”`, detail: `${run.words} words`, key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
+      recordNotification({ kind: "task", title: `Transcript ready: “${name}”`, detail: nounCount(run.words, "word"), key: `transcription:${rec.id}:${Date.now()}`, action: { open: "recording", id: rec.id } });
       toastAction(`Transcript ready: “${name}”.`, "Open", () => openRecordings(rec.id));
     }
   } else if (run.state === "failed") {
@@ -2251,7 +2251,7 @@ function openRecordingTrim(rec) {
       if (minutes >= RECORDING_TRIM_HEAVY_MINUTES) {
         const note = document.createElement("p");
         note.className = "muted recording-trim-weight";
-        note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${minutes} minutes.`;
+        note.textContent = `Trimming opens the whole recording in this tab: about ${minutes * RECORDING_TRIM_MB_PER_MINUTE} MB of memory for ${nounCount(minutes, "minute")}.`;
         heavy.push(note);
       }
       const sync = () => {

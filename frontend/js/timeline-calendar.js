@@ -180,7 +180,7 @@ async function paintTimelineCalendar() {
     loading.remove();
     if (!read) {
       timelineCal.url = "";
-      surfaceFailed($("timeline-empty"), "calendar", paintTimelineCalendar);
+      surfaceFailed($("timeline-empty"), "your calendar", paintTimelineCalendar);
       return;
     }
     surfaceRecovered($("timeline-empty"));

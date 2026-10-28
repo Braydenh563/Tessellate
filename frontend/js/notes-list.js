@@ -333,7 +333,7 @@ function liveQueryBar(visible) {
   //: letting the count pass for the whole of a larger answer.
   count.textContent = parsed.engine.length > 0 && noteEngine.capped
     ? `The first ${ids.length} notes that match this query`
-    : `${ids.length} note${ids.length === 1 ? "" : "s"} match this query`;
+    : `${nounCount(ids.length, "note")} match this query`;
   bar.replaceChildren(
     count,
     smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
@@ -2877,7 +2877,7 @@ async function loadEntries() {
   //: throws, and a throw used to leave the skeletons and then the empty state
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
-  return loadSurface($("empty-message"), "notes", _loadEntries);
+  return loadSurface($("empty-message"), "your notes", _loadEntries);
 }
 
 async function _loadEntries() {
@@ -3195,7 +3195,7 @@ function reminderCountChip(entry, options = {}) {
   if ((!options.actions && !options.facts) || entry.is_board || entry.is_draft) return null;
   const count = reminderCountsCache.get(entry.id) || 0;
   if (!count) return null;
-  const alarm = chip(`ph:alarm ${count} reminder${count === 1 ? "" : "s"}`, "reminders", (event) => {
+  const alarm = chip(`ph:alarm ${nounCount(count, "reminder")}`, "reminders", (event) => {
     event.stopPropagation();
     toggleNoteReminders(entry);
   });
@@ -3228,7 +3228,7 @@ function noteTopicChip(entry) {
     await switchTab("graph");
     showTopicInGraph(entry.id);
   });
-  mark.title = `In the topic ${topic.name}, ${topic.size} notes. Open it on the graph`;
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Open it on the graph`;
   return mark;
 }
 
@@ -3694,7 +3694,7 @@ function offerWikiRename(entryId, saved) {
     try {
       const done = await apiJson(`/entries/${entryId}/wiki-rename`, { method: "POST", body: JSON.stringify({ old: offer.old }) });
       pushWikiRenameUndo(entryId, offer.old, done);
-      toast(`Updated ${done.rewritten} note${done.rewritten === 1 ? "" : "s"}.`);
+      toast(`Updated ${nounCount(done.rewritten, "note")}.`);
       await loadEntries().catch(() => {});
     } catch (error) {
       toast(error.message || "Couldn't update those links.", true);

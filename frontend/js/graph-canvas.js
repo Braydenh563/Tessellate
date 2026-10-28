@@ -1505,7 +1505,7 @@ function gcShowTopic(topic, colour) {
   //: wrapped to two lines as soon as the rename field took the name's room.
   const size = document.createElement("span");
   size.className = "muted graph-topic-count";
-  size.textContent = `${topic.size} notes`;
+  size.textContent = nounCount(topic.size, "note");
   //: INBOX 547: a topic's name is found, and can be replaced by one of your
   //: own; an empty name brings the found one back.
   const tools = document.createElement("div");
@@ -1562,7 +1562,7 @@ function gcShowTopic(topic, colour) {
   //: "Topics and categories": neither writes the other on its own). One
   //: move with one Undo, the batch bar's own (`moveNotesToCategory`).
   const file = smallButton("ph:folder-simple-plus File as a category", "File these notes under one category, named for the topic", async () => {
-    const wanted = (await promptDialog(`File these ${topic.size} notes under the category:`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
+    const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category:`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
     if (wanted) await moveNotesToCategory(topic.ids, wanted);
   });
   actions.append(ask, file);
@@ -2274,7 +2274,7 @@ function gcExportPng(scale = 2, s = gcTab) {
     .filter((row) => row.text)
     .slice(0, 14);
   const noteCount = s.nodes.filter((n) => !n.isGroup).length;
-  const caption = `${noteCount} note${noteCount === 1 ? "" : "s"} · ${new Date().toLocaleDateString()}`;
+  const caption = `${nounCount(noteCount, "note")} · ${new Date().toLocaleDateString()}`;
   ctx.font = "12px system-ui, sans-serif";
   const lineH = 18;
   const pad = 10;
@@ -4154,7 +4154,7 @@ function gcPinSelection(s, pinned) {
     ? apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins: saved.map((c) => ({ id: c.id, x: c.after.x, y: c.after.y })) }) })
     : Promise.all(saved.map((c) => graphPinSave(c.id, null, null)));
   if (saved.length) write.catch(() => toast("The pins were not saved.", true));
-  const words = `${changes.length} note${changes.length === 1 ? "" : "s"}`;
+  const words = nounCount(changes.length, "note");
   graphPinStep(pinned ? `Pinned ${words}` : `Unpinned ${words}`, changes);
   toast(pinned ? `Pinned ${words}.` : `Unpinned ${words}.`);
 }
@@ -4191,8 +4191,8 @@ function gcWireSelectionDock(s = gcTab) {
         changes.push({ id: node.id, before: { tags: wasTags }, after: { tags } });
       }
     }
-    if (changes.length) pushEntriesPutUndo(`Tagged ${changes.length} note${changes.length === 1 ? "" : "s"} #${tag}`, changes, () => renderGraph());
-    toast(`Tagged ${done} note${done === 1 ? "" : "s"} #${tag}.`);
+    if (changes.length) pushEntriesPutUndo(`Tagged ${nounCount(changes.length, "note")} #${tag}`, changes, () => renderGraph());
+    toast(`Tagged ${nounCount(done, "note")} #${tag}.`);
     renderGraph();
   });
   on("graph-selection-link", async () => {
@@ -4222,7 +4222,7 @@ function gcWireSelectionDock(s = gcTab) {
     }
     renderGraph();
     if (!made.length) return toast("Those notes were already linked.");
-    const words = `${made.length} pair${made.length === 1 ? "" : "s"}`;
+    const words = nounCount(made.length, "pair");
     const action = pushUndo(`Linked ${words} on the graph`, () => gcUnlinkPairs(made), () => gcRelinkPairs(made));
     toastAction(`Linked ${words}.`, "Undo", async () => {
       settleUndoFromToast(action);
@@ -4245,7 +4245,7 @@ function gcWireSelectionDock(s = gcTab) {
     }
     if (!gone.length) return toast("None of the selected notes are linked to each other.");
     await gcUnlinkPairs(gone);
-    const words = `${gone.length} link${gone.length === 1 ? "" : "s"}`;
+    const words = nounCount(gone.length, "link");
     const action = pushUndo(`Removed ${words} on the graph`, () => gcRelinkPairs(gone), () => gcUnlinkPairs(gone));
     toastAction(`Removed ${words}.`, "Undo", async () => {
       settleUndoFromToast(action);
@@ -4287,7 +4287,7 @@ function gcWireSelectionDock(s = gcTab) {
     //: notification included no link to it"). Open lays the map out against
     //: its topics' real sizes as it opens, the step an import takes too.
     toastAction(
-      `Mind map \u201c${name}\u201d made from ${ids.size} note${ids.size === 1 ? "" : "s"}.`,
+      `Mind map \u201c${name}\u201d made from ${nounCount(ids.size, "note")}.`,
       "Open",
       async () => {
         await openWhiteboardBoard(board.id);
@@ -4584,7 +4584,7 @@ function gcTooltip(node, s = gcTab) {
     return `${node.preview}\nA whiteboard, joined to the notes on it`;
   }
   return (
-    `${node.preview}\n[${node.category}] · ${links} connection${links === 1 ? "" : "s"}` +
+    `${node.preview}\n[${node.category}] · ${nounCount(links, "connection")}` +
     `${node.access_count ? ` · used ${node.access_count}×` : ""}` +
     gcTooltipMatches(node, s)
   );
@@ -5291,7 +5291,7 @@ async function renderGraphCanvas(s = gcTab) {
   const data = await apiJson(endpoint).then(graphFill).catch(() => null);
   if (!data) {
     gcArriving(s, false);
-    surfaceFailed(document.getElementById("graph-empty"), "map", renderGraph);
+    surfaceFailed(document.getElementById("graph-empty"), "your map", renderGraph);
     //: And the overview goes with the map it summarises, exactly as it does
     //: when there is nothing to map.
     graphMinimapShown(false);
@@ -5736,7 +5736,7 @@ function graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour =
   if (colourMode === "topic" && graphStructure?.topics) {
     for (const topic of graphStructure.topics) {
       const item = entry(
-        `${topic.size} notes` + (topic.terms.length ? `: ${topic.terms.map((t) => `${t.term} (${t.notes})`).join(", ")}` : ""),
+        nounCount(topic.size, "note") + (topic.terms.length ? `: ${topic.terms.map((t) => `${t.term} (${t.notes})`).join(", ")}` : ""),
         clusterColour(String(topic.id)),
         `${topic.name} (${topic.size})`,
         () => {
@@ -5753,7 +5753,7 @@ function graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour =
   if (colourMode === "cluster" && graphStructure) {
     graphStructure.clusters.forEach((cluster, position) => {
       entry(
-        `${cluster.size} notes, around "${cluster.core.preview}"` +
+        `${nounCount(cluster.size, "note")}, around "${cluster.core.preview}"` +
           (cluster.categories.length ? ` · ${cluster.categories.join(", ")}` : ""),
         clusterColour(String(position)),
         `${cluster.core.preview} (${cluster.size})`,
@@ -5906,9 +5906,9 @@ function graphRenderStats(data, nodes, edges, colourMode, layoutKind) {
   const counts = { link: 0, thread: 0, similar: 0, filing: 0, map: 0 };
   for (const edge of edges) counts[edge.kind] = (counts[edge.kind] || 0) + 1;
   const noteCount = nodes.filter((n) => !n.isGroup).length;
-  const parts = [`${noteCount} note${noteCount === 1 ? "" : "s"}`];
-  if (counts.link) parts.push(`${counts.link} link${counts.link === 1 ? "" : "s"}`);
-  if (counts.thread) parts.push(`${counts.thread} thread${counts.thread === 1 ? "" : "s"}`);
+  const parts = [nounCount(noteCount, "note")];
+  if (counts.link) parts.push(nounCount(counts.link, "link"));
+  if (counts.thread) parts.push(nounCount(counts.thread, "thread"));
   if (counts.similar)
     parts.push(`${counts.similar} similarity line${counts.similar === 1 ? "" : "s"}`);
   if (counts.filing) parts.push(`${counts.filing} filed under a category`);
@@ -6247,7 +6247,7 @@ async function renderGraphPane(entryId) {
   s.fittedOnce = false;
   s.userZoomed = false;
   if (count) {
-    count.textContent = `${nodes.length} note${nodes.length === 1 ? "" : "s"}`;
+    count.textContent = nounCount(nodes.length, "note");
   }
   if (empty) empty.hidden = nodes.length > 1;
   gcStartWorker(nodes, edges, gcWorldFor(nodes.length, s.dims.w, s.dims.h), s);

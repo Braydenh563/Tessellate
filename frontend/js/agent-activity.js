@@ -120,7 +120,7 @@ function renderAgentRunSummary(run) {
   if (run.stepCount) {
     const at = Math.min(run.stepCount, (run.currentIndex ?? done) + 1);
     run.metaEl.textContent =
-      run.state === "running" ? `Step ${at} of ${run.stepCount}` : `${done} of ${run.stepCount} steps`;
+      run.state === "running" ? `Step ${at} of ${run.stepCount}` : `${done} of ${nounCount(run.stepCount, "step")}`;
   } else {
     run.metaEl.textContent = run.detail || "";
   }

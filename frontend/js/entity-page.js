@@ -65,7 +65,7 @@ async function openEntityPage(id) {
   });
   if (!page) return;
   entityPageClose?.();
-  const facts = [ENTITY_KIND_WORDS[page.kind] || "No kind yet", `named in ${page.notes} note${page.notes === 1 ? "" : "s"}`];
+  const facts = [ENTITY_KIND_WORDS[page.kind] || "No kind yet", `named in ${nounCount(page.notes, "note")}`];
   const [first, last] = [entityWhen(page.first_seen), entityWhen(page.last_seen)];
   if (first) facts.push(first === last ? first : `${first} to ${last}`);
   if (page.aliases.length) facts.push(`also ${page.aliases.join(", ")}`);
@@ -92,7 +92,7 @@ async function openEntityPage(id) {
       const related = document.createElement("div");
       related.className = "row entity-related";
       for (const other of page.related) {
-        const b = smallButton(`${other.name} · ${other.notes}`, `Open ${other.name}: named together in ${other.notes} note${other.notes === 1 ? "" : "s"}`, () => openEntityPage(other.id));
+        const b = smallButton(`${other.name} · ${other.notes}`, `Open ${other.name}: named together in ${nounCount(other.notes, "note")}`, () => openEntityPage(other.id));
         b.prepend(entityIcon(other.kind));
         related.appendChild(b);
       }

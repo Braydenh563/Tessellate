@@ -44,7 +44,7 @@
     $("clip-source").textContent = clip.url;
     const words = clip.selection ? clip.selection.split(/\s+/).filter(Boolean).length : 0;
     $("clip-what").textContent = clip.selection
-      ? `The ${words} words you selected.`
+      ? `The ${nounCount(words, "word")} you selected.`
       : clip.html
         ? "The page's main text, without its menus and footer."
         : "The address and title only (this page did not send its text).";

@@ -1580,22 +1580,7 @@ $("reminder-text")?.addEventListener("keydown", (event) => {
   event.preventDefault();
   $("reminder-add").click();
 });
-$("reminder-add").addEventListener("click", async () => {
-  const ok = await addReminder($("reminder-text").value.trim(), $("reminder-due").value, null, {
-    priority: $("reminder-priority").value,
-    recurring: $("reminder-recurring").value,
-  });
-  if (ok) {
-    $("reminder-text").value = "";
-    $("reminder-priority").value = "normal";
-    $("reminder-recurring").value = "none";
-    // A fresh default for the next one, measured from now.
-    setDue(defaultDueValue());
-    // On a phone the form was a sheet over the list; the toast says it
-    // landed and the list behind is where it now is.
-    reminderComposeSheetClose?.();
-  }
-});
+$("reminder-add").addEventListener("click", reminderComposeAdd); // quickadd.js
 
 // **What a phone comes to Reminders for is the list** (INBOX 392,
 // UI_MODERNISATION_PLAN Phase 11 item 12): what is due, and ticking it off.

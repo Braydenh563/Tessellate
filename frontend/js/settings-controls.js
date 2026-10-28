@@ -1726,7 +1726,7 @@ async function findDuplicates() {
     const body = await apiJson(`/duplicates?threshold=${threshold}`);
     renderDuplicateGroups(body.groups);
     status.textContent = body.groups.length
-      ? `${body.groups.length} group${body.groups.length === 1 ? "" : "s"} of similar notes.`
+      ? `${nounCount(body.groups.length, "group")} of similar notes.`
       : "No duplicates at that similarity, try lowering the slider.";
   } catch (error) {
     status.classList.add("error");
@@ -1802,7 +1802,7 @@ function renderDuplicateGroups(groups) {
 
     const head = document.createElement("p");
     head.className = "muted";
-    head.textContent = `${group.entries.length} notes · ${Math.round(group.similarity * 100)}% alike`;
+    head.textContent = `${nounCount(group.entries.length, "note")} · ${Math.round(group.similarity * 100)}% alike`;
     card.appendChild(head);
 
     // Every note ticked by default: the whole point is merging the group.
@@ -1875,7 +1875,7 @@ async function mergeDuplicateGroup(ids, card) {
   status.textContent = "";
 
   const ok = (await confirmDialog(
-    `Merge ${ids.length} notes into one?\n\n` +
+    `Merge ${nounCount(ids.length, "note")} into one?\n\n` +
       `The merged note will read:\n\n${preview.merged.slice(0, 400)}` +
       `${preview.merged.length > 400 ? "…" : ""}\n\n` +
       `The other ${ids.length - 1} go to the bin, so this is undoable.`
@@ -1897,8 +1897,8 @@ async function mergeDuplicateGroup(ids, card) {
       for (const id of binned) await api(back ? `/entries/${id}/restore` : `/entries/${id}`, { method: back ? "POST" : "DELETE" });
       await refreshEntries([result.id, ...binned]);
     };
-    const action = pushUndo(`Merged ${result.merged_count} notes`, swap(true), swap(false));
-    toastAction(`Merged ${result.merged_count} notes${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
+    const action = pushUndo(`Merged ${nounCount(result.merged_count, "note")}`, swap(true), swap(false));
+    toastAction(`Merged ${nounCount(result.merged_count, "note")}${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
       settleUndoFromToast(action);
       await swap(true)();
     });

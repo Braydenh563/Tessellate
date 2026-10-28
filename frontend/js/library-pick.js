@@ -4,7 +4,7 @@
 function libraryPickAbout(kind, row) {
   const when = relativeTime(row.updated_at || row.created_at);
   if (kind === "note") return pickerNoteAbout(row);
-  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "");
+  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "");
   if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
   if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
   let host = "";
