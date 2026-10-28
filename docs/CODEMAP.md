@@ -13040,9 +13040,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `did_you_mean` | src/tessellate/ai/guide_aliases.py:145 |
-| `intents` | src/tessellate/ai/guide_aliases.py:114 |
-| `topic_ids` | src/tessellate/ai/guide_aliases.py:120 |
+| `did_you_mean` | src/tessellate/ai/guide_aliases.py:141 |
+| `intents` | src/tessellate/ai/guide_aliases.py:110 |
+| `topic_ids` | src/tessellate/ai/guide_aliases.py:116 |
 
 ### src/tessellate/ai/guide_intent.py (7)
 

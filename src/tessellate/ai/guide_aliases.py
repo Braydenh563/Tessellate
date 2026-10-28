@@ -20,10 +20,6 @@ from __future__ import annotations
 
 import re
 
-#: Words that open a how-to, so a row can say "how do I <verb> <thing>"
-#: without repeating the frame. Optional in every row that uses it.
-_ASK = r"(?:how (?:do|can|would|should|could) (?:i|you|we)|how to|can i|can you|where (?:do|can) i|is there a way to|i want to|i need to|i'?d like to)"
-
 #: (intent, pattern, topics). A pattern is matched against the lowered
 #: question; `.{0,40}` joins a verb to its thing without caring about the
 #: words between ("export my notes to a pdf").
