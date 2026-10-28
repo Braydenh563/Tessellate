@@ -166,7 +166,8 @@ def _target(text: str) -> dict | None:
         return None
     words = text.split(" ")
     if len(words) >= 2 and words[-1].lower() in ("note", "notes"):
-        about = _drop_article(" ".join(words[:-1]))
+        #: "all my uni notes" names the uni notes (audit 1028 E9).
+        about = _drop_article(re.sub(r"^(?:all|every|any)\s+(?:of\s+)?", "", " ".join(words[:-1]), flags=re.I))
         if about and about.lower() not in ("all", "the", "my", "these", "those", "some"):
             return {"about": about, "single": words[-1].lower() == "note"}
     return None
@@ -596,8 +597,17 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     typos are part of the gold (`fixtures/composer/tasks_1011.json`)."""
     from tessellate.ai import question_noise
 
-    fixed = question_noise.repair(question_noise.tidy(text or ""))
+    fixes: list = []
+    fixed = question_noise.repair(question_noise.tidy(text or ""), fixed=fixes)
     found = (read(fixed, now, locale) if fixed and fixed != text else None) or read(text, now, locale)
+    #: Only slang spelled out, no misspelling put right: the notes a command
+    #: names keep the person's own word ("delete notes about uni" is their
+    #: category Uni, not "university"; audit 1028 E9). Dates and verbs keep
+    #: the spelled-out reading ("tmrw").
+    if found is not None and "about" in found and fixed != text and not fixes:
+        typed = read(text, now, locale)
+        if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
+            found = {**found, "about": typed["about"]}
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",

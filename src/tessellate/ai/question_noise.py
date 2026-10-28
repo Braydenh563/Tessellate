@@ -2163,7 +2163,8 @@ def _repair_token(tokens: list[str], i: int, out: list[str], text: str, report, 
         pass
     elif low in spelling.CONTRACTION_STEMS and word.islower() and nxt and low not in known:
         out.append(spelling.CONTRACTION_STEMS[low] + tail)
-    elif low in SLANG and not (low in ("r", "y") and not _at_asking_place(out)):
+    #: A word of the person's own (a category "Uni", a tag) is never spelled out (audit 1028 E9).
+    elif low in SLANG and low not in known and not (low in ("r", "y") and not _at_asking_place(out)):
         _repair_slang(low, word, tail, out, fixed)
     elif _split(low):
         out.append(_split(low) + tail)
