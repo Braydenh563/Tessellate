@@ -2,7 +2,7 @@
 
 Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1448, tests 12815, plan headings 984.
+Counts: frontend functions 6658, frontend ids 2562, CSS sections 505, backend routes 628, backend modules 6910, test files 1448, tests 12817, plan headings 984.
 
 ## Frontend functions (6658)
 
@@ -17572,16 +17572,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `BundleError` | src/tessellate/core/backup_bundle.py:72 |
+| `BundleError` | src/tessellate/core/backup_bundle.py:88 |
 | `_db_member` | src/tessellate/core/backup_bundle.py:60 |
-| `_nonce` | src/tessellate/core/backup_bundle.py:76 |
-| `_readable_preferences` | src/tessellate/core/backup_bundle.py:162 |
-| `_safe_target` | src/tessellate/core/backup_bundle.py:174 |
-| `build_zip` | src/tessellate/core/backup_bundle.py:129 |
-| `decrypt_file` | src/tessellate/core/backup_bundle.py:102 |
-| `encrypt_file` | src/tessellate/core/backup_bundle.py:80 |
-| `is_sealed` | src/tessellate/core/backup_bundle.py:97 |
-| `restore_zip` | src/tessellate/core/backup_bundle.py:185 |
+| `_nonce` | src/tessellate/core/backup_bundle.py:92 |
+| `_readable_preferences` | src/tessellate/core/backup_bundle.py:178 |
+| `_safe_target` | src/tessellate/core/backup_bundle.py:190 |
+| `build_zip` | src/tessellate/core/backup_bundle.py:145 |
+| `decrypt_file` | src/tessellate/core/backup_bundle.py:118 |
+| `encrypt_file` | src/tessellate/core/backup_bundle.py:96 |
+| `is_sealed` | src/tessellate/core/backup_bundle.py:113 |
+| `restore_zip` | src/tessellate/core/backup_bundle.py:201 |
 
 ### src/tessellate/core/bgtasks.py (11)
 
@@ -18825,23 +18825,23 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `HostCheckMiddleware` | src/tessellate/core/security.py:101 |
 | `OriginCheckMiddleware` | src/tessellate/core/security.py:314 |
 | `SecurityHeadersMiddleware` | src/tessellate/core/security.py:595 |
-| `UnsafeUrl` | src/tessellate/core/security.py:893 |
+| `UnsafeUrl` | src/tessellate/core/security.py:898 |
 | `_BodyTooLarge` | src/tessellate/core/security.py:192 |
-| `_backend_addresses` | src/tessellate/core/security.py:707 |
+| `_backend_addresses` | src/tessellate/core/security.py:712 |
 | `_body_limit` | src/tessellate/core/security.py:271 |
 | `_is_same_site` | src/tessellate/core/security.py:58 |
 | `_notebook_has_password` | src/tessellate/core/security.py:302 |
 | `_origin_of` | src/tessellate/core/security.py:44 |
-| `_refuses` | src/tessellate/core/security.py:771 |
-| `_resolve` | src/tessellate/core/security.py:699 |
+| `_refuses` | src/tessellate/core/security.py:776 |
+| `_resolve` | src/tessellate/core/security.py:704 |
 | `_session_is_live` | src/tessellate/core/security.py:297 |
 | `_too_large` | src/tessellate/core/security.py:263 |
-| `assert_public_url` | src/tessellate/core/security.py:954 |
+| `assert_public_url` | src/tessellate/core/security.py:959 |
 | `build_csp` | src/tessellate/core/security.py:448 |
-| `check_backend_url` | src/tessellate/core/security.py:801 |
+| `check_backend_url` | src/tessellate/core/security.py:806 |
 | `inline_script_hashes` | src/tessellate/core/security.py:424 |
-| `is_internal_address` | src/tessellate/core/security.py:897 |
-| `public_addresses` | src/tessellate/core/security.py:921 |
+| `is_internal_address` | src/tessellate/core/security.py:902 |
+| `public_addresses` | src/tessellate/core/security.py:926 |
 | `register_auth` | src/tessellate/core/security.py:292 |
 | `without_userinfo` | src/tessellate/core/security.py:88 |
 
@@ -19908,7 +19908,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (12815)
+## Tests (12817)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20003,7 +20003,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_background_registry_shutdown.py | 1 |
 | tests/test_background_rows_keep_their_space.py | 3 |
 | tests/test_backlog_status_rows.py | 6 |
-| tests/test_backup_bundle.py | 8 |
+| tests/test_backup_bundle.py | 9 |
 | tests/test_backup_copy.py | 8 |
 | tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
@@ -21009,7 +21009,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_searxng_install.py | 42 |
 | tests/test_searxng_recovery.py | 33 |
 | tests/test_season_hemisphere_1027.py | 14 |
-| tests/test_security_boundaries.py | 59 |
+| tests/test_security_boundaries.py | 60 |
 | tests/test_security_hardening.py | 13 |
 | tests/test_seed_examples.py | 6 |
 | tests/test_select_focus.py | 2 |
