@@ -2780,12 +2780,22 @@ function wbRememberBoardView() {
   wbBoardViews.set(id, { x: t.x, y: t.y, k: t.k });
 }
 
-/** Does any of the content land inside the free area under this view? */
+/** Does this view show the content well enough to keep (INBOX 1428)?
+ *  Any overlap used to count, so a board opened on a view showing only its
+ *  corner stayed there ("it didnt fit the content to my screen at all"). Kept
+ *  when half the content is on screen, or what is on screen fills a third of
+ *  the canvas (a big board zoomed in on one part). */
 function wbViewShowsContent(view, bounds, free) {
   if (!view || !bounds) return false;
   const x0 = view.x + view.k * bounds.minX, x1 = view.x + view.k * bounds.maxX;
   const y0 = view.y + view.k * bounds.minY, y1 = view.y + view.k * bounds.maxY;
-  return x1 > free.left && x0 < free.right && y1 > free.top && y0 < free.bottom;
+  const seenW = Math.min(x1, free.right) - Math.max(x0, free.left);
+  const seenH = Math.min(y1, free.bottom) - Math.max(y0, free.top);
+  if (seenW <= 0 || seenH <= 0) return false;
+  const seen = seenW * seenH;
+  const whole = Math.max(1, (x1 - x0) * (y1 - y0));
+  const room = Math.max(1, (free.right - free.left) * (free.bottom - free.top));
+  return seen / whole >= 0.5 || seen / room >= 0.33;
 }
 
 //: Whether a view puts a whole board-space box inside the free canvas.
@@ -2815,8 +2825,9 @@ function wbRestoreOrFrameBoard(boardId) {
     return;
   }
   if (wbIsMap()) return wbFrameMapOnOpen();
-  const current = d3.zoomTransform(container);
-  if (bounds && !wbViewShowsContent(current, bounds, free)) wbZoomToFit({ animate: false });
+  //: With no view of its own the camera on screen is the last board's, so
+  //: it is never kept: the board is framed (INBOX 1428).
+  if (bounds) wbZoomToFit({ animate: false });
 }
 
 //: **The canvas is panned by its transform and never by scrolling** (mapdeeppan.js:
