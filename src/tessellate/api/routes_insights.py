@@ -7,7 +7,7 @@ import json
 import random
 import re
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -423,12 +423,18 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     from tessellate.ai import composer_voice
 
     cats = {c.id: c.name for c in session.scalars(select(Category)).all()}
-    rows = session.scalars(
-        select(Entry)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(120)
-    ).all()
+    shown = (Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+    rows = session.scalars(select(Entry).where(*shown).order_by(Entry.created_at.desc()).limit(120)).all()
+    #: The 120 rows are the sample the line names notes from; how many were
+    #: written today and yesterday is counted in SQL, so a bulk import is not
+    #: capped at the sample's size (audit 1028 S8).
+    today = user_now(deps.get_config()).date()
+    day = func.date(Entry.created_at)
+    asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
+    counts = {
+        date.fromisoformat(d): n
+        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
+    }
     notes = [
         {
             "id": e.id,
@@ -439,7 +445,7 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
         }
         for e in rows
     ]
-    line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
+    line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
     if not line:
         #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
         from tessellate.api import chat_extra

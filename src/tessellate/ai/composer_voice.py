@@ -534,27 +534,33 @@ def _draw(seed: int, slot: str, n: int) -> int:
     return int.from_bytes(hashlib.sha1(f"{seed}:{slot}".encode()).digest()[:4], "big") % n
 
 
-def today_line(notes: list[dict], *, today: date, seed: int = 0) -> dict | None:
+def today_line(
+    notes: list[dict], *, today: date, seed: int = 0, counts: dict[date, int] | None = None
+) -> dict | None:
     """One short sentence for under the dashboard's greeting: what was written
     today or yesterday, or when the last note was. `seed` rotates the wording:
     the same seed gives the same line, so a test with a fixed clock is exact.
     One sentence only (the owner, 2026-10-18: the hero's sub line must not run
-    long). Every fact in it is traced like the rest of the voice."""
+    long). Every fact in it is traced like the rest of the voice. `notes` may be
+    only a sample of the newest; `counts` (day to how many) is the whole notebook's
+    answer for today and yesterday, so a big import is not read as the sample."""
     views = _views(notes)
     dated = sorted((w for w in views if w.written), key=lambda w: (w.written, -w.rank), reverse=True)
     if not dated:
         return None
     v = _Voice({w.id: w for w in views}, today)
-    _today_opening(v, dated, today, _draw(seed, "open", 6))
+    _today_opening(v, dated, today, _draw(seed, "open", 6), counts or {})
     return v.done("today")
 
 
-def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
+def _today_opening(v: _Voice, dated: list, today: date, k: int, counts: dict[date, int]) -> None:
     todays = [w for w in dated if w.written == today]
     yesterdays = [w for w in dated if (today - w.written).days == 1]
-    if len(todays) > 1:
+    n_today = max(len(todays), counts.get(today, 0))
+    n_yesterday = max(len(yesterdays), counts.get(today - timedelta(days=1), 0))
+    if n_today > 1:
         v.t(("v_today_wrote", "v_today_wrote_b", "v_today_wrote_c", "v_today_wrote_d", "v_today_wrote_e", "v_today_wrote_f")[k])
-        v.m(_count_word(len(todays)))
+        v.m(_count_word(n_today))
         #: An untitled note names itself "your note from today", which cannot
         #: follow "the latest": the count then ends the sentence on its own.
         if todays[0].titled:
@@ -567,8 +573,8 @@ def _today_opening(v: _Voice, dated: list, today: date, k: int) -> None:
         v.t(("v_today_one", "v_today_one_b", "v_today_one_c", "v_today_one_d", "v_today_one_e", "v_today_one_f")[k]).name(todays[0]).t("stop")
     elif yesterdays:
         v.t(("v_yesterday", "v_yesterday_b", "v_yesterday_c", "v_yesterday_d", "v_yesterday_e", "v_yesterday_f")[k]).name(yesterdays[0])
-        if len(yesterdays) > 1:
-            v.t("v_and_more").m(_count_word(len(yesterdays) - 1)).t("v_more")
+        if n_yesterday > 1:
+            v.t("v_and_more").m(_count_word(n_yesterday - 1)).t("v_more")
         v.t("stop")
     else:
         v.t(("v_last_was", "v_last_was_b", "v_last_was_c", "v_last_was_d", "v_last_was_e", "v_last_was_f")[k]).name(dated[0])
