@@ -40,6 +40,7 @@ from tessellate.ai.provider import (
     offered_tool_names,
     split_thinking,
 )
+from tessellate.core import activity
 
 # `OllamaError` is not a subclass of the neutral error, it *is* the neutral
 # error. Every `except OllamaError` in the routes was written to mean "the AI
@@ -629,7 +630,7 @@ class OllamaClient(Provider):
                     timeout=self._request_timeout(),
                 ) as response:
                     response.raise_for_status()
-                    for line in response.iter_lines():
+                    for line in activity.stop_aware(response, response.iter_lines()):
                         if not line:
                             continue
                         data = json.loads(line)
@@ -843,7 +844,7 @@ class OllamaClient(Provider):
                         shown = True
                         yield {"content_delta": visible}
 
-                for line in response.iter_lines():
+                for line in activity.stop_aware(response, response.iter_lines()):
                     if not line:
                         continue
                     data = json.loads(line)

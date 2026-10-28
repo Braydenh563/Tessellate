@@ -11,6 +11,7 @@ Plain `def` so the blocking LLM call runs in FastAPI's threadpool.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -28,6 +29,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
@@ -1017,6 +1019,9 @@ def _attached_files(session: Session, file_ids: list[int]) -> list[dict]:
                 "content": f"{header}\n\n{body}" if body else f"{header}\n\n(no readable text)",
                 "category": "File",
                 "kind": "file",
+                #: A file's words were written by somebody else (audit 1028
+                #: E4): the turn starts tainted, so a write asks first.
+                "from_outside": True,
                 "attached": True,
                 "connected": False,
                 "match_info": None,
@@ -1705,6 +1710,16 @@ def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale:
         )
 
 
+#: Text this app read out of a picture or an attached file and put under a
+#: note (`_media_readings`, `_attachment_readings`) is not the person's words:
+#: a note carrying it taints the turn like a clipped page (audit 1028 E4).
+_READ_TEXT_MARKERS = ('text in it: "', "[Files attached to this note, as this app read them:")
+
+
+def _holds_read_text(content: str) -> bool:
+    return any(marker in content for marker in _READ_TEXT_MARKERS)
+
+
 def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
     session, found = ctx.session, ctx.found
     content = found.as_of_then[entry.id].text if entry.id in found.as_of_then else entry.content
@@ -1729,11 +1744,12 @@ def _note_content(ctx: _NoteCtx, entry) -> str:  # noqa: ANN001
 
 def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
     found, as_of = ctx.found, ctx.as_of
+    content = _note_content(ctx, entry)
     return {
         # id lets agent-mode tool calls target these notes; the plain librarian
         # prompt simply ignores it.
         "id": entry.id,
-        "content": _note_content(ctx, entry),
+        "content": content,
         #: How many pictures the note holds: the prompt says so, because the
         #: answer shows them beside this note's citation (INBOX 502).
         "pictures": len(set(_MEDIA_REF.findall(entry.content or ""))),
@@ -1742,7 +1758,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         "attached": entry.id in ctx.attached_ids,
         # Clipped from the web or imported (SEC-02): the agent starts the turn
         # tainted, so writes and reaching out ask first.
-        "from_outside": manager.came_from_outside(entry),
+        "from_outside": manager.came_from_outside(entry) or _holds_read_text(content),
         # ...and which arrived by the graph rather than by the search. The
         # prompt renders this as a caveat, so an answer can say "you linked this
         # to the note about X" instead of implying it was a hit.
@@ -1765,7 +1781,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
     }
 
 
-def _document_row(document) -> dict:  # noqa: ANN001
+def _document_row(document, session: Session | None = None) -> dict:  # noqa: ANN001
     # The same shape `_context_note` builds, by hand rather than through it: a
     # Document has no category/tags and its id lives in a different table than
     # Entry's, so folding it through the Entry-shaped helper would be the wrong
@@ -1777,6 +1793,8 @@ def _document_row(document) -> dict:  # noqa: ANN001
         "created_at": document.created_at.isoformat() if document.created_at else None,
         "category": "Document",
         "kind": "document",
+        #: An imported document's text is somebody else's (audit 1028 E4).
+        "from_outside": bool(session is not None and manager.document_came_from_outside(session, document.id)),
         "attached": True,
         "connected": False,
         "match_info": None,
@@ -1801,7 +1819,7 @@ def _context_notes(session: Session, found: _Found, attached: list, attached_doc
     #: model otherwise ignores the order of (measured on a 1.5B model).
     if found.mode == "recent" and notes:
         notes[0]["newest"] = True
-    notes.extend(_document_row(document) for document in attached_docs)
+    notes.extend(_document_row(document, session) for document in attached_docs)
     # Library files, already shaped as context rows by `_attached_files`; mind
     # maps likewise (`_attached_boards` builds the outline).
     notes.extend(attached_files)
@@ -1899,7 +1917,7 @@ def _named_rows(session: Session, question: str) -> list[dict]:
     named_docs, named_boards = _named_sources(session, question)
     #: Said by its title and words, as a note is (`_board_rows`).
     boards = _board_rows(_attached_boards(session, named_boards))
-    named = [_document_row(d) for d in named_docs] + boards
+    named = [_document_row(d, session) for d in named_docs] + boards
     for row in named:
         row["attached"] = False
         row["named"] = True
@@ -1959,7 +1977,7 @@ def _matched_rows(session: Session, question: str, skip: set[tuple[str, int]]) -
         return []
     hits = engine.search(session, " ".join(terms), kinds=["board", "map", "document"], limit=8, hybrid=False)
     docs, boards = _holding(session, hits, terms, skip)
-    rows = [_document_row(d) for d in docs] + _board_rows(_attached_boards(session, boards), terms)
+    rows = [_document_row(d, session) for d in docs] + _board_rows(_attached_boards(session, boards), terms)
     for row in rows:
         row["attached"] = False
         row["named"] = True
@@ -2328,7 +2346,7 @@ class _StreamRequest:
     allowed_tools: list[str] | None
     #: Set by Stop in Activity. The run's Activity job and its budget share it,
     #: so a write the model asked for as Stop landed is refused (Brief 101b).
-    stop: threading.Event = field(default_factory=threading.Event)
+    stop: threading.Event = field(default_factory=activity.StopEvent)
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
@@ -4751,10 +4769,49 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     # X-Accel-Buffering: no tells reverse proxies (nginx) not to buffer the
     # stream, so tokens reach the browser as they're produced.
     return StreamingResponse(
-        _answer_lines(req),
+        _stop_when_gone(req, _answer_lines(req)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
+
+
+async def _stop_when_gone(req, lines):  # noqa: ANN001
+    """The turn's lines, with the browser's Stop (or a closed tab) made the
+    model's Stop (audit 1028 E3). Starlette cancels this generator when the
+    client goes; the abort used to end only the HTTP response, so the model
+    kept generating to the end and the next question queued behind it. The
+    cancel sets the turn's stop flag, which cuts the upstream request
+    (`activity.stop_aware`); the sync generator is closed once its current
+    step returns, so its `finally` blocks run."""
+    source = iter(lines)
+    done = object()
+
+    def step():  # noqa: ANN202
+        return next(source, done)
+
+    try:
+        while True:
+            task = asyncio.ensure_future(run_in_threadpool(step))
+            try:
+                line = await asyncio.shield(task)
+            except asyncio.CancelledError:
+                req.stop.set()
+                task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
+                raise
+            if line is done:
+                return
+            yield line
+    finally:
+        req.stop.set()
+
+
+def _close_quietly(source) -> None:  # noqa: ANN001
+    close = getattr(source, "close", None)
+    try:
+        if close is not None:
+            close()
+    except Exception:  # noqa: BLE001 - nothing is left to tell
+        pass
 
 
 def _stoppable(spend, req):  # noqa: ANN001, ANN202

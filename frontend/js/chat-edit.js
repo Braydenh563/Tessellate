@@ -68,6 +68,9 @@ function editAndResend(bubble, text) {
 
     const bubbles = [...$("chat-messages").querySelectorAll(".msg")];
     const turnIndex = Math.floor(bubbles.indexOf(bubble) / 2);
+    //: This turn's answer re-runs with the new wording; if it changed notes,
+    //: ask first (confirmRerun, chat.js).
+    if (!(await confirmRerun(bubbles[bubbles.indexOf(bubble) + 1]))) return;
 
     // Server first: if this fails, nothing on screen has been thrown away yet.
     const wasId = chatConv.id;
@@ -149,4 +152,73 @@ function showCopyFallback(text) {
   document.body.appendChild(overlay);
   box.focus();
   box.select();
+}
+
+//: Regenerate from a given answer (chat.js `regenerateFromBubble` loads this file).
+async function regenerateFrom(bubble) {
+  if (chatController) return toast("Wait for the current answer to finish.");
+  const asked = questionForBubble(bubble);
+  if (!asked) return toast("There is no question above this answer to re-ask.");
+  if (!(await confirmRerun(bubble))) return;
+  const host = $("chat-messages");
+  const kept = [...host.children];
+  const from = kept.indexOf(asked.bubble);
+  //: Which turn this answer is, counted before anything is removed.
+  const turnIndex = [...host.querySelectorAll(".msg.assistant")].indexOf(bubble);
+  const later = kept.slice(from + 1).some((n) => n !== bubble && n.classList.contains("assistant"));
+  //: The saved chat is cut the same way the screen is (edit-and-resend does
+  //: this too): `replaceLast` overwrites the last saved turn, so without the
+  //: cut a regenerate from turn 1 of 3 wrote its answer over turn 3.
+  if (later && chatConv && chatConv.id !== null && turnIndex >= 0) {
+    try {
+      await apiJson(`/conversations/${chatConv.id}/truncate`, {
+        method: "POST",
+        body: JSON.stringify({ from_turn: turnIndex + 1 }),
+      });
+      chatConv.turns = chatConv.turns.slice(0, turnIndex + 1);
+    } catch (error) {
+      return toast(`Couldn't regenerate that: ${error.message}`, true);
+    }
+  }
+  //: The question stays; everything after it goes, including this answer.
+  for (const node of kept.slice(from + 1)) node.remove();
+  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true });
+}
+
+//: **An answer that changed the notebook is not re-run silently.** A composer
+//: act ("note to self buy stamps") or an agent write ran when the answer was
+//: made, and Regenerate or Edit asks the whole question again, so the same
+//: note or reminder would be made twice. `dataset.wrote` is set on the
+//: bubble by the stream (chat-attach.js); the person decides.
+async function confirmRerun(answerBubble) {
+  if (!answerBubble || !answerBubble.dataset || !answerBubble.dataset.wrote) return true;
+  return confirmDialog("This answer changed your notes. Running it again may make the same change twice.", {
+    confirmLabel: "Run again",
+    danger: false,
+  });
+}
+
+//: **A message over the 20,000 character limit** (`ChatRequest.question`). It
+//: used to go out, come back as a 422 the screen blamed on the model, and clear
+//: the box. Now it stays in the box, the sentence names the limit, and the
+//: one way forward that needs no cutting is offered: the text saved as a note
+//: and the note asked about.
+function chatTooLong(text, fromBox) {
+  const box = $("chat-input");
+  toastAction(
+    `That message is ${text.length.toLocaleString()} characters and the limit is 20,000.`,
+    "Save as a note and ask about it",
+    async () => {
+      try {
+        const note = await apiJson("/entries", { method: "POST", body: JSON.stringify({ content: text, tags: [] }) });
+        if (fromBox && box.value.trim() === text) {
+          box.value = "";
+          box.dispatchEvent(new Event("input"));
+        }
+        sendChatMessage("Summarise this note.", { noteIds: [note.id] });
+      } catch (error) {
+        toast(error.message || "Couldn't save that as a note.", true);
+      }
+    },
+  );
 }

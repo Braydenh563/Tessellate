@@ -63,6 +63,7 @@ from tessellate.ai.provider import (
     offered_tool_names,
     split_thinking,
 )
+from tessellate.core import activity
 
 
 def _looks_like_tools_rejection(status: int, body: str) -> bool:
@@ -513,7 +514,7 @@ class OpenAICompatClient(Provider):
         framed differently on the wire. Keeping the split exactly here is why
         neither of them needed touching for a second provider.
         """
-        for line in response.iter_lines():
+        for line in activity.stop_aware(response, response.iter_lines()):
             if not line:
                 continue
             text = line.decode("utf-8") if isinstance(line, bytes) else line

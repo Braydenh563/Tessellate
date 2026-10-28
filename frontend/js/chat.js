@@ -606,17 +606,7 @@ function questionForBubble(bubble) {
 //: newest. Everything after the question is removed first, an answer
 //: regenerated in the middle of a thread that keeps the turns built on the old
 //: one is a transcript that contradicts itself.
-function regenerateFromBubble(bubble) {
-  if (chatController) return toast("Wait for the current answer to finish.");
-  const asked = questionForBubble(bubble);
-  if (!asked) return toast("There is no question above this answer to re-ask.");
-  const host = $("chat-messages");
-  const kept = [...host.children];
-  const from = kept.indexOf(asked.bubble);
-  //: The question stays; everything after it goes, including this answer.
-  for (const node of kept.slice(from + 1)) node.remove();
-  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true });
-}
+const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
 
 //: **Rewrite the last answer under a standing instruction**, Odysseus's
 //: "shorter" and "simpler" footer actions.
@@ -661,11 +651,12 @@ async function forkFromBubble(bubble) {
 //: How many times the last question has been asked again (`retries`, kept on
 //: the function, not a top-level let): sent as `attempt`, so an answer
 //: composed from the notes is worded anew (CHAT_PLAN decision 34).
-function regenerateLastAnswer() {
+async function regenerateLastAnswer() {
   if (!lastChatQuestion || chatController) return;
-  regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   const assistantBubbles = $("chat-messages").querySelectorAll(".msg.assistant");
   const lastAssistant = assistantBubbles[assistantBubbles.length - 1];
+  if (lastAssistant?.dataset.wrote && !(await lazyScript("/js/chat-edit.js").then(() => confirmRerun(lastAssistant)))) return;
+  regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
   if (lastAssistant) lastAssistant.remove(); // clear the old answer first
   sendChatMessage(lastChatQuestion, {
     skipUserBubble: true,
