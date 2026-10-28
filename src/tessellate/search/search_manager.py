@@ -1354,6 +1354,27 @@ def _append_connected(session: Session, entries: list[Entry], match_info: dict, 
             match_info[neighbour.id] = info
 
 
+def _category_scope(session: Session, query: str, limit: int, found: dict):  # noqa: ANN202
+    """The category the question names (or None) and, when it asks for the
+    whole category, the listing that answers it (else None)."""
+    scoped = _named_category(session, query)
+    if scoped is None:
+        return None, None
+    scope, rest = scoped
+    found["category"] = scope.name
+    if _category_only(rest):
+        return scope, (_without_private(_category_notes(session, scope.id, max(limit, 10))), "category")
+    return scope, None
+
+
+def _dated_candidates(session: Session, mentioned: set, limit: int) -> list[Entry]:
+    """The notes that say the day the person gave, newest first."""
+    #: The day is the anchor the person gave; their word for the thing
+    #: ("lift" for "deadlift") may not be the note's. The notes that say
+    #: the day are the candidates.
+    return list(session.scalars(select(Entry).where(Entry.id.in_(mentioned)).order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1382,13 +1403,9 @@ def _retrieve(
     #: **A named category is a scope** (`_named_category`). A question that
     #: asks for the whole category lists it; one with a subject searches
     #: inside it, and lists it when nothing inside matches.
-    scoped = _named_category(session, query)
-    scope = None
-    if scoped is not None:
-        scope, rest = scoped
-        found["category"] = scope.name
-        if _category_only(rest):
-            return _without_private(_category_notes(session, scope.id, max(limit, 10))), "category"
+    scope, listed = _category_scope(session, query, limit, found)
+    if listed is not None:
+        return listed
 
     # Falls back to the whole question when stripping left nothing to search for.
     subject = asked.subject or query
@@ -1406,10 +1423,7 @@ def _retrieve(
 
     entries, mode = _rank(semantic, keyword, limit)
     if not entries and mentioned:
-        #: The day is the anchor the person gave; their word for the thing
-        #: ("lift" for "deadlift") may not be the note's. The notes that say
-        #: the day are the candidates.
-        dated = list(session.scalars(select(Entry).where(Entry.id.in_(mentioned)).order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
+        dated = _dated_candidates(session, mentioned, limit)
         if dated:
             return _without_private(dated), "dated"
     if not entries:

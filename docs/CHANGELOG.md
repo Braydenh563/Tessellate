@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Complexity: eight functions the 1028 merges grew past 15 are split by step, and commands.py plan/run shrink (seed lowered).
 - Help and Guide match today's UI: Run again, the 20,000-character limit, Stop, Move under, the eraser on touch and pen, Insert, Sticky note, the Links and media menu, kept unsaved words, New code file, the lock screen focus and the import toast counts.
 - Composer: "add X to my to-do list" still adds the line to a note called that, when there is one; the composer asks act_registry.READER whether a sentence is an act, instead of importing commands (the cycle test_no_import_cycles caught).
 - Chat does tasks with no model (audit 1028 E10): "add a task to read chapter 5 tomorrow" or "add chapter 5 reading to my to-do list" sets a reminder (the time asked once if not said), and "tick off buy milk" or "mark read chapter 5 as done" completes the open reminder or unticked checklist line it names, with Undo; a name that fits more than one thing asks which, never guesses.

@@ -910,40 +910,89 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
     return found[0] if found and not getattr(found[0], "is_private", False) else None
 
 
+def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) -> dict | None:
+    """The plan that appends a task to a note called that ("add milk to my
+    to-do list"), or None when no note is."""
+    #: "add milk to my to-do list" when a note is called that: the note
+    #: gets the line, as before tasks were acts (E10).
+    #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.
+    for asked in {parsed["asked"], re.sub(r"\bto do\b", "to-do", parsed["asked"])}:
+        alt = _append(asked)
+        if alt and not alt.get("these") and _resolve_one(session, alt.get("about"), None, False)[0] is not None:
+            return _plan_one(session, alt, note_ids)
+    return None
+
+
+def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    """The card for a reminder, or a task with a day."""
+    #: "Remind you on Friday at 9: call the dentist" (INBOX 734): the
+    #: person's own words after the colon, the time said against today,
+    #: and the note it comes from, which the reminder is attached to.
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    due = parsed["due_at"]
+    when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None)) + (
+        "" if parsed.get("time_given") else " (no time was said)"
+    )
+    said = parsed.get("said") or parsed["text"]
+    label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}: {said}"
+    arguments = {"text": parsed["text"], "due_at": due.isoformat()}
+    note = _reminder_note(session, said, note_ids)
+    if note is not None:
+        arguments["note_id"] = note.id
+    steps = [{"name": "set_reminder", "arguments": arguments}]
+    return {
+        "line": f"{label}.",
+        "card": _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None),
+        "run": True,
+    }
+
+
+def _no_notes_to_tag_or_move(parsed: dict, which: str, intent: str) -> str:
+    """What to say when no note was found to tag or move."""
+    if parsed.get("these"):
+        return (
+            "Attach the notes first with the paperclip, or say which, like: "
+            + ("tag my notes about the trip with travel." if intent == "tag" else "move my notes about the plumber to Home.")
+        )
+    return f"I found no note {which}, so there is nothing to {'tag' if intent == 'tag' else 'move'}."
+
+
+def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None, intent: str) -> dict:
+    """The card that tags notes or moves them to a category."""
+    entries, which = _which(parsed, session, note_ids)
+    if not entries:
+        return {"line": _no_notes_to_tag_or_move(parsed, which, intent)}
+    ok, skipped = _split_allowed(entries)
+    items = [f"#{e.id} {_title(e)}" for e in ok]
+    count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
+    if intent == "tag":
+        tags = " ".join(f"#{t}" for t in parsed["tags"])
+        steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "add": parsed["tags"]}}] if ok else []
+        label = f"Tag {count} {which} {tags}"
+    else:
+        existing = _existing_category(session, parsed["category"])
+        category = existing or parsed["category"]
+        steps = [{"name": "edit_note", "arguments": {"note_id": e.id, "category": category}} for e in ok]
+        label = f"Move {count} {which} to {category}" + ("" if existing else " (a new category)")
+    if not ok:
+        return {"line": summarise_done([], skipped)}
+    return {
+        "line": _confirm(label) + (f" {not_done(skipped)}" if skipped else ""),
+        "card": _card(label, steps, skipped, items),
+    }
+
+
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     intent = parsed["intent"]
     if parsed.get("task") and parsed.get("asked"):
-        #: "add milk to my to-do list" when a note is called that: the note
-        #: gets the line, as before tasks were acts (E10).
-        #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.
-        for asked in {parsed["asked"], re.sub(r"\bto do\b", "to-do", parsed["asked"])}:
-            alt = _append(asked)
-            if alt and not alt.get("these") and _resolve_one(session, alt.get("about"), None, False)[0] is not None:
-                return _plan_one(session, alt, note_ids)
+        into_note = _task_into_note(session, parsed, note_ids)
+        if into_note is not None:
+            return into_note
     if intent == "reminder":
-        #: "Remind you on Friday at 9: call the dentist" (INBOX 734): the
-        #: person's own words after the colon, the time said against today,
-        #: and the note it comes from, which the reminder is attached to.
-        from tessellate.core import deps
-        from tessellate.core.config import user_now
-
-        due = parsed["due_at"]
-        when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None)) + (
-            "" if parsed.get("time_given") else " (no time was said)"
-        )
-        said = parsed.get("said") or parsed["text"]
-        label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}: {said}"
-        arguments = {"text": parsed["text"], "due_at": due.isoformat()}
-        note = _reminder_note(session, said, note_ids)
-        if note is not None:
-            arguments["note_id"] = note.id
-        steps = [{"name": "set_reminder", "arguments": arguments}]
-        return {
-            "line": f"{label}.",
-            "card": _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None),
-            "run": True,
-        }
+        return _plan_reminder(session, parsed, note_ids)
     if intent == "complete":
         return task_acts.plan_complete(session, parsed, _card, _title)
     if intent == "new_note":
@@ -963,34 +1012,7 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
             "run": True,
         }
     if intent in ("tag", "move"):
-        entries, which = _which(parsed, session, note_ids)
-        if not entries:
-            return {
-                "line": (
-                    "Attach the notes first with the paperclip, or say which, like: "
-                    + ("tag my notes about the trip with travel." if intent == "tag" else "move my notes about the plumber to Home.")
-                )
-                if parsed.get("these")
-                else f"I found no note {which}, so there is nothing to {'tag' if intent == 'tag' else 'move'}.",
-            }
-        ok, skipped = _split_allowed(entries)
-        items = [f"#{e.id} {_title(e)}" for e in ok]
-        count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
-        if intent == "tag":
-            tags = " ".join(f"#{t}" for t in parsed["tags"])
-            steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "add": parsed["tags"]}}] if ok else []
-            label = f"Tag {count} {which} {tags}"
-        else:
-            existing = _existing_category(session, parsed["category"])
-            category = existing or parsed["category"]
-            steps = [{"name": "edit_note", "arguments": {"note_id": e.id, "category": category}} for e in ok]
-            label = f"Move {count} {which} to {category}" + ("" if existing else " (a new category)")
-        if not ok:
-            return {"line": summarise_done([], skipped)}
-        return {
-            "line": _confirm(label) + (f" {not_done(skipped)}" if skipped else ""),
-            "card": _card(label, steps, skipped, items),
-        }
+        return _plan_tag_or_move(session, parsed, note_ids, intent)
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
         return _plan_one(session, parsed, note_ids)
     if intent == "untag":
@@ -1201,6 +1223,19 @@ def _bin_reminder(session: Session, args: dict) -> dict:
     return {"binned": int(args["reminder_id"])}
 
 
+def _step_undo(name: str, args: dict, result: dict):  # noqa: ANN202
+    """The step that reverses one that ran: the tool's own, or the one this
+    module knows for a reminder, a completed task and a link."""
+    step_undo = result.get("undo")
+    if name == "set_reminder" and result.get("id") is not None:
+        step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
+    if name == "complete_reminder":
+        step_undo = task_acts.undo_step(name, args)
+    if name == "link_notes" and not step_undo:
+        step_undo = {"tool": "unlink_notes", "arguments": {"note_id": args.get("note_id"), "other_note_id": args.get("other_note_id")}}
+    return step_undo
+
+
 def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, say=None) -> dict:  # noqa: ANN001
     """Run a confirmed card's steps: {"summary", "undo", "open"?, "ok"}.
 
@@ -1231,13 +1266,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
             failed.append({"id": args.get("note_id"), "reason": reason})
             continue
         done.append((name, args, result))
-        step_undo = result.get("undo")
-        if name == "set_reminder" and result.get("id") is not None:
-            step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
-        if name == "complete_reminder":
-            step_undo = task_acts.undo_step(name, args)
-        if name == "link_notes" and not step_undo:
-            step_undo = {"tool": "unlink_notes", "arguments": {"note_id": args.get("note_id"), "other_note_id": args.get("other_note_id")}}
+        step_undo = _step_undo(name, args, result)
         if isinstance(step_undo, dict):
             undo.extend(step_undo["steps"] if step_undo.get("tool") == "batch" else [step_undo])
         opened = result.get("open") or opened

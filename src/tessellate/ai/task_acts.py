@@ -100,27 +100,30 @@ def read_add(text: str, reminder) -> dict | None:  # noqa: ANN001
     return {**found, "task": True, "asked": text} if found else None
 
 
-def read_complete(text: str) -> dict | None:
-    """The task a sentence completes, as {"intent": "complete", "about",
-    "kind"?}, or None. kind is "reminder" or "checklist" when the sentence
-    says which, else both are looked in."""
+def _complete_rest(text: str) -> str | None:
+    """What follows the completing verb ("mark X done", "tick off X", "tick X
+    off", "complete X"), or None when the sentence is none of those."""
     low = text.lower()
-    rest = None
     if low.startswith(("mark ", "set ", "flag ")):
         rest = text[low.index(" ") + 1 :].strip()
         off = re.match(r"off\s+(.+)$", rest, re.IGNORECASE)
         if off:
-            rest = off.group(1)
-        elif _DONE_TAIL.search(rest):
-            rest = _DONE_TAIL.sub("", rest, count=1)
-        else:
-            return None
-    elif re.match(r"(?:tick|check|cross)\s+off\s+", text, re.IGNORECASE):
-        rest = re.sub(r"^\w+\s+off\s+", "", text, count=1, flags=re.IGNORECASE)
-    elif re.match(r"(?:tick|check|cross|strike)\s+(?!off\b)\S", text, re.IGNORECASE) and _OFF_TAIL.search(text):
-        rest = _OFF_TAIL.sub("", text.split(" ", 1)[1], count=1)
-    elif low.startswith("complete "):
-        rest = text[len("complete ") :]
+            return off.group(1)
+        return _DONE_TAIL.sub("", rest, count=1) if _DONE_TAIL.search(rest) else None
+    if re.match(r"(?:tick|check|cross)\s+off\s+", text, re.IGNORECASE):
+        return re.sub(r"^\w+\s+off\s+", "", text, count=1, flags=re.IGNORECASE)
+    if re.match(r"(?:tick|check|cross|strike)\s+(?!off\b)\S", text, re.IGNORECASE) and _OFF_TAIL.search(text):
+        return _OFF_TAIL.sub("", text.split(" ", 1)[1], count=1)
+    if low.startswith("complete "):
+        return text[len("complete ") :]
+    return None
+
+
+def read_complete(text: str) -> dict | None:
+    """The task a sentence completes, as {"intent": "complete", "about",
+    "kind"?}, or None. kind is "reminder" or "checklist" when the sentence
+    says which, else both are looked in."""
+    rest = _complete_rest(text)
     if rest is None:
         return None
     rest = _ON_LIST_TAIL.sub("", _OFF_TAIL.sub("", rest.strip()), count=1).strip()

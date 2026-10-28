@@ -419,17 +419,22 @@ def _wait_left(failures: list[float], allowance: int, now: float) -> float:
     return wait - (now - failures[-1])
 
 
+def _drop_stale_pending(now: float) -> None:
+    """Forget unlock attempts older than the pending window. Caller holds the lock."""
+    for key in list(_pending_unlocks):
+        kept = [t for t in _pending_unlocks[key] if now - t < _PENDING_TTL]
+        if kept:
+            _pending_unlocks[key] = kept
+        else:
+            del _pending_unlocks[key]
+
+
 def _refuse_if_throttled(client: str = "unknown") -> None:
     """429 while inside the wait a run of wrong passwords has earned."""
     client = _bucket(client)
     with _throttle_lock:
         now = time.time()
-        for key in list(_pending_unlocks):
-            kept = [t for t in _pending_unlocks[key] if now - t < _PENDING_TTL]
-            if kept:
-                _pending_unlocks[key] = kept
-            else:
-                del _pending_unlocks[key]
+        _drop_stale_pending(now)
         own = _failed_by_client.get(client)
         if own is not None:
             _wait_left(own, _FAILURE_ALLOWANCE, now)  # forgets a long-quiet run

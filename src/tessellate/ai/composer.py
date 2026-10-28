@@ -2705,27 +2705,21 @@ _STILL_OPEN = re.compile(
 )
 
 
-def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
-    """The checklist items not ticked on the note the question names: how
-    many of how many, then those items. False when the question is not
-    that, or no note found names it with a checklist."""
-    asked = question_noise.repair(question_noise.tidy(" ".join((question or "").split())))
-    found = _STILL_OPEN.match(asked.rstrip("?."))
-    if not found:
-        return False
-    subject = found.group("a") or found.group("b")
-    wanted = {_stem(w) for w in _words(subject)} - {_stem(w) for w in _NOTE_NOUNS}
-    if not wanted:
-        return False
+def _notes_named_by(views: list[NoteView], wanted: set[str]) -> list[NoteView]:
+    """The notes a "still open" question names, best-ranked first."""
 
-    def stems(v: NoteView, wide: bool) -> set[str]:
+    def stems(v: NoteView) -> set[str]:
         held = {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
-        return held | {_stem(w) for w in v.words} if wide else held
+        return held | {_stem(w) for w in v.words}
 
     ranked = sorted(views, key=lambda v: v.rank)
     #: Named by its filing or heading first ("for uni", "for history"); by any
     #: word of it only when none is (the old reading).
-    named = [v for v in ranked if wanted <= stems(v, True)] or [v for v in ranked if wanted & stems(v, True)]
+    return [v for v in ranked if wanted <= stems(v)] or [v for v in ranked if wanted & stems(v)]
+
+
+def _say_open_notes(out: _Answer, named: list[NoteView], subject: str, wanted: set[str]) -> bool:
+    """The open items of up to three named notes; False when none was named."""
     open_in = [(v, [s for s in v.sentences if s.kind == "task"]) for v in named]
     open_in = [(v, tasks) for v, tasks in open_in if tasks]
     if not open_in:
@@ -2740,6 +2734,21 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
             out.t("para")
         _say_open(out, view, tasks, wanted)
     return True
+
+
+def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
+    """The checklist items not ticked on the note the question names: how
+    many of how many, then those items. False when the question is not
+    that, or no note found names it with a checklist."""
+    asked = question_noise.repair(question_noise.tidy(" ".join((question or "").split())))
+    found = _STILL_OPEN.match(asked.rstrip("?."))
+    if not found:
+        return False
+    subject = found.group("a") or found.group("b")
+    wanted = {_stem(w) for w in _words(subject)} - {_stem(w) for w in _NOTE_NOUNS}
+    if not wanted:
+        return False
+    return _say_open_notes(out, _notes_named_by(views, wanted), subject, wanted)
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:
@@ -5031,6 +5040,19 @@ def asks_written_when(question: str) -> bool:
     return bool(_WRITTEN_WHEN.search(question or "")) and not _NOT_ONE_NOTE.search(question or "")
 
 
+def _best_dated_title(stems: set, views_list: list):  # noqa: ANN202
+    """The dated note whose name holds every stem, the better-ranked on a tie;
+    None when no note's name holds them all."""
+    best, hits = None, 0
+    for view in views_list:
+        if view.written is None or not view.titled:
+            continue
+        held = sum(1 for t in stems if _holds(t, view.title_words | view.filed_words))
+        if held > hits or (held == hits and held and best is not None and view.rank < best.rank):
+            best, hits = view, held
+    return best if best is not None and hits >= len(stems) else None
+
+
 def _written_when(out: "_Answer", question: str, p, views_list: list):  # noqa: ANN001
     """The day a named note was written, from its own date (E6: "when was my
     gym log written" quoted a lift). None unless the question is that shape and
@@ -5040,14 +5062,8 @@ def _written_when(out: "_Answer", question: str, p, views_list: list):  # noqa: 
     stems = {_stem(t) for t in p.terms if t.lower() not in _WHEN_NOISE}
     if not stems:
         return None
-    best, hits = None, 0
-    for view in views_list:
-        if view.written is None or not view.titled:
-            continue
-        held = sum(1 for t in stems if _holds(t, view.title_words | view.filed_words))
-        if held > hits or (held == hits and held and best is not None and view.rank < best.rank):
-            best, hits = view, held
-    if best is None or hits < len(stems):
+    best = _best_dated_title(stems, views_list)
+    if best is None:
         return None
     when = best.written
     out.name(best, cap=True).t("written_on").m(f"{when:%A} {when.day} {when:%B}" + (f" {when.year}" if when.year != out.today.year else "")).t("stop")
@@ -5084,6 +5100,22 @@ def _write_body(out: "_Answer", p, shape: str, chosen: list, terms: list, questi
     _missing(out, terms, views_list)
 
 
+def _is_broad(shape: str, question: str) -> bool:
+    """Whether the question asks for a spread across notes, not one fact."""
+    return shape == "what" and bool(_BROAD.match(question) or _BROAD.match(rephrase(question)))
+
+
+def _by_the_day(p, shape: str, terms: list, views_list: list, said: str) -> tuple[list, list]:  # noqa: ANN001
+    """The sentences that say the day the question anchors on, with the day
+    as the terms when they answer; nothing and the terms as they were if not."""
+    #: The day was the anchor and the note says it ("Friday deadlift 100kg"
+    #: for "how much did I lift on friday"): the sentences that say the
+    #: day answer, whatever word the question used for the thing (E6).
+    day = _day_terms(p, views_list)
+    chosen = select(shape, day, views_list, limit=MAX_POINTS, per_note=MAX_PER_NOTE, said=said) if day else []
+    return chosen, (day if chosen else terms)
+
+
 def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, typed: list, unsure: list, views_list: list, said: str, embed, voice: str) -> dict | None:  # noqa: ANN001
     """Choose the sentences and write the answer; a result only when there is
     nothing to say."""
@@ -5091,7 +5123,7 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
     #: notes say about" off, which is the frame that says it is broad
     #: (INBOX 729: "what do my notes say about running" was answered
     #: as one fact with the other notes tacked on by "Elsewhere").
-    broad = shape == "what" and bool(_BROAD.match(question) or _BROAD.match(rephrase(question)))
+    broad = _is_broad(shape, question)
     meaning = _meaning_maker(shape, views_list, embed)(terms)
     wish = length_wish(question)
     chosen = select(
@@ -5102,13 +5134,7 @@ def _fill_selected(out: "_Answer", p, shape: str, question: str, terms: list, ty
         said=said,
     )
     if not chosen:
-        #: The day was the anchor and the note says it ("Friday deadlift 100kg"
-        #: for "how much did I lift on friday"): the sentences that say the
-        #: day answer, whatever word the question used for the thing (E6).
-        day = _day_terms(p, views_list)
-        chosen = select(shape, day, views_list, limit=MAX_POINTS, per_note=MAX_PER_NOTE, said=said) if day else []
-        if chosen:
-            terms = day
+        chosen, terms = _by_the_day(p, shape, terms, views_list, said)
     if not chosen:
         if _bare_title(out, terms, views_list) is not None:
             return _result(out.parts, shape, out.rows)
@@ -5174,6 +5200,23 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)
 
 
+def _refusal(refused: tuple, question: str, shape: str) -> dict:
+    """The answer that says the word asked about is one the notes are kept
+    from (a filter refused it)."""
+    key, word = refused
+    return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
+                    ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], shape)
+
+
+def _planned(question: str, today: date, recent: bool, embed, prefer: str, notes: list[dict], views_list: list):  # noqa: ANN001, ANN202
+    """The plan for the question, the notes it may read, and the refusal when
+    a word it asks about is one the notes are kept from (else None)."""
+    p = plan(question, today, recent=recent, embed=embed)
+    _steer_to_correction(p, prefer, notes)
+    views_list, refused = _filtered(views_list, p)
+    return p, views_list, (_refusal(refused, question, p.shape) if refused else None)
+
+
 def _compose(
     question: str,
     notes: list[dict],
@@ -5201,21 +5244,20 @@ def _compose(
     #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
     recent = recent and _still_recent(question)
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
+    early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time())))
     if early:
         return early
-    unfinished = None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time()))
-    if unfinished:
-        return unfinished
     notes = _correction_order(notes, prefer, dialogue) if prefer else notes
     views_list = _note_views(notes)
-    p = plan(question, today, recent=recent, embed=embed)
-    _steer_to_correction(p, prefer, notes)
-    views_list, refused = _filtered(views_list, p)
-    if refused:
-        key, word = refused
-        return _result([("template", PHRASES[key]), ("template", PHRASES["open_quote"]), ("asked", _as_typed(word, question)),
-                        ("template", PHRASES["close_quote"]), ("template", PHRASES["stop"])], p.shape)
+    p, views_list, refusal = _planned(question, today, recent, embed, prefer, notes, views_list)
+    if refusal is not None:
+        return refusal
     out = _fresh_answer(views_list, today, dialogue, said, previous, voice, question)
+    return _answer_views(out, p, question, views_list, today, recent=recent, embed=embed, said=said, voice=voice)
+
+
+def _answer_views(out: "_Answer", p, question: str, views_list: list, today: date, *, recent: bool, embed, said: str, voice: str) -> dict:  # noqa: ANN001
+    """Classify the question and write the answer from the notes it may read."""
     shape = "recent" if recent else classify(question, embed)
     typed = p.terms if shape != "recent" else []
     unsure: list[dict] = []
