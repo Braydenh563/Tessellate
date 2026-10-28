@@ -466,6 +466,21 @@ def _filed_words(view) -> set[str]:  # noqa: ANN001
     return {composer._stem(w) for w in (*view.title_words, *view.filed_words)}
 
 
+def _due_candidates(views: list, wanted: set, kinds: list, today: date) -> tuple[list | None, list]:
+    """The notes a due question names and their upcoming dated sentences,
+    narrowed to the kind it names; (None, []) when it names no filed note."""
+    if wanted:
+        named = [v for v in views if wanted <= _filed_words(v)] or [v for v in views if wanted <= {composer._stem(w) for w in v.words}]
+        if not named:
+            return None, []
+    else:
+        named = list(views)
+    items = _upcoming(named, today)
+    if kinds:
+        items = [i for i in items if set(kinds) & ({composer._stem(w) for w in i[2].words} | _filed_words(i[1]))]
+    return named, items
+
+
 def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """Every dated sentence ahead in the notes a "what is due for uni" names
     (their category, tag or heading), or of the kind it names ("exams"), in day
@@ -473,15 +488,9 @@ def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     are filed under, so the question is answered as before."""
     subject, kinds, window = due_ask(asked) or ([], [], None)
     wanted = set(subject)
-    if wanted:
-        named = [v for v in views if wanted <= _filed_words(v)] or [v for v in views if wanted <= {composer._stem(w) for w in v.words}]
-        if not named:
-            return False
-    else:
-        named = list(views)
-    items = _upcoming(named, today)
-    if kinds:
-        items = [i for i in items if set(kinds) & ({composer._stem(w) for w in i[2].words} | _filed_words(i[1]))]
+    named, items = _due_candidates(views, wanted, kinds, today)
+    if named is None:
+        return False
     start, end, said = _due_window(asked, window, today)
     inside = [i for i in items if start <= i[0] <= end]
     label = " ".join([*(w for w in asked.lower().split() if composer._stem(w) in wanted)]) or " ".join(kinds)
@@ -490,6 +499,12 @@ def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
             return False
         out.lines.append(f"Nothing in your {label or 'notes'} notes has a day {said}.")
         return True
+    _say_due(out, inside, label, said, today)
+    return True
+
+
+def _say_due(out, inside: list, label: str, said: str, today: date) -> None:  # noqa: ANN001
+    """The header and the dated lines (at most `SHOWN`) of what is due."""
     first, last = _day(inside[0][0], today), _day(inside[-1][0], today)
     count = realise.count_word(len(inside)).capitalize()
     header = f"One date is {said}: {first}." if len(inside) == 1 else f"{count} dates are {said} for {label or 'your notes'}, {first} to {last}:"
@@ -501,7 +516,6 @@ def _due_for(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     _block(out, header, lines)
     if len(inside) > SHOWN:
         out.lines.append(f"{realise.count_word(len(inside) - SHOWN).capitalize()} more are on the right.")
-    return True
 
 
 _SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for}
