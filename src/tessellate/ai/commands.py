@@ -27,6 +27,7 @@ turn goes on to the composer.
 
 from __future__ import annotations
 
+import importlib
 import re
 from dataclasses import dataclass, field
 from collections import deque
@@ -35,21 +36,21 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import reminder_parser, when
+from tessellate.ai import reminder_parser, task_acts, when
 from tessellate.ai import act_registry
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
 
 #: The verbs of the grammar (decision 38), as said in `Command.verb`.
-VERBS = ("remind", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
+VERBS = ("remind", "complete", "tag", "untag", "file", "rename", "pin", "unpin", "link", "unlink", "delete", "create", "add", "summarise", "find", "open")
 #: The intents `read` gives, each with its verb.
 _VERB_OF = {
     "reminder": "remind", "tag": "tag", "untag": "untag", "move": "file", "rename": "rename", "pin": "pin",
     "unpin": "unpin", "link": "link", "unlink": "unlink", "delete": "delete", "new_note": "create",
-    "meeting": "create", "append": "add", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
+    "meeting": "create", "append": "add", "complete": "complete", "summarise": "summarise", "find": "find", "open": "open", "navigate": "open",
 }
 #: The intents that write: each is shown as a card.
-WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append"})
+WRITE_INTENTS = frozenset({"reminder", "tag", "untag", "move", "rename", "pin", "unpin", "link", "unlink", "delete", "new_note", "meeting", "append", "complete"})
 #: Read only: answered at once, nothing to confirm.
 READ_INTENTS = frozenset({"find", "open", "navigate", "summarise"})
 #: The writes that wait for Confirm: anything that removes, renames, moves or
@@ -71,7 +72,7 @@ def __getattr__(name: str) -> str:
 #: others are this module's own, for what no registry tool does.
 RUNNABLE = frozenset(
     {"set_reminder", "tag_note", "edit_note", "create_note", "delete_note", "restore_note",
-     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder"}
+     "pin_note", "link_notes", "unlink_notes", "start_meeting", "bin_reminder", "complete_reminder"}
 )
 
 _MAX_TEXT = 300
@@ -685,7 +686,8 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
-    for reader in (_meeting, lambda t: _reminder(t, now, locale), _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
+    for reader in (_meeting, lambda t: _reminder(t, now, locale), lambda t: task_acts.read_add(t, lambda r: _reminder(r, now, locale)),
+                   task_acts.read_complete, _new_note, _untag, _tag, _move, _delete, _pin, _link, _rename,
                    _append, _summarise, _navigate, _find):
         found = reader(command)
         if found is None:
@@ -912,6 +914,14 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     intent = parsed["intent"]
+    if parsed.get("task") and parsed.get("asked"):
+        #: "add milk to my to-do list" when a note is called that: the note
+        #: gets the line, as before tasks were acts (E10).
+        #: `_fold` reads "to-do" as "to do"; a title keeps its hyphen.
+        for asked in {parsed["asked"], re.sub(r"\bto do\b", "to-do", parsed["asked"])}:
+            alt = _append(asked)
+            if alt and not alt.get("these") and _resolve_one(session, alt.get("about"), None, False)[0] is not None:
+                return _plan_one(session, alt, note_ids)
     if intent == "reminder":
         #: "Remind you on Friday at 9: call the dentist" (INBOX 734): the
         #: person's own words after the colon, the time said against today,
@@ -924,7 +934,7 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
             "" if parsed.get("time_given") else " (no time was said)"
         )
         said = parsed.get("said") or parsed["text"]
-        label = f"Remind you {when_said}: {said}"
+        label = f"{'Add a task due' if parsed.get('task') else 'Remind you'} {when_said}: {said}"
         arguments = {"text": parsed["text"], "due_at": due.isoformat()}
         note = _reminder_note(session, said, note_ids)
         if note is not None:
@@ -935,6 +945,8 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
             "card": _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None),
             "run": True,
         }
+    if intent == "complete":
+        return task_acts.plan_complete(session, parsed, _card, _title)
     if intent == "new_note":
         steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
         return {
@@ -1116,7 +1128,9 @@ def _clip(text: str, cap: int) -> str:
 def _filed_notes(session: Session, filed: str) -> tuple | None:
     """("list_notes", its arguments, its result, the line) for the notes in
     the category `filed`, else tagged `filed`; None when neither holds any."""
-    from tessellate.ai import tool_say, tools
+    from tessellate.ai import tool_say
+
+    tools = importlib.import_module("tessellate.ai.tools")  # breaks commands -> tools -> composer -> commands
 
     for key in ("category", "tag"):
         args = {key: filed, "limit": 8}
@@ -1129,7 +1143,10 @@ def _filed_notes(session: Session, filed: str) -> tuple | None:
 
 def _plan_read(session: Session, parsed: dict) -> dict:
     """Find or open: run the agent's own search and hand back its tool event."""
-    from tessellate.ai import agent, cards, tool_say, tools
+    from tessellate.ai import cards, tool_say
+
+    agent = importlib.import_module("tessellate.ai.agent")  # breaks agent -> tools -> composer -> commands -> agent
+    tools = importlib.import_module("tessellate.ai.tools")
 
     if parsed.get("note_id") is not None:
         result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
@@ -1169,7 +1186,8 @@ def _plan_read(session: Session, parsed: dict) -> dict:
 
 
 def _start_meeting(session: Session, args: dict) -> dict:
-    from tessellate.api.routes_meetings import MeetingCreate, create_meeting
+    meetings = importlib.import_module("tessellate.api.routes_meetings")  # breaks commands -> routes_meetings -> ... -> commands
+    MeetingCreate, create_meeting = meetings.MeetingCreate, meetings.create_meeting
     from tessellate.core import deps
     from tessellate.core.config import user_now
 
@@ -1197,7 +1215,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """
-    from tessellate.ai import tools
+    tools = importlib.import_module("tessellate.ai.tools")
 
     done: list[tuple[str, dict, dict]] = []
     failed: list[dict] = list(skipped or [])
@@ -1223,6 +1241,8 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
         step_undo = result.get("undo")
         if name == "set_reminder" and result.get("id") is not None:
             step_undo = {"tool": "bin_reminder", "arguments": {"reminder_id": result["id"]}}
+        if name == "complete_reminder":
+            step_undo = task_acts.undo_step(name, args)
         if name == "link_notes" and not step_undo:
             step_undo = {"tool": "unlink_notes", "arguments": {"note_id": args.get("note_id"), "other_note_id": args.get("other_note_id")}}
         if isinstance(step_undo, dict):

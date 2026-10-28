@@ -89,6 +89,8 @@ class Act:
 _ACTS = (
     Act("reminder", "remind", "set a reminder", "Say what and when; it is set at once with Undo.",
         "remind me to call mum on Friday at 9", ("text", "due_at"), "bin_reminder"),
+    Act("complete", "complete", "tick off a task", "Names a reminder or a checklist line; it is ticked at once with Undo, and asked about if more than one fits.",
+        "tick off buy milk", (), "complete_reminder", stem="Tick off "),
     Act("tag", "tag", "tag notes", "Name the notes and the tags; the change waits for Confirm.",
         "tag the knife note with kitchen", ("tags",), "edit_note", stem="Tag the note about "),
     Act("untag", "untag", "take a tag off", "Name the tag and the notes; waits for Confirm.",
@@ -175,7 +177,7 @@ def guide_topic() -> dict:
 #: its tool as well as its intent. "navigate" opens a part of the app and
 #: runs no tool.
 ACT_TOOLS: dict[str, str] = {
-    "reminder": "set_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
+    "reminder": "set_reminder", "complete": "complete_reminder", "tag": "tag_note", "untag": "tag_note", "move": "edit_note",
     "new_note": "create_note", "meeting": "create_note", "pin": "pin_note", "unpin": "pin_note",
     "link": "link_notes", "unlink": "unlink_notes", "rename": "edit_note", "append": "edit_note",
     "delete": "delete_note", "find": "search_notes", "open": "get_note", "summarise": "summarize_notes",

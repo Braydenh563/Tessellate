@@ -40,7 +40,7 @@ def _state(session) -> tuple:
         if e.deleted_at is None
     )
     links = tuple(sorted((link.source_entry_id, link.target_entry_id) for link in session.scalars(select(EntryLink))))
-    reminders = tuple(r.id for r in session.scalars(select(Reminder)) if r.deleted_at is None)
+    reminders = tuple((r.id, r.done) for r in session.scalars(select(Reminder)) if r.deleted_at is None)
     return notes, links, reminders
 
 
@@ -64,6 +64,11 @@ def test_every_write_act_has_an_inverse_that_restores_the_notebook(client, sessi
     if act.intent in _BEFORE:
         setup = acts.preview(session, acts.parse(_BEFORE[act.intent], NOW))
         acts.run(session, setup["card"]["steps"])
+        session.commit()
+    if act.intent == "complete":
+        #: A task is completed only once one is open; seeded directly, as the
+        #: store refuses a reminder due before the real clock.
+        session.add(Reminder(text="Buy milk", due_at=datetime(2030, 1, 1, 9)))
         session.commit()
     before = _state(session)
     # The store refuses a reminder due in the past by the real clock, so a

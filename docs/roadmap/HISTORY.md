@@ -7,6 +7,21 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Morning summary of the 2026-10-27 away run (moved from HANDOVER 2026-10-28)
+
+Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; stopped at the owner's 48% weekly line.
+
+- Merged and pushed: fastembed (search by meaning on ONNX; only bge-small and e5-small vectors kept; Settings, Search and index "Old search files" list with Remove once the new model is ready; torch launcher opt-in removed; installer running-flag fix); model writes counted answers (facts round 3, 7 items); Atlas friendly at rest (92% to 1.4% grumpy) and thrown companions land near where dropped (worst move 256 to 65px).
+- Fixed: connector drag left "Drop here to delete" up (1405); board thumbnails faded on light; image ⋯ chip invisible on light, glass only with glass on; Guide chip closed the open Guide; Guide how-to lead skipped past forms; picture deleted mid-read raised StaleDataError; toast covering Save (E2E).
+- Not reviewed independently (budget): the Atlas merge e343d49 (UI) and the facts round 3. Run `reviewer` plus `blind-tester` on e343d49, `reviewer` on the facts range, before PR 204 merges.
+- Edited by the fastembed agent outside the usual scope: `.github/workflows/release.yml` (torch removed from the release build). Check it.
+- Open on the PR (placed): INBOX 1403 and 1404 (whiteboard rich text, drag connector labels) in WHITEBOARD_PLAN; 1406 (Guide leads with a 134-word sentence) in CHAT_PLAN; 1407 (Harper and spell-check false positives, app-side filter) and 1408 (doc sidebars not resizable in full screen) in DOCUMENTS_PLAN; 1409 (glass controls as an Appearance option) in UI_MODERNISATION_PLAN; companion hit test counts the tail (Atlas agent, found not fixed).
+- fastembed leftovers: nomic-embed-text-v1.5 as one press; Qwen3 and bge-m3 ONNX builds untested; no real PyTorch-era cache or packaged build tried.
+- Facts leftovers: "next fortnight", "last weekend" not read as windows; real-model behaviour unverified (fake transport only).
+- Owner questions still open: desktop companion (BACKLOG 16, build it?); auto-select drawn whiteboard shapes (recommended yes for shapes, pen keeps its tool).
+- Next: full suite on the head (not run this span; serial merged-test runs and gates passed), then reviews above, then 1407 plus 1408 (one Sonnet), then 1403 plus 1404 (one Sonnet).
+- Disk: /tmp/pytest-of-root held about 15 GB from old runs; clearing it was denied to agents.
+
 ## Moved from the plans, 2026-10-27 (lag 1415)
 
 - 2026-10-27, INBOX 1415 forced layouts (first pass), measured at 4x CPU throttle with CDP Performance metrics and long tasks on a 580-note scratch notebook: Settings, Help section long task 2101 ms to 313 ms, 190 layouts to 9 (`toastYield`, status.js, laid out every button inside a skipped `content-visibility` window; now `checkVisibility` first and one class write); Appearance section 774 ms to 386 ms, 555 rects to 117; Ctrl+plus zoom `applyAppearance` replaced by `applyZoomVar`, `measureLabelOptics` cached by font key (4 presses: layout 409 ms to 310 ms, long tasks 696/495/702 to 528/398); boot `renderBrandLogo` 835 ms to 406 ms inclusive (each emblem is drawn a tick later, after all six slots have been asked); OCR `ocrFitLiveText` read pass then write pass, OCR pinch wheel one `ocrZoomAbout` per frame, dashboard map card sized from the `ResizeObserver` entry. Pinned by `tests/test_lag_1415.py`. Not reproduced here (small data, Linux fonts): Quick sketch plain keydown (71 ms at 4x), Library OCR `Response.json.then` layout, tab-switch click handler (no long task on desktop or at 390 wide), Timeline first load (580 notes: 3 layouts, 3 ms), boot `status.js` build (`build` 89 ms), settings-find build.
