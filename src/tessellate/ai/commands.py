@@ -173,6 +173,34 @@ def _target(text: str) -> dict | None:
     return None
 
 
+#: Other kinds of thing a verb here may name; a phrase holding one is not a note's title.
+_OTHER_KINDS = frozenset("reminder reminders tag tags label labels category categories folder folders board boards map maps document documents meeting meetings timer task tasks event events".split())
+#: What the app itself holds: "delete all my data" is the Guide's, never a note's title.
+_APP_NOUNS = frozenset(
+    "data account accounts everything anything history chat chats conversation conversations messages message settings app "
+    "notebook notebooks model models vault backup backups cache index search session sessions workspace workspaces theme "
+    "password passwords it this that them these those one ones all".split()
+)
+
+
+#: A title is a noun phrase; a clause ("bin day is on thursday") is a sentence.
+_CLAUSE_WORDS = frozenset("is are was were be been do does did has have had will would should can could that which who what when where why how if whether because".split())
+
+
+def _bare_target(text: str) -> dict | None:
+    """A note named by its title alone ("the gym log", "my history essay"),
+    for the verbs only a note can take: tag, rename, pin, delete (audit 1028
+    E7: every one of them needed the literal word "note"). The notes are
+    found later by the words, and no match or several is asked, never run."""
+    phrase = _drop_article(text.strip(" .,'\"“”"))
+    words = re.findall(r"[\w'’-]+", phrase.lower())
+    if not 1 <= len(words) <= 6 or words[0].isdigit() or words[-1] in _APP_NOUNS or all(w in _APP_NOUNS for w in words):
+        return None
+    if _OTHER_KINDS & set(words) or _CLAUSE_WORDS & set(words):
+        return None
+    return {"about": phrase, "single": True, "bare": True}
+
+
 def _tags(text: str) -> list[str]:
     text = text.strip(" .,'\"")
     if "#" in text:
@@ -242,14 +270,22 @@ def _tag(text: str) -> dict | None:
     if low.startswith(("tag ", "label ")):
         body = text.split(" ", 1)[1]
         return _tag_with(body) or _note_then_tags(body) or _tag_these(body)
-    for lead in ("add the tags ", "add the tag ", "add tags ", "add tag ", "add the label ", "add label "):
+    for lead in ("add the tags ", "add the tag ", "add tags ", "add tag ", "add the label ", "add label ", "add a tag ", "add a label "):
         if low.startswith(lead):
             split = _split_last(text[len(lead):], (" to ",))
             if split:
                 tags, target = split
-                found = _target(target)
+                found = _target(target) or _bare_target(target)
                 if found and _tags(tags):
                     return {"intent": "tag", **found, "tags": _tags(tags)}
+    if low.startswith("give "):
+        #: "give my gym log the tag fitness"
+        split = _split_last(text[len("give "):], (" the tag ", " the tags ", " the label ", " a tag ", " a label "))
+        if split:
+            target, tags = split
+            found = _target(target) or _bare_target(target)
+            if found and _tags(tags):
+                return {"intent": "tag", **found, "tags": _tags(tags)}
     return None
 
 
@@ -262,7 +298,7 @@ def _tag_with(body: str) -> dict | None:
     for lead in ("the tags ", "the tag ", "tags ", "tag "):
         if tags.lower().startswith(lead):
             tags = tags[len(lead):]
-    found = _target(target)
+    found = _target(target) or _bare_target(target)
     return {"intent": "tag", **found, "tags": _tags(tags)} if found and _tags(tags) else None
 
 
@@ -298,7 +334,7 @@ def _move(text: str) -> dict | None:
     if not split:
         return None
     target, category = split
-    found = _target(target)
+    found = _target(target) or (_bare_target(target) if verb in ("move ", "file ") else None)
     if not found:
         return None
     category = _drop_article(category.strip())
@@ -482,9 +518,10 @@ def _navigate(text: str) -> dict | None:
     return None
 
 
-def _one_target(text: str) -> dict | None:
+def _one_target(text: str, *, bare: bool = False) -> dict | None:
     """The note a single-note verb names: "the boiler note", "my passport
-    note", "this note", "the note about the boiler"."""
+    note", "this note", "the note about the boiler". `bare`: for a verb only a
+    note can take, its title alone names it too ("pin the history essay")."""
     found = _target(text)
     if found:
         return found
@@ -493,26 +530,31 @@ def _one_target(text: str) -> dict | None:
         about = _drop_article(" ".join(words[:-1]))
         if about:
             return {"about": about, "single": True}
-    return None
+    return _bare_target(text) if bare else None
 
 
 def _delete(text: str) -> dict | None:
     low = text.lower()
-    verb = next((v for v in ("delete ", "remove ", "bin ", "trash ", "throw away ", "get rid of ") if low.startswith(v)), None)
+    verb = next((v for v in ("delete ", "remove ", "bin ", "trash ", "throw away ", "get rid of ", "erase ", "discard ", "ditch ", "scrap ", "throw out ") if low.startswith(v)), None)
     if verb is None:
         return None
     rest = text[len(verb):].strip()
     if re.match(r"(?:the |a |my )?(?:tags?|labels?|reminders?|categor(?:y|ies)|board|map|document)\b", rest, re.I):
         return None
-    found = _one_target(rest)
+    found = _one_target(rest, bare=True)
     return {"intent": "delete", **found} if found else None
 
 
 def _pin(text: str) -> dict | None:
     low = text.lower()
-    for verb, intent in (("unpin ", "unpin"), ("pin ", "pin"), ("star ", "pin"), ("favourite ", "pin"), ("unstar ", "unpin")):
+    for verb, intent in (("unpin ", "unpin"), ("pin ", "pin"), ("star ", "pin"), ("favourite ", "pin"), ("favorite ", "pin"),
+                         ("unstar ", "unpin"), ("unfavourite ", "unpin"), ("unfavorite ", "unpin")):
         if low.startswith(verb):
-            found = _one_target(text[len(verb):].strip())
+            rest = text[len(verb):].strip()
+            for tail in (" to the top", " at the top", " to top", " to the sidebar"):
+                if rest.lower().endswith(tail):
+                    rest = rest[: -len(tail)].strip()
+            found = _one_target(rest, bare=True)
             return {"intent": intent, **found} if found else None
     return None
 
@@ -548,13 +590,17 @@ def _link(text: str) -> dict | None:
 
 def _rename(text: str) -> dict | None:
     low = text.lower()
-    if not low.startswith(("rename ", "retitle ")):
+    body = text.split(" ", 1)[1] if low.startswith(("rename ", "retitle ")) else ""
+    for lead in ("change the title of ", "change the name of ", "change my title of ", "set the title of ", "set the name of "):
+        if low.startswith(lead):
+            body = text[len(lead):]
+    if not body:
         return None
-    split = _split_last(text.split(" ", 1)[1], (" to ", " as "))
+    split = _split_last(body, (" to ", " as "))
     if not split:
         return None
     target, title = split
-    found = _one_target(target.strip())
+    found = _one_target(target.strip(), bare=True)
     title = title.strip(" '\"“”")
     if found and title and len(title) <= 200:
         return {"intent": "rename", **found, "title": title}
@@ -569,7 +615,10 @@ def _append(text: str) -> dict | None:
     if not split:
         return None
     words, target = split
-    found = _one_target(target.strip())
+    #: "add milk to my shopping list": a thing that is theirs (my, our) or a
+    #: list-like name is a title, though it says no "note".
+    listish = target.lower().startswith(("my ", "our ")) or target.lower().split(" ")[-1] in ("list", "checklist", "log", "journal", "diary", "tracker")
+    found = _one_target(target.strip(), bare=listish)
     words = words.strip(" '\"“”")
     if found and found.get("single", True) and words:
         return {"intent": "append", **found, "single": True, "content": _cap(words)}

@@ -1508,6 +1508,9 @@ class _Found:
     entries: list = field(default_factory=list)
     mode: str = "none"
     meaning_loading: bool = False
+    meaning_off: bool = False
+    #: Notes that mention the one day asked about (E6).
+    mentioned: set = field(default_factory=set)
     #: Ids that are here because they are *connected* to a match rather than
     #: because they matched. The user asked about one thing and is shown notes
     #: about another; without saying why, the panel looks like the search
@@ -1626,7 +1629,10 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
         #: write about sourdough last week" was answered with sourdough notes
         #: from six weeks, under a header that said "last week". The notes
         #: inside the window are the answer when there are any.
-        inside = [e for e in found.entries if e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1]]
+        inside = [
+            e for e in found.entries
+            if e.id in found.mentioned or (e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1])
+        ]
         if inside:
             found.entries = inside
             found.when_phrase = found.when_phrase or asked.window_phrase
@@ -1653,6 +1659,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
     found.meaning_loading = _meaning_loading()
+    found.meaning_off = _meaning_off()
     hit = search_manager.retrieve_detailed(
         session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
         locale=locale,
@@ -1664,6 +1671,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     found.connected_ids = hit.connected_ids
     found.match_info = hit.match_info
     found.when_phrase = hit.when_phrase
+    found.mentioned = set(hit.mentioned)
     if not attached and as_of is None:
         _recall_window(session, question, found)
 
@@ -1763,6 +1771,7 @@ def _context_note(ctx: _NoteCtx, entry) -> dict:  # noqa: ANN001
         # prompt renders this as a caveat, so an answer can say "you linked this
         # to the note about X" instead of implying it was a hit.
         "connected": entry.id in found.connected_ids,
+        "dated_in_window": entry.id in found.mentioned,
         # Already computed (match_info feeds the frontend's similarity/hops
         # badges) and shown to the user, just never reached the model itself.
         # Asked for directly: "can the ai see the link reasons and similarity
@@ -1857,6 +1866,7 @@ def _chat_payload(session: Session, found: _Found, notes: list[dict], config, as
         #: (`search_manager.query_vector`): said in Why, and when nothing
         #: matched, said with the answer.
         "meaning_loading": found.meaning_loading,
+        "meaning_off": found.meaning_off,
         "raw_results": _raw_results(session, found),
         #: The day asked about and, per note, the revision its text came from
         #: (None for a note that read the same then as now).
@@ -2417,7 +2427,26 @@ def _meaning_loading() -> bool:
         cold = getattr(embeddings, "loads_cold", None)
         from tessellate.ai import embeddings as embedding_service
 
+        if not embedding_service._package_present():
+            #: Not installed never loads (E30): saying "still loading" told
+            #: the person to wait for something that would not come.
+            return False
         return bool(callable(cold) and cold()) or (embedding_service.warmup_running() and not embeddings.is_ready())
+    except Exception:  # noqa: BLE001  # no backend is a state, not an error
+        return False
+
+
+def _meaning_off() -> bool:
+    """Search by meaning is not installed (or its engine is gone), so a miss
+    read words only for good, not for a few seconds (E30)."""
+    try:
+        from tessellate.ai import embeddings as embedding_service
+
+        backend = deps.get_embeddings()
+        models = getattr(backend, "_models", None)
+        if models is None or models.embedding_backend() == "ollama":
+            return False
+        return not embedding_service._package_present() and type(backend).embed_text is embedding_service.EmbeddingService.embed_text
     except Exception:  # noqa: BLE001  # no backend is a state, not an error
         return False
 
@@ -3555,7 +3584,8 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     #: The open note said it holds none ("This note does not give a date"): a
     #: finished answer, not a miss to send to the web or to "general knowledge".
     said_none = str(result.get("shape") or "").startswith("open_")
-    missed = not result["grounding"] and not said_none
+    #: A note's own day is an answer with no quote to ground (`composer._written_when`).
+    missed = not result["grounding"] and not said_none and not result.get("answered")
     if missed:
         redirected = _missed_events(req, follow, ollama_running)
         if redirected is not None:
@@ -3577,6 +3607,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         text = personal.general_reply(_web_allowed(req))
     if missed and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
+    elif missed and prepared.get("meaning_off"):
+        text += "\n\n" + composer_digest.PHRASES["meaning_off"]
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
         text = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))

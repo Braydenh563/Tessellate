@@ -118,6 +118,7 @@ _BASE = {
     "told_self": ("you told yourself to", "you reminded yourself to"),
     "drift_woven": "though no later note says how that went",
     "meaning_loading": "The search by meaning is still loading, so this read your words only; ask again in a few seconds.",
+    "meaning_off": "Search by meaning is off, so this read your words only; turn it on in Settings, Search and index.",
     "landed": ("{opening}, and you're {landed}.", "{opening}. For now you're {landed}."),
     "open_count": ("{opening}, with {left} still open.", "{opening}, and {left} still to settle."),
     "stale": (
@@ -2729,8 +2730,8 @@ def _kind_if_mine(asked: str) -> str | None:
     empty question, or two things named ("Lisbon vs Porto", "how does A differ
     from B"), which the composer's side-by-side answers; a digest of the best
     note would say one side and drop the other."""
-    if not asked:
-        return None
+    if not asked or composer.asks_written_when(asked):
+        return None  # a note's own day is the composer's, not a digest of its words (E6)
     kind = kind_of(asked)
     return None if kind != "compare" and composer.compare_sides(asked) else kind
 
