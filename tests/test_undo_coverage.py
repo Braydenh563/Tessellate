@@ -512,6 +512,8 @@ EXEMPT: dict[str, str] = {
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
     "meetings.js:nameRecordingSpeakers": "read: asks the model to name speakers, shown for review",
     "library.js:ocrRunRegion": "read: reads a region of a picture, shows the text for review",
+    "chat-edit.js:chatTooLong": "send: saves an over-long message as a note on the person's own click so it can be asked about; deleting it in Notes is the way back",
+    "chat-edit.js:regenerateFrom": "send: cuts the turns after the question it re-asks, as Regenerate always replaced them; asks first when an answer wrote",
     "chat.js:compressChatContext": "read: asks the model to shorten the chat's context; writes nothing",
     "graph.js:graphPinSave": "inverse: the one door for pin writes; each caller pushes its pin step (graphPinStep) and graphSetPin replays it for Undo and Redo",
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",

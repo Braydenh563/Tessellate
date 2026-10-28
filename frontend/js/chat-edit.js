@@ -222,3 +222,20 @@ function chatTooLong(text, fromBox) {
     },
   );
 }
+
+// Try again on the last answer: lazy, reached only from its button.
+async function regenerateLast() {
+  if (!lastChatQuestion || chatController) return;
+  const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].at(-1);
+  if (lastAssistant?.dataset.wrote && !(await confirmRerun(lastAssistant))) return;
+  regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
+  if (lastAssistant) lastAssistant.remove(); // clear the old answer first
+  sendChatMessage(lastChatQuestion, {
+    skipUserBubble: true,
+    replaceLast: true,
+    noteIds: lastChatAttachments,
+    imageMediaIds: lastChatImageAttachments.map((img) => img.id),
+    documentIds: lastChatDocumentAttachments.map((d) => d.id),
+    attempt: regenerateLastAnswer.retries,
+  });
+}

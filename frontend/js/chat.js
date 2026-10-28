@@ -151,7 +151,7 @@ function chatTurnTranscript(bubble, text) {
       if (result) line += `\nResult: ${result}`;
       parts.push(line);
     } else if (node.classList.contains("msg-body")) {
-      const last = node === bodies[bodies.length - 1];
+      const last = node === bodies.at(-1);
       const body = last && text ? text : node.innerText.trim();
       if (body) parts.push(body);
     } else {
@@ -651,21 +651,7 @@ async function forkFromBubble(bubble) {
 //: How many times the last question has been asked again (`retries`, kept on
 //: the function, not a top-level let): sent as `attempt`, so an answer
 //: composed from the notes is worded anew (CHAT_PLAN decision 34).
-async function regenerateLastAnswer() {
-  if (!lastChatQuestion || chatController) return;
-  const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].at(-1);
-  if (lastAssistant?.dataset.wrote && !(await lazyScript("/js/chat-edit.js").then(() => confirmRerun(lastAssistant)))) return;
-  regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
-  if (lastAssistant) lastAssistant.remove(); // clear the old answer first
-  sendChatMessage(lastChatQuestion, {
-    skipUserBubble: true,
-    replaceLast: true,
-    noteIds: lastChatAttachments,
-    imageMediaIds: lastChatImageAttachments.map((img) => img.id),
-    documentIds: lastChatDocumentAttachments.map((d) => d.id),
-    attempt: regenerateLastAnswer.retries,
-  });
-}
+const regenerateLastAnswer = () => lazyScript("/js/chat-edit.js").then(() => regenerateLast());
 
 //: One line offering Atlas a question, for the empty states that are a person
 //: looking at a surface they have not used yet. Built here rather than written

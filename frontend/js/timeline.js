@@ -739,6 +739,19 @@ const TIMELINE_APPEND_CHUNK = 60;
 //: per page, and a section's count is a number written once per chunk.
 const TIMELINE_APPEND_BUDGET_MS = 6;
 
+//: **One header line for the feed, the grid and the table.** A page is not the
+//: range: while `timelineNextCursor` says more follow, the count is what is
+//: loaded and a plus ("300+ items"), never a total it is not. "1 day", not
+//: "1 days"; "1 item" only when nothing follows.
+function timelineUnitText(n, unit) {
+  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+}
+function timelineCountLine(shown, loaded, tail) {
+  const more = timelineNextCursor ? "+" : "";
+  const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
+  return `${count} item${shown === 1 && !more ? "" : "s"} · ${tail}`;
+}
+
 function appendTimelineRows(fresh, from = 0, visible = null) {
   const feed = $("timeline-feed");
   const scale = feed.dataset.scale || "day";
@@ -784,9 +797,8 @@ function appendTimelineRows(fresh, from = 0, visible = null) {
   }
   applyTimelineRowTabOrder();
   const total = feed.querySelectorAll(".timeline-row").length;
-  $("timeline-count").textContent = `${total} note${total === 1 ? "" : "s"} · ${
-    feed.querySelectorAll(".timeline-bucket").length
-  } ${{ day: "day", week: "week", month: "month", year: "year" }[scale]}s`;
+  $("timeline-count").textContent = timelineCountLine(
+    total, total, timelineUnitText(feed.querySelectorAll(".timeline-bucket").length, scale));
 }
 
 //: The end of the feed is the request for the next page. 600px of warning
@@ -950,15 +962,12 @@ function paintTimelineFeed(rows) {
     current.rows.push(row);
   }
 
-  const unit = { day: "day", week: "week", month: "month", year: "year" }[scale];
-  const filtered = rows.length !== timelineRows.length;
+  const unit = scale;
   //: "Items", not "notes": the feed holds documents, boards and reminders
   //: since Phase 4, and a count line that calls a reminder a note is the same
   //: small lie the response's `notes` key was telling until today.
   $("timeline-count").textContent = rows.length
-    ? `${filtered ? `${rows.length} of ${timelineRows.length}` : rows.length} item${
-        rows.length === 1 ? "" : "s"
-      } · ${buckets.length} ${unit}${buckets.length === 1 ? "" : "s"}`
+    ? timelineCountLine(rows.length, timelineRows.length, timelineUnitText(buckets.length, unit))
     : "";
 
   const fragment = document.createDocumentFragment();
@@ -2050,12 +2059,9 @@ function timelineSortedRows(rows) {
 function paintTimelineTable(rows) {
   const body = $("timeline-table-body");
   body.replaceChildren();
-  const filtered = rows.length !== timelineRows.length;
   const column = TIMELINE_COLUMNS.find((c) => c.key === timelineSort.key);
   $("timeline-count").textContent = rows.length
-    ? `${filtered ? `${rows.length} of ${timelineRows.length}` : rows.length} note${
-        rows.length === 1 ? "" : "s"
-      } · by ${(column ? column.label : "date").toLowerCase()}`
+    ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`)
     : "";
   const sorted = timelineSortedRows(rows);
   const fragment = document.createDocumentFragment();

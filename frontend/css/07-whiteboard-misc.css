@@ -3104,6 +3104,7 @@ dialog::backdrop {
   align-items: center;
   gap: var(--space-2);
   margin-left: auto;
+  flex-wrap: wrap;
 }
 /* The answer-length picker was squashed to "Det…", it is a real choice
    with real words in it, and an ellipsis where the word "Detailed" should

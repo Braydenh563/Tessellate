@@ -1884,6 +1884,9 @@ function sortEntries(entries) {
 // container-level scroll, without having to find which one this list is in.
 const listWindows = new WeakMap();
 
+//: Set by `flashEntry` while it renders: the first paint must reach this id.
+let pendingJumpId = null;
+
 function renderIncrementally(container, items, buildItem, options = {}) {
   //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
   //: carry on next frame while the sentinel is still near, instead of forty
@@ -1893,7 +1896,8 @@ function renderIncrementally(container, items, buildItem, options = {}) {
   //: fires when the sentinel's intersection *changes*: a sentinel that is
   //: still near after a small chunk never fires again. So `near` keeps the
   //: observer's last answer and the pump runs on frames until it goes false.
-  const { initial = 60, chunk = 40, afterChunk, budgetMs = 0 } = options;
+  const at = pendingJumpId == null ? -1 : items.findIndex((x) => (x.id ?? x[0].id) === pendingJumpId);
+  const { initial = Math.max(60, at + 1), chunk = 40, afterChunk, budgetMs = 0 } = options;
 
   // Tear down the previous run first. Without this a re-render (a keystroke in
   // the search box) leaves the old observer alive, still holding the old
@@ -2006,23 +2010,14 @@ function paginateNotesForDisplay(items) {
 // jump. Threads are the reason this can't be a plain sort-then-slice: a
 // child's position depends on its parent's position, not on the child's own
 // sort key, so `renderEntries`'s own thread-flattening (`ordered`,
-// `addWithChildren`) is reproduced here rather than approximated.
+// `addWithChildren`) lives here, and `renderEntries` calls it.
 //
 // Reads the same module-level filter state `renderEntries` does
 // (`draftsOnly`, `activeCategory`, `noteSearch`, `noteSort`), a caller that
 // wants a *different* view's ordering (see `resolveNotePage` below) sets
 // those first, the same way `flashEntry` already resets category/search/
 // drafts before it ever draws anything.
-function orderedNotesForCurrentView() {
-  let visible = draftsOnly
-    ? allEntries.filter((e) => e.is_draft)
-    : favouritesOnly
-      ? allEntries.filter((e) => e.pinned && noteListed(e))
-      : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e))
-        : allEntries.filter(noteListed);
-  visible = visible.filter(matchesSearch);
-
+function orderedNotesForCurrentView(visible = libraryVisibleRows()) {
   const flat = Boolean(noteSearch) || noteSort !== "newest";
   if (flat) return sortEntries(visible).map((entry) => [entry, 0]);
 
@@ -2356,58 +2351,12 @@ function renderEntries() {
   empty.classList.toggle("hidden", !notebookEmpty);
   noMatch.classList.toggle("hidden", notebookEmpty || visible.length > 0);
 
-  // A search or a non-default sort means the user wants a flat, ordered
-  // list: thread nesting only applies to the default newest view.
-  const flat = Boolean(noteSearch) || noteSort !== "newest";
-  if (flat) {
-    renderIncrementally(
-      list,
-      paginateNotesForDisplay(sortEntries(visible)),
-      (entry) => entryItem(entry, { actions: true }),
-      {
-        afterChunk: () => {
-          applyEntryListTabOrder(list);
-          ensureCardCounts(list, _entriesLoadGeneration);
-        },
-      }
-    );
-    return;
-  }
-
-  // Threads (Wave B): children render indented under their parent. A
-  // child whose parent isn't visible (filtered out) shows at top level.
-  const visibleIds = new Set(visible.map((e) => e.id));
-  const childrenOf = new Map();
-  for (const entry of visible) {
-    if (entry.parent_id && visibleIds.has(entry.parent_id)) {
-      if (!childrenOf.has(entry.parent_id)) childrenOf.set(entry.parent_id, []);
-      childrenOf.get(entry.parent_id).push(entry);
-    }
-  }
-
-  // Flattened to `[entry, depth]` pairs *before* rendering, rather than
-  // recursing straight into the DOM. A thread has to stay whole, a parent and
-  // its continuations are one unit and must never be split across a chunk
-  // boundary: so the recursion produces the order and the depth, and the
-  // renderer below decides how much of that order to paint. Threads are the
-  // reason this list cannot simply be sliced: position in `visible` is not
-  // position on screen.
-  const ordered = [];
-  const addWithChildren = (entry, depth) => {
-    ordered.push([entry, depth]);
-    // Oldest continuation first: a thread reads top to bottom.
-    const children = (childrenOf.get(entry.id) || []).slice().reverse();
-    for (const child of children) addWithChildren(child, depth + 1);
-  };
-
-  for (const entry of visible) {
-    const parentVisible = entry.parent_id && visibleIds.has(entry.parent_id);
-    if (!parentVisible) addWithChildren(entry, 0);
-  }
-
+  // Flat for a search or non-default sort, threaded for newest: one ordering
+  // with `resolveNotePage`, so a jump's page is the page that renders.
+  const ordered = paginateNotesForDisplay(orderedNotesForCurrentView(visible));
   renderIncrementally(
     list,
-    paginateNotesForDisplay(ordered),
+    ordered,
     ([entry, depth]) => {
       const li = entryItem(entry, { actions: true });
       if (depth > 0) {
@@ -2421,9 +2370,8 @@ function renderEntries() {
         applyEntryListTabOrder(list);
         ensureCardCounts(list, _entriesLoadGeneration);
         // Expand-all reads the rendered rows, and `applyNotesViewMode` runs
-        // at the *top* of this function, right after `replaceChildren()`,
-        // when the list is empty and the button would read "Expand all
-        // (disabled)" forever. Refreshed here, once the rows exist.
+        // at the *top* of this function, when the list is empty: refreshed
+        // here, once the rows exist.
         updateExpandAllButton();
       },
     }

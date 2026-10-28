@@ -514,9 +514,24 @@ async function importDirectory() {
 //: The way back from a one-step import (INBOX 464 (18)): choosing the files
 //: starts it, so the toast offers Undo, which moves exactly the notes it made
 //: (the ids both endpoints return) to the recycle bin, restorable from there.
+//: What an import did, in one line: made, skipped as already here, failed
+//: (the files or notes it could not read). Said even when nothing was made.
+function importSummary(result) {
+  const made = result.imported ?? (result.ids || []).length;
+  const already = result.already || 0;
+  const failed = (result.skipped || []).length;
+  const parts = [`Imported ${made} note${made === 1 ? "" : "s"}`];
+  if (already) parts.push(`skipped ${already} already here`);
+  if (failed) parts.push(`${failed} failed`);
+  return `${parts.join(", ")}.`;
+}
+
 function undoImport(result, status) {
   const ids = result.ids || [];
-  if (!ids.length) return;
+  if (!ids.length) {
+    toast(importSummary(result));
+    return;
+  }
   const n = ids.length;
   //: Eight at a time, each settled on its own, so one note already gone does
   //: not stop the rest; answers how many went.
@@ -540,7 +555,7 @@ function undoImport(result, status) {
     const back = await each((id) => apiJson(`/entries/${id}/restore`, { method: "POST", silent: true }));
     if (status) status.textContent = `Imported ${back} note${back === 1 ? "" : "s"} again.`;
   };
-  offerUndo(`Imported ${n} note${n === 1 ? "" : "s"}`, `Imported ${n} note${n === 1 ? "" : "s"}.`, binThem, restoreThem);
+  offerUndo(`Imported ${n} note${n === 1 ? "" : "s"}`, importSummary(result), binThem, restoreThem);
 }
 
 async function importMarkdown(inputId = "import-md-files") {
