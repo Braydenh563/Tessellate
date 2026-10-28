@@ -287,6 +287,7 @@ FAULTS = {
     'whiteboard.js': {
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
+        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
         'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
     },

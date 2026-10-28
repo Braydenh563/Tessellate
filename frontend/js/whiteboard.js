@@ -843,6 +843,8 @@ const WB_INV_ZOOM_GRIPS = [
   ".wb-map-edge-handle",
   ".wb-map-resize-grip",
   ".wb-map-actions",
+  ".wb-map-collapse",
+  ".wb-map-count",
   ".wb-sketch-rotate-handle",
   ".wb-rotate-handle-stem",
 ];
@@ -9811,6 +9813,54 @@ function wbDropUndoEntry(entry) {
   wbUpdateUndoRedoButtons();
 }
 
+//: A delete the server refused: the undo entry goes, the redo history the
+//: push wiped comes back, and the user is told (audit B8; it was a console line).
+//: The ink a stored black or white default draws in on this board (audit U1):
+//: those two are the app's own theme defaults, not a choice, so they follow
+//: the board's background; any other colour is the person's and stays.
+function wbDefaultInk(color) {
+  const c = String(color || "").toLowerCase();
+  return c === "#000000" || c === "#ffffff" ? wbReadableInk(c, wbBoardBg()) : color;
+}
+
+let wbBoardBgCache = { sig: "", value: "" };
+function wbBoardBg() {
+  const el = document.getElementById("whiteboard-container");
+  if (!el) return "";
+  const root = document.documentElement;
+  let sig = el.style.getPropertyValue("--wb-board-bg");
+  for (const attr of root.attributes) sig += `|${attr.name}=${attr.value}`;
+  if (wbBoardBgCache.sig !== sig) wbBoardBgCache = { sig, value: getComputedStyle(el).backgroundColor };
+  //: Transparent says nothing about the board: no remap.
+  return /,\s*0\)$/.test(wbBoardBgCache.value) ? "" : wbBoardBgCache.value;
+}
+
+function wbDeleteFailed(entry, redoBefore, e, retry) {
+  console.error(e);
+  wbDropUndoEntry(entry);
+  if (!wbRedoStack.length) wbRedoStack = redoBefore;
+  wbUpdateUndoRedoButtons();
+  toast(voiceLine("failed", { what: "delete that" }), true, { action: ["Try again", retry] });
+}
+
+//: One call per frame with the newest event, for a pointermove handler that
+//: only paints (audit B5): the browser fires these faster than it paints, and
+//: a hit test per event is work nobody sees. Not for a handler that collects
+//: every point (the pen, the lasso).
+function wbOnFrame(fn) {
+  let latest = null;
+  return (e) => {
+    const idle = latest === null;
+    latest = e;
+    if (!idle) return;
+    requestAnimationFrame(() => {
+      const ev = latest;
+      latest = null;
+      fn(ev);
+    });
+  };
+}
+
 function wbPushUndo(entry) {
   wbHistoryFor();
   wbUndoStack.push(entry);
@@ -16199,7 +16249,10 @@ async function initWhiteboard() {
     if (!choice) return;
     closeAllWbMenus();
     const what = choice.dataset.wbInsert;
-    if (what === "image") document.getElementById("wb-add-image")?.click();
+    //: Enter on the item (detail 0) is not a pointer that can click the board
+    //: next, so it places the note where the view is centred (audit U3).
+    if (what === "sticky" && e.detail === 0) wbCreateSticky(...wbViewCentre());
+    else if (what === "image") document.getElementById("wb-add-image")?.click();
     else if (what === "note") document.getElementById("wb-add-note")?.click();
     else document.querySelector(`#wb-tool-group [data-tool="${what}"]`)?.click();
   });
@@ -16992,9 +17045,11 @@ async function initWhiteboard() {
   window.addEventListener("pointerup", () => {
     wbErasing = false;
   });
-  containerEl.addEventListener("pointermove", (e) => {
-    if (window.currentTool !== "eraser" || !wbErasing) return;
-    const el = document.elementFromPoint(e.clientX, e.clientY);
+  //: Every sample the browser coalesced into this event is hit-tested, so a
+  //: fast finger or pen stroke between two events erases what it crossed
+  //: (audit B21); `pointerenter` alone never fires reliably on touch or pen.
+  function wbEraseAt(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
     const sketchEl = el?.closest(".sketch-group");
     if (sketchEl) {
       const item = wbState.sketches.find((s) => s.id === Number(sketchEl.dataset.id));
@@ -17012,6 +17067,11 @@ async function initWhiteboard() {
       const item = (wbState.objects || []).find((o) => o.id === Number(objEl.dataset.id));
       if (item) wbDeleteObjectRef?.(item);
     }
+  }
+  containerEl.addEventListener("pointermove", (e) => {
+    if (window.currentTool !== "eraser" || !wbErasing) return;
+    const samples = e.getCoalescedEvents?.() ?? [];
+    for (const p of samples.length ? samples : [e]) wbEraseAt(p.clientX, p.clientY);
   });
   // Clicking empty canvas with Select active clears the selection, every
   // card/sketch's own click handler calls stopPropagation() under Select,
@@ -17379,7 +17439,10 @@ async function initWhiteboard() {
       wbMarqueeAt = getLogicalMouse(at);
       wbDrawMarquee();
     } else {
-      window.dispatchEvent(new MouseEvent("mousemove", at));
+      //: d3-drag's own move listener, called directly: a broadcast
+      //: mousemove re-entered the right-press, hover and marquee listeners
+      //: with coordinates nobody moved to (audit B16).
+      d3.select(window).on("mousemove.drag")?.call(window, new MouseEvent("mousemove", at));
     }
     wbEdgePan.frame = requestAnimationFrame(wbEdgePanTick);
   }
@@ -17602,7 +17665,7 @@ async function initWhiteboard() {
   }, { passive: true });
   containerEl.addEventListener("pointerleave", () => { wbPointerClient = null; });
 
-  containerEl.addEventListener("pointermove", (e) => {
+  containerEl.addEventListener("pointermove", wbOnFrame((e) => {
     if (wbLinkDragActive) return;
     //: Off a link tool there are no dots to show, and any left over go (INBOX
     //: 573: the cross-link tool's dots stayed on a topic after switching back
@@ -17621,7 +17684,7 @@ async function initWhiteboard() {
     const hit = wbLinkCandidateAt(x, y);
     if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
     else wbClearAnchorHints();
-  });
+  }), { passive: true });
 
   // --- Connection points with Select (wb-phase2 step 5; draw.io's ports) ---
   //
@@ -17702,15 +17765,21 @@ async function initWhiteboard() {
       /* a synthetic event has no capture to take; the moves still arrive */
     }
   }, true);
+  //: The line and `moved` follow every event (release reads `moved`); only
+  //: the anchor hit test waits for the frame.
+  const portHints = wbOnFrame(({ drag, x, y }) => {
+    if (port.drag !== drag) return;
+    const hit = wbLinkCandidateAt(x, y, drag.kind, drag.item.id);
+    if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
+    else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
+  });
   containerEl.addEventListener("pointermove", (e) => {
     const drag = port.drag;
     if (!drag) return;
     const [x, y] = getLogicalMouse(e);
     drag.moved = drag.moved || Math.hypot(x - drag.start.x, y - drag.start.y) * zoomK() > 4;
     drag.path.setAttribute("d", `M ${drag.start.x} ${drag.start.y} L ${x} ${y}`);
-    const hit = wbLinkCandidateAt(x, y, drag.kind, drag.item.id);
-    if (hit) wbShowAnchorHints(hit[0], hit[1], wbNearestAnchor(hit[0], hit[1], x, y));
-    else wbShowAnchorHints(drag.kind, drag.item, drag.anchor);
+    portHints({ drag, x, y });
   });
   containerEl.addEventListener("keydown", (e) => {
     if (port.drag && e.key === "Escape") {
@@ -21263,6 +21332,7 @@ function renderWhiteboard() {
     //: flight may have pushed after this one.
     const links = wbLinksTouching("sketch", d.id);
     const entry = { action: "delete", kind: "sketch", payload: WB_KIND_INFO.sketch.payload(d), oldId: d.id, links };
+    const redoBefore = wbRedoStack;
     wbPushUndo(entry);
     try {
       await apiJson(`/whiteboard/sketches/${d.id}`, { method: "DELETE" });
@@ -21270,8 +21340,7 @@ function renderWhiteboard() {
       wbForgetLinks(links);
       wbScheduleRender();
     } catch (e) {
-      console.error(e);
-      wbDropUndoEntry(entry); // the delete never happened, so neither did the undo entry
+      wbDeleteFailed(entry, redoBefore, e, () => deleteSketch(d)); // the delete never happened, so neither did the undo entry
     } finally {
       wbDeleting.delete(deletingKey);
     }
@@ -21591,7 +21660,7 @@ function renderWhiteboard() {
         // rather than "a stroke that happens to carry an opacity": a pen
         // stroke restyled through the context bar could have one too.
         isHighlighterStroke = parsed.shape === "highlighter";
-        stroke = parsed.noStroke ? "none" : (parsed.color || stroke);
+        stroke = parsed.noStroke ? "none" : (wbDefaultInk(parsed.color) || stroke);
         // Highlighter strokes carry their own width/opacity (see the mouseup
         // handler that writes them), everything else keeps the defaults
         // above, set explicitly every render so a reused element can't keep
@@ -21717,6 +21786,7 @@ function renderWhiteboard() {
     wbDeleting.add(deletingKey);
     const links = wbLinksTouching("node", d.id);
     const entry = { action: "delete", kind: "node", payload: WB_KIND_INFO.node.payload(d), oldId: d.id, links };
+    const redoBefore = wbRedoStack;
     wbPushUndo(entry);
     try {
       await apiJson(`/whiteboard/nodes/${d.id}`, { method: "DELETE" });
@@ -21724,8 +21794,7 @@ function renderWhiteboard() {
       wbForgetLinks(links);
       wbScheduleRender();
     } catch (e) {
-      console.error(e);
-      wbDropUndoEntry(entry);
+      wbDeleteFailed(entry, redoBefore, e, () => deleteNode(d));
     } finally {
       wbDeleting.delete(deletingKey);
     }
@@ -22523,6 +22592,7 @@ function renderWbObjects(canvas) {
     if (wbDeleting.has(deletingKey)) return;
     wbDeleting.add(deletingKey);
     const entry = { action: "delete", kind: "object", payload: WB_KIND_INFO.object.payload(d), oldId: d.id, parentId: d.parent_id ?? null, links: wbLinksTouching("object", d.id) };
+    const redoBefore = wbRedoStack;
     wbPushUndo(entry);
     try {
       const res = await apiJson(`/whiteboard/objects/${d.id}`, { method: "DELETE" });
@@ -22549,8 +22619,7 @@ function renderWbObjects(canvas) {
       wbState.objects = wbState.objects.filter((o) => !gone.has(o.id));
       wbScheduleRender();
     } catch (e) {
-      console.error(e);
-      wbDropUndoEntry(entry);
+      wbDeleteFailed(entry, redoBefore, e, () => deleteObject(d));
     } finally {
       wbDeleting.delete(deletingKey);
     }
@@ -23105,7 +23174,7 @@ function renderWbObjects(canvas) {
         .attr("class", "wb-text-content")
         // Not editable until asked, see `wbBeginTextEdit` for why.
         .attr("contenteditable", "false")
-        .style("color", d.data.color || "")
+        .style("color", d.data.color ? wbReadableInk(d.data.color, d.data.bg || wbBoardBg()) : "")
         .style("font-size", d.data.font_size ? `${d.data.font_size}px` : "")
         .text(d.data.content || "");
       // Saved on blur, not on every keystroke, a PUT per character would

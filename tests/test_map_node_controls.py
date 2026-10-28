@@ -229,9 +229,9 @@ def test_a_topics_add_buttons_are_surfaces_at_the_target_floor():
     assert box
     for want in ("width: var(--target-min)", "height: var(--target-min)", "background: var(--modal-bg-opaque)", "border: 1px solid var(--ghost-btn-border)"):
         assert want in box.group(1), want
-    # INBOX 816: scaled with the topic between 20 and 28px (44 to 20 on touch),
-    # not one size at every zoom.
-    assert re.search(r"\.wb-map-actions \{\s*transform: scale\(clamp\(calc\(20 / 28 \* var\(--wb-inv-zoom\)\), 1, var\(--wb-inv-zoom\)\)\)", lazy)
+    # INBOX 816 scaled with the topic; the floor moved from 20 to 24px (and
+    # touch holds 44) because a target under 24px fails WCAG 2.5.8 (audit 1028 U5).
+    assert re.search(r"\.wb-map-actions \{\s*transform: scale\(clamp\(calc\(24 / 28 \* var\(--wb-inv-zoom\)\), 1, var\(--wb-inv-zoom\)\)\)", lazy)
     js = (_REPO / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     assert '"ph ph-link-simple"' in js and "bookmarks-simple" not in js
     wb = (_REPO / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")

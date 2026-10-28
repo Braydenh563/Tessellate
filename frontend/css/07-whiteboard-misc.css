@@ -8436,7 +8436,7 @@ input[type="file"] {
   right: 50%;
   top: auto;
   bottom: calc(var(--space-6) * -1);
-  transform: translateX(50%);
+  translate: 50% 0;
 }
 /* The node's two "grow the map here" buttons: `+` (a topic) and the library
    one (a node pointing at a real note/document/file/link). They are an

@@ -2255,7 +2255,11 @@ body.printing-doc #doc-preview p,
   position: absolute;
   right: calc(var(--space-6) * -1);
   top: 50%;
-  transform: translateY(-50%);
+  /* The offset is `translate` so the scale below stays one rule. 24px floor
+     on screen at any zoom (audit U5: 21.7px at fit, 10px on a phone), the
+     normal 28 from 100% up; 44 under touch, below. */
+  translate: 0 -50%;
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
   /* Above the corner grip (5): at phone width the map is zoomed out until a
      topic is 28px tall, and the grip's 24px corner button reached the
      chevron's middle (measured 390x844, mapnarrow.js: a press on the chevron
@@ -2266,8 +2270,17 @@ body.printing-doc #doc-preview p,
 /* How much a collapsed branch is holding. On the node, in the branch's own
    colour, because the count belongs to the branch that is folded away rather
    than to the node it is folded into. */
+@media (pointer: coarse) {
+  .wb-map-collapse {
+    transform: scale(var(--wb-inv-zoom));
+  }
+}
+
 .wb-map-count {
   position: absolute;
+  /* One size to the hand: 24px or more on screen at any zoom (audit U5). */
+  transform: scale(max(1, var(--wb-inv-zoom)));
+  transform-origin: 50% 100%;
   /* A button now (§12.1 item 7: it reopens the branch on click), so it has to
      be told not to look like one: the app's button ramp would give a 20px
      counter a hairline, a lift and a hover fill, and it is a count, not a
@@ -2284,13 +2297,13 @@ body.printing-doc #doc-preview p,
      belongs to the fold, not to the node. */
   right: calc(var(--space-6) * -1);
   top: calc(var(--space-8) * -1);
-  min-width: 1.25rem;
+  min-width: 1.5rem;
   padding: 0 var(--space-1);
   border-radius: var(--radius-md);
   background: var(--wb-branch);
   color: var(--card);
   font-size: var(--text-xs);
-  line-height: 1.25rem;
+  line-height: 1.5rem;
   text-align: center;
   z-index: 5;
 }
@@ -2559,7 +2572,7 @@ body.printing-doc #doc-preview p,
    the topic landed on the next sibling at every zoom and a row beside it on
    the parent (measured, mapactions.js). */
 .wb-map-actions {
-  transform: scale(clamp(calc(20 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
   transform-origin: 100% 50%;
   flex-direction: column;
   left: auto;
@@ -2572,7 +2585,7 @@ body.printing-doc #doc-preview p,
 }
 @media (pointer: coarse) {
   .wb-map-actions {
-    transform: scale(clamp(calc(20 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+    transform: scale(var(--wb-inv-zoom));
   }
 }
 /* **Away while the topic's text is edited** (INBOX 817): the + and link
