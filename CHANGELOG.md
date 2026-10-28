@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Speed (INBOX 1426 L1): the model status poll no longer waits 2.5s on a slow model server (a quarter second, then the last answer; the first poll after a start says Checking and the page asks again in 1.5s), the suggested-models list asks what is loaded once at a time, the Health page's folder size is cached and measured off the request (a first count that runs long says "or more"), and start-up no longer re-folds the whole edit history on every launch (1.3s to 0.07s on 30,000 events) or holds one write transaction over it.
 - Boards: a board opened from the timeline, a link or the Library fits its content unless its own last view shows half of it; the last board's camera is never kept (INBOX 1428).
 - Boards and maps: the presentation bar shows the page name centred between the arrows as a button; it opens a list of every page (current one marked) that opens upward, so you can jump to any page, and the presentation keys wait while it is open.
 - Composer: tasks as acts (audit 1028 E10) finished: "cancel the dentist task" bins a reminder or removes a checklist line, "snooze the dentist task until Friday" moves a reminder, both asked about when the name fits more than one and both with Undo; a Guide topic, Tasks in Chat, says add, complete, cancel, snooze and undo.

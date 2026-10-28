@@ -1910,15 +1910,23 @@ async function refreshModelStatus() {
     // Backend's own worst case is 2.5s (INSTALLED_REFRESH_BUDGET: the runner
     // call has its own thread and a poll serves the last answer past that),
     // so 8s leaves real headroom instead of racing it at the wire.
-    modelStatus = await apiJson("/models/status", {
+    const next = await apiJson("/models/status", {
       silent: true,
       //: A timeout of a silent request (this poll is the only one that sets
       //: its own `AbortSignal.timeout`) is the "slow" state below, asked
       //: again on the next tick, so `api()` does not log it.
       signal: AbortSignal.timeout(8000)
     });
-    statusEverAnswered = true;
-    modelStatusProblem = null;
+    //: **Nothing has answered yet is not an answer** (INBOX 1426 L1): the
+    //: server's first seconds after a start, with the runner still busy. Keep
+    //: what the page had, show "Checking", and ask again soon.
+    if (next && next.ollama_checking) {
+      modelStatusProblem = "checking";
+    } else {
+      modelStatus = next;
+      statusEverAnswered = true;
+      modelStatusProblem = null;
+    }
   } catch (err) {
     //: **A slow answer keeps the last good status** (OPEN ledger 1520): the
     //: Agent panel and the pill used to grey on every timeout and flicker
@@ -1971,7 +1979,9 @@ async function refreshModelStatus() {
   } else if (!jobsRunning() && !settingsOpen() && !document.hidden) {
     statusIdleDelay = Math.min(statusIdleDelay * 2, STATUS_IDLE_CEILING_MS);
   }
-  const delay = jobsRunning()
+  const delay = modelStatusProblem === "checking"
+    ? 1500
+    : jobsRunning()
     ? 1000
     : document.hidden
       ? 120000
