@@ -467,7 +467,7 @@ def _follow_slot(raw: str, turn: dict, now: datetime) -> str | None:
         return None
     #: Rebuilt from what is to be done, so a time already gone ("tonight at
     #: 8", said at ten) does not ride along with the new one.
-    joined = f"remind me to {waiting.get('said') or ''} {raw}"
+    joined = f"{'add a task to' if waiting.get('task') else 'remind me to'} {waiting.get('said') or ''} {raw}"
     filled = commands.read_typed(joined, now)
     if filled and filled.get("time_given") and filled.get("said") == waiting.get("said"):
         return joined
