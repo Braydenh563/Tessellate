@@ -499,7 +499,7 @@ MORE_TOPICS: list[dict] = [
             "palette (Activity). Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models beside Use this model, stops any answer "
-            "and unloads the model from memory (Ollama drops it at once); a server "
+            "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
             "this app did not start keeps its own model, and the message says so."
         ),
         "badge": {"label": "Models", "section": "models"},
@@ -879,8 +879,7 @@ MORE_TOPICS: list[dict] = [
             "notes to the recycle bin. Folders and notebooks become categories, "
             "tags and dates come along where the app wrote them, and links between "
             "Notion pages become wiki links. Each note remembers where it came from, "
-            "so importing the same export again adds nothing twice and says how "
-            "many were already here. Imported text is treated as someone else's "
+            "so importing the same export again adds nothing twice; the toast counts imported, skipped and failed. Imported text is treated as someone else's "
             "words: Atlas never follows instructions written in it. A note's day "
             "comes from the export where it says one with its year: a daily "
             "note named 2024-03-14, a date: or Created: line; that is its day "
@@ -2610,7 +2609,7 @@ MORE_TOPICS.extend([
         "body": (
             "Making and writing on a board without a pointer: press N, T or F to hold "
             "the Sticky note, Text or Frame tool, then Enter to drop one in the middle "
-            "of the view. Tab walks the items; Enter on a selected "
+            "of the view (Insert, Sticky note does too). Tab walks the items; Enter on a selected "
             "text box or sticky puts the caret at the end of its words, and Enter on a "
             "selected shape writes in it. Escape leaves the words."
         ),
