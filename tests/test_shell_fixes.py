@@ -86,3 +86,30 @@ def test_theme_change_keeps_a_background_scheme():
     js = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
     body = js[js.index("function applyThemeChoice(") :].split("\n}\n", 1)[0]
     assert 'if (remember && !prefs.get("page-bg-dark", null)) {' in body
+
+
+def test_import_summary_says_made_skipped_and_failed():
+    body = _extract("settings-data.js", "function importSummary(")
+    script = (
+        body
+        + """
+console.log(JSON.stringify([
+  importSummary({ imported: 5, ids: [1, 2, 3, 4, 5] }),
+  importSummary({ imported: 1, already: 2, skipped: ["a.md: empty"] }),
+  importSummary({ imported: 0, already: 3, skipped: [] }),
+  importSummary({ ids: [7], skipped: ["x", "y"] }),
+]));
+"""
+    )
+    assert json.loads(_node(script)) == [
+        "Imported 5 notes.",
+        "Imported 1 note, skipped 2 already here, 1 failed.",
+        "Imported 0 notes, skipped 3 already here.",
+        "Imported 1 note, 2 failed.",
+    ]
+
+
+def test_an_import_that_made_nothing_still_says_what_happened():
+    js = (ROOT / "frontend" / "js" / "settings-data.js").read_text(encoding="utf-8")
+    body = js[js.index("function undoImport(") :].split("\n}\n", 1)[0]
+    assert body.index("toast(importSummary(result))") < body.index("offerUndo(")

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The import toast says what happened (audit 1028 S9): imported, skipped as already here, and failed, and it appears even when nothing new was made (it used to say nothing then).
 - The dashboard line under the greeting counts today's and yesterday's notes in SQL (audit 1028 S8): an import of 130 notes read as 120, the size of the sample the line names notes from.
 - Changing the theme keeps a page background scheme (audit 1028 S10): the light and dark pair stay and the one for the showing mode applies; only a single hand-picked colour, which would override the new theme, is still cleared.
 - The timeline header line is one helper for the feed, grid and table (audit 1028 S7): "1 day" not "1 days", and while more pages follow the count reads "100+ items" instead of passing the loaded page off as the total.
