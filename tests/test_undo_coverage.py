@@ -526,6 +526,7 @@ EXEMPT: dict[str, str] = {
     "settings-controls.js:restoreFullBackup": "job: a confirmed restore that snapshots the current notebook first; the snapshot is the way back",
     "meetings.js:meetingTakeAppend": "job: uploads the audio chunks of a take in progress; Discard is the take's own undo",
     "media.js:toggleDictation": "read: transcribes speech into the box being typed in",
+    "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents.js:docAiReview": "read: asks the model to check a document, shows a result",
     "capture-ask.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
     "account-recovery.js:onMake": "auth: sign-in, recovery or lock; no user data",

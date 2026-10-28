@@ -878,7 +878,8 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
     """Owner 2026-10-11: identifiers and an f-string's prefix were underlined by
     the browser; the app's own check masks to comment and string nodes."""
     docs = (JS / "documents.js").read_text(encoding="utf-8")
-    assert "? docCodeSpellFindings(text)" in docs
+    # A code file takes the masked check (the D7 window applies to prose only).
+    assert "if (isCode) docProseFound = docCodeSpellFindings(text);" in docs
     mask = _fn(docs, "docCodeProseMask")
     assert "[rRbBuUfF]{0,3}" in mask and "Interpolation" in mask
     assert "string|template" in mask and "comment" in mask
