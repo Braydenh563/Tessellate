@@ -741,8 +741,8 @@ function setDocView(mode, { persist = true } = {}) {
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
   //: Source in a code file is the file's only editing view, not a choice.
   docViewState.held = !type.previewable && docView === "source";
-  try {
-    if (persist && !docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
+  if (persist) try {
+    if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
     // change view: the choice just does not survive the reload.

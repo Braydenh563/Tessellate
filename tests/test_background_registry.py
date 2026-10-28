@@ -48,6 +48,7 @@ ai/janitor.py::_chat_within_deadline::thread::1
 ai/tools/__init__.py::prefetch_web::executor::1
 api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
+api/routes_chat.py::_stop_when_gone::task::1
 api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1

@@ -34,7 +34,7 @@ def test_u7_code_documents_use_a_monospace_stack():
 
 def test_u8_a_blank_document_opens_in_edit_without_changing_the_stored_view():
     assert "function setDocView(mode, { persist = true } = {})" in DOCS_JS
-    assert "if (persist && !docViewState.held) prefs.set(DOC_VIEW_KEY, docView);" in DOCS_JS
+    assert "if (persist) try {\n    if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);" in DOCS_JS
     blank = _fn("showNoDocument")
     assert 'if (docView === "rendered") setDocView("live", { persist: false });' in blank
 

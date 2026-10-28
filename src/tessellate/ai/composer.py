@@ -4948,9 +4948,9 @@ def _unfinished_act(question: str, now: datetime) -> dict | None:
     first = _lead_act_verb(question)
     if first is None:
         return None
-    from tessellate.ai import act_registry, commands
+    from tessellate.ai import act_registry
 
-    if commands.read(question, now) is not None:
+    if act_registry.READER is None or act_registry.READER(question, now) is not None:
         return None
     act = act_registry.ACTS.get(_ACT_VERBS[first])
     if act is None:

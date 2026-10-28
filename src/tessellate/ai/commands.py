@@ -27,7 +27,6 @@ turn goes on to the composer.
 
 from __future__ import annotations
 
-import importlib
 import re
 from dataclasses import dataclass, field
 from collections import deque
@@ -1128,9 +1127,7 @@ def _clip(text: str, cap: int) -> str:
 def _filed_notes(session: Session, filed: str) -> tuple | None:
     """("list_notes", its arguments, its result, the line) for the notes in
     the category `filed`, else tagged `filed`; None when neither holds any."""
-    from tessellate.ai import tool_say
-
-    tools = importlib.import_module("tessellate.ai.tools")  # breaks commands -> tools -> composer -> commands
+    from tessellate.ai import tool_say, tools
 
     for key in ("category", "tag"):
         args = {key: filed, "limit": 8}
@@ -1143,10 +1140,7 @@ def _filed_notes(session: Session, filed: str) -> tuple | None:
 
 def _plan_read(session: Session, parsed: dict) -> dict:
     """Find or open: run the agent's own search and hand back its tool event."""
-    from tessellate.ai import cards, tool_say
-
-    agent = importlib.import_module("tessellate.ai.agent")  # breaks agent -> tools -> composer -> commands -> agent
-    tools = importlib.import_module("tessellate.ai.tools")
+    from tessellate.ai import agent, cards, tool_say, tools
 
     if parsed.get("note_id") is not None:
         result = tools.execute_tool(session, "get_note", {"note_id": parsed["note_id"]})
@@ -1186,8 +1180,7 @@ def _plan_read(session: Session, parsed: dict) -> dict:
 
 
 def _start_meeting(session: Session, args: dict) -> dict:
-    meetings = importlib.import_module("tessellate.api.routes_meetings")  # breaks commands -> routes_meetings -> ... -> commands
-    MeetingCreate, create_meeting = meetings.MeetingCreate, meetings.create_meeting
+    from tessellate.api.routes_meetings import MeetingCreate, create_meeting
     from tessellate.core import deps
     from tessellate.core.config import user_now
 
@@ -1215,7 +1208,7 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     in the line rather than a stop: a person who confirmed tagging five notes
     gets the four that could be tagged and is told about the fifth.
     """
-    tools = importlib.import_module("tessellate.ai.tools")
+    from tessellate.ai import tools
 
     done: list[tuple[str, dict, dict]] = []
     failed: list[dict] = list(skipped or [])
@@ -1258,3 +1251,6 @@ def run(session: Session, steps: list[dict], skipped: list[dict] | None = None, 
     if opened:
         out["open"] = opened
     return out
+
+
+act_registry.READER = read  # for the composer (act_registry.READER)

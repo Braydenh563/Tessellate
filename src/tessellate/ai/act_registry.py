@@ -17,6 +17,11 @@ from dataclasses import dataclass
 #: `api/routes_chat.py` imports acts at module level, so the app always has it.
 proposer = None
 
+#: `commands.read`, set when commands.py is imported, for the composer's
+#: "is this an act it could not finish" check (composer -> commands closes
+#: the same cycle). None reads as "cannot tell", and the composer then says nothing.
+READER = None
+
 
 #: The one reading (`reading.read`) and Chat's help sentence
 #: (`composer.help_line`), set by those modules when they are imported, for
