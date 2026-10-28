@@ -62,6 +62,28 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
     {
+        "id": "companion-travel",
+        "keywords": (
+            "companion portal", "companion puff of smoke", "companion vanishes",
+            "companion walks off the screen", "companion ducks under the bar",
+            "companion moves too much", "companion distracting", "companion travels",
+            "companion sneezes", "companion grooms", "companion sighs",
+        ),
+        "body": (
+            "The corner companion travels rarely and never while you type or "
+            "carry it. When it has somewhere far to go it takes a calm way: it "
+            "opens a portal and walks through, vanishes in a puff of smoke, walks "
+            "off one side of the window and comes in at the other, or ducks "
+            "behind a bar and climbs down from the other. Never the same way "
+            "twice in a row. The rest of the time it sits, looks around, "
+            "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
+            "Reduce motion on, or Interface animations off, it only fades or "
+            "stays put. To keep it still, set Corner companion to Off in "
+            "Settings, Appearance, Atlas and faces."
+        ),
+        "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
+    },
+    {
         "id": "companion-throw",
         "keywords": (
             "throw the companion", "flick the companion", "throwing the companion",
@@ -2196,6 +2218,7 @@ TOPIC_META: dict[str, dict] = {
         "Open Settings, Appearance, Atlas and faces.", "Pick who it is under Corner companion.", "Right-click it on the page for its menu; Ctrl+Shift+Y shows or hides it.")},
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2366,7 +2389,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Look and feel", (
         "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",
-        "statusbar", "companion", "companion-throw", "atlas-look", "faces",
+        "statusbar", "companion", "companion-travel", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (
         "models", "what-is-atlas", "model-downloads", "model-bench", "tools-setting", "autonomous", "websearch",
