@@ -43,6 +43,44 @@ RECENT_KEEP = 5
 RECENT_SECONDS = 30 * 60
 
 
+class StopEvent(threading.Event):
+    """A stop flag that can also wake a call blocked on the network.
+
+    `set()` runs the registered hooks, so a model request waiting for its first
+    token (prefill, when no chunk arrives to check the flag against) is cut the
+    moment Stop or a closed browser tab sets it, not when the model finishes."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._hooks: list[Callable[[], object]] = []
+        self._hook_lock = threading.Lock()
+
+    def set(self) -> None:
+        super().set()
+        with self._hook_lock:
+            hooks, self._hooks = self._hooks, []
+        for hook in hooks:
+            try:
+                hook()
+            except Exception:  # noqa: BLE001 - a failed close must not stop the others
+                pass
+
+    def add_hook(self, hook: Callable[[], object]) -> Callable[[], None]:
+        """Run `hook` when set (now, if already set); returns the remover."""
+        if self.is_set():
+            hook()
+            return lambda: None
+        with self._hook_lock:
+            self._hooks.append(hook)
+
+        def remove() -> None:
+            with self._hook_lock:
+                if hook in self._hooks:
+                    self._hooks.remove(hook)
+
+        return remove
+
+
 class Job:
     """One running piece of work, as the Activity panel shows it."""
 
@@ -65,7 +103,7 @@ class Job:
         self.stoppable = stoppable or on_stop is not None
         #: Shared with the work it tracks when that work must see Stop mid-call
         #: (a skill run's budget, `ai/budget.py`), not only at its next yield.
-        self._stop = stop_event or threading.Event()
+        self._stop = stop_event or StopEvent()
         #: A job run somewhere else (a code run in the browser's sandbox)
         #: holds a lease it renews with `touch`; one not renewed in time is
         #: gone, so a closed tab does not leave a row that never ends.
@@ -242,6 +280,47 @@ def bind(job: Job) -> Iterator[None]:
             yield
     finally:
         _bound.job = previous
+
+
+def stop_aware(response, items: Iterator) -> Iterator:  # noqa: ANN001
+    """`items`, read from the streamed HTTP `response`, ended when the job this
+    thread is advancing is stopped (Stop pressed, or the browser went away).
+
+    The check runs between chunks; the hook closes the connection so a read
+    blocked before the first token ends too, and the upstream model stops
+    generating instead of finishing a turn nobody is waiting for."""
+    job = getattr(_bound, "job", None)
+    event = getattr(job, "_stop", None)
+    if event is None:
+        yield from items
+        return
+
+    def cut() -> None:
+        sock = None
+        try:
+            sock = response.raw._fp.fp.raw._sock  # the live socket, if this is a plain one
+        except AttributeError:
+            pass
+        if sock is not None:
+            try:
+                sock.shutdown(2)
+            except OSError:
+                pass
+        response.close()
+
+    remove = event.add_hook(cut) if hasattr(event, "add_hook") else (lambda: None)
+    try:
+        for item in items:
+            if event.is_set():
+                break
+            yield item
+    except Exception:
+        if not event.is_set():
+            raise
+    finally:
+        remove()
+        if event.is_set():
+            response.close()
 
 
 def current_stopped() -> bool:

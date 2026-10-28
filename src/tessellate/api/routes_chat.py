@@ -11,6 +11,7 @@ Plain `def` so the blocking LLM call runs in FastAPI's threadpool.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -28,6 +29,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
@@ -2328,7 +2330,7 @@ class _StreamRequest:
     allowed_tools: list[str] | None
     #: Set by Stop in Activity. The run's Activity job and its budget share it,
     #: so a write the model asked for as Stop landed is refused (Brief 101b).
-    stop: threading.Event = field(default_factory=threading.Event)
+    stop: threading.Event = field(default_factory=activity.StopEvent)
     #: What the message called the assistant ("hey lil bro, ..."), taken off
     #: `question` (`vocative.split`); `call` when that was all it said.
     address: vocative.Address | None = None
@@ -4751,10 +4753,49 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     # X-Accel-Buffering: no tells reverse proxies (nginx) not to buffer the
     # stream, so tokens reach the browser as they're produced.
     return StreamingResponse(
-        _answer_lines(req),
+        _stop_when_gone(req, _answer_lines(req)),
         media_type="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )
+
+
+async def _stop_when_gone(req, lines):  # noqa: ANN001
+    """The turn's lines, with the browser's Stop (or a closed tab) made the
+    model's Stop (audit 1028 E3). Starlette cancels this generator when the
+    client goes; the abort used to end only the HTTP response, so the model
+    kept generating to the end and the next question queued behind it. The
+    cancel sets the turn's stop flag, which cuts the upstream request
+    (`activity.stop_aware`); the sync generator is closed once its current
+    step returns, so its `finally` blocks run."""
+    source = iter(lines)
+    done = object()
+
+    def step():  # noqa: ANN202
+        return next(source, done)
+
+    try:
+        while True:
+            task = asyncio.ensure_future(run_in_threadpool(step))
+            try:
+                line = await asyncio.shield(task)
+            except asyncio.CancelledError:
+                req.stop.set()
+                task.add_done_callback(lambda t: (t.cancelled() or t.exception(), _close_quietly(source)))
+                raise
+            if line is done:
+                return
+            yield line
+    finally:
+        req.stop.set()
+
+
+def _close_quietly(source) -> None:  # noqa: ANN001
+    close = getattr(source, "close", None)
+    try:
+        if close is not None:
+            close()
+    except Exception:  # noqa: BLE001 - nothing is left to tell
+        pass
 
 
 def _stoppable(spend, req):  # noqa: ANN001, ANN202
