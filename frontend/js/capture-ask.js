@@ -913,23 +913,16 @@ function flashEntry(id) {
   noteSearch = "";
   const searchBox = $("note-search");
   if (searchBox) searchBox.value = "";
-  // **BACKLOG §77 item 2, the page half of "jump to a note."** Everything
-  // above already resets category/drafts/search to whatever view actually
-  // contains the target (the design question that item scoped: a jump
-  // always lands in that reset default view, never in whatever filter the
-  // *origin*, Chat, the graph, a document, happened to have active,
-  // since most origins have no Notes-tab filter state to preserve at all).
-  // With that view now fixed, `resolveNotePage` answers the one thing that
-  // reset alone didn't: which *page* of it. Set before `renderEntries()` so
-  // the list paints the right page the first time, not the first page
-  // followed by a jump.
+  // The reset above fixes the view, so `resolveNotePage` can name the target's page.
   const targetPage = resolveNotePage(id);
   if (targetPage) notesCurrentPage = targetPage;
   renderSidebar();
+  pendingJumpId = id; // paint through the target: later rows only exist after a scroll
   renderEntries();
+  pendingJumpId = null;
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
-    if (!card) return;
+    if (!card) return toast("Note not found.");
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
     // Restart the animation even when the same note is jumped to twice in a

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Jumping to a note (palette, graph, links, chat) renders the list through the target before flashing it (audit 1028 S1): a note past the first 60 rows did nothing; one that cannot be found now says so.
 - Typing in a long document no longer serialises its whole undo history on every keystroke (audit 1028 D6): the snapshot is taken once per pause, when the store writes.
 - API answers carry `Cache-Control: no-store` (audit 1028 K12): note JSON no longer outlives a lock in a shared phone's back/forward cache or a proxy.
 - Restoring a backup zip keeps this computer's model address, "keep the AI on this machine", web search, update and background-task switches (audit 1028 K9): a zip from someone else could point every chat at their server.
