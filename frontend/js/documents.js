@@ -17339,6 +17339,9 @@ function docSpellable(text, word, start, end) {
   const before = start > 0 && !opened ? text[start - 1] : "";
   const after = end < text.length && !closed ? text[end] : "";
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
+  //: A letter the ASCII word regex stops at (é, ï, ß) means this run is a
+  //: piece of a longer word: "caf" of café, "ve" of naïve (audit 1028 D8).
+  if (/\p{L}/u.test(before) || /\p{L}/u.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
   //: A dotfile (" .gitignore", ".env"): a dot that opens a name, with nothing
@@ -18879,6 +18882,8 @@ function docAutocorrectAt(box) {
   const upto = line.text.slice(0, caret - line.from);
   const match = /([A-Za-z']+)([\s.,;:!?)\]]+)$/.exec(upto);
   if (!match) return false;
+  //: Never the tail of a word with an accented letter ("ve" of naïve; D8).
+  if (/\p{L}/u.test(upto[match.index - 1] || "")) return false;
   const lower = match[1].toLowerCase();
   //: A word the reader has accepted is never rewritten, whatever the typo list
   //: says. The dictionary is the reader's answer to this feature, and an

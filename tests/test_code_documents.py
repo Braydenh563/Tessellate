@@ -885,3 +885,19 @@ def test_a_code_file_spell_checks_comments_and_strings_only():
     spell = _fn(docs, "docCmSpellcheck")
     assert "!docFileType().previewable" in spell
     assert "docOpenSuggestFor(finding, false, point)" in docs[docs.index("DOC_HOVER_SUGGEST_MS =") :]
+
+
+# Audit 1028 D8: the ASCII word regex split "café" into "caf" and "naïve" into
+# "na" and "ve"; a piece next to an accented letter is never checked.
+def test_a_piece_of_an_accented_word_is_not_a_spelling_finding():
+    docs = (JS / "documents.js").read_text(encoding="utf-8")
+    prelude = _fn(docs, "docSpellable")
+    cases = {
+        "cafe": ["the café was shut", 4, 7],
+        "naive_tail": ["a naïve plan", 5, 7],
+        "naive_head": ["a naïve plan", 2, 4],
+        "plain": ["the cafe was shut", 4, 8],
+    }
+    expr = "Object.fromEntries(Object.entries(" + json.dumps(cases) + ").map(([k, [t, s, e]]) => [k, docSpellable(t, t.slice(s, e), s, e)]))"
+    got = _node(prelude, expr)
+    assert got == {"cafe": False, "naive_tail": False, "naive_head": False, "plain": True}

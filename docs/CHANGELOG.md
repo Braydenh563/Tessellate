@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Spelling and autocorrect leave accented words alone (audit 1028 D8): "café" and "naïve" were split at the accent and the pieces flagged or rewritten.
 - Links read their scheme as a browser does (audit 1028 D14 to D16): "java<tab>script:" and leading control characters no longer pass the link allowlist, opening a document link uses the same allowlist instead of a blocklist, and a pasted address with ")" or spaces is encoded rather than breaking out of its Markdown link.
 - The composer quotes short facts (audit 1028 E5): "Rent 650." or "Wifi: hunter2" was dropped as a two-word fragment, so "how much is my rent" had nothing to answer from.
 - Commands keep the person's own words (audit 1028 E9): "delete notes about uni" finds the Uni notes rather than notes about "university", and "move all my uni notes" names the uni notes; a word in the notebook is never spelled out as slang.
