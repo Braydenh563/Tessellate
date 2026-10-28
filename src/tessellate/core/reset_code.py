@@ -43,7 +43,9 @@ class _Live:
     wrong: int = 0
 
 
-_live: _Live | None = None
+#: The one live code, kept in a holder rather than a rebound global so every
+#: write is a visible use of the same object.
+_state: dict[str, _Live | None] = {"live": None}
 
 
 def _hash(salt: bytes, code: str) -> bytes:
@@ -51,8 +53,7 @@ def _hash(salt: bytes, code: str) -> bytes:
 
 
 def _forget() -> None:
-    global _live
-    _live = None
+    _state["live"] = None
 
 
 register_cache_reset(_forget)
@@ -60,11 +61,10 @@ register_cache_reset(_forget)
 
 def issue() -> int:
     """Make a code, print it to the terminal, keep only its hash. Returns the lifetime in seconds."""
-    global _live
     code = f"{secrets.randbelow(10**CODE_DIGITS):0{CODE_DIGITS}d}"
     salt = secrets.token_bytes(16)
     with _lock:
-        _live = _Live(salt=salt, digest=_hash(salt, code), expires=_now() + TTL_SECONDS)
+        _state["live"] = _Live(salt=salt, digest=_hash(salt, code), expires=_now() + TTL_SECONDS)
     print(  # noqa: T201  # the terminal is the point: only whoever sees this computer's server output may read the code
         f"\nTessellate password reset code: {code}\n"
         f"It works for {TTL_SECONDS // 60} minutes. If you did not ask for it, ignore it.\n",
@@ -76,21 +76,20 @@ def issue() -> int:
 
 def check(typed: str) -> bool:
     """True once, for the live code. Wrong tries are counted; the fifth kills the code."""
-    global _live
     shape_ok = isinstance(typed, str) and len(typed.strip()) == CODE_DIGITS and typed.strip().isascii() and typed.strip().isdigit()
     candidate = typed.strip() if shape_ok else "-" * CODE_DIGITS
     with _lock:
-        live = _live
+        live = _state["live"]
         if live is None:
             return False
         if _now() >= live.expires:
-            _live = None
+            _state["live"] = None
             return False
         ok = hmac.compare_digest(_hash(live.salt, candidate), live.digest) and shape_ok
         if ok:
-            _live = None
+            _state["live"] = None
             return True
         live.wrong += 1
         if live.wrong >= MAX_WRONG:
-            _live = None
+            _state["live"] = None
         return False

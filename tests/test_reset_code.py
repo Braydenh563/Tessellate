@@ -24,6 +24,9 @@ from test_forgot_password import (  # noqa: F401  # the fixtures are autouse the
     _state,
 )
 
+#: Named so the autouse fixtures above read as used: pytest finds them by import.
+AUTOUSE = (_clean, _devices_already_allowed, _known_code)
+
 BODY = {"confirm": "RESET"}
 
 
@@ -143,6 +146,6 @@ def test_the_code_is_kept_only_as_a_hash():
     source = inspect.getsource(reset_code)
     assert "compare_digest" in source and "pbkdf2_hmac" in source
     reset_code.issue()
-    live = reset_code._live
+    live = reset_code._state["live"]
     assert live is not None and not hasattr(live, "code")
     reset_code._forget()

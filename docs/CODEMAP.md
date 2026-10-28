@@ -18940,10 +18940,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `_Live` | src/tessellate/core/reset_code.py:39 |
-| `_forget` | src/tessellate/core/reset_code.py:53 |
-| `_hash` | src/tessellate/core/reset_code.py:49 |
+| `_forget` | src/tessellate/core/reset_code.py:55 |
+| `_hash` | src/tessellate/core/reset_code.py:51 |
 | `check` | src/tessellate/core/reset_code.py:77 |
-| `issue` | src/tessellate/core/reset_code.py:61 |
+| `issue` | src/tessellate/core/reset_code.py:62 |
 
 ### src/tessellate/core/security.py (24)
 
