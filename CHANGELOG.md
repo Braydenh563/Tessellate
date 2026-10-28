@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Boards: a board opened from the timeline, a link or the Library fits its content unless its own last view shows half of it; the last board's camera is never kept (INBOX 1428).
+- Boards and maps: the presentation bar shows the page name centred between the arrows as a button; it opens a list of every page (current one marked) that opens upward, so you can jump to any page, and the presentation keys wait while it is open.
 - Complexity: eight functions the 1028 merges grew past 15 are split by step, and commands.py plan/run shrink (seed lowered).
 - Help and Guide match today's UI: Run again, the 20,000-character limit, Stop, Move under, the eraser on touch and pen, Insert, Sticky note, the Links and media menu, kept unsaved words, New code file, the lock screen focus and the import toast counts.
 - Composer: "add X to my to-do list" still adds the line to a note called that, when there is one; the composer asks act_registry.READER whether a sentence is an act, instead of importing commands (the cycle test_no_import_cycles caught).

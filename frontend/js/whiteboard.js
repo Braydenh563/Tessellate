@@ -24811,30 +24811,73 @@ function wbPresentShow(index) {
 
 //: The bar's caption for a step, set before the frame is fitted because a
 //: caption that wraps makes the bar taller and the frame keeps clear of it.
-//: A caption the bar's width would cut (a study question on a phone, a
-//: study note's answer) takes a line of its own above the buttons instead,
+//: The caption is the page picker (INBOX 1425): one `kebabMenu` whose opener
+//: shows "N of M: title" centred with a caret and whose rows are every step,
+//: so a click jumps to any page. The menu is built once per presentation and
+//: its rows are refreshed here, so the opener (and the focus on it) survives
+//: a step. A caption the bar's width would cut (a study question on a phone,
+//: a study note's answer) takes a line of its own above the buttons instead,
 //: whole on hover as well.
 function wbPresentCaption(at, steps) {
-  const count = document.getElementById("wb-present-count");
+  const slot = document.getElementById("wb-present-count");
   const bar = document.getElementById("wb-present-bar");
   const prev = document.getElementById("wb-present-prev");
   const next = document.getElementById("wb-present-next");
   if (prev) prev.disabled = at === 0;
   if (next) next.disabled = at === steps.length - 1;
   if (wbStudy.on) wbMapStudySyncBar();
-  if (!count) return;
-  count.textContent = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
-  count.title = count.textContent;
-  Object.assign(count.style, { flex: "", order: "", whiteSpace: "", textAlign: "", maxHeight: "", overflowY: "" });
-  if (bar) bar.style.flexWrap = "";
+  if (!slot) return;
+  const caption = `${at + 1} of ${steps.length}: ${steps[at].title()}`;
+  const items = steps.map((step, i) => ({
+    label: `${i + 1}. ${step.title()}`,
+    run: () => wbPresentShow(i),
+  }));
+  const fresh = kebabMenu(items, "Go to a page");
+  let wrap = slot.querySelector(":scope > .menu-wrap");
+  if (!wrap) {
+    wrap = fresh;
+    const first = wrap.querySelector(":scope > button");
+    first.id = "wb-present-pick";
+    first.classList.remove("icon-only", "kebab-opener");
+    first.classList.add("wb-present-pick");
+    first.replaceChildren();
+    const label = document.createElement("span");
+    label.className = "wb-present-pick-title";
+    const caret = document.createElement("i");
+    caret.className = "ph ph-caret-up wb-present-pick-caret";
+    caret.setAttribute("aria-hidden", "true");
+    first.append(label, caret);
+    //: Opened, the menu lands on the current page rather than the first.
+    first.addEventListener("click", () => {
+      const row = document.querySelector(".action-menu:not(.hidden) .menu-item[aria-current]");
+      row?.focus({ preventScroll: true });
+      row?.scrollIntoView({ block: "nearest" });
+    });
+    slot.replaceChildren(wrap);
+  } else {
+    wrap.querySelector(".action-menu")?.replaceChildren(...fresh.querySelector(".action-menu").children);
+  }
+  const opener = wrap.querySelector(":scope > button");
+  const words = opener.querySelector(".wb-present-pick-title");
+  words.textContent = caption;
+  opener.title = caption;
+  opener.setAttribute("aria-label", `${caption}. Go to a page`);
+  const rows = [...(wrap.querySelector(".action-menu")?.querySelectorAll(".menu-item") || [])];
+  if (rows[at]) {
+    rows[at].setAttribute("aria-current", "step");
+    rows[at].classList.add("wb-present-pick-row");
+    const mark = document.createElement("i");
+    mark.className = "ph ph-check wb-present-pick-check";
+    mark.setAttribute("aria-hidden", "true");
+    rows[at].append(mark);
+  }
   //: A board's frame title keeps the cell's fixed width and ellipsis, so the
   //: arrows sit at the same x on every page (INBOX K32); only a study note
   //: (long question or answer) takes a line of its own.
-  if (!bar || !wbStudy.on || count.scrollWidth <= count.clientWidth) return;
-  //: Up to about six lines, then it scrolls: a long note never takes the screen.
-  Object.assign(count.style, {
-    flex: "1 0 100%", order: "-1", whiteSpace: "normal", textAlign: "center", maxHeight: "9em", overflowY: "auto",
-  });
+  slot.classList.remove("is-wide");
+  if (bar) bar.style.flexWrap = "";
+  if (!bar || !wbStudy.on || words.scrollWidth <= words.clientWidth) return;
+  slot.classList.add("is-wide");
   bar.style.flexWrap = "wrap";
 }
 
@@ -24918,6 +24961,8 @@ function wbStopPresenting() {
   wbPresent = null;
   wbPresentLaser(false);
   wbMapEndStudy();
+  closeActionMenus();
+  document.getElementById("wb-present-count")?.replaceChildren();
   document.getElementById("library-view-whiteboard")?.classList.remove("wb-presenting");
   document.getElementById("wb-present-bar")?.classList.add("hidden");
   if (!wasFull) toggleWhiteboardFullscreen(false);
@@ -24938,6 +24983,18 @@ window.addEventListener("keydown", (event) => {
     ArrowLeft: -1, ArrowUp: -1, PageUp: -1,
   }[event.key];
   if (event.key === "Tab") return;
+  //: While the page picker is open its own keys rule (arrows, Home, End, Enter,
+  //: Esc); the presentation's shortcuts wait, and Esc closes the menu first.
+  const picker = document.querySelector(".action-menu:not(.hidden)");
+  if (picker && document.getElementById("wb-present-count")?.contains(picker._escapedOpener || picker.parentElement)) {
+    if (event.key === "Escape" && !picker.contains(event.target)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeActionMenus();
+      document.getElementById("wb-present-pick")?.focus({ preventScroll: true });
+    }
+    return;
+  }
   event.preventDefault();
   event.stopImmediatePropagation();
   //: Enter and Space on a focused bar button press that button, here rather
