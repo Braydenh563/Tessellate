@@ -86,3 +86,13 @@ READ_THEN_WRITE_SITES = [("timeline-calendar.js", "timelineCalFit"), ("avatars.j
 def test_named_lag_sites_do_not_measure_inside_a_writing_loop():
     for file, fn in READ_THEN_WRITE_SITES:
         assert mixed_loops(file, fn) == [], f"{file} {fn}: batch the reads before the writes"
+
+
+def test_timeline_ticks_take_the_strip_height_from_the_observer():
+    """A draw writes the strip and asks for ticks in the same task: a `clientHeight` read
+    there laid the page out (248ms in the owner's log). The observer's number is free."""
+    js = frontend_text("timeline-ticks.js")
+    body = _braced(js, js.index("async function timelineTicks("))
+    assert "contentRect.height" in body
+    reads = [m.group(0) for m in re.finditer(r"^(?!\s*//)[^\n]*clientHeight[^\n]*", body, re.M)]
+    assert reads == ["  const height = timelineTickCache.height ?? strip.clientHeight;"], reads

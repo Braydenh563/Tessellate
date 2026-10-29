@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6793, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7095, test files 1512, tests 13280, plan headings 985.
+Counts: frontend functions 6793, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7095, test files 1512, tests 13281, plan headings 985.
 
 ## Frontend functions (6793)
 
@@ -6154,12 +6154,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `drawTimelineStrip` | frontend/js/timeline-ticks.js:143 |
-| `timelineTickLabel` | frontend/js/timeline-ticks.js:45 |
-| `timelineTickPlan` | frontend/js/timeline-ticks.js:57 |
-| `timelineTickSteps` | frontend/js/timeline-ticks.js:27 |
-| `timelineTicks` | frontend/js/timeline-ticks.js:102 |
-| `timelineTicksWanted` | frontend/js/timeline-ticks.js:80 |
+| `drawTimelineStrip` | frontend/js/timeline-ticks.js:154 |
+| `timelineTickLabel` | frontend/js/timeline-ticks.js:46 |
+| `timelineTickPlan` | frontend/js/timeline-ticks.js:58 |
+| `timelineTickSteps` | frontend/js/timeline-ticks.js:28 |
+| `timelineTicks` | frontend/js/timeline-ticks.js:103 |
+| `timelineTicksWanted` | frontend/js/timeline-ticks.js:81 |
 
 ### frontend/js/tour.js (47)
 
@@ -20339,7 +20339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13280)
+## Tests (13281)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21045,7 +21045,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_label_in_name_1345.py | 3 |
 | tests/test_lag_1415.py | 7 |
 | tests/test_lag_1419.py | 5 |
-| tests/test_lag_layout_reads.py | 5 |
+| tests/test_lag_layout_reads.py | 6 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lan.py | 126 |
 | tests/test_launch_splash.py | 24 |
