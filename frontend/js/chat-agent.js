@@ -2075,7 +2075,7 @@ function deactivateControls(root) {
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
-function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
+function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2177,7 +2177,36 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
   //: Web pages first (the owner, 2026-10-10): a page the turn went out to
   //: read is the newest thing in it. One order, so the numbers in the answer
   //: and on the cards stay the same.
-  return [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")];
+  return sourcesByFirstMention(
+    [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")],
+    sentences
+  );
+}
+
+//: **Numbered by first mention** (audit 1029 rank 49, INBOX 1420: markers read
+//: 3, 2, 1, 1, 4, 5, and a screen reader hears 3 before 1). The number a note
+//: carries is its place in this list, so the list is put in the order the
+//: answer first cites its notes: the cited notes take the note places in
+//: that order and the uncited ones follow in their old order; a web page or a
+//: file keeps its place, because the answer never marks one. Live rows are
+//: answer-ordered and arrive as a prefix, so a digit shown mid-answer is the
+//: digit it keeps. Every caller that draws a marker, a chip or a row passes the
+//: same `sentences`, which is why the order lives here and not in each.
+function sourcesByFirstMention(sources, sentences) {
+  const rank = new Map();
+  for (const g of sentences || []) if (!rank.has(g.note_id)) rank.set(g.note_id, rank.size);
+  if (!rank.size) return sources;
+  const places = [];
+  const notes = [];
+  sources.forEach((source, at) => {
+    if (source.kind !== "note") return;
+    places.push(at);
+    notes.push(source);
+  });
+  const cited = notes.filter((n) => rank.has(n.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+  const out = sources.slice();
+  [...cited, ...notes.filter((n) => !rank.has(n.id))].forEach((n, k) => (out[places[k]] = n));
+  return out;
 }
 
 //: The address a card shows under its title, the host, not the whole URL.

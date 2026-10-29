@@ -2084,7 +2084,7 @@ async function chatSendTurn(preset, opts = {}) {
       },
       onGroundingLive: (event) => {
         groundingSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta, toolEvents: [], touched: [], sentences: groundingSentences });
         placeLiveCitations();
       },
       onGrounding: (event) => {
@@ -2443,6 +2443,7 @@ async function chatSendTurn(preset, opts = {}) {
     meta,
     toolEvents,
     touched: [...touchedItems.values()],
+    sentences: groundingSentences,
     grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it

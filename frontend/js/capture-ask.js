@@ -2130,7 +2130,7 @@ function answerObject({
     //: The same builder the Chat tab's bubble uses, so the two surfaces cannot
     //: disagree about what counts as a source or about the order they are
     //: numbered in.
-    sources: chatSourcesFrom({ meta, toolEvents, touched }),
+    sources: chatSourcesFrom({ meta, toolEvents, touched, sentences: grounding }),
     related: related || [],
     next: next || [],
     stats: stats || null,
@@ -3151,7 +3151,7 @@ async function askQuestion(preset) {
       },
       onGroundingLive: (event) => {
         groundedSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [], sentences: groundedSentences });
         numberMatchingRecords(
           $("ai-answer-grounding"),
           citationNumbers(groundedSentences, liveSources)
