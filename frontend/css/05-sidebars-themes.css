@@ -567,9 +567,9 @@ select.ai-unavailable {
   margin: 0 var(--space-3) var(--space-3);
   border-radius: var(--radius-sm);
 }
-/* Swapped in for a note's own inline image once its file is gone, 
-   a closable box instead of a broken-image glyph, asked for directly. */
-.entry-inline-image-deleted {
+/* Stands where a note's inline image cannot show: its file is gone (closable),
+   or it lives on the web and this offline notebook does not load it (a link). */
+.entry-image-note {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);

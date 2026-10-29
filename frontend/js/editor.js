@@ -1255,7 +1255,8 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1270,7 +1271,7 @@ function editorLinkMatches(needle) {
       icon: "ph:file-text",
       label: doc.title || "Untitled",
       hint: "document",
-      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 60),
+      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1326,7 +1327,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 

@@ -1570,6 +1570,25 @@ MORE_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            "id": "card-content",
+            "keywords": (
+                "table in a note", "code block in a note", "remote image",
+                "picture from the web", "image not loaded", "note card",
+                "what a card shows", "create a linked note", "link mode",
+            ),
+            "body": (
+                "What a note's card draws. A table or a code block is drawn the "
+                "way a document draws it, with its Copy button; a search does not "
+                "mark words inside one. A picture from the web is not loaded, "
+                "because this notebook works offline: the card says so and links "
+                "to it, to open in a new tab. A [[link]] to a note that does not "
+                "exist has a Create chip beside it, which offers to make the note "
+                "or a document of that name. Esc leaves link mode (Link to "
+                "another) and takes its notice down."
+            ),
+            "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
             "id": "addresses",
             "keywords": (
                 "address", "url", "address bar", "web address", "browser back",
@@ -2395,6 +2414,7 @@ TOPIC_META: dict[str, dict] = {
     "manage-categories": {"title": "Managing categories", "path": "Notes tab, the Categories head in the sidebar"},
     "note-history": {"title": "A note's history", "path": "A note's menu, History"},
     "notes-list": {"title": "Sorting and browsing notes", "path": "Notes tab, Your notes"},
+    "card-content": {"title": "What a note's card draws", "path": "Notes tab, a note's card"},
     "addresses": {"title": "Every view has an address", "path": "The browser's address bar"},
     "bookmarks": {"title": "Bookmarks", "path": "Library tab, Bookmarks"},
     "contents": {"title": "Contents, the notebook's outline", "path": "Library tab, Contents"},
@@ -2426,7 +2446,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Writing notes", (
         "capture", "quick-note", "quick-add", "editor-offers", "autocorrect", "share-note", "capture-anywhere", "note-outbox", "attachments", "quick-sketch", "notes-controls",
-        "notes-list", "note-history", "links", "favourites", "templates",
+        "notes-list", "card-content", "note-history", "links", "favourites", "templates",
         "write-with-atlas", "translate", "translate-offline", "extract-notes", "voice", "live-captions", "meetings",
     )),
     ("Filing, tags and categories", (

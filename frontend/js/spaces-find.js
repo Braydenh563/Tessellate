@@ -405,7 +405,9 @@ function renderSpaceMenu() {
 function closeSpaceMenu() {
   //: The same hand-back as `closeNavHistoryMenu`: Escape in the list left
   //: the focus on `body`.
-  const held = $("space-menu")?.contains(document.activeElement);
+  //: Also when the focus was on <body> under an open menu: a delete rebuilds the rows beneath the focused one (audit 1029 X23).
+  const open = !$("space-menu")?.classList.contains("hidden");
+  const held = $("space-menu")?.contains(document.activeElement) || (open && document.activeElement === document.body);
   $("space-menu")?.classList.add("hidden");
   $("space-switcher-btn")?.setAttribute("aria-expanded", "false");
   if (held) $("space-switcher-btn")?.focus({ preventScroll: true });

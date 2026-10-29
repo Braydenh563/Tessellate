@@ -332,6 +332,15 @@ function similarNoteRow(entry, other, onLinked) {
 //: budget (INBOX 676 needed the room). Reached only by a gesture, called for
 //: its effect, so `LAZY_ENTRY_POINTS.notePanels` stands in for it until this
 //: file arrives (three seconds after boot at the latest).
+//: Cancelling takes the instruction down with it: "Esc cancels" stayed up its
+//: full life after Esc had (audit 1029 N14).
+function linkCancel() {
+  linkSource = null;
+  for (const note of document.querySelectorAll("#toast-box .toast")) {
+    if (note.textContent.startsWith("Now click Link")) dismissToast(note);
+  }
+  renderEntries();
+}
 function beginOrCompleteLink(entry) {
   //: **A draft and a saved note cannot be connected**, asked for directly,
   //: and refused by `manager.create_link` whichever route asks. Caught here as
@@ -345,8 +354,7 @@ function beginOrCompleteLink(entry) {
     const source = allEntries.find((e) => e.id === linkSource);
     if (source && Boolean(source.is_draft) !== Boolean(entry.is_draft)) {
       const draftFirst = Boolean(source.is_draft);
-      linkSource = null;
-      renderEntries();
+      linkCancel();
       toast(
         draftFirst
           ? "A draft can't be linked to a saved note. Save the draft first."
@@ -363,8 +371,7 @@ function beginOrCompleteLink(entry) {
     return;
   }
   if (linkSource === entry.id) {
-    linkSource = null; // clicked the same one again = cancel
-    renderEntries();
+    linkCancel(); // clicked the same one again = cancel
     return;
   }
   const source = linkSource;

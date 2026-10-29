@@ -903,6 +903,36 @@ function readableUrl(url) {
   return segments.length > 1 ? `${host} / \u2026 / ${last}` : `${host} / ${last}`;
 }
 
+//: **A picture at another address is never asked for** (audit 1029 N7). The
+//: page's CSP (`img-src 'self' data: blob:`) refuses it, which read as
+//: "deleted" and logged four errors a render. The card says so and links to
+//: it instead of building the `<img>`.
+//: The blank lines before a picture on its own line are the markdown's, not
+//: the note's: kept, they stacked on the box's own margin into a 33px gap
+//: under a sketch's caption (dog3-1026 row 15).
+function appendPictureBox(element, box) {
+  const before = element.lastChild?.lastChild || element.lastChild;
+  if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
+  element.appendChild(box);
+}
+
+function isRemoteImage(url) {
+  return /^https?:\/\//i.test(url) && !url.startsWith(`${location.origin}/`);
+}
+
+function remoteImageNote(url) {
+  const note = document.createElement("span");
+  note.className = "entry-image-note";
+  note.title = "This notebook works offline, so pictures from the web are not loaded.";
+  const open = document.createElement("a");
+  open.href = safeHref(url);
+  open.target = "_blank";
+  open.rel = "noopener noreferrer";
+  open.textContent = "Open link";
+  note.append("Remote image not loaded. ", open);
+  return note;
+}
+
 //: A link label worth reading as inline markdown: it holds emphasis or code.
 const LINK_LABEL_MARKUP = /[*_`~=]/;
 
@@ -991,6 +1021,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     if (imageUrl !== undefined) {
       if (compact) {
         element.appendChild(document.createTextNode(imageAlt || "Image"));
+      } else if (isRemoteImage(imageUrl)) {
+        appendPictureBox(element, remoteImageNote(imageUrl));
       } else if (isRenderableUrl(imageUrl)) {
         if (!dismissible) {
           const img = document.createElement("img");
@@ -1039,7 +1071,7 @@ function appendInlineRun(element, text, terms, compact, options) {
         // separate feature.
         img.addEventListener("error", () => {
           const placeholder = document.createElement("span");
-          placeholder.className = "entry-inline-image-deleted";
+          placeholder.className = "entry-image-note";
           placeholder.append(document.createTextNode(`${imageAlt || "Image"} deleted`));
           const dismiss = document.createElement("span");
           dismiss.className = "unlink";
@@ -1050,12 +1082,7 @@ function appendInlineRun(element, text, terms, compact, options) {
           placeholder.appendChild(dismiss);
           wrapper.replaceWith(placeholder);
         });
-        //: The blank lines before a picture on its own line are the
-        //: markdown's, not the note's: kept, they stacked on the wrapper's own
-        //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
-        const before = element.lastChild?.lastChild || element.lastChild;
-        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
-        element.appendChild(wrapper);
+        appendPictureBox(element, wrapper);
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }
@@ -1452,13 +1479,13 @@ function resolveWikiTarget(name) {
 // always did. When a note contains neither, the DOM produced is identical to
 // before, which is why the fall-through appends to `element` directly rather
 // than wrapping runs in a container.
-function renderNoteText(element, text, terms) {
+function renderNoteText(element, text, terms, prose = (s) => s) {
   element.replaceChildren();
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
   let buffer = [];
   const flush = () => {
     if (!buffer.length) return;
-    renderNoteInline(element, buffer.join("\n"), terms);
+    renderNoteInline(element, prose(buffer.join("\n")), terms);
     buffer = [];
   };
 
@@ -1481,8 +1508,21 @@ function renderNoteText(element, text, terms) {
     const columns = mdColumnsFrom(lines, i);
     if (columns) {
       flush();
-      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms)));
+      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms, prose)));
       i = columns.end;
+      continue;
+    }
+    //: **A table or a code fence draws as it does everywhere else** (audit
+    //: 1029 N8: the card showed `| a | b |` and the fence's backticks as
+    //: text). Search terms are not marked inside the block.
+    const blockEnd = mdBlockEnd(lines, i);
+    if (blockEnd) {
+      flush();
+      const box = document.createElement("div");
+      box.className = "entry-md-block";
+      renderMarkdown(box, lines.slice(i, blockEnd).join("\n"));
+      element.appendChild(box);
+      i = blockEnd;
       continue;
     }
     const maths = mdMathBlockFrom(lines, i);
@@ -1631,6 +1671,10 @@ function renderNoteInline(element, text, terms) {
       else offerToCreateWikiTarget(name);
     });
     element.appendChild(link);
+    //: A link to nothing says so and offers the note (audit 1029 N22).
+    if (!mapTarget && wikiLinkTarget(name).trim()) {
+      element.appendChild(chip("Create", "", (event) => { event.stopPropagation(); offerToCreateWikiTarget(name); }));
+    }
     cursor = pattern.lastIndex;
   }
   if (cursor < text.length) {

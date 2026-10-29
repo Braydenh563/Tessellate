@@ -5047,7 +5047,9 @@ try {
   /* matchMedia is absent in some test shells; the row is drawn on open. */
 }
 
-function closeGraphPopup() {
+//: The keyboard stays on the map: Esc, or Close from inside the popup, used to leave focus on <body> (audit 1029 G19).
+function closeGraphPopup(returnFocus = false) {
+  const held = returnFocus || $("graph-popup").contains(document.activeElement);
   keepGraphPopupEdit();
   graphPopupId = null;
   graphLate.popupDragged = false;
@@ -5055,6 +5057,7 @@ function closeGraphPopup() {
   $("graph-popup").classList.add("hidden");
   $("graph-popup").classList.remove("graph-popup-away");
   clearGraphKeyboardFocus();
+  if (held) $("graph-box")?.focus({ preventScroll: true });
 }
 
 //: **Keyboard focus ends when the keyboard leaves.** `focusGraphNode` is

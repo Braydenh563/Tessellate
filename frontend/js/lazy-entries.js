@@ -47,7 +47,7 @@ setTimeout(() => ensureModule("loadFailed"), 3000);
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
   noteActions: ["openImprove", "closeImprove", "runImprove", "applyImprove", "reevaluateEntry", "attachFileTo", "attachFromLibrary"],
-  libraryPick: ["pickLibraryItemDialog"],
+  libraryPick: ["pickLibraryItemDialog", "pickMediaDialog"],
   statusPanels: ["renderSearchEngineHealth", "emailSupportReport", "renderBackendPicker", "openUndoHistoryMenu"],
   featureModelSheet: ["openFeatureModelSheet"],
   dashLazy: ["renderOrphanNotesWidget", "renderNightWidget", "renderDayDigest", "dashPatternBit", "dashTodayLine"],
