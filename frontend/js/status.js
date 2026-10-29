@@ -967,11 +967,13 @@ function toastYield(target = document.activeElement) {
   if (!box?.children.length || !target || box.contains(target) || target === document.body) return box?.classList.remove("is-yielding");
   const meets = (b, r) => r.width > 0 && b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
   const focused = target.getBoundingClientRect();
+  //: A target that fills the window (the sketch's drawing area) hides nothing a toast could cover, and it ghosted every toast there (audit 1029 N16).
+  const wide = focused.width > innerWidth / 2 && focused.height > innerHeight / 2;
   //: Skipped content-visibility buttons are not drawn; measuring one lays it out alone (INBOX 1415).
   const work = [...(target.closest("form, section")?.querySelectorAll("button") || [])].map((el) => el.checkVisibility({ contentVisibilityAuto: true }) && el.getBoundingClientRect());
   box.classList.toggle("is-yielding", [...box.children].some((el) => {
     const b = el.getBoundingClientRect();
-    return meets(b, focused) || (!el.toastTimer && work.some((r) => meets(b, r)));
+    return (!wide && meets(b, focused)) || (!el.toastTimer && work.some((r) => meets(b, r)));
   }));
 }
 document.addEventListener("focusin", (e) => toastYield(e.target));
