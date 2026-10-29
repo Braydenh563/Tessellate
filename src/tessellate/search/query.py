@@ -524,6 +524,28 @@ STOPWORDS = frozenset(
     will with would you your""".split()
 )
 
+#: Words that join a sentence and name nothing, beyond `STOPWORDS` (which
+#: search needs to stay narrow: "about" still matches a note that says it).
+#: A word the composer offers as what a note or a question was ABOUT is never
+#: one of these ("touched on about"); every topic taken from text goes through
+#: `is_topic_word`, so a new caller cannot forget the list.
+FUNCTION_WORDS = frozenset(
+    """about above across after again against all along also although always among another any around
+    because before behind below beside besides between beyond both during each either else enough even
+    ever every few further here however indeed instead just least less like maybe might more most much
+    must neither never none nor not now off often once only onto other others otherwise ought over own
+    perhaps quite rather really same several shall should since some somehow someone something sometimes
+    still such than though through throughout thus too toward towards under unless until upon very via
+    whenever whereas whether whichever while whom whose within without yet""".split()
+)
+
+
+def is_topic_word(term: str) -> bool:
+    """Whether `term` can be what something is about: not a stop word and not
+    a function word."""
+    word = (term or "").lower()
+    return bool(word) and word not in STOPWORDS and word not in FUNCTION_WORDS
+
 
 def search_terms(text: str) -> list[str]:
     """The words worth matching on, in the order they were typed.
