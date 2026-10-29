@@ -358,7 +358,7 @@ def _move(text: str) -> dict | None:
 
 
 _NOTE_HEADS_NEW = (
-    ("note to self", False), ("new note", True), ("quick note", True), ("make a note", False),
+    ("note to self", False), ("note that", False), ("new note", True), ("quick note", True), ("make a note", False),
     ("take a note", False), ("save a note", False), ("add a note", False), ("create a note", False),
     ("write a note", False), ("jot down", False), ("write down", False), ("note down", False),
     ("save this", True), ("creat a note", False), ("make note", False), ("note", True),
@@ -603,10 +603,13 @@ def _rename(text: str) -> dict | None:
             body = text[len(lead):]
     if not body:
         return None
-    split = _split_last(body, (" to ", " as "))
-    if not split:
+    #: The target ends at the first " to " after the word note ("the Atlas
+    #: note to Trip to Lisbon"), else at the first one: a title may hold
+    #: "to"/"as" itself, a split at the last would drop its words (C41).
+    cut = re.search(r"(?i)\b(?:note|doc|document|page|list)(\s+(?:to|as)\s+)", body) or re.search(r"(?i)(\s(?:to|as)\s)", body)
+    if not cut or cut.start(1) <= 0:
         return None
-    target, title = split
+    target, title = body[: cut.start(1)], body[cut.end():]
     found = _one_target(target.strip(), bare=True)
     title = title.strip(" '\"“”")
     if found and title and len(title) <= 200:
@@ -647,6 +650,10 @@ def _summarise(text: str) -> dict | None:
     return None
 
 
+#: Arguments of an act that are the person's own words (never respelt).
+OWN_WORDS = ("content", "title", "tags", "text", "said")
+
+
 def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """`read` of the sentence as the speller puts it right ("remnd me to pay
     rent on friday", "delte my old wifi note"), else as typed: the owner's
@@ -656,14 +663,24 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     fixes: list = []
     fixed = question_noise.repair(question_noise.tidy(text or ""), fixed=fixes)
     found = (read(fixed, now, locale) if fixed and fixed != text else None) or read(text, now, locale)
-    #: Only slang spelled out, no misspelling put right: the notes a command
-    #: names keep the person's own word ("delete notes about uni" is their
-    #: category Uni, not "university"; audit 1028 E9). Dates and verbs keep
-    #: the spelled-out reading ("tmrw").
+    #: The words an act writes are the person's own, never spell-corrected
+    #: ("add oat milk to the packing list" must not write "At milk"); the
+    #: speller only serves the verb and the target (audit 1029 C40).
     if found is not None and "about" in found and fixed != text and not fixes:
+        #: Only slang spelled out, no misspelling put right: the notes a
+        #: command names keep the person's own word ("delete notes about uni"
+        #: is their category Uni, not "university"; audit 1028 E9).
         typed = read(text, now, locale)
         if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
             found = {**found, "about": typed["about"]}
+    if found is not None and fixed != text:
+        head, _, tail = (text or "").partition(" ")
+        typed = read(text, now, locale) or (read(f"{question_noise.repair(head)} {tail}", now, locale) if tail else None)
+        #: A reminder's words are cut at its time ("tmrw" is left in the typed
+        #: reading), so those are taken only when they are the same length.
+        if typed is not None and typed.get("intent") == found.get("intent"):
+            own = {k: typed[k] for k in OWN_WORDS if k in typed and k in found and (not isinstance(typed[k], str) or len(typed[k].split()) == len(str(found[k]).split()))}
+            found = {**found, **own}
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
@@ -682,12 +699,17 @@ def _time_of(words: str, now: datetime, locale: str | None) -> datetime | None:
     return when.resolve(words, now, locale=locale) or when.resolve("in " + words, now, locale=locale)
 
 
+_TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck)\s+(.+?)\s+(?:in|into|to)\s+the\s+(?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
+
+
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
     command, question, polite = _fold(text)
     if not command:
         return None
+    #: "move the lentil soup note to the bin" says delete in other words.
+    command = _TO_THE_BIN.sub(r"delete \1", command)
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None
@@ -962,11 +984,32 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     if note is not None:
         arguments["note_id"] = note.id
     steps = [{"name": "set_reminder", "arguments": arguments}]
-    return {
-        "line": f"{label}.",
-        "card": _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None),
-        "run": True,
-    }
+    card = _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None)
+    if _has_open_reminder(session, parsed["text"]):
+        return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
+    return {"line": f"{label}.", "card": card, "run": True}
+
+
+def _add_another(what: str, card: dict) -> dict:
+    """The same act twice is asked, not repeated: the card waits for Confirm
+    (audit 1029 C48), so a double send never makes two."""
+    return {"line": f"You already have {what}. Add another? Confirm below and I'll add it.", "card": card}
+
+
+def _has_note_saying(session: Session, content: str) -> bool:
+    from tessellate.core.database import Entry
+
+    wanted = " ".join(content.split()).casefold()
+    rows = session.scalars(select(Entry.content).where(Entry.deleted_at.is_(None), Entry.is_private.is_(False)).order_by(Entry.id.desc()).limit(200)).all()
+    return any(" ".join((c or "").lstrip("# ").split()).casefold() == wanted for c in rows)
+
+
+def _has_open_reminder(session: Session, text: str) -> bool:
+    from tessellate.core.database import Reminder
+
+    wanted = " ".join(text.split()).casefold()
+    rows = session.scalars(select(Reminder.text).where(Reminder.done.is_(False), Reminder.deleted_at.is_(None)).limit(500)).all()
+    return any(" ".join((t or "").split()).casefold() == wanted for t in rows)
 
 
 def _no_notes_to_tag_or_move(parsed: dict, which: str, intent: str) -> str:
@@ -1017,11 +1060,10 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
         return _plan_task(session, parsed)
     if intent == "new_note":
         steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
-        return {
-            "line": f"Make a new note: “{_clip(parsed['content'], 80)}”.",
-            "card": _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps),
-            "run": True,
-        }
+        card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
+        if _has_note_saying(session, parsed["content"]):
+            return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
+        return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
     if intent == "meeting":
         title = parsed.get("title") or ""
         steps = [{"name": "start_meeting", "arguments": {"title": title}}]
@@ -1121,6 +1163,37 @@ def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None
     return found[0], ""
 
 
+_CHECK_LINE = re.compile(r"^\s*[-*+]\s+\[[ xX]\]\s")
+_BULLET_LINE = re.compile(r"^\s*[-*+]\s+(?!\[)")
+_ITEM_LEAD = re.compile(r"^\s*(?:[-*+]\s+)?(?:\[[ xX]\]\s+)?")
+
+
+def retitled(content: str, title: str) -> str:
+    """`content` with its title line (the first line, heading or not) replaced
+    by `# title`: the old title is not left behind as body text and the heading
+    is never doubled (audit 1029 C41)."""
+    lines = content.split("\n")
+    at = next((i for i, line in enumerate(lines) if line.strip()), None)
+    if at is None:
+        return f"# {title}\n"
+    lines[at] = f"# {title}"
+    return "\n".join(lines)
+
+
+def appended(content: str, text: str) -> str:
+    """`content` with `text` added at the end in the note's own shape: an item
+    after a checklist is `- [ ] item`, after bullets `- item`, else a new
+    paragraph (audit 1029 C42). One helper, so every add keeps the structure."""
+    body = content.rstrip()
+    last = next((line for line in reversed(body.split("\n")) if line.strip()), "")
+    item = _ITEM_LEAD.sub("", text.strip(), count=1) or text.strip()
+    if _CHECK_LINE.match(last):
+        return f"{body}\n- [ ] {item}"
+    if _BULLET_LINE.match(last):
+        return f"{body}\n- {item}"
+    return f"{body}\n\n{text}"
+
+
 def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
     """Delete, pin, rename, add to, link: one note, named or attached."""
     intent = parsed["intent"]
@@ -1138,13 +1211,11 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         steps = [{"name": "pin_note", "arguments": {"note_id": entry.id, "pinned": intent == "pin"}}]
         label = f"{'Pin' if intent == 'pin' else 'Unpin'} the note {name}"
     elif intent == "rename":
-        content = entry.content or ""
-        first, _, rest = content.partition("\n")
-        new_content = f"# {parsed['title']}\n{rest}" if first.lstrip().startswith("#") else f"# {parsed['title']}\n\n{content}"
+        new_content = retitled(entry.content or "", parsed["title"])
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Rename the note {name} to “{parsed['title']}”"
     elif intent == "append":
-        new_content = (entry.content or "").rstrip() + "\n\n" + parsed["content"]
+        new_content = appended(entry.content or "", parsed["content"])
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]
         label = f"Add “{_clip(parsed['content'], 80)}” to the end of {name}"
     else:
