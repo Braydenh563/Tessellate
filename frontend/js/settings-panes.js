@@ -1295,6 +1295,7 @@ function paletteCommands() {
     ...editor,
     ...board,
     { label: "ph:clipboard Go to Dashboard", tab: "dashboard", about: "Today at a glance: recent notes, reminders and widgets." },
+    { label: "ph:clipboard-text Copy diagnostics", about: "Lag, errors and slow routes as text to send us. No note text.", act: () => ensureModule("diagnostics").then(() => diagCopy()) },
     { label: "ph:magnifying-glass-plus Zoom in", about: "Make everything in the app a step larger.", act: () => nudgeZoom(1) },
     { label: "ph:magnifying-glass-minus Zoom out", about: "Make everything in the app a step smaller.", act: () => nudgeZoom(-1) },
     { label: "ph:arrow-counter-clockwise Reset zoom to 100%", about: "Back to the size the app was drawn at.", act: () => { setZoom(100); hud("Zoom 100%"); } },
