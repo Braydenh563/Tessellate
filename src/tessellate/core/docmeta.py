@@ -140,3 +140,21 @@ def properties(text: str) -> dict[str, list[str]]:
         found[key] = values[:MAX_VALUES_PER_KEY]
         index += 1
     return found
+
+
+def block_end(text: str) -> int:
+    """Where the body starts: the offset just past the closing fence's line,
+    or 0 when the text opens with no closed block."""
+    source = str(text or "")
+    if not source.startswith("---"):
+        return 0
+    lines = source.split("\n")
+    if not _FENCE.match(lines[0]):
+        return 0
+    offset = len(lines[0]) + 1
+    for index in range(1, min(len(lines), MAX_FENCE_LINES + 1)):
+        line = lines[index]
+        if _FENCE.match(line):
+            return min(len(source), offset + len(line) + 1)
+        offset += len(line) + 1
+    return 0

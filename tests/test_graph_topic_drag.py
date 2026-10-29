@@ -78,7 +78,7 @@ def test_the_gesture_is_wired_end_to_end():
     assert "if (s.dragTopic) node._dragShift = true;" in CANVAS, "a topic is pinned as a group"
     assert "? gcTopicMembers(s.dragTopic, s)" in CANVAS
     assert 'apiJson("/graph/pins", { method: "PUT", body: JSON.stringify({ pins }) })' in CANVAS
-    assert "!s.dragTopic ? graphNodeUnder(" in CANVAS, "dropping a topic never links"
+    assert "s.dragTopic || !node._dragAlt) return null;" in CANVAS, "dropping a topic never links"
 
 
 def test_a_plate_double_click_renames_in_place():

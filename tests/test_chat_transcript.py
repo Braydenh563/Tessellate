@@ -286,7 +286,9 @@ def test_web_pieces_of_the_owners_list():
     "the notification said it takes a while to pull the first image for
     searxng but ive already used multiple times" (said only when absent)."""
     agent = frontend_text("chat-agent.js")
-    assert 'return [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")];' in agent
+    #: The web-first order now feeds the first-mention numbering (audit 1029
+    #: rank 49), which keeps a web page's place: the intent is unchanged.
+    assert '[...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")],' in agent
     groups = agent[agent.index("const CHAT_SOURCE_GROUPS = [") :][:200]
     assert groups.index('key: "web"') < groups.index('key: "note"')
     chat = frontend_text("chat.js")
