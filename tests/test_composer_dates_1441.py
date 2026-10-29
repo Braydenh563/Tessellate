@@ -195,6 +195,9 @@ def test_a_glossary_answer_names_its_note_and_ends_whole():
     ("Project Management Office sent the forms.", "the note that starts “Project Management Office sent the forms”"),
     ("Atlas retro meeting", "the Atlas retro meeting"),
     ("HCI quiz Friday.", "the HCI quiz Friday"),
+    ("Trip planning: flights to Lisbon on 3 May.", "the trip planning note"),
+    ("Gym: squats at 80 kg.", "the gym note"),
+    ("Pros: more time.", "the note that starts “Pros: more time”"),
 ])
 def test_a_one_line_sentence_is_quoted_never_worn_as_a_name(content, named):
     """The coordinator, 2026-10-29: "Intro to Cloud Computing starts Monday

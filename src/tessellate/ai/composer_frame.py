@@ -251,12 +251,39 @@ _FINITE = re.compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|
                      r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took)\b")
 
 
+#: Labels that open a section of a note and never name the note: "Your
+#: attendees note", "your pros note", "your key idea note" (C8).
+SECTION_LABELS = frozenset("""
+idea ideas pros cons attendees decisions decision actions notes note summary todo tasks takeaways takeaway questions
+thoughts update status agenda outcome outcomes result results quote tip tips reading points
+""".split()) | {"key idea", "key ideas", "action items", "next steps", "key points", "to do"}
+
+
+def note_label(note: dict) -> str:
+    """The label a title-less note opens with when it names the note
+    ("Trip planning: flights to Lisbon" is the trip planning note); "" for
+    a section's label ("Pros:", "Attendees:"), the note's own category, or
+    a label too long to be a name."""
+    head = _PREFIX.match(_first_line(str(note.get("content") or "").strip()))
+    label = re.sub(r"\s+", " ", head.group(1).strip()) if head else ""
+    key = label.lower()
+    if not label or len(label.split()) > 5 or key in SECTION_LABELS or key == str(note.get("category") or "").strip().lower():
+        return ""
+    return label
+
+
+def lower_name(text: str) -> str:
+    """A name in running text: "Trip planning" as "trip planning", "League of Legends" as written."""
+    return _lower(text)
+
+
 def own_title(content: str) -> str:
     """A one-line note that is only a name ("Atlas retro meeting"): short,
     no sentence marks, not an instruction and not the person's own "I";
     "" otherwise."""
     line = _first_line(content.strip())
-    if "\n" in content.strip() or not line or re.search(r"[,;.!?]", line) or len(line.split()) > 6:
+    #: "Gym: squats at 80 kg" is a label and its detail, never a title.
+    if "\n" in content.strip() or not line or re.search(r"[,;:.!?]", line) or len(line.split()) > 6:
         return ""
     if _FINITE.search(line):
         #: "Intro to Cloud Computing starts Monday" says something: a
@@ -283,10 +310,12 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     title = _title_of(content) or own_title(content)
     if title:
         return _titled(title)
+    label = note_label(note)
+    if label:
+        return f"the {lower(label)} note"
     first = _first_line(content)
     head = _PREFIX.match(first)
-    category = str(note.get("category") or "").lower()
-    if head and len(head.group(1).split()) <= 5 and head.group(1).strip().lower() != category:
+    if head and head.group(1).strip().lower() in SECTION_LABELS:
         #: "Pros: more time", "Idea: a bike route": a section's label is
         #: never the note's name ("your pros note", C8).
         return _clipped(note)

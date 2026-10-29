@@ -690,7 +690,10 @@ def _your_note(view) -> str:  # noqa: ANN001
     section's label or "untitled"."""
     if getattr(view, "titled", False) and view.title:
         return _note_called(view.title)
-    return composer_frame.short_name(getattr(view, "note", None) or {"content": getattr(view, "title", "")})
+    note = getattr(view, "note", None) or {"content": getattr(view, "title", "")}
+    #: "Trip planning: flights to Lisbon" is your trip planning note.
+    label = composer_frame.note_label(note)
+    return _note_called(composer_frame.lower_name(label)) if label else composer_frame.short_name(note)
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
@@ -1632,20 +1635,12 @@ def _prose_opening(label: str, named: str, written: date | None, today: date | N
     return "noted", f"Your {named} note"
 
 
-#: Labels that open a section of a note and never name the note: "Your
-#: attendees note", "your pros note", "your key idea note" (C8).
-_SECTION_LABELS = frozenset("""
-idea ideas pros cons attendees decisions decision actions notes note summary todo tasks takeaways takeaway questions
-thoughts update status agenda outcome outcomes result results quote tip tips reading points
-""".split()) | {"key idea", "key ideas", "action items", "next steps", "key points", "to do"}
-
-
 def _label_names(label: str, view) -> bool:  # noqa: ANN001
     """Whether a line's label is the note's own name: a title-less note's
     first "Psych lecture 1: ..." names it; a section ("Attendees:", "Pros:")
     or a label inside a titled note does not."""
     key = re.sub(r"\s+", " ", label.strip().lower())
-    if key in _SECTION_LABELS:
+    if key in composer_frame.SECTION_LABELS:
         return False
     if getattr(view, "titled", False):
         return key == re.sub(r"\s+", " ", (view.title or "").strip().lower())
@@ -3206,7 +3201,7 @@ def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) ->
     where = f", in {category}" if category and category.lower() != "uncategorised" else ""
     #: A title keeps its capital (C1); a note without one is named by its
     #: first clause (C8), never by a section's label or "untitled".
-    name = _note_called(title) if title else composer_frame.short_name(v.note)
+    name = _note_called(title) if title else _your_note(v)
     said = [(_fragment(_second_person(f.body), names), f) for f in facts]
     if len(said) == 1:
         out.lines.append(PHRASES["this_one"].format(name=name, day=_day(v.written, today), where=where, pause="," if where else "", fact=said[0][0]))
@@ -3214,7 +3209,7 @@ def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) ->
         return
     out.lines.append(PHRASES["this_note"].format(
         name=name, day=_day(v.written, today), where=where, points=f"{realise.count_word(len(said))} points"))
-    out.lines.append(_points_block(out, said[:MORE_LINES], title))
+    out.lines.append(_points_block(out, said[:MORE_LINES], title or composer_frame.note_label(v.note)))
 
 
 def _points_block(out: _Out, said: list, title: str) -> str:
