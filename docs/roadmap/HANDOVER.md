@@ -13,16 +13,15 @@
 
 ## Morning summary
 
-Away run 2026-10-29, branch claude/sharp-thompson-45hngp, PR 211, head after 1f9fc81; stopped at 67% weekly (owner's line 70%), finishing up as asked.
+Away run 2026-10-29 (second stretch), branch claude/sharp-thompson-45hngp, PR 211, head after a62840f; owner's line 75% weekly, finishing at about 70%.
 
-- Audit 1029 (`agent-remaining/audit-1029-ranked.md`, 64 rows): 33 fixed or built, the rest open; this run added ranks 22 (composer frames), 31 (streak), 39 (graph search speed) and INBOX 1441 to 1449.
-- CI: the 6 reds from rank 22 fixed (e86bed1, targeted tests and gate green); CI on the pushed head not yet seen.
-- Decision taken: "do I like / am I into" questions count as about now (1441), so they get the "may have moved on" line; gold 9 is 81 over its floor of 80, no floor lowered.
-- Rank 42 (graph search count, Enter and Shift+Enter, Esc) is designed, not built: drafts in `agent-remaining/g11/` (rename the `.txt` test into `tests/` after CODEMAP), notes in `graph-search-1029.md`.
-- Graph search at 4x CPU is still 50 to 70 ms a key (target 50); SVG path, phone and dark theme not checked.
-- Not reviewed independently (budget): rank 22 and rank 39 merges; run `reviewer` before PR 211 merges.
-- Found, not fixed: lag items in the 1446 report (revealActiveTab, atlasRigRead, popup scans, notesScroller, avatars), streak items in composer-streak-1029.md, items 1 to 9 in composer-frames-1029.md.
-- Next by rank: 42, then 9, 10, 24, 49.
+- Audit 1029 (`agent-remaining/audit-1029-ranked.md`, 64 rows): 56 fixed or built, 5 partly fixed, 3 open (41 graph labels at 500 notes, against the 2026-09-26 decision, needs the owner; 59 extras, an agent on it; 60 legacy SVG renderer removal).
+- This stretch: graph 42, 43, 48, 57, 58; backend 9, 10, 51, 61, 63; UI 44 to 47, 50, 52, 56, 62; composer 49, 53 to 55 and the composer-1029b leftovers; 40 re-timed (did not reproduce).
+- Partly: row 35 graph cold layout at 2,000 notes 28 to 29.7 s down to 16 to 21.6 s, click p50 57-80 to 42-48 ms, click max still 240 to 310 ms (next steps in graph-1029b.md); row 38 Settings nodes 5,293 to 3,249, open mean 1,684 to 1,280 ms (leftovers in ui-1029a.md).
+- Reviewed: an Opus reviewer read db3816f..d39135f; the medium (legacy comma tags split on background writes) and the lows on undo paths and note-to-self clauses are fixed with tests.
+- CI: reds on 099d241 and de15e6b fixed (SQLAlchemy import in the composer, complexity, one-reader); a harness timing flake passes locally. CI on a62840f not yet reported.
+- Owner calls: the study summary "Let me check." opener; whether row 41 reopens the 2026-09-26 label decision.
+- Left: review lows (undo cap 200 on large retags, Alt-drag on KDE/XFCE), G30 loading line, "What did I think of The Overstory" lead, N17 card button names, the WIP commit 18f717a without trailers.
 
 ## 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv)
 
@@ -385,7 +384,7 @@ state now. The line-by-line ledger of what is left is
 
 **Away queue (owner asleep, 2026-10-17 late), state at the last push (5af1c03 on PR 189):** merged and green: both WIP branches, CI fixes, companion physics/perch/boot budget, Atlas stars and the companion mind (lazy companion-menu.js), timeline calendar add (B72), Harper hover (B04), the new-chat skeleton, composer O5 to O11, tab-entry costs (reduced-motion blankets now motion-still.css, timeline `:has()` anchors removed: timeline entry style 654 to 246 ms at 4x), accessibility WCAG 2.2 sweep, security review (graph pins, slash, ReDoS, LIKE wildcards), composer question cap (2,000 chars planned), `/improve` bounded, B80 new-tag suggestions, folder import as a durable pool job, word-boundary snippets, time-reader gaps (spoken clocks, 24-hour figures, `eod`, week offsets, midnight). Open, in order: B50 splash (Windows only, unverifiable here); Harper-driven autocorrect beyond the popup; Library/Notes reveal cost (first style of the revealed page, 1,389 and 1,186 elements; only a smaller first chunk helps); `when.resolve` ignores a clock after a day-sized offset; the route still takes about 5 s on a 20,000-character question (`question_noise.guided` on 2,000 characters, 7 times a turn); owner questions in bugs-1017.md (B32, B41, B49, B54, B77, B70, B53, B59, B07, B61 unsloth licence, B58 icon toggles needs a named example). The two remote WIP branches were merged and deleted by the owner. Two CI flakes seen on this PR were a timing test (`test_duplicates_scan_speed`, 2.20 s against 2.0) and a leaked `TESSELLATE_LAUNCHED` from `test_frozen_packaging` (fixed).
 
-**Now (2026-10-29k, branch claude/sharp-thompson-45hngp, PR 211):** the owner: "can you cover all of them?? Ill give you to 75% as of now ... just do the best you can and then Ill see about allowing more usage". Stop line 75% weekly (67% at start). Merged and pushed (d39135f, 69% weekly): graph rows 42, 43, 48, 57, 58; backend rows 9, 10, 51, 61, 63; UI rows 44, 45, 46, 47 (N17 card button names left), 50, 52, 56, 62; composer rows 49, 53, 54, 55; row 40 re-timed (did not reproduce). An Opus reviewer read db3816f..HEAD: one medium (legacy comma tags split by background writes and restore) and the undo-path and note-to-self lows are fixed in d39135f; the other lows are in ui-1029a.md. CI fix 061a408: the composer imported SQLAlchemy again (block_end moved to core/docmeta). Running (Sonnet): composer-1029b leftovers. Next if usage allows: perf 35, 38 (L, Opus). Boot scripts gzip has about 125 bytes of headroom.
+**Now (2026-10-29k, branch claude/sharp-thompson-45hngp, PR 211):** the owner: "can you cover all of them?? Ill give you to 75% as of now ... just do the best you can and then Ill see about allowing more usage". Finishing at about 70% weekly; see the Morning summary. Head a62840f: audit 1029 has 56 rows fixed or built, 5 partly, 3 open (41 owner call, 59 agent running, 60). Next: merge row 59, then row 60 (legacy SVG graph renderer), the row 35 and 38 follow-ups, then INBOX.
 
 **Now (2026-10-29j, branch claude/sharp-thompson-45hngp, PR 211, head after 1f9fc81):** merged rank 22 CI fixes (e86bed1) and rank 39 graph search (1f9fc81); stopped at 67% weekly per the owner's 70% line. Next: rank 42 from `agent-remaining/g11/`, then 9, 10, 24, 49.
 
