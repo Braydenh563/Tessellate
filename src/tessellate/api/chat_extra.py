@@ -10,7 +10,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_digest, composer_extra, realise
+from tessellate.ai import activity, composer_digest, composer_extra, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry, Reminder
@@ -42,6 +42,9 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     if composer_digest.about_this(question) or composer_digest.named_category(
         question, list(session.execute(select(Category.name)).scalars())
     ):
+        return None
+    #: "Summarise my week" is the week's recap (`ai/activity`), not a note's summary.
+    if activity.as_recap(question) != question:
         return None
     ctx = Ctx(question=question, notes=_notes(session), now=now, history=history, seed=seed, open_ids=open_ids,
               follow_kind=follow_kind, said=said, asked=asked or question, ask=ask, reminders=_reminders(session), voice=voice)

@@ -26,7 +26,6 @@ from sqlalchemy.orm import Session
 from tessellate.core.database import NoteType
 from tessellate.core.docmeta import block_end, properties as read_block
 
-_FENCE = re.compile(r"^---[ \t]*$")
 _NEEDS_QUOTES = re.compile(r"""^[\s"'\[{>|*&!%@`-]|:\s|\s#|[,\]]|\s$""")
 
 

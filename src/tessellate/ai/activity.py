@@ -113,10 +113,35 @@ def _doing_of(text: str, phrase: str, back: object) -> str | None:
     return "all" if verb is None and back else verb
 
 
+#: "Summarise my week", "recap last week", "sum up the month": a request for a
+#: period's recap, which is asked as "what did I do ..." (the class: any
+#: summary of a bare period, not of a subject).
+_RECAP = re.compile(
+    r"^\W*(?:(?:please|pls|can you|could you|will you|would you)\s+)*(?:(?:give me|do)\s+(?:a |an |the )?)?"
+    r"(?:summari[sz]e|sum up|recap|summary|rundown|overview)(?:\s+of)?\s+(?:(?:my|our|the)\s+)?"
+    r"(?P<span>(?:(?:this|last|past)\s+)?(?:week|month|year|weekend|fortnight)|today|yesterday|day)\W*$",
+    re.I,
+)
+
+
+def as_recap(text: str) -> str:
+    """A request to summarise a bare period, put as the question it is: "what
+    did I do this week"; any other text as it came."""
+    found = _RECAP.match(text)
+    if not found:
+        return text
+    span = " ".join(found.group("span").lower().split())
+    if span == "day":
+        span = "today"
+    elif span.split()[0] not in ("this", "last", "past", "today", "yesterday"):
+        span = f"this {span}"
+    return f"what did I do {span}"
+
+
 def read(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
-    text = (question or "").strip()
+    text = as_recap((question or "").strip())
     if not text or len(text) > 200:
         return None
     #: "What is on 14 August" with the day gone asks what that day held, in the

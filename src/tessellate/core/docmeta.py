@@ -30,10 +30,11 @@ from __future__ import annotations
 
 import re
 
-#: A fence line: exactly three dashes and nothing but whitespace after them.
+#: A fence line: exactly three dashes and nothing but whitespace after them
+#: (a CR too: a note saved with CRLF line ends splits on "\n" and keeps it).
 #: Not `---` anywhere in the document, which is a horizontal rule; the only
 #: thing that makes these three characters a fence is being the first line.
-_FENCE = re.compile(r"^---[ \t]*$")
+_FENCE = re.compile(r"^---[ \t\r]*$")
 
 #: The key half of a `key: value` line. What YAML allows unquoted and what the
 #: competitor editors write: letters, digits, underscores, dashes, dots, and

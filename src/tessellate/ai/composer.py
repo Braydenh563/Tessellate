@@ -1188,6 +1188,9 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     #: note's words, never at "---" (audit 1029 X19). Offsets stay the
     #: content's own.
     front = block_end(content)
+    #: And from its first line with words in it: the blank line people leave
+    #: after the closing fence must not leave the note without a name.
+    front += len(content[front:]) - len(content[front:].lstrip("\r\n"))
     title, body_start = _title(content[front:])
     titled = bool(title) and body_start > 0
     body_start = front + body_start
@@ -1297,6 +1300,21 @@ def _cue(shape: str, text: str) -> float:
     return 0.0
 
 
+#: Words that say what kind of note is asked for, not which one ("the gear
+#: list"): beside a word that names the subject they count a quarter, so a
+#: note that only has "list" in its text or title does not outrank the note
+#: called Gear.
+KIND_WORDS = frozenset({"list", "checklist"})
+KIND_WORD_WEIGHT = 0.25
+
+
+def _term_weights(stems: list[str]) -> dict[str, float]:
+    """What each term of the question counts for: a kind word beside others
+    counts `KIND_WORD_WEIGHT`, any other word, or a kind word alone, 1."""
+    named = [t for t in stems if t not in KIND_WORDS]
+    return {t: KIND_WORD_WEIGHT if named and t in KIND_WORDS else 1.0 for t in stems}
+
+
 def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence]:
     """Every sentence scored: BM25 over the sentences of the notes found, plus
     the note's title, the question's shape and the note's retrieval rank.
@@ -1310,6 +1328,7 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
     if not pool:
         return []
     stems = [_stem(t) for t in terms]
+    term_weight = _term_weights(stems)
     frequency: Counter[str] = Counter()
     for s in pool:
         frequency.update(set(s.words))
@@ -1328,16 +1347,16 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
                 if tf:
                     idf = math.log(1 + (total - frequency[word] + 0.5) / (frequency[word] + 0.5))
                     best = max(best, weight * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * len(s.words) / average)))
-            bm25 += best
+            bm25 += best * term_weight[term]
         view = by_id[s.note_id]
         #: A sentence under a heading that names the subject is about it even
         #: when it does not repeat the words: "It was not the database." is
         #: the answer to "why did the list feel slow" because its note is
         #: called "Why the list felt slow".
-        title_hits = sum(1 for term in stems if _holds(term, view.title_words))
-        filed_hits = sum(1 for term in stems if _holds(term, view.filed_words) and not _holds(term, view.title_words))
+        title_hits = sum(term_weight[term] for term in stems if _holds(term, view.title_words))
+        filed_hits = sum(term_weight[term] for term in stems if _holds(term, view.filed_words) and not _holds(term, view.title_words))
         relevance = bm25 + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
-        if stems and title_hits == len(stems):
+        if stems and title_hits == sum(term_weight[term] for term in stems):
             relevance += TITLE_WEIGHT
         if stems and relevance <= 0:
             s.score = 0.0

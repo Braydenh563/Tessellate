@@ -2919,7 +2919,7 @@ def _newest_word(session: Session) -> str:
     if not newest:
         return ""
     for term in query_understanding.search_terms(str(newest[0] or "")[:400]):
-        if len(term) >= 4 and term.isalpha() and term not in _NOT_A_SUBJECT and spelling.is_word(term):
+        if len(term) >= 4 and term.isalpha() and term not in _NOT_A_SUBJECT and query_understanding.is_topic_word(term) and spelling.is_word(term):
             return term
     return ""
 
@@ -3533,7 +3533,7 @@ def _chat_topic(history: list[dict]) -> str:
     for turn in reversed(history or []):
         answer = str(turn.get("answer") or "").lower()
         for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
-            if len(term) >= 4 and term.isalpha() and term.lower() in answer:
+            if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
                 return term
     return ""
 
