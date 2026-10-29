@@ -1713,8 +1713,15 @@ function chatMidStream() {
   return typeof chatStreaming !== "undefined" && !!chatStreaming;
 }
 
+//: A recording in hand, live or paused, is lost by a reload or a close (its
+//: audio is only kept as far as it was sent). Not in `hasUnsavedWork`: a tab
+//: switch leaves it running in the dock. `typeof`: meetings.js loads lazily.
+function recordingLive() {
+  return typeof meetingRecorder !== "undefined" && !!meetingRecorder && meetingRecorder.state !== "inactive";
+}
+
 window.addEventListener("beforeunload", (event) => {
-  if (!hasUnsavedWork() && !chatMidStream()) return;
+  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive()) return;
   event.preventDefault();
   event.returnValue = "";
 });

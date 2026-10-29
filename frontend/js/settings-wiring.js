@@ -743,10 +743,9 @@ document.addEventListener("keydown", (e) => {
   const el = document.activeElement;
   const typing =
     ["INPUT", "TEXTAREA", "SELECT"].includes(el && el.tagName) || Boolean(el && el.isContentEditable);
-  const overlayOpen =
-    settingsModalOpen() ||
-    !$("palette-overlay").classList.contains("hidden") ||
-    !$("sketch-overlay").classList.contains("hidden");
+  //: Any open modal, not a list of three: the voice dialog and every native
+  //: `<dialog>` took a typed "t" or "a" for a chord (audit 1029 X1).
+  const overlayOpen = Boolean(activeOverlay() || document.querySelector("dialog[open]"));
   // Unchorded shortcuts ("/", "?") only fire when you're not typing and no
   // overlay is open, so they never steal a literal slash mid-sentence.
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types

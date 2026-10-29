@@ -2,9 +2,9 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6758, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7012, test files 1482, tests 13079, plan headings 985.
+Counts: frontend functions 6761, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7012, test files 1483, tests 13086, plan headings 985.
 
-## Frontend functions (6758)
+## Frontend functions (6761)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -882,27 +882,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `splitTableRow` | frontend/js/markdown.js:24 |
 | `wrapToggle` | frontend/js/markdown.js:860 |
 
-### frontend/js/navigation.js (53)
+### frontend/js/navigation.js (54)
 
 | Name | File:line |
 |---|---|
-| `activeNotesSection` | frontend/js/navigation.js:2255 |
+| `activeNotesSection` | frontend/js/navigation.js:2262 |
 | `arrowNavTarget` | frontend/js/navigation.js:201 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1771 |
-| `chatMessagesEl` | frontend/js/navigation.js:2401 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1778 |
+| `chatMessagesEl` | frontend/js/navigation.js:2408 |
 | `chatMidStream` | frontend/js/navigation.js:1712 |
 | `closeNavHistoryMenu` | frontend/js/navigation.js:885 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1733 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2560 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1740 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2567 |
 | `entryLabel` | frontend/js/navigation.js:983 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2521 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2528 |
 | `goToTabHistory` | frontend/js/navigation.js:1074 |
 | `hasUnsavedWork` | frontend/js/navigation.js:1691 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2315 |
-| `initScrollTopButton` | frontend/js/navigation.js:2580 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2322 |
+| `initScrollTopButton` | frontend/js/navigation.js:2587 |
 | `insideClosedDetails` | frontend/js/navigation.js:1527 |
 | `loadSurface` | frontend/js/navigation.js:1275 |
-| `measureSpacingPx` | frontend/js/navigation.js:2551 |
+| `measureSpacingPx` | frontend/js/navigation.js:2558 |
 | `menuOfOpener` | frontend/js/navigation.js:1549 |
 | `menuRowsOf` | frontend/js/navigation.js:1534 |
 | `mermaidSoon` | frontend/js/navigation.js:359 |
@@ -912,31 +912,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openSelectionScope` | frontend/js/navigation.js:307 |
 | `paintTabHistory` | frontend/js/navigation.js:932 |
 | `placeDockMenuInWindow` | frontend/js/navigation.js:1346 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2423 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2430 |
 | `recordTabVisit` | frontend/js/navigation.js:1020 |
+| `recordingLive` | frontend/js/navigation.js:1719 |
 | `renderMarkdown` | frontend/js/navigation.js:368 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2217 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2236 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2224 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2243 |
 | `restoreSettingsScroll` | frontend/js/navigation.js:1121 |
 | `revealTab` | frontend/js/navigation.js:811 |
 | `rowMenuAtEvent` | frontend/js/navigation.js:123 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2405 |
-| `scrollingPage` | frontend/js/navigation.js:2354 |
-| `showNotesSection` | frontend/js/navigation.js:2260 |
-| `spacingPx` | frontend/js/navigation.js:2544 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2412 |
+| `scrollingPage` | frontend/js/navigation.js:2361 |
+| `showNotesSection` | frontend/js/navigation.js:2267 |
+| `spacingPx` | frontend/js/navigation.js:2551 |
 | `stepTabHistory` | frontend/js/navigation.js:1064 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2144 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2151 |
 | `surfaceRecovered` | frontend/js/navigation.js:1253 |
-| `switchTab` | frontend/js/navigation.js:1820 |
-| `syncScrollLock` | frontend/js/navigation.js:2735 |
+| `switchTab` | frontend/js/navigation.js:1827 |
+| `syncScrollLock` | frontend/js/navigation.js:2742 |
 | `tabLabel` | frontend/js/navigation.js:971 |
-| `tabPlaceholder` | frontend/js/navigation.js:2080 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2061 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2071 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2050 |
-| `usageCount` | frontend/js/navigation.js:1781 |
-| `usageFeatureName` | frontend/js/navigation.js:1777 |
-| `usageFlush` | frontend/js/navigation.js:1785 |
+| `tabPlaceholder` | frontend/js/navigation.js:2087 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2068 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2078 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2057 |
+| `usageCount` | frontend/js/navigation.js:1788 |
+| `usageFeatureName` | frontend/js/navigation.js:1784 |
+| `usageFlush` | frontend/js/navigation.js:1792 |
 | `watchDockMenuPlacement` | frontend/js/navigation.js:1408 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
@@ -1298,51 +1299,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `_isChatComposer` | frontend/js/settings-wiring.js:1918 |
-| `activeOverlay` | frontend/js/settings-wiring.js:899 |
-| `buildShortcutList` | frontend/js/settings-wiring.js:1405 |
-| `captureCountText` | frontend/js/settings-wiring.js:1715 |
-| `captureShortcutKey` | frontend/js/settings-wiring.js:1466 |
-| `clearStagedImages` | frontend/js/settings-wiring.js:2084 |
-| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1196 |
-| `closeShortcuts` | frontend/js/settings-wiring.js:1529 |
-| `comboFromEvent` | frontend/js/settings-wiring.js:1232 |
-| `commitCaptureImages` | frontend/js/settings-wiring.js:2069 |
-| `fileDropBox` | frontend/js/settings-wiring.js:1927 |
+| `_isChatComposer` | frontend/js/settings-wiring.js:1917 |
+| `activeOverlay` | frontend/js/settings-wiring.js:898 |
+| `buildShortcutList` | frontend/js/settings-wiring.js:1404 |
+| `captureCountText` | frontend/js/settings-wiring.js:1714 |
+| `captureShortcutKey` | frontend/js/settings-wiring.js:1465 |
+| `clearStagedImages` | frontend/js/settings-wiring.js:2083 |
+| `closeOverlaysForChord` | frontend/js/settings-wiring.js:1195 |
+| `closeShortcuts` | frontend/js/settings-wiring.js:1528 |
+| `comboFromEvent` | frontend/js/settings-wiring.js:1231 |
+| `commitCaptureImages` | frontend/js/settings-wiring.js:2068 |
+| `fileDropBox` | frontend/js/settings-wiring.js:1926 |
 | `flashSaved` | frontend/js/settings-wiring.js:446 |
-| `handleFileUpload` | frontend/js/settings-wiring.js:2116 |
-| `hideChordGuide` | frontend/js/settings-wiring.js:1214 |
-| `loadForgottenOrder` | frontend/js/settings-wiring.js:1601 |
-| `loadShortcuts` | frontend/js/settings-wiring.js:1073 |
-| `localizeStaticChords` | frontend/js/settings-wiring.js:1116 |
+| `handleFileUpload` | frontend/js/settings-wiring.js:2115 |
+| `hideChordGuide` | frontend/js/settings-wiring.js:1213 |
+| `loadForgottenOrder` | frontend/js/settings-wiring.js:1600 |
+| `loadShortcuts` | frontend/js/settings-wiring.js:1072 |
+| `localizeStaticChords` | frontend/js/settings-wiring.js:1115 |
 | `lockFail` | frontend/js/settings-wiring.js:248 |
 | `lockRequest` | frontend/js/settings-wiring.js:325 |
-| `matchesShortcut` | frontend/js/settings-wiring.js:1250 |
-| `maybeShowOnboarding` | frontend/js/settings-wiring.js:920 |
+| `matchesShortcut` | frontend/js/settings-wiring.js:1249 |
+| `maybeShowOnboarding` | frontend/js/settings-wiring.js:919 |
 | `notebookLocked` | frontend/js/settings-wiring.js:431 |
-| `openShortcuts` | frontend/js/settings-wiring.js:1496 |
+| `openShortcuts` | frontend/js/settings-wiring.js:1495 |
 | `persistSavedSearches` | frontend/js/settings-wiring.js:53 |
-| `renderCaptureFiles` | frontend/js/settings-wiring.js:1688 |
-| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1668 |
-| `renderInstallRow` | frontend/js/settings-wiring.js:1839 |
+| `renderCaptureFiles` | frontend/js/settings-wiring.js:1687 |
+| `renderEntryAttachmentChips` | frontend/js/settings-wiring.js:1667 |
+| `renderInstallRow` | frontend/js/settings-wiring.js:1838 |
 | `renderSavedSearches` | frontend/js/settings-wiring.js:17 |
-| `renderShortcutList` | frontend/js/settings-wiring.js:1393 |
-| `resetShortcuts` | frontend/js/settings-wiring.js:1364 |
-| `restampShortcutHints` | frontend/js/settings-wiring.js:1126 |
-| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2057 |
-| `runShortcut` | frontend/js/settings-wiring.js:1255 |
+| `renderShortcutList` | frontend/js/settings-wiring.js:1392 |
+| `resetShortcuts` | frontend/js/settings-wiring.js:1363 |
+| `restampShortcutHints` | frontend/js/settings-wiring.js:1125 |
+| `rewriteStagedUrls` | frontend/js/settings-wiring.js:2056 |
+| `runShortcut` | frontend/js/settings-wiring.js:1254 |
 | `saveCurrentSearch` | frontend/js/settings-wiring.js:61 |
-| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1220 |
+| `saveShortcutOverrides` | frontend/js/settings-wiring.js:1219 |
 | `saveWhatIsInFront` | frontend/js/settings-wiring.js:509 |
 | `savedSearches` | frontend/js/settings-wiring.js:13 |
-| `setShortcutStatus` | frontend/js/settings-wiring.js:1380 |
-| `setShortcutStatusError` | frontend/js/settings-wiring.js:1387 |
-| `singleKeysOn` | frontend/js/settings-wiring.js:2255 |
-| `stagedImageUrl` | frontend/js/settings-wiring.js:2034 |
-| `stampShortcutTitles` | frontend/js/settings-wiring.js:1102 |
+| `setShortcutStatus` | frontend/js/settings-wiring.js:1379 |
+| `setShortcutStatusError` | frontend/js/settings-wiring.js:1386 |
+| `singleKeysOn` | frontend/js/settings-wiring.js:2254 |
+| `stagedImageUrl` | frontend/js/settings-wiring.js:2033 |
+| `stampShortcutTitles` | frontend/js/settings-wiring.js:1101 |
 | `submitLockForm` | frontend/js/settings-wiring.js:255 |
-| `textCounts` | frontend/js/settings-wiring.js:1705 |
-| `uploadStagedFiles` | frontend/js/settings-wiring.js:2093 |
+| `textCounts` | frontend/js/settings-wiring.js:1704 |
+| `uploadStagedFiles` | frontend/js/settings-wiring.js:2092 |
 
 ### frontend/js/spaces-find.js (25)
 
@@ -4934,107 +4935,109 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `meaningVocab` | frontend/js/meaning.js:100 |
 | `meaningWords` | frontend/js/meaning.js:41 |
 
-### frontend/js/meetings.js (97)
+### frontend/js/meetings.js (99)
 
 | Name | File:line |
 |---|---|
-| `addMeetingMarker` | frontend/js/meetings.js:2365 |
-| `addRecordingMark` | frontend/js/meetings.js:1838 |
-| `binRecording` | frontend/js/meetings.js:2085 |
-| `closeMeetingRecorder` | frontend/js/meetings.js:955 |
-| `discardMeetingTake` | frontend/js/meetings.js:969 |
-| `editRecordingMark` | frontend/js/meetings.js:1853 |
-| `enhanceGain` | frontend/js/meetings.js:1199 |
-| `enhanceRecording` | frontend/js/meetings.js:1221 |
-| `fillMicDevices` | frontend/js/meetings.js:2520 |
-| `meetingAcceptOriginal` | frontend/js/meetings.js:1275 |
+| `addMeetingMarker` | frontend/js/meetings.js:2387 |
+| `addRecordingMark` | frontend/js/meetings.js:1860 |
+| `binRecording` | frontend/js/meetings.js:2107 |
+| `closeMeetingRecorder` | frontend/js/meetings.js:976 |
+| `discardMeetingTake` | frontend/js/meetings.js:990 |
+| `editRecordingMark` | frontend/js/meetings.js:1875 |
+| `enhanceGain` | frontend/js/meetings.js:1219 |
+| `enhanceRecording` | frontend/js/meetings.js:1241 |
+| `fillMicDevices` | frontend/js/meetings.js:2542 |
+| `meetingAcceptOriginal` | frontend/js/meetings.js:1295 |
 | `meetingActionRow` | frontend/js/meetings.js:265 |
 | `meetingAppendUndoable` | frontend/js/meetings.js:539 |
 | `meetingBinPair` | frontend/js/meetings.js:108 |
 | `meetingClockText` | frontend/js/meetings.js:625 |
-| `meetingContainerName` | frontend/js/meetings.js:638 |
+| `meetingContainerName` | frontend/js/meetings.js:646 |
 | `meetingCreateUndoable` | frontend/js/meetings.js:558 |
 | `meetingElapsedMs` | frontend/js/meetings.js:620 |
-| `meetingElapsedText` | frontend/js/meetings.js:633 |
-| `meetingEnhanceTake` | frontend/js/meetings.js:1259 |
+| `meetingElapsedText` | frontend/js/meetings.js:641 |
+| `meetingEnhanceTake` | frontend/js/meetings.js:1279 |
+| `meetingFocusFirstField` | frontend/js/meetings.js:950 |
 | `meetingFormRow` | frontend/js/meetings.js:89 |
-| `meetingLiveWords` | frontend/js/meetings.js:1068 |
-| `meetingLiveWordsStart` | frontend/js/meetings.js:1074 |
-| `meetingLiveWordsStop` | frontend/js/meetings.js:1089 |
+| `meetingLiveWords` | frontend/js/meetings.js:1088 |
+| `meetingLiveWordsStart` | frontend/js/meetings.js:1094 |
+| `meetingLiveWordsStop` | frontend/js/meetings.js:1109 |
 | `meetingNowValue` | frontend/js/meetings.js:18 |
-| `meetingPeaksSummary` | frontend/js/meetings.js:673 |
+| `meetingPeaksSummary` | frontend/js/meetings.js:687 |
 | `meetingPeopleField` | frontend/js/meetings.js:40 |
 | `meetingRecordInto` | frontend/js/meetings.js:573 |
-| `meetingRecordingStarted` | frontend/js/meetings.js:1039 |
-| `meetingRecordingStopped` | frontend/js/meetings.js:1098 |
+| `meetingRecordingStarted` | frontend/js/meetings.js:1059 |
+| `meetingRecordingStopped` | frontend/js/meetings.js:1118 |
 | `meetingRemind` | frontend/js/meetings.js:306 |
 | `meetingSaveTranscript` | frontend/js/meetings.js:519 |
-| `meetingSay` | frontend/js/meetings.js:1034 |
-| `meetingShowSaved` | frontend/js/meetings.js:1288 |
+| `meetingSay` | frontend/js/meetings.js:1054 |
+| `meetingShowSaved` | frontend/js/meetings.js:1308 |
+| `meetingStatusLine` | frontend/js/meetings.js:635 |
 | `meetingSummarise` | frontend/js/meetings.js:424 |
-| `meetingTakeAppend` | frontend/js/meetings.js:658 |
-| `meetingTakeBegin` | frontend/js/meetings.js:642 |
-| `meetingTakeDiscard` | frontend/js/meetings.js:1306 |
-| `meetingTakeFinish` | frontend/js/meetings.js:684 |
-| `meetingTick` | frontend/js/meetings.js:892 |
-| `meetingTranscribeTake` | frontend/js/meetings.js:1142 |
+| `meetingTakeAppend` | frontend/js/meetings.js:667 |
+| `meetingTakeBegin` | frontend/js/meetings.js:650 |
+| `meetingTakeDiscard` | frontend/js/meetings.js:1326 |
+| `meetingTakeFinish` | frontend/js/meetings.js:698 |
+| `meetingTick` | frontend/js/meetings.js:906 |
+| `meetingTranscribeTake` | frontend/js/meetings.js:1162 |
 | `meetingWhenText` | frontend/js/meetings.js:29 |
-| `micControlsInto` | frontend/js/meetings.js:2460 |
-| `micLevelInto` | frontend/js/meetings.js:2580 |
-| `nameMeetingMic` | frontend/js/meetings.js:2621 |
-| `nameRecordingSpeakers` | frontend/js/meetings.js:2066 |
-| `noteRecoveredRecordings` | frontend/js/meetings.js:1404 |
-| `openLiveCaptionsFrom` | frontend/js/meetings.js:2380 |
-| `openMeetingRecorder` | frontend/js/meetings.js:922 |
+| `micControlsInto` | frontend/js/meetings.js:2482 |
+| `micLevelInto` | frontend/js/meetings.js:2602 |
+| `nameMeetingMic` | frontend/js/meetings.js:2643 |
+| `nameRecordingSpeakers` | frontend/js/meetings.js:2088 |
+| `noteRecoveredRecordings` | frontend/js/meetings.js:1426 |
+| `openLiveCaptionsFrom` | frontend/js/meetings.js:2402 |
+| `openMeetingRecorder` | frontend/js/meetings.js:936 |
 | `openMeetingSheet` | frontend/js/meetings.js:334 |
 | `openNewMeeting` | frontend/js/meetings.js:131 |
-| `openRecordingTrim` | frontend/js/meetings.js:2232 |
-| `openRecordings` | frontend/js/meetings.js:1441 |
-| `openVoiceNote` | frontend/js/meetings.js:939 |
-| `playRecordingFrom` | frontend/js/meetings.js:1802 |
-| `recordingCardsRun` | frontend/js/meetings.js:2193 |
-| `recordingFacts` | frontend/js/meetings.js:1521 |
-| `recordingMarksFill` | frontend/js/meetings.js:1777 |
-| `recordingMenu` | frontend/js/meetings.js:2009 |
-| `recordingPaint` | frontend/js/meetings.js:1734 |
-| `recordingReady` | frontend/js/meetings.js:1628 |
-| `recordingRow` | frontend/js/meetings.js:1544 |
-| `recordingRunLine` | frontend/js/meetings.js:2202 |
-| `recordingShowLine` | frontend/js/meetings.js:1812 |
-| `recordingSpeed` | frontend/js/meetings.js:1650 |
-| `recordingTranscript` | frontend/js/meetings.js:1880 |
-| `recordingTranscriptFill` | frontend/js/meetings.js:1896 |
-| `recordingTranscriptNow` | frontend/js/meetings.js:1996 |
-| `recordingTranscriptState` | frontend/js/meetings.js:1531 |
-| `recordingTranscriptionEnded` | frontend/js/meetings.js:2167 |
-| `recordingTrimField` | frontend/js/meetings.js:2289 |
-| `recordingWav` | frontend/js/meetings.js:2333 |
-| `recordingWave` | frontend/js/meetings.js:1669 |
-| `recordingsEmpty` | frontend/js/meetings.js:1487 |
-| `removeRecordingMark` | frontend/js/meetings.js:1863 |
-| `renameRecording` | frontend/js/meetings.js:2076 |
-| `renameRecordingSpeaker` | frontend/js/meetings.js:2042 |
-| `renderRecordings` | frontend/js/meetings.js:1457 |
-| `resetMeetingUI` | frontend/js/meetings.js:900 |
-| `saveMeetingDocument` | frontend/js/meetings.js:1357 |
-| `saveMeetingNote` | frontend/js/meetings.js:1393 |
-| `saveRecordingMarks` | frontend/js/meetings.js:1825 |
-| `saveVoiceNoteText` | frontend/js/meetings.js:1411 |
-| `setMeetingState` | frontend/js/meetings.js:851 |
-| `showMeetingRecorder` | frontend/js/meetings.js:944 |
-| `startMeetingWave` | frontend/js/meetings.js:712 |
-| `startRecordingTranscription` | frontend/js/meetings.js:2132 |
-| `stopMeetingTimer` | frontend/js/meetings.js:832 |
-| `stopMeetingTranscription` | frontend/js/meetings.js:1300 |
-| `stopRecordingTranscription` | frontend/js/meetings.js:2139 |
-| `syncMicSelects` | frontend/js/meetings.js:2532 |
-| `syncRecordingDock` | frontend/js/meetings.js:877 |
-| `testMicrophone` | frontend/js/meetings.js:2541 |
-| `toggleMeetingPause` | frontend/js/meetings.js:1329 |
-| `toggleMeetingRecording` | frontend/js/meetings.js:986 |
-| `transcribeRecording` | frontend/js/meetings.js:2101 |
-| `trimRecording` | frontend/js/meetings.js:2309 |
-| `watchRecordingTranscription` | frontend/js/meetings.js:2148 |
+| `openRecordingTrim` | frontend/js/meetings.js:2254 |
+| `openRecordings` | frontend/js/meetings.js:1463 |
+| `openVoiceNote` | frontend/js/meetings.js:960 |
+| `playRecordingFrom` | frontend/js/meetings.js:1824 |
+| `recordingCardsRun` | frontend/js/meetings.js:2215 |
+| `recordingFacts` | frontend/js/meetings.js:1543 |
+| `recordingMarksFill` | frontend/js/meetings.js:1799 |
+| `recordingMenu` | frontend/js/meetings.js:2031 |
+| `recordingPaint` | frontend/js/meetings.js:1756 |
+| `recordingReady` | frontend/js/meetings.js:1650 |
+| `recordingRow` | frontend/js/meetings.js:1566 |
+| `recordingRunLine` | frontend/js/meetings.js:2224 |
+| `recordingShowLine` | frontend/js/meetings.js:1834 |
+| `recordingSpeed` | frontend/js/meetings.js:1672 |
+| `recordingTranscript` | frontend/js/meetings.js:1902 |
+| `recordingTranscriptFill` | frontend/js/meetings.js:1918 |
+| `recordingTranscriptNow` | frontend/js/meetings.js:2018 |
+| `recordingTranscriptState` | frontend/js/meetings.js:1553 |
+| `recordingTranscriptionEnded` | frontend/js/meetings.js:2189 |
+| `recordingTrimField` | frontend/js/meetings.js:2311 |
+| `recordingWav` | frontend/js/meetings.js:2355 |
+| `recordingWave` | frontend/js/meetings.js:1691 |
+| `recordingsEmpty` | frontend/js/meetings.js:1509 |
+| `removeRecordingMark` | frontend/js/meetings.js:1885 |
+| `renameRecording` | frontend/js/meetings.js:2098 |
+| `renameRecordingSpeaker` | frontend/js/meetings.js:2064 |
+| `renderRecordings` | frontend/js/meetings.js:1479 |
+| `resetMeetingUI` | frontend/js/meetings.js:914 |
+| `saveMeetingDocument` | frontend/js/meetings.js:1379 |
+| `saveMeetingNote` | frontend/js/meetings.js:1415 |
+| `saveRecordingMarks` | frontend/js/meetings.js:1847 |
+| `saveVoiceNoteText` | frontend/js/meetings.js:1433 |
+| `setMeetingState` | frontend/js/meetings.js:865 |
+| `showMeetingRecorder` | frontend/js/meetings.js:965 |
+| `startMeetingWave` | frontend/js/meetings.js:726 |
+| `startRecordingTranscription` | frontend/js/meetings.js:2154 |
+| `stopMeetingTimer` | frontend/js/meetings.js:846 |
+| `stopMeetingTranscription` | frontend/js/meetings.js:1320 |
+| `stopRecordingTranscription` | frontend/js/meetings.js:2161 |
+| `syncMicSelects` | frontend/js/meetings.js:2554 |
+| `syncRecordingDock` | frontend/js/meetings.js:891 |
+| `testMicrophone` | frontend/js/meetings.js:2563 |
+| `toggleMeetingPause` | frontend/js/meetings.js:1349 |
+| `toggleMeetingRecording` | frontend/js/meetings.js:1007 |
+| `transcribeRecording` | frontend/js/meetings.js:2123 |
+| `trimRecording` | frontend/js/meetings.js:2331 |
+| `watchRecordingTranscription` | frontend/js/meetings.js:2170 |
 
 ### frontend/js/mermaid-draw.js (23)
 
@@ -20177,7 +20180,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13079)
+## Tests (13086)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21219,6 +21222,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_recency_questions.py | 9 |
 | tests/test_recent_questions_surface.py | 7 |
 | tests/test_recognise.py | 18 |
+| tests/test_recording_is_unsaved_work_1029.py | 7 |
 | tests/test_recordings.py | 16 |
 | tests/test_recordings_background.py | 4 |
 | tests/test_recordings_library.py | 25 |

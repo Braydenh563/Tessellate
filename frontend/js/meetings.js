@@ -193,7 +193,7 @@ async function openNewMeeting({ title = "", notes = "", then = null } = {}) {
       create.className = "accent small";
       create.id = "meeting-new-create";
       setLabel(create, "ph:users-three Start the meeting");
-      //: `record`: "Start and record" (INBOX 704: the redesign took the
+      //: `record`: "Start and open recorder" (INBOX 704: the redesign took the
       //: recorder's tile away and left recording two levels deep): the
       //: meeting is made, then the recorder opens writing into its Notes.
       const make = async (record = false) => {
@@ -240,8 +240,8 @@ async function openNewMeeting({ title = "", notes = "", then = null } = {}) {
       recordButton.type = "button";
       recordButton.className = "ghost small";
       recordButton.id = "meeting-new-record";
-      recordButton.title = "Start the meeting and transcribe it as it happens, on this computer";
-      setLabel(recordButton, "ph:microphone Start and record");
+      recordButton.title = "Start the meeting and open the recorder, writing into its Notes";
+      setLabel(recordButton, "ph:microphone Start and open recorder");
       recordButton.addEventListener("click", () => make(true));
       create.addEventListener("click", () => make());
       for (const input of [titleInput, whenInput]) {
@@ -614,7 +614,7 @@ let meetingStartedAt = 0;
 //: never refuses: with no Whisper add-on the audio is kept and the sheet says
 //: how long it is; transcription is offered only when `/voice/status` says
 //: the add-on is there. One object, not more top-level lets.
-const meetingTake = { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0 };
+const meetingTake = { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0, bytes: 0 };
 
 //: How long the audio is, in ms: the clock stops while paused.
 function meetingElapsedMs() {
@@ -630,6 +630,14 @@ function meetingClockText(ms) {
   return h ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
+//: What the status line says while a take is live: the state and what the
+//: server really holds, never a fixed claim (audit 1029 X3).
+function meetingStatusLine() {
+  const b = meetingTake.bytes;
+  const saved = b ? `${b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB"} saved so far.` : "Nothing saved yet.";
+  return meetingRecorder?.state === "paused" ? `Paused. ${saved} Resume to keep recording, or stop to transcribe.` : `Recording. ${saved}`;
+}
+
 function meetingElapsedText() {
   return meetingClockText(Date.now() - meetingStartedAt);
 }
@@ -640,7 +648,7 @@ function meetingContainerName(mime) {
 }
 
 async function meetingTakeBegin(recorder) {
-  Object.assign(meetingTake, { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0 });
+  Object.assign(meetingTake, { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0, bytes: 0 });
   const made = await apiJson("/recordings", {
     method: "POST",
     body: JSON.stringify({
@@ -652,7 +660,8 @@ async function meetingTakeBegin(recorder) {
   meetingTake.id = made.id;
 }
 
-const MEETING_CHUNK_MS = 10000;
+//: A slice every 2 s: a crash loses at most that, not ten seconds (audit 1029 X3).
+const MEETING_CHUNK_MS = 2000;
 
 //: One slice of audio onto the object, in order: each waits for the last.
 function meetingTakeAppend(blob) {
@@ -663,6 +672,11 @@ function meetingTakeAppend(blob) {
   form.append("duration_ms", String(Math.round(meetingElapsedMs())));
   meetingTake.chain = meetingTake.chain
     .then(() => api.upload(`/recordings/${id}/chunk`, form))
+    .then((r) => r.json())
+    .then((saved) => {
+      meetingTake.bytes = saved.size_bytes || 0;
+      if (meetingRecorder) meetingSay(meetingStatusLine());
+    })
     .catch((error) => {
       meetingTake.failed = error;
     });
@@ -928,7 +942,14 @@ async function openMeetingRecorder() {
   $("meeting-overlay").classList.remove("meeting-into", "voice-note");
   resetMeetingUI();
   $("meeting-overlay").classList.remove("hidden");
-  $("meeting-record").focus();
+  meetingFocusFirstField();
+}
+
+//: First focus is the first field you can type in, never an action: Record
+//: focused meant a typed space started the microphone (audit 1029 X1).
+function meetingFocusFirstField() {
+  const fields = $("meeting-overlay").querySelectorAll("input:not([type=hidden]), select, textarea");
+  [...fields].find((el) => el.getClientRects().length)?.focus();
 }
 
 //: **Voice note** (WORLD_CLASS_PLAN 28.5 row 3; the owner: "meeting notes
@@ -944,7 +965,7 @@ function openVoiceNote() {
 function showMeetingRecorder() {
   $("meeting-overlay").classList.remove("hidden");
   syncRecordingDock();
-  $("meeting-record").focus();
+  meetingFocusFirstField();
 }
 
 //: Closed while recording, the recording goes on in the dock (V1): a live
@@ -991,10 +1012,9 @@ async function toggleMeetingRecording() {
     // up to a second stale, stopped while paused it is already right.
     if (meetingRecorder.state === "recording") $("meeting-timer").textContent = meetingElapsedText();
     meetingTake.ms = Math.round(meetingElapsedMs());
-    // A paused recorder holds what it has heard so far; asking for it before
-    // the stop makes the last chunk arrive on every engine, not only the ones
-    // that flush on a stop from paused (INBOX 708: Stop from Paused).
-    if (meetingRecorder.state === "paused") meetingRecorder.requestData();
+    // Asking for what it has heard before the stop makes the last chunk arrive
+    // on every engine, paused or not (INBOX 708: Stop from Paused).
+    if (meetingRecorder.state === "paused" || meetingRecorder.state === "recording") meetingRecorder.requestData();
     meetingRecorder.stop();
     return;
   }
@@ -1025,8 +1045,8 @@ async function toggleMeetingRecording() {
     if (!recorder.discarded) meetingTakeAppend(e.data);
   });
   recorder.addEventListener("stop", () => meetingRecordingStopped(recorder, button));
-  //: A slice every 10 s, each appended to the object as it arrives (row 5):
-  //: a tab killed at 2:00 keeps at least 1:50.
+  //: A slice every 2 s, each appended to the object as it arrives (row 5):
+  //: a tab killed at 2:00 keeps at least 1:58.
   recorder.start(MEETING_CHUNK_MS);
   meetingRecordingStarted(button);
 }
@@ -1052,7 +1072,7 @@ function meetingRecordingStarted(button) {
     stopWave();
   };
   setMeetingState("recording");
-  meetingSay("Recording. Saved as it goes.");
+  meetingSay(meetingStatusLine());
   meetingLiveWordsStart();
 }
 
@@ -1331,12 +1351,14 @@ function toggleMeetingPause() {
   const button = $("meeting-pause");
   if (meetingRecorder.state === "recording") {
     meetingRecorder.pause();
+    //: The audio since the last slice is sent now, not lost if the tab dies while paused.
+    meetingRecorder.requestData();
     if (meetingLive.on) holdLiveCaptions(true);
     meetingPausedAt = Date.now();
     stopMeetingTimer();
     setLabel(button, "ph:play Resume");
     setMeetingState("paused");
-    $("meeting-status").textContent = "Paused. Resume to keep recording, or stop to transcribe.";
+    meetingSay(meetingStatusLine());
   } else if (meetingRecorder.state === "paused") {
     meetingRecorder.resume();
     if (meetingLive.on) holdLiveCaptions(false);
@@ -1346,7 +1368,7 @@ function toggleMeetingPause() {
     meetingTimerHandle = setInterval(meetingTick, 1000);
     setLabel(button, "ph:pause Pause");
     setMeetingState("recording");
-    $("meeting-status").textContent = "Recording.";
+    meetingSay(meetingStatusLine());
   }
 }
 
@@ -1511,7 +1533,7 @@ function recordingsEmpty(kind) {
     const mic = document.createElement("i");
     mic.className = "ph ph-microphone ph-lead";
     mic.setAttribute("aria-hidden", "true");
-    record.append(mic, " Record");
+    record.append(mic, " Open recorder");
     record.addEventListener("click", () => openVoiceNote());
     li.appendChild(record);
   }
