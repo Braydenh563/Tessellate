@@ -25,7 +25,9 @@ def test_opening_settings_no_longer_draws_the_help_topics() -> None:
 
 def test_showing_help_draws_them() -> None:
     show = _body("showSettingsSection")
-    assert 'name === "help" && typeof renderHelpTopics === "function"' in show
+    # `window.x?.()`, not a typeof guard: the guard count only falls
+    # (test_global_scope_ratchet). The intent is unchanged.
+    assert 'if (name === "help") window.renderHelpTopics?.();' in show
 
 
 def test_the_first_search_draws_them_and_asks_again() -> None:

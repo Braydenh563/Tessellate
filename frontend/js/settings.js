@@ -122,7 +122,8 @@ function showSettingsSection(name) {
   if (name === "help") renderTourReplay();
   //: Help's topics (about 2,100 nodes, from the Guide's own table, settings-find.js) are
   //: drawn when Help is shown or Settings is searched (filterSettings), not on every open.
-  if (name === "help" && typeof renderHelpTopics === "function") renderHelpTopics();
+  //: settings-find.js is awaited by openSettingsModal; `?.` covers a bundle that failed to load.
+  if (name === "help") window.renderHelpTopics?.();
   //: Reported: reopening Settings lands on Models "but the scroll doesn't
   //: reset", so the first section opened halfway down. The section's own
   //: scrolling ancestor goes back to the top whenever the section changes.
@@ -595,8 +596,8 @@ function filterSettings(term) {
   }
 
   //: The topics are findable settings too: draw them on the first query, then ask again.
-  if ($("help-topics")?.hasAttribute("aria-busy") && typeof renderHelpTopics === "function") {
-    renderHelpTopics()?.then(() => {
+  if ($("help-topics")?.hasAttribute("aria-busy")) {
+    window.renderHelpTopics?.()?.then(() => {
       if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
     });
   }
