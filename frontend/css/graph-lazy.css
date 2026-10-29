@@ -520,3 +520,13 @@
   min-width: 0;
   white-space: nowrap;
 }
+
+/* The match count beside the graph's search box (audit 1029 G11): a quiet
+   line that keeps its place, so the dock does not shift as it fills. */
+.dock[data-dock-name="graph"] .graph-search-count {
+  min-width: 5.5rem;
+  white-space: nowrap;
+}
+.dock[data-dock-name="graph"] .graph-search-count:empty {
+  min-width: 0;
+}

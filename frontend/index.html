@@ -3885,6 +3885,8 @@ Link to another note with [[its first few words]]."></textarea>
               <input id="graph-search" data-search-scope="notes" class="search-field-input" type="search" placeholder="Highlight notes…"
                 aria-label="Highlight matching notes in the graph">
             </div>
+            <!-- Said in words and politely (audit 1029 G11); Enter and Shift+Enter walk the matches, Esc clears. -->
+            <span id="graph-search-count" class="graph-search-count muted text-xs" role="status" aria-live="polite"></span>
             <button id="graph-highlight-clear" class="ghost small hidden" title="Clear the similar-notes highlight"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear highlight</button>
             <button id="graph-focus-clear" class="ghost small hidden" title="Exit focus mode and return to the global map"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Exit focus</button>
           </div>
