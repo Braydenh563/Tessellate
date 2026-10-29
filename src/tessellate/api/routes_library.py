@@ -41,7 +41,7 @@ from tessellate.core.database import (
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
-from tessellate.entry.manager import extract_title, join_blocks, remove_title, strip_inline_markdown
+from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 
 router = APIRouter(tags=["library"])
@@ -696,7 +696,7 @@ def _notes(session: Session, q: str = "") -> list[dict]:
                 # than the earlier "Meeting Notes" sub-tab's `tag:meeting`
                 # in the search box, which matched nothing: this endpoint
                 # never sent tags at all, so it always showed an empty grid.
-                "tags": json.loads(entry.tags) if entry.tags else [],
+                "tags": shown_tags(entry),
                 # Never for a private note, hiding the text but showing a
                 # thumbnail of what it's a photo of would be the same
                 # encryption bypass showing the preview text would be.

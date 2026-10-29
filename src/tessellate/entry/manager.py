@@ -1625,7 +1625,10 @@ def all_tags(session: Session) -> dict[str, int]:
     notebook version gets the cached dict.
     """
     _ensure_tag_cache_reset_registered()
-    fingerprint = _tag_fingerprint(session)
+    # Whether the vault is open is part of what the counts say: a locked
+    # private note's tags are not counted (INBOX 1437), so the cache must not
+    # carry an unlocked answer across a lock.
+    fingerprint = (_tag_fingerprint(session), note_is_sealed(True))
     with _tag_cache.lock:
         if _tag_cache.entry is not None and _tag_cache.entry[0] == fingerprint:
             return _tag_cache.entry[1]
@@ -1639,8 +1642,12 @@ def all_tags(session: Session) -> dict[str, int]:
     # 20k+ notes went on materialising entities it then discarded). The
     # fingerprint cache above keeps this off the hot path most of the time;
     # this makes the miss itself cheap instead of merely rare.
+    sealed = note_is_sealed(True)
     for raw in session.scalars(
-        select(Entry.tags).where(Entry.is_deleted == False)  # noqa: E712
+        select(Entry.tags).where(
+            Entry.is_deleted == False,  # noqa: E712
+            *([Entry.is_private == False] if sealed else []),  # noqa: E712
+        )
     ):
         for tag in tags_from_json(raw):
             counts[tag] = counts.get(tag, 0) + 1
@@ -2389,6 +2396,23 @@ def tags_from_json(tags_json: str | None) -> list[str]:
 def entry_tags(entry: Entry) -> list[str]:
     """Tags are stored as a JSON string; hand callers a real list."""
     return tags_from_json(entry.tags)
+
+
+def note_is_sealed(is_private: object) -> bool:
+    """True when a private note's words must stay hidden right now: the note
+    is private and the vault is locked. The one vault gate for the read
+    surfaces that are not the note's text (tags, previews, word counts,
+    export, history; INBOX 1437), so each asks here instead of re-deriving it."""
+    from tessellate.core import vault
+
+    return bool(is_private) and vault.key() is None
+
+
+def shown_tags(entry: Entry) -> list[str]:
+    """`entry_tags` for a response: a private note's tags are as private as
+    its text, so none while the vault is locked. Writers keep `entry_tags`,
+    which must see the stored list (a locked rename must not drop them)."""
+    return [] if note_is_sealed(getattr(entry, "is_private", False)) else tags_from_json(entry.tags)
 
 
 # --- category management (rename / delete) -----------------------------------

@@ -1157,14 +1157,19 @@ function blobToBase64(blob) {
 //: file (tests/test_locked_downloads.py). The server's own
 //: `Content-Disposition` names the file when it sends one, since it knows the
 //: real extension; `fallbackName` covers a route that does not.
-async function downloadFromApi(path, fallbackName) {
+async function downloadFromApi(path, fallbackName, unlocked = false) {
   try {
     const response = await api(path);
     const disposition = response.headers.get("Content-Disposition") || "";
     const named = /filename="([^"]+)"/i.exec(disposition);
     await saveFile(named ? named[1] : fallbackName, await response.blob());
   } catch (error) {
-    if (!error?.isLockout) toast(error.message || "Couldn't download that.", true);
+    //: A locked private note answers 409 "Unlock first" (INBOX 1437): ask for
+    //: the password through the usual prompt, then download once.
+    if (!unlocked && error?.detail === "Unlock first" && (await ensureVaultOpen())) {
+      return downloadFromApi(path, fallbackName, true);
+    }
+    if (!error?.isLockout && error?.detail !== "Unlock first") toast(error.message || "Couldn't download that.", true);
   }
 }
 

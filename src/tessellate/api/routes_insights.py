@@ -440,7 +440,7 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
             "id": e.id,
             "content": e.content or "",
             "created_at": e.created_at.date().isoformat() if e.created_at else "",
-            "tags": manager.entry_tags(e),
+            "tags": manager.shown_tags(e),
             "category": "" if cats.get(e.category_id, "").lower().startswith("uncategori") else cats.get(e.category_id, ""),
         }
         for e in rows

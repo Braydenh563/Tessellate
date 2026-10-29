@@ -244,7 +244,7 @@ def _place_notes(
                 "phrase": mention.phrase if mention else "",
                 "written_at": entry.created_at.isoformat(),
                 "category": categories.get(entry.category_id, manager.UNCATEGORISED),
-                "tags": manager.entry_tags(entry),
+                "tags": manager.shown_tags(entry),
                 # Only read by `_thread_bands` (group=thread): carried for
                 # every note regardless of the chosen group so switching to
                 # "Thread" never needs a second fetch.

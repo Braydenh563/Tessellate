@@ -2723,7 +2723,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # search index either: `backup.strip_leftovers`.)
             "content": manager.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
-            "tags": manager.entry_tags(e),
+            "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
             # Said, so a note decrypted for the export is not mistaken for an
             # ordinary one by whatever reads the file next (SEC-14).
@@ -3409,7 +3409,7 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
                 e.id,
                 manager.readable_content(e),
                 category_names.get(e.category_id, manager.UNCATEGORISED),
-                "|".join(manager.entry_tags(e)),
+                "|".join(manager.shown_tags(e)),
                 e.ai_confidence,
                 e.created_at.isoformat(),
                 e.is_deleted,
