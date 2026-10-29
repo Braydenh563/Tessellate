@@ -923,8 +923,17 @@ function flashEntry(id) {
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
     if (!card) return toast("No such note.");
+    //: A long way is a jump, not a glide: the Notes list is windowed
+    //: (notes-list.js), and every row built on the way draws at its own
+    //: height, so a smooth scroll aimed at the card's first place ended
+    //: thousands of pixels short on a phone. Then it is centred again once
+    //: the rows round it are built.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    const far = Math.abs(card.getBoundingClientRect().top) > 2 * window.innerHeight;
+    card.scrollIntoView({ behavior: reduced || far ? "auto" : "smooth", block: "center" });
+    if (far) requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelector(`#entry-list li[data-id="${id}"]`)?.scrollIntoView({ block: "center" });
+    }));
     // Restart the animation even when the same note is jumped to twice in a
     // row: without the reflow the class is already there and nothing replays.
     card.classList.remove("flash");

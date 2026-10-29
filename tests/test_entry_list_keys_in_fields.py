@@ -35,6 +35,8 @@ const list = {
 };
 const $ = () => list;
 const entryListItems = (l) => l.querySelectorAll();
+// The windowed list builds the row it moves to (`noteWindow.fill`); these rows are built.
+const noteWindow = { fill: (li) => li };
 const allEntries = [];
 let editingId = null;
 function openNoteEditor() { calls.push('edit'); }

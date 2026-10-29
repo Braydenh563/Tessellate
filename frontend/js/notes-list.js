@@ -1852,127 +1852,130 @@ function sortEntries(entries) {
   return [...entries].sort((a, b) => byPinned(a, b) || cmp(a, b));
 }
 
-// --- incremental list rendering (ROADMAP §85.4 items 3 and 4) ---------------
-//
-// **The problem this solves, measured rather than assumed.** Four of this
-// app's lists: the Notes list, the Library grid, the Timeline, the log
-// console: built one DOM node per record for the *entire* collection, with
-// no cap and no windowing. At 1,501 notes `renderEntries()` took ~533ms, and
-// it re-runs on every search keystroke, sort change, filter and save.
-//
-// **Why chunk-on-scroll rather than true virtualisation.** Real
-// virtualisation (absolute positioning against a scroll offset) needs to know
-// each row's height before it renders one. Every list here has variable
-// heights: a note card grows with its text, its tags, its attachments and
-// whether its inline actions are open, so a virtualiser would either need
-// measurement passes that cost what it saves, or fixed heights the design
-// does not have. Rendering in chunks as the end of the list approaches keeps
-// the DOM proportional to what has been *scrolled past* rather than to the
-// notebook, needs no height information at all, and leaves the list one
-// continuous scroll rather than turning it into pages, which is the
-// distinction BACKLOG §77 draws and deliberately asks for.
-//
-// **The honest trade:** the browser's own Ctrl+F cannot find text in a chunk
-// that has not rendered yet. That is a real loss, and it is why `initial` is
-// generous rather than minimal, a screenful and change is always present , 
-// and why it is applied to lists that have their own search box sitting
-// directly above them. It is not applied anywhere that the browser's find is
-// the only way through.
-//
-// `root: null` (the viewport) rather than the scroll container: an element
-// inside the scrolled-away part of a *nested* scroller is not intersecting
-// the viewport either, so one observer is correct for both a page-level and a
-// container-level scroll, without having to find which one this list is in.
-const listWindows = new WeakMap();
+//: **The Notes list is windowed** (audit 1029 N9). `renderIncrementally` (now library.js)
+//: only ever added: a list scrolled to its end held every card, 300 notes
+//: 12,126 elements, and each redraw rebuilt sixty or more. Here every note
+//: is an empty `<li class="row-shell">` holding its place (its id, its
+//: index, the height it last drew at), and only the rows within
+//: `NOTE_WINDOW_MARGIN` of the scroller's window are built; a built row that
+//: leaves the margin becomes a shell again. The shells keep keyboard order
+//: (`entryListItems` walks them, and the keyboard builds the row it moves
+//: to, `noteWindow.fill`) and the selection lives in `selectedIds`, so neither
+//: depends on what is built. Built rows say where they are in the whole list
+//: (`aria-posinset`, `aria-setsize`), the shells are hidden from screen
+//: readers. Never hollowed: the row being edited, holding focus, an open
+//: disclosure or an open menu. A redraw builds the rows that were built
+//: before it (the same place in the list), the note being jumped to or
+//: edited, or the first screenful.
+const NOTE_WINDOW_MARGIN = "1200px 0px";
+const NOTE_WINDOW_FIRST = 12;
+const NOTE_WINDOW_BATCH = 6;
+const NOTE_WINDOW_KEEP = 30;
+const noteWindow = { observer: null, fill: (li) => li, timer: 0, heights: new Map(), mode: "", slot: new WeakMap() };
 
-function renderIncrementally(container, items, buildItem, options = {}) {
-  //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
-  //: carry on next frame while the sentinel is still near, instead of forty
-  //: items in one go. The Library's forty cards measured 42 to 83ms a chunk
-  //: on a thousand-note seed, six frames dropped each time a chunk landed
-  //: mid-scroll. The observer alone cannot drive this, because it only
-  //: fires when the sentinel's intersection *changes*: a sentinel that is
-  //: still near after a small chunk never fires again. So `near` keeps the
-  //: observer's last answer and the pump runs on frames until it goes false.
-  const at = noteEngine.jumpId == null ? -1 : items.findIndex((x) => (x.id ?? x[0].id) === noteEngine.jumpId);
-  const { initial = Math.max(60, at + 1), chunk = 40, afterChunk, budgetMs = 0 } = options;
+function notesScroller(list) {
+  for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el;
+  }
+  return null;
+}
 
-  // Tear down the previous run first. Without this a re-render (a keystroke in
-  // the search box) leaves the old observer alive, still holding the old
-  // items, still appending them into a container that has moved on, the
-  // "listener added without removal" shape, and the reason this is a
-  // WeakMap rather than a local.
-  listWindows.get(container)?.disconnect();
-  listWindows.delete(container);
-
-  const paint = (from, to) => {
-    const fragment = document.createDocumentFragment();
-    for (let i = from; i < to; i++) fragment.appendChild(buildItem(items[i], i));
-    container.appendChild(fragment);
+function renderWindowed(list, items, buildItem, { keep, afterChunk, settled } = {}) {
+  noteWindow.observer?.disconnect();
+  if (noteWindow.mode !== notesViewMode) noteWindow.heights.clear();
+  noteWindow.mode = notesViewMode;
+  const size = String(items.length);
+  const guess = notesViewMode === "rows" ? 50 : 132;
+  const shellFor = (item, i, from = null) => {
+    const li = document.createElement("li");
+    li.dataset.id = item[0].id;
+    li.className = "row-shell";
+    li.setAttribute("aria-hidden", "true");
+    //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
+    li.style.cssText = `visibility:hidden;height:${noteWindow.heights.get(item[0].id) || guess}px`;
+    li.tabIndex = from ? from.tabIndex : -1;
+    for (const name of ["rail-subject", "flash"]) if (from?.classList.contains(name)) li.classList.add(name);
+    noteWindow.slot.set(li, i);
+    return li;
   };
-
-  paint(0, Math.min(initial, items.length));
-  afterChunk?.();
-  if (items.length <= initial) return;
-
-  let rendered = initial;
-  // A zero-height marker after the last painted item. It is the *list's* own
-  // last child rather than a sibling of the container, so it moves down as
-  // chunks land and it inherits whatever scroller the list is in.
-  const sentinel = document.createElement("li");
-  sentinel.className = "list-window-sentinel";
-  sentinel.setAttribute("aria-hidden", "true");
-  container.appendChild(sentinel);
-
-  let near = false;
-  let pumping = 0;
-  let done = false;
-  const buildNext = () => {
-    const next = Math.min(rendered + chunk, items.length);
-    const started = performance.now();
-    // Insert *before* the sentinel so it stays last and keeps observing.
-    const fragment = document.createDocumentFragment();
-    let i = rendered;
-    for (; i < next; i++) {
-      if (budgetMs && i > rendered && performance.now() - started > budgetMs) break;
-      fragment.appendChild(buildItem(items[i], i));
+  const build = (i, from = null) => {
+    const li = buildItem(items[i], i);
+    li.setAttribute("aria-posinset", String(i + 1));
+    li.setAttribute("aria-setsize", size);
+    noteWindow.slot.set(li, i);
+    if (from) {
+      li.tabIndex = from.tabIndex;
+      for (const name of ["rail-subject", "flash"]) if (from.classList.contains(name)) li.classList.add(name);
     }
-    container.insertBefore(fragment, sentinel);
-    rendered = i;
-    afterChunk?.();
-    if (rendered >= items.length) {
-      done = true;
-      observer.disconnect();
-      listWindows.delete(container);
-      sentinel.remove();
+    return li;
+  };
+  const stays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
+    || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
+
+  const fragment = document.createDocumentFragment();
+  const first = keep.size ? 0 : Math.min(NOTE_WINDOW_FIRST, items.length);
+  items.forEach((item, i) => fragment.appendChild(i < first || keep.has(item[0].id) ? build(i) : shellFor(item, i)));
+  list.appendChild(fragment);
+
+  //: Rows are emptied once the scroll settles, never on the frame they
+  //: left, and only past `NOTE_WINDOW_KEEP` rows from the window: building a
+  //: card is mostly the browser styling its forty elements, so a row read a
+  //: moment ago and scrolled back to is kept rather than built again. The
+  //: count chips (`settled`) are asked for then too, once per pause.
+  const near = new Set();
+  const settle = () => {
+    if (noteWindow.observer !== observer || !near.size) return;
+    const lo = Math.min(...near) - NOTE_WINDOW_KEEP;
+    const hi = Math.max(...near) + NOTE_WINDOW_KEEP;
+    for (const target of list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")) {
+      const i = noteWindow.slot.get(target);
+      if (i === undefined || (i >= lo && i <= hi) || stays(target)) continue;
+      const li = shellFor(items[i], i, target);
+      target.replaceWith(li);
+      observer.observe(li);
     }
+    settled?.();
   };
-  const pump = () => {
-    pumping = 0;
-    if (done || !near || listWindows.get(container) !== observer) return;
-    buildNext();
-    if (!done && near) pumping = requestAnimationFrame(pump);
-  };
-  const observer = new IntersectionObserver(
-    (entries) => {
-      near = entries.some((entry) => entry.isIntersecting);
-      if (!near) return;
-      if (!budgetMs) {
-        buildNext();
-        return;
+  const observer = new IntersectionObserver((seen) => {
+    if (noteWindow.observer !== observer) return;
+    for (const { target, isIntersecting, boundingClientRect, rootBounds } of seen) {
+      const i = noteWindow.slot.get(target);
+      if (i === undefined || target.parentElement !== list) continue;
+      if (isIntersecting) near.add(i);
+      else near.delete(i);
+      if (!target.classList.contains("row-shell")) {
+        if (boundingClientRect.height) noteWindow.heights.set(items[i][0].id, boundingClientRect.height);
+      } else if (isIntersecting) {
+        //: The rows beyond it come with it, further from the window: a few
+        //: rows in one frame cost less than a row in every frame of a scroll.
+        const run = [target];
+        const step = rootBounds && boundingClientRect.top < rootBounds.top ? "previousElementSibling" : "nextElementSibling";
+        for (let el = target[step]; el?.classList.contains("row-shell") && run.length < NOTE_WINDOW_BATCH; el = el[step]) run.push(el);
+        for (const shell of run) fill(shell);
       }
-      if (!pumping) pump();
-    },
-    // Start the next chunk while the sentinel is still a screen away, so the
-    // list refills before the user reaches the bottom rather than after.
-    { root: null, rootMargin: "600px 0px" }
-  );
-  observer.observe(sentinel);
-  listWindows.set(container, observer);
+    }
+    clearTimeout(noteWindow.timer);
+    noteWindow.timer = setTimeout(settle, 300);
+  }, { root: notesScroller(list), rootMargin: NOTE_WINDOW_MARGIN });
+  noteWindow.observer = observer;
+  //: A shell is hidden, so it cannot take focus: the keyboard (Home, End,
+  //: the arrows) builds the row it is moving to first (`noteWindow.fill`).
+  function fill(shell) {
+    const at = noteWindow.slot.get(shell);
+    if (at === undefined || !shell.classList.contains("row-shell") || shell.parentElement !== list) return shell;
+    const li = build(at, shell);
+    shell.replaceWith(li);
+    entryCardControls(li, li.tabIndex === 0);
+    observer.observe(li);
+    return li;
+  }
+  noteWindow.fill = fill;
+  for (const li of list.querySelectorAll(":scope > li[data-id]")) if (noteWindow.slot.has(li)) observer.observe(li);
+  afterChunk?.();
 }
 
 // BACKLOG §77 item 1, the user-facing page-size control, deliberately kept
-// separate from §86's scroll-chunking (renderIncrementally above): that stays
+// separate from §86's scroll-chunking (`renderIncrementally`, library.js): that stays
 // one continuous scroll under "All notes" (the default, and this function's
 // no-op path). A numeric size instead slices whatever list renderEntries was
 // about to paint down to one page and updates the Prev/Next bar.
@@ -2151,53 +2154,6 @@ function setNotesViewMode(mode) {
 //: coming back to a tidy one.
 const expandedRows = new Set();
 
-function toggleRowExpanded(id) {
-  const open = !expandedRows.has(id);
-  if (open) {
-    expandedRows.add(id);
-    notesRailId = id;
-  } else {
-    expandedRows.delete(id);
-    //: Closing the note the rail is about closes the rail's subject with it:
-    //: a column describing a note nobody has open is the chrome-with-nothing
-    //: the local map already learned not to be.
-    if (notesRailId === id) notesRailId = null;
-  }
-  const li = document.querySelector(`#entry-list > li[data-id="${id}"]`);
-  if (!li) return renderEntries();
-  //: **In place, and animated** (INBOX 676, the owner: "the dropdown and
-  //: collapse should be a smooth animation adn not sudden and janky"). This
-  //: was a full list redraw: a new row in one frame (49.6 to 237.8px) and a
-  //: new chevron, so its glyph could not turn. The row is the same DOM open
-  //: or closed (CSS hides what a closed row does not show), so the class
-  //: alone is the change. The height runs from where the row *is*, read
-  //: before the previous animation is cancelled, so a second press mid-way
-  //: turns back from there instead of snapping; what the change reveals
-  //: fades in over the same time. `--ui-slow` is the Interface animations
-  //: switch's token: 0s with it off, and then nothing animates.
-  const from = li.getBoundingClientRect().height;
-  const parts = [...li.querySelectorAll(":scope > :not(.row-expand, .entry-title)")];
-  const seen = parts.map((el) => (el.getAnimations().length ? +getComputedStyle(el).opacity : 0));
-  for (const el of [li, ...parts]) for (const a of el.getAnimations()) if (a.id === "row") a.cancel();
-  li.classList.toggle("row-expanded", open);
-  const button = li.querySelector(":scope > .row-expand");
-  if (button) {
-    button.title = open ? "Show less of this note" : "Show the whole note here";
-    button.setAttribute("aria-label", button.title);
-    button.setAttribute("aria-expanded", String(open));
-  }
-  const to = li.getBoundingClientRect().height;
-  const style = getComputedStyle(li);
-  const duration = parseFloat(style.getPropertyValue("--ui-slow")) * 1000 || 0;
-  const easing = style.getPropertyValue("--ease-in-out").trim() || "ease-in-out";
-  if (duration && Math.abs(to - from) > 1) {
-    li.animate({ height: [`${from}px`, `${to}px`], overflow: ["hidden", "hidden"] }, { id: "row", duration, easing });
-    parts.forEach((el, i) => el.animate({ opacity: [seen[i], 1] }, { id: "row", duration, easing }));
-  }
-  scheduleNotesRail();
-  updateExpandAllButton();
-}
-
 $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
 $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
 $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
@@ -2288,6 +2244,10 @@ function renderEntries() {
   //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
   //: first render, and a render after the list was empty, mark nothing.
   rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
+  //: The rows built now are where the reader is: the redraw builds them again.
+  const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
+  if (noteEngine.jumpId != null) keep.add(noteEngine.jumpId);
+  if (editingId != null) keep.add(editingId);
   clearTimeout(rowEnterTimer);
   rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
   list.replaceChildren();
@@ -2352,7 +2312,7 @@ function renderEntries() {
   // Flat for a search or non-default sort, threaded for newest: one ordering
   // with `resolveNotePage`, so a jump's page is the page that renders.
   const ordered = paginateNotesForDisplay(orderedNotesForCurrentView(visible));
-  renderIncrementally(
+  renderWindowed(
     list,
     ordered,
     ([entry, depth]) => {
@@ -2364,6 +2324,7 @@ function renderEntries() {
       return li;
     },
     {
+      keep,
       afterChunk: () => {
         applyEntryListTabOrder(list);
         ensureCardCounts(list, _entriesLoadGeneration);
@@ -2372,6 +2333,7 @@ function renderEntries() {
         // here, once the rows exist.
         updateExpandAllButton();
       },
+      settled: () => ensureCardCounts(list, _entriesLoadGeneration),
     }
   );
 }
@@ -2388,6 +2350,22 @@ function renderEntries() {
 // roving tabindex and the arrow-key walk below, so ArrowDown at the bottom of
 // the list would focus an invisible element and appear to do nothing.
 const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id]"));
+
+//: A shift-click range over every row between the two, built or not.
+function selectNoteRange(list, fromId, toId, on) {
+  const rows = entryListItems(list);
+  const a = rows.findIndex((li) => li.dataset.id === fromId);
+  const b = rows.findIndex((li) => li.dataset.id === toId);
+  if (a === -1 || b === -1) return;
+  for (const li of rows.slice(Math.min(a, b), Math.max(a, b) + 1)) {
+    if (on) selectedIds.add(Number(li.dataset.id));
+    else selectedIds.delete(Number(li.dataset.id));
+    const check = li.querySelector(":scope > .select-check");
+    if (check) check.checked = on;
+    if (!li.classList.contains("row-shell")) li.classList.toggle("is-selected", on);
+  }
+  updateBatchCount();
+}
 
 function applyEntryListTabOrder(list) {
   const items = entryListItems(list);
@@ -2442,12 +2420,13 @@ function initEntryListKeyboardNav() {
         event.key === "Home" ? 0
           : event.key === "End" ? items.length - 1
             : Math.min(Math.max(index + (event.key === "ArrowDown" ? 1 : -1), 0), items.length - 1);
-      entryListSetStop(items, items[nextIndex]);
-      items[nextIndex].focus();
+      const target = noteWindow.fill(items[nextIndex]);
+      entryListSetStop(entryListItems(list), target);
+      target.focus();
       // .focus() alone scrolls in most browsers, but not predictably, 
       // explicit and consistent with the same fix on the command palette's
       // own arrow-key nav, which has no focus to lean on at all.
-      items[nextIndex].scrollIntoView({ block: "nearest" });
+      target.scrollIntoView({ block: "nearest" });
     } else if (event.key === "Enter" && event.target === current) {
       // Only when the <li> itself has focus, not a button/link/textarea
       // inside it: those already handle their own Enter behaviour, and
@@ -3303,7 +3282,7 @@ function ensureCardCounts(list, generation) {
 
 function ensureOneCardCount(list, generation, source) {
   const wanted = [];
-  for (const li of list.querySelectorAll("li[data-id]")) {
+  for (const li of list.querySelectorAll("li[data-id]:not(.row-shell)")) {
     const id = Number(li.dataset.id);
     if (!id || source.cache.has(id) || source.inFlight.has(id)) continue;
     wanted.push(id);
@@ -3329,7 +3308,7 @@ function ensureOneCardCount(list, generation, source) {
         if (built) fitNoteMetas([meta]);
       }
       // The page may hold more than one batch; the next call finds the rest.
-      if (list.querySelectorAll("li[data-id]").length > wanted.length) {
+      if (list.querySelectorAll("li[data-id]:not(.row-shell)").length > wanted.length) {
         ensureOneCardCount(list, generation, source);
       }
     })
@@ -3347,42 +3326,6 @@ function ensureMapChipsFor(page, generation) {
       if (generation === _entriesLoadGeneration) renderEntries();
     })
     .catch(() => {});
-}
-
-//: The bell says so once a week, past a handful, as it does for untagged.
-async function nudgeReviewQueue() {
-  const queue = await apiJson("/review-queue?limit=1", { silent: true, cacheMs: 60000 }).catch(() => null);
-  if (!queue || queue.count < UNTAGGED_NUDGE_MIN) return;
-  const now = new Date();
-  const week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 86400000));
-  recordNotification({
-    kind: "assist",
-    title: `${queue.count} filings to check`,
-    detail: "Atlas was unsure where these belong. Accept each, or move it.",
-    key: `review:${now.getFullYear()}-${week}`,
-    action: { tab: "notes", filter: "is:review" },
-  });
-}
-
-//: **The app notices what the person has not got round to** (INBOX 162).
-//: Once the notebook is loaded, a bell entry counts the real notes with no
-//: tag and offers the filtered list. Keyed by the ISO week, so it is said
-//: once a week at most however often the list reloads, and only past a
-//: handful: three untagged notes is a Tuesday, not a backlog.
-const UNTAGGED_NUDGE_MIN = 5;
-
-function nudgeUntaggedNotes() {
-  const untagged = allEntries.filter((e) => !e.is_board && !e.is_draft && !e.map_topic && !(e.tags || []).length);
-  if (untagged.length < UNTAGGED_NUDGE_MIN) return;
-  const now = new Date();
-  const week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 86400000));
-  recordNotification({
-    kind: "assist",
-    title: `${untagged.length} notes have no tags`,
-    detail: "Tags are how notes find each other. Open the list and add a few.",
-    key: `untagged:${now.getFullYear()}-${week}`,
-    action: { tab: "notes", filter: "is:untagged" },
-  });
 }
 
 // --- the connections rail (WORLD_CLASS_PLAN D2) --------------------------------

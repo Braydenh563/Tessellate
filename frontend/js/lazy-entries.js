@@ -32,6 +32,8 @@ Object.assign(LAZY_MODULES, {
   mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
+  //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
+  notesLazy: ["/js/notes-lazy.js"],
   //: Every ```mermaid fence, in documents, chat and Ask (mermaid-draw.js). The 5 MB
   //: library is not here: it loads inside the hidden frame mermaid-draw.js creates.
   mermaid: ["/css/mermaid-lazy.css", "/js/mermaid-draw.js"],
@@ -53,6 +55,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
+  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue"],
   quickAdd: ["reminderComposeAdd"],
   loadFailed: ["surfaceFailed"],
   appearancePanel: ["openAppearancePanel"],

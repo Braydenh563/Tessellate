@@ -125,8 +125,17 @@ function notesRailMark(entry) {
   };
   //: A render replaces the cards: observe the new ones and pick again, so a
   //: filter or a sort never leaves the column on a note that has gone.
-  new MutationObserver(() => {
-    observeAll();
+  //: Only the rows that changed: the windowed list (notes-list.js) swaps a
+  //: few rows on every scroll, and observing all three hundred again each
+  //: time was a measured 0.8s of a long scroll.
+  new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of record.removedNodes) {
+        notesSpyVisible.delete(node);
+        if (node.nodeType === 1) seen?.unobserve(node);
+      }
+      for (const node of record.addedNodes) if (node.dataset?.id) seen?.observe(node);
+    }
     notesSpySchedule();
   }).observe(list, { childList: true });
   //: Capture, so a scroll of whichever element holds the list is heard.
