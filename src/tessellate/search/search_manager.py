@@ -191,7 +191,7 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
     phrase_terms = terms
     scores = matching(require_all=True)
     if not scores:
-        prefixed = [f"{t}*" if len(t) >= PREFIX_MIN_LEN else t for t in terms]
+        prefixed = [f"{t}*" if len(t) >= PREFIX_MIN_LEN and not is_exact_term(t) else t for t in terms]
         if prefixed != terms:
             scores = matching(require_all=True, words=prefixed)
     if not scores:
@@ -245,6 +245,13 @@ CORRECT_MIN_LEN = 4
 CORRECT_CUTOFF = 0.8
 
 
+def is_exact_term(term: str) -> bool:
+    """A word with a digit in it is a number, a code or a date: "4471" is not
+    a misspelling of "447" and does not begin "44710" (audit 1029 N5), so it
+    is matched as typed, never prefix-expanded and never typo-corrected."""
+    return any(char.isdigit() for char in term)
+
+
 def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     """Each term replaced by the closest word the FTS index holds, when it
     holds no such word itself. Terms already in the vocabulary, and short
@@ -257,7 +264,7 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     text rather than inventing a match."""
     corrected: list[str] = []
     for term in terms:
-        if len(term) < CORRECT_MIN_LEN:
+        if len(term) < CORRECT_MIN_LEN or is_exact_term(term):
             corrected.append(term)
             continue
         first = term[0]
