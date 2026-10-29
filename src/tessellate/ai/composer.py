@@ -1315,6 +1315,14 @@ def _term_weights(stems: list[str]) -> dict[str, float]:
     return {t: KIND_WORD_WEIGHT if named and t in KIND_WORDS else 1.0 for t in stems}
 
 
+def _heading_hits(view: NoteView, stems: list[str], term_weight: dict[str, float]) -> tuple[float, float]:
+    """The weight of the question's terms in the note's title, and in its
+    category and tags but not its title."""
+    title = sum(term_weight[term] for term in stems if _holds(term, view.title_words))
+    filed = sum(term_weight[term] for term in stems if _holds(term, view.filed_words) and not _holds(term, view.title_words))
+    return title, filed
+
+
 def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence]:
     """Every sentence scored: BM25 over the sentences of the notes found, plus
     the note's title, the question's shape and the note's retrieval rank.
@@ -1353,8 +1361,7 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
         #: when it does not repeat the words: "It was not the database." is
         #: the answer to "why did the list feel slow" because its note is
         #: called "Why the list felt slow".
-        title_hits = sum(term_weight[term] for term in stems if _holds(term, view.title_words))
-        filed_hits = sum(term_weight[term] for term in stems if _holds(term, view.filed_words) and not _holds(term, view.title_words))
+        title_hits, filed_hits = _heading_hits(view, stems, term_weight)
         relevance = bm25 + TITLE_WEIGHT * title_hits + FILED_WEIGHT * filed_hits
         if stems and title_hits == sum(term_weight[term] for term in stems):
             relevance += TITLE_WEIGHT
