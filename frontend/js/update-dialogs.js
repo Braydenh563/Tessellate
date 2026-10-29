@@ -1,5 +1,5 @@
 // update-dialogs.js: the update check, applying an update, and the two
-// "a new version" dialogs. Moved out of settings-panes.js on 2026-10-05 (the
+// update bar and the "was updated" dialog. Moved out of settings-panes.js on 2026-10-05 (the
 // boot-script gzip budget, ratchet in tests/test_static_compression.py): the
 // check runs from Settings' "Check for updates" button and, only for someone who
 // turned it on, once at startup; the dialogs open from those and from the
@@ -52,18 +52,11 @@ async function checkForUpdate(silent = false) {
     const size = result.asset && result.asset.size ? `, a ${formatFileSize(result.asset.size)} download` : "";
     const msg = `Version ${result.latest} is available (you have ${result.current})${size}.`;
     if (status) status.textContent = msg;
-    // The silent startup check is the one that runs on every login, asked
-    // for directly: a popup after login, but "only if... not every time
-    // they login". A toast alone auto-dismisses in 5.5s and is easy to miss
-    // entirely if it fires mid-startup while other things are still
-    // loading, so a newly-detected version also gets a real dialog, but
-    // only once per version, via the same localStorage-latch pattern the
-    // rest of this app uses for "seen it" state (e.g. the graph layout/
-    // colour prefs above). Re-showing it every login for a version the
-    // user has already dismissed would be the exact nagging this was
-    // asked to avoid.
-    if (silent && prefs.get(UPDATE_SEEN_KEY, null) !== result.latest) {
-      showUpdateAvailableDialog(result);
+    // INBOX 1440: the startup check shows a closable bar, once per version
+    // (the seen key), unless the person turned the bar off in Settings. It
+    // never installs anything: the bar's Update button is the press.
+    if (silent) {
+      if (prefsCache?.show_update_bar !== false && prefs.get(UPDATE_SEEN_KEY, null) !== result.latest) showUpdateBar(result);
     } else {
       toast(msg);
     }
@@ -106,12 +99,12 @@ async function askUpdateChoiceOnce() {
   if (yes) await checkForUpdate(true);
 }
 
-//: The last version this profile was already told about, so the post-login
-//: dialog fires once per newly-available release rather than every login
+//: The last version this profile was already told about, so the update bar
+//: shows once per newly-available release rather than every login
 //: for as long as the user hasn't updated.
 const UPDATE_SEEN_KEY = "update-seen-version";
 
-// Shared by the dialog's "Update automatically" button and Settings ->
+// Shared by the update bar's Update button and Settings ->
 // About's manual one: asked for directly: "either by the message popping
 // up the next time they load up the app and are connected to the internet,
 // and/or they can manually do it in the settings." `onProgress(state)` is
@@ -147,97 +140,60 @@ async function applyUpdateNow(onProgress, tag = null) {
   return false;
 }
 
-function showUpdateAvailableDialog(result) {
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay confirm-overlay";
-  overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("aria-label", "A new version is available");
+async function showUpdateBar(result) {
+  //: Its own sheet, loaded here and not named in `LAZY_MODULES.updates`: app.js
+  //: is at its gzip cap. Awaited, so the bar never paints unstyled.
+  await lazyScript("/css/update-bar-lazy.css");
+  document.querySelector(".update-bar")?.remove();
+  const bar = document.createElement("div");
+  bar.id = "update-bar";
+  bar.className = "notice update-bar";
+  bar.setAttribute("role", "region");
+  bar.setAttribute("aria-label", "Update available");
+  const icon = document.createElement("span");
+  setLabel(icon, "ph:arrow-circle-up");
+  // role="status": progress and failures are spoken as they change.
+  const text = document.createElement("span");
+  text.className = "update-bar-text";
+  text.setAttribute("role", "status");
+  text.textContent = `Tessellate ${result.latest} is available.`;
 
-  const card = document.createElement("div");
-  card.className = "card modal-card confirm-card";
-  const heading = document.createElement("h3");
-  heading.textContent = "A new version is available";
-  const text = document.createElement("p");
-  text.className = "confirm-text";
-  text.textContent = result.can_auto_apply
-    ? `Tessellate ${result.latest} is out: you're on ${result.current}. ` +
-      "Update automatically (downloads and installs it, then closes Tessellate: " +
-      "reopen it in a minute or two to start using the new version), or " +
-      "download it yourself from the release page."
-    : `Tessellate ${result.latest} is out: you're on ${result.current}. ` +
-      "This app never updates itself without asking: download the new " +
-      "version yourself whenever you're ready.";
-  const progress = document.createElement("p");
-  progress.className = "muted";
-  const row = document.createElement("div");
-  row.className = "row confirm-actions";
-
-  let dismissed = false;
-  const dismiss = () => {
-    if (dismissed) return;
-    dismissed = true;
-    document.removeEventListener("keydown", onKey, true);
-    overlay.remove();
+  const close = () => {
+    bar.remove();
     prefs.set(UPDATE_SEEN_KEY, result.latest);
   };
-  const onKey = (event) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      dismiss();
+  // The intentional press. Where this build cannot install itself, the same
+  // button opens the release page instead.
+  const update = smallButton("Update", result.can_auto_apply ? "Download and install the update" : "Open the release page", async () => {
+    if (!result.can_auto_apply) {
+      window.open(result.url, "_blank", "noopener");
+      return;
     }
-  };
-
-  const later = smallButton("Remind me next time", "Remind me next time", dismiss);
-  const view = document.createElement("a");
-  view.href = result.url;
-  view.target = "_blank";
-  view.rel = "noopener";
-  // A real <a>, not a button with a click handler that navigates, right-
-  // click "open in new tab", middle-click, and Ctrl-click all need to keep
-  // working the way they do on every other external link in this app. The
-  // `.small`/`.ghost` button rules are scoped to `button.small` and don't
-  // reach an anchor at all, hence the dedicated class below rather than
-  // relying on those.
-  view.className = "small update-dialog-link";
-  view.textContent = "View release";
-  view.addEventListener("click", dismiss);
-  row.append(later, view);
-
-  if (result.can_auto_apply) {
-    const auto = smallButton("Update automatically", "Update automatically", async () => {
-      auto.disabled = true;
-      later.disabled = true;
-      const ok = await applyUpdateNow((state) => {
-        progress.textContent = state.total_bytes
-          ? `${state.step} (${Math.round((state.done_bytes / state.total_bytes) * 100)}%)`
-          : state.step;
-      });
-      if (!ok) {
-        // A failed apply must not mark this version "seen", asked for
-        // directly: it has to come back next login while still offline (or
-        // whatever the real cause was), not go quiet. Re-enabling the
-        // buttons also lets them retry immediately without waiting for
-        // that next login at all.
-        auto.disabled = false;
-        later.disabled = false;
-        toast(progress.textContent || "Couldn't apply the update.", true);
-      }
-      // On success the app exits itself shortly after (routes_update.py): 
-      // nothing left to do here; the dialog just stays up, showing the
-      // last progress line, until the process closes.
-    }, false);
-    row.appendChild(auto);
-  }
-
-  card.append(heading, text, progress, row);
-  overlay.appendChild(card);
-  wireBackdropClose(overlay, () => dismiss());
-  document.addEventListener("keydown", onKey, true);
-  document.body.appendChild(overlay);
-  later.focus();
+    update.disabled = true;
+    const ok = await applyUpdateNow((state) => {
+      text.textContent = state.total_bytes
+        ? `${state.step} (${Math.round((state.done_bytes / state.total_bytes) * 100)}%)`
+        : state.step;
+    });
+    // A failed apply keeps the bar and re-enables the button to retry. On
+    // success the app exits itself shortly after (routes_update.py).
+    if (!ok) {
+      update.disabled = false;
+      toast(text.textContent || "Couldn't apply the update.", true);
+    }
+  }, false);
+  // Closable notice recipe (DESIGN.md): the icon-only ghost button is the last child.
+  const dismiss = document.createElement("button");
+  dismiss.type = "button";
+  dismiss.className = "ghost small icon-only";
+  dismiss.setAttribute("data-dismiss", "notice");
+  dismiss.title = "Hide this until the next version";
+  dismiss.setAttribute("aria-label", "Hide this until the next version");
+  setLabel(dismiss, "ph:x");
+  dismiss.addEventListener("click", close);
+  bar.append(icon, text, update, dismiss);
+  document.querySelector("#top-bar").after(bar);
 }
-
 
 function showSourceUpdatedDialog(result) {
   const overlay = document.createElement("div");

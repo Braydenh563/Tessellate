@@ -304,6 +304,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
   $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
+  $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
   $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
   $("pref-update-beta").checked = prefsCache?.update_beta === true;
   $("update-check-status").textContent = "";

@@ -33,7 +33,7 @@ ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/entry/timewords.py"
 # Hand verdicts, 2026-10-10 (Brief 64), for the files the scan finds. A new file
 # in the scan with no verdict prints "unjudged": judge it, then add it here.
 VERDICT = {
-    "src/tessellate/ai/note_rank.py": "not a reader: `_TIME_AFTER` is a mask so 'last week' is not taken as 'the last N notes'; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/note_recency.py": "not a reader: `_TIME_AFTER` is a mask so 'last week' is not taken as 'the last N notes'; it turns no word into a value, recognise reads the window",
     "src/tessellate/ai/act_registry.py": "not a reader: `_WHEN` is a lookahead mask telling 'due' as a time from 'due diligence'; it turns no word into a value, recognise reads the window",
     "src/tessellate/ai/when.py": "reader: words to a date or window (resolve, parse_reminder_text, _AGO)",
     "src/tessellate/ai/reminder_parser.py": "reader: parse_relative, 'in 30 mins' to a datetime",

@@ -27,7 +27,7 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
-from tessellate.ai import note_rank
+from tessellate.ai import note_recency
 from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
 #: An app address for each kind of thing a tool names (router.js
@@ -240,7 +240,7 @@ def _search_notes(result: dict, args: dict) -> Said:
     if result.get("search_mode") == "recent":
         newest = f"your {count_word_of(len(notes))} newest notes" if len(notes) > 1 else "your newest note"
         #: "latest" and "last three" ask for the newest notes: nothing failed to match.
-        asked_newest = not query or note_rank.recency(query, bare=True) is not None
+        asked_newest = not query or note_recency.recency(query, bare=True) is not None
         lead = f"Here are {newest}." if asked_newest else f"Nothing matched “{query}”, so here are {newest} instead."
         return _found_notes(lead, notes, total, f"I found no notes{about}.")
     return _found_notes(f"I found {count_noun(total, 'note')}{about}.", notes, total, f"I found no notes{about}. Try other words, or browse them in Notes.")

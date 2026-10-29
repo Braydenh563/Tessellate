@@ -1,0 +1,15 @@
+/* The update bar (INBOX 1440): a closable `.notice` between the top bar and the
+   page, loaded with the update module. The recipe supplies the box; this only
+   sets it level with the page's side gutter and centres its one row. */
+.update-bar {
+  align-items: center;
+  margin: var(--space-2) var(--space-4) 0;
+}
+.update-bar > .ph,
+.update-bar > span:first-child {
+  line-height: 1;
+}
+.update-bar-text {
+  flex: 1 1 0;
+  min-width: 0;
+}

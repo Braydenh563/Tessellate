@@ -2566,7 +2566,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   background: var(--accent-soft);
   color: var(--accent-text);
 }
-.space-option:has([aria-checked="true"]) .ph:first-child {
+.space-option [aria-checked="true"] > .ph {
   color: var(--accent-text);
 }
 .space-option-name {

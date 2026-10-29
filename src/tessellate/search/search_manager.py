@@ -1387,11 +1387,11 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     filters first, then the newest of what it left (audit 1029 C31); the
     newest notes of the whole notebook were the answer to a subject never
     searched. None when the query is no such request."""
-    from tessellate.ai import note_rank
+    from tessellate.ai import note_recency
 
     #: A find's topic keeps no noun ("latest", "last three"): short, it is read bare.
     bare = len(query.split()) <= 3
-    rec = note_rank.recency(query, bare=bare)
+    rec = note_recency.recency(query, bare=bare)
     if rec is None:
         return None
     if not rec.subject:

@@ -45,6 +45,8 @@ _OWN = re.compile(r"\b(?:i|i've|i'd|me|my|we|our)\b", re.I)
 #: Said of the past: "what do I have on this week" asks what is coming, not
 #: what was done, so a bare present "do" is not a recap.
 _PAST = re.compile(r"\b(?:did|was|were|been)\b|\b\w+ed\b|\b(?:made|done|built|threw|thrown|got|activity|history)\b", re.I)
+_LISTED = re.compile(r"\b(?:notes?|entries|entry)\b", re.I)
+
 #: Words that are neither a subject nor a doing: the question's frame.
 _FRAME = frozenset(
     "what which show list tell give me my i i've i'd we our us all everything anything stuff things thing "
@@ -108,6 +110,10 @@ def read(question: str, today: date) -> Asked | None:
     #: present tense and with no "I": the plan's one date reader says so.
     back = composer_plan.lookback(text, today)
     if not (back or _OWN.search(text)):
+        return None
+    #: "notes from 24 to 30 September" is a list by date, which leaves
+    #: archived notes out; only "what is on" with no past verb reads as activity.
+    if back and not _PAST.search(text) and _LISTED.search(text):
         return None
     window = _window(text, today)
     if window is None or not (back or _PAST.search(text)):

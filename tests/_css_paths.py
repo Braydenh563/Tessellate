@@ -128,6 +128,8 @@ CSS_FILES = [
     #: rules copied under #appearance-panel (scripts/appearance_panel_css.py), then its own.
     CSS_DIR / "appearance-panel-lazy.css",
     CSS_DIR / "appearance-panel-own-lazy.css",
+    #: The update bar (INBOX 1440), loaded by update-dialogs.js when a version is found.
+    CSS_DIR / "update-bar-lazy.css",
 ]
 
 

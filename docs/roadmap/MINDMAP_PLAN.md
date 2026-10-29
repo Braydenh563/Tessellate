@@ -1449,6 +1449,8 @@ topic: a control that wide has nowhere to go.
 
 ## Placed from INBOX, 2026-09-09
 
+1445. **The owner, 2026-10-29, verbatim:** "I cant left click drag to pan on the mind map". Recommendation (taken): on a mind map a left-button drag on empty canvas pans (as the whiteboard's hand does), a drag from a topic still moves it; reproduce in the running app first, find the regression, test it in node or Playwright.
+
 24 built; moved to HISTORY.md ("Moved from the plans, 2026-10-04 (the map's
 palette, font and the app's own default)", "the placed items of 2026-09-09").
 

@@ -2643,6 +2643,10 @@ Link to another note with [[its first few words]]."></textarea>
             Hidden, it comes back from the notes list's More menu. In a
             narrow window it is the Connections item on a note's own menu.
           </p>
+          <p>
+            Drag its left edge to change its width, or focus the edge and use
+            the arrow keys (16 pixels a press); Home puts it back.
+          </p>
         </div>
         <p class="notes-rail-subject" id="notes-rail-subject"></p>
         <div class="notes-rail-body" id="notes-rail-body" aria-live="polite"></div>
@@ -14582,6 +14586,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-update-check">
                 <span>Check GitHub for a newer version</span>
               </label>
+              <label class="check-row" data-this-computer>
+                <input type="checkbox" id="pref-update-bar">
+                <span>Show the update bar</span>
+              </label>
               <div class="row button-row setting-dependent" id="update-check-row">
                 <button id="update-check-now" class="ghost small" type="button">Check for updates</button>
                 <!-- Shown only once a check finds a newer version this app can
@@ -14590,7 +14598,7 @@ Link to another note with [[its first few words]]."></textarea>
                      apiJson('/update/apply') call): asked for directly: a
                      manual fallback for whoever dismissed the popup, or
                      started this check from here in the first place. -->
-                <button id="update-apply-now" class="small hidden" type="button">Update automatically</button>
+                <button id="update-apply-now" class="small hidden" type="button">Update now</button>
                 <span class="muted" id="update-check-status"></span>
               </div>
               <!-- Separate from "Check GitHub for a newer version" above on
@@ -14601,10 +14609,10 @@ Link to another note with [[its first few words]]."></textarea>
                    someone can want to know a release exists (Settings shows
                    it, the popup mentions it) without ever wanting this app
                    to run an installer by itself. -->
-              <h4 class="setting-subhead">Installing them</h4>
+              <h4 class="setting-subhead">Launcher copies</h4>
               <label class="check-row" data-this-computer>
                 <input type="checkbox" id="pref-auto-update">
-                <span>Update automatically when a new version is found</span>
+                <span>Pull the latest code when start.sh or start.bat runs</span>
               </label>
               <!-- "Maybe they can have the option to select the specific
                    versions they wish to switch to??", asked for directly.

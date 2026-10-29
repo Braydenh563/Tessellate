@@ -1092,6 +1092,9 @@ Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to 
 
 ## Placed from INBOX, built (pointers)
 
+1446. **The owner, 2026-10-29, verbatim** (pasted log, Windows, no model): lag lines in one session. Worst: "frame 833ms on timeline: app.js Response.json.then 820ms (forced layout 793ms) [apiJson /timeline from timeline-calendar.js timelineCalFetch]"; "frame 571ms on dashboard: status.js build 557ms"; "input 536ms on dashboard: keydown on input#lock-password"; avatars.js nameMarkBuddyBeat/nameMarkBuddyTick 238 to 425ms (forced layout 190 to 323ms) on notes and timeline; "input 704ms on dashboard: pointerup on span.tab-label" with phone-shell.js tab onclick 216ms (forced layout 167ms); capture-ask.js LI.onclick 153ms; app.js Response.json.then 177ms on library; avatars.js setTimeout 137ms and Promise.resolve 201ms on notes.
+     Recommendation (taken): one perf pass on these named sites, worst first, each measured before and after at 4x CPU with the app's own lag reporter: the timeline calendar's render reads layout after writes (batch reads before writes); the companion's name mark measures every beat (cache its box, measure once per resize); status.js build off the boot path; the tab switch and lock keydown checked for the same read-after-write. No cap raised.
+
 All built, each in HISTORY.md: 60, 94, 100 to 104, 164, 165, 186, 279, 282, 296, 393 ("Moved from the plans, 2026-09-09" and "2026-10-05"); the Files rows' two rhythms and the attach picker's tiles ("2026-10-05 (UI_MODERNISATION_PLAN ...)"); 621 and 622 ("2026-10-05 (INBOX 621 and 622 ...)").
 
 ## Settings information architecture (INBOX 444)

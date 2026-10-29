@@ -69,6 +69,7 @@ const SETTING_ROWS = [
   { key: "searxng_autostart", id: "searxng-autostart" },
   { key: "update_check_enabled", id: "pref-update-check" },
   { key: "auto_update_enabled", id: "pref-auto-update" },
+  { key: "show_update_bar", id: "pref-update-bar" },
   { key: "update_channel", id: "pref-update-channel-main", on: "main", off: "stable" },
   { key: "update_beta", id: "pref-update-beta" },
   { key: "voice_model", id: "voice-model-select" },

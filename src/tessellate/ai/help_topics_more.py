@@ -1563,7 +1563,9 @@ MORE_TOPICS.extend(
                 "note's Connections sheet shows the same, with its rows as a quiet "
                 "list (a glyph, the title, a muted line for the kind or day) under a "
                 "row of count chips, and on a wide window an Open in the sidebar "
-                "button that docks it as this column."
+                "button that docks it as this column. Drag its left edge to change the "
+                "column's width (arrow keys on the edge do it 16 pixels a press, "
+                "and Home puts it back); the width is kept on this device."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },

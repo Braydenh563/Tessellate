@@ -73,10 +73,10 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if not stems:
         return False
     open_, done = _tasks(views, stems)
-    name = " ".join(w for w in rest.split() if w.lower() not in {"on", "for", "to", "at", "the", "my", "a", "do", "bring", "before"}) or "that"
+    #: No list the subject names ("what do I need to buy" names a verb, not a
+    #: list): the composer's own readers answer, as they did before the slots.
     if not open_ and not done:
-        out.lines.append(f"I found no checklist for {name} in your notes.")
-        return True
+        return False
     view = open_[0][0] if open_ else done[0][0]
     title = composer_lists._title(view)  # noqa: SLF001
     if not open_:

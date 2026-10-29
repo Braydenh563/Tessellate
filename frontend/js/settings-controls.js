@@ -448,6 +448,11 @@ $("update-apply-now").addEventListener("click", async () => {
   }
 });
 
+$("pref-update-bar").addEventListener("change", (e) => {
+  if (!e.target.checked) document.querySelector(".update-bar")?.remove();
+  return setPreference("show_update_bar", e.target.checked);
+});
+
 $("pref-auto-update").addEventListener("change", (e) =>
   setPreference("auto_update_enabled", e.target.checked)
 );
