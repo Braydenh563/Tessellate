@@ -5051,8 +5051,8 @@ try {
 
 //: The keyboard stays on the map: Esc, or Close from inside the popup, used to leave focus on <body> (audit 1029 G19).
 function closeGraphPopup(returnFocus = false) {
-  const held = returnFocus || $("graph-popup").contains(document.activeElement);
   keepGraphPopupEdit();
+  const held = returnFocus || $("graph-popup").contains(document.activeElement);
   graphPopupId = null;
   graphLate.popupDragged = false;
   if (typeof gcTab !== "undefined" && gcTab.canvas) gcRequestDraw(gcTab);
