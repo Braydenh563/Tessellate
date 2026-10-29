@@ -5822,14 +5822,20 @@ function initGraphDockHeightToken() {
   dock._heightWired = true;
   const write = (e) => {
     //: The entry has the box; a rect read forced a style pass on tab flips.
-    const h = Math.round(e ? e[0].borderBoxSize[0].blockSize : dock.getBoundingClientRect().height);
+    //: One observer serves the rail too (`initGraphRailToken`): its strips'
+    //: entries come here, and only the dock's own entry sizes this token.
+    card._railWrite?.();
+    const own = e ? e.find((x) => x.target === dock) : null;
+    if (e && !own) return;
+    const h = Math.round(own ? own.borderBoxSize[0].blockSize : dock.getBoundingClientRect().height);
     // Zero while the tab is not on screen (the card is display:none until
     // then), and a zero here would stack the minimap and the selection bar
     // on top of the dock at the next paint. The stylesheet's own calc stands
     // until there is a real measurement to replace it with.
     if (h > 0) card.style.setProperty("--graph-dock-h", `${h}px`);
   };
-  new ResizeObserver(write).observe(dock);
+  card._chromeWatch = new ResizeObserver(write);
+  card._chromeWatch.observe(dock);
   write();
 }
 
@@ -5848,7 +5854,8 @@ function initGraphRailToken() {
   const card = document.getElementById("graph-card");
   const dock = card?.querySelector('.dock[data-dock-name="graph"]');
   const strips = card ? [...card.querySelectorAll(".graph-overlay > .graph-trace, .graph-overlay > .graph-trace-result")] : [];
-  if (!dock || !strips.length || typeof ResizeObserver === "undefined" || card._railWired) return;
+  //: Rides the dock's ResizeObserver (`initGraphDockHeightToken`, run first), no second observer.
+  if (!dock || !strips.length || !card._chromeWatch || typeof ResizeObserver === "undefined" || card._railWired) return;
   card._railWired = true;
   const write = () => {
     const boxes = strips.map((el) => el.getBoundingClientRect());
@@ -5858,8 +5865,8 @@ function initGraphRailToken() {
     if (offset) card.style.setProperty("--graph-chrome-top", `calc(var(--space-3) * 2 + var(--graph-dock-h) + ${offset}px)`);
     else card.style.removeProperty("--graph-chrome-top");
   };
-  const watcher = new ResizeObserver(write);
-  for (const el of [dock, ...strips]) watcher.observe(el);
+  card._railWrite = write;
+  for (const el of strips) card._chromeWatch.observe(el);
   write();
 }
 

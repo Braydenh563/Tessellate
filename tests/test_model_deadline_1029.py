@@ -233,6 +233,9 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     monkeypatch.setattr(searxng_manager, "docker_available", lambda: release.wait(10) and False)
     monkeypatch.setattr(routes_websearch, "STATUS_BUDGET", 0.1)
     api = TestClient(create_app())
+    # The app's first request pays its own start-up; on a loaded CI runner that
+    # alone was 2.3 s, so it is paid before the timed one (any route will do).
+    api.get("/health")
     first, took = _timed(api, "/websearch/searxng/status")
     # Far under the 10 s hang, with room for a loaded runner (-n auto).
     assert first.status_code == 503 and took < 2.0
