@@ -1822,7 +1822,10 @@ async function chatSendTurn(preset, opts = {}) {
   //: back, so a late delta after `finally` re-attached "Writing the answer"
   //: under a finished turn. The flag says the turn is over.
   let turnEnded = false;
+  //: Set by the model's first word; see the waiting line below (H8).
+  let heard = false;
   const clearPending = () => {
+    heard = true;
     if (turnEnded) return;
     //: Only when not already last: `onAnswer` calls this per delta, and
     //: re-appending the last child restarts its CSS animation, which froze
@@ -2037,11 +2040,10 @@ async function chatSendTurn(preset, opts = {}) {
 
   let slowLoadTimeout;
   try {
+    //: A silent model used to leave "Waking the model..." up forever (H8).
     slowLoadTimeout = setTimeout(() => {
-      if (!meta && !stopped) {
-        status.textContent = "Loading model… (this may take a moment)";
-      }
-    }, 5000);
+      if (!heard && viewing()) status.textContent = "Waiting for the model…";
+    }, 8e3);
     await streamChat({
       progress: pendingLine,
       question,
@@ -2212,9 +2214,7 @@ async function chatSendTurn(preset, opts = {}) {
         }
         if (event.proposal) {
           // Asked where it was suggested, not in a settings page nobody opens.
-          const card = document.createElement("div");
-          renderMemoryProposal(card, event.proposal);
-          timeline.tool(card.firstElementChild || card);
+          showWaiting(recordsHolder, renderMemoryProposal, event.proposal);
         }
         if (event.ok) toolsActed = true;
         if (event.wrote) bubble.dataset.wrote = "1";
@@ -2241,32 +2241,14 @@ async function chatSendTurn(preset, opts = {}) {
       onPanel: (event) => drawAnswerPanels(timeline.holder, [event]).then(chatScrollToEnd),
       onConfirm: (event) => {
         clearPending();
-        const card = document.createElement("div");
-        renderToolConfirm(card, event);
-        //: An act's card is the answer's own (CHAT_PLAN decision 38), under
-        //: its line, never folded away in a step group with its Confirm.
-        if (event.type === "act") timeline.holder.appendChild(card);
-        else timeline.tool(card.firstElementChild || card);
+        //: Waiting cards are output (`showWaiting`); an act's is the answer's own.
+        showWaiting(event.type === "act" ? timeline.holder : recordsHolder, renderToolConfirm, event);
         if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
         status.textContent = "Waiting for your confirmation…";
       },
       onAsk: (event) => {
         clearPending();
-        //: **The question is output, not a step.**
-        //:
-        //: Reported: *"the question the agent asked me appeared in the step
-        //: and not the actual output."* A step group folds itself shut into
-        //: "Finished 1 step" the moment prose starts (`startAnswer`), so a
-        //: question filed there is a question that disappears while it is
-        //: still waiting to be answered, and the answer box underneath then
-        //: says the model wrote nothing, which is the screenshot.
-        //:
-        //: `recordsHolder` is the bubble's own output area, under the steps
-        //: and above the sources, where everything else the turn is waiting
-        //: on (a confirmation, a memory proposal's outcome) already lands.
-        const card = document.createElement("div");
-        renderAgentQuestion(card, event);
-        recordsHolder.appendChild(card.firstElementChild || card);
+        showWaiting(recordsHolder, renderAgentQuestion, event);
         status.textContent = "Waiting for your answer…";
         chatAwaitingAgentAnswer = true;
         asked = true;
@@ -2586,7 +2568,7 @@ async function chatSendTurn(preset, opts = {}) {
     //: A plan the model drew waits for Run the plan (row 3: approved once,
     //: with each step's writes listed); a skill the person saved starts.
     const plan = handoff;
-    if (plan.type === "run_plan") planProposalCard(timeline.holder, plan, () => startPlannedRun(plan.goal, plan.steps));
+    if (plan.type === "run_plan") showWaiting(recordsHolder, planProposalCard, plan, () => startPlannedRun(plan.goal, plan.steps));
     else setTimeout(() => startSkill({ name: plan.skill }, plan.inputs || {}), 0);
   }
   if (!answerRaw) {
@@ -2594,9 +2576,9 @@ async function chatSendTurn(preset, opts = {}) {
     // bubble sitting there with the notes disclosure, no answer, no error and
     // no buttons: a dead end with nothing to click and nothing explaining it.
     if (opts.replaceLast) {
-      // A regenerate already removed the old answer; don't leave a blank in
-      // its place, since the previous one is gone either way.
+      //: No new answer: the old one goes back (audit 1029 H7).
       bubble.remove();
+      if (opts.restore) $("chat-messages").appendChild(opts.restore);
       toast("The model returned nothing that time. Try again.", "info");
       return;
     }

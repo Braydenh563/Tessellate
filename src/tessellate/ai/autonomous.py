@@ -549,7 +549,7 @@ def _optimization_pass(started: float, run: "jobruns.Run") -> None:
                     persona_prompt=persona,
                     # Nothing here can be confirmed and nothing here should be
                     # deleted: there is no user in the loop to ask.
-                    blocked_tools=frozenset({"ask_user", "delete_note"}),
+                    blocked_tools=frozenset({"ask_user", "delete_note"}) | agent.tools.CHANGE_TOOLS,
                     max_rounds=MAX_ROUNDS,
                     mode="autonomous",
                     use_utility_model=True,

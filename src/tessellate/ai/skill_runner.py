@@ -1427,6 +1427,7 @@ def _run_skill(
             exhausted_note=note,
             # The run draws its own card; a step's rounds are not a second one.
             show_plan=False,
+            approved=True,
         )
 
     if not steps:

@@ -740,7 +740,7 @@ function renderChatEmptyState() {
     helpText.textContent =
       `${aiName} answers from your saved notes and shows the notes behind each ` +
       "answer. In Agent mode it can also create, tag, link and organise notes " +
-      "for you, and asks before anything it cannot undo.";
+      "for you, and asks before changing a note.";
   }
   empty.append(emblem, title, blurb);
   //: One line about the other assistant (INBOX 224). The empty chat is where
@@ -2496,7 +2496,7 @@ const PROGRESS_MUSINGS = [
   "Searching uses meaning and keywords together, then merges the two rankings.",
   "A note you never tagged is still findable, the links between notes count too.",
   "Private notes are held back from Atlas, even when it asks for them.",
-  "Ask mode reads. Agent mode can change things, and says so before it does.",
+  "Ask mode reads. Agent mode asks before changing a note.",
   "Long answers are slower on a small model, not stuck.",
   "Every tool call Atlas makes is listed under the answer, with what it touched.",
   "Type [[ in any note to link to another one.",

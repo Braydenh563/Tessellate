@@ -177,7 +177,7 @@ const TOUR_SECTIONS = [
         side: "top",
         tab: "chat",
         title: "Ask or act",
-        text: "Ask only reads. Agent mode can also tag, link and organise, and asks before anything it cannot undo.",
+        text: "Ask only reads. Agent mode can also tag, link and organise, and asks before changing a note.",
       },
       {
         target: "#chat-dock-more-btn",

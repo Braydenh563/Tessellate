@@ -229,10 +229,12 @@ async function regenerateLast() {
   const lastAssistant = [...$("chat-messages").querySelectorAll(".msg.assistant")].at(-1);
   if (lastAssistant?.dataset.wrote && !(await confirmRerun(lastAssistant))) return;
   regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
-  if (lastAssistant) lastAssistant.remove(); // clear the old answer first
+  //: Put back by `sendChatMessage` if no new answer comes (audit 1029 H7).
+  if (lastAssistant) lastAssistant.remove();
   sendChatMessage(lastChatQuestion, {
     skipUserBubble: true,
     replaceLast: true,
+    restore: lastAssistant,
     noteIds: lastChatAttachments,
     imageMediaIds: lastChatImageAttachments.map((img) => img.id),
     documentIds: lastChatDocumentAttachments.map((d) => d.id),
