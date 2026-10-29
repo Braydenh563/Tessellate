@@ -15,7 +15,7 @@
 //: clock, so a throttled tab reads true, several can run, and the list is
 //: kept in `prefs` so a reload gets them back (`utilityRestore`).
 const utilityClocks = [];
-let utilityTick = 0;
+const utilityTick = { id: 0 };
 
 function utilityTimeText(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -73,10 +73,10 @@ function utilityClockRun(kind, name, seconds = 0) {
 //: The one wake source here: a second's tick while any clock is on the bar,
 //: cleared the moment none is (tests/wake_sources_seed.json).
 function utilityEnsureTick() {
-  if (utilityClocks.length && !utilityTick) utilityTick = setInterval(paintUtilityChip, 1000);
-  if (!utilityClocks.length && utilityTick) {
-    clearInterval(utilityTick);
-    utilityTick = 0;
+  if (utilityClocks.length && !utilityTick.id) utilityTick.id = setInterval(paintUtilityChip, 1000);
+  if (!utilityClocks.length && utilityTick.id) {
+    clearInterval(utilityTick.id);
+    utilityTick.id = 0;
   }
 }
 
