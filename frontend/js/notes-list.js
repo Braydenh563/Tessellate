@@ -1452,13 +1452,13 @@ function resolveWikiTarget(name) {
 // always did. When a note contains neither, the DOM produced is identical to
 // before, which is why the fall-through appends to `element` directly rather
 // than wrapping runs in a container.
-function renderNoteText(element, text, terms) {
+function renderNoteText(element, text, terms, prose = (s) => s) {
   element.replaceChildren();
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
   let buffer = [];
   const flush = () => {
     if (!buffer.length) return;
-    renderNoteInline(element, buffer.join("\n"), terms);
+    renderNoteInline(element, prose(buffer.join("\n")), terms);
     buffer = [];
   };
 
@@ -1481,8 +1481,21 @@ function renderNoteText(element, text, terms) {
     const columns = mdColumnsFrom(lines, i);
     if (columns) {
       flush();
-      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms)));
+      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms, prose)));
       i = columns.end;
+      continue;
+    }
+    //: **A table or a code fence draws as it does everywhere else** (audit
+    //: 1029 N8: the card showed `| a | b |` and the fence's backticks as
+    //: text). Search terms are not marked inside the block.
+    const blockEnd = mdBlockEnd(lines, i);
+    if (blockEnd) {
+      flush();
+      const box = document.createElement("div");
+      box.className = "entry-md-block";
+      renderMarkdown(box, lines.slice(i, blockEnd).join("\n"));
+      element.appendChild(box);
+      i = blockEnd;
       continue;
     }
     const maths = mdMathBlockFrom(lines, i);

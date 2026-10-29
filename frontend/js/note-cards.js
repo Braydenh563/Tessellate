@@ -1607,9 +1607,11 @@ function entryItem(entry, options = {}) {
   const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
   const fillContent = () => renderNoteText(
     content,
-    //: Heading hashes are source, not words (dogfood item 18).
-    (content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body).replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•"),
-    searchHighlightTerms()
+    content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+    searchHighlightTerms(),
+    //: Heading hashes are source, not words (dogfood item 18). Run on the
+    //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
+    (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
   );
   fillContent();
   content.addEventListener("remove-inline-image", async (e) => {

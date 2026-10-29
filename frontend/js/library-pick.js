@@ -1,4 +1,4 @@
-// library-pick.js: the Library item picker dialog (bookmark, board, note or document), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
+// library-pick.js: the Library item picker dialog (bookmark, board, note or document) and the uploaded-picture picker (`pickMediaDialog`, 2026-10-29, audit 1029 rows 44 to 56 paid for in the same gzip budget), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
 
 //: And its second line: what tells two rows with one name apart.
 function libraryPickAbout(kind, row) {
@@ -161,5 +161,82 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
         }
       })();
     }
+  });
+}
+
+//: Pick something already uploaded rather than uploading it again ("attach
+//: images that are already in the image library... to new notes in the
+//: capture subtab"). `/media` has no mime field, so each tile is tried as an
+//: `<img>` and drops itself on error, the gallery's own approach.
+function pickMediaDialog() {
+  return new Promise((resolve) => {
+    const grid = document.createElement("div");
+    grid.className = "media-pick-grid";
+    const shell = pickerDialog({
+      title: "Choose from your library",
+      about: "An image already in your library, attached without uploading it again.",
+      placeholder: "Search by file name…",
+      searchLabel: "Search your uploaded images",
+      list: grid,
+    });
+    let uploads = [];
+    //: The grid's states on the empty state recipe, as the lists' are
+    //: (`pickerListState`): an icon and a title over the sentence when
+    //: there is nothing to show, the sentence alone while loading.
+    const say = (text, { icon = "", title = "" } = {}) => {
+      const state = document.createElement("div");
+      state.className = "empty-state entry-pick-empty";
+      if (icon) {
+        const glyph = document.createElement("i");
+        glyph.className = `${richPickerIconClass(icon)} empty-icon`;
+        glyph.setAttribute("aria-hidden", "true");
+        state.appendChild(glyph);
+      }
+      if (title) {
+        const heading = document.createElement("p");
+        heading.className = "empty-title";
+        heading.textContent = title;
+        state.appendChild(heading);
+      }
+      const line = document.createElement("p");
+      line.textContent = text;
+      state.appendChild(line);
+      grid.replaceChildren(state);
+    };
+    const paint = () => {
+      const term = shell.search.value.trim().toLowerCase();
+      const matches = uploads.filter((u) => !term || u.original_name.toLowerCase().includes(term)).slice(0, 60);
+      if (!matches.length) {
+        return uploads.length
+          ? say("Try fewer or different words.", { icon: "ph:magnifying-glass", title: "No pictures match that" })
+          : say("Attach a new file to start your library.", { icon: "ph:image", title: "No pictures yet" });
+      }
+      grid.replaceChildren();
+      for (const upload of matches) {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "media-pick-tile";
+        tile.title = upload.original_name;
+        const img = document.createElement("img");
+        img.src = mediaSrc(upload.url);
+        img.alt = "";
+        img.loading = "lazy";
+        img.addEventListener("error", () => tile.remove());
+        const name = document.createElement("span");
+        name.textContent = upload.original_name;
+        tile.append(img, name);
+        tile.addEventListener("click", () => shell.close(upload));
+        grid.appendChild(tile);
+      }
+    };
+    shell.search.addEventListener("input", paint);
+    say("Loading your library…");
+    shell.open(resolve);
+    apiJson("/media", { silent: true })
+      .then((list) => {
+        uploads = list || [];
+        paint();
+      })
+      .catch(() => say("Couldn't load your library."));
   });
 }

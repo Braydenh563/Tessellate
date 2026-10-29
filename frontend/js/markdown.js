@@ -43,6 +43,21 @@ function splitTableRow(line) {
   return cells;
 }
 
+//: Where a code fence or a pipe table that starts at line `i` ends (the line
+//: after it), else 0. A note card hands such a block to `renderMarkdown`
+//: whole, so it reads as it does in a document, Chat and the Read view; an
+//: unclosed fence runs to the end, as that renderer reads it.
+function mdBlockEnd(lines, i) {
+  let j = i + 1;
+  if (lines[i].trim().startsWith("```")) {
+    while (j < lines.length && !lines[j].trim().startsWith("```")) j++;
+    return j + 1;
+  }
+  if (!lines[i].includes("|") || j >= lines.length || !isTableSeparator(lines[j])) return 0;
+  while (++j < lines.length && lines[j].includes("|") && lines[j].trim());
+  return j;
+}
+
 // Column alignment from the separator row: ":--" left, "--:" right,
 // ":-:" centre, else none.
 function columnAlign(spec) {

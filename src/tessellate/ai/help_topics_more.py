@@ -1537,7 +1537,7 @@ MORE_TOPICS.extend(
                 "sort notes", "recently edited", "a to z", "copy link", "copy wiki link", "copy app link",
                 "connections column", "beside the list", "forgotten", "close to this",
                 "backlinks", "unlinked mentions", "mentioned, not linked", "linked mentions",
-                "most used", "note order", "f2",
+                "most used", "note order", "f2", "table in a note", "code block in a note",
             ),
             "body": (
                 "Sort notes: Newest first, Oldest first, Recently edited, A to Z "
@@ -1565,7 +1565,9 @@ MORE_TOPICS.extend(
                 "row of count chips, and on a wide window an Open in the sidebar "
                 "button that docks it as this column. Drag its left edge to change the "
                 "column's width (arrow keys on the edge do it 16 pixels a press, "
-                "and Home puts it back); the width is kept on this device."
+                "and Home puts it back); the width is kept on this device. A "
+                "note's card draws a table or a code block the way a document "
+                "does, with its Copy button."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
