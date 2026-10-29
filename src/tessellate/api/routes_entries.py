@@ -215,8 +215,9 @@ def _open_suggestions(entry) -> list[str]:  # noqa: ANN001
     """The kept suggestions still worth showing: not on the note already and
     not discarded (a tag added by hand since filing drops out by itself).
     None while the note is set to "Don't suggest tags" (brief 89); what was
-    kept is still on the row and comes back when that is cleared."""
-    if getattr(entry, "tag_suggest_off", False):
+    kept is still on the row and comes back when that is cleared. None while
+    a private note is locked, like its tags (INBOX 1437)."""
+    if getattr(entry, "tag_suggest_off", False) or manager.note_is_sealed(getattr(entry, "is_private", False)):
         return []
     have = {tag.casefold() for tag in manager.entry_tags(entry)}
     gone = {tag.casefold() for tag in _json_tags(getattr(entry, "discarded_tags", "[]"))}
