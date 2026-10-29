@@ -1900,7 +1900,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "Moving and resizing panels. On a computer with a mouse, any panel "
-                "with a title row (Settings, Find anything, the agent, Statistics "
+                "with a title row (the agent, Find anything, Statistics, Settings "
                 "and the rest) can sit where you want it: drag its head to move it "
                 "and drag the small corner mark at its bottom right to resize it. "
                 "The head always stays on screen, and the content scrolls inside "

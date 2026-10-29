@@ -25,6 +25,8 @@ const vm = require("node:vm");
 const fs = require("node:fs");
 const store = {};
 const ctx = { localStorage: { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = v; } }, JSON, Math, Number, Array, Object, Element: class {}, WeakMap };
+// The app's storage door (prefs.js), over the same store.
+ctx.prefs = { get: (k, f = "") => ctx.localStorage.getItem(k) ?? f, setJSON: (k, v) => { ctx.localStorage.setItem(k, JSON.stringify(v)); return true; } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.api = { panelClampMove, panelClampSize, panelKeyDelta, panelStoreRead, panelStoreWrite };", ctx);
 const a = ctx.api;

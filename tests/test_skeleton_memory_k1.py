@@ -26,7 +26,8 @@ def test_the_last_render_sets_count_and_height():
 
 def test_it_records_only_what_was_on_screen_and_only_once():
     body = _show()
-    assert "getBoundingClientRect().top < innerHeight" in body
+    # On screen only: the walk stops at the first row below the fold (INBOX 1426 L6).
+    assert "getBoundingClientRect().top >= innerHeight) break" in body
     assert "Math.min(shown.length, 30)" in body
     assert 'prefs.setJSON("skeleton-seen", seen)' in body
 

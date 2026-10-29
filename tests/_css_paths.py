@@ -116,6 +116,8 @@ CSS_FILES = [
     CSS_DIR / "companion-throw-lazy.css",
     #: The companion's far moves and small acts (companion-travel.js loads it, INBOX 1429).
     CSS_DIR / "companion-travel-lazy.css",
+    #: Movable and resizable panels (panel-movable.js loads it, INBOX 1427).
+    CSS_DIR / "panel-movable-lazy.css",
     #: The guided equation editor (lazy-entries.js `mathEditor`, DOCUMENTS_PLAN 16).
     CSS_DIR / "math-editor-lazy.css",
     #: Mermaid diagrams: the figure, its placeholder and the hidden frame (mermaid-draw.js).

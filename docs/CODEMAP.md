@@ -5236,27 +5236,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `panelAdopt` | frontend/js/panel-movable.js:178 |
-| `panelApply` | frontend/js/panel-movable.js:114 |
-| `panelClamp` | frontend/js/panel-movable.js:133 |
+| `panelAdopt` | frontend/js/panel-movable.js:175 |
+| `panelApply` | frontend/js/panel-movable.js:111 |
+| `panelClamp` | frontend/js/panel-movable.js:130 |
 | `panelClampMove` | frontend/js/panel-movable.js:41 |
 | `panelClampSize` | frontend/js/panel-movable.js:49 |
-| `panelFull` | frontend/js/panel-movable.js:162 |
-| `panelGripDown` | frontend/js/panel-movable.js:237 |
-| `panelGripKey` | frontend/js/panel-movable.js:286 |
-| `panelHeadDown` | frontend/js/panel-movable.js:202 |
-| `panelHeadOf` | frontend/js/panel-movable.js:129 |
-| `panelId` | frontend/js/panel-movable.js:99 |
+| `panelFull` | frontend/js/panel-movable.js:159 |
+| `panelGripDown` | frontend/js/panel-movable.js:234 |
+| `panelGripKey` | frontend/js/panel-movable.js:283 |
+| `panelHeadDown` | frontend/js/panel-movable.js:199 |
+| `panelHeadOf` | frontend/js/panel-movable.js:126 |
+| `panelId` | frontend/js/panel-movable.js:96 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:56 |
-| `panelMovableOn` | frontend/js/panel-movable.js:88 |
-| `panelOf` | frontend/js/panel-movable.js:92 |
-| `panelReset` | frontend/js/panel-movable.js:166 |
-| `panelSave` | frontend/js/panel-movable.js:173 |
-| `panelSt` | frontend/js/panel-movable.js:106 |
+| `panelMovableOn` | frontend/js/panel-movable.js:85 |
+| `panelOf` | frontend/js/panel-movable.js:89 |
+| `panelReset` | frontend/js/panel-movable.js:163 |
+| `panelSave` | frontend/js/panel-movable.js:170 |
+| `panelSt` | frontend/js/panel-movable.js:103 |
 | `panelStoreParse` | frontend/js/panel-movable.js:62 |
 | `panelStoreRead` | frontend/js/panel-movable.js:70 |
-| `panelStoreWrite` | frontend/js/panel-movable.js:79 |
-| `panelWindowResized` | frontend/js/panel-movable.js:322 |
+| `panelStoreWrite` | frontend/js/panel-movable.js:77 |
+| `panelWindowResized` | frontend/js/panel-movable.js:319 |
 
 ### frontend/js/personas-pane.js (3)
 

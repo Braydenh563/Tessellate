@@ -87,6 +87,8 @@ SCRIPTS = (
     "first-run.js",
     #: The manual (Find anything and the palette open it after `lazyScript`).
     "manual.js",
+    #: Copy diagnostics (INBOX 1430): the palette loads `diagnostics`, then calls diagCopy.
+    "diag-report.js",
 )
 
 #: Names a row may call that are the platform rather than the app. Kept short

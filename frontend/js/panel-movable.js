@@ -68,21 +68,18 @@ function panelStoreParse(raw) {
   }
 }
 function panelStoreRead(id) {
-  let raw = null;
-  try { raw = localStorage.getItem(PANEL_KEY); } catch (_) { return null; }
-  const e = panelStoreParse(raw)[id];
+  const e = panelStoreParse(prefs.get(PANEL_KEY, ""))[id];
   if (!Array.isArray(e) || e.length !== 4) return null;
   const [x, y, w, h] = e;
   if (![x, y].every(Number.isFinite) || (w !== null && !Number.isFinite(w)) || (h !== null && !Number.isFinite(h))) return null;
   return { x, y, w, h };
 }
 function panelStoreWrite(id, st) {
-  try {
-    const all = panelStoreParse(localStorage.getItem(PANEL_KEY));
-    if (st) all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
-    else delete all[id];
-    localStorage.setItem(PANEL_KEY, JSON.stringify(all));
-  } catch (_) { /* private window or blocked storage: the panel still works */ }
+  //: prefs swallows a private window or blocked storage: the panel still works.
+  const all = panelStoreParse(prefs.get(PANEL_KEY, ""));
+  if (st) all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
+  else delete all[id];
+  prefs.setJSON(PANEL_KEY, all);
 }
 
 function panelMovableOn() {
