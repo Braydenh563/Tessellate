@@ -45,8 +45,8 @@ def test_skeleton_memory_stops_measuring_at_the_fold():
 # layouts from a read after a write inside a loop, one layout per pass. A loop
 # body that both writes what the page lays out and reads a measurement is that
 # shape; the sites below read first, or write after, instead.
-_READS = re.compile(r"\.(?:offset(?:Height|Width|Top|Left)|client(?:Height|Width)|scroll(?:Height|Width)|getBoundingClientRect)\b|getComputedStyle\(")
-_WRITES = re.compile(r"\.hidden\s*=|\.classList\.(?:add|remove|toggle)\(|\.style\.\w+\s*=|\.textContent\s*=|\.append(?:Child)?\(|\.setAttribute\(|\.dataset\.\w+\s*=")
+_READS = re.compile(r"\.(?:offset(?:Height|Width|Top|Left)|client(?:Height|Width)|scroll(?:Height|Width)|getBoundingClientRect)\b|getComputedStyle\(|\.getAnimations\(")
+_WRITES = re.compile(r"\.hidden\s*=|\.classList\.(?:add|remove|toggle)\(|\.style\.\w+\s*=|\.textContent\s*=|\.append(?:Child)?\(|\.setAttribute\(|\.dataset\.\w+\s*=|\.animate\(")
 
 
 def _braced(js: str, start: int) -> str:
@@ -80,7 +80,7 @@ def mixed_loops(file: str, fn: str) -> list[str]:
 
 
 #: (file, function) pairs fixed under INBOX 1446; the next one found goes here.
-READ_THEN_WRITE_SITES = [("timeline-calendar.js", "timelineCalFit")]
+READ_THEN_WRITE_SITES = [("timeline-calendar.js", "timelineCalFit"), ("avatars.js", "nameMarkBuddyBlend")]
 
 
 def test_named_lag_sites_do_not_measure_inside_a_writing_loop():
