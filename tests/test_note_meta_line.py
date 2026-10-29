@@ -56,8 +56,9 @@ def test_what_does_not_fit_folds_into_one_more_chip():
     # line that fits as drawn is left alone.
     assert 'addEventListener("contentvisibilityautostatechange"' in fit
     assert "const lines = drawn.filter(" in fit
-    # A count chip patched in later is fitted again.
-    assert "fitNoteMetas([meta])" in _read("notes-list.js")
+    # A count chip patched in later is fitted again (INBOX 1446: once for the
+    # batch, after every chip is in, not once per card).
+    assert "fitNoteMetas(fitted)" in _read("notes-list.js")
 
 
 def test_the_time_is_the_lines_last_fact_everywhere():

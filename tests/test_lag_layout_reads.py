@@ -107,3 +107,12 @@ def test_a_pointer_picked_tab_finds_its_scroller_after_it_has_drawn():
     assert re.search(r"afterFrames\(\(\) => \{.*tabPageScroller\(.*\}, 2\);", body, re.S)
     scroller = _braced(js, js.index("function tabPageScroller("))
     assert "tabScrollerKept.get(tab)" in scroller and "tabScrollerKept.set(tab, target)" in scroller
+
+
+def test_card_chips_are_fitted_once_after_they_are_all_in():
+    """Each chip was inserted and then its line fitted, which reads widths: a layout per card
+    (105 layouts in six note jumps at 4x CPU, 800ms). `fitNoteMetas` takes a list for this."""
+    js = frontend_text("notes-list.js")
+    body = _braced(js, js.index("function ensureOneCardCount("))
+    assert not [b for b in _loop_bodies(body) if "fitNoteMetas(" in b], "fit after the loop, once"
+    assert "fitNoteMetas(fitted)" in body

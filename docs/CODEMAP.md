@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6793, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7095, test files 1512, tests 13282, plan headings 985.
+Counts: frontend functions 6793, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7095, test files 1512, tests 13283, plan headings 985.
 
 ## Frontend functions (6793)
 
@@ -230,10 +230,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `categoryMenuItems` | frontend/js/notes-list.js:2714 |
 | `clearSkeletons` | frontend/js/notes-list.js:2815 |
 | `compareCategoryNames` | frontend/js/notes-list.js:2670 |
-| `dockConnectionsInRail` | frontend/js/notes-list.js:3556 |
+| `dockConnectionsInRail` | frontend/js/notes-list.js:3563 |
 | `engineQueryIds` | frontend/js/notes-list.js:195 |
 | `ensureCardCounts` | frontend/js/notes-list.js:3279 |
-| `ensureMapChipsFor` | frontend/js/notes-list.js:3321 |
+| `ensureMapChipsFor` | frontend/js/notes-list.js:3328 |
 | `ensureOneCardCount` | frontend/js/notes-list.js:3283 |
 | `entryListItems` | frontend/js/notes-list.js:2352 |
 | `entryListOrder` | frontend/js/notes-list.js:2990 |
@@ -270,13 +270,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteSemanticLoaded` | frontend/js/notes-list.js:378 |
 | `noteSortName` | frontend/js/notes-list.js:1817 |
 | `noteTopicChip` | frontend/js/notes-list.js:3209 |
-| `notesRailFocusSubject` | frontend/js/notes-list.js:3549 |
-| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3372 |
-| `notesRailNearGroup` | frontend/js/notes-list.js:3520 |
-| `notesRailSync` | frontend/js/notes-list.js:3383 |
-| `notesRailWanted` | frontend/js/notes-list.js:3400 |
+| `notesRailFocusSubject` | frontend/js/notes-list.js:3556 |
+| `notesRailHiddenByChoice` | frontend/js/notes-list.js:3379 |
+| `notesRailNearGroup` | frontend/js/notes-list.js:3527 |
+| `notesRailSync` | frontend/js/notes-list.js:3390 |
+| `notesRailWanted` | frontend/js/notes-list.js:3407 |
 | `notesScroller` | frontend/js/notes-list.js:1876 |
-| `offerWikiRename` | frontend/js/notes-list.js:3640 |
+| `offerWikiRename` | frontend/js/notes-list.js:3647 |
 | `openNoteEditor` | frontend/js/notes-list.js:76 |
 | `orderedNotesForCurrentView` | frontend/js/notes-list.js:2021 |
 | `paginateNotesForDisplay` | frontend/js/notes-list.js:1987 |
@@ -294,7 +294,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderInlineMarkdown` | frontend/js/notes-list.js:909 |
 | `renderNoteInline` | frontend/js/notes-list.js:1586 |
 | `renderNoteText` | frontend/js/notes-list.js:1455 |
-| `renderNotesRail` | frontend/js/notes-list.js:3419 |
+| `renderNotesRail` | frontend/js/notes-list.js:3426 |
 | `renderSidebar` | frontend/js/notes-list.js:2501 |
 | `renderWindowed` | frontend/js/notes-list.js:1883 |
 | `resolveCategoryChoice` | frontend/js/notes-list.js:127 |
@@ -302,17 +302,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `resolveWikiTarget` | frontend/js/notes-list.js:1345 |
 | `safeHref` | frontend/js/notes-list.js:837 |
 | `scheduleEntriesProgress` | frontend/js/notes-list.js:2857 |
-| `scheduleNotesRail` | frontend/js/notes-list.js:3395 |
+| `scheduleNotesRail` | frontend/js/notes-list.js:3402 |
 | `searchHighlightTerms` | frontend/js/notes-list.js:1747 |
 | `selectNoteRange` | frontend/js/notes-list.js:2355 |
-| `setNotesRailHidden` | frontend/js/notes-list.js:3562 |
+| `setNotesRailHidden` | frontend/js/notes-list.js:3569 |
 | `setNotesViewMode` | frontend/js/notes-list.js:2135 |
 | `showEntrySkeletons` | frontend/js/notes-list.js:2751 |
 | `showNotesFilter` | frontend/js/notes-list.js:237 |
 | `showSkeletons` | frontend/js/notes-list.js:2772 |
 | `skeletonRemember` | frontend/js/notes-list.js:2794 |
 | `sortEntries` | frontend/js/notes-list.js:1821 |
-| `syncNotesRailToggle` | frontend/js/notes-list.js:3408 |
+| `syncNotesRailToggle` | frontend/js/notes-list.js:3415 |
 | `toggleExpandAllRows` | frontend/js/notes-list.js:2124 |
 | `topicRepeatsTag` | frontend/js/notes-list.js:3203 |
 | `unlatex` | frontend/js/notes-list.js:760 |
@@ -20339,7 +20339,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13282)
+## Tests (13283)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21045,7 +21045,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_label_in_name_1345.py | 3 |
 | tests/test_lag_1415.py | 7 |
 | tests/test_lag_1419.py | 5 |
-| tests/test_lag_layout_reads.py | 7 |
+| tests/test_lag_layout_reads.py | 8 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lan.py | 126 |
 | tests/test_launch_splash.py | 24 |

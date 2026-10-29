@@ -3298,15 +3298,22 @@ function ensureOneCardCount(list, generation, source) {
         const given = counts[String(id)];
         source.cache.set(id, given === undefined || given === null ? source.empty : given);
       }
+      //: **Every chip goes in, then the lines are fitted once** (INBOX 1446, the
+      //: owner's lag log: a note jump of 153ms). Fitting reads widths, so a fit
+      //: after each insert laid the list out once per card: 105 layouts, 800ms
+      //: of them, over six jumps at 4x CPU.
+      const fitted = [];
       for (const id of wanted) {
         const li = list.querySelector(`li[data-id="${id}"]`);
         const meta = li && li.querySelector(":scope > .entry-meta");
         if (!meta || meta.querySelector(source.marker)) continue;
         const entry = allEntries.find((e) => e.id === id);
         const built = entry && source.chip(entry);
-        if (built) meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
-        if (built) fitNoteMetas([meta]);
+        if (!built) continue;
+        meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
+        fitted.push(meta);
       }
+      if (fitted.length) fitNoteMetas(fitted);
       // The page may hold more than one batch; the next call finds the rest.
       if (list.querySelectorAll("li[data-id]:not(.row-shell)").length > wanted.length) {
         ensureOneCardCount(list, generation, source);
