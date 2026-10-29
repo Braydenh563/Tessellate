@@ -100,6 +100,19 @@ def _kinds_named(rest: str) -> set[str] | None:
     return kinds
 
 
+def _is_dated_listing(text: str, back: object) -> bool:
+    """"notes from 24 to 30 September" is a list by date, which leaves
+    archived notes out; only "what is on" with no past verb reads as activity."""
+    return bool(back and not _PAST.search(text) and _LISTED.search(text))
+
+
+def _doing_of(text: str, phrase: str, back: object) -> str | None:
+    """The most specific doing wins: "what did I delete" is binned, not "did"."""
+    bare = text.replace(phrase, " ")
+    verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
+    return "all" if verb is None and back else verb
+
+
 def read(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
@@ -109,21 +122,13 @@ def read(question: str, today: date) -> Asked | None:
     #: "What is on 14 August" with the day gone asks what that day held, in the
     #: present tense and with no "I": the plan's one date reader says so.
     back = composer_plan.lookback(text, today)
-    if not (back or _OWN.search(text)):
-        return None
-    #: "notes from 24 to 30 September" is a list by date, which leaves
-    #: archived notes out; only "what is on" with no past verb reads as activity.
-    if back and not _PAST.search(text) and _LISTED.search(text):
+    if not (back or _OWN.search(text)) or _is_dated_listing(text, back):
         return None
     window = _window(text, today)
     if window is None or not (back or _PAST.search(text)):
         return None
     phrase, span = window
-    #: The most specific doing wins: "what did I delete" is binned, not "did".
-    bare = text.replace(phrase, " ")
-    verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
-    if verb is None and back:
-        verb = "all"
+    verb = _doing_of(text, phrase, back)
     if verb is None:
         return None
     kinds = _kinds_named(_VERB.sub(" ", re.sub(re.escape(phrase), " ", text, flags=re.I)))

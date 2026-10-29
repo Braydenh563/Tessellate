@@ -654,6 +654,30 @@ def _summarise(text: str) -> dict | None:
 OWN_WORDS = ("content", "title", "tags", "text", "said")
 
 
+def _about_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
+    """Only slang spelled out, no misspelling put right: the notes a command
+    names keep the person's own word ("delete notes about uni" is their
+    category Uni, not "university"; audit 1028 E9)."""
+    typed = read(text, now, locale)
+    if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
+        return {**found, "about": typed["about"]}
+    return found
+
+
+def _words_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
+    """The act's own words from the typed reading, for the same intent."""
+    from tessellate.ai import question_noise
+
+    head, _, tail = (text or "").partition(" ")
+    typed = read(text, now, locale) or (read(f"{question_noise.repair(head)} {tail}", now, locale) if tail else None)
+    #: A reminder's words are cut at its time ("tmrw" is left in the typed
+    #: reading), so those are taken only when they are the same length.
+    if typed is None or typed.get("intent") != found.get("intent"):
+        return found
+    own = {k: typed[k] for k in OWN_WORDS if k in typed and k in found and (not isinstance(typed[k], str) or len(typed[k].split()) == len(str(found[k]).split()))}
+    return {**found, **own}
+
+
 def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """`read` of the sentence as the speller puts it right ("remnd me to pay
     rent on friday", "delte my old wifi note"), else as typed: the owner's
@@ -667,20 +691,9 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     #: ("add oat milk to the packing list" must not write "At milk"); the
     #: speller only serves the verb and the target (audit 1029 C40).
     if found is not None and "about" in found and fixed != text and not fixes:
-        #: Only slang spelled out, no misspelling put right: the notes a
-        #: command names keep the person's own word ("delete notes about uni"
-        #: is their category Uni, not "university"; audit 1028 E9).
-        typed = read(text, now, locale)
-        if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
-            found = {**found, "about": typed["about"]}
+        found = _about_as_typed(found, text, now, locale)
     if found is not None and fixed != text:
-        head, _, tail = (text or "").partition(" ")
-        typed = read(text, now, locale) or (read(f"{question_noise.repair(head)} {tail}", now, locale) if tail else None)
-        #: A reminder's words are cut at its time ("tmrw" is left in the typed
-        #: reading), so those are taken only when they are the same length.
-        if typed is not None and typed.get("intent") == found.get("intent"):
-            own = {k: typed[k] for k in OWN_WORDS if k in typed and k in found and (not isinstance(typed[k], str) or len(typed[k].split()) == len(str(found[k]).split()))}
-            found = {**found, **own}
+        found = _words_as_typed(found, text, now, locale)
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
@@ -1051,6 +1064,36 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     }
 
 
+def _plan_new_note(session: Session, parsed: dict) -> dict:
+    steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
+    card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
+    if _has_note_saying(session, parsed["content"]):
+        return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
+    return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+
+
+def _plan_meeting(parsed: dict) -> dict:
+    title = parsed.get("title") or ""
+    steps = [{"name": "start_meeting", "arguments": {"title": title}}]
+    named = f" “{title}”" if title else ""
+    return {
+        "line": f"Start a meeting{named}.",
+        "card": _card(f"Start a meeting{named}", steps),
+        "run": True,
+    }
+
+
+def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    entries, which = _which(parsed, session, note_ids)
+    ok, skipped = _split_allowed(entries)
+    if not ok:
+        return {"line": f"I found no note {which} to take the tag off." if not skipped else summarise_done([], skipped)}
+    tags = " ".join(f"#{t}" for t in parsed["tags"])
+    label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
+    steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+
+
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     intent = parsed["intent"]
@@ -1063,33 +1106,15 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
     if intent in ("complete", "cancel", "snooze"):
         return _plan_task(session, parsed)
     if intent == "new_note":
-        steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
-        card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
-        if _has_note_saying(session, parsed["content"]):
-            return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
-        return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+        return _plan_new_note(session, parsed)
     if intent == "meeting":
-        title = parsed.get("title") or ""
-        steps = [{"name": "start_meeting", "arguments": {"title": title}}]
-        named = f" “{title}”" if title else ""
-        return {
-            "line": f"Start a meeting{named}.",
-            "card": _card(f"Start a meeting{named}", steps),
-            "run": True,
-        }
+        return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
         return _plan_one(session, parsed, note_ids)
     if intent == "untag":
-        entries, which = _which(parsed, session, note_ids)
-        ok, skipped = _split_allowed(entries)
-        if not ok:
-            return {"line": f"I found no note {which} to take the tag off." if not skipped else summarise_done([], skipped)}
-        tags = " ".join(f"#{t}" for t in parsed["tags"])
-        label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
-        steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
-        return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+        return _plan_untag(session, parsed, note_ids)
     if intent == "navigate":
         return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
     if intent in READ_INTENTS:

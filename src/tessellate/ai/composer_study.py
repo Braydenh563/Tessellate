@@ -128,6 +128,28 @@ def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     return [row[2] for row in scored[:limit]]
 
 
+def _titled_as(topic: str, ctx: Ctx, open_one: bool) -> list[dict]:
+    """The one note whose title is the topic, as typed or (for "open the chess
+    note") with the noise words off; empty when none is."""
+    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
+    if exact:
+        return exact[:1]
+    #: "open the chess note" names the note titled "Chess": one note, not a menu.
+    said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
+    return [n for n in ctx.notes if open_one and said and _title(n).lower() == said][:1]
+
+
+def _ranked_by_title_then_body(topic: str, wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
+    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
+    #: The same ranker as Chat's lists (audit 1029 C19, C20): the note titled
+    #: as the topic, then the one that defines it, then the rest.
+    if titled:
+        #: A note that defines the topic is about it whatever its title says.
+        defining = [n for n in _body_matches(wanted, ctx, 50) if n not in titled and note_rank.key(n, note_rank.subject(topic), note_rank.stems_of(topic))[0] == 1]
+        return note_rank.lead(titled + defining, topic)[:limit]
+    return note_rank.lead(_body_matches(wanted, ctx, 50), topic)[:limit]
+
+
 def topic_notes(topic: str, ctx: Ctx, limit: int = 3, *, open_one: bool = False) -> list[dict]:
     """The notes a topic names: those whose title holds every word of it,
     else those whose text does, best first. An empty topic, or "this note", is
@@ -138,22 +160,10 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3, *, open_one: bool = False)
     wanted = study.content_stems(_TOPIC_NOISE.sub(" ", topic))
     if not wanted:
         return []
-    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
+    exact = _titled_as(topic, ctx, open_one)
     if exact:
-        return exact[:1]
-    #: "open the chess note" names the note titled "Chess": one note, not a menu.
-    said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
-    exact = [n for n in ctx.notes if open_one and said and _title(n).lower() == said]
-    if exact:
-        return exact[:1]
-    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
-    #: The same ranker as Chat's lists (audit 1029 C19, C20): the note titled
-    #: as the topic, then the one that defines it, then the rest.
-    if titled:
-        #: A note that defines the topic is about it whatever its title says.
-        defining = [n for n in _body_matches(wanted, ctx, 50) if n not in titled and note_rank.key(n, note_rank.subject(topic), note_rank.stems_of(topic))[0] == 1]
-        return note_rank.lead(titled + defining, topic)[:limit]
-    return note_rank.lead(_body_matches(wanted, ctx, 50), topic)[:limit]
+        return exact
+    return _ranked_by_title_then_body(topic, wanted, ctx, limit)
 
 
 def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:

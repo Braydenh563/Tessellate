@@ -2430,13 +2430,22 @@ _INSTRUCTION_STEMS = frozenset(
 )
 
 
-def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
-    """"None of these notes mention “hotel”." for the question's words that no
-    note found contains, measured over every word of every one of them.
+def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
+    """Words of the sentences the answer quoted and of the notes it named."""
+    quoted = {w for v in views for s in v.sentences if s.key in out.cited for w in s.words}
+    quoted |= {w for v in views if v.id in out.named for w in v.title_words | v.filed_words}
+    return quoted
 
-    Said of "these notes", the ones found, and not of the notebook: retrieval
-    chose them, and a claim about every note would be a claim nothing here
-    measured."""
+
+def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str]) -> bool:
+    if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _seen(term, found):
+        return False
+    if _alternatives(_stem(term)) & quoted:
+        return False
+    return not out.question or term.lower() in out.question.lower()
+
+
+def _unfound_terms(out: _Answer, terms: list[str], views: list[NoteView]) -> list[str]:
     found: set[str] = set()
     for view in views:
         found |= view.words | view.title_words | view.filed_words
@@ -2444,13 +2453,18 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     #: cost" answered by the budget's own line is not missing "cost", but a
     #: "hotel" no quote (or quoted note's name) stands in for is still said
     #: to be missing.
-    quoted = {w for v in views for s in v.sentences if s.key in out.cited for w in s.words}
-    quoted |= {w for v in views if v.id in out.named for w in v.title_words | v.filed_words}
-    missing = [
-        t for t in terms
-        if len(t) >= _MISSING_MIN and _stem(t) not in _INSTRUCTION_STEMS and not _seen(t, found) and not (_alternatives(_stem(t)) & quoted)
-        and (not out.question or t.lower() in out.question.lower())
-    ]
+    quoted = _quoted_words(out, views)
+    return [t for t in terms if _is_unfound(out, t, found, quoted)]
+
+
+def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
+    """"None of these notes mention “hotel”." for the question's words that no
+    note found contains, measured over every word of every one of them.
+
+    Said of "these notes", the ones found, and not of the notebook: retrieval
+    chose them, and a claim about every note would be a claim nothing here
+    measured."""
+    missing = _unfound_terms(out, terms, views)
     if not missing or len(missing) == len(terms):
         return
     out.t("para", "missing")

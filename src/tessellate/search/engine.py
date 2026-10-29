@@ -1199,9 +1199,7 @@ def _having(session: Session, rows: list, wanted_has: list) -> list:
     return [row for row in rows if all(_row_has(row, want, carriers) for want in wanted_has)]
 
 
-def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
-    """The rows that also carry the `is:`, `has:` and `tag:` the query named."""
-    wanted_is, wanted_has = _flag_filters(asked)
+def _by_flags_and_title(rows: list, asked, wanted_is: list) -> list:  # noqa: ANN001
     #: Rows that arrived by meaning never went through the SQL narrowing, so
     #: the bin and the title are checked here as well.
     if "deleted" not in wanted_is:
@@ -1210,17 +1208,26 @@ def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
         rows = [row for row in rows if value.lower() in (row["title"] or "").lower()]
     if wanted_is:
         rows = [row for row in rows if all(flag in (row["flags"] or "").split() for flag in wanted_is)]
+    return rows
+
+
+def _by_tags(rows: list, asked) -> list:  # noqa: ANN001
+    wanted_tags = [tag.lower() for tag in asked.filters["tag"]]
+    if not wanted_tags:
+        return rows
+    # Substring rather than word equality: the tags column is a space-
+    # joined list, and `tag:garden` should find a note tagged "gardening"
+    # for the same reason the keyword stage tries prefixes.
+    return [row for row in rows if all(tag in (row["tags"] or "").lower() for tag in wanted_tags)]
+
+
+def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """The rows that also carry the `is:`, `has:` and `tag:` the query named."""
+    wanted_is, wanted_has = _flag_filters(asked)
+    rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    wanted_tags = [tag.lower() for tag in asked.filters["tag"]]
-    if wanted_tags:
-        # Substring rather than word equality: the tags column is a space-
-        # joined list, and `tag:garden` should find a note tagged "gardening"
-        # for the same reason the keyword stage tries prefixes.
-        rows = [
-            row for row in rows if all(tag in (row["tags"] or "").lower() for tag in wanted_tags)
-        ]
-    return rows
+    return _by_tags(rows, asked)
 
 
 def _hit_for(row, best_raw: float, filters_only: bool, cosines: dict, hops: dict, terms: list) -> Hit | None:  # noqa: ANN001

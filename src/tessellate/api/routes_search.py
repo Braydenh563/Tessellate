@@ -57,6 +57,44 @@ MAX_LIMIT = 50
 MAX_PAGE = 20
 
 
+def _scope_of(entry_id: int | None, space: str) -> dict:
+    ctx = {}
+    if entry_id:
+        ctx["entry_id"] = entry_id
+    if space:
+        ctx["space"] = space
+    return ctx
+
+
+def _with_typo_fix(session: Session, q: str, hits: list, ctx: dict, want: int, hybrid: bool, kinds: list[str]) -> tuple[list, str]:
+    """The hits and the corrected query they are for ("" when `q` stands).
+
+    **A typo gets the word it meant** (audit 2026-10-05, UX-04). Ask's
+    `keyword_search` corrected "dentst" to "dentist" and these two boxes
+    did not, so the same notebook answered a typo differently depending on
+    where it was typed. Only when the query found nothing, and only to a
+    word the notes actually hold, so a word that exists is never "fixed".
+    The engine corrects a typo itself now (ARCH-07), so the hits can already
+    be the corrected query's; the line still says so. `_corrected_query`
+    only changes a word the notes do not hold, so a real word never shows
+    as "corrected".
+    """
+    retry = _corrected_query(session, q) if q.strip() else ""
+    if not retry or retry == q:
+        return hits, ""
+    if not hits:
+        hits = engine.search(session, retry, ctx=ctx or None, limit=want, hybrid=hybrid, kinds=kinds or None)
+    return hits, (retry if hits else "")
+
+
+def _notices_for(q: str, hits: list) -> list[str]:
+    asked = search_query.understand(q)
+    notices = list(asked.notices)
+    if asked.filters["title"] and not hits:
+        notices.append("No title says " + " or ".join(f"\u201c{value}\u201d" for value in asked.filters["title"]) + ".")
+    return notices
+
+
 @router.get("")
 def search(
     q: str = Query(default="", description="The query, operators included"),
@@ -77,37 +115,13 @@ def search(
     reasoning `/entries/tensions` states for its own status field.
     """
     kinds = [part.strip() for part in kind.split(",") if part.strip() in search_index.KINDS]
-    ctx = {}
-    if entry_id:
-        ctx["entry_id"] = entry_id
-    if space:
-        ctx["space"] = space
+    ctx = _scope_of(entry_id, space)
     #: Paged by ranking deeper and slicing: one more than the page asks for,
     #: so `more` is known without a count of the whole notebook.
     want = page * limit + 1
     hits = engine.search(session, q, ctx=ctx or None, limit=want, hybrid=hybrid, kinds=kinds or None)
-    #: **A typo gets the word it meant** (audit 2026-10-05, UX-04). Ask's
-    #: `keyword_search` corrected "dentst" to "dentist" and these two boxes
-    #: did not, so the same notebook answered a typo differently depending on
-    #: where it was typed. Only when the query found nothing, and only to a
-    #: word the notes actually hold, so a word that exists is never "fixed".
-    #: The engine corrects a typo itself now (ARCH-07), so the hits can already
-    #: be the corrected query's; the line still says so. `_corrected_query`
-    #: only changes a word the notes do not hold, so a real word never shows
-    #: as "corrected".
-    corrected = ""
-    retry = _corrected_query(session, q) if q.strip() else ""
-    if retry and retry != q:
-        if not hits:
-            hits = engine.search(
-                session, retry, ctx=ctx or None, limit=want, hybrid=hybrid, kinds=kinds or None
-            )
-        if hits:
-            corrected = retry
-    asked = search_query.understand(q)
-    notices = list(asked.notices)
-    if asked.filters["title"] and not hits:
-        notices.append("No title says " + " or ".join(f"\u201c{value}\u201d" for value in asked.filters["title"]) + ".")
+    hits, corrected = _with_typo_fix(session, q, hits, ctx, want, hybrid, kinds)
+    notices = _notices_for(q, hits)
     return {
         "query": q,
         #: Said beside the results: a filter nothing answers, and a `title:`

@@ -100,14 +100,9 @@ def _verdict(out, view, task, verb_said: str) -> None:  # noqa: ANN001
     composer_lists._cite(out, view, task, line)  # noqa: SLF001
 
 
-def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
-    words = rest.split()
-    if len(words) < 2:
-        return False
-    verb = _stems(words[0])
-    obj = _stems(" ".join(words[1:]))
-    if not obj:
-        return False
+def _first_did(views: list, verb, obj):  # noqa: ANN001
+    """The (view, sentence) that says the doing: a task that holds the object
+    and the verb at once, else the first task or prose that holds the object."""
     best = None
     for view in sorted(views, key=lambda v: v.rank):
         for s in view.sentences:
@@ -116,24 +111,35 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
             if s.kind == "task":
                 best = best or (view, s)
                 if not verb or _holds(s, verb):
-                    best = (view, s)
-                    break
+                    return view, s
             elif verb and _holds(s, verb + obj):
                 best = best or (view, s)
-        else:
-            continue
-        break
+    return best
+
+
+def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
+    if s.kind == "task":
+        _verdict(out, view, s, verb_word)
+        return
+    day = view.written
+    when = f" (your note of {composer_lists._day(day, today)})" if day else ""  # noqa: SLF001
+    out.lines.append(f"Yes, your notes say so{when}: {s.text.strip()}")
+    composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+
+
+def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    words = rest.split()
+    if len(words) < 2:
+        return False
+    verb = _stems(words[0])
+    obj = _stems(" ".join(words[1:]))
+    if not obj:
+        return False
+    best = _first_did(views, verb, obj)
     if best is None:
         out.lines.append(f"I found nothing in your notes that says you {rest}.")
         return True
-    view, s = best
-    if s.kind == "task":
-        _verdict(out, view, s, words[0])
-    else:
-        day = view.written
-        when = f" (your note of {composer_lists._day(day, today)})" if day else ""  # noqa: SLF001
-        out.lines.append(f"Yes, your notes say so{when}: {s.text.strip()}")
-        composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+    _say_did(out, *best, words[0], today)
     return True
 
 
@@ -172,32 +178,22 @@ def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-def _pair(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
-    """"Compare the two lentil soup notes": both sides, side by side, or which
-    side is missing (audit 1029 C36). Read in code, not by a pattern, so a long
-    question costs nothing."""
+def _pair_subject(q: str) -> str | None:
+    """What the two notes are about in "compare the two X notes", else None."""
     low = " ".join(q.lower().split())
     for lead in ("compare the two ", "compare my two ", "compare two "):
         if low.startswith(lead):
             low = low[len(lead):]
             break
     else:
-        return False
+        return None
     for tail in (" notes", " note", " ones"):
         if low.endswith(tail):
-            low = low[: -len(tail)]
-            break
-    stems = _stems(low)
-    if not stems:
-        return False
-    named = composer._notes_named_by(views, set(stems))  # noqa: SLF001
-    named = sorted(named, key=lambda v: (not _title_holds(v, stems), v.rank))
-    if not named:
-        return False
-    if len(named) == 1:
-        view = named[0]
-        out.lines.append(f"You have only one {low} note, {composer_lists._title(view)}, so there is nothing to compare it with.")  # noqa: SLF001
-        return True
+            return low[: -len(tail)]
+    return low
+
+
+def _say_side_by_side(out, named: list, low: str) -> None:  # noqa: ANN001
     out.lines.append(f"Your two {low} notes, side by side:")
     for view in named[:2]:
         first = next((x for x in view.sentences if x.kind in ("prose", "item", "task")), None)
@@ -209,6 +205,27 @@ def _pair(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
     if sizes[0] != sizes[1]:
         longer = named[0] if sizes[0] > sizes[1] else named[1]
         out.lines.append(f"{composer_lists._title(longer)} is the longer, {max(sizes)} words to {min(sizes)}.")  # noqa: SLF001
+
+
+def _pair(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """"Compare the two lentil soup notes": both sides, side by side, or which
+    side is missing (audit 1029 C36). Read in code, not by a pattern, so a long
+    question costs nothing."""
+    low = _pair_subject(q)
+    if low is None:
+        return False
+    stems = _stems(low)
+    if not stems:
+        return False
+    named = composer._notes_named_by(views, set(stems))  # noqa: SLF001
+    named = sorted(named, key=lambda v: (not _title_holds(v, stems), v.rank))
+    if not named:
+        return False
+    if len(named) == 1:
+        view = named[0]
+        out.lines.append(f"You have only one {low} note, {composer_lists._title(view)}, so there is nothing to compare it with.")  # noqa: SLF001
+        return True
+    _say_side_by_side(out, named, low)
     return True
 
 
