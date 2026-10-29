@@ -240,15 +240,20 @@ function spaceIconPicker(container, hiddenInput) {
   }
 }
 
+//: A menu of spaces (audit 1029 X4): `role="menu"`, each row a wrapper holding
+//: the space (`menuitemradio`) and, as its SIBLINGS, the row's actions
+//: (`menuitem`), so nothing interactive sits inside another. The arrows
+//: walk every item (the delegated menu keys in navigation.js).
 function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
+  const row = document.createElement("div");
+  row.className = "space-option";
+  row.setAttribute("role", "none");
   const option = document.createElement("button");
   option.type = "button";
-  option.className = "space-option";
-  option.setAttribute("role", "option");
+  option.className = "space-option-main";
+  option.setAttribute("role", "menuitemradio");
   option.dataset.spaceId = id;
-  option.setAttribute("aria-selected", String(id === activeSpaceId()));
-  // .space-option-name ellipsises with no other escape hatch for a long
-  // board name.
+  option.setAttribute("aria-checked", String(id === activeSpaceId()));
   option.title = name;
 
   const glyph = document.createElement("i");
@@ -261,61 +266,42 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
 
   option.append(glyph, label);
   option.addEventListener("click", () => setActiveSpace(id));
+  row.appendChild(option);
 
   if (deletable) {
     const actions = document.createElement("span");
     actions.className = "space-option-actions";
-
-    // Nested <button> is invalid HTML, so these are spans with a button role.
-    // The click handlers stop propagation: without it, "rename" would also
-    // trip the row's own switch-to-this-space handler and reload the page out
-    // from under the dialog that was about to open.
+    actions.setAttribute("role", "none");
+    //: Hide from All spaces (the glyph carries the state, the title says what
+    //: pressing does), rename, delete. They close the menu before they run.
     for (const [glyphName, title, run] of [
-      // Keep this space out of "All spaces", or put it back. Asked for
-      // directly: "how do I hide a specific space's notes and
-      // images/documents etc, all the content from the 'all spaces' space if
-      // I wish??" It lives on the space's own row because that is where a
-      // person is when they think it, not buried in Settings, which is the
-      // other place it could have gone and a worse one.
-      //
-      // The glyph carries the state (an open eye means visible, a struck-out
-      // one means hidden), and the title says what pressing it will do,
-      // which is the pair every other toggle in this app uses.
       [
         hiddenFromAll ? "ph-eye-slash" : "ph-eye",
-        hiddenFromAll
-          ? "Hidden from All spaces, show it there again"
-          : "Hide this space's contents from All spaces",
+        hiddenFromAll ? "Hidden from All spaces, show it there again" : "Hide this space's contents from All spaces",
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
       ["ph-pencil-simple", "Rename this space", () => openSpaceEdit(id, name, icon)],
       ["ph-trash", "Delete this space", () => rmSpace(id)],
     ]) {
-      const action = document.createElement("span");
+      const action = document.createElement("button");
+      action.type = "button";
       action.className = "ghost small";
-      action.setAttribute("role", "button");
-      action.tabIndex = 0;
+      action.setAttribute("role", "menuitem");
       action.title = title;
       action.setAttribute("aria-label", title);
       const actionIcon = document.createElement("i");
       actionIcon.className = `ph ${glyphName}`;
       actionIcon.setAttribute("aria-hidden", "true");
       action.appendChild(actionIcon);
-      const fire = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
+      action.addEventListener("click", () => {
         closeSpaceMenu();
         run();
-      };
-      action.addEventListener("click", fire);
-      action.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") fire(event);
       });
       actions.appendChild(action);
     }
-    option.appendChild(actions);
+    row.appendChild(actions);
   }
-  return option;
+  return row;
 }
 
 // Flip a space in or out of the everything-view. A view filter, not a
@@ -383,7 +369,8 @@ function renderSpaceMenu() {
 
   const create = document.createElement("button");
   create.type = "button";
-  create.className = "space-option";
+  create.className = "space-option-main";
+  create.setAttribute("role", "menuitem");
   create.id = "space-create-open";
   const plus = document.createElement("i");
   plus.className = "ph ph-plus";
@@ -396,7 +383,11 @@ function renderSpaceMenu() {
     closeSpaceMenu();
     openSpaceCreate();
   });
-  menu.appendChild(create);
+  const createRow = document.createElement("div");
+  createRow.className = "space-option";
+  createRow.setAttribute("role", "none");
+  createRow.appendChild(create);
+  menu.appendChild(createRow);
 
   // The button's own label follows whatever is selected.
   const current = spacesCache.find((space) => space.id === activeSpaceId());
@@ -408,7 +399,7 @@ function renderSpaceMenu() {
   }
   if (iconEl) iconEl.className = `ph ${current ? current.icon : "ph-circles-four"}`;
   //: Past twelve spaces the menu is typed to (row 1643, `listFilter`).
-  listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(#space-create-open)" })?.refresh();
+  listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(:has(#space-create-open))" })?.refresh();
 }
 
 function closeSpaceMenu() {

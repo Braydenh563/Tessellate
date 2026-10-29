@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Space menu (audit 1029 X4): a menu of rows, each the space (a radio item) with hide, rename and delete as real buttons beside it instead of inside it; axe on the open switcher goes from 1 critical and 6 serious findings to none.
 - Timers (audit 1029 X14): a second timer no longer replaces the first; several run at once and the status bar shows the one ending first with a count; each keeps only its end time (kept in this browser), so a reload brings them back and one that ran out meanwhile is announced.
 - Recording (audit 1029 X2, X3, X1, X7): closing or reloading the tab mid-recording asks first; pause and stop send the audio held since the last slice, slices are 2 s not 10; the status line shows the saved size from the server ("Nothing saved yet" at zero) instead of a fixed claim; the voice dialog opens on its first field, not Record, and single-key chords stay quiet under any open dialog; "Start and record" and the Library Record button now say "Start and open recorder" and "Open recorder", which is what they do.
 - Deleting a space (audit 1029 X5): the dialog selects "move everything to Default" first and counts what the other option would take ("N notes, M documents", `GET /spaces/{id}/counts`); deleting with the contents stays final, as decided.
