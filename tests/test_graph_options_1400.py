@@ -99,4 +99,4 @@ def test_a_toast_over_the_map_stands_above_the_legend_and_left_of_the_zoom() -> 
     # The legend row rides the popups' observer (`watchGraphPopupSize`): a second ResizeObserver
     # in graph.js fails the wake-source ratchet (tests/test_frontend_wake_sources.py).
     assert "box.style.bottom" in body and "watchGraphPopupSize(row, write)" in body and '"resize"' in body
-    assert js.count("initGraphToastClearance();") == 2, "the clearance is wired on render and at load"
+    assert js.count("initGraphToastClearance();") == 1, "the clearance is wired once, at load"
