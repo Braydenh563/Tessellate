@@ -51,27 +51,27 @@ from tessellate.ai import when as when_words
 #: The connecting words, one table (decision 72: a voice swaps this, never
 #: the facts). `{}` slots are filled in order.
 _BASE = {
-    "overview": "You have {count} about {topic}, {span}.",
-    "likes": "It looks that way: you've written about {topic} {times}, {span}.",
+    "overview": "You have {count} about {topic}‹, {span}›.",
+    "likes": "It looks that way: you've written about {topic} {times}‹, {span}›.",
     "from_note": "{fact}, from {name}{when}.",
-    "from_list": "{count}, from your {what} of {day}: {items}.",
+    "from_list": "{count}, from your {what}‹ of {day}›: {items}.",
     "only_one": "It's your only note on {topic} so far.",
-    "who_once": "{name} comes up once, on {day}: {fact}.",
-    "who_many": "{name} comes up in {count}, {span}.",
+    "who_once": "{name} comes up once‹, on {day}›: {fact}.",
+    "who_many": "{name} comes up in {count}‹, {span}›.",
     "pick": "The {side}, by your notes: {why}.",
     "more_right": "{count} more on the right.",
     "more_show": "Show {count} more",
-    "stands_for": "{abbr} is short for {phrase}, from your note of {day}.",
-    "stands_for_seen": "{abbr} looks like {phrase}: your note of {day} names it in full.",
-    "uses": "You use {abbr} in {count}, the last on {day}.",
-    "all_said": "That's all your notes say on {topic} so far: {count}, {span}.",
+    "stands_for": "{abbr} is short for {phrase}, from {name}‹, written on {day}›.",
+    "stands_for_seen": "{abbr} looks like {phrase}: {name}‹, written on {day},› names it in full.",
+    "uses": "You use {abbr} in {count}‹, the last on {day}›.",
+    "all_said": "That's all your notes say on {topic} so far: {count}‹, {span}›.",
     "tie": "{Topic} also comes up in {category}: {count} on something else.",
     "tie_chip": "What have I saved about {topic} in {category}?",
     #: A line the person pinned as true (B32): said as their word.
     "pinned": "{said} (you pinned this as true, {day})",
-    "this_note": "{Name} of {day}{where}, in {points}:",
-    "this_one": "{Name} of {day}{where}{pause} says one thing: {fact}.",
-    "this_many": "{Count} in {topic}, {span}.",
+    "this_note": "{Name}‹ of {day}›{where}, in {points}:",
+    "this_one": "{Name}‹ of {day}›{where}{pause} says one thing: {fact}.",
+    "this_many": "{Count} in {topic}‹, {span}›.",
     "nothing_open": "Nothing is open to sum up. Open a note, or pick a category in the sidebar, and ask again; or name it: \"summarise Travel\".",
     "nothing_yet": "Nothing yet on {facets}.",
     "remind": "Remind you to {action}?",
@@ -168,19 +168,19 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
                      "That is the only note you have on {topic} so far.",
                      "So far this is your only note on {topic}.",
                      "You have just the one note on {topic} so far."),
-        "overview": ("You have {count} about {topic}, {span}.",
-                     "There are {count} about {topic}, {span}.",
-                     "{Count} about {topic}, {span}.",
-                     "Your notes on {topic}: {count}, {span}.",
-                     "On {topic} you've written {count}, {span}."),
+        "overview": ("You have {count} about {topic}‹, {span}›.",
+                     "There are {count} about {topic}‹, {span}›.",
+                     "{Count} about {topic}‹, {span}›.",
+                     "Your notes on {topic}: {count}‹, {span}›.",
+                     "On {topic} you've written {count}‹, {span}›."),
     },
     "professional": {
-        "overview": ("Your notebook holds {count} on {topic}, {span}.",
-                     "{Count} concern {topic}, {span}.",
-                     "On {topic}: {count}, {span}.",
-                     "Recorded on {topic}: {count}, {span}.",
-                     "The notebook has {count} on {topic}, {span}."),
-        "likes": "The notes suggest so: {topic} appears {times}, {span}.",
+        "overview": ("Your notebook holds {count} on {topic}‹, {span}›.",
+                     "{Count} concern {topic}‹, {span}›.",
+                     "On {topic}: {count}‹, {span}›.",
+                     "Recorded on {topic}: {count}‹, {span}›.",
+                     "The notebook has {count} on {topic}‹, {span}›."),
+        "likes": "The notes suggest so: {topic} appears {times}‹, {span}›.",
         "from_note": "{fact}, as recorded in {name}{when}.",
         "nothing_yet": "The notes do not yet cover {facets}.",
         "remind": "Set a reminder to {action}?",
@@ -194,12 +194,12 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
         "only_kind": "This is the only {noun}.",
     },
     "playful": {
-        "overview": ("Found {count} about {topic}, {span}.",
-                     "Here's the lot: {count} about {topic}, {span}.",
-                     "Ooh, {topic}: {count}, {span}.",
-                     "Dug up {count} about {topic}, {span}.",
-                     "Right, {topic}: {count}, {span}."),
-        "likes": "Sounds like it: you've written about {topic} {times}, {span}.",
+        "overview": ("Found {count} about {topic}‹, {span}›.",
+                     "Here's the lot: {count} about {topic}‹, {span}›.",
+                     "Ooh, {topic}: {count}‹, {span}›.",
+                     "Dug up {count} about {topic}‹, {span}›.",
+                     "Right, {topic}: {count}‹, {span}›."),
+        "likes": "Sounds like it: you've written about {topic} {times}‹, {span}›.",
         "from_note": "{fact}, says {name}{when}.",
         "nothing_yet": "No word yet on {facets}.",
         "remind": "Want a nudge to {action}?",
@@ -208,8 +208,8 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
         "gone_quiet": "{Word} has gone quiet since {month}.",
     },
     "plain": {
-        "overview": ("{Count} about {topic}, {span}.",),
-        "likes": "Yes. {Topic} comes up {times}, {span}.",
+        "overview": ("{Count} about {topic}‹, {span}›.",),
+        "likes": "Yes. {Topic} comes up {times}‹, {span}›.",
         "from_note": "{fact}. {Name}{when}.",
         "nothing_yet": "Not in your notes: {facets}.",
         "remind": "Remind you to {action}?",
@@ -248,9 +248,10 @@ def _set_timing(question: str) -> None:
     _CURRENT.set(bool(_ASKS_CURRENT.search(question or "")))
 
 
-#: A phrase's date slot, dropped when the question is not about time:
-#: "You have six notes about hobbies, 17 July to 4 October." says the count.
-_UNTIMED_SLOT = re.compile(r",? \{span\}|(?:,? on| of) \{day\}")
+#: A phrase's date clause, marked ‹...› whole: kept when the question is
+#: about time, dropped with every word of it otherwise ("You have six notes
+#: about hobbies." says the count; "the last on {day}" never leaves "the last").
+_DATE_CLAUSE = re.compile(r"‹([^›]*)›")
 
 
 def _vary(key: str) -> _Capitals:
@@ -302,7 +303,7 @@ class _Capitals(str):
         for k, v in list(kwargs.items()):
             if isinstance(v, str) and "{" + k.capitalize() + "}" in self:
                 kwargs[k.capitalize()] = v[:1].upper() + v[1:]
-        return str.format(self if _TIMED.get() else _UNTIMED_SLOT.sub("", self), *args, **kwargs)
+        return str.format(_DATE_CLAUSE.sub(r"\1" if _TIMED.get() else "", self), *args, **kwargs)
 
 
 PHRASES = _Phrases(_BASE)
@@ -2854,8 +2855,8 @@ def _stands_for(out: _Out, abbr: str, views: list, today: date) -> bool:
     view, sentence, both = found
     #: Said outright ("Cloud Computing (CC)") or only seen beside it: the
     #: second is a reading, and the answer says so.
-    line = PHRASES["stands_for" if both else "stands_for_seen"].format(abbr=abbr, phrase=phrase, day=_day(view.written, today))
-    out.lines.append(line)
+    line = PHRASES["stands_for" if both else "stands_for_seen"].format(abbr=abbr, phrase=phrase, name=_your_note(view), day=_day(view.written, today))
+    out.lines.append(line[:1].upper() + line[1:])
     out.rows.append(_row(line.rstrip("."), Fact(view, sentence, "", phrase)))
     using = [v for v in dated if re.search(rf"\b{re.escape(abbr)}\b", str(v.note.get("content") or ""))]
     if len(using) > 1 and using[-1].written:

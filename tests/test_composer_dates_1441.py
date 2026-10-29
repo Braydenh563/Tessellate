@@ -131,3 +131,74 @@ def test_a_question_about_time_still_says_when(answers, book, chat):
     #: "Nothing in July touches hobbies" says the asked time too.
     when = re.compile(rf"\bago\b|\b(?:in|of|since) (?:{_MONTH})\b|\blast (?:week|month)\b", re.I)
     _bad([f"{q!r}:\n{t}" for q, t in found if not _DATE.search(t) and not when.search(t)])
+
+
+class _Slots(dict):
+    def __missing__(self, key: str) -> str:
+        return "Thing" if key[:1].isupper() else "thing"
+
+
+def _every_phrase() -> list[tuple[str, str]]:
+    from tessellate.ai import composer_digest
+
+    said = []
+    for table in [composer_digest._BASE, *composer_digest.VOICES.values()]:
+        for key, phrases in table.items():
+            for phrase in phrases if isinstance(phrases, tuple) else (phrases,):
+                #: A lead ("a week on, ") opens a clause; it is not one.
+                if isinstance(phrase, str) and "{" in phrase and not phrase.endswith(", "):
+                    said.append((key, phrase))
+    return said
+
+
+def test_a_dropped_date_never_leaves_its_clause_behind():
+    """The coordinator, 2026-10-29: "You use HCI in two notes, the last." A
+    phrase's date goes with its whole clause, in every phrase of every voice."""
+    from tessellate.ai import composer_digest
+
+    token = composer_digest._TIMED.set(False)
+    try:
+        bad = []
+        for key, phrase in _every_phrase():
+            text = composer_digest._Capitals(phrase).format(**_Slots({k: "thing" for k in re.findall(r"\{(\w+)\}", phrase)}))
+            if re.search(r"\b(?:the last|on|of|from|by|at|written|dated|spanning)\s*[.,:;)]|,\s*[.,:;)]|\s{2}", text):
+                bad.append(f"{key}: {text}")
+    finally:
+        composer_digest._TIMED.reset(token)
+    _bad(bad)
+
+
+def test_a_glossary_answer_names_its_note_and_ends_whole():
+    from datetime import date
+
+    from tessellate.ai import composer_digest
+
+    notes = [{"id": i, "content": c, "created_at": f"2026-09-0{i}T10:00:00", "tags": [], "category": "Uni"}
+             for i, c in ((1, "# HCI lecture\n\nHuman Computer Interaction (HCI) lecture 2."), (2, "HCI quiz Friday."))]
+    text = composer_digest.answer("what does HCI stand for?", notes, today=date(2026, 10, 11))["text"]
+    assert text.startswith("HCI is short for Human Computer Interaction, from your HCI lecture note."), text
+    assert "You use HCI in two notes." in text and "September" not in text, text
+    #: Asked about time, the clause comes back whole.
+    from tessellate.ai import composer
+
+    composer_digest._set_timing("when did I write down what HCI is?")
+    out = composer_digest._Out()
+    views = [composer.read_note(n, i) for i, n in enumerate(notes)]
+    assert composer_digest._stands_for(out, "HCI", views, date(2026, 10, 11))
+    timed = " ".join(out.lines + out.closing)
+    assert "written on 1 September" in timed and "the last on 2 September" in timed and "note of" not in timed, timed
+
+
+@pytest.mark.parametrize(("content", "named"), [
+    ("Intro to Cloud Computing starts Monday.", "the note that starts “Intro to Cloud Computing starts Monday”"),
+    ("Annual Leave starts 2 December.", "the note that starts “Annual Leave starts 2 December”"),
+    ("Project Management Office sent the forms.", "the note that starts “Project Management Office sent the forms”"),
+    ("Atlas retro meeting", "the Atlas retro meeting"),
+    ("HCI quiz Friday.", "the HCI quiz Friday"),
+])
+def test_a_one_line_sentence_is_quoted_never_worn_as_a_name(content, named):
+    """The coordinator, 2026-10-29: "Intro to Cloud Computing starts Monday
+    names it in full". A short line that says something is a sentence."""
+    from tessellate.ai import composer_frame
+
+    assert composer_frame.short_name({"content": content, "category": "Uni"}) == named

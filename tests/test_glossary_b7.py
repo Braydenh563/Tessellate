@@ -93,10 +93,14 @@ def test_the_answer_says_what_it_stands_for_and_how_it_knows():
     from tessellate.ai import composer_digest
 
     said = composer_digest.answer("what does HCI stand for?", _notes("Human Computer Interaction (HCI) lecture 2.", "HCI quiz Friday."), today=date(2026, 10, 11))
-    assert said["text"].startswith("HCI is short for Human Computer Interaction, from your note of 1 September.")
-    assert "You use HCI in two notes, the last on 2 September." in said["text"]
+    #: The note is named, never by its day, and the day is said only when
+    #: the question asks about time (INBOX 1441, the owner, 2026-10-29).
+    assert said["text"].startswith("HCI is short for Human Computer Interaction, from the Human Computer Interaction (HCI) lecture 2."), said["text"]
+    assert "You use HCI in two notes." in said["text"]
     seen = composer_digest.answer("what does CC stand for?", _notes("Intro to Cloud Computing starts Monday.", "CC lab on Friday."), today=date(2026, 10, 11))
-    assert seen["text"].startswith("CC looks like Cloud Computing: your note of 1 September names it in full.")
+    #: INBOX 1441 moved this line's intent: a note is never named by its day,
+    #: and a one-line sentence is quoted, not worn as a title.
+    assert seen["text"].startswith("CC looks like Cloud Computing: the note that starts “Intro to Cloud Computing starts Monday” names it in full."), seen["text"]
     assert seen["grounding"][0]["note_id"] == 1
     #: Unknown to the notes: no reading, the composer's answer stands.
     assert composer_digest.answer("what does XYZ stand for?", _notes("Nothing here about it.", "Or here."), today=date(2026, 10, 11)) is None
