@@ -57,6 +57,17 @@ def _dated(session: Session) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live(), Entry.content.op("GLOB")("*[0-9]*")).order_by(Entry.created_at.desc()).limit(DATED_LIMIT)))
 
 
+def _of_kind(session: Session, kind: str) -> list[Entry]:
+    """The newest notes that can be of `kind` (audit 1029 C34): a note with a
+    tick box, a digit, or any note for a list (bullets are read in code)."""
+    if kind == "dates":
+        return _dated(session)
+    newest = select(Entry).where(*_live()).order_by(Entry.created_at.desc())
+    if kind == "tasks":
+        newest = newest.where(or_(Entry.content.like("%[ ]%"), Entry.content.like("%[x]%")))
+    return list(session.scalars(newest.limit(LIST_LIMIT)))
+
+
 def pool(session: Session, question: str, entries: list) -> list:
     """The notes the computed answer for `question` reads, or `entries` when
     it is not one or its pool is empty (the search's own notes then answer)."""
@@ -67,6 +78,8 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _mentioning(session, question)
     elif which in ("dates", "due_for"):
         found = _dated(session)
+    elif which == "holding":
+        found = _of_kind(session, composer_lists.holding_ask(question)[0])  # type: ignore[index]
     else:
         return entries
     if which == "mentions" and not found:

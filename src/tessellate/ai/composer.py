@@ -651,7 +651,7 @@ SYNONYM_GROUPS = (
     ("buy", "purchase", "shopping"),
     ("film", "movie"),
     ("car", "drive", "driving"),
-    ("eat", "food", "dinner", "lunch", "breakfast", "meal", "recipe"),
+    ("eat", "cook", "food", "dinner", "lunch", "breakfast", "meal", "recipe"),
     ("book", "books", "reading", "read"),
     ("run", "running", "jog", "race"),
     ("flat", "apartment", "home", "house"),

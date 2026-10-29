@@ -442,12 +442,20 @@ _WHATS_IN = re.compile(
 )
 
 
+def _asks_a_kind(text: str) -> bool:
+    from tessellate.ai import composer_lists  # on first use: the composer is not loaded by importing the commands
+
+    return composer_lists.holding_ask(text) is not None
+
+
 def _find(text: str) -> dict | None:
-    whats = _WHATS_IN.fullmatch(text.strip())
+    whats =_WHATS_IN.fullmatch(text.strip())
     if whats:
         filed = (whats["a"] or whats["b"]).strip()
         return {"intent": "find", "about": filed, "filed": filed}
     asked = _ASKED_FIND.fullmatch(text.strip()) or _MENTIONING.fullmatch(text.strip())
+    if asked and _asks_a_kind(text):
+        return None  # "what notes contain a checklist" asks for a kind of note, not a word (audit 1029 C34)
     if asked and _note_topic(asked["topic"]):
         about = _drop_article(_NOTES_SCOPE.sub("", asked["topic"].strip()))
         if about:

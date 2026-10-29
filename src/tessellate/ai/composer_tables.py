@@ -882,7 +882,7 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("baby", "infant", "newborn"),
     ("grandma", "granny", "gran", "nan", "nana", "grandmother"),
     ("grandpa", "grandad", "granddad", "grandfather"),
-    ("party", "celebration", "gathering", "get-together"),
+    ("party", "celebration", "celebrate", "gathering", "get-together"),
     # Feelings.
     ("happy", "glad", "pleased", "delighted", "cheerful"),
     ("sad", "unhappy", "upset", "gloomy", "miserable"),
@@ -1211,6 +1211,29 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
  ['help', 'assist', 'support', 'aid', 'guide', 'advice', 'advise'],
  ['change', 'modify', 'alter', 'adjust', 'adapt', 'transform', 'update'],
  ['use', 'utilize', 'employ', 'apply', 'operate', 'consume']])
+
+#: The verb a person asks with and the noun a note is written with ("when do I
+#: fly" is the "Flight to Lisbon" note; audit 1029 C21). `fly` and `flight`,
+#: `travel` and `trip`, `depart` and `departure`, `arrive` and `arrival`,
+#: `exercise` and `workout` already sit in groups above (a word is in one
+#: group only); the pairs below are the ones that did not.
+VERB_NOUN_PAIRS: tuple[tuple[str, ...], ...] = (
+    ("decide", "decision"),
+    ("invite", "invitation"),
+    ("marry", "marriage", "wedding"),
+    ("graduate", "graduation"),
+    ("retire", "retirement"),
+    ("register", "registration", "enrol", "enrolment"),
+    ("subscribe", "subscription"),
+    ("submit", "submission"),
+    ("deliver", "delivery"),
+    ("renew", "renewal"),
+    ("invest", "investment"),
+    ("donate", "donation"),
+    ("complain", "complaint"),
+    ("vote", "ballot", "election"),
+)
+EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + VERB_NOUN_PAIRS
 EXTRA_ASKING_WORDS = EXTRA_ASKING_WORDS | frozenset(['af',
  'asf',
  'bestie',
