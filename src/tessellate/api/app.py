@@ -1332,6 +1332,7 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_maintenance.router, dependencies=locked)
     app.include_router(routes_lag.router, dependencies=locked)
     app.include_router(routes_diag.router, dependencies=locked)
+    routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.

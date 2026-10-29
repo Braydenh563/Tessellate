@@ -159,15 +159,14 @@ def clear() -> None:
         _queries.clear()
 
 
-_hooked = False
+_hook = {"on": False}
 
 
 def install_query_hook() -> None:
     """Time every statement on every engine: two `perf_counter` calls each."""
-    global _hooked
-    if _hooked:
+    if _hook["on"]:
         return
-    _hooked = True
+    _hook["on"] = True
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
 

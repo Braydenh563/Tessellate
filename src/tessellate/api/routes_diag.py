@@ -52,12 +52,13 @@ def counts(session: Session) -> dict:
     return value
 
 
+#: app.py registers the asset-hash lookup at startup, so this module never imports app (a cycle).
+BUILD: dict = {"hash": lambda: ""}
+
+
 def context(session: Session) -> dict:
     """What every lag line carries from this side: sizes, app version, asset hash."""
-    from tessellate.api import app as app_module
-
-    build = app_module.asset_hash(app_module.FRONTEND_DIR / "js" / "app.js") or ""
-    return {**counts(session), "v": __version__, "build": build}
+    return {**counts(session), "v": __version__, "build": BUILD["hash"]() or ""}
 
 
 def _job_failures() -> list[dict]:
