@@ -1188,6 +1188,9 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     #: note's words, never at "---" (audit 1029 X19). Offsets stay the
     #: content's own.
     front = properties.block_end(content)
+    #: And from its first line with words in it: the blank line people leave
+    #: after the closing fence must not leave the note without a name.
+    front += len(content[front:]) - len(content[front:].lstrip("\r\n"))
     title, body_start = _title(content[front:])
     titled = bool(title) and body_start > 0
     body_start = front + body_start

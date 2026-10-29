@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from tessellate.core.database import NoteType
 from tessellate.core.docmeta import MAX_FENCE_LINES, properties as read_block
 
-_FENCE = re.compile(r"^---[ \t]*$")
+_FENCE = re.compile(r"^---[ \t\r]*$")
 _NEEDS_QUOTES = re.compile(r"""^[\s"'\[{>|*&!%@`-]|:\s|\s#|[,\]]|\s$""")
 
 

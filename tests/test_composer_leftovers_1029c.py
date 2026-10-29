@@ -55,3 +55,39 @@ def test_a_greeting_never_offers_about_as_a_topic(book, greeting, chat):  # noqa
     said = [ask(f"{greeting}{' ' * n}", chat) for n in range(8)]
     bad = [s for s in said if re.search(r"(?:on|about|of|to) about\b|“what did I write about about”", s)]
     assert not bad, bad
+
+
+# --- 2: a properties block reads the same with any line ending ----------------------------
+
+BLOCKS = [
+    "---\ntags: [meeting, atlas]\nstatus: open\n---\n# Atlas sync\n\nBeta scope is frozen.",
+    "---\ntype: Book\nauthor: Powers\n---\nThe Overstory, a slow start.",
+    "---\naliases:\n  - sync\n  - weekly\n---\n\n# Weekly\n\n- [ ] draft the spec",
+]
+
+
+@pytest.mark.parametrize("text", BLOCKS, ids=["tags", "book", "list"])
+def test_a_crlf_block_ends_where_its_lf_twin_does(text):
+    from tessellate.entry import properties
+
+    crlf = text.replace("\n", "\r\n")
+    lf_end, crlf_end = properties.block_end(text), properties.block_end(crlf)
+    assert lf_end
+    assert crlf_end
+    assert crlf[crlf_end:] == text[lf_end:].replace("\n", "\r\n")
+
+
+@pytest.mark.parametrize("text", BLOCKS, ids=["tags", "book", "list"])
+def test_a_crlf_block_reads_the_same_properties(text):
+    from tessellate.entry import properties
+
+    assert properties.split(text.replace("\n", "\r\n"))[0] == properties.split(text)[0]
+
+
+@pytest.mark.parametrize("text", BLOCKS, ids=["tags", "book", "list"])
+def test_a_crlf_note_is_never_named_by_its_fence(text):
+    from tessellate.ai import composer
+
+    view = composer.read_note({"id": 1, "content": text.replace("\n", "\r\n"), "created_at": NOW, "updated_at": NOW}, 0)
+    assert view is not None
+    assert view.title.strip("-") != "", view.title
