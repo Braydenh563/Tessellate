@@ -231,7 +231,8 @@
   cursor: pointer;
   visibility: hidden;
 }
-.sp-unpick:hover {
+.sp-unpick:hover,
+.sp-unpick:is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }

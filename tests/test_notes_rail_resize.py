@@ -63,7 +63,7 @@ def test_the_width_is_the_grid_track_and_the_handle_follows_the_rail() -> None:
     assert "grid-auto-columns: clamp(17rem, 21vw, 20rem)" in css, "the stylesheet's own width is what Home restores"
     js = SPY.read_text(encoding="utf-8")
     assert "layout.style.gridAutoColumns" in js and "gridArea" in js
-    assert "notesRailHandle.hidden = !entry" in js, "no handle without the rail (no empty track)"
+    assert "notesRail.handle.hidden = !entry" in js, "no handle without the rail (no empty track)"
 
 
 def test_the_recipe_and_the_guide_say_it() -> None:
