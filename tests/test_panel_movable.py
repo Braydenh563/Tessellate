@@ -28,7 +28,7 @@ const ctx = { localStorage: { getItem: (k) => (k in store ? store[k] : null), se
 // The app's storage door (prefs.js), over the same store.
 ctx.prefs = { get: (k, f = "") => ctx.localStorage.getItem(k) ?? f, setJSON: (k, v) => { ctx.localStorage.setItem(k, JSON.stringify(v)); return true; } };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.api = { panelClampMove, panelClampSize, panelKeyDelta, panelStoreRead, panelStoreWrite };", ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.api = { panelClampMove, panelClampSize, panelKeyDelta, panelStoreRead, panelStoreWrite, panelSnapZone, panelZoneRect, panelRestoreOn };", ctx);
 const a = ctx.api;
 const rect = { left: 300, top: 100, width: 500, height: 400 };
 const out = {
@@ -51,6 +51,22 @@ store["tessellate.panels"] = "{not json";
 out.corrupt = a.panelStoreRead("x");
 store["tessellate.panels"] = JSON.stringify({ x: [1, "a", 2, 3] });
 out.bad = a.panelStoreRead("x");
+delete store["tessellate.panels"];
+a.panelStoreWrite("dock-me", { x: 1.2, y: 2, w: 500, h: 700, dock: "left" });
+out.dockRead = a.panelStoreRead("dock-me");
+a.panelStoreWrite("odd", { x: 0, y: 0, w: null, h: null, dock: "sideways" });
+out.dockBad = a.panelStoreRead("odd");
+out.zones = {};
+for (const [n, x, y] of [["mid", 500, 400], ["l", 3, 400], ["r", 997, 400], ["t", 500, 2], ["b", 500, 799], ["tl", 5, 5], ["tr", 995, 5], ["bl", 5, 795], ["br", 995, 795], ["edgeIn", 24, 400], ["edgeOut", 25, 400], ["topThirdL", 200, 2], ["topThirdR", 800, 2], ["topMidEdge", 340, 2]]) out.zones[n] = a.panelSnapZone(x, y, 1000, 800);
+out.rects = {};
+for (const z of ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"]) out.rects[z] = a.panelZoneRect(z, 1000, 800, 12);
+out.noRect = a.panelZoneRect("", 1000, 800, 12);
+out.safe = a.panelZoneRect("left", 1000, 800, 12, { left: 60, top: 50, right: 1000, bottom: 770 });
+out.restoreDefault = a.panelRestoreOn();
+store["panel-restore"] = "off";
+out.restoreOff = a.panelRestoreOn();
+store["panel-restore"] = "on";
+out.restoreOn = a.panelRestoreOn();
 console.log(JSON.stringify(out));
 """
 
@@ -108,3 +124,60 @@ def test_the_module_has_no_wake_source_and_uses_the_cssom() -> None:
         assert banned not in js, banned
     assert "setPointerCapture" in js and "style.translate" in js
     assert chr(0x2014) not in js
+
+
+@node
+def test_snap_zones_follow_the_pointer_to_an_edge_or_corner(maths) -> None:
+    z = maths["zones"]
+    assert z["mid"] == ""
+    assert (z["l"], z["r"], z["t"], z["b"]) == ("left", "right", "max", "bottom")
+    assert (z["tl"], z["tr"], z["bl"], z["br"]) == ("tl", "tr", "bl", "br")
+    # 24px is inside the zone, 25px is not
+    assert z["edgeIn"] == "left" and z["edgeOut"] == ""
+    # the top band is read by thirds: one gesture, one height
+    assert (z["topThirdL"], z["topThirdR"], z["topMidEdge"]) == ("tl", "tr", "max")
+
+
+@node
+def test_zone_rects_tile_the_window_with_an_inset(maths) -> None:
+    r = maths["rects"]
+    # 1000 x 800, inset 12: a half is (1000 - 36) / 2 = 482 wide, a gap of 12 between
+    assert r["left"] == {"left": 12, "top": 12, "width": 482, "height": 776}
+    assert r["right"] == {"left": 506, "top": 12, "width": 482, "height": 776}
+    assert r["max"] == {"left": 12, "top": 12, "width": 976, "height": 776}
+    assert r["bottom"] == {"left": 12, "top": 406, "width": 976, "height": 382}
+    assert r["tl"] == {"left": 12, "top": 12, "width": 482, "height": 382}
+    assert r["br"] == {"left": 506, "top": 406, "width": 482, "height": 382}
+    assert r["tr"]["left"] == 506 and r["bl"]["top"] == 406
+    assert maths["noRect"] is None
+    # beside a 60px rail, below a 50px bar, above a 30px status bar
+    assert maths["safe"] == {"left": 72, "top": 62, "width": 452, "height": 696}
+
+
+@node
+def test_a_dock_is_stored_with_the_panel_and_garbage_is_dropped(maths) -> None:
+    assert maths["dockRead"] == {"x": 1, "y": 2, "w": 500, "h": 700, "dock": "left"}
+    assert "dock" not in maths["dockBad"]
+
+
+@node
+def test_panels_open_where_left_by_default_and_the_setting_turns_it_off(maths) -> None:
+    assert maths["restoreDefault"] is True and maths["restoreOn"] is True
+    assert maths["restoreOff"] is False
+
+
+def test_the_setting_row_is_wired_like_its_neighbours() -> None:
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert 'id="panel-restore-toggle"' in html and "Panels open where you left them" in html
+    rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
+    assert '{ key: "panel-restore", id: "panel-restore-toggle", on: "on", off: "off", base: "on" }' in rows
+    assert '["panel-restore-toggle", "panel-restore"]' in rows
+
+
+def test_the_reset_button_and_the_snap_preview_are_recipe_shaped() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
+    assert 'aria-label", "Put back in the middle"' in js
+    assert "dialog-head-btn" in js and "ph-arrow-counter-clockwise" in js
+    assert "panel-snap-preview" in js and "pointer-events: none" in css
+    assert "backdrop-filter" not in css

@@ -1896,7 +1896,8 @@ MORE_TOPICS.extend(
                 "move a panel", "move a popup", "drag a panel", "drag a popup",
                 "resize a panel", "resize a popup", "make a panel bigger",
                 "panel in the way", "popup in the way", "reset a panel",
-                "movable", "resizable", "panel size",
+                "movable", "resizable", "panel size", "dock a panel", "snap a panel",
+                "panel back in the middle", "panels open where you left them",
             ),
             "body": (
                 "Moving and resizing panels. On a computer with a mouse, any panel "
@@ -1905,7 +1906,14 @@ MORE_TOPICS.extend(
                 "and drag the small corner mark at its bottom right to resize it. "
                 "The head always stays on screen, and the content scrolls inside "
                 "when the panel is small. Each panel remembers its place and size "
-                "on this computer; double-click its head to put it back. From the "
+                "on this computer; the small arrow button in its head (Put back in "
+                "the middle), a double-click on the head or Home puts it back. "
+                "Drag the head to a screen edge to dock it: a faint outline shows "
+                "the zone, and letting go fills it (the left or right half, the "
+                "bottom half, a quarter at a bottom corner or the top left and "
+                "right, or the whole window at the top middle). Settings, "
+                "Appearance, Panels open where you left them, turns the "
+                "remembering off so every panel opens in the middle. From the "
                 "keyboard, Tab to the corner mark (Move or resize this panel): the "
                 "arrow keys move the panel 16 pixels, Shift and an arrow key "
                 "resize it, and Home resets it. On a phone or any touch screen "

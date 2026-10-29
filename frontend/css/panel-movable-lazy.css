@@ -10,6 +10,11 @@
   .panel-movable-on {
     transition: none;
   }
+  /* A sized or docked panel keeps its width inside a padded overlay (measured:
+     a maximised Settings shrank by the overlay's 48px of padding). */
+  .panel-movable-on[style*="width"] {
+    flex-shrink: 0;
+  }
   .panel-movable-on > .dialog-head {
     cursor: grab;
     user-select: none;
@@ -43,5 +48,28 @@
   .panel-grip:hover,
   .panel-grip:focus-visible {
     opacity: 1;
+  }
+}
+/* The dock preview (INBOX 1434): one element, in the top layer, click-through.
+   Its padding is the inset `panel-movable.js` reads; no blur, so it is not on
+   the glass-off list. */
+.panel-snap-preview {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: var(--space-3);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+}
+.panel-reset[hidden] {
+  display: none;
+}
+@media not ((min-width: 600px) and (pointer: fine)) {
+  .panel-reset {
+    display: none;
   }
 }
