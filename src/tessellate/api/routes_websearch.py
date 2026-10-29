@@ -8,12 +8,14 @@ pattern every route module follows.
 
 from __future__ import annotations
 
+import threading
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from tessellate.ai import backend_hint
 from tessellate.core import deps
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -119,18 +121,37 @@ def detect_searxng(url: str = "", session: Session = Depends(get_session)) -> di
     return {"found": True, "url": found}
 
 
+#: Per data folder, so one notebook's answer is never another's.
+_status_latest: dict[str, backend_hint.Latest] = {}
+_status_lock = threading.Lock()
+STATUS_BUDGET = 0.25
+
+
 @router.get("/websearch/searxng/status")
 def searxng_status() -> dict:
     """Is a Tessellate-managed SearXNG installed, running, and answering?"""
     from tessellate.search import searxng_manager
 
     data_dir = deps.get_config().data_dir
-    return {
-        **searxng_manager.status(data_dir),
-        # What the instance itself last said. Its output used to go to
-        # DEVNULL, which is why a failed start could only ever be guessed at.
-        "output": searxng_manager.recent_output(data_dir),
-    }
+
+    def probe() -> dict:
+        return {
+            **searxng_manager.status(data_dir),
+            # What the instance itself last said. Its output used to go to
+            # DEVNULL, which is why a failed start could only ever be guessed at.
+            "output": searxng_manager.recent_output(data_dir),
+        }
+
+    #: `status()` spawns `docker info`, which against a daemon that never
+    #: answers holds a worker for its whole timeout: 5 s on every open of the
+    #: chat tab and Settings (audit 1029 H6). Asked on a thread; a slow answer
+    #: is served from the last one.
+    with _status_lock:
+        latest = _status_latest.setdefault(str(data_dir), backend_hint.Latest(None))
+    answer = latest.get(probe, budget=STATUS_BUDGET)
+    if answer is None:
+        raise HTTPException(status_code=503, detail="Still checking whether Docker is up. Try again in a moment.")
+    return answer
 
 
 @router.post("/websearch/searxng/start", dependencies=[Depends(this_computer_only)])

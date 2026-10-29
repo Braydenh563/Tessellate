@@ -33,7 +33,7 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.ai import budget as run_budget
-from tessellate.ai import librarian, presets, skill_composer, skills
+from tessellate.ai import backend_hint, librarian, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
 from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, security
 from tessellate.core.config import default_preferences
@@ -2163,9 +2163,10 @@ def embedding_model_choices() -> dict:
     choices = embedmodels.catalogue()
     #: Which Ollama rows are pulled already, for Install against Reinstall
     #: and Uninstall (the owner's second addendum). Ollama's local list only.
-    ollama = deps.get_ollama()
     try:
-        pulled = {str(m.get("name", "")) for m in (ollama.list_models() or [])} if ollama.is_running() else set()
+        from tessellate.api import routes_models
+
+        pulled = routes_models._installed_names()
     except Exception:  # noqa: BLE001  # Ollama down: nothing is pulled as far as this screen knows
         pulled = set()
     for row in choices:
@@ -2654,7 +2655,7 @@ def _models_status_snapshot() -> dict:
     model_manager = deps.get_model_manager()
     embeddings = deps.get_embeddings()
     return {
-        "ollama_running": ollama.is_running(),
+        "ollama_running": backend_hint.running(ollama),
         "chat_model": model_manager.chat_model(),
         "utility_model": model_manager._config.get_preference("utility_model", ""),
         "embedding_backend": model_manager.embedding_backend(),

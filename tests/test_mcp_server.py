@@ -270,3 +270,35 @@ def test_a_notification_that_carries_an_id_still_gets_no_reply():
 
     for method in ("notifications/initialized", "notifications/cancelled"):
         assert handle_request({"jsonrpc": "2.0", "id": 9, "method": method}) is None
+
+
+def test_shape_errors_answer_invalid_params_not_a_crash(app_state):
+    for params in ("text", ["a"], 7):
+        for method in ("tools/call", "resources/read", "prompts/get", "initialize"):
+            response = handle_request({"jsonrpc": "2.0", "id": 5, "method": method, "params": params})
+            assert response["error"]["code"] == -32602, (method, params)
+    call = {"name": "count_notes", "arguments": "x"}
+    bad_args = handle_request({"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": call})
+    assert bad_args["error"]["code"] == -32602
+
+
+def test_a_non_object_message_gets_invalid_request(app_state):
+    assert handle_request([1, 2])["error"]["code"] == -32600
+    assert handle_request("hi")["error"]["code"] == -32600
+
+
+def test_serve_survives_a_bad_shape_and_a_raising_handler(app_state, monkeypatch):
+    from tessellate import mcp_server
+
+    lines = [
+        json.dumps([1, 2]),
+        json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": "x"}),
+        json.dumps({"jsonrpc": "2.0", "id": 2, "method": "boom"}),
+        json.dumps({"jsonrpc": "2.0", "id": 3, "method": "ping"}),
+    ]
+    monkeypatch.setitem(mcp_server._METHODS, "boom", lambda message: 1 / 0)
+    out = io.StringIO()
+    serve(io.StringIO("\n".join(lines) + "\n"), out)
+    replies = [json.loads(x) for x in out.getvalue().splitlines()]
+    assert [r.get("id") for r in replies] == [None, 1, 2, 3]
+    assert replies[2]["error"]["code"] == -32603 and replies[3]["result"] == {}

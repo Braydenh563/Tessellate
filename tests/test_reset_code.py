@@ -210,3 +210,19 @@ def test_the_code_is_kept_only_as_a_hash():
     live = reset_code._state["live"]
     assert live and not hasattr(live[0], "code")
     reset_code._forget()
+
+
+def test_open_logs_failure_never_names_the_path(client, monkeypatch):
+    from fastapi import HTTPException
+
+    from tessellate.api import routes_files
+
+    _notebook(client)
+
+    def refuse(folder, label):
+        raise HTTPException(status_code=500, detail=f"Couldn't open {label}. You can find it at {folder}.")
+
+    monkeypatch.setattr(routes_files, "reveal_folder", refuse)
+    bad = _local(client).post("/auth/reset-code/open-logs")
+    assert bad.status_code == 500
+    assert "/" not in bad.json()["detail"] and "\\" not in bad.json()["detail"]

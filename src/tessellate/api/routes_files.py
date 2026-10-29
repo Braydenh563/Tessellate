@@ -26,7 +26,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 
 from tessellate.core import activity
 from tessellate.core.subproc import NO_WINDOW
-from tessellate.api import paging
+from tessellate.api import bounds, paging
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -145,7 +145,7 @@ def upload_file(
     attachment = manager.add_attachment(
         session,
         entry,
-        filename=file.filename or stored_name,
+        filename=bounds.display_name(file.filename, stored_name),
         stored_name=stored_name,
         mime=file.content_type or "application/octet-stream",
         size=size,
@@ -969,7 +969,7 @@ def _put_notes_back(session: Session, changed: dict) -> None:
 
 
 class AttachmentRenameBody(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
+    filename: str = Field(min_length=1, max_length=bounds.NAME_MAX)
 
 
 @router.put("/files/{attachment_id}", response_model=EntryOut)
@@ -1344,12 +1344,18 @@ def upload_media(
                     raise HTTPException(status_code=413, detail="That file is larger than 50 MB.")
                 out.write(chunk)
 
-    original_name = file.filename or stored_name
+    try:
+        with destination.open("rb") as written:
+            bounds.check_image_upload(written.read(64), size)
+    except HTTPException:
+        destination.unlink(missing_ok=True)
+        raise
+    original_name = bounds.display_name(file.filename, stored_name)
     # `size` was already counted above while streaming the upload to disk, 
     # storing it here means `GET /media` never has to `stat()` this file to
     # answer "how big is it" (PLAN.md §0 P6).
     upload = MediaUpload(
-        filename=stored_name, original_name=original_name[:300], size_bytes=size
+        filename=stored_name, original_name=original_name, size_bytes=size
     )
     session.add(upload)
     session.commit()

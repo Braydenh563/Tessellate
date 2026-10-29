@@ -25,6 +25,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
+from tessellate.api import bounds
 from tessellate.core import deps
 from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
@@ -1232,7 +1233,7 @@ def graph_local(
     index, directed, _with_similarity = _local_topology(session, similarity)
 
     if entry_id not in index.entries:
-        return {"nodes": [], "edges": [], "categories": []}
+        raise HTTPException(status_code=404, detail="No such note.")
 
     def oriented(a: int, b: int, kind: str) -> tuple[int, int]:
         if kind not in ("link", "thread"):
@@ -1772,8 +1773,8 @@ class PinBody(BaseModel):
     # already scoped to the graph by its own path.
     #: No NaN or infinity: SQLite keeps an infinity, and the graph's response
     #: then cannot be encoded, so one bad pin broke the whole tab.
-    x: float | None = Field(default=None, allow_inf_nan=False)
-    y: float | None = Field(default=None, allow_inf_nan=False)
+    x: bounds.PinCoord | None = None
+    y: bounds.PinCoord | None = None
 
 
 def _pin_target(node_id: object) -> tuple[str, int] | None:
@@ -1835,8 +1836,8 @@ class PinRow(BaseModel):
     #: A note's number, or `document:N` for a document node (B78); the topic
     #: "Document" is a ring of them, so a drag of it carries both kinds.
     id: int | str
-    x: float = Field(allow_inf_nan=False)
-    y: float = Field(allow_inf_nan=False)
+    x: bounds.PinCoord
+    y: bounds.PinCoord
 
 
 class PinsBody(BaseModel):

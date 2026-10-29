@@ -15,7 +15,7 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import greeting_compose, librarian
+from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.core import deps
@@ -187,7 +187,7 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     }
 
     ollama = deps.get_ollama()
-    if not ollama.is_running():
+    if not backend_hint.running(ollama):
         return fallback
 
     # The name is read from preferences here rather than trusted from the

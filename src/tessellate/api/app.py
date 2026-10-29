@@ -105,11 +105,13 @@ from tessellate.api import (
     routes_map_suggest,
     routes_map_from_notes,
 )
+from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
     backup,
     bgtasks,
+    deadline,
     deps,
     diagring,
     diskspace,
@@ -991,6 +993,17 @@ def _register_error_handlers(app: FastAPI) -> None:
                 },
                 headers={"Retry-After": "2"},
             )
+        if getattr(_request.state, "deadline_expired", False) and isinstance(exc, ProviderError):
+            # The route's deadline (core/deadline.py) cut the model call and
+            # the route had no notes-only fallback of its own.
+            return JSONResponse(
+                status_code=504,
+                content={
+                    "detail": "The model took too long to answer. Try again in a moment.",
+                    "code": "model_slow",
+                    "hint": None,
+                },
+            )
         # A fresh id per failure, logged next to the real traceback and
         # handed back to the user, "it broke" with no ref is unreportable;
         # this ref is the thing a bug report can actually be filed against.
@@ -1639,7 +1652,7 @@ def create_app() -> FastAPI:
 
     # Everything that touches the user's data sits behind the unlock
     # gate; /auth itself and /health stay open.
-    locked = [Depends(require_unlock)]
+    locked = [Depends(require_unlock), Depends(deadline.guard)]
     _include_routers(app, locked)
     _add_system_routes(app, locked)
 

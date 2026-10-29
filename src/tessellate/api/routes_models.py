@@ -750,11 +750,19 @@ def _hardware_profile() -> dict:
     return hardware.profile(deps.get_config().get_preference("hardware_override"))
 
 
-_loaded_state: dict = {"names": set(), "busy": False, "answered": False}
+_loaded_state: dict = {"names": set(), "busy": False, "answered": False, "unknown": True}
 
 
 def _loaded_names() -> set[str]:
     """Models Ollama holds in memory now, without `:latest`; empty when unknown."""
+    return loaded_snapshot() or set()
+
+
+def loaded_snapshot() -> set[str] | None:
+    """`_loaded_names`, but None when the backend could not say. Never waits
+    past the short budget, so a route that only decorates (Activity's "Stop the
+    model", the hardware card) cannot be held by a busy or hung runner (audit
+    1029 H5)."""
     #: Under the same short budget as the list: /api/ps is one more call to a
     #: runner that may be busy loading, and "loaded" only tints a card. One
     #: request at a time: a runner that stays slow used to be asked again by
@@ -766,16 +774,17 @@ def _loaded_names() -> set[str]:
         busy = _loaded_state["busy"]
         _loaded_state["busy"] = True
     if busy:
-        return set(_loaded_state["names"])
+        return _loaded_known()
     finished = threading.Event()
 
     def run() -> None:
         try:
-            names = deps.get_ollama().loaded_models() or []
+            names = deps.get_ollama().loaded_models()
         except Exception:  # noqa: BLE001  # the backend being off is not an error here
-            names = []
+            names = None
         with _installed_lock:
-            _loaded_state["names"] = {str(n).removesuffix(":latest") for n in names if n}
+            _loaded_state["unknown"] = names is None
+            _loaded_state["names"] = {str(n).removesuffix(":latest") for n in (names or []) if n}
             _loaded_state["busy"] = False
             _loaded_state["answered"] = True
         finished.set()
@@ -790,7 +799,12 @@ def _loaded_names() -> set[str]:
     #: tint on last time's truth, and the shortlist does not pay for it.
     if not _loaded_state["answered"]:
         finished.wait(INSTALLED_REFRESH_BUDGET)
-    return set(_loaded_state["names"])
+    return _loaded_known()
+
+
+def _loaded_known() -> set[str] | None:
+    with _installed_lock:
+        return None if _loaded_state["unknown"] else set(_loaded_state["names"])
 
 
 class HardwareBody(BaseModel):
@@ -826,8 +840,10 @@ class InspectBody(BaseModel):
 
 
 def _installed_names() -> set[str]:
+    #: Through the one bounded, single-flight list (`_installed_state`), never a
+    #: live `list_models()`: a hung runner held `/models/hardware` for 5 s.
     try:
-        return {str(m.get("name", "")) for m in deps.get_ollama().list_models()}
+        return {m["name"] for m in _installed_or_last_known(deps.get_ollama(), patient=False) or []}
     except Exception:  # noqa: BLE001  # the backend being off is not an error here
         return set()
 
