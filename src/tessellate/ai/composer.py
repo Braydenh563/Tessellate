@@ -710,16 +710,27 @@ def _without_command(text: str) -> str:
         at += 1
     if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
         return text
+    rest = _without_bin(words[_past_filler(words, at):])
+    return " ".join(rest) or text
+
+
+def _past_filler(words: list[str], at: int) -> int:
+    """Where the subject starts after the command verb at `at`: past "the",
+    and for a draft past "a message to"."""
     drafting = words[at].casefold() in ("draft", "write", "compose")
     at += 1
     while at < len(words) and (words[at].casefold() in _COMMAND_FILLER or (drafting and words[at].casefold() in _DRAFTED)):
         at += 1
     if drafting and at < len(words) and words[at].casefold() in ("to", "for"):
         at += 1
-    rest = words[at:]
+    return at
+
+
+def _without_bin(rest: list[str]) -> list[str]:
+    """"budget to the bin" is budget."""
     if len(rest) >= 3 and rest[-3].casefold() == "to" and rest[-2].casefold() == "the" and rest[-1].casefold().rstrip("?.!") in _BIN_WORDS:
-        rest = rest[:-3]
-    return " ".join(rest) or text
+        return rest[:-3]
+    return rest
 
 
 def subject_terms(question: str) -> list[str]:
