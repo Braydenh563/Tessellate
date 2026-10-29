@@ -903,6 +903,36 @@ function readableUrl(url) {
   return segments.length > 1 ? `${host} / \u2026 / ${last}` : `${host} / ${last}`;
 }
 
+//: **A picture at another address is never asked for** (audit 1029 N7). The
+//: page's CSP (`img-src 'self' data: blob:`) refuses it, which read as
+//: "deleted" and logged four errors a render. The card says so and links to
+//: it instead of building the `<img>`.
+//: The blank lines before a picture on its own line are the markdown's, not
+//: the note's: kept, they stacked on the box's own margin into a 33px gap
+//: under a sketch's caption (dog3-1026 row 15).
+function appendPictureBox(element, box) {
+  const before = element.lastChild?.lastChild || element.lastChild;
+  if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
+  element.appendChild(box);
+}
+
+function isRemoteImage(url) {
+  return /^https?:\/\//i.test(url) && !url.startsWith(`${location.origin}/`);
+}
+
+function remoteImageNote(url) {
+  const note = document.createElement("span");
+  note.className = "entry-image-note";
+  note.title = "This notebook works offline, so pictures from the web are not loaded.";
+  const open = document.createElement("a");
+  open.href = safeHref(url);
+  open.target = "_blank";
+  open.rel = "noopener noreferrer";
+  open.textContent = "Open link";
+  note.append("Remote image not loaded. ", open);
+  return note;
+}
+
 //: A link label worth reading as inline markdown: it holds emphasis or code.
 const LINK_LABEL_MARKUP = /[*_`~=]/;
 
@@ -991,6 +1021,8 @@ function appendInlineRun(element, text, terms, compact, options) {
     if (imageUrl !== undefined) {
       if (compact) {
         element.appendChild(document.createTextNode(imageAlt || "Image"));
+      } else if (isRemoteImage(imageUrl)) {
+        appendPictureBox(element, remoteImageNote(imageUrl));
       } else if (isRenderableUrl(imageUrl)) {
         if (!dismissible) {
           const img = document.createElement("img");
@@ -1039,7 +1071,7 @@ function appendInlineRun(element, text, terms, compact, options) {
         // separate feature.
         img.addEventListener("error", () => {
           const placeholder = document.createElement("span");
-          placeholder.className = "entry-inline-image-deleted";
+          placeholder.className = "entry-image-note";
           placeholder.append(document.createTextNode(`${imageAlt || "Image"} deleted`));
           const dismiss = document.createElement("span");
           dismiss.className = "unlink";
@@ -1050,12 +1082,7 @@ function appendInlineRun(element, text, terms, compact, options) {
           placeholder.appendChild(dismiss);
           wrapper.replaceWith(placeholder);
         });
-        //: The blank lines before a picture on its own line are the
-        //: markdown's, not the note's: kept, they stacked on the wrapper's own
-        //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
-        const before = element.lastChild?.lastChild || element.lastChild;
-        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
-        element.appendChild(wrapper);
+        appendPictureBox(element, wrapper);
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }
