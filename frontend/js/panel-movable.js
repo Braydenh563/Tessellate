@@ -180,6 +180,12 @@ function panelSt(panel) {
 }
 function panelApply(panel, st) {
   panel.style.translate = st.x || st.y ? `${st.x}px ${st.y}px` : "";
+  //: **The scrim lifts once a panel is moved** (INBOX 1450, the owner:
+  //: "there's no point in dragging windows if the background is darkened
+  //: ... it should only be dark in the default position"). A panel moved,
+  //: docked or resized is put where it is to see what is beside it; at its
+  //: default place the dim stays. The panel is still modal (focus, Esc).
+  panelScrimLift(panel, st);
   if (st.w === null) {
     panel.style.width = panel.style.maxWidth = "";
   } else {
@@ -193,8 +199,19 @@ function panelApply(panel, st) {
     panel.style.maxHeight = "none";
   }
 }
+//: The dimmed layer behind a panel: its `dialog` (the ::backdrop) or the
+//: fixed overlay that holds it.
+function panelScrimOf(panel) {
+  return panel.closest("dialog, .modal-overlay, [id$='-overlay']");
+}
+function panelScrimLift(panel, st) {
+  panelScrimOf(panel)?.toggleAttribute("data-panel-moved", Boolean(st.x || st.y || st.dock || st.w !== null));
+}
+//: One level down too: the OCR workspace wraps its head in `.ocr-head`, so it
+//: had no reset button and none of the head's grab cursor or no-select rule,
+//: and a drag there highlighted text (the owner 2026-10-29).
 function panelHeadOf(panel) {
-  return panel.querySelector(":scope > .dialog-head");
+  return panel.querySelector(":scope > .dialog-head, :scope > * > .dialog-head");
 }
 //: Keeps a panel inside the window: size first, then place.
 function panelClamp(panel, st) {
@@ -328,6 +345,7 @@ function panelReset(panel) {
 function panelSave(panel) {
   const st = panelSt(panel);
   if (st.id) panelStoreWrite(st.id, st);
+  panelScrimLift(panel, st);
   panelSync(panel);
 }
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
@@ -347,6 +365,7 @@ function panelAdopt(panel) {
       else panelClamp(panel, st);
     }
   }
+  panelHeadOf(panel)?.classList.add("panel-drag-head");
   if (!st.reset || !st.reset.isConnected) {
     const head = panelHeadOf(panel);
     const actions = head && head.querySelector(":scope > .dialog-head-actions");

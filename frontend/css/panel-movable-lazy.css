@@ -15,13 +15,13 @@
   .panel-movable-on[style*="width"] {
     flex-shrink: 0;
   }
-  .panel-movable-on > .dialog-head {
+  .panel-movable-on .panel-drag-head {
     cursor: grab;
     user-select: none;
     touch-action: none;
   }
   .panel-moving,
-  .panel-moving > .dialog-head {
+  .panel-moving .panel-drag-head {
     cursor: grabbing;
     user-select: none;
   }
@@ -75,4 +75,14 @@
   .panel-reset {
     display: none;
   }
+}
+
+/* A moved panel's scrim is clear (INBOX 1450: dark only at the default
+   place); `panelScrimLift` sets the attribute. Still modal, so the layer
+   stays to take the outside press. The scrims carry no blur to lift. */
+[data-panel-moved]:is(.modal-overlay, [id$="-overlay"]) {
+  background: transparent;
+}
+dialog[data-panel-moved]::backdrop {
+  background: transparent;
 }
