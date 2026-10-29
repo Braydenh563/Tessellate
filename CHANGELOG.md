@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Lock screen: the password field keeps focus when the splash goes, a wrong password marks and describes it; mind map names lose trailing blank lines; the browser log tag clears contrast (sweep 1028b W9, W16, W25)
 - Spaces: the seeded name is Default space (migration for stored ones), a duplicate name answers 409 inline, and the space dialogs submit on Enter with a named icon group (sweep 1028b W11, W12, W30)
 - A failed load of chats, backups, logs, the tag cloud and the notes shuffle says so with Try again instead of an empty state (sweep 1028b W4)
 - Reminders take typed dates and a past date answers inline; one plural helper; failed-load titles read whole (sweep 1028b W2 to W5, W13 to W15, W28, W29)

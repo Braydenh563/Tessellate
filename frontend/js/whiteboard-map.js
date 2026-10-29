@@ -1867,7 +1867,8 @@ function wbBuildMapNode(el, d) {
     });
     text.on("blur", function () {
       wbEndTextEdit(this);
-      const edited = wbEditedText(this);
+      //: Trailing blank lines are not part of a name ("Central idea\n\n" was saved, sweep 1028b W16); Enter stays a new line (the owner, 2026-10-10).
+      const edited = wbEditedText(this).replace(/\s+$/, "");
       //: **The topic as it is now, by the id the element wears** (INBOX 537):
       //: this closure's `d` is the row from when the node was built, and a
       //: state fetch or an Undo since replaced it; a rename saved through it
