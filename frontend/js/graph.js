@@ -3617,34 +3617,91 @@ let graphHighlightIds = null;
 //: (`GET /read/filter`, ai/filters.py; this file reads no words itself). The
 //: words left over still match the preview. A box with no filter in it
 //: (`ids` null) is the plain search it always was.
-const graphPhrase = { q: "", ids: null, rest: "" };
+const graphPhrase = { q: "", ids: null, rest: "", waiting: false, timer: 0 };
 
+//: The server is asked after a pause, not per key: the plain words are matched
+//: in the page at once, and a phrase that is a filter replaces them when the
+//: answer comes. `waiting` is true from the first key to the answer, so the
+//: count does not say "No matches" for the half-typed filter it is about to read.
 function graphReadPhrase(query) {
   if (graphPhrase.q === query) return;
   graphPhrase.q = query;
   graphPhrase.ids = null;
+  clearTimeout(graphPhrase.timer);
+  graphPhrase.waiting = Boolean(query);
   if (!query) return;
-  apiJson("/read/filter?q=" + encodeURIComponent(query) + `&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true })
-    .then((got) => {
-      if (graphPhrase.q !== query || !got.ids) return;
-      graphPhrase.ids = new Set(got.ids);
-      graphPhrase.rest = (got.rest || "").toLowerCase();
-      applyGraphHighlight();
-    })
-    .catch(() => {});
+  graphPhrase.timer = setTimeout(() => {
+    apiJson("/read/filter?q=" + encodeURIComponent(query) + `&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true })
+      .then((got) => {
+        if (graphPhrase.q !== query) return;
+        graphPhrase.waiting = false;
+        if (got.ids) {
+          graphPhrase.ids = new Set(got.ids);
+          graphPhrase.rest = (got.rest || "").toLowerCase();
+        }
+        applyGraphHighlight(true);
+      })
+      .catch(() => {
+        if (graphPhrase.q === query) graphPhrase.waiting = false;
+      });
+  }, 150);
 }
 
-function graphQueryMatch(id, preview, query) {
-  if (graphPhrase.ids && graphPhrase.q === query) {
-    return graphPhrase.ids.has(id) && (!graphPhrase.rest || preview.toLowerCase().includes(graphPhrase.rest));
+//: **The search's matches, found once per change** (audit 1029 G10). The
+//: canvas used to lowercase a note's preview every time it asked "does this
+//: one match?": several times a note, and once per line end, every frame. Now
+//: it asks a set. The key is the node array, the query and what the server
+//: said about a phrase, so a hover or a pan reuses the last answer untouched.
+const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+
+//: A note's lowercase name, kept on the node and made again only when the
+//: preview itself changed (an edit, a rename): the label index.
+function graphPreviewLower(node) {
+  if (node._lcOf !== node.preview) {
+    node._lcOf = node.preview;
+    node._lc = String(node.preview || "").toLowerCase();
   }
-  return !query || preview.toLowerCase().includes(query);
+  return node._lc;
 }
 
-function applyGraphHighlight() {
+function graphNodeMatches(node, query) {
+  if (graphPhrase.ids && graphPhrase.q === query) {
+    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
+  }
+  return !query || graphPreviewLower(node).includes(query);
+}
+
+//: The notes `query` lights: `list` newest first (the order Enter walks them
+//: in) and `ids` as a set, null for an empty box. A group is a heading over
+//: notes, not a note, so it is never one. A new answer starts the walk again.
+function graphSearchFor(nodes, query) {
+  const g = graphSearch;
+  const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
+  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
+  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
+  g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
+  g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
+  g.ids = query ? new Set(g.list.map((n) => n.id)) : null;
+  return g;
+}
+
+function graphSearchNodes() {
+  return (graphRenderer() === "canvas" && typeof gcTab !== "undefined" && gcTab.nodes) || graphNodesRef || [];
+}
+
+//: The set for what is in the box now.
+function graphSearchRefresh(query) {
+  return graphSearchFor(graphSearchNodes(), query);
+}
+
+//: `cheap` is a change of the query alone: the scene the canvas painted is
+//: still right, so the frame is composed from it (`gcDrawComposed`). Anything
+//: else that lands here may have changed what the scene shows.
+function applyGraphHighlight(cheap) {
   const query = $("graph-search").value.trim().toLowerCase();
   if (query) graphHighlightIds = null; // typing takes over the spotlight
   graphReadPhrase(query);
+  graphSearchRefresh(query);
   // Reported: no way to cancel the "≈ Similar" highlight - it only ever
   // reset as a side effect of something else (typing over it, or a full
   // refresh). Same shape as #graph-focus-clear: shown exactly while there's
@@ -3656,7 +3713,7 @@ function applyGraphHighlight() {
   // draw, from this same state, see `gcHighlight`. There are no selections to
   // classed() there, so all this has to do is ask for a frame.
   if (graphRenderer() === "canvas") {
-    gcRequestDraw();
+    gcRequestDraw(gcTab, cheap === true);
     return;
   }
   if (!graphNodeSelection) return;
@@ -3670,7 +3727,7 @@ function applyGraphHighlight() {
       ? onPath.has(d.id)
       : graphHighlightIds
         ? graphHighlightIds.has(d.id)
-        : graphQueryMatch(d.id, d.preview, query);
+        : graphNodeMatches(d, query);
 
   const neighbours =
     graphHoveredId != null && graphAdjacency
@@ -3707,6 +3764,24 @@ function applyGraphHighlight() {
     return !(bySearch && byHover);
   });
 }
+
+//: Typing re-reads the matches at once (about 0.6 ms at 2,000 notes) and asks
+//: for a frame; `gcRequestDraw` keeps one frame queued, so a burst of keys is
+//: one redraw. The pause that used to sit here made the first letters wait for
+//: nothing: what is slow is the repaint, not the match (audit 1029 G10).
+$("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+//: Focusing the box paints the dimmed layer the search is drawn over, in an
+//: idle moment, so the first key costs what the others do (about 250 ms at
+//: 2,000 notes, once, otherwise paid inside the first keystroke).
+$("graph-search").addEventListener("focus", () => {
+  if (graphRenderer() !== "canvas" || typeof gcTab === "undefined") return;
+  const warm = () => {
+    gcTab.warmDim = true;
+    gcRequestDraw(gcTab, true);
+  };
+  if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 400 });
+  else setTimeout(warm, 0);
+});
 
 // --- graph node popup: edit a note without leaving the map -------------------
 

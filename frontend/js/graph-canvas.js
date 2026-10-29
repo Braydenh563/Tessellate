@@ -174,6 +174,8 @@ function gcSurface(options = {}) {
     dimA: 0,
     overCentres: new Map(),
     overLit: new Map(),
+    searchOver: false,
+    warmDim: false,
   };
 }
 
@@ -2225,6 +2227,17 @@ function gcEl(id) {
   return found;
 }
 
+//: **A search that is only a search** (no traced path, no "similar notes"
+//: spotlight) is drawn over the dimmed scene, as a hover is: the dimmed layer
+//: does not depend on what was typed, so it is painted once and kept, and each
+//: key draws only the notes it lights (audit 1029 G10: 80 ms a key at 2,000
+//: notes at 1x, nearly all of it the canvas commit of a whole repaint).
+function gcSearchOver(s) {
+  if (s.size !== "full" || graphTrace || graphHighlightIds) return false;
+  const box = gcEl("graph-search");
+  return Boolean(box && box.value.trim());
+}
+
 //: What is dimmed and what is lit, in one pass, for the same reason the SVG
 //: renderer's `applyGraphHighlight` does it in one pass: search, the "similar
 //: notes" spotlight, a traced path and the hover neighbourhood are four
@@ -2240,17 +2253,24 @@ function gcHighlight(s = gcTab) {
   const query = (search ? search.value : "").trim().toLowerCase();
   const onPath = chrome && graphTrace ? new Set(graphTrace.ids) : null;
   const ids = chrome ? graphHighlightIds : null;
-  const searchOk = (n) =>
-    onPath ? onPath.has(n.id) : ids ? ids.has(n.id) : graphQueryMatch(n.id, n.preview, query);
-  //: The dimmed scene layer (`gcDrawComposed`) is the map as every hover
-  //: leaves it: no note is a neighbour.
+  const searching = gcSearchOver(s);
+  //: The scene layers carry no search (see `gcSearchOver`), so they are good
+  //: for every query; the over layer, and a whole frame, do.
+  const layered = searching && (s.paintMode === "rest" || s.paintMode === "dim");
+  const found = query && !layered ? graphSearchFor(s.nodes, query) : null;
+  const searchOk = (n) => (onPath ? onPath.has(n.id) : ids ? ids.has(n.id) : !found || found.ids.has(n.id));
+  //: The dimmed layer of the composed frame (`gcDrawComposed`) is the map as
+  //: every hover leaves it: no note is a neighbour.
   const neighbours =
     s.paintMode === "dim" ? GC_NO_NEIGHBOURS : s.hoveredId != null && s.adj ? s.adj.get(s.hoveredId) : null;
   const hoverOk = (id) => neighbours == null || id === s.hoveredId || neighbours.has(id);
   return {
-    active: Boolean(query || ids || onPath),
+    active: Boolean(found || ids || onPath),
     onPath,
     hovering: neighbours != null,
+    searching,
+    //: The match Enter last went to: ringed and named whatever else is dimmed.
+    current: found ? graphSearch.current : null,
     searchOk,
     hoverOk,
   };
@@ -2384,7 +2404,12 @@ function gcDrawComposed(s) {
   //: The hover: how dimmed the map is, and how lit each note it lights.
   const step = gcFadeStep(s, gcStill());
   const hovering = s.hoveredId != null && s.adj.has(s.hoveredId);
-  s.dimA = gcFadeToward(s.dimA, hovering ? 1 : 0, step);
+  //: A search dims the map as a hover does and lights its matches on top;
+  //: with the pointer on a note too, the hover's neighbourhood is what is lit
+  //: (and only the matches among it, `gcDraw` asks the search of each).
+  const searching = gcSearchOver(s);
+  s.searchOver = searching && !hovering;
+  s.dimA = gcFadeToward(s.dimA, hovering || searching ? 1 : 0, step);
   let moving = s.dimA > 0 && s.dimA < 1;
   if (hovering && !s.overCentres.has(s.hoveredId)) s.overCentres.set(s.hoveredId, 0);
   s.overLit = new Map();
@@ -2398,7 +2423,10 @@ function gcDrawComposed(s) {
     if (next < 1) moving = true;
     for (const lit of [id, ...s.adj.get(id)]) s.overLit.set(lit, Math.max(s.overLit.get(lit) || 0, next));
   }
-  if (s.dimA > 0 && !scene.dim) scene.dim = gcPaintLayer(s, "dim", scene.spare);
+  //: `warmDim`: the search box was just focused, so the dimmed layer is painted
+  //: now, while nobody is typing, and the first key draws only its matches.
+  if ((s.dimA > 0 || s.warmDim) && !scene.dim) scene.dim = gcPaintLayer(s, "dim", scene.spare);
+  s.warmDim = false;
   const ctx = s.ctx;
   const r = t.k / scene.t.k;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2560,7 +2588,7 @@ function gcDraw(s = gcTab) {
       continue;
     }
     //: The hover draws only the lines of the notes it lights, at how lit each is.
-    const centre = over ? Math.max(s.overCentres.get(a.id) || 0, s.overCentres.get(b.id) || 0) : 1;
+    const centre = over ? (s.searchOver ? 1 : Math.max(s.overCentres.get(a.id) || 0, s.overCentres.get(b.id) || 0)) : 1;
     if (!centre) continue;
     const bySearch = !hl.active || (hl.searchOk(a) && hl.searchOk(b));
     const byHover =
@@ -2668,7 +2696,7 @@ function gcDraw(s = gcTab) {
     if (!Number.isFinite(node.x)) continue;
     if (!gcVisibleAtTime(node, s)) continue;
     if (!inView(node)) continue;
-    const lift = over ? s.overLit.get(node.id) : 1;
+    const lift = over ? (s.searchOver ? 1 : s.overLit.get(node.id)) : 1;
     if (!lift) continue;
     const dim = !(hl.searchOk(node) && (over || hl.hoverOk(node.id)));
     if (over && dim) continue;
@@ -2707,7 +2735,7 @@ function gcDraw(s = gcTab) {
     node._dim = dim;
     //: The note whose popup is open keeps the focus ring (Brief 100 (c), a
     //: ring on the selected node), so the map says which dot the card is for.
-    const focused = node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === openId;
+    const focused = node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === openId || node.id === hl.current;
     //: The node the pointer just left keeps its ring while it shrinks back,
     //: fading with it, and the one it arrived on fades its ring in.
     const leaving = !focused && node.id === s.hoverFrom && heat > 0;
@@ -2749,7 +2777,8 @@ function gcDraw(s = gcTab) {
     // it the zoom gate stays, since 2,000 labels at the fitted zoom are
     // paint the eye cannot read and the frame budget cannot afford.
     const labelsForAll = labelsOn && s.nodes.length <= GC_LABEL_ALL_SMALL && k > labelZoom - GC_LABEL_ZOOM;
-    if (!dim && ((labelsOn && (labelsForAll || k > labelZoom || matched)) || focused)) {
+    //: A match is named whatever the tickbox says: the label is why somebody typed.
+    if (!dim && ((labelsOn && (labelsForAll || k > labelZoom)) || matched || focused)) {
       labelled.push(node);
     }
   }
@@ -2983,7 +3012,7 @@ function gcDraw(s = gcTab) {
     // this is thousands of number comparisons and no allocation, not the
     // quadtree it looks like it wants.
     const labelRank = (node) =>
-      node.id === s.hoveredId || node.id === gcKeyboardId(s)
+      node.id === s.hoveredId || node.id === gcKeyboardId(s) || node.id === hl.current
         ? 0
         : hl.active && hl.searchOk(node)
           ? 1
@@ -3223,7 +3252,7 @@ function gcDraw(s = gcTab) {
     //: Nothing but the hover is left moving: the next frame can be composed,
     //: from the hover this one showed.
     s.sceneStale = busy;
-    s.dimA = hl.hovering ? 1 : 0;
+    s.dimA = hl.hovering || hl.searching ? 1 : 0;
     s.overCentres = new Map(hl.hovering ? [[s.hoveredId, 1]] : []);
   }
   //: A fade of the whole map keeps painting whole frames; a hover's ease, or
