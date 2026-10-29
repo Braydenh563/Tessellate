@@ -9272,6 +9272,7 @@ function nameMarkBuddyBuild() {
     //: so a sleeping companion answered a click as if awake, at once
     //: (companionfeel.js: "wave" 200ms after clicking it asleep).
     drag = { box: null, sx: event.clientX, sy: event.clientY, x: event.clientX, y: event.clientY, moved: false };
+    nmb.grabbed = true;
     face.setPointerCapture(event.pointerId);
   });
   face.addEventListener("pointermove", (event) => {
@@ -9322,6 +9323,7 @@ function nameMarkBuddyBuild() {
     if (!dragFrame) dragFrame = requestAnimationFrame(follow);
   });
   const release = (event) => {
+    nmb.grabbed = false;
     if (drag?.flipped) nameMarkBuddyFlip(buddy, false);
     if (drag?.moved) {
       cancelAnimationFrame(dragFrame);
@@ -9373,6 +9375,8 @@ function nameMarkBuddyBuild() {
   };
   face.addEventListener("pointerup", release);
   face.addEventListener("pointercancel", release);
+  //: A press that loses its capture another way never pins the board still.
+  face.addEventListener("lostpointercapture", () => { nmb.grabbed = false; });
   //: **A double-click is not two pokes** (INBOX 443 c, the owner: a
   //: double-click to enlarge it should find it "still doing that action").
   //: Its first click used to poke it there and then, and the poke ended

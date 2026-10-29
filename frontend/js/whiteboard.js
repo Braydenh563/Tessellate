@@ -105,7 +105,25 @@ function wbTrackpadPan(event) {
   return g.pad;
 }
 
+//: **The companion's press is the companion's** (INBOX 1432, the owner:
+//: "when I move the companion the board pans a bit with it as well"). While
+//: it is held nothing pans the board, and anything that tries is written to
+//: the log with its source, once a press: Chromium here never panned, so the
+//: owner's next log names the path.
+function wbCompanionHeld(event, why) {
+  if (!nmb.grabbed) return false;
+  if (nmb.grabbed !== "logged") {
+    nmb.grabbed = "logged";
+    const line = `board pan refused while the companion was held: ${why} ${event?.type || "code"} ${event?.pointerType || ""} buttons=${event?.buttons ?? ""} on ${typeof lagTarget === "function" ? lagTarget(event?.target) : event?.target?.tagName || ""}`;
+    //: The lag log reaches the server's terminal, which is what the owner pastes.
+    if (typeof lagNote === "function") lagNote("companion", 0, line);
+    else recordBrowserLog("WARN", [line]);
+  }
+  return true;
+}
+
 function wbZoomFilter(event) {
+  if (wbCompanionHeld(event, "filter")) return false;
   //: **A plain wheel zooms about the pointer** (the owner, 2026-10-18: "mouse
   //: scroll on the whiteboard and mindmap still doesnt zoom"; this reverses the
   //: earlier plain-wheel pan, recorded in WHITEBOARD_PLAN decision 24). Ctrl or
@@ -173,6 +191,7 @@ let wbZoom = d3
   .wheelDelta(zoomWheelDelta)
   .filter(wbZoomFilter)
   .on("zoom", handleWbZoom)
+  .on("start.companion", (e) => wbCompanionHeld(e.sourceEvent, "zoom"))
   .on("end.shield", wbEndPanShield);
 //: Whether the view is where the last "Fit to screen" put it (INBOX 792):
 //: the destination, and until when the fit's own animation is running.
@@ -17451,8 +17470,8 @@ async function initWhiteboard() {
   }, true);
   function wbEdgePanWanted() {
     if (!(wbEdgePan.buttons & 1) || WB_BRUSH_TOOLS.has(window.currentTool) || window.currentTool === "pan") return false;
-    if (wbMarqueeEl && wbMarqueeStart && !wbMarqueeStart.pending) return true;
-    return Boolean(wbGesture && !wbGesture.cancelled && !wbGesture.overTrash && !wbEdgePan.turn);
+    const wanted = (wbMarqueeEl && wbMarqueeStart && !wbMarqueeStart.pending) || Boolean(wbGesture && !wbGesture.cancelled && !wbGesture.overTrash && !wbEdgePan.turn);
+    return wanted && !wbCompanionHeld(null, "edge pan");
   }
   //: Screen pixels a frame along one axis: positive moves the board's
   //: content towards the far edge (so the near side comes into view).
