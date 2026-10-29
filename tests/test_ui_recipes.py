@@ -3414,7 +3414,7 @@ def test_a_script_built_dialog_opens_with_the_dialog_head() -> None:
 #: 25; DESIGN.md, "A grid of things you place"). The icon and emoji picker is
 #: the third grid of glyphs (MINDMAP_PLAN decision 43; DESIGN.md, "An icon or
 #: an emoji, picked or dragged"): its tiles are dragged as well as picked.
-HAND_BUILT_OPTION_ROWS = {"documents.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "spaces-find.js": 1, "whiteboard-library.js": 1}
+HAND_BUILT_OPTION_ROWS = {"documents.js": 1, "icon-picker.js": 1, "sheets-selects.js": 1, "search.js": 1, "whiteboard-library.js": 1}
 
 
 def test_only_the_rich_picker_stamps_its_anatomy() -> None:

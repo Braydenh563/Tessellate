@@ -2528,37 +2528,45 @@ body.scroll-top-visible .skills-split > .tab-main {
 .space-menu.hidden {
   display: none;
 }
-.space-option {
+.space-option,
+.space-option-main {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+.space-option {
   width: 100%;
   /* The trailing padding is bigger than the leading one because the row's
      hover actions live in it; without the reserve, the actions appear on
      hover and shove the name sideways. */
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
-  border: 0;
   border-radius: var(--radius-sm);
-  background: none;
-  font: inherit;
   font-size: var(--text-md);
   color: var(--ink);
-  text-align: left;
-  cursor: pointer;
 }
-.space-option:hover,
-.space-option:focus-visible {
+.space-option:hover {
   background: var(--inner);
-  outline: none;
 }
-.space-option>.ph:first-child {
+/* The row is a wrapper; the space is the button inside it, so the actions can
+   be its siblings (audit 1029 X4). */
+.space-option-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.space-option .ph:first-child {
   color: var(--muted);
 }
-.space-option[aria-selected="true"] {
+.space-option:has([aria-checked="true"]) {
   background: var(--accent-soft);
   color: var(--accent-text);
 }
-.space-option[aria-selected="true"]>.ph:first-child {
+.space-option:has([aria-checked="true"]) .ph:first-child {
   color: var(--accent-text);
 }
 .space-option-name {
@@ -2570,6 +2578,9 @@ body.scroll-top-visible .skills-split > .tab-main {
 /* Rename/delete for a space, revealed on hover or keyboard focus. Kept in the
    flow with opacity rather than display:none so the row does not change width
    when they appear. */
+.space-option-actions>button {
+  padding: var(--space-1);
+}
 .space-option-actions {
   display: flex;
   gap: var(--space-1);

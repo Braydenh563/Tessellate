@@ -139,13 +139,13 @@
          (the icon carries it) so it never competes with the tabs for room. -->
     <div class="space-switcher">
       <button id="space-switcher-btn" class="ghost small space-switcher-btn" type="button"
-        aria-haspopup="listbox" aria-expanded="false" aria-controls="space-menu"
+        aria-haspopup="menu" aria-expanded="false" aria-controls="space-menu"
         title="Switch space">
         <i id="space-current-icon" class="ph ph-circles-four" aria-hidden="true"></i>
         <span id="space-current-name" class="space-switcher-name">All spaces</span>
         <i class="ph ph-caret-down space-switcher-caret" aria-hidden="true"></i>
       </button>
-      <div id="space-menu" class="space-menu glass hidden" role="listbox"
+      <div id="space-menu" class="space-menu glass hidden" role="menu"
         aria-label="Spaces" tabindex="-1"></div>
     </div>
     <nav id="tab-bar" role="tablist" aria-label="App sections">
@@ -1006,6 +1006,7 @@
       </span>
     </div>
     <p>Choose what happens to its notes, documents, files and chats.</p>
+    <p id="space-delete-count" class="muted small" aria-live="polite"></p>
     <label for="space-delete-fate" class="form-label">Its contents</label>
     <select id="space-delete-fate" class="wide">
       <option value="">Delete everything in it</option>
@@ -8746,8 +8747,8 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Everything recorded in the app: meetings, lectures and voice notes. Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
             <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
-          <button id="recordings-record" class="small" type="button" title="Record a voice note">
-            <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Record</button>
+          <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
+            <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Open recorder</button>
         </div>
       </div>
       <p class="muted library-lede">Meetings, lectures and voice notes, kept as audio.</p>

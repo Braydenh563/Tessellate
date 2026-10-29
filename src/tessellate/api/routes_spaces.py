@@ -77,6 +77,20 @@ def get_spaces(session: Session = Depends(get_session)):
     return session.query(Space).all()
 
 
+@router.get("/spaces/{space_id}/counts")
+def space_counts(space_id: str, session: Session = Depends(get_session)):
+    """What deleting this space would take with it, for the confirm dialog."""
+    from sqlalchemy import func
+
+    from tessellate.core.database import Document
+
+    deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    with impersonate_workspace(session, "all"):
+        notes = session.query(func.count(Entry.id)).filter(Entry.workspace_id == space_id).scalar() or 0
+        documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
+    return {"notes": notes, "documents": documents}
+
+
 @router.post("/spaces", response_model=SpaceResponse)
 def create_space(space_in: SpaceCreate, session: Session = Depends(get_session)):
     # space_in.id is intentionally never read, see SpaceCreate.id's docstring.

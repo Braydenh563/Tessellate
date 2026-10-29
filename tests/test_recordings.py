@@ -175,11 +175,12 @@ def test_recover_route_finishes_a_killed_take_once(client):
     assert response.json() == []
 
 
-def test_the_recorder_saves_a_slice_every_ten_seconds():
+def test_the_recorder_saves_a_slice_every_two_seconds():
+    # Intent moved with audit 1029 X3: ten seconds of audio lost to a crash was too much.
     from pathlib import Path
 
     js = (Path(__file__).resolve().parents[1] / "frontend/js/meetings.js").read_text(encoding="utf-8")
-    assert "const MEETING_CHUNK_MS = 10000;" in js
+    assert "const MEETING_CHUNK_MS = 2000;" in js
     assert "recorder.start(MEETING_CHUNK_MS)" in js
     assert "/recordings/${id}/chunk" in js
 

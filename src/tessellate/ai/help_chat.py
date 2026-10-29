@@ -400,8 +400,9 @@ HELP_TOPICS: list[dict] = [
             "documents, chats and tags kept apart from other spaces. Switch or "
             "create one from the picker at the top of the sidebar; \"All "
             "spaces\" shows everything together. Deleting a space asks what "
-            "happens to its contents: delete everything in it, or move "
-            "everything to another space (a category both have is merged)."
+            "happens to its contents: move everything to another space (the "
+            "default choice, with a count of what is inside), or delete everything in it; "
+            "a category both spaces have is merged."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },
@@ -697,8 +698,8 @@ HELP_TOPICS: list[dict] = [
             "Library's Create, Tools and features) asks for a title, when and "
             "who (a title like \"Sync with Ana friday 2pm\" fills When and "
             "Who from its chips), then opens the meeting as a note with Agenda, Notes, Decisions "
-            "and Action items; Start and record does the same and starts "
-            "transcribing straight into its Notes (Ctrl+Shift+R records too). Write an action item as \"- [ ] Send the deck "
+            "and Action items; Start and open recorder does the same and opens the "
+            "recorder, writing into its Notes; press Record there (Ctrl+Shift+R opens it too). Write an action item as \"- [ ] Send the deck "
             "@Sam by Friday\": @Name is its owner, the plain words its due. "
             "The meeting chip on the note (or its ... menu, Meeting) opens the "
             "meeting sheet: Remind me makes an action item a reminder, asking "
