@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sixteen long functions split into named steps (own activity, typed commands, composer plan, slots, study, missing words, intent, note recency, chat prepare, the search route, engine filter, retrieve, note references), none over complexity 15 now; behaviour unchanged.
 - The Appearance panel has its own Help entry under Look and feel, and its current section reads in the accent text colour; "tell me about golf" answers with what you confirmed about golf, not as a person.
 - Quick sketch swatches (INBOX 1447): removing a recent colour offers Undo, a plus beside the picker saves the current colour as a swatch again, and the remove x is a small control beside the swatch (16 px, nothing over the disc; the 24 px target floor met by spacing); the picker's icon is an eyedropper.
 - Find anything and the palette rank the row that opens a feature above a Guide topic about it, for every feature (INBOX 1449): Help-pane rows are a "Guide" group listed after the rows that name the thing; "ocr workspace" had the Guide topic first.

@@ -2011,6 +2011,31 @@ def _with_sources(session: Session, question: str, notes: list[dict], mode: str)
     return named + (matched + notes if mode in ("recent", "none") else notes + matched)
 
 
+def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None) -> None:
+    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
+    _rewind_as_of(session, question, found, as_of, locale)
+    #: One ranker for every shape (audit 1029 C19): the note the subject
+    #: names, then the one that defines it, then the rest as retrieved.
+    if as_of is None and found.mode != "recent":
+        found.entries = note_rank.lead(found.entries, question)
+
+
+def _log_question(session: Session, found: "_Found", question: str, surface: str) -> None:
+    # Every entry this question surfaced counts as "used".
+    for entry in found.entries:
+        entry.access_count += 1
+    manager.log_action(session, "queried", surface, detail=question)
+    session.commit()
+    logging.getLogger("tessellate.chat").info(
+        "chat: %d note(s) via %s search for %r",
+        len(found.entries),
+        found.mode,
+        # The question is the user's own text, and it reaches the terminal as
+        # well as the in-app viewer, a bare %r of it can forge a log line.
+        safe_value(question, 80),
+    )
+
+
 def _prepare(
     session: Session,
     question: str,
@@ -2044,12 +2069,7 @@ def _prepare(
     #: plan, a countdown, a quiz), so the search and the hydration of every
     #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
     if not skip_search:
-        _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
-        _rewind_as_of(session, question, found, as_of, locale)
-        #: One ranker for every shape (audit 1029 C19): the note the subject
-        #: names, then the one that defines it, then the rest as retrieved.
-        if as_of is None and found.mode != "recent":
-            found.entries = note_rank.lead(found.entries, question)
+        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
@@ -2057,19 +2077,7 @@ def _prepare(
         notes = _with_sources(session, question, notes, found.mode)
     config = deps.get_config()
 
-    # Every entry this question surfaced counts as "used".
-    for entry in found.entries:
-        entry.access_count += 1
-    manager.log_action(session, "queried", surface, detail=question)
-    session.commit()
-    logging.getLogger("tessellate.chat").info(
-        "chat: %d note(s) via %s search for %r",
-        len(found.entries),
-        found.mode,
-        # The question is the user's own text, and it reaches the terminal as
-        # well as the in-app viewer, a bare %r of it can forge a log line.
-        safe_value(question, 80),
-    )
+    _log_question(session, found, question, surface)
     return _chat_payload(session, found, notes, config, as_of)
 
 

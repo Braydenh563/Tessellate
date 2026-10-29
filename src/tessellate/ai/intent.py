@@ -158,6 +158,22 @@ def classify(message: str) -> str:
     return routed
 
 
+def _is_act(message: str) -> bool:
+    from datetime import datetime
+
+    from tessellate.ai import act_registry
+
+    # `commands` registers the typed reader when it loads, and the chat route
+    # loads it (through the agent) before any question is classified. Naming it
+    # here would make intent, agent and commands one import cycle.
+    act = act_registry.typed_reader(message, datetime.now())
+    return bool((act and act["intent"] != "summarise") or act_registry.app_verb(message))
+
+
+def _reads_as_app_question(text: str) -> bool:
+    return _matches_any(text, _ABOUT_APP_PATTERNS) or any(re.search(pattern, text) for pattern in _ABOUT_APP_PATTERNS)
+
+
 def _classify(message: str) -> str:
     text = _normalise(message)
     if not text:
@@ -181,17 +197,7 @@ def _classify(message: str) -> str:
     if kind and kind != "until_note":
         return UTILITY
 
-    from datetime import datetime
-
-    from tessellate.ai import act_registry
-
-    # `commands` registers the typed reader when it loads, and the chat route
-    # loads it (through the agent) before any question is classified. Naming it
-    # here would make intent, agent and commands one import cycle.
-    act = act_registry.typed_reader(message, datetime.now())
-    if act and act["intent"] != "summarise":
-        return ACT
-    if act_registry.app_verb(message):
+    if _is_act(message):
         return ACT
 
     #: A key-mash ("asdfgh"): asked what was meant, never searched for.
@@ -202,9 +208,7 @@ def _classify(message: str) -> str:
     if _NOTE_WORDS.search(text):
         return NOTES
 
-    if _matches_any(text, _ABOUT_APP_PATTERNS) or any(
-        re.search(pattern, text) for pattern in _ABOUT_APP_PATTERNS
-    ):
+    if _reads_as_app_question(text):
         return ABOUT_APP
 
     if _matches_any(text, _SMALLTALK_PATTERNS):
