@@ -624,20 +624,6 @@ their it we they he she you a an as about into over under during since until bec
 """.split())
 
 
-def _keeps_capital(word: str, names: set[str]) -> bool:
-    return word == "I" or word.lower() in names | _title_capitals() or any(c.isupper() for c in word[1:])
-
-
-def _starts_a_title(text: str, verb: bool) -> bool:
-    if verb:
-        return False
-    nxt = re.match(r"[A-Za-z][\w'-]*,? +([A-Z][\w'-]*)", text)
-    if nxt and not _CALENDAR_WORD.match(nxt.group(1)) and nxt.group(1) != "I":
-        #: "Deep Work", "Sara, Tom", "Dune Part Two"; "Invite Daniel" is a verb.
-        return True
-    return any(text.startswith(t) for t in _titles())
-
-
 def _fragment(text: str, names: set[str]) -> str:
     """`text` placed after other words ("you noted ..."): its first letter
     lowered only when that word is a plain dictionary word. A name, a title
@@ -649,10 +635,14 @@ def _fragment(text: str, names: set[str]) -> str:
     if not first:
         return text
     word = first.group(0)
-    if _keeps_capital(word, names):
+    if word == "I" or word.lower() in names | _title_capitals() or any(c.isupper() for c in word[1:]):
         return text
+    nxt = re.match(r"[A-Za-z][\w'-]*,? +([A-Z][\w'-]*)", text)
     verb = _verb_led(text) or _did(word) or word.lower() in _FUNCTION_WORDS
-    if _starts_a_title(text, bool(verb)):
+    if nxt and not _CALENDAR_WORD.match(nxt.group(1)) and nxt.group(1) != "I" and not verb:
+        #: "Deep Work", "Sara, Tom", "Dune Part Two"; "Invite Daniel" is a verb.
+        return text
+    if not verb and any(text.startswith(t) for t in _titles()):
         return text
     known = _dictionary()
     if known and word.lower() not in known:
@@ -1593,16 +1583,6 @@ def _noted_sentence(body: str, first: bool) -> str:
     return ("says " if finite else "is ") + body
 
 
-def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
-    """The clause a body gets from the frame alone, once no task or doing claimed it."""
-    if frame == "heard":
-        return f"{_pick('learned', i)} {body}"
-    if frame in ("planned", "noted"):
-        items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",\s*(?:and\s+)?", body) if p]
-        return ("has " if first else "it has ") + realise.join_items(items)
-    return f"{_pick('noted', i)} {body}"
-
-
 def _clause(body: str, frame: str, i: int, first: bool) -> str:
     """One fact as a clause of the paragraph: a statement heard is what was
     learned, a note-to-self is the task set, a plain noun is what the plan
@@ -1623,7 +1603,12 @@ def _clause(body: str, frame: str, i: int, first: bool) -> str:
         return _pick("set_task", i).format(obj=obj, verb=verb) + when
     if _DOING.match(body) and _verb_led(body):
         return f"{_pick('meant', i)} {body[0].lower() + body[1:]}"
-    return _clause_of_frame(body, frame, i, first)
+    if frame == "heard":
+        return f"{_pick('learned', i)} {body}"
+    if frame in ("planned", "noted"):
+        items = [("the " + p if _PLACE_NOUN.match(p) else p) for p in re.split(r",\s*(?:and\s+)?", body) if p]
+        return ("has " if first else "it has ") + realise.join_items(items)
+    return f"{_pick('noted', i)} {body}"
 
 
 def _prose_opening(label: str, named: str, written: date | None, today: date | None, filed: bool = False, view=None) -> tuple[str, str]:  # noqa: ANN001
@@ -1667,20 +1652,6 @@ def _label_names(label: str, view) -> bool:  # noqa: ANN001
     return not sentences or sentences[0].text.strip().lower().startswith(key)
 
 
-def _section_items(bodies: list[str]) -> str:
-    if any(_FINITE.search(b) for b in bodies) or len(bodies) == 1 and len(bodies[0].split()) > 8:
-        return _join(bodies, True)
-    return realise.join_items([p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p])
-
-
-def _noted_section(head: str, items: str, view, today: date | None) -> str:  # noqa: ANN001
-    """A title-less note that is one labelled thought: "On 22 October, you noted an idea: ..."."""
-    article = "" if head.endswith("s") or head[:1].isupper() else ("an " if head[:1] in "aeiou" else "a ")
-    written = view.written
-    lead = _recent(written, today) or (f"on {_day(written, today or written)}, " if written and _TIMED.get() else "")
-    return f"{lead}you noted {article}{head}: {items}"
-
-
 def _section_line(label: str, view, bodies: list[str], today: date | None, same: bool) -> str:  # noqa: ANN001
     """A section of one note said as that note's part, never as a note of
     its own (C8, INBOX 1301 D5): "Your Project Atlas kickoff meeting note
@@ -1688,10 +1659,16 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     a title-less note that is one labelled thought ("Idea: a bike route")
     is what the person noted: "On 22 October, you noted an idea: ..."."""
     head = _fragment(label.strip(), _NAMES.get())
-    items = _section_items(bodies)
+    if any(_FINITE.search(b) for b in bodies) or len(bodies) == 1 and len(bodies[0].split()) > 8:
+        items = _join(bodies, True)
+    else:
+        items = realise.join_items([p for b in bodies for p in re.split(r",\s*(?:and\s+)?", b) if p])
     first = view.sentences[0].text.strip().lower() if view.sentences else ""
     if not view.titled and first.startswith(label.strip().lower()):
-        line = _noted_section(head, items, view, today)
+        article = "" if head.endswith("s") or head[:1].isupper() else ("an " if head[:1] in "aeiou" else "a ")
+        written = view.written
+        lead = _recent(written, today) or (f"on {_day(written, today or written)}, " if written and _TIMED.get() else "")
+        line = f"{lead}you noted {article}{head}: {items}"
     elif same:
         line = f"it also has {head}: {items}"
     else:
@@ -2216,14 +2193,6 @@ def _second_said(view: composer.NoteView, chosen: list[Fact], said: dict[int, st
         said[b] = "you" + said[b][2:]
 
 
-def _list_gist(view: composer.NoteView, items: list[Fact]) -> list[Fact]:
-    if all(f.body.rstrip().endswith("?") for f in items):
-        #: "a list: how did that go?, what happened next? And ..." (1420).
-        asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in items]
-        return [Fact(view, items[0].sentence, "", PHRASES["a_list_asked"].format(items=_listed(asked)))]
-    return [Fact(view, items[0].sentence, "", PHRASES["a_list"].format(items=_listed(items)))]
-
-
 def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shape: str, sort: _Sorted, chosen: list[Fact], material: bool) -> list[Fact]:
     """The note's closing sentence: its shape, its open tasks, or its list."""
     if not own:
@@ -2235,7 +2204,11 @@ def _gist_tail(view: composer.NoteView, own: list[Fact], heads: list[Fact], shap
         said = PHRASES[key].format(items=_listed(sort.tasks), name=_your_note(view))
         return [Fact(view, sort.tasks[0].sentence, "", said, sort.tasks[0].action)]
     if sort.items and not chosen and not sort.labelled and not material:
-        return _list_gist(view, sort.items)
+        if all(f.body.rstrip().endswith("?") for f in sort.items):
+            #: "a list: how did that go?, what happened next? And ..." (1420).
+            asked = [Fact(f.view, f.sentence, f.label, f.body.rstrip().rstrip("?")) for f in sort.items]
+            return [Fact(view, sort.items[0].sentence, "", PHRASES["a_list_asked"].format(items=_listed(asked)))]
+        return [Fact(view, sort.items[0].sentence, "", PHRASES["a_list"].format(items=_listed(sort.items)))]
     return []
 
 
