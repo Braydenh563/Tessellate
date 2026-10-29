@@ -22116,7 +22116,7 @@ function renderWhiteboard() {
     const firstImageAttachment = (entry.attachments || []).find((a) => a.is_image);
     const thumbSrc = entry.thumb_attachment_id
       ? mediaSrc(`/files/${entry.thumb_attachment_id}`)
-      : entry.thumb_url
+      : entry.thumb_url && !isRemoteImage(entry.thumb_url)
       ? mediaSrc(entry.thumb_url)
       : firstImageAttachment
       ? mediaSrc(`/files/${firstImageAttachment.id}`)

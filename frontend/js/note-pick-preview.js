@@ -46,7 +46,8 @@ function notePickThumb(entry) {
   img.className = "attachment-thumb";
   img.alt = "";
   const inline = String(entry.content || "").match(NOTE_PICK_IMAGE);
-  if (inline && isRenderableUrl(inline[1])) {
+  //: Not a picture at another address: the page refuses it, and asking logs a CSP error (audit 1029 row 45).
+  if (inline && isRenderableUrl(inline[1]) && !isRemoteImage(inline[1])) {
     img.src = mediaSrc(inline[1]);
     return img;
   }
