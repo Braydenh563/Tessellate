@@ -400,7 +400,7 @@ class ChatRequest(BaseModel):
     # Prior turns for follow-up context (Round 1); the server clips this.
     history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
     # Persona name; None → the active persona preference.
-    persona: str | None = None
+    persona: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
     # Agent mode: may the model call tools to change things?
     # None → the saved "tools_enabled" preference (default on).
     use_tools: bool | None = None
@@ -409,7 +409,7 @@ class ChatRequest(BaseModel):
     # reply cap, the temperature, the thinking toggle and a length hint, so
     # one picker moves all four together rather than four settings that have
     # to be kept consistent by hand.
-    mode: str | None = None
+    mode: str | None = Field(default=None, max_length=bounds.LABEL_MAX)
     # Notes the user attached by hand. These are always given to the model,
     # ahead of anything retrieval finds, "this note, specifically" is a
     # stronger signal than any similarity score.
@@ -453,7 +453,9 @@ class ChatRequest(BaseModel):
     # instruction, so what a skill *is* lives in one place rather than being
     # assembled in `app.js` and hoped for here.
     skill: str | None = Field(default=None, max_length=skills.MAX_NAME)
-    skill_inputs: dict[str, str] | None = None
+    skill_inputs: dict[str, Annotated[str, Field(max_length=bounds.TURN_TEXT_MAX)]] | None = Field(
+        default=None, max_length=40
+    )
     # Resuming a run that stopped part-way (reported: *"it cuts out half way
     # through and has to restart"*). Steps before this index are marked as done
     # in an earlier run and are not repeated, which matters because most of
@@ -5097,13 +5099,13 @@ def compress_history(body: CompressBody) -> dict:
 class ToolExecuteBody(BaseModel):
     """A tool call the user approved in the UI (confirm step)."""
 
-    name: str
-    arguments: dict = Field(default_factory=dict)
+    name: str = Field(max_length=bounds.LABEL_MAX)
+    arguments: dict = Field(default_factory=dict, max_length=100)
     #: A `{"tool": "batch", "steps": [...]}` undo (a change to several notes or
     #: board items): each step is `{"tool", "arguments"}` of a registry tool.
     #: Posted as name "batch" it used to answer 404, so such a change had an
     #: Undo button that could never undo.
-    steps: list[dict] = Field(default_factory=list)
+    steps: list[dict] = Field(default_factory=list, max_length=bounds.BATCH_STEPS_MAX)
 
 
 @router.post("/tools/execute")
