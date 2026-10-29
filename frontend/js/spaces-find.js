@@ -742,4 +742,6 @@ $("notif-mark-all-read")?.addEventListener("click", () => {
 //: them in the old order is declarations and listeners, none of which read
 //: what they set up.
 initNotesSubtabs();
+//: A timer left running across a reload: load the module that restores it.
+if (prefs.has("utility-clocks")) ensureModule("utilities");
 initAuth();

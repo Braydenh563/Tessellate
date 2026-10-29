@@ -2,9 +2,9 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6761, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7012, test files 1483, tests 13086, plan headings 985.
+Counts: frontend functions 6766, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7012, test files 1484, tests 13094, plan headings 985.
 
-## Frontend functions (6761)
+## Frontend functions (6766)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -6247,22 +6247,27 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUsage` | frontend/js/usage-ledger.js:31 |
 | `usageLabels` | frontend/js/usage-ledger.js:18 |
 
-### frontend/js/utility-tools.js (12)
+### frontend/js/utility-tools.js (17)
 
 | Name | File:line |
 |---|---|
-| `countSelection` | frontend/js/utility-tools.js:109 |
-| `insertTemplate` | frontend/js/utility-tools.js:126 |
-| `paintUtilityChip` | frontend/js/utility-tools.js:33 |
-| `startStopwatch` | frontend/js/utility-tools.js:72 |
-| `startUtilityTimer` | frontend/js/utility-tools.js:64 |
-| `stopUtilityClock` | frontend/js/utility-tools.js:77 |
-| `utilityClockRun` | frontend/js/utility-tools.js:49 |
-| `utilityClockSeconds` | frontend/js/utility-tools.js:27 |
-| `utilityMinutesName` | frontend/js/utility-tools.js:58 |
-| `utilitySelectedText` | frontend/js/utility-tools.js:101 |
-| `utilityTimeText` | frontend/js/utility-tools.js:15 |
-| `utilityTimerDone` | frontend/js/utility-tools.js:87 |
+| `countSelection` | frontend/js/utility-tools.js:150 |
+| `insertTemplate` | frontend/js/utility-tools.js:167 |
+| `paintUtilityChip` | frontend/js/utility-tools.js:47 |
+| `startStopwatch` | frontend/js/utility-tools.js:114 |
+| `startUtilityTimer` | frontend/js/utility-tools.js:106 |
+| `stopUtilityClock` | frontend/js/utility-tools.js:120 |
+| `utilityClockRun` | frontend/js/utility-tools.js:64 |
+| `utilityClockSeconds` | frontend/js/utility-tools.js:30 |
+| `utilityDrop` | frontend/js/utility-tools.js:83 |
+| `utilityEnsureTick` | frontend/js/utility-tools.js:75 |
+| `utilityMinutesName` | frontend/js/utility-tools.js:100 |
+| `utilityRestore` | frontend/js/utility-tools.js:91 |
+| `utilitySave` | frontend/js/utility-tools.js:36 |
+| `utilitySelectedText` | frontend/js/utility-tools.js:142 |
+| `utilityShown` | frontend/js/utility-tools.js:42 |
+| `utilityTimeText` | frontend/js/utility-tools.js:20 |
+| `utilityTimerDone` | frontend/js/utility-tools.js:129 |
 
 ### frontend/js/vault-unlock.js (2)
 
@@ -13247,8 +13252,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2773 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2899 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2775 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2901 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -20180,7 +20185,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13086)
+## Tests (13094)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21522,6 +21527,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
+| tests/test_utility_timers_1029.py | 8 |
 | tests/test_ux1005_copy.py | 6 |
 | tests/test_ux_audit_1018.py | 3 |
 | tests/test_uxfix2_1018.py | 8 |
