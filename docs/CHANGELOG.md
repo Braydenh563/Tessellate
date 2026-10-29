@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Update bar instead of the update dialog (INBOX 1440): a found version shows a closable bar under the top bar, once per version, with an Update button that is the only thing that installs (`/update/apply` no longer needs the install switch; elsewhere the button opens the release page); Settings, About has Show the update bar (on by default), and the old install switch is now Pull the latest code when start.sh or start.bat runs, which saying yes to checking no longer turns on.
 - Update dialogs (audit 1029 X12): the apply poll gives up after ten missed answers instead of spinning, Escape or the backdrop on any confirm answers "decide later" (the update choice is then not stored), and the copy names Tessellate.
 - Bidi control characters (U+202E and kin) are dropped from note titles and previews, so a label reads as the note does (audit 1029 N20).
 - One date-window reader (audit 1029 C24 to C28, C30, rank 21): `composer_plan.window` reads a question into one window for every date shape. A day gone is a lookback ("what is on 14 August", "what was I doing on 2 August" go to the activity recap, no wrong-year weekday), "the next two weeks" or "next 2 months" are unit windows, "before December" or "by 15 November" end on the day, "what is overdue" lists the overdue reminders alone (or says nothing is), and the day plan counts and shows every open item, including ones dated outside the day.

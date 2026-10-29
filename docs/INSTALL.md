@@ -311,16 +311,18 @@ Nothing about updating touches the network until you say so.
   check for updates automatically, and until you answer nothing about updating
   touches the network. Settings, About, Updates holds the answer as **Check
   GitHub for a newer version** (off until you say yes, like web search), and
-  with it on the app tells you when a newer release exists. The **Check for updates** button
-  checks once even with the switch off. On a packaged Windows install, the
-  **Update automatically** button runs the official installer for you, and a
-  second switch, **Update automatically when a new version is found**, does it
-  without asking each time. With both off, nothing is downloaded or installed:
-  fetch a newer installer and run it over the old one.
+  with it on a bar at the top tells you when a newer release exists (close
+  it to hide it for that version; **Show the update bar** turns it off). The
+  **Check for updates** button checks once even with the switch off. On a
+  packaged Windows install, the bar's **Update** button runs the official
+  installer for you; nothing is downloaded or installed until you press it.
+  Elsewhere it opens the release page.
 - **A launcher copy** asks once, the first time it starts, whether to check for
-  updates each time it launches. Answer yes and it pulls the latest code from
-  GitHub, then reinstalls dependencies when `requirements.txt` changes. Answer
-  no and it runs what is here. Settings, About, Updates can change the answer
+  updates. Answer yes and the update bar tells you when a release exists. It
+  pulls the latest code from GitHub at launch (then reinstalls dependencies
+  when `requirements.txt` changes) only if you turn on **Pull the latest code
+  when start.sh or start.bat runs**. Answer no and it runs what is here.
+  Settings, About, Updates can change the answer
   and choose between finished releases and the newest changes. `--no-update`
   skips the step for one launch.
 
