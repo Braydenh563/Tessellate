@@ -2648,10 +2648,11 @@ function settleUntangled(until, deadline, cap) {
     if (!coolToRest(until)) return false;
   }
   untangle.done = true;
-  if (untangle.passes > 0 && !untangle.cleaned && untangle.edges.length) {
+  if (untangle.passes > 0 && !untangle.cleaned) {
     if (late()) return "late";
     untangle.cleaned = true;
-    if (untangleCleanup()) landTargets();
+    // No links past the cap (G1): nothing to clear, but marked cleaned so it is not owed again.
+    if (untangle.edges.length && untangleCleanup()) landTargets();
   }
   for (const node of nodes) {
     node.vx = 0;
