@@ -3070,6 +3070,42 @@ def _defining_first(asked: str, members: list) -> list:
     return defining[:1] + [v for v in members if v not in defining[:1]] if defining else members
 
 
+def _named_checklist(kind: str, asked: str, members: list):  # noqa: ANN202
+    """The note the question names when that note is nothing but a checklist
+    and the question asks for it plainly ("what is the checklist note", "tell
+    me about gear"), else None: its list is shown with its ticks
+    (`_show_checklist`), never quoted as a lead fact with "Also" the rest."""
+    if kind not in ("fact", "overview") or not members:
+        return None
+    stems = _subject(asked)
+    #: "the gear list" names Gear; "list" and "checklist" only say what kind.
+    needed = [st for st in stems if st not in _KIND_WORDS] or stems
+    named = [v for v in members if needed and all(composer._holds(st, v.title_words) for st in needed)]
+    if len(named) != 1:
+        return None
+    tasks = [s for s in named[0].sentences if s.kind == "task"]
+    return named[0] if len(tasks) >= 2 and len(tasks) == len(named[0].sentences) else None
+
+
+def _show_checklist(out: _Out, view: composer.NoteView) -> None:
+    """A checklist note as the list it is: how many are ticked, then every
+    item with its box, as the composer's own list block does."""
+    tasks = [s for s in view.sentences if s.kind == "task"]
+    ticked = sum(1 for s in tasks if s.done)
+    total = realise.count_word(len(tasks))
+    name = _your_note(view)
+    done = f"{realise.count_word(ticked)} of {total}" if ticked else f"none of its {total}"
+    opening = f"{name[0].upper()}{name[1:]} has {done} checklist items done"
+    boxes = [f"- [{'x' if s.done else ' '}] {s.text[:1].upper()}{s.text[1:]}" for s in tasks]
+    out.lines.append(opening + ":\n\n" + "\n".join(boxes))
+    out.rows.append({"sentence": opening, "note_id": view.note.get("source_id", view.id), "source": tasks[0].text,
+                     "start": tasks[0].start, "end": tasks[0].end, "score": 1.0, "digest": True,
+                     "kind": getattr(view, "kind", "note")})
+
+
+_KIND_WORDS = frozenset({"list", "checklist", "note", "tasklist"})
+
+
 def _pick_members(asked: str, views: list, wants_context: bool) -> list:
     """The notes the question is about, oldest first."""
     if wants_context:
@@ -3122,7 +3158,10 @@ def answer(
     members = _defining_first(asked, _pick_members(asked, views, wants_context))
     tie = _tie(asked, members) if members and kind == "overview" else None
     members = tie[0] if tie else members
-    facts = [f for v in members for f in _facts(v, names, set(_subject(asked)))]
+    if checklist := _named_checklist(kind, asked, members):
+        _show_checklist(out, checklist)
+        return _result(out, "fact", asked)
+    facts =[f for v in members for f in _facts(v, names, set(_subject(asked)))]
     if not facts:
         return None
     if kind == "left":

@@ -91,3 +91,25 @@ def test_a_crlf_note_is_never_named_by_its_fence(text):
     view = composer.read_note({"id": 1, "content": text.replace("\n", "\r\n"), "created_at": NOW, "updated_at": NOW}, 0)
     assert view is not None
     assert view.title.strip("-") != "", view.title
+
+
+# --- 3: a checklist asked for by name is shown, not quoted as facts -----------------------
+
+#: (the note, the questions that name it). Each note is only a checklist.
+CHECKLIST_NOTES = [
+    ("# Checklist\n\n- [ ] tent\n- [ ] stove\n- [x] torch", ["what is the checklist note", "what is the checklist", "what is in my checklist", "tell me about checklist"]),
+    ("# Gear\n\n- [ ] tent\n- [ ] stove\n- [x] torch", ["what is the gear note", "what is in my gear list", "tell me about gear", "what is my gear"]),
+    ("# Chores\n\n- [ ] sweep\n- [ ] mop\n- [ ] bins", ["what is the chores note", "what is on my chores list", "tell me about chores"]),
+]
+
+
+@MODES
+@pytest.mark.parametrize(("text", "questions"), CHECKLIST_NOTES, ids=["checklist", "gear", "chores"])
+def test_a_checklist_asked_for_by_name_is_shown_as_the_checklist(book, text, questions, chat):  # noqa: F811
+    ask = book([(text, D(2026, 10, 23, 9))])
+    found = []
+    for q in questions:
+        said = ask(q, chat)
+        if "- [ ] " not in said or "**Also:**" in said:
+            found.append(f"{q}\n{said}")
+    assert not found, "\n\n".join(found)
