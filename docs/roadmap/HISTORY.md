@@ -22,6 +22,13 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 - Next: full suite on the head (not run this span; serial merged-test runs and gates passed), then reviews above, then 1407 plus 1408 (one Sonnet), then 1403 plus 1404 (one Sonnet).
 - Disk: /tmp/pytest-of-root held about 15 GB from old runs; clearing it was denied to agents.
 
+## Moved from the plans, 2026-10-29 (dates 1441)
+
+From CHAT_PLAN "Placed from INBOX, 2026-09-09". Built: `composer.asks_time`, `composer_digest._set_timing` and the date slot of `_Capitals.format`; tests `tests/test_composer_dates_1441.py`.
+
+1441. **The owner, 2026-10-29, verbatim** (screenshot, dark: Ask, no model, "What have I saved about hobbies?", Atlas "From your notes"): "I dont like how it refers to dates". The answer opened "You have ten notes about hobbies, 17 July to 4 October.", then "On 4 September, you saved your Girl with bell, ...", "On 27 July, you wrote down go to the gym ...", "Your note of 27 July has Pull, Push, ...", "A week on, by 3 August, you go to the gym at 9pm on Tuesday for legs.", "You last wrote about it about a month ago, which is a while; a fresh note would bring it up to date."
+     Recommendation (taken, CLAUDE.md order 3): a date is said only when the question asks about time (when, last week, on a date, latest) or two notes disagree over time; otherwise the sentence carries the fact and the Matching records card carries the date. Never "On <date>, you saved/wrote down", never "Your note of <date>" as a name (name the note by its title or clipped clause), never "A week on, by <date>"; the opener gives the count without the date span; the staleness footer only when the question is about how current something is. Class fix in the digest's one sentence-frame function (rank 22 agent, composer_digest.py), tested over many subjects with no model in Ask and Chat.
+
 ## Moved from the plans, 2026-10-29 (appearance 1435)
 
 Built e22c9f8: an Appearance quick panel (non-modal, `panelMovable`, docking) that holds the Settings page's own controls (moved, not copied), a sticky section strip (Theme, Colour, Text, Layout, Background art, Motion) that remembers the last section, Peek and the per-control reset. Opens from the palette, a right-click on the theme button and a Pop out button on the page. Measured at 1440x900: page 1263 px default and 6434 px all open; Background art 2 screens default and 8 screens all open, now 1 strip press and 0 scrolls; panel 528x788, body 1373 / 7461 px. Leftovers in `agent-remaining/appearance-1435.md`.

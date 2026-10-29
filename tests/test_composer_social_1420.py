@@ -200,8 +200,10 @@ def test_untitled_uni_notes_are_named_by_what_they_are_about(question):
     assert "uni days this week are Tuesday," not in text and "your uni days this week are Tuesday" not in text.split("\n\n")[1], text
     assert not re.search(r"you (?:noted|wrote|said|mentioned) that you had (?:noted|jotted|written)", text), text
     assert "however" not in text
-    #: The 20 July note is said with its verb: what the person wrote.
-    assert re.search(r"20 July, you \w+(?: down)? that cloud computing is the delivery", text), text
+    #: The 20 July note is said with its verb: what the person wrote. Its
+    #: day is not said: the question is not about time (INBOX 1441).
+    assert re.search(r"\b[Yy]ou \w+(?: down)? that cloud computing is the delivery", text), text
+    assert "20 July" not in text, text
     assert defects(text) == [], text
 
 

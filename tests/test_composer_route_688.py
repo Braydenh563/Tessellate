@@ -53,9 +53,10 @@ def test_from_your_notes_composes_even_with_a_model_running(ai_client, fake_olla
     meta = out["meta"][0]
     assert meta["composed"] is True
     assert meta["answered_by"] is None
-    #: Decision 70: the fact first, said once with its day, not the note's
-    #: name over a quote.
-    assert out["text"].startswith(f"Ship the mobile app to the public on {NEXT_14}, from your note of")
+    #: Decision 70: the fact first, then its note by name, not the note's
+    #: name over a quote; its day only when the question is about time
+    #: (INBOX 1441: never "your note of <date>").
+    assert out["text"].startswith(f"Ship the mobile app to the public on {NEXT_14}, from your Harbor launch plan note.")
     assert fake_ollama.librarian_reply not in out["text"]
     #: No model was asked for this answer.
     assert len(fake_ollama.chat_models) == calls_before
@@ -73,7 +74,7 @@ def test_the_composed_turn_is_saved_with_its_rows(ai_client, session):
     turns = ai_client.get("/ask-history").json()["turns"]
     assert len(turns) == 1
     turn = ai_client.get(f"/ask-history/{turns[0]['id']}").json()
-    assert turn["answer"].startswith("Check-up booked for the 21st, from your note of")
+    assert turn["answer"].startswith("Check-up booked for the 21st, from your Dentist note, written on")
     assert any(row["sentence"] == "Check-up booked for the 21st" for row in turn["grounding"])
 
 

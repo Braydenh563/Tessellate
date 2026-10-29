@@ -53,7 +53,7 @@ from tessellate.ai import when as when_words
 _BASE = {
     "overview": "You have {count} about {topic}, {span}.",
     "likes": "It looks that way: you've written about {topic} {times}, {span}.",
-    "from_note": "{fact}, from your note of {day}.",
+    "from_note": "{fact}, from {name}{when}.",
     "from_list": "{count}, from your {what} of {day}: {items}.",
     "only_one": "It's your only note on {topic} so far.",
     "who_once": "{name} comes up once, on {day}: {fact}.",
@@ -181,7 +181,7 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
                      "Recorded on {topic}: {count}, {span}.",
                      "The notebook has {count} on {topic}, {span}."),
         "likes": "The notes suggest so: {topic} appears {times}, {span}.",
-        "from_note": "{fact}, as recorded on {day}.",
+        "from_note": "{fact}, as recorded in {name}{when}.",
         "nothing_yet": "The notes do not yet cover {facets}.",
         "remind": "Set a reminder to {action}?",
         "only_one": "This is the only note on {topic}.",
@@ -200,7 +200,7 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
                      "Dug up {count} about {topic}, {span}.",
                      "Right, {topic}: {count}, {span}."),
         "likes": "Sounds like it: you've written about {topic} {times}, {span}.",
-        "from_note": "{fact}, says your note of {day}.",
+        "from_note": "{fact}, says {name}{when}.",
         "nothing_yet": "No word yet on {facets}.",
         "remind": "Want a nudge to {action}?",
         "only_week": "That's the only week you've jotted down so far.",
@@ -210,7 +210,7 @@ VOICES: dict[str, dict[str, str | tuple[str, ...]]] = {
     "plain": {
         "overview": ("{Count} about {topic}, {span}.",),
         "likes": "Yes. {Topic} comes up {times}, {span}.",
-        "from_note": "{fact}. Note of {day}.",
+        "from_note": "{fact}. {Name}{when}.",
         "nothing_yet": "Not in your notes: {facets}.",
         "remind": "Remind you to {action}?",
         "only_week": "Only one week is written down.",
@@ -231,6 +231,26 @@ _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
 
 #: The gap leads already said in this answer, in order (reset per answer).
 _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
+#: **A date is said only when the question is about time** (INBOX 1441, the
+#: owner: "I dont like how it refers to dates"). Otherwise the sentence
+#: carries the fact and the record card carries the date: no "On 4
+#: September, you saved", no "your note of 27 July", no "A week on, by 3
+#: August", no span in the count opener. `_CURRENT`: the question is about
+#: how current something is, the only time the staleness footer is said.
+_TIMED: ContextVar[bool] = ContextVar("digest_timed", default=True)
+_CURRENT: ContextVar[bool] = ContextVar("digest_current", default=True)
+_ASKS_CURRENT = re.compile(r"\b(?:latest|current(?:ly)?|up to date|still|now|stale|how old|recent(?:ly)?|newest|lately)\b", re.I)
+
+
+def _set_timing(question: str) -> None:
+    """What this answer may say about time, from the question (INBOX 1441)."""
+    _TIMED.set(composer.asks_time(question))
+    _CURRENT.set(bool(_ASKS_CURRENT.search(question or "")))
+
+
+#: A phrase's date slot, dropped when the question is not about time:
+#: "You have six notes about hobbies, 17 July to 4 October." says the count.
+_UNTIMED_SLOT = re.compile(r",? \{span\}|(?:,? on| of) \{day\}")
 
 
 def _vary(key: str) -> _Capitals:
@@ -282,7 +302,7 @@ class _Capitals(str):
         for k, v in list(kwargs.items()):
             if isinstance(v, str) and "{" + k.capitalize() + "}" in self:
                 kwargs[k.capitalize()] = v[:1].upper() + v[1:]
-        return str.format(self, *args, **kwargs)
+        return str.format(self if _TIMED.get() else _UNTIMED_SLOT.sub("", self), *args, **kwargs)
 
 
 PHRASES = _Phrases(_BASE)
@@ -292,6 +312,8 @@ def sample(voice: str) -> str:
     """The live sample Settings shows beside the voice choice: an opening,
     a missing line and an offer, in that voice."""
     token = _VOICE.set(voice if voice in VOICES else "natural")
+    #: An ordinary question, not about time: no span (INBOX 1441).
+    timed = _TIMED.set(False)
     try:
         return " ".join([
             PHRASES["overview"].format(count="four notes", topic="uni", span="17 July to 4 August"),
@@ -299,6 +321,7 @@ def sample(voice: str) -> str:
             PHRASES["remind"].format(action="ask the tutor on Thursday"),
         ])
     finally:
+        _TIMED.reset(timed)
         _VOICE.reset(token)
 
 #: A note under one of these tags is someone else's words or not a claim
@@ -496,13 +519,16 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         #: "Atlas retro meeting, from your note of 26 October": a title said
         #: as a fact (C2). The note is named; it holds nothing more.
         said = _note_called(view.title)
-        day = f" of {_day(view.written, today)}" if view.written else ""
+        day = f" of {_day(view.written, today)}" if view.written and _TIMED.get() else ""
         return f"{said[0].upper() + said[1:]}{day} has only its title so far."
     if noun and view.title:
         return f"{fact}, from your {noun} **{view.title}**."
-    if view.written is None:
+    if view.written is None or not _TIMED.get() and not getattr(view, "titled", False):
         return f"{fact}, from one of your notes."
-    return PHRASES["from_note"].format(fact=fact, day=_day(view.written, today))
+    when = f", written on {_day(view.written, today)}" if _TIMED.get() else ""
+    if not getattr(view, "titled", False):
+        return f"{fact}{when}."
+    return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
 
 
 def _day(d: date | None, today: date) -> str:
@@ -661,9 +687,9 @@ def _your_note(view) -> str:  # noqa: ANN001
     """The one name for a note in a frame: a titled note by its title, a
     title-less one by its clipped first clause (C8, INBOX 1420), never by a
     section's label or "untitled"."""
-    if view.titled and view.title:
+    if getattr(view, "titled", False) and view.title:
         return _note_called(view.title)
-    return composer_frame.short_name(view.note)
+    return composer_frame.short_name(getattr(view, "note", None) or {"content": getattr(view, "title", "")})
 
 
 def _title_only(view) -> bool:  # noqa: ANN001
@@ -1193,7 +1219,7 @@ def _recent(written: date | None, today: date | None) -> str:
     owner: "saying dates and time words in sentences"): "yesterday, ",
     "on Thursday, ", "last Friday, ", "a week ago, on 12 October, ",
     "earlier this month, on 3 October, "; "" for an older day."""
-    if not written or not today:
+    if not written or not today or not _TIMED.get():
         return ""
     ago = (today - written).days
     weekday = _DAY_NAMES[written.weekday()]
@@ -1221,6 +1247,8 @@ _WH_SUBJECT = re.compile(r"(?:what|how|why|which|who|where)\b", re.I)
 
 def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, before: date | None) -> str:
     """The line's lead: the time since the line before, a recent day, or its date."""
+    if not _TIMED.get():
+        return ""
     gap = (written - before).days if i and before and written else 0
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
@@ -1260,7 +1288,8 @@ def _dated_line(line_body: str, label: str, i: int, by_day: date | None, written
     2026-10-11: no label lines), the time since the last one first."""
     lead = _dated_lead(label, i, by_day, written, before)
     reported = _said_as_written(_cleaned_body(line_body, label), i)
-    line_body = lead[0].upper() + lead[1:] + reported
+    line_body = lead + reported
+    line_body = line_body[:1].upper() + line_body[1:]
     return line_body, line_body + _relate(line_body, by_day)
 
 
@@ -1269,7 +1298,7 @@ def _heading_line(label: str, held: list[Fact], bodies: list[str], i: int, by_da
     written = held[0].view.written
     #: A note told by its day after an earlier one says the time
     #: between (gold Q2: "a week later, you tried the Viper").
-    on_day = f"On {_day(written, by_day or written)}, " if written else ""
+    on_day = f"On {_day(written, by_day or written)}, " if written and _TIMED.get() else ""
     if on_day and before and (written - before).days >= 2 and line_body.startswith(on_day):
         lead = _gap_on((written - before).days, _day(written, by_day or written))
         line_body = lead[0].upper() + lead[1:] + _reported(line_body[len(on_day):], i)
@@ -1324,7 +1353,7 @@ def _line_of(label: str, held: list[Fact], i: int, weave: bool, by_day: date | N
         line_body, said = _dated_line(line_body, label, i, by_day, written, before)
     elif heading:
         line_body, said = _heading_line(label, held, bodies, i, by_day, tail, before, same)
-    elif weave and mine and i and _days_apart(before, written) >= 2:
+    elif weave and mine and i and _days_apart(before, written) >= 2 and _TIMED.get():
         #: "A week later" names its day too (the owner, 2026-10-11).
         said = _gap_on(_days_apart(before, written), _day(written, by_day or written)) + _reported(line_body, i)
     return said, line_body, bool(heading)
@@ -1582,8 +1611,10 @@ def _clause(body: str, frame: str, i: int, first: bool) -> str:
     return f"{_pick('noted', i)} {body}"
 
 
-def _prose_opening(label: str, named: str, written: date | None, today: date | None, filed: bool = False) -> tuple[str, str]:
+def _prose_opening(label: str, named: str, written: date | None, today: date | None, filed: bool = False, view=None) -> tuple[str, str]:  # noqa: ANN001
     """How a heading-labelled paragraph opens: (frame, opening words)."""
+    if not _TIMED.get():
+        written = None
     on = f" on {_day(written, today or written)}" if written else ""
     if _PLANNED.search(label):
         return "planned", f"Your {named}"
@@ -1594,7 +1625,9 @@ def _prose_opening(label: str, named: str, written: date | None, today: date | N
     if re.match(r"(?:the|a|an|this|my|your)\b", named, re.I) or filed:
         #: "Your the split follows this structure note" (owner, 2026-10-12):
         #: a heading that is a sentence cannot stand between "Your" and "note".
-        return "noted", "Your note" + (f" of {_day(written, today or written)}" if written else "")
+        #: Named by its title or first clause, never "Your note of 27 July" (1441).
+        name = _your_note(view) if view is not None else "your note"
+        return "noted", name[:1].upper() + name[1:]
     return "noted", f"Your {named} note"
 
 
@@ -1634,7 +1667,7 @@ def _section_line(label: str, view, bodies: list[str], today: date | None, same:
     if not view.titled and first.startswith(label.strip().lower()):
         article = "" if head.endswith("s") or head[:1].isupper() else ("an " if head[:1] in "aeiou" else "a ")
         written = view.written
-        lead = _recent(written, today) or (f"on {_day(written, today or written)}, " if written else "")
+        lead = _recent(written, today) or (f"on {_day(written, today or written)}, " if written and _TIMED.get() else "")
         line = f"{lead}you noted {article}{head}: {items}"
     elif same:
         line = f"it also has {head}: {items}"
@@ -1656,13 +1689,15 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
     #: "Hobbies: ..." filed under Hobbies names nothing the filing does not
     #: (INBOX 1310: "Your hobbies note has thinking of buying").
     filed = label.lower() == str((getattr(held[0].view, "note", None) or {}).get("category") or "").lower()
-    frame, opening = _prose_opening(label, named, written, today, filed)
+    frame, opening = _prose_opening(label, named, written, today, filed, held[0].view)
     clauses = [_clause(b, frame, i + n, n == 0) for n, b in enumerate(bodies)]
     if frame in ("planned", "noted") and re.match(r"you\b", clauses[0]):
         #: The person's own doing needs no heading: its day says when.
         recent = _recent(written, today).rstrip(", ")
         opening = (recent[:1].upper() + recent[1:] + "," if recent else f"On {_day(written, today or written)},") if written else f"In your {named} note,"
-    line = f"{opening} {clauses[0]}"
+        if written and not _TIMED.get():
+            opening = ""
+    line = f"{opening} {clauses[0]}".lstrip()
     for clause in clauses[1:]:
         line += (", though " if clause.startswith("you were still") else ", and ") + clause
     return line[0].upper() + line[1:]
@@ -1741,8 +1776,12 @@ def _pattern(members: list[composer.NoteView], today: date) -> str:
         return ""
     age = (today - days[-1]).days
     span = (days[-1] - days[0]).days
+    #: How the notes sit in time is said only when time was asked, and how
+    #: stale they are only when the question is about now (INBOX 1441).
     if age >= 21:
-        return _vary("stale").format(age=_gap(age))
+        return _vary("stale").format(age=_gap(age)) if _CURRENT.get() else ""
+    if not _TIMED.get():
+        return ""
     if span <= 9:
         return _vary("burst").format(count=realise.count_word(len(days)), span=_gap(max(span, 1)), age=_gap(max(age, 1)))
     if len(days) >= 3:
@@ -2425,7 +2464,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
 def _say_list(out: _Out, lead: Fact, items: list[str], today: date) -> None:
     """"Hobbies I want to try: bouldering, film photography, ukulele": asked
     what the hobbies are, the answer is the count and the list."""
-    out.lines.append(f"{realise.count_word(len(items)).capitalize()}, from your note of {_day(lead.view.written, today)}: {realise.join_items(items)}.")
+    day = f", written on {_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
+    name = f"your note “{lead.label}”" if _label_names(lead.label, lead.view) else _your_note(lead.view)
+    out.lines.append(f"{realise.count_word(len(items)).capitalize()}, from {name}{day}: {realise.join_items(items)}.")
     others = [v for v in _VIEWS.get() if v.id != lead.view.id]
     if not any(composer._holds(composer._stem(w), v.words) for v in others for i in items for w in composer.subject_terms(i)[-1:]):
         out.closing.append(PHRASES["none_own"])
@@ -2440,7 +2481,8 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
         #: A heading the note gives itself ("Psych lecture") names the note;
         #: a label the answer gave the fact ("How it went") does not.
         name = f"your {_fragment(lead.label, _NAMES.get())} note" if _label_names(lead.label, lead.view) else _your_note(lead.view)
-        out.lines.append(f"From {name}, {_day(lead.view.written, today)}: {body}.")
+        day = f", {_day(lead.view.written, today)}" if _TIMED.get() else ""
+        out.lines.append(f"From {name}{day}: {body}.")
     else:
         out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
     out.rows.append(_row(body, lead))
@@ -2670,10 +2712,14 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
         out.closing.append(PHRASES["only_names"].format(name=name[:1].upper() + name[1:]))
     else:
         out.lines.append(PHRASES["who_many"].format(name=name[:1].upper() + name[1:], count=_count(len(notes)), span=_span([v for v, _ in found], today)))
+        said: set[str] = set()
         for v, s2 in found[:LINES["overview"]]:
             body = _tidy(_second_person(s2.text.strip()), v.written)
+            if not _TIMED.get() and body.lower() in said:
+                continue
+            said.add(body.lower())
             body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
-            out.lines.append(f"On {_day(v.written, today)}, {body}.")
+            out.lines.append(f"On {_day(v.written, today)}, {body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
     out.rows.append({"sentence": fact, "note_id": view.note.get("source_id", view.id), "source": s.text, "score": 1.0, "digest": True})
     return True
 
@@ -2828,6 +2874,7 @@ def all_said(question: str, notes: list[dict], *, today: date | None = None) -> 
     if not members:
         return None
     _TODAY.set(today)
+    _set_timing(question)
     out = _Out()
     line = PHRASES["all_said"].format(topic=_topic(asked, members), count=_count(len(members)), span=_span(members, today))
     out.lines.append(line)
@@ -2849,6 +2896,7 @@ def _begin(question: str, asked: str, notes: list[dict], today: date, voice: str
         return []
     _NAMES.set(_capitalised_inside(views))
     _TODAY.set(today)
+    _set_timing(question)
     _VOICE.set(voice if voice in VOICES else "natural")
     _TURN.set(turn)
     _SEED.set(zlib.crc32(asked.lower().encode()))
@@ -3259,7 +3307,7 @@ def _count_offer(question: str, text: str) -> dict | None:
 
 
 def _fact_offer(out: _Out) -> dict | None:
-    listed = re.search(r"^\w+, from your note of [^:]+: (.+)\.$", out.lines[0]) if out.lines else None
+    listed = re.search(r"^\w+, from [^:]+: (.+)\.$", out.lines[0]) if out.lines else None
     if not listed:
         return None
     first = re.split(r",\s*| and ", listed.group(1))[0].strip()

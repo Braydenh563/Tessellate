@@ -644,10 +644,10 @@ $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("sea
 //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
 //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
 const VOICE_SAMPLES = {
-  natural: "You have four notes about uni, 17 July to 4 August. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
-  professional: "Your notebook holds four notes on uni, 17 July to 4 August. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
-  playful: "Found four notes about uni, 17 July to 4 August. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
-  plain: "Four notes about uni, 17 July to 4 August. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
+  natural: "You have four notes about uni. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
+  professional: "Your notebook holds four notes on uni. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
+  playful: "Found four notes about uni. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
+  plain: "Four notes about uni. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
 };
 function showVoiceSample(voice) {
   $("pref-voice-sample").textContent = VOICE_SAMPLES[voice] || VOICE_SAMPLES.natural;
