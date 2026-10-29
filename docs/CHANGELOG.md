@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- "What is new", "what changed", "what have I added lately", "what did I edit this week", "my longest streak" and "how many days in a row" are answered from the notebook's own counts, in Ask and in Chat, with a model on or off (audit 1029 C32, rank 31): the notes made and edited in the window you name (else the last seven days), and the longest run of consecutive days with a note beside the run you are on now. A word that is not part of such a question is a subject ("what changed in the harbor plan"), which stays a search; dates are said only when the question asks about time.
 - The Appearance panel has its own Help entry under Look and feel, and its current section reads in the accent text colour; "tell me about golf" answers with what you confirmed about golf, not as a person.
 - Quick sketch swatches (INBOX 1447): removing a recent colour offers Undo, a plus beside the picker saves the current colour as a swatch again, and the remove x is a small control beside the swatch (16 px, nothing over the disc; the 24 px target floor met by spacing); the picker's icon is an eyedropper.
 - Find anything and the palette rank the row that opens a feature above a Guide topic about it, for every feature (INBOX 1449): Help-pane rows are a "Guide" group listed after the rows that name the thing; "ocr workspace" had the Guide topic first.

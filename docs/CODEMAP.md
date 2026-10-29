@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6796, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7111, test files 1518, tests 13306, plan headings 985.
+Counts: frontend functions 6796, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7133, test files 1519, tests 13319, plan headings 985.
 
 ## Frontend functions (6796)
 
@@ -11503,7 +11503,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7111)
+## Backend modules (7133)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -11629,6 +11629,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `boards` | src/tessellate/ai/activity.py:504 |
 | `read` | src/tessellate/ai/activity.py:103 |
 | `week` | src/tessellate/ai/activity.py:473 |
+
+### src/tessellate/ai/activity_new.py (22)
+
+| Name | File:line |
+|---|---|
+| `Asked` | src/tessellate/ai/activity_new.py:60 |
+| `_days` | src/tessellate/ai/activity_new.py:213 |
+| `_doing_of` | src/tessellate/ai/activity_new.py:77 |
+| `_doings` | src/tessellate/ai/activity_new.py:91 |
+| `_fresh` | src/tessellate/ai/activity_new.py:139 |
+| `_is_doing` | src/tessellate/ai/activity_new.py:87 |
+| `_kind_of` | src/tessellate/ai/activity_new.py:73 |
+| `_local_days` | src/tessellate/ai/activity_new.py:185 |
+| `_new` | src/tessellate/ai/activity_new.py:99 |
+| `_nothing` | src/tessellate/ai/activity_new.py:177 |
+| `_now_line` | src/tessellate/ai/activity_new.py:217 |
+| `_quiet_line` | src/tessellate/ai/activity_new.py:148 |
+| `_recap` | src/tessellate/ai/activity_new.py:171 |
+| `_span_days` | src/tessellate/ai/activity_new.py:209 |
+| `_streak` | src/tessellate/ai/activity_new.py:108 |
+| `_window` | src/tessellate/ai/activity_new.py:129 |
+| `_words` | src/tessellate/ai/activity_new.py:69 |
+| `answer` | src/tessellate/ai/activity_new.py:240 |
+| `new` | src/tessellate/ai/activity_new.py:154 |
+| `read` | src/tessellate/ai/activity_new.py:116 |
+| `runs` | src/tessellate/ai/activity_new.py:198 |
+| `streak` | src/tessellate/ai/activity_new.py:225 |
 
 ### src/tessellate/ai/acts.py (12)
 
@@ -20358,7 +20385,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13306)
+## Tests (13319)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20634,6 +20661,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_slots_1029.py | 13 |
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1420.py | 14 |
+| tests/test_composer_streak_1029.py | 13 |
 | tests/test_composer_study_1025.py | 20 |
 | tests/test_composer_subject_1029.py | 11 |
 | tests/test_composer_suggest_2210.py | 13 |

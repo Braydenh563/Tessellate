@@ -1590,10 +1590,10 @@ def _activity(session: Session, question: str):
     notes, documents, boards, maps and reminders made, edited, binned or
     ticked off, read from the rows (`ai/activity.py`); None when the
     question is not an own-activity question with a window."""
-    from tessellate.ai import activity
+    from tessellate.ai import activity, activity_new
 
     now = user_now(deps.get_config())
-    return activity.answer(question, session, now=now) or activity.boards(question, session, now)
+    return activity.answer(question, session, now=now) or activity.boards(question, session, now) or activity_new.answer(question, session, now)
 
 
 def _computed_answer(session: Session, question: str, detected: str, as_of, attached: list) -> tuple[str, object]:  # noqa: ANN001
