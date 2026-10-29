@@ -51,7 +51,7 @@ function firstStepButton({ number, done, icon, label, note, doneNote, run }) {
 }
 
 //: Step one is typed where it is asked: a name field in the tile, Enter
-//: saves it (`PUT /preferences`), rather than a door into Settings, General,
+//: saves it (`PUT /preferences`), rather than a door into Settings, Profile,
 //: whose Save button is three presses further on.
 function firstStepName(host) {
   const form = document.createElement("form");
@@ -219,7 +219,7 @@ function firstStepsCard(host, state) {
     state.named
       ? firstStepButton({
           number: 1, done: true, icon: "ph:hand-waving", label: "Your name",
-          doneNote: "Done. Change it in Settings, General.",
+          doneNote: "Done. Change it in Settings, Profile.",
           run: () => openSettingsModal("preferences"),
         })
       : firstStepName(host),
@@ -266,7 +266,7 @@ function getStartedSteps(state) {
   return [
     {
       done: state.named, label: "Add your name",
-      note: "For the greeting and Atlas.", doneNote: "Done. Change it in Settings, General.",
+      note: "For the greeting and Atlas.", doneNote: "Done. Change it in Settings, Profile.",
       run: () => openSettingsModal("preferences"),
     },
     {

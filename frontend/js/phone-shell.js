@@ -1563,11 +1563,10 @@ function syncPhoneMoreRuns() {
     badge.className = "tab-badge";
     more.appendChild(badge);
   }
-  badge.textContent = String(shown);
-  badge.title = due
-    ? `${nounCount(due, "reminder")} due`
-    : `${runs} agent run${runs === 1 ? "" : "s"}`;
-  more.setAttribute("aria-label", due ? `More: ${nounCount(due, "reminder")} due` : "More");
+  badge.textContent = ` ${shown}`;
+  const words = due ? `${nounCount(due, "reminder")} due` : `${runs} agent run${runs === 1 ? "" : "s"}`;
+  badge.title = words;
+  more.setAttribute("aria-label", `More: ${words}`);
 }
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.

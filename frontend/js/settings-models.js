@@ -329,7 +329,9 @@ function buildModelCard(model, state) {
 
   const head = document.createElement("div");
   head.className = "model-card-head";
-  const name = document.createElement("h5");
+  //: One level under whatever heads the list: the installed list's `h3`, or a
+  //: suggested group's `h4` (a skipped level is axe's heading-order, 1029 row 62).
+  const name = document.createElement(model.listed === "installed" ? "h4" : "h5");
   name.className = "model-card-name";
   name.textContent = model.label || modelDisplayName(model.name);
   name.title = model.name;

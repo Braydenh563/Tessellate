@@ -976,7 +976,7 @@ function updateReminderBadge(reminders) {
     badge.className = "tab-badge";
     button.appendChild(badge);
   }
-  badge.textContent = due;
+  badge.textContent = ` ${due}`;
   badge.title = `${nounCount(due, "reminder")} due`;
 }
 

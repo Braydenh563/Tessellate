@@ -878,26 +878,6 @@ input[type="range"] {
   min-width: 0;
   min-height: 0;
 }
-/* The update-available dialog's "View release" is a real <a>, not a button
-   with a navigate-on-click handler (right-click/middle-click/Ctrl-click all
-   need to keep working), so it can't pick up `button`/`button.small`'s own
-   rules above: this is that same look, on an element those selectors
-   don't reach. */
-.update-dialog-link {
-  display: inline-block;
-  padding: 0.25rem 0.8rem;
-  border-radius: var(--radius-lg);
-  background: var(--accent-surface);
-  color: var(--on-accent);
-  font-size: var(--text-md);
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: var(--shadow-accent-glow);
-}
-.update-dialog-link:hover,
-.update-dialog-link:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--accent-surface-hover);
-}
 .row {
   display: flex;
   gap: 0.6rem;
@@ -1875,13 +1855,17 @@ input.md-task-inline:disabled,
    The switches' pattern (DESIGN.md, Hit targets): a transparent overhang,
    centred, so the row of pills keeps its density and a click 2px above or
    below still lands. Never shorter than the chip itself. */
-.chip-interactive::after {
+.chip-interactive::after,
+.entry-more::after,
+#entry-list .menu-wrap > button::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
   /* No transform: a later rule resets pseudo-element transforms, and the
-     overhang must not depend on it. Half the shortfall, never negative. */
+     overhang must not depend on it. Half the shortfall, never negative, on
+     both axes: the same pattern serves a link pill's menu button (21px with
+     a mouse) and "Show more" (14px high), both measured under the floor. */
   inset-block: min(0px, calc(50% - var(--target-min) / 2));
+  inset-inline: min(0px, calc(50% - var(--target-min) / 2));
 }
 .chip-interactive:hover {
   background-image: linear-gradient(var(--hover-veil), var(--hover-veil));

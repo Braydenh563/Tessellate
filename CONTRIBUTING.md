@@ -49,7 +49,7 @@ Everything runs offline, with no Ollama and no models:
 ```bash
 bash scripts/gate.sh --changed   # lint set, node --check, ruff, and the tests that name your files
 ruff check .                     # lint (what CI runs)
-pytest -n auto                   # the whole suite: 12,400+ tests, under nine minutes on four cores
+pytest -n auto                   # the whole suite: 13,300+ tests, under nine minutes on four cores
 ```
 
 The full suite takes about 25 minutes serially, so run the gate while you work

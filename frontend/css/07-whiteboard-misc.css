@@ -2539,7 +2539,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   /* The trailing padding is bigger than the leading one because the row's
      hover actions live in it; without the reserve, the actions appear on
      hover and shove the name sideways. */
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  padding: 0 var(--space-2) 0 var(--space-3);
   border-radius: var(--radius-sm);
   font-size: var(--text-md);
   color: var(--ink);
@@ -2551,7 +2551,9 @@ body.scroll-top-visible .skills-split > .tab-main {
    be its siblings (audit 1029 X4). */
 .space-option-main {
   flex: 1 1 auto;
+  align-self: stretch;
   min-width: 0;
+  min-height: var(--target-min);
   padding: 0;
   border: 0;
   background: none;
@@ -2580,6 +2582,8 @@ body.scroll-top-visible .skills-split > .tab-main {
    when they appear. */
 .space-option-actions>button {
   padding: var(--space-1);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
 }
 .space-option-actions {
   display: flex;
@@ -5003,14 +5007,6 @@ rect.board-minimap-card,
 .whiteboard-floating-panel .wb-panel-primary {
   width: 100%;
   justify-content: flex-start;
-}
-/* Clearing a board cannot be undone by pressing the same button again, unlike
-   every other control in this group. It says so at rest rather than only in
-   its tooltip. */
-.whiteboard-floating-panel .wb-panel-danger:hover,
-.whiteboard-floating-panel .wb-panel-danger:focus-visible {
-  color: var(--error);
-  border-color: var(--error);
 }
 /* --- a file says what it is attached to ----------------------------------
    The Files & Images gallery could not answer the one question anyone brings
@@ -7443,11 +7439,6 @@ button.connection-row:is(:hover, :focus-visible) {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-2);
-}
-.wb-help-foot {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--space-3);
 }
 /* **The board's help and shortcut sheet** (INBOX 566; UX-03). The dialog
    recipe; what is new is the row. The old card set each row `nowrap` with

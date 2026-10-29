@@ -33,9 +33,9 @@
     bottom: 0;
     align-self: flex-end;
     flex: none;
-    width: var(--space-6);
-    height: var(--space-6);
-    margin: calc(-1 * var(--space-6)) 0 0 auto;
+    width: var(--target-min);
+    height: var(--target-min);
+    margin: calc(-1 * var(--target-min)) 0 0 auto;
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);

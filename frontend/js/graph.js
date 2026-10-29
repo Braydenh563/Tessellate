@@ -4660,7 +4660,7 @@ async function renderGraphPopupTopic(entry) {
     topic = row?.topics?.[String(entry.id)] || null;
   }
   if (!topic || graphPopupId !== entry.id) return;
-  const mark = chip(`ph:circles-three ${topic.name}`, "tag", () => showTopicInGraph(entry.id));
+  const mark = chip(`ph:circles-three ${topic.name}`, "topic", () => showTopicInGraph(entry.id));
   mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Show it on the map`;
   //: `members=1` above: a rename is stored by the topic's notes.
   const rename = smallButton("ph:pencil-simple", "Rename the topic", () => gcRenameTopicInline(topic, mark, rename));
