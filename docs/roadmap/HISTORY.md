@@ -51439,3 +51439,31 @@ Quick sketch, the same day (the owner's screenshots): a thick arrow's shaft ran 
 
 All built, each in HISTORY.md: 60, 94, 100 to 104, 164, 165, 186, 279, 282, 296, 393 ("Moved from the plans, 2026-09-09" and "2026-10-05"); the Files rows' two rhythms and the attach picker's tiles ("2026-10-05 (UI_MODERNISATION_PLAN ...)"); 621 and 622 ("2026-10-05 (INBOX 621 and 622 ...)").
 
+
+## Moved from the plans, 2026-10-29 (audit 1029 row 60, G26)
+
+The legacy SVG graph renderer is deleted; the canvas renderer is the only one.
+It was reachable only through `localStorage["graph-renderer"] = "svg"`, a
+dev-only switch with no UI that existed so the Phase 1 gate could be measured
+on one build. Removed from `frontend/js/graph.js`: `renderGraphSvg` (1,263
+lines), `graphRenderer()` and the flag's read, the SVG branches of `drawTrace`,
+`applyGraphHighlight`, the keyboard focus ring and search stepping, the SVG
+export (`graphInlineComputedStyle`, `graphRasterizeSvg`,
+`GRAPH_EXPORT_STYLE_PROPS`), the full screen `viewBox` and simulation block,
+and the state only that path set (`graphSimulation`, `graphCanvas`, the d3
+node, edge and label selections, the trace layer and lines, the drag-link
+target). `frameTree` and `fitGraphToView` lost their always-null canvas
+argument (callers in `graph-canvas.js` and five tests updated). `graph.js`
+6,794 to 5,171 lines; gzip 106,410 to 78,913 bytes. Measured on a 60-note
+notebook in the browser: the canvas shows (hidden false, 1406 x 785), the
+hidden `#graph-svg` is `display: none`, 60 nodes, zoom keys and fit move the
+camera (k 1.086, 1.412, 1.083), full screen resizes the canvas to 1422 x 882,
+PNG export writes a 4.7 MB image, and no console or page error.
+
+Left for a follow-up outside the graph files: the empty hidden `<svg
+id="graph-svg">` in `index.html` with its click handlers (`wiring.js`), its
+styles (`02-chat-graph.css`, `motion-still.css`), its entries in the lock
+list (`app.js`) and `NMB_CANVAS` (`avatars.js`), and the dead
+`graphCatchUpLabels` call in `wiring.js` and `graphSimulation` guard in
+`navigation.js`. The scratchpad sweep `graphexportcsp.js` went with the
+export it drove.
