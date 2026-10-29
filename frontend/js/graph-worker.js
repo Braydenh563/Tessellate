@@ -1625,8 +1625,11 @@ function untangleSetup(edges) {
   untangle.cleaned = false;
   untangle.holding = false;
   untangle.mark = null;
-  if (edges.length > UNTANGLE_MAX_EDGES) return;
-  for (const edge of edges) {
+  //: Past the edge cap the stage is skipped, but its buffers are still built (empty),
+  //: sized for this run: a dependent (`untangleCleanup`, `lineGridBuild`) reached on a
+  //: skipped stage then sees no lines instead of null or the last run's arrays (the
+  //: 2,000-note crash, audit G1). Every typed array here is allocated for the current sizes.
+  for (const edge of edges.length > UNTANGLE_MAX_EDGES ? [] : edges) {
     const a = indexById.get(edge.source);
     const b = indexById.get(edge.target);
     if (a === b) continue;
@@ -2645,7 +2648,7 @@ function settleUntangled(until, deadline, cap) {
     if (!coolToRest(until)) return false;
   }
   untangle.done = true;
-  if (untangle.passes > 0 && !untangle.cleaned) {
+  if (untangle.passes > 0 && !untangle.cleaned && untangle.edges.length) {
     if (late()) return "late";
     untangle.cleaned = true;
     if (untangleCleanup()) landTargets();

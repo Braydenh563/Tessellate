@@ -2322,6 +2322,7 @@ class DatabaseManager:
         self._add_missing_columns()
         self._rebuild_categories_unique_constraint()
         self._backfill_inherited_workspaces()
+        self._drop_orphan_links()
         self._ensure_fts5()
         self._ensure_indexes()
         self._ensure_readings_view()
@@ -2891,6 +2892,28 @@ class DatabaseManager:
                     f'   AND EXISTS (SELECT 1 FROM "{parent}" p WHERE p.id = "{table}".{fk}'
                     f"              AND p.workspace_id <> 'default')"
                 )
+
+    def _drop_orphan_links(self) -> None:
+        """Remove link rows whose source or target note no longer exists.
+
+        Every purge clears a note's links (`manager._hard_delete`), so a row
+        pointing at a missing note came from a path that did not (a database
+        written with foreign keys off, an interrupted import). Left in place
+        it inflates the link count (diagnostics showed 4,234 links on 37
+        notes) and every walk of the link table. Idempotent: a clean table
+        matches nothing. A note in the bin still exists, so its links stay.
+        """
+        with self.engine.begin() as connection:
+            tables = {
+                row[0]
+                for row in connection.exec_driver_sql("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+            }
+            if not {"entries", "entry_links"} <= tables:
+                return
+            connection.exec_driver_sql(
+                "DELETE FROM entry_links WHERE source_entry_id NOT IN (SELECT id FROM entries)"
+                " OR target_entry_id NOT IN (SELECT id FROM entries)"
+            )
 
     def _add_missing_columns(self) -> None:
         """Additive auto-migration for existing databases.

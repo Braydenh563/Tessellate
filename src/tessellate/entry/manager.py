@@ -1142,11 +1142,10 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     session.execute(delete(Attachment).where(Attachment.entry_id.in_(ids)))
     session.execute(delete(EmbeddingRecord).where(EmbeddingRecord.entry_id.in_(ids)))
     session.execute(delete(ChunkVector).where(ChunkVector.entry_id.in_(ids)))
-    session.execute(
-        delete(EntryLink).where(
-            or_(EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids))
-        )
-    )
+    # The table, not the mapped class: the class carries the space filter, and a link
+    # stamped for another space would survive its note (every space's, as the delete is).
+    links = EntryLink.__table__
+    session.execute(delete(links).where(or_(links.c.source_entry_id.in_(ids), links.c.target_entry_id.in_(ids))))
     # **Everything else that points at an entry, or the delete fails outright.**
     #
     # Reported twice in one sitting, "request failed (500) when I tried to

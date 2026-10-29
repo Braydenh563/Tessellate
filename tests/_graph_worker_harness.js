@@ -71,6 +71,11 @@ sandbox.onmessage({
     bloom: scenario.bloom === true,
   },
 });
+// `settleCap` runs the settle with an already-passed cap (the branch that skips the passes and goes straight to the cleanup), as a slow machine does.
+let settled = null;
+if (scenario.settleCap) {
+  settled = vm.runInContext("(() => { try { simulation.alpha(0); return String(settleUntangled(Date.now() + 1e5, 0, 1)); } catch (e) { return 'error: ' + e.message; } })()", sandbox);
+}
 let last = null;
 let firstAlpha = null;
 // The warm-up's playback (INBOX 775): the `frame` it posts, and how many
@@ -103,4 +108,4 @@ const positions = {};
 scenario.nodes.forEach((n, i) => {
   positions[n.id] = [last[i * 2], last[i * 2 + 1]];
 });
-process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha }));
+process.stdout.write(JSON.stringify({ positions, firstAlpha, framed, introTicks, firstIntroAlpha, settled }));

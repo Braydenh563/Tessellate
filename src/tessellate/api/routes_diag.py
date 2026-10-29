@@ -15,7 +15,7 @@ import time
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from tessellate import __version__
 from tessellate.core import deps, diagring, jobruns, lagwatch, maintenance
@@ -38,13 +38,22 @@ def counts(session: Session) -> dict:
     if _counts["value"] and now - _counts["at"] < COUNTS_TTL_S:
         return _counts["value"]
     try:
+        live_from, live_to = aliased(Entry), aliased(Entry)
         notes_q = select(func.count(Entry.id)).where(Entry.is_deleted == False)  # noqa: E712
         boards = session.scalar(notes_q.where(Entry.board_settings.is_not(None))) or 0
         value = {
             "notes": (session.scalar(notes_q) or 0) - boards,
             "boards": boards,
             "docs": session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0,
-            "links": session.scalar(select(func.count(EntryLink.id))) or 0,
+            #: Links between notes still in the notebook, the graph's own count: a binned
+            #: note keeps its links for a restore, and counting them said 4,234 on 37 notes.
+            "links": session.scalar(
+                select(func.count(EntryLink.id))
+                .join(live_from, live_from.id == EntryLink.source_entry_id)
+                .join(live_to, live_to.id == EntryLink.target_entry_id)
+                .where(live_from.is_deleted == False, live_to.is_deleted == False)  # noqa: E712
+            )
+            or 0,
         }
     except Exception:  # noqa: BLE001  # context for a report must never fail the report
         return _counts["value"]
