@@ -1229,19 +1229,35 @@ function clearanceForce() {
     //: line is within it of a chord, so the cells round each chord hold every
     //: note the box did. A long diagonal line's box is mostly empty air (the
     //: 300-note seed: this force was 64% of a tick, 7 of 11 ms).
+    //: And only the chord's corridor, not its box (audit 1029 row 35): each
+    //: column of cells takes the rows the chord crosses within it, padded by
+    //: the reach. A long diagonal's box at 2,000 notes asked 290,000 notes a
+    //: tick, 81% of the worker's time.
     for (let c = 1; c < count; c++) {
       const ax = clearPts[c * 2 - 2];
       const ay = clearPts[c * 2 - 1];
-      const bx = clearPts[c * 2];
-      const by = clearPts[c * 2 + 1];
-      const x1 = Math.floor((Math.max(ax, bx) + reach) / CLEAR_CELL);
-      const y1 = Math.floor((Math.max(ay, by) + reach) / CLEAR_CELL);
-      for (let gx = Math.floor((Math.min(ax, bx) - reach) / CLEAR_CELL); gx <= x1; gx++) {
-        for (let gy = Math.floor((Math.min(ay, by) - reach) / CLEAR_CELL); gy <= y1; gy++) {
+      const dx = clearPts[c * 2] - ax;
+      const dy = clearPts[c * 2 + 1] - ay;
+      const l2 = dx * dx + dy * dy || 1;
+      const lo = Math.min(ax, ax + dx);
+      const hi = Math.max(ax, ax + dx);
+      const x1 = Math.floor((hi + reach) / CLEAR_CELL);
+      for (let gx = Math.floor((lo - reach) / CLEAR_CELL); gx <= x1; gx++) {
+        const u0 = dx ? (Math.max(lo, gx * CLEAR_CELL - reach) - ax) / dx : 0;
+        const u1 = dx ? (Math.min(hi, (gx + 1) * CLEAR_CELL + reach) - ax) / dx : 1;
+        const ya = ay + dy * u0;
+        const yb = ay + dy * u1;
+        const y1 = Math.floor((Math.max(ya, yb) + reach + 1) / CLEAR_CELL);
+        for (let gy = Math.floor((Math.min(ya, yb) - reach - 1) / CLEAR_CELL); gy <= y1; gy++) {
           const list = grid.get(gx * 100003 + gy);
           if (!list) continue;
           for (const node of list) {
             if (node === a || node === b || node._clear === clear.stamp) continue;
+            // Clear of this chord: no push from it, and a chord it is near
+            // finds it in its own corridor.
+            const u = Math.max(0, Math.min(1, ((node.x - ax) * dx + (node.y - ay) * dy) / l2));
+            const need = (node.r || 8) + CLEAR_GAP;
+            if ((node.x - ax - u * dx) ** 2 + (node.y - ay - u * dy) ** 2 >= need * need) continue;
             node._clear = clear.stamp;
             clearNearest(node, count);
             clearPush(node, a, b);
