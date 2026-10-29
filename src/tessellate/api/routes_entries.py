@@ -2750,7 +2750,7 @@ def _refuse_while_sealed(entry) -> None:  # noqa: ANN001
     answers 409 rather than a placeholder that looks like the note (INBOX
     1437). The same gate as writes: the person unlocks, then asks again."""
     if manager.note_is_sealed(entry.is_private):
-        raise HTTPException(status_code=409, detail="Unlock first")
+        raise HTTPException(status_code=409, detail="Unlock first.")
 
 
 def _safe_filename(title: str, extension: str) -> str:
@@ -2777,7 +2777,7 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     is no second branch to share, and the two routes would only be coupled
     by the part that's already this short.
 
-    A locked private note answers 409 "Unlock first" (`_refuse_while_sealed`):
+    A locked private note answers 409 "Unlock first." (`_refuse_while_sealed`):
     a download named like the note and holding a placeholder is a file that
     looks like the note and is not.
     """

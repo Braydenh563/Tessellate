@@ -105,7 +105,8 @@ function rmSpace(id) {
   sync();
   $("space-delete-submit").onclick = spaceDeleteSubmit;
   $("space-delete-dialog").showModal();
-  fate.focus();
+  //: The select is rebuilt by enhanceSelect: its opener takes focus.
+  (fate.closest(".select-shell")?.querySelector(".select-opener") || fate).focus();
   apiJson(`/spaces/${encodeURIComponent(id)}/counts`).then((c) => {
     const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
     const text = `${part(c.notes, "note")}, ${part(c.documents, "document")}`;

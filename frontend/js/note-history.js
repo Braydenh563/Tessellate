@@ -17,13 +17,13 @@ async function openEntryHistory(entry) {
   let history;
   try {
     history = await apiJson(`/entries/${entry.id}/history`).catch(async (error) => {
-      //: A locked private note answers 409 "Unlock first" (INBOX 1437): the
+      //: A locked private note answers 409 "Unlock first." (INBOX 1437): the
       //: usual password prompt, then the sheet reads once more.
-      if (error?.detail !== "Unlock first" || !(await ensureVaultOpen())) throw error;
+      if (error?.detail !== "Unlock first." || !(await ensureVaultOpen())) throw error;
       return apiJson(`/entries/${entry.id}/history`);
     });
   } catch (error) {
-    if (error?.detail === "Unlock first") {
+    if (error?.detail === "Unlock first.") {
       overlay.classList.add("hidden");
       return;
     }

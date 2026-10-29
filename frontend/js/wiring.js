@@ -1188,7 +1188,7 @@ window.addEventListener(
   },
   { passive: true }
 );
-$("graph-popup-save").addEventListener("click", saveGraphPopup);
+$("graph-popup-save").addEventListener("click", () => saveGraphPopup());
 // Save is shown only once the note differs from what loaded (GRAPH_PLAN
 // Phase 6), so both fields have to tell the gate when they change.
 for (const id of ["graph-popup-content", "graph-popup-tags"]) {

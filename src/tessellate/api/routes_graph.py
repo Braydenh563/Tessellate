@@ -184,7 +184,11 @@ def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
         if hit is not None and hit[0] == e.updated_at and not e.is_private:
             out[e.id] = hit[1]
         else:
-            out[e.id] = (_label(e), _words(e))
+            if manager.note_is_sealed(e.is_private):
+                out[e.id] = (SEALED_LABEL, 0)
+            else:  # one read for both numbers
+                text = manager.readable_content(e)
+                out[e.id] = (_preview(text), _word_count(text))
             if not e.is_private:
                 fresh[key] = (e.updated_at, out[e.id])
                 continue

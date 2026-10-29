@@ -83,7 +83,7 @@ def test_export_and_history_refuse_while_locked(client, locked_with_a_private_no
     for suffix in ("export.md", "history"):
         response = client.get(f"/entries/{locked_with_a_private_note}/{suffix}")
         assert response.status_code == 409, suffix
-        assert response.json()["detail"] == "Unlock first"
+        assert response.json()["detail"] == "Unlock first."
 
 
 def test_export_and_history_work_once_unlocked(client, session, locked_with_a_private_note):

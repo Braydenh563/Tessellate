@@ -2544,7 +2544,8 @@ body.scroll-top-visible .skills-split > .tab-main {
   font-size: var(--text-md);
   color: var(--ink);
 }
-.space-option:hover {
+.space-option:hover,
+.space-option:is(:focus-visible, :has(:focus-visible)) {
   background: var(--inner);
 }
 /* The row is a wrapper; the space is the button inside it, so the actions can

@@ -1164,12 +1164,12 @@ async function downloadFromApi(path, fallbackName, unlocked = false) {
     const named = /filename="([^"]+)"/i.exec(disposition);
     await saveFile(named ? named[1] : fallbackName, await response.blob());
   } catch (error) {
-    //: A locked private note answers 409 "Unlock first" (INBOX 1437): ask for
+    //: A locked private note answers 409 "Unlock first." (INBOX 1437): ask for
     //: the password through the usual prompt, then download once.
-    if (!unlocked && error?.detail === "Unlock first" && (await ensureVaultOpen())) {
+    if (!unlocked && error?.detail === "Unlock first." && (await ensureVaultOpen())) {
       return downloadFromApi(path, fallbackName, true);
     }
-    if (!error?.isLockout && error?.detail !== "Unlock first") toast(error.message || "Couldn't download that.", true);
+    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || "Couldn't download that.", true);
   }
 }
 
