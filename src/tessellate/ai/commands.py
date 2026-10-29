@@ -1064,6 +1064,36 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     }
 
 
+def _plan_new_note(session: Session, parsed: dict) -> dict:
+    steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
+    card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
+    if _has_note_saying(session, parsed["content"]):
+        return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
+    return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+
+
+def _plan_meeting(parsed: dict) -> dict:
+    title = parsed.get("title") or ""
+    steps = [{"name": "start_meeting", "arguments": {"title": title}}]
+    named = f" “{title}”" if title else ""
+    return {
+        "line": f"Start a meeting{named}.",
+        "card": _card(f"Start a meeting{named}", steps),
+        "run": True,
+    }
+
+
+def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
+    entries, which = _which(parsed, session, note_ids)
+    ok, skipped = _split_allowed(entries)
+    if not ok:
+        return {"line": f"I found no note {which} to take the tag off." if not skipped else summarise_done([], skipped)}
+    tags = " ".join(f"#{t}" for t in parsed["tags"])
+    label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
+    steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+
+
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
     """What the command would do: {"line", "card"?, "tool"?}. Writes nothing."""
     intent = parsed["intent"]
@@ -1076,33 +1106,15 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
     if intent in ("complete", "cancel", "snooze"):
         return _plan_task(session, parsed)
     if intent == "new_note":
-        steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
-        card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
-        if _has_note_saying(session, parsed["content"]):
-            return _add_another(f"a note “{_clip(parsed['content'], 60)}”", card)
-        return {"line": f"Make a new note: “{_clip(parsed['content'], 80)}”.", "card": card, "run": True}
+        return _plan_new_note(session, parsed)
     if intent == "meeting":
-        title = parsed.get("title") or ""
-        steps = [{"name": "start_meeting", "arguments": {"title": title}}]
-        named = f" “{title}”" if title else ""
-        return {
-            "line": f"Start a meeting{named}.",
-            "card": _card(f"Start a meeting{named}", steps),
-            "run": True,
-        }
+        return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
         return _plan_one(session, parsed, note_ids)
     if intent == "untag":
-        entries, which = _which(parsed, session, note_ids)
-        ok, skipped = _split_allowed(entries)
-        if not ok:
-            return {"line": f"I found no note {which} to take the tag off." if not skipped else summarise_done([], skipped)}
-        tags = " ".join(f"#{t}" for t in parsed["tags"])
-        label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
-        steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
-        return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+        return _plan_untag(session, parsed, note_ids)
     if intent == "navigate":
         return {"line": f"Opening {parsed['surface']}.", "navigate": parsed["surface"]}
     if intent in READ_INTENTS:
