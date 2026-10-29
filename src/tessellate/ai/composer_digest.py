@@ -1160,8 +1160,12 @@ def _as_written(topic: str, members: list[composer.NoteView]) -> str:
     "lisbon" typed small is "Lisbon" (C1: "two notes about lisbon")."""
     #: A name: a word not in the dictionary ("lisbon") or one a title writes
     #: with a capital ("atlas"); "social" in "Complete Social Skills" is neither.
-    names = {w for w in _NAMES.get() if w not in _dictionary()} | _title_capitals()
     text = " ".join(f"{v.title} " + " ".join(s.text for s in v.sentences) for v in members)
+    #: Or a dictionary word the notes write as a place ("moving to Lisbon"):
+    #: "what about lisbon" is answered as a topic, so it no longer takes the
+    #: who shape's capital (audit 1029 C15 residue).
+    placed = {w.lower() for w in re.findall(r"\b(?:to|in|from|at|near|visit|visiting|visited)\s+([A-Z][a-z'-]+)", text)}
+    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed} | _title_capitals()
     whole = re.search(rf"\b{re.escape(topic)}\b", text, re.I) if " " in topic.strip() else None
     if whole and topic.islower() and re.search(r"\s[A-Z]", whole.group(0)) and any(w in names for w in topic.split()):
         #: "project atlas" is "Project Atlas", as the notes write it.
