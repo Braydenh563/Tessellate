@@ -246,13 +246,17 @@ function fallbackGreetingPhrase(now = new Date()) {
   return options[daySlot % options.length];
 }
 
+//: A name longer than this is cut at a word with an ellipsis in the greeting (X25).
+const GREETING_NAME_MAX = 40;
+
 // The name always comes from preferences, never from the model, so it can't
 // be mangled or hallucinated, and editing it takes effect immediately. The
 // terminal mark goes on last so the result reads as a proper sentence:
 // "Rise and shine" + ", Sam" + "." → "Rise and shine, Sam." A cached "!" from
 // before the server stopped sending one reads as a full stop (INBOX 472).
 function withDisplayName(phrase, punctuation = ".", appendName = true) {
-  const name = ((prefsCache && prefsCache.display_name) || "").trim();
+  const full = ((prefsCache && prefsCache.display_name) || "").trim();
+  const name = clipText(full, GREETING_NAME_MAX);
   const mark = punctuation === "?" ? "?" : ".";
   // Also sentence-cased here, so an older cached greeting written by the model
   // in lowercase corrects itself on the next render.
@@ -262,7 +266,7 @@ function withDisplayName(phrase, punctuation = ".", appendName = true) {
   // text check is a belt-and-braces guard against a stale cache.
   const already =
     !appendName ||
-    (name && new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(opener));
+    (full && new RegExp(`\\b${full.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(opener));
   if (!name || already) return `${opener}${mark}`;
   return `${opener}, ${name}${mark}`;
 }
