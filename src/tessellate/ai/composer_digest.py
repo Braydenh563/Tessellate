@@ -239,7 +239,11 @@ _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
 #: how current something is, the only time the staleness footer is said.
 _TIMED: ContextVar[bool] = ContextVar("digest_timed", default=True)
 _CURRENT: ContextVar[bool] = ContextVar("digest_current", default=True)
-_ASKS_CURRENT = re.compile(r"\b(?:latest|current(?:ly)?|up to date|still|now|stale|how old|recent(?:ly)?|newest|lately)\b", re.I)
+#: "Do I like golf?" asks how a taste stands now, so old notes say their
+#: age; "what do I like to cook?" asks for a list, not a verdict.
+_ASKS_CURRENT = re.compile(
+    r"\b(?:latest|current(?:ly)?|up to date|still|now|stale|how old|recent(?:ly)?|newest|lately)\b|"
+    r"^\W*(?:so,? )?(?:do|am) i (?:really )?(?:like|love|enjoy|prefer|hate|into)\b", re.I)
 
 
 def _set_timing(question: str) -> None:

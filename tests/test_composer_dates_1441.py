@@ -205,3 +205,16 @@ def test_a_one_line_sentence_is_quoted_never_worn_as_a_name(content, named):
     from tessellate.ai import composer_frame
 
     assert composer_frame.short_name({"content": content, "category": "Uni"}) == named
+
+
+@pytest.mark.parametrize(("question", "current"), [
+    ("do I like golf?", True), ("am I into bouldering?", True), ("do I still go to the gym?", True),
+    ("what have I saved about hobbies?", False), ("what does HCI stand for?", False), ("what do I like to cook?", False),
+])
+def test_a_question_about_how_a_taste_stands_now_hears_the_notes_age(question, current):
+    """INBOX 1441 keeps the staleness line for a question about how current
+    something is; "do I like golf?" asks how a taste stands now (gold 9)."""
+    from tessellate.ai import composer_digest
+
+    composer_digest._set_timing(question)
+    assert composer_digest._CURRENT.get() is current
