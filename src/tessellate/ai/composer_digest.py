@@ -2643,6 +2643,11 @@ def _compared(out: _Out, asked: str, views: list, names: set[str], today: date) 
     return _result(out, "compare", asked)
 
 
+def _filed_under(word: str, views: list) -> bool:
+    stem = composer._stem(word)  # noqa: SLF001
+    return any(stem in v.filed_words for v in views)
+
+
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
     """The answers that are one notebook-wide lookup (what an abbreviation
     stands for, who someone is, a comparison, what a category holds): the
@@ -2661,9 +2666,10 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
         #: to P13); when the notes do not hold what it needs the ordinary
         #: shapes below still answer.
         return _result(out, "fact", asked)
-    if kind == "overview" and (said := _one_name(asked, names)):
+    if kind == "overview" and (said := _one_name(asked, names)) and not _filed_under(said, views):
         #: "tell me about Tom" is "who is Tom": a name has one answer shape
-        #: (audit 1029 C17), never an attendee list read as a count.
+        #: (audit 1029 C17), never an attendee list read as a count. A word
+        #: notes are tagged or filed under ("Golf") is a topic, not a person.
         kind, asked = "who", f"who is {said}"
     if kind == "who":
         name = _ASKS["who"].search(asked).group("name").strip()
