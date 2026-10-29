@@ -710,16 +710,27 @@ def _without_command(text: str) -> str:
         at += 1
     if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
         return text
+    rest = _without_bin(words[_past_filler(words, at):])
+    return " ".join(rest) or text
+
+
+def _past_filler(words: list[str], at: int) -> int:
+    """Where the subject starts after the command verb at `at`: past "the",
+    and for a draft past "a message to"."""
     drafting = words[at].casefold() in ("draft", "write", "compose")
     at += 1
     while at < len(words) and (words[at].casefold() in _COMMAND_FILLER or (drafting and words[at].casefold() in _DRAFTED)):
         at += 1
     if drafting and at < len(words) and words[at].casefold() in ("to", "for"):
         at += 1
-    rest = words[at:]
+    return at
+
+
+def _without_bin(rest: list[str]) -> list[str]:
+    """"budget to the bin" is budget."""
     if len(rest) >= 3 and rest[-3].casefold() == "to" and rest[-2].casefold() == "the" and rest[-1].casefold().rstrip("?.!") in _BIN_WORDS:
-        rest = rest[:-3]
-    return " ".join(rest) or text
+        return rest[:-3]
+    return rest
 
 
 def subject_terms(question: str) -> list[str]:
@@ -4395,7 +4406,7 @@ def _span_of(out: _Answer, views: list[NoteView]) -> None:
     """", from July to September" over the notes' days; ", all from
     September" when they share a month."""
     days = sorted(v.written for v in views if v.written)
-    if not days:
+    if not days or not asks_time(getattr(out, "question", "")):
         return
     first, last = _month(out, days[0]), _month(out, days[-1])
     if first == last:
@@ -4452,10 +4463,11 @@ def _overview_bullets(out: _Answer, views: list[NoteView], stems: set[str], text
         if i or not first:
             out.t("line")
         out.t("bullet")
-        if view.written:
+        if view.written and asks_time(getattr(out, "question", "")):
             day = out.day(view.written)
             out.m(day[:1].upper() + day[1:]).t("colon")
-        else:
+        elif view.titled or not view.written:
+            #: The card carries the day (INBOX 1441): a titled note is named.
             out.name(view, cap=True).t("colon")
         _overview_line(out, composer_overview.best_line(view.sentences, stems, text_stems), stems)
     return len(views)
@@ -5097,6 +5109,20 @@ _WHEN_NOISE = frozenset(
     "day date time created create creating start started starting began begun note notes page entry entries "
     "made make making added add saved save wrote write written put together jotted typed".split()
 )
+
+
+#: A question about time (INBOX 1441): only then does an answer say a date.
+_ASKS_TIME = re.compile(
+    r"\b(?:when|what time|dates?|dated|days?|weeks?|weekend|months?|years?|yesterday|today|tonight|tomorrow|"
+    r"recent(?:ly)?|latest|newest|oldest|earliest|last|first|since|ago|before|after|until|timeline|history|"
+    r"how long|how often|going|progress\w*|improv\w*|chang\w*|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|"
+    r"april|may|june|july|august|september|october|november|december|\d{1,2}(?:st|nd|rd|th)?)\b", re.I)
+
+
+def asks_time(question: str | None) -> bool:
+    """Whether a question is about time, the only time an answer says a date
+    (INBOX 1441: "I dont like how it refers to dates")."""
+    return bool(_ASKS_TIME.search(question or "")) or asks_written_when(question or "")
 
 
 def asks_written_when(question: str) -> bool:

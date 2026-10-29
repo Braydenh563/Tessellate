@@ -71,10 +71,11 @@ def test_no_note_answer_quotes_brackets_or_repeats_the_sources(item):
     assert not {"no_brackets", "no_quoting", "never"} & set(failed), failed
 
 
-def test_the_owners_question_opens_with_the_count_and_the_span():
+def test_the_owners_question_opens_with_the_count():
     result = composer_digest.answer("What have I saved about courses & study?", NOTES, today=TODAY)
     lines = result["text"].split("\n\n")
-    assert lines[0] == "You have four notes about uni, 17 July to 4 August."
+    #: The count without the span: the question is not about time (INBOX 1441).
+    assert lines[0] == "You have four notes about uni."
     #: The first note told as what happened (the owner, 2026-10-11), its
     #: "next week" said from today; the narration tests further down have the rest.
     assert lines[1].startswith("You went back to uni the week of 20 July") and "classes on Tuesdays and Thursdays" in lines[1]
@@ -266,7 +267,8 @@ def test_a_short_answer_has_no_more():
 def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
-    assert "today" not in text and "On 2 September, you trimmed your first bowl." in text
+    #: Undated since INBOX 1441: "What have I saved about" is not about time.
+    assert "today" not in text and "You trimmed your first bowl." in text
 
 
 @pytest.mark.parametrize(("question", "subject"), [

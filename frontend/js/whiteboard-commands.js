@@ -633,6 +633,10 @@ const WB_HELP_SECTIONS = [
     { cmd: "tool-diamond" }, { cmd: "insert-text" }, { cmd: "insert-sticky" }, { cmd: "insert-frame" },
     { cmd: "insert-image" }, { cmd: "tool-connector" }, { cmd: "tool-connector-curved" }, { cmd: "tool-delete" },
   ] },
+  { title: "Pan a map", surface: "map", rows: [
+    { icon: "ph:hand", label: "Pan the map", keys: ["drag empty canvas"] },
+    { icon: "ph:selection", label: "Box select on a map", keys: ["Shift+drag"] },
+  ] },
   { title: "Move around", surface: "both", rows: [
     { icon: "ph:hand", label: "Pan", keys: ["H then drag", "middle drag", "two-finger scroll"] },
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },

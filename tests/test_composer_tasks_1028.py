@@ -231,7 +231,7 @@ def test_a_task_on_a_private_note_is_never_touched(session):
     assert "card" not in planned
 
 
-def test_adding_a_task_is_a_reminder_card_that_undo_bins(session):
+def test_adding_a_task_is_a_reminder_card_that_undo_bins(session, clock):
     planned = _go(session, "add a task to read chapter 5 tomorrow")
     assert planned["run"] and "task" in planned["card"]["label"].lower()
     done = acts.run(session, planned["card"]["steps"])

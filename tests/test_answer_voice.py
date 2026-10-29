@@ -47,7 +47,9 @@ def test_a_voice_changes_the_words_never_the_facts_or_the_shape(voice):
 def test_five_turns_never_open_the_same_way(voice):
     openings = [composer_digest.answer(QUESTION, NOTES, today=TODAY, voice=voice, turn=t)["text"].split("\n\n")[0] for t in range(5)]
     assert len(set(openings)) == 5, openings
-    assert all("four notes" in o.lower() and "17 July to 4 August" in o for o in openings), openings
+    #: No span in the count opener when the question is not about time
+    #: (INBOX 1441, the owner, 2026-10-29: "I dont like how it refers to dates").
+    assert all("four notes" in o.lower() and "17 July" not in o for o in openings), openings
 
 
 def test_the_setting_is_saved(client):

@@ -169,9 +169,24 @@ function wbZoomFilter(event) {
   }
   // Left button: Pan tool, or space held down.
   if (event.button === 0 || event.buttons === 1 || event.buttons === 0) {
-    return window.currentTool === "pan" || wbSpaceHeld;
+    //: **On a mind map a left drag on empty canvas pans** (the owner,
+    //: 2026-10-29, INBOX 1445: "I cant left click drag to pan on the mind
+    //: map"). The 2026-10-19 reversal of the left-drag pan kept the box
+    //: select for the board and the map alike; a map has few things to box
+    //: (a branch is selected by its topic), so its empty canvas pans and
+    //: Shift-drag draws the box (`wbMapPansOnLeftDrag`, one test for both).
+    return window.currentTool === "pan" || wbSpaceHeld || wbMapPansOnLeftDrag(event);
   }
   return false;
+}
+
+//: A left press on a mind map's bare canvas with Select, no Shift: the
+//: drag is a pan, not a box. Used by the zoom filter and by the box select,
+//: which must agree about who owns the gesture. Only the press is judged
+//: (`mousedown`); the moves of a drag the filter let in carry on.
+function wbMapPansOnLeftDrag(event) {
+  return wbIsMap() && window.currentTool === "select" && !event.shiftKey
+    && event.type !== "wheel" && wbIsBareCanvas(event.target);
 }
 
 //: Nothing on the board under this point: not a card, a drawn shape (a link
@@ -17261,6 +17276,8 @@ async function initWhiteboard() {
     //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is
     //: not also the start of an area select.
     if (!place && e.pointerType === "touch") return;
+    //: On a map the same press pans (`wbMapPansOnLeftDrag`); Shift boxes.
+    if (!place && wbMapPansOnLeftDrag(e)) return;
     // Primary button only. A right-click opens the context menu and a middle
     // click pans; neither ends with the pointerup this drag is waiting for,
     // so both used to start a rectangle that nothing would ever remove.

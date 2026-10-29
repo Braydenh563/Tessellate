@@ -175,7 +175,8 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
 def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
     """INBOX 1332 reverted by the owner: a left-drag pan on empty canvas took the drag from the
     marquee and lasso. With Select a left-drag never pans, Shift or not; Pan, Space, the middle
-    button and the trackpad still do."""
+    button and the trackpad still do. (Boards only: a mind map's left-drag on empty canvas pans since
+    INBOX 1445, see test_map_left_drag_pan_1445.py; the stub says this is a board.)"""
     import json
 
     node = shutil.which("node")
@@ -185,7 +186,8 @@ def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
     script = (
         "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
-        "function wbIsBareCanvas() { return true; }\n"
+        "function wbIsBareCanvas() { return true; }\nfunction wbIsMap() { return false; }\n"
+        + _function("wbMapPansOnLeftDrag")
         + _function("wbTrackpadPan")
         + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
