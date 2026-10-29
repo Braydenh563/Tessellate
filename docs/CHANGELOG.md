@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Thirteen long functions split into named steps (own activity, typed commands, composer plan, slots and study, intent, note recency, chat prepare, the search route, engine filter, retrieve), none over complexity 15 now; behaviour unchanged.
 - The Appearance panel has its own Help entry under Look and feel, and its current section reads in the accent text colour; "tell me about golf" answers with what you confirmed about golf, not as a person.
 - Connections column and its forgotten notes name a note in plain words (INBOX 1442): "**Gym Routine Overview**" showed its stars; both now use the chip label.
 - The Connections column is resizable (INBOX 1443): drag its left edge, or focus the edge and press the arrow keys (16px) and Home to reset; 240 to 560px, kept on this device, on a fine pointer at 600px or wider, the list beside it reflowing.
