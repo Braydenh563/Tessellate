@@ -26,6 +26,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import notebook_stats
+from tessellate.ai import composer_plan
 from tessellate.ai import when as when_words
 
 #: The doing verbs, by what they ask for. "work on" and "do" are every kind of
@@ -47,7 +48,7 @@ _PAST = re.compile(r"\b(?:did|was|were|been)\b|\b\w+ed\b|\b(?:made|done|built|th
 #: Words that are neither a subject nor a doing: the question's frame.
 _FRAME = frozenset(
     "what which show list tell give me my i i've i'd we our us all everything anything stuff things thing "
-    "did do does done have has had been get got up to on in at over during the a an of for this that these "
+    "did do does done have has had been get got up to on in at over during the a an of for this that these is was were s "
     "please pls plz can could you u summary summarise summarize recap overview "
     "so far lately recently whole entire full".split()
 )
@@ -101,15 +102,22 @@ def read(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
     text = (question or "").strip()
-    if not text or len(text) > 200 or not _OWN.search(text):
+    if not text or len(text) > 200:
+        return None
+    #: "What is on 14 August" with the day gone asks what that day held, in the
+    #: present tense and with no "I": the plan's one date reader says so.
+    back = composer_plan.lookback(text, today)
+    if not (back or _OWN.search(text)):
         return None
     window = _window(text, today)
-    if window is None or not _PAST.search(text):
+    if window is None or not (back or _PAST.search(text)):
         return None
     phrase, span = window
     #: The most specific doing wins: "what did I delete" is binned, not "did".
     bare = text.replace(phrase, " ")
     verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
+    if verb is None and back:
+        verb = "all"
     if verb is None:
         return None
     kinds = _kinds_named(_VERB.sub(" ", re.sub(re.escape(phrase), " ", text, flags=re.I)))
