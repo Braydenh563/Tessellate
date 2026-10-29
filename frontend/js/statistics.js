@@ -230,6 +230,19 @@ function statsRangeControl(holder, book) {
   return label;
 }
 
+//: The one line that says why the words, tags, links and growth cover fewer
+//: notes than the note count (audit 1029 X13): none when nothing is left out.
+function statsLeftOutLine(left) {
+  const parts = [];
+  if (left && left.private) parts.push(`${left.private} private ${left.private === 1 ? "note" : "notes"}`);
+  if (left && left.archived) parts.push(`${left.archived} archived ${left.archived === 1 ? "note" : "notes"}`);
+  if (!parts.length) return null;
+  const line = document.createElement("p");
+  line.className = "muted stats-about";
+  line.textContent = `Words, tags, links and growth leave out ${parts.join(" and ")}.`;
+  return line;
+}
+
 function statsNotebookSection(book) {
   const section = statsSection("Notebook", "What is in it, and how it grew. Click a count to open what it counts.");
   section.appendChild(
@@ -243,6 +256,8 @@ function statsNotebookSection(book) {
       [book.orphans, "note with no link", "notes with no link", statsOpenLooseEnds],
     ])
   );
+  const left = statsLeftOutLine(book.left_out);
+  if (left) section.appendChild(left);
   const holder = document.createElement("div");
   holder.className = "stats-growth";
   holder.appendChild(statsGrowthChart(book));

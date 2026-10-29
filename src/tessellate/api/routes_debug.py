@@ -78,6 +78,22 @@ def _db_name(config) -> str:  # noqa: ANN001
         return Path(config.db_path).name
 
 
+def db_footprint(db_path: Path) -> dict:
+    """What the database takes on disk: the file, plus the write-ahead log and
+    its shared-memory index beside it. The log holds recent writes until a
+    checkpoint, so the main file alone read 4 KB beside a 2.9 MB log (audit
+    1029 X17). A file that is not there counts as 0."""
+    def size(path: Path) -> int:
+        try:
+            return path.stat().st_size
+        except OSError:
+            return 0
+
+    main = size(db_path)
+    wal = sum(size(db_path.with_name(db_path.name + suffix)) for suffix in ("-wal", "-shm"))
+    return {"main_bytes": main, "wal_bytes": wal, "size_bytes": main + wal}
+
+
 @router.get("/health")
 def debug_health(session: Session = Depends(get_session)) -> dict:
     """One page's worth of "is this notebook okay", Settings › About reads
@@ -85,12 +101,9 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
     bug report too: nothing here is note content, nothing here writes.
     """
     config = deps.get_config()
-    try:
-        db_size_bytes = config.db_path.stat().st_size
-    except OSError:
-        # A brand new notebook, or a data dir moved out from under the
-        # process: 0 is the honest answer, not a 500 over a stat() call.
-        db_size_bytes = 0
+    # A brand new notebook, or a data dir moved out from under the process,
+    # is 0 bytes: the honest answer, not a 500 over a stat() call.
+    footprint = db_footprint(Path(config.db_path))
 
     live = Entry.is_deleted == False  # noqa: E712
     counts = {
@@ -134,7 +147,7 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
     return {
         "app_version": __version__,
         "data_dir": shown_path(config.data_dir),
-        "db": {"path": _db_name(config), "size_bytes": db_size_bytes},
+        "db": {"path": _db_name(config), **footprint},
         "counts": counts,
         # A "more queued" row (`jobs.pending`) stands for that many jobs.
         "jobs": {
