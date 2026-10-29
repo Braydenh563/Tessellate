@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import threading
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -77,6 +78,7 @@ from tessellate.api import (
     routes_graph,
     routes_help,
     routes_insights,
+    routes_diag,
     routes_lag,
     routes_library,
     routes_maintenance,
@@ -109,6 +111,7 @@ from tessellate.core import (
     backup,
     bgtasks,
     deps,
+    diagring,
     diskspace,
     egress,
     events,
@@ -993,6 +996,7 @@ def _register_error_handlers(app: FastAPI) -> None:
         # this ref is the thing a bug report can actually be filed against.
         ref = uuid.uuid4().hex
         error_logger.exception("Unhandled exception (ref=%s)", ref, exc_info=exc)
+        diagring.note_exception(_request.url.path, exc, ref)
         return JSONResponse(
             status_code=500,
             content={
@@ -1130,14 +1134,27 @@ class RequestPulse:
             await self.app(scope, receive, send)
             return
         embeddings.note_request()
+        started = time.perf_counter()
+        status = 0
+
+        async def timed_send(message) -> None:  # noqa: ANN001
+            nonlocal status
+            if message["type"] == "http.response.start":
+                status = message["status"]
+            await send(message)
+
         #: Which device this request is for (core/origin.py): carried into
         #: the jobs it queues, so a phone's save cannot start an install here.
         another = is_another_device(Request(scope))
         if not another and scope.get("method") in _ACTS and origin.has_deferred():
             origin.run_deferred(jobs.enqueue)
         #: The request's endpoint names a model call no run owns (INBOX 805).
-        with origin.acting_for(another), jobruns.for_request(scope):
-            await self.app(scope, receive, send)
+        try:
+            with origin.acting_for(another), jobruns.for_request(scope):
+                await self.app(scope, receive, timed_send)
+        finally:
+            #: A slow route is one line in the diagnostics report (core/diagring.py).
+            diagring.note_request(scope.get("method", ""), scope.get("path", ""), (time.perf_counter() - started) * 1000, status)
 
 
 def _start_services() -> Path:
@@ -1148,6 +1165,7 @@ def _start_services() -> Path:
     2026-10-05, ARCH-22: create_app was 354 lines)."""
     pin_static_mime_types()
     logbuffer.install()  # start capturing logs for the Settings viewer
+    diagring.install_query_hook()  # slow statements, for the diagnostics report
     # The privacy receipt's record (core/egress.py): before anything below
     # can open a socket, so a startup download or a warmup that phones home
     # is on the receipt too. Idempotent, and permanent by design.
@@ -1313,6 +1331,7 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_settings.router, dependencies=locked)
     app.include_router(routes_maintenance.router, dependencies=locked)
     app.include_router(routes_lag.router, dependencies=locked)
+    app.include_router(routes_diag.router, dependencies=locked)
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.

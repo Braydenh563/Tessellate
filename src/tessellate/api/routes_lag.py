@@ -11,10 +11,13 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
+from tessellate.api import routes_diag
 from tessellate.core import deps, lagwatch, maintenance
+from tessellate.core.deps import get_session
 
 logger = logging.getLogger("tessellate.lag")
 router = APIRouter(tags=["logs"])
@@ -30,9 +33,13 @@ def _logs_dir():  # noqa: ANN202
 
 
 @router.post("/logs/lag", status_code=201)
-def record_lag(body: LagBatch) -> dict:
-    """Keep the reports on disk and put a one-line summary of each in the log."""
-    events = [lagwatch.clean(e) for e in body.events]
+def record_lag(body: LagBatch, session: Session = Depends(get_session)) -> dict:
+    """Keep the reports on disk and put a one-line summary of each in the log.
+
+    Each is stamped with this side's context (notebook size, app version and
+    build), so a line read alone says how big the notebook was (INBOX 1430)."""
+    context = routes_diag.context(session)
+    events = [lagwatch.clean({**e, **context}) for e in body.events]
     for e in events:
         # The fields come from the browser: a line break in one could forge a
         # log record (CodeQL py/log-injection), so each is one line here.

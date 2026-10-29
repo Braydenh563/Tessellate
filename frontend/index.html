@@ -14140,7 +14140,7 @@ Link to another note with [[its first few words]]."></textarea>
                   data-help-for="logs-help" aria-controls="logs-help" aria-expanded="false"
                   title="About the log" aria-label="About the log"><i class="ph ph-question" aria-hidden="true"></i></button>
                 <div class="help-body hidden" id="logs-help" role="dialog" aria-label="About the log">
-                  <p>The app's own log, updating live. Filter the records by text, switch between a list and a terminal view, and use the three dots to narrow by which log and how serious. Support bundle saves a zip of the log, your settings and the app's status, for a bug report.</p>
+                  <p>The app's own log, updating live. Filter the records by text, switch between a list and a terminal view, and use the three dots to narrow by which log and how serious. Support bundle saves a zip of the log, your settings and the app's status, for a bug report. To send us what is slow or broken, open the three dots and press Copy diagnostics: one plain-text report (lag, errors, slow routes, how big your notebook is, no note text) to paste into a message, or Save diagnostics as file.</p>
                 </div>
                 <details class="doc-dock-menu dock-menu dock-more" id="logs-more-menu">
                   <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -14195,6 +14195,14 @@ Link to another note with [[its first few words]]."></textarea>
                          door is one row below it here. -->
                     <button id="logs-email-bundle" class="doc-dock-menu-item" type="button"
                       title="Save the bundle, then open your mail app with the report addressed to the developer"><i class="ph ph-envelope-simple ph-lead" aria-hidden="true"></i> Email the support bundle</button>
+                    <button id="logs-diag-copy" class="doc-dock-menu-item" type="button"
+                      title="One plain-text report of lag, errors and slow routes, with no note text, to paste into a message"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i> Copy diagnostics</button>
+                    <button id="logs-diag-save" class="doc-dock-menu-item" type="button"
+                      title="The same report as a text file"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i> Save diagnostics as file</button>
+                    <label class="dock-menu-check"
+                      title="Times the animation loops by script so the report can name a costly one. Off, the report has no animation figures.">
+                      <input type="checkbox" id="logs-sampler" checked> <i class="ph ph-gauge ph-lead" aria-hidden="true"></i> Time animation loops
+                    </label>
                     <button id="logs-copy" class="doc-dock-menu-item" type="button"></button>
                     <button id="logs-clear" class="doc-dock-menu-item" type="button"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Clear</button>
                   </div>

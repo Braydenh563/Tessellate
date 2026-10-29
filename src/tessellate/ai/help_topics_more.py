@@ -625,14 +625,20 @@ MORE_TOPICS: list[dict] = [
         "id": "logs",
         "keywords": (
             "logs", "log", "support bundle", "report a bug", "bug report", "error report",
-            "send a report", "email support",
+            "send a report", "email support", "send you my logs", "diagnostics", "copy diagnostics",
+            "something is slow", "app is laggy", "lag report",
         ),
         "body": (
             "Settings, Logs shows what happened, for when something did not "
             "work: filter by source and level, follow new lines, copy or clear "
             "them. The ? beside the three dots in its bar says what each control "
             "does. The support bundle collects the logs and the app's state; "
-            "Email it opens a message to support with the bundle to attach."
+            "Email it opens a message to support with the bundle to attach. "
+            "To send the logs for something slow or broken, open the three dots in "
+            "the Logs bar and press Copy diagnostics (or Save diagnostics as file), "
+            "or run Copy diagnostics from the palette: one plain-text report of lag "
+            "with its cause, errors, slow routes and how big the notebook is, with "
+            "no note text, that you paste into a message."
         ),
         "badge": {"label": "Logs", "section": "logs"},
     },
@@ -2260,7 +2266,7 @@ TOPIC_META: dict[str, dict] = {
     "packages": {"title": "Packages", "path": "Settings, Packages"},
     "import-export": {"title": "Import and export", "path": "Settings, Import & export"},
     "logs": {"title": "Logs and reporting a problem", "path": "Settings, Logs", "steps": (
-        "Open Settings, Logs.", "Press Email it under the support bundle.", "Attach the bundle the app saved and send.")},
+        "Open Settings, Logs.", "Open the three dots and press Copy diagnostics, then paste it into your message.", "For a bug that is not about speed, press Email it under the support bundle and attach the bundle.")},
     "find-anything": {"title": "Find anything", "path": "Ctrl+P, or the magnifying glass in the status bar"},
     "background-art": {"title": "The animated background", "path": "Settings, Appearance, Animated background"},
     "themes": {"title": "Themes, colour and type", "path": "Settings, Appearance"},
