@@ -23,7 +23,7 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from tessellate.ai import extractor, filing_certainty, janitor, learning, lexical_filing, librarian, links, relations
+from tessellate.ai import backend_hint, extractor, filing_certainty, janitor, learning, lexical_filing, librarian, links, relations
 from tessellate.ai import tensions as tensions_module
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
@@ -1946,7 +1946,7 @@ def find_tensions(
     """
 
     ollama = deps.get_ollama()
-    if not ollama.is_running():
+    if not backend_hint.running(ollama):
         return {"tensions": [], "status": "no_model"}
 
     embeddings = deps.get_embeddings()

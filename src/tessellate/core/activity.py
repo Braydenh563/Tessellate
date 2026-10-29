@@ -324,6 +324,13 @@ def stop_aware(response, items: Iterator) -> Iterator:  # noqa: ANN001
             response.close()
 
 
+def current_stop_event() -> StopEvent | None:
+    """The stop flag of the job this thread is advancing, if it has one that
+    can wake a blocked call (`StopEvent`)."""
+    event = getattr(getattr(_bound, "job", None), "_stop", None)
+    return event if isinstance(event, StopEvent) else None
+
+
 def current_stopped() -> bool:
     """Whether the job this thread is advancing has been asked to stop."""
     job = getattr(_bound, "job", None)

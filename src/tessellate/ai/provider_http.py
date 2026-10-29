@@ -24,14 +24,19 @@ reasons. The call sites stay as they read. And the tests' fakes, which patch
 
 from __future__ import annotations
 
+import socket
+import threading
 from urllib.parse import urljoin, urlsplit
 
 import requests
 from requests import ConnectTimeout, HTTPError, ReadTimeout, RequestException, Response
+from requests.adapters import HTTPAdapter
+from urllib3.connection import HTTPConnection, HTTPSConnection
+from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
 from requests import ConnectionError as RefusedError
 
 __all__ = [
-    "ConnectTimeout", "HTTPError", "OffHostRedirect", "ReadTimeout", "RefusedError", "RequestException", "Response",
+    "Cancelled", "ConnectTimeout", "HTTPError", "OffHostRedirect", "ReadTimeout", "RefusedError", "RequestException", "Response",
     "delete", "get", "post",
 ]
 
@@ -80,13 +85,132 @@ def _guarded(kwargs: dict) -> dict:
     return {**kwargs, "hooks": hooks}
 
 
+class Cancelled(RequestException):
+    """The call was stopped (Stop, a closed tab) or ran out of its deadline.
+    Caught wherever `RequestException` already is, so it reads as a failed
+    call and each caller's own fallback runs."""
+
+
+class _Cut:
+    """The sockets one call has open, so a stop can shut them at once. A call
+    blocked waiting for the model's first byte has no response object to
+    close yet; the socket is the only handle on it."""
+
+    def __init__(self) -> None:
+        self.cancelled = False
+        self._socks: list = []
+        self._lock = threading.Lock()
+
+    def add(self, sock) -> None:  # noqa: ANN001
+        with self._lock:
+            self._socks.append(sock)
+            cancelled = self.cancelled
+        if cancelled:
+            self._shut(sock)
+
+    def cut(self) -> None:
+        with self._lock:
+            self.cancelled = True
+            socks = list(self._socks)
+        for sock in socks:
+            self._shut(sock)
+
+    @staticmethod
+    def _shut(sock) -> None:  # noqa: ANN001
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass  # already closed by the other side: nothing left to cut
+
+
+_tls = threading.local()
+
+
+def _note_socket(connection) -> None:  # noqa: ANN001
+    cut = getattr(_tls, "cut", None)
+    if cut is not None and connection.sock is not None:
+        cut.add(connection.sock)
+
+
+class _Conn(HTTPConnection):
+    def connect(self) -> None:
+        super().connect()
+        _note_socket(self)
+
+
+class _SecureConn(HTTPSConnection):
+    def connect(self) -> None:
+        super().connect()
+        _note_socket(self)
+
+
+class _Pool(HTTPConnectionPool):
+    ConnectionCls = _Conn
+
+
+class _SecurePool(HTTPSConnectionPool):
+    ConnectionCls = _SecureConn
+
+
+_POOLS = {"http": _Pool, "https": _SecurePool}
+
+
+class _Adapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        super().init_poolmanager(*args, **kwargs)
+        self.poolmanager.pool_classes_by_scheme = _POOLS
+
+    def proxy_manager_for(self, proxy, **kwargs):  # noqa: ANN001, ANN003, ANN202
+        manager = super().proxy_manager_for(proxy, **kwargs)
+        manager.pool_classes_by_scheme = _POOLS
+        return manager
+
+
+def _stop_events() -> list:
+    from tessellate.core import activity, deadline
+
+    return [event for event in (activity.current_stop_event(), deadline.current()) if event is not None]
+
+
+def _send(method: str, url: str, kwargs: dict) -> Response:
+    kwargs = _guarded(kwargs)
+    events = _stop_events()
+    if not events:
+        return requests.request(method, url, **kwargs)
+    cut = _Cut()
+    _tls.cut = cut
+    removers = [event.add_hook(cut.cut) for event in events]
+    try:
+        if cut.cancelled:
+            raise Cancelled("The model call was stopped before it started.")
+        with requests.Session() as session:
+            adapter = _Adapter()
+            session.mount("http://", adapter)
+            session.mount("https://", adapter)
+            response = session.request(method, url, **kwargs)
+        # A streamed body is still being read: its hook stays until the flag
+        # fires or the run ends, so a deadline can cut a stream too.
+        if not kwargs.get("stream"):
+            for remove in removers:
+                remove()
+        return response
+    except RequestException as exc:
+        for remove in removers:
+            remove()
+        if cut.cancelled and not isinstance(exc, Cancelled):
+            raise Cancelled("The model call was stopped.") from exc
+        raise
+    finally:
+        _tls.cut = None
+
+
 def get(url: str, **kwargs) -> Response:  # noqa: ANN003
-    return requests.request("GET", url, **_guarded(kwargs))
+    return _send("GET", url, kwargs)
 
 
 def post(url: str, **kwargs) -> Response:  # noqa: ANN003
-    return requests.request("POST", url, **_guarded(kwargs))
+    return _send("POST", url, kwargs)
 
 
 def delete(url: str, **kwargs) -> Response:  # noqa: ANN003
-    return requests.request("DELETE", url, **_guarded(kwargs))
+    return _send("DELETE", url, kwargs)

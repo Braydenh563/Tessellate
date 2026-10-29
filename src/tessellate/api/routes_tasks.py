@@ -921,8 +921,11 @@ def _model_state() -> dict:
         model = deps.get_model_manager().chat_model()
     except Exception:  # noqa: BLE001  # no backend configured is a state, not a 500
         return {"model": "", "loaded": None, "stoppable": False}
-    loaded_fn = getattr(provider, "loaded_models", None)
-    loaded = loaded_fn() if callable(loaded_fn) else None
+    from tessellate.api import routes_models
+
+    #: The bounded snapshot, not a live `/api/ps`: this route is polled, and a
+    #: busy runner held a worker for 2 s a poll (audit 1029 H5).
+    loaded = routes_models.loaded_snapshot() if callable(getattr(provider, "loaded_models", None)) else None
     is_loaded = None if loaded is None else any(name == model or name.split(":")[0] == model.split(":")[0] for name in loaded)
     return {"model": model, "loaded": is_loaded, "stoppable": loaded is not None}
 

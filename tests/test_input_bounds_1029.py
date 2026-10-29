@@ -19,7 +19,8 @@ def test_history_over_the_cap_is_refused_before_any_work(client):
 
 def test_one_history_turn_over_the_text_cap_is_refused(client):
     turn = {"question": "q", "answer": "x" * (bounds.TURN_TEXT_MAX + 1)}
-    assert client.post("/chat", json={"question": "hi", "history": [turn]}).status_code == 422
+    response = client.post("/chat", json={"question": "hi", "history": [turn]})
+    assert response.status_code == 422
 
 
 def test_the_page_history_fits_under_the_cap():
@@ -59,8 +60,9 @@ def test_attachment_name_is_capped_on_upload_and_rename(client):
 @pytest.mark.parametrize("value", [1e308, -1e30, 1e7])
 def test_pin_coordinates_are_bounded(client, value):
     note = _note(client)
-    assert client.put(f"/graph/pin/{note['id']}", json={"x": value, "y": 0}).status_code == 422
-    assert client.put("/graph/pins", json={"pins": [{"id": note["id"], "x": 0, "y": value}]}).status_code == 422
+    one = client.put(f"/graph/pin/{note['id']}", json={"x": value, "y": 0})
+    many = client.put("/graph/pins", json={"pins": [{"id": note["id"], "x": 0, "y": value}]})
+    assert (one.status_code, many.status_code) == (422, 422)
 
 
 def test_a_sane_pin_still_saves(client):
@@ -70,7 +72,8 @@ def test_a_sane_pin_still_saves(client):
 
 
 def test_unknown_graph_id_is_a_404(client):
-    assert client.get("/graph/local/99999").status_code == 404
+    missing = client.get("/graph/local/99999")
+    assert missing.status_code == 404
 
 
 def test_display_name_helper():
