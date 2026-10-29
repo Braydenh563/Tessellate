@@ -390,6 +390,12 @@
    the canvas underneath. DESIGN.md, "A card about one dot on a canvas". */
 .graph-hovercard {
   position: absolute;
+  /* Placed by a transform on its own layer, and laid out apart from the page
+     (audit 1029 G5): a hover moves it without a repaint or a page layout. */
+  left: 0;
+  top: 0;
+  will-change: transform;
+  contain: layout style;
   /* Over the canvas; the popup (which hides it) and the menus stay above. */
   z-index: 2;
   max-width: min(18rem, calc(100% - 1.5rem));
