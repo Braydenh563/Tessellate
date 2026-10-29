@@ -81,7 +81,7 @@ from typing import Any
 from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
-from tessellate.entry import properties
+from tessellate.core.docmeta import block_end
 from tessellate.search import query as query_understanding
 
 #: At most this many quoted points in one answer. Six is about what reads as an
@@ -1187,7 +1187,7 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     #: "---") is read from after it: its name and every quote start at the
     #: note's words, never at "---" (audit 1029 X19). Offsets stay the
     #: content's own.
-    front = properties.block_end(content)
+    front = block_end(content)
     title, body_start = _title(content[front:])
     titled = bool(title) and body_start > 0
     body_start = front + body_start

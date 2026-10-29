@@ -18323,12 +18323,13 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `strip_comments` | src/tessellate/core/docexport.py:96 |
 | `with_title` | src/tessellate/core/docexport.py:124 |
 
-### src/tessellate/core/docmeta.py (3)
+### src/tessellate/core/docmeta.py (4)
 
 | Name | File:line |
 |---|---|
 | `_split_key` | src/tessellate/core/docmeta.py:53 |
 | `_unquote` | src/tessellate/core/docmeta.py:82 |
+| `block_end` | src/tessellate/core/docmeta.py:144 |
 | `properties` | src/tessellate/core/docmeta.py:89 |
 
 ### src/tessellate/core/doctor.py (11)
@@ -19956,20 +19957,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `orphans` | src/tessellate/entry/paths.py:558 |
 | `pagerank` | src/tessellate/entry/paths.py:465 |
 
-### src/tessellate/entry/properties.py (10)
+### src/tessellate/entry/properties.py (9)
 
 | Name | File:line |
 |---|---|
-| `_line` | src/tessellate/entry/properties.py:81 |
-| `_scalar` | src/tessellate/entry/properties.py:70 |
-| `block_end` | src/tessellate/entry/properties.py:33 |
-| `ensure_builtin_types` | src/tessellate/entry/properties.py:121 |
-| `find_type` | src/tessellate/entry/properties.py:138 |
-| `note_type` | src/tessellate/entry/properties.py:65 |
-| `split` | src/tessellate/entry/properties.py:51 |
-| `strip` | src/tessellate/entry/properties.py:59 |
-| `with_type_fields` | src/tessellate/entry/properties.py:144 |
-| `write` | src/tessellate/entry/properties.py:88 |
+| `_line` | src/tessellate/entry/properties.py:63 |
+| `_scalar` | src/tessellate/entry/properties.py:52 |
+| `ensure_builtin_types` | src/tessellate/entry/properties.py:103 |
+| `find_type` | src/tessellate/entry/properties.py:120 |
+| `note_type` | src/tessellate/entry/properties.py:47 |
+| `split` | src/tessellate/entry/properties.py:33 |
+| `strip` | src/tessellate/entry/properties.py:41 |
+| `with_type_fields` | src/tessellate/entry/properties.py:126 |
+| `write` | src/tessellate/entry/properties.py:70 |
 
 ### src/tessellate/entry/query.py (10)
 
