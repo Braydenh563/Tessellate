@@ -15,6 +15,8 @@ import threading
 import weakref
 from collections.abc import Callable
 
+from tessellate.core import background
+
 #: Long enough for a local backend to answer; short enough for any route.
 BUDGET = 0.15
 
@@ -33,7 +35,8 @@ class Latest:
             done = self._out
             if done is None:
                 done = self._out = threading.Event()
-                threading.Thread(target=self._run, args=(probe, done), daemon=True).start()
+                #: Registered, so the activity list and quit see a probe in flight.
+                background.start("backend probe", lambda: self._run(probe, done))
         done.wait(budget)
         return self.value
 

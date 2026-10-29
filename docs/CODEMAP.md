@@ -11767,8 +11767,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `Latest` | src/tessellate/ai/backend_hint.py:22 |
-| `running` | src/tessellate/ai/backend_hint.py:56 |
+| `Latest` | src/tessellate/ai/backend_hint.py:24 |
+| `running` | src/tessellate/ai/backend_hint.py:59 |
 
 ### src/tessellate/ai/bench.py (13)
 
