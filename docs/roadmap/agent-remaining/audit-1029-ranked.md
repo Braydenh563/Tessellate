@@ -71,7 +71,7 @@ Rung: Haiku mechanical, Sonnet bounded, Opus design. Size S, M or L. Every provi
 | 60 | G26 | low | open | Legacy SVG graph renderer (1,272 lines) reachable only by a localStorage flag | Delete the SVG path; add function sizes to the ratchet | frontend/js/graph.js, tests/complexity_seed.js | Sonnet | M | WORLD_CLASS_PLAN.md:3257 and :3303 list it |
 | 61 | X18 | low | fixed | Notification detail gets ".." when the error ends in a period | Strip trailing period in the one builder | frontend/js/status.js | Haiku | S | - |
 | 62 | H13 | low | open | Heading order skip in Models pane, `#chat-title` role | Model title is `h4` under `h3`, remove the role | frontend/js models pane, chat title | Haiku | S | - |
-| 63 | X28 | low | open | Service worker cache prefix is the legacy `memorymap-assets-` | Leave until the rename lands, then clear the old cache name | frontend/sw.js | Haiku | S | - |
+| 63 | X28 | low | fixed | Service worker cache prefix is the legacy `memorymap-assets-` | Leave until the rename lands, then clear the old cache name | frontend/sw.js | Haiku | S | - |
 
 ## Counts
 
