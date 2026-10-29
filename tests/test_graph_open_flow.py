@@ -49,9 +49,16 @@ const fs = require("fs"), path = require("path"), vm = require("vm");
 const root = process.argv[1];
 const mode = process.argv[2];
 const sent = [], timers = [];
-const sb = { console, Math, Date, Float32Array, Float64Array, Int32Array, Uint8Array, Map, Set,
+//: A stepped clock, a hundredth of a ms per read: the worker's untangle passes
+//: stop at a Date.now() budget, and a loaded CI runner spent it before the
+//: clean (no "frame" posted). Stepped, the budget is spent the same way on any
+//: machine, as on an idle one. Only where asked: a drag test needs real time.
+let clockNow = 1.7e12;
+class FixedDate extends Date { static now() { return (clockNow += 0.01); } }
+const Clock = process.argv[3] === "stepped" ? FixedDate : Date;
+const sb = { console, Math, Date: Clock, Float32Array, Float64Array, Int32Array, Uint8Array, Map, Set,
   setTimeout: (fn) => { timers.push(fn); return timers.length; }, clearTimeout: () => {}, setInterval: () => 1, clearInterval: () => {},
-  performance: { now: () => Date.now() } };
+  performance: { now: () => Clock.now() } };
 sb.self = sb;
 sb.postMessage = (m) => sent.push({ m, passes: vm.runInContext("untangle.passes", sb), cleaned: vm.runInContext("untangle.cleaned", sb), after: Boolean(sb.__starts) });
 sb.importScripts = (u) => vm.runInContext(fs.readFileSync(path.join(root, u.replace(/^\//, "")), "utf8"), sb);
@@ -109,7 +116,7 @@ console.log(JSON.stringify({
 
 
 def test_the_opening_is_untangled_and_cleaned_before_its_first_post_and_flows_into_it() -> None:
-    out = _node(OPEN, "intro")
+    out = _node(OPEN, "intro", "stepped")
     # The camera's frame first, then the playback, then the map at rest.
     assert out["kinds"] == ["frame", "tick", "end"], out
     first = out["firstTick"]
@@ -125,7 +132,7 @@ def test_the_opening_is_untangled_and_cleaned_before_its_first_post_and_flows_in
 
 
 def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
-    out = _node(OPEN, "still")
+    out = _node(OPEN, "still", "stepped")
     assert out["kinds"] == ["tick", "end"] and out["ticks"] == 1, out
     assert out["firstTick"]["passes"] > 0 and out["firstTick"]["cleaned"], out
     assert out["firstTick"]["alpha"] < 0.08 and out["lastRunning"] is False, out
@@ -140,7 +147,7 @@ def test_less_motion_gets_the_settled_map_as_its_one_and_only_frame() -> None:
 
 
 def test_a_layout_settled_live_is_untangled_out_of_sight_and_glided_to_once() -> None:
-    out = _node(OPEN, "live")
+    out = _node(OPEN, "live", "stepped")
     # One settle out of sight and one glide, never a burst per pass. Before it
     # the layout runs live from full heat (no warm-up asked), physics only.
     assert out["starts"] == 1 and out["glides"] <= 1, out
