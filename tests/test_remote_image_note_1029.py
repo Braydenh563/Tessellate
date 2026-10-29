@@ -72,3 +72,14 @@ def test_no_other_thumbnail_asks_the_web_either() -> None:
     assert "!isRemoteImage(embedded.url)" in row
     card = (JS / "library.js").read_text(encoding="utf-8")
     assert "!isRemoteImage(item.thumb_url)" in card
+
+
+def test_the_picker_preview_and_the_board_card_skip_a_remote_picture_too() -> None:
+    """Review of the round: `notePickThumb` (the picker's pane) took any https
+    address, and a board's note card took the Library's `thumb_url`, which the
+    route returns as written. Both ask the web, and the page refuses, so each
+    logged a CSP error; both now fall through (an attachment, or no picture)."""
+    pick = _decl("note-pick-preview.js", "notePickThumb")
+    assert "isRenderableUrl(inline[1]) && !isRemoteImage(inline[1])" in pick
+    board = (JS / "whiteboard.js").read_text(encoding="utf-8")
+    assert "entry.thumb_url && !isRemoteImage(entry.thumb_url)" in board
