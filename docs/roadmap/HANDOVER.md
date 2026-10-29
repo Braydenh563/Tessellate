@@ -13,16 +13,16 @@
 
 ## Morning summary
 
-Away run 2026-10-28, branch claude/sharp-thompson-45hngp, PR 211; stopped at about 56% weekly (line 62%) because each turn now carries a long context, so a fresh session is cheaper.
+Away run 2026-10-29, branch claude/sharp-thompson-45hngp, PR 211, head after 1f9fc81; stopped at 67% weekly (owner's line 70%), finishing up as asked.
 
-- Audit: five clean-eye audits (board, docs, backend, shell, agent) plus UX, ranked in `agent-remaining/audit-1028-ranked.md` (313 rows, 258 new). Agents' leftovers: board-1028, board2-1028, docux-1028, composer-1028.
-- Built and pushed: D1 to D8, D14 to D16; K2, K3, K7 to K10, K12, K17; E1 to E12, E30, E31; S1, S4 to S10; B5 (part), B8, B9, B16, B21; U1 to U8, U10, U11; find panel; help and Guide text for all of it (standing order 13).
-- E10 tasks as acts: add (reminder with `task`), complete by name (reminders and `- [ ]` lines), ask on ambiguity, Undo. Not built: cancel, snooze and bin a task by name; Guide help topic text for tasks.
-- Fixed in passing: `test_no_import_cycles` was red on the base (commands.py lazy imports); CodeQL `_ASK` unused.
-- CI: green on every head through c64b1af. gitleaks fails on the workflow's shallow checkout (needs fetch-depth 0; CI files are not edited by agents; commented on PR 211).
-- Not reviewed independently (budget): the E10 merge and the docux merge. Run `reviewer` on them, and `blind-tester` on documents, before PR 211 merges.
-- Owner question: INBOX 1424 (K1, password reset needs proof of this computer; recommended a six-digit code printed to the terminal).
-- Next by rank: B3/B4 incremental board render, S2 graph layout off the main thread, S3 index.html boot weight, E42/E66/E70 agent safety, K4 to K6, K19, D11, E32, E33, B5 pen/lasso/marquee, U43.
+- Audit 1029 (`agent-remaining/audit-1029-ranked.md`, 64 rows): 33 fixed or built, the rest open; this run added ranks 22 (composer frames), 31 (streak), 39 (graph search speed) and INBOX 1441 to 1449.
+- CI: the 6 reds from rank 22 fixed (e86bed1, targeted tests and gate green); CI on the pushed head not yet seen.
+- Decision taken: "do I like / am I into" questions count as about now (1441), so they get the "may have moved on" line; gold 9 is 81 over its floor of 80, no floor lowered.
+- Rank 42 (graph search count, Enter and Shift+Enter, Esc) is designed, not built: drafts in `agent-remaining/g11/` (rename the `.txt` test into `tests/` after CODEMAP), notes in `graph-search-1029.md`.
+- Graph search at 4x CPU is still 50 to 70 ms a key (target 50); SVG path, phone and dark theme not checked.
+- Not reviewed independently (budget): rank 22 and rank 39 merges; run `reviewer` before PR 211 merges.
+- Found, not fixed: lag items in the 1446 report (revealActiveTab, atlasRigRead, popup scans, notesScroller, avatars), streak items in composer-streak-1029.md, items 1 to 9 in composer-frames-1029.md.
+- Next by rank: 42, then 9, 10, 24, 49.
 
 ## 0.6.01 bug-document pass (2026-10-22, branch claude/project-thread-ol5yuv)
 
@@ -385,15 +385,9 @@ state now. The line-by-line ledger of what is left is
 
 **Away queue (owner asleep, 2026-10-17 late), state at the last push (5af1c03 on PR 189):** merged and green: both WIP branches, CI fixes, companion physics/perch/boot budget, Atlas stars and the companion mind (lazy companion-menu.js), timeline calendar add (B72), Harper hover (B04), the new-chat skeleton, composer O5 to O11, tab-entry costs (reduced-motion blankets now motion-still.css, timeline `:has()` anchors removed: timeline entry style 654 to 246 ms at 4x), accessibility WCAG 2.2 sweep, security review (graph pins, slash, ReDoS, LIKE wildcards), composer question cap (2,000 chars planned), `/improve` bounded, B80 new-tag suggestions, folder import as a durable pool job, word-boundary snippets, time-reader gaps (spoken clocks, 24-hour figures, `eod`, week offsets, midnight). Open, in order: B50 splash (Windows only, unverifiable here); Harper-driven autocorrect beyond the popup; Library/Notes reveal cost (first style of the revealed page, 1,389 and 1,186 elements; only a smaller first chunk helps); `when.resolve` ignores a clock after a day-sized offset; the route still takes about 5 s on a 20,000-character question (`question_noise.guided` on 2,000 characters, 7 times a turn); owner questions in bugs-1017.md (B32, B41, B49, B54, B77, B70, B53, B59, B07, B61 unsloth licence, B58 icon toggles needs a named example). The two remote WIP branches were merged and deleted by the owner. Two CI flakes seen on this PR were a timing test (`test_duplicates_scan_speed`, 2.20 s against 2.0) and a leaked `TESSELLATE_LAUNCHED` from `test_frozen_packaging` (fixed).
 
+**Now (2026-10-29j, branch claude/sharp-thompson-45hngp, PR 211, head after 1f9fc81):** merged rank 22 CI fixes (e86bed1) and rank 39 graph search (1f9fc81); stopped at 67% weekly per the owner's 70% line. Next: rank 42 from `agent-remaining/g11/`, then 9, 10, 24, 49.
+
 **Now (2026-10-29i, branch claude/sharp-thompson-45hngp, PR 211, head db3816f):** merged rank 22 composer frames and INBOX 1441 dates, owner bugs 1445/1447/1448/1449, 1442 labels, 1443 Connections resize; CI reds from 80a9bf9 fixed (golf as topic, Appearance panel Help, accent text, recency verdict, lazy CSS, task test clock). Running: complexity splits (20 functions over 15, Sonnet), INBOX 1446 lag pass (Sonnet), rank 31 C32 streak shape (Sonnet). Next: rank 38 after the lag pass, then 39, 42. Weekly 64%.
-
-**Now (2026-10-29h, branch claude/sharp-thompson-45hngp, PR 211, head 7502532):** merged rank 21 composer dates (43acaf9), ranks 13 update poll and 14 bidi controls, backend_hint probe through core/background; CI reds from 74aaf48 fixed (ba869c3, 7502532). Running: rank 20 subject (Sonnet), rank 37 notes list window (Opus), INBOX 1440 update bar (Sonnet). Next: rank 22 after 20, then 31. Weekly 63%.
-
-**Now (2026-10-28h, branch claude/sharp-thompson-45hngp, PR 211, head 3337e07):** owner asks INBOX 1425 to 1427. Running (worktree agents, cap 3): present bar page picker (Sonnet), E10 cancel/snooze/bin plus Guide topic (Sonnet), full-app sweep to `agent-remaining/sweep-1028b.md` (Opus ux-auditor). Queued next: perf agent on `agent-remaining/lag-1028.md` L1 to L7 with a notebook seeded to the owner's size (empty-notebook Linux run measured tabs 17 to 58 ms, no slow request, so not reproduced), movable and resizable panels (1427), reviewer on the E10 and docux merges plus blind-tester on documents, K1 (1424, recommendation taken). Stop line 62% weekly.
-
-**Now (2026-10-28g, branch claude/sharp-thompson-45hngp, PR 211, head 8ba45c5):** the full-suite Tests job was red on 716d35d (15 failures from the 1028 merges); all fixed in 0f88144, 27e51aa, 8ba45c5 (stripper reads strings, toast actions, let ratchet, readers through recognise, composer -> commands cycle through act_registry.READER, complexity splits). Next: confirm Tests green on 8ba45c5, then the Morning summary's next list.
-
-**Now (2026-10-28f, branch claude/sharp-thompson-45hngp, PR 211, head 490e3c3):** audits filed and ranked (`agent-remaining/audit-1028-ranked.md`). Merged and pushed this session: D1 to D8, D14 to D16 (D7 window), K2, K3, K7 to K10, K12, K17, E1 to E9, E11, E12, E30, E31, S1, S4 to S10, B8, B9, B16, B21, B5 partial, U1 to U8, U10, U11, find panel. Running: help text parity (agent/help-1028, standing order 13 for today's UI), E10 tasks as acts (agent/tasks-1028). Next by rank: B3/B4 incremental board render, S2 graph layout off the main thread, S3 index.html boot weight, E42/E66/E70 agent safety, K4 to K6, K19, D11; K1 is INBOX 1424. gitleaks red is the workflow's shallow checkout (commented on PR 211). Stopped (see Morning summary).
 
 **Now (2026-10-26i, branch claude/loving-edison-4d0din, PR 204, away, stop at 43% weekly (35% at 17:40), then morning summary):** head 1c37f42. Merged since 10-26h: composer round 2 (boards, maps, documents as sources; map hierarchy; filtered counts; told by source; ranges and recently, 49/49), code editor and recordings dogfood (f5d0fba), whiteboard layer order (painted vs model 92 to 0), CodeQL regex fixes in ai/no_model_text.py (5 threads resolved). Running: graph round 3 (help on every Options group, panel fit, toasts clear of legend, untangle on warm-up; carries unmerged round 2 worktree-agent-a0f8670b3e82df58e), code editor leftovers (status bar counts, empty assist send, print code, waveform height), composer round 3 (state, tag and season counts, week-of phrases). Next: harness and Needle. Found-not-fixed: whiteboard drawings are one layer under cards (owner decision), mind map root width (owner decision).
 

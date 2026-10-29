@@ -1,0 +1,111 @@
+def edit(path, pairs):
+    s = open(path, encoding="utf-8").read()
+    for old, new in pairs:
+        assert s.count(old) == 1, (path, s.count(old), old[:80])
+        s = s.replace(old, new)
+    open(path, "w", encoding="utf-8").write(s)
+
+
+# ---- graph.js: count, keys, pan --------------------------------------------------
+edit("frontend/js/graph.js", [
+    ('''//: The set for what is in the box now.
+function graphSearchRefresh(query) {
+  return graphSearchFor(graphSearchNodes(), query);
+}
+''', '''//: "No matches", "1 match", "134 matches": the count beside the box (G11).
+function graphSearchCountText(n) {
+  return n ? nounCount(n, "match", "matches") : "No matches";
+}
+
+//: The set for what is in the box now, and the count said beside it. The count
+//: stays empty while a phrase that may be a filter is still being read.
+function graphSearchRefresh(query) {
+  const found = graphSearchFor(graphSearchNodes(), query);
+  const box = $("graph-search-count");
+  const text = !query || (graphPhrase.waiting && !found.list.length) ? "" : graphSearchCountText(found.list.length);
+  if (box && box.textContent !== text) box.textContent = text;
+  return found;
+}
+'''),
+    ('''$("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+''', '''$("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+
+//: **Walking the matches** (audit 1029 G11). Enter goes to the next match and
+//: pans to it, Shift+Enter to the one before, both wrapping; the match is ringed
+//: and named whatever else is dimmed (`gcHighlight`'s `current`), and said in
+//: the page's polite region. Escape clears the search and the "similar notes"
+//: highlight; on an empty box it is left alone, for whatever else listens.
+function graphSearchStepIndex(at, dir, n) {
+  if (!n) return -1;
+  if (at < 0) return dir < 0 ? n - 1 : 0;
+  return (at + dir + n) % n;
+}
+
+function graphPanToNode(node) {
+  if (!graphSvg || !graphZoom || !graphMinimapFinite(graphDims.w, graphDims.h, node.x, node.y)) return;
+  const k = d3.zoomTransform(graphSvg.node()).k;
+  const target = d3.zoomIdentity.translate(graphDims.w / 2, graphDims.h / 2).scale(k).translate(-node.x, -node.y);
+  //: Moved by hand as far as the settle fit is concerned (INBOX 792).
+  if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
+  graphSvg.transition().duration(graphGlideMs(300)).call(graphZoom.transform, target);
+}
+
+function graphSearchGo(dir) {
+  const box = $("graph-search");
+  const found = graphSearchRefresh(box.value.trim().toLowerCase());
+  const at = graphSearchStepIndex(found.at, dir, found.list.length);
+  if (at < 0) {
+    announce("No matches.");
+    return;
+  }
+  const node = found.list[at];
+  found.at = at;
+  found.current = node.id;
+  //: The suggestions list sits over the map's left side; a jump is the end of typing.
+  if (typeof searchSuggest !== "undefined" && searchSuggest?.input === box) {
+    searchSuggest.quiet = true;
+    fillSearchSuggest();
+  }
+  announce(`Match ${at + 1} of ${found.list.length}: ${node.preview}`);
+  graphNodeSelection?.classed("graph-keyfocus", (d) => d.id === node.id);
+  graphPanToNode(node);
+  gcRequestDraw(gcTab, true);
+}
+
+function graphSearchClear() {
+  //: A spotlight is part of the scene the canvas painted, so lifting one is a
+  //: whole frame; a search alone is not.
+  const spotlit = Boolean(graphHighlightIds);
+  $("graph-search").value = "";
+  graphHighlightIds = null;
+  graphNodeSelection?.classed("graph-keyfocus", false);
+  applyGraphHighlight(!spotlit);
+  announce("Search cleared.");
+}
+
+function graphSearchKey(event) {
+  if (event.isComposing) return;
+  const box = $("graph-search");
+  if (event.key === "Enter" && box.value.trim()) {
+    event.preventDefault();
+    graphSearchGo(event.shiftKey ? -1 : 1);
+  } else if (event.key === "Escape" && (box.value || graphHighlightIds)) {
+    event.preventDefault();
+    event.stopPropagation();
+    graphSearchClear();
+  }
+}
+$("graph-search").addEventListener("keydown", graphSearchKey);
+'''),
+])
+
+# ---- index.html: the count --------------------------------------------------------
+edit("frontend/index.html", [
+    ('''                aria-label="Highlight matching notes in the graph">
+            </div>
+            <button id="graph-highlight-clear"''', '''                aria-label="Highlight matching notes in the graph">
+            </div>
+            <!-- Said in words and politely (audit 1029 G11); Enter and Shift+Enter walk the matches, Esc clears. -->
+            <span id="graph-search-count" class="graph-search-count muted text-xs" role="status" aria-live="polite"></span>
+            <button id="graph-highlight-clear"'''),
+])

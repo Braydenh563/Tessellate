@@ -7,6 +7,30 @@ Split out of `ROADMAP.md`. Kept, not deleted, for one reason: **three sessions
 have independently rebuilt something that already existed.** This is the file
 that answers "has this been done?" before anyone starts.
 
+## Session record 2026-10-28 and 29 (moved from HANDOVER 2026-10-29)
+
+### Morning summary 2026-10-28
+
+Away run 2026-10-28, branch claude/sharp-thompson-45hngp, PR 211; stopped at about 56% weekly (line 62%) because each turn now carries a long context, so a fresh session is cheaper.
+
+- Audit: five clean-eye audits (board, docs, backend, shell, agent) plus UX, ranked in `agent-remaining/audit-1028-ranked.md` (313 rows, 258 new). Agents' leftovers: board-1028, board2-1028, docux-1028, composer-1028.
+- Built and pushed: D1 to D8, D14 to D16; K2, K3, K7 to K10, K12, K17; E1 to E12, E30, E31; S1, S4 to S10; B5 (part), B8, B9, B16, B21; U1 to U8, U10, U11; find panel; help and Guide text for all of it (standing order 13).
+- E10 tasks as acts: add (reminder with `task`), complete by name (reminders and `- [ ]` lines), ask on ambiguity, Undo. Not built: cancel, snooze and bin a task by name; Guide help topic text for tasks.
+- Fixed in passing: `test_no_import_cycles` was red on the base (commands.py lazy imports); CodeQL `_ASK` unused.
+- CI: green on every head through c64b1af. gitleaks fails on the workflow's shallow checkout (needs fetch-depth 0; CI files are not edited by agents; commented on PR 211).
+- Not reviewed independently (budget): the E10 merge and the docux merge. Run `reviewer` on them, and `blind-tester` on documents, before PR 211 merges.
+- Owner question: INBOX 1424 (K1, password reset needs proof of this computer; recommended a six-digit code printed to the terminal).
+- Next by rank: B3/B4 incremental board render, S2 graph layout off the main thread, S3 index.html boot weight, E42/E66/E70 agent safety, K4 to K6, K19, D11, E32, E33, B5 pen/lasso/marquee, U43.
+
+
+**Now (2026-10-29h, branch claude/sharp-thompson-45hngp, PR 211, head 7502532):** merged rank 21 composer dates (43acaf9), ranks 13 update poll and 14 bidi controls, backend_hint probe through core/background; CI reds from 74aaf48 fixed (ba869c3, 7502532). Running: rank 20 subject (Sonnet), rank 37 notes list window (Opus), INBOX 1440 update bar (Sonnet). Next: rank 22 after 20, then 31. Weekly 63%.
+
+**Now (2026-10-28h, branch claude/sharp-thompson-45hngp, PR 211, head 3337e07):** owner asks INBOX 1425 to 1427. Running (worktree agents, cap 3): present bar page picker (Sonnet), E10 cancel/snooze/bin plus Guide topic (Sonnet), full-app sweep to `agent-remaining/sweep-1028b.md` (Opus ux-auditor). Queued next: perf agent on `agent-remaining/lag-1028.md` L1 to L7 with a notebook seeded to the owner's size (empty-notebook Linux run measured tabs 17 to 58 ms, no slow request, so not reproduced), movable and resizable panels (1427), reviewer on the E10 and docux merges plus blind-tester on documents, K1 (1424, recommendation taken). Stop line 62% weekly.
+
+**Now (2026-10-28g, branch claude/sharp-thompson-45hngp, PR 211, head 8ba45c5):** the full-suite Tests job was red on 716d35d (15 failures from the 1028 merges); all fixed in 0f88144, 27e51aa, 8ba45c5 (stripper reads strings, toast actions, let ratchet, readers through recognise, composer -> commands cycle through act_registry.READER, complexity splits). Next: confirm Tests green on 8ba45c5, then the Morning summary's next list.
+
+**Now (2026-10-28f, branch claude/sharp-thompson-45hngp, PR 211, head 490e3c3):** audits filed and ranked (`agent-remaining/audit-1028-ranked.md`). Merged and pushed this session: D1 to D8, D14 to D16 (D7 window), K2, K3, K7 to K10, K12, K17, E1 to E9, E11, E12, E30, E31, S1, S4 to S10, B8, B9, B16, B21, B5 partial, U1 to U8, U10, U11, find panel. Running: help text parity (agent/help-1028, standing order 13 for today's UI), E10 tasks as acts (agent/tasks-1028). Next by rank: B3/B4 incremental board render, S2 graph layout off the main thread, S3 index.html boot weight, E42/E66/E70 agent safety, K4 to K6, K19, D11; K1 is INBOX 1424. gitleaks red is the workflow's shallow checkout (commented on PR 211). Stopped (see Morning summary).
+
 ## Session record 2026-10-27 (Now lines moved from HANDOVER 2026-10-29)
 
 **Now (2026-10-27f, branch claude/loving-edison-4d0din, PR 204, head 70126d0):** CI fixes for 915649f's 7 reds pushed (complexity splits, global lets, Alt listeners, warm-up log, helper imports, guide test); CodeQL 1846/1847 fixed and resolved; watch CI on 70126d0. INBOX 1418 to 1423 merged (thumbnail, launch, composer wording, silent model server, popup Save row, Ask head presses, lone Alt); 0.6.2 CHANGELOG folded. Stopped at the owner's 53% weekly line. Next: CI green on the head, then README screenshots retake (scratchpad/ui-sweeps/readmeshots.js), the repo cleanup pass, citation numbers in text order (1420 leftover), Alt on a real Windows webview, the throw's idle spot measure and mood timer, BACKLOG 1416, 1417, 1338, 1339.
