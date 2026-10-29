@@ -126,6 +126,54 @@ function bgFlow(x, t) {
   return (a + b) * 0.5;
 }
 
+// Drift's noise (INBOX 1436, from the owner's wallpaper renderer): value noise
+// on a hashed lattice with a smoothstep blend, three octaves. `bgHash2` is an
+// integer hash of a lattice point and a seed, 0..1.
+function bgHash2(ix, iy, seed) {
+  let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(seed, 1274126177)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+// The lattice itself: 256 by 256 hashed values, built once per style so the
+// per-pixel loop reads a table instead of hashing (a hash per corner per
+// octave per pixel is where the first version spent its time and its garbage).
+function bgLattice(seed) {
+  const t = new Float32Array(65536);
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) t[y * 256 + x] = bgHash2(x, y, seed);
+  return t;
+}
+
+// One row of Drift's field: `n` samples of three-octave value noise (smoothstep
+// blend, each octave half the weight and twice the frequency) from `x0` in
+// steps of `dx` along the row at height `y`, as bytes in `out`. Everything is
+// in this one function on purpose: called per pixel with fractional
+// arguments, the three helpers it replaced boxed every one of them (58MB of
+// garbage in ten seconds, measured), and V8 would not inline them.
+function bgFbmRow(lat, out, n, x0, dx, y) {
+  for (let i = 0; i < n; i++) {
+    let sum = 0, amp = 1, f = 1;
+    for (let o = 0; o < 3; o++) {
+      const u = (x0 + i * dx) * f, v = y * f;
+      const ix = Math.floor(u), iy = Math.floor(v);
+      let fx = u - ix, fy = v - iy;
+      fx = fx * fx * (3 - 2 * fx);
+      fy = fy * fy * (3 - 2 * fy);
+      const r0 = (iy & 255) << 8, r1 = ((iy + 1) & 255) << 8, c0 = ix & 255, c1 = (ix + 1) & 255;
+      const a = lat[r0 + c0], b = lat[r0 + c1], c = lat[r1 + c0], d = lat[r1 + c1];
+      sum += amp * (a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy);
+      amp *= 0.5; f *= 2;
+    }
+    out[i] = (sum / 1.75 * 255) | 0;
+  }
+}
+
+// Wander's edge rule: a step heading out of [lo, hi] turns round; one
+// already heading in is left alone.
+function bgTurnBack(p, v, lo, hi) {
+  return (p < lo && v < 0) || (p > hi && v > 0) ? -v : v;
+}
+
 // p5's `random`: nothing, one bound, or two.
 function bgRand(a, b) {
   const r = Math.random();
@@ -2057,6 +2105,131 @@ const BG_ART_BUILDERS = {
     };
   },
 
+  // Wander: pen strokes that walk. A few strokes (the accent's hue and two
+  // offsets from it) each take a handful of small random steps a frame, each
+  // frame's steps one path onto a canvas that is never cleared, so the drawing
+  // grows as it goes. A stroke that reaches the window's edge turns back. Old
+  // marks go by a faint clear every few seconds (`destination-out`, one
+  // fillRect), not a redraw: a frame is a few line segments and nothing
+  // else. The pen keeps a little of its last heading, so it travels instead of
+  // shivering in place. Still: a finished drawing (`settle` walks it ahead).
+  wander(p, ctx) {
+    const MAX = 6, STEPS = 7, LIFE = 2600;
+    const px = new Float32Array(MAX), py = new Float32Array(MAX);
+    const vx = new Float32Array(MAX), vy = new Float32Array(MAX), age = new Int32Array(MAX);
+    const inks = [];
+    let W = 0, H = 0, n = 0, rand = Math.random, fadeEvery = 80;
+    const respawn = (i) => {
+      px[i] = W * (0.1 + 0.8 * rand()); py[i] = H * (0.1 + 0.8 * rand());
+      vx[i] = 0; vy[i] = 0; age[i] = 0;
+    };
+    // One frame's steps for every stroke: a path per stroke, stroked once.
+    const walk = (g) => {
+      g.lineWidth = 2;
+      for (let i = 0; i < n; i++) {
+        g.strokeStyle = inks[i % inks.length];
+        g.beginPath();
+        g.moveTo(px[i], py[i]);
+        for (let s = 0; s < STEPS; s++) {
+          vx[i] = vx[i] * 0.82 + (rand() - 0.5) * 3.2;
+          vy[i] = vy[i] * 0.82 + (rand() - 0.5) * 3.2;
+          vx[i] = bgTurnBack(px[i], vx[i], 0, W);
+          vy[i] = bgTurnBack(py[i], vy[i], 0, H);
+          px[i] += vx[i]; py[i] += vy[i];
+          g.lineTo(px[i], py[i]);
+        }
+        g.stroke();
+        if (++age[i] > LIFE) respawn(i);
+      }
+    };
+    return {
+      background: "keep",
+      pixelDensity: 0.5,
+      fps: 20,
+      darkCap: 0.14,
+      lightFloor: 0.3,
+      init() {
+        W = p.width; H = p.height;
+        rand = bgRandom(Math.round(ctx.baseHue * 19) + 23);
+        n = Math.max(3, Math.round(MAX * (0.5 + 0.5 * ctx.density)));
+        inks.length = 0;
+        for (const off of [0, 40, -40]) inks.push(bgHsla(ctx.baseHue + off, ctx.dark ? 70 : 62, ctx.dark ? 66 : 42, ctx.dark ? 0.7 : 0.6));
+        for (let i = 0; i < n; i++) respawn(i);
+        fadeEvery = Math.round(Math.min(20, bgArtFrameRate()) * 4);
+      },
+      settle() {
+        const g = p.drawingContext;
+        for (let i = 0; i < 70; i++) walk(g);
+      },
+      frame() {
+        const g = p.drawingContext;
+        walk(g);
+        // Every few seconds the drawing loses a tenth of its ink.
+        if (p.frameCount % fadeEvery === 0) {
+          g.globalCompositeOperation = "destination-out";
+          g.globalAlpha = 0.1;
+          g.fillRect(0, 0, W, H);
+          g.globalAlpha = 1;
+          g.globalCompositeOperation = "source-over";
+        }
+      },
+    };
+  },
+
+  // Drift: value noise as slow weather. Three octaves of hashed-lattice noise
+  // (`bgFbmRow`) mapped through a table of colours between a dark and a light
+  // tone of the accent forty degrees apart, written into one reused
+  // ImageData at an eighth of the window a side, and put on a canvas the
+  // compositor stretches (never `drawImage`). The field slides slowly across
+  // the lattice; only a third of the rows are recomputed a frame, at twelve
+  // frames a second, so the whole picture is refreshed four times a second.
+  drift(p, ctx) {
+    const LUT = new Uint32Array(256);
+    let img = null, px = null, row = null, lat = null, bw = 0, bh = 0, ox = 0, oy = 0, phase = 0;
+    return {
+      background: "keep",
+      pixelDensity: 0.125,
+      fps: 12,
+      darkCap: 0.06,
+      lightFloor: 0.6,
+      init() {
+        const g = p.drawingContext;
+        bw = p.canvas.width; bh = p.canvas.height;
+        img = g.createImageData(bw, bh);
+        px = new Uint32Array(img.data.buffer);
+        const seed = Math.round(ctx.baseHue * 31) + 7;
+        lat = bgLattice(seed);
+        row = new Uint8Array(bw);
+        ox = (seed % 97) * 0.7; oy = (seed % 53) * 0.9;
+        // The tones: dark mode adds light (deep to glowing), light mode lays ink
+        // (pale wash to a mid tone), both capped by the runtime's luminance rules.
+        const lo = bgHslToRgb(ctx.baseHue, ctx.dark ? 50 : 55, ctx.dark ? 9 : 80);
+        const hi = bgHslToRgb(ctx.baseHue + 40, ctx.dark ? 60 : 62, ctx.dark ? 30 : 64);
+        for (let i = 0; i < 256; i++) {
+          const k = i / 255;
+          LUT[i] = (255 << 24) | ((lo[2] + (hi[2] - lo[2]) * k) << 16) | ((lo[1] + (hi[1] - lo[1]) * k) << 8) | (lo[0] + (hi[0] - lo[0]) * k);
+        }
+      },
+      settle() {
+        for (phase = 0; phase < 3; phase++) this.rows();
+      },
+      // Rows `phase`, `phase + 3`, ... at the field's present offset.
+      rows() {
+        const scale = 6 / bw; // about six lattice cells across the window
+        for (let y = phase; y < bh; y += 3) {
+          bgFbmRow(lat, row, bw, ox, scale, y * scale + oy);
+          const at = y * bw;
+          for (let x = 0; x < bw; x++) px[at + x] = LUT[row[x]];
+        }
+      },
+      frame() {
+        ox += 0.011; oy += 0.004;
+        phase = (phase + 1) % 3;
+        this.rows();
+        p.drawingContext.putImageData(img, 0, 0);
+      },
+    };
+  },
 };
 
 // --- the runtime ------------------------------------------------------------------
@@ -2520,7 +2693,7 @@ function bgArtRun(o) {
 // Light under 0.5ms, Medium under 1.2ms, Heavy above; none may pass 2ms.
 const BG_ART_COST = {
   aurora: 0.91, constellation: 1.47, waves: 0.97, bubbles: 1.59, mesh: 1.09, microbes: 1.68,
-  mycelium: 0.25, dusk: 0.05, ripples: 0.18, fireflies: 0.38, rain: 0.13,
+  mycelium: 0.25, dusk: 0.05, ripples: 0.18, fireflies: 0.38, rain: 0.13, wander: 0.12, drift: 0.41,
 };
 
 function bgArtTier(style) {

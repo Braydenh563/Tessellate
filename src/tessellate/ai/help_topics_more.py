@@ -671,12 +671,16 @@ MORE_TOPICS: list[dict] = [
             "animated background", "background animation", "moving background",
             "wallpaper", "background style", "constellation", "fireflies",
             "rain background", "lightest background", "background cost",
+            "wander", "drift", "pen strokes", "paused background",
         ),
         "body": (
             "Settings, Appearance, Animated background: Style is a card per "
             "art, lightest first, each with a preview and its cost, Light, "
             "Medium or Heavy, from what one frame takes; picking a card turns "
-            "the background on. Movement sets how much it moves and Intensity "
+            "the background on. Wander draws pen strokes that walk and fade; "
+            "Drift is slow colour noise. A background that has been paused for "
+            "20 seconds (hidden window, idle, covered) becomes a picture of itself "
+            "and carries on when you come back. Movement sets how much it moves and Intensity "
             "how strong it is. Page background in Theme & colour sets the "
             "colour under it. Performance mode and Battery-efficient mode both "
             "stop it, and so does Reduce motion."

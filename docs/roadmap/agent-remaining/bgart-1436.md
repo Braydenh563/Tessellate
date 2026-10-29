@@ -68,3 +68,33 @@ Measured (`PAUSE=1 PAUSE_WAIT=22 CPU=1`, dark, a hidden tab; canvases and pictur
 JS heap and browser RSS did not move beyond the run-to-run noise (aurora 693 to 705 MB, constellation 760 to 758,
 mycelium 774 to 797), as expected: the bitmap is kept. Not verified: GPU memory of the freed layer, or a real
 window minimised on Windows.
+
+## C. Wander and Drift (built)
+
+Both follow the file's header rules (typed arrays, nothing allocated per frame, pixel density at most 1, colours from
+`ctx.baseHue`, dark adds light and light lays ink, still by capture through `settle` plus one frame).
+Registered in `BG_ART_BUILDERS`, `BG_ART_STYLES`, `BG_ART_INFO` (the Appearance grid) and `BG_ART_COST`; the Guide
+topic `background-art` (`ai/help_topics_more.py`) names both and the 20 s picture.
+
+- **Wander**: 3 to 6 pens (accent hue and two 40 degree offsets), 7 steps a frame each as one path onto a
+  persistent canvas at pixel density 0.5, 20 fps, a heading that keeps 82 percent of itself, `bgTurnBack` at the
+  edges, `destination-out` 10 percent every 4 s, a stroke restarts after 2,600 frames. Still: `settle` walks 70 frames ahead.
+- **Drift**: `bgHash2` lattice table, three octaves, smoothstep, 180x113 buffer at pixel density 0.125 into one
+  reused `ImageData` (`putImageData`, scaled by CSS), 12 fps with a third of the rows recomputed per frame, a colour
+  table between two tones 40 degrees apart. The first version called a per-pixel noise function and allocated 58 MB
+  in 10 s (V8 boxed the fractional arguments, as the file's header warned); `bgFbmRow` does a whole row in one
+  function over a prebuilt lattice: 1.6 MB.
+
+Measured (`bgartcost.js`, `CPU=1`, same sandbox, still check on):
+
+| style | theme | script ms | paint median ms | fps | alloc KB / 10 s | still |
+| --- | --- | --- | --- | --- | --- | --- |
+| wander | dark | 0.04 | 0.11 | 20 | 2,439 | 0 rAF, no canvas, image set |
+| wander | light | 0.04 | 0.12 | 20 | 2,472 | same |
+| drift | dark | 0.37 | 0.41 | 12 | 1,609 | 0 rAF, no canvas, image set |
+| drift | light | 0.36 | 0.40 | 12 | 1,629 | same |
+
+Both are under microbes' 2.15 ms (the most expensive style) and under the cheapest tier boundary (Light is under
+0.5 ms). `BG_ART_COST` holds 0.12 and 0.41. Art-only pixels (`pngpixel.py`): drift dark (43,26,90) at the centre
+against a page of about (31,31,31); drift light (204,204,238). Not verified: contrast of the muted dashboard
+text over each (bgartcontrast.js was not run for the new styles), a real-model or Windows machine.
