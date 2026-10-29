@@ -992,6 +992,10 @@ function gcEnsureCanvas(s = gcTab) {
   // thing that sees all of them (§5 Phase 1 asks for one by name).
   if (!s.observer && typeof ResizeObserver !== "undefined") {
     s.observer = new ResizeObserver((entries) => {
+      //: A tab flip folds the box to 0x0: the entry says so, and reading
+      //: `clientWidth` in `gcResize` made the flip pay a style pass here.
+      const own = entries.find((entry) => entry.target.id === s.boxId);
+      if (own && !own.contentRect.width && s.dims.w) return;
       const before = { ...s.dims };
       const wasReal = s.dimsReal !== false;
       if (!gcResize(s)) {
