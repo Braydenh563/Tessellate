@@ -584,20 +584,7 @@ async function copyToClipboard(text, button) {
 // Re-run the most recent question and REPLACE the previous answer in place
 // (user request: a redo shouldn't stack a second answer below the old one).
 // The original "you" bubble stays; only the assistant bubble is swapped.
-//: **The question a bubble is the answer to.** Walks back through the
-//: transcript rather than trusting an index: bubbles are deleted, edited and
-//: re-ordered, and any stored position goes stale the first time somebody uses
-//: the ⋯ on a message in the middle.
-function questionForBubble(bubble) {
-  let node = bubble;
-  while (node) {
-    node = node.previousElementSibling;
-    if (node && node.classList.contains("msg") && node.classList.contains("user")) {
-      return { bubble: node, text: (node.querySelector(".msg-body")?.textContent || "").trim() };
-    }
-  }
-  return null;
-}
+//: `questionForBubble` is chat-edit.js, its one caller (boot gzip ratchet).
 
 //: **Regenerate from *this* answer, not just the last one.**
 //:

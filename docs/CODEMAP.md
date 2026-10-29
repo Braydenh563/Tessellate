@@ -420,92 +420,91 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `watchFiling` | frontend/js/capture-ask.js:48 |
 | `withTitle` | frontend/js/capture-ask.js:439 |
 
-### frontend/js/chat.js (82)
+### frontend/js/chat.js (81)
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2185 |
-| `applyCompression` | frontend/js/chat.js:2045 |
-| `askAboutPage` | frontend/js/chat.js:1451 |
+| `aiWritingTrace` | frontend/js/chat.js:2172 |
+| `applyCompression` | frontend/js/chat.js:2032 |
+| `askAboutPage` | frontend/js/chat.js:1438 |
 | `assistantLabel` | frontend/js/chat.js:55 |
 | `assistantMessageActions` | frontend/js/chat.js:165 |
-| `atlasSuggestion` | frontend/js/chat.js:661 |
-| `batteryModeOn` | frontend/js/chat.js:2087 |
-| `bookmarkWebResult` | frontend/js/chat.js:1254 |
-| `buildWebResultRow` | frontend/js/chat.js:1131 |
-| `chatEmptySettle` | frontend/js/chat.js:682 |
+| `atlasSuggestion` | frontend/js/chat.js:648 |
+| `batteryModeOn` | frontend/js/chat.js:2074 |
+| `bookmarkWebResult` | frontend/js/chat.js:1241 |
+| `buildWebResultRow` | frontend/js/chat.js:1118 |
+| `chatEmptySettle` | frontend/js/chat.js:669 |
 | `chatHistoryToSend` | frontend/js/chat.js:39 |
 | `chatMessageActions` | frontend/js/chat.js:68 |
-| `chatTranscriptText` | frontend/js/chat.js:1983 |
+| `chatTranscriptText` | frontend/js/chat.js:1970 |
 | `chatTurnTranscript` | frontend/js/chat.js:128 |
-| `citeWebPage` | frontend/js/chat.js:1508 |
-| `clearChatEmptyState` | frontend/js/chat.js:810 |
-| `clearWebSearchHistory` | frontend/js/chat.js:1322 |
-| `closeWebReader` | frontend/js/chat.js:880 |
+| `citeWebPage` | frontend/js/chat.js:1495 |
+| `clearChatEmptyState` | frontend/js/chat.js:797 |
+| `clearWebSearchHistory` | frontend/js/chat.js:1309 |
+| `closeWebReader` | frontend/js/chat.js:867 |
 | `compactTokens` | frontend/js/chat.js:494 |
-| `compressChatContext` | frontend/js/chat.js:2011 |
+| `compressChatContext` | frontend/js/chat.js:1998 |
 | `continueRunControls` | frontend/js/chat.js:230 |
 | `copyToClipboard` | frontend/js/chat.js:558 |
 | `copyViaTextarea` | frontend/js/chat.js:518 |
-| `copyWebLink` | frontend/js/chat.js:1246 |
-| `fillPersonaMark` | frontend/js/chat.js:1785 |
+| `copyWebLink` | frontend/js/chat.js:1233 |
+| `fillPersonaMark` | frontend/js/chat.js:1772 |
 | `flashCopied` | frontend/js/chat.js:540 |
-| `forkFromBubble` | frontend/js/chat.js:627 |
-| `livingInterval` | frontend/js/chat.js:2171 |
-| `loadResponseModes` | frontend/js/chat.js:1740 |
-| `loadWebSearchHistory` | frontend/js/chat.js:1297 |
+| `forkFromBubble` | frontend/js/chat.js:614 |
+| `livingInterval` | frontend/js/chat.js:2158 |
+| `loadResponseModes` | frontend/js/chat.js:1727 |
+| `loadWebSearchHistory` | frontend/js/chat.js:1284 |
 | `manualPauseControls` | frontend/js/chat.js:276 |
 | `messageMetaLine` | frontend/js/chat.js:344 |
 | `metaItem` | frontend/js/chat.js:310 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1930 |
-| `openWebPageExternally` | frontend/js/chat.js:1242 |
-| `openWebReader` | frontend/js/chat.js:1468 |
-| `personaOptions` | frontend/js/chat.js:1802 |
-| `progressLine` | frontend/js/chat.js:2513 |
-| `progressMotionWanted` | frontend/js/chat.js:2123 |
-| `progressPhaseText` | frontend/js/chat.js:2381 |
-| `pushWebSearchHistory` | frontend/js/chat.js:1306 |
-| `questionForBubble` | frontend/js/chat.js:591 |
-| `reducedMotionWanted` | frontend/js/chat.js:2093 |
-| `refreshWebSearxngStrip` | frontend/js/chat.js:1051 |
-| `regenerateFromBubble` | frontend/js/chat.js:609 |
-| `regenerateLastAnswer` | frontend/js/chat.js:654 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1917 |
+| `openWebPageExternally` | frontend/js/chat.js:1229 |
+| `openWebReader` | frontend/js/chat.js:1455 |
+| `personaOptions` | frontend/js/chat.js:1789 |
+| `progressLine` | frontend/js/chat.js:2500 |
+| `progressMotionWanted` | frontend/js/chat.js:2110 |
+| `progressPhaseText` | frontend/js/chat.js:2368 |
+| `pushWebSearchHistory` | frontend/js/chat.js:1293 |
+| `reducedMotionWanted` | frontend/js/chat.js:2080 |
+| `refreshWebSearxngStrip` | frontend/js/chat.js:1038 |
+| `regenerateFromBubble` | frontend/js/chat.js:596 |
+| `regenerateLastAnswer` | frontend/js/chat.js:641 |
 | `removeChatBubble` | frontend/js/chat.js:504 |
-| `renderChatContextMeter` | frontend/js/chat.js:1880 |
-| `renderChatEmptyState` | frontend/js/chat.js:692 |
-| `renderChatTurnCount` | frontend/js/chat.js:1910 |
-| `renderChatUsage` | frontend/js/chat.js:1863 |
-| `renderCompressionState` | frontend/js/chat.js:2058 |
-| `renderModelContextBox` | frontend/js/chat.js:1601 |
-| `renderModelHealthNote` | frontend/js/chat.js:1703 |
-| `renderModelSpec` | frontend/js/chat.js:1631 |
-| `renderWebPageAttachment` | frontend/js/chat.js:1535 |
-| `renderWebPanelMenu` | frontend/js/chat.js:985 |
-| `renderWebSearchHistory` | frontend/js/chat.js:1331 |
-| `rewriteAnswerWith` | frontend/js/chat.js:618 |
-| `runWebSearch` | frontend/js/chat.js:1366 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2299 |
-| `setResponseMode` | frontend/js/chat.js:1763 |
-| `setWebEngineDot` | frontend/js/chat.js:971 |
-| `setWebSearxngRunning` | frontend/js/chat.js:1036 |
-| `showCompressReview` | frontend/js/chat.js:2033 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2327 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2349 |
-| `stopWebRequest` | frontend/js/chat.js:865 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1855 |
-| `toggleWebPanel` | frontend/js/chat.js:893 |
-| `toolPhaseVerb` | frontend/js/chat.js:2396 |
-| `typingDots` | frontend/js/chat.js:2410 |
-| `webEngineWords` | frontend/js/chat.js:954 |
-| `webPageContextBlock` | frontend/js/chat.js:1566 |
-| `webPageMarkdown` | frontend/js/chat.js:1475 |
-| `webQueryTerms` | frontend/js/chat.js:1118 |
-| `webReaderIsOpen` | frontend/js/chat.js:876 |
-| `webRequestEnd` | frontend/js/chat.js:855 |
-| `webRequestStart` | frontend/js/chat.js:846 |
-| `webResultMark` | frontend/js/chat.js:1097 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2234 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2267 |
+| `renderChatContextMeter` | frontend/js/chat.js:1867 |
+| `renderChatEmptyState` | frontend/js/chat.js:679 |
+| `renderChatTurnCount` | frontend/js/chat.js:1897 |
+| `renderChatUsage` | frontend/js/chat.js:1850 |
+| `renderCompressionState` | frontend/js/chat.js:2045 |
+| `renderModelContextBox` | frontend/js/chat.js:1588 |
+| `renderModelHealthNote` | frontend/js/chat.js:1690 |
+| `renderModelSpec` | frontend/js/chat.js:1618 |
+| `renderWebPageAttachment` | frontend/js/chat.js:1522 |
+| `renderWebPanelMenu` | frontend/js/chat.js:972 |
+| `renderWebSearchHistory` | frontend/js/chat.js:1318 |
+| `rewriteAnswerWith` | frontend/js/chat.js:605 |
+| `runWebSearch` | frontend/js/chat.js:1353 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2286 |
+| `setResponseMode` | frontend/js/chat.js:1750 |
+| `setWebEngineDot` | frontend/js/chat.js:958 |
+| `setWebSearxngRunning` | frontend/js/chat.js:1023 |
+| `showCompressReview` | frontend/js/chat.js:2020 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2314 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2336 |
+| `stopWebRequest` | frontend/js/chat.js:852 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1842 |
+| `toggleWebPanel` | frontend/js/chat.js:880 |
+| `toolPhaseVerb` | frontend/js/chat.js:2383 |
+| `typingDots` | frontend/js/chat.js:2397 |
+| `webEngineWords` | frontend/js/chat.js:941 |
+| `webPageContextBlock` | frontend/js/chat.js:1553 |
+| `webPageMarkdown` | frontend/js/chat.js:1462 |
+| `webQueryTerms` | frontend/js/chat.js:1105 |
+| `webReaderIsOpen` | frontend/js/chat.js:863 |
+| `webRequestEnd` | frontend/js/chat.js:842 |
+| `webRequestStart` | frontend/js/chat.js:833 |
+| `webResultMark` | frontend/js/chat.js:1084 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2221 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2254 |
 
 ### frontend/js/chat-agent.js (72)
 
@@ -1024,7 +1023,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:659 |
 | `agentActivityQuiet` | frontend/js/status.js:651 |
-| `agentModeAvailable` | frontend/js/status.js:2778 |
+| `agentModeAvailable` | frontend/js/status.js:2775 |
 | `aiIsOff` | frontend/js/status.js:2036 |
 | `aiOffGlyph` | frontend/js/status.js:2435 |
 | `aiOfflineDismissed` | frontend/js/status.js:2237 |
@@ -1034,7 +1033,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appStackIsNewer` | frontend/js/status.js:1572 |
 | `armReminderTimer` | frontend/js/status.js:515 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2841 |
+| `backendLabel` | frontend/js/status.js:2838 |
 | `boardHistoryActive` | frontend/js/status.js:1537 |
 | `checkDueReminders` | frontend/js/status.js:532 |
 | `closeModelGate` | frontend/js/status.js:2055 |
@@ -1042,7 +1041,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `dismissAiOffline` | frontend/js/status.js:2245 |
 | `dismissToast` | frontend/js/status.js:902 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2509 |
+| `embeddingProblemDetail` | frontend/js/status.js:2506 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
 | `insightLine` | frontend/js/status.js:1454 |
@@ -1060,18 +1059,18 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1260 |
 | `noteServerDown` | frontend/js/status.js:1316 |
 | `noteServerUp` | frontend/js/status.js:1325 |
-| `noticeTaskTransitions` | frontend/js/status.js:3085 |
+| `noticeTaskTransitions` | frontend/js/status.js:3082 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:694 |
 | `notificationsMuted` | frontend/js/status.js:636 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:459 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2513 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2510 |
 | `offerUndo` | frontend/js/status.js:1479 |
 | `openLanPanel` | frontend/js/status.js:596 |
 | `openModelGate` | frontend/js/status.js:2065 |
 | `openModelOffer` | frontend/js/status.js:2072 |
-| `paintPrivacyChip` | frontend/js/status.js:3181 |
-| `paintStatusItem` | frontend/js/status.js:2567 |
+| `paintPrivacyChip` | frontend/js/status.js:3178 |
+| `paintStatusItem` | frontend/js/status.js:2564 |
 | `paintTitle` | frontend/js/status.js:492 |
 | `paintUndoDoor` | frontend/js/status.js:1668 |
 | `performRedo` | frontend/js/status.js:1593 |
@@ -1085,19 +1084,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1512 |
 | `pushUndo` | frontend/js/status.js:1390 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3005 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3002 |
 | `refreshModelStatus` | frontend/js/status.js:1907 |
-| `refreshPrivacyChip` | frontend/js/status.js:3195 |
+| `refreshPrivacyChip` | frontend/js/status.js:3192 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:730 |
 | `renderAiOfflineNotice` | frontend/js/status.js:2260 |
 | `renderAiPill` | frontend/js/status.js:2465 |
-| `renderChatModeSeg` | frontend/js/status.js:2782 |
+| `renderChatModeSeg` | frontend/js/status.js:2779 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2852 |
-| `renderStatusBar` | frontend/js/status.js:2610 |
+| `renderSettings` | frontend/js/status.js:2849 |
+| `renderStatusBar` | frontend/js/status.js:2607 |
 | `renderUndoBar` | frontend/js/status.js:1653 |
 | `reopenAnswerPanel` | frontend/js/status.js:709 |
 | `resetStatusCadence` | frontend/js/status.js:1830 |
@@ -1105,7 +1104,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sayChatModelChosen` | frontend/js/status.js:1793 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1340 |
 | `scheduleUndoBar` | frontend/js/status.js:1645 |
-| `setChatMode` | frontend/js/status.js:2825 |
+| `setChatMode` | frontend/js/status.js:2822 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:497 |
@@ -1113,9 +1112,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1846 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1500 |
-| `showAgentNoModelHint` | frontend/js/status.js:2820 |
+| `showAgentNoModelHint` | frontend/js/status.js:2817 |
 | `showServerDownBanner` | frontend/js/status.js:1299 |
-| `startPrivacyChip` | frontend/js/status.js:3205 |
+| `startPrivacyChip` | frontend/js/status.js:3202 |
 | `startReminderWatch` | frontend/js/status.js:603 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1554 |
@@ -1123,7 +1122,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2119 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3066 |
+| `taskKey` | frontend/js/status.js:3063 |
 | `toast` | frontend/js/status.js:1090 |
 | `toastAction` | frontend/js/status.js:1232 |
 | `toastActionButton` | frontend/js/status.js:1212 |
@@ -1140,12 +1139,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:860 |
 | `toastStack` | frontend/js/status.js:865 |
 | `toastYield` | frontend/js/status.js:965 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2752 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2749 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1084 |
 | `whenText` | frontend/js/status.js:1073 |
-| `withoutEndStop` | frontend/js/status.js:2505 |
+| `withoutEndStop` | frontend/js/status.js:2502 |
 
 ### frontend/js/ai-tools.js (39)
 
@@ -2658,13 +2657,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `swatchPicker` | frontend/js/categories-panel.js:937 |
 | `wireManageCategoryKeys` | frontend/js/categories-panel.js:360 |
 
-### frontend/js/chat-edit.js (6)
+### frontend/js/chat-edit.js (7)
 
 | Name | File:line |
 |---|---|
 | `chatTooLong` | frontend/js/chat-edit.js:206 |
 | `confirmRerun` | frontend/js/chat-edit.js:193 |
 | `editAndResend` | frontend/js/chat-edit.js:19 |
+| `questionForBubble` | frontend/js/chat-edit.js:249 |
 | `regenerateFrom` | frontend/js/chat-edit.js:158 |
 | `regenerateLast` | frontend/js/chat-edit.js:227 |
 | `showCopyFallback` | frontend/js/chat-edit.js:112 |
@@ -5939,30 +5939,30 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `openStatistics` | frontend/js/statistics.js:415 |
-| `paintStatistics` | frontend/js/statistics.js:395 |
-| `renderWeekWidget` | frontend/js/statistics.js:485 |
-| `statsAskBox` | frontend/js/statistics.js:311 |
+| `openStatistics` | frontend/js/statistics.js:416 |
+| `paintStatistics` | frontend/js/statistics.js:396 |
+| `renderWeekWidget` | frontend/js/statistics.js:486 |
+| `statsAskBox` | frontend/js/statistics.js:312 |
 | `statsChange` | frontend/js/statistics.js:121 |
 | `statsChart` | frontend/js/statistics.js:61 |
 | `statsDay` | frontend/js/statistics.js:115 |
 | `statsGo` | frontend/js/statistics.js:76 |
 | `statsGrowthChart` | frontend/js/statistics.js:205 |
-| `statsLeftOutLine` | frontend/js/statistics.js:235 |
-| `statsNotebookSection` | frontend/js/statistics.js:246 |
+| `statsLeftOutLine` | frontend/js/statistics.js:234 |
+| `statsNotebookSection` | frontend/js/statistics.js:247 |
 | `statsOpenFeature` | frontend/js/statistics.js:107 |
 | `statsOpenLooseEnds` | frontend/js/statistics.js:92 |
 | `statsOpenMonth` | frontend/js/statistics.js:100 |
 | `statsOpenReminders` | frontend/js/statistics.js:87 |
 | `statsOpenTab` | frontend/js/statistics.js:85 |
 | `statsRangeControl` | frontend/js/statistics.js:211 |
-| `statsRemindersSection` | frontend/js/statistics.js:268 |
+| `statsRemindersSection` | frontend/js/statistics.js:269 |
 | `statsSection` | frontend/js/statistics.js:37 |
 | `statsSpark` | frontend/js/statistics.js:131 |
 | `statsTile` | frontend/js/statistics.js:17 |
 | `statsTiles` | frontend/js/statistics.js:52 |
 | `statsUnused` | frontend/js/statistics.js:188 |
-| `statsUsageSection` | frontend/js/statistics.js:275 |
+| `statsUsageSection` | frontend/js/statistics.js:276 |
 | `statsWeekCard` | frontend/js/statistics.js:149 |
 
 ### frontend/js/status-panels.js (4)

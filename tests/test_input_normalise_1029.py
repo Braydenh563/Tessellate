@@ -40,7 +40,8 @@ def test_a_tag_rename_to_a_comma_name_is_refused_and_changes_nothing(client):
     note = client.post("/entries", json={"content": "x", "tags": ["old"]}).json()
     response = client.post("/tags/rename", json={"old": "old", "new": "a, b"})
     assert response.status_code == 400 and "comma" in response.text
-    assert client.get(f"/entries/{note['id']}").json()["tags"] == ["old"]
+    response = client.get(f"/entries/{note['id']}")
+    assert response.json()["tags"] == ["old"]
 
 
 def test_space_names_ignore_invisible_characters_and_inner_spacing(client):
@@ -51,7 +52,8 @@ def test_space_names_ignore_invisible_characters_and_inner_spacing(client):
         assert again.status_code == 409, twin
     inner = client.post("/spaces", json={"name": "Side   project"})
     assert inner.json()["name"] == "Side project"
-    assert client.post("/spaces", json={"name": "Side project"}).status_code == 409
+    response = client.post("/spaces", json={"name": "Side project"})
+    assert response.status_code == 409
 
 
 @pytest.mark.parametrize("name", ["​", " ​‍ ", "⁠﻿"])
@@ -65,19 +67,23 @@ def test_a_space_rename_obeys_the_same_rule(client):
     beta = client.post("/spaces", json={"name": "Beta"}).json()
     clash = client.put(f"/spaces/{beta['id']}", json={"name": "Al​pha"})
     assert clash.status_code == 409
-    assert client.put(f"/spaces/{beta['id']}", json={"name": "​"}).status_code in (400, 422)
+    response = client.put(f"/spaces/{beta['id']}", json={"name": "​"})
+    assert response.status_code in (400, 422)
 
 
 @pytest.mark.parametrize("due", ["2099-02-31T09:00:00+00:00", "2099-13-01T09:00:00+00:00", "next tuesday", ""])
 def test_a_reminder_date_that_is_not_a_date_is_refused_on_create_and_update(client, due):
-    assert client.post("/reminders", json={"text": "t", "due_at": due}).status_code == 422
+    response = client.post("/reminders", json={"text": "t", "due_at": due})
+    assert response.status_code == 422
     made = client.post("/reminders", json={"text": "t", "due_at": FUTURE})
     assert made.status_code in (200, 201)
-    assert client.put(f"/reminders/{made.json()['id']}", json={"due_at": due}).status_code == 422
+    response = client.put(f"/reminders/{made.json()['id']}", json={"due_at": due})
+    assert response.status_code == 422
 
 
 def test_a_reminder_with_only_blanks_for_text_is_refused(client):
-    assert client.post("/reminders", json={"text": "  ​ ", "due_at": FUTURE}).status_code == 422
+    response = client.post("/reminders", json={"text": "  ​ ", "due_at": FUTURE})
+    assert response.status_code == 422
 
 
 @pytest.mark.parametrize("due", ["2099-02-31T09:00:00", "next tuesday", ""])

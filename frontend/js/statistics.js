@@ -230,12 +230,13 @@ function statsRangeControl(holder, book) {
   return label;
 }
 
-//: The one line that says why the words, tags, links and growth cover fewer
-//: notes than the note count (audit 1029 X13): none when nothing is left out.
+//: Why words, tags, links and growth count fewer notes (X13); none if nothing is left out.
 function statsLeftOutLine(left) {
   const parts = [];
-  if (left && left.private) parts.push(`${left.private} private ${left.private === 1 ? "note" : "notes"}`);
-  if (left && left.archived) parts.push(`${left.archived} archived ${left.archived === 1 ? "note" : "notes"}`);
+  for (const kind of ["private", "archived"]) {
+    const n = left?.[kind];
+    if (n) parts.push(`${n} ${kind} ${n === 1 ? "note" : "notes"}`);
+  }
   if (!parts.length) return null;
   const line = document.createElement("p");
   line.className = "muted stats-about";

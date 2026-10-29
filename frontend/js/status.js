@@ -2498,10 +2498,7 @@ function renderAiPill() {
 //: not once per poll.
 let embeddingNudgeSaid = "";
 
-//: An error's own words with their closing full stops (and spacing) taken off,
-//: for joining to a sentence of ours. The error may or may not end in one, and
-//: `${error}. Next` read ".." when it did (audit 1029 X18). A "?" or an
-//: ellipsis character stays: it is not a full stop.
+//: An error without its closing full stops, so `${error}. Next` never reads ".." (X18).
 function withoutEndStop(text) {
   return String(text || "").trim().replace(/[.\s]+$/, "");
 }

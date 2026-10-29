@@ -241,3 +241,18 @@ async function regenerateLast() {
     attempt: regenerateLastAnswer.retries,
   });
 }
+
+//: **The question a bubble is the answer to.** Walks back through the
+//: transcript rather than trusting an index: bubbles are deleted, edited and
+//: re-ordered, and any stored position goes stale the first time somebody uses
+//: the ⋯ on a message in the middle.
+function questionForBubble(bubble) {
+  let node = bubble;
+  while (node) {
+    node = node.previousElementSibling;
+    if (node && node.classList.contains("msg") && node.classList.contains("user")) {
+      return { bubble: node, text: (node.querySelector(".msg-body")?.textContent || "").trim() };
+    }
+  }
+  return null;
+}

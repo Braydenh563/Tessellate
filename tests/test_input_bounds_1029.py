@@ -78,13 +78,17 @@ def test_unknown_graph_id_is_a_404(client):
 
 def test_tool_execute_body_is_bounded(client):
     many = [{"tool": "x", "arguments": {}}] * (bounds.BATCH_STEPS_MAX + 1)
-    assert client.post("/chat/tools/execute", json={"name": "batch", "steps": many}).status_code == 422
-    assert client.post("/chat/tools/execute", json={"name": "n" * 500}).status_code == 422
+    response = client.post("/chat/tools/execute", json={"name": "batch", "steps": many})
+    assert response.status_code == 422
+    response = client.post("/chat/tools/execute", json={"name": "n" * 500})
+    assert response.status_code == 422
 
 
 def test_chat_request_names_are_bounded(client):
-    assert client.post("/chat", json={"question": "hi", "persona": "p" * 500}).status_code == 422
-    assert client.post("/chat", json={"question": "hi", "mode": "m" * 500}).status_code == 422
+    response = client.post("/chat", json={"question": "hi", "persona": "p" * 500})
+    assert response.status_code == 422
+    response = client.post("/chat", json={"question": "hi", "mode": "m" * 500})
+    assert response.status_code == 422
 
 
 def test_file_text_over_the_file_cap_is_refused_at_the_model(client):
@@ -92,7 +96,8 @@ def test_file_text_over_the_file_cap_is_refused_at_the_model(client):
     added = client.post(f"/entries/{note['id']}/files", files={"file": ("a.txt", b"hi", "text/plain")})
     attachment_id = added.json()["attachments"][0]["id"]
     too_big = "x" * (bounds.FILE_TEXT_MAX + 1)
-    assert client.put(f"/files/{attachment_id}/text", json={"text": too_big}).status_code == 422
+    response = client.put(f"/files/{attachment_id}/text", json={"text": too_big})
+    assert response.status_code == 422
 
 
 def test_request_models_in_the_busy_routes_bound_every_text_and_list_field():
