@@ -496,6 +496,17 @@ def _respell(text: str) -> str:
     return question_noise.repair(text, known=_KNOWN.get())
 
 
+#: "define X" and "the meaning of X" ask what "what is X" asks, so they take
+#: its answer (audit 1029 C18). The text is single-spaced by here, so the
+#: pattern reads one literal space: linear on any input.
+_DEFINE = re.compile(r"^(?:define|(?:the )?(?:definition|meaning) of) (.+)$", re.I)
+
+
+def what_is(text: str) -> str:
+    """"define X" read as "what is X"; any other text as it came."""
+    return _DEFINE.sub(r"what is \1", " ".join(text.split()))
+
+
 def rephrase(question: str) -> str:
     """The question with its casual wrapper off: "hey, can you remind me
     when the dentist is please?" reads as "when the dentist is?". Text-speak
@@ -512,6 +523,7 @@ def rephrase(question: str) -> str:
             text = pattern.sub(spelled, text)
         if text == before:
             break
+    text = what_is(text)
     last = _LAST_WORD.match(text)
     if last and not _ASKS_FIRST.match(text):
         text = f"{last.group('q')} {last.group('rest')}{last.group('p')}"
@@ -727,7 +739,11 @@ def subject_terms(question: str) -> list[str]:
     if re.match(r"^\s*(list|name|show|tell)\b", question, re.I):
         source = re.sub(r"^\s*(list|name|show|tell)\b", "", source, flags=re.I)
     seen: list[str] = []
-    for word in query_understanding.search_terms(_without_command(source)):
+    #: Only a command the question itself opens with: "what did I add to the
+    #: pasta" keeps its "add", which understanding may have moved to the front.
+    if _without_command(question) != question:
+        source = _without_command(source)
+    for word in query_understanding.search_terms(source):
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)
@@ -2393,6 +2409,16 @@ def _seen(term: str, found: set[str]) -> bool:
     return len(stem) >= 4 and any(_one_edit(stem, word) for word in found if word[:1] == stem[:1])
 
 
+#: Words that tell the composer how to answer, never what to find: a note
+#: that does not hold "sentences" is not missing anything (audit 1029 C37).
+_INSTRUCTION_STEMS = frozenset(
+    _stem_plain(w)
+    for w in """main two three four five six seven eight nine ten both sentence paragraph line point bullet tag category categories
+    improve improvement related similar recur recurring older newer oldest newest favourite favorite best worst everything
+    summary list top first second third""".split()
+)
+
+
 def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     """"None of these notes mention “hotel”." for the question's words that no
     note found contains, measured over every word of every one of them.
@@ -2411,7 +2437,7 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     quoted |= {w for v in views if v.id in out.named for w in v.title_words | v.filed_words}
     missing = [
         t for t in terms
-        if len(t) >= _MISSING_MIN and not _seen(t, found) and not (_alternatives(_stem(t)) & quoted)
+        if len(t) >= _MISSING_MIN and _stem(t) not in _INSTRUCTION_STEMS and not _seen(t, found) and not (_alternatives(_stem(t)) & quoted)
         and (not out.question or t.lower() in out.question.lower())
     ]
     if not missing or len(missing) == len(terms):

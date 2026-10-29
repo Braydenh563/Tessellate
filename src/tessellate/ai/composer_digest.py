@@ -2417,6 +2417,21 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
     _single_close(out, kind, rest, members)
 
 
+_NAME_ASKS = ("tell me about ", "what do i know about ", "what about ", "anything on ", "anything about ")
+
+
+def _one_name(asked: str, names: set[str]) -> str:
+    """The name in "tell me about Tom" and its kin when the notebook writes it
+    as a name; empty for anything else. Word steps, no regex, so nothing here
+    can go quadratic on a long run of blanks."""
+    text = " ".join(asked.lower().split()).rstrip("?.! ")
+    for lead in _NAME_ASKS:
+        if text.startswith(lead):
+            rest = text[len(lead):]
+            return rest if rest.isalpha() and rest in names else ""
+    return ""
+
+
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     found = [(v, s) for v in views for s in v.sentences if re.search(rf"\b{re.escape(name)}\b", s.text, re.I)]
     if not found:
@@ -2646,6 +2661,10 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
         #: to P13); when the notes do not hold what it needs the ordinary
         #: shapes below still answer.
         return _result(out, "fact", asked)
+    if kind == "overview" and (said := _one_name(asked, names)):
+        #: "tell me about Tom" is "who is Tom": a name has one answer shape
+        #: (audit 1029 C17), never an attendee list read as a count.
+        kind, asked = "who", f"who is {said}"
     if kind == "who":
         name = _ASKS["who"].search(asked).group("name").strip()
         return _result(out, kind, asked) if _who(out, name, views, names, today) else None
@@ -2748,9 +2767,11 @@ def answer(
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
     today = today or date.today()
-    asked = clean(question)
+    asked = composer.what_is(clean(question))
     kind = _kind_if_mine(asked)
-    if kind is None:
+    #: An act ("rename my gym log") is not a topic to digest: with its verb off
+    #: the subject, it would find the gym log and summarise it.
+    if kind is None or composer._lead_act_verb(question):
         return None
     views, wants_context = _scope(question, asked, notes, today, voice, turn, known)
     if not views:

@@ -137,7 +137,8 @@ def test_a_person_is_answered_in_one_shape(notebook, name, decoy, frame, chat):
     said = go(frame.format(n=name), chat)
     assert not COUNT_OPENING.match(said.strip()), said
     assert "of its own" not in said and "Remind you to try" not in said, said
-    assert said == go(f"who is {name}", chat), said
+    #: The closing offer is varied by phrasing; the answer itself is one shape.
+    assert said.split("\n\n")[0] == go(f"who is {name}", chat).split("\n\n")[0], said
 
 
 # --- define X is answered as a definition (C18) -----------------------------------
