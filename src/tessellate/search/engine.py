@@ -679,11 +679,26 @@ def _term_groups(terms: list[str], mode: str) -> list[str]:
     not a second 4 written out here: the two stages are meant to agree, and
     a duplicated constant is how they stop agreeing."""
     if mode == "prefix":
-        return [variants.fts_group(f"{term}*" if len(term) >= search_manager.PREFIX_MIN_LEN else term) for term in terms]
+        return [
+            variants.fts_group(
+                f"{term}*" if len(term) >= search_manager.PREFIX_MIN_LEN and not search_manager.is_exact_term(term) else term
+            )
+            for term in terms
+        ]
     return [variants.fts_group(term) for term in terms]
 
 
-def _match_expression(terms: list[str], phrases: list[str], excluded: list[str], mode: str) -> str:
+def _title_terms(asked) -> list[str]:  # noqa: ANN001
+    """The words of every `title:` the query carried, as match terms."""
+    words: list[str] = []
+    for value in asked.filters["title"]:
+        words.extend(word for word in query_understanding.search_terms(value) if word not in words)
+    return words
+
+
+def _match_expression(
+    terms: list[str], phrases: list[str], excluded: list[str], mode: str, titled: list[str] | tuple[str, ...] = ()
+) -> str:
     """An FTS5 MATCH expression from what the person typed.
 
     `terms` are already `\\W`-stripped by `query.search_terms`, so
@@ -701,6 +716,11 @@ def _match_expression(terms: list[str], phrases: list[str], excluded: list[str],
     # for half the results, and `a OR b NOT c` would exclude `c` from only
     # half. One pair of brackets is the whole fix.
     expression = f"({joiner.join(parts)})" if parts else ""
+    if titled:
+        #: `title:` restricts the MATCH to the title column (audit 1029 N4),
+        #: which FTS5 spells `title : (...)`; every title word must be there.
+        in_title = f"title : ({' AND '.join(_term_groups(list(titled), 'all'))})"
+        expression = f"{expression} AND {in_title}" if expression else in_title
     for phrase in phrases:
         cleaned = phrase.replace('"', " ").strip()
         if cleaned:
@@ -750,28 +770,25 @@ def _session_space(session: Session):  # noqa: ANN202
     return None
 
 
-def _candidates(
-    session: Session,
-    expression: str,
+def _narrow(
+    sql: list[str],
+    params: dict,
     kinds: list[str],
     space: str | tuple[str, ...] | None,
-    since,
-    until,
-    depth: int,
-) -> list[dict]:
-    """The keyword pass: one query, every kind, filters applied in SQL.
+    since,  # noqa: ANN001
+    until,  # noqa: ANN001
+    flags: list[str] | tuple[str, ...],
+    tags: list[str] | tuple[str, ...],
+) -> None:
+    """The filters every raw index query shares, applied in SQL.
 
-    Filtering here rather than in Python is the difference between "read the
-    top 200 rows" and "read the notebook": `kind`, `space` and the date bounds
-    are stored on the index row precisely so they can narrow a MATCH instead of
-    trimming its results.
+    **Before the LIMIT, never after it** (audit 1029 N2): `is:pinned` tested
+    on the newest `depth` rows lost every pinned note older than that.
+    `kind`, `space`, the date bounds, `is:` flags and `tag:` all narrow the
+    rows the ranking then reads. A binned note is out unless `is:deleted`
+    asked for it (N3); the flags column is a space-joined word list, so a
+    flag is a whole word between spaces.
     """
-    sql = [
-        f"SELECT rowid, kind, ref_id, source, title, body, tags, space, flags, written, "
-        f"bm25(search_index, {', '.join(str(w) for w in search_index.BM25_WEIGHTS)}) AS score "
-        "FROM search_index WHERE search_index MATCH :expr"
-    ]
-    params: dict = {"expr": expression, "depth": depth}
     if kinds:
         names = {f"kind{i}": kind for i, kind in enumerate(kinds)}
         sql.append("AND kind IN (" + ", ".join(f":{name}" for name in names) + ")")
@@ -786,6 +803,45 @@ def _candidates(
     if until is not None:
         sql.append("AND (written = '' OR written <= :until)")
         params["until"] = until.isoformat()
+    for index, flag in enumerate(flags):
+        sql.append(f"AND instr(' ' || flags || ' ', :flag{index}) > 0")
+        params[f"flag{index}"] = f" {flag} "
+    if "deleted" not in flags:
+        sql.append("AND instr(' ' || flags || ' ', ' deleted ') = 0")
+    #: `tag:` in the query, not after it (Brief 47's bench): filtered over the
+    #: newest `depth` rows instead, `tag:tag3` alone found 5 of the ~110 notes
+    #: a 5,000-note notebook tags with it. The same substring test the
+    #: caller applies to the rows it gets back.
+    for index, tag in enumerate(tags):
+        sql.append(f"AND instr(lower(tags), :tag{index}) > 0")
+        params[f"tag{index}"] = tag.lower()
+
+
+def _candidates(
+    session: Session,
+    expression: str,
+    kinds: list[str],
+    space: str | tuple[str, ...] | None,
+    since,  # noqa: ANN001
+    until,  # noqa: ANN001
+    depth: int,
+    flags: list[str] | tuple[str, ...] = (),
+    tags: list[str] | tuple[str, ...] = (),
+) -> list[dict]:
+    """The keyword pass: one query, every kind, filters applied in SQL.
+
+    Filtering here rather than in Python is the difference between "read the
+    top 200 rows" and "read the notebook": `kind`, `space`, the date bounds,
+    flags and tags are stored on the index row precisely so they can narrow a
+    MATCH instead of trimming its results.
+    """
+    sql = [
+        f"SELECT rowid, kind, ref_id, source, title, body, tags, space, flags, written, "
+        f"bm25(search_index, {', '.join(str(w) for w in search_index.BM25_WEIGHTS)}) AS score "
+        "FROM search_index WHERE search_index MATCH :expr"
+    ]
+    params: dict = {"expr": expression, "depth": depth}
+    _narrow(sql, params, kinds, space, since, until, flags, tags)
     sql.append("ORDER BY score LIMIT :depth")
     rows = session.execute(text(" ".join(sql)), params).mappings().all()
     return [dict(row) for row in rows]
@@ -795,10 +851,11 @@ def _filter_only(
     session: Session,
     kinds: list[str],
     space: str | tuple[str, ...] | None,
-    since,
-    until,
+    since,  # noqa: ANN001
+    until,  # noqa: ANN001
     depth: int,
     tags: list[str] | tuple[str, ...] = (),
+    flags: list[str] | tuple[str, ...] = (),
 ) -> list[dict]:
     """The rows a query with no words at all asks for.
 
@@ -813,24 +870,7 @@ def _filter_only(
         "0.0 AS score FROM search_index WHERE 1 = 1"
     ]
     params: dict = {"depth": depth}
-    if kinds:
-        names = {f"kind{i}": kind for i, kind in enumerate(kinds)}
-        sql.append("AND kind IN (" + ", ".join(f":{name}" for name in names) + ")")
-        params.update(names)
-    sql.extend(_space_clause(space, params))
-    if since is not None:
-        sql.append("AND (written = '' OR written >= :since)")
-        params["since"] = since.isoformat()
-    if until is not None:
-        sql.append("AND (written = '' OR written <= :until)")
-        params["until"] = until.isoformat()
-    #: `tag:` in the query, not after it (Brief 47's bench): filtered over the
-    #: newest `depth` rows instead, `tag:tag3` alone found 5 of the ~110 notes
-    #: a 5,000-note notebook tags with it. The same substring test the
-    #: caller applies to the rows it gets back.
-    for index, tag in enumerate(tags):
-        sql.append(f"AND instr(lower(tags), :tag{index}) > 0")
-        params[f"tag{index}"] = tag.lower()
+    _narrow(sql, params, kinds, space, since, until, flags, tags)
     sql.append("ORDER BY written DESC, rowid DESC LIMIT :depth")
     rows = session.execute(text(" ".join(sql)), params).mappings().all()
     return [dict(row) for row in rows]
@@ -853,11 +893,15 @@ def _keyword_pass(
     depth: int,
 ) -> list[dict]:
     for mode in ("all", "prefix", "any"):
-        expression = _match_expression(terms, asked.phrases, asked.excluded, mode)
+        expression = _match_expression(terms, asked.phrases, asked.excluded, mode, _title_terms(asked))
         if not expression:
             return []
+        wanted_is, _has = _flag_filters(asked)
         try:
-            rows = _candidates(session, expression, kinds, space, asked.since, asked.until, depth)
+            rows = _candidates(
+                session, expression, kinds, space, asked.since, asked.until, depth,
+                flags=wanted_is, tags=asked.filters["tag"],
+            )
         except Exception:  # noqa: BLE001  # a malformed MATCH is a typed query, not a bug
             # The expression is built from what somebody typed, so it stays
             # out of the log line (CodeQL, log injection): a newline in a
@@ -968,6 +1012,9 @@ def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | N
         )
     said.sort(key=lambda pair: -pair[0])
     words = [phrase for _weight, phrase in said]
+    if "deleted" in (row.get("flags") or "").split():
+        #: Marked, because opening it from here would be "No such note".
+        words.insert(0, "in the bin")
     if not words:
         # Reachable when a filter alone selected the row (`kind:document`
         # with no words). Saying so beats an empty line that reads like a bug.
@@ -1114,13 +1161,14 @@ def _search_space(session: Session, context: dict, asked) -> str | None:  # noqa
 def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
     """The rows the words (or, with none, the filters) select, and the terms
     after any typo fix."""
-    if not (terms or asked.phrases):
+    if not (terms or asked.phrases or _title_terms(asked)):
         # Nothing to match on, but something to filter by: `kind:document`,
         # `is:pinned`, `after:2026-01-01`. Answering those with an empty page
         # would be the app refusing to do the one thing §5.1 promises works
         # with no model running.
         rows = _filter_only(
-            session, wanted_kinds, space, asked.since, asked.until, depth, tags=asked.filters["tag"]
+            session, wanted_kinds, space, asked.since, asked.until, depth,
+            tags=asked.filters["tag"], flags=_flag_filters(asked)[0],
         )
         if asked.excluded:
             # There is no MATCH to hang a `NOT` on here, so the exclusion is
@@ -1154,6 +1202,12 @@ def _having(session: Session, rows: list, wanted_has: list) -> list:
 def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     """The rows that also carry the `is:`, `has:` and `tag:` the query named."""
     wanted_is, wanted_has = _flag_filters(asked)
+    #: Rows that arrived by meaning never went through the SQL narrowing, so
+    #: the bin and the title are checked here as well.
+    if "deleted" not in wanted_is:
+        rows = [row for row in rows if "deleted" not in (row["flags"] or "").split()]
+    for value in asked.filters["title"]:
+        rows = [row for row in rows if value.lower() in (row["title"] or "").lower()]
     if wanted_is:
         rows = [row for row in rows if all(flag in (row["flags"] or "").split() for flag in wanted_is)]
     if wanted_has:

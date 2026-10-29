@@ -17,7 +17,7 @@ from tessellate.search.query import understand
 
 def test_an_ordinary_question_has_no_operators():
     u = understand("what did I write about beans")
-    assert u.filters == {"tag": [], "kind": [], "space": [], "has": [], "is": []}
+    assert u.filters == {"tag": [], "kind": [], "space": [], "has": [], "is": [], "title": []}
     assert not u.has_operators
     assert u.subject == "beans"
 

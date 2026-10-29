@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from tessellate.core.deps import get_session
 from tessellate.search import engine
 from tessellate.search import index as search_index
+from tessellate.search import query as search_query
 
 router = APIRouter(prefix="/search", tags=["search"])
 
@@ -103,8 +104,15 @@ def search(
             )
         if hits:
             corrected = retry
+    asked = search_query.understand(q)
+    notices = list(asked.notices)
+    if asked.filters["title"] and not hits:
+        notices.append("No title says " + " or ".join(f"\u201c{value}\u201d" for value in asked.filters["title"]) + ".")
     return {
         "query": q,
+        #: Said beside the results: a filter nothing answers, and a `title:`
+        #: nothing is called (audit 1029 N4, N16).
+        "notices": notices,
         #: The query the hits are for when it is not `query`: the view says
         #: "Showing results for ..." rather than letting a typo look matched.
         "corrected": corrected,

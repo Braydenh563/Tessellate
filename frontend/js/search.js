@@ -67,7 +67,7 @@ let finderCounts = {};
 let finderIndexTotals = {};
 //: The corrected query the hits are for, if the route fixed a typo.
 //: `page` and `more`: the route's paging, for "Show more".
-const finderState = { corrected: "", page: 1, more: false, timer: null, run: 0, active: -1, opener: null };
+const finderState = { corrected: "", notices: [], page: 1, more: false, timer: null, run: 0, active: -1, opener: null };
 //: The box's private counters live on `finderState` rather than as four more
 //: top-level lets (tests/test_global_scope_ratchet.py): `timer` the typing
 //: pause, `run` so a slow answer cannot paint over a newer one, `active` the
@@ -176,6 +176,7 @@ async function finderSearch(append = false) {
   surfaceRecovered(results);
   finderIndexTotals = body.counts || {};
   finderState.corrected = body.corrected || "";
+  finderState.notices = body.notices || [];
   finderState.more = Boolean(body.more);
   if (append) {
     finderHits = [...finderHits.filter((hit) => hit.kind !== "action"), ...(body.hits || []), ...finderHits.filter((hit) => hit.kind === "action")];
@@ -453,13 +454,13 @@ function finderRender() {
   finderResultsRole(results, rows.length > 0);
   if (!rows.length) {
     finderRenderNothing(results);
-    if (summary) summary.textContent = "";
+    if (summary) summary.textContent = finderState.notices.join(" ");
     return;
   }
   if (summary) {
     summary.textContent = `${nounCount(rows.length, "result")}${
       finderState.corrected ? `, showing results for “${finderState.corrected}”` : ""
-    }`;
+    }${finderState.notices.length ? `. ${finderState.notices.join(" ")}` : ""}`;
   }
   const icons = Object.fromEntries(FINDER_KINDS.map((k) => [k.key, k.icon]));
   const names = Object.fromEntries(FINDER_KINDS.map((k) => [k.key, k]));

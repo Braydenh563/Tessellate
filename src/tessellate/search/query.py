@@ -38,7 +38,7 @@ from tessellate.ai import recognise
 #: the dict rather than `.get()` it. Named here rather than inline because
 #: `search/engine.py` iterates the same list to decide which filters it knows
 #: how to apply, and two copies of this list would drift.
-FILTER_KEYS = ("tag", "kind", "space", "has", "is")
+FILTER_KEYS = ("tag", "kind", "space", "has", "is", "title")
 
 
 def _empty_filters() -> dict[str, list[str]]:
@@ -90,6 +90,11 @@ class Understood:
     #: Words after a leading `-`. A hit containing any of these is dropped,
     #: which is the whole of what the operator promises.
     excluded: list[str] = field(default_factory=list)
+    #: Sentences about what the query asked for that nothing answers: a flag
+    #: or `has:` word the search does not know, or `name:` that is no
+    #: operator. Reported beside the results rather than swallowed (audit
+    #: 1029 N16: `has:attachment` matched nothing and said nothing).
+    notices: list[str] = field(default_factory=list)
 
     @property
     def has_range(self) -> bool:
@@ -249,7 +254,30 @@ _OPERATOR_NAMES = {
     "space": "space",
     "has": "has",
     "is": "is",
+    "title": "title",
 }
+
+#: The words `is:` and `has:` are answered from the index row's flags and the
+#: attachment, link and reminder tables (`search/engine.py`). Aliases are what
+#: the app calls things elsewhere ("Favourites" is the pin; a file is an
+#: attachment), so the name a person reads in the app works as typed.
+IS_VALUES = ("pinned", "archived", "done", "open", "urgent", "draft", "clipped", "deleted")
+HAS_VALUES = ("file", "image", "link", "reminder", "highlight")
+_VALUE_ALIASES = {
+    "is": {
+        "favourite": "pinned", "favorite": "pinned", "favourites": "pinned", "starred": "pinned",
+        "bin": "deleted", "binned": "deleted", "trashed": "deleted",
+    },
+    "has": {
+        "attachment": "file", "attachments": "file", "files": "file", "images": "image",
+        "picture": "image", "photo": "image", "links": "link", "reminders": "reminder",
+        "highlights": "highlight",
+    },
+}
+_KNOWN_VALUES = {"is": IS_VALUES, "has": HAS_VALUES}
+#: Prefixes that look like `name:value` and are not filters.
+_NOT_OPERATORS = frozenset({"http", "https", "mailto", "ftp", "file", "www", "tel", "sms", "re", "fwd"})
+_UNKNOWN_OPERATOR = re.compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
 
 #: `before:` and `after:` are dates rather than filters: see `Understood.filters`.
 _DATE_OPERATORS = ("before", "after", "since", "until")
@@ -336,6 +364,7 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
             return " "
         key = _OPERATOR_NAMES[name]
         for value_part in _split_values(value):
+            value_part = _VALUE_ALIASES.get(key, {}).get(value_part.lower(), value_part)
             if value_part not in filters[key]:
                 filters[key].append(value_part)
         return " "
@@ -350,6 +379,30 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
     remainder = _EXCLUDED.sub(" ", remainder)
 
     return remainder, filters, phrases, excluded, since, until
+
+
+def operator_notices(remainder: str, filters: dict[str, list[str]]) -> list[str]:
+    """What the query asked for that no filter answers, in words.
+
+    `remainder` is the text with the known operators already taken out, so a
+    `name:` still in it is one the parser does not know. Reported, and left in
+    the text as words, which is what searching it always did.
+    """
+    import difflib
+
+    notices: list[str] = []
+    for key, known in _KNOWN_VALUES.items():
+        for value in filters.get(key, []):
+            if value.lower() in known:
+                continue
+            near = difflib.get_close_matches(value.lower(), known, n=1)
+            hint = f"Did you mean {key}:{near[0]}?" if near else f"Try {', '.join(f'{key}:{word}' for word in known[:4])}."
+            notices.append(f"No filter called {key}:{value}. {hint}")
+    for match in _UNKNOWN_OPERATOR.finditer(remainder):
+        name = match.group(1).lower()
+        if name not in _NOT_OPERATORS:
+            notices.append(f"No filter called {name}:, so it was searched as words. Filters: tag, kind, in, is, has, title, before, after.")
+    return notices
 
 
 def _read_window(remainder: str, today: date, locale: str | None, operator_dates: bool, since: date | None, until: date | None) -> tuple:
@@ -431,6 +484,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         filters=filters,
         phrases=phrases,
         excluded=excluded,
+        notices=operator_notices(remainder, filters),
     )
 
 
