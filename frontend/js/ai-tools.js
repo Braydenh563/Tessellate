@@ -55,7 +55,7 @@ function paintTaskRunLines(fold, lines) {
   const pre = fold.querySelector("pre");
   const key = pre.dataset.runLines;
   const verb = fold.dataset.state === "running" ? "What it's doing" : "What it did";
-  fold.querySelector("summary").textContent = `${verb} (${lines.length} line${lines.length === 1 ? "" : "s"})`;
+  fold.querySelector("summary").textContent = `${verb} (${nounCount(lines.length, "line")})`;
   pre.textContent = taskRunLinesText(lines, Number(pre.dataset.started) || 0);
   //: Follow the tail, the way a terminal does, unless the reader scrolled up.
   if (fold.open && taskLogScrollStates.get(key) !== false) {
@@ -775,7 +775,7 @@ function renderReindex(status) {
   if (running) {
     $("reindex-progress").value = job.done;
     $("reindex-progress").max = Math.max(job.total, 1);
-    $("reindex-label").textContent = `${job.done} of ${job.total} notes re-indexed`;
+    $("reindex-label").textContent = `${job.done} of ${nounCount(job.total, "note")} re-indexed`;
   }
   //: **Say when it is actually worth doing.** Asked for: "suggest rebuilding
   //: the search index upon large changes". The backend counts notes that

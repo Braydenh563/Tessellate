@@ -211,7 +211,7 @@ async function loadLibrary() {
   const body = await apiJson("/library").catch(() => null);
   clearSkeletons(grid);
   if (!body) {
-    surfaceFailed(document.getElementById("library-empty"), "library", loadLibrary);
+    surfaceFailed(document.getElementById("library-empty"), "your library", loadLibrary);
     return;
   }
   surfaceRecovered(document.getElementById("library-empty"));
@@ -1069,9 +1069,9 @@ function renderLibraryContextBars() {
     // bin you can trust to clear itself and one you assume you have to empty.
     const days = prefsCache ? prefsCache.recycle_bin_days : 30;
     $("library-bin-note").textContent = count
-      ? `${count} note${count === 1 ? "" : "s"} in the bin, kept for ${days} days ` +
+      ? `${nounCount(count, "note")} in the bin, kept for ${days} days ` +
         "then cleared automatically. Open one to read it, or use its ⋯ menu."
-      : `The bin is empty. Deleted notes are kept here for ${days} days ` +
+      : `The bin is empty. Deleted notes are kept here for ${nounCount(days, "day")} ` +
         "(change that in Preferences) before they clear.";
     $("library-bin-empty").disabled = !count;
   }
@@ -1604,7 +1604,7 @@ async function openBinnedNote(entryId) {
   const binned = entry.deleted_at ? relativeTime(entry.deleted_at) : "recently";
   $("binned-meta").textContent =
     `Deleted ${binned} · written ${relativeTime(entry.created_at)} · ` +
-    `kept for ${days} days from deletion, then cleared automatically.`;
+    `kept for ${nounCount(days, "day")} from deletion, then cleared automatically.`;
   // The note's own markdown, as the notebook renders it everywhere else. A
   // binned note is still a note, and showing it as flat text here would make
   // it look like a different, lesser thing than the one you deleted.
@@ -1811,7 +1811,7 @@ for (const button of document.querySelectorAll("#library-view button, #library-b
 $("library-bin-empty").addEventListener("click", async () => {
   const count = libraryCounts.archived || 0;
   const ok = await confirmDialog(
-    `Permanently delete ${count} note${count === 1 ? "" : "s"} in the bin?\n\n` +
+    `Permanently delete ${nounCount(count, "note")} in the bin?\n\n` +
       "This cannot be undone."
   );
   if (!ok) return;
@@ -1876,15 +1876,15 @@ $("library-bulk-restore").addEventListener("click", async () => {
   }
   if (back.length) {
     pushRoutePairUndo(
-      `Restored ${back.length} item${back.length === 1 ? "" : "s"} from the bin`,
+      `Restored ${nounCount(back.length, "item")} from the bin`,
       back.map((item) => [binRoutes(item).restore.replace(/\/restore$/, ""), "DELETE"]),
       back.map((item) => [binRoutes(item).restore, "POST"]),
       () => Promise.all([loadLibrary(), loadEntries(), loadReminders()])
     );
   }
-  if (restored) toast(`Restored ${restored} item${restored === 1 ? "" : "s"}.`);
+  if (restored) toast(`Restored ${nounCount(restored, "item")}.`);
   const failed = chosen.length - restored;
-  if (failed) toast(`${failed} item${failed === 1 ? "" : "s"} couldn't be restored.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be restored.`, true);
   loadLibrary();
   loadEntries();
   loadReminders();
@@ -1897,7 +1897,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   // "delete" means recoverable for a note and permanent for one already binned.
   const permanent = chosen.filter((i) => i.kind === "archived").length;
   const ok = await confirmDialog(
-    `Delete ${chosen.length} item${chosen.length === 1 ? "" : "s"}?\n\n` +
+    `Delete ${nounCount(chosen.length, "item")}?\n\n` +
       (permanent
         ? `${permanent} of them ${permanent === 1 ? "is" : "are"} already in the bin and will be destroyed permanently.`
         : "Notes and documents go to the bin; chats are deleted for good.")
@@ -1937,7 +1937,7 @@ $("library-bulk-delete").addEventListener("click", async () => {
   if (comeBack.length) {
     const live = comeBack.map((c) => ({ ...c }));
     pushUndo(
-      `Deleted ${comeBack.length} item${comeBack.length === 1 ? "" : "s"} from the Library`,
+      `Deleted ${nounCount(comeBack.length, "item")} from the Library`,
       async () => {
         for (const c of live) {
           if (c.chat) await apiJson("/conversations/restore", { method: "POST", body: JSON.stringify(c.chat) });
@@ -1954,9 +1954,9 @@ $("library-bulk-delete").addEventListener("click", async () => {
       }
     );
   }
-  if (deleted) toast(`Deleted ${deleted} item${deleted === 1 ? "" : "s"}.`);
+  if (deleted) toast(`Deleted ${nounCount(deleted, "item")}.`);
   const failed = chosen.length - deleted;
-  if (failed) toast(`${failed} item${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "item")} couldn't be deleted.`, true);
   loadLibrary();
   loadEntries();
 });
@@ -2406,7 +2406,7 @@ function skillCard(skill, lastRun) {
   //: and onto a second line.
   if (inputs) {
     const asks = document.createElement("span");
-    asks.textContent = ` · asks for ${inputs} input${inputs === 1 ? "" : "s"}`;
+    asks.textContent = ` · asks for ${nounCount(inputs, "input")}`;
     asks.title = "Asks you for these before it runs";
     when.appendChild(asks);
   }
@@ -3148,7 +3148,7 @@ async function importLibraryDocuments(files) {
   // The list is already on screen and redrawn, so "Show them" would be a
   // button that does nothing; only a single import has somewhere to go.
   if (made.length > 1) {
-    toast(`Added ${made.length} files to your documents.`);
+    toast(`Added ${nounCount(made.length, "file")} to your documents.`);
     return;
   }
   toastAction(`Added “${made[0].title}” to your documents.`, "Open it", () => {
@@ -3186,7 +3186,7 @@ async function renderLibraryDocuments() {
     );
   } catch {
     list.replaceChildren();
-    return surfaceFailed(empty, "documents", renderLibraryDocuments);
+    return surfaceFailed(empty, "your documents", renderLibraryDocuments);
   } finally {
     clearSkeletons(list);
   }
@@ -3302,7 +3302,7 @@ async function renderLibraryDocuments() {
     meta.className = "muted doc-list-meta";
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
-    const words = typeof doc.words === "number" ? `${doc.words} words` : "";
+    const words = typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
     const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
     meta.textContent = [words, when].filter(Boolean).join(" · ");
     body.append(title, meta);
@@ -3434,7 +3434,7 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   const ids = [...libraryDocsSelection];
   if (!ids.length) return;
   const ok = await confirmDialog(
-    `Delete ${ids.length} document${ids.length === 1 ? "" : "s"}? This cannot be undone.`
+    `Delete ${nounCount(ids.length, "document")}? This cannot be undone.`
   );
   if (!ok) return;
   let deleted = 0;
@@ -3450,16 +3450,16 @@ $("library-docs-bulk-delete")?.addEventListener("click", async () => {
   }
   if (gone.length) {
     pushRoutePairUndo(
-      `Deleted ${gone.length} document${gone.length === 1 ? "" : "s"}`,
+      `Deleted ${nounCount(gone.length, "document")}`,
       gone.map((id) => [`/documents/${id}/restore`, "POST"]),
       gone.map((id) => [`/documents/${id}`, "DELETE"]),
       () => renderLibraryDocuments()
     );
   }
   libraryDocsSelection.clear();
-  if (deleted) toast(`Deleted ${deleted} document${deleted === 1 ? "" : "s"}.`);
+  if (deleted) toast(`Deleted ${nounCount(deleted, "document")}.`);
   const failed = ids.length - deleted;
-  if (failed) toast(`${failed} document${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "document")} couldn't be deleted.`, true);
   renderLibraryDocuments();
 });
 
@@ -3785,7 +3785,7 @@ function fileMetaLine(image) {
   parts.push(mediaFileKind(image.original_name || image.url || ""));
   const size = formatFileSize(image.size_bytes);
   if (size) parts.push(size);
-  if (image.page_count) parts.push(`${image.page_count} page${image.page_count === 1 ? "" : "s"}`);
+  if (image.page_count) parts.push(nounCount(image.page_count, "page"));
   if (image.created_at) {
     const when = new Date(image.created_at);
     if (!Number.isNaN(when.getTime())) parts.push(`added ${when.toLocaleDateString()}`);
@@ -8225,7 +8225,7 @@ function mediaReadingSummary(row) {
   //: claim twice, and the owner wrote the shorter one out in the report
   //: (INBOX 279).
   const pages = Number(row?.pages_read) || 0;
-  if (pages) facts.push(`${pages} page${pages === 1 ? "" : "s"}`);
+  if (pages) facts.push(nounCount(pages, "page"));
   facts.push(`${words.toLocaleString()} word${words === 1 ? "" : "s"}`);
   return { sentence, facts, words, pages };
 }
@@ -8545,7 +8545,7 @@ async function renderLibraryImagesGallery({ ifUnchanged = "render" } = {}) {
   if (unchanged && ifUnchanged === "skip") return;
   if (!images && !attachments?.length) {
     grid.replaceChildren();
-    if (!images && empty) surfaceFailed(empty, "images", renderLibraryImagesGallery);
+    if (!images && empty) surfaceFailed(empty, "your images", renderLibraryImagesGallery);
     else empty?.classList.remove("hidden");
     return;
   }
@@ -10780,7 +10780,7 @@ async function bulkDeleteLibraryBoards() {
   // things about whether it comes back.
   if (
     !(await confirmDialog(
-      `Delete ${boards.length} board${boards.length === 1 ? "" : "s"}? They go to the bin.`
+      `Delete ${nounCount(boards.length, "board")}? They go to the bin.`
     ))
   ) {
     return;
@@ -10804,13 +10804,13 @@ async function bulkDeleteLibraryBoards() {
   };
   if (deleted) {
     const action = pushUndo(`Deleted ${deleted} boards`, move(false), move(true));
-    toastAction(`Moved ${deleted} board${deleted === 1 ? "" : "s"} to the bin.`, "Undo", async () => {
+    toastAction(`Moved ${nounCount(deleted, "board")} to the bin.`, "Undo", async () => {
       settleUndoFromToast(action);
       await move(false)();
     });
   }
   const failed = boards.length - deleted;
-  if (failed) toast(`${failed} board${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "board")} couldn't be deleted.`, true);
   if (typeof renderLibraryBoardsGallery === "function") renderLibraryBoardsGallery();
 }
 
@@ -10851,9 +10851,9 @@ onDomReady(() => {
     };
     linkVerb("library-links-bulk-move", "ph:folder-simple Move to group", "Put the ticked bookmarks in a group", bulkMoveLibraryLinks);
     linkVerb("library-links-bulk-read", "ph:check-circle Mark read", "Mark the ticked bookmarks as read", () =>
-      bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${n} bookmark${n === 1 ? "" : "s"} as read.`));
+      bulkUpdateLibraryLinks({ is_read: true }, (n) => `Marked ${nounCount(n, "bookmark")} as read.`));
     linkVerb("library-links-bulk-pin", "ph:push-pin Pin", "Pin the ticked bookmarks to the top", () =>
-      bulkUpdateLibraryLinks({ pinned: true }, (n) => `Pinned ${n} bookmark${n === 1 ? "" : "s"}.`));
+      bulkUpdateLibraryLinks({ pinned: true }, (n) => `Pinned ${nounCount(n, "bookmark")}.`));
     document.getElementById("library-links-bulk-delete").addEventListener("click", bulkDeleteLibraryLinks);
     document.getElementById("library-links-clear-selection").addEventListener("click", clearLibraryLinksSelection);
   }
@@ -10904,7 +10904,7 @@ async function renderBookmarks() {
     bookmarksCache = await fetchAllBookmarks();
   } catch {
     list.replaceChildren();
-    return surfaceFailed(empty, "bookmarks", renderBookmarks);
+    return surfaceFailed(empty, "your bookmarks", renderBookmarks);
   } finally {
     clearSkeletons(list);
   }
@@ -10950,7 +10950,7 @@ async function deleteBookmarksWithUndo(links) {
   }
   libraryLinksSelection.clear();
   const failed = links.length - deleted;
-  if (failed) toast(`${failed} bookmark${failed === 1 ? "" : "s"} couldn't be deleted.`, true);
+  if (failed) toast(`${nounCount(failed, "bookmark")} couldn't be deleted.`, true);
   await renderBookmarks();
   if (!deleted) return;
   const restore = async () => {
@@ -11018,7 +11018,7 @@ async function bulkUpdateLibraryLinks(changes, done) {
   libraryLinksSelection.clear();
   if (changed) {
     toast(done(changed));
-    pushBookmarksPutUndo(`Changed ${changed} bookmark${changed === 1 ? "" : "s"}`, written);
+    pushBookmarksPutUndo(`Changed ${nounCount(changed, "bookmark")}`, written);
   }
   await renderBookmarks();
 }
@@ -11027,7 +11027,7 @@ async function bulkMoveLibraryLinks() {
   const links = [...libraryLinksSelection.values()];
   if (!links.length) return;
   const value = await promptDialog(
-    `Group for ${links.length} bookmark${links.length === 1 ? "" : "s"} (e.g. Work/Reading, blank clears it):`,
+    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it):`,
     ""
   );
   //: Cancel and an empty field both resolve "" (see `moveToGroup`), so a bulk
@@ -11036,7 +11036,7 @@ async function bulkMoveLibraryLinks() {
   if (!value) return;
   await bulkUpdateLibraryLinks(
     { group_name: value.trim() },
-    (n) => `Moved ${n} bookmark${n === 1 ? "" : "s"} to “${value.trim()}”.`
+    (n) => `Moved ${nounCount(n, "bookmark")} to “${value.trim()}”.`
   );
 }
 
@@ -11198,7 +11198,7 @@ function manageBookmarkGroups() {
       name.textContent = group.split("/").join(" / ");
       const meta = document.createElement("span");
       meta.className = "muted text-sm";
-      meta.textContent = count === 0 ? "Empty" : `${count} bookmark${count === 1 ? "" : "s"}`;
+      meta.textContent = count === 0 ? "Empty" : nounCount(count, "bookmark");
       label.append(name, meta);
 
       const actions = document.createElement("div");
@@ -11210,13 +11210,13 @@ function manageBookmarkGroups() {
           const moved = await renameBookmarkGroup(group, next);
           await renderBookmarks();
           paint();
-          toast(moved ? `Moved ${moved} bookmark${moved === 1 ? "" : "s"} to "${next}".` : `Renamed to "${next}".`);
+          toast(moved ? `Moved ${nounCount(moved, "bookmark")} to "${next}".` : `Renamed to "${next}".`);
         }),
         smallButton("ph:trash", `Delete "${group}"`, async () => {
           const ok = await confirmDialog(
             count === 0
               ? `Delete the empty group "${group}"?`
-              : `Delete the group "${group}"? Its ${count} bookmark${count === 1 ? "" : "s"} stay: they just stop being grouped.`
+              : `Delete the group "${group}"? Its ${nounCount(count, "bookmark")} stay: they just stop being grouped.`
           );
           if (!ok) return;
           await deleteBookmarkGroup(group);
@@ -12105,7 +12105,7 @@ function contentsDocRow(doc, heads, shallowest, forceOpen) {
   link.href = "#";
   const facts = [
     contentsMode === "date" ? "" : "Document",
-    heads.length ? `${heads.length} section${heads.length === 1 ? "" : "s"}` : "",
+    heads.length ? nounCount(heads.length, "section") : "",
     doc.updated_at ? relativeTime(doc.updated_at) : "",
   ];
   contentsRowBody(link, contentsGlyph("ph-file-text"), doc.title || "Untitled", facts);
@@ -12341,7 +12341,7 @@ async function renderContents() {
   hint?.classList.add("hidden");
   if (summary) summary.textContent = "";
   if (!active.length && $("empty-message")?.classList.contains("is-failed")) {
-    surfaceFailed(empty, "contents", renderContents);
+    surfaceFailed(empty, "this document's contents", renderContents);
     return;
   }
   surfaceRecovered(empty);
@@ -12455,10 +12455,10 @@ async function renderContents() {
 
   if (summary) {
     const sections = shownDocs.reduce((n, d) => n + d.heads.length, 0);
-    const bits = [`${shown.length} note${shown.length === 1 ? "" : "s"}`];
+    const bits = [nounCount(shown.length, "note")];
     if (shownDocs.length) {
-      bits.push(`${shownDocs.length} document${shownDocs.length === 1 ? "" : "s"}`);
-      if (sections) bits.push(`${sections} section${sections === 1 ? "" : "s"}`);
+      bits.push(nounCount(shownDocs.length, "document"));
+      if (sections) bits.push(nounCount(sections, "section"));
     }
     summary.textContent = bits.join(" · ");
   }

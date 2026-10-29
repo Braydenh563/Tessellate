@@ -432,7 +432,7 @@ def test_read_view_table_is_set_like_prose_and_counts_rows_plainly() -> None:
     rule = css[css.index("#doc-preview .md-table-block:not(.is-full) .md-table") :].split("}")[0]
     assert "font-family: var(--font-sans)" in rule and "width: auto" in rule and "max-width: 100%" in rule
     markdown = (ROOT / "frontend" / "js" / "markdown.js").read_text(encoding="utf-8")
-    assert "table · header and ${bodyRows.length} row" in markdown and "table · header only" in markdown
+    assert 'table · header and ${nounCount(bodyRows.length, "row")}' in markdown and "table · header only" in markdown
 
 
 def test_list_markers_do_not_inherit_the_hanging_indent() -> None:

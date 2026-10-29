@@ -582,7 +582,7 @@ function mdDocumentCard(doc, name = "") {
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
   const bits = ["Document"];
-  if (doc && Number.isFinite(doc.words)) bits.push(`${doc.words.toLocaleString()} words`);
+  if (doc && Number.isFinite(doc.words)) bits.push(nounCount(doc.words, "word"));
   if (doc && doc.updated_at) {
     const when = new Date(doc.updated_at);
     if (!Number.isNaN(when.getTime())) bits.push(`edited ${when.toLocaleDateString()}`);
@@ -895,7 +895,7 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   bar.className = "code-bar";
   const label = document.createElement("span");
   label.className = "code-lang";
-  label.textContent = bodyRows.length ? `table · header and ${bodyRows.length} row${bodyRows.length === 1 ? "" : "s"}` : "table · header only";
+  label.textContent = bodyRows.length ? `table · header and ${nounCount(bodyRows.length, "row")}` : "table · header only";
   const cells = (row) => headers.map((_, c) => (row[c] || "").trim());
   const rows = [cells(headers), ...bodyRows.map(cells)];
   const tsv = rows.map((row) => row.map((v) => v.replace(/\t/g, " ")).join("\t")).join("\n");

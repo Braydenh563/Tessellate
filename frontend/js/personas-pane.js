@@ -118,7 +118,7 @@ async function renderPersonas() {
             //: beside the box instead of a raw 422 from a save that has
             //: already closed the editor.
             if (thinkingWords.length && (thinkingWords.length < 8 || thinkingWords.length > 40)) {
-              wordsStatus.textContent = `${thinkingWords.length} words: use 8 to 40, or leave it empty for the default list.`;
+              wordsStatus.textContent = `${nounCount(thinkingWords.length, "word")}: use 8 to 40, or leave it empty for the default list.`;
               return;
             }
             const tooLong = thinkingWords.find((w) => w.length > 40);

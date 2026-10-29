@@ -3495,8 +3495,8 @@ async function wbBoardReplaceAll(find, to) {
   }
   wbPushMoveBatch(undo);
   wbScheduleRender();
-  const said = `Replaced ${changes} time${changes === 1 ? "" : "s"} in ${undo.length} item${undo.length === 1 ? "" : "s"}`
-    + `${cards ? `; ${cards} card${cards === 1 ? "" : "s"} hold it too, edited in their note` : ""}.`;
+  const said = `Replaced ${nounCount(changes, "time")} in ${nounCount(undo.length, "item")}`
+    + `${cards ? `; ${nounCount(cards, "card")} hold it too, edited in their note` : ""}.`;
   wbAnnounce(said);
   toast(said);
   wbBoardSearchRun(document.getElementById("wb-search-input")?.value || "");
@@ -5105,7 +5105,7 @@ async function wbTidySelection(direction = "down") {
     pushed.push(await wbMoveItemBy(e.kind, e.id, e.item, dx, dy));
   }
   wbPushMoveBatch(pushed);
-  toast(`Tidied ${entries.length} items as a tree.`);
+  toast(`Tidied ${nounCount(entries.length, "item")} as a tree.`);
 }
 
 //: **Change a shape's kind in place** (draw.io Edit > Edit style > shape,
@@ -6019,7 +6019,7 @@ async function wbArrangeMindMap(rootId, kind) {
   // spanning tree.
   window.wbMindMap = { rootId, parentOf, childrenOf, kind };
   wbScheduleRender();
-  toast(`Arranged ${parentOf.size} cards as a ${kind === "radial" ? "radial" : "tree"} mind map.`);
+  toast(`Arranged ${nounCount(parentOf.size, "card")} as a ${kind === "radial" ? "radial" : "tree"} mind map.`);
 }
 
 //: Tab/Enter branch entry (item 25's second piece) needs to know a card's
@@ -8047,7 +8047,7 @@ async function wbTrashDelete(keys) {
   const step = wbUndoStack[wbUndoStack.length - 1];
   const topicsGone = map ? topicsBefore - topics() : 0;
   const words = topicsGone
-    ? `Deleted ${topicsGone} topic${topicsGone === 1 ? "" : "s"}.`
+    ? `Deleted ${nounCount(topicsGone, "topic")}.`
     : `Deleted ${gone === 1 ? "1 item" : `${gone} items`}.`;
   wbAnnounce(words);
   toastAction(words, "Undo", async () => {
@@ -9214,7 +9214,7 @@ function wbBuildContextMenu(kind) {
       if (kids) sub("Lay this branch out again", "Tidy this topic and everything under it", async () => {
         const moved = await wbMapTidy({ onlyBranch: mapNode.id, quiet: true });
         toast(moved
-          ? `Laid out ${moved} topic${moved === 1 ? "" : "s"}.`
+          ? `Laid out ${nounCount(moved, "topic")}.`
           : "This branch is already where the layout puts it.");
       });
       sub("Copy this branch", "This topic and everything under it, beside itself", () =>
@@ -11514,7 +11514,7 @@ async function wbLockSelection() {
 async function wbUnlockAll() {
   const count = await wbSetLocked(wbLockedItems(), false);
   wbScheduleRender();
-  toast(count ? `Unlocked ${count} item${count === 1 ? "" : "s"}.` : "Nothing on this board is locked.");
+  toast(count ? `Unlocked ${nounCount(count, "item")}.` : "Nothing on this board is locked.");
 }
 
 //: The class that lets the pointer through, from state, after every render
@@ -12817,7 +12817,7 @@ async function wbClearBoard() {
     return;
   }
   const ok = await confirmDialog(
-    `Clear this board? ${total} item${total === 1 ? "" : "s"} will be removed. ` +
+    `Clear this board? ${nounCount(total, "item")} will be removed. ` +
     "One Ctrl+Z puts them all back."
   );
   if (!ok) return;
@@ -13632,7 +13632,7 @@ async function wbGenerateMapFromNotes() {
       }),
     });
     window.wbLastCreatedBoard = board;
-    toast(`Made “${board.title}”: ${board.object_count} node${board.object_count === 1 ? "" : "s"}.`);
+    toast(`Made “${board.title}”: ${nounCount(board.object_count, "node")}.`);
     // Straight into the map, for the same reason the import opens what it
     // imported: landing back on an unchanged-looking list is how a thing that
     // worked reads as a thing that did not.
@@ -13674,7 +13674,7 @@ function wbReviewMapProposal(proposal) {
       unusable: "Grouped by how they are filed, because the model did not answer with an outline",
       failed: "Grouped by how they are filed, because the model could not be reached",
     };
-    const counted = `${proposal.notes} note${proposal.notes === 1 ? "" : "s"}`;
+    const counted = nounCount(proposal.notes, "note");
     said.textContent = `${because[proposal.reason] || because.offline}, from ${counted}. Edit anything here before it is created.`;
 
     const name = document.createElement("input");
@@ -13811,7 +13811,7 @@ async function wbImportOutlineFile(event) {
     window.wbLastCreatedBoard = board;
     renderLibraryBoardsGallery();
     toast(
-      `Imported “${board.title}”: ${board.object_count} node${board.object_count === 1 ? "" : "s"}.`
+      `Imported “${board.title}”: ${nounCount(board.object_count, "node")}.`
     );
     await openWhiteboardBoard(board.id);
     wbBoardMadeStep(board);
@@ -15027,7 +15027,7 @@ async function initWhiteboard() {
   $("wb-map-tidy")?.addEventListener("click", async () => {
     const moved = await wbMapTidy({ quiet: true });
     toast(moved
-      ? `Tidied ${moved} node${moved === 1 ? "" : "s"}.`
+      ? `Tidied ${nounCount(moved, "node")}.`
       : "Everything is already where this layout puts it.");
   });
   $("wb-empty-hint-close")?.addEventListener("click", () => {
@@ -17616,7 +17616,7 @@ async function initWhiteboard() {
     if (wbClipboard) {
       const count = wbClipboard.things;
       items.push(makeMenuItem(
-        count > 1 ? `ph:clipboard-text Paste ${count} items here` : "ph:clipboard-text Paste here",
+        count > 1 ? `ph:clipboard-text Paste ${nounCount(count, "item")} here` : "ph:clipboard-text Paste here",
         "Ctrl+V pastes beside the original, Ctrl+Shift+V in place", () => wbPasteClipboard({ at: [x, y] })
       ));
       items.push(makeMenuItem("ph:clipboard Paste here without comments", "Ctrl+Alt+Shift+V", () => wbPasteClipboard({ at: [x, y], noComments: true })));
@@ -24257,7 +24257,7 @@ function drawLibraryBoardsGallery(listed) {
   const boards = listed && listed.filter(libraryListsBoard);
   if (!boards) {
     grid.replaceChildren();
-    if (empty) surfaceFailed(empty, "boards", renderLibraryBoardsGallery);
+    if (empty) surfaceFailed(empty, "your boards", renderLibraryBoardsGallery);
     noMatch?.classList.add("hidden");
     return;
   }
@@ -25112,7 +25112,7 @@ function pickNotesDialog(message, { confirmLabel = "Continue", limit = 40 } = {}
 
     const refreshCount = () => {
       count.textContent = chosen.size
-        ? `${chosen.size} note${chosen.size === 1 ? "" : "s"} chosen${chosen.size >= limit ? ` (the most is ${limit})` : ""}`
+        ? `${nounCount(chosen.size, "note")} chosen${chosen.size >= limit ? ` (the most is ${limit})` : ""}`
         : "Pick the notes to build from.";
       confirm.disabled = chosen.size === 0;
     };

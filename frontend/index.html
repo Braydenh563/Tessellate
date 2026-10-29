@@ -963,15 +963,17 @@
       </span>
     </div>
     <p class="muted">A space keeps a set of notes, tags and chats apart from the rest. Your settings, models and skills stay shared.</p>
+    <!-- Enter in the name field creates the space: the controls belong to this form by `form=`, so the dialog's layout is untouched. -->
+    <form id="space-create-form" class="hidden"></form>
     <label for="space-create-name">Name</label>
-    <input type="text" id="space-create-name" placeholder="e.g. Work" maxlength="60" autocomplete="off">
-    <label for="space-create-icon">Icon</label>
-    <div id="space-create-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-create-icon"></div>
+    <input type="text" id="space-create-name" form="space-create-form" placeholder="e.g. Work" maxlength="60" autocomplete="off">
+    <label id="space-create-icon-label">Icon</label>
+    <div id="space-create-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-create-icon-label"></div>
     <input type="hidden" id="space-create-icon" value="ph-folder">
     <p id="space-create-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-create-dialog">Cancel</button>
-      <button type="button" class="accent small" id="space-create-submit">Create space</button>
+      <button type="submit" form="space-create-form" class="accent small" id="space-create-submit">Create space</button>
     </div>
   </dialog>
 
@@ -983,15 +985,16 @@
       </span>
     </div>
     <input type="hidden" id="space-edit-id">
+    <form id="space-edit-form" class="hidden"></form>
     <label for="space-edit-name">Name</label>
-    <input type="text" id="space-edit-name" maxlength="60" autocomplete="off">
-    <label for="space-edit-icon">Icon</label>
-    <div id="space-edit-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-edit-icon"></div>
+    <input type="text" id="space-edit-name" form="space-edit-form" maxlength="60" autocomplete="off">
+    <label id="space-edit-icon-label">Icon</label>
+    <div id="space-edit-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-edit-icon-label"></div>
     <input type="hidden" id="space-edit-icon">
     <p id="space-edit-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-edit-dialog">Cancel</button>
-      <button type="button" class="accent small" id="space-edit-submit">Save</button>
+      <button type="submit" form="space-edit-form" class="accent small" id="space-edit-submit">Save</button>
     </div>
   </dialog>
 
@@ -5854,6 +5857,7 @@ Link to another note with [[its first few words]]."></textarea>
         </select>
         <button id="reminder-add"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add</button>
       </div>
+      <p id="reminder-form-error" class="status error hidden" role="alert"></p>
       <!-- Quick set covers the times people actually pick, so the
            datetime-local field is a fallback rather than the only way in.
            Each button shows the time it resolves to once pressed. -->

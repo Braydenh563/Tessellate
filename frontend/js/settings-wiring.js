@@ -244,6 +244,15 @@ window.addEventListener("storage", (event) => {
   showLockScreen(false);
 });
 //: The lock form's submit (moved from app.js, whose only caller is here).
+//: A wrong password is said under the field, the field is marked and described by it, and focus goes back to it selected (sweep 1028b W9).
+function lockFail(message) {
+  const field = $("lock-password");
+  $("lock-error").textContent = message;
+  field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", "lock-error");
+  field.focus();
+  field.select();
+}
 async function submitLockForm() {
   const password = $("lock-password").value;
   const errorLine = $("lock-error");
@@ -252,7 +261,7 @@ async function submitLockForm() {
   //: A new password needs 8 (SEC-17); one set before that still unlocks.
   const floor = mode === "setup" ? 8 : 4;
   if (password.length < floor) {
-    errorLine.textContent = `Use at least ${floor} characters.`;
+    lockFail(`Use at least ${floor} characters.`);
     return;
   }
   if (mode === "prompt") {
@@ -303,7 +312,7 @@ async function submitLockForm() {
     //: when the dialog closes.
     if (mode === "setup") offerRecoveryKey(password);
   } catch (error) {
-    errorLine.textContent = error.message;
+    lockFail(error.message);
   }
 }
 
@@ -361,6 +370,7 @@ $("lock-password-show").addEventListener("click", (event) => {
   button.querySelector("i").className = `ph ${show ? "ph-eye-slash" : "ph-eye"}`;
   field.focus();
 });
+$("lock-password").addEventListener("input", () => $("lock-password").removeAttribute("aria-invalid"));
 $("lock-password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") submitLockForm();
   if (e.key === "Escape" && lockPrompt) {

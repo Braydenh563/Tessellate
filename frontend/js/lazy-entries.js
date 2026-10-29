@@ -36,7 +36,10 @@ Object.assign(LAZY_MODULES, {
   //: Settings, Packages, with the package steps it shares with Settings, Tasks
   //: (task-steps.js); named here, not in app.js, whose gzip cap is tight.
   packages: ["/js/task-steps.js", "/js/settings-packages.js"],
+  //: The failed-load state (load-failed.js's header).
+  loadFailed: ["/js/load-failed.js"],
 });
+setTimeout(() => ensureModule("loadFailed"), 3000);
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
   noteActions: ["openImprove", "closeImprove", "runImprove", "applyImprove", "reevaluateEntry", "attachFileTo", "attachFromLibrary"],
@@ -48,6 +51,8 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
+  quickAdd: ["reminderComposeAdd"],
+  loadFailed: ["surfaceFailed"],
 });
 //: A lone Alt is nobody's (INBOX 1422): its release hands focus to the window's
 //: own menu, which stays until blur. Cancelled; Alt+key is untouched.

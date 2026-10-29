@@ -742,7 +742,7 @@ function wbSyncMapFocusChrome(passed = null) {
   if (label) label.textContent = name.length > 40 ? `${name.slice(0, 39)}…` : name;
   const shown = index.nodes.length - wbMapFocusHidden(index).size;
   if (depth) {
-    depth.textContent = `${wbMapFocusState.depth} step${wbMapFocusState.depth === 1 ? "" : "s"}, ${shown} of ${index.nodes.length} nodes`;
+    depth.textContent = `${nounCount(wbMapFocusState.depth, "step")}, ${shown} of ${index.nodes.length} nodes`;
   }
   bar.hidden = false;
 }
@@ -950,7 +950,7 @@ async function wbMapClearEveryTopicNow() {
     await fetchWhiteboardState();
     renderWhiteboardNow();
     toast(count
-      ? `${count} topic${count === 1 ? "" : "s"} back to following this map.`
+      ? `${nounCount(count, "topic")} back to following this map.`
       : "Every topic was already following this map.");
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "reset the topics" }), true);
@@ -1867,7 +1867,8 @@ function wbBuildMapNode(el, d) {
     });
     text.on("blur", function () {
       wbEndTextEdit(this);
-      const edited = wbEditedText(this);
+      //: Trailing blank lines are not part of a name ("Central idea\n\n" was saved, sweep 1028b W16); Enter stays a new line (the owner, 2026-10-10).
+      const edited = wbEditedText(this).replace(/\s+$/, "");
       //: **The topic as it is now, by the id the element wears** (INBOX 537):
       //: this closure's `d` is the row from when the node was built, and a
       //: state fetch or an Undo since replaced it; a rename saved through it
@@ -2202,7 +2203,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     const buried = collapsed && index ? wbMapSubtree(index, d.id).length - 1 : 0;
     badge.hidden = buried <= 0;
     badge.textContent = String(buried);
-    const label = `Open the ${buried} topic${buried === 1 ? "" : "s"} folded in here`;
+    const label = `Open the ${nounCount(buried, "topic")} folded in here`;
     badge.title = label;
     badge.setAttribute("aria-label", label);
   }
@@ -2247,7 +2248,7 @@ function wbPaintMapNode(el, d, index, colors, fills) {
     progress.hidden = !tally;
     if (tally) {
       progress.textContent = `${tally.done}/${tally.total}`;
-      progress.title = `${tally.done} of ${tally.total} tasks under this topic are done`;
+      progress.title = `${tally.done} of ${nounCount(tally.total, "task")} under this topic are done`;
       progress.classList.toggle("wb-map-progress-complete", tally.done === tally.total);
     }
   }
@@ -4754,7 +4755,7 @@ async function wbMapPasteText(text) {
   if (wbMapLayout() !== "free") await wbMapTidy({ onlyBranch: wbMapTidyBranchScope(node ? node.id : null), quiet: true });
   if (made[0]) selectWbItem("object", made[0].id);
   const n = made.length;
-  wbAnnounce(`Pasted ${n} topic${n === 1 ? "" : "s"}`);
+  wbAnnounce(`Pasted ${nounCount(n, "topic")}`);
   return n;
 }
 
@@ -5595,12 +5596,12 @@ async function wbMapDeleteSubtree(id) {
   //: Inside a recorded gesture the gesture pushes the one step for the whole
   //: act; the toast's Undo is then the board's own.
   if (wbRecordDepth > 0) {
-    toastAction(`Deleted ${count} node${count === 1 ? "" : "s"}.`, "Undo", () => wbUndo());
+    toastAction(`Deleted ${nounCount(count, "node")}.`, "Undo", () => wbUndo());
     return;
   }
   wbPushUndo(entry);
   toastAction(
-    `Deleted ${count} node${count === 1 ? "" : "s"}.`,
+    `Deleted ${nounCount(count, "node")}.`,
     "Undo",
     async () => {
       const at = wbUndoStack.lastIndexOf(entry);
@@ -8159,7 +8160,7 @@ async function wbMapCopyBranch(id) {
   if (!source) return;
   const subtree = wbMapSubtree(index, id);
   if (subtree.length > WB_MAP_COPY_MAX) {
-    toast(`That branch has ${subtree.length} topics: copying stops at ${WB_MAP_COPY_MAX}.`, "info");
+    toast(`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`, "info");
     return;
   }
   const mapped = new Map();
@@ -8193,7 +8194,7 @@ async function wbMapCopyBranch(id) {
   renderWhiteboardNow();
   const rootCopy = mapped.get(id);
   if (rootCopy) selectWbItem("object", rootCopy);
-  toast(`Copied ${mapped.size} topic${mapped.size === 1 ? "" : "s"}.`);
+  toast(`Copied ${nounCount(mapped.size, "topic")}.`);
 }
 
 //: A branch big enough that copying it is a mistake rather than an intention.
@@ -9254,7 +9255,7 @@ async function wbMapSetLayoutNow(layout) {
     renderWhiteboardNow();
     toast(layout === "free"
       ? "Layout set to Free, nodes stay where you put them."
-      : `Laid out ${moved} node${moved === 1 ? "" : "s"}.`);
+      : `Laid out ${nounCount(moved, "node")}.`);
   } catch (err) {
     toast(err.message || voiceLine("failed", { what: "change the layout" }), true);
   }

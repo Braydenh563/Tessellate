@@ -1173,7 +1173,7 @@ function renderTraceReadout(result) {
   header.className = "graph-trace-header";
   const summary = document.createElement("span");
   summary.className = "graph-trace-step";
-  summary.textContent = `${result.hops} step${result.hops === 1 ? "" : "s"}`;
+  summary.textContent = nounCount(result.hops, "step");
   header.appendChild(summary);
 
   const path = document.createElement("div");
@@ -1227,7 +1227,7 @@ function renderTraceReadout(result) {
       swatch.setAttribute("aria-hidden", "true");
       const label = document.createElement("span");
       const hops = route.steps.length;
-      label.textContent = `Route ${index + 1} · ${hops} step${hops === 1 ? "" : "s"}`;
+      label.textContent = `Route ${index + 1} · ${nounCount(hops, "step")}`;
       chip.append(swatch, label);
       chip.title =
         index === 0
@@ -2024,7 +2024,7 @@ async function renderGraphSvg() {
   //: See `surfaceFailed` in navigation.js.
   const data = await apiJson(endpoint).then(graphFill).catch(() => null);
   if (!data) {
-    surfaceFailed(document.getElementById("graph-empty"), "map", renderGraph);
+    surfaceFailed(document.getElementById("graph-empty"), "your map", renderGraph);
     //: And the overview goes with the map it summarises, exactly as it does
     //: when there is nothing to map.
     graphMinimapShown(false);
@@ -2095,7 +2095,7 @@ async function renderGraphSvg() {
       const item = document.createElement("button");
       item.className = "legend-item legend-toggle";
       item.title =
-        `${cluster.size} notes, around "${cluster.core.preview}"` +
+        `${nounCount(cluster.size, "note")}, around "${cluster.core.preview}"` +
         (cluster.categories.length ? ` · ${cluster.categories.join(", ")}` : "");
       const dot = document.createElement("span");
       dot.className = "legend-dot";
@@ -2844,7 +2844,7 @@ async function renderGraphSvg() {
   nodeGroups.append("title").text((d) => {
     const links = graphAdjacency.get(d.id)?.size || 0;
     return (
-      `${d.preview}\n[${d.category}] · ${links} connection${links === 1 ? "" : "s"}` +
+      `${d.preview}\n[${d.category}] · ${nounCount(links, "connection")}` +
       `${d.access_count ? ` · used ${d.access_count}×` : ""}`
     );
   });
@@ -2961,9 +2961,9 @@ async function renderGraphSvg() {
   const counts = { link: 0, thread: 0, similar: 0, filing: 0, map: 0 };
   for (const e of edges) counts[e.kind] = (counts[e.kind] || 0) + 1;
   const noteCount = nodes.filter((n) => !n.isGroup).length;
-  const parts = [`${noteCount} note${noteCount === 1 ? "" : "s"}`];
-  if (counts.link) parts.push(`${counts.link} link${counts.link === 1 ? "" : "s"}`);
-  if (counts.thread) parts.push(`${counts.thread} thread${counts.thread === 1 ? "" : "s"}`);
+  const parts = [nounCount(noteCount, "note")];
+  if (counts.link) parts.push(nounCount(counts.link, "link"));
+  if (counts.thread) parts.push(nounCount(counts.thread, "thread"));
   if (counts.similar) parts.push(`${counts.similar} similarity line${counts.similar === 1 ? "" : "s"}`);
   if (counts.filing) parts.push(`${counts.filing} filed under a category`);
   // "on a mind map", not "map link": the edge means this note is a node on
@@ -3317,7 +3317,7 @@ function focusGraphNode(node, { announceIt = true } = {}) {
     const links = graphAdjacency?.get(node.id)?.size || 0;
     announce(
       `${node.preview}. ${node.category}. ` +
-        `${links} connection${links === 1 ? "" : "s"}. Press Enter to open.`
+        `${nounCount(links, "connection")}. Press Enter to open.`
     );
   }
 }
@@ -4496,7 +4496,7 @@ async function renderGraphPopupTopic(entry) {
   }
   if (!topic || graphPopupId !== entry.id) return;
   const mark = chip(`ph:circles-three ${topic.name}`, "tag", () => showTopicInGraph(entry.id));
-  mark.title = `In the topic ${topic.name}, ${topic.size} notes. Show it on the map`;
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Show it on the map`;
   //: `members=1` above: a rename is stored by the topic's notes.
   const rename = smallButton("ph:pencil-simple", "Rename the topic", () => gcRenameTopicInline(topic, mark, rename));
   rename.classList.add("icon-only");
@@ -4559,7 +4559,7 @@ function renderGraphPopupProps(entry) {
         if (!row) return;
         graphHighlightIds = new Set(row.ids || []);
         applyGraphHighlight();
-        toast(`${graphHighlightIds.size} note${graphHighlightIds.size === 1 ? "" : "s"} with ${key} ${shown}, lit on the map.`, "info");
+        toast(`${nounCount(graphHighlightIds.size, "note")} with ${key} ${shown}, lit on the map.`, "info");
       });
       light.title = `Light the notes whose ${key} is ${shown}`;
       dd.append(light, " ");
@@ -4596,8 +4596,8 @@ function renderGraphPopupInfo(entry) {
   const views = entry.access_count || 0;
   const parts = [
     new Date(entry.created_at).toLocaleDateString(),
-    `${links} link${links === 1 ? "" : "s"}`,
-    `${views} view${views === 1 ? "" : "s"}`,
+    nounCount(links, "link"),
+    nounCount(views, "view"),
   ];
   //: When a person last changed it (INBOX 1300 C11, "see their values and
   //: dates"), as the hover card says it: `edited_at`, which the app's own
@@ -6452,7 +6452,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
     if (!count) return toast("Nothing was pinned.");
     offerUndo(
       "Unpinned every note",
-      `${count} note${count === 1 ? "" : "s"} released: the layout can move freely again.`,
+      `${nounCount(count, "note")} released: the layout can move freely again.`,
       () => graphRestorePins(rows),
       () => graphUnpinAllNow()
     );

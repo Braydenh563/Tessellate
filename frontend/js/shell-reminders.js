@@ -854,7 +854,7 @@ async function loadReminders() {
   if (all) armReminderTimer(all);
   clearSkeletons($("reminder-groups"));
   if (!all) {
-    surfaceFailed($("reminders-empty"), "reminders", loadReminders);
+    surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
     return;
   }
   surfaceRecovered($("reminders-empty"));
@@ -976,13 +976,14 @@ function updateReminderBadge(reminders) {
     button.appendChild(badge);
   }
   badge.textContent = due;
-  badge.title = `${due} reminder${due === 1 ? "" : "s"} due`;
+  badge.title = `${nounCount(due, "reminder")} due`;
 }
 
 async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
-  const all = await apiPagedList("/reminders", 200).catch(() => []);
+  const all = await apiPagedList("/reminders", 200).catch(() => null);
+  if (!all) return toast("Could not load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1110,7 +1111,7 @@ function reminderItem(reminder, label) {
       )
     );
     actions.appendChild(
-      smallButton("ph:arrow-right tmrw", "Snooze to tomorrow 9am", () =>
+      smallButton("ph:arrow-right Tomorrow", "Snooze to tomorrow 9am", () =>
         snoozeReminderTo(reminder, presetDate("tomorrow"))
       )
     );
@@ -1372,7 +1373,7 @@ function updateDueReadout() {
   else if (minutes < 60 * 24) relative = `in about ${Math.round(minutes / 60)} h`;
   else {
     const days = Math.round(minutes / (60 * 24));
-    relative = `in ${days} day${days === 1 ? "" : "s"}`;
+    relative = `in ${nounCount(days, "day")}`;
   }
   setLabel(readout, `ph:alarm ${relative}: ${pretty}`);
   readout.classList.toggle("error", minutes < 0);
@@ -1582,27 +1583,9 @@ async function addReminder(text, dueValue, entryId = null, opts = {}) {
 
 // Magic Add (`magicAddReminder`) is quickadd.js's, with the chips.
 
-// The Wave O reminder poller used to live here. **It was dead code with a
-// live timer**, and that combination is worse than either half.
-//
-// §36C rewrote `checkDueReminders` further down this file, badge, title
-// count, one-notification-per-reminder, announced ids in localStorage, and a
-// second `async function checkDueReminders` at the same scope simply replaces
-// the first. What did not get deleted was the `setInterval(...)` that sat
-// beside the old one, and since the name resolves to the surviving
-// definition, that stray timer was running the *new* poller on a second
-// 30-second interval. Two effects, both real:
-//
-// - twice the requests, for nothing;
-// - and a race on the announcement: both polls read `announcedReminders()`
-//   before either calls `rememberAnnounced`, so a reminder coming due could
-//   be announced twice: which is precisely the "notifications are noisy"
-//   shape of report this rewrite existed to fix.
-//
-// Found by opening the app in a real browser and reading the network log,
-// which also showed the other half: the surviving poller runs before the
-// unlock and 401s once per load. Its predecessor guarded on `authToken()`;
-// that guard moved with the deletion (see `checkDueReminders` below).
+// The old Wave O poller is gone: a stray setInterval beside the rewritten
+// checkDueReminders ran it twice (double requests, a race on the announced
+// ids). One poller now; it guards on authToken() (see checkDueReminders).
 
 // Default due time for new reminders: tomorrow morning, 9am.
 // The field starts at today's date and the current time, so the common case

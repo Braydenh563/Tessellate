@@ -46,7 +46,7 @@ function relationTypeDeleteUndo(gone) {
     await apiJson(`/relation-types/${gone.deleted}`, { method: "DELETE" });
     relationTypesRepaint();
   });
-  toastAction(n ? `Deleted. ${n} link${n === 1 ? "" : "s"} kept, with no kind.` : "Deleted.", "Undo", async () => {
+  toastAction(n ? `Deleted. ${nounCount(n, "link")} kept, with no kind.` : "Deleted.", "Undo", async () => {
     settleUndoFromToast(action);
     await remake().catch((e) => toast(e.message, true));
   });

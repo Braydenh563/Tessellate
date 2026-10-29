@@ -4,7 +4,7 @@
 function libraryPickAbout(kind, row) {
   const when = relativeTime(row.updated_at || row.created_at);
   if (kind === "note") return pickerNoteAbout(row);
-  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "");
+  if (kind === "document") return notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "");
   if (kind === "file") return notePickerFacts(row.size_bytes ? formatFileSize(row.size_bytes) : "", notePickerUsedIn(row) || when);
   if (kind === "board") return notePickerFacts(row.type === "board" ? "Whiteboard" : "Mind map", when);
   let host = "";
@@ -52,7 +52,9 @@ function pickLibraryItemDialog(message, { sources = null } = {}) {
       const read = source.path === "/files/gallery"
         ? apiPagedList(source.path, 200, { silent: true })
         : apiJson(source.path, { silent: true });
-      const rows = await read.catch(() => []);
+      //: A failed read is not remembered as an empty source: the next visit to the tab asks again.
+      const rows = await read.catch(() => null);
+      if (!rows) return [];
       const list = Array.isArray(rows) ? rows : rows.documents || [];
       cache[kind] = source.keep ? list.filter(source.keep) : list;
       return cache[kind];

@@ -4397,12 +4397,12 @@ def test_sub_views_whose_read_failed_say_so_instead_of_claiming_empty() -> None:
         at = js.index(start)
         return js[at : at + length]
 
-    assert 'surfaceFailed(empty, "images"' in body("async function renderLibraryImagesGallery(", 9000)
-    assert 'surfaceFailed(empty, "contents", renderContents)' in body("async function renderContents(")
-    assert 'surfaceFailed(empty, "bookmarks", renderBookmarks)' in body("async function renderBookmarks(")
-    assert 'surfaceFailed(empty, "documents", renderLibraryDocuments)' in body("async function renderLibraryDocuments(")
-    assert 'surfaceFailed(empty, "boards"' in body("function drawLibraryBoardsGallery(")
-    assert 'surfaceFailed(failed, "recordings", renderRecordings)' in body("async function renderRecordings(", 1500)
+    assert 'surfaceFailed(empty, "your images"' in body("async function renderLibraryImagesGallery(", 9000)
+    assert "surfaceFailed(empty, \"this document's contents\", renderContents)" in body("async function renderContents(")
+    assert 'surfaceFailed(empty, "your bookmarks", renderBookmarks)' in body("async function renderBookmarks(")
+    assert 'surfaceFailed(empty, "your documents", renderLibraryDocuments)' in body("async function renderLibraryDocuments(")
+    assert 'surfaceFailed(empty, "your boards"' in body("function drawLibraryBoardsGallery(")
+    assert 'surfaceFailed(failed, "your recordings", renderRecordings)' in body("async function renderRecordings(", 1500)
     assert "error.message" not in body("async function renderRecordings(", 1200), "no raw server line on the page"
 
 

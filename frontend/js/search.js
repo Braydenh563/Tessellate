@@ -170,7 +170,7 @@ async function finderSearch(append = false) {
     finderHits = [];
     finderCounts = {};
     results.replaceChildren();
-    surfaceFailed(results, "results", () => finderSearch());
+    surfaceFailed(results, "the results", () => finderSearch());
     return;
   }
   surfaceRecovered(results);
@@ -457,7 +457,7 @@ function finderRender() {
     return;
   }
   if (summary) {
-    summary.textContent = `${rows.length} result${rows.length === 1 ? "" : "s"}${
+    summary.textContent = `${nounCount(rows.length, "result")}${
       finderState.corrected ? `, showing results for “${finderState.corrected}”` : ""
     }`;
   }

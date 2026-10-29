@@ -43,7 +43,10 @@ def _node(script: str) -> str:
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    done = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=30)
+    #: The plural helper the shipped code calls (prefs.js, loaded before everything).
+    prefs = (ROOT / "frontend" / "js" / "prefs.js").read_text(encoding="utf-8")
+    helper = prefs[prefs.index("function nounCount(") :].split("\n}\n", 1)[0] + "\n}\n"
+    done = subprocess.run([node, "-e", helper + script], capture_output=True, text=True, timeout=30)
     assert done.returncode == 0, done.stderr
     return done.stdout.strip()
 

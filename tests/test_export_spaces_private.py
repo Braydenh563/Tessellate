@@ -42,7 +42,7 @@ def open_vault(session):
 
 @pytest.fixture()
 def two_spaces(client):
-    work = client.post("/spaces", json={"name": "Work"}).json()["id"]
+    work = client.post("/spaces", json={"name": "Client work"}).json()["id"]
 
     def note(text: str, space: str) -> dict:
         response = client.post("/entries", json={"content": text}, headers={"X-Workspace-ID": space})

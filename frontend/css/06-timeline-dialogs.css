@@ -769,7 +769,6 @@
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  opacity: 0.8;
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 .log-source-browser {

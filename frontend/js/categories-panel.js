@@ -219,7 +219,7 @@ function drawManageCategoryRows(list, footer, state) {
     name.className = "manage-cat-name";
     name.textContent = meta.name;
     name.title = meta.name;
-    main.setAttribute("aria-label", `${meta.name}, ${meta.count} note${meta.count === 1 ? "" : "s"}`);
+    main.setAttribute("aria-label", `${meta.name}, ${nounCount(meta.count, "note")}`);
     main.append(dot, name, manageCountButton(meta.count, () => showCategoryNotes(meta.name)));
     li.appendChild(main);
     if (meta.name !== "Uncategorised") {
@@ -430,7 +430,7 @@ async function deleteCategoriesFromPanel(metas) {
   const names = metas.map((m) => m.name);
   const total = metas.reduce((n, m) => n + m.count, 0);
   const target = total
-    ? await chooseCategorySheet({ label: `Delete ${metas.length} categories`, sub: `Where should their ${total} note${total === 1 ? "" : "s"} go? Nothing is deleted but the categories.`, exclude: null, excludeAll: names, includeUncategorised: true })
+    ? await chooseCategorySheet({ label: `Delete ${metas.length} categories`, sub: `Where should their ${nounCount(total, "note")} go? Nothing is deleted but the categories.`, exclude: null, excludeAll: names, includeUncategorised: true })
     : { name: "Uncategorised", id: null };
   if (!target) return;
   const into = target.name === "Uncategorised" ? "" : `?into=${target.id}`;
@@ -445,7 +445,7 @@ async function deleteCategoriesFromPanel(metas) {
   }
   if (!done.length) return;
   offerCategoryUndo(
-    `Deleted ${done.length} categories. Their notes are in ${target.name}.`,
+    `Deleted ${nounCount(done.length, "category", "categories")}. Their notes are in ${target.name}.`,
     async () => {
       for (const result of done) {
         if (result.moved_ids.length) await apiJson("/categories/move", { method: "POST", body: JSON.stringify({ entry_ids: result.moved_ids, category: result.name }) });
@@ -470,7 +470,7 @@ function colourCategoriesFromPanel(metas) {
   const before = new Map(metas.map((meta) => [meta.name, categoryMeta.get(meta.name)?.colour || null]));
   return new Promise((resolve) => {
     openSheet({
-      label: `Colour for ${metas.length} categories`,
+      label: `Colour for ${nounCount(metas.length, "category", "categories")}`,
       sub: "Shown on their dots, labels, graph nodes and timeline. Automatic picks one from each name.",
       name: "category-colour",
       onClose: () => resolve(),
@@ -489,7 +489,7 @@ function colourCategoriesFromPanel(metas) {
           manageCategoriesRedraw?.();
         };
         const picker = swatchPicker({
-          label: `Colour for ${metas.length} categories`,
+          label: `Colour for ${nounCount(metas.length, "category", "categories")}`,
           value: undefined,
           onChange: show,
           onChoose: async (key) => {
@@ -516,7 +516,7 @@ function colourCategoriesFromPanel(metas) {
 async function mergeCategoriesFromPanel(metas, target = null) {
   if (metas.length === 1 && !target) return mergeCategoryFromPanel(metas[0]);
   const names = metas.map((m) => m.name);
-  target = target || await chooseCategorySheet({ label: `Merge ${metas.length} categories into`, sub: "Their notes move across and they go.", exclude: null, excludeAll: names });
+  target = target || await chooseCategorySheet({ label: `Merge ${nounCount(metas.length, "category", "categories")} into`, sub: "Their notes move across and they go.", exclude: null, excludeAll: names });
   if (!target) return;
   const done = [];
   try {
@@ -530,7 +530,7 @@ async function mergeCategoriesFromPanel(metas, target = null) {
   }
   if (!done.length) return;
   offerCategoryUndo(
-    `Merged ${done.length} categories into "${target.name}".`,
+    `Merged ${nounCount(done.length, "category", "categories")} into "${target.name}".`,
     async () => {
       for (const result of done) {
         if (result.moved_ids.length) await apiJson("/categories/move", { method: "POST", body: JSON.stringify({ entry_ids: result.moved_ids, category: result.from }) });
@@ -609,7 +609,7 @@ function chooseCategorySheet({ label, sub, exclude, excludeAll = [], includeUnca
 }
 
 async function mergeCategoryFromPanel(meta) {
-  const target = await chooseCategorySheet({ label: `Merge ${meta.name} into`, sub: `Its ${meta.count} note${meta.count === 1 ? "" : "s"} move across and ${meta.name} goes.`, exclude: meta.name });
+  const target = await chooseCategorySheet({ label: `Merge ${meta.name} into`, sub: `Its ${nounCount(meta.count, "note")} move across and ${meta.name} goes.`, exclude: meta.name });
   if (!target) return;
   try {
     const result = await apiJson(`/categories/${meta.id}/merge`, { method: "POST", body: JSON.stringify({ into: target.id }) });
@@ -628,7 +628,7 @@ async function mergeCategoryFromPanel(meta) {
 
 async function deleteCategoryFromPanel(meta) {
   const target = meta.count
-    ? await chooseCategorySheet({ label: `Delete ${meta.name}`, sub: `Where should its ${meta.count} note${meta.count === 1 ? "" : "s"} go? Nothing is deleted but the category.`, exclude: meta.name, includeUncategorised: true })
+    ? await chooseCategorySheet({ label: `Delete ${meta.name}`, sub: `Where should its ${nounCount(meta.count, "note")} go? Nothing is deleted but the category.`, exclude: meta.name, includeUncategorised: true })
     : { name: "Uncategorised", id: null };
   if (!target) return;
   try {
@@ -722,7 +722,7 @@ function splitCategoryFromPanel(meta) {
         }
         if (proposal.ai_unavailable) line(`${aiNameNow()} couldn't suggest a split just now, so these are grouped by tags.`);
         for (const group of proposal.groups) {
-          const pick = smallButton(`ph:check-square ${group.name} (${group.entry_ids.length})`, `Tick these ${group.entry_ids.length} notes and name the category ${group.name}`, () => {
+          const pick = smallButton(`ph:check-square ${group.name} (${group.entry_ids.length})`, `Tick these ${nounCount(group.entry_ids.length, "note")} and name the category ${group.name}`, () => {
             for (const [id, box] of boxes) box.checked = group.entry_ids.includes(id);
             nameInput.value = group.name;
             nameInput.focus();
@@ -757,7 +757,7 @@ function splitCategoryFromPanel(meta) {
           close();
           const moved = result.moved_ids;
           offerCategoryUndo(
-            `Moved ${moved.length} note${moved.length === 1 ? "" : "s"} from "${result.from}" into "${result.name}".`,
+            `Moved ${nounCount(moved.length, "note")} from "${result.from}" into "${result.name}".`,
             () => apiJson("/categories/move", { method: "POST", body: JSON.stringify({ entry_ids: moved, category: result.from }) }),
             () => apiJson("/categories/move", { method: "POST", body: JSON.stringify({ entry_ids: moved, category: result.name }) })
           );
@@ -832,7 +832,7 @@ async function deleteCategory(meta, name, count) {
   const ok = (await confirmDialog(
     `Delete the category "${name}"?\n\n` +
       (count
-        ? `Its ${count} note${count === 1 ? "" : "s"} are kept and become ` +
+        ? `Its ${nounCount(count, "note")} are kept and become ` +
           `Uncategorised: deleting a category never deletes notes.`
         : "It has no notes in it.")
   ));
@@ -884,7 +884,7 @@ function chooseNoteCategory(ids, current = "") {
   if (!noteIds.length) return;
   const many = noteIds.length > 1;
   openSheet({
-    label: many ? `Move ${noteIds.length} notes to` : "Move to category",
+    label: many ? `Move ${nounCount(noteIds.length, "note")} to` : "Move to category",
     sub: current && !many ? `Now in ${current}.` : "",
     name: "note-category",
     build: (card, close) => {
@@ -930,7 +930,7 @@ async function moveNotesToCategory(ids, category) {
     const previous = result.previous;
     if (previous.length) {
       offerCategoryUndo(
-        `Moved ${previous.length} note${previous.length === 1 ? "" : "s"} to "${category}".`,
+        `Moved ${nounCount(previous.length, "note")} to "${category}".`,
         async () => {
           await restoreCategoryMoves(previous);
           if (made) await dropEmptyCategory(category);

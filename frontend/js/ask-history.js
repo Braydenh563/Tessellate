@@ -56,7 +56,7 @@ function askHistoryRow(turn) {
   meta.className = "ask-history-meta muted";
   const parts = [relativeTime(turn.created_at)];
   if (turn.result_count) {
-    parts.push(`${turn.result_count} note${turn.result_count === 1 ? "" : "s"}`);
+    parts.push(nounCount(turn.result_count, "note"));
   }
   meta.textContent = parts.join(" · ");
   li.appendChild(meta);

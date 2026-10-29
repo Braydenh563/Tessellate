@@ -6,7 +6,7 @@ function nightKindWords(kind, n) {
 }
 
 function nightRunSummary(run) {
-  const read = `Read ${run.scanned} note${run.scanned === 1 ? "" : "s"}`;
+  const read = `Read ${nounCount(run.scanned, "note")}`;
   const when = dashRelativeTime(run.finished_at || run.started_at);
   const stopped = run.stopped_reason === "budget" ? "stopped at its budget, carries on next time" : "";
   return [read, when, stopped].filter(Boolean).join(" · ");

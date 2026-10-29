@@ -1728,12 +1728,12 @@ function relativeTime(iso) {
   if (hours < 24) return `${Math.round(hours)}h ago`;
   const days = Math.round(hours / 24);
   if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
+  if (days < 7) return `${nounCount(days, "day")} ago`;
   // Screenshotted as "1 weeks ago". Rounding 8 days gives 1, and the plural
   // was hard-coded: the only branch here that forgot to agree with its own
   // number.
   const weeks = Math.round(days / 7);
-  if (days < 30) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  if (days < 30) return `${nounCount(weeks, "week")} ago`;
   return then.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
@@ -1769,11 +1769,11 @@ async function loadConversationList() {
   const list = $("conversation-list");
   showSkeletons(list, 4, "li");
   if (!list.children.length || list.querySelector(".skeleton")) $("conv-empty")?.classList.add("hidden");
-  const conversations = sortConversations(
-    await apiJson("/conversations").catch(() => []),
-    $("chat-sidebar-sort")?.value || "recent"
-  ).slice(0, RECENT_CHATS_SHOWN);
+  //: A failed read says so with Try again; "No saved chats yet" is for a list that came back empty.
+  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson("/conversations"));
   clearSkeletons(list);
+  if (!loaded) return list.replaceChildren();
+  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, RECENT_CHATS_SHOWN);
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);

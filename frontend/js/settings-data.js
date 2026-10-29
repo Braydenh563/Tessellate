@@ -41,7 +41,7 @@ function privacyAddressLine(row) {
   //: INBOX 894: a device on this network opening the app is a row too,
   //: by its address only; it came in, nothing here reached out to it.
   const verb = row.kind === "lookup" ? "Looked up" : row.kind === "incoming" ? "Came in from" : "Connected to";
-  return `${verb} ${address}, ${row.count} time${row.count === 1 ? "" : "s"}, last ${privacyWhen(row.last)}`;
+  return `${verb} ${address}, ${nounCount(row.count, "time")}, last ${privacyWhen(row.last)}`;
 }
 
 function privacyDestinationRow(group) {
@@ -74,7 +74,7 @@ function privacyDestinationRow(group) {
   meta.className = "library-file-meta privacy-row-meta";
   meta.textContent = [
     what.charAt(0).toUpperCase() + what.slice(1),
-    `${verb} ${count} time${count === 1 ? "" : "s"}`,
+    `${verb} ${nounCount(count, "time")}`,
     `last ${privacyWhen(group.last)}`,
   ].join(" · ");
   li.appendChild(meta);
@@ -320,9 +320,10 @@ async function renderBackups() {
   const list = $("backup-list");
   renderBackupCopyRow().catch(() => {});
   showSkeletons(list, 2, "li");
-  const backups = await apiJson("/backups").catch(() => []);
+  const backups = await loadSurface($("backup-schedule"), "your backups", () => apiJson("/backups"));
   clearSkeletons(list);
   list.replaceChildren();
+  if (!backups) return;
   renderBackupSchedule(backups).catch(() => {});
   for (const item of backups) {
     const li = document.createElement("li");
@@ -520,7 +521,7 @@ function importSummary(result) {
   const made = result.imported ?? (result.ids || []).length;
   const already = result.already || 0;
   const failed = (result.skipped || []).length;
-  const parts = [`Imported ${made} note${made === 1 ? "" : "s"}`];
+  const parts = [`Imported ${nounCount(made, "note")}`];
   if (already) parts.push(`skipped ${already} already here`);
   if (failed) parts.push(`${failed} failed`);
   return `${parts.join(", ")}.`;
@@ -553,9 +554,9 @@ function undoImport(result, status) {
   };
   const restoreThem = async () => {
     const back = await each((id) => apiJson(`/entries/${id}/restore`, { method: "POST", silent: true }));
-    if (status) status.textContent = `Imported ${back} note${back === 1 ? "" : "s"} again.`;
+    if (status) status.textContent = `Imported ${nounCount(back, "note")} again.`;
   };
-  offerUndo(`Imported ${n} note${n === 1 ? "" : "s"}`, importSummary(result), binThem, restoreThem);
+  offerUndo(`Imported ${nounCount(n, "note")}`, importSummary(result), binThem, restoreThem);
 }
 
 async function importMarkdown(inputId = "import-md-files") {
@@ -589,7 +590,7 @@ async function importMarkdown(inputId = "import-md-files") {
     form.append("files", file, file.webkitRelativePath || file.name);
   }
   input.value = "";
-  setLabel(status, `ph:spin Importing ${chosen.length} file${chosen.length === 1 ? "" : "s"}…`);
+  setLabel(status, `ph:spin Importing ${nounCount(chosen.length, "file")}…`);
   try {
     // `api.upload` (F5): the multipart type from the browser, and
     // X-Workspace-ID, without which the notes land in the default space.
@@ -598,7 +599,7 @@ async function importMarkdown(inputId = "import-md-files") {
     });
     const result = await response.json();
     status.textContent =
-      `Imported ${result.imported} note${result.imported === 1 ? "" : "s"}.` +
+      `Imported ${nounCount(result.imported, "note")}.` +
       //: Passed over because the same file and text are already a note.
       (result.already ? ` ${result.already} already in your notebook, left as they are.` : "") +
       (result.skipped.length ? ` Skipped: ${result.skipped.join("; ")}` : "");
@@ -629,7 +630,7 @@ async function importDocument() {
     const response = await api.upload("/import/document", form);
     const result = await response.json();
     status.textContent =
-      `Imported ${result.imported} note${result.imported === 1 ? "" : "s"}` +
+      `Imported ${nounCount(result.imported, "note")}` +
       ` from ${result.filename}.` +
       (result.truncated ? " (Stopped at the note limit, the rest wasn't imported.)" : "");
     undoImport(result, status);
@@ -872,7 +873,7 @@ function settingShown(value) {
   if (value === false || value === "off") return "off";
   if (value == null) return "default";
   if (value === "") return "empty";
-  if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  if (Array.isArray(value)) return nounCount(value.length, "item");
   if (typeof value === "object") return "changed";
   const text = String(value);
   return text.length > 24 ? `${text.slice(0, 23)}…` : text;

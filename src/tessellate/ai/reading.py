@@ -393,6 +393,9 @@ _PRONOUN = (r"^(?:and |then |now |ok |okay |also |please )*(?P<verb>delete|bin|p
             r"\s+(?:that one|this one|the note|it|that)\b(?P<rest>.*)$")
 _OTHER = r"\bthe other(?: one| note)?\b"
 _TOO = r"^(?:and |also )?(?:the )?(?P<x>.+?)(?: note)? (?:too|as well)$"
+#: A sentence that names its own note ("delete the note about lentil soup")
+#: stands alone: the follow-on subject never rides along (sweep 1028b W1).
+_OWN_SUBJECT = r"\b(?:about|called|named|titled|regarding|concerning)\s+\S"
 
 
 def _turn_object(turn: dict, now: datetime) -> str | None:
@@ -439,6 +442,8 @@ def follow(text: str, turns: list[dict] | None, now: datetime) -> tuple[str, str
         return slot, "slot"
     if re.match(_AGAIN, low):
         return str(turns[-1]["text"]), "again"
+    if re.search(_OWN_SUBJECT, low) and not re.match(_SAME_FOR, low):
+        return None
     if re.search(_OTHER, low):
         return _follow_other(raw, low, turns, now)
     pronoun = re.match(_PRONOUN, low)

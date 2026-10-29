@@ -188,7 +188,7 @@ EXPECTED = {
         '"That topic\'s link is not a web address."',
         '"A topic\'s link has to be an http, https or mailto address."',
         '"That file is not a picture."',
-        '`That branch has ${subtree.length} topics: copying stops at ${WB_MAP_COPY_MAX}.`',
+        '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
         '"That day has gone: pick a later due date for a reminder."',
@@ -216,6 +216,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'entity-page.js': {
+        '"Could not load the people and things in your notes. Try again."': 'the entities request failed',
+    },
     'media.js': {
         '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
     },
@@ -247,12 +250,12 @@ FAULTS = {
     },
     'library.js': {
         '`The topic was not renamed: ${e?.message || e}.`': 'the rename request failed: the name shown is not the name kept',
-        '`${failed} item${failed === 1 ? "" : "s"} couldn\'t be restored.`': 'a bulk restore partly failed',
-        '`${failed} item${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
-        '`${failed} document${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "item")} couldn\'t be restored.`': 'a bulk restore partly failed',
+        '`${nounCount(failed, "item")} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "document")} couldn\'t be deleted.`': 'a bulk delete partly failed',
         '"That region couldn\'t be cut out of the page."': 'cutting the region out of the page image failed',
-        '`${failed} board${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
-        '`${failed} bookmark${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "board")} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "bookmark")} couldn\'t be deleted.`': 'a bulk delete partly failed',
     },
     'lightbox-view.js': {
         '"Couldn\'t save that file."': 'saving the file failed',
@@ -279,6 +282,7 @@ FAULTS = {
         '"Couldn\'t reset those settings."': 'resetting settings failed',
     },
     'shell-reminders.js': {
+        '"Could not load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },

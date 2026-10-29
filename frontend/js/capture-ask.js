@@ -278,8 +278,8 @@ async function loadCaptureDocuments() {
   //: under *any* document, and a document past the server's page would be
   //: invisible with nothing on screen saying so (`archive/agent-remaining/
   //: list-paging.md`). `apiPagedList` is one request at any realistic size.
-  const documents = await apiPagedList("/documents", 200).catch(() => []);
-  renderCaptureDocuments(documents);
+  //: A failed read keeps the list already held (null) rather than emptying the picker.
+  renderCaptureDocuments(await apiPagedList("/documents", 200).catch(() => null));
 }
 
 // Ask for a title and start an empty document. Shared by the capture box and

@@ -684,7 +684,7 @@ async function askKeepAsMap() {
     () => api(`/entries/${board.id}/restore`, { method: "POST" })
   );
   toastAction(
-    `Mind map \u201c${name}\u201d made from ${ids.length} note${ids.length === 1 ? "" : "s"}.`,
+    `Mind map \u201c${name}\u201d made from ${nounCount(ids.length, "note")}.`,
     "Open",
     async () => {
       await openWhiteboardBoard(board.id);

@@ -492,15 +492,15 @@ async function renderDashSubmessage() {
   if (composed) bits.push(["notes", composed]);
   else if (stats) {
     const n = stats.total_entries;
-    bits.push(["notes", n === 0 ? "No notes yet" : `You have ${n} note${n === 1 ? "" : "s"}`]);
+    bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
   const due = (reminders || []).filter(
     (r) => !r.done && new Date(r.due_at) <= new Date()
   ).length;
-  if (due) bits.push(["reminders", `${due} reminder${due === 1 ? "" : "s"} due`]);
+  if (due) bits.push(["reminders", `${nounCount(due, "reminder")} due`]);
   else {
     const open = (reminders || []).filter((r) => !r.done).length;
-    if (open) bits.push(["reminders", `${open} reminder${open === 1 ? "" : "s"} coming up`]);
+    if (open) bits.push(["reminders", `${nounCount(open, "reminder")} coming up`]);
   }
   if (stats && stats.per_day) {
     const streak = dashStreak(stats.per_day);
@@ -622,7 +622,7 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
     id: "meetings",
     icon: "ph:users-three",
     count: n,
-    label: n ? `${n} meeting${n === 1 ? "" : "s"} today` : "No meetings today",
+    label: n ? `${nounCount(n, "meeting")} today` : "No meetings today",
     hint: !n
       ? "Nothing on the calendar"
       : upcoming.when >= now
@@ -2875,7 +2875,7 @@ async function renderStreakWidget(body) {
     //: A streak kept alive by yesterday says what keeps it going.
     const today = perDay.length ? perDay[perDay.length - 1] : 0;
     sub.textContent =
-      `You've captured ${current} day${current === 1 ? "" : "s"} running` +
+      `You've captured ${nounCount(current, "day")} running` +
       (today ? "" : ". Save a note today to keep it") +
       (longest > current ? ` · best in the last fortnight: ${longest}` : "");
   } else {
@@ -2888,7 +2888,7 @@ async function renderStatsWidget(body) {
   const stats = await fetchDashStats();
   const total = document.createElement("p");
   total.className = "dash-big";
-  total.textContent = `${stats.total_entries} note${stats.total_entries === 1 ? "" : "s"}`;
+  total.textContent = nounCount(stats.total_entries, "note");
   body.appendChild(total);
 
   // Last-14-days activity strip (theme colours, height = volume).
@@ -2900,7 +2900,7 @@ async function renderStatsWidget(body) {
     const bar = document.createElement("span");
     bar.style.height = `${Math.max(8, (count / peak) * 34)}px`;
     bar.classList.toggle("empty", count === 0);
-    bar.title = `${count} note${count === 1 ? "" : "s"}`;
+    bar.title = nounCount(count, "note");
     strip.appendChild(bar);
   }
   body.appendChild(strip);
@@ -3073,7 +3073,7 @@ async function renderReviewWidget(body) {
   }
   const line = document.createElement("p");
   line.className = "dash-review-count";
-  line.textContent = `${queue.count} note${queue.count === 1 ? "" : "s"} to check`;
+  line.textContent = `${nounCount(queue.count, "note")} to check`;
   const open = smallButton("ph:checks Review them", "Show them in Notes, filtered to is:review", async () => {
     await switchTab("notes");
     showNotesSection("browse");
@@ -3438,7 +3438,7 @@ async function renderHeatmapWidget(body) {
   //: in one sentence. This is a graphic drawn out of divs, so it announces
   //: as one, and the tab stop Chromium gives it still scrolls with arrows.
   grid.setAttribute("role", "img");
-  grid.setAttribute("aria-label", `Activity over the last year, ${data.total} notes`);
+  grid.setAttribute("aria-label", `Activity over the last year, ${nounCount(data.total, "note")}`);
   //: axe `scrollable-region-focusable` (serious): the grid scrolls sideways
   //: and nothing in it takes focus. An explicit stop, with a ring below
   //: (`.heatmap:focus-visible`), so the arrow keys reach the older weeks.
@@ -3480,7 +3480,7 @@ async function renderHeatmapWidget(body) {
       cell.className = `heat-cell heat-${level}`;
       const day = new Date(start);
       day.setDate(day.getDate() + index);
-      cell.title = `${day.toLocaleDateString()}, ${count} note${count === 1 ? "" : "s"}`;
+      cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
       grid.appendChild(cell);
     });
     // The grid runs oldest → newest, so the interesting end is the right
@@ -3513,7 +3513,12 @@ async function renderHeatmapWidget(body) {
 
   const summary = document.createElement("p");
   summary.className = "muted";
-  summary.textContent = `${data.total} notes in the last year · busiest day ${data.busiest}`;
+  //: The busiest day is a date with its count ("10 March, 4 notes"), not a bare
+  //: number that reads as a number of days (sweep 1028b W15).
+  const top = new Date(`${data.start}T12:00:00`);
+  top.setDate(top.getDate() + data.counts.indexOf(data.busiest));
+  const busiest = data.busiest ? ` · busiest day ${top.toLocaleDateString(undefined, { day: "numeric", month: "long" })} (${nounCount(data.busiest, "note")})` : "";
+  summary.textContent = `${nounCount(data.total, "note")} in the last year${busiest}`;
   //: Brief 89 (statistics row 1): the page is one click from here, the
   //: grid itself and the button below, where it was three (Settings,
   //: General, What you use).
@@ -3575,7 +3580,7 @@ async function renderCategoriesWidget(body) {
   if (!waiting) return;
   const line = document.createElement("p");
   line.className = "muted night-questions";
-  line.textContent = `${waiting} note${waiting === 1 ? "" : "s"} to check where ${waiting === 1 ? "it was" : "they were"} filed.`;
+  line.textContent = `${nounCount(waiting, "note")} to check where ${waiting === 1 ? "it was" : "they were"} filed.`;
   const open = smallButton("ph:check-square Review filings", "The Notes list, filtered to the filings to check", () => showNotesFilter("is:review"));
   const review = document.createElement("div");
   //: The night widget's question line is the same shape: one recipe, no new rule.
@@ -3691,7 +3696,8 @@ function paintFadedNotes(body, items) {
 }
 
 async function renderRandomShuffle(body) {
-  const entries = await dashEntries().catch(() => []);
+  const entries = await loadSurface(body, "your notes", dashEntries);
+  if (!entries) return;
   if (!entries.length) {
     dashEmpty(body, "Save some notes and one will resurface here.", { label: "ph:plus New note", run: "capture" });
     return;
@@ -3794,7 +3800,8 @@ async function renderRandomShuffle(body) {
 // --- weighted tag cloud ------------------------------------------------------
 
 async function renderTagCloudWidget(body) {
-  const tags = await apiJson("/insights/tag-cloud").catch(() => []);
+  const tags = await loadSurface(body, "your tag cloud", () => apiJson("/insights/tag-cloud"));
+  if (!tags) return;
   if (!tags.length) {
     dashEmpty(body, "Tag some notes and your cloud grows here.", { label: "ph:tag Show untagged notes", run: "untagged" });
     return;
@@ -3808,7 +3815,7 @@ async function renderTagCloudWidget(body) {
     const item = chip(tag, "tag", () => filterNotesByTag(tag));
     item.style.fontSize = `${(0.8 + weight * 0.9).toFixed(2)}rem`;
     item.style.opacity = String(0.55 + weight * 0.45);
-    item.title = `${count} note${count === 1 ? "" : "s"} tagged “${tag}”`;
+    item.title = `${nounCount(count, "note")} tagged “${tag}”`;
     cloud.appendChild(item);
   }
   body.appendChild(cloud);
@@ -4262,7 +4269,7 @@ async function renderActivityWidget(body) {
   try {
     items = await dashActivityItems();
   } catch {
-    surfaceFailed(body, "recent activity", () => renderActivityWidget(body));
+    surfaceFailed(body, "your recent activity", () => renderActivityWidget(body));
     return;
   }
   if (!items.length) {
@@ -4383,7 +4390,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
       method: "POST",
       body: JSON.stringify({ actor, since, dry_run: false }),
     });
-    toast(`Put back ${done.undone} note${done.undone === 1 ? "" : "s"}.`);
+    toast(`Put back ${nounCount(done.undone, "note")}.`);
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
@@ -4510,9 +4517,9 @@ function dashRelativeTime(iso) {
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (hours < 24) return `${nounCount(hours, "hour")} ago`;
   const days = Math.round(hours / 24);
-  if (days <= 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  if (days <= 30) return `${nounCount(days, "day")} ago`;
   return when.toLocaleDateString();
 }
 
@@ -4587,9 +4594,9 @@ async function renderTensionsWidget(body) {
   blurb.className = "muted";
   const linked = accepted ? `${accepted} linked as contradicting` : "";
   blurb.textContent = counts.open
-    ? [`${counts.open} disagreement${counts.open === 1 ? "" : "s"} to look at`, linked].filter(Boolean).join(", ") + "."
+    ? [`${nounCount(counts.open, "disagreement")} to look at`, linked].filter(Boolean).join(", ") + "."
     : accepted
-      ? `${accepted} place${accepted === 1 ? "" : "s"} where your notes contradict each other.`
+      ? `${nounCount(accepted, "place")} where your notes contradict each other.`
       : "Nothing here can tell you where you changed your mind, until you look.";
   body.appendChild(blurb);
 
@@ -4724,7 +4731,7 @@ function renderOnThisDayWidget(body) {
     //: one place from the note written on this very date (Brief 85).
     const months = (thisYear - at.getFullYear()) * 12 + month - at.getMonth();
     const years = months / 12;
-    const when = Number.isInteger(years) ? `${years} year${years === 1 ? "" : "s"} ago` : `${months} month${months === 1 ? "" : "s"} ago`;
+    const when = Number.isInteger(years) ? `${nounCount(years, "year")} ago` : `${nounCount(months, "month")} ago`;
     if (seen.has(when)) continue;
     seen.add(when);
     shown.push({ entry, when });

@@ -489,7 +489,8 @@ document.addEventListener("keydown", (e) => {
 //: puts it back at the top, unless something real already has focus.
 function tabFromTop() {
   const b = document.body, a = document.activeElement;
-  if (a && a !== b && !$("lock-overlay").contains(a)) return;
+  //: Focus inside a lock screen that is still open stays (sweep 1028b W9: the splash going away took it off the password field).
+  if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
   b.tabIndex = -1;
   b.focus({ preventScroll: true });
   b.removeAttribute("tabindex");
@@ -1561,9 +1562,9 @@ function syncPhoneMoreRuns() {
   }
   badge.textContent = String(shown);
   badge.title = due
-    ? `${due} reminder${due === 1 ? "" : "s"} due`
+    ? `${nounCount(due, "reminder")} due`
     : `${runs} agent run${runs === 1 ? "" : "s"}`;
-  more.setAttribute("aria-label", due ? `More: ${due} reminder${due === 1 ? "" : "s"} due` : "More");
+  more.setAttribute("aria-label", due ? `More: ${nounCount(due, "reminder")} due` : "More");
 }
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.
