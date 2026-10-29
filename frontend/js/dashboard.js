@@ -2585,6 +2585,8 @@ async function startArt(holder) {
     let glide = null;
     //: The quick cross-fade's picture of the old sky, and when it began.
     let fade = null;
+    //: When the card left the view (`sight` below), 0 while it is in view.
+    let hiddenSince = 0;
     //: The wash's hue and gradient, made once: the accent and the height do not
     //: change for the life of a sketch (a theme change rebuilds it).
     let washHue = null;
@@ -2750,6 +2752,10 @@ async function startArt(holder) {
     //: `frameCount * 0.005` at sixty frames a second advanced `t` by 0.3 a
     //: second, and `millis() * 0.0003` advances it by 0.3 a second full stop.
     p.draw = () => {
+      if (hiddenSince) {
+        p.noLoop();
+        return;
+      }
       //: **Rests when nobody is there**: after the background art's two idle
       //: minutes (bg-art.js stamps every input), and goes on at the next
       //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
@@ -2800,8 +2806,25 @@ async function startArt(holder) {
     };
     const observer = new ResizeObserver(resync);
     observer.observe(holder);
+    //: **Rests while scrolled out of view** (audit 1029 row 38: on a long
+    //: Dashboard this scene was 185 ms of every 3 s at 1x with the card off
+    //: screen). The clock moves on by the time away, as after the idle rest,
+    //: so the drift picks up where it was last drawn.
+    const sight = new IntersectionObserver(([entry]) => {
+      if (reduceMotion) return;
+      if (!entry.isIntersecting) {
+        hiddenSince ||= performance.now();
+        return;
+      }
+      if (!hiddenSince) return;
+      artClock.epoch += performance.now() - hiddenSince;
+      hiddenSince = 0;
+      if (!p.rested) p.loop();
+    });
+    sight.observe(holder);
     p.remove = ((original) => () => {
       observer.disconnect();
+      sight.disconnect();
       original.call(p);
     })(p.remove);
   };
