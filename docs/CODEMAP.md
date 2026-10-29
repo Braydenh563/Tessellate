@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6769, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7013, test files 1491, tests 13115, plan headings 985.
+Counts: frontend functions 6769, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7013, test files 1492, tests 13121, plan headings 985.
 
 ## Frontend functions (6769)
 
@@ -10530,7 +10530,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1588 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
 | held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4940 |
-| help | frontend/css/sketch-pad.css:523 |
+| help | frontend/css/sketch-pad.css:557 |
 | help guide accordion | frontend/css/04-chat-dock-appearance.css:2383 |
 | help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2415 |
 | hovering a node | frontend/css/02-chat-graph.css:1306 |
@@ -10558,7 +10558,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:4993 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:832 |
-| narrow windows | frontend/css/sketch-pad.css:578 |
+| narrow windows | frontend/css/sketch-pad.css:612 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1559 |
 | note history | frontend/css/05-sidebars-themes.css:1742 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2028 |
@@ -10600,7 +10600,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space dialogs | frontend/css/07-whiteboard-misc.css:2607 |
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2424 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1980 |
-| status and foot | frontend/css/sketch-pad.css:429 |
+| status and foot | frontend/css/sketch-pad.css:463 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3502 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
@@ -10747,7 +10747,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10412 |
 | the writing room | frontend/css/04-chat-dock-appearance.css:3415 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1773 |
-| tools and page | frontend/css/sketch-pad.css:322 |
+| tools and page | frontend/css/sketch-pad.css:356 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4372 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1593 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:10051 |
@@ -10815,7 +10815,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/settings-controls-lazy.css | 121 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
-| frontend/css/sketch-pad.css | 701 |
+| frontend/css/sketch-pad.css | 735 |
 | frontend/css/tidy-lazy.css | 333 |
 | frontend/css/timeline-calendar-lazy.css | 299 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
@@ -20189,7 +20189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13115)
+## Tests (13121)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21365,6 +21365,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_skeleton_memory_k1.py | 4 |
 | tests/test_sketch_media.py | 15 |
 | tests/test_sketch_pad.py | 18 |
+| tests/test_sketch_recent_remove.py | 6 |
 | tests/test_skill_composer.py | 11 |
 | tests/test_skill_evals.py | 3 |
 | tests/test_skill_fixtures.py | 11 |
@@ -22393,7 +22394,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:298 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:300 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

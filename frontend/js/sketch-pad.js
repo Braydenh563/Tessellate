@@ -283,7 +283,7 @@
     const keys = TOOLS.map((t) => h("li", {}, h("kbd", {}, t.key), ` ${t.label}`));
     const areas = [
       ["Tools", "pick one on the left or press its letter. A shape runs corner to corner; Alt draws it from the centre, Shift keeps it square, round or at 45 degrees."],
-      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them."],
+      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them. A recent colour's x, or Delete on it, takes it off."],
       ["Shape style", "outline, outline and fill, or fill only, for rectangles, ellipses and polygons."],
       ["Size", "[ and ] change it; with the Text tool it is the text size."],
       ["More", "sets the paper colour or adds a picture under the ink; Clear keeps both."],
@@ -323,7 +323,7 @@
       iconButton("sliders-horizontal", "Colour, size and style", () => toggleStyle(), { extra: "sp-style-toggle", data: { sp: "style-toggle" } }));
     const swatches = h("div", { class: "sp-swatches", role: "group", "aria-label": "Palette", "data-sp": "swatches" },
       SWATCHES.map(([hex, name]) => swatch(hex, name)));
-    const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent" });
+    const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent", onkeydown: forgetRecentKey });
     const custom = h("label", { class: "sp-custom", title: "Any colour" },
       h("span", { class: "sp-visually-hidden" }, "Any colour"),
       h("input", { type: "color", "data-sp": "custom", value: S.ink, oninput: (e) => setColour(e.target.value), onchange: (e) => rememberColour(e.target.value) }),
@@ -510,7 +510,7 @@
   //: toolbar pattern): the arrows walk the group, Home and End go to its
   //: ends. Tab crossed 45 stops before; the slider keeps its own arrows.
   function roveItems(group) {
-    return [...group.querySelectorAll("button, input[type=color]")].filter((el) => el.closest("[data-rove]") === group
+    return [...group.querySelectorAll("button:not(.sp-unpick), input[type=color]")].filter((el) => el.closest("[data-rove]") === group
       && !el.closest("[role=menu], .action-menu") && el.getClientRects().length);
   }
 
@@ -636,8 +636,31 @@
     paintRecent();
   }
 
+  //: A colour added by eye can be taken off again (the owner, 2026-10-29):
+  //: the x sits beside the swatch, never inside it (a button in a button),
+  //: and stays out of the arrow rove; Delete on the swatch is the key way.
+  function forgetColour(hex) {
+    S.recent = S.recent.filter((c) => c !== hex);
+    S.host.prefs.set("recent", S.recent);
+    paintRecent();
+  }
+
+  function forgetRecentKey(e) {
+    const hex = e.target.closest?.(".sp-swatch")?.dataset.colour;
+    if (!hex || (e.key !== "Delete" && e.key !== "Backspace")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const i = S.recent.indexOf(hex);
+    forgetColour(hex);
+    const next = S.el.recent.querySelectorAll(".sp-swatch")[Math.min(i, S.recent.length - 1)];
+    (next || S.root.querySelector('[data-sp="custom"]'))?.focus();
+  }
+
   function paintRecent() {
-    S.el.recent.replaceChildren(...S.recent.map((hex) => swatch(hex, `Recent ${hex}`)));
+    S.el.recent.replaceChildren(...S.recent.map((hex) => h("span", { class: "sp-recent-item" },
+      swatch(hex, `Recent ${hex}, Delete removes it`),
+      h("button", { type: "button", class: "sp-unpick", tabindex: "-1", title: "Remove this colour", "aria-label": `Remove ${hex}`,
+        onclick: (e) => { e.stopPropagation(); forgetColour(hex); } }, icon("x")))));
     S.el.recent.classList.toggle("sp-hidden", S.recent.length === 0);
     paintWells();
     refreshRove();

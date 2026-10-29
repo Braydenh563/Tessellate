@@ -196,9 +196,43 @@
 }
 /* The dialog touch floor (07-whiteboard-misc.css, under 820) would stretch a
    disc into an oval; its target is the spacing round it. */
-#sketch-overlay .sp-root button:is(.sp-swatch, .sp-well) {
+#sketch-overlay .sp-root button:is(.sp-swatch, .sp-well, .sp-unpick) {
   min-width: 0;
   min-height: 0;
+}
+/* A recent colour's remove button, beside the swatch (a sibling, not nested):
+   shown on hover, focus and a finger, where there is no hover. */
+.sp-recent-item {
+  position: relative;
+  display: inline-grid;
+}
+.sp-unpick {
+  position: absolute;
+  top: calc(-1 * var(--space-2));
+  right: calc(-1 * var(--space-2));
+  display: grid;
+  place-items: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  padding: 0;
+  border: 1px solid var(--control-edge);
+  border-radius: var(--radius-pill);
+  background: var(--modal-bg-opaque);
+  color: var(--muted);
+  cursor: pointer;
+  visibility: hidden;
+}
+.sp-unpick svg {
+  width: 70%;
+  height: 70%;
+}
+.sp-recent-item:is(:hover, :focus-within) .sp-unpick {
+  visibility: visible;
+}
+@media (pointer: coarse) {
+  .sp-unpick {
+    visibility: visible;
+  }
 }
 .sp-swatch.active {
   box-shadow: 0 0 0 2px var(--modal-bg-opaque), 0 0 0 4px var(--accent);

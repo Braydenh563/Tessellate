@@ -2929,7 +2929,7 @@ TOPIC_META["patterns"] = {"title": "Patterns", "path": "The dashboard's line und
 MORE_TOPICS.append({
     "id": "quick-sketch",
     "keywords": (
-        "quick sketch", "sketch pad", "draw a picture", "paint", "drawing tools",
+        "quick sketch", "sketch pad", "draw a picture", "paint", "drawing tools" "remove a recent colour", "delete a custom colour",
         "brush", "pencil", "eraser", "highlighter", "bucket fill", "paint bucket",
         "eyedropper", "colour picker", "draw a rectangle", "draw a circle",
         "polygon", "annotate a picture", "draw on a picture", "download png",
@@ -2943,7 +2943,8 @@ MORE_TOPICS.append({
         "and snaps a line to 45 degrees, Alt draws it from the centre, and "
         "Escape cancels it; with the Text tool Escape places the text. The "
         "bar holds the ink and fill colours (X swaps them), the palette and "
-        "a custom colour, the size ([ and ] change it; for Text it is the "
+        "a custom colour (the last six you picked show as recent colours; "
+        "the x on one, or Delete on it, takes it off), the size ([ and ] change it; for Text it is the "
         "text size), outline, fill or both for shapes, Undo, Redo (Ctrl+Shift+Z "
         "or Ctrl+Y), Clear and a More menu (a picture under the ink, the paper "
         "colour). On a narrow window the palette, size and style are under "
