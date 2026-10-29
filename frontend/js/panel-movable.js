@@ -28,6 +28,8 @@
 //: panel is a sheet and stays one. A focusable grip (the last control in the
 //: panel) is the keyboard route (WCAG 2.5.7): arrows move 16px, Shift and
 //: arrows resize 16px, Home resets.
+//: Docking, the reset button and Settings' "Panels open where you left them"
+//: (INBOX 1434): DESIGN.md `panelMovable`.
 const PANEL_KEY = "tessellate.panels";
 const PANEL_STEP = 16;
 const PANEL_KEEP = 64;
@@ -36,6 +38,8 @@ const PANEL_MIN_H = 160;
 const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
 const PANEL_SKIP = "button, a, input, select, textarea, summary, [contenteditable], .panel-grip";
 const PANEL_STATE = new WeakMap();
+const PANEL_EDGE = 24;
+const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
 
 //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
 function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH) {
@@ -53,6 +57,58 @@ function panelClampSize(rect, w, h, vw, vh) {
   const maxH = Math.max(minH, vh - Math.max(0, rect.top));
   return { w: Math.round(Math.min(Math.max(w, minW), maxW)), h: Math.round(Math.min(Math.max(h, minH), maxH)) };
 }
+//: Which zone the pointer is in, "" for none; edges within PANEL_EDGE, corners
+//: when two meet.
+function panelSnapZone(x, y, vw, vh) {
+  const l = x <= PANEL_EDGE;
+  const r = x >= vw - PANEL_EDGE;
+  const t = y <= PANEL_EDGE;
+  const b = y >= vh - PANEL_EDGE;
+  //: The top band is read by thirds so one gesture always gives one height:
+  //: the middle third maximises, the outer thirds are the top quarters.
+  if (t) return x < vw / 3 ? "tl" : x > (2 * vw) / 3 ? "tr" : "max";
+  if (b) return l ? "bl" : r ? "br" : "bottom";
+  return l ? "left" : r ? "right" : "";
+}
+//: `safe` ({left, top, right, bottom}) keeps zones off the app's own bars.
+function panelZoneRect(zone, vw, vh, inset, safe) {
+  if (!PANEL_ZONES.includes(zone)) return null;
+  const sx = safe ? safe.left : 0;
+  const sy = safe ? safe.top : 0;
+  const sr = safe ? safe.right : vw;
+  const sb = safe ? safe.bottom : vh;
+  const halfW = Math.round((sr - sx - 3 * inset) / 2);
+  const halfH = Math.round((sb - sy - 3 * inset) / 2);
+  const w = zone === "left" || zone === "right" || zone.length === 2 ? halfW : sr - sx - 2 * inset;
+  const h = zone === "bottom" || zone.length === 2 ? halfH : sb - sy - 2 * inset;
+  const east = zone === "right" || zone === "tr" || zone === "br";
+  const south = zone === "bottom" || zone === "bl" || zone === "br";
+  return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
+}
+//: The window minus the top bar, the status bar and a side tab rail, read
+//: when a drag starts or a dock is fitted, never per move.
+function panelSafe(vw, vh) {
+  const safe = { left: 0, top: 0, right: vw, bottom: vh };
+  const seen = (id) => {
+    const el = document.getElementById(id);
+    return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
+  };
+  const bar = seen("top-bar");
+  const foot = seen("status-bar");
+  const tabs = seen("tab-bar");
+  if (bar) safe.top = Math.max(0, Math.round(bar.bottom));
+  if (foot) safe.bottom = Math.min(vh, Math.round(foot.top));
+  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2) safe.left = Math.round(tabs.right);
+  return safe;
+}
+//: `data-panel-zones="left right max"` on a panel limits its zones.
+function panelZoneFor(panel, zone) {
+  const only = panel.dataset.panelZones;
+  return !only || only.split(/\s+/).includes(zone) ? zone : "";
+}
+function panelRestoreOn() {
+  return prefs.get("panel-restore", "on") !== "off";
+}
 function panelKeyDelta(key, shift) {
   const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];
   if (!d) return null;
@@ -69,16 +125,20 @@ function panelStoreParse(raw) {
 }
 function panelStoreRead(id) {
   const e = panelStoreParse(prefs.get(PANEL_KEY, ""))[id];
-  if (!Array.isArray(e) || e.length !== 4) return null;
-  const [x, y, w, h] = e;
+  if (!Array.isArray(e) || (e.length !== 4 && e.length !== 5)) return null;
+  const [x, y, w, h, dock] = e;
   if (![x, y].every(Number.isFinite) || (w !== null && !Number.isFinite(w)) || (h !== null && !Number.isFinite(h))) return null;
-  return { x, y, w, h };
+  return PANEL_ZONES.includes(dock) ? { x, y, w, h, dock } : { x, y, w, h };
 }
 function panelStoreWrite(id, st) {
   //: prefs swallows a private window or blocked storage: the panel still works.
   const all = panelStoreParse(prefs.get(PANEL_KEY, ""));
-  if (st) all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
-  else delete all[id];
+  if (st) {
+    all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
+    if (st.dock) all[id].push(st.dock);
+  } else {
+    delete all[id];
+  }
   prefs.setJSON(PANEL_KEY, all);
 }
 
@@ -103,7 +163,7 @@ function panelId(panel) {
 function panelSt(panel) {
   let st = PANEL_STATE.get(panel);
   if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, id: panelId(panel), grip: null, skip: false };
+    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, id: panelId(panel), grip: null, reset: null, skip: false };
     PANEL_STATE.set(panel, st);
   }
   return st;
@@ -156,6 +216,91 @@ function panelClamp(panel, st) {
     place();
   }
 }
+//: The one preview, reused: top layer (a modal dialog's own layer sits under
+//: it), click-through. Its padding is `--space-3`, so the inset is read from it
+//: (a density-aware length) rather than parsed out of a calc().
+let panelPreview = null;
+function panelPreviewEl() {
+  if (!panelPreview || !panelPreview.isConnected) {
+    panelPreview = document.createElement("div");
+    panelPreview.className = "panel-snap-preview";
+    panelPreview.setAttribute("popover", "manual");
+    panelPreview.setAttribute("aria-hidden", "true");
+    document.body.appendChild(panelPreview);
+  }
+  return panelPreview;
+}
+function panelInset() {
+  return parseFloat(getComputedStyle(panelPreviewEl()).paddingLeft) || 12;
+}
+function panelShowZone(r) {
+  const el = panelPreviewEl();
+  try {
+    if (!r) {
+      if (el.matches(":popover-open")) el.hidePopover();
+      return;
+    }
+    el.style.left = `${r.left}px`;
+    el.style.top = `${r.top}px`;
+    el.style.width = `${r.width}px`;
+    el.style.height = `${r.height}px`;
+    if (!el.matches(":popover-open")) el.showPopover();
+  } catch (_) {
+    /* no popover support: the drop still docks, only the preview is missing */
+  }
+}
+//: Fill the dock zone: size first, then one rect read to learn where the
+//: centred layout put it, and translate the difference.
+function panelFit(panel, st) {
+  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight));
+  if (!z) {
+    st.dock = "";
+    return;
+  }
+  st.w = z.width;
+  st.h = z.height;
+  panelApply(panel, st);
+  const r = panel.getBoundingClientRect();
+  st.x += z.left - r.left;
+  st.y += z.top - r.top;
+  panelApply(panel, st);
+}
+function panelDock(panel, st, zone) {
+  if (!st.dock) st.pre = { w: st.w, h: st.h };
+  st.dock = zone;
+  panelFit(panel, st);
+}
+function panelUndock(st) {
+  st.dock = "";
+  st.w = st.pre ? st.pre.w : null;
+  st.h = st.pre ? st.pre.h : null;
+  st.pre = null;
+}
+//: The reset button shows only while there is something to put back.
+function panelSync(panel) {
+  const st = panelSt(panel);
+  if (st.reset) st.reset.hidden = !(st.x || st.y || st.w !== null || st.h !== null || st.dock);
+}
+//: Closing a panel with "open where you left them" off puts it back in the
+//: middle (the saved place stays). One observer for all panels; it wakes only
+//: when a panel appears or disappears.
+let panelWatch = null;
+function panelWatchOpen(panel) {
+  if (typeof IntersectionObserver === "undefined") return;
+  panelWatch ||= new IntersectionObserver((list) => {
+    for (const en of list) {
+      if (en.isIntersecting || panelRestoreOn()) continue;
+      const st = panelSt(en.target);
+      st.x = st.y = 0;
+      st.w = st.h = null;
+      st.dock = "";
+      st.pre = null;
+      panelApply(en.target, st);
+      panelSync(en.target);
+    }
+  });
+  panelWatch.observe(panel);
+}
 function panelFull(panel) {
   const r = panel.getBoundingClientRect();
   return r.width >= window.innerWidth - 2 && r.height >= window.innerHeight - 2;
@@ -164,12 +309,16 @@ function panelReset(panel) {
   const st = panelSt(panel);
   st.x = st.y = 0;
   st.w = st.h = null;
+  st.dock = "";
+  st.pre = null;
   panelApply(panel, st);
   if (st.id) panelStoreWrite(st.id, null);
+  panelSync(panel);
 }
 function panelSave(panel) {
   const st = panelSt(panel);
   if (st.id) panelStoreWrite(st.id, st);
+  panelSync(panel);
 }
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
 function panelAdopt(panel) {
@@ -179,13 +328,33 @@ function panelAdopt(panel) {
   if (!panel.classList.contains("panel-movable-on")) {
     if (panelFull(panel)) { st.skip = true; return; }
     panel.classList.add("panel-movable-on");
-    const saved = st.id ? panelStoreRead(st.id) : null;
+    panelWatchOpen(panel);
+    const saved = st.id && panelRestoreOn() ? panelStoreRead(st.id) : null;
     if (saved) {
       Object.assign(st, saved);
       panelApply(panel, st);
-      panelClamp(panel, st);
+      if (st.dock) panelFit(panel, st);
+      else panelClamp(panel, st);
     }
   }
+  if (!st.reset || !st.reset.isConnected) {
+    const head = panelHeadOf(panel);
+    const actions = head && head.querySelector(":scope > .dialog-head-actions");
+    if (head) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "icon-only ghost small dialog-head-btn panel-reset";
+      btn.setAttribute("aria-label", "Put back in the middle");
+      btn.title = "Put back in the middle";
+      const icon = document.createElement("i");
+      icon.className = "ph ph-arrow-counter-clockwise";
+      icon.setAttribute("aria-hidden", "true");
+      btn.appendChild(icon);
+      (actions || head).insertBefore(btn, actions ? actions.firstChild : null);
+      st.reset = btn;
+    }
+  }
+  panelSync(panel);
   if (!st.grip || !st.grip.isConnected || st.grip.parentElement !== panel) {
     const grip = document.createElement("button");
     grip.type = "button";
@@ -203,28 +372,62 @@ function panelHeadDown(e) {
   panelAdopt(panel);
   const st = panelSt(panel);
   if (st.skip) return;
-  const rect = panel.getBoundingClientRect();
+  let rect = panel.getBoundingClientRect();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const hh = head.offsetHeight;
-  const x0 = e.clientX;
-  const y0 = e.clientY;
-  const ox = st.x;
-  const oy = st.y;
+  const inset = panelInset();
+  const safe = panelSafe(vw, vh);
+  let moved = 0;
+  let x0 = e.clientX;
+  let y0 = e.clientY;
+  let ox = st.x;
+  let oy = st.y;
+  let zone = "";
   panel.classList.add("panel-moving");
   head.setPointerCapture(e.pointerId);
   const move = (ev) => {
+    if (st.dock) {
+      //: Off the edge: back to the size it had, under the pointer (the one
+      //: layout read of a drag, and only for a docked panel).
+      if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
+      const fx = (x0 - rect.left) / rect.width;
+      panelUndock(st);
+      panelApply(panel, st);
+      const r = panel.getBoundingClientRect();
+      st.x += ev.clientX - fx * r.width - r.left;
+      st.y += ev.clientY - (y0 - rect.top) - r.top;
+      rect = { left: ev.clientX - fx * r.width, top: ev.clientY - (y0 - rect.top), width: r.width, height: r.height };
+      ox = st.x;
+      oy = st.y;
+      x0 = ev.clientX;
+      y0 = ev.clientY;
+    }
     const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh);
     st.x = m.x;
     st.y = m.y;
     panel.style.translate = `${m.x}px ${m.y}px`;
+    moved = Math.max(moved, Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY));
+    const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
+    if (z !== zone) {
+      zone = z;
+      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, safe) : null);
+    }
   };
-  const done = () => {
+  const done = (ev) => {
     head.removeEventListener("pointermove", move);
     head.removeEventListener("pointerup", done);
     head.removeEventListener("pointercancel", done);
     panel.classList.remove("panel-moving");
+    if (zone) panelShowZone(null);
+    if (zone && ev.type === "pointerup") panelDock(panel, st, zone);
     panelSave(panel);
+    if (moved > 4) {
+      //: A drag is not a click on the head: swallow the one that follows.
+      const eat = (c) => { c.stopPropagation(); c.preventDefault(); };
+      head.addEventListener("click", eat, { capture: true, once: true });
+      setTimeout(() => head.removeEventListener("click", eat, true), 80);
+    }
   };
   head.addEventListener("pointermove", move);
   head.addEventListener("pointerup", done);
@@ -237,6 +440,8 @@ function panelGripDown(e) {
   if (!panel || e.button !== 0 || !panelMovableOn()) return;
   e.preventDefault();
   const st = panelSt(panel);
+  st.dock = "";
+  st.pre = null;
   const rect = panel.getBoundingClientRect();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -295,6 +500,8 @@ function panelGripKey(e) {
   if (!d) return;
   e.preventDefault();
   e.stopPropagation();
+  st.dock = "";
+  st.pre = null;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const before = panel.getBoundingClientRect();
@@ -327,7 +534,8 @@ function panelWindowResized() {
         st.w = st.h = null;
         panelApply(panel, st);
       } else if (panel.getClientRects().length) {
-        panelClamp(panel, st);
+        if (st.dock) panelFit(panel, st);
+        else panelClamp(panel, st);
       }
     });
   }, 120);
@@ -342,6 +550,11 @@ if (typeof document !== "undefined" && document.addEventListener) {
     if (!(e.target instanceof Element)) return;
     if (e.target.closest(".panel-grip")) panelGripDown(e);
     else if (e.target.closest(".dialog-head")) panelHeadDown(e);
+  }, true);
+  document.addEventListener("click", (e) => {
+    const btn = e.target instanceof Element && e.target.closest(".panel-reset");
+    const panel = btn && panelOf(btn);
+    if (panel) panelReset(panel);
   }, true);
   document.addEventListener("dblclick", (e) => {
     if (!(e.target instanceof Element) || e.target.closest(PANEL_SKIP)) return;

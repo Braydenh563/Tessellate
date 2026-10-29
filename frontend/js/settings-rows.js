@@ -94,6 +94,7 @@ const LOOK_ROWS = [
   { key: "motion", id: "reduce-motion-toggle", on: "reduced", off: "auto" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },
   { key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" },
+  { key: "panel-restore", id: "panel-restore-toggle", on: "on", off: "off", base: "on" },
   { key: "progress-motion", id: "progress-motion" },
   { key: "show-thinking-words", id: "pref-show-thinking-words", on: "on", off: "off" },
   { key: "perf", id: "perf-mode" },
@@ -522,12 +523,12 @@ function wireSettingsFile() {
 
 // --- Reveal replies ---------------------------------------------------------------
 
-//: Settings, Appearance, Reveal replies (INBOX 1300 C28): whether a reply no
-//: model wrote rises into place (`replyReveal`, reply-kit.js, reads it). Kept
-//: on this device, like Interface animations beside it.
-(() => {
-  const box = $("reply-motion-toggle");
-  if (!box) return;
-  box.checked = prefs.get("reply-motion", "on") !== "off";
-  box.addEventListener("change", () => prefs.set("reply-motion", box.checked ? "on" : "off"));
-})();
+//: Settings, Appearance, Reveal replies (INBOX 1300 C28: `replyReveal`,
+//: reply-kit.js) and Panels open where you left them (INBOX 1434:
+//: panel-movable.js): kept on this device, like Interface animations.
+for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-restore"]]) {
+  const box = $(id);
+  if (!box) continue;
+  box.checked = prefs.get(key, "on") !== "off";
+  box.addEventListener("change", () => prefs.set(key, box.checked ? "on" : "off"));
+}
