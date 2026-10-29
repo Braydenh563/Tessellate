@@ -35,6 +35,7 @@ import string
 from dataclasses import dataclass, field
 
 from tessellate.ai import composer_lines as lines
+from tessellate.ai import recognise
 
 #: Voice names the rest of the app uses (the `composer_voice` preference and
 #: the composer's two registers) mapped onto the four voices written here.
@@ -220,8 +221,18 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
     pool = tuple(c for c in lines.FRAMES[ability] if have <= _fields(c.text) and _fields(c.text) <= facts.keys())
     if not pool:
         raise KeyError(f"no frame of {ability!r} holds {sorted(have)}")
-    chosen = pick(pool, f"frame:{ability}", mood, lambda t: t.format(**facts))
-    return (chosen or pool[0]).text.format(**facts)
+    chosen = pick(pool, f"frame:{ability}", mood, lambda t: _fill(t, facts))
+    return _fill((chosen or pool[0]).text, facts)
+
+
+def _fill(text: str, facts: dict) -> str:
+    """`text` with `facts` in it. A day word a span opens with ("Tomorrow,
+    Friday 30 October") is capital only where the frame starts with it
+    (audit 1029 C10: "dated for Tomorrow")."""
+    span = facts.get("span")
+    if isinstance(span, str) and not text.startswith("{span"):
+        facts = {**facts, "span": recognise.mid_sentence(span)}
+    return text.format(**facts)
 
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
@@ -287,10 +298,10 @@ def say(ability: str, mood: Mood, **facts: object) -> str:
 
 
 def span_phrase(span: str) -> str:
-    """A time span as an adverbial phrase: "the last 7 days" takes "in",
-    "this week", "yesterday" and "in october" stand as they are."""
-    span = span.strip()
-    return f"in {span}" if span.lower().startswith(("the ", "a ", "an ")) else span
+    """A time span as an adverbial phrase, carrying its preposition: "the last
+    7 days" takes "in", "20 October" takes "on", "this week", "yesterday" and
+    "in october" stand as they are (`recognise.adverbial`)."""
+    return recognise.adverbial(span)
 
 
 def sentence_case(text: str) -> str:

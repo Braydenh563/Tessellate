@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -3005,7 +3005,7 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
     for (content,) in rows:
         title = composer._title(str(content or ""))[0].strip()
         if title and title not in titles:
-            titles.append(title[:60])
+            titles.append(realise.cut_title(title, 60))
     return titles[:count]
 
 
@@ -3554,10 +3554,10 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     for kind, nid in ids[:3]:
         if kind == "document":
             doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
-            title = str(doc[0] or "").strip()[:60] if doc else ""
+            title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
         else:
             row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
+            title = realise.cut_title(composer._title(str(row[0] or ""))[0].strip(), 60) if row else ""
         if title:
             titles.append(title)
     return titles

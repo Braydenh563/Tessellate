@@ -25,7 +25,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import notebook_stats
+from tessellate.ai import notebook_stats, realise
 from tessellate.ai import composer_plan
 from tessellate.ai import when as when_words
 
@@ -151,7 +151,7 @@ def _day_words(day: date, today: date) -> str:
 def _title_of(content: str) -> str:
     from tessellate.ai import composer
 
-    return (composer._title(content or "")[0] or "Untitled").strip()[:80]
+    return realise.cut_title((composer._title(content or "")[0] or "Untitled").strip(), 80)
 
 
 def _bounds(start: date, end: date) -> tuple[datetime, datetime]:
@@ -223,7 +223,7 @@ def _document_events(session: Session, lo: datetime, hi: datetime, inside) -> li
         )
     ).all()
     for doc in documents:
-        title = (doc.title or "Untitled").strip()[:80]
+        title = realise.cut_title((doc.title or "Untitled").strip(), 80)
         said = f"**{title}** (now in the bin)" if doc.deleted_at is not None else _link("document", doc.id, title)
         _made_edited(out, "document", said, inside(doc.created_at), inside(doc.updated_at))
         binned = inside(doc.deleted_at)
@@ -246,7 +246,7 @@ def _reminder_events(session: Session, lo: datetime, hi: datetime, inside) -> li
     #: facts: a reminder made from a private note says none of its words.
     private = private_note_ids(session, [r.entry_id for r in reminders])
     for reminder in reminders:
-        text = PRIVATE_REMINDER if reminder.entry_id in private else (reminder.text or "").strip()[:80]
+        text = PRIVATE_REMINDER if reminder.entry_id in private else realise.cut_title((reminder.text or "").strip(), 80)
         done, made = inside(reminder.done_at), inside(reminder.created_at)
         if reminder.done and done:
             out.append((done, "done", "reminder", text))
@@ -423,7 +423,7 @@ _DATE_STUB = re.compile(r"(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|o
 def _reminder_words(text: str) -> str:
     """A reminder's text as the digest says it: no space before a comma and no
     dangling lead-in to a date that is said beside it."""
-    words = re.sub(r"\s+([,.;:!?])", r"\1", (text or "").strip()[:80])
+    words = re.sub(r"\s+([,.;:!?])", r"\1", realise.cut_title(text or "", 80))
     return _DATE_STUB.sub("", words).rstrip(" ,;:") or words
 
 

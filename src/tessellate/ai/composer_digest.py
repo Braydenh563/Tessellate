@@ -77,7 +77,7 @@ _BASE = {
     "remind": "Remind you to {action}?",
     "checklist": "Save it as a checklist note?",
     "pick_note": "Note the {side} as your pick?",
-    "start_list": "Start a list of {noun}s to watch next?",
+    "start_list": "Start a list of {noun}s to {verb} next?",
     "gather": "Gather them into one note?",
     "go_again": "Remind you to go to {place} again?",
     "try_one": "Remind you to try {item}?",
@@ -1862,6 +1862,17 @@ def _on_topic(action: str, asked: str) -> bool:
     return bool(words & {composer._stem(w) for w in re.findall(r"[a-z]{4,}", asked.lower())})
 
 
+def _answered(out: _Out, facts: list[Fact]) -> list[Fact]:
+    """The facts from the notes the answer cites. An offer is a next step on
+    what was just said, so a to-do from a note that is not in the answer
+    ("Remind you to buy a capo?" under an answer about a sister, audit 1029
+    C4) is never a candidate. With no rows yet, every fact stands."""
+    cited = {r["note_id"] for r in out.rows}
+    if not cited:
+        return facts
+    return [f for f in facts if f.view.note.get("source_id", f.view.id) in cited]
+
+
 def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     """One thing to do next, from the notes' own to-dos: the one with a day
     first ("ask the tutor on Thursday"), then something still to book. With
@@ -2669,14 +2680,15 @@ def _single_heading(out: _Out, lead: Fact, rest: list[Fact], today: date) -> lis
     return rest
 
 
-def _single_close(out: _Out, kind: str, rest: list[Fact], members) -> None:  # noqa: ANN001
+def _single_close(out: _Out, kind: str, rest: list[Fact], members, question: str = "") -> None:  # noqa: ANN001
     labels = {f.label for f in rest}
     score = re.search(r"You gave .+? (\d+(?:\.\d+)?) out of", out.lines[0]) if out.lines else None
     if kind == "opinion" and score and {"Loved", "Didn't"} <= labels:
         #: The verdict the two lines add up to (INBOX 870).
         out.closing.append(_vary("mixed").format(score=score.group(1)))
     if len(members) == 1 and kind in ("fact", "opinion"):
-        noun = "film review" if kind == "opinion" else "note"
+        word = _reviewed_word(question, members) if kind == "opinion" else ""
+        noun = f"{word} review" if word else "note"
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
 
 
@@ -2709,7 +2721,7 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
         _say_fact(out, lead, today, question)
         rest = [f for f in rest if f.view.id == lead.view.id]
     _lines(out, rest, LINES.get(kind, 2))
-    _single_close(out, kind, rest, members)
+    _single_close(out, kind, rest, members, question)
 
 
 _NAME_ASKS = ("tell me about ", "what do i know about ", "what about ", "anything on ", "anything about ")
@@ -3017,7 +3029,7 @@ def _finish(out: _Out, kind: str, asked: str, members: list, facts: list[Fact], 
         _volunteer(out, asked, members, notes, today, insight, learned)
     #: A fact answer ("what is the Krebs cycle") offers a to-do only when it is
     #: about it; an overview of notes that hold an open task still offers it.
-    out.offer = out.offer or _offer(facts, asked if kind == "fact" else None) or _kind_offer(kind, asked, members, facts, today, out)
+    out.offer = out.offer or _offer(_answered(out, facts), asked if kind == "fact" else None) or _kind_offer(kind, asked, members, facts, today, out)
     return _result(out, kind, asked)
 
 
@@ -3278,7 +3290,7 @@ def _this(out: _Out, views: list, names: set[str], today: date, asked: str) -> d
         _this_category(out, views, facts, today)
     if not out.lines:
         return None
-    out.offer = _offer(facts)
+    out.offer = _offer(_answered(out, facts))
     return _result(out, "overview", asked)
 
 
@@ -3329,10 +3341,27 @@ def _likes_offer(text: str) -> dict | None:
     return {"kind": "reminder", "label": PHRASES["go_again"].format(place=where), "text": f"Go to {where}"}
 
 
-def _opinion_offer(question: str, members, text: str) -> dict:  # noqa: ANN001
-    noun = _REVIEWED.search(question + " " + " ".join(str(t) for v in members for t in (v.note.get("tags") or [])) + " " + text)
-    noun_word = {"movie": "film"}.get(noun.group(1).lower(), noun.group(1).lower()) if noun else "film"
-    return _note_offer(PHRASES["start_list"].format(noun=noun_word), f"{noun_word.capitalize()}s to watch next\n\n- [ ] ")
+#: What to do with each kind of thing reviewed: a book is read, not watched.
+_REVIEW_VERB = {"book": "read", "album": "listen to", "game": "play"}
+
+
+def _reviewed_word(question: str, members, text: str = "") -> str:  # noqa: ANN001
+    """What the opinion is about ("film", "book"), from the question, the
+    tags and the notes' words; "" when none names it. A review was called a
+    "film review" whatever it was (audit 1029 C5: a book), so the word is
+    never assumed."""
+    tags = " ".join(str(t) for v in members for t in (v.note.get("tags") or []))
+    own = " ".join(s.text for v in members for s in v.sentences)
+    found = _REVIEWED.search(f"{question} {tags} {text or own}")
+    return {"movie": "film"}.get(found.group(1).lower(), found.group(1).lower()) if found else ""
+
+
+def _opinion_offer(question: str, members, text: str) -> dict | None:  # noqa: ANN001
+    noun_word = _reviewed_word(question, members, text)
+    if not noun_word:
+        return None
+    verb = _REVIEW_VERB.get(noun_word, "watch")
+    return _note_offer(PHRASES["start_list"].format(noun=noun_word, verb=verb), f"{noun_word.capitalize()}s to {verb} next\n\n- [ ] ")
 
 
 def _count_offer(question: str, text: str) -> dict | None:

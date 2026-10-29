@@ -25,6 +25,8 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 
+from tessellate.ai import realise
+
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
 _CHECK = re.compile(r"^\s*[-*+]\s+\[([ xX])\]\s+(.+)$")
@@ -160,10 +162,17 @@ def sections(content: str) -> list[Section]:
 
 
 def title_of(content: str) -> str:
+    """The name a note is listed by: its heading, else its first sentence,
+    cut at a word with an ellipsis (`realise.cut_title`, audit 1029 C9) and
+    never through one."""
     for line in (content or "").splitlines():
         if line.strip():
             found = _HEADING.match(line)
-            return clean(found.group(2)) if found else clean(line)[:80]
+            if found:
+                return realise.cut_title(clean(found.group(2)), 80)
+            text = clean(line)
+            first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+            return realise.cut_title(first.rstrip(".") if len(first.split()) >= 3 else text, 80)
     return ""
 
 

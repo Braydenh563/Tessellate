@@ -2075,6 +2075,63 @@ def looks_dated(text: str) -> bool:
     return bool(_DATED.search(text or ""))
 
 
+#: A time phrase that already carries its preposition, or needs none
+#: ("since 3 October", "last week", "today", "3 days ago").
+_ADVERB_LEAD = re.compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)
+_ADVERB_BARE = re.compile(
+    r"^(?:today|tonight|yesterday|tomorrow|this|last|next|previous|coming|recently|lately|"
+    r"the (?:day|week|weekend|rest|next|last|past|previous|first|end)\b)|\bago\b", re.I)
+#: "the last 7 days", "past week": a rolling window is "in" it; "last week" and
+#: "last month" are calendar spans and read without.
+_ROLLING_SAID = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
+
+
+def _rolling_said(text: str) -> str:
+    """"in the last 7 days" for a rolling window, "" for anything else."""
+    rolling = _ROLLING_SAID.match(text)
+    if rolling and (rolling.group("n") or rolling.group("the") or rolling.group("which").lower() == "past"):
+        return f"in {text if rolling.group('the') else 'the ' + text}"
+    return ""
+
+
+def _dated_said(text: str, low: str) -> str:
+    """The preposition a named day, month or year takes, "" when none."""
+    month = re.search(r"\b" + _MONTH_RE + r"\b", low)
+    if re.fullmatch(_WEEKDAY_RE + "s?", low) or re.fullmatch(r"(?:the )?\d{1,2}(?:st|nd|rd|th)", low):
+        return "on " + text
+    if month and re.search(r"\b\d{1,2}(?:st|nd|rd|th)?\b(?!\s*\d{2}\b)", re.sub(r"\b(?:19|20)\d{2}\b", "", low)):
+        return ("from " if re.search(r"\bto\b|\d\s*-\s*\d", low) else "on ") + text
+    if month or re.fullmatch(r"(?:19|20)\d{2}", low):
+        return "in " + text
+    return ""
+
+
+def adverbial(phrase: str) -> str:
+    """A time phrase as it follows a verb or a count, carrying the
+    preposition it needs (audit 1029 C10): "20 October" is "on 20 October",
+    "friday" is "on friday", "october" and "2025" are "in" them, a rolling
+    window is "in the last 7 days"; "last week", "today", "3 days ago" and
+    "since 3 October" stand as they are. A range of days is "from" the first."""
+    text = " ".join(str(phrase or "").split())
+    low = text.lower()
+    if not text or _ADVERB_LEAD.match(low):
+        return text
+    if said := _rolling_said(text):
+        return said
+    if _ADVERB_BARE.search(low):
+        return text
+    return _dated_said(text, low) or (f"in {text}" if low.startswith(("a ", "an ")) else text)
+
+
+_DEICTIC_LEAD = re.compile(r"^(?:Today|Tomorrow|Yesterday|Tonight)\b")
+
+
+def mid_sentence(span: str) -> str:
+    """A span that opens with a day word ("Tomorrow, Friday 30 October") with
+    that word lowered, for a frame that puts it mid-sentence."""
+    return span[0].lower() + span[1:] if _DEICTIC_LEAD.match(span) else span
+
+
 def find(text: str) -> list[tuple[int, int, str]]:
     """Every time phrase in `text`: (start, end, phrase), left to right, none
     overlapping. A bare month that is also a word ("may", "march" as a verb)

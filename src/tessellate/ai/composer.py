@@ -990,8 +990,10 @@ def _title(content: str) -> tuple[str, int]:
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
     if not words:
         return "", 0
-    name = " ".join(words[:UNTITLED_WORDS]).rstrip(".,;:!?")
-    return (name + "…" if len(words) > UNTITLED_WORDS else name), 0
+    if len(words) <= UNTITLED_WORDS:
+        return " ".join(words).rstrip(".,;:!?"), 0
+    #: Cut where `realise.cut_title` cuts: never on "at", "the" or "and".
+    return " ".join(realise.drop_dangling(words[:UNTITLED_WORDS])).rstrip(".,;:!?") + "…", 0
 
 
 def _depth(line: str) -> int:
@@ -1746,7 +1748,7 @@ class _Answer:
                 "signals": {"bm25": 1.0, "cosine": None, "graph": grounding._graph_nearness(note)},
                 "verdict": "supported",
                 "terms": [w for w in query_understanding.search_terms(text) if _stem(w) in stems][:6],
-                "label": " ".join(content.split())[:60],
+                "label": realise.cut_title(content, 60),
                 #: The name the answer cites it by ("[**Dentist**]"), so the
                 #: page can make that name open the note: matched exactly,
                 #: never guessed from the label's opening words.
@@ -4631,19 +4633,11 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     return absent if terms and len(absent) == len(terms) else []
 
 
-#: A rolling window ("the last 7 days", "past week") is "in" it; "last week"
-#: and "last month" are calendar spans and read without.
-_ROLLING = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
-
-
 def window_said(phrase: str) -> str:
-    """A time window as an adverbial: "in the last 7 days" for a rolling one,
-    the phrase as it is for "last week", "today" or "since 3 October"."""
-    found = _ROLLING.match((phrase or "").strip())
-    if not found or not (found.group("n") or found.group("the") or found.group("which").lower() == "past"):
-        return phrase
-    text = phrase.strip()
-    return f"in {text if found.group('the') else 'the ' + text}"
+    """A time window as an adverbial, with the preposition it needs ("on 20
+    October", "in the last 7 days"; "last week" and "today" as they are):
+    `recognise.adverbial`, the one reader of it."""
+    return rec.adverbial(phrase)
 
 
 def _as_typed(word: str, question: str) -> str:
@@ -5098,7 +5092,7 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
     if p.window and not said and views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
-        out.t("recall_none").asked(_as_typed(p.window_phrase, question)).t("stop")
+        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question))).t("stop")
         return _result(out.parts, shape), views_list
     if p.window and not said:
         views_list = [v for v in views_list if _in_window(v, p.window)]

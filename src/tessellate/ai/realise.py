@@ -33,6 +33,8 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
+from tessellate.search.snippet import clip_words
+
 _NUMBERS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 _WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -270,17 +272,29 @@ def after_comma(text: str) -> str:
     return text[0].lower() + text[1:]
 
 
+#: Words a clipped name never ends on: "Dentist appointment on 4 November at…"
+#: says nothing, "Dentist appointment on 4 November…" does.
+_DANGLING = frozenset("a an the and or but nor of to in on at for with by from as is are was were my your our their its this that if so then".split())
+
+
 def cut_title(title: str, limit: int) -> str:
-    """A title no longer than `limit` characters, cut at a word with an
-    ellipsis, never through one."""
-    title = " ".join((title or "").split())
-    if len(title) <= limit:
-        return title
-    cut = title[: max(1, limit - 1)]
-    space = cut.rfind(" ")
-    if space > 0:
-        cut = cut[:space]
-    return cut.rstrip(" ,;:-") + "…"
+    """The one clip for a name or a line said back (audit 1029 C9): at most
+    `limit` characters, cut at a word with an ellipsis, never through a word
+    and never after a word that cannot end a phrase. Text that fits is
+    returned whole, spaces folded."""
+    flat = " ".join((title or "").split())
+    clipped = clip_words(flat, limit)
+    if clipped == flat:
+        return flat
+    return " ".join(drop_dangling(clipped.removesuffix("…").split(" "))).rstrip(" ,;:-") + "…"
+
+
+def drop_dangling(words: list[str]) -> list[str]:
+    """`words` without the function words a cut would leave at its end."""
+    words = list(words)
+    while len(words) > 1 and words[-1].lower().strip(",;:") in _DANGLING:
+        words.pop()
+    return words
 
 
 # --- the variety floor (decision 51) ------------------------------------------------
