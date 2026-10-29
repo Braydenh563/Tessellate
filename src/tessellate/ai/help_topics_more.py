@@ -1897,6 +1897,28 @@ MORE_TOPICS.extend(
             "badge": {"label": "Models", "section": "models"},
         },
         {
+            "id": "appearance-panel",
+            "keywords": (
+                "appearance panel", "pop out appearance", "change theme without closing settings",
+                "see changes while i change them", "peek", "appearance in a panel",
+                "settings keep closing", "quick appearance", "section strip",
+            ),
+            "body": (
+                "The Appearance panel is Settings, Appearance in a panel beside the "
+                "app, so you see each change as you make it. Open it from the command "
+                "palette (Ctrl+K, Appearance), by right-clicking the light and dark "
+                "button in the top bar, or with Pop out at the top of Settings, "
+                "Appearance (which closes Settings and leaves the panel). The strip "
+                "under its head jumps to Theme, Colour, Text, Layout, Background art "
+                "or Motion, and the panel opens on the last one you used. Peek fades "
+                "the panel so you can judge a colour on the app behind it. A changed "
+                "setting shows a small arrow that puts it back to its default. Drag "
+                "its head to move it, to a screen edge to dock it, the corner to "
+                "resize it. Back to Settings or Bring it back here returns the page."
+            ),
+            "badge": {"label": "Appearance", "section": "appearance"},
+        },
+        {
             "id": "movable-panels",
             "keywords": (
                 "move a panel", "move a popup", "drag a panel", "drag a popup",

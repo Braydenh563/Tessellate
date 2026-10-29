@@ -22,6 +22,8 @@ Object.assign(LAZY_MODULES, {
   //: The generative background's styles and runtime (bg-art.js, 20 KB gzipped):
   //: only a notebook with the art on, or an open Appearance grid, needs them.
   bgArt: ["/js/bg-art.js"],
+  //: The Appearance quick panel (appearance-panel.js, INBOX 1435).
+  appearancePanel: ["/css/appearance-panel-lazy.css", "/css/appearance-panel-own-lazy.css", "/js/appearance-panel.js"],
   //: Settings, Appearance, Glass controls: the icon buttons' glass, fetched only while the switch is on.
   glassControls: ["/css/glass-controls-lazy.css"],
   //: Ask, Chat and the Guide's screen context (screen-context.js's header).
@@ -53,6 +55,7 @@ installStandIns({
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
   quickAdd: ["reminderComposeAdd"],
   loadFailed: ["surfaceFailed"],
+  appearancePanel: ["openAppearancePanel"],
 });
 //: A lone Alt is nobody's (INBOX 1422): its release hands focus to the window's
 //: own menu, which stays until blur. Cancelled; Alt+key is untouched.

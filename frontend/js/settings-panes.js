@@ -1511,6 +1511,7 @@ function paletteCommands() {
     { label: "ph:info Settings → About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
     { label: "ph:archive Back up now", keywords: "backup snapshot save a copy", about: "Save a copy of the whole notebook, now.", act: () => { openSettingsModal("data"); backupNow(); } },
     { label: "ph:export Export markdown", about: "Every note as a Markdown file, in one download.", act: () => downloadExport("markdown") },
+    { label: "ph:palette Appearance panel", keywords: "pop out theme colour text font layout background art motion peek look panel", about: "Every look setting in a panel beside the app.", act: () => openAppearancePanel() },
     { label: "ph:circle-half Toggle light/dark", keywords: "theme dark mode light mode night", chord: "toggleTheme", act: toggleTheme },
     //: INBOX 430: also in Find anything, which lists these same commands;
     //: the row says which it will do, since this list is built per query.
