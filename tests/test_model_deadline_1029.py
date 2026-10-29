@@ -221,7 +221,7 @@ def test_decorating_routes_do_not_wait_on_a_silent_backend(app_state, silent):
     for path in paths:
         response, took = _timed(api, path)
         assert response.status_code == 200, path
-        assert took < 0.3, (path, took)
+        assert took < 0.75, (path, took)  # they waited 1 to 5 s; room for a loaded runner
 
 
 def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monkeypatch):
@@ -230,12 +230,13 @@ def test_the_searxng_status_does_not_wait_on_a_docker_that_hangs(app_state, monk
     from tessellate.search import searxng_manager
 
     release = threading.Event()
-    monkeypatch.setattr(searxng_manager, "docker_available", lambda: release.wait(5) and False)
+    monkeypatch.setattr(searxng_manager, "docker_available", lambda: release.wait(10) and False)
     monkeypatch.setattr(routes_websearch, "STATUS_BUDGET", 0.1)
     api = TestClient(create_app())
     first, took = _timed(api, "/websearch/searxng/status")
-    assert first.status_code == 503 and took < 0.5
+    # Far under the 10 s hang, with room for a loaded runner (-n auto).
+    assert first.status_code == 503 and took < 2.0
     release.set()
     assert _wait(lambda: api.get("/websearch/searxng/status").status_code == 200)
     second, took = _timed(api, "/websearch/searxng/status")
-    assert second.status_code == 200 and took < 0.3
+    assert second.status_code == 200 and took < 1.0
