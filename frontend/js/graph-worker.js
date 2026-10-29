@@ -1716,7 +1716,10 @@ function crossingsOn(mine) {
 //: A whole category turns or mirrors about its middle when that lowers the
 //: crossings on its lines: its links out then face the categories they join.
 const UNTANGLE_TURN_STEPS = 8;
-function untangleGroups(still) {
+//: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
+//: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
+//: turns took 7.2 s in one call against a budget of 0.6 s.
+function untangleGroups(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
     if (still(node)) return;
@@ -1725,6 +1728,7 @@ function untangleGroups(still) {
   });
   let gained = 0;
   for (const members of groups.values()) {
+    if (Date.now() >= until) break;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
     if (!lines.length) continue;
@@ -1736,7 +1740,7 @@ function untangleGroups(still) {
     let best = before;
     let bestAt = null;
     for (let mirror = 0; mirror < 2; mirror++) {
-      for (let step = 0; step < UNTANGLE_TURN_STEPS; step++) {
+      for (let step = 0; step < UNTANGLE_TURN_STEPS && Date.now() < until; step++) {
         if (!mirror && !step) continue;
         const angle = (2 * Math.PI * step) / UNTANGLE_TURN_STEPS;
         const cos = Math.cos(angle);
@@ -2506,7 +2510,7 @@ function untangleLayout() {
   untangle.total = crossingsOn(untangle.edges.map((_, i) => i));
   untangle.gain = 0;
   for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
-    let gained = untangleGroups(still);
+    let gained = untangleGroups(still, until);
     for (let i = 0; i < nodes.length && Date.now() < until; i++) {
       const node = nodes[i];
       const mine = untangle.incident[i];
@@ -2981,14 +2985,24 @@ function loop() {
   // is actually watching is the one following their pointer, and a
   // neighbourhood that reorganises at 10 Hz under a pointer that tracks at
   // 60 Hz looks right; the reverse does not.
-  const share = dragging ? 2 : 1;
+  timer = setTimeout(loop, loopYield(cost));
+}
+
+//: **Audit 1029 row 35: the duty cycle only where it is needed.** The half
+//: core above was measured when the canvas drew every frame between ticks; it
+//: now draws a costly map once a tick (`gcTickSnaps`, graph-canvas.js), and
+//: 2,000 notes at half a core took 28.7 s to come to rest. So a costly tick
+//: is followed by a short turn (`LOOP_YIELD_MS`, long enough to hear a drag),
+//: except during a drag and in performance mode, which settings.js turns on
+//: by itself at two cores or fewer: those keep the duty cycle.
+const LOOP_YIELD_MS = 8;
+function loopYield(cost) {
   // Performance mode: the yield doubles, so the simulation takes at most a
   // quarter of a core and a small laptop keeps its frames for the paint.
   const rest = perf ? 2 : 1;
-  timer = setTimeout(
-    loop,
-    (cost >= 12 ? Math.min(120, cost * share) : Math.max(4, 16 - cost)) * rest
-  );
+  if (cost < 12) return Math.max(4, 16 - cost) * rest;
+  if (!dragging && !perf) return LOOP_YIELD_MS;
+  return Math.min(120, cost * (dragging ? 2 : 1)) * rest;
 }
 
 //: Every message that moves the layout comes through here, so this is where

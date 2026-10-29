@@ -2149,6 +2149,18 @@ function gcFadeStep(s, still) {
 const GC_GLIDE_MIN_MS = 16;
 const GC_GLIDE_MAX_MS = 120;
 
+//: **A map that costs more than this to draw is drawn once a tick** (audit
+//: 1029 row 35): 2,000 notes drew 472 full frames for 141 ticks, 417 of them
+//: glides at about 13 ms each. The cost is smoothed over full draws only (a
+//: hover or a pan composes from layers and says nothing about the scene).
+const GC_GLIDE_COST_MS = 8;
+function gcNoteDrawCost(s, ms) {
+  s.drawCost = s.drawCost == null ? ms : s.drawCost * 0.7 + ms * 0.3;
+}
+function gcTickSnaps(s) {
+  return (s.drawCost || 0) > GC_GLIDE_COST_MS;
+}
+
 //: Moves every note the share of the way from the tick before to the last
 //: one that the time since the last one says, over the interval that brought
 //: it, and reports whether there is more of the glide to draw. A note in the hand, and a note a new
@@ -2208,7 +2220,10 @@ function gcRequestDraw(s = gcTab, cheap = false) {
   s.drawQueued = true;
   requestAnimationFrame(() => {
     s.drawQueued = false;
+    const full = s.sceneStale;
+    const drawn = performance.now();
     gcDraw(s);
+    if (full) gcNoteDrawCost(s, performance.now() - drawn);
     if (s.minimapQueued) {
       s.minimapQueued = false;
       graphMinimapFrame();
@@ -5102,6 +5117,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         s.glideFrom = now;
         s.glideMs = 0;
         s.gliding = true;
+        if (gcTickSnaps(s)) gcGlideFinish(s);
         // The positions moved, so the hit-test index is stale. Marked here
         // rather than at the end of every draw: a settled map redraws on
         // hover without anything having moved, and rebuilding a 2,000-point
