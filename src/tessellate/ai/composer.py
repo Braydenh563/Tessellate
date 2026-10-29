@@ -81,6 +81,7 @@ from typing import Any
 from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
+from tessellate.entry import properties
 from tessellate.search import query as query_understanding
 
 #: At most this many quoted points in one answer. Six is about what reads as an
@@ -206,6 +207,10 @@ PHRASES: dict[str, str] = {
     "checklist_done": " done:",
     "has": " has ",
     "checklist_items_done": " checklist items done:",
+    #: Nothing ticked: "no of three" read as a typo (audit 1029 C6).
+    "has_none_of_its": " has none of its ",
+    "checklist_none_of_its": "Its checklist has none of its ",
+    "one_open": "one item, not done:",
     "end_colon": ":",
     # The notes after the first, joined by how they relate to what came
     # before, never the same joining words twice running and never a pile of
@@ -279,6 +284,9 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    #: The window held more than the list shows (audit 1029 C11): say so.
+    "recall_more_a": "And ",
+    "recall_more_b": " more.",
     "recall_none": "Nothing I found was written ",
     "written_on": " was written on ",
     "open_nowhere_a": "No checklist in your notes about ",
@@ -990,8 +998,10 @@ def _title(content: str) -> tuple[str, int]:
     words = _MARKS.sub("", first.strip().lstrip("-*+> ")).split()
     if not words:
         return "", 0
-    name = " ".join(words[:UNTITLED_WORDS]).rstrip(".,;:!?")
-    return (name + "…" if len(words) > UNTITLED_WORDS else name), 0
+    if len(words) <= UNTITLED_WORDS:
+        return " ".join(words).rstrip(".,;:!?"), 0
+    #: Cut where `realise.cut_title` cuts: never on "at", "the" or "and".
+    return " ".join(realise.drop_dangling(words[:UNTITLED_WORDS])).rstrip(".,;:!?") + "…", 0
 
 
 def _depth(line: str) -> int:
@@ -1173,13 +1183,20 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     content = str(note.get("content") or "")
     if not content.strip() or note.get("id") is None:
         return None
-    title, body_start = _title(content)
-    view = NoteView(note=note, rank=rank, title=title, written=_written(note), titled=bool(title) and body_start > 0, kind=source_kind(note))
+    #: A note that opens with a properties block ("---", "tags: [meeting]",
+    #: "---") is read from after it: its name and every quote start at the
+    #: note's words, never at "---" (audit 1029 X19). Offsets stay the
+    #: content's own.
+    front = properties.block_end(content)
+    title, body_start = _title(content[front:])
+    titled = bool(title) and body_start > 0
+    body_start = front + body_start
+    view = NoteView(note=note, rank=rank, title=title, written=_written(note), titled=titled, kind=source_kind(note))
     if view.kind != "note" and not view.titled and title:
         #: A document or a map arrives as its title, a blank line, its text:
         #: its first line is its name, never a sentence of it.
         view.titled = True
-        body_start = len(content.split("\n", 1)[0])
+        body_start = front + len(content[front:].split("\n", 1)[0])
     view.title_words = set(_words(title))
     filed = [str(t) for t in (note.get("tags") or [])] + [str(note.get("category") or "")]
     view.filed_words = set(_words(" ".join(filed)))
@@ -1746,7 +1763,7 @@ class _Answer:
                 "signals": {"bm25": 1.0, "cosine": None, "graph": grounding._graph_nearness(note)},
                 "verdict": "supported",
                 "terms": [w for w in query_understanding.search_terms(text) if _stem(w) in stems][:6],
-                "label": " ".join(content.split())[:60],
+                "label": realise.cut_title(content, 60),
                 #: The name the answer cites it by ("[**Dentist**]"), so the
                 #: page can make that name open the note: matched exactly,
                 #: never guessed from the label's opening words.
@@ -1794,7 +1811,7 @@ class _Answer:
 
     @property
     def text(self) -> str:
-        return "".join(part[1] for part in self.parts)
+        return realise.mend_stops("".join(part[1] for part in self.parts))
 
 
 #: The openers that promise the person's words as written: after one, the
@@ -2055,18 +2072,32 @@ def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
         out.t("it_lists")
 
 
+def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:
+    """How many of a checklist are ticked. Zero is "none of its three", one
+    left unticked is "one item, not done": a count word before "of" is never
+    "no" (audit 1029 C6)."""
+    ticked = sum(1 for s in tasks if s.done)
+    opening = lead == "opening"
+    if opening:
+        if view.titled:
+            out.t(_your_kind(view), "space")
+        out.name(view, cap=True)
+    if ticked:
+        out.t("has" if opening else "checklist").m(out.count(ticked)).t("checklist_of").m(out.count(len(tasks)))
+        out.t("checklist_items_done" if opening else "checklist_done")
+    elif len(tasks) == 1:
+        out.t("has" if opening else "checklist").t("one_open")
+    else:
+        out.t("has_none_of_its" if opening else "checklist_none_of_its").m(out.count(len(tasks)))
+        out.t("checklist_items_done" if opening else "checklist_done")
+
+
 def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list[str], lead: str) -> None:
     """A note's list, introduced by what it holds: "Your note **Reading
     list** lists four: ...", a checklist with how many are ticked."""
     tasks = [s for s in items if s.kind == "task"]
     if tasks and len(tasks) == len(items):
-        done, total = out.count(sum(1 for s in tasks if s.done)), out.count(len(tasks))
-        if lead == "opening":
-            if view.titled:
-                out.t(_your_kind(view), "space")
-            out.name(view, cap=True).t("has").m(done).t("checklist_of").m(total).t("checklist_items_done")
-        else:
-            out.t("checklist").m(done).t("checklist_of").m(total).t("checklist_done")
+        _checklist_count(out, view, tasks, lead)
         out.t("para")
         for i, s in enumerate(tasks):
             if i:
@@ -4285,7 +4316,11 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
     wrote = bool(_WROTE_VERB.search(question or ""))
-    inside = sorted((v for v in views if _in_window(v, p.window, mentions=not wrote)), key=lambda v: (v.written, -v.rank), reverse=True)
+    #: A board or a mind map is made, not written: it is no "note" in the count.
+    inside = sorted(
+        (v for v in views if _in_window(v, p.window, mentions=not wrote) and str(v.note.get("kind") or "note") not in ("board", "map")),
+        key=lambda v: (v.written, -v.rank), reverse=True,
+    )
     said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
@@ -4306,6 +4341,8 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
             continue
         out.t("colon")
         _overview_line(out, units, set())
+    if len(inside) > RECALL_NOTES:
+        out.t("para", "recall_more_a").m(out.count(len(inside) - RECALL_NOTES)).t("recall_more_b")
 
 
 def _label_line(view: NoteView) -> list[Sentence]:
@@ -4631,19 +4668,11 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
     return absent if terms and len(absent) == len(terms) else []
 
 
-#: A rolling window ("the last 7 days", "past week") is "in" it; "last week"
-#: and "last month" are calendar spans and read without.
-_ROLLING = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
-
-
 def window_said(phrase: str) -> str:
-    """A time window as an adverbial: "in the last 7 days" for a rolling one,
-    the phrase as it is for "last week", "today" or "since 3 October"."""
-    found = _ROLLING.match((phrase or "").strip())
-    if not found or not (found.group("n") or found.group("the") or found.group("which").lower() == "past"):
-        return phrase
-    text = phrase.strip()
-    return f"in {text if found.group('the') else 'the ' + text}"
+    """A time window as an adverbial, with the preposition it needs ("on 20
+    October", "in the last 7 days"; "last week" and "today" as they are):
+    `recognise.adverbial`, the one reader of it."""
+    return rec.adverbial(phrase)
 
 
 def _as_typed(word: str, question: str) -> str:
@@ -4728,11 +4757,23 @@ _EMPTY_WINDOW_ONE = {
 }
 
 
+#: A window past the newest note (today, this week) is answered with the
+#: newest note, not with where the notebook starts (audit 1029 C12).
+_EMPTY_WINDOW_NEWEST = {
+    "natural": ("Your newest note is from {last}.", "The last thing you wrote was {last}."),
+    "professional": ("The newest entry is dated {last}.", "The latest entry is from {last}."),
+    "terse": ("Newest: {last}.", "Last: {last}."),
+    "playful": ("Your latest page is from {last}.", "The ink last dried {last}."),
+}
+
+
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
-                 today: date | None = None, register: str = "") -> str:
+                 today: date | None = None, register: str = "", window: tuple | None = None) -> str:
     """A time window with no note in it, said as that, and where the notes
     are (`first` and `last` written days; None for an empty notebook).
-    `register` is the chat's own voice (a persona's cue included)."""
+    `register` is the chat's own voice (a persona's cue included); `window`
+    is the days asked, so one that starts after the newest note is answered
+    with that note."""
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
     if register:
         voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
@@ -4745,6 +4786,11 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     def day(d: date) -> str:
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
 
+    if window and window[0] > last:
+        ago = (today - last).days
+        said = "yesterday" if ago == 1 else day(last)
+        newest = _pick(seed or when, "empty_window_newest", list(_EMPTY_WINDOW_NEWEST.get(voice, _EMPTY_WINDOW_NEWEST["natural"])))
+        return f"{lead} {newest.format(last=said)}"
     if first == last:
         span = _EMPTY_WINDOW_ONE[voice].format(first=day(first))
     else:
@@ -5098,7 +5144,7 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
     if p.window and not said and views_list and not any(_in_window(v, p.window) for v in views_list):
         #: A window no note found falls in: said, never answered from notes
         #: written at another time.
-        out.t("recall_none").asked(_as_typed(p.window_phrase, question)).t("stop")
+        out.t("recall_none").asked(window_said(_as_typed(p.window_phrase, question))).t("stop")
         return _result(out.parts, shape), views_list
     if p.window and not said:
         views_list = [v for v in views_list if _in_window(v, p.window)]

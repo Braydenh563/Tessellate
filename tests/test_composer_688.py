@@ -138,7 +138,9 @@ def test_a_leading_discourse_word_is_trimmed_and_the_offsets_follow():
 
 def test_a_note_without_a_heading_is_named_by_its_first_words():
     view = composer.read_note(NOTES[13], 0)
-    assert view.title == "Note with no heading about the…"
+    #: Cut at a word, and never on a dangling "the" (audit 1029 C9): the
+    #: intent, a name from the first words, is unchanged.
+    assert view.title == "Note with no heading about…"
     #: Its first sentence is still quotable: the name is not the body.
     assert view.sentences[0].text.startswith("Note with no heading")
 

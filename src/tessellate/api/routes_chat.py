@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -3007,7 +3007,7 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
     for (content,) in rows:
         title = composer._title(str(content or ""))[0].strip()
         if title and title not in titles:
-            titles.append(title[:60])
+            titles.append(realise.cut_title(title, 60))
     return titles[:count]
 
 
@@ -3210,6 +3210,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
         voice=_composer_voice(),
         seed=req.question or "",
         register=_chat_voice(req),
+        window=planned.window,
     )
 
 
@@ -3320,6 +3321,12 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
     )
 
 
+def _asks_only_a_time(question: str) -> bool:
+    """A question that names a time and no subject ("what did I write today")."""
+    planned = composer.plan(question or "")
+    return bool(planned.window and planned.window_phrase and not planned.terms)
+
+
 def _related_sentence(related: list) -> str:
     plural = len(related) != 1
     kinds = sorted({item["kind"] for item in related})
@@ -3342,7 +3349,10 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
     # here regardless.
-    related = _related_elsewhere(req.session, req.question)
+    #: Not for a question that is only a day ("what did I write today"): the
+    #: items it would name matched the words "write" and "today", and "it" had
+    #: no referent (audit 1029 C12).
+    related = [] if _asks_only_a_time(req.question) else _related_elsewhere(req.session, req.question)
     if related:
         events.append({"type": "answer", "delta": _related_sentence(related)})
         events.append({"type": "related", "items": related})
@@ -3556,10 +3566,10 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     for kind, nid in ids[:3]:
         if kind == "document":
             doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
-            title = str(doc[0] or "").strip()[:60] if doc else ""
+            title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
         else:
             row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = composer._title(str(row[0] or ""))[0].strip()[:60] if row else ""
+            title = realise.cut_title(composer._title(str(row[0] or ""))[0].strip(), 60) if row else ""
         if title:
             titles.append(title)
     return titles

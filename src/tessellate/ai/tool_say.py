@@ -27,7 +27,7 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
-from tessellate.ai import note_recency
+from tessellate.ai import note_recency, recognise
 from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
 #: An app address for each kind of thing a tool names (router.js
@@ -417,7 +417,7 @@ def _window_said(phrase: str) -> str:
         return f"for {phrase}"
     if phrase.startswith("the day"):
         return f"on {phrase}"
-    return phrase
+    return recognise.adverbial(phrase)
 
 
 def _due_day(value: object):  # noqa: ANN202

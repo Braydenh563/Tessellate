@@ -30,7 +30,7 @@ Object.assign(LAZY_MODULES, {
   screenContext: ["/js/screen-context.js"],
   //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16).
   mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"],
-  //: The model badge's spec panel, editing an answer, a note's Explain row (gesture-kit.js's header).
+  //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
   notesLazy: ["/js/notes-lazy.js"],
@@ -54,7 +54,7 @@ installStandIns({
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
-  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote"],
+  gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
   notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue"],
   quickAdd: ["reminderComposeAdd"],
   loadFailed: ["surfaceFailed"],

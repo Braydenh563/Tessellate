@@ -679,8 +679,8 @@ function cmdPaletteGoToNote(id) {
 //: its date. Every row closes the palette before it opens
 //: its note: the palette is an overlay over the app it is about to
 //: navigate, and "find it" and "go to it" should be one gesture.
-function cmdPaletteSources({ meta, touched }) {
-  const sources = chatSourcesFrom({ meta, touched }).map((source) =>
+function cmdPaletteSources({ meta, touched, sentences }) {
+  const sources = chatSourcesFrom({ meta, touched, sentences }).map((source) =>
     source.open
       ? {
           ...source,
@@ -1222,7 +1222,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
   let cites = null;
   const cite = (event) => {
     if (event) cites = event.sentences || [];
-    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()] }));
+    if (cites?.length) addInlineCitations(answerBox, cites, found, chatSourcesFrom({ meta, touched: [...touched.values()], sentences: cites }));
   };
   //: The box the reasoning is written into while it is being produced, made
   //: on the first delta rather than up front so a turn that never thinks out
@@ -1419,7 +1419,7 @@ async function cmdPaletteAsk(text, { plan = null } = {}) {
     //: what was searched and what was opened (`cmdPaletteSources`), inside
     //: the bubble and above its action row, so the row hangs under the
     //: bubble rather than over the list.
-    const sources = cmdPaletteSources({ meta, touched: [...touched.values()] });
+    const sources = cmdPaletteSources({ meta, touched: [...touched.values()], sentences: cites });
     if (sources) agentMsg.insertBefore(sources, actionRow);
     //: The reasoning stays where it was written, folded now, with the
     //: trailing blank lines trimmed.

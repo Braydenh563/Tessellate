@@ -166,80 +166,6 @@ function closeExtractPreview() {
   extractProposal = null;
 }
 
-async function commitExtractPreview() {
-  if (!extractProposal) return;
-  const keptRefs = new Set();
-  const notes = [];
-  for (const card of $("extract-notes-list").querySelectorAll(".extract-note-card")) {
-    if (!card.querySelector(".extract-note-keep").checked) continue;
-    const ref = card.dataset.ref;
-    const original = extractProposal.notes.find((n) => n.ref === ref);
-    if (!original) continue;
-    const content = card.querySelector(".extract-note-content").value.trim();
-    if (!content) continue; // an edited-down-to-nothing note is dropped, not saved empty
-    keptRefs.add(ref);
-    notes.push({
-      ref,
-      title: card.querySelector(".extract-note-title").value.trim(),
-      content,
-      category: original.category,
-      tags: card
-        .querySelector(".extract-note-tags")
-        .value.split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-  }
-  if (!notes.length) {
-    toast("Keep at least one note to save.");
-    return;
-  }
-
-  const links = [];
-  for (const row of $("extract-links-list").querySelectorAll(".extract-link-row")) {
-    if (!row.querySelector(".extract-link-keep").checked) continue;
-    const sourceRef = row.dataset.sourceRef;
-    const targetRef = row.dataset.targetRef;
-    if (!keptRefs.has(sourceRef)) continue; // its source note was dropped
-    if (!targetRef.startsWith("existing:") && !keptRefs.has(targetRef)) continue; // its sibling was dropped
-    const original = extractProposal.links.find(
-      (l) => l.source_ref === sourceRef && l.target_ref === targetRef
-    );
-    if (original) links.push({ source_ref: sourceRef, target_ref: targetRef, reason: original.reason });
-  }
-
-  $("extract-commit").disabled = true;
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent = "Saving…";
-  try {
-    const result = await apiJson("/entries/extract/commit", {
-      method: "POST",
-      body: JSON.stringify({
-        notes,
-        links,
-        source_document_id: extractProposal.source_document_id || null,
-      }),
-    });
-    closeExtractPreview();
-    const madeIds = result.notes.map((n) => n.id).filter((id) => id != null);
-    if (madeIds.length) {
-      pushRoutePairUndo(
-        `Saved ${madeIds.length} extracted note${madeIds.length === 1 ? "" : "s"}`,
-        madeIds.map((id) => [`/entries/${id}`, "DELETE"]),
-        madeIds.map((id) => [`/entries/${id}/restore`, "POST"]),
-        () => refreshEntries(madeIds)
-      );
-    }
-    toast(`Saved ${nounCount(result.notes.length, "note")}.`);
-    await loadEntries();
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-    $("extract-commit").disabled = false;
-  }
-}
-
 // --- attaching notes to a chat message ------------------------------------------
 // "Use this note, specifically" is a stronger signal than any similarity
 // score, so attached notes are sent to the model ahead of whatever retrieval
@@ -2084,7 +2010,7 @@ async function chatSendTurn(preset, opts = {}) {
       },
       onGroundingLive: (event) => {
         groundingSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta, toolEvents: [], touched: [], sentences: groundingSentences });
         placeLiveCitations();
       },
       onGrounding: (event) => {
@@ -2443,6 +2369,7 @@ async function chatSendTurn(preset, opts = {}) {
     meta,
     toolEvents,
     touched: [...touchedItems.values()],
+    sentences: groundingSentences,
     grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it

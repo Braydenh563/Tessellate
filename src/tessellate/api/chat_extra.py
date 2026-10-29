@@ -10,7 +10,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_digest, composer_extra
+from tessellate.ai import composer_digest, composer_extra, realise
 from tessellate.ai.composer_study import Ctx
 from tessellate.ai.tools._common import _visible
 from tessellate.core.database import Category, Entry, Reminder
@@ -77,4 +77,4 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() == today)
     last = study.title_of(notes[0]["content"]) if notes else ""
     mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=last[:60], streak=facts.streak, notes=facts.total or len(notes))
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=facts.total or len(notes), question=question)

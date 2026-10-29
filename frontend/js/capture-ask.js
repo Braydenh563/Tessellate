@@ -1265,6 +1265,16 @@ function collapseCitationRuns(targets) {
   }
 }
 
+//: What a mark is called aloud (audit 1029 C9): the first line as words, never its list markup.
+function citationName(content, length = 40) {
+  const first = stripFrontmatter(content || "").split("\n").map((line) => line.trim()).find(Boolean) || "";
+  const text = plainText(first.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s*)?/, ""));
+  if (text.length <= length) return text || "(empty note)";
+  const cut = text.slice(0, length - 1);
+  const word = text[length - 1] === " " ? cut : cut.replace(/\s+\S*$/, "") || cut;
+  return `${word.replace(/[\s,;:-]+$/, "")}…`;
+}
+
 function citationMarker(g, byId, numberFor) {
   const marker = document.createElement("sup");
   marker.className = "answer-citation";
@@ -1282,7 +1292,7 @@ function citationMarker(g, byId, numberFor) {
   const entry = byId.get(g.note_id);
   // A note a tool read mid-turn is not in `rawResults`; the backend
   // sends its opening words on the entry itself for exactly this case.
-  const name = noteLabel({ content: entry?.content || g.label || "" }, 40);
+  const name = citationName(entry?.content || g.label || "");
   link.textContent = String(numberFor.get(g.note_id));
   //: No `title`: the peek below is what a hover shows now, and a native
   //: tooltip would draw a second, plainer box over it a moment later.
@@ -2130,7 +2140,7 @@ function answerObject({
     //: The same builder the Chat tab's bubble uses, so the two surfaces cannot
     //: disagree about what counts as a source or about the order they are
     //: numbered in.
-    sources: chatSourcesFrom({ meta, toolEvents, touched }),
+    sources: chatSourcesFrom({ meta, toolEvents, touched, sentences: grounding }),
     related: related || [],
     next: next || [],
     stats: stats || null,
@@ -3151,7 +3161,7 @@ async function askQuestion(preset) {
       },
       onGroundingLive: (event) => {
         groundedSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [], sentences: groundedSentences });
         numberMatchingRecords(
           $("ai-answer-grounding"),
           citationNumbers(groundedSentences, liveSources)
