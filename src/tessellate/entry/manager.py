@@ -1721,7 +1721,7 @@ def _retag(session: Session, entries, change) -> dict[int, list[str]]:
     before: dict[int, list[str]] = {}
     for entry in entries:
         old = entry_tags(entry)
-        new = normalise_tags(change(entry, list(old)))
+        new = normalise_tags(change(entry, list(old)), split=False)
         if new == old:
             continue
         record_revision(session, entry)
@@ -1745,6 +1745,8 @@ def rename_tags(session: Session, olds: list[str], new: str) -> dict[int, list[s
     cleaned = normalise_tags([new])
     if not cleaned:
         raise ValueError("A tag needs a name.")
+    if len(cleaned) > 1:
+        raise ValueError("A tag name cannot hold a comma. Rename one tag at a time.")
     new = cleaned[0]
     wanted = set(olds)
     if not wanted:
@@ -1788,7 +1790,7 @@ def edit_tags_on_notes(
     "Food" on one note and "food" on another are one tag to the person),
     and the add runs after it, so a name in both lists ends up added.
     """
-    drop = {t.casefold() for t in normalise_tags(remove)}
+    drop = {t.casefold() for t in normalise_tags(remove, split=False)}
     put = normalise_tags(add)
     if not ids or not (drop or put):
         return {}

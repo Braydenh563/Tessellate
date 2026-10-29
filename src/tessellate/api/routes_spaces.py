@@ -8,6 +8,7 @@ from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
 from tessellate.core import deps
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
 from tessellate.core.deps import get_session, impersonate_workspace
+from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select as sa_select
 from sqlalchemy import update as sa_update
@@ -25,6 +26,10 @@ RESERVED_SPACE_IDS = {"all", "default"}
 _ICON_RE = re.compile(r"^ph-[a-z0-9-]{1,40}$")
 
 _MAX_NAME_LEN = 60
+
+#: Names the space picker already uses for the whole notebook; a space called
+#: either would read as that choice (compared by `name_key`).
+_RESERVED_NAMES = frozenset({"all", "all spaces"})
 
 
 def _slugify(name: str) -> str:
@@ -54,10 +59,13 @@ def _validate_icon(icon: str) -> str:
     return icon
 
 
-def _validate_name(name: str) -> str:
-    name = name.strip()
-    if not name:
+def _validate_name(name: str, *, restoring: bool = False) -> str:
+    name = clean_name(name)
+    if is_blank(name):
         raise HTTPException(400, "A space needs a name.")
+    # Undo puts a space back as it was, even one made before this rule.
+    if not restoring and name_key(name) in _RESERVED_NAMES:
+        raise HTTPException(400, "That name is the picker's own. Pick another.")
     if len(name) > _MAX_NAME_LEN:
         raise HTTPException(400, f"A space name can be at most {_MAX_NAME_LEN} characters.")
     return name
@@ -66,9 +74,9 @@ def _validate_name(name: str) -> str:
 def _refuse_duplicate_name(session: Session, name: str, own_id: str | None = None) -> None:
     """Two spaces with the same name (case and spacing aside) cannot be told
     apart in the picker or the "In <space>" chips (sweep 1028b W12)."""
-    wanted = " ".join(name.split()).casefold()
+    wanted = name_key(name)
     for other in session.query(Space).all():
-        if other.id != own_id and " ".join((other.name or "").split()).casefold() == wanted:
+        if other.id != own_id and name_key(other.name) == wanted:
             raise HTTPException(409, f"A space called \u201c{other.name}\u201d already exists.")
 
 
@@ -216,7 +224,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         raise HTTPException(400, "The default spaces cannot be made again.")
     if session.get(Space, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
-    name = _validate_name(body.space.name)
+    name = _validate_name(body.space.name, restoring=True)
     icon = _validate_icon(body.space.icon)
     session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
     session.flush()

@@ -11,7 +11,8 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from tessellate.api import paging
-from pydantic import BaseModel, Field
+from tessellate.api.schemas import not_blank
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
@@ -60,6 +61,11 @@ class ReminderCreate(BaseModel):
     restore: bool = False
     done: bool = False
 
+    @field_validator("text")
+    @classmethod
+    def _text_is_not_blank(cls, text: str) -> str:
+        return not_blank(text, "reminder")
+
 
 class MagicAddBody(BaseModel):
     text: str = Field(min_length=1, max_length=300)
@@ -84,6 +90,11 @@ class ReminderUpdate(BaseModel):
     #: back to is the old one, which is usually already past (an overdue
     #: reminder is what gets snoozed), so the past-date rule must not refuse it.
     restore: bool = False
+
+    @field_validator("text")
+    @classmethod
+    def _text_is_not_blank(cls, text: str | None) -> str | None:
+        return not_blank(text, "reminder")
 
 
 def _reject_if_in_the_past(due_at: datetime) -> None:

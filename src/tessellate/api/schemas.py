@@ -6,7 +6,16 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from tessellate.entry.cleantext import is_blank
 from tessellate.entry.tagnames import normalise_tags
+
+
+def not_blank(value: str | None, what: str = "note") -> str | None:
+    """Refuse text that holds nothing a reader can see: spaces, line breaks and
+    zero-width characters alone. The text itself is kept as sent."""
+    if value is not None and is_blank(value):
+        raise ValueError(f"That {what} is blank. Write something first.")
+    return value
 
 
 
@@ -58,6 +67,11 @@ class EntryCreate(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=200)
     #: GRAPH_PLAN KG4: a note type's name; its fields are written at the top.
     note_type: str | None = Field(default=None, max_length=60)
+
+    @field_validator("content")
+    @classmethod
+    def _content_is_not_blank(cls, content: str) -> str:
+        return not_blank(content)
 
     @field_validator("tags")
     @classmethod
@@ -131,6 +145,11 @@ class EntryUpdate(BaseModel):
     content: str | None = Field(default=None, min_length=1, max_length=MAX_NOTE_CONTENT)
     category: str | None = None
     tags: list[str] | None = Field(default=None, max_length=200)
+
+    @field_validator("content")
+    @classmethod
+    def _content_is_not_blank(cls, content: str | None) -> str | None:
+        return not_blank(content)
 
     @field_validator("tags")
     @classmethod
