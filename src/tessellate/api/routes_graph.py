@@ -46,7 +46,10 @@ def _age_days(created_at, now) -> int:  # noqa: ANN001  # datetime, kept off the
 
 
 def _tags_of(entry: Entry) -> list[str]:
-    """The note's tags as a list, whatever shape the column holds."""
+    """The note's tags as a list, whatever shape the column holds. Empty for a
+    private note while the vault is locked: they are as private as its text."""
+    if manager.note_is_sealed(entry.is_private):
+        return []
     try:
         tags = json.loads(entry.tags or "[]")
     except (TypeError, ValueError):
@@ -149,6 +152,25 @@ def reset_graph_cache() -> None:
 _text_memo: dict[tuple[str, int], tuple] = {}
 
 
+#: What a private note is called on the map while the vault is locked.
+SEALED_LABEL = "Private note"
+
+
+def _label(entry: Entry, length: int = 40) -> str:
+    """A node's one-line label through the vault gate: the node stays on the
+    map, its words do not (INBOX 1437)."""
+    if manager.note_is_sealed(entry.is_private):
+        return SEALED_LABEL
+    return _preview(manager.readable_content(entry), length)
+
+
+def _words(entry: Entry) -> int:
+    """A node's length in words; nothing to count while the note is sealed."""
+    if manager.note_is_sealed(entry.is_private):
+        return 0
+    return _word_count(manager.readable_content(entry))
+
+
 def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
     """{id: (preview, words)} for these notes, reading only what changed."""
     notebook = str(deps.get_config().data_dir)
@@ -162,8 +184,7 @@ def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
         if hit is not None and hit[0] == e.updated_at and not e.is_private:
             out[e.id] = hit[1]
         else:
-            text = manager.readable_content(e)
-            out[e.id] = (_preview(text), _word_count(text))
+            out[e.id] = (_label(e), _words(e))
             if not e.is_private:
                 fresh[key] = (e.updated_at, out[e.id])
                 continue
@@ -1290,7 +1311,7 @@ def graph_local(
     nodes = [
         {
             "id": e_id,
-            "preview": _preview(manager.readable_content(drawn[e_id])),
+            "preview": _label(drawn[e_id]),
             "category": category_names.get(drawn[e_id].category_id, manager.UNCATEGORISED),
             "access_count": drawn[e_id].access_count,
             "pinned": drawn[e_id].pinned,
@@ -1307,7 +1328,7 @@ def graph_local(
             # unparseable double-suffixed string in JavaScript.
             "created_at": drawn[e_id].created_at.isoformat(),
             # The size rule's numbers, as on the whole map (see `graph`).
-            "words": _word_count(manager.readable_content(drawn[e_id])),
+            "words": _words(drawn[e_id]),
             "updated_at": (drawn[e_id].updated_at or drawn[e_id].created_at).isoformat(),
         }
         for e_id in visited
@@ -1329,7 +1350,7 @@ def _path_node(entry: Entry, category_names: dict[int | None, str]) -> dict:
     enough text to read a chain as a sentence when the graph is not on screen."""
     return {
         "id": entry.id,
-        "preview": _preview(manager.readable_content(entry), 60),
+        "preview": _label(entry, 60),
         "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
     }
 

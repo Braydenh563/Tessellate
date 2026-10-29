@@ -129,7 +129,7 @@ def _to_out(
         category=(
             manager.category_name_for(session, entry) if category_name is None else category_name
         ),
-        tags=manager.entry_tags(entry),
+        tags=manager.shown_tags(entry),
         ai_confidence=filing_certainty.shown(
             entry.ai_confidence, user_filed=bool(getattr(entry, "user_filed", False))
         ),
@@ -2744,6 +2744,14 @@ def get_entry(
     return out
 
 
+def _refuse_while_sealed(entry) -> None:  # noqa: ANN001
+    """Export and history hand out a note's text, so a locked private note
+    answers 409 rather than a placeholder that looks like the note (INBOX
+    1437). The same gate as writes: the person unlocks, then asks again."""
+    if manager.note_is_sealed(entry.is_private):
+        raise HTTPException(status_code=409, detail="Unlock first")
+
+
 def _safe_filename(title: str, extension: str) -> str:
     """A title is user text; it must not steer where the file lands.
 
@@ -2768,14 +2776,14 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     is no second branch to share, and the two routes would only be coupled
     by the part that's already this short.
 
-    `readable_content` is the same call `get_entry` and every other reader
-    already goes through: a locked private note downloads its own "unlock
-    to read it" placeholder rather than erroring or exposing ciphertext,
-    identical to what viewing one already does.
+    A locked private note answers 409 "Unlock first" (`_refuse_while_sealed`):
+    a download named like the note and holding a placeholder is a file that
+    looks like the note and is not.
     """
     entry = _existing_entry(session, entry_id)
     if entry.is_deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
+    _refuse_while_sealed(entry)
     content = manager.readable_content(entry)
     title = manager.extract_title(content) or content.strip()[:60] or "Untitled note"
     body = content if manager.extract_title(content) else f"# {title}\n\n{content}"
@@ -3450,6 +3458,7 @@ def entry_history(
     `before` pages backwards through the events by id, newest first.
     """
     entry = _existing_entry(session, entry_id)
+    _refuse_while_sealed(entry)
 
     rows = events.events_for(
         session,
