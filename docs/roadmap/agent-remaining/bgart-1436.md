@@ -98,3 +98,42 @@ Both are under microbes' 2.15 ms (the most expensive style) and under the cheape
 0.5 ms). `BG_ART_COST` holds 0.12 and 0.41. Art-only pixels (`pngpixel.py`): drift dark (43,26,90) at the centre
 against a page of about (31,31,31); drift light (204,204,238). Not verified: contrast of the muted dashboard
 text over each (bgartcontrast.js was not run for the new styles), a real-model or Windows machine.
+
+## D. Cheaper-equivalent pass (built, five styles)
+
+`scratchpad/ui-sweeps/bgartdiff.js` (replaces the older `bgart.js`, which timed frame intervals and was superseded
+by `bgartcost.js`; the scratchpad file cap is exact): the real runtime on a seeded `Math.random` and noise table,
+`requestAnimationFrame` driven by hand at 60 ticks a second for 6 s of art time (so a style that now draws at 15
+fps is compared at the same moment as one that drew at 20 or 30), canvas read back at 360x225. The figure is the
+share of pixels with any channel differing by more than 16 of 255; the gate is 2 percent. Run against itself it
+gives 0.00 (determinism). Each change keeps the on-screen speed: the per-frame step and the clock are scaled by the
+number of old frames one draw stands for.
+
+| style | change | diff, light / dark (changed px, mean) | paint ms/frame x fps = ms/s, before | after |
+| --- | --- | --- | --- | --- |
+| constellation | 15 fps (stars drift 0.05 to 0.3 px a frame; twinkle, drift and meteor rescaled) | 0.93 % / 1.02 % (mean 0.10 / 0.15) | 1.80 x 20 = 36.0 | 1.83 x 15 = 27.5 |
+| waves | 15 fps (crests move under 1 px a frame; clock rescaled) | 0.01 % / 0.06 % | 0.87 x 20 = 17.4 | 0.85 x 14.4 = 12.2 |
+| bubbles | 15 fps (fastest rises 0.72 px a frame; `dt` in seconds) | 0.63 % / 0.59 % | 1.18 x 20 = 23.6 | 1.29 x 15 = 19.4 |
+| fireflies | 15 fps (0.5 to 1.1 px a frame, step rescaled) | 1.04 % / 0.90 % | 0.66 x 20 = 13.2 | 0.76 x 15 = 11.4 |
+| dusk | 5 fps (glow crosses 0.4 canvas px a draw) | 0.00 % / 0.00 % | 0.21 x 10 = 2.1 | 0.23 x 5 = 1.2 |
+
+Per-frame paint is unchanged (the draw is the same); the saving is frames. Browser CPU ms/s, dark (noisy, a shared
+sandbox): constellation 662 to 546, waves 380 to 340, bubbles 356 to 312, dusk 280 to 202, fireflies 376 to 342.
+`BG_ART_COST` (per frame) is unchanged. All 13 styles, both themes: every diff under 2 percent; the untouched
+styles read 0.00 against the old file.
+
+Skipped, with the reason (no change was tried and failed the diff; these fail the rule's premise):
+- **aurora** (pixel density 0.2 by 0.1 already, the noise clock runs on the drawn frame), **mesh** (already 15 fps
+  at 0.2 density), **mycelium** (growth steps per frame, twin canvases), **microbes** (per-frame physics, 2.15 ms is the
+  dearest style but its organisms move 1 px or more a frame): no safe 15 fps change found in this pass.
+- **rain** (5 to 13 px a frame) and **ripples** (1.5 px a frame at 20): marks move over 1 px a frame.
+- **Soft layers at a lower pixel density**: bubbles and constellation draw crisp rims and hairlines at density 1; not tried.
+- **Sprites for repeated shapes**: the constellation, microbes and fireflies already draw from sprites.
+- **Full-window gradient per frame**: the constellation's nebula was already a CSS background; dusk's 1x64 sky
+  `drawImage` per draw stays (it is 5 draws a second now at a 144x90 canvas); mesh's ground is a solid fill.
+
+## Not done / not verified
+
+- Contrast of the dashboard's muted text over Wander and Drift (`bgartcontrast.js` not run).
+- The paused picture on a real minimised Windows window; GPU memory of the freed layer.
+- Microbes, aurora, mycelium cheaper-equivalent changes (above).

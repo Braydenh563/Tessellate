@@ -622,6 +622,10 @@ const BG_ART_BUILDERS = {
     return {
       background: "clear",
       darkCap: 0.12,
+      // The stars move 0.05 to 0.3 pixels a frame: 15 frames a second show
+      // the same drift (INBOX 1436). `k` is how many of the old frames one
+      // draw stands for, so drift, twinkle and the meteor keep their speed.
+      fps: 15,
       init() {
         W = p.width; H = p.height;
         // One star per 8000 square pixels (162 at 1440x900): at 6000 the dark
@@ -717,14 +721,16 @@ const BG_ART_BUILDERS = {
       },
       frame(t) {
         const g = p.drawingContext;
+        const k = Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+        const tk = t * k;
         if (ctx.still) g.drawImage(nebula, 0, 0, W, H);
         g.lineCap = "butt";
         for (let li = 0; li < LAYERS.length; li++) {
           const L = LAYERS[li];
           const from = lFrom[li], to = lTo[li];
-          const vx = driftX * 0.22 * L.z, vy = driftY * 0.22 * L.z;
+          const vx = driftX * 0.22 * L.z * k, vy = driftY * 0.22 * L.z * k;
           for (let i = from; i < to; i++) {
-            let x = sx[i] + vx + sjx[i], y = sy[i] + vy + sjy[i];
+            let x = sx[i] + vx + sjx[i] * k, y = sy[i] + vy + sjy[i] * k;
             if (x < -10) x += W + 20; else if (x > W + 10) x -= W + 20;
             if (y < -10) y += H + 20; else if (y > H + 10) y -= H + 20;
             sx[i] = x; sy[i] = y;
@@ -783,7 +789,7 @@ const BG_ART_BUILDERS = {
         if (ctx.dark) g.globalCompositeOperation = "lighter";
         g.fillStyle = farFill;
         for (let i = lFrom[0]; i < lTo[0]; i++) {
-          const tw = Math.sin(t * 9 * stw[i] + sph[i]);
+          const tw = Math.sin(tk * 9 * stw[i] + sph[i]);
           farStep[i] = tw > 0.5 ? 3 : tw > 0 ? 2 : tw > -0.5 ? 1 : 0;
         }
         for (let k = 0; k < 4; k++) {
@@ -800,7 +806,7 @@ const BG_ART_BUILDERS = {
           const sprites = dots[li];
           const hh = halo.width / 2;
           for (let i = lFrom[li]; i < lTo[li]; i++) {
-            const tw = 0.62 + 0.38 * Math.sin(t * 9 * stw[i] + sph[i]);
+            const tw = 0.62 + 0.38 * Math.sin(tk * 9 * stw[i] + sph[i]);
             const big = ssize[i];
             // Whole pixels, like the microbes: a copy at a fractional place
             // is resampled, and a star drifting a fifth of a pixel a frame
@@ -816,7 +822,7 @@ const BG_ART_BUILDERS = {
         }
         g.globalAlpha = 1;
         // A meteor every twenty seconds or so, faint and quick.
-        if (!meteor.on && --nextMeteor <= 0) {
+        if (!meteor.on && (nextMeteor -= k) <= 0) {
           const ang = p.random(0.35, 0.75);
           const left = p.random() < 0.5;
           meteor.on = true; meteor.life = 0;
@@ -827,8 +833,8 @@ const BG_ART_BUILDERS = {
           nextMeteor = 450 + Math.floor(p.random(450));
         }
         if (meteor.on) {
-          meteor.life++;
-          meteor.x += meteor.vx; meteor.y += meteor.vy;
+          meteor.life += k;
+          meteor.x += meteor.vx * k; meteor.y += meteor.vy * k;
           g.globalAlpha = Math.sin(Math.min(1, meteor.life / 34) * Math.PI);
           g.save();
           g.translate(meteor.x, meteor.y);
@@ -857,6 +863,8 @@ const BG_ART_BUILDERS = {
     return {
       background: "wash",
       pixelDensity: 0.5,
+      // A crest moves under a pixel a frame (INBOX 1436): 15 frames a second.
+      fps: 15,
       init() {
         // Five layers at full intensity, fewer at less.
         layers = Math.max(2, Math.round(5 * ctx.density));
@@ -866,9 +874,10 @@ const BG_ART_BUILDERS = {
           fills.push(bgP5Rgba(hue, 62, ctx.dark ? 55 : 58, 0.16));
         }
       },
-      frame(t) {
+      frame(t0) {
         const g = p.drawingContext;
         const W = p.width, H = p.height;
+        const t = t0 * (Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate()));
         for (let l = 0; l < layers; l++) {
           const yBase = H * (0.35 + l * 0.13);
           const amp = 26 + l * 10;
@@ -917,6 +926,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "keep",
       lightFloor: 0.3,
+      // The fastest bubble rises 0.72 pixels a frame at 30 (INBOX 1436):
+      // `dt` is in seconds, so 15 frames a second move the same.
+      fps: 15,
       init() {
         W = p.width; H = p.height;
         const rand = bgRandom(Math.round(ctx.baseHue * 1000) + 7);
@@ -989,7 +1001,7 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        const dt = 1 / bgArtFrameRate();
+        const dt = 1 / Math.min(15, bgArtFrameRate());
         secs += dt;
         // Clear each bubble's last box (a pixel wider for the smoothing).
         for (let i = 0; i < n; i++) {
@@ -1929,7 +1941,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "keep",
       pixelDensity: 0.1,
-      fps: 10,
+      // The glow crosses 4 pixels a draw at 5 frames a second, 0.4 of this
+      // canvas's own: the compositor's upscale shows no step (INBOX 1436).
+      fps: 5,
       darkCap: 0.05,
       lightFloor: 0.55,
       init() {
@@ -1953,7 +1967,7 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        secs += 1 / Math.min(10, bgArtFrameRate());
+        secs += 1 / Math.min(5, bgArtFrameRate());
         g.drawImage(sky, 0, 0, W + 20, H + 20);
         const r = Math.max(W, H) * (0.35 + 0.05 * Math.sin(secs * 0.3)) * (0.7 + 0.3 * ctx.density);
         const x = W * (0.5 + 0.3 * Math.sin(secs * 0.05));
@@ -2020,7 +2034,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "clear",
       pixelDensity: 0.5,
-      fps: 20,
+      // A light moves 0.5 to 1.1 pixels a frame at 20 (INBOX 1436): 15 a
+      // second, each draw carrying a third more motion.
+      fps: 15,
       darkCap: 0.12,
       lightFloor: 0.3,
       init() {
@@ -2042,11 +2058,12 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        secs += 1 / Math.min(20, bgArtFrameRate());
+        secs += 1 / Math.min(15, bgArtFrameRate());
+        const k = Math.min(20, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
         for (let i = 0; i < n; i++) {
           const a = bgFlow(i * 0.37, secs * 0.05) * 6.28;
-          fx[i] += Math.cos(a) * fs[i] * 0.8;
-          fy[i] += Math.sin(a) * fs[i] * 0.8 - 0.1;
+          fx[i] += Math.cos(a) * fs[i] * 0.8 * k;
+          fy[i] += (Math.sin(a) * fs[i] * 0.8 - 0.1) * k;
           if (fx[i] < -20) fx[i] += W + 40; else if (fx[i] > W + 20) fx[i] -= W + 40;
           if (fy[i] < -20) fy[i] += H + 40; else if (fy[i] > H + 20) fy[i] -= H + 40;
           g.globalAlpha = 0.25 + 0.75 * Math.max(0, Math.sin(secs * fs[i] + fp[i]));
