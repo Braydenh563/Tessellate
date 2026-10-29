@@ -791,18 +791,24 @@ _COMPARE_SIDES = (*composer_tables.EXTRA_COMPARE_SIDES, *_COMPARE_SIDES)
 _COMPARE_EXTRA = re.compile(composer_tables.COMPARE_SHAPE_EXTRA, re.I)
 
 
-def _bare_side(side: str) -> str:
+_NOTES_NOUNS = ("note", "notes", "entries")
+_SIDE_NUMBERS = r"one|two|three|four|five|1|2|3|4|5|first|second|third|a|b|c|old|new"
+
+
+def _bare_side(side: str, shared_noun: bool = False) -> str:
     """One side of a comparison without the noun that names the notes:
     "Lisbon notes" is Lisbon (1324)."""
     side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
-    #: "the Porto notes" is Porto, as a heading and as a topic (audit 1029
-    #: C36: "**the Porto**"). Lower case only: "The Overstory" is a title.
-    side = re.sub(r"^(?:the|my|our|your) ", "", side)
     # Word steps, not `\s+(?:notes?|entries)$`: that regex is quadratic on a run
     # of whitespace (CodeQL py/polynomial-redos).
     head, _, last = side.rstrip().rpartition(" ")
-    if head and last.casefold() in ("note", "notes", "entries"):
-        side = head
+    if head and last.casefold() in _NOTES_NOUNS:
+        side, shared_noun = head, True
+    if shared_noun:
+        #: The article went with the noun: "the Porto notes" is Porto, as a
+        #: heading and as a topic (audit 1029 C36: "**the Porto**"), while "the
+        #: Lisbon flat" keeps its "the". Lower case only: "The Overstory" is a title.
+        side = re.sub(r"^(?:the|my|our|your) ", "", side)
     return side.strip(" ,") or side
 
 
@@ -832,7 +838,14 @@ def compare_sides(question: str) -> tuple[str, str] | None:
                 clean = _clean_split(span.strip(" ?.!"))
                 if clean:
                     raw_a, raw_b = clean
-            a, b = (_bare_side(s) for s in (raw_a, raw_b))
+            #: "the Porto and Lisbon notes": one "notes" names both sides.
+            b = _bare_side(raw_b)
+            #: "compare sourdough loaf one and two": the second side is the
+            #: first's name with its own number (audit 1029 C36).
+            numbered = re.match(rf"(.+ )(?:{_SIDE_NUMBERS})$", raw_a.strip(), re.I)
+            if numbered and re.fullmatch(_SIDE_NUMBERS, b, re.I):
+                b = numbered.group(1) + b
+            a = _bare_side(raw_a, shared_noun=raw_b.strip(" ,").rpartition(" ")[2].casefold() in _NOTES_NOUNS)
             if subject_terms(a) and subject_terms(b):
                 return a, b
     return None
@@ -2855,23 +2868,29 @@ _STILL_OPEN = re.compile(
     r"(?:open|left(?: to [a-z]+)?|outstanding|remaining|not done|undone|unticked|unchecked|to do|todo|pending)(?: still)? "
     r"(?:on|for|in|from|with|about) (?P<a>.+)$"
     #: "what do I still need to read for history" (E11): any verb, not only "do".
-    r"|^what (?:else )?(?:do|have|must|should) i (?:still |also |got )?(?:have |need |got |want )?(?:left )?to (?:[a-z']+ ){1,3}?(?:on|for|in|about|from) (?P<b>.+)$",
+    r"|^what (?:else )?(?:do|have|must|should) i (?:still |also |got )?(?:have |need |got |want )?(?:left )?to (?:[a-z']+ ){1,3}?(?:on|for|in|about|from|before) (?P<b>.+)$",
     re.I,
 )
 
 
-def _notes_named_by(views: list[NoteView], wanted: set[str]) -> list[NoteView]:
+def _notes_named_by(views: list[NoteView], wanted: set[str], names: set[str] = frozenset()) -> list[NoteView]:
     """The notes a "still open" question names, best-ranked first."""
 
-    def stems(v: NoteView) -> set[str]:
-        held = {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
-        return held | {_stem(w) for w in v.words}
+    def titled(v: NoteView) -> set[str]:
+        return {_stem(w) for w in v.title_words} | {_stem(w) for w in v.filed_words}
 
     ranked = sorted(views, key=lambda v: v.rank)
     #: Named by its filing or heading ("for uni", "for history"): every word
     #: of the subject. One shared word ("packing list" for the Tokyo list) is
     #: a near note, not the one asked about (audit 1029 C33).
-    return [v for v in ranked if wanted <= stems(v)]
+    named = [v for v in ranked if wanted <= titled(v) | {_stem(w) for w in v.words}]
+    if not names or any(s.kind == "task" for v in named for s in v.sentences):
+        return named
+    #: Nothing to tick there: then the notes titled or filed with every name
+    #: the subject carries. "before the Lisbon trip" is the Lisbon packing
+    #: list when the trip note holds no checklist (audit 1029 C33); the name
+    #: is what keeps the Tokyo list out.
+    return named + [v for v in ranked if names <= titled(v) and v not in named]
 
 
 def _say_open_notes(out: _Answer, named: list[NoteView], subject: str, wanted: set[str]) -> bool:
@@ -2903,7 +2922,8 @@ def _still_open(out: _Answer, question: str, views: list[NoteView]) -> bool:
     wanted = {_stem(w) for w in _words(subject)} - {_stem(w) for w in _NOTE_NOUNS}
     if not wanted:
         return False
-    return _say_open_notes(out, _notes_named_by(views, wanted), subject, wanted)
+    names = {_stem(w) for w in re.findall(r"\b[A-Z][\w'-]*", subject) if w != "I"}
+    return _say_open_notes(out, _notes_named_by(views, wanted, names & wanted), subject, wanted)
 
 
 def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> None:

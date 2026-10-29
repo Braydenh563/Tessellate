@@ -339,7 +339,10 @@ def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001
             return presented
     sentence = re.sub(r",\s*however,", "", re.split(r"(?<=[.!?])\s", body, maxsplit=1)[0])
     about = _SUBJECT_VERB.match(sentence)
-    if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you)\b", about.group(1), re.I):
+    #: "What your notes leave out is ...": a wh-clause is a question's shape,
+    #: never a subject to name the note by ("the note on what your notes
+    #: currently leave out", INBOX 1420); the sentence is quoted instead.
+    if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you|what|how|why|which|who|where|when|whether)\b", about.group(1), re.I):
         return "the note on " + re.sub(r"\bmy\b", "your", lower(about.group(1)), flags=re.I)
     return ""
 

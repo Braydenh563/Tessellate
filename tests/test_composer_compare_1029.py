@@ -43,3 +43,21 @@ def test_two_sides_are_answered_side_by_side(notebook, chat, frame, side):  # no
     assert text.index(note_a) < text.index(note_b), text
     # Never an overview whose topic is the question's own words.
     assert "notes about compare" not in text and "about compare" not in text, text
+
+
+@pytest.mark.parametrize(
+    ("ask", "sides"),
+    [
+        ("how are Deep Work and The Overstory different", ("Deep Work", "The Overstory")),
+        ("how are my running and baking notes alike", ("running", "baking")),
+        ("compare sourdough loaf one and two", ("sourdough loaf one", "sourdough loaf two")),
+        ("compare plan a and b", ("plan a", "plan b")),
+        # A whole second name is not a number: left as it is.
+        ("compare Lisbon and Porto", ("Lisbon", "Porto")),
+    ],
+)
+def test_more_ways_of_naming_two_sides(ask, sides):
+    from tessellate.ai import composer
+
+    assert composer.compare_sides(ask) == sides
+    assert composer.classify(ask) == "compare"

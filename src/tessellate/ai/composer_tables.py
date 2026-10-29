@@ -946,6 +946,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:the )?comparison (?:of|between) (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"\b(?:similarities|contrast) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    #: "how are Deep Work and The Overstory different" (audit 1029 C36).
+    re.compile(r"^(?:how|in what ways?) (?:are|were|do|did) (?P<a>.+?) and (?P<b>.+?) (?:different|differ|alike|similar|the same)[?.!]*$", re.I),
 )
 
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
@@ -953,7 +955,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 COMPARE_SHAPE_EXTRA = (
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
     rf"^which (?:is|are|was|were) (?:{_MORE})\b.+? or |\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
-    r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b"
+    r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
+    r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$"
 )
 
 #: Comparison words are asking words: dropped from the subject, so "is Lisbon

@@ -3593,7 +3593,10 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
     #: A cited note is called the newest only when it is (INBOX 1357, class
     #: K: "Your latest note is Hello" named the oldest note).
     is_newest = cited is None or bool(newest and newest == _newest_titles(req.session, 1)[:1])
-    line = (composer_aware.closing(_awareness(req), seed, recent, asked=req.question or "", cited=cited or ()) if req.body.screen else "") or composer_tone.closing(
+    #: An answer from the notes ends on the notes, never on a how-to for the
+    #: app ("what have I written about uni" closed on "A good next question
+    #: here: how do I ask about one note", INBOX 1420).
+    line = (composer_aware.closing(_awareness(req), seed, recent, related=not cited, asked=req.question or "", cited=cited or ()) if req.body.screen else "") or composer_tone.closing(
         recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or "", newest=is_newest
     )
     return f"{text}\n\n{line}" if line else text

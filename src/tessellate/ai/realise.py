@@ -78,6 +78,12 @@ _PHRASES = (
     (r"\bWas I\b", "Were you"),
 )
 _PHRASE_RES = tuple((re.compile(p), r) for p, r in _PHRASES)
+#: A "was" that shares the writer's "I" across "and": "I walked and was 20
+#: minutes late" is "you walked and were" (INBOX 1420: "you walked and was").
+#: Up to four words between, none of them another subject.
+_AND_WAS = re.compile(
+    r"\bI((?: (?!(?:he|she|it|they|we|you|there|this|that)\b)[a-z']+){1,4},? (?:and|but|or|then)(?: then)?) was(n't)?\b"
+)
 #: "Sam and I", "Sam and me": the person first, as people say it of others.
 _AND_I = re.compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
 #: A sentence's opening word is not a person: "Then Sam and I" is Sam.
@@ -131,6 +137,7 @@ def _with_you(match: re.Match) -> str:
 
 def _shift_words(text: str) -> str:
     text = _AND_I.sub(_with_you, text)
+    text = _AND_WAS.sub(lambda m: f"I{m.group(1)} were{m.group(2) or ''}", text)
     for pattern, said in _PHRASE_RES:
         text = pattern.sub(said, text)
     return _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)

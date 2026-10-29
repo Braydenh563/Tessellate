@@ -2991,7 +2991,21 @@ def _person_asked(asked: str, names: set[str], views: list) -> str:
     notes are tagged or filed under ("Golf"), which is a topic, not a person."""
     said = _one_name(asked, names)
     stem = composer._stem(said) if said else ""  # noqa: SLF001
-    return "" if not said or any(stem in v.filed_words for v in views) else said
+    if not said or any(stem in v.filed_words for v in views):
+        return ""
+    #: "tell me about Lisbon": a name the notes go to, stay in or fly from,
+    #: and never speak with, is a place, answered as a topic (audit 1029
+    #: C15 residue: it took the who shape).
+    texts = [s.text for v in views for s in v.sentences if said in s.text.lower()]
+    place = re.compile(rf"\b(?:to|in|from|at|near|around|visit|visiting|visited) {re.escape(said)}\b|\b{re.escape(said)} (?:trip|holiday|flight|flat|hotel)\b", re.I)
+    person = re.compile(
+        rf"\b(?:with|call|called|text|texted|email|emailed|ask|asked|told|tell|met|meet|thank|thanked) {re.escape(said)}\b"
+        rf"|\b{re.escape(said)} (?:said|says|told|asked|thinks|wants|wanted|called|texted|emailed|is coming|came)\b",
+        re.I,
+    )
+    if any(place.search(t) for t in texts) and not any(person.search(t) for t in texts):
+        return ""
+    return said
 
 
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
