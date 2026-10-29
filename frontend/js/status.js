@@ -388,7 +388,13 @@ function askNotificationPermission() {
 // 2026-10-03: `new AudioContext()` cost 44 to 56 ms inside the unlock click);
 // every gesture resumes a suspended context, which is WebKit's unlock, and
 // the listeners leave once it runs.
-const reminderAudio = { ctx: null, building: false };
+//: **Not built for a reminder that is far off** (INBOX 1446, the owner's lag
+//: log: "status.js build 557ms" and a 536ms keydown on the lock screen, the
+//: audio device opening on the main thread). `nextAt` is the soonest alert
+//: (`armReminderTimer`); a chime wanted with no context builds one and plays
+//: once it exists (`after`).
+const REMINDER_AUDIO_LEAD_MS = 5 * 60 * 1000;
+const reminderAudio = { ctx: null, building: false, nextAt: Infinity, after: null };
 function primeReminderAudio() {
   if (reminderAudio.ctx) {
     if (reminderAudio.ctx.state === "running") {
@@ -399,7 +405,7 @@ function primeReminderAudio() {
     }
     return;
   }
-  if (reminderAudio.building) return;
+  if (reminderAudio.building || reminderAudio.nextAt - Date.now() > REMINDER_AUDIO_LEAD_MS) return;
   reminderAudio.building = true;
   const build = () => {
     try {
@@ -407,6 +413,9 @@ function primeReminderAudio() {
     } catch {
       // No Web Audio support, reminders still show as a toast/notification.
     }
+    const wanted = reminderAudio.after;
+    reminderAudio.after = null;
+    if (wanted && reminderAudio.ctx) wanted();
   };
   if (window.requestIdleCallback) window.requestIdleCallback(build, { timeout: 1500 });
   else setTimeout(build, 300);
@@ -415,7 +424,12 @@ document.addEventListener("pointerdown", primeReminderAudio, { passive: true });
 document.addEventListener("keydown", primeReminderAudio, { passive: true });
 
 function playReminderChime() {
-  if (!reminderAudio.ctx) return;
+  if (!reminderAudio.ctx) {
+    reminderAudio.after = playReminderChime;
+    reminderAudio.nextAt = 0;
+    primeReminderAudio();
+    return;
+  }
   reminderAudio.ctx.resume().catch(() => {});
   const now = reminderAudio.ctx.currentTime;
   // Two short notes, rising, reads as "an alert" rather than a UI click,
@@ -513,6 +527,7 @@ function armReminderTimer(list) {
     return r.alert_minutes ? [due, due - r.alert_minutes * 60000] : [due];
   });
   const next = Math.min(...times.filter((t) => t > now));
+  reminderAudio.nextAt = next;
   if (!Number.isFinite(next)) return;
   //: Past the browser's 24.8-day ceiling a timeout fires at once; the poll
   //: re-arms long before such a reminder comes due.

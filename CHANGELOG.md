@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The reminder chime's audio context is no longer built after the first key or click of every session (INBOX 1446, the owner's lag log: `status.js build 557ms` and a 536ms keydown on the lock screen, the audio device opening on the main thread). It is built when a reminder is due within five minutes, or when a chime is wanted and there is none (the chime plays once it exists). A session with no reminder near builds none: 1 context at the first keystroke before, 0 after.
 - The companion no longer flushes style once per part it eases (INBOX 1446, the owner's lag log): `nameMarkBuddyBlend` read a part, eased it, then read the next, so each `animate` made the next read re-style; it reads every part first and eases them after, in the same order. A lint (`tests/test_lag_layout_reads.py`) names the loops that measure after writing.
 - The Timeline calendar draws without a layout per cell (INBOX 1446, the owner's lag log): the fit of chips to cells measured one cell at a time and the scroll and fade read a second and third layout; one measure now serves all three. A month of 900 notes at 4x CPU: frame 954 to 1177ms (forced layout 822 to 951ms) down to 261 to 454ms (106 to 250ms).
 - The Appearance panel has its own Help entry under Look and feel, and its current section reads in the accent text colour; "tell me about golf" answers with what you confirmed about golf, not as a person.
