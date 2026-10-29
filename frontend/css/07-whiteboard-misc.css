@@ -2544,8 +2544,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   font-size: var(--text-md);
   color: var(--ink);
 }
-.space-option:hover,
-.space-option:is(:focus-visible, :has(:focus-visible)) {
+.space-option:is(:hover, :focus-visible, :has(:focus-visible)) {
   background: var(--inner);
 }
 /* The row is a wrapper; the space is the button inside it, so the actions can
@@ -2589,9 +2588,7 @@ body.scroll-top-visible .skills-split > .tab-main {
   opacity: 0;
   transition: opacity var(--ui-fast) var(--ease-out);
 }
-.space-option:hover .space-option-actions,
-.space-option:focus-within .space-option-actions,
-.space-option-actions:focus-within {
+.space-option:is(:hover, :focus-within) .space-option-actions {
   opacity: 1;
 }
 /* Touch and keyboard have no hover, so hiding the actions there hides the
