@@ -1159,11 +1159,7 @@ $("graph-labels").addEventListener("change", (e) => {
   // or the names sit detached from their notes until something redraws.
   graphCatchUpLabels();
 });
-let graphSearchDebounceTimeout;
-$("graph-search").addEventListener("input", () => {
-  clearTimeout(graphSearchDebounceTimeout);
-  graphSearchDebounceTimeout = setTimeout(applyGraphHighlight, 150);
-});
+//: The search box's own listener is in graph.js, with the match set it reads.
 
 // Physics sliders: persist, then rebuild the simulation with the new forces.
 for (const key of ["gravity", "spread", "link-force"]) {
