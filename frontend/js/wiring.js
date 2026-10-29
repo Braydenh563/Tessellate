@@ -764,7 +764,7 @@ mountChatActionsMenu();
 
 $("chat-title").addEventListener("click", renameCurrentConversation);
 $("chat-title").addEventListener("keydown", (event) => {
-  //: Space and Enter, because this is a `<h2 role="button">` and the browser
+  //: Space and Enter, because this is a focusable `<h2>` and the browser
   //: only gives those two keys to a real `<button>` for free.
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();

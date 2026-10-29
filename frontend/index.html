@@ -2770,10 +2770,11 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- **Editable in place.** Renaming a conversation used to mean
                    leaving the tab, finding it in the Library and using its ⋯
                    menu: for a property whose only purpose is to help you
-                   recognise this thread, while you are looking at it. A button
-                   rather than a bare heading so it is reachable by keyboard
-                   and announces that pressing it does something. -->
-              <h2 id="chat-title" class="chat-title" role="button" tabindex="0"
+                   recognise this thread, while you are looking at it. Still a
+                   heading (a heading may not take `role="button"`), focusable
+                   so the keyboard can rename it; its title says what a press
+                   does. -->
+              <h2 id="chat-title" class="chat-title" tabindex="0"
                 title="Click to rename this conversation">New chat</h2>
               <span class="chat-subline">
                 <!-- A button, not a `<span>`. Its own tooltip already read
