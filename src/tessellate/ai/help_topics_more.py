@@ -2308,6 +2308,7 @@ TOPIC_META: dict[str, dict] = {
     "find-anything": {"title": "Find anything", "path": "Ctrl+P, or the magnifying glass in the status bar"},
     "background-art": {"title": "The animated background", "path": "Settings, Appearance, Animated background"},
     "themes": {"title": "Themes, colour and type", "path": "Settings, Appearance"},
+    "appearance-panel": {"title": "The Appearance panel", "path": "Ctrl+K, Appearance, or right-click the light and dark button"},
     "tabs-overview": {"title": "The app at a glance", "path": "The tabs along the top"},
     "phone-nav": {"title": "The app on a phone", "path": "The bar along the bottom, then More"},
     "settings-overview": {"title": "Finding your way round Settings", "path": "The gear in the top bar, or Ctrl+,"},
@@ -2456,7 +2457,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "timer", "calculator", "count-words", "insert-template",
     )),
     ("Look and feel", (
-        "appearance", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
+        "appearance", "appearance-panel", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
         "statusbar", "companion", "companion-travel", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (

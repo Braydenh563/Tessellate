@@ -53,7 +53,7 @@
 }
 .appearance-strip > button[aria-current="true"] {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .appearance-panel-body {
   flex: 1 1 auto;
