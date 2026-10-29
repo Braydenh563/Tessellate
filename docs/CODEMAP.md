@@ -5243,31 +5243,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelClamp` | frontend/js/panel-movable.js:190 |
 | `panelClampMove` | frontend/js/panel-movable.js:45 |
 | `panelClampSize` | frontend/js/panel-movable.js:53 |
-| `panelDock` | frontend/js/panel-movable.js:268 |
-| `panelFit` | frontend/js/panel-movable.js:254 |
+| `panelDock` | frontend/js/panel-movable.js:269 |
+| `panelFit` | frontend/js/panel-movable.js:255 |
 | `panelFull` | frontend/js/panel-movable.js:304 |
 | `panelGripDown` | frontend/js/panel-movable.js:437 |
 | `panelGripKey` | frontend/js/panel-movable.js:488 |
 | `panelHeadDown` | frontend/js/panel-movable.js:368 |
 | `panelHeadOf` | frontend/js/panel-movable.js:186 |
 | `panelId` | frontend/js/panel-movable.js:156 |
-| `panelInset` | frontend/js/panel-movable.js:233 |
+| `panelInset` | frontend/js/panel-movable.js:234 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:112 |
 | `panelMovableOn` | frontend/js/panel-movable.js:145 |
 | `panelOf` | frontend/js/panel-movable.js:149 |
-| `panelPreviewEl` | frontend/js/panel-movable.js:223 |
+| `panelPreviewEl` | frontend/js/panel-movable.js:224 |
 | `panelReset` | frontend/js/panel-movable.js:308 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:109 |
 | `panelSafe` | frontend/js/panel-movable.js:90 |
 | `panelSave` | frontend/js/panel-movable.js:318 |
-| `panelShowZone` | frontend/js/panel-movable.js:236 |
+| `panelShowZone` | frontend/js/panel-movable.js:237 |
 | `panelSnapZone` | frontend/js/panel-movable.js:62 |
 | `panelSt` | frontend/js/panel-movable.js:163 |
 | `panelStoreParse` | frontend/js/panel-movable.js:118 |
 | `panelStoreRead` | frontend/js/panel-movable.js:126 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:133 |
-| `panelSync` | frontend/js/panel-movable.js:280 |
-| `panelUndock` | frontend/js/panel-movable.js:273 |
+| `panelSync` | frontend/js/panel-movable.js:281 |
+| `panelUndock` | frontend/js/panel-movable.js:274 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:288 |
 | `panelWindowResized` | frontend/js/panel-movable.js:526 |
 | `panelZoneFor` | frontend/js/panel-movable.js:105 |
@@ -22230,7 +22230,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:35 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:595 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:597 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -22265,7 +22265,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:362 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:549 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:551 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |

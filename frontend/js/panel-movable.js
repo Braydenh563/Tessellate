@@ -219,16 +219,17 @@ function panelClamp(panel, st) {
 //: The one preview, reused: top layer (a modal dialog's own layer sits under
 //: it), click-through. Its padding is `--space-3`, so the inset is read from it
 //: (a density-aware length) rather than parsed out of a calc().
-let panelPreview = null;
+//: The snap preview and the open-panel observer, made on first use.
+const PANEL_LIVE = { preview: null, watch: null };
 function panelPreviewEl() {
-  if (!panelPreview || !panelPreview.isConnected) {
-    panelPreview = document.createElement("div");
-    panelPreview.className = "panel-snap-preview";
-    panelPreview.setAttribute("popover", "manual");
-    panelPreview.setAttribute("aria-hidden", "true");
-    document.body.appendChild(panelPreview);
+  if (!PANEL_LIVE.preview || !PANEL_LIVE.preview.isConnected) {
+    PANEL_LIVE.preview = document.createElement("div");
+    PANEL_LIVE.preview.className = "panel-snap-preview";
+    PANEL_LIVE.preview.setAttribute("popover", "manual");
+    PANEL_LIVE.preview.setAttribute("aria-hidden", "true");
+    document.body.appendChild(PANEL_LIVE.preview);
   }
-  return panelPreview;
+  return PANEL_LIVE.preview;
 }
 function panelInset() {
   return parseFloat(getComputedStyle(panelPreviewEl()).paddingLeft) || 12;
@@ -284,10 +285,9 @@ function panelSync(panel) {
 //: Closing a panel with "open where you left them" off puts it back in the
 //: middle (the saved place stays). One observer for all panels; it wakes only
 //: when a panel appears or disappears.
-let panelWatch = null;
 function panelWatchOpen(panel) {
   if (typeof IntersectionObserver === "undefined") return;
-  panelWatch ||= new IntersectionObserver((list) => {
+  PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
     for (const en of list) {
       if (en.isIntersecting || panelRestoreOn()) continue;
       const st = panelSt(en.target);
@@ -299,7 +299,7 @@ function panelWatchOpen(panel) {
       panelSync(en.target);
     }
   });
-  panelWatch.observe(panel);
+  PANEL_LIVE.watch.observe(panel);
 }
 function panelFull(panel) {
   const r = panel.getBoundingClientRect();

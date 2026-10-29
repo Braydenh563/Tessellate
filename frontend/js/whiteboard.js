@@ -114,7 +114,7 @@ function wbCompanionHeld(event, why) {
   if (!nmb.grabbed) return false;
   if (nmb.grabbed !== "logged") {
     nmb.grabbed = "logged";
-    const line = `board pan refused while the companion was held: ${why} ${event?.type || "code"} ${event?.pointerType || ""} buttons=${event?.buttons ?? ""} on ${typeof lagTarget === "function" ? lagTarget(event?.target) : event?.target?.tagName || ""}`;
+    const line = `board pan refused while the companion was held: ${why} ${event?.type || "code"} ${event?.pointerType || ""} buttons=${event?.buttons ?? ""} on ${event?.target?.tagName || ""}`;
     //: The lag log reaches the server's terminal, which is what the owner pastes.
     if (typeof lagNote === "function") lagNote("companion", 0, line);
     else recordBrowserLog("WARN", [line]);

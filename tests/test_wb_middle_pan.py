@@ -65,9 +65,10 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
     import json
 
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
@@ -108,9 +109,10 @@ def _gesture(events: list[dict]) -> list[bool]:
     if not node:
         pytest.skip("node is not installed")
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify({json.dumps(events)}.map((e) => Boolean(wbZoomFilter(e)))));\n"
     )
@@ -181,10 +183,11 @@ def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
         pytest.skip("node is not installed")
     event = {"type": "mousedown", "button": 0, "buttons": 1, "shiftKey": shift, "target": None}
     script = (
-        "let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         "function wbIsBareCanvas() { return true; }\n"
         + _function("wbTrackpadPan")
+        + _function("wbCompanionHeld")
         + _function("wbZoomFilter")
         + f"\nconsole.log(JSON.stringify(Boolean(wbZoomFilter({json.dumps(event)}))));\n"
     )
