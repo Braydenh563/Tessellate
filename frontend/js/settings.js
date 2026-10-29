@@ -120,6 +120,9 @@ function showSettingsSection(name) {
   if (name === "appearance") nameMarkBuddyHint(true);
   //: Help's tour buttons are drawn by tour.js, a lazy bundle.
   if (name === "help") renderTourReplay();
+  //: Help's topics (about 2,100 nodes, from the Guide's own table, settings-find.js) are
+  //: drawn when Help is shown or Settings is searched (filterSettings), not on every open.
+  if (name === "help" && typeof renderHelpTopics === "function") renderHelpTopics();
   //: Reported: reopening Settings lands on Models "but the scroll doesn't
   //: reset", so the first section opened halfway down. The section's own
   //: scrolling ancestor goes back to the top whenever the section changes.
@@ -351,8 +354,6 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
-  //: Settings, Help's topics, from the Guide's own table (settings-find.js).
-  if (typeof renderHelpTopics === "function") renderHelpTopics();
   if (typeof renderCredits === "function") renderCredits();
   showSettingsSection(section);
   // Re-read every open, not cached: the panel shows what the *currently
@@ -593,6 +594,12 @@ function filterSettings(term) {
     return;
   }
 
+  //: The topics are findable settings too: draw them on the first query, then ask again.
+  if ($("help-topics")?.hasAttribute("aria-busy") && typeof renderHelpTopics === "function") {
+    renderHelpTopics()?.then(() => {
+      if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
+    });
+  }
   let matches = 0;
   //: Each word, or a word meaning the same thing (settings-find.js
   //: `settingQueryAlts`, once that file has loaded): "night" keeps the

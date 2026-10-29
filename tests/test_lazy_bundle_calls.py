@@ -264,7 +264,7 @@ REACHED_AFTER_LOAD = {
     #: and the arrow keys, and these index and result extras are simply not
     #: drawn, which is the intended degradation.
     "settingsIndexWatchSection": "settingsUi, awaited by openSettingsModal before a section is shown",
-    "renderHelpTopics": "settingsUi, awaited by openSettingsModal on the line before the call",
+    "renderHelpTopics": "settingsUi, called when Help is shown or Settings is first searched, both inside the open dialog that awaited the bundle",
     "renderCredits": "settingsUi, awaited by openSettingsModal two lines before the call",
     "renderSettingResults": "settingsUi, called from the search field inside the open dialog",
     "settingQueryAlts": "settingsUi, called from filterSettings, the search field inside the open dialog (an empty query returns before it)",
