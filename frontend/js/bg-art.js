@@ -126,6 +126,54 @@ function bgFlow(x, t) {
   return (a + b) * 0.5;
 }
 
+// Drift's noise (INBOX 1436, from the owner's wallpaper renderer): value noise
+// on a hashed lattice with a smoothstep blend, three octaves. `bgHash2` is an
+// integer hash of a lattice point and a seed, 0..1.
+function bgHash2(ix, iy, seed) {
+  let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(seed, 1274126177)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+// The lattice itself: 256 by 256 hashed values, built once per style so the
+// per-pixel loop reads a table instead of hashing (a hash per corner per
+// octave per pixel is where the first version spent its time and its garbage).
+function bgLattice(seed) {
+  const t = new Float32Array(65536);
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++) t[y * 256 + x] = bgHash2(x, y, seed);
+  return t;
+}
+
+// One row of Drift's field: `n` samples of three-octave value noise (smoothstep
+// blend, each octave half the weight and twice the frequency) from `x0` in
+// steps of `dx` along the row at height `y`, as bytes in `out`. Everything is
+// in this one function on purpose: called per pixel with fractional
+// arguments, the three helpers it replaced boxed every one of them (58MB of
+// garbage in ten seconds, measured), and V8 would not inline them.
+function bgFbmRow(lat, out, n, x0, dx, y) {
+  for (let i = 0; i < n; i++) {
+    let sum = 0, amp = 1, f = 1;
+    for (let o = 0; o < 3; o++) {
+      const u = (x0 + i * dx) * f, v = y * f;
+      const ix = Math.floor(u), iy = Math.floor(v);
+      let fx = u - ix, fy = v - iy;
+      fx = fx * fx * (3 - 2 * fx);
+      fy = fy * fy * (3 - 2 * fy);
+      const r0 = (iy & 255) << 8, r1 = ((iy + 1) & 255) << 8, c0 = ix & 255, c1 = (ix + 1) & 255;
+      const a = lat[r0 + c0], b = lat[r0 + c1], c = lat[r1 + c0], d = lat[r1 + c1];
+      sum += amp * (a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy);
+      amp *= 0.5; f *= 2;
+    }
+    out[i] = (sum / 1.75 * 255) | 0;
+  }
+}
+
+// Wander's edge rule: a step heading out of [lo, hi] turns round; one
+// already heading in is left alone.
+function bgTurnBack(p, v, lo, hi) {
+  return (p < lo && v < 0) || (p > hi && v > 0) ? -v : v;
+}
+
 // p5's `random`: nothing, one bound, or two.
 function bgRand(a, b) {
   const r = Math.random();
@@ -574,6 +622,10 @@ const BG_ART_BUILDERS = {
     return {
       background: "clear",
       darkCap: 0.12,
+      // The stars move 0.05 to 0.3 pixels a frame: 15 frames a second show
+      // the same drift (INBOX 1436). `k` is how many of the old frames one
+      // draw stands for, so drift, twinkle and the meteor keep their speed.
+      fps: 15,
       init() {
         W = p.width; H = p.height;
         // One star per 8000 square pixels (162 at 1440x900): at 6000 the dark
@@ -669,14 +721,16 @@ const BG_ART_BUILDERS = {
       },
       frame(t) {
         const g = p.drawingContext;
+        const k = Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
+        const tk = t * k;
         if (ctx.still) g.drawImage(nebula, 0, 0, W, H);
         g.lineCap = "butt";
         for (let li = 0; li < LAYERS.length; li++) {
           const L = LAYERS[li];
           const from = lFrom[li], to = lTo[li];
-          const vx = driftX * 0.22 * L.z, vy = driftY * 0.22 * L.z;
+          const vx = driftX * 0.22 * L.z * k, vy = driftY * 0.22 * L.z * k;
           for (let i = from; i < to; i++) {
-            let x = sx[i] + vx + sjx[i], y = sy[i] + vy + sjy[i];
+            let x = sx[i] + vx + sjx[i] * k, y = sy[i] + vy + sjy[i] * k;
             if (x < -10) x += W + 20; else if (x > W + 10) x -= W + 20;
             if (y < -10) y += H + 20; else if (y > H + 10) y -= H + 20;
             sx[i] = x; sy[i] = y;
@@ -735,7 +789,7 @@ const BG_ART_BUILDERS = {
         if (ctx.dark) g.globalCompositeOperation = "lighter";
         g.fillStyle = farFill;
         for (let i = lFrom[0]; i < lTo[0]; i++) {
-          const tw = Math.sin(t * 9 * stw[i] + sph[i]);
+          const tw = Math.sin(tk * 9 * stw[i] + sph[i]);
           farStep[i] = tw > 0.5 ? 3 : tw > 0 ? 2 : tw > -0.5 ? 1 : 0;
         }
         for (let k = 0; k < 4; k++) {
@@ -752,7 +806,7 @@ const BG_ART_BUILDERS = {
           const sprites = dots[li];
           const hh = halo.width / 2;
           for (let i = lFrom[li]; i < lTo[li]; i++) {
-            const tw = 0.62 + 0.38 * Math.sin(t * 9 * stw[i] + sph[i]);
+            const tw = 0.62 + 0.38 * Math.sin(tk * 9 * stw[i] + sph[i]);
             const big = ssize[i];
             // Whole pixels, like the microbes: a copy at a fractional place
             // is resampled, and a star drifting a fifth of a pixel a frame
@@ -768,7 +822,7 @@ const BG_ART_BUILDERS = {
         }
         g.globalAlpha = 1;
         // A meteor every twenty seconds or so, faint and quick.
-        if (!meteor.on && --nextMeteor <= 0) {
+        if (!meteor.on && (nextMeteor -= k) <= 0) {
           const ang = p.random(0.35, 0.75);
           const left = p.random() < 0.5;
           meteor.on = true; meteor.life = 0;
@@ -779,8 +833,8 @@ const BG_ART_BUILDERS = {
           nextMeteor = 450 + Math.floor(p.random(450));
         }
         if (meteor.on) {
-          meteor.life++;
-          meteor.x += meteor.vx; meteor.y += meteor.vy;
+          meteor.life += k;
+          meteor.x += meteor.vx * k; meteor.y += meteor.vy * k;
           g.globalAlpha = Math.sin(Math.min(1, meteor.life / 34) * Math.PI);
           g.save();
           g.translate(meteor.x, meteor.y);
@@ -809,6 +863,8 @@ const BG_ART_BUILDERS = {
     return {
       background: "wash",
       pixelDensity: 0.5,
+      // A crest moves under a pixel a frame (INBOX 1436): 15 frames a second.
+      fps: 15,
       init() {
         // Five layers at full intensity, fewer at less.
         layers = Math.max(2, Math.round(5 * ctx.density));
@@ -818,9 +874,10 @@ const BG_ART_BUILDERS = {
           fills.push(bgP5Rgba(hue, 62, ctx.dark ? 55 : 58, 0.16));
         }
       },
-      frame(t) {
+      frame(t0) {
         const g = p.drawingContext;
         const W = p.width, H = p.height;
+        const t = t0 * (Math.min(30, bgArtFrameRate()) / Math.min(15, bgArtFrameRate()));
         for (let l = 0; l < layers; l++) {
           const yBase = H * (0.35 + l * 0.13);
           const amp = 26 + l * 10;
@@ -869,6 +926,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "keep",
       lightFloor: 0.3,
+      // The fastest bubble rises 0.72 pixels a frame at 30 (INBOX 1436):
+      // `dt` is in seconds, so 15 frames a second move the same.
+      fps: 15,
       init() {
         W = p.width; H = p.height;
         const rand = bgRandom(Math.round(ctx.baseHue * 1000) + 7);
@@ -941,7 +1001,7 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        const dt = 1 / bgArtFrameRate();
+        const dt = 1 / Math.min(15, bgArtFrameRate());
         secs += dt;
         // Clear each bubble's last box (a pixel wider for the smoothing).
         for (let i = 0; i < n; i++) {
@@ -1881,7 +1941,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "keep",
       pixelDensity: 0.1,
-      fps: 10,
+      // The glow crosses 4 pixels a draw at 5 frames a second, 0.4 of this
+      // canvas's own: the compositor's upscale shows no step (INBOX 1436).
+      fps: 5,
       darkCap: 0.05,
       lightFloor: 0.55,
       init() {
@@ -1905,7 +1967,7 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        secs += 1 / Math.min(10, bgArtFrameRate());
+        secs += 1 / Math.min(5, bgArtFrameRate());
         g.drawImage(sky, 0, 0, W + 20, H + 20);
         const r = Math.max(W, H) * (0.35 + 0.05 * Math.sin(secs * 0.3)) * (0.7 + 0.3 * ctx.density);
         const x = W * (0.5 + 0.3 * Math.sin(secs * 0.05));
@@ -1972,7 +2034,9 @@ const BG_ART_BUILDERS = {
     return {
       background: "clear",
       pixelDensity: 0.5,
-      fps: 20,
+      // A light moves 0.5 to 1.1 pixels a frame at 20 (INBOX 1436): 15 a
+      // second, each draw carrying a third more motion.
+      fps: 15,
       darkCap: 0.12,
       lightFloor: 0.3,
       init() {
@@ -1994,11 +2058,12 @@ const BG_ART_BUILDERS = {
       },
       frame() {
         const g = p.drawingContext;
-        secs += 1 / Math.min(20, bgArtFrameRate());
+        secs += 1 / Math.min(15, bgArtFrameRate());
+        const k = Math.min(20, bgArtFrameRate()) / Math.min(15, bgArtFrameRate());
         for (let i = 0; i < n; i++) {
           const a = bgFlow(i * 0.37, secs * 0.05) * 6.28;
-          fx[i] += Math.cos(a) * fs[i] * 0.8;
-          fy[i] += Math.sin(a) * fs[i] * 0.8 - 0.1;
+          fx[i] += Math.cos(a) * fs[i] * 0.8 * k;
+          fy[i] += (Math.sin(a) * fs[i] * 0.8 - 0.1) * k;
           if (fx[i] < -20) fx[i] += W + 40; else if (fx[i] > W + 20) fx[i] -= W + 40;
           if (fy[i] < -20) fy[i] += H + 40; else if (fy[i] > H + 20) fy[i] -= H + 40;
           g.globalAlpha = 0.25 + 0.75 * Math.max(0, Math.sin(secs * fs[i] + fp[i]));
@@ -2056,6 +2121,132 @@ const BG_ART_BUILDERS = {
       },
     };
   },
+
+  // Wander: pen strokes that walk. A few strokes (the accent's hue and two
+  // offsets from it) each take a handful of small random steps a frame, each
+  // frame's steps one path onto a canvas that is never cleared, so the drawing
+  // grows as it goes. A stroke that reaches the window's edge turns back. Old
+  // marks go by a faint clear every few seconds (`destination-out`, one
+  // fillRect), not a redraw: a frame is a few line segments and nothing
+  // else. The pen keeps a little of its last heading, so it travels instead of
+  // shivering in place. Still: a finished drawing (`settle` walks it ahead).
+  wander(p, ctx) {
+    const MAX = 6, STEPS = 7, LIFE = 2600;
+    const px = new Float32Array(MAX), py = new Float32Array(MAX);
+    const vx = new Float32Array(MAX), vy = new Float32Array(MAX), age = new Int32Array(MAX);
+    const inks = [];
+    let W = 0, H = 0, n = 0, rand = Math.random, fadeEvery = 80;
+    const respawn = (i) => {
+      px[i] = W * (0.1 + 0.8 * rand()); py[i] = H * (0.1 + 0.8 * rand());
+      vx[i] = 0; vy[i] = 0; age[i] = 0;
+    };
+    // One frame's steps for every stroke: a path per stroke, stroked once.
+    const walk = (g) => {
+      g.lineWidth = 2;
+      for (let i = 0; i < n; i++) {
+        g.strokeStyle = inks[i % inks.length];
+        g.beginPath();
+        g.moveTo(px[i], py[i]);
+        for (let s = 0; s < STEPS; s++) {
+          vx[i] = vx[i] * 0.82 + (rand() - 0.5) * 3.2;
+          vy[i] = vy[i] * 0.82 + (rand() - 0.5) * 3.2;
+          vx[i] = bgTurnBack(px[i], vx[i], 0, W);
+          vy[i] = bgTurnBack(py[i], vy[i], 0, H);
+          px[i] += vx[i]; py[i] += vy[i];
+          g.lineTo(px[i], py[i]);
+        }
+        g.stroke();
+        if (++age[i] > LIFE) respawn(i);
+      }
+    };
+    return {
+      background: "keep",
+      pixelDensity: 0.5,
+      fps: 20,
+      darkCap: 0.14,
+      lightFloor: 0.3,
+      init() {
+        W = p.width; H = p.height;
+        rand = bgRandom(Math.round(ctx.baseHue * 19) + 23);
+        n = Math.max(3, Math.round(MAX * (0.5 + 0.5 * ctx.density)));
+        inks.length = 0;
+        for (const off of [0, 40, -40]) inks.push(bgHsla(ctx.baseHue + off, ctx.dark ? 70 : 62, ctx.dark ? 66 : 42, ctx.dark ? 0.7 : 0.6));
+        for (let i = 0; i < n; i++) respawn(i);
+        fadeEvery = Math.round(Math.min(20, bgArtFrameRate()) * 4);
+      },
+      settle() {
+        const g = p.drawingContext;
+        for (let i = 0; i < 70; i++) walk(g);
+      },
+      frame() {
+        const g = p.drawingContext;
+        walk(g);
+        // Every few seconds the drawing loses a tenth of its ink.
+        if (p.frameCount % fadeEvery === 0) {
+          g.globalCompositeOperation = "destination-out";
+          g.globalAlpha = 0.1;
+          g.fillRect(0, 0, W, H);
+          g.globalAlpha = 1;
+          g.globalCompositeOperation = "source-over";
+        }
+      },
+    };
+  },
+
+  // Drift: value noise as slow weather. Three octaves of hashed-lattice noise
+  // (`bgFbmRow`) mapped through a table of colours between a dark and a light
+  // tone of the accent forty degrees apart, written into one reused
+  // ImageData at an eighth of the window a side, and put on a canvas the
+  // compositor stretches (never `drawImage`). The field slides slowly across
+  // the lattice; only a third of the rows are recomputed a frame, at twelve
+  // frames a second, so the whole picture is refreshed four times a second.
+  drift(p, ctx) {
+    const LUT = new Uint32Array(256);
+    let img = null, px = null, row = null, lat = null, bw = 0, bh = 0, ox = 0, oy = 0, phase = 0;
+    return {
+      background: "keep",
+      pixelDensity: 0.125,
+      fps: 12,
+      darkCap: 0.06,
+      lightFloor: 0.6,
+      init() {
+        const g = p.drawingContext;
+        bw = p.canvas.width; bh = p.canvas.height;
+        img = g.createImageData(bw, bh);
+        px = new Uint32Array(img.data.buffer);
+        const seed = Math.round(ctx.baseHue * 31) + 7;
+        lat = bgLattice(seed);
+        row = new Uint8Array(bw);
+        ox = (seed % 97) * 0.7; oy = (seed % 53) * 0.9;
+        // The tones: dark mode adds light (deep to glowing), light mode lays ink
+        // (pale wash to a mid tone), both capped by the runtime's luminance rules.
+        const lo = bgHslToRgb(ctx.baseHue, ctx.dark ? 50 : 55, ctx.dark ? 9 : 80);
+        const hi = bgHslToRgb(ctx.baseHue + 40, ctx.dark ? 60 : 62, ctx.dark ? 30 : 64);
+        for (let i = 0; i < 256; i++) {
+          const k = i / 255;
+          LUT[i] = (255 << 24) | ((lo[2] + (hi[2] - lo[2]) * k) << 16) | ((lo[1] + (hi[1] - lo[1]) * k) << 8) | (lo[0] + (hi[0] - lo[0]) * k);
+        }
+      },
+      settle() {
+        for (phase = 0; phase < 3; phase++) this.rows();
+      },
+      // Rows `phase`, `phase + 3`, ... at the field's present offset.
+      rows() {
+        const scale = 6 / bw; // about six lattice cells across the window
+        for (let y = phase; y < bh; y += 3) {
+          bgFbmRow(lat, row, bw, ox, scale, y * scale + oy);
+          const at = y * bw;
+          for (let x = 0; x < bw; x++) px[at + x] = LUT[row[x]];
+        }
+      },
+      frame() {
+        ox += 0.011; oy += 0.004;
+        phase = (phase + 1) % 3;
+        this.rows();
+        p.drawingContext.putImageData(img, 0, 0);
+      },
+    };
+  },
 };
 
 // --- the runtime ------------------------------------------------------------------
@@ -2083,6 +2274,26 @@ let bgArtLastInput = 0;
 // run that is itself replaced before it is ready hands them on.
 let bgArtRetiring = [];
 const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false };
+
+// **A long pause becomes a picture** (INBOX 1436). A pause already stops the
+// loop, but the live canvas stays mounted, holding its bitmap. After
+// `BG_ART_FREEZE_MS` of pause the canvas is captured through the same path a
+// still takes (`bgArtMountStill`: `toBlob`, an object URL, one fixed element
+// with the image as its background) and taken out of the page; the element
+// keeps the style's state (its typed arrays, its seed, its place in time),
+// and a resume puts the canvas back and carries on from there. The kept state
+// includes the canvas bitmap, so the page's memory is not freed, only its
+// layers and its compositor work; restarting the style from its seed instead
+// would free the bitmap but lose the picture the person was looking at.
+const BG_ART_FREEZE_MS = 20000;
+let bgArtPausedAt = 0; // performance.now() when this pause began, or 0
+let bgArtFreezeTimer = 0;
+let bgArtFrozen = null; // { layer, url } while the picture stands in for the canvas
+
+// Pure: has this pause lasted long enough, and is it not frozen already?
+function bgArtShouldFreeze(pausedAt, now, frozen) {
+  return !frozen && pausedAt > 0 && now - pausedAt >= BG_ART_FREEZE_MS;
+}
 
 // Idle: no pointer, key or wheel for two minutes. The art holds still
 // until the next one, and carries on from where it was.
@@ -2139,11 +2350,68 @@ function bgArtApplyPause() {
   const paused = b.hidden || b.blurred || b.covered || b.idle;
   if (bgArtInstance) {
     if (paused && bgArtInstance.isLooping()) bgArtInstance.noLoop();
-    else if (!paused && !bgArtInstance.isLooping()) bgArtInstance.loop();
+    else if (!paused && !bgArtInstance.isLooping()) {
+      bgArtThaw();
+      bgArtInstance.loop();
+    }
+    if (paused && !bgArtPausedAt) {
+      bgArtPausedAt = performance.now();
+      clearTimeout(bgArtFreezeTimer);
+      bgArtFreezeTimer = setTimeout(bgArtFreeze, BG_ART_FREEZE_MS);
+    } else if (!paused) {
+      bgArtPausedAt = 0;
+      clearTimeout(bgArtFreezeTimer);
+    }
   }
   if (bgArtLayer && bgArtLayer.classList.contains("bg-art-layer")) {
     bgArtLayer.classList.toggle("is-paused", paused);
   }
+}
+
+// The pause has run its time: swap the canvas for its picture. A timer that
+// fires early (a throttled background tab) waits out the rest.
+function bgArtFreeze() {
+  bgArtFreezeTimer = 0;
+  const inst = bgArtInstance;
+  if (!inst || bgArtFrozen || inst.isLooping() || !bgArtPausedAt) return;
+  const left = BG_ART_FREEZE_MS - (performance.now() - bgArtPausedAt);
+  if (!bgArtShouldFreeze(bgArtPausedAt, performance.now(), false)) {
+    bgArtFreezeTimer = setTimeout(bgArtFreeze, Math.max(250, left));
+    return;
+  }
+  const pausedAt = bgArtPausedAt;
+  inst.capture(bgArtGeneration, (layer, url) => {
+    // Resumed, or replaced, while the picture was encoding: it is not needed.
+    if (bgArtInstance !== inst || bgArtPausedAt !== pausedAt) {
+      layer.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    // Take the canvas out only once the picture can be drawn, so there is no
+    // frame with neither.
+    const done = () => {
+      if (bgArtInstance !== inst || bgArtPausedAt !== pausedAt) {
+        layer.remove();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      inst.detach();
+      bgArtFrozen = { layer, url };
+    };
+    const probe = new Image();
+    probe.src = url;
+    (probe.decode ? probe.decode() : Promise.resolve()).then(done, done);
+  });
+}
+
+// A resume: the canvas goes back where it was, then the picture goes.
+function bgArtThaw() {
+  if (!bgArtFrozen) return;
+  const { layer, url } = bgArtFrozen;
+  bgArtFrozen = null;
+  if (bgArtInstance) bgArtInstance.attach();
+  layer.remove();
+  URL.revokeObjectURL(url);
 }
 
 // Is the whole window covered by something opaque? The topmost element at
@@ -2204,6 +2472,19 @@ function bgArtHalt(handingOver = false) {
   bgArtGeneration++;
   clearInterval(bgArtCoverTimer);
   bgArtCoverTimer = 0;
+  clearTimeout(bgArtFreezeTimer);
+  bgArtFreezeTimer = 0;
+  bgArtPausedAt = 0;
+  if (bgArtFrozen) {
+    // The picture of a paused canvas stands in for it until what replaces it
+    // is ready, as a moving canvas does.
+    if (handingOver) bgArtRetiring.push([bgArtFrozen.layer, bgArtFrozen.url]);
+    else {
+      bgArtFrozen.layer.remove();
+      URL.revokeObjectURL(bgArtFrozen.url);
+    }
+    bgArtFrozen = null;
+  }
   const canvas = document.getElementById("bg-art-canvas");
   if (bgArtInstance) {
     // Handing over, a moving canvas stops but stays on screen until its
@@ -2226,6 +2507,25 @@ function bgArtHalt(handingOver = false) {
   bgArtStillUrl = "";
   if (!handingOver) bgArtRetire();
   bgArtSeedUsed = null;
+}
+
+// The still path, shared by a still frame and a long pause: encode `source`
+// (a canvas) to a PNG, and hand `done` a fixed element with that image as its
+// background and the image's object URL. `extra` is a CSS background the
+// canvas element itself carried (the constellation's nebula), laid under it.
+// A capture from a run that has since been replaced is dropped.
+function bgArtMountStill(source, gen, extra, done) {
+  source.toBlob((blob) => {
+    if (gen !== bgArtGeneration || !blob) return;
+    const url = URL.createObjectURL(blob);
+    const layer = document.createElement("div");
+    layer.id = "bg-art-still";
+    layer.className = "bg-art-canvas bg-art-still";
+    layer.setAttribute("aria-hidden", "true");
+    layer.style.backgroundImage = extra ? `url("${url}"), ${extra}` : `url("${url}")`;
+    document.body.appendChild(layer);
+    done(layer, url);
+  }, "image/png");
 }
 
 // Mount one style. `o`: { style, dark, accent, density, seedText, still,
@@ -2313,18 +2613,11 @@ function bgArtRun(o) {
     }
     if (style.settle) style.settle();
     style.frame(0);
-    canvas.toBlob((blob) => {
-      if (gen !== bgArtGeneration || !blob) return;
-      bgArtStillUrl = URL.createObjectURL(blob);
-      const layer = document.createElement("div");
-      layer.id = "bg-art-still";
-      layer.className = "bg-art-canvas bg-art-still";
-      layer.setAttribute("aria-hidden", "true");
-      layer.style.backgroundImage = `url("${bgArtStillUrl}")`;
-      document.body.appendChild(layer);
+    bgArtMountStill(canvas, gen, "", (layer, url) => {
+      bgArtStillUrl = url;
       bgArtLayer = layer;
       retire();
-    }, "image/png");
+    });
     return;
   }
 
@@ -2364,6 +2657,31 @@ function bgArtRun(o) {
       canvas.remove();
       if (twin) twin.canvas.remove();
     },
+    // The long pause (see BG_ART_FREEZE_MS): the picture of what is on
+    // screen, the canvas out of the page, the canvas back.
+    capture(gen, done) {
+      let source = canvas;
+      if (twin) {
+        // Two generations cross-fading: flatten them as they stand.
+        source = document.createElement("canvas");
+        source.width = canvas.width; source.height = canvas.height;
+        const c = source.getContext("2d");
+        for (const el of [canvas, twin.canvas]) {
+          const k = /\* ([\d.]+)\)$/.exec(el.style.opacity);
+          c.globalAlpha = k ? Number(k[1]) : 1;
+          c.drawImage(el, 0, 0);
+        }
+      }
+      bgArtMountStill(source, gen, canvas.style.backgroundImage, done);
+    },
+    detach() {
+      canvas.remove();
+      if (twin) twin.canvas.remove();
+    },
+    attach() {
+      if (!canvas.isConnected) document.body.appendChild(canvas);
+      if (twin && !twin.canvas.isConnected) document.body.appendChild(twin.canvas);
+    },
   };
   // A timestamp gate: the browser offers every display frame, and a frame
   // is drawn only when a thirtieth (or twentieth) of a second has passed.
@@ -2392,7 +2710,7 @@ function bgArtRun(o) {
 // Light under 0.5ms, Medium under 1.2ms, Heavy above; none may pass 2ms.
 const BG_ART_COST = {
   aurora: 0.91, constellation: 1.47, waves: 0.97, bubbles: 1.59, mesh: 1.09, microbes: 1.68,
-  mycelium: 0.25, dusk: 0.05, ripples: 0.18, fireflies: 0.38, rain: 0.13,
+  mycelium: 0.25, dusk: 0.05, ripples: 0.18, fireflies: 0.38, rain: 0.13, wander: 0.12, drift: 0.41,
 };
 
 function bgArtTier(style) {

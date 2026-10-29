@@ -1499,7 +1499,7 @@ const APPEARANCE_DEFAULTS = {
   // from whether it's on at all.
   "glass-sheen-strength": "100",
   zoom: "100", // §37E: interface-wide scale, percent: multiplies the root font-size
-  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium
+  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium | dusk | ripples | fireflies | rain | wander | drift
   palette: "default", // which curated colour set; themes select one
   // No accent by default: the palette supplies the colour until you pick one
   // yourself. Named here so appearancePref("accent") has a defined answer
@@ -2930,7 +2930,7 @@ function stopBgArt() {
 
 // Which generative background to paint. Persisted like the other
 // appearance prefs (user asked for more variety of art).
-const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain"];
+const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain", "wander", "drift"];
 //: The cards (Brief 95): a name and one line each, shown lightest first by
 //: their measured cost (`BG_ART_COST`, bg-art.js).
 const BG_ART_INFO = {
@@ -2945,6 +2945,8 @@ const BG_ART_INFO = {
   ripples: ["Ripples", "Rings on still water"],
   fireflies: ["Fireflies", "Soft lights wandering"],
   rain: ["Rain", "Fine streaks falling"],
+  wander: ["Wander", "Pen strokes that walk"],
+  drift: ["Drift", "Slow colour noise"],
 };
 
 //: Built once, then only marked; the previews are drawn when the cards are
