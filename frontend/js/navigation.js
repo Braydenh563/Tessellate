@@ -809,6 +809,10 @@ const TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "rem
 // exists: see revealTab("dashboard")'s module-level call below, and why
 // it's this instead of a full switchTab().
 function revealTab(name) {
+  //: One attribute on body is what the stylesheets key page-level rules on
+  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
+  //: the engine re-match that rule against every tab flip (lag-1029.md).
+  document.body.dataset.tab = name;
   for (const tab of TABS) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
