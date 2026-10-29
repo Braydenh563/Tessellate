@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1665,9 +1665,15 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         session, glossary.expand(question, _glossary(session)), deps.get_embeddings(), limit=5,
         locale=locale,
     )
-    entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
-    entries = _with_each_side(session, question, entries, locale)
-    found.entries = list_pool.pool(session, question, entries)
+    #: "The latest notes about running", "my last 2 notes": the notes the
+    #: request counted, not those widened by what the subject sounds like.
+    counted = note_rank.recency(question, bare=len(question.split()) <= 3)
+    if counted is not None and (counted.subject or counted.said_count or hit.mode == "recent"):
+        found.entries = list(hit.entries)
+    else:
+        entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
+        entries = _with_each_side(session, question, entries, locale)
+        found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
     found.match_info = hit.match_info
@@ -2040,6 +2046,10 @@ def _prepare(
     if not skip_search:
         _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
         _rewind_as_of(session, question, found, as_of, locale)
+        #: One ranker for every shape (audit 1029 C19): the note the subject
+        #: names, then the one that defines it, then the rest as retrieved.
+        if as_of is None and found.mode != "recent":
+            found.entries = note_rank.lead(found.entries, question)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)

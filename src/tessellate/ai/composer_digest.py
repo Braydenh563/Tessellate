@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_tables, glossary, realise, verdicts
+from tessellate.ai import composer, composer_frame, composer_lists, composer_slots, composer_tables, glossary, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -2635,6 +2635,10 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     names = _NAMES.get()
     abbr = glossary.asked(question)
     if abbr and _stands_for(out, abbr, views, today):
+        return _result(out, "fact", asked)
+    if composer_slots.answer(out, asked, views, today):
+        #: The question's slot (a tick, an open task, a dated line) is what
+        #: answers it, or the answer says no note holds it (audit 1029 rank 19).
         return _result(out, "fact", asked)
     computed = composer_lists.computed_kind(asked)
     if computed and composer_lists.answer(out, computed, asked, views, today):

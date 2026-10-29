@@ -236,7 +236,10 @@ def _find(views: list, subject: str, today: date, tense: str):  # noqa: ANN202
     wanted = {composer._stem(w) for w in composer._words(subject) if len(w) > 2} - {composer._stem(w) for w in composer._NOTE_NOUNS}
     if not wanted:
         return None
-    for view in sorted(views, key=lambda v: v.rank):
+    #: The note titled as the subject first, then one whose title holds it
+    #: (note_rank's order): "the dentist" is the Dentist note, not the
+    #: "Call the dentist" to-do that happens to name tomorrow.
+    for view in sorted(views, key=lambda v: (v.title_words != wanted, not wanted <= v.title_words, v.rank)):
         if not wanted <= {composer._stem(w) for w in composer._words(str(view.note.get("content") or ""))}:
             continue
         days = _dated(view, today, "future") + _dated(view, today, "past") if tense == "any" else _dated(view, today, tense)

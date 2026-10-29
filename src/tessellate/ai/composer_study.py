@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import study
+from tessellate.ai import note_rank, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -126,7 +126,7 @@ def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     return [row[2] for row in scored[:limit]]
 
 
-def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
+def topic_notes(topic: str, ctx: Ctx, limit: int = 3, *, open_one: bool = False) -> list[dict]:
     """The notes a topic names: those whose title holds every word of it,
     else those whose text does, best first. An empty topic, or "this note", is
     the note that is open. Empty when nothing fits."""
@@ -139,8 +139,19 @@ def topic_notes(topic: str, ctx: Ctx, limit: int = 3) -> list[dict]:
     exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
     if exact:
         return exact[:1]
+    #: "open the chess note" names the note titled "Chess": one note, not a menu.
+    said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
+    exact = [n for n in ctx.notes if open_one and said and _title(n).lower() == said]
+    if exact:
+        return exact[:1]
     titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
-    return titled[:limit] or _body_matches(wanted, ctx, limit)
+    #: The same ranker as Chat's lists (audit 1029 C19, C20): the note titled
+    #: as the topic, then the one that defines it, then the rest.
+    if titled:
+        #: A note that defines the topic is about it whatever its title says.
+        defining = [n for n in _body_matches(wanted, ctx, 50) if n not in titled and note_rank.key(n, note_rank.subject(topic), note_rank.stems_of(topic))[0] == 1]
+        return note_rank.lead(titled + defining, topic)[:limit]
+    return note_rank.lead(_body_matches(wanted, ctx, 50), topic)[:limit]
 
 
 def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
@@ -554,20 +565,26 @@ def _finish(ctx: Ctx, topic: str, note: dict, deck: list[study.Card], score: int
     return Reply("\n".join(lines), asks=[f"Quiz me on {topic}", f"Make flashcards from {topic}"])
 
 
-_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?:open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
+_OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<verb>open|show me|show|go to|take me to|pull up|bring up|jump to|find and open)\s+(?:my |the |all my |all the )?(?P<t>.+?)\W*$", re.I)
 _OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
 
 
 def open_named(ctx: Ctx) -> Reply | None:
     """Ask cannot open things itself, but it can point: "open my lecture
-    notes" is the links to the notes that name it."""
+    notes" is the links to the notes that name it. Chat answers the same
+    (audit 1029 C20): "open the sourdough starter" was a digest of three loaf
+    notes there, and the same words in Ask pointed at the starter."""
     found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
-    if not ctx.ask or not found:
+    if not found:
+        return None
+    #: "show me notes about X" is a listing Chat draws with previews (the
+    #: tool's rows); only a verb that opens is answered the same in both.
+    if not ctx.ask and found.group("verb").lower().startswith("show"):
         return None
     topic = found.group("t")
     if _OPEN_NOT.match(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
         return None
-    notes = topic_notes(topic, ctx, limit=5)
+    notes = topic_notes(topic, ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
     if not notes:
         return None
     if len(notes) == 1:

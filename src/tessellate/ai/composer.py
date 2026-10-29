@@ -408,7 +408,7 @@ _ASKING_WORDS = frozenset(
     wrote written write mention mentions mentioning mentioned explain should
     could would way am i me my mine whose whom anyone someone near after
     before during without within over under around across through since
-    until also again just only some other one any every each
+    until also again just only some other one any every each main
     remind idea forgot forget remember wonder wondering deal hows whats
     wheres whens whos whys going happen happened happening news anything
     something stuff info information details please thanks thank check
@@ -2713,9 +2713,10 @@ def _notes_named_by(views: list[NoteView], wanted: set[str]) -> list[NoteView]:
         return held | {_stem(w) for w in v.words}
 
     ranked = sorted(views, key=lambda v: v.rank)
-    #: Named by its filing or heading first ("for uni", "for history"); by any
-    #: word of it only when none is (the old reading).
-    return [v for v in ranked if wanted <= stems(v)] or [v for v in ranked if wanted & stems(v)]
+    #: Named by its filing or heading ("for uni", "for history"): every word
+    #: of the subject. One shared word ("packing list" for the Tokyo list) is
+    #: a near note, not the one asked about (audit 1029 C33).
+    return [v for v in ranked if wanted <= stems(v)]
 
 
 def _say_open_notes(out: _Answer, named: list[NoteView], subject: str, wanted: set[str]) -> bool:
@@ -2723,10 +2724,9 @@ def _say_open_notes(out: _Answer, named: list[NoteView], subject: str, wanted: s
     open_in = [(v, [s for s in v.sentences if s.kind == "task"]) for v in named]
     open_in = [(v, tasks) for v, tasks in open_in if tasks]
     if not open_in:
-        if not named:
-            return False
-        #: Nothing to tick on what was named: said, not answered with another
-        #: note's checklist (E11: biology answered with the history sources).
+        #: Nothing to tick on what was named, or no note named: said, not
+        #: answered with another note's checklist (E11: biology answered with
+        #: the history sources; audit 1029 C33: Tokyo with the Lisbon list).
         out.t("open_nowhere_a").asked(subject.strip(" ?.")).t("open_nowhere_b")
         return True
     for i, (view, tasks) in enumerate(open_in[:3]):
@@ -2786,7 +2786,9 @@ def _until_note(out: _Answer, question: str, views: list[NoteView], today: date)
     ahead = asked[0] == "future"
     #: A particle is no subject: "the stand up" is not the "Check-up" note.
     wanted = {_stem(w) for w in _words(asked[1]) if len(w) > 2} - {_stem(w) for w in _NOTE_NOUNS}
-    for view in sorted(views, key=lambda v: v.rank):
+    #: The note titled as the subject first (note_rank's order), so "the
+    #: dentist" is the Dentist note and not a to-do that says "call the dentist".
+    for view in sorted(views, key=lambda v: (v.title_words != wanted, not wanted <= v.title_words, v.rank)):
         if not wanted or not wanted & {_stem(w) for w in _words(str(view.note.get("content") or ""))}:
             continue
         dated = _days_named(view, today, asked[0])
