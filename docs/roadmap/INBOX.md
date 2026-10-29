@@ -295,6 +295,8 @@ with its owner named in the entry.
      B85. Composer's wording and grammar, especially around dates is a bit off and hard to read. And other things could be improved as well
      B86. The compsoer guide didn’t answer my question :(
 
+1437. **Decision needed, 2026-10-29 (audit 1029 rank 8, H15, N21, N12; standing order 3).** Private and locked notes leak through side doors: the Graph `preview` shows private text, a private note's tags and word count show while locked, and export and history return 200 with placeholder text as if it were the note. Recommendation, taken: every read surface passes the one vault gate. Export and history return 409 "Unlock first"; Graph and `/tags` drop the preview, tags and counts of a private note while locked (the node stays, titled "Private note"); one test walks every read route with a locked private note and fails on any leak. Queued for the next free agent.
+
 ## Placed (last 20, newest first)
 - 1430, 1431 (2026-10-28, deep audit agents and the diagnostics report): PLAN "Placed from INBOX, 2026-10-28".
 - 1416 (companion biological motion), 1417 (spaces as AI context), 1338 (Use AI switch disabled without a model), 1339 (relative times in Ask theme summaries): BACKLOG "Placed from INBOX, 2026-10-27 (next PR)".
