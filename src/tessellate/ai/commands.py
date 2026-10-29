@@ -699,7 +699,9 @@ def _time_of(words: str, now: datetime, locale: str | None) -> datetime | None:
     return when.resolve(words, now, locale=locale) or when.resolve("in " + words, now, locale=locale)
 
 
-_TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck)\s+(.+?)\s+(?:in|into|to)\s+the\s+(?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
+#: Matched on single-spaced text (see `read`), words joined by one space, so
+#: a run of blanks has one reading and the match stays linear.
+_TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|into|to) the (?:bin|trash|rubbish|recycle bin|rubbish bin|trash can)$", re.I)
 
 
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
@@ -709,7 +711,9 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     if not command:
         return None
     #: "move the lentil soup note to the bin" says delete in other words.
-    command = _TO_THE_BIN.sub(r"delete \1", command)
+    binned = _TO_THE_BIN.match(" ".join(command.split()))
+    if binned:
+        command = f"delete {binned.group(1)}"
     if re.match(r"(?i)archive\b", command):
         #: Decision 42: archiving stays a UI action; no act archives.
         return None

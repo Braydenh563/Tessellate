@@ -280,7 +280,9 @@ def _ask(items: list[dict], about: str, partial: bool) -> str:
 
 
 #: "<item> on|in|from the <note> (note|list)": the item and the note it is on.
-_ON_NOTE = re.compile(r"^(?P<item>.+?)\s+(?:on|in|from|off)\s+(?:(?:my|the)\s+)(?P<note>.+?)(?:\s+(?:note|list|checklist))?$", re.IGNORECASE)
+#: Read on whitespace squashed to single spaces: words joined by one space
+#: leave no two ways to split a run of blanks, so the match stays linear.
+_ON_NOTE = re.compile(r"^(?P<item>\S+(?: \S+)*?) (?:on|in|from|off) (?:my|the) (?P<note>\S+(?: \S+)*?)(?: (?:note|list|checklist))?$", re.IGNORECASE)
 
 
 def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # noqa: ANN001
@@ -289,7 +291,7 @@ def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # n
     note, split before the lookup (audit 1029 C43)."""
     about = str(parsed.get("about") or "")
     items = _candidates(session, parsed.get("kind"), title)
-    split = _ON_NOTE.match(about)
+    split = _ON_NOTE.match(" ".join(about.split()))
     if split and not _match(items, about)[0]:
         note = _stems(split.group("note"))
         if note:
