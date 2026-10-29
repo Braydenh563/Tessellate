@@ -47,7 +47,7 @@
  "editor.js::raf": 4,
  "graph-canvas.js::raf": 3,
  "graph-canvas.js::resize-observer": 2,
- "graph.js::raf": 3,
+ "graph.js::raf": 2,
  "graph.js::resize-observer": 2,
  "library.js::mutation-observer": 1,
  "library.js::raf": 5,
