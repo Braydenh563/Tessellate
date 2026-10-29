@@ -3932,6 +3932,10 @@ function gcWireInteraction(s = gcTab) {
     //: gesture the reader began, and a Shift pressed or released mid-drag
     //: would otherwise change what the gesture meant halfway through.
     node._dragShift = Boolean(event.sourceEvent && event.sourceEvent.shiftKey);
+    //: **Alt is what links** (audit 1029 G15: a plain drag onto another note
+    //: opened "How are these connected?"). Shift already pins, so the link
+    //: takes the other modifier, read here for the same reason.
+    node._dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);
     //: A topic moved by its name stays where it is put, as a group: a
     //: released group would drift back into the layout one note at a time.
     s.dragTopic = event.subject.topic || null;
@@ -4009,13 +4013,7 @@ function gcWireInteraction(s = gcTab) {
       mate.node.fy = mate.node.y = wy + mate.dy;
       gcPost({ type: "drag", phase: "move", id: mate.node.id, x: mate.node.fx, y: mate.node.fy }, s);
     }
-    //: `graphNodeUnder` aims at `graphNodesRef`, which is the tab's map.
-    //: Drag-to-link is a Graph-tab gesture; a pane drags to place only.
-    //: Never while carrying a group: dropping a selection on a note is
-    //: not "link these two", and guessing which of the carried notes was
-    //: meant would be.
-    s.dropTarget =
-      s.size === "full" && !s.dragGroup.length && !s.dragTopic ? graphNodeUnder(node, { x: wx, y: wy }) : null;
+    s.dropTarget = gcDropTargetFor(s, node, { x: wx, y: wy });
     gcRequestDraw(s);
   }
 
@@ -4878,6 +4876,18 @@ function gcTooltipMatches(node, s = gcTab) {
 //: A click on a node, with the same three modes the SVG renderer had: trace
 //: mode picks an end, an in-flight "Link" picks the other note, otherwise the
 //: note opens in the popup.
+//: The note a dragged one would link to, or null. `graphNodeUnder` aims at
+//: `graphNodesRef`, which is the tab's map, so drag-to-link is a Graph-tab
+//: gesture; a pane drags to place only. Never while carrying a group:
+//: dropping a selection on a note is not "link these two", and guessing which
+//: of the carried notes was meant would be. And only with Alt held at the
+//: start of the drag (`_dragAlt`): a plain drag places the note, so a drop
+//: that was only a move never opens the link dialog.
+function gcDropTargetFor(s, node, point) {
+  if (s.size !== "full" || s.dragGroup.length || s.dragTopic || !node._dragAlt) return null;
+  return graphNodeUnder(node, point);
+}
+
 function gcClickNode(event, node, s = gcTab) {
   //: A surface can say what a click means on it. The pane opens the note in
   //: the tab it is sitting beside rather than in the Graph tab's popup, which
