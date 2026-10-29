@@ -127,7 +127,7 @@ _BASE = {
     "open_count": ("{opening}, with {left} still open.", "{opening}, and {left} still to settle."),
     "stale": (
         "The newest of these is {age} old, so things may have moved on since.",
-        "You last wrote about it {age} ago, which is a while; a fresh note would bring it up to date.",
+        "You last added to it {age} ago, which is a while; a fresh note would bring it up to date.",
         "Nothing new on it for {age}, so this is where it stood then rather than now.",
     ),
     "burst": (
@@ -283,6 +283,13 @@ def _gap(days: int) -> str:
         return "about a month"
     months = round(days / 30)
     return f"about {realise.count_word(months)} months" if months < 12 else "over a year"
+
+
+def _bare_gap(gap: str) -> str:
+    """`_gap` without its hedge or article, for a frame that brings its own:
+    "every a week" (owner, 2026-10-12) and "every about three months" (audit
+    1029 C7) are both "every week" and "every three months"."""
+    return re.sub(r"^(?:(?:about|nearly|over) )?(?:an? )?", "", gap)
 
 
 #: Phrases worded by the question as well as the turn: the same question says
@@ -1290,6 +1297,10 @@ def _said_as_written(line_body: str, i: int) -> str:
     """The body as reported speech: shorthand noted, a statement about something else written, else retold."""
     #: "What your notes leave out is how ...": a clause of its own, its verb late.
     asked_clause = bool(_WH_SUBJECT.match(line_body) and _FINITE.search(line_body))
+    if _OBLIGED.match(line_body):
+        #: "you wrote down need to cut eating out" (audit 1029 C13): a need
+        #: is said as one, not as an object of "wrote down".
+        return f"you {line_body[0].lower() + line_body[1:]}"
     if _SHORTHAND.match(line_body) and not _FINITE.search(line_body.split(",")[0]) and not asked_clause:
         #: "golf practice after work, hit a bucket ...": shorthand with no
         #: verb is what the person wrote down, never a dated fragment.
@@ -1611,6 +1622,9 @@ def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     return f"{_pick('noted', i)} {body}"
 
 
+_OBLIGED = re.compile(r"(?:need|needs|needed|want|wants|wanted|have|has|got|should|must|ought|hope|hopes|remember|forgot|try|trying)\s+to\b", re.I)
+
+
 def _clause(body: str, frame: str, i: int, first: bool) -> str:
     """One fact as a clause of the paragraph: a statement heard is what was
     learned, a note-to-self is the task set, a plain noun is what the plan
@@ -1625,6 +1639,10 @@ def _clause(body: str, frame: str, i: int, first: bool) -> str:
         return _past(body)
     if body.lower().startswith("going to "):
         return f"{_pick('meant', i)} {body[9:]}"
+    if _OBLIGED.match(body):
+        #: "you wrote down need to cut eating out", "it has need to cut ..."
+        #: (audit 1029 C13): a need is a clause of its own, not an object.
+        return f"you {body[0].lower() + body[1:]}"
     task = _TASK.match(body)
     if task:
         verb, obj, when = task.group(1).lower(), task.group(2), task.group(3) or ""
@@ -1808,8 +1826,7 @@ def _pattern(members: list[composer.NoteView], today: date) -> str:
     if span <= 9:
         return _vary("burst").format(count=realise.count_word(len(days)), span=_gap(max(span, 1)), age=_gap(max(age, 1)))
     if len(days) >= 3:
-        #: "every a week" (owner, 2026-10-12): "every" takes the bare unit.
-        every = re.sub(r"^(?:about |nearly )?an? ", "", _gap(max(1, round(span / (len(days) - 1)))))
+        every = _bare_gap(_gap(max(1, round(span / (len(days) - 1)))))
         return _vary("cadence").format(every=every, age=_gap(max(age, 1)))
     return _vary("fresh").format(age=_gap(max(age, 1)))
 
@@ -3569,7 +3586,7 @@ def polish(text: str, keep: Iterable[str] = ()) -> str:
     text = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), text)
     text = _DAY_OF_MONTH.sub(lambda m: m.group(0).title() if m.group(1) or m.group(3) else m.group(0), text)
     text = _SENTENCE_START.sub(_capital, text)
-    return re.sub("(\\d+)", lambda m: held[int(m.group(1))], text)
+    return realise.mend_stops(re.sub("(\\d+)", lambda m: held[int(m.group(1))], text))
 
 
 def _polish_out(out: _Out, kind: str) -> None:

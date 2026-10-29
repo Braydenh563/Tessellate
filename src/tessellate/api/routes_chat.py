@@ -3208,6 +3208,7 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
         voice=_composer_voice(),
         seed=req.question or "",
         register=_chat_voice(req),
+        window=planned.window,
     )
 
 
@@ -3318,6 +3319,12 @@ def _conversational_messages(req: _StreamRequest, prepared: dict, ollama_running
     )
 
 
+def _asks_only_a_time(question: str) -> bool:
+    """A question that names a time and no subject ("what did I write today")."""
+    planned = composer.plan(question or "")
+    return bool(planned.window and planned.window_phrase and not planned.terms)
+
+
 def _related_sentence(related: list) -> str:
     plural = len(related) != 1
     kinds = sorted({item["kind"] for item in related})
@@ -3340,7 +3347,10 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
     # here regardless.
-    related = _related_elsewhere(req.session, req.question)
+    #: Not for a question that is only a day ("what did I write today"): the
+    #: items it would name matched the words "write" and "today", and "it" had
+    #: no referent (audit 1029 C12).
+    related = [] if _asks_only_a_time(req.question) else _related_elsewhere(req.session, req.question)
     if related:
         events.append({"type": "answer", "delta": _related_sentence(related)})
         events.append({"type": "related", "items": related})

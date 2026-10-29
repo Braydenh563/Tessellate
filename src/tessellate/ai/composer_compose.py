@@ -322,15 +322,26 @@ def time_of_day(hour: int) -> str:
     return "morning" if 5 <= hour < 12 else "afternoon" if 12 <= hour < 17 else "evening" if 17 <= hour < 22 else "night"
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1) -> str:
+_GREETED = re.compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
+
+
+def greeted_as(question: str, hour: int) -> str:
+    """The part of the day to greet in: the one the person greeted in ("good
+    morning" is answered in the morning, whatever the clock says, audit 1029
+    C14), else the clock's."""
+    said = _GREETED.search(question or "")
+    return (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+
+
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "") -> str:
     """A greeting built from what the app knows: the time of day, what is due
     today (`due`, None when unknown), the title of the last note (`last`) and
     the streak in days. No note yet is the empty welcome. Each known fact is
     one clause; which come, in what order and joined how is the mood's."""
     if notes <= 0:
         new = frame("welcome_new", mood)
-        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=time_of_day(hour))} {new}"
-    parts = [frame("hello", mood, tod=time_of_day(hour))]
+        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
+    parts = [frame("hello", mood, tod=greeted_as(question, hour))]
     clauses: list[tuple[str, str]] = []
     if due:
         clauses.append(("due", frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")))

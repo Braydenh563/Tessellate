@@ -297,6 +297,18 @@ def drop_dangling(words: list[str]) -> list[str]:
     return words
 
 
+_STOP_AFTER_STOP = re.compile(r"([?!])\.(?!\.)")
+_COMMA_AFTER_STOP = re.compile(r"([?!]),(\s+)(\w)")
+
+
+def mend_stops(text: str) -> str:
+    """`text` without the stop a frame adds after a quote that ends a
+    question or an exclamation: "theme?." is "theme?", and "next?, from your
+    note" is "next? From your note" (audit 1029 C13)."""
+    text = _STOP_AFTER_STOP.sub(r"\1", text)
+    return _COMMA_AFTER_STOP.sub(lambda m: f"{m.group(1)}{m.group(2)}{m.group(3).upper()}", text)
+
+
 # --- the variety floor (decision 51) ------------------------------------------------
 
 #: Parts that carry a fact or the person's words: fixed whatever the turn.

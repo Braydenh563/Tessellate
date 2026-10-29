@@ -77,4 +77,4 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() == today)
     last = study.title_of(notes[0]["content"]) if notes else ""
     mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=facts.total or len(notes))
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=facts.total or len(notes), question=question)

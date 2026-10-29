@@ -368,8 +368,17 @@ def _by_day(rows: list[_Event]) -> dict[date, list[str]]:
     return by_day
 
 
+#: Clauses said on one day's line: a day of twelve edits was one 1,200
+#: character bullet (audit 1029 C11); the rest are counted, never dropped silently.
+_PER_DAY = 5
+
+
 def _day_lines(by_day: dict[date, list[str]], today: date) -> list[str]:
-    return [f"- **{_day_words(day, today)}:** " + "; ".join(clauses) + "." for day, clauses in by_day.items()]
+    lines = []
+    for day, clauses in by_day.items():
+        said = "; ".join(clauses[:_PER_DAY]) + (f"; and {_n(len(clauses) - _PER_DAY)} more" if len(clauses) > _PER_DAY else "")
+        lines.append(f"- **{_day_words(day, today)}:** {said}.")
+    return lines
 
 
 def _filtered(rows: list[_Event], asked: Asked) -> list[_Event]:

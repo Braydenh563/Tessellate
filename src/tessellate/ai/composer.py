@@ -206,6 +206,10 @@ PHRASES: dict[str, str] = {
     "checklist_done": " done:",
     "has": " has ",
     "checklist_items_done": " checklist items done:",
+    #: Nothing ticked: "no of three" read as a typo (audit 1029 C6).
+    "has_none_of_its": " has none of its ",
+    "checklist_none_of_its": "Its checklist has none of its ",
+    "one_open": "one item, not done:",
     "end_colon": ":",
     # The notes after the first, joined by how they relate to what came
     # before, never the same joining words twice running and never a pile of
@@ -279,6 +283,9 @@ PHRASES: dict[str, str] = {
     "recall_note": " note ",
     "recall_notes": " notes ",
     "recall_b": ", newest first:",
+    #: The window held more than the list shows (audit 1029 C11): say so.
+    "recall_more_a": "And ",
+    "recall_more_b": " more.",
     "recall_none": "Nothing I found was written ",
     "written_on": " was written on ",
     "open_nowhere_a": "No checklist in your notes about ",
@@ -1796,7 +1803,7 @@ class _Answer:
 
     @property
     def text(self) -> str:
-        return "".join(part[1] for part in self.parts)
+        return realise.mend_stops("".join(part[1] for part in self.parts))
 
 
 #: The openers that promise the person's words as written: after one, the
@@ -2057,18 +2064,32 @@ def _list_lead(out: _Answer, view: NoteView, lead: str) -> None:
         out.t("it_lists")
 
 
+def _checklist_count(out: _Answer, view: NoteView, tasks: list[Sentence], lead: str) -> None:
+    """How many of a checklist are ticked. Zero is "none of its three", one
+    left unticked is "one item, not done": a count word before "of" is never
+    "no" (audit 1029 C6)."""
+    ticked = sum(1 for s in tasks if s.done)
+    opening = lead == "opening"
+    if opening:
+        if view.titled:
+            out.t(_your_kind(view), "space")
+        out.name(view, cap=True)
+    if ticked:
+        out.t("has" if opening else "checklist").m(out.count(ticked)).t("checklist_of").m(out.count(len(tasks)))
+        out.t("checklist_items_done" if opening else "checklist_done")
+    elif len(tasks) == 1:
+        out.t("has" if opening else "checklist").t("one_open")
+    else:
+        out.t("has_none_of_its" if opening else "checklist_none_of_its").m(out.count(len(tasks)))
+        out.t("checklist_items_done" if opening else "checklist_done")
+
+
 def _list_block(out: _Answer, view: NoteView, items: list[Sentence], terms: list[str], lead: str) -> None:
     """A note's list, introduced by what it holds: "Your note **Reading
     list** lists four: ...", a checklist with how many are ticked."""
     tasks = [s for s in items if s.kind == "task"]
     if tasks and len(tasks) == len(items):
-        done, total = out.count(sum(1 for s in tasks if s.done)), out.count(len(tasks))
-        if lead == "opening":
-            if view.titled:
-                out.t(_your_kind(view), "space")
-            out.name(view, cap=True).t("has").m(done).t("checklist_of").m(total).t("checklist_items_done")
-        else:
-            out.t("checklist").m(done).t("checklist_of").m(total).t("checklist_done")
+        _checklist_count(out, view, tasks, lead)
         out.t("para")
         for i, s in enumerate(tasks):
             if i:
@@ -4287,7 +4308,11 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
     """Recall by time (decision 31's schema): the notes in the window, newest
     first, grouped by day, under the count; "nothing from then" when none."""
     wrote = bool(_WROTE_VERB.search(question or ""))
-    inside = sorted((v for v in views if _in_window(v, p.window, mentions=not wrote)), key=lambda v: (v.written, -v.rank), reverse=True)
+    #: A board or a mind map is made, not written: it is no "note" in the count.
+    inside = sorted(
+        (v for v in views if _in_window(v, p.window, mentions=not wrote) and str(v.note.get("kind") or "note") not in ("board", "map")),
+        key=lambda v: (v.written, -v.rank), reverse=True,
+    )
     said = window_said(_as_typed(p.window_phrase, question))
     if not inside:
         out.t("recall_none").asked(said).t("stop")
@@ -4308,6 +4333,8 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
             continue
         out.t("colon")
         _overview_line(out, units, set())
+    if len(inside) > RECALL_NOTES:
+        out.t("para", "recall_more_a").m(out.count(len(inside) - RECALL_NOTES)).t("recall_more_b")
 
 
 def _label_line(view: NoteView) -> list[Sentence]:
@@ -4722,11 +4749,23 @@ _EMPTY_WINDOW_ONE = {
 }
 
 
+#: A window past the newest note (today, this week) is answered with the
+#: newest note, not with where the notebook starts (audit 1029 C12).
+_EMPTY_WINDOW_NEWEST = {
+    "natural": ("Your newest note is from {last}.", "The last thing you wrote was {last}."),
+    "professional": ("The newest entry is dated {last}.", "The latest entry is from {last}."),
+    "terse": ("Newest: {last}.", "Last: {last}."),
+    "playful": ("Your latest page is from {last}.", "The ink last dried {last}."),
+}
+
+
 def empty_window(when: str, first: date | None, last: date | None, *, voice: str = "natural", seed: str = "",
-                 today: date | None = None, register: str = "") -> str:
+                 today: date | None = None, register: str = "", window: tuple | None = None) -> str:
     """A time window with no note in it, said as that, and where the notes
     are (`first` and `last` written days; None for an empty notebook).
-    `register` is the chat's own voice (a persona's cue included)."""
+    `register` is the chat's own voice (a persona's cue included); `window`
+    is the days asked, so one that starts after the newest note is answered
+    with that note."""
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
     if register:
         voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
@@ -4739,6 +4778,11 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     def day(d: date) -> str:
         return f"{d.day} {d:%B}" if d.year == today.year else f"{d.day} {d:%B %Y}"
 
+    if window and window[0] > last:
+        ago = (today - last).days
+        said = "yesterday" if ago == 1 else day(last)
+        newest = _pick(seed or when, "empty_window_newest", list(_EMPTY_WINDOW_NEWEST.get(voice, _EMPTY_WINDOW_NEWEST["natural"])))
+        return f"{lead} {newest.format(last=said)}"
     if first == last:
         span = _EMPTY_WINDOW_ONE[voice].format(first=day(first))
     else:
