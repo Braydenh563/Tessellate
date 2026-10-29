@@ -545,7 +545,7 @@ def classify(question: str, embed=None) -> str:  # noqa: ANN001
 
 #: Words whose final "s" is not a plural: "news" is not "new", "lens" not
 #: "len" (the stemmer's own rule, below; found by the 2026-10-10 triage).
-_NOT_PLURAL = frozenset("news lens gas yes always perhaps series species means mathematics physics".split())
+_NOT_PLURAL = frozenset("atlas canvas news lens gas yes always perhaps series species means mathematics physics".split())
 _VOWELS = "aeiou"
 
 
@@ -675,6 +675,41 @@ def _words(text: str) -> list[str]:
 
 
 
+#: The verbs the app does or answers as acts: a question that opens with one
+#: is about what follows it, never about the verb (audit 1029 C15).
+_COMMAND_VERBS = frozenset(
+    "read open show draft write compose compare explain define summarise summarize archive unarchive restore split merge "
+    "duplicate clone combine rename retitle tag untag pin unpin delete remove move file link unlink append add".split()
+)
+_COMMAND_LEADS = frozenset("please pls can could would will you just ok okay hey and then".split())
+_COMMAND_FILLER = frozenset("me my the a an this that these those all both every two three four five".split())
+_DRAFTED = frozenset("message messages email emails text reply letter note".split())
+_BIN_WORDS = frozenset("bin trash".split())
+
+
+def _without_command(text: str) -> str:
+    """The subject without the command that wraps it, one pass over the words:
+    "draft a message to Sara" is Sara, "move the budget to the bin" is budget,
+    "merge the two lentil soup notes" is lentil soup. Only a verb that opens
+    the sentence is a command, so "books I am reading" keeps its verb."""
+    words = text.split()
+    at = 0
+    while at < len(words) and words[at].casefold() in _COMMAND_LEADS:
+        at += 1
+    if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
+        return text
+    drafting = words[at].casefold() in ("draft", "write", "compose")
+    at += 1
+    while at < len(words) and (words[at].casefold() in _COMMAND_FILLER or (drafting and words[at].casefold() in _DRAFTED)):
+        at += 1
+    if drafting and at < len(words) and words[at].casefold() in ("to", "for"):
+        at += 1
+    rest = words[at:]
+    if len(rest) >= 3 and rest[-3].casefold() == "to" and rest[-2].casefold() == "the" and rest[-1].casefold().rstrip("?.!") in _BIN_WORDS:
+        rest = rest[:-3]
+    return " ".join(rest) or text
+
+
 def subject_terms(question: str) -> list[str]:
     """The words the question is about, as typed, without the asking words."""
     question = rephrase(question)
@@ -692,7 +727,7 @@ def subject_terms(question: str) -> list[str]:
     if re.match(r"^\s*(list|name|show|tell)\b", question, re.I):
         source = re.sub(r"^\s*(list|name|show|tell)\b", "", source, flags=re.I)
     seen: list[str] = []
-    for word in query_understanding.search_terms(source):
+    for word in query_understanding.search_terms(_without_command(source)):
         if word in _ASKING_WORDS or word in seen:
             continue
         seen.append(word)

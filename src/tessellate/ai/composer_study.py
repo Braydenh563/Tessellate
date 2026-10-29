@@ -120,7 +120,9 @@ def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     scored: list[tuple[int, int, dict]] = []
     for i, n in enumerate(ctx.notes):
         low = str(n.get("content") or "").lower()
-        if all(w in low for w in wanted):
+        #: A cheap substring pass, then whole stems: "Tom" is a name, never
+        #: the start of "tomatoes" (audit 1029 C16).
+        if all(w in low for w in wanted) and set(wanted) <= set(study.content_stems(low)):
             scored.append((-sum(low.count(w) for w in wanted), i, n))
     scored.sort(key=lambda row: row[:2])
     return [row[2] for row in scored[:limit]]
