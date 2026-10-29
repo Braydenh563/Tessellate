@@ -35,6 +35,13 @@ _DUE = re.compile(
     r"(?:\w+\W+){0,6}?(?:due|deadlines?|coming up|upcoming|on my plate|happening|scheduled|ahead|on the calendar|on the horizon|to hand in|to submit|to do)\b", re.I)
 #: "what's on", "am I busy": only a question when a time window is also named (`window`).
 _BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does)\b", re.I)
+#: "what is overdue", "anything overdue", "show me overdue reminders": the
+#: overdue reminders alone, never every reminder. Each optional part opens with
+#: its own word, so the match is linear.
+_OVERDUE = re.compile(
+    rf"^{_LEAD}(?:what(?:'s|’s| is| are)?|which|anything|any|show me|show|list|tell me|give me|do i have|have i got|is there anything|is anything)?"
+    r"(?: what(?:'s|’s| is| are)?)?(?: (?:the|my|any|all|every))*(?: (?:reminders?|tasks?|items?|things?))?(?: (?:that|which))?(?: (?:is|are))?(?: now)? ?(?:overdue|past due)"
+    r"(?: (?:reminders?|tasks?|items?|things?))?(?: for me)?\W*$", re.I)
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
@@ -64,7 +71,16 @@ _WHEN_IS_ALT = re.compile(
 _WHEN_IS_NEXT = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are) (?:my |the |our )?next\s+(?P<t>.+?)"
     r"|(?:my |the |our )?(?P<t2>\S.*?) (?:date|day|deadline|time))\W*$", re.I)
-_SPAN_WORDS = re.compile(r"\b(?:the )?(?:next|coming|following) (\d{1,2}|few|couple of) days?\b|\bnext (\d{1,2}) days\b|\bthe rest of (?:the|this) week\b|\brest of (?:the|this) week\b", re.I)
+#: "the next 7 days", "next two weeks", "the coming month", "the rest of this
+#: week": a span in units. Every part is a fixed word, so the match is linear.
+_UNIT_N = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "twelve": 12, "few": 3, "couple of": 2}
+_SPAN_WORDS = re.compile(
+    r"\b(?P<the>the )?(?P<lead>next|coming|following|upcoming) (?:(?P<n>\d{1,2}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|few|couple of) )?(?P<unit>day|week|month)s?\b"
+    r"|\b(?:the )?rest of (?:the|this) week\b", re.I)
+#: "before December", "by 15 November", "until Friday": the word and what follows.
+_BOUND = re.compile(r"\b(before|by|until|till)\b", re.I)
+_PAST_SAID = re.compile(r"\b(?:was|were|did|had|happened|wrote|made|went|saw|doing|done|been)\b", re.I)
+_AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|deadlines?|remind(?:er|ers|me)?)\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
@@ -107,32 +123,96 @@ def _short(day: date) -> str:
     return f"{day:%a} {day.day} {day:%b}"
 
 
-def window(question: str, today: date) -> tuple[date, date, str] | None:
-    """(first day, last day, how it was said) for the time a question names; the
-    past part of a week is cut at today."""
-    low = (question or "").lower()
+def _add_months(day: date, n: int) -> date:
+    month = day.month - 1 + n
+    year, month = day.year + month // 12, month % 12 + 1
+    last = (date(year + (month == 12), month % 12 + 1, 1) - timedelta(days=1)).day
+    return date(year, month, min(day.day, last))
+
+
+def _unit_span(low: str, today: date) -> tuple[date, date, str] | None:
     found = _SPAN_WORDS.search(low)
-    if found:
-        if "rest of" in found.group(0):
-            end = today + timedelta(days=6 - today.weekday())
-            return today, end, "the rest of this week"
-        raw = found.group(1) or found.group(2)
-        n = 3 if raw == "few" else 2 if raw == "couple of" else int(raw)
-        return today, today + timedelta(days=n - 1), f"the next {n} days"
-    phrases = when_words.find(low)
-    for _s, _e, phrase in phrases:
-        span = when_words.span(phrase, today, "future")
-        if span:
-            start = max(span[0], today)
-            if span[1] < today:
-                continue
-            # On a Saturday or Sunday "this week" cut at today is a day or
-            # two; a student asking on Sunday night means the next seven
-            # (dogfood 2026-10-25 round 2, item 4).
-            if phrase == "this week" and (span[1] - start).days <= 1:
-                return start, start + timedelta(days=6), phrase
-            return start, span[1], phrase
+    if not found:
+        return None
+    if found.group("unit") is None:
+        return today, today + timedelta(days=6 - today.weekday()), "the rest of this week"
+    raw = found.group("n")
+    if raw is None and not (found.group("the") or found.group("lead").lower() != "next"):
+        return None  # a bare "next week" is the calendar's (when_words)
+    n = int(raw) if raw and raw.isdigit() else _UNIT_N.get(raw or "a", 1)
+    unit = found.group("unit").lower()
+    end = _add_months(today, n) - timedelta(days=1) if unit == "month" else today + timedelta(days=n * (7 if unit == "week" else 1) - 1)
+    return today, end, f"the next {n} {unit}{'s' if n != 1 else ''}"
+
+
+def _bounded(low: str, today: date) -> tuple[date, date, str] | None:
+    """"Before December" ends the day before it starts; "by 15 November" and
+    "until Friday" end on that day. A bound that names no day ("before the
+    exam") is no window."""
+    for found in list(_BOUND.finditer(low))[:3]:
+        rest = re.sub(r"^(?:the |end of |the end of )+", "", low[found.end():].lstrip()[:40])
+        words = re.findall(r"[a-z0-9]+", rest)[:3]
+        said = next((" ".join(words[:k]) for k in (3, 2, 1) if words[:k] and when_words.span(" ".join(words[:k]), today, "future")), "")
+        span = when_words.span(said, today, "future") if said else None
+        if not span:
+            continue
+        before = found.group(1).lower() == "before"
+        last = span[0] - timedelta(days=1) if before else span[1]
+        if last >= today:
+            return today, last, f"{found.group(1).lower()} {said}"
     return None
+
+
+def _dated_phrase(phrase: str, low: str, today: date) -> tuple[date, date] | None:
+    """The span of a time phrase. An explicit date ("14 August", "the 25th")
+    that is already gone is the day just gone when the question looks back
+    ("what was I doing on 2 August") and, with no tense said, when that is the
+    nearer reading; "will", "due" or "coming" look ahead."""
+    ahead = when_words.span(phrase, today, "future")
+    if not ahead or not any(c.isdigit() for c in phrase) or ahead[2] != "day":
+        return ahead[:2] if ahead else None
+    gone = when_words.span(phrase, today, "past")
+    if not gone or gone[1] >= today and gone != ahead:
+        return ahead[:2]
+    if _PAST_SAID.search(low) and not _AHEAD_SAID.search(low):
+        return gone[:2]
+    if _AHEAD_SAID.search(low):
+        return ahead[:2]
+    return gone[:2] if (today - gone[1]).days < (ahead[0] - today).days else ahead[:2]
+
+
+def window(question: str, today: date) -> tuple[date, date, str] | None:
+    """(first day, last day, how it was said) for the time a question names: the
+    one reader every date shape uses. A window ahead is cut at today (the past
+    part of a week is not "coming up"); a day gone, read as a lookback, ends
+    before today."""
+    low = (question or "").lower()[:300]
+    span = _unit_span(low, today) or _bounded(low, today)
+    if span:
+        return span
+    for _s, _e, phrase in when_words.find(low):
+        found = _dated_phrase(phrase, low, today)
+        if not found:
+            continue
+        if found[1] < today:
+            if any(c.isdigit() for c in phrase):
+                return found[0], found[1], phrase
+            continue
+        start = max(found[0], today)
+        # On a Saturday or Sunday "this week" cut at today is a day or
+        # two; a student asking on Sunday night means the next seven
+        # (dogfood 2026-10-25 round 2, item 4).
+        if phrase == "this week" and (found[1] - start).days <= 1:
+            return start, start + timedelta(days=6), phrase
+        return start, found[1], phrase
+    return None
+
+
+def lookback(question: str, today: date) -> bool:
+    """Whether the question asks what a day gone held ("what is on 14
+    August"): the activity recap answers it (by the day each note was made)."""
+    win = window(question, today)
+    return win is not None and win[1] < today
 
 
 # --- events -----------------------------------------------------------------------------
@@ -308,6 +388,19 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
     return Reply("\n".join(lines), asks=["Plan my week"] if (end - start).days >= 3 else [])
 
 
+def _overdue(ctx: Ctx) -> Reply:
+    """The reminders past their day, oldest first; nothing else."""
+    late = sorted(_reminder_events(ctx, ctx.now.date(), ctx.now.date())[1], key=lambda e: (e.day, e.at))
+    if not late:
+        return Reply("Nothing is overdue.")
+    n = len(late)
+    lines = [f"{n} reminder{'s are' if n != 1 else ' is'} overdue:", ""]
+    lines += [e.line(overdue=True) for e in late[:MAX_ITEMS]]
+    if n > MAX_ITEMS:
+        lines += ["", f"And {n - MAX_ITEMS} more."]
+    return Reply("\n".join(lines))
+
+
 def _nothing_due(ctx: Ctx, end: date, span: str) -> Reply:
     lines = [compose.sentence_case(compose.frame("due_none", ctx.mood, span=span))]
     later, _o = events(ctx, end + timedelta(days=1), end + timedelta(days=3650))
@@ -325,14 +418,22 @@ def _next_reminder(ctx: Ctx, end: date, found: list[Event]) -> list[str]:
 
 
 
-def _tasks(ctx: Ctx, limit: int = 8) -> list[tuple[str, dict]]:
-    out: list[tuple[str, dict]] = []
-    for note in ctx.notes[:40]:
+#: Every open checklist item is counted and shown: the plan and "what is left"
+#: read the same list (audit 1029 C28).
+OPEN_LIMIT = 40
+
+
+def _tasks(ctx: Ctx, start: date, end: date) -> list[tuple[str, dict, bool]]:
+    """(task, its note, whether it names a day outside the window) for every
+    open item; one that names a day inside the window is a dated line already."""
+    out: list[tuple[str, dict, bool]] = []
+    for note in ctx.notes[:OPEN_LIMIT]:
         for task in study.open_tasks(str(note.get("content") or "")):
-            if recognise.dated_sentence(task) and any(not s.rank for s in recognise.recognise(task, now=_anchor(note, ctx.now), tense="future") if s.kind in ("date", "datetime")):
+            day = _sentence_day(task, _anchor(note, ctx.now)) if recognise.dated_sentence(task) else None
+            if day is not None and start <= day <= end:
                 continue
-            out.append((task, note))
-            if len(out) >= limit:
+            out.append((task, note, day is not None))
+            if len(out) >= OPEN_LIMIT:
                 return out
     return out
 
@@ -344,17 +445,20 @@ def _busiest(found: list[Event], days: list[date], load: dict) -> str:
 
 
 def _task_lines(tasks: list, days: list[date], load: dict) -> list[str]:
-    lines = ["", f"**Open tasks with no day ({len(tasks)})**"]
-    for task, note in tasks:
-        lines.append(f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))")
-    if len(days) > 1:
+    lines: list[str] = []
+    for heading, rows in (("Open tasks with no day", [t for t in tasks if not t[2]]), ("Open tasks dated outside this time", [t for t in tasks if t[2]])):
+        if rows:
+            lines += ["", f"**{heading} ({len(rows)})**"]
+            lines += [f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))" for task, note, _d in rows]
+    undated = [t[0] for t in tasks if not t[2]]
+    if len(days) > 1 and undated:
         work = [d for d in days if d.weekday() < 5] or days
-        placed: list[str] = []
-        for task, _n in tasks[:4]:
+        placed: dict[date, list[str]] = {}
+        for task in undated:
             day = min(work, key=lambda d: (load[d], d))
             load[day] += 1
-            placed.append(f"{day:%A}: {task}")
-        lines += ["", "A way to spread them over the lighter days: " + "; ".join(placed) + "."]
+            placed.setdefault(day, []).append(task)
+        lines += ["", "A way to spread them over the lighter days: " + "; ".join(f"{d:%A}: {', '.join(t)}" for d, t in sorted(placed.items())) + "."]
     return lines
 
 
@@ -362,7 +466,7 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     start, end, said = win
     today = ctx.now.date()
     found, overdue = events(ctx, start, end)
-    tasks = _tasks(ctx)
+    tasks = _tasks(ctx, start, end)
     days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
     load = {d: sum(1 for e in found if e.day == d) for d in days}
     span = _range_words(start, end, said, today)
@@ -404,7 +508,7 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
 
 def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
     win = window(said, today) or window(text, today)
-    if win is not None:
+    if win is not None and win[1] >= today:
         return win
     low = said.lower()
     if any(w in low for w in ("day", "today", "first", "focus", "start")):
@@ -448,7 +552,7 @@ PHRASES = {
 }
 
 
-def _open_tasks(ctx: Ctx, limit: int = 12) -> list[tuple[str, dict]]:
+def _open_tasks(ctx: Ctx, limit: int = OPEN_LIMIT) -> list[tuple[str, dict]]:
     out: list[tuple[str, dict]] = []
     for note in ctx.notes[:300]:
         out += [(task, note) for task in study.open_tasks(str(note.get("content") or ""))]
@@ -533,8 +637,9 @@ def _written_from(text: str, today: date) -> bool:
 def _asks_due(text: str, today: date) -> bool:
     """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
     if _DUE.match(text):
-        return True
-    return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and window(text, today) is not None and not _written_from(text, today))
+        return not lookback(text, today)
+    win = window(text, today)
+    return bool((_SPAN_WORDS.search(text) or _BUSY.match(text)) and win is not None and win[1] >= today and not _written_from(text, today))
 
 
 def answer(ctx: Ctx) -> Reply | None:
@@ -544,7 +649,9 @@ def answer(ctx: Ctx) -> Reply | None:
     today = ctx.now.date()
     if _LEFT.match(text):
         return _left(ctx)
-    until = _UNTIL.match(text)
+    if _OVERDUE.match(text):
+        return _overdue(ctx)
+    until =_UNTIL.match(text)
     if until:
         return _until(ctx, until.group("t"))
     if (reply := _when_reply(ctx, text)) is not None:

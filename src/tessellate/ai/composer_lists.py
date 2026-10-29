@@ -458,7 +458,7 @@ def _due_window(asked: str, window: tuple[str, int] | None, today: date) -> tupl
         last = span[0] - timedelta(days=1) if bound.group(1).lower() == "before" else span[1]
         return today, last, f"{bound.group(1).lower()} {bound.group('when').strip()}"
     planned = composer_plan.window(asked, today)
-    if planned:
+    if planned and planned[1] >= today:
         return planned[0], planned[1], planned[2]
     return today, today + timedelta(days=3650), "ahead in your notes"
 
