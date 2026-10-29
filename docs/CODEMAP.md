@@ -5276,7 +5276,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:126 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:133 |
 | `panelSync` | frontend/js/panel-movable.js:281 |
-| `panelUndock` | frontend/js/panel-movable.js:274 |
+| `panelUnsnap` | frontend/js/panel-movable.js:274 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:288 |
 | `panelWindowResized` | frontend/js/panel-movable.js:526 |
 | `panelZoneFor` | frontend/js/panel-movable.js:105 |

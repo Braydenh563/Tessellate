@@ -271,7 +271,7 @@ function panelDock(panel, st, zone) {
   st.dock = zone;
   panelFit(panel, st);
 }
-function panelUndock(st) {
+function panelUnsnap(st) {
   st.dock = "";
   st.w = st.pre ? st.pre.w : null;
   st.h = st.pre ? st.pre.h : null;
@@ -392,7 +392,7 @@ function panelHeadDown(e) {
       //: layout read of a drag, and only for a docked panel).
       if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) < 6) return;
       const fx = (x0 - rect.left) / rect.width;
-      panelUndock(st);
+      panelUnsnap(st);
       panelApply(panel, st);
       const r = panel.getBoundingClientRect();
       st.x += ev.clientX - fx * r.width - r.left;
