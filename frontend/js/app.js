@@ -1496,14 +1496,14 @@ function confirmDialog(message, options = {}) {
       document.removeEventListener("keydown", onKey, true);
       overlay.remove();
       returnFocus?.focus?.();
-      resolve(checkbox ? { ok: answer, checked: answer && Boolean(extra?.checked) } : answer);
+      resolve(checkbox ? { ok: answer, checked: answer && !!extra?.checked } : answer);
     };
     const onKey = (event) => {
       // Escape cancels and Enter confirms, but only while this dialog is up, 
       // captured, so a keyboard shortcut elsewhere can't fire underneath it.
       if (event.key === "Escape") {
         event.stopPropagation();
-        close(false);
+        close(); // undefined, not false: leaving is not a "no" (X12)
       } else if (event.key === "Enter" && event.target.tagName !== "BUTTON") {
         event.stopPropagation();
         close(true);
@@ -1521,7 +1521,7 @@ function confirmDialog(message, options = {}) {
     card.appendChild(row);
     overlay.appendChild(card);
     // Clicking the backdrop cancels, the way every other overlay here behaves.
-    wireBackdropClose(overlay, () => close(false));
+    wireBackdropClose(overlay, () => close());
     document.addEventListener("keydown", onKey, true);
     document.body.appendChild(overlay);
     // Cancel takes focus, not the dangerous one: a stray Enter or Space

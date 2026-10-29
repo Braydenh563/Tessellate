@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6788, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7084, test files 1506, tests 13236, plan headings 985.
+Counts: frontend functions 6788, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7084, test files 1507, tests 13239, plan headings 985.
 
 ## Frontend functions (6788)
 
@@ -6257,11 +6257,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `applyUpdateNow` | frontend/js/update-dialogs.js:121 |
+| `applyUpdateNow` | frontend/js/update-dialogs.js:124 |
 | `askUpdateChoiceOnce` | frontend/js/update-dialogs.js:81 |
 | `checkForUpdate` | frontend/js/update-dialogs.js:18 |
-| `showSourceUpdatedDialog` | frontend/js/update-dialogs.js:231 |
-| `showUpdateAvailableDialog` | frontend/js/update-dialogs.js:139 |
+| `showSourceUpdatedDialog` | frontend/js/update-dialogs.js:242 |
+| `showUpdateAvailableDialog` | frontend/js/update-dialogs.js:150 |
 
 ### frontend/js/usage-ledger.js (6)
 
@@ -20311,7 +20311,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13236)
+## Tests (13239)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21668,6 +21668,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_update_ask_once.py | 10 |
 | tests/test_update_beta.py | 7 |
 | tests/test_update_channel_packaged.py | 2 |
+| tests/test_update_dialogs_x12.py | 3 |
 | tests/test_upgrade_keeps_data_folder.py | 6 |
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |

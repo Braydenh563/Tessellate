@@ -91,6 +91,9 @@ async function askUpdateChoiceOnce() {
   );
   await ensureModule("onboarding").catch(() => {});
   const yes = typeof firstRunTurn === "function" ? await firstRunTurn(ask, "updates") : await ask();
+  //: Escape or the backdrop answers undefined (not a "no"): nothing stored,
+  //: asked again next start (X12).
+  if (yes === undefined) return;
   try {
     const saved = await apiJson("/update/choice", { method: "POST", body: JSON.stringify({ check: Boolean(yes) }) });
     if (prefsCache) Object.assign(prefsCache, saved);
@@ -125,15 +128,23 @@ async function applyUpdateNow(onProgress, tag = null) {
     return null;
   });
   if (!start) return false;
-  for (;;) {
+  //: A transient miss mid-poll is not a failure, but ten in a row (7 s with
+  //: no answer) is: the loop ends rather than spinning forever (X12).
+  for (let misses = 0; misses < 10; ) {
     await new Promise((resolve) => setTimeout(resolve, 700));
     const state = await apiJson("/update/apply/status", { silent: true }).catch(() => null);
-    if (!state) continue; // a transient miss mid-poll isn't a failure
+    if (!state) {
+      misses += 1;
+      continue;
+    }
+    misses = 0;
     onProgress?.(state);
     if (state.outcome === "launched") return true;
     if (state.outcome === "failed") return false;
     if (!state.running) return false; // shouldn't happen, but never loop forever
   }
+  onProgress?.({ step: "The update stopped answering. Try again from Settings, About.", failed: true });
+  return false;
 }
 
 function showUpdateAvailableDialog(result) {
@@ -151,8 +162,8 @@ function showUpdateAvailableDialog(result) {
   text.className = "confirm-text";
   text.textContent = result.can_auto_apply
     ? `Tessellate ${result.latest} is out: you're on ${result.current}. ` +
-      "Update automatically (downloads and installs it, then closes Tessellate " +
-      "AI: reopen it in a minute or two to start using the new version), or " +
+      "Update automatically (downloads and installs it, then closes Tessellate: " +
+      "reopen it in a minute or two to start using the new version), or " +
       "download it yourself from the release page."
     : `Tessellate ${result.latest} is out: you're on ${result.current}. ` +
       "This app never updates itself without asking: download the new " +
