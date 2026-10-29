@@ -203,6 +203,9 @@ def _title_of(content: str) -> str:
         return ""
     first = lines[0].strip()
     marked = bool(re.match(r"#{1,6}\s|(\*\*|__)\S.*\1:?$", first))
+    if not marked and _PREFIX.match(_plain(first)):
+        #: "Pros: more time" opens a section; it does not name the note (C8).
+        return ""
     name = _plain(re.sub(r"^#{1,6}\s+", "", first)).rstrip(".").rstrip(":").strip()
     return name if name and len(name.split()) <= (10 if marked else 6) else ""
 
@@ -225,15 +228,31 @@ def _whole_clause(clause: str) -> str:
     return ""
 
 
-def _dated(note: dict) -> str:
-    raw = str(note.get("created_at") or "")[:10]
-    try:
-        from datetime import date
+#: How many words of a title-less note's first clause name it (C8).
+_CLIP_WORDS = 7
 
-        day = date.fromisoformat(raw)
-    except ValueError:
-        return "an untitled note"
-    return f"your note of {day.day} {day.strftime('%B')}"
+
+def _clipped(note: dict) -> str:
+    """A title-less note by its first clause, cut at a word with an ellipsis:
+    "the note that starts “I just missed the bus to uni…”", never by its
+    day alone or "an untitled note" (audit 1029 C8, INBOX 1420)."""
+    first = _first_line(str(note.get("content") or "").strip())
+    clause = re.split(r"(?<=\w)[,;.!?](?:\s|$)", first, maxsplit=1)[0].strip()
+    words = clause.split()
+    if not words:
+        return "a note with no words yet"
+    said = " ".join(words[:_CLIP_WORDS]).rstrip(",;:")
+    return f"the note that starts “{said}{'…' if len(words) > _CLIP_WORDS else ''}”"
+
+
+def own_title(content: str) -> str:
+    """A one-line note that is only a name ("Atlas retro meeting"): short,
+    no sentence marks, not an instruction and not the person's own "I";
+    "" otherwise."""
+    line = _first_line(content.strip())
+    if "\n" in content.strip() or not line or re.search(r"[,;.!?]", line) or len(line.split()) > 6:
+        return ""
+    return "" if _IMPERATIVE.match(line) or re.match(r"i\b", line, re.I) else line
 
 
 def _presented(body: str) -> str:
@@ -251,14 +270,16 @@ def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     about; quoted when it is an instruction ("go to the gym at 9pm") or a
     sentence of the person's own; never a phrase cut mid-thought (1420)."""
     content = str(note.get("content") or "").strip()
-    title = _title_of(content)
+    title = _title_of(content) or own_title(content)
     if title:
         return _titled(title)
     first = _first_line(content)
     head = _PREFIX.match(first)
     category = str(note.get("category") or "").lower()
     if head and len(head.group(1).split()) <= 5 and head.group(1).strip().lower() != category:
-        return f"the {lower(head.group(1).strip())} note"
+        #: "Pros: more time", "Idea: a bike route": a section's label is
+        #: never the note's name ("your pros note", C8).
+        return _clipped(note)
     body = head.group(2) if head else first
     return _named_by_subject(body, lower) or _named_by_clause(body, note, lower)
 
@@ -293,12 +314,12 @@ def _named_by_clause(body: str, note: dict, lower) -> str:  # noqa: ANN001
         #: The person's own sentence is quoted whole, never cut into a
         #: different meaning ("I had work today and a friend").
         whole = _whole_clause(clause)
-        return "“" + whole + "”" if whole else _dated(note)
+        return "“" + whole + "”" if whole else _clipped(note)
     clause = _DOING.sub("", clause).strip() or clause
     if len(clause.split()) > _NAME_WORDS:
         whole = _whole_clause(clause)
         if not whole or len(whole.split()) > _NAME_WORDS:
-            return _dated(note)
+            return _clipped(note)
         clause = whole
     if not re.match(r"(?:the|a|an|my|your)\b", clause, re.I):
         clause = lower(clause)

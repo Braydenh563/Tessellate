@@ -1,0 +1,12 @@
+# Composer sentence frames (audit 1029 rank 22)
+
+Built: one naming and fragment rule in `ai/composer_digest.py` ("naming and fragments" section): `_fragment` (replaces `_lower_first`; a name, a title or a capital on the next word keeps the capital; `[[x]]` said as x), `_verb_led` (the only gate for "you still need to", "Remind you to", "you planned to"), `_note_called` and `_your_note` (a title named, never spoken), `_label_names` and `_section_line` (a section is the note's part: "Your X note has attendees: ...", "It also has decisions: ..."), `_second_person` (a book title is not a doing clause; any "-ed" dictionary verb gets its "you"), `_as_written` (the topic in the notes' capitals). Title-less notes: `composer_frame.short_name` names them by the clipped first clause ("the note that starts “Idea: a bike route along the river…”"), a one-line name is its own title (`own_title`), and a "Label: body" first line is never a title. One reporting verb for "learned" and "meant" (C38). Tests: `tests/test_composer_frames_1029.py` (3 notebooks, 22 phrasings, Ask and Chat).
+
+Remaining, in order:
+
+1. C15 residue seen here: "what about project atlas" still says "two notes about project" (`composer_digest._topic_typed` / `_subject` keep only the first word); the topic casing is right once the subject is.
+2. "**Also:** you were thinking about whether to move to a four day week" repeats the line a title-less note is named by (`_say_fact` then `_lines`, composer_digest.py); the lead names the note by that clause, so the line could be dropped.
+3. `_LEAD_VERBS` and `_SECTION_LABELS` are word lists; a verb the list lacks ("defrost the freezer") is read as a thing ("your X note still has defrost the freezer"), which is safe English but not a to-do offer.
+4. The "who" shape still says a section label raw: "On 13 October, Attendees: Sara, Tom, Priya." (`_one_name` path, composer_digest.py); it should go through `_section_line`.
+5. INBOX 1420 stays open for its other parts (answer latency, the social-skills connectors); its naming half is this row.
+6. Five failures on the base before this work, not touched: `test_composer_classes_1026e.py::test_a_list_by_date_leaves_archived_notes_out` (3), `test_gold_answers.py::test_what_is_left_is_a_checklist`, `test_gold_answers.py::test_the_answer_names_its_shape_for_the_page[what do I need to buy?-left]`.
