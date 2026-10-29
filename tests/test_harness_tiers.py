@@ -264,7 +264,9 @@ def test_a_copy_of_the_note_just_changed_is_not_made(monkeypatch, app_state):
         {"name": "edit_note", "arguments": {"note_id": 3, "content": f"{_SNOWDON}\nbring a rain jacket"}},
         {"name": "create_note", "arguments": {"content": f"{_SNOWDON}\nbring a rain jacket"}},
     )
-    assert ran == ["edit_note"]
+    #: The edit parks for a Confirm card now (audit 1029 H2), so it has not run,
+    #: and the copy is still not made behind it: that is the guard's point.
+    assert ran == []
 
 
 def test_a_note_holding_the_prompt_s_fence_is_not_made(monkeypatch, app_state):

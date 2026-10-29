@@ -1983,6 +1983,9 @@ class _TurnState:
     #: budget runs out, which is what forces the round after that to answer.
     offered: list[dict]
     did_write: bool = False
+    #: The person started this run with its writes listed (plan or skill): a
+    #: change to existing text runs, a removal still parks (`needs_confirm`).
+    approved: bool = False
     #: Which write tools ran, so a claim can be checked against the action that
     #: would have made it true rather than against the turn as a whole.
     ran_writes: set[str] = field(default_factory=set)
@@ -2654,7 +2657,7 @@ def _dispatch_call(
         except tools.ToolError as exc:
             return (yield from _handoff_refused(state, name, signature, exc))
         return (yield from _finish_handover(session, plan, state, name, arguments, handover))
-    elif spec is not None and (spec.destructive or (state.tainted and name in _PARK_WHEN_TAINTED and not _cleared_page(state, name, arguments))) and state.parked.get(name, 0) >= MAX_PARKED_CONFIRMS:
+    elif spec is not None and (tools.needs_confirm(name, arguments, state.approved) or (state.tainted and name in _PARK_WHEN_TAINTED and not _cleared_page(state, name, arguments))) and state.parked.get(name, 0) >= MAX_PARKED_CONFIRMS:
         # **A destructive tool cannot paper the turn with confirm
         # cards.** Parking one hands the model `AWAITING_CONFIRMATION`
         # rather than a result, which is honest but is not a *stop*:
@@ -2683,7 +2686,7 @@ def _dispatch_call(
             "ok": False,
             "error": result["error"],
         }
-    elif spec is not None and (spec.destructive or (state.tainted and name in _PARK_WHEN_TAINTED and not _cleared_page(state, name, arguments))):
+    elif spec is not None and (tools.needs_confirm(name, arguments, state.approved) or (state.tainted and name in _PARK_WHEN_TAINTED and not _cleared_page(state, name, arguments))):
         # Park it for the user, never auto-run a destructive tool, nor a
         # tool that reaches out once the turn has read from outside.
         # The confirm card is the honest signal, so count it as an
@@ -3227,6 +3230,7 @@ def run_agent(
     model_override: str | None = None,
     image_context: str | None = None,
     show_plan: bool = True,
+    approved: bool = False,
 ) -> Iterator[dict]:
     """Yields event dicts:
     {"type": "unsupported", "model": ..., "message": ...}, model can't do
@@ -3267,7 +3271,7 @@ def run_agent(
         model_override=model_override,
         image_context=image_context,
     )
-    state = _TurnState(messages=plan.messages, offered=plan.offered, named_hosts=_hosts_named(question))
+    state = _TurnState(messages=plan.messages, offered=plan.offered, named_hosts=_hosts_named(question), approved=approved)
     # SEC-02: a note retrieved for the question that was clipped from the web
     # or imported is already in the prompt, so the turn starts tainted.
     if any(isinstance(n, dict) and n.get("from_outside") for n in notes or ()):

@@ -938,7 +938,7 @@ def _tool_group(name: str) -> str:
     if name in ("web_search", "read_url"):
         return "online"
     spec = TOOLS[name]
-    return "confirm" if spec.destructive else "write" if name in WRITE_TOOLS else "read"
+    return "confirm" if spec.destructive or name in CHANGE_TOOLS else "write" if name in WRITE_TOOLS else "read"
 
 
 def _list_tools(session: Session, args: dict) -> dict:
@@ -3976,6 +3976,67 @@ WRITE_TOOLS = {
 }
 set_write_tools(WRITE_TOOLS)
 
+#: **Writes are in one of three classes** (audit 1029 H2; table in
+#: `docs/roadmap/agent-remaining/audit-1029-harness.md`). The Agent tip says it
+#: asks before it changes or removes something, so the gate is in code:
+#:
+#: - destructive (`ToolSpec.destructive`): removes content; always parks.
+#: - CHANGE_TOOLS: overwrites or detaches what the person already wrote;
+#:   parks the same way, so a Confirm card names it before it happens.
+#: - ADD_TOOLS: only adds (or flips state with an Undo); runs, and its result
+#:   card carries the Undo. `tag_note` is here, but `remove` makes it a change
+#:   (`needs_confirm`).
+#:
+#: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
+CHANGE_TOOLS = frozenset({
+    "edit_note",
+    "unlink_notes",
+    "rename_tag",
+    "rename_category",
+    "save_skill",
+    "audit_link_reasons",
+})
+ADD_TOOLS = frozenset({
+    "create_note",
+    "tag_note",
+    "pin_note",
+    "link_notes",
+    "restore_note",
+    "set_reminder",
+    "complete_reminder",
+    "create_document",
+    "add_whiteboard_card",
+    "add_whiteboard_link",
+    "generate_diagram",
+    "create_mindmap",
+    "map_from_note",
+    "add_map_node",
+    "link_map_nodes",
+    "restore_board_item",
+    "add_board_shape",
+    "place_library_item",
+    "create_category",
+})
+
+
+def needs_confirm(name: str, arguments: dict | None = None, approved: bool = False) -> bool:
+    """Whether this call parks for a Confirm card whatever else is true of the turn.
+
+    `approved` is a run the person already started with the writes listed (a
+    plan's "Run the plan", a skill they ran): their click was the confirm for
+    changes, so only a removal still parks.
+    """
+    spec = TOOLS.get(name)
+    if spec is None:
+        return False
+    if spec.destructive:
+        return True
+    if approved:
+        return False
+    if name in CHANGE_TOOLS:
+        return True
+    return name == "tag_note" and bool((arguments or {}).get("remove"))
+
 
 # --- which tools a turn is offered (roadmap §11a) --------------------------------
 #
@@ -4759,7 +4820,7 @@ def tool_catalog() -> list[dict]:
         {
             "name": spec.name,
             "description": spec.description,
-            "destructive": spec.destructive,
+            "destructive": spec.destructive or spec.name in CHANGE_TOOLS,
             "enabled": tool_enabled(spec.name),
             "online": spec.name in ("web_search", "read_url"),
             "counts": spec.name in COUNTING_TOOLS,
@@ -4770,7 +4831,7 @@ def tool_catalog() -> list[dict]:
                 "online"
                 if spec.name in ("web_search", "read_url")
                 else "confirm"
-                if spec.destructive
+                if spec.destructive or spec.name in CHANGE_TOOLS
                 else "write"
                 if spec.name in WRITE_TOOLS
                 else "read"

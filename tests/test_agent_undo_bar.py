@@ -56,9 +56,12 @@ def test_the_last_write_undone_restores_the_note_byte_equal(ai_client, fake_olla
     fake_ollama.tool_script = [[{"name": "edit_note", "arguments": {"note_id": note["id"], "content": "# Boiler\n\nPressure 2 bar."}}]]
     with ai_client.stream("POST", "/chat/stream", json={"question": "set the boiler pressure to 2 bar", "use_tools": True}) as r:
         events = [json.loads(line) for line in r.iter_lines() if line.strip()]
-    change = next(e["change"] for e in events if e.get("type") == "tool" and e.get("change"))
+    #: An edit to existing text parks for a Confirm card (audit 1029 H2); the
+    #: click runs it through /chat/tools/execute, whose result carries the undo.
+    park = next(e for e in events if e.get("type") == "confirm")
+    ran = ai_client.post("/chat/tools/execute", json={"name": park["name"], "arguments": park["arguments"]}).json()
     assert ai_client.get(f"/entries/{note['id']}").json()["content"] != before["content"]
-    undo = change["undo"]
+    undo = ran["undo"]
     ai_client.post("/chat/tools/execute", json={"name": undo["tool"], "arguments": undo["arguments"]})
     after = ai_client.get(f"/entries/{note['id']}").json()
     assert (after["content"], after["tags"], after.get("pinned")) == (before["content"], before["tags"], before.get("pinned"))

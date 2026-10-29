@@ -155,7 +155,7 @@ HELP_TOPICS: list[dict] = [
             "... menu has Explain this note: read aloud, then what it links to "
             "and why. Agent mode "
             "(a toggle in Chat) lets the assistant use its tools to search, link, "
-            "tag, organise and create, destructive actions always ask first, "
+            "tag, organise and create; changing or removing asks first, "
             "and after it reads a web page or a clipped or imported note, so "
             "does every change and web request. "
             "Conversations save and rename in the sidebar; the same agent pops "

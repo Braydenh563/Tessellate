@@ -1765,6 +1765,11 @@ function toolChip(label, ok = true, event = null) {
   return markToolStep(item, step);
 }
 
+//: A card that waits on the person is output, never a step: prose folds the
+//: step group shut (`closeGroup`) and the Confirm goes with it (audit 1029
+//: H1). Every such card is drawn by this, into `recordsHolder`; `tests/test_waiting_cards.py` checks.
+const showWaiting = (holder, render, ...args) => render(holder, ...args);
+
 // A destructive tool call parked for approval (Wave G). Nothing has
 // happened yet: Confirm actually runs it via /chat/tools/execute.
 function renderToolConfirm(holder, event) {
