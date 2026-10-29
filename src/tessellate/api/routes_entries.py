@@ -84,7 +84,7 @@ def _preview(text: str, length: int = 60) -> str:
     """
     from tessellate.entry.properties import strip as strip_properties
 
-    plain = manager.wiki_plain(strip_properties(text or "").lstrip())
+    plain = manager.strip_inline_markdown(manager.wiki_plain(strip_properties(text or "").lstrip()))
     return plain if len(plain) <= length else plain[: length - 1] + "…"
 
 
@@ -3927,7 +3927,7 @@ def _connection_label(entry) -> str:  # noqa: ANN001
     title and the first line of the body run together.
     """
     text = manager.readable_content(entry)
-    return manager.extract_title(text) or _preview(text, 80)
+    return manager.plain_label(text, 80)
 
 
 def _connected_files(session: Session, text: str) -> list[dict]:
