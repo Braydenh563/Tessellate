@@ -1125,8 +1125,11 @@ const HOME_PULL = 1.5;
 const CLEAR_GAP = 4;
 const CLEAR_STRENGTH = 0.6;
 const CLEAR_CELL = 40;
+//: The grid is a dense array over the notes' extent; past this many cells
+//: (a note flung far out) the cell doubles instead.
+const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
-const clear = { curved: true, stamp: 0 };
+const clear = { curved: true, stamp: 0, start: new Int32Array(1), items: new Int32Array(0) };
 
 function clearCurve(a, b) {
   // Drawn straight in every shape but Organic, whose long curves are its
@@ -1213,13 +1216,54 @@ function clearanceForce() {
   let widest = 0;
   for (const node of nodes) widest = Math.max(widest, node.r || 8);
   const reach = widest + CLEAR_GAP;
-  const grid = new Map();
+  //: **The notes by cell in two typed arrays, not a Map of lists** (audit
+  //: 1029 row 35): a long line's corridor reads hundreds of cells, nearly
+  //: all empty, and a Map lookup on a number key was most of this force's
+  //: time (2,000 notes, 3,800 links spread over the world: 195 ms a call).
+  //: Counting sort over the notes' extent; reads outside it are skipped.
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   for (const node of nodes) {
-    const key = Math.floor(node.x / CLEAR_CELL) * 100003 + Math.floor(node.y / CLEAR_CELL);
-    const list = grid.get(key);
-    if (list) list.push(node);
-    else grid.set(key, [node]);
+    if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) continue;
+    if (node.x < minX) minX = node.x;
+    if (node.x > maxX) maxX = node.x;
+    if (node.y < minY) minY = node.y;
+    if (node.y > maxY) maxY = node.y;
   }
+  if (minX > maxX) return;
+  let cell = CLEAR_CELL;
+  let cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+  let rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  while (cols * rows > CLEAR_GRID_MAX) {
+    cell *= 2;
+    cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+    rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  }
+  const gx0 = Math.floor(minX / cell);
+  const gy0 = Math.floor(minY / cell);
+  const cells = cols * rows;
+  if (clear.start.length < cells + 1) clear.start = new Int32Array(cells + 1);
+  if (clear.items.length < nodes.length) clear.items = new Int32Array(nodes.length);
+  const start = clear.start;
+  const items = clear.items;
+  start.fill(0, 0, cells + 1);
+  const cellOf = (node) =>
+    Number.isFinite(node.x) && Number.isFinite(node.y)
+      ? (Math.floor(node.x / cell) - gx0) * rows + Math.floor(node.y / cell) - gy0
+      : -1;
+  for (const node of nodes) {
+    const at = cellOf(node);
+    if (at >= 0) start[at + 1] += 1;
+  }
+  for (let i = 1; i <= cells; i++) start[i] += start[i - 1];
+  //: Filled in the notes' order, as the lists were, so pushes sum the same.
+  const fill = start.slice(0, cells);
+  nodes.forEach((node, index) => {
+    const at = cellOf(node);
+    if (at >= 0) items[fill[at]++] = index;
+  });
   for (const link of links) {
     const a = link.source;
     const b = link.target;
@@ -1241,17 +1285,18 @@ function clearanceForce() {
       const l2 = dx * dx + dy * dy || 1;
       const lo = Math.min(ax, ax + dx);
       const hi = Math.max(ax, ax + dx);
-      const x1 = Math.floor((hi + reach) / CLEAR_CELL);
-      for (let gx = Math.floor((lo - reach) / CLEAR_CELL); gx <= x1; gx++) {
-        const u0 = dx ? (Math.max(lo, gx * CLEAR_CELL - reach) - ax) / dx : 0;
-        const u1 = dx ? (Math.min(hi, (gx + 1) * CLEAR_CELL + reach) - ax) / dx : 1;
+      const x1 = Math.min(Math.floor((hi + reach) / cell), gx0 + cols - 1);
+      for (let gx = Math.max(Math.floor((lo - reach) / cell), gx0); gx <= x1; gx++) {
+        const u0 = dx ? (Math.max(lo, gx * cell - reach) - ax) / dx : 0;
+        const u1 = dx ? (Math.min(hi, (gx + 1) * cell + reach) - ax) / dx : 1;
         const ya = ay + dy * u0;
         const yb = ay + dy * u1;
-        const y1 = Math.floor((Math.max(ya, yb) + reach + 1) / CLEAR_CELL);
-        for (let gy = Math.floor((Math.min(ya, yb) - reach - 1) / CLEAR_CELL); gy <= y1; gy++) {
-          const list = grid.get(gx * 100003 + gy);
-          if (!list) continue;
-          for (const node of list) {
+        const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
+        const column = (gx - gx0) * rows - gy0;
+        for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
+          const end = start[column + gy + 1];
+          for (let k = start[column + gy]; k < end; k++) {
+            const node = nodes[items[k]];
             if (node === a || node === b || node._clear === clear.stamp) continue;
             // Clear of this chord: no push from it, and a chord it is near
             // finds it in its own corridor.

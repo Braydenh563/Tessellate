@@ -67,11 +67,11 @@ console.log(JSON.stringify({ asked, worst, moved, links: run("simulation.force('
 """
 
 
-def _run() -> dict:
+def _run(script: str = SCRIPT) -> dict:
     node = shutil.which("node")
     if not node:
         pytest.skip("node is not installed")
-    out = subprocess.run([node, "-e", SCRIPT, str(FRONTEND)], capture_output=True, text=True, timeout=120)
+    out = subprocess.run([node, "-e", script, str(FRONTEND)], capture_output=True, text=True, timeout=120)
     assert out.returncode == 0, out.stderr[-2000:]
     return json.loads(out.stdout.strip().splitlines()[-1])
 
@@ -84,3 +84,18 @@ def test_clearance_pushes_match_every_pair_and_ask_few_notes() -> None:
     # The bounding-box scan asked 289,939 notes on this map for their nearest
     # point on a line; the corridor with its per-chord check asks 18,202.
     assert out["asked"] < 40_000, out
+
+
+def test_a_note_flung_far_out_coarsens_the_grid_and_misses_nothing() -> None:
+    # The grid is a dense typed array over the notes' extent (2,000 notes,
+    # 3,800 links: 42 to 25 ms a call against the Map of lists). One note five
+    # million units out would ask for 10^10 cells; the cell doubles instead,
+    # and the pushes are still the brute force's.
+    far = SCRIPT.replace(
+        "const place = nodes.map(() => [-1600 + rand() * 4600, -1900 + rand() * 4600]);",
+        "const place = nodes.map(() => [-1600 + rand() * 4600, -1900 + rand() * 4600]); place[3] = [5e6, -5e6];",
+    )
+    assert far != SCRIPT
+    out = _run(far)
+    assert out["moved"] > 50, out
+    assert out["worst"] < 1e-9, out
