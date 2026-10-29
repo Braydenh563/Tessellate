@@ -76,7 +76,9 @@ def test_the_panel_grip_is_the_floor_not_a_space_step():
     text = (CSS / "panel-movable-lazy.css").read_text(encoding="utf-8")
     body = _rule(text, ".panel-movable-on > .panel-grip")
     assert "width: var(--target-min)" in body and "height: var(--target-min)" in body
-    assert "margin: calc(-1 * var(--target-min)) 0 0 auto" in body
+    # Zero net height, shifted into the right padding so it does not cover a
+    # foot's last button (the margin moved; the floor size it pins did not).
+    assert "margin: calc(-1 * var(--target-min)) calc(-1 * var(--space-5)) 0 auto" in body
     assert "--space-6" not in body
 
 

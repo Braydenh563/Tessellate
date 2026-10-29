@@ -26,7 +26,10 @@
     user-select: none;
   }
   /* Zero net height: it overlaps the foot's corner and stays there while the
-     card scrolls (the card is the scroll box). */
+     card scrolls (the card is the scroll box). At the target floor it covered
+     the centre of a foot's last button (the Guide's send, an E2E click), so it
+     reaches into the card's right padding instead (sticky keeps it inside the
+     content box vertically, so only the sideways shift holds). */
   .panel-movable-on > .panel-grip {
     display: block;
     position: sticky;
@@ -35,7 +38,7 @@
     flex: none;
     width: var(--target-min);
     height: var(--target-min);
-    margin: calc(-1 * var(--target-min)) 0 0 auto;
+    margin: calc(-1 * var(--target-min)) calc(-1 * var(--space-5)) 0 auto;
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
