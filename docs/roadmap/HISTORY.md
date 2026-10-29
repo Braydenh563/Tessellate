@@ -51439,6 +51439,7 @@ Quick sketch, the same day (the owner's screenshots): a thick arrow's shaft ran 
 
 All built, each in HISTORY.md: 60, 94, 100 to 104, 164, 165, 186, 279, 282, 296, 393 ("Moved from the plans, 2026-09-09" and "2026-10-05"); the Files rows' two rhythms and the attach picker's tiles ("2026-10-05 (UI_MODERNISATION_PLAN ...)"); 621 and 622 ("2026-10-05 (INBOX 621 and 622 ...)").
 
+1450. **The owner, 2026-10-29, verbatim** (whiteboard; screenshots, dark: a zoomed-out board whose connector-target check boxes are drawn as large rounded squares with a tick over the small shapes; a colour row with a ringed swatch and a round x delete button beside it). "cant left click drag to pan now on whiteboard" / "buttons get oversized at zoom, they should adjust in size but only so much idk ur the expert" / "wait if i right click pan then that doesnt allow drag select" / "can you somehow fix the ability to pan with mouse and trackpad and touch?" / "that x delete button is off in design" (Fixed f49654b: left drag pans, Shift-drag boxes, map controls bounded, the x quieter.) Later the same day: "there's no point in dragging windows if the background is darkened right?? I feel it should only be dark in the default position. also the ocr workspace is difficult and annoing to drag and I keep accidentally highlighting things on it trying to do so"
 
 ## Moved from the plans, 2026-10-29 (audit 1029 row 60, G26)
 
