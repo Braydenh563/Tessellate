@@ -1403,6 +1403,19 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     return _without_private(held[: rec.count]), mode if held else "keyword"
 
 
+def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set, scope, semantic, any_time, limit: int, found: dict, subject: str):  # noqa: ANN001, ANN202
+    """What stands in for an empty ranking: the notes written on a day the
+    question mentions, else what `_nothing_matched` offers; None when there
+    were entries (or nothing stands in)."""
+    if entries:
+        return None
+    if mentioned:
+        dated = _dated_candidates(session, mentioned, limit)
+        if dated:
+            return _without_private(dated), "dated"
+    return _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1453,14 +1466,9 @@ def _retrieve(
     semantic, keyword = _narrow_to_range(semantic, keyword, asked, mentioned)
 
     entries, mode = _rank(semantic, keyword, limit)
-    if not entries and mentioned:
-        dated = _dated_candidates(session, mentioned, limit)
-        if dated:
-            return _without_private(dated), "dated"
-    if not entries:
-        miss = _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
-        if miss is not None:
-            return miss
+    miss = _when_nothing_ranked(session, entries, asked, mentioned, scope, semantic, any_time, limit, found, subject)
+    if miss is not None:
+        return miss
 
     entries = _without_private(entries)
     match_info = _match_info(entries, sem_scores, kw_terms)

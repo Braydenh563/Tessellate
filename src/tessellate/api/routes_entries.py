@@ -3233,101 +3233,124 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
         if label:
             label_of[entry.id] = label
     distinct = sorted(set(label_of.values()))
-
-    document_hits: dict[str, list[tuple[int, str, str]]] = {label: [] for label in distinct}
-    note_hits: dict[str, list[tuple[int, str]]] = {label: [] for label in distinct}
-    if distinct:
-        #: `like`, not `ilike`: on SQLite a plain LIKE already folds ASCII case
-        #: (the pragma that turns that off is never set here), and `ilike`
-        #: compiles to `lower(x) LIKE lower(?)`, which copies every row's text
-        #: once per label. Measured over 60 labels on 500 notes, same answers:
-        #: 74 ms per call with `ilike`, 35 ms with `like`
-        #: (`test_a_mention_matches_whatever_the_case...` pins the folding).
-        flags = [Document.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in distinct]
-        for row in session.execute(
-            select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
-            .where(Document.archived_at.is_(None), or_(*flags))
-            .order_by(Document.updated_at.desc(), Document.id.desc())
-        ):
-            for i, label in enumerate(distinct):
-                if row[3 + i] and len(document_hits[label]) < REFERENCE_SOURCES_MAX and _names(row[2], label):
-                    document_hits[label].append((row[0], row[1] or "Untitled", row[2] or ""))
-        #: Two groups (audit 2026-10-05, ARCH-11: 1.1 s for sixty cards at
-        #: 5,000 notes, all of it SQLite running sixty LIKEs over every
-        #: note). A label with an interior word has a phrase the full-text
-        #: index can find, so its LIKE only reads the notes holding that
-        #: phrase; a short label still reads every note. Each label is in
-        #: one group, each group is read newest first, so a label's hits come
-        #: back in the order they always did.
-        narrowed = {label: _interior_phrase(label) for label in distinct}
-        groups = [
-            [label for label in distinct if narrowed[label] is None],
-            [label for label in distinct if narrowed[label] is not None],
-        ]
-        for group in groups:
-            if not group:
-                continue
-            flags = [Entry.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in group]
-            where = [
-                Entry.is_deleted.is_(False),
-                #: A private note is encrypted at rest, so its content could not
-                #: match the LIKE anyway; the filter is here so that stays true
-                #: by decision rather than by side effect. The same sentence
-                #: `routes_documents._backlinks` carries, for the same reason.
-                Entry.is_private.is_(False),
-                or_(*flags),
-            ]
-            if narrowed[group[0]] is not None:
-                where.append(
-                    Entry.id.in_(
-                        text(
-                            " UNION ".join(
-                                f"SELECT rowid FROM entries_fts WHERE entries_fts MATCH :p{i}"
-                                for i in range(len(group))
-                            )
-                        ).bindparams(**{f"p{i}": narrowed[label] for i, label in enumerate(group)})
-                    )
-                )
-            for row in session.execute(
-                select(Entry.id, Entry.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
-                .where(*where)
-                .order_by(Entry.id.desc())
-            ):
-                for i, label in enumerate(group):
-                    #: One over the cap, because the note itself can be among its
-                    #: own label's matches and is dropped per note below: the cap
-                    #: is on sources other than the note, as it always was.
-                    if row[2 + i] and len(note_hits[label]) <= REFERENCE_SOURCES_MAX and _names(row[1], label):
-                        note_hits[label].append((row[0], row[1] or ""))
-
+    document_hits = _document_mentions(session, distinct)
+    note_hits = _note_mentions(session, distinct)
     for entry in entries:
         rows = list(result.get(entry.id, []))
         label = label_of.get(entry.id)
-        if label is None:
-            result[entry.id] = rows[:REFERENCE_ROWS_MAX]
-            continue
-        wanted = label.casefold()
-        candidates: list[tuple[str, int, str, str]] = []
-        for document_id, title, content in document_hits[label]:
-            candidates.append(("document", document_id, title, content))
-        others = [(nid, content) for nid, content in note_hits[label] if nid != entry.id]
-        for note_id, content in others[:REFERENCE_SOURCES_MAX]:
-            candidates.append(("note", note_id, plain_label(content, 60) or "Untitled note", content))
-        for kind, source_id, source_label, content in candidates:
-            rows.append({
-                "kind": kind,
-                "id": source_id,
-                "label": source_label,
-                #: A link is a decision someone made; a mention is a coincidence
-                #: until they make it. Saying which is what stops this row being
-                #: a list of every note that happens to share a word.
-                "how": "links to it" if _links_to(content, wanted) else "mentions it",
-            })
-        #: Links before mentions, so the rows someone chose come first, and the
-        #: boards before both because they are exact.
-        rows.sort(key=lambda row: {"on it": 0, "links to it": 1, "mentions it": 2}[row["how"]])
+        if label is not None:
+            rows += _mention_rows(entry.id, label, document_hits[label], note_hits[label])
+            #: Links before mentions, so the rows someone chose come first, and the
+            #: boards before both because they are exact.
+            rows.sort(key=lambda row: {"on it": 0, "links to it": 1, "mentions it": 2}[row["how"]])
         result[entry.id] = rows[:REFERENCE_ROWS_MAX]
     return result
+
+
+def _document_mentions(session: Session, distinct: list[str]) -> dict[str, list[tuple[int, str, str]]]:
+    """Per label, the documents (newest-updated first) that name it."""
+    hits: dict[str, list[tuple[int, str, str]]] = {label: [] for label in distinct}
+    if not distinct:
+        return hits
+    #: `like`, not `ilike`: on SQLite a plain LIKE already folds ASCII case
+    #: (the pragma that turns that off is never set here), and `ilike`
+    #: compiles to `lower(x) LIKE lower(?)`, which copies every row's text
+    #: once per label. Measured over 60 labels on 500 notes, same answers:
+    #: 74 ms per call with `ilike`, 35 ms with `like`
+    #: (`test_a_mention_matches_whatever_the_case...` pins the folding).
+    flags = [Document.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in distinct]
+    for row in session.execute(
+        select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
+        .where(Document.archived_at.is_(None), or_(*flags))
+        .order_by(Document.updated_at.desc(), Document.id.desc())
+    ):
+        for i, label in enumerate(distinct):
+            if row[3 + i] and len(hits[label]) < REFERENCE_SOURCES_MAX and _names(row[2], label):
+                hits[label].append((row[0], row[1] or "Untitled", row[2] or ""))
+    return hits
+
+
+def _note_mentions(session: Session, distinct: list[str]) -> dict[str, list[tuple[int, str]]]:
+    """Per label, the notes (newest first) that name it."""
+    hits: dict[str, list[tuple[int, str]]] = {label: [] for label in distinct}
+    if not distinct:
+        return hits
+    #: Two groups (audit 2026-10-05, ARCH-11: 1.1 s for sixty cards at
+    #: 5,000 notes, all of it SQLite running sixty LIKEs over every
+    #: note). A label with an interior word has a phrase the full-text
+    #: index can find, so its LIKE only reads the notes holding that
+    #: phrase; a short label still reads every note. Each label is in
+    #: one group, each group is read newest first, so a label's hits come
+    #: back in the order they always did.
+    narrowed = {label: _interior_phrase(label) for label in distinct}
+    groups = [
+        [label for label in distinct if narrowed[label] is None],
+        [label for label in distinct if narrowed[label] is not None],
+    ]
+    for group in groups:
+        if group:
+            _scan_note_group(session, group, narrowed, hits)
+    return hits
+
+
+def _scan_note_group(session: Session, group: list[str], narrowed: dict, hits: dict[str, list[tuple[int, str]]]) -> None:
+    flags = [Entry.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in group]
+    where = [
+        Entry.is_deleted.is_(False),
+        #: A private note is encrypted at rest, so its content could not
+        #: match the LIKE anyway; the filter is here so that stays true
+        #: by decision rather than by side effect. The same sentence
+        #: `routes_documents._backlinks` carries, for the same reason.
+        Entry.is_private.is_(False),
+        or_(*flags),
+    ]
+    if narrowed[group[0]] is not None:
+        where.append(
+            Entry.id.in_(
+                text(
+                    " UNION ".join(
+                        f"SELECT rowid FROM entries_fts WHERE entries_fts MATCH :p{i}"
+                        for i in range(len(group))
+                    )
+                ).bindparams(**{f"p{i}": narrowed[label] for i, label in enumerate(group)})
+            )
+        )
+    for row in session.execute(
+        select(Entry.id, Entry.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
+        .where(*where)
+        .order_by(Entry.id.desc())
+    ):
+        for i, label in enumerate(group):
+            #: One over the cap, because the note itself can be among its
+            #: own label's matches and is dropped per note below: the cap
+            #: is on sources other than the note, as it always was.
+            if row[2 + i] and len(hits[label]) <= REFERENCE_SOURCES_MAX and _names(row[1], label):
+                hits[label].append((row[0], row[1] or ""))
+
+
+def _mention_rows(entry_id: int, label: str, document_hits: list, note_hits: list) -> list[dict]:
+    """The document and note rows that point at one note, links before mentions."""
+    from tessellate.entry.manager import plain_label
+
+    wanted = label.casefold()
+    candidates: list[tuple[str, int, str, str]] = []
+    for document_id, title, content in document_hits:
+        candidates.append(("document", document_id, title, content))
+    others = [(nid, content) for nid, content in note_hits if nid != entry_id]
+    for note_id, content in others[:REFERENCE_SOURCES_MAX]:
+        candidates.append(("note", note_id, plain_label(content, 60) or "Untitled note", content))
+    return [
+        {
+            "kind": kind,
+            "id": source_id,
+            "label": source_label,
+            #: A link is a decision someone made; a mention is a coincidence
+            #: until they make it. Saying which is what stops this row being
+            #: a list of every note that happens to share a word.
+            "how": "links to it" if _links_to(content, wanted) else "mentions it",
+        }
+        for kind, source_id, source_label, content in candidates
+    ]
 
 
 def _mention_like(label: str) -> str:
