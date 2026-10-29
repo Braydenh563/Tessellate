@@ -147,7 +147,6 @@ THREAD_SITES = {
     "core/embedmodels.py": "collect: embedding-model",
     "core/security.py": "infrastructure: a DNS probe of two seconds",
     "core/lanserve.py": "infrastructure: the one select thread that waits for a LAN connection first byte",
-    "ai/backend_hint.py": "infrastructure: one status probe of a backend, waited for at most 0.15 s by a decorating route",
     "core/background.py": "the registry: running() lists, stop_all() at quit; callers reach Activity (transcription: activity.start, warm-up: collect embeddings)",
 }
 
