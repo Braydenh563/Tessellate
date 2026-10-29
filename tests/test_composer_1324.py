@@ -80,9 +80,12 @@ def test_a_heading_is_named_without_its_hash():
     assert composer_frame.short_name({"content": "# Trains\n\nLisbon to Porto, 2h50."}) == "the Trains"
 
 
+#: "the Porto" was the recorded side until audit 1029 C36: a determiner is not
+#: part of the thing named (it headed the side-by-side as "**the Porto**"),
+#: and the digest's topic for the same question was already "Porto and Lisbon".
 @pytest.mark.parametrize(
     ("ask", "sides"),
-    [("compare the Porto and Lisbon notes", ("the Porto", "Lisbon")), ("compare Porto notes with Lisbon notes", ("Porto", "Lisbon")), ("Porto vs Lisbon", ("Porto", "Lisbon"))],
+    [("compare the Porto and Lisbon notes", ("Porto", "Lisbon")), ("compare Porto notes with Lisbon notes", ("Porto", "Lisbon")), ("Porto vs Lisbon", ("Porto", "Lisbon"))],
 )
 def test_a_comparison_names_its_two_things_without_the_noun_for_notes(ask, sides):
     assert composer.compare_sides(ask) == sides

@@ -795,6 +795,9 @@ def _bare_side(side: str) -> str:
     """One side of a comparison without the noun that names the notes:
     "Lisbon notes" is Lisbon (1324)."""
     side = re.sub(r"^(?:how (?:does|do|is|are) |what (?:does|do) )?(?:my )?(?:notes? )?(?:on |about )?", "", side.strip(" ,"), flags=re.I)
+    #: "the Porto notes" is Porto, as a heading and as a topic (audit 1029
+    #: C36: "**the Porto**"). Lower case only: "The Overstory" is a title.
+    side = re.sub(r"^(?:the|my|our|your) ", "", side)
     # Word steps, not `\s+(?:notes?|entries)$`: that regex is quadratic on a run
     # of whitespace (CodeQL py/polynomial-redos).
     head, _, last = side.rstrip().rpartition(" ")
@@ -4461,10 +4464,15 @@ def _overview_subject(question: str, today: date) -> str | None:
     """The topic a question asks about as a whole, when nothing else in it
     (a time, a tag, a sum, a recall, an insight) answers it first: "any
     patterns in my golf notes" has the "<topic> notes" frame, but it asks for
-    the measurement, which the insight path says."""
+    the measurement, which the insight path says. Two sides named ("compare
+    my running notes and my baking notes") are the side-by-side's, as in the
+    digest (`_kind_if_mine`): an overview of both read "two notes about
+    compare my running notes and my baking" (audit 1029 C36)."""
     subject = _overview().topic(question)
     p = plan(question, today) if subject else None
     if p is None or p.window or p.constraints or p.kind in ("utility", "recall", "insight"):
+        return None
+    if p.shape == "compare" and compare_sides(question):
         return None
     return subject
 

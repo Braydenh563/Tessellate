@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- A question that names two sides ("compare my running notes and my baking notes", "compare the Porto notes with the Lisbon notes") is answered side by side whatever its frame, and a side loses a leading "the" or "my" (audit 1029 C36). It was read as a one-topic overview: "two notes about compare my running notes and my baking".
 - The graph's line-clearance force files notes in a dense typed-array grid instead of a Map of lists: 2,000 notes and 3,800 links, 41-43 ms a call to 22-28 ms (audit 1029 row 35). A note flung far out coarsens the grid rather than growing it.
 - The Dashboard's constellation stops drawing while its card is scrolled out of view and picks up its drift where it left off when it returns (audit 1029 row 38: 60 frames in 2 s to 0 off screen). Graph row 41 is closed by the owner's 2026-10-06 label rule (INBOX 693), which the code already follows.
 - The composer imports without `composer_overview` and `logging`: the first is loaded on the first overview question, the second only on two failure branches in `spelling.py` (about 7 ms of a 90 ms cold import here; the 0.2 s budget failed twice on a slow CI runner at 0.21 s).
