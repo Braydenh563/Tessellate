@@ -708,7 +708,7 @@ def attached_file_text(
 class FileTextIn(BaseModel):
     """The edited text of a file, on its way back to disk."""
 
-    text: str
+    text: str = Field(max_length=bounds.FILE_TEXT_MAX)
 
 
 @router.put("/files/{attachment_id}/text", response_model=AttachedFileTextOut)
@@ -1048,7 +1048,7 @@ class SaveFileBody(BaseModel):
 
     filename: str = Field(min_length=1, max_length=120)
     #: Base64, because the same route has to carry a .zip as well as a .md.
-    content_base64: str
+    content_base64: str = Field(max_length=bounds.FILE_BASE64_MAX)
 
 
 def safe_filename(name: str) -> str:

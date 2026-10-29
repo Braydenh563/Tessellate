@@ -76,6 +76,49 @@ def test_unknown_graph_id_is_a_404(client):
     assert missing.status_code == 404
 
 
+def test_tool_execute_body_is_bounded(client):
+    many = [{"tool": "x", "arguments": {}}] * (bounds.BATCH_STEPS_MAX + 1)
+    assert client.post("/chat/tools/execute", json={"name": "batch", "steps": many}).status_code == 422
+    assert client.post("/chat/tools/execute", json={"name": "n" * 500}).status_code == 422
+
+
+def test_chat_request_names_are_bounded(client):
+    assert client.post("/chat", json={"question": "hi", "persona": "p" * 500}).status_code == 422
+    assert client.post("/chat", json={"question": "hi", "mode": "m" * 500}).status_code == 422
+
+
+def test_file_text_over_the_file_cap_is_refused_at_the_model(client):
+    note = _note(client)
+    added = client.post(f"/entries/{note['id']}/files", files={"file": ("a.txt", b"hi", "text/plain")})
+    attachment_id = added.json()["attachments"][0]["id"]
+    too_big = "x" * (bounds.FILE_TEXT_MAX + 1)
+    assert client.put(f"/files/{attachment_id}/text", json={"text": too_big}).status_code == 422
+
+
+def test_request_models_in_the_busy_routes_bound_every_text_and_list_field():
+    # The class lint for "request caps": a new str, list or dict field on a body
+    # in these routes reaches for a bound instead of arriving unbounded.
+    import ast
+    from pathlib import Path
+
+    unbounded = []
+    for name in ("routes_chat", "routes_files", "routes_graph"):
+        path = Path("src/tessellate/api") / f"{name}.py"
+        for cls in ast.walk(ast.parse(path.read_text())):
+            if not isinstance(cls, ast.ClassDef) or cls.name.endswith(("Out", "Response")):
+                continue
+            if not any(getattr(b, "id", getattr(b, "attr", "")) == "BaseModel" for b in cls.bases):
+                continue
+            for field in cls.body:
+                if not isinstance(field, ast.AnnAssign):
+                    continue
+                shape, value = ast.unparse(field.annotation), ast.unparse(field.value or ast.Constant(""))
+                free = shape.startswith(("str", "list", "dict")) and "Literal" not in shape
+                if free and not any(k in shape + value for k in ("max_length", "pattern")):
+                    unbounded.append(f"{name}.{cls.name}.{field.target.id}")
+    assert not unbounded, unbounded
+
+
 def test_display_name_helper():
     assert bounds.display_name("a/b\\c.txt", "z") == "c.txt"
     assert bounds.display_name("", "fallback.png") == "fallback.png"

@@ -961,6 +961,17 @@ def _growth_keys(now: datetime, growth: str, made: list[str]) -> list[str]:
     return _month_keys(now, max(3, min(GROWTH_ALL_MAX, span)))
 
 
+def _left_out(session: Session) -> dict:
+    """Notes the page counts but does not read: the words, tags, links and
+    growth below skip a private note (a figure that moves when a note is made
+    private leaks it) and an archived one (audit 1029 X13: 7 of 8 notes read,
+    said nowhere). The page says so in one line."""
+    counted = manager.note_filter(select(func.count()).select_from(Entry))
+    private = session.scalar(counted.where(Entry.is_private.is_(True))) or 0
+    archived = session.scalar(counted.where(Entry.is_private.is_(False), Entry.archived_at.is_not(None))) or 0
+    return {"private": private, "archived": archived}
+
+
 def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
     """Notes, words, tags and growth from one pass over the live notes; the
     other counts are one aggregate query each."""
@@ -997,6 +1008,7 @@ def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -
     )
     return {
         "notes": manager.count_notes(session),
+        "left_out": _left_out(session),
         "words": words,
         "tags": len(tags),
         "categories": session.scalar(select(func.count(Category.id))) or 0,

@@ -2497,6 +2497,19 @@ function renderAiPill() {
 //: the same in the bell, keyed by the error so it is said once per problem,
 //: not once per poll.
 let embeddingNudgeSaid = "";
+
+//: An error's own words with their closing full stops (and spacing) taken off,
+//: for joining to a sentence of ours. The error may or may not end in one, and
+//: `${error}. Next` read ".." when it did (audit 1029 X18). A "?" or an
+//: ellipsis character stays: it is not a full stop.
+function withoutEndStop(text) {
+  return String(text || "").trim().replace(/[.\s]+$/, "");
+}
+
+function embeddingProblemDetail(error) {
+  return `${withoutEndStop(error)}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
+}
+
 function nudgeEmbeddingProblem() {
   const error = modelStatus?.embedding_error;
   if (!error || error === embeddingNudgeSaid) return;
@@ -2505,7 +2518,7 @@ function nudgeEmbeddingProblem() {
   const title = installing ? "Search by meaning is being installed" : "Search by meaning is not working";
   const detail = installing
     ? "Search uses keywords until it finishes. Or pick nomic-embed-text in Settings, Models."
-    : `${error}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
+    : embeddingProblemDetail(error);
   recordNotification({
     kind: "assist",
     title,
@@ -2901,7 +2914,7 @@ function renderSettings() {
   const say = (text) => setLabel(embeddingError, `ph:warning ${text}`);
   if (status.embedding_error && /^Search by meaning/.test(status.embedding_error)) {
     say(
-      `${status.embedding_error}. ` +
+      `${withoutEndStop(status.embedding_error)}. ` +
       (status.ollama_running
         ? `Or switch the search engine to ${EMBEDDING_FALLBACK_MODEL} below: smaller, and offline.`
         : `Or start Ollama and pick ${EMBEDDING_FALLBACK_MODEL} as the search engine: smaller, and offline.`)

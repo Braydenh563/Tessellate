@@ -164,7 +164,7 @@ def test_the_cache_name_carries_the_app_version(tmp_path):
         """,
         version="1.2.3",
     )
-    assert names == ["memorymap-assets-1.2.3"]
+    assert names == ["tessellate-assets-1.2.3"]
 
 
 @needs_node
@@ -257,7 +257,7 @@ def test_the_shell_is_network_first_and_never_stored(tmp_path):
         const nav = { mode: "navigate", destination: "document" };
         net.routes["/"] = () => new Response("the app");
         const res = await fire("/?share_text=hello&share_url=http%3A%2F%2Fx", nav);
-        const cache = await caches.open("memorymap-assets-9.9.9");
+        const cache = await caches.open("tessellate-assets-9.9.9");
         return { body: await res.text(), stored: (await cache.keys()).length, called: net.calls };
         """,
     )
@@ -314,18 +314,22 @@ def test_an_iframe_navigation_is_not_answered_with_the_offline_page(tmp_path):
 
 @needs_node
 def test_activate_drops_the_old_version_and_the_retired_shell_caches(tmp_path):
+    # The legacy `memorymap-assets-*` and `memorymap-shell-*` names are retired
+    # with the rename (audit 1029 X28): both go on activate, whatever the version.
     out = run_worker(
         tmp_path,
         """
         await caches.open("memorymap-shell-v10");
         await caches.open("memorymap-assets-1.0.0");
         await caches.open("memorymap-assets-9.9.9");
+        await caches.open("tessellate-assets-1.0.0");
+        await caches.open("tessellate-assets-9.9.9");
         await caches.open("somebody-elses-cache");
         await lifecycle("activate");
         return { names: (await caches.keys()).sort(), claimed: sw.claimed === true };
         """,
     )
-    assert out["names"] == ["memorymap-assets-9.9.9", "somebody-elses-cache"]
+    assert out["names"] == ["somebody-elses-cache", "tessellate-assets-9.9.9"]
     assert out["claimed"]
 
 

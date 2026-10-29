@@ -409,7 +409,10 @@ def run_step(session: Session, name: str, args: dict) -> dict:
             return {"label": f"Restored reminder #{reminder_id}", "undo": {"tool": "bin_reminder", "arguments": {"reminder_id": reminder_id}}}
         #: restore=True: the time was checked against the person's clock when
         #: planned, and Undo's old time is usually past (see ReminderUpdate).
-        due = datetime.fromisoformat(str(args["due_at"]))
+        try:
+            due = datetime.fromisoformat(str(args["due_at"]))
+        except ValueError:
+            return {"error": "That time is not a date I can read, such as 31 February."}
         rr.update_reminder(reminder_id, rr.ReminderUpdate(due_at=due, restore=True), session)
     except HTTPException as exc:
         return {"error": str(exc.detail)}

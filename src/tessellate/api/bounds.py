@@ -22,6 +22,16 @@ HISTORY_MAX_TURNS = 40
 #: One side of one turn. An answer can be long; 600 MB of them cannot be a chat.
 TURN_TEXT_MAX = 50_000
 
+#: Steps in one batch undo (a change to several notes or board items).
+BATCH_STEPS_MAX = 200
+#: The edited text of an attached file, in characters: the upload cap
+#: (`MAX_FILE_BYTES`, 50 MB) is the most a file can hold, so the same figure.
+FILE_TEXT_MAX = 50 * 1024 * 1024
+#: The same file as base64 (4 characters for every 3 bytes) for the save route.
+FILE_BASE64_MAX = FILE_TEXT_MAX * 4 // 3 + 4
+#: A persona, response mode, tool or skill-input name or value.
+LABEL_MAX = 80
+
 #: A graph position. The map is a few thousand units across; a pin outside
 #: this range is not a place, and 1e308 breaks the camera fit.
 PIN_LIMIT = 1_000_000.0
