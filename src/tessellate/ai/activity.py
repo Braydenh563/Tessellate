@@ -119,7 +119,7 @@ def _doing_of(text: str, phrase: str, back: object) -> str | None:
 #: (one reader, tests/test_one_reader.py); a bare unit is "this" one.
 _RECAP = re.compile(
     r"^\W*(?:(?:please|pls|can you|could you|will you|would you)\s+)*(?:(?:give me|do)\s+(?:a |an |the )?)?"
-    r"(?:summari[sz]e|sum up|recap|summary|rundown|overview)(?:\s+of)?\s+(?:(?:my|our|the)\s+)?(?P<span>.+?)\W*$",
+    r"(?:summari[sz]e|sum up|recap|summary|rundown|overview)(?:\s+of)?\s+(?:(?:my|our|the)\s+)?(?P<span>\w.*)$",
     re.I,
 )
 
@@ -127,10 +127,16 @@ _RECAP = re.compile(
 def as_recap(text: str) -> str:
     """A request to summarise a bare period, put as the question it is: "what
     did I do this week"; any other text as it came."""
-    found = _RECAP.match(text)
+    found = _RECAP.match(text) if len(text) <= 200 else None
     if not found:
         return text
+    # The trailing marks are cut here, not in the pattern: a lazy span before
+    # "\W*$" backtracks polynomially on a run of spaces (CodeQL).
     span = " ".join(found.group("span").split())
+    end = len(span)
+    while end and not (span[end - 1].isalnum() or span[end - 1] == "_"):
+        end -= 1
+    span = span[:end]
     for said in (span, f"this {span}"):
         times = when_words.find(said)
         if times and times[0][2].lower() == said.lower():

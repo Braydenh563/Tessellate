@@ -162,3 +162,23 @@ def test_the_lead_note_is_the_one_the_subject_names(book, question, lead, never,
     ])
     said = ask(question, chat)
     assert lead in said and f"{never} note" not in said and f"**{never}**" not in said, said
+
+
+@pytest.mark.parametrize("text", ["recap\t" + "\t\t" * 5000, "recap\ta" + " " * 20000 + "x"])
+def test_a_recap_request_reads_in_linear_time(text):
+    """CodeQL 1862: a lazy span before "\\W*$" was polynomial on runs of
+    spaces; the long or odd request comes back as it came, at once."""
+    import time
+
+    from tessellate.ai.activity import as_recap
+
+    start = time.perf_counter()
+    assert as_recap(text) == text
+    assert time.perf_counter() - start < 0.2
+
+
+def test_a_recap_request_still_drops_its_closing_marks():
+    from tessellate.ai.activity import as_recap
+
+    assert as_recap("Summary of my weekend?!") == "what did I do this weekend"
+    assert as_recap("can you give me a recap of last week ...") == "what did I do last week"

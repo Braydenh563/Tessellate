@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7215, test files 1545, tests 13495, plan headings 985.
+Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7215, test files 1545, tests 13497, plan headings 985.
 
 ## Frontend functions (6827)
 
@@ -11627,43 +11627,43 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Asked` | src/tessellate/ai/activity.py:70 |
-| `_bounds` | src/tessellate/ai/activity.py:182 |
-| `_by_day` | src/tessellate/ai/activity.py:389 |
-| `_clause` | src/tessellate/ai/activity.py:343 |
-| `_day_lines` | src/tessellate/ai/activity.py:401 |
-| `_day_words` | src/tessellate/ai/activity.py:167 |
-| `_document_events` | src/tessellate/ai/activity.py:239 |
+| `_bounds` | src/tessellate/ai/activity.py:188 |
+| `_by_day` | src/tessellate/ai/activity.py:395 |
+| `_clause` | src/tessellate/ai/activity.py:349 |
+| `_day_lines` | src/tessellate/ai/activity.py:407 |
+| `_day_words` | src/tessellate/ai/activity.py:173 |
+| `_document_events` | src/tessellate/ai/activity.py:245 |
 | `_doing_of` | src/tessellate/ai/activity.py:109 |
-| `_empty` | src/tessellate/ai/activity.py:355 |
-| `_entry_events` | src/tessellate/ai/activity.py:215 |
-| `_entry_kind` | src/tessellate/ai/activity.py:195 |
-| `_events` | src/tessellate/ai/activity.py:283 |
-| `_filtered` | src/tessellate/ai/activity.py:409 |
-| `_head` | src/tessellate/ai/activity.py:415 |
+| `_empty` | src/tessellate/ai/activity.py:361 |
+| `_entry_events` | src/tessellate/ai/activity.py:221 |
+| `_entry_kind` | src/tessellate/ai/activity.py:201 |
+| `_events` | src/tessellate/ai/activity.py:289 |
+| `_filtered` | src/tessellate/ai/activity.py:415 |
+| `_head` | src/tessellate/ai/activity.py:421 |
 | `_is_dated_listing` | src/tessellate/ai/activity.py:103 |
 | `_kinds_named` | src/tessellate/ai/activity.py:89 |
-| `_link` | src/tessellate/ai/activity.py:199 |
-| `_local` | src/tessellate/ai/activity.py:186 |
-| `_made_edited` | src/tessellate/ai/activity.py:207 |
-| `_n` | src/tessellate/ai/activity.py:339 |
-| `_named` | src/tessellate/ai/activity.py:464 |
-| `_nearest` | src/tessellate/ai/activity.py:303 |
-| `_recap_lines` | src/tessellate/ai/activity.py:420 |
-| `_reminder_events` | src/tessellate/ai/activity.py:260 |
-| `_reminder_words` | src/tessellate/ai/activity.py:457 |
-| `_say_day` | src/tessellate/ai/activity.py:330 |
-| `_span` | src/tessellate/ai/activity.py:323 |
-| `_summary` | src/tessellate/ai/activity.py:370 |
-| `_title_of` | src/tessellate/ai/activity.py:176 |
-| `_week_lean` | src/tessellate/ai/activity.py:470 |
-| `_week_reminders` | src/tessellate/ai/activity.py:497 |
+| `_link` | src/tessellate/ai/activity.py:205 |
+| `_local` | src/tessellate/ai/activity.py:192 |
+| `_made_edited` | src/tessellate/ai/activity.py:213 |
+| `_n` | src/tessellate/ai/activity.py:345 |
+| `_named` | src/tessellate/ai/activity.py:470 |
+| `_nearest` | src/tessellate/ai/activity.py:309 |
+| `_recap_lines` | src/tessellate/ai/activity.py:426 |
+| `_reminder_events` | src/tessellate/ai/activity.py:266 |
+| `_reminder_words` | src/tessellate/ai/activity.py:463 |
+| `_say_day` | src/tessellate/ai/activity.py:336 |
+| `_span` | src/tessellate/ai/activity.py:329 |
+| `_summary` | src/tessellate/ai/activity.py:376 |
+| `_title_of` | src/tessellate/ai/activity.py:182 |
+| `_week_lean` | src/tessellate/ai/activity.py:476 |
+| `_week_reminders` | src/tessellate/ai/activity.py:503 |
 | `_window` | src/tessellate/ai/activity.py:78 |
-| `_window_said` | src/tessellate/ai/activity.py:349 |
-| `answer` | src/tessellate/ai/activity.py:428 |
+| `_window_said` | src/tessellate/ai/activity.py:355 |
+| `answer` | src/tessellate/ai/activity.py:434 |
 | `as_recap` | src/tessellate/ai/activity.py:127 |
-| `boards` | src/tessellate/ai/activity.py:543 |
-| `read` | src/tessellate/ai/activity.py:141 |
-| `week` | src/tessellate/ai/activity.py:512 |
+| `boards` | src/tessellate/ai/activity.py:549 |
+| `read` | src/tessellate/ai/activity.py:147 |
+| `week` | src/tessellate/ai/activity.py:518 |
 
 ### src/tessellate/ai/activity_new.py (22)
 
@@ -20504,7 +20504,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13495)
+## Tests (13497)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20763,7 +20763,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_grammar.py | 3 |
 | tests/test_composer_grammar_1029b.py | 14 |
 | tests/test_composer_labels_1018.py | 2 |
-| tests/test_composer_leftovers_1029c.py | 11 |
+| tests/test_composer_leftovers_1029c.py | 13 |
 | tests/test_composer_lists_1018.py | 22 |
 | tests/test_composer_long_question.py | 7 |
 | tests/test_composer_notes_1025.py | 8 |
