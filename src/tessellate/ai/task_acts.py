@@ -279,13 +279,33 @@ def _ask(items: list[dict], about: str, partial: bool) -> str:
     return f"{lead}: {listed}{more}? Say it again with more of its name."
 
 
-def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:
-    """(the one task named, ""), or (None, what to say instead)."""
+#: "<item> on|in|from the <note> (note|list)": the item and the note it is on.
+_ON_NOTE = re.compile(r"^(?P<item>.+?)\s+(?:on|in|from|off)\s+(?:(?:my|the)\s+)(?P<note>.+?)(?:\s+(?:note|list|checklist))?$", re.IGNORECASE)
+
+
+def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # noqa: ANN001
+    """(the one task named, ""), or (None, what to say instead). A name with a
+    note after it ("charger on the Lisbon packing list") is the item on that
+    note, split before the lookup (audit 1029 C43)."""
     about = str(parsed.get("about") or "")
+    items = _candidates(session, parsed.get("kind"), title)
+    split = _ON_NOTE.match(about)
+    if split and not _match(items, about)[0]:
+        note = _stems(split.group("note"))
+        if note:
+            on_note = [i for i in items if i["kind"] == "checklist" and note <= _stems(i["where"])]
+            if on_note:
+                found, say = _match(on_note, split.group("item"))
+                if found or say:
+                    return found, say
+    found, say = _match(items, about, parsed.get("kind"))
+    return found, say
+
+
+def _match(items: list[dict], about: str, kind: str | None = None) -> tuple[dict | None, str]:
     wanted = _stems(about)
     if not wanted:
         return None, "Which task do you mean? Say its name, like: tick off buy milk."
-    items = _candidates(session, parsed.get("kind"), title)
     scored = [(len(wanted & i["stems"]) / len(wanted), i) for i in items]
     full = [i for score, i in scored if score == 1.0]
     if full:
@@ -298,7 +318,7 @@ def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:
     near = [i for score, i in scored if score >= 0.5]
     if near:
         return None, _ask(near, about, partial=True)
-    where = "reminder" if parsed.get("kind") == "reminder" else "open task or reminder"
+    where = "reminder" if kind == "reminder" else "open task or reminder"
     return None, f"I found no {where} named “{about}”."
 
 

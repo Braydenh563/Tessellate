@@ -8,6 +8,8 @@ neither has to import the runner (an import cycle the lints refused).
 
 from __future__ import annotations
 
+import re
+
 from dataclasses import dataclass
 
 #: The act runner's `propose` (acts.py), set when acts.py is imported: the
@@ -148,6 +150,36 @@ def capability_line() -> str:
         + ", ".join([*said[:4], reads, *said[4:]])
         + f", {single}. For example: {ACTS['reminder'].example}."
     )
+
+
+#: Verbs only the app's own menus do (decision 42: archiving stays a UI
+#: action). A sentence that opens with one is an act said to the wrong place,
+#: so it is answered "done in the app", never searched (audit 1029 C45).
+_APP_VERB = re.compile(
+    r"^(?:(?:and|then|please|can you|could you|would you|just)\s+)*"
+    r"(?P<verb>archive|unarchive|restore|split|merge|duplicate|clone|combine)\s+(?:the|my|a|an|this|that|these|those|all|both|every|\w+)\b",
+    re.IGNORECASE,
+)
+
+
+def app_verb(text: str) -> str | None:
+    """The app verb a sentence opens with ("archive the scarecrow joke"), or
+    None. A question about the verb ("how do I archive a note?") does not open
+    with it."""
+    found = _APP_VERB.match(" ".join(str(text or "").split()))
+    return found.group("verb").lower() if found else None
+
+
+def app_verb_line(verb: str) -> str:
+    """Where an app verb is done, in one line."""
+    where = {
+        "archive": "open the note and use Archive in its menu",
+        "unarchive": "open the Archive and use Restore on the note",
+        "restore": "open the Bin, or the Archive, and use Restore on the note",
+        "split": "open the note and use Split in its menu",
+        "merge": "select the notes in the Notes tab and use Merge",
+    }.get(verb, "open the note and use its menu")
+    return f"I do not {verb} notes from here: that is done in the app. To do it, {where}."
 
 
 def ask_line(parsed: dict | None) -> str:

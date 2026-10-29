@@ -191,6 +191,8 @@ def _classify(message: str) -> str:
     act = act_registry.typed_reader(message, datetime.now())
     if act and act["intent"] != "summarise":
         return ACT
+    if act_registry.app_verb(message):
+        return ACT
 
     #: A key-mash ("asdfgh"): asked what was meant, never searched for.
     if is_mash(message) or is_test(message):
