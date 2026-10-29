@@ -269,6 +269,13 @@ document.addEventListener("change", (event) => {
   if (!list) return;
   const anchor = rangeAnchor;
   rangeAnchor = tick;
+  //: The Notes list is windowed (notes-list.js): the rows between two ticks
+  //: may not be built, so its range runs over the rows' ids.
+  if (list.id === "entry-list") {
+    const from = anchor?.closest("li[data-id]")?.dataset.id;
+    if (rangeShiftHeld && from) selectNoteRange(list, from, tick.closest("li[data-id]")?.dataset.id, tick.checked);
+    return;
+  }
   if (!rangeShiftHeld || !anchor || !anchor.isConnected || anchor.closest(RANGE_LISTS) !== list) return;
   //: In the order the rows are drawn, not the DOM's: the Library's columns
   //: put its cards in column order.

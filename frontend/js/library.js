@@ -80,6 +80,126 @@
 //    (whiteboard.js) and renderLibraryImagesGallery()/renderLibraryDocuments()
 //    (this file) exactly as before; only the listener's *location* changed.
 
+// --- incremental list rendering (ROADMAP §85.4 items 3 and 4; moved here from
+// notes-list.js when the Notes list was windowed, audit 1029 N9, so the
+// Library is its one caller) ---------------
+//
+// **The problem this solves, measured rather than assumed.** Four of this
+// app's lists: the Notes list, the Library grid, the Timeline, the log
+// console: built one DOM node per record for the *entire* collection, with
+// no cap and no windowing. At 1,501 notes `renderEntries()` took ~533ms, and
+// it re-runs on every search keystroke, sort change, filter and save.
+//
+// **Why chunk-on-scroll rather than true virtualisation.** Real
+// virtualisation (absolute positioning against a scroll offset) needs to know
+// each row's height before it renders one. Every list here has variable
+// heights: a note card grows with its text, its tags, its attachments and
+// whether its inline actions are open, so a virtualiser would either need
+// measurement passes that cost what it saves, or fixed heights the design
+// does not have. Rendering in chunks as the end of the list approaches keeps
+// the DOM proportional to what has been *scrolled past* rather than to the
+// notebook, needs no height information at all, and leaves the list one
+// continuous scroll rather than turning it into pages, which is the
+// distinction BACKLOG §77 draws and deliberately asks for.
+//
+// **The honest trade:** the browser's own Ctrl+F cannot find text in a chunk
+// that has not rendered yet. That is a real loss, and it is why `initial` is
+// generous rather than minimal, a screenful and change is always present , 
+// and why it is applied to lists that have their own search box sitting
+// directly above them. It is not applied anywhere that the browser's find is
+// the only way through.
+//
+// `root: null` (the viewport) rather than the scroll container: an element
+// inside the scrolled-away part of a *nested* scroller is not intersecting
+// the viewport either, so one observer is correct for both a page-level and a
+// container-level scroll, without having to find which one this list is in.
+const listWindows = new WeakMap();
+
+function renderIncrementally(container, items, buildItem, options = {}) {
+  //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
+  //: carry on next frame while the sentinel is still near, instead of forty
+  //: items in one go. The Library's forty cards measured 42 to 83ms a chunk
+  //: on a thousand-note seed, six frames dropped each time a chunk landed
+  //: mid-scroll. The observer alone cannot drive this, because it only
+  //: fires when the sentinel's intersection *changes*: a sentinel that is
+  //: still near after a small chunk never fires again. So `near` keeps the
+  //: observer's last answer and the pump runs on frames until it goes false.
+  const { initial = 60, chunk = 40, afterChunk, budgetMs = 0 } = options;
+
+  // Tear down the previous run first. Without this a re-render (a keystroke in
+  // the search box) leaves the old observer alive, still holding the old
+  // items, still appending them into a container that has moved on, the
+  // "listener added without removal" shape, and the reason this is a
+  // WeakMap rather than a local.
+  listWindows.get(container)?.disconnect();
+  listWindows.delete(container);
+
+  const paint = (from, to) => {
+    const fragment = document.createDocumentFragment();
+    for (let i = from; i < to; i++) fragment.appendChild(buildItem(items[i], i));
+    container.appendChild(fragment);
+  };
+
+  paint(0, Math.min(initial, items.length));
+  afterChunk?.();
+  if (items.length <= initial) return;
+
+  let rendered = initial;
+  // A zero-height marker after the last painted item. It is the *list's* own
+  // last child rather than a sibling of the container, so it moves down as
+  // chunks land and it inherits whatever scroller the list is in.
+  const sentinel = document.createElement("li");
+  sentinel.className = "list-window-sentinel";
+  sentinel.setAttribute("aria-hidden", "true");
+  container.appendChild(sentinel);
+
+  let near = false;
+  let pumping = 0;
+  let done = false;
+  const buildNext = () => {
+    const next = Math.min(rendered + chunk, items.length);
+    const started = performance.now();
+    // Insert *before* the sentinel so it stays last and keeps observing.
+    const fragment = document.createDocumentFragment();
+    let i = rendered;
+    for (; i < next; i++) {
+      if (budgetMs && i > rendered && performance.now() - started > budgetMs) break;
+      fragment.appendChild(buildItem(items[i], i));
+    }
+    container.insertBefore(fragment, sentinel);
+    rendered = i;
+    afterChunk?.();
+    if (rendered >= items.length) {
+      done = true;
+      observer.disconnect();
+      listWindows.delete(container);
+      sentinel.remove();
+    }
+  };
+  const pump = () => {
+    pumping = 0;
+    if (done || !near || listWindows.get(container) !== observer) return;
+    buildNext();
+    if (!done && near) pumping = requestAnimationFrame(pump);
+  };
+  const observer = new IntersectionObserver(
+    (entries) => {
+      near = entries.some((entry) => entry.isIntersecting);
+      if (!near) return;
+      if (!budgetMs) {
+        buildNext();
+        return;
+      }
+      if (!pumping) pump();
+    },
+    // Start the next chunk while the sentinel is still a screen away, so the
+    // list refills before the user reaches the bottom rather than after.
+    { root: null, rootMargin: "600px 0px" }
+  );
+  observer.observe(sentinel);
+  listWindows.set(container, observer);
+}
+
 
 // --- the Library (§4, §36F) ---------------------------------------------------
 //

@@ -32,9 +32,10 @@ def function_body(source: str, name: str) -> str:
 
 
 def test_the_incremental_renderer_can_build_by_time_and_the_library_asks_it_to():
-    source = read("notes-list.js")
+    # In library.js since the Notes list was windowed (audit 1029 N9).
+    source = read("library.js")
     body = function_body(source, "renderIncrementally")
-    assert "budgetMs = 0" in body, "opt-in, so the Notes list keeps its behaviour"
+    assert "budgetMs = 0" in body, "opt-in, so a caller that does not ask builds by count"
     assert "performance.now() - started > budgetMs" in body
     # The observer only fires on a *change* of intersection, so a small chunk
     # that leaves the sentinel near must carry on by itself, on frames.
