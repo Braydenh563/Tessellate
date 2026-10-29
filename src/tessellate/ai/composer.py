@@ -5111,18 +5111,10 @@ _WHEN_NOISE = frozenset(
 )
 
 
-#: A question about time (INBOX 1441): only then does an answer say a date.
-_ASKS_TIME = re.compile(
-    r"\b(?:when|what time|dates?|dated|days?|weeks?|weekend|months?|years?|yesterday|today|tonight|tomorrow|"
-    r"recent(?:ly)?|latest|newest|oldest|earliest|last|first|since|ago|before|after|until|timeline|history|"
-    r"how long|how often|going|progress\w*|improv\w*|chang\w*|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|"
-    r"april|may|june|july|august|september|october|november|december|\d{1,2}(?:st|nd|rd|th)?)\b", re.I)
-
-
 def asks_time(question: str | None) -> bool:
     """Whether a question is about time, the only time an answer says a date
     (INBOX 1441: "I dont like how it refers to dates")."""
-    return bool(_ASKS_TIME.search(question or "")) or asks_written_when(question or "")
+    return rec.asks_time(question or "") or asks_written_when(question or "")
 
 
 def asks_written_when(question: str) -> bool:

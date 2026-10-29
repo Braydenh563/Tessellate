@@ -247,6 +247,20 @@ def asks_computed(question: str) -> bool:
     return bool(_COMPUTED.search(question))
 
 
+#: A question about time (INBOX 1441): only then does an answer say a date.
+_ASKS_TIME = re.compile(
+    r"\b(?:when|what time|dates?|dated|days?|weeks?|weekend|months?|years?|yesterday|today|tonight|tomorrow|"
+    r"recent(?:ly)?|latest|newest|oldest|earliest|last|first|since|ago|before|after|until|timeline|history|"
+    r"how long|how often|going|progress\w*|improv\w*|chang\w*|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|"
+    r"april|may|june|july|august|september|october|november|december|\d{1,2}(?:st|nd|rd|th)?)\b", re.I)
+
+
+def asks_time(question: str) -> bool:
+    """Whether a question's words are about time: a when, a day, a week or
+    a month, a change over time (composer.asks_time adds "when did I write")."""
+    return bool(_ASKS_TIME.search(question))
+
+
 _WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
 _MO_WORD = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _WD_PREFIX = rf"(?:\b({_WD_WORD})\.?,?\s+)?"
