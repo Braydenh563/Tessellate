@@ -231,9 +231,22 @@
   cursor: pointer;
   visibility: hidden;
 }
-.sp-unpick:hover,
+/* **A quiet glyph, not a badge** (INBOX 1450, the owner: "that x delete
+   button is off in design"). A filled light disc with a bright x read as a
+   sticker beside the swatch, and on a touch screen a tap left it filled (a
+   sticky :hover). The x stays the muted ink of the app's ghost buttons; only a
+   real hover tints it, and the keyboard gets the focus ring, not a fill. */
+/* The glyph was 12.9px in a 16px disc, edge to edge; the smallest step leaves it room. */
+.sp-unpick > :is(i, svg) {
+  font-size: var(--text-xs);
+}
+@media (hover: hover) {
+  .sp-unpick:hover {
+    background: var(--ghost-btn-bg);
+    color: var(--ink);
+  }
+}
 .sp-unpick:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--ghost-btn-bg);
   color: var(--ink);
 }
 .sp-recent-item:is(:hover, :focus-within) .sp-unpick {

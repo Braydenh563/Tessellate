@@ -2259,7 +2259,7 @@ body.printing-doc #doc-preview p,
      on screen at any zoom (audit U5: 21.7px at fit, 10px on a phone), the
      normal 28 from 100% up; 44 under touch, below. */
   translate: 0 -50%;
-  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, calc(1.25 * var(--wb-inv-zoom))));
   /* Above the corner grip (5): at phone width the map is zoomed out until a
      topic is 28px tall, and the grip's 24px corner button reached the
      chevron's middle (measured 390x844, mapnarrow.js: a press on the chevron
@@ -2272,7 +2272,7 @@ body.printing-doc #doc-preview p,
    than to the node it is folded into. */
 @media (pointer: coarse) {
   .wb-map-collapse {
-    transform: scale(var(--wb-inv-zoom));
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
   }
 }
 
@@ -2572,7 +2572,7 @@ body.printing-doc #doc-preview p,
    the topic landed on the next sibling at every zoom and a row beside it on
    the parent (measured, mapactions.js). */
 .wb-map-actions {
-  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, calc(1.25 * var(--wb-inv-zoom))));
   transform-origin: 100% 50%;
   flex-direction: column;
   left: auto;
@@ -2585,7 +2585,7 @@ body.printing-doc #doc-preview p,
 }
 @media (pointer: coarse) {
   .wb-map-actions {
-    transform: scale(var(--wb-inv-zoom));
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
   }
 }
 /* **Away while the topic's text is edited** (INBOX 817): the + and link
@@ -2599,6 +2599,17 @@ body.printing-doc #doc-preview p,
 /* Below half zoom only the + stays: two buttons of 20px are wider than the
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
 #whiteboard-container[data-wb-zoom-far] .wb-map-ref {
+  display: none;
+}
+/* **The controls follow the zoom, within bounds** (INBOX 1450, the owner:
+   "buttons get oversized at zoom, they should adjust in size but only so
+   much"). On screen the fold chevron and the topic's buttons are 28px at
+   100%, grow with the board to 35px (125%) and shrink with it to a 24px
+   floor, the smallest target WCAG 2.5.8 allows; under touch 44 down to 24.
+   Below half zoom a 24px chevron is wider than the topic it sits on (30%:
+   a topic 17px tall carried one on every branch), so it waits for the zoom
+   or for the topic to be selected. */
+#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
   display: none;
 }
 

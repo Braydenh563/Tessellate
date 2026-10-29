@@ -231,7 +231,8 @@ def test_a_topics_add_buttons_are_surfaces_at_the_target_floor():
         assert want in box.group(1), want
     # INBOX 816 scaled with the topic; the floor moved from 20 to 24px (and
     # touch holds 44) because a target under 24px fails WCAG 2.5.8 (audit 1028 U5).
-    assert re.search(r"\.wb-map-actions \{\s*transform: scale\(clamp\(calc\(24 / 28 \* var\(--wb-inv-zoom\)\), 1, var\(--wb-inv-zoom\)\)\)", lazy)
+    # INBOX 1450 lets them grow with the board to 1.25x past 100% (the cap was 1x).
+    assert re.search(r"\.wb-map-actions \{\s*transform: scale\(clamp\(calc\(24 / 28 \* var\(--wb-inv-zoom\)\), 1, calc\(1\.25 \* var\(--wb-inv-zoom\)\)\)\)", lazy)
     js = (_REPO / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
     assert '"ph ph-link-simple"' in js and "bookmarks-simple" not in js
     wb = (_REPO / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")

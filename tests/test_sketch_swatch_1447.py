@@ -63,3 +63,11 @@ def test_the_pad_help_names_undo_and_save_colour() -> None:
     colours = PAD[PAD.index('["Colours", ') :]
     colours = colours[: colours.index("\"],")]
     assert "Undo" in colours and "plus" in colours
+
+
+def test_the_remove_x_is_a_quiet_glyph_not_a_badge() -> None:
+    """INBOX 1450, the owner: "that x delete button is off in design". A 12.9px
+    glyph filled its 16px disc, and a tap on a touch screen left the hover fill
+    on. The glyph is the smallest text step and the fill comes only with a real hover."""
+    assert re.search(r"\.sp-unpick > :is\(i, svg\) \{\s*font-size: var\(--text-xs\);", CSS)
+    assert re.search(r"@media \(hover: hover\) \{\s*\.sp-unpick:hover \{\s*background: var\(--ghost-btn-bg\);", CSS)

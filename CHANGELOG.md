@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Whiteboard (INBOX 1450): a left drag on empty canvas pans a board as it does a map, and Shift-drag draws the selection box; right drag, middle drag, Space, two trackpad fingers and one finger on a touch screen pan too (checked in the browser). A map's fold chevron and topic buttons follow the zoom within bounds (24 to 35px on screen, 44 to 24 under touch) and the chevrons wait below half zoom unless the topic is selected. The sketch pad's remove-colour x is a quiet glyph with room in its disc, tinted only on a real hover.
 - A question that names two sides ("compare my running notes and my baking notes", "compare the Porto notes with the Lisbon notes") is answered side by side whatever its frame, and a side loses a leading "the" or "my" (audit 1029 C36). It was read as a one-topic overview: "two notes about compare my running notes and my baking".
 - The graph's line-clearance force files notes in a dense typed-array grid instead of a Map of lists: 2,000 notes and 3,800 links, 41-43 ms a call to 22-28 ms (audit 1029 row 35). A note flung far out coarsens the grid rather than growing it.
 - The Dashboard's constellation stops drawing while its card is scrolled out of view and picks up its drift where it left off when it returns (audit 1029 row 38: 60 frames in 2 s to 0 off screen). Graph row 41 is closed by the owner's 2026-10-06 label rule (INBOX 693), which the code already follows.

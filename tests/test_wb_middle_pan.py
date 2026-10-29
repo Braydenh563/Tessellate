@@ -171,12 +171,13 @@ def test_frames_turn_and_a_click_on_a_panel_selects_it() -> None:
     assert "wbSelectFrameAt(...getLogicalMouse(e)" in SOURCE
 
 
-@pytest.mark.parametrize("shift", [False, True])
+@pytest.mark.parametrize("shift", [True])
 def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
     """INBOX 1332 reverted by the owner: a left-drag pan on empty canvas took the drag from the
-    marquee and lasso. With Select a left-drag never pans, Shift or not; Pan, Space, the middle
-    button and the trackpad still do. (Boards only: a mind map's left-drag on empty canvas pans since
-    INBOX 1445, see test_map_left_drag_pan_1445.py; the stub says this is a board.)"""
+    marquee and lasso. The owner moved it again (INBOX 1450, "cant left click drag to pan now on
+    whiteboard"): a plain drag on empty canvas pans on a board as on a map
+    (test_map_left_drag_pan_1445.py), so the marquee is Shift-drag, and a Shift left-drag never pans.
+    The plain case left this test with that change."""
     import json
 
     node = shutil.which("node")
@@ -187,7 +188,7 @@ def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
         "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         "function wbIsBareCanvas() { return true; }\nfunction wbIsMap() { return false; }\n"
-        + _function("wbMapPansOnLeftDrag")
+        + _function("wbPansOnLeftDrag")
         + _function("wbTrackpadPan")
         + _function("wbCompanionHeld")
         + _function("wbZoomFilter")

@@ -161,10 +161,13 @@ def test_insert_sticky_from_the_keyboard_places_one_in_view():
 
 def test_the_fold_chevron_and_count_keep_a_24px_floor_and_44_on_touch():
     rule = LAZY[LAZY.index("\n.wb-map-collapse {") :][:900]
-    assert "scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)))" in rule
+    # INBOX 1450: the cap past 100% moved from 1x to 1.25x (the 24px floor holds).
+    assert "scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, calc(1.25 * var(--wb-inv-zoom))))" in rule
     assert "translate: 0 -50%" in rule
     coarse = LAZY[LAZY.index("@media (pointer: coarse) {\n  .wb-map-collapse") :][:400]
-    assert "scale(var(--wb-inv-zoom))" in coarse
+    # Touch: 44 at 100% and above, shrinking with the board to the 24px floor
+    # (INBOX 1450: one size at every zoom drew 44px chevrons over 17px topics).
+    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)))" in coarse
     count = LAZY[LAZY.index("\n.wb-map-count {") :][:1800]
     assert "scale(max(1, var(--wb-inv-zoom)))" in count and "min-width: 1.5rem" in count
     down = MISC[MISC.index(".wb-map-down .wb-map-collapse {") :][:200]
@@ -177,4 +180,10 @@ def test_the_node_action_buttons_floor_is_24_not_20():
     rule = LAZY[LAZY.index("\n.wb-map-actions {\n  transform: scale(") :][:200]
     assert "24 / 28" in rule
     coarse = LAZY[LAZY.index("@media (pointer: coarse) {\n  .wb-map-actions") :][:200]
-    assert "scale(var(--wb-inv-zoom))" in coarse
+    assert "scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)))" in coarse  # INBOX 1450
+
+
+def test_far_out_the_fold_chevron_waits_for_the_zoom_or_the_selection():
+    """INBOX 1450, the owner: "buttons get oversized at zoom". Below half zoom a
+    24px chevron is wider than its topic, so only a selected topic keeps it."""
+    assert "#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {\n  display: none;" in LAZY
