@@ -33,7 +33,21 @@ const MARGIN_KIND_WORDS = {
 const marginState = { on: false, timer: null, inFlight: false, paragraph: "", top: 0 };
 //: Sources shown, or dismissed, in this editing session: never shown twice.
 const marginSeen = new Set();
+//: Holds source ids and, for a date card, `date:<when>` keys (see `marginCardKey`).
 const marginDismissed = new Set();
+
+//: What "Not this" remembers a card by: its source note, or for a date card,
+//: which has none, the day it names. Without one the card came back (X27).
+function marginCardKey(card) {
+  if (card.source_entry_id) return card.source_entry_id;
+  return card.kind === "date" && card.when ? `date:${card.when}` : null;
+}
+
+//: A margin that cannot read stays quiet, but the lag log (Settings, Logs)
+//: now has the reason; the log is a lazy module, so it may not be there yet.
+function marginLogError(error) {
+  window.lagNoteError?.(`Margin reader: ${error?.message || error}`, error?.stack);
+}
 
 function marginParagraphAtCaret() {
   const view = typeof docCmView !== "undefined" ? docCmView : null;
@@ -96,7 +110,8 @@ function marginCard(card) {
     button("Open", () => flashEntry(card.source_entry_id));
   }
   button("Not this", () => {
-    if (card.source_entry_id) marginDismissed.add(card.source_entry_id);
+    const key = marginCardKey(card);
+    if (key) marginDismissed.add(key);
     box.remove();
   });
   box.append(head, text);
@@ -134,7 +149,7 @@ async function marginAsk(judge) {
     paragraph: at.text,
     ordinal: at.ordinal,
     document_id: currentDoc ? currentDoc.id : null,
-    exclude: [...marginDismissed],
+    exclude: [...marginDismissed].filter(Number.isInteger),
     judge,
   };
   let followUp = false;
@@ -146,12 +161,13 @@ async function marginAsk(judge) {
       $("doc-margin").replaceChildren(marginOffNote());
       return;
     }
-    const cards = (reply.cards || []).filter((c) => !marginDismissed.has(c.source_entry_id));
+    const cards = (reply.cards || []).filter((c) => !marginDismissed.has(marginCardKey(c)));
     marginRender(cards);
     const judgeable = cards.some((c) => c.kind === "related" || c.kind === "repeats");
     followUp = !judge && judgeable;
-  } catch {
+  } catch (error) {
     // A margin that cannot read says nothing rather than a toast per pause.
+    marginLogError(error);
   } finally {
     marginState.inFlight = false;
   }

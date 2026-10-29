@@ -2571,6 +2571,12 @@ function draftTranslateKind() {
   return `translate-${code}`;
 }
 
+//: A chip only sets what the next pass does, so with no model it used to look
+//: dead: the status line says why, in the sentence Refine carries as its title (X20).
+function draftChipOfflineNote() {
+  if (aiIsOff()) setDraftStatus(`${$("draft-refine").dataset.needsModel}. ${AI_OFFLINE_HINT}.`);
+}
+
 function renderDraftQuickstarts() {
   const host = $("draft-quickstarts");
   if (!host) return;
@@ -2585,6 +2591,7 @@ function renderDraftQuickstarts() {
       $("draft-kind").value = start.kind === "translate" ? draftTranslateKind() : start.kind;
       if (start.tone) $("draft-tone").value = start.tone;
       markDraftQuickstart(start.kind);
+      draftChipOfflineNote();
       saveDraftLocally();
       $("draft-thoughts").focus();
     });

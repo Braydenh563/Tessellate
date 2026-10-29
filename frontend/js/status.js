@@ -2509,6 +2509,18 @@ function embeddingProblemDetail(error) {
   return `${withoutEndStop(error)}. Settings, Models can switch it to ${EMBEDDING_FALLBACK_MODEL} or install the package.`;
 }
 
+//: The toast is once per browser session (X24); the bell keeps every problem.
+//: Blocked storage falls back to `embeddingNudgeSaid`: once per page load.
+function embeddingToastDue() {
+  try {
+    if (sessionStorage.getItem("embeddingToastShown")) return false;
+    sessionStorage.setItem("embeddingToastShown", "1");
+  } catch {
+    // No storage: the in-memory once-per-problem guard above still holds.
+  }
+  return true;
+}
+
 function nudgeEmbeddingProblem() {
   const error = modelStatus?.embedding_error;
   if (!error || error === embeddingNudgeSaid) return;
@@ -2525,7 +2537,7 @@ function nudgeEmbeddingProblem() {
     key: `embedding:${error}`,
     action: { settings: "models" },
   });
-  if (!installing) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
+  if (!installing && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
 }
 
 // --- the status bar (§36D) ---------------------------------------------------
