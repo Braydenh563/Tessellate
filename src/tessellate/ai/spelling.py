@@ -24,7 +24,6 @@ composer offers "Did you mean" instead of guessing silently.
 
 from __future__ import annotations
 
-import logging
 import re
 from collections import Counter
 from collections.abc import Callable
@@ -140,6 +139,8 @@ def _help_text() -> str | None:
             if isinstance(t, dict)
         )
     except Exception:  # noqa: BLE001 - a missing help must not stop a question being read
+        import logging  # only on this failure path: the cold import is budgeted
+
         logging.getLogger(__name__).debug("the help topics could not be read; questions are read without them", exc_info=True)
         return None
 
@@ -874,4 +875,6 @@ def _warm() -> None:
         _common()
         variants.pairs()
     except Exception:  # noqa: BLE001  # a warm-up that fails leaves the first use to build them
+        import logging  # only on this failure path: the cold import is budgeted
+
         logging.getLogger(__name__).debug("spelling warm-up failed; the first question builds the lists", exc_info=True)

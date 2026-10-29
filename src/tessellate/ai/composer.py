@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -577,6 +577,15 @@ def _one_syllable_cvc(w: str) -> bool:
         return False
     groups = re.findall(r"[aeiou]+", w)
     return len(groups) == 1
+
+
+@functools.cache
+def _overview():
+    """composer_overview, imported on the first overview question rather than
+    with the composer: the cold import is budgeted (test_engine_budgets)."""
+    from tessellate.ai import composer_overview
+
+    return composer_overview
 
 
 def _stem(word: str) -> str:
@@ -3011,7 +3020,7 @@ def _newest(out: _Answer, views: list[NoteView]) -> None:
         out.t("colon")
         #: A picture's note as what it shows and its words; a note's
         #: heading with the sentence after it (INBOX 787).
-        _overview_line(out, composer_overview.best_line(view.sentences, set()), set())
+        _overview_line(out, _overview().best_line(view.sentences, set()), set())
 
 
 # --- what to ask next -----------------------------------------------------------
@@ -4361,7 +4370,7 @@ def _recall(out: _Answer, p: Plan, views: list[NoteView], question: str) -> None
             out.t("list_from").m(out.day(view.written))
         #: A picture's note as what it shows and its words; a note's
         #: heading with the sentence after it (INBOX 787).
-        units = composer_overview.best_line(view.sentences, set()) or _label_line(view)
+        units = _overview().best_line(view.sentences, set()) or _label_line(view)
         if not units:
             out.t("stop")
             continue
@@ -4422,7 +4431,7 @@ def _overview_answer(
     views = [v for v in (read_note(n, i) for i, n in enumerate(_distinct_ids(notes or []))) if v]
     stems = _subject_stems(subject)
     head = next((_stem(t) for t in subject_terms(subject)), "")
-    found = composer_overview.members(stems, views, _holds, head)
+    found = _overview().members(stems, views, _holds, head)
     if len(found) < 2 or not _overview_over_broad(question, stems, views):
         return None
     found, filed = _with_matched(found, views)
@@ -4430,7 +4439,7 @@ def _overview_answer(
     out.voice, out.question, out.subject = composer_tables.voice_of(voice), question, stems
     #: No joining words twice in a conversation (decision 25).
     out.used = set(dialogue.used) if dialogue is not None else set()
-    themes = [] if _PERSON.match(subject) else composer_overview.themes(found, stems, _stem, views)
+    themes = [] if _PERSON.match(subject) else _overview().themes(found, stems, _stem, views)
     _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
@@ -4453,7 +4462,7 @@ def _overview_subject(question: str, today: date) -> str | None:
     (a time, a tag, a sum, a recall, an insight) answers it first: "any
     patterns in my golf notes" has the "<topic> notes" frame, but it asks for
     the measurement, which the insight path says."""
-    subject = composer_overview.topic(question)
+    subject = _overview().topic(question)
     p = plan(question, today) if subject else None
     if p is None or p.window or p.constraints or p.kind in ("utility", "recall", "insight"):
         return None
@@ -4461,7 +4470,7 @@ def _overview_subject(question: str, today: date) -> str | None:
 
 
 def _subject_stems(subject: str) -> set[str]:
-    if subject == composer_overview.DOING:
+    if subject == _overview().DOING:
         return {subject}
     return {_stem(t) for t in subject_terms(subject)} or {_stem(w) for w in _words(subject)}
 
@@ -4496,7 +4505,7 @@ def _overview_lead(out: _Answer, question: str, subject: str, found: list[NoteVi
     """The first sentence answers: how many notes, over which days, and the
     thread most of them share."""
     said = _as_typed(subject, question)
-    if subject == composer_overview.DOING:
+    if subject == _overview().DOING:
         out.m(out.count(len(found)).capitalize()).t("ov_doing")
         _span_of(out, found)
         out.t("stop")
@@ -4546,7 +4555,7 @@ def _overview_bullets(out: _Answer, views: list[NoteView], stems: set[str], text
         elif view.titled or not view.written:
             #: The card carries the day (INBOX 1441): a titled note is named.
             out.name(view, cap=True).t("colon")
-        _overview_line(out, composer_overview.best_line(view.sentences, stems, text_stems), stems)
+        _overview_line(out, _overview().best_line(view.sentences, stems, text_stems), stems)
     return len(views)
 
 
@@ -4590,7 +4599,7 @@ def _overview_links(out: _Answer, found: list[NoteView], themes: list, stems: se
     """A name two or more of the notes share that no thread named: what
     links them across the groups ("Jake is in two of these notes.")."""
     skip = {label.lower() for label, _ in themes} | {w for w in stems}
-    for name, n in composer_overview.shared_names(found, skip, views):
+    for name, n in _overview().shared_names(found, skip, views):
         if _stem(name.lower()) in stems:
             continue
         holder = next(v for v in found if name in str(v.note.get("content") or ""))
@@ -4607,7 +4616,7 @@ def _overview_next(question: str, subject: str, found: list[NoteView], themes: l
     picks += _overview_name_chip(found, subject, themes)
     picks += _overview_tag_chip(found, subject)
     said = _as_typed(subject, question)
-    if len(said) <= 40 and subject != composer_overview.DOING:
+    if len(said) <= 40 and subject != _overview().DOING:
         picks.append([("template", PHRASES["next_latest_a"]), ("asked", said), ("template", PHRASES["next_tag_b"])])
     return [p for p in picks if len("".join(part[1] for part in p)) <= NEXT_MAX_CHARS][:3]
 
@@ -4616,7 +4625,7 @@ def _overview_name_chip(found: list[NoteView], subject: str, themes: list) -> li
     """A name in the notes that is neither a thread nor the subject."""
     asked = {_stem(w) for w in _words(subject)}
     skip = {label.lower() for label, _ in themes} | {w.lower() for w in _words(subject)} | {subject.lower()}
-    for name, _n in composer_overview.shared_names(found, skip, least=1):
+    for name, _n in _overview().shared_names(found, skip, least=1):
         if {_stem(w) for w in _words(name)} & asked:
             continue
         holder = next(v for v in found if name in str(v.note.get("content") or ""))
@@ -4642,7 +4651,7 @@ def _recall_next(window: tuple, views: list[NoteView]) -> list[list[tuple]]:
     inside = [v for v in views if _in_window(v, window)]
     picks = [
         [("template", PHRASES["ov_next_about"]), ("term", label, held[0].id), ("template", PHRASES["next_tag_b"])]
-        for label, held in composer_overview.themes(inside, set(), _stem, views)
+        for label, held in _overview().themes(inside, set(), _stem, views)
     ]
     picks += _overview_tag_chip(inside, "")
     return [p for p in picks if len("".join(part[1] for part in p)) <= NEXT_MAX_CHARS][:3]
