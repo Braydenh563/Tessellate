@@ -509,7 +509,7 @@ function updateCaptureSpaceLabel() {
   const active = activeSpaceId();
   const filingId = active === SPACE_ALL ? "default" : active;
   const space = spacesCache.find((s) => s.id === filingId);
-  const name = space ? space.name : "Default Space";
+  const name = space ? space.name : "Default space";
   label.textContent =
     active === SPACE_ALL
       ? `Filing into ${name} (pick a space above to file there instead).`
@@ -542,6 +542,9 @@ function initSpaceSwitcher() {
       document.getElementById(closer.dataset.closeDialog)?.close();
     });
   }
+
+  //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
+  for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
 
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();

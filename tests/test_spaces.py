@@ -48,11 +48,27 @@ def test_name_that_slugifies_to_a_reserved_word_is_deduped(client):
     assert resp["id"] not in ("all", "default")
 
 
-def test_duplicate_names_get_a_numeric_suffix(client):
-    first = client.post("/spaces", json={"name": "Work"}).json()
-    second = client.post("/spaces", json={"name": "Work"}).json()
+def test_names_that_slugify_alike_get_a_numeric_suffix(client):
+    # Two different names can make the same id; the id is deduped (the name
+    # check below is separate: sweep 1028b W12).
+    first = client.post("/spaces", json={"name": "Studio"}).json()
+    second = client.post("/spaces", json={"name": "Studio!"}).json()
     assert first["id"] != second["id"]
-    assert second["id"].startswith("work-")
+    assert second["id"].startswith("studio-")
+
+
+def test_a_space_name_already_taken_is_refused_whatever_its_case_or_spacing(client):
+    made = client.post("/spaces", json={"name": "Studio"})
+    assert made.status_code == 200
+    for again in ("Studio", "studio ", "  STUDIO", "Studio  "):
+        resp = client.post("/spaces", json={"name": again})
+        assert resp.status_code == 409, again
+        assert "already exists" in resp.json()["detail"]
+    other = client.post("/spaces", json={"name": "Garden"}).json()
+    clash = client.put(f"/spaces/{other['id']}", json={"name": "studio"})
+    assert clash.status_code == 409
+    same = client.put(f"/spaces/{other['id']}", json={"name": "Garden"})
+    assert same.status_code == 200
 
 
 def test_bad_icon_refused_on_create(client):
@@ -155,7 +171,7 @@ def test_a_hidden_space_leaves_all_spaces_but_still_works_when_selected(client):
     the one selected.
     """
     private = client.post("/spaces", json={"name": "Journal"}).json()
-    other = client.post("/spaces", json={"name": "Work"}).json()
+    other = client.post("/spaces", json={"name": "Errands"}).json()
 
     client.post(
         "/entries",

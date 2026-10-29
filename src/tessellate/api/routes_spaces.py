@@ -63,6 +63,15 @@ def _validate_name(name: str) -> str:
     return name
 
 
+def _refuse_duplicate_name(session: Session, name: str, own_id: str | None = None) -> None:
+    """Two spaces with the same name (case and spacing aside) cannot be told
+    apart in the picker or the "In <space>" chips (sweep 1028b W12)."""
+    wanted = " ".join(name.split()).casefold()
+    for other in session.query(Space).all():
+        if other.id != own_id and " ".join((other.name or "").split()).casefold() == wanted:
+            raise HTTPException(409, f"A space called \u201c{other.name}\u201d already exists.")
+
+
 @router.get("/spaces", response_model=list[SpaceResponse])
 def get_spaces(session: Session = Depends(get_session)):
     return session.query(Space).all()
@@ -73,6 +82,7 @@ def create_space(space_in: SpaceCreate, session: Session = Depends(get_session))
     # space_in.id is intentionally never read, see SpaceCreate.id's docstring.
     name = _validate_name(space_in.name)
     icon = _validate_icon(space_in.icon)
+    _refuse_duplicate_name(session, name)
     space_id = _generate_space_id(name, session)
     space = Space(id=space_id, name=name, icon=icon)
     session.add(space)
@@ -89,6 +99,7 @@ def update_space(space_id: str, space_in: SpaceUpdate, session: Session = Depend
     provided = space_in.model_dump(exclude_unset=True)
     if "name" in provided:
         space.name = _validate_name(provided["name"])
+        _refuse_duplicate_name(session, space.name, space.id)
     if "icon" in provided:
         space.icon = _validate_icon(provided["icon"])
     if "hidden_from_all" in provided:

@@ -2379,7 +2379,7 @@ class DatabaseManager:
         with self.session() as session:
             if session.query(Space).first() is None:
                 defaults = [
-                    Space(id="default", name="Default Space", icon="ph-house"),
+                    Space(id="default", name="Default space", icon="ph-house"),
                     Space(id="work", name="Work", icon="ph-briefcase"),
                     Space(id="personal", name="Personal", icon="ph-user"),
                     Space(id="projects", name="Projects", icon="ph-kanban")
