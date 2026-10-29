@@ -809,6 +809,10 @@ const TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "rem
 // exists: see revealTab("dashboard")'s module-level call below, and why
 // it's this instead of a full switchTab().
 function revealTab(name) {
+  //: One attribute on body is what the stylesheets key page-level rules on
+  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
+  //: the engine re-match that rule against every tab flip (lag-1029.md).
+  document.body.dataset.tab = name;
   for (const tab of TABS) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
@@ -825,7 +829,7 @@ function revealTab(name) {
   // leaving them inside a catch-all view called "Documents" that showed
   // everything. Worth the note so the next session does not re-derive it.
   //: The companion finds its perch on the tab it is now on (avatars.js).
-  if (typeof nameMarkBuddyTabChanged === "function") nameMarkBuddyTabChanged();
+  window.nameMarkBuddyTabChanged?.();
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -1845,7 +1849,7 @@ async function switchTab(name) {
     // The canvas renderer's simulation is in a Worker, so there is no
     // `graphSimulation` to stop: the same "a cooling layout must not go on
     // running in a tab nobody is looking at" rule needs its own message.
-    if (typeof gcStop === "function") gcStop();
+    window.gcStop?.();
     // Full screen is a state of the map, not of the app, and it now hides the
     // top bar and the status bar with it. Leaving the tab while it is on (the
     // command palette and the keyboard shortcuts still work with the chrome

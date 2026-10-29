@@ -5620,8 +5620,9 @@ function initGraphDockHeightToken() {
   if (!card || !dock || typeof ResizeObserver === "undefined") return;
   if (dock._heightWired) return;
   dock._heightWired = true;
-  const write = () => {
-    const h = Math.round(dock.getBoundingClientRect().height);
+  const write = (e) => {
+    //: The entry has the box; a rect read forced a style pass on tab flips.
+    const h = Math.round(e ? e[0].borderBoxSize[0].blockSize : dock.getBoundingClientRect().height);
     // Zero while the tab is not on screen (the card is display:none until
     // then), and a zero here would stack the minimap and the selection bar
     // on top of the dock at the next paint. The stylesheet's own calc stands

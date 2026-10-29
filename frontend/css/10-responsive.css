@@ -1701,8 +1701,12 @@ header#top-bar[data-scrolled="1"],
      toast box stood on the tab bar (bottom 64px) and the New note button's
      centre (y 752) answered the toast. The page's own fab sets the line:
      its offset (07-whiteboard-misc.css's `.dock-fab`), its height, a step. */
-  body:not(:has(#tab-chat:not(.hidden))):has(.tab-page:not(.hidden) > .dock-fab) #toast-box {
-    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+  /* The five pages that own a floating button; it floats only at 421px tall
+     and up (phone-shell.js PHONE_FAB), hence the height query. */
+  @media (min-height: 421px) {
+    body:is([data-tab="notes"], [data-tab="graph"], [data-tab="library"], [data-tab="timeline"], [data-tab="reminders"]) #toast-box {
+      bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+    }
   }
   .agent-monitor {
     bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));

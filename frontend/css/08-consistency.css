@@ -8850,7 +8850,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    the Chat tab, where the bottom is the composer (Send and the microphone,
    the reason the top was chosen in the first place): there it stays up. */
 @media (max-width: 599.98px) {
-  body:not(:has(#tab-chat:not(.hidden))) #toast-box {
+  body:not([data-tab="chat"]) #toast-box {
     top: auto;
     bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px) + var(--space-2));
   }
@@ -8864,7 +8864,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    the composer and its mode switch (the reason the band went to the top),
    it stays up. */
 @media (min-width: 600px) and (max-width: 1099.98px) {
-  body:not(:has(#tab-chat:not(.hidden))) #toast-box {
+  body:not([data-tab="chat"]) #toast-box {
     top: auto;
     left: auto;
     right: var(--space-4);
