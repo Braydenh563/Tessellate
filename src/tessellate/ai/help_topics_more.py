@@ -1885,6 +1885,29 @@ MORE_TOPICS.extend(
             "badge": {"label": "Models", "section": "models"},
         },
         {
+            "id": "movable-panels",
+            "keywords": (
+                "move a panel", "move a popup", "drag a panel", "drag a popup",
+                "resize a panel", "resize a popup", "make a panel bigger",
+                "panel in the way", "popup in the way", "reset a panel",
+                "movable", "resizable", "panel size",
+            ),
+            "body": (
+                "Moving and resizing panels. On a computer with a mouse, any panel "
+                "with a title row (Settings, Find anything, the agent, Statistics "
+                "and the rest) can sit where you want it: drag its head to move it "
+                "and drag the small corner mark at its bottom right to resize it. "
+                "The head always stays on screen, and the content scrolls inside "
+                "when the panel is small. Each panel remembers its place and size "
+                "on this computer; double-click its head to put it back. From the "
+                "keyboard, Tab to the corner mark (Move or resize this panel): the "
+                "arrow keys move the panel 16 pixels, Shift and an arrow key "
+                "resize it, and Home resets it. On a phone or any touch screen "
+                "panels stay as sheets."
+            ),
+            "badge": {"label": "Appearance", "section": "appearance"},
+        },
+        {
             "id": "accessibility",
             "keywords": (
                 "accessibility", "accessible", "screen reader", "zoom the app",
@@ -2341,6 +2364,7 @@ TOPIC_META: dict[str, dict] = {
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},
     "model-downloads": {"title": "Downloading a model", "path": "Settings, Models, Suggested downloads"},
     "accessibility": {"title": "Accessibility and zoom", "path": "Settings, Keyboard shortcuts and Appearance"},
+    "movable-panels": {"title": "Moving and resizing panels", "path": "Any panel with a title row, on a computer with a mouse"},
 }
 
 #: **How Settings, Help lists the entries** (INBOX 448 (1)). The page used to
@@ -2388,7 +2412,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "timer", "calculator", "count-words", "insert-template",
     )),
     ("Look and feel", (
-        "appearance", "themes", "simple-mode", "accessibility", "performance", "background-art",
+        "appearance", "themes", "simple-mode", "accessibility", "movable-panels", "performance", "background-art",
         "statusbar", "companion", "companion-travel", "companion-throw", "atlas-look", "faces",
     )),
     ("Models and the AI", (

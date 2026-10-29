@@ -1,0 +1,47 @@
+/* panelMovable (INBOX 1427, DESIGN.md recipe index). Loaded with
+   js/panel-movable.js. Only on a fine pointer at 600px or wider: a phone's
+   sheet keeps its edge and has no grip. */
+.panel-grip {
+  display: none;
+}
+@media (min-width: 600px) and (pointer: fine) {
+  /* A card that eases `all` would trail the pointer (measured: 65px of a
+     100px drag after the button went up). */
+  .panel-movable-on {
+    transition: none;
+  }
+  .panel-movable-on > .dialog-head {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+  .panel-moving,
+  .panel-moving > .dialog-head {
+    cursor: grabbing;
+    user-select: none;
+  }
+  /* Zero net height: it overlaps the foot's corner and stays there while the
+     card scrolls (the card is the scroll box). */
+  .panel-movable-on > .panel-grip {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    align-self: flex-end;
+    flex: none;
+    width: var(--space-6);
+    height: var(--space-6);
+    margin: calc(-1 * var(--space-6)) 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, transparent 50%, var(--muted) 50%, var(--muted) 58%, transparent 58%, transparent 72%, var(--muted) 72%, var(--muted) 80%, transparent 80%);
+    opacity: 0.55;
+    cursor: nwse-resize;
+    touch-action: none;
+    z-index: 2;
+  }
+  .panel-grip:hover,
+  .panel-grip:focus-visible {
+    opacity: 1;
+  }
+}

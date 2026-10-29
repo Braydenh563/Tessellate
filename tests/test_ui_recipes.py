@@ -6208,3 +6208,107 @@ def test_the_present_bar_caption_is_a_page_picker():
     assert "text-align: center" in css and "text-overflow: ellipsis" in css
     assert ".wb-present-pick-caret" in css and "wb-present-pick-slot" in css
     assert 'id="wb-history-when" class="wb-present-count"' in index
+
+
+#: panelMovable (INBOX 1427): a dialog, popover or floating panel is draggable
+#: and resizable when it wears the dialog-head recipe (js/panel-movable.js
+#: adopts any panel that holds one). These are the ones that do not, each with
+#: the reason. May only shrink: give one a `.dialog-head` and delete its row.
+PANEL_FIXED_HTML = {
+    "lock-card": "the lock screen is the page, nothing sits behind it to drag over",
+    "chat-context-pop": "a small readout anchored to its button, closes on a click away",
+    "chat-dock-more-panel": "an anchored overflow list, no head",
+    "timeline-month-pop": "an anchored month picker, no head",
+    "status-clock-detail": "an anchored readout, no head",
+    "lan-popover": "an anchored readout, no head",
+    "chat-model-panel": "an anchored picker, no head",
+    "palette-overlay": "a legacy wrapper whose card is the command palette",
+    "sketch-overlay": "the full-window drawing surface",
+    "onboarding-overlay": "the first-run tour, full window",
+}
+PANEL_FIXED_JS = {
+    "app.js": "confirm and prompt dialogs: small, centred, answered at once",
+    "capture-ask.js": "an anchored panel",
+    "chat-edit.js": "an inline edit overlay",
+    "documents-code.js": "help bodies and anchored menus",
+    "documents.js": "an anchored overlay",
+    "edit-conflict.js": "a blocking choice",
+    "editor.js": "the formatting bar and an anchored overlay",
+    "graph.js": "anchored node popups",
+    "icon-picker.js": "an anchored picker",
+    "lightbox-actions.js": "the image viewer's overlays",
+    "lightbox-view.js": "the image viewer",
+    "reply-kit.js": "an anchored panel",
+    "settings-controls.js": "an anchored control overlay",
+    "sheets-selects.js": "the select popup",
+    "skills.js": "an anchored panel",
+    "status.js": "an anchored readout",
+    "tag-suggest.js": "an anchored suggestion panel",
+    "update-dialogs.js": "update prompts: small, blocking",
+    "whiteboard-format.js": "an anchored panel",
+    "whiteboard-map.js": "anchored map panels",
+    "whiteboard.js": "anchored board panels",
+}
+
+
+class _DialogHeads(HTMLParser):
+    VOID = {"input", "img", "br", "hr", "meta", "link", "source", "wbr"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stack: list[dict] = []
+        self.dialogs: list[dict] = []
+
+    def handle_starttag(self, tag, attrs) -> None:
+        a = dict(attrs)
+        classes = (a.get("class") or "").split()
+        if "dialog-head" in classes:
+            for frame in self.stack:
+                frame["head"] = True
+        if tag in self.VOID:
+            return
+        node = {
+            "tag": tag,
+            "id": a.get("id") or "",
+            "help": "help-body" in classes,
+            "dialog": tag == "dialog" or a.get("role") == "dialog",
+            "head": False,
+        }
+        self.stack.append(node)
+        if node["dialog"]:
+            self.dialogs.append(node)
+
+    def handle_endtag(self, tag) -> None:
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index]["tag"] == tag:
+                del self.stack[index:]
+                return
+
+
+def test_every_popup_panel_opts_in_to_panel_movable_or_says_why_not() -> None:
+    """DESIGN.md, recipe `panelMovable`: the head is the handle."""
+    parser = _DialogHeads()
+    parser.feed((ROOT / "frontend" / "index.html").read_text(encoding="utf-8"))
+    headless = {d["id"] for d in parser.dialogs if not d["head"] and not d["help"] and d["id"]}
+    assert headless == set(PANEL_FIXED_HTML), (
+        "a dialog or popup with no `.dialog-head` cannot be dragged or resized; give it "
+        "the head recipe, or list it in PANEL_FIXED_HTML with the reason. "
+        f"new: {sorted(headless - set(PANEL_FIXED_HTML))}, stale: {sorted(set(PANEL_FIXED_HTML) - headless)}"
+    )
+    built = {
+        path.name
+        for path in JS
+        if 'setAttribute("role", "dialog")' in path.read_text(encoding="utf-8")
+        and "dialog-head" not in path.read_text(encoding="utf-8")
+    }
+    assert built == set(PANEL_FIXED_JS), (
+        "a script builds a dialog with no `.dialog-head`: give it the head recipe or list "
+        f"the file in PANEL_FIXED_JS. new: {sorted(built - set(PANEL_FIXED_JS))}, stale: {sorted(set(PANEL_FIXED_JS) - built)}"
+    )
+
+
+def test_the_panel_movable_recipe_is_in_the_index_and_the_guide() -> None:
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`panelMovable`" in design and "panel-movable.js" in design
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert "drag its head" in topics

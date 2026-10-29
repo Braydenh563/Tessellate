@@ -1,10 +1,10 @@
 # Code map
 
-Generated 2026-10-28 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6686, frontend ids 2565, CSS sections 505, backend routes 629, backend modules 6989, test files 1469, tests 13000, plan headings 985.
+Counts: frontend functions 6707, frontend ids 2565, CSS sections 505, backend routes 629, backend modules 6989, test files 1470, tests 13008, plan headings 985.
 
-## Frontend functions (6686)
+## Frontend functions (6707)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5198,6 +5198,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboarding` | frontend/js/onboarding.js:433 |
 | `showOnboardingTurn` | frontend/js/onboarding.js:411 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:342 |
+
+### frontend/js/panel-movable.js (21)
+
+| Name | File:line |
+|---|---|
+| `panelAdopt` | frontend/js/panel-movable.js:178 |
+| `panelApply` | frontend/js/panel-movable.js:114 |
+| `panelClamp` | frontend/js/panel-movable.js:133 |
+| `panelClampMove` | frontend/js/panel-movable.js:41 |
+| `panelClampSize` | frontend/js/panel-movable.js:49 |
+| `panelFull` | frontend/js/panel-movable.js:162 |
+| `panelGripDown` | frontend/js/panel-movable.js:237 |
+| `panelGripKey` | frontend/js/panel-movable.js:286 |
+| `panelHeadDown` | frontend/js/panel-movable.js:202 |
+| `panelHeadOf` | frontend/js/panel-movable.js:129 |
+| `panelId` | frontend/js/panel-movable.js:99 |
+| `panelKeyDelta` | frontend/js/panel-movable.js:56 |
+| `panelMovableOn` | frontend/js/panel-movable.js:88 |
+| `panelOf` | frontend/js/panel-movable.js:92 |
+| `panelReset` | frontend/js/panel-movable.js:166 |
+| `panelSave` | frontend/js/panel-movable.js:173 |
+| `panelSt` | frontend/js/panel-movable.js:106 |
+| `panelStoreParse` | frontend/js/panel-movable.js:62 |
+| `panelStoreRead` | frontend/js/panel-movable.js:70 |
+| `panelStoreWrite` | frontend/js/panel-movable.js:79 |
+| `panelWindowResized` | frontend/js/panel-movable.js:322 |
 
 ### frontend/js/personas-pane.js (3)
 
@@ -10693,6 +10719,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/offline-split-lazy.css | 71 |
+| frontend/css/panel-movable-lazy.css | 47 |
 | frontend/css/questions-lazy.css | 102 |
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |
@@ -13140,8 +13167,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2731 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2857 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2755 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:2881 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -20040,7 +20067,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13000)
+## Tests (13008)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20994,6 +21021,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_coverage.py | 7 |
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
+| tests/test_panel_movable.py | 6 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |
@@ -21345,7 +21373,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 224 |
+| tests/test_ui_recipes.py | 226 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_undo_bin.py | 24 |
