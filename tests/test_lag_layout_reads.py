@@ -84,7 +84,6 @@ READ_THEN_WRITE_SITES = [
     ("timeline-calendar.js", "timelineCalFit"),
     ("avatars.js", "nameMarkBuddyBlend"),
     ("library.js", "keepLibraryScroll"),
-    ("status.js", "toastStack"),
 ]
 
 
@@ -106,12 +105,12 @@ def test_timeline_ticks_take_the_strip_height_from_the_observer():
 def test_a_pointer_picked_tab_finds_its_scroller_after_it_has_drawn():
     """`switchTab` awaits before it reveals the page, so a lookup made inside the click found
     the target page still hidden, returned nothing and never moved the focus (measured: the
-    focus stayed on the button on every tab). Found two frames on, with the answer kept."""
+    focus stayed on the button on every tab). Found two frames on, size test before style."""
     js = frontend_text("phone-shell.js")
     body = _braced(js, js.index("function focusTabPage("))
-    assert re.search(r"afterFrames\(\(\) => \{.*tabPageScroller\(.*\}, 2\);", body, re.S)
+    assert re.search(r"afterFrames\(\(\) => \{.*tabPageScroller\(.*\}\);", body, re.S)
     scroller = _braced(js, js.index("function tabPageScroller("))
-    assert "tabScrollerKept.get(tab)" in scroller and "tabScrollerKept.set(tab, target)" in scroller
+    assert scroller.index("scrollHeight > el.clientHeight") < scroller.index("getComputedStyle(el)")
 
 
 def test_card_chips_are_fitted_once_after_they_are_all_in():

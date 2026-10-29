@@ -825,37 +825,6 @@ async function renameCategory(meta, currentName) {
   }
 }
 
-//: Kept for the keyboard's Delete on a focused row and older callers; the
-//: sidebar's ⋯ now goes through `deleteCategoryFromPanel`, which asks where
-//: the notes go.
-async function deleteCategory(meta, name, count) {
-  const ok = (await confirmDialog(
-    `Delete the category "${name}"?\n\n` +
-      (count
-        ? `Its ${nounCount(count, "note")} are kept and become ` +
-          `Uncategorised: deleting a category never deletes notes.`
-        : "It has no notes in it.")
-  ));
-  if (!ok) return;
-  try {
-    const result = await apiJson(`/categories/${meta.id}`, { method: "DELETE" });
-    if (activeCategory === name) activeCategory = null;
-    const ids = result.moved_ids || [];
-    offerCategoryUndo(
-      `Deleted "${name}". Its notes are in Uncategorised.`,
-      () => apiJson(ids.length ? "/categories/move" : "/categories", { method: "POST", body: JSON.stringify(ids.length ? { entry_ids: ids, category: name } : { name }) }),
-      async () => {
-        await loadCategories();
-        const again = categoryMeta.get(name);
-        if (again) await apiJson(`/categories/${again.id}`, { method: "DELETE" });
-      }
-    );
-    await refreshAfterCategoryChange();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
 //: Moves notes back to where they were, from the `previous` a move returned.
 async function restoreCategoryMoves(previous) {
   //: Grouped by the category and by who filed it: a note the model filed is

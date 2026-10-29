@@ -109,11 +109,8 @@ async function timelineTicks() {
   }
   if (!strip.dataset.ticksWatched) {
     strip.dataset.ticksWatched = "1";
-    //: **The height comes from the observer, not from `clientHeight`** (INBOX
-    //: 1446, the owner's lag log: 248ms of layout at this line on the timeline).
-    //: A draw writes the strip and calls this in the same task, so a read here
-    //: laid the page out for a number the observer hands over after the
-    //: browser's own layout, free.
+    //: The observer hands over the height free; `clientHeight` here laid the
+    //: page out after the draw's writes (INBOX 1446).
     if (typeof ResizeObserver === "function") {
       new ResizeObserver((entries) => {
         timelineTickCache.height = entries[entries.length - 1].contentRect.height;

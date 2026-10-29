@@ -391,28 +391,19 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: the switch left it on the button: a tab that focuses its own field on
 //: arrival (Chat's composer) keeps that. From the keyboard (`detail` 0) the
 //: focus stays in the strip, where its arrows are expected.
-//:
-//: **Found after the page has drawn, not inside the click** (INBOX 1446, the
-//: owner's lag log: a tab click of 216ms with 167ms of it forced layout). Right
-//: after `switchTab` the page's boxes are dirty, so looking for its scroller
-//: there laid the whole page out a second time; one frame later it is clean.
+//: Found two frames on (INBOX 1446): `switchTab` reveals after an await.
 function focusTabPage(button) {
-  if (document.activeElement !== button) return;
   afterFrames(() => {
     if (document.activeElement !== button) return;
     const target = tabPageScroller(button.dataset.tab);
     if (!target) return;
     if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
     target.focus({ preventScroll: true });
-  }, 2);
+  });
 }
 
 //: The region that scrolls a tab's page: the page itself, or the biggest
 //: scrolling region inside it (Notes and the Library scroll a list).
-//: The one found last time is tried first: scanning every element of a
-//: 6,000-element page for it cost 25 to 40ms at 4x CPU on each tab press, and
-//: the answer is the same until the page's layout changes shape.
-const tabScrollerKept = new Map();
 function tabPageScroller(tab) {
   const page = document.getElementById(`tab-${tab}`);
   if (!page || !page.getClientRects().length) return null;
@@ -420,22 +411,18 @@ function tabPageScroller(tab) {
   const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
     /(auto|scroll)/.test(getComputedStyle(el).overflowY);
   let target = scrolls(page) ? page : null;
-  const kept = tabScrollerKept.get(tab);
-  if (!target && kept && page.contains(kept) && kept.getClientRects().length && scrolls(kept)) return kept;
   if (!target) {
     //: The page's biggest scrolling region: a tab whose own box does not
     //: scroll (Notes, the Library) scrolls a list inside it.
     let best = 0;
     for (const el of page.querySelectorAll("*")) {
-      if (!scrolls(el) || !el.getClientRects().length) continue;
-      const area = el.clientWidth * el.clientHeight;
+      const area = scrolls(el) ? el.clientWidth * el.clientHeight : 0;
       if (area > best) {
         best = area;
         target = el;
       }
     }
   }
-  if (target) tabScrollerKept.set(tab, target);
   return target || page;
 }
 // Arrow keys walk the tablist; Home/End jump to the ends (Wave L).

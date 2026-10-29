@@ -388,12 +388,8 @@ function askNotificationPermission() {
 // 2026-10-03: `new AudioContext()` cost 44 to 56 ms inside the unlock click);
 // every gesture resumes a suspended context, which is WebKit's unlock, and
 // the listeners leave once it runs.
-//: **Not built for a reminder that is far off** (INBOX 1446, the owner's lag
-//: log: "status.js build 557ms" and a 536ms keydown on the lock screen, the
-//: audio device opening on the main thread). `nextAt` is the soonest alert
-//: (`armReminderTimer`); a chime wanted with no context builds one and plays
-//: once it exists (`after`).
-const REMINDER_AUDIO_LEAD_MS = 5 * 60 * 1000;
+//: Built only when an alert is near (`nextAt`) or a chime is wanted
+//: (`after`): the device opens on the main thread (INBOX 1446).
 const reminderAudio = { ctx: null, building: false, nextAt: Infinity, after: null };
 function primeReminderAudio() {
   if (reminderAudio.ctx) {
@@ -405,7 +401,7 @@ function primeReminderAudio() {
     }
     return;
   }
-  if (reminderAudio.building || reminderAudio.nextAt - Date.now() > REMINDER_AUDIO_LEAD_MS) return;
+  if (reminderAudio.building || (!reminderAudio.after && reminderAudio.nextAt - Date.now() > 3e5)) return;
   reminderAudio.building = true;
   const build = () => {
     try {
@@ -413,9 +409,8 @@ function primeReminderAudio() {
     } catch {
       // No Web Audio support, reminders still show as a toast/notification.
     }
-    const wanted = reminderAudio.after;
+    if (reminderAudio.ctx) reminderAudio.after?.();
     reminderAudio.after = null;
-    if (wanted && reminderAudio.ctx) wanted();
   };
   if (window.requestIdleCallback) window.requestIdleCallback(build, { timeout: 1500 });
   else setTimeout(build, 300);
@@ -426,7 +421,6 @@ document.addEventListener("keydown", primeReminderAudio, { passive: true });
 function playReminderChime() {
   if (!reminderAudio.ctx) {
     reminderAudio.after = playReminderChime;
-    reminderAudio.nextAt = 0;
     primeReminderAudio();
     return;
   }
@@ -884,22 +878,18 @@ function toastStack(box, change) {
   const ms = parseFloat(cs.getPropertyValue("--ui-base")) * 1000;
   if (!ms || toastReduced()) return;
   const ease = cs.getPropertyValue("--ease-out");
-  //: Every toast is measured, then every one slides (INBOX 1446): an `animate`
-  //: between two reads makes the next read recalculate style again.
   let shift = 0;
-  const slides = [];
   for (const [t, at] of was) {
     if (!t.isConnected || !shown(t)) continue;
     const dy = at - t.getBoundingClientRect().top;
     if (!dy) continue;
     shift = dy;
-    slides.push([t, dy]);
+    t.animate([{ translate: `0 ${dy}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
   }
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const step = (parseFloat(cs.getPropertyValue("--space-4")) || 1) * rem * (top ? -1 : 1);
-  const arrivals = [...box.children].filter((t) => !was.has(t) && shown(t) && !t.classList.contains("toast-more"));
-  for (const [t, dy] of slides) t.animate([{ translate: `0 ${dy}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
-  for (const t of arrivals) {
+  for (const t of box.children) {
+    if (was.has(t) || !shown(t) || t.classList.contains("toast-more")) continue;
     t.animate([{ translate: `0 ${shift || step}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
   }
 }

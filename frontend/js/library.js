@@ -1260,9 +1260,7 @@ function keepLibraryScroll() {
   const pending = new Set();
   const sections = [...document.querySelectorAll("#tab-library .library-view-section")];
   const restore = () => {
-    //: Every section is read, then the offsets are put back (INBOX 1446): a
-    //: `scrollTop` written between two sections' reads made the next read
-    //: lay the page out again (230ms at this line in a trace at 4x CPU).
+    //: Read every section, then put the offsets back (INBOX 1446).
     const put = [];
     for (const el of sections) {
       if (!el.clientHeight) {

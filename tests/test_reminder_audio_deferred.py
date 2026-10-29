@@ -46,7 +46,7 @@ def test_the_gesture_listeners_stay_on_until_the_context_is_running():
 # input#lock-password". The context was built after the first gesture of every
 # session, a main-thread block of 557ms where the audio device opens, whether
 # or not a reminder was anywhere near. It is built now only when a reminder is
-# due within `REMINDER_AUDIO_LEAD_MS`, or when a chime is wanted and there is
+# due within five minutes (3e5), or when a chime is wanted and there is
 # none (the chime then plays once it exists).
 
 
@@ -57,7 +57,7 @@ def _status() -> str:
 def test_the_context_is_built_only_when_a_reminder_is_near():
     text = _status()
     body = _prime_function()
-    gate = body.index("reminderAudio.nextAt - Date.now() > REMINDER_AUDIO_LEAD_MS")
+    gate = body.index("reminderAudio.nextAt - Date.now() > 3e5")
     assert gate < body.index("reminderAudio.building = true;")
     arm = text[text.index("function armReminderTimer(") :]
     arm = arm[: arm.index("\n}\n")]

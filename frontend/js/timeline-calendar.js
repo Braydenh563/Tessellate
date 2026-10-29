@@ -206,10 +206,8 @@ function timelineCalDraw(box, span, first, last) {
     : span === "week" ? `${TIMELINE_CAL_SHORT.format(timelineCalDate(first))} to ${TIMELINE_CAL_SHORT.format(timelineCalDate(last))}`
       : TIMELINE_CAL_MONTH.format(timelineCalDate(first));
   const shown = rows.length + ghosts;
-  //: All the writes, then all the reads, then the trim (INBOX 1446: the page
-  //: was laid out three times in this task, 120, 50 and 45ms at 4x). The
-  //: cells have fixed heights, so the trim moves nothing the scroll and the
-  //: fade below measure; they read the layout the fit already paid for.
+  //: Writes, then reads, then the trim (INBOX 1446): cells have fixed
+  //: heights, so the trim moves nothing the reads below measure.
   feed.classList.toggle("hidden", span !== "agenda");
   $("timeline-count").textContent = `${shown}${timelineCal.more ? "+" : ""} item${shown === 1 ? "" : "s"} · ${period}`;
   let trim = null;
@@ -461,13 +459,10 @@ function timelineCalFill(cell, key, day, items, place, stop) {
 //: How many one-line rows a month cell or all-day row has room for, then
 //: shows that many chips; the last slot is "+n more" when some are left, and
 //: a cell with room for no chip beside its "+n" shows dots for the notes.
-//: Run after the grid is attached, because it reads the laid-out height; it
-//: returns the trim, which the caller runs once its own reads are done.
+//: Run once the grid is attached; returns the trim for the caller to run last.
 function timelineCalFit(root) {
-  //: Three passes, not one per cell (INBOX 1446: 793ms of forced layout at 4x
-  //: on a month of 900 notes): every cell is shown whole, then every cell is
-  //: measured, then every cell is trimmed. The cells have fixed heights
-  //: (`--cal-month-cell`, `--cal-allday`), so no cell's content moves another's room.
+  //: Three passes, not one per cell (INBOX 1446): show all, measure all,
+  //: trim all. Cells have fixed heights (`--cal-month-cell`, `--cal-allday`).
   const cells = [];
   for (const cell of root.querySelectorAll(".timeline-cal-monthcell, .timeline-cal-alldaycell")) {
     const chips = [...cell.querySelectorAll(":scope > .timeline-cal-item")];

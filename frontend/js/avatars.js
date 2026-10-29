@@ -8365,14 +8365,9 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     const style = getComputedStyle(el);
     return { el, from: Object.fromEntries(BODY.map((key) => [key, style[key]])) };
   });
-  //: **Read every part, then ease them** (INBOX 1446: the style flush after
-  //: `change()` was paid again for each part eased, 7 to 155ms a flush at 4x
-  //: in the owner's lag log, "forced layout 190 to 323ms" in a tick). `animate`
-  //: dirties style, so the next part's read flushed it; here each part is read
-  //: in one pass and the eases are made in another, in the order they were
-  //: made before. A part the held pass is going to ease reads as it was in the
-  //: second pass (the ease starts there), so its keys are skipped, as the
-  //: second pass used to find them unmoved.
+  //: Read every part, then ease them: `animate` dirties style, so a read
+  //: between two eases flushed it each time (INBOX 1446). Keys the held pass
+  //: eases are skipped in the second.
   const eases = [];
   const eased = new Map();
   change();
