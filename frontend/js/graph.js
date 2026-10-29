@@ -3756,6 +3756,7 @@ function renderGraphPopupHeader(entry, node) {
 
 async function openGraphPopup(event, node) {
   event.stopPropagation();
+  if (graphPopupId !== node.id) keepGraphPopupEdit();
   graphPopupId = node.id;
   graphLate.popupDragged = false;
   //: The open note wears the focus ring (graph-canvas.js `openId`).
@@ -4883,6 +4884,7 @@ try {
 }
 
 function closeGraphPopup() {
+  keepGraphPopupEdit();
   graphPopupId = null;
   graphLate.popupDragged = false;
   if (typeof gcTab !== "undefined" && gcTab.canvas) gcRequestDraw(gcTab);
@@ -4913,35 +4915,69 @@ $("graph-box")?.addEventListener("pointerdown", () => {
   if (graphKeyboardId !== null) clearGraphKeyboardFocus();
 });
 
-async function saveGraphPopup() {
+//: **One guard for every way out of the popup** (audit G2: Escape, the X, a
+//: click on the map and a click on another note all dropped unsaved typing).
+//: `closeGraphPopup` and `openGraphPopup` (another note) both call this first.
+//: A dirty popup is saved on the way out, as the document editor autosaves, and
+//: Ctrl+Z undoes it (`pushEntryPutUndo`); a save that fails hands the text back
+//: on the clipboard instead of dropping it.
+function graphPopupIsDirty() {
+  if (graphPopupId === null || $("graph-popup").classList.contains("hidden")) return false;
+  if (graphPopupClean.content === "Loading…") return false;
+  return (
+    $("graph-popup-content").value !== graphPopupClean.content || $("graph-popup-tags").value !== graphPopupClean.tags
+  );
+}
+
+function keepGraphPopupEdit() {
+  if (!graphPopupIsDirty()) return;
+  saveGraphPopup({ leaving: true });
+}
+
+async function saveGraphPopup({ leaving = false } = {}) {
   if (graphPopupId === null) return;
+  const id = graphPopupId;
   const status = $("graph-popup-status");
-  const tags = $("graph-popup-tags")
-    .value.split(",")
+  const content = $("graph-popup-content").value;
+  const tagsText = $("graph-popup-tags").value;
+  const was = graphPopupClean;
+  const tags = tagsText
+    .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
   status.classList.remove("error");
   status.textContent = "Saving…";
   try {
-    const wasTags = String(graphPopupClean.tags || "").split(",").map((t) => t.trim()).filter(Boolean);
-    const saved = await apiJson(`/entries/${graphPopupId}`, {
+    const wasTags = String(was.tags || "").split(",").map((t) => t.trim()).filter(Boolean);
+    const saved = await apiJson(`/entries/${id}`, {
       method: "PUT",
-      body: JSON.stringify({ content: $("graph-popup-content").value, tags }),
+      body: JSON.stringify({ content, tags }),
     });
-    pushEntryPutUndo(graphPopupId, "Edited a note on the map", { content: graphPopupClean.content, tags: wasTags }, { content: $("graph-popup-content").value, tags });
-    status.textContent = "Saved.";
-    if (typeof offerWikiRename === "function") offerWikiRename(graphPopupId, saved);
-    //: What was just written is the new clean state, so the button puts
-    //: itself away for the 600ms the panel is still open.
-    graphPopupClean = {
-      content: $("graph-popup-content").value,
-      tags: $("graph-popup-tags").value,
-    };
-    syncGraphPopupSave();
+    pushEntryPutUndo(id, "Edited a note on the map", { content: was.content, tags: wasTags }, { content, tags });
+    if (typeof offerWikiRename === "function") offerWikiRename(id, saved);
+    if (leaving) toast("Saved your edit to the note.");
+    //: The popup may have moved on to another note while the request ran.
+    if (graphPopupId === id) {
+      status.textContent = "Saved.";
+      //: What was just written is the new clean state, so the button puts
+      //: itself away for the 600ms the panel is still open.
+      graphPopupClean = { content, tags: tagsText };
+      syncGraphPopupSave();
+    }
     await loadEntries().catch(() => {});
     renderGraph(); // content/tags may change what the map shows
-    setTimeout(closeGraphPopup, 600);
+    if (!leaving) {
+      setTimeout(() => {
+        if (graphPopupId === id) closeGraphPopup();
+      }, 600);
+    }
   } catch (error) {
+    if (leaving) {
+      toastAction(`Couldn't save your edit: ${error.message}`, "Copy text", () => {
+        navigator.clipboard?.writeText(content).catch(() => {});
+      });
+      return;
+    }
     status.textContent = error.message;
     status.classList.add("error");
   }
