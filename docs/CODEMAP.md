@@ -2,9 +2,9 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6806, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7179, test files 1521, tests 13342, plan headings 985.
+Counts: frontend functions 6807, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7179, test files 1522, tests 13345, plan headings 985.
 
-## Frontend functions (6806)
+## Frontend functions (6807)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4042,169 +4042,170 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `explainNote` | frontend/js/gesture-kit.js:174 |
 | `openChatModelPanel` | frontend/js/gesture-kit.js:9 |
 
-### frontend/js/graph-canvas.js (159)
+### frontend/js/graph-canvas.js (160)
 
 | Name | File:line |
 |---|---|
-| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4249 |
-| `gcArriving` | frontend/js/graph-canvas.js:6656 |
+| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4259 |
+| `gcArriving` | frontend/js/graph-canvas.js:6666 |
 | `gcArrows` | frontend/js/graph-canvas.js:868 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:192 |
-| `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:1897 |
-| `gcBalanceFit` | frontend/js/graph-canvas.js:1750 |
-| `gcBornAlpha` | frontend/js/graph-canvas.js:1941 |
+| `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:1907 |
+| `gcBalanceFit` | frontend/js/graph-canvas.js:1760 |
+| `gcBornAlpha` | frontend/js/graph-canvas.js:1951 |
 | `gcBowPoint` | frontend/js/graph-canvas.js:882 |
 | `gcBoxLineCount` | frontend/js/graph-canvas.js:739 |
-| `gcBoxPoints` | frontend/js/graph-canvas.js:4266 |
-| `gcCachedPositions` | frontend/js/graph-canvas.js:5324 |
+| `gcBoxPoints` | frontend/js/graph-canvas.js:4276 |
+| `gcCachedPositions` | frontend/js/graph-canvas.js:5334 |
 | `gcClampBox` | frontend/js/graph-canvas.js:653 |
-| `gcClickNode` | frontend/js/graph-canvas.js:4857 |
+| `gcClickNode` | frontend/js/graph-canvas.js:4867 |
 | `gcClipEdge` | frontend/js/graph-canvas.js:726 |
-| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4524 |
+| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4534 |
 | `gcCurvedLinks` | frontend/js/graph-canvas.js:837 |
-| `gcDraw` | frontend/js/graph-canvas.js:2471 |
-| `gcDrawComposed` | frontend/js/graph-canvas.js:2380 |
-| `gcDrawDrift` | frontend/js/graph-canvas.js:3350 |
-| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3363 |
-| `gcDrawLabels` | frontend/js/graph-canvas.js:3423 |
-| `gcDrawLeaving` | frontend/js/graph-canvas.js:2004 |
-| `gcDrawLeavingLines` | frontend/js/graph-canvas.js:1995 |
-| `gcDrawNebulae` | frontend/js/graph-canvas.js:1177 |
-| `gcDrawPill` | frontend/js/graph-canvas.js:3400 |
-| `gcDrawSelection` | frontend/js/graph-canvas.js:4305 |
-| `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1340 |
-| `gcDrawTrace` | frontend/js/graph-canvas.js:3600 |
-| `gcDrawTreemap` | frontend/js/graph-canvas.js:1226 |
-| `gcEaseOut` | frontend/js/graph-canvas.js:2029 |
-| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3683 |
+| `gcDraw` | frontend/js/graph-canvas.js:2481 |
+| `gcDrawComposed` | frontend/js/graph-canvas.js:2390 |
+| `gcDrawDrift` | frontend/js/graph-canvas.js:3360 |
+| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3373 |
+| `gcDrawLabels` | frontend/js/graph-canvas.js:3433 |
+| `gcDrawLeaving` | frontend/js/graph-canvas.js:2014 |
+| `gcDrawLeavingLines` | frontend/js/graph-canvas.js:2005 |
+| `gcDrawNebulae` | frontend/js/graph-canvas.js:1187 |
+| `gcDrawPill` | frontend/js/graph-canvas.js:3410 |
+| `gcDrawSelection` | frontend/js/graph-canvas.js:4315 |
+| `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1350 |
+| `gcDrawTrace` | frontend/js/graph-canvas.js:3610 |
+| `gcDrawTreemap` | frontend/js/graph-canvas.js:1236 |
+| `gcEaseOut` | frontend/js/graph-canvas.js:2039 |
+| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3693 |
 | `gcEdgeLook` | frontend/js/graph-canvas.js:905 |
 | `gcEdgeStyle` | frontend/js/graph-canvas.js:940 |
-| `gcEl` | frontend/js/graph-canvas.js:2221 |
-| `gcEllipsize` | frontend/js/graph-canvas.js:1266 |
+| `gcEl` | frontend/js/graph-canvas.js:2231 |
+| `gcEllipsize` | frontend/js/graph-canvas.js:1276 |
 | `gcEnsureCanvas` | frontend/js/graph-canvas.js:985 |
-| `gcExportPng` | frontend/js/graph-canvas.js:2292 |
-| `gcFadeStep` | frontend/js/graph-canvas.js:2109 |
-| `gcFadeToward` | frontend/js/graph-canvas.js:2096 |
-| `gcFillSparks` | frontend/js/graph-canvas.js:3330 |
-| `gcFilterChip` | frontend/js/graph-canvas.js:1435 |
-| `gcFitInsets` | frontend/js/graph-canvas.js:1859 |
-| `gcFrameIntro` | frontend/js/graph-canvas.js:5339 |
-| `gcGlideFinish` | frontend/js/graph-canvas.js:2151 |
-| `gcGlideStep` | frontend/js/graph-canvas.js:2132 |
+| `gcExportPng` | frontend/js/graph-canvas.js:2302 |
+| `gcFadeStep` | frontend/js/graph-canvas.js:2119 |
+| `gcFadeToward` | frontend/js/graph-canvas.js:2106 |
+| `gcFillSparks` | frontend/js/graph-canvas.js:3340 |
+| `gcFilterChip` | frontend/js/graph-canvas.js:1445 |
+| `gcFitInsets` | frontend/js/graph-canvas.js:1869 |
+| `gcFrameIntro` | frontend/js/graph-canvas.js:5349 |
+| `gcGlideFinish` | frontend/js/graph-canvas.js:2161 |
+| `gcGlideStep` | frontend/js/graph-canvas.js:2142 |
 | `gcHexToRgb` | frontend/js/graph-canvas.js:1082 |
-| `gcHideTopic` | frontend/js/graph-canvas.js:1502 |
-| `gcHighlight` | frontend/js/graph-canvas.js:2246 |
-| `gcHoverCardEl` | frontend/js/graph-canvas.js:4686 |
-| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4651 |
-| `gcHoverCardFill` | frontend/js/graph-canvas.js:4709 |
-| `gcHoverCardFrame` | frontend/js/graph-canvas.js:4764 |
-| `gcHoverChanged` | frontend/js/graph-canvas.js:2037 |
-| `gcHoverGrow` | frontend/js/graph-canvas.js:2048 |
-| `gcHoverStep` | frontend/js/graph-canvas.js:2056 |
+| `gcHideTopic` | frontend/js/graph-canvas.js:1512 |
+| `gcHighlight` | frontend/js/graph-canvas.js:2256 |
+| `gcHoverCardEl` | frontend/js/graph-canvas.js:4696 |
+| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4661 |
+| `gcHoverCardFill` | frontend/js/graph-canvas.js:4719 |
+| `gcHoverCardFrame` | frontend/js/graph-canvas.js:4774 |
+| `gcHoverChanged` | frontend/js/graph-canvas.js:2047 |
+| `gcHoverGrow` | frontend/js/graph-canvas.js:2058 |
+| `gcHoverStep` | frontend/js/graph-canvas.js:2066 |
 | `gcHubSpokeMin` | frontend/js/graph-canvas.js:403 |
 | `gcIsNote` | frontend/js/graph-canvas.js:375 |
 | `gcKeyboardId` | frontend/js/graph-canvas.js:204 |
-| `gcLabelCut` | frontend/js/graph-canvas.js:3560 |
+| `gcLabelCut` | frontend/js/graph-canvas.js:3570 |
 | `gcLabelPlates` | frontend/js/graph-canvas.js:849 |
-| `gcLabelText` | frontend/js/graph-canvas.js:3570 |
-| `gcLabelWidth` | frontend/js/graph-canvas.js:3528 |
+| `gcLabelText` | frontend/js/graph-canvas.js:3580 |
+| `gcLabelWidth` | frontend/js/graph-canvas.js:3538 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:856 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6081 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6127 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6091 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6137 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:670 |
-| `gcLinkKindHidden` | frontend/js/graph-canvas.js:1426 |
-| `gcLinkSpark` | frontend/js/graph-canvas.js:3285 |
+| `gcLinkKindHidden` | frontend/js/graph-canvas.js:1436 |
+| `gcLinkSpark` | frontend/js/graph-canvas.js:3295 |
 | `gcLinkWidth` | frontend/js/graph-canvas.js:862 |
-| `gcLitAlpha` | frontend/js/graph-canvas.js:2102 |
-| `gcMarkLeaving` | frontend/js/graph-canvas.js:1960 |
+| `gcLitAlpha` | frontend/js/graph-canvas.js:2112 |
+| `gcMarkLeaving` | frontend/js/graph-canvas.js:1970 |
 | `gcMaxDegree` | frontend/js/graph-canvas.js:248 |
 | `gcMixRgb` | frontend/js/graph-canvas.js:1098 |
 | `gcMs` | frontend/js/graph-canvas.js:335 |
-| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3659 |
-| `gcNodeSprite` | frontend/js/graph-canvas.js:1123 |
-| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:4900 |
-| `gcOpenTopic` | frontend/js/graph-canvas.js:1722 |
-| `gcOverlayBoxes` | frontend/js/graph-canvas.js:1837 |
-| `gcPaintCore` | frontend/js/graph-canvas.js:1101 |
-| `gcPaintLayer` | frontend/js/graph-canvas.js:2362 |
-| `gcPinSelection` | frontend/js/graph-canvas.js:4360 |
+| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3669 |
+| `gcNodeSprite` | frontend/js/graph-canvas.js:1133 |
+| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:4910 |
+| `gcOpenTopic` | frontend/js/graph-canvas.js:1732 |
+| `gcOverlayBoxes` | frontend/js/graph-canvas.js:1847 |
+| `gcPaintCore` | frontend/js/graph-canvas.js:1111 |
+| `gcPaintLayer` | frontend/js/graph-canvas.js:2372 |
+| `gcPinSelection` | frontend/js/graph-canvas.js:4370 |
 | `gcPlaceLabels` | frontend/js/graph-canvas.js:496 |
 | `gcPlacePill` | frontend/js/graph-canvas.js:786 |
-| `gcPlateAtWorld` | frontend/js/graph-canvas.js:1694 |
-| `gcPlateTitle` | frontend/js/graph-canvas.js:1701 |
-| `gcPointInPolygon` | frontend/js/graph-canvas.js:4228 |
-| `gcPositionsSig` | frontend/js/graph-canvas.js:5309 |
-| `gcPost` | frontend/js/graph-canvas.js:4932 |
+| `gcPlateAtWorld` | frontend/js/graph-canvas.js:1704 |
+| `gcPlateTitle` | frontend/js/graph-canvas.js:1711 |
+| `gcPointInPolygon` | frontend/js/graph-canvas.js:4238 |
+| `gcPositionsSig` | frontend/js/graph-canvas.js:5319 |
+| `gcPost` | frontend/js/graph-canvas.js:4942 |
 | `gcPruneSimilarity` | frontend/js/graph-canvas.js:439 |
-| `gcQuadAt` | frontend/js/graph-canvas.js:3275 |
+| `gcQuadAt` | frontend/js/graph-canvas.js:3285 |
 | `gcRadius` | frontend/js/graph-canvas.js:260 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:314 |
-| `gcRefitForPanels` | frontend/js/graph-canvas.js:1889 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:6636 |
-| `gcRenameTopicInline` | frontend/js/graph-canvas.js:1623 |
-| `gcRenderFilterChips` | frontend/js/graph-canvas.js:1447 |
-| `gcRequestDraw` | frontend/js/graph-canvas.js:2181 |
-| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2203 |
-| `gcReshuffle` | frontend/js/graph-canvas.js:4985 |
+| `gcRefitForPanels` | frontend/js/graph-canvas.js:1899 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:6646 |
+| `gcRenameTopicInline` | frontend/js/graph-canvas.js:1633 |
+| `gcRenderFilterChips` | frontend/js/graph-canvas.js:1457 |
+| `gcRequestDraw` | frontend/js/graph-canvas.js:2191 |
+| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2213 |
+| `gcReshuffle` | frontend/js/graph-canvas.js:4995 |
 | `gcResize` | frontend/js/graph-canvas.js:953 |
-| `gcReveal` | frontend/js/graph-canvas.js:6681 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6669 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:5886 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:5868 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:5892 |
-| `gcSavePositions` | frontend/js/graph-canvas.js:5312 |
-| `gcSaveTopicName` | frontend/js/graph-canvas.js:1595 |
-| `gcSearchOver` | frontend/js/graph-canvas.js:2235 |
-| `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1288 |
-| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5475 |
-| `gcSelectedNodes` | frontend/js/graph-canvas.js:4384 |
-| `gcSelectionChanged` | frontend/js/graph-canvas.js:4338 |
+| `gcReveal` | frontend/js/graph-canvas.js:6691 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6679 |
+| `gcRimShare` | frontend/js/graph-canvas.js:1106 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:5896 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:5878 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:5902 |
+| `gcSavePositions` | frontend/js/graph-canvas.js:5322 |
+| `gcSaveTopicName` | frontend/js/graph-canvas.js:1605 |
+| `gcSearchOver` | frontend/js/graph-canvas.js:2245 |
+| `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1298 |
+| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5485 |
+| `gcSelectedNodes` | frontend/js/graph-canvas.js:4394 |
+| `gcSelectionChanged` | frontend/js/graph-canvas.js:4348 |
 | `gcSetAutoFitDone` | frontend/js/graph-canvas.js:196 |
 | `gcSetHovered` | frontend/js/graph-canvas.js:208 |
-| `gcShape` | frontend/js/graph-canvas.js:4968 |
-| `gcShowEmpty` | frontend/js/graph-canvas.js:5421 |
-| `gcShowEveryNote` | frontend/js/graph-canvas.js:5450 |
-| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4581 |
-| `gcShowTopic` | frontend/js/graph-canvas.js:1508 |
+| `gcShape` | frontend/js/graph-canvas.js:4978 |
+| `gcShowEmpty` | frontend/js/graph-canvas.js:5431 |
+| `gcShowEveryNote` | frontend/js/graph-canvas.js:5460 |
+| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4591 |
+| `gcShowTopic` | frontend/js/graph-canvas.js:1518 |
 | `gcSimilarityBand` | frontend/js/graph-canvas.js:482 |
 | `gcSimilarityCutoff` | frontend/js/graph-canvas.js:816 |
-| `gcSmooth` | frontend/js/graph-canvas.js:2091 |
-| `gcStartWorker` | frontend/js/graph-canvas.js:5011 |
+| `gcSmooth` | frontend/js/graph-canvas.js:2101 |
+| `gcStartWorker` | frontend/js/graph-canvas.js:5021 |
 | `gcStill` | frontend/js/graph-canvas.js:345 |
-| `gcStop` | frontend/js/graph-canvas.js:4936 |
+| `gcStop` | frontend/js/graph-canvas.js:4946 |
 | `gcSurface` | frontend/js/graph-canvas.js:43 |
-| `gcTabHidden` | frontend/js/graph-canvas.js:2173 |
-| `gcTogglePin` | frontend/js/graph-canvas.js:4203 |
-| `gcTooltip` | frontend/js/graph-canvas.js:4816 |
-| `gcTooltipMatches` | frontend/js/graph-canvas.js:4841 |
-| `gcTopicColour` | frontend/js/graph-canvas.js:1729 |
-| `gcTopicCore` | frontend/js/graph-canvas.js:1716 |
-| `gcTopicMembers` | frontend/js/graph-canvas.js:1709 |
-| `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1220 |
-| `gcTreeIndex` | frontend/js/graph-canvas.js:3645 |
-| `gcTweenFromPrior` | frontend/js/graph-canvas.js:1911 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6629 |
-| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2279 |
-| `gcWireInteraction` | frontend/js/graph-canvas.js:3735 |
-| `gcWireLasso` | frontend/js/graph-canvas.js:4270 |
-| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4528 |
-| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4388 |
-| `gcWorkerParams` | frontend/js/graph-canvas.js:4943 |
-| `gcWorldFor` | frontend/js/graph-canvas.js:5372 |
-| `gcWorldPoint` | frontend/js/graph-canvas.js:3669 |
-| `gcWriteUnresolved` | frontend/js/graph-canvas.js:4915 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:6421 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6557 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:6399 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:6511 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:6566 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:5909 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:6151 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6199 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6226 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:6265 |
-| `renderGraphCanvas` | frontend/js/graph-canvas.js:5506 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:6427 |
+| `gcTabHidden` | frontend/js/graph-canvas.js:2183 |
+| `gcTogglePin` | frontend/js/graph-canvas.js:4213 |
+| `gcTooltip` | frontend/js/graph-canvas.js:4826 |
+| `gcTooltipMatches` | frontend/js/graph-canvas.js:4851 |
+| `gcTopicColour` | frontend/js/graph-canvas.js:1739 |
+| `gcTopicCore` | frontend/js/graph-canvas.js:1726 |
+| `gcTopicMembers` | frontend/js/graph-canvas.js:1719 |
+| `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1230 |
+| `gcTreeIndex` | frontend/js/graph-canvas.js:3655 |
+| `gcTweenFromPrior` | frontend/js/graph-canvas.js:1921 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6639 |
+| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2289 |
+| `gcWireInteraction` | frontend/js/graph-canvas.js:3745 |
+| `gcWireLasso` | frontend/js/graph-canvas.js:4280 |
+| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4538 |
+| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4398 |
+| `gcWorkerParams` | frontend/js/graph-canvas.js:4953 |
+| `gcWorldFor` | frontend/js/graph-canvas.js:5382 |
+| `gcWorldPoint` | frontend/js/graph-canvas.js:3679 |
+| `gcWriteUnresolved` | frontend/js/graph-canvas.js:4925 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:6431 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6567 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:6409 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:6521 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:6576 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:5919 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:6161 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6209 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6236 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:6275 |
+| `renderGraphCanvas` | frontend/js/graph-canvas.js:5516 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:6437 |
 
 ### frontend/js/graph-worker.js (102)
 
@@ -10332,7 +10333,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | A notification's two controls are a column of their own (INBOX 874) | frontend/css/06-timeline-dialogs.css:3430 |
 | A rail row's ⋮ overlays the row; it never reserves a column (INBOX 722) | frontend/css/08-consistency.css:10692 |
 | A row is a pointer target (INBOX 719) | frontend/css/08-consistency.css:10607 |
-| Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2865 |
+| Ask history: the personal-notes-browser panel (§ROADMAP item 6) | frontend/css/01-forms-settings.css:2866 |
 | Atlas's life: loops while the mark is on screen and motion is on | frontend/css/08-consistency.css:8105 |
 | Atlas, the app's guide (INBOX 224) | frontend/css/08-consistency.css:1805 |
 | Atlas, the assistant's own character (atlas.js) | frontend/css/08-consistency.css:6678 |
@@ -10363,7 +10364,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Icons | frontend/css/07-whiteboard-misc.css:2363 |
 | Inline AI (editor.js) | frontend/css/07-whiteboard-misc.css:6473 |
 | Lagoon: indigo and teal together | frontend/css/05-sidebars-themes.css:3365 |
-| Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2485 |
+| Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2486 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4014 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4039 |
 | Live preview | frontend/css/04-chat-dock-appearance.css:4637 |
@@ -10392,7 +10393,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:992 |
 | Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2003 |
 | Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1342 |
-| Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2846 |
+| Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2847 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4469 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3974 |
 | Placed at the end of this file on purpose. A panel keeps its original class | frontend/css/03-dashboard-widgets.css:4050 |
@@ -10406,10 +10407,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Reminders: the time at the row's end, actions over it on hover | frontend/css/08-consistency.css:4456 |
 | Ring room (INBOX 685, "a lot of borders get cut off on an edge") | frontend/css/08-consistency.css:10254 |
 | Rosewood: dusty rose and wine. Warm without being orange. | frontend/css/05-sidebars-themes.css:3560 |
-| Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1473 |
+| Rows: the default way a list of notes is shown | frontend/css/01-forms-settings.css:1474 |
 | Rules that used to be inline style="" attributes. | frontend/css/06-timeline-dialogs.css:642 |
-| SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5113 |
-| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5261 |
+| SETTINGS: one control height, one right edge | frontend/css/01-forms-settings.css:5114 |
+| SETTINGS: spacing, hierarchy and proximity | frontend/css/01-forms-settings.css:5262 |
 | SIDEBAR COLLAPSE & PEEK | frontend/css/07-whiteboard-misc.css:464 |
 | SKILLS TAB | frontend/css/07-whiteboard-misc.css:821 |
 | Sage: quiet greens. The calmest of the set. | frontend/css/05-sidebars-themes.css:3295 |
@@ -10418,14 +10419,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings form rows share a label column (Phase 5.1) | frontend/css/07-whiteboard-misc.css:7907 |
 | Settings headings sit at one left edge | frontend/css/08-consistency.css:1444 |
 | Settings rows that wrap their actions under the title (INBOX 82) | frontend/css/08-consistency.css:2229 |
-| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6216 |
+| Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6217 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4563 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
 | THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5644 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5429 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2320 |
 | THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5691 |
-| THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4980 |
+| THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4981 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3683 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3468 |
 | Text on accent-coloured surfaces (roadmap §7: colour contrast was listed as | frontend/css/05-sidebars-themes.css:4091 |
@@ -10500,7 +10501,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a map line's end grips and the topic shapes (K31) | frontend/css/library-lazy.css:7079 |
 | a map's levels and a solid fill (MINDMAP_PLAN §14, decisions 38, 39) | frontend/css/library-lazy.css:3376 |
 | a menu is one column: rows, section labels and icons (INBOX 403) | frontend/css/08-consistency.css:8733 |
-| a model per feature (Settings → Models) | frontend/css/01-forms-settings.css:5633 |
+| a model per feature (Settings → Models) | frontend/css/01-forms-settings.css:5634 |
 | a named item in a Settings list: title, label, facts | frontend/css/08-consistency.css:3486 |
 | a narrow measure for prose, wide chrome around it | frontend/css/07-whiteboard-misc.css:5090 |
 | a note's connections: one pill each, its menu inside it | frontend/css/08-consistency.css:3255 |
@@ -10515,9 +10516,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a traced path (§9) | frontend/css/graph-lazy.css:264 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4121 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1073 |
-| account & security | frontend/css/01-forms-settings.css:3467 |
+| account & security | frontend/css/01-forms-settings.css:3468 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1845 |
-| activity log | frontend/css/01-forms-settings.css:2821 |
+| activity log | frontend/css/01-forms-settings.css:2822 |
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3198 |
 | an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6132 |
 | and inside a small phone | frontend/css/05-sidebars-themes.css:5910 |
@@ -10540,7 +10541,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2745 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1310 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:509 |
-| chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1074 |
+| chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1075 |
 | chat polish | frontend/css/03-dashboard-widgets.css:3246 |
 | chat tab (Wave C) | frontend/css/02-chat-graph.css:1 |
 | chat, de-vibecoded | frontend/css/08-consistency.css:3077 |
@@ -10548,9 +10549,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | choice controls, the owner's 2026-09-24 pass (INBOX 409, 411) | frontend/css/08-consistency.css:8663 |
 | column-flex cards keep their full width | frontend/css/07-whiteboard-misc.css:3737 |
 | compressing a long conversation (§35I) | frontend/css/02-chat-graph.css:796 |
-| curated themes | frontend/css/01-forms-settings.css:3503 |
+| curated themes | frontend/css/01-forms-settings.css:3504 |
 | dark glass reads flatter, and here is which half of it does | frontend/css/10-responsive.css:324 |
-| dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3688 |
+| dashboard + reminders (Wave D) | frontend/css/01-forms-settings.css:3689 |
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1485 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4231 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1946 |
@@ -10561,14 +10562,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | duplicate tidy-up | frontend/css/05-sidebars-themes.css:1692 |
 | editing a question in place | frontend/css/05-sidebars-themes.css:315 |
 | empty states that sit where they should | frontend/css/08-consistency.css:4328 |
-| entry actions + links (Phase 4) | frontend/css/01-forms-settings.css:2183 |
-| entry lists | frontend/css/01-forms-settings.css:1432 |
+| entry actions + links (Phase 4) | frontend/css/01-forms-settings.css:2184 |
+| entry lists | frontend/css/01-forms-settings.css:1433 |
 | every control in a dock takes the touch floor | frontend/css/07-whiteboard-misc.css:10536 |
 | every menu scrolls down, never sideways, and never runs off the page | frontend/css/07-whiteboard-misc.css:7823 |
 | fields answer the pointer too | frontend/css/07-whiteboard-misc.css:3655 |
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:651 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1378 |
-| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5739 |
+| finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5740 |
 | first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2324 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2663 |
@@ -10586,12 +10587,12 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3450 |
 | left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3711 |
 | line numbers for any textarea (UI_MODERNISATION_PLAN Phase 7.2) | frontend/css/07-whiteboard-misc.css:8033 |
-| live clock (reminders tab) | frontend/css/01-forms-settings.css:3689 |
-| lock screen (Phase 4) | frontend/css/01-forms-settings.css:2073 |
+| live clock (reminders tab) | frontend/css/01-forms-settings.css:3690 |
+| lock screen (Phase 4) | frontend/css/01-forms-settings.css:2074 |
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8155 |
 | markdown tables | frontend/css/04-chat-dock-appearance.css:1920 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1670 |
-| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5887 |
+| model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5888 |
 | more than one route between the same two notes | frontend/css/02-chat-graph.css:1194 |
 | motion: a heavy page's first visit (INBOX 580) | frontend/css/08-consistency.css:9850 |
 | motion: a hover eases (2026-10-05) | frontend/css/08-consistency.css:9738 |
@@ -10615,10 +10616,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | notifications | frontend/css/08-consistency.css:3723 |
 | numbered citations inside an answer | frontend/css/02-chat-graph.css:3879 |
 | one control height per Library header row | frontend/css/07-whiteboard-misc.css:5390 |
-| one gap under every card heading | frontend/css/01-forms-settings.css:4867 |
+| one gap under every card heading | frontend/css/01-forms-settings.css:4868 |
 | one line of facts: a note's meta row | frontend/css/08-consistency.css:2695 |
 | one popup, three tiers (INBOX 456, DESIGN.md "A popup window or panel") | frontend/css/08-consistency.css:9316 |
-| one size for every dropdown | frontend/css/01-forms-settings.css:4830 |
+| one size for every dropdown | frontend/css/01-forms-settings.css:4831 |
 | one switch, everywhere a checkbox means "on or off" | frontend/css/06-timeline-dialogs.css:2092 |
 | one ⋯ button, everywhere (INBOX 722) | frontend/css/00-tokens-shell.css:4262 |
 | optional extras (Settings) | frontend/css/00-tokens-shell.css:1654 |
@@ -10632,16 +10633,16 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | reminders: "when" is one decision, so it is one group | frontend/css/07-whiteboard-misc.css:3671 |
 | resizable sidebars | frontend/css/05-sidebars-themes.css:1773 |
 | results: the list-row recipe | frontend/css/03-dashboard-widgets.css:1217 |
-| rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1265 |
+| rich markdown blocks (tables, quotes, rules, task lists) | frontend/css/01-forms-settings.css:1266 |
 | rows instead of cards | frontend/css/00-tokens-shell.css:2282 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1098 |
 | saved filters | frontend/css/05-sidebars-themes.css:664 |
 | screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2729 |
 | scrollbars | frontend/css/07-whiteboard-misc.css:3605 |
 | search match highlighting | frontend/css/05-sidebars-themes.css:351 |
-| settings / model manager | frontend/css/01-forms-settings.css:2029 |
-| settings modal + logs (Wave A) | frontend/css/01-forms-settings.css:3274 |
-| settings rows: one shape at rest | frontend/css/01-forms-settings.css:4637 |
+| settings / model manager | frontend/css/01-forms-settings.css:2030 |
+| settings modal + logs (Wave A) | frontend/css/01-forms-settings.css:3275 |
+| settings rows: one shape at rest | frontend/css/01-forms-settings.css:4638 |
 | settings, de-vibecoded | frontend/css/08-consistency.css:3160 |
 | settings: one column for every "?", and a pane title that is a title | frontend/css/08-consistency.css:3368 |
 | sidebar | frontend/css/01-forms-settings.css:111 |
@@ -10653,7 +10654,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3502 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
-| the "?" head row and its help body | frontend/css/01-forms-settings.css:5395 |
+| the "?" head row and its help body | frontend/css/01-forms-settings.css:5396 |
 | the 464 round: Settings groups, switch rows, the phone's chrome | frontend/css/08-consistency.css:9979 |
 | the AI skills dock: one row where it fits (INBOX 450, 599) | frontend/css/08-consistency.css:9523 |
 | the AI status dot | frontend/css/00-tokens-shell.css:1517 |
@@ -10747,7 +10748,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the note card's metadata, ordered (§36B) | frontend/css/06-timeline-dialogs.css:1497 |
 | the notifications centre (§36E) | frontend/css/06-timeline-dialogs.css:1656 |
 | the one control in a dock that was not the dock's height | frontend/css/10-responsive.css:365 |
-| the one generating animation | frontend/css/01-forms-settings.css:4770 |
+| the one generating animation | frontend/css/01-forms-settings.css:4771 |
 | the one map chip (MINDMAP_PLAN.md §5 item 12) | frontend/css/05-sidebars-themes.css:794 |
 | the one popover shell (UI_MODERNISATION_PLAN.md, Phase 2) | frontend/css/07-whiteboard-misc.css:7854 |
 | the orphan-row pattern, everywhere else it appears (§36B) | frontend/css/06-timeline-dialogs.css:1638 |
@@ -10768,7 +10769,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the selection tick in Rows (INBOX 426 z, image 91) | frontend/css/08-consistency.css:9085 |
 | the selection tick, in the app's own language | frontend/css/07-whiteboard-misc.css:4285 |
 | the settings jump list | frontend/css/07-whiteboard-misc.css:10495 |
-| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5528 |
+| the settings sheet takes the touch floor | frontend/css/01-forms-settings.css:5529 |
 | the spine | frontend/css/00-tokens-shell.css:2232 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8407 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3166 |
@@ -10804,7 +10805,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1949 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:961 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3602 |
-| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5586 |
+| what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5587 |
 | what the AI remembers (ROADMAP §39B) | frontend/css/07-whiteboard-misc.css:2006 |
 | what the agent found, as things you can open | frontend/css/07-whiteboard-misc.css:5349 |
 | what the answering model is | frontend/css/02-chat-graph.css:4747 |
@@ -10818,7 +10819,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | File | Lines |
 |---|---|
 | frontend/css/00-tokens-shell.css | 4292 |
-| frontend/css/01-forms-settings.css | 6298 |
+| frontend/css/01-forms-settings.css | 6299 |
 | frontend/css/02-chat-graph.css | 5346 |
 | frontend/css/03-dashboard-widgets.css | 4843 |
 | frontend/css/04-chat-dock-appearance.css | 6568 |
@@ -20442,7 +20443,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13342)
+## Tests (13345)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21010,6 +21011,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_click_threshold.py | 2 |
 | tests/test_graph_colour_rules.py | 7 |
 | tests/test_graph_compose_1400.py | 5 |
+| tests/test_graph_contrast_1029b.py | 3 |
 | tests/test_graph_empty_filtered.py | 4 |
 | tests/test_graph_encoded_off_loop.py | 2 |
 | tests/test_graph_feel_100.py | 14 |

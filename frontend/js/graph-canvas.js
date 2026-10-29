@@ -1098,6 +1098,16 @@ function gcHexToRgb(colour) {
 function gcMixRgb(rgb, toward, share) {
   return `rgb(${rgb.map((v) => Math.round(v + (toward - v) * share)).join(", ")})`;
 }
+//: **The rim must clear 3:1 on a light ground** (audit 1029 G12/G21): the
+//: automatic colours (Tableau, Set3) are 1.0 to 2.7 against the map's ground as
+//: a disc, so the thin edge is the part that reads, and a quarter deeper left
+//: the palest at 1.9. Half deeper puts the worst of the 22 at 3.8 (3.0 sampled off the painted sprite at 45%). A dark ground
+//: (or a card token this cannot read) keeps the quarter.
+function gcRimShare() {
+  const ground = gcHexToRgb(gcTokens.card);
+  return ground && ground[0] * 0.299 + ground[1] * 0.587 + ground[2] * 0.114 > 160 ? 0.5 : 0.25;
+}
+
 function gcPaintCore(c, half, r, colour) {
   const rgb = gcHexToRgb(colour);
   c.beginPath();
@@ -1116,7 +1126,7 @@ function gcPaintCore(c, half, r, colour) {
   c.beginPath();
   c.arc(half, half, r - 0.5, 0, Math.PI * 2);
   c.lineWidth = 1;
-  c.strokeStyle = gcMixRgb(rgb, 0, 0.25);
+  c.strokeStyle = gcMixRgb(rgb, 0, gcRimShare());
   c.stroke();
 }
 
