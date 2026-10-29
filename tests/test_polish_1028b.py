@@ -27,7 +27,8 @@ def test_the_browser_log_tag_is_not_dimmed_below_contrast():
 def test_a_failed_unlock_marks_and_describes_the_field_and_refocuses_it():
     text = _read("frontend/js/settings-wiring.js")
     assert 'field.setAttribute("aria-invalid", "true")' in text
-    assert 'field.setAttribute("aria-describedby", "lock-error")' in text
+    # Described by the error line from the start (in the page, not script: the boot gzip cap).
+    assert 'aria-describedby="lock-error"' in _read("frontend/index.html").split('id="lock-password"', 1)[1].split(">", 1)[0]
     assert text.count("lockFail(") >= 3
 
 

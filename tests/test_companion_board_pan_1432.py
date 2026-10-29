@@ -15,8 +15,8 @@ def _body(name: str) -> str:
 
 def test_the_press_marks_the_companion_held_and_every_way_out_clears_it():
     assert "nmb.grabbed = true;" in JS
-    assert JS.count("nmb.grabbed = false") >= 2  # release, and a lost capture
-    assert 'face.addEventListener("lostpointercapture"' in JS
+    assert "nmb.grabbed = false" in JS[JS.index("const release = (event) => {") :][:80]
+    assert 'face.addEventListener("lostpointercapture", release)' in JS
 
 
 def test_the_board_zoom_and_edge_pan_refuse_while_held():

@@ -249,7 +249,6 @@ function lockFail(message) {
   const field = $("lock-password");
   $("lock-error").textContent = message;
   field.setAttribute("aria-invalid", "true");
-  field.setAttribute("aria-describedby", "lock-error");
   field.focus();
   field.select();
 }

@@ -9376,7 +9376,7 @@ function nameMarkBuddyBuild() {
   face.addEventListener("pointerup", release);
   face.addEventListener("pointercancel", release);
   //: A press that loses its capture another way never pins the board still.
-  face.addEventListener("lostpointercapture", () => { nmb.grabbed = false; });
+  face.addEventListener("lostpointercapture", release);
   //: **A double-click is not two pokes** (INBOX 443 c, the owner: a
   //: double-click to enlarge it should find it "still doing that action").
   //: Its first click used to poke it there and then, and the poke ended
