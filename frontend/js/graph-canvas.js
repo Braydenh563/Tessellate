@@ -1454,19 +1454,29 @@ function gcFilterChip(label, count, pressed, title, onClick, { offWhenUnpressed 
   return el;
 }
 
-function gcRenderFilterChips(data) {
-  const kinds = document.getElementById("graph-link-kinds");
-  const props = document.getElementById("graph-prop-chips");
-  if (!kinds || !props) return;
+//: The link kinds on the map, biggest first, as `[key, {label, n}]`. Empty when
+//: no link has a kind: one chip, "No kind 64", filters nothing a person can
+//: tell apart, so the row says so in words instead (audit 1029 G22). Unless that
+//: kind was turned off earlier: its chip is the only way back.
+function gcLinkKindRows(edges, hidden = new Set()) {
   const byKind = new Map();
-  for (const e of data.edges) {
+  for (const e of edges) {
     if (e.kind !== "link") continue;
     const key = e.link_type || "untyped";
     const row = byKind.get(key) || { label: key === "untyped" ? "No kind" : e.type_name || key, n: 0 };
     row.n++;
     byKind.set(key, row);
   }
-  kinds.replaceChildren(...[...byKind].sort((a, b) => b[1].n - a[1].n).map(([key, row]) => {
+  const rows = [...byKind].sort((a, b) => b[1].n - a[1].n);
+  return rows.some(([key]) => key !== "untyped" || hidden.has(key)) ? rows : [];
+}
+
+function gcRenderFilterChips(data) {
+  const kinds = document.getElementById("graph-link-kinds");
+  const props = document.getElementById("graph-prop-chips");
+  if (!kinds || !props) return;
+  const rows = gcLinkKindRows(data.edges, graphHiddenLinkKinds);
+  kinds.replaceChildren(...rows.map(([key, row]) => {
     const shown = !graphHiddenLinkKinds.has(key);
     return gcFilterChip(row.label, row.n, shown, shown ? `Hide the ${row.label} links` : `Draw the ${row.label} links again`, () => {
       if (graphHiddenLinkKinds.has(key)) graphHiddenLinkKinds.delete(key);
@@ -1479,7 +1489,7 @@ function gcRenderFilterChips(data) {
       renderGraph();
     }, { offWhenUnpressed: true });
   }));
-  if (!byKind.size) kinds.textContent = "No links on the map.";
+  if (!rows.length) kinds.textContent = data.edges.some((e) => e.kind === "link") ? "No link has a kind yet." : "No links on the map.";
   const onMap = new Set(data.nodes.map((n) => n.id));
   const pairs = new Map();
   for (const e of typeof allEntries !== "undefined" ? allEntries : []) {

@@ -2270,6 +2270,7 @@ async function renderGraphSvg() {
   graphDims = { w: width, h: height };
   initGraphMinimap();
   initGraphDockHeightToken();
+  initGraphRailToken();
   initGraphToastClearance();
   initGraphViews();
 
@@ -5821,6 +5822,36 @@ function initGraphDockHeightToken() {
   write();
 }
 
+//: **The rail the map's furniture hangs from** (audit 1029 G24, 1306 residue).
+//: The Trace strip and its result sit in the overlay column, full width, under
+//: the dock; the minimap's top corners were placed from the dock alone and sat
+//: under them (8,861 px² of overlap at 1440x900). The offset is how far the
+//: lowest shown strip reaches below the dock, 0 while none is shown (a hidden
+//: strip has no box), and `--graph-chrome-top` grows by it on the card.
+function graphRailOffset(strips, dockBottom) {
+  const shown = strips.filter((s) => s.bottom > s.top);
+  return shown.length ? Math.max(0, Math.round(Math.max(...shown.map((s) => s.bottom)) - dockBottom)) : 0;
+}
+
+function initGraphRailToken() {
+  const card = document.getElementById("graph-card");
+  const dock = card?.querySelector('.dock[data-dock-name="graph"]');
+  const strips = card ? [...card.querySelectorAll(".graph-overlay > .graph-trace, .graph-overlay > .graph-trace-result")] : [];
+  if (!dock || !strips.length || typeof ResizeObserver === "undefined" || card._railWired) return;
+  card._railWired = true;
+  const write = () => {
+    const boxes = strips.map((el) => el.getBoundingClientRect());
+    const offset = graphRailOffset(boxes, dock.getBoundingClientRect().bottom);
+    //: The existing token plus the rail, so no second property is declared
+    //: (the stylesheet's custom-property count only falls); cleared at 0.
+    if (offset) card.style.setProperty("--graph-chrome-top", `calc(var(--space-3) * 2 + var(--graph-dock-h) + ${offset}px)`);
+    else card.style.removeProperty("--graph-chrome-top");
+  };
+  const watcher = new ResizeObserver(write);
+  for (const el of [dock, ...strips]) watcher.observe(el);
+  write();
+}
+
 //: **A toast over the map stands above the legend** (INBOX 1400: it met the
 //: legend row's box at 1440 and the zoom strip at 390). The toast box's bottom
 //: is the legend row's own distance from the window's bottom plus a step, kept
@@ -6206,6 +6237,7 @@ function initGraphViews() {
 // calls are idempotent (`_heightWired`), and the observer's first callback
 // arrives with a real height as soon as the card stops being display:none.
 initGraphDockHeightToken();
+initGraphRailToken();
 initGraphToastClearance();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the

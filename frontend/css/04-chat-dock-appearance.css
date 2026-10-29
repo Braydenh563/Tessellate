@@ -453,36 +453,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   min-height: 12rem;
 }
 
-/* A legend is a key, not a list to browse: past a couple of rows it is eating
-   the thing it explains. It scrolls at that point instead. */
-/* **One row that scrolls sideways, not two or three that stack.** Reported:
-   "the graph view area keeps feeling squashed on my screen due to the top
-   dock", with a screenshot showing eleven category chips wrapped over two
-   rows above the canvas.
-
-   `max-height: 5.5rem` let the legend take up to three rows of the thing
-   people came to look at, and it grows with the notebook, the more
-   categories you have, the less graph you get, which is backwards. A single
-   non-wrapping row is a fixed cost regardless of how many categories exist,
-   and horizontal scrolling is the right affordance for a list whose length
-   is not the point.
-
-   `scrollbar-width: thin` keeps the bar from claiming a chip's worth of
-   height back. */
-#graph-legend {
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  min-height: 0;
-  scrollbar-width: thin;
-}
-
-/* A chip must not shrink to fit the row, that is what turns a legend into
-   a line of ellipses. It keeps its size and the row scrolls instead. */
-#graph-legend > * {
-  flex: 0 0 auto;
-}
+/* The legend's wrapping and scrolling rules live in graph-lazy.css (audit 1029 G9). */
 
 /* The legend's collapse: asked for twice: "the categories toggle line
    needs to be collapsible or redesigned," the fixed-row-cost complaint
