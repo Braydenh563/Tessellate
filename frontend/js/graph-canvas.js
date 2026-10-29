@@ -5590,7 +5590,14 @@ async function renderGraphCanvas(s = gcTab) {
   //: drew "Nothing to map yet" over a notebook full of linked notes because
   //: the only thing distinguishing the two was a null this returned silently.
   //: See `surfaceFailed` in navigation.js.
+  //: A reload of a map already shown that takes a while says so: a thin
+  //: line under the count from 400 ms (audit 1029 G30). The first visit
+  //: has its glow (`gcArriving`).
+  const stats = s.shown ? document.getElementById("graph-stats") : null;
+  const slow = stats && setTimeout(() => stats.setAttribute("aria-busy", "true"), 400);
   const data = await apiJson(endpoint).then(graphFill).catch(() => null);
+  clearTimeout(slow);
+  stats?.removeAttribute("aria-busy");
   if (!data) {
     gcArriving(s, false);
     surfaceFailed(document.getElementById("graph-empty"), "your map", renderGraph);

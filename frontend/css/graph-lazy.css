@@ -192,6 +192,29 @@
   animation: none;
 }
 
+/* A slow reload of a map already shown (audit 1029 G30, `renderGraphCanvas`):
+   a thin accent line runs under the count from 400 ms until the data is in.
+   Less motion: the line holds still. */
+#graph-stats[aria-busy="true"] {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) -40% 100% / 40% 2px no-repeat;
+  animation: graph-reloading 1.2s linear infinite;
+}
+@keyframes graph-reloading {
+  to {
+    background-position: 140% 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #graph-stats[aria-busy="true"] {
+    animation: none;
+    background-position: 50% 100%;
+  }
+}
+:root[data-motion="reduced"] #graph-stats[aria-busy="true"] {
+  animation: none;
+  background-position: 50% 100%;
+}
+
 .graph-edge-similar {
   stroke-dasharray: 2 5;
   stroke-width: 1.2;

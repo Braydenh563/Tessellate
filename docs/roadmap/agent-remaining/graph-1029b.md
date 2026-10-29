@@ -13,7 +13,7 @@ Ratchets: boot CSS gzip 179,097 before row 57, 179,069 after (cap 179,100); cust
 
 ## Remaining
 
-- G30 (row 57): a thin progress line on `#graph-stats` while `/graph` reloads slowly. `renderGraphCanvas` (graph-canvas.js, the `await apiJson(endpoint)` near line 5559) is the place; `gcArriving` covers only the first visit. Style belongs in graph-lazy.css (boot CSS has 31 gzip bytes of room).
+- G30 (row 57): done 2026-10-29. A reload of a shown map marks `#graph-stats` busy from 400 ms and a thin accent line runs under the count (graph-canvas.js `renderGraphCanvas`, graph-lazy.css; tests/test_graph_reload_line_1029.py). Measured with `/graph` held 1.5 s: none at 200 ms, line at 700 ms, gone after.
 - Row 48: a dot with radius under 3 (`gcPaintCore`'s flat branch) has no rim, so the very smallest dots on a light ground keep the plain colour; not measured separately.
 - Row 58: a popup that cannot be beside its node because the node is at the map's far edge stays clamped (by design); the local-graph pane popup (size not full) still does not follow.
 - Row 57: the topic card (right column) and the minimap's top-right corner are not on the rail; only the Trace strips are.

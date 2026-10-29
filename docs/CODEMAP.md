@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7243, test files 1553, tests 13549, plan headings 985.
+Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7243, test files 1554, tests 13551, plan headings 985.
 
 ## Frontend functions (6827)
 
@@ -4056,7 +4056,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `gcArmTouchLasso` | frontend/js/graph-canvas.js:4288 |
-| `gcArriving` | frontend/js/graph-canvas.js:6725 |
+| `gcArriving` | frontend/js/graph-canvas.js:6732 |
 | `gcArrows` | frontend/js/graph-canvas.js:872 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:192 |
 | `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:1921 |
@@ -4119,8 +4119,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcLabelText` | frontend/js/graph-canvas.js:3613 |
 | `gcLabelWidth` | frontend/js/graph-canvas.js:3571 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:860 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6150 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6196 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6157 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6203 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:674 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1440 |
 | `gcLinkKindRows` | frontend/js/graph-canvas.js:1465 |
@@ -4152,19 +4152,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcRadius` | frontend/js/graph-canvas.js:264 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:318 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:1913 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:6705 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:6712 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1647 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1478 |
 | `gcRequestDraw` | frontend/js/graph-canvas.js:2217 |
 | `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2242 |
 | `gcReshuffle` | frontend/js/graph-canvas.js:5036 |
 | `gcResize` | frontend/js/graph-canvas.js:957 |
-| `gcReveal` | frontend/js/graph-canvas.js:6750 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6738 |
+| `gcReveal` | frontend/js/graph-canvas.js:6757 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6745 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1110 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:5936 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:5918 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:5942 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:5943 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:5925 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:5949 |
 | `gcSavePositions` | frontend/js/graph-canvas.js:5366 |
 | `gcSaveTopicName` | frontend/js/graph-canvas.js:1619 |
 | `gcSearchOver` | frontend/js/graph-canvas.js:2274 |
@@ -4197,7 +4197,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1234 |
 | `gcTreeIndex` | frontend/js/graph-canvas.js:3687 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:1935 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6698 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6705 |
 | `gcVisibleAtTime` | frontend/js/graph-canvas.js:2318 |
 | `gcWireInteraction` | frontend/js/graph-canvas.js:3777 |
 | `gcWireLasso` | frontend/js/graph-canvas.js:4309 |
@@ -4207,19 +4207,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcWorldFor` | frontend/js/graph-canvas.js:5426 |
 | `gcWorldPoint` | frontend/js/graph-canvas.js:3711 |
 | `gcWriteUnresolved` | frontend/js/graph-canvas.js:4966 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:5961 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:6490 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6626 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:6468 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:6580 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:6635 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:5978 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:6220 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6268 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6295 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:6334 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:5968 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:6497 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6633 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:6475 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:6587 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:6642 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:5985 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:6227 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6275 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6302 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:6341 |
 | `renderGraphCanvas` | frontend/js/graph-canvas.js:5560 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:6496 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:6503 |
 
 ### frontend/js/graph-worker.js (103)
 
@@ -10533,7 +10533,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a sheet (DESIGN.md's recipe index, "A sheet") | frontend/css/10-responsive.css:797 |
 | a sticker (MINDMAP_PLAN decision 44, INBOX 642) | frontend/css/library-lazy.css:3421 |
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4210 |
-| a traced path (§9) | frontend/css/graph-lazy.css:264 |
+| a traced path (§9) | frontend/css/graph-lazy.css:287 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4121 |
 | a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1073 |
 | account & security | frontend/css/01-forms-settings.css:3452 |
@@ -10861,7 +10861,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 123 |
 | frontend/css/glass-controls-lazy.css | 23 |
-| frontend/css/graph-lazy.css | 552 |
+| frontend/css/graph-lazy.css | 575 |
 | frontend/css/help-chat-lazy.css | 38 |
 | frontend/css/icon-picker.css | 121 |
 | frontend/css/improve-lazy.css | 110 |
@@ -20532,7 +20532,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13549)
+## Tests (13551)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21153,6 +21153,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_popup_phone.py | 5 |
 | tests/test_graph_popup_props.py | 3 |
 | tests/test_graph_popup_room.py | 3 |
+| tests/test_graph_reload_line_1029.py | 2 |
 | tests/test_graph_restore_holds.py | 2 |
 | tests/test_graph_search_1029.py | 6 |
 | tests/test_graph_search_keys_1029.py | 6 |
