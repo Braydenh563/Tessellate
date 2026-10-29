@@ -1704,7 +1704,7 @@ header#top-bar[data-scrolled="1"],
   /* The five pages that own a floating button; it floats only at 421px tall
      and up (phone-shell.js PHONE_FAB), hence the height query. */
   @media (min-height: 421px) {
-    body:is([data-tab="notes"], [data-tab="graph"], [data-tab="library"], [data-tab="timeline"], [data-tab="reminders"]) #toast-box {
+    body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box {
       bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
     }
   }
