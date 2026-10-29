@@ -164,6 +164,16 @@ function gcSurface(options = {}) {
     labelsDrawn: 0,
     labelsPriority: 0,
     labelBoxes: [],
+
+    //: The composed frame (`gcDrawComposed`): the scene layers and the camera
+    //: they were painted at, whether anything but the camera or the hover has
+    //: changed since, and the hover drawn over them.
+    scene: null,
+    sceneStale: true,
+    paintMode: null,
+    dimA: 0,
+    overCentres: new Map(),
+    overLit: new Map(),
   };
 }
 
@@ -2164,7 +2174,10 @@ function gcTabHidden(s) {
   return !!page && page.classList.contains("hidden");
 }
 
-function gcRequestDraw(s = gcTab) {
+//: `cheap`: only the camera or the hover changed, so the frame may be composed
+//: from the scene layers (`gcDrawComposed`); anything else repaints them.
+function gcRequestDraw(s = gcTab, cheap = false) {
+  if (!cheap) s.sceneStale = true;
   if (s.drawQueued || !s.ctx || gcTabHidden(s)) return;
   s.drawQueued = true;
   requestAnimationFrame(() => {
@@ -2189,11 +2202,11 @@ function gcRequestMinimapFrame(s = gcTab) {
   //: There is one minimap and it belongs to the tab. A pane panning its own
   //: camera must not move the picture of a map it is not drawing.
   if (s.size !== "full") {
-    gcRequestDraw(s);
+    gcRequestDraw(s, true);
     return;
   }
   s.minimapQueued = true;
-  gcRequestDraw(s);
+  gcRequestDraw(s, true);
 }
 
 //: **Two controls that were read out of the document on every frame.** The
@@ -2229,8 +2242,10 @@ function gcHighlight(s = gcTab) {
   const ids = chrome ? graphHighlightIds : null;
   const searchOk = (n) =>
     onPath ? onPath.has(n.id) : ids ? ids.has(n.id) : graphQueryMatch(n.id, n.preview, query);
+  //: The dimmed scene layer (`gcDrawComposed`) is the map as every hover
+  //: leaves it: no note is a neighbour.
   const neighbours =
-    s.hoveredId != null && s.adj ? s.adj.get(s.hoveredId) : null;
+    s.paintMode === "dim" ? GC_NO_NEIGHBOURS : s.hoveredId != null && s.adj ? s.adj.get(s.hoveredId) : null;
   const hoverOk = (id) => neighbours == null || id === s.hoveredId || neighbours.has(id);
   return {
     active: Boolean(query || ids || onPath),
@@ -2307,9 +2322,133 @@ function gcExportPng(scale = 2, s = gcTab) {
   return out;
 }
 
+// --- the composed frame ------------------------------------------------------------
+//
+//: **A frame only the camera or the hover changed is composed, not painted**
+//: (audit 1029 G5, G8). Measured at CPU 4x on 500 notes: the paint's own
+//: script was 11 ms and the frame 67 to 133 ms; the rest was the raster of
+//: every line, dot and wash at commit (`LayerTreeHost::DoUpdateLayers`).
+//: Hiding the rest of the page, or a layer of its own for the canvas, changed
+//: nothing; one full-size `drawImage` a frame held 16.7 ms. So the map is
+//: painted into two layers at one camera, as it rests and with every note
+//: dimmed; a pan or zoom draws them moved, a hover crossfades them and paints
+//: only its own notes and lines on top. A moved layer is painted again once
+//: the camera is still for `GC_SCENE_SETTLE_MS`, or at once when it no longer
+//: covers the frame or is scaled past 2x. Anything else (`gcRequestDraw`
+//: without `cheap`) paints the frame whole, as before.
+const GC_SCENE_PAD = 0.15;
+const GC_SCENE_SETTLE_MS = 160;
+const GC_NO_NEIGHBOURS = new Set();
+function gcPaintLayer(s, mode, old) {
+  const pad = { x: Math.round(s.dims.w * GC_SCENE_PAD), y: Math.round(s.dims.h * GC_SCENE_PAD) };
+  const canvas = old ? old.canvas : document.createElement("canvas");
+  const w = Math.round((s.dims.w + 2 * pad.x) * s.dpr);
+  const h = Math.round((s.dims.h + 2 * pad.y) * s.dpr);
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
+  //: Painted with no hover at all: the hover is the layer on top.
+  const keep = { ctx: s.ctx, hoveredId: s.hoveredId, hoverTo: s.hoverTo, hoverFrom: s.hoverFrom, hoverEase: s.hoverEase, hoverEdge: s.hoverEdge };
+  Object.assign(s, { ctx: canvas.getContext("2d"), paintMode: mode, paintPad: pad, paintFade: 1, hoveredId: null, hoverTo: null, hoverFrom: null, hoverEase: 1, hoverEdge: null });
+  try {
+    gcDraw(s);
+  } finally {
+    Object.assign(s, keep, { paintMode: null, paintPad: null });
+  }
+  return { canvas, pad };
+}
+
+function gcDrawComposed(s) {
+  if (s.sceneStale || s.ctx.canvas !== s.canvas || !s.dims.w || !s.nodes.length) return false;
+  const t = s.transform || d3.zoomIdentity;
+  let scene = s.scene;
+  if (scene && (scene.w !== s.dims.w || scene.h !== s.dims.h || scene.dpr !== s.dpr || scene.tokens !== gcTokens)) scene = null;
+  if (scene && (t.k !== scene.t.k || t.x !== scene.t.x || t.y !== scene.t.y)) {
+    const r = t.k / scene.t.k;
+    const pad = scene.rest.pad;
+    const left = t.x - r * (scene.t.x + pad.x);
+    const top = t.y - r * (scene.t.y + pad.y);
+    const covers = left <= 0 && top <= 0 && left + r * (s.dims.w + 2 * pad.x) >= s.dims.w && top + r * (s.dims.h + 2 * pad.y) >= s.dims.h;
+    const still = performance.now() - (s.cameraAt || 0) >= GC_SCENE_SETTLE_MS;
+    if (still || !covers || r > 2 || r < 0.5) {
+      scene = null;
+    } else {
+      clearTimeout(s.sceneSettle);
+      s.sceneSettle = setTimeout(() => gcRequestDraw(s, true), GC_SCENE_SETTLE_MS);
+    }
+  }
+  if (!scene) {
+    const old = s.scene;
+    scene = s.scene = { t, w: s.dims.w, h: s.dims.h, dpr: s.dpr, tokens: gcTokens, dim: null, spare: old && (old.dim || old.spare) };
+    scene.rest = gcPaintLayer(s, "rest", old && old.rest);
+  }
+  //: The hover: how dimmed the map is, and how lit each note it lights.
+  const step = gcFadeStep(s, gcStill());
+  const hovering = s.hoveredId != null && s.adj.has(s.hoveredId);
+  s.dimA = gcFadeToward(s.dimA, hovering ? 1 : 0, step);
+  let moving = s.dimA > 0 && s.dimA < 1;
+  if (hovering && !s.overCentres.has(s.hoveredId)) s.overCentres.set(s.hoveredId, 0);
+  s.overLit = new Map();
+  for (const [id, a] of s.overCentres) {
+    const next = gcFadeToward(a, id === s.hoveredId ? 1 : 0, step);
+    if (next <= 0 || !s.adj.has(id)) {
+      s.overCentres.delete(id);
+      continue;
+    }
+    s.overCentres.set(id, next);
+    if (next < 1) moving = true;
+    for (const lit of [id, ...s.adj.get(id)]) s.overLit.set(lit, Math.max(s.overLit.get(lit) || 0, next));
+  }
+  if (s.dimA > 0 && !scene.dim) scene.dim = gcPaintLayer(s, "dim", scene.spare);
+  const ctx = s.ctx;
+  const r = t.k / scene.t.k;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const shown = gcSmooth(s.dimA);
+  const W = s.canvas.width;
+  const H = s.canvas.height;
+  //: Only the part of a layer the frame shows is read, and the first layer
+  //: replaces the frame ("copy") rather than a clear and a blend over it.
+  let first = true;
+  for (const [layer, alpha] of [[scene.rest, 1 - shown], [scene.dim, shown]]) {
+    if (!layer || alpha <= 0) continue;
+    const sx = (r * (scene.t.x + layer.pad.x) - t.x) * (s.dpr / r);
+    const sy = (r * (scene.t.y + layer.pad.y) - t.y) * (s.dpr / r);
+    ctx.globalAlpha = alpha;
+    ctx.globalCompositeOperation = first && alpha >= 1 ? "copy" : "source-over";
+    if (first && alpha < 1) ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(layer.canvas, sx, sy, W / r, H / r, 0, 0, W, H);
+    first = false;
+  }
+  if (first) ctx.clearRect(0, 0, W, H);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  //: The hover's labels fade on their own, apart from the scene's.
+  const labels = [s.labelLit, s.labelGhosts];
+  s.labelLit = s.overLabelLit;
+  s.labelGhosts = s.overLabelGhosts;
+  s.paintMode = "over";
+  s.paintFade = step;
+  try {
+    gcDraw(s);
+  } finally {
+    s.overLabelLit = s.labelLit;
+    s.overLabelGhosts = s.labelGhosts;
+    [s.labelLit, s.labelGhosts] = labels;
+    s.paintMode = null;
+  }
+  s.composed = true;
+  if (moving) gcRequestDraw(s, true);
+  return true;
+}
+
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
   if (gcTabHidden(s)) return;
+  if (!s.paintMode && gcDrawComposed(s)) return;
+  //: `paintMode` (`gcDrawComposed`): null paints the frame whole; "rest" and
+  //: "dim" paint a scene layer offscreen; "over" paints the hover on top.
+  const over = s.paintMode === "over";
+  const layer = s.paintMode === "rest" || s.paintMode === "dim";
+  if (!s.paintMode) s.scene = null;
   const started = performance.now();
   //: Advanced once, before anything is measured, so every radius in this frame
   //: agrees, and another frame is asked for only while it is still moving.
@@ -2317,13 +2456,19 @@ function gcDraw(s = gcTab) {
   //: The glide's last frame lands the notes, so the paths are rebuilt on
   //: it too (`pathsStale` stays true until a frame after the glide).
   const gliding = gcGlideStep(s);
-  const fadeStep = gcFadeStep(s, gcStill());
+  //: A whole frame after composed ones lands every fade at once: the dims it
+  //: would fade from are the scene's, not what was on screen.
+  const snap = !s.paintMode && s.composed;
+  s.composed = false;
+  const fadeStep = s.paintMode ? s.paintFade : snap ? (gcFadeStep(s, true), 1) : gcFadeStep(s, gcStill());
+  const litAlpha = over ? gcSmooth : gcLitAlpha;
   let fading = false;
   const ctx = s.ctx;
   const t = s.transform || d3.zoomIdentity;
   const k = t.k;
-  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
-  ctx.clearRect(0, 0, s.dims.w, s.dims.h);
+  const pad = s.paintPad || { x: 0, y: 0 };
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, s.dpr * pad.x, s.dpr * pad.y);
+  if (!over) ctx.clearRect(-pad.x, -pad.y, s.dims.w + 2 * pad.x, s.dims.h + 2 * pad.y);
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(k, k);
@@ -2332,10 +2477,10 @@ function gcDraw(s = gcTab) {
   // is the difference between drawing 2,000 nodes and drawing forty.
   const margin = 80 / k;
   const view = {
-    left: -t.x / k - margin,
-    top: -t.y / k - margin,
-    right: (s.dims.w - t.x) / k + margin,
-    bottom: (s.dims.h - t.y) / k + margin,
+    left: (-t.x - pad.x) / k - margin,
+    top: (-t.y - pad.y) / k - margin,
+    right: (s.dims.w + pad.x - t.x) / k + margin,
+    bottom: (s.dims.h + pad.y - t.y) / k + margin,
   };
   const inView = (n) =>
     n.x >= view.left && n.x <= view.right && n.y >= view.top && n.y <= view.bottom;
@@ -2349,9 +2494,11 @@ function gcDraw(s = gcTab) {
     return box ? box.checked : true;
   })();
 
-  gcDrawNebulae(ctx, s, inView);
-  gcDrawTreemap(ctx, s, k);
-  gcDrawTopicHulls(ctx, s, k);
+  if (!over) {
+    gcDrawNebulae(ctx, s, inView);
+    gcDrawTreemap(ctx, s, k);
+    gcDrawTopicHulls(ctx, s, k);
+  }
   //: Read from the switch itself, like the labels above, so what the menu
   //: shows and what is drawn cannot disagree (the owner: "it is showing
   //: curved links even when it is visibly off??"); the stored value only
@@ -2412,14 +2559,19 @@ function gcDraw(s = gcTab) {
     ) {
       continue;
     }
+    //: The hover draws only the lines of the notes it lights, at how lit each is.
+    const centre = over ? Math.max(s.overCentres.get(a.id) || 0, s.overCentres.get(b.id) || 0) : 1;
+    if (!centre) continue;
     const bySearch = !hl.active || (hl.searchOk(a) && hl.searchOk(b));
     const byHover =
-      !hl.hovering || a.id === s.hoveredId || b.id === s.hoveredId;
+      over || !hl.hovering || a.id === s.hoveredId || b.id === s.hoveredId;
     const dim = !(bySearch && byHover);
-    edge._lit = gcFadeToward(edge._lit, dim ? 0 : 1, fadeStep);
-    if (edge._lit !== (dim ? 0 : 1)) fading = true;
+    if (over && dim) continue;
+    //: A scene layer is drawn as it will rest, and keeps nothing of it.
+    const lit = over ? centre : layer ? (dim ? 0 : 1) : (edge._lit = gcFadeToward(edge._lit, dim ? 0 : 1, fadeStep));
+    if (!layer && !over && lit !== (dim ? 0 : 1)) fading = true;
     //: Eleven steps of lit-ness, so a fade still strokes in buckets.
-    const level = Math.round(gcSmooth(edge._lit) * 10);
+    const level = Math.round(gcSmooth(lit) * 10);
     if (edge._styleEpoch !== s.epoch) gcEdgeLook(edge, a, b, simLo, simHi, s.epoch);
     const similar = edge._similar;
     //: **A line between clusters is quiet until asked about** (INBOX 693,
@@ -2472,7 +2624,7 @@ function gcDraw(s = gcTab) {
     ctx.strokeStyle = bucket.tint || gcTokens[style.colour] || gcTokens.muted;
     // `.graph-edge.graph-dim` is opacity 0.06 in the stylesheet; kept, because
     // a dimmed edge that is still readable defeats the spotlight.
-    ctx.globalAlpha = 0.06 + (style.alpha - 0.06) * (bucket.level / 10);
+    ctx.globalAlpha = (over ? 0 : 0.06) + (style.alpha - (over ? 0 : 0.06)) * (bucket.level / 10);
     //: An arrowed link thins from its source half to its target half.
     ctx.lineWidth = (style.width * widthScale * (bucket.wide ? 0.8 : 1)) / k;
     ctx.setLineDash(style.dash ? style.dash.map((v) => v / k) : []);
@@ -2486,18 +2638,20 @@ function gcDraw(s = gcTab) {
   for (const bucket of simBuckets.values()) strokeBucket(bucket);
   for (const bucket of buckets.values()) strokeBucket(bucket);
   ctx.setLineDash([]);
-  gcDrawLeavingLines(ctx, s, performance.now());
-  s.sparksDrawn = sparks;
+  if (!over) gcDrawLeavingLines(ctx, s, performance.now());
+  if (!over) s.sparksDrawn = sparks;
   if (drift.length) {
     gcDrawDrift(ctx, drift, k);
     fading = true;
   }
   ctx.globalAlpha = 1;
 
-  if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) fading = true;
+  if (!layer) {
+    if (gcDrawEdgeHover(ctx, s, k, fadeStep, curvedLinks)) fading = true;
+  }
 
   // --- the traced path ----------------------------------------------------
-  gcDrawTrace(ctx, k, s);
+  if (!over) gcDrawTrace(ctx, k, s);
 
   // --- nodes --------------------------------------------------------------
   // Two batched fills per colour (halo, then core) and one batched stroke for
@@ -2514,9 +2668,15 @@ function gcDraw(s = gcTab) {
     if (!Number.isFinite(node.x)) continue;
     if (!gcVisibleAtTime(node, s)) continue;
     if (!inView(node)) continue;
-    const dim = !(hl.searchOk(node) && hl.hoverOk(node.id));
-    node._lit = gcFadeToward(node._lit, dim ? 0 : 1, fadeStep);
-    if (node._lit !== (dim ? 0 : 1)) fading = true;
+    const lift = over ? s.overLit.get(node.id) : 1;
+    if (!lift) continue;
+    const dim = !(hl.searchOk(node) && (over || hl.hoverOk(node.id)));
+    if (over && dim) continue;
+    //: A scene layer or the hover writes its own lit-ness here; the whole
+    //: frame after composed ones lands every fade at once (`snap`), so none
+    //: of it leaks into a fade.
+    node._lit = over ? lift : layer ? (dim ? 0 : 1) : gcFadeToward(node._lit, dim ? 0 : 1, fadeStep);
+    if (!layer && !over && node._lit !== (dim ? 0 : 1)) fading = true;
     const key = node.colour;
     let halo = haloByColour.get(key);
     if (!halo) {
@@ -2653,6 +2813,7 @@ function gcDraw(s = gcTab) {
       const born = gcBornAlpha(node, bornAt);
       if (born < 1) s.bornPending = true;
       let alpha = gcLitAlpha(node._lit) * born;
+      if (over) alpha = gcSmooth(node._lit) * born;
       if (node.type === "unresolved") alpha *= 0.4;
       const rWorld = node.r + node._grow;
       if (rWorld * pixelScale < GC_LOD_PX && !node._grow) {
@@ -2688,8 +2849,8 @@ function gcDraw(s = gcTab) {
     ctx.fillStyle = batch.colour;
     ctx.fill(batch.path);
   }
-  s.lodNodes = lodNodes;
-  gcDrawLeaving(ctx, s, bornAt);
+  if (!over) s.lodNodes = lodNodes;
+  if (!over) gcDrawLeaving(ctx, s, bornAt);
   //: The hovered node's halo, lit. A second fill over the one the batch
   //: already laid down, because pulling this node out of its colour batch to
   //: give it a different alpha would cost a fill per colour rather than a fill
@@ -2721,10 +2882,10 @@ function gcDraw(s = gcTab) {
   //: keyboard and hover paths that read it keep working).
   void hubs;
 
-  gcDrawSelection(ctx, k, s);
+  if (!over) gcDrawSelection(ctx, k, s);
   for (const item of ringed) {
     const node = item.node;
-    ctx.globalAlpha = gcLitAlpha(node._lit) * item.ringFade;
+    ctx.globalAlpha = litAlpha(node._lit) * item.ringFade;
     ctx.beginPath();
     ctx.arc(node.x, node.y, node.r + (node._grow || 0), 0, Math.PI * 2);
     if (node === s.dropTarget) {
@@ -2773,15 +2934,17 @@ function gcDraw(s = gcTab) {
   ctx.globalAlpha = 1;
 
   // --- labels -------------------------------------------------------------
-  s.labelsWanted = 0;
-  s.labelsDrawn = 0;
-  s.labelsPriority = 0;
+  //: What the debug surface and the fit balance read is the scene's labels.
+  const book = over ? {} : s;
+  book.labelsWanted = 0;
+  book.labelsDrawn = 0;
+  book.labelsPriority = 0;
   // Cleared per frame, not only written per frame: a map whose labels have
   // just been switched off would otherwise report the boxes of the last frame
   // that had any.
-  s.labelBoxes = [];
+  book.labelBoxes = [];
   let placedLabels = [];
-  if (labelled.length) {
+  if (labelled.length && s.paintMode !== "dim") {
     const size = 12 / k;
     // Divided by the zoom so a label is a constant size on screen: the whole
     // context is scaled by k, and a fixed font size would make labels grow
@@ -2857,8 +3020,8 @@ function gcDraw(s = gcTab) {
       const degreeB = (s.adj.get(b.id) || { size: 0 }).size;
       return degreeB - degreeA;
     });
-    s.labelsWanted = labelled.length;
-    s.labelsPriority = 0;
+    book.labelsWanted = labelled.length;
+    book.labelsPriority = 0;
     const padX = 4 / k;
     const padY = 2 / k;
     const items = [];
@@ -2877,7 +3040,7 @@ function gcDraw(s = gcTab) {
       const y = beside ? node.y : node.y + node.r + 13;
       const left = (beside ? x : x - width / 2) - padX;
       const rank = labelRank(node);
-      if (rank < 2) s.labelsPriority += 1;
+      if (rank < 2) book.labelsPriority += 1;
       //: **Where else the name may go** when its own place is taken. Under the
       //: dot is the web's reading position and stays first; then above it,
       //: then to its right, then to its left. Measured on the 417-note
@@ -2949,7 +3112,8 @@ function gcDraw(s = gcTab) {
     //: every position would change the grid each frame, at 1.5ms a build on
     //: 1,100 links, for names that are moving anyway. The names step to
     //: their clear places when it settles, cross-fading (`gcDrawLabels`).
-    const lines = s.tree || s.dragNode || s.alpha > 0.03 ? null : gcLineGrid(s, curvedLinks);
+    //: The hover places its few labels against its own notes only: no line grid.
+    const lines = over || s.tree || s.dragNode || s.alpha > 0.03 ? null : gcLineGrid(s, curvedLinks);
     // The canvas itself, a few pixels in: a name is never cut by its edge
     // (INBOX 693, labels "cut by the viewport"; `gcPlaceLabels`).
     const inset = 4 / k;
@@ -2962,16 +3126,16 @@ function gcDraw(s = gcTab) {
     const blocked = [...(s.topicPlates || []), ...gcOverlayBoxes(s, t)];
     const placed = gcPlaceLabels(items, discs, lines ? (box, limit) => gcBoxLineCount(lines, box, limit) : null, blocked, frame);
     placedLabels = placed;
-    s.labelBoxes = placed;
-    s.labelsDrawn = placed.length;
+    book.labelBoxes = placed;
+    book.labelsDrawn = placed.length;
   }
-  if (gcDrawLabels(ctx, s, placedLabels, fadeStep, k)) fading = true;
-  if (s.fitCheck > 0) {
+  if (s.paintMode !== "dim" && gcDrawLabels(ctx, s, placedLabels, fadeStep, k)) fading = true;
+  if (!over && s.fitCheck > 0) {
     const left = s.fitCheck - 1;
     s.fitCheck = 0;
     gcBalanceFit(s, placedLabels, left);
   }
-  if (s.revealAfterFit && !(s.fitCheck > 0)) {
+  if (!over && s.revealAfterFit && !(s.fitCheck > 0)) {
     s.revealAfterFit = false;
     gcReveal(s);
   }
@@ -2985,13 +3149,14 @@ function gcDraw(s = gcTab) {
   //: rather than a cosine, because "72%" reads and "0.72" is a statistic.
   //: The pills fade in with the note they belong to, and the last note's
   //: fade out where they were (see GC_FADE_MS).
-  if (scoreFor !== s.pillFor) {
+  if (layer) s.simScoreLabels = [];
+  if (!layer && scoreFor !== s.pillFor) {
     if (s.pillDrawn?.length && s.pillA > 0) s.pillGhost = { list: s.pillDrawn, a: s.pillA };
     s.pillA = 0;
     s.pillFor = scoreFor;
     s.pillDrawn = [];
   }
-  if (s.pillGhost) {
+  if (!layer && s.pillGhost) {
     s.pillGhost.a = gcFadeToward(s.pillGhost.a, 0, fadeStep);
     if (s.pillGhost.a > 0) {
       fading = true;
@@ -3013,7 +3178,7 @@ function gcDraw(s = gcTab) {
     ctx.textBaseline = "middle";
     //: Obstacles: the labels this frame placed, the pills placed so far, and
     //: every drawn dot at the size it is drawn plus a hair of clearance.
-    const boxes = s.labelBoxes.slice();
+    const boxes = book.labelBoxes.slice();
     //: A dimmed dot is drawn at 20% and is not what the reader is looking
     //: at, so a pill may sit over it; a lit one may not.
     const dots = drawn
@@ -3037,6 +3202,7 @@ function gcDraw(s = gcTab) {
   }
 
   ctx.restore();
+  if (layer) return;
   gcHoverCardFrame(s);
   if (s === gcTab && typeof graphPopupId !== "undefined" && graphPopupId !== null) placeGraphPopup();
   s.timing.lastFrame = performance.now() - started;
@@ -3052,7 +3218,19 @@ function gcDraw(s = gcTab) {
   //: is scheduled once `gcHoverStep` reports it has arrived, so an idle graph
   //: costs no frames at all.
   s.pathsStale = gliding && Boolean(s.glideMs);
-  if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
+  const busy = fading || gliding || s.bornPending;
+  if (!s.paintMode) {
+    //: Nothing but the hover is left moving: the next frame can be composed,
+    //: from the hover this one showed.
+    s.sceneStale = busy;
+    s.dimA = hl.hovering ? 1 : 0;
+    s.overCentres = new Map(hl.hovering ? [[s.hoveredId, 1]] : []);
+  }
+  //: A fade of the whole map keeps painting whole frames; a hover's ease, or
+  //: anything the hover layer moves, asks for a composed one.
+  const cheap = over || !busy;
+  if (cheap && (easing || busy)) gcRequestDraw(s, true);
+  else if (easing || fading || gliding || s.bornPending) gcRequestDraw(s);
 }
 
 //: The line under the pointer, drawn again over the rest, wider and in its
@@ -3283,7 +3461,7 @@ function gcDrawLabels(ctx, s, placed, fadeStep, k) {
     const x = draw.x ?? draw.node.x + draw.spot.dx;
     const y = draw.y ?? draw.node.y + draw.spot.dy;
     const box = draw.spot.box;
-    const a = gcSmooth(draw.a);
+    const a = gcSmooth(draw.a) * (s.paintMode === "over" ? gcSmooth(draw.node._lit ?? 1) : 1);
     if (!plates) {
       ctx.globalAlpha = a;
       ctx.textAlign = draw.spot.align;
@@ -3483,12 +3661,22 @@ function gcEdgeAtWorld(x, y, s = gcTab) {
     const a = edge.source;
     const b = edge.target;
     if (!a || !b || !Number.isFinite(a.x) || !Number.isFinite(b.x)) continue;
+    //: A line whose box (its ends, and the bow a curve stays inside) is out of
+    //: reach is passed over before any distance is measured.
+    const c = curved ? gcBowPoint(a, b, gcBowScratch) : a;
+    if (
+      x < Math.min(a.x, b.x, c.x) - tolerance ||
+      x > Math.max(a.x, b.x, c.x) + tolerance ||
+      y < Math.min(a.y, b.y, c.y) - tolerance ||
+      y > Math.max(a.y, b.y, c.y) + tolerance
+    ) {
+      continue;
+    }
     if (!gcVisibleAtTime(a, s) || !gcVisibleAtTime(b, s)) continue;
     let distance;
     if (curved) {
       //: Sampled along the curve it is drawn as: eight steps are a pixel or
       //: two of error on a 150px line, well inside the tolerance.
-      const c = gcBowPoint(a, b);
       distance = Infinity;
       for (let i = 0; i <= 8; i++) {
         const u = i / 8;
@@ -3546,7 +3734,7 @@ function gcWireInteraction(s = gcTab) {
     .on("start", () => {
       s.panning = true;
       gcSetHovered(s, null);
-      gcRequestDraw(s);
+      gcRequestDraw(s, true);
     })
     .on("zoom", (event) => {
       //: **A touch lasso is refused here rather than in `.filter`.** The
@@ -3573,12 +3761,13 @@ function gcWireInteraction(s = gcTab) {
         s.fitCheck = 0;
       }
       s.transform = event.transform;
-      gcRequestDraw(s);
+      //: The camera alone moved: the frame is the scene, moved (`gcDrawComposed`).
+      s.cameraAt = performance.now();
       gcRequestMinimapFrame(s);
     })
     .on("end", () => {
       s.panning = false;
-      gcRequestDraw(s);
+      gcRequestDraw(s, true);
     });
   selection.call(zoom).on("dblclick.zoom", null);
   //: A middle press that keeps its default starts the page's autoscroll
@@ -3897,7 +4086,7 @@ function gcWireInteraction(s = gcTab) {
       //: On the tab a note answers with its hover card (`gcHoverCardFrame`),
       //: so the native tooltip is only the pane's.
       s.canvas.title = node ? (s.size === "full" ? "" : gcTooltip(node, s)) : edge ? "Click to see this connection" : gcPlateTitle(plate, s);
-      gcRequestDraw(s);
+      gcRequestDraw(s, true);
     }
   });
   s.canvas.addEventListener("pointerleave", () => {
@@ -3908,7 +4097,7 @@ function gcWireInteraction(s = gcTab) {
     s.hoverPlate = null;
     s.canvas.classList.remove("graph-edge-hover", "graph-plate-hover");
     s.canvas.title = "";
-    gcRequestDraw(s);
+    gcRequestDraw(s, true);
   });
 
   s.canvas.addEventListener("click", (event) => {
@@ -4476,6 +4665,15 @@ function gcHoverCardEl(s) {
   card.hidden = true;
   box.appendChild(card);
   s._hoverCard = card;
+  //: Called after layout and before paint whenever the card's size changes,
+  //: so it is placed by its new size in the same frame.
+  card._sizer = new ResizeObserver(() => {
+    card._w = card.offsetWidth;
+    card._h = card.offsetHeight;
+    card._at = null;
+    if (!card.hidden) gcHoverCardFrame(s);
+  });
+  card._sizer.observe(card);
   return card;
 }
 
@@ -4550,26 +4748,40 @@ function gcHoverCardFrame(s) {
     card._for = null;
     return;
   }
-  if (card._for !== node.id || card._epoch !== s.epoch) {
+  const fill = card._for !== node.id || card._epoch !== s.epoch;
+  if (fill) {
     gcHoverCardFill(card, node, s);
     card._for = node.id;
     card._epoch = s.epoch;
   }
-  card.hidden = false;
-  s.canvas.setAttribute("aria-describedby", card.id);
+  if (card.hidden) {
+    card.hidden = false;
+    s.canvas.setAttribute("aria-describedby", card.id);
+  }
+  //: The size comes from the card's ResizeObserver (`gcHoverCardEl`), after
+  //: the browser's own layout: a size read here, after the fill, forced a
+  //: layout on every hover change (audit 1029 G5).
+  if (fill && !card._sizer) {
+    card._w = card.offsetWidth;
+    card._h = card.offsetHeight;
+  }
   const t = s.transform;
   const sx = node.x * t.k + t.x;
   const sy = node.y * t.k + t.y;
   const r = (node.r + (node._grow || 0)) * t.k;
-  const w = card.offsetWidth;
-  const h = card.offsetHeight;
+  const w = card._w || 0;
+  const h = card._h || 0;
   const gap = 12;
   let left = sx + r + gap;
   if (left + w > s.dims.w - gap) left = sx - r - gap - w;
   left = Math.max(gap, Math.min(left, s.dims.w - w - gap));
   const top = Math.max(gap, Math.min(sy - h / 2, s.dims.h - h - gap));
-  card.style.left = `${Math.round(left)}px`;
-  card.style.top = `${Math.round(top)}px`;
+  const at = `${Math.round(left)},${Math.round(top)}`;
+  if (card._at === at) return;
+  card._at = at;
+  //: Moved on its own layer (`will-change`, graph-lazy.css): a move is a
+  //: composite, not a repaint of the card and its shadow every hover.
+  card.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
 }
 
 function gcTooltip(node, s = gcTab) {
