@@ -104,7 +104,9 @@ def test_a_note_cards_connection_pill_is_one_line():
     (qa1005-polish.js `linkpills`: 112 of 112 at 390, then 0)."""
     css = (CSS / "08-consistency.css").read_text(encoding="utf-8")
     chip = _rule(css, "#entry-list .link-connection > .chip.link")
-    assert "white-space: nowrap" in chip and "overflow: hidden" in chip
+    #: `clip visible`, not `hidden` (audit 1029 rank 46): the words are still cut
+    #: across, but the chip keeps the hit overhang above and below.
+    assert "white-space: nowrap" in chip and "overflow: clip visible" in chip
     assert "text-overflow: ellipsis" in _rule(css, "#entry-list .link-connection > .chip.link > .ph-text")
 
 

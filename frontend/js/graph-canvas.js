@@ -257,6 +257,10 @@ function gcMaxDegree(s, nodes) {
 //: 5), still plainly the hub, no longer a blob that its own glow doubled.
 const GC_MIN_RADIUS = 5;
 const GC_MAX_RADIUS = 15;
+//: How far past a dot's edge a press still counts as on it, in screen pixels. A
+//: finger gets 20 (audit 1029 G13): with the smallest dot that is a 44px target,
+//: the floor; the nearest dot within it wins (`gcTreeIndex().find`).
+const GC_SLOP_PX = window.matchMedia?.("(pointer: coarse)")?.matches ? 20 : 6;
 function gcRadius(node, degree, maxDegree = 0) {
   if (node.isGroup) return node.id === "root" ? 14 : 11;
   //: By the View menu's Size rule (`graphSizeRadius`, graph.js): connections
@@ -3678,7 +3682,7 @@ function gcTreeIndex(s = gcTab) {
 //: a 4px dot at k=0.3 is a one-pixel target otherwise.
 function gcNodeAtWorld(x, y, s = gcTab) {
   if (!s.nodes.length) return null;
-  const slop = 6 / ((s.transform && s.transform.k) || 1);
+  const slop = GC_SLOP_PX / ((s.transform && s.transform.k) || 1);
   const found = gcTreeIndex(s).find(x, y, GC_MAX_RADIUS + slop + 8);
   if (!found) return null;
   if (!gcVisibleAtTime(found, s)) return null;
@@ -5614,6 +5618,7 @@ async function renderGraphCanvas(s = gcTab) {
     return ruleColour(gcRuleKey(colourMode, node));
   };
   graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour, groups, s);
+  graphLegendRove(document.getElementById("graph-legend"));
   gcLegendEdgeKey(data);
   gcLegendSizeKey();
   gcSelectionChanged(s);
@@ -5924,6 +5929,25 @@ function gcRuleScale(rule, data) {
     return (key) => (key === GC_NO_TYPE ? "#9aa1ad" : own.get(String(key).toLowerCase()) || categoryAutoDot(key));
   }
   return d3.scaleOrdinal(gcRuleDomain(rule, data), graphCalmScheme());
+}
+
+//: One Tab stop for the legend's toggles (audit 1029 G20): seven buttons were
+//: seven stops before the map. The arrows, Home and End walk them.
+function graphLegendRove(legend) {
+  const items = [...(legend?.querySelectorAll(".legend-toggle") || [])];
+  items.forEach((item, index) => (item.tabIndex = index ? -1 : 0));
+  if (!legend || legend.dataset.roved) return;
+  legend.dataset.roved = "1";
+  legend.addEventListener("keydown", (event) => {
+    const list = [...legend.querySelectorAll(".legend-toggle")];
+    const at = list.indexOf(document.activeElement);
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    const to = event.key === "Home" ? 0 : event.key === "End" ? list.length - 1 : at + step;
+    if (at < 0 || !list[to] || (step === undefined && event.key !== "Home" && event.key !== "End")) return;
+    event.preventDefault();
+    list.forEach((item) => (item.tabIndex = item === list[to] ? 0 : -1));
+    list[to].focus();
+  });
 }
 
 function graphRenderLegend(data, colourMode, colour, clusterColour, ruleColour = null, groups = [], s = gcTab) {

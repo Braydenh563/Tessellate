@@ -1831,6 +1831,16 @@ transform). A chip that shrinks with its row is clipped across only
 `scratchpad/ui-sweeps/perf2-1005-chipfloor.js` measures the target with
 `elementFromPoint`: 0 under the floor at 1440, light and dark.
 
+**One overhang rule, three users** (audit 1029 rank 46): `.chip-interactive`,
+"Show more" (`.entry-more`) and a card's menu buttons (`#entry-list
+.menu-wrap > button`) share the `::after` in `01-forms-settings.css`, on both
+axes. A chip that is clipped across (`overflow: clip visible`) keeps it; a
+`hidden` one cuts it off. Wrapped pills keep `--target-min` minus their paint
+apart under a coarse pointer (`#entry-list .entry-links`), or the overhangs
+steal each other's box. A search well's input stretches to the well
+(`align-self: stretch`), the graph's hit slop is 20px under a coarse pointer
+(`GC_SLOP_PX`, 6 otherwise), and the legend is one Tab stop with arrow keys.
+
 ---
 
 ## Motion: and the one rule that is not optional

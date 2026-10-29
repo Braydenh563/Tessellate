@@ -3265,6 +3265,13 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 #entry-list .entry-links {
   gap: var(--space-2);
 }
+/* A finger's pill is `--target-min` tall (the chip's and the menu's overhang),
+   so wrapped rows keep that much apart, as the graph's filter chips do. */
+@media (pointer: coarse) {
+  #entry-list .entry-links {
+    row-gap: calc(var(--target-min) - 1.5rem);
+  }
+}
 #entry-list .link-connection {
   gap: 0;
   border: 1px solid var(--border);
@@ -3276,7 +3283,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   background: transparent;
   min-width: 0;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: clip visible;
 }
 /* One line, cut with an ellipsis, as Ask's results already were (below): at
    390 a note card's connection pills wrapped their words to two 12px lines
