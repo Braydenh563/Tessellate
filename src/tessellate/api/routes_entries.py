@@ -63,6 +63,7 @@ from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_sug
 from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
 from tessellate.entry import duplicates, link_facts, manager
+from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
 from tessellate.entry.tagnames import inline_tags, normalise_tags
@@ -3233,14 +3234,14 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
         #: once per label. Measured over 60 labels on 500 notes, same answers:
         #: 74 ms per call with `ilike`, 35 ms with `like`
         #: (`test_a_mention_matches_whatever_the_case...` pins the folding).
-        flags = [Document.content.like(f"%{like_escape(label)}%", escape=LIKE_ESCAPE) for label in distinct]
+        flags = [Document.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in distinct]
         for row in session.execute(
             select(Document.id, Document.title, Document.content, *[f.label(f"m{i}") for i, f in enumerate(flags)])
             .where(Document.archived_at.is_(None), or_(*flags))
             .order_by(Document.updated_at.desc(), Document.id.desc())
         ):
             for i, label in enumerate(distinct):
-                if row[3 + i] and len(document_hits[label]) < REFERENCE_SOURCES_MAX:
+                if row[3 + i] and len(document_hits[label]) < REFERENCE_SOURCES_MAX and _names(row[2], label):
                     document_hits[label].append((row[0], row[1] or "Untitled", row[2] or ""))
         #: Two groups (audit 2026-10-05, ARCH-11: 1.1 s for sixty cards at
         #: 5,000 notes, all of it SQLite running sixty LIKEs over every
@@ -3257,7 +3258,7 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
         for group in groups:
             if not group:
                 continue
-            flags = [Entry.content.like(f"%{like_escape(label)}%", escape=LIKE_ESCAPE) for label in group]
+            flags = [Entry.content.like(_mention_like(label), escape=LIKE_ESCAPE) for label in group]
             where = [
                 Entry.is_deleted.is_(False),
                 #: A private note is encrypted at rest, so its content could not
@@ -3287,7 +3288,7 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
                     #: One over the cap, because the note itself can be among its
                     #: own label's matches and is dropped per note below: the cap
                     #: is on sources other than the note, as it always was.
-                    if row[2 + i] and len(note_hits[label]) <= REFERENCE_SOURCES_MAX:
+                    if row[2 + i] and len(note_hits[label]) <= REFERENCE_SOURCES_MAX and _names(row[1], label):
                         note_hits[label].append((row[0], row[1] or ""))
 
     for entry in entries:
@@ -3318,6 +3319,21 @@ def _reference_rows_batch(session: Session, entries: list[Entry]) -> dict[int, l
         rows.sort(key=lambda row: {"on it": 0, "links to it": 1, "mentions it": 2}[row["how"]])
         result[entry.id] = rows[:REFERENCE_ROWS_MAX]
     return result
+
+
+def _mention_like(label: str) -> str:
+    """The LIKE that narrows the scan; `_names` decides. A label too short to
+    be mentioned (audit 1029 N1) can still be linked, `[[t]]`, so it only
+    narrows to notes with that bracket."""
+    if len(label) < MENTION_MIN_TITLE_CHARS:
+        return f"%[[{like_escape(label)}%"
+    return f"%{like_escape(label)}%"
+
+
+def _names(content: str | None, label: str) -> bool:
+    """Whether the text links to `label` or names it as a whole word: the
+    one definition (`entry/mentions.py`) every mention surface shares."""
+    return names_label(content, label) or _links_to(content, label.casefold())
 
 
 #: A run of characters the full-text tokenizer may treat as one word: ASCII
