@@ -70,7 +70,8 @@ def test_purge_clears_links_stamped_for_another_space(client, session):
     keep, goner = _note(session, "stays"), _note(session, "goes")
     _link(session, goner, keep, workspace="elsewhere")
     client.delete(f"/entries/{goner.id}")
-    assert client.delete(f"/entries/{goner.id}/purge").status_code == 200
+    purged = client.delete(f"/entries/{goner.id}/purge")
+    assert purged.status_code == 200
     session.expire_all()
     assert _links(session) == 0
 
