@@ -2056,6 +2056,7 @@ const BG_ART_BUILDERS = {
       },
     };
   },
+
 };
 
 // --- the runtime ------------------------------------------------------------------
@@ -2083,6 +2084,26 @@ let bgArtLastInput = 0;
 // run that is itself replaced before it is ready hands them on.
 let bgArtRetiring = [];
 const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false };
+
+// **A long pause becomes a picture** (INBOX 1436). A pause already stops the
+// loop, but the live canvas stays mounted, holding its bitmap. After
+// `BG_ART_FREEZE_MS` of pause the canvas is captured through the same path a
+// still takes (`bgArtMountStill`: `toBlob`, an object URL, one fixed element
+// with the image as its background) and taken out of the page; the element
+// keeps the style's state (its typed arrays, its seed, its place in time),
+// and a resume puts the canvas back and carries on from there. The kept state
+// includes the canvas bitmap, so the page's memory is not freed, only its
+// layers and its compositor work; restarting the style from its seed instead
+// would free the bitmap but lose the picture the person was looking at.
+const BG_ART_FREEZE_MS = 20000;
+let bgArtPausedAt = 0; // performance.now() when this pause began, or 0
+let bgArtFreezeTimer = 0;
+let bgArtFrozen = null; // { layer, url } while the picture stands in for the canvas
+
+// Pure: has this pause lasted long enough, and is it not frozen already?
+function bgArtShouldFreeze(pausedAt, now, frozen) {
+  return !frozen && pausedAt > 0 && now - pausedAt >= BG_ART_FREEZE_MS;
+}
 
 // Idle: no pointer, key or wheel for two minutes. The art holds still
 // until the next one, and carries on from where it was.
@@ -2139,11 +2160,68 @@ function bgArtApplyPause() {
   const paused = b.hidden || b.blurred || b.covered || b.idle;
   if (bgArtInstance) {
     if (paused && bgArtInstance.isLooping()) bgArtInstance.noLoop();
-    else if (!paused && !bgArtInstance.isLooping()) bgArtInstance.loop();
+    else if (!paused && !bgArtInstance.isLooping()) {
+      bgArtThaw();
+      bgArtInstance.loop();
+    }
+    if (paused && !bgArtPausedAt) {
+      bgArtPausedAt = performance.now();
+      clearTimeout(bgArtFreezeTimer);
+      bgArtFreezeTimer = setTimeout(bgArtFreeze, BG_ART_FREEZE_MS);
+    } else if (!paused) {
+      bgArtPausedAt = 0;
+      clearTimeout(bgArtFreezeTimer);
+    }
   }
   if (bgArtLayer && bgArtLayer.classList.contains("bg-art-layer")) {
     bgArtLayer.classList.toggle("is-paused", paused);
   }
+}
+
+// The pause has run its time: swap the canvas for its picture. A timer that
+// fires early (a throttled background tab) waits out the rest.
+function bgArtFreeze() {
+  bgArtFreezeTimer = 0;
+  const inst = bgArtInstance;
+  if (!inst || bgArtFrozen || inst.isLooping() || !bgArtPausedAt) return;
+  const left = BG_ART_FREEZE_MS - (performance.now() - bgArtPausedAt);
+  if (!bgArtShouldFreeze(bgArtPausedAt, performance.now(), false)) {
+    bgArtFreezeTimer = setTimeout(bgArtFreeze, Math.max(250, left));
+    return;
+  }
+  const pausedAt = bgArtPausedAt;
+  inst.capture(bgArtGeneration, (layer, url) => {
+    // Resumed, or replaced, while the picture was encoding: it is not needed.
+    if (bgArtInstance !== inst || bgArtPausedAt !== pausedAt) {
+      layer.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    // Take the canvas out only once the picture can be drawn, so there is no
+    // frame with neither.
+    const done = () => {
+      if (bgArtInstance !== inst || bgArtPausedAt !== pausedAt) {
+        layer.remove();
+        URL.revokeObjectURL(url);
+        return;
+      }
+      inst.detach();
+      bgArtFrozen = { layer, url };
+    };
+    const probe = new Image();
+    probe.src = url;
+    (probe.decode ? probe.decode() : Promise.resolve()).then(done, done);
+  });
+}
+
+// A resume: the canvas goes back where it was, then the picture goes.
+function bgArtThaw() {
+  if (!bgArtFrozen) return;
+  const { layer, url } = bgArtFrozen;
+  bgArtFrozen = null;
+  if (bgArtInstance) bgArtInstance.attach();
+  layer.remove();
+  URL.revokeObjectURL(url);
 }
 
 // Is the whole window covered by something opaque? The topmost element at
@@ -2204,6 +2282,19 @@ function bgArtHalt(handingOver = false) {
   bgArtGeneration++;
   clearInterval(bgArtCoverTimer);
   bgArtCoverTimer = 0;
+  clearTimeout(bgArtFreezeTimer);
+  bgArtFreezeTimer = 0;
+  bgArtPausedAt = 0;
+  if (bgArtFrozen) {
+    // The picture of a paused canvas stands in for it until what replaces it
+    // is ready, as a moving canvas does.
+    if (handingOver) bgArtRetiring.push([bgArtFrozen.layer, bgArtFrozen.url]);
+    else {
+      bgArtFrozen.layer.remove();
+      URL.revokeObjectURL(bgArtFrozen.url);
+    }
+    bgArtFrozen = null;
+  }
   const canvas = document.getElementById("bg-art-canvas");
   if (bgArtInstance) {
     // Handing over, a moving canvas stops but stays on screen until its
@@ -2226,6 +2317,25 @@ function bgArtHalt(handingOver = false) {
   bgArtStillUrl = "";
   if (!handingOver) bgArtRetire();
   bgArtSeedUsed = null;
+}
+
+// The still path, shared by a still frame and a long pause: encode `source`
+// (a canvas) to a PNG, and hand `done` a fixed element with that image as its
+// background and the image's object URL. `extra` is a CSS background the
+// canvas element itself carried (the constellation's nebula), laid under it.
+// A capture from a run that has since been replaced is dropped.
+function bgArtMountStill(source, gen, extra, done) {
+  source.toBlob((blob) => {
+    if (gen !== bgArtGeneration || !blob) return;
+    const url = URL.createObjectURL(blob);
+    const layer = document.createElement("div");
+    layer.id = "bg-art-still";
+    layer.className = "bg-art-canvas bg-art-still";
+    layer.setAttribute("aria-hidden", "true");
+    layer.style.backgroundImage = extra ? `url("${url}"), ${extra}` : `url("${url}")`;
+    document.body.appendChild(layer);
+    done(layer, url);
+  }, "image/png");
 }
 
 // Mount one style. `o`: { style, dark, accent, density, seedText, still,
@@ -2313,18 +2423,11 @@ function bgArtRun(o) {
     }
     if (style.settle) style.settle();
     style.frame(0);
-    canvas.toBlob((blob) => {
-      if (gen !== bgArtGeneration || !blob) return;
-      bgArtStillUrl = URL.createObjectURL(blob);
-      const layer = document.createElement("div");
-      layer.id = "bg-art-still";
-      layer.className = "bg-art-canvas bg-art-still";
-      layer.setAttribute("aria-hidden", "true");
-      layer.style.backgroundImage = `url("${bgArtStillUrl}")`;
-      document.body.appendChild(layer);
+    bgArtMountStill(canvas, gen, "", (layer, url) => {
+      bgArtStillUrl = url;
       bgArtLayer = layer;
       retire();
-    }, "image/png");
+    });
     return;
   }
 
@@ -2363,6 +2466,31 @@ function bgArtRun(o) {
       handle.noLoop();
       canvas.remove();
       if (twin) twin.canvas.remove();
+    },
+    // The long pause (see BG_ART_FREEZE_MS): the picture of what is on
+    // screen, the canvas out of the page, the canvas back.
+    capture(gen, done) {
+      let source = canvas;
+      if (twin) {
+        // Two generations cross-fading: flatten them as they stand.
+        source = document.createElement("canvas");
+        source.width = canvas.width; source.height = canvas.height;
+        const c = source.getContext("2d");
+        for (const el of [canvas, twin.canvas]) {
+          const k = /\* ([\d.]+)\)$/.exec(el.style.opacity);
+          c.globalAlpha = k ? Number(k[1]) : 1;
+          c.drawImage(el, 0, 0);
+        }
+      }
+      bgArtMountStill(source, gen, canvas.style.backgroundImage, done);
+    },
+    detach() {
+      canvas.remove();
+      if (twin) twin.canvas.remove();
+    },
+    attach() {
+      if (!canvas.isConnected) document.body.appendChild(canvas);
+      if (twin && !twin.canvas.isConnected) document.body.appendChild(twin.canvas);
     },
   };
   // A timestamp gate: the browser offers every display frame, and a frame

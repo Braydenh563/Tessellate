@@ -167,7 +167,11 @@ def test_still_is_an_image_not_a_stopped_sketch():
     run = runtime[runtime.index("function bgArtRun(") :]
     still = run[run.index("if (o.still) {\n    // One frame") :]
     still = still[: still.index("\n    return;\n  }\n")]
-    assert "toBlob(" in still and "URL.createObjectURL" in still
+    # The capture is bgArtMountStill (shared with a long pause, INBOX 1436).
+    assert "bgArtMountStill(canvas" in still
+    mount = runtime[runtime.index("function bgArtMountStill(") :]
+    mount = mount[: mount.index("\n}\n")]
+    assert "toBlob(" in mount and "URL.createObjectURL" in mount
     # The still's canvas is never put in the page, and no loop is started.
     assert "appendChild(canvas)" not in still
     assert "requestAnimationFrame" not in still and "bgArtInstance =" not in still

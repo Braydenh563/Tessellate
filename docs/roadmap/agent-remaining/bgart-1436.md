@@ -41,3 +41,30 @@ having stopped (the emblem stops with a hidden tab). A pause already costs no fr
 still save is the mounted canvas (1 or 2 canvases kept in the DOM and composited) and, if it were freed, its bitmap.
 Browser RSS moves by tens of MB between samples from the garbage collector alone and is not a clean signal.
 Only three styles were measured for the paused baseline: the other styles take the same path (one canvas, no rAF).
+
+## B. A pause of 20 s or more becomes a picture (built)
+
+`bgArtApplyPause` starts a 20 s timer (`BG_ART_FREEZE_MS`) when the first pause cause appears and clears it on
+resume. At 20 s `bgArtFreeze` captures the canvas through `bgArtMountStill` (the still path's own `toBlob`,
+now shared; a canvas element's CSS background, the constellation's nebula, is laid under the image; the
+mycelium's two canvases are flattened first at their fade opacity), waits for the image to decode, then takes
+the canvas out of the page. A resume (`bgArtThaw`) puts the canvas back, removes the picture, and the loop goes on.
+Hidden tab included (the same pause flag). A timer that fires early waits out the rest; a resume while the
+picture is encoding discards it.
+
+Which: **kept state**. The style's closure (typed arrays, seed, clock) and the canvas bitmap stay in memory, so
+the art continues exactly where it was. A restart with the same seed would free the bitmap but lose the picture
+the person was looking at, so it was not chosen. What a long pause now frees is the live layer: the canvas
+element(s) leave the DOM and the compositor, and one image layer stands in.
+
+Measured (`PAUSE=1 PAUSE_WAIT=22 CPU=1`, dark, a hidden tab; canvases and pictures in the DOM, art rAF in 2 s):
+
+| style | paused 3 s, before | paused 24 s, before | paused 24 s, after | resumed, after |
+| --- | --- | --- | --- | --- |
+| aurora | canvas 1, still 0, rAF 0 | canvas 1, still 0 | canvas 0, still 1, rAF 0 | canvas 1, still 0, rAF 120 |
+| constellation | canvas 1, rAF 0 | canvas 1 | canvas 0, still 1, rAF 0 | canvas 1, still 0, rAF 120 |
+| mycelium (twin) | canvas 2, rAF 0 | canvas 2 | canvas 0, still 1, rAF 0 | canvas 2, still 0, rAF 120 |
+
+JS heap and browser RSS did not move beyond the run-to-run noise (aurora 693 to 705 MB, constellation 760 to 758,
+mycelium 774 to 797), as expected: the bitmap is kept. Not verified: GPU memory of the freed layer, or a real
+window minimised on Windows.
