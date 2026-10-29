@@ -304,10 +304,11 @@ input[type="datetime-local"] {
   resize: none;
 }
 /* The placeholder was inheriting the body colour at full strength in some
-   themes, so an empty box read as a filled one. */
+   themes, so an empty box read as a filled one. `--muted` whole: dimmed it was
+   3.68:1 on the dock's search field (audit 1029 G21). */
 ::placeholder {
   color: var(--muted);
-  opacity: 0.85;
+  opacity: 1;
 }
 /* A one-row box that grows with what is typed (`rows="1"`: chat, the
    palette's agent line, magic add) keeps its hint on that one row: the

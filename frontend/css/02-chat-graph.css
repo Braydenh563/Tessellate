@@ -5148,7 +5148,9 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   border: none;
   border-radius: 0;
 }
-/* The minimap's top corners clear the floating dock. The bottom corners are
+/* The minimap's top corners clear the floating dock and, while Trace is open,
+   its strips (`initGraphRailToken` writes the extra into `--graph-chrome-top`
+   on the card, audit 1029 G24: 8,861 px² of overlap at 1440x900). The bottom corners are
    left where they are: bottom left is the legend's, which is a collision the
    corner setting exists to let someone step out of, and the default (top
    left) is now the corner nothing else claims. */

@@ -520,3 +520,33 @@
   min-width: 0;
   white-space: nowrap;
 }
+
+/* The match count beside the graph's search box (audit 1029 G11): a quiet
+   line that keeps its place, so the dock does not shift as it fills. */
+.dock[data-dock-name="graph"] .graph-search-count {
+  min-width: 5.5rem;
+  white-space: nowrap;
+}
+.dock[data-dock-name="graph"] .graph-search-count:empty {
+  min-width: 0;
+}
+
+/* **The legend wraps to two rows, then scrolls** (audit 1029 G9). It was one
+   row that scrolled sideways (a legend of three rows had eaten the canvas, when
+   it sat in the page's flow); it floats over the map now and is bounded, so it
+   wraps to two rows and scrolls down past them. Measured at 1440x900 with 17
+   entries: scrollWidth 2088 in 1308, five of them out of sight. A chip keeps
+   its size; the row's height is the bound. */
+.graph-legend-row #graph-legend {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-size: var(--text-base);
+  max-height: 5.2em;
+  min-height: 0;
+  scrollbar-width: thin;
+}
+.graph-legend-row #graph-legend > * {
+  flex: 0 0 auto;
+}

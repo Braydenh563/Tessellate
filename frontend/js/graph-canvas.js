@@ -1098,6 +1098,16 @@ function gcHexToRgb(colour) {
 function gcMixRgb(rgb, toward, share) {
   return `rgb(${rgb.map((v) => Math.round(v + (toward - v) * share)).join(", ")})`;
 }
+//: **The rim must clear 3:1 on a light ground** (audit 1029 G12/G21): the
+//: automatic colours (Tableau, Set3) are 1.0 to 2.7 against the map's ground as
+//: a disc, so the thin edge is the part that reads, and a quarter deeper left
+//: the palest at 1.9. Half deeper puts the worst of the 22 at 3.8 (3.0 sampled off the painted sprite at 45%). A dark ground
+//: (or a card token this cannot read) keeps the quarter.
+function gcRimShare() {
+  const ground = gcHexToRgb(gcTokens.card);
+  return ground && ground[0] * 0.299 + ground[1] * 0.587 + ground[2] * 0.114 > 160 ? 0.5 : 0.25;
+}
+
 function gcPaintCore(c, half, r, colour) {
   const rgb = gcHexToRgb(colour);
   c.beginPath();
@@ -1116,7 +1126,7 @@ function gcPaintCore(c, half, r, colour) {
   c.beginPath();
   c.arc(half, half, r - 0.5, 0, Math.PI * 2);
   c.lineWidth = 1;
-  c.strokeStyle = gcMixRgb(rgb, 0, 0.25);
+  c.strokeStyle = gcMixRgb(rgb, 0, gcRimShare());
   c.stroke();
 }
 
@@ -1444,19 +1454,29 @@ function gcFilterChip(label, count, pressed, title, onClick, { offWhenUnpressed 
   return el;
 }
 
-function gcRenderFilterChips(data) {
-  const kinds = document.getElementById("graph-link-kinds");
-  const props = document.getElementById("graph-prop-chips");
-  if (!kinds || !props) return;
+//: The link kinds on the map, biggest first, as `[key, {label, n}]`. Empty when
+//: no link has a kind: one chip, "No kind 64", filters nothing a person can
+//: tell apart, so the row says so in words instead (audit 1029 G22). Unless that
+//: kind was turned off earlier: its chip is the only way back.
+function gcLinkKindRows(edges, hidden = new Set()) {
   const byKind = new Map();
-  for (const e of data.edges) {
+  for (const e of edges) {
     if (e.kind !== "link") continue;
     const key = e.link_type || "untyped";
     const row = byKind.get(key) || { label: key === "untyped" ? "No kind" : e.type_name || key, n: 0 };
     row.n++;
     byKind.set(key, row);
   }
-  kinds.replaceChildren(...[...byKind].sort((a, b) => b[1].n - a[1].n).map(([key, row]) => {
+  const rows = [...byKind].sort((a, b) => b[1].n - a[1].n);
+  return rows.some(([key]) => key !== "untyped" || hidden.has(key)) ? rows : [];
+}
+
+function gcRenderFilterChips(data) {
+  const kinds = document.getElementById("graph-link-kinds");
+  const props = document.getElementById("graph-prop-chips");
+  if (!kinds || !props) return;
+  const rows = gcLinkKindRows(data.edges, graphHiddenLinkKinds);
+  kinds.replaceChildren(...rows.map(([key, row]) => {
     const shown = !graphHiddenLinkKinds.has(key);
     return gcFilterChip(row.label, row.n, shown, shown ? `Hide the ${row.label} links` : `Draw the ${row.label} links again`, () => {
       if (graphHiddenLinkKinds.has(key)) graphHiddenLinkKinds.delete(key);
@@ -1469,7 +1489,7 @@ function gcRenderFilterChips(data) {
       renderGraph();
     }, { offWhenUnpressed: true });
   }));
-  if (!byKind.size) kinds.textContent = "No links on the map.";
+  if (!rows.length) kinds.textContent = data.edges.some((e) => e.kind === "link") ? "No link has a kind yet." : "No links on the map.";
   const onMap = new Set(data.nodes.map((n) => n.id));
   const pairs = new Map();
   for (const e of typeof allEntries !== "undefined" ? allEntries : []) {

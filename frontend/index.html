@@ -3885,6 +3885,8 @@ Link to another note with [[its first few words]]."></textarea>
               <input id="graph-search" data-search-scope="notes" class="search-field-input" type="search" placeholder="Highlight notes…"
                 aria-label="Highlight matching notes in the graph">
             </div>
+            <!-- Said in words and politely (audit 1029 G11); Enter and Shift+Enter walk the matches, Esc clears. -->
+            <span id="graph-search-count" class="graph-search-count muted text-xs" role="status" aria-live="polite"></span>
             <button id="graph-highlight-clear" class="ghost small hidden" title="Clear the similar-notes highlight"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear highlight</button>
             <button id="graph-focus-clear" class="ghost small hidden" title="Exit focus mode and return to the global map"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Exit focus</button>
           </div>
@@ -3976,40 +3978,30 @@ Link to another note with [[its first few words]]."></textarea>
           <button id="graph-selection-clear" class="ghost small icon-only" type="button" title="Clear the selection" aria-label="Clear the selection"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
         <div id="graph-help-panel" class="help-body hidden" role="dialog" aria-label="How to use this map">
-          <!-- Rewritten to lead with placement. The old copy buried "drag to
-               arrange" mid-sentence and then said "double-click to pin it in
-               place", which was the only gesture that actually held a note
-               still, and the one nothing on screen pointed at. Now a drag
-               places, so the sentence people read first is the one that
-               describes what they are about to try. -->
+          <!-- Short lines, not three paragraphs (audit 1029 G23: 1,296 characters
+               scrolled inside the panel). The Options sections carry their own
+               '?' for the rest. -->
           <p class="muted">
-            <strong>Drag a note to move it.</strong> Let go and it settles near
-            where you put it. Double-click a note to pin it in place (a pinned
-            note keeps its place when you come back); double-click it again to
-            let it go.
+            <strong>Drag a note to move it.</strong> Double-click to pin it in
+            place, and again to let it go.
           </p>
-          <p class="muted">
-            <strong>This map is built for you</strong> from what your notes
-            already say. If you want to draw one yourself, your own cards, your
-            own links, your own arrangement, that is a
-            <strong>mind map</strong>, and the button in the toolbar opens
-            them.
-          </p>
-          <p class="muted">
-            Solid lines are links you made, dashed lines are trains of thought,
-            dotted lines are notes that mean similar things. Hover a note to
-            spotlight its connections and see its card (dates, links, views,
-            properties and tags; the arrow keys show it too), scroll or use the buttons to zoom, click a
-            note to edit it right here (Open, Focus, Pin and Link at its foot, the rest under <i class="ph ph-dots-three" aria-hidden="true"></i>), and click a legend colour to hide that
-            category. Double-click empty space to add a note there. Gravity and
-            Spread reshape whatever you have not placed yourself. A Tree,
-            Radial, Arc or Treemap layout stays still and is named in the
-            toolbar; click its name to change it. Treemap sizes each category
-            by how many notes it holds. A bigger dot has more links; Size in
-            the options changes what size means, and the legend says which.
-            <strong>Drop one note onto another to link them</strong>, and use
-            <strong>Trace</strong> to see how any two notes connect.
-          </p>
+          <ul class="muted">
+            <li><strong>Hover a note</strong> to see its dates, links and tags;
+              click it to edit it here.</li>
+            <li><strong>Drop one note onto another</strong> to link them.
+              Double-click empty space to add a note there.</li>
+            <li><strong>Trace</strong> shows how any two notes connect.</li>
+            <li>Solid lines are links you made, dashed lines are trains of
+              thought, dotted lines are notes that mean similar things.</li>
+            <li>A bigger dot has more links; Size in the options changes that,
+              and the legend says which. Click a legend colour to hide that
+              category.</li>
+            <li>A Tree, Radial, Arc or Treemap layout stays still; click its
+              name in the toolbar to change it. Treemap sizes each category by
+              how many notes it holds.</li>
+            <li>This map is built from your notes. To draw one yourself, open
+              the <strong>mind map</strong> button in the toolbar.</li>
+          </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
              options panel needs a redesign"). It was one wrapping strip of

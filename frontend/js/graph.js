@@ -2270,6 +2270,7 @@ async function renderGraphSvg() {
   graphDims = { w: width, h: height };
   initGraphMinimap();
   initGraphDockHeightToken();
+  initGraphRailToken();
   initGraphToastClearance();
   initGraphViews();
 
@@ -3689,9 +3690,19 @@ function graphSearchNodes() {
   return (graphRenderer() === "canvas" && typeof gcTab !== "undefined" && gcTab.nodes) || graphNodesRef || [];
 }
 
-//: The set for what is in the box now.
+//: "No matches", "1 match", "134 matches": the count beside the box (G11).
+function graphSearchCountText(n) {
+  return n ? nounCount(n, "match", "matches") : "No matches";
+}
+
+//: The set for what is in the box now, and the count said beside it. The count
+//: stays empty while a phrase that may be a filter is still being read.
 function graphSearchRefresh(query) {
-  return graphSearchFor(graphSearchNodes(), query);
+  const found = graphSearchFor(graphSearchNodes(), query);
+  const box = $("graph-search-count");
+  const text = !query || (graphPhrase.waiting && !found.list.length) ? "" : graphSearchCountText(found.list.length);
+  if (box && box.textContent !== text) box.textContent = text;
+  return found;
 }
 
 //: `cheap` is a change of the query alone: the scene the canvas painted is
@@ -3770,6 +3781,73 @@ function applyGraphHighlight(cheap) {
 //: one redraw. The pause that used to sit here made the first letters wait for
 //: nothing: what is slow is the repaint, not the match (audit 1029 G10).
 $("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+
+//: **Walking the matches** (audit 1029 G11). Enter goes to the next match and
+//: pans to it, Shift+Enter to the one before, both wrapping; the match is ringed
+//: and named whatever else is dimmed (`gcHighlight`'s `current`), and said in
+//: the page's polite region. Escape clears the search and the "similar notes"
+//: highlight; on an empty box it is left alone, for whatever else listens.
+function graphSearchStepIndex(at, dir, n) {
+  if (!n) return -1;
+  if (at < 0) return dir < 0 ? n - 1 : 0;
+  return (at + dir + n) % n;
+}
+
+function graphPanToNode(node) {
+  if (!graphSvg || !graphZoom || !graphMinimapFinite(graphDims.w, graphDims.h, node.x, node.y)) return;
+  const k = d3.zoomTransform(graphSvg.node()).k;
+  const target = d3.zoomIdentity.translate(graphDims.w / 2, graphDims.h / 2).scale(k).translate(-node.x, -node.y);
+  //: Moved by hand as far as the settle fit is concerned (INBOX 792).
+  if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
+  graphSvg.transition().duration(graphGlideMs(300)).call(graphZoom.transform, target);
+}
+
+function graphSearchGo(dir) {
+  const box = $("graph-search");
+  const found = graphSearchRefresh(box.value.trim().toLowerCase());
+  const at = graphSearchStepIndex(found.at, dir, found.list.length);
+  if (at < 0) {
+    announce("No matches.");
+    return;
+  }
+  const node = found.list[at];
+  found.at = at;
+  found.current = node.id;
+  //: The suggestions list sits over the map's left side; a jump is the end of typing.
+  if (typeof searchSuggest !== "undefined" && searchSuggest?.input === box) {
+    searchSuggest.quiet = true;
+    fillSearchSuggest();
+  }
+  announce(`Match ${at + 1} of ${found.list.length}: ${node.preview}`);
+  graphNodeSelection?.classed("graph-keyfocus", (d) => d.id === node.id);
+  graphPanToNode(node);
+  gcRequestDraw(gcTab, true);
+}
+
+function graphSearchClear() {
+  //: A spotlight is part of the scene the canvas painted, so lifting one is a
+  //: whole frame; a search alone is not.
+  const spotlit = Boolean(graphHighlightIds);
+  $("graph-search").value = "";
+  graphHighlightIds = null;
+  graphNodeSelection?.classed("graph-keyfocus", false);
+  applyGraphHighlight(!spotlit);
+  announce("Search cleared.");
+}
+
+function graphSearchKey(event) {
+  if (event.isComposing) return;
+  const box = $("graph-search");
+  if (event.key === "Enter" && box.value.trim()) {
+    event.preventDefault();
+    graphSearchGo(event.shiftKey ? -1 : 1);
+  } else if (event.key === "Escape" && (box.value || graphHighlightIds)) {
+    event.preventDefault();
+    event.stopPropagation();
+    graphSearchClear();
+  }
+}
+$("graph-search").addEventListener("keydown", graphSearchKey);
 //: Focusing the box paints the dimmed layer the search is drawn over, in an
 //: idle moment, so the first key costs what the others do (about 250 ms at
 //: 2,000 notes, once, otherwise paid inside the first keystroke).
@@ -4372,6 +4450,17 @@ function watchGraphPopupSize(popup, place) {
 
 // Clamp the popup inside the graph box. Called on open and again once the
 // note has loaded, since the popup is taller by then.
+//: **The popup keeps room to follow its node in y** (audit 1029 G25). A long
+//: note took the map's whole height less 16 (517 of 533 at 1280x640), so its
+//: slide was 16px: the node moved 280px and the popup 0, which read as
+//: following in x only. An undragged popup is held to 60% of the room (never
+//: under 280px; the body scrolls inside it and the dock stays pinned); one the
+//: head has moved stays where put and keeps the whole room.
+function graphPopupCap(room, dragged) {
+  const full = Math.max(120, room - 16);
+  return dragged ? full : Math.min(full, Math.max(280, Math.round(room * 0.6)));
+}
+
 function placeGraphPopup() {
   const popup = $("graph-popup");
   watchGraphPopupSize(popup, placeGraphPopup);
@@ -4405,7 +4494,7 @@ function placeGraphPopup() {
   popup.classList.remove("graph-popup-sheet");
   // Never taller than the room it has, beyond that its body scrolls inside
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
-  popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
+  popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
   const size = popup.getBoundingClientRect();
   const maxLeft = Math.max(8, box.width - size.width - 8);
   const maxTop = Math.max(8, room - size.height - 8);
@@ -5744,6 +5833,36 @@ function initGraphDockHeightToken() {
   write();
 }
 
+//: **The rail the map's furniture hangs from** (audit 1029 G24, 1306 residue).
+//: The Trace strip and its result sit in the overlay column, full width, under
+//: the dock; the minimap's top corners were placed from the dock alone and sat
+//: under them (8,861 px² of overlap at 1440x900). The offset is how far the
+//: lowest shown strip reaches below the dock, 0 while none is shown (a hidden
+//: strip has no box), and `--graph-chrome-top` grows by it on the card.
+function graphRailOffset(strips, dockBottom) {
+  const shown = strips.filter((s) => s.bottom > s.top);
+  return shown.length ? Math.max(0, Math.round(Math.max(...shown.map((s) => s.bottom)) - dockBottom)) : 0;
+}
+
+function initGraphRailToken() {
+  const card = document.getElementById("graph-card");
+  const dock = card?.querySelector('.dock[data-dock-name="graph"]');
+  const strips = card ? [...card.querySelectorAll(".graph-overlay > .graph-trace, .graph-overlay > .graph-trace-result")] : [];
+  if (!dock || !strips.length || typeof ResizeObserver === "undefined" || card._railWired) return;
+  card._railWired = true;
+  const write = () => {
+    const boxes = strips.map((el) => el.getBoundingClientRect());
+    const offset = graphRailOffset(boxes, dock.getBoundingClientRect().bottom);
+    //: The existing token plus the rail, so no second property is declared
+    //: (the stylesheet's custom-property count only falls); cleared at 0.
+    if (offset) card.style.setProperty("--graph-chrome-top", `calc(var(--space-3) * 2 + var(--graph-dock-h) + ${offset}px)`);
+    else card.style.removeProperty("--graph-chrome-top");
+  };
+  const watcher = new ResizeObserver(write);
+  for (const el of [dock, ...strips]) watcher.observe(el);
+  write();
+}
+
 //: **A toast over the map stands above the legend** (INBOX 1400: it met the
 //: legend row's box at 1440 and the zoom strip at 390). The toast box's bottom
 //: is the legend row's own distance from the window's bottom plus a step, kept
@@ -6129,6 +6248,7 @@ function initGraphViews() {
 // calls are idempotent (`_heightWired`), and the observer's first callback
 // arrives with a real height as soon as the card stops being display:none.
 initGraphDockHeightToken();
+initGraphRailToken();
 initGraphToastClearance();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the
