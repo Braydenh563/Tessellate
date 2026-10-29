@@ -4777,7 +4777,7 @@ function gcHoverCardFill(card, node, s) {
   if (facts.tags) line(facts.tags, "graph-hovercard-sub");
   const matches = gcTooltipMatches(node, s);
   if (matches) line(matches.trim().split("\n").slice(0, 4).join("\n"), "graph-hovercard-sub graph-hovercard-matches");
-  if (gcIsNote(node)) line("Click to open, double-click to pin", "graph-hovercard-hint");
+  if (gcIsNote(node)) line("Click for details, double-click to pin", "graph-hovercard-hint");
   card.replaceChildren(...parts);
 }
 

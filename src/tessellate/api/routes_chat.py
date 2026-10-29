@@ -5119,6 +5119,7 @@ def execute_confirmed_tool(
         calls = [(str(step.get("tool") or ""), step.get("arguments") or {}) for step in body.steps]
         if not calls or any(name not in tools.TOOLS for name, _ in calls):
             raise HTTPException(status_code=404, detail="That undo names a step this app does not have.")
+        _refuse_if_off(name for name, _ in calls)
         # Last change first, the way a stack of edits is taken back. Each
         # step's own result is not sent back: the button only needs to know it
         # worked, and a tool's result can carry text written for the model.
@@ -5127,6 +5128,7 @@ def execute_confirmed_tool(
         return {"label": f"Undid {len(calls)} changes."}
     if body.name not in tools.TOOLS:
         raise HTTPException(status_code=404, detail=f"There is no tool called '{body.name}'.")
+    _refuse_if_off([body.name])
     result = tools.execute_tool(session, body.name, body.arguments)
     if "error" in result:
         _refuse_failed(body.name, result)
@@ -5135,6 +5137,14 @@ def execute_confirmed_tool(
     #: whole-result return to the exception text. The Confirm card reads
     #: `label`; `undo` lets a confirmed change be taken back.
     return {"label": str(result.get("label") or ""), "undo": result.get("undo")}
+
+
+def _refuse_if_off(names) -> None:
+    """A tool switched off in Settings is refused for that reason. It used to
+    reach `_refuse_failed`, whose sentence ("the note may have changed") is
+    about a different cause and sent the person looking in the wrong place."""
+    if not all(tools.tool_enabled(name) for name in names):
+        raise HTTPException(status_code=409, detail="That tool is turned off in Settings, Tools it can use.")
 
 
 def _refuse_failed(name: str, result: dict) -> None:
