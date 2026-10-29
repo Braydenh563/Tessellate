@@ -1109,16 +1109,21 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
     #: should I buy for my sister" is about the sister, not the note that has
     #: "buy a capo" in it. A note must hold a word that names something (when
     #: the question has one); the doing words then count with the rest.
-    named = [st for st in stems if st not in _VERBS()] or stems
-    scored = [
-        (hits, v) for v in views
-        if any(composer._holds(st, _pool(v)) for st in named) and (hits := sum(1 for st in stems if composer._holds(st, _pool(v))))
-    ]
+    scored = _scored_members(stems, views)
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)
     need = best if best >= 2 else 1
     return [v for h, v in scored if h >= need]
+
+
+def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
+    """Each note holding a naming word of the question, with how many of its words it holds."""
+    named = [st for st in stems if st not in _VERBS()] or stems
+    return [
+        (hits, v) for v in views
+        if any(composer._holds(st, _pool(v)) for st in named) and (hits := sum(1 for st in stems if composer._holds(st, _pool(v))))
+    ]
 
 
 def _shared_tags(members: list[composer.NoteView]) -> list[str]:
@@ -3141,6 +3146,14 @@ def _kind_if_mine(asked: str) -> str | None:
     return None if kind != "compare" and composer.compare_sides(asked) else kind
 
 
+def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[list, tuple | None]:
+    """The notes the answer is about, the defining one first, and the tie an
+    overview splits on (None when there is none)."""
+    members = _defining_first(asked, _pick_members(asked, views, wants_context))
+    tie = _tie(asked, members) if members and kind == "overview" else None
+    return (tie[0] if tie else members), tie
+
+
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -3163,13 +3176,11 @@ def answer(
     early = _early(out, kind, asked, question, views, today)
     if early is not _ORDINARY:
         return early
-    members = _defining_first(asked, _pick_members(asked, views, wants_context))
-    tie = _tie(asked, members) if members and kind == "overview" else None
-    members = tie[0] if tie else members
+    members, tie = _chosen(asked, kind, views, wants_context)
     if checklist := _named_checklist(kind, asked, members):
         _show_checklist(out, checklist)
         return _result(out, "fact", asked)
-    facts =[f for v in members for f in _facts(v, names, set(_subject(asked)))]
+    facts = [f for v in members for f in _facts(v, names, set(_subject(asked)))]
     if not facts:
         return None
     if kind == "left":
