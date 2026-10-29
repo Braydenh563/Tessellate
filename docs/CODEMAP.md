@@ -2,9 +2,9 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6792, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1513, tests 13276, plan headings 985.
+Counts: frontend functions 6794, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1514, tests 13280, plan headings 985.
 
-## Frontend functions (6792)
+## Frontend functions (6794)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2318,50 +2318,51 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `importReportSection` | frontend/js/app-import.js:79 |
 | `openImportReport` | frontend/js/app-import.js:113 |
 
-### frontend/js/app-palette.js (41)
+### frontend/js/app-palette.js (42)
 
 | Name | File:line |
 |---|---|
 | `closePalette` | frontend/js/app-palette.js:155 |
-| `notesPaletteCommands` | frontend/js/app-palette.js:785 |
+| `notesPaletteCommands` | frontend/js/app-palette.js:801 |
 | `openPalette` | frontend/js/app-palette.js:114 |
 | `paletteActRows` | frontend/js/app-palette.js:424 |
 | `paletteAskNotes` | frontend/js/app-palette.js:60 |
 | `paletteBase` | frontend/js/app-palette.js:379 |
-| `paletteDistance` | frontend/js/app-palette.js:611 |
+| `paletteDistance` | frontend/js/app-palette.js:627 |
 | `paletteEditorMatches` | frontend/js/app-palette.js:200 |
 | `paletteFeature` | frontend/js/app-palette.js:96 |
 | `paletteFeatureRows` | frontend/js/app-palette.js:407 |
-| `paletteFind` | frontend/js/app-palette.js:657 |
+| `paletteFind` | frontend/js/app-palette.js:673 |
 | `paletteFuzzyScore` | frontend/js/app-palette.js:180 |
-| `paletteGoToCategory` | frontend/js/app-palette.js:871 |
-| `paletteKeydown` | frontend/js/app-palette.js:742 |
-| `paletteLight` | frontend/js/app-palette.js:724 |
+| `paletteGoToCategory` | frontend/js/app-palette.js:887 |
+| `paletteKeydown` | frontend/js/app-palette.js:758 |
+| `paletteLight` | frontend/js/app-palette.js:740 |
 | `paletteMatches` | frontend/js/app-palette.js:210 |
-| `paletteNearRows` | frontend/js/app-palette.js:637 |
-| `paletteNearest` | frontend/js/app-palette.js:591 |
-| `paletteNearestCommand` | frontend/js/app-palette.js:662 |
-| `paletteNearestRows` | frontend/js/app-palette.js:626 |
+| `paletteNearRows` | frontend/js/app-palette.js:653 |
+| `paletteNearest` | frontend/js/app-palette.js:607 |
+| `paletteNearestCommand` | frontend/js/app-palette.js:678 |
+| `paletteNearestRows` | frontend/js/app-palette.js:642 |
 | `paletteNoteAbout` | frontend/js/app-palette.js:38 |
 | `paletteNoteRows` | frontend/js/app-palette.js:45 |
-| `paletteNotesInHand` | frontend/js/app-palette.js:861 |
-| `palettePick` | frontend/js/app-palette.js:566 |
-| `palettePicks` | frontend/js/app-palette.js:547 |
+| `paletteNotesInHand` | frontend/js/app-palette.js:877 |
+| `palettePick` | frontend/js/app-palette.js:582 |
+| `palettePicks` | frontend/js/app-palette.js:563 |
 | `palettePool` | frontend/js/app-palette.js:385 |
-| `palettePrefixPicks` | frontend/js/app-palette.js:555 |
-| `paletteRanked` | frontend/js/app-palette.js:523 |
+| `palettePrefixPicks` | frontend/js/app-palette.js:571 |
+| `paletteRanked` | frontend/js/app-palette.js:539 |
 | `paletteRefresh` | frontend/js/app-palette.js:399 |
 | `paletteRun` | frontend/js/app-palette.js:103 |
-| `paletteScore` | frontend/js/app-palette.js:495 |
+| `paletteScore` | frontend/js/app-palette.js:499 |
 | `paletteSettingRows` | frontend/js/app-palette.js:459 |
 | `paletteStartAct` | frontend/js/app-palette.js:446 |
 | `paletteTarget` | frontend/js/app-palette.js:390 |
 | `paletteText` | frontend/js/app-palette.js:171 |
-| `paletteVocab` | frontend/js/app-palette.js:511 |
-| `paletteWhy` | frontend/js/app-palette.js:580 |
-| `paletteWords` | frontend/js/app-palette.js:482 |
-| `renderPalette` | frontend/js/app-palette.js:673 |
-| `scrollPaletteToActive` | frontend/js/app-palette.js:769 |
+| `paletteTier` | frontend/js/app-palette.js:530 |
+| `paletteVocab` | frontend/js/app-palette.js:515 |
+| `paletteWhy` | frontend/js/app-palette.js:596 |
+| `paletteWords` | frontend/js/app-palette.js:486 |
+| `renderPalette` | frontend/js/app-palette.js:689 |
+| `scrollPaletteToActive` | frontend/js/app-palette.js:785 |
 | `utilityPaletteRows` | frontend/js/app-palette.js:287 |
 
 ### frontend/js/appearance-panel.js (16)
@@ -5774,44 +5775,45 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsPrefsSeen` | frontend/js/settings-data.js:899 |
 | `undoImport` | frontend/js/settings-data.js:530 |
 
-### frontend/js/settings-find.js (34)
+### frontend/js/settings-find.js (35)
 
 | Name | File:line |
 |---|---|
-| `findSettings` | frontend/js/settings-find.js:113 |
-| `helpAlternation` | frontend/js/settings-find.js:618 |
-| `helpApplySearch` | frontend/js/settings-find.js:738 |
-| `helpEmphasis` | frontend/js/settings-find.js:624 |
-| `helpFill` | frontend/js/settings-find.js:645 |
-| `helpMarks` | frontend/js/settings-find.js:658 |
-| `helpMatches` | frontend/js/settings-find.js:722 |
-| `helpQueryTerms` | frontend/js/settings-find.js:714 |
-| `helpSearchBind` | frontend/js/settings-find.js:795 |
-| `helpTopicLink` | frontend/js/settings-find.js:585 |
-| `helpTopicPaint` | frontend/js/settings-find.js:672 |
-| `helpTopicRow` | frontend/js/settings-find.js:686 |
-| `openSettingRow` | frontend/js/settings-find.js:184 |
-| `renderCredits` | frontend/js/settings-find.js:818 |
-| `renderHelpTopics` | frontend/js/settings-find.js:866 |
-| `renderSettingResults` | frontend/js/settings-find.js:231 |
-| `settingNearAdd` | frontend/js/settings-find.js:246 |
+| `findSettings` | frontend/js/settings-find.js:120 |
+| `helpAlternation` | frontend/js/settings-find.js:625 |
+| `helpApplySearch` | frontend/js/settings-find.js:745 |
+| `helpEmphasis` | frontend/js/settings-find.js:631 |
+| `helpFill` | frontend/js/settings-find.js:652 |
+| `helpMarks` | frontend/js/settings-find.js:665 |
+| `helpMatches` | frontend/js/settings-find.js:729 |
+| `helpQueryTerms` | frontend/js/settings-find.js:721 |
+| `helpSearchBind` | frontend/js/settings-find.js:802 |
+| `helpTopicLink` | frontend/js/settings-find.js:592 |
+| `helpTopicPaint` | frontend/js/settings-find.js:679 |
+| `helpTopicRow` | frontend/js/settings-find.js:693 |
+| `openSettingRow` | frontend/js/settings-find.js:191 |
+| `renderCredits` | frontend/js/settings-find.js:825 |
+| `renderHelpTopics` | frontend/js/settings-find.js:873 |
+| `renderSettingResults` | frontend/js/settings-find.js:238 |
+| `settingNearAdd` | frontend/js/settings-find.js:253 |
 | `settingQueryAlts` | frontend/js/settings-find.js:101 |
-| `settingResultItem` | frontend/js/settings-find.js:214 |
-| `settingResultsKey` | frontend/js/settings-find.js:266 |
+| `settingResultItem` | frontend/js/settings-find.js:221 |
+| `settingResultsKey` | frontend/js/settings-find.js:273 |
+| `settingRowIsTopic` | frontend/js/settings-find.js:116 |
 | `settingRowText` | frontend/js/settings-find.js:33 |
 | `settingRows` | frontend/js/settings-find.js:45 |
 | `settingVocab` | frontend/js/settings-find.js:89 |
-| `settingsIndexBuild` | frontend/js/settings-find.js:462 |
-| `settingsIndexClear` | frontend/js/settings-find.js:428 |
-| `settingsIndexGo` | frontend/js/settings-find.js:337 |
-| `settingsIndexHeads` | frontend/js/settings-find.js:298 |
-| `settingsIndexJump` | frontend/js/settings-find.js:437 |
-| `settingsIndexList` | frontend/js/settings-find.js:329 |
-| `settingsIndexMark` | frontend/js/settings-find.js:391 |
-| `settingsIndexOffset` | frontend/js/settings-find.js:323 |
-| `settingsIndexWatchSection` | frontend/js/settings-find.js:551 |
-| `settingsNavFollow` | frontend/js/settings-find.js:365 |
-| `settingsPaneTitleHead` | frontend/js/settings-find.js:315 |
+| `settingsIndexBuild` | frontend/js/settings-find.js:469 |
+| `settingsIndexClear` | frontend/js/settings-find.js:435 |
+| `settingsIndexGo` | frontend/js/settings-find.js:344 |
+| `settingsIndexHeads` | frontend/js/settings-find.js:305 |
+| `settingsIndexJump` | frontend/js/settings-find.js:444 |
+| `settingsIndexList` | frontend/js/settings-find.js:336 |
+| `settingsIndexMark` | frontend/js/settings-find.js:398 |
+| `settingsIndexOffset` | frontend/js/settings-find.js:330 |
+| `settingsIndexWatchSection` | frontend/js/settings-find.js:558 |
+| `settingsNavFollow` | frontend/js/settings-find.js:372 |
+| `settingsPaneTitleHead` | frontend/js/settings-find.js:322 |
 
 ### frontend/js/settings-health.js (2)
 
@@ -20335,7 +20337,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13276)
+## Tests (13280)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21314,6 +21316,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_page_captions.py | 12 |
 | tests/test_palette_contract.py | 3 |
 | tests/test_palette_coverage.py | 7 |
+| tests/test_palette_guide_after_action_1449.py | 4 |
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_movable.py | 12 |

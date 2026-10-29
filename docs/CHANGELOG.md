@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Find anything and the palette rank the row that opens a feature above a Guide topic about it, for every feature (INBOX 1449): Help-pane rows are a "Guide" group listed after the rows that name the thing; "ocr workspace" had the Guide topic first.
 - Movable panels move the whole panel (INBOX 1448): the OCR workspace's head sat in a wrapper, so a drag moved the head bar alone; the moved box is now the dialog or its direct-child card for every panel.
 - Mind map left-drag pan (INBOX 1445): a left-button drag on empty map canvas pans, Shift-drag draws the selection box, a drag from a topic still moves it; boards keep the box select.
 - Connections column and its forgotten notes name a note in plain words (INBOX 1442): "**Gym Routine Overview**" showed its stars; both now use the chip label.
