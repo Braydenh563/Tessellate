@@ -1622,7 +1622,7 @@ def _clause_of_frame(body: str, frame: str, i: int, first: bool) -> str:
     return f"{_pick('noted', i)} {body}"
 
 
-_OBLIGED = re.compile(r"(?:need|needs|needed|want|wants|wanted|have|has|got|should|must|ought|hope|hopes|remember|forgot|try|trying)\s+to\b", re.I)
+_OBLIGED = re.compile(r"(?:need|needs|needed|want|wants|wanted|have|has|got|should|must|ought|hope|hopes|forgot)\s+to\b", re.I)
 
 
 def _clause(body: str, frame: str, i: int, first: bool) -> str:

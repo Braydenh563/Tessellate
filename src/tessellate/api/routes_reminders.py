@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Respon
 
 from tessellate.api import paging
 from tessellate.api.schemas import not_blank
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
@@ -61,10 +61,13 @@ class ReminderCreate(BaseModel):
     restore: bool = False
     done: bool = False
 
-    @field_validator("text")
-    @classmethod
-    def _text_is_not_blank(cls, text: str) -> str:
-        return not_blank(text, "reminder")
+    @model_validator(mode="after")
+    def _text_is_not_blank(self) -> "ReminderCreate":
+        #: Undo brings a reminder back as it was, a blank one made before the
+        #: rule included; only a new one is held to it.
+        if not self.restore:
+            not_blank(self.text, "reminder")
+        return self
 
 
 class MagicAddBody(BaseModel):

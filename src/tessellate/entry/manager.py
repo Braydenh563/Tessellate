@@ -282,7 +282,9 @@ def create_entry(
         category_id=category.id,
         # The schema normalises an HTTP write; this is every other writer
         # (the AI tools, imports, passive capture), held to the same rule.
-        tags=json.dumps(normalise_tags(tags)),
+        # No comma split here: a restore or import brings back a legacy tag
+        # that holds one, and the split is for what a person types (schema).
+        tags=json.dumps(normalise_tags(tags, split=False)),
         ai_confidence=ai_confidence,
         client_key=client_key or None,
     )
@@ -681,7 +683,9 @@ def _update_entry_fields(
             entry.user_filed = True
             changed.append(f"category={category_name}")
     if tags is not None:
-        entry.tags = json.dumps(normalise_tags(tags))
+        #: No comma split: background writers (the janitor, a tag suggestion,
+        #: undo) pass the note's own tags back, a legacy "work, home" with them.
+        entry.tags = json.dumps(normalise_tags(tags, split=False))
         changed.append("tags")
     if changed:
         mark_edited(entry)

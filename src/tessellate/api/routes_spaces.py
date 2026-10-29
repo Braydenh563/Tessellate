@@ -216,7 +216,9 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         raise HTTPException(400, "The default spaces cannot be made again.")
     if session.get(Space, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
-    name = _validate_name(body.space.name)
+    #: Checked, but stored as it was: an undo never renames the space.
+    _validate_name(body.space.name)
+    name = body.space.name
     icon = _validate_icon(body.space.icon)
     session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
     session.flush()
