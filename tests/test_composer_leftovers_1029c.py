@@ -113,3 +113,31 @@ def test_a_checklist_asked_for_by_name_is_shown_as_the_checklist(book, text, que
         if "- [ ] " not in said or "**Also:**" in said:
             found.append(f"{q}\n{said}")
     assert not found, "\n\n".join(found)
+
+
+# --- 4: "summarise my week" is the week's recap --------------------------------------------
+
+RECAPS = [
+    ("what did I do this week", ["summarise my week", "summarize my week", "summarise this week", "recap my week", "sum up the week",
+                                  "give me a recap of my week", "please summarise my week", "can you summarise this week"]),
+    ("what did I do last week", ["summarise last week", "recap last week", "sum up my last week"]),
+    ("what did I do this month", ["summarise my month", "recap this month", "summarise the month"]),
+    ("what did I do yesterday", ["summarise yesterday", "recap yesterday"]),
+]
+
+
+@MODES
+@pytest.mark.parametrize(("canonical", "asks"), RECAPS, ids=["week", "last-week", "month", "yesterday"])
+def test_a_summary_of_a_period_is_that_periods_recap(book, canonical, asks, chat):  # noqa: F811
+    ask = book([("Thinking about the week ahead and what to plan", D(2026, 10, 28, 9))])
+    want = ask(canonical, chat)
+    assert " you " in want.split(":")[0], want
+    found = [f"{q}\n{said}" for q in asks if (said := ask(q, chat)) != want]
+    assert not found, "\n\n".join(found)
+
+
+@pytest.mark.parametrize("question", ["summarise my gym notes", "summarise the week ahead plan", "summarise my week at the cafe"])
+def test_a_summary_of_a_subject_is_not_a_recap(question):
+    from tessellate.ai import activity
+
+    assert activity.read(question, NOW.date()) is None
