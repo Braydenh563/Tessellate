@@ -5276,14 +5276,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `magicAddReminder` | frontend/js/quickadd.js:458 |
-| `noteOfferCalendar` | frontend/js/quickadd.js:792 |
-| `noteOfferKey` | frontend/js/quickadd.js:687 |
-| `noteOfferReplace` | frontend/js/quickadd.js:769 |
-| `noteOfferTake` | frontend/js/quickadd.js:797 |
-| `noteOffersAttach` | frontend/js/quickadd.js:694 |
-| `noteOffersDraw` | frontend/js/quickadd.js:750 |
-| `noteOffersFetch` | frontend/js/quickadd.js:721 |
-| `noteOffersSchedule` | frontend/js/quickadd.js:716 |
+| `noteOfferCalendar` | frontend/js/quickadd.js:794 |
+| `noteOfferKey` | frontend/js/quickadd.js:689 |
+| `noteOfferReplace` | frontend/js/quickadd.js:771 |
+| `noteOfferTake` | frontend/js/quickadd.js:799 |
+| `noteOffersAttach` | frontend/js/quickadd.js:696 |
+| `noteOffersDraw` | frontend/js/quickadd.js:752 |
+| `noteOffersFetch` | frontend/js/quickadd.js:723 |
+| `noteOffersSchedule` | frontend/js/quickadd.js:718 |
 | `qaChipValue` | frontend/js/quickadd.js:148 |
 | `qaChipWords` | frontend/js/quickadd.js:162 |
 | `qaDateTime` | frontend/js/quickadd.js:88 |

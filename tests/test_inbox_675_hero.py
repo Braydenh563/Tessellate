@@ -135,6 +135,7 @@ def glance(tmp_path_factory) -> dict:
         pytest.skip("node is not available")
     source = "\n".join(
         [
+            _function((JS / "prefs.js").read_text(encoding="utf-8"), "nounCount"),
             _function(DASH, "dashContinueNote"),
             _function(DASH, "dashMeetingWhen"),
             _function(DASH, "dashGlanceFacts"),

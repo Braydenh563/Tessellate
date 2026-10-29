@@ -30,4 +30,4 @@ def test_the_search_engine_says_how_well_it_is_working(client):
     client.get("/search", params={"q": "count"})
     assert isinstance(body.get("last_search"), dict)
     status_js = with_pieces("status.js")
-    assert "notes searchable by meaning" in status_js and "last search used keywords only" in status_js
+    assert "searchable by meaning" in status_js and "last search used keywords only" in status_js

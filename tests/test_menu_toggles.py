@@ -60,7 +60,7 @@ def test_settings_nav_headings_open_their_first_page_and_the_index_is_one_short_
     settings = _read("settings.js")
     assert '"#settings-nav button, #settings-nav .nav-group-label"' in settings
     find = _read("settings-find.js")
-    assert "settings-nav-sections" in find and "Show all ${heads.length} sections" in find
+    assert "settings-nav-sections" in find and "Show all ${nounCount(heads.length, \"section\")}" in find
     css = (ROOT / "frontend" / "css" / "06-timeline-dialogs.css").read_text(encoding="utf-8")
     assert ".settings-nav-groups:not(.is-open) .settings-nav-group:not([aria-current=\"location\"])" in css
     label = re.search(r"#settings-nav \.nav-group-label \{(.*?)\}", css, re.S)

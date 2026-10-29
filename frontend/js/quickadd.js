@@ -642,10 +642,12 @@ function qaPrewarm(tries = 0) {
   quickAddAttach($("reminder-magic"), "reminder", { after: $("reminder-magic-row") });
   //: The "Remind me to…" box reads its words the same way (sweep 1028b W2):
   //: its chips go under the whole form, so the time is shown before Add.
-  quickAddAttach($("reminder-text"), "reminder", { after: document.querySelector("#reminder-compose .reminder-form") });
-  for (const id of ["reminder-text", "reminder-date", "reminder-time"]) $(id).addEventListener("input", reminderFormClear);
-  const today = new Date();
-  $("reminder-date").min = `${today.getFullYear()}-${qaPad(today.getMonth() + 1)}-${qaPad(today.getDate())}`;
+  const compose = $("reminder-compose");
+  if (compose) {
+    quickAddAttach($("reminder-text"), "reminder", { after: compose.querySelector(".reminder-form") });
+    for (const id of ["reminder-text", "reminder-date", "reminder-time"]) $(id).addEventListener("input", reminderFormClear);
+    $("reminder-date").min = toLocalInputValue(new Date()).slice(0, 10);
+  }
   const search =$("timeline-search");
   if (search) {
     quickAddAttach(search, "timeline", { after: search.closest(".search-field") || search });
