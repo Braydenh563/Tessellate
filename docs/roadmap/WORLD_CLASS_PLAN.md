@@ -3254,7 +3254,7 @@ Brief 45 part 1, numbers only. Produced by `python scratchpad/census/census.py` 
 | frontend/js/library.js | 11669 | 276 | filterLibraryImagesGallery (1546) | 20 | 113 | 2034 |
 | frontend/js/whiteboard-map.js | 9195 | 333 | wbBuildMapNode (301) | 11 | 42 | 2236 |
 | frontend/js/avatars.js | 9098 | 286 | drawCharacter (800) | 11 | 512 | 3099 |
-| frontend/js/graph.js | 5660 | 124 | renderGraphSvg (1254) | 11 | 168 | 925 |
+| frontend/js/graph.js | 5171 | 163 | graphPopupActionList (167) | 11 | 31 | 993 |
 | frontend/js/dashboard.js | 5054 | 156 | startArt (276) | 12 | 34 | 947 |
 | frontend/js/graph-canvas.js | 4995 | 133 | gcDraw (729) | 9 | 220 | 1297 |
 | frontend/js/settings.js | 4492 | 142 | openSettingsModal (168) | 7 | 45 | 739 |
@@ -3300,7 +3300,6 @@ Brief 45 part 1, numbers only. Produced by `python scratchpad/census/census.py` 
 | build | frontend/js/documents.js:7422 | 942 | 189 |
 | sendChatMessage | frontend/js/chat-attach.js:1478 | 1079 | 176 |
 | entryItem | frontend/js/note-cards.js:1371 | 915 | 169 |
-| renderGraphSvg | frontend/js/graph.js:1801 | 1254 | 168 |
 | nameMood | frontend/js/avatars.js:395 | 488 | 141 |
 | docCodeScan | frontend/js/documents-code.js:2906 | 425 | 132 |
 | renderWhiteboard | frontend/js/whiteboard.js:16408 | 864 | 126 |
@@ -3314,7 +3313,6 @@ Brief 45 part 1, numbers only. Produced by `python scratchpad/census/census.py` 
 | openLightbox | frontend/js/lightbox-view.js:25 | 1888 | 54 |
 | filterLibraryImagesGallery | frontend/js/library.js:7890 | 1546 | 113 |
 | docLivePlugin | frontend/js/documents.js:6941 | 1517 | 52 |
-| renderGraphSvg | frontend/js/graph.js:1801 | 1254 | 168 |
 | sendChatMessage | frontend/js/chat-attach.js:1478 | 1079 | 176 |
 | build | frontend/js/documents.js:7422 | 942 | 189 |
 | entryItem | frontend/js/note-cards.js:1371 | 915 | 169 |
@@ -3754,7 +3752,7 @@ World class for a local notebook is five things, each measurable:
 | Code editor | VS Code | `documents-code.js` 4,399 lines, `docCodeScan` cx 132 | multi-cursor, regex find and replace, folding, bracket pairs, diagnostics (DOCUMENTS 21) | Brief 42 |
 | Whiteboard | draw.io, Excalidraw, tldraw | measured: 500 objects open in 2,551 ms first, 55 to 100 ms after; `whiteboard.js` 19,811 lines, `initWhiteboard` 3,730 (24.6b) | WHITEBOARD "The draw.io programme"; split along seams (45 part 2) | Briefs 36, 44, 45 |
 | Mind map | Coggle, XMind | `whiteboard-map.js` 9,195 lines | MINDMAP 13, 14 | Brief 36 |
-| Graph | Obsidian graph, Logseq | `graph.js` plus `graph-canvas.js` 10,655 lines, `renderGraphSvg` 1,254 | GRAPH "The knowledge graph" open rows | Brief 38 |
+| Graph | Obsidian graph, Logseq | `graph.js` plus `graph-canvas.js` 11,931 lines (the SVG renderer is gone, 2026-10-29) | GRAPH "The knowledge graph" open rows | Brief 38 |
 | Timeline and calendar | Fantastical, Google Calendar agenda, Day One | `timeline.js` 59 functions: feed and table, scrubber, day notes, a month popover | no month grid, week view, drag to reschedule, reminders on the grid, ICS in and out | TIMELINE Phase 5 |
 | Ask, no model | a grounded answer with numbered sources | `composer.py` 2,980 lines, `compose` cx 74 | CHAT Phase 6 | Brief 39 |
 | Chat and agent | Claude, ChatGPT: a run you can read and resume | `chat*.js` 8,767 lines, `sendChatMessage` 1,079 lines | Brief 37; AGENT_SKILLS Phase E | Briefs 37, 54 |

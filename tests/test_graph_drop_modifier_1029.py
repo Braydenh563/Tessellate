@@ -67,8 +67,6 @@ def test_a_drop_target_is_looked_for_only_while_alt_is_held() -> None:
 def test_the_drag_reads_alt_at_its_start_and_the_move_uses_the_helper() -> None:
     assert "node._dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);" in CANVAS
     assert "s.dropTarget = gcDropTargetFor(s, node, { x: wx, y: wy });" in CANVAS
-    assert "d.dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);" in GRAPH
-    assert "d.dragAlt ? graphNodeUnder(d, event) : null" in GRAPH
 
 
 def test_help_says_how_to_link_by_drop() -> None:

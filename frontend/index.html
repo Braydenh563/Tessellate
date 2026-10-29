@@ -4580,13 +4580,12 @@ Link to another note with [[its first few words]]."></textarea>
                 x="0" y="0" width="0" height="0"></rect>
             </svg>
           </div>
-        <!-- Two surfaces, one at a time: the Canvas 2D renderer
-             (graph-canvas.js, GRAPH_PLAN.md §5 Phase 1) and the SVG one it
-             replaces. `renderGraph()` in graph.js shows whichever is drawing
-             and hides the other, so nothing else on the page has to know which
-             it is looking at. The SVG element goes when the SVG path does. -->
+        <!-- The map is the Canvas 2D renderer (graph-canvas.js, GRAPH_PLAN.md
+             section 5 Phase 1). The empty SVG below is what the removed SVG
+             renderer drew into; it stays hidden until its click handlers,
+             styles and lock-list entries go (audit 1029 row 60 follow-up). -->
         <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
-        <svg id="graph-svg"></svg>
+        <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
           aria-label="Edit note">

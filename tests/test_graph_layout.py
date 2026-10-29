@@ -384,9 +384,8 @@ def test_the_dock_chip_is_hidden_under_force_and_opens_the_layout_choice():
     assert 'layoutKind !== "force"' in body and 'classList.toggle("hidden", !named)' in body
     assert "setGraphOptionsOpen(true)" in body and "openGraphControlsSheet(chip)" in body
     assert 'focusSelect(document.getElementById("graph-layout"))' in body
-    # Both renderers' stats line call it, so neither leaves a stale chip.
+    # The stats line calls it, so it never leaves a stale chip.
     assert "graphSyncLayoutChip(layoutKind);" in CANVAS
-    assert "graphSyncLayoutChip(layoutKind);" in (ROOT / "frontend" / "js" / "graph.js").read_text(encoding="utf-8")
 
 
 def test_the_chip_survives_the_phone_dock_that_hides_every_other_chip():
@@ -536,7 +535,7 @@ const ring = Array.from({ length: 12 }, (_, i) => ({
   y: 400 + 150 * Math.sin((i / 12) * 2 * Math.PI),
   depth: 1,
 }));
-frameTree(svg, { transform: null }, null, ring, 1400, 800, true, false);
+frameTree(svg, { transform: null }, ring, 1400, 800, true, false);
 const mid = { x: got.x + got.k * 600, y: got.y + got.k * 400 };
 console.log(JSON.stringify({ k: got.k, mid }));
 """,

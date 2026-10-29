@@ -1342,7 +1342,7 @@ the order a person meets them, with what the code says today.
 | Chat | bubbles, meta lines, tool chips, the rail, attachments, the mode segment | `sendChatMessage` 1,079 lines renders and sends | metadata rule | the modes (Ask, Chat, Agent) are a segment with no explanation at rest | one bubble recipe with the meta line, one explanation line per mode |
 | Documents and code | DOCUMENTS 17 and 21 | the live view bar and the block bar | `docCmTheme` 871 lines of theme | the slash menus are one system (DOCUMENTS 18) | Brief 42 |
 | Whiteboard and mind map | the radial, the tool palette, the format panel, the properties sheet, the dock: five | `initWhiteboard` 3,730 lines | draw.io programme | the radial is a toolbar not a menu (linted) | the format panel as draw.io's one panel (programme phase 2) |
-| Graph | the options folds (three) | GRAPH decisions | `renderGraphSvg` 1,254 lines | folds are learnable | Brief 38 |
+| Graph | the options folds (three) | GRAPH decisions | `gcDraw` 729 lines | folds are learnable | Brief 38 |
 | Timeline | feed, table, scrubber | one row model | row tokens | keys documented in the plan, not the UI | Phase 5 adds the calendar; the keys go in the help popover |
 | Library | gallery, activity, filters | `filterLibraryImagesGallery` 1,546 lines | chips as `.library-chip` | the filter well recipe | split along the seams (Brief 45) |
 | Dashboard | greeting, clock, art, timer, streak, digest, widgets, quick links, features | nine blocks, 24 buttons, two filled (Save, Generate this week's dig) and a 4-item dock | widgets sized by `sizeDashWidgets` | the catalogue is a second navigation | "continue and today" (WORLD_CLASS decision 51) |

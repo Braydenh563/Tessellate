@@ -114,7 +114,7 @@ function gcSurface(options = {}) {
     //: offset from it and whether it was pinned before the gesture.
     dragGroup: [],
     //: The node the pointer is over. The tab mirrors it into
-    //: `graphHoveredId`, which the SVG renderer and the node popup read.
+    //: `graphHoveredId`, which the node popup reads.
     hoveredId: null,
     hoverTo: null, // the node id growing
     hoverFrom: null, // the node id shrinking back
@@ -186,7 +186,7 @@ let gcTab = gcSurface({ size: "full", boxId: "graph-box", canvasId: "graph-canva
 //: outside this file by things that only ever meant the tab: whether the
 //: camera has framed the map already (`graphAutoFitDone`, cleared by
 //: switchTab on a fresh visit) and which node the pointer is over
-//: (`graphHoveredId`, read by the SVG renderer and the node popup). The tab's
+//: (`graphHoveredId`, read by the node popup). The tab's
 //: surface writes through to both; a pane keeps them to itself, so hovering a
 //: note in the pane cannot light a node up on the tab behind it.
 function gcAutoFitDone(s) {
@@ -1027,8 +1027,8 @@ function gcEnsureCanvas(s = gcTab) {
         if (!s.userZoomed && s.size === "full" && wasReal && !graphAutoFitOn()) s.userZoomed = true;
         //: A tree, radial or arc is framed by `frameTree`, as on first draw;
         //: the force fit read the arc's dots alone and overshot (1920x1080).
-        if (!s.userZoomed && s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc, !wasReal);
-        else if (!s.userZoomed) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
+        if (!s.userZoomed && s.tree) frameTree(s.svg, s.zoom, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc, !wasReal);
+        else if (!s.userZoomed) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, !wasReal);
         else s.svg.call(s.zoom.translateBy, (s.dims.w - before.w) / 2 / s.transform.k, (s.dims.h - before.h) / 2 / s.transform.k);
       }
       gcRequestDraw(s);
@@ -1912,8 +1912,8 @@ function gcFitInsets(s = gcTab) {
 //: while the warm-up plays (`gcFrameIntro`).
 function gcRefitForPanels(s) {
   if (s.userZoomed || s.intro || !s.zoom || !s.svg || !s.nodes?.length) return;
-  if (s.tree) frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
-  else if (s.fittedOnce) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+  if (s.tree) frameTree(s.svg, s.zoom, gcTreeFrameNodes(s.tree, s.nodes), s.dims.w, s.dims.h, s.tree.radial, s.tree.arc);
+  else if (s.fittedOnce) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
 }
 
 //: Auto-fit turned back on: with it off a resize marks the camera as moved for good
@@ -3637,9 +3637,8 @@ function gcLabelText(node, s = gcTab) {
   return `${cut} (${where})`;
 }
 
-//: The trace overlay. Drawn from the same `graphTrace`/`graphTraceRoutes`
-//: state the SVG renderer's `drawTrace` fills in, so trace mode, the route
-//: chips and the readout are untouched by the change of renderer.
+//: The trace overlay. Drawn from the `graphTrace`/`graphTraceRoutes` state
+//: that trace mode, the route chips and the readout (graph.js) fill in.
 function gcDrawTrace(ctx, k, s = gcTab) {
   if (s.size !== "full") return;
   const routes = graphTraceRoutes.length
@@ -3866,7 +3865,6 @@ function gcWireInteraction(s = gcTab) {
   if (s.size === "full") {
     graphSvg = selection;
     graphZoom = zoom;
-    graphCanvas = null; // there is no <g> to transform any more
   }
 
   selection.call(
@@ -5158,13 +5156,13 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
             //: the next paint, which is what the first fit used to frame
             //: (k 2.5, the clamp, on 60 notes).
             gcGlideFinish(s);
-            fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
+            fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h, true);
             s.fitTicks = s.ticksSeen;
             gcRevealAfterBalance(s);
           } else if (message.alpha < 0.08) {
             gcSetAutoFitDone(s, true);
             if (!s.userZoomed) {
-              fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+              fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
               //: The layout keeps drifting between alpha 0.08 and rest, so
               //: this frame could end lopsided: a wide empty band along one
               //: edge (owner, 0.3.31: "the graph auto size leaves quite a bit
@@ -5196,9 +5194,9 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
           //: Nothing moved since the first fit (the settled map as the one
           //: frame, less motion): framing it again from the guess undid its
           //: balance, a hop just after the cut-in.
-          if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          if (s.ticksSeen !== s.fitTicks) fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
         } else if (s.fitAgainAtEnd && !s.userZoomed && s.nodes.length) {
-          fitGraphToView(s.svg, null, s.zoom, s.nodes, s.dims.w, s.dims.h);
+          fitGraphToView(s.svg, s.zoom, s.nodes, s.dims.w, s.dims.h);
         }
         s.fitAgainAtEnd = false;
         if (!s.revealAfterFit) gcReveal(s);
@@ -5415,7 +5413,7 @@ function gcFrameIntro(s, positions, start) {
   const target = s.nodes.map((node, i) => ({ x: positions[i * 2], y: positions[i * 2 + 1], r: node.r }));
   //: Instant behind the fade of a first open; on a map already showing, the
   //: camera eases to the new frame while the notes move.
-  fitGraphToView(s.svg, null, s.zoom, target, s.dims.w, s.dims.h, s.canvas?.style.opacity === "0");
+  fitGraphToView(s.svg, s.zoom, target, s.dims.w, s.dims.h, s.canvas?.style.opacity === "0");
   gcReveal(s);
 }
 
@@ -5617,10 +5615,8 @@ async function renderGraphCanvas(s = gcTab) {
   gcReadTokens(s);
   gcShowEmpty(data.nodes.length === 0);
   if (!data.nodes.length) gcArriving(s, false);
-  //: The minimap goes with the map, here as in `renderGraphSvg`: an overview
-  //: of nothing is a grey rectangle in a corner. Reported against this
-  //: renderer, which is the default, so the SVG one's copy of this line alone
-  //: changed nothing on screen (measured).
+  //: The minimap goes with the map: an overview of nothing is a grey
+  //: rectangle in a corner.
   graphMinimapShown(data.nodes.length > 0);
 
   const colour = graphCategoryScale(data.categories);
@@ -5871,7 +5867,7 @@ async function renderGraphCanvas(s = gcTab) {
       //: framing is instant, as the force layout's first fit is (INBOX 738):
       //: a glide from k 1 to an arc's 0.31 is the zoomed-in start reported.
       const untouched = !s.transform || (s.transform.k === 1 && s.transform.x === 0 && s.transform.y === 0);
-      frameTree(s.svg, s.zoom, null, gcTreeFrameNodes(s.tree, nodes), width, height, s.tree.radial, s.tree.arc, untouched);
+      frameTree(s.svg, s.zoom, gcTreeFrameNodes(s.tree, nodes), width, height, s.tree.radial, s.tree.arc, untouched);
     }
     //: After the frame, which is set on where the notes are going.
     gcTweenFromPrior(s, nodes, prior);
@@ -5909,11 +5905,8 @@ async function renderGraphCanvas(s = gcTab) {
 
 // --- the chrome around the drawing ------------------------------------------------
 //
-// The legend, the stats line and the time slider are the same controls on
-// either renderer: they describe the data, not the drawing. They live here
-// rather than in graph.js because this is the file that survives Phase 1: the
-// SVG renderer keeps its own inline copies until it is deleted, and then there
-// is one of each.
+// The legend, the stats line and the time slider describe the data, not the
+// drawing.
 
 //: One entry per category (click to filter) or per cluster (click to
 //: spotlight). A legend whose dots do not match the colours on screen is worse
