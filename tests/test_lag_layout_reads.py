@@ -96,3 +96,14 @@ def test_timeline_ticks_take_the_strip_height_from_the_observer():
     assert "contentRect.height" in body
     reads = [m.group(0) for m in re.finditer(r"^(?!\s*//)[^\n]*clientHeight[^\n]*", body, re.M)]
     assert reads == ["  const height = timelineTickCache.height ?? strip.clientHeight;"], reads
+
+
+def test_a_pointer_picked_tab_finds_its_scroller_after_it_has_drawn():
+    """`switchTab` awaits before it reveals the page, so a lookup made inside the click found
+    the target page still hidden, returned nothing and never moved the focus (measured: the
+    focus stayed on the button on every tab). Found two frames on, with the answer kept."""
+    js = frontend_text("phone-shell.js")
+    body = _braced(js, js.index("function focusTabPage("))
+    assert re.search(r"afterFrames\(\(\) => \{.*tabPageScroller\(.*\}, 2\);", body, re.S)
+    scroller = _braced(js, js.index("function tabPageScroller("))
+    assert "tabScrollerKept.get(tab)" in scroller and "tabScrollerKept.set(tab, target)" in scroller
