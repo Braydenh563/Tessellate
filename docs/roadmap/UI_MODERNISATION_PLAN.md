@@ -1090,10 +1090,9 @@ Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to 
 - 7 on chat bubbles and library cards; 1's panel padding 12 and sidebar gutter 8, not yet measured.
 - One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`).
 
-## Placed from INBOX, 2026-09-09 to 2026-10-03 (all built)
+## Placed from INBOX, built (pointers)
 
-Built, each block in HISTORY.md: 100, 101 and 103 ("Moved from the plans, 2026-09-09"); 60, 102, 104 and 279 ("Moved from the plans, 2026-10-05 (UI_MODERNISATION_PLAN's built INBOX blocks)"); 94 ("Moved from the plans, 2026-10-05 (UI_MODERNISATION_PLAN 94 and 282, found built)").
-The evening batch of 2026-09-09, and 164, 165, 186, 282, 296 and 393: all built and moved whole to HISTORY.md ("Moved from the plans, 2026-10-05", the UI_MODERNISATION_PLAN blocks; 296 under "INBOX resolved, 2026-09-21").
+All built, each in HISTORY.md: 60, 94, 100 to 104, 164, 165, 186, 279, 282, 296, 393 ("Moved from the plans, 2026-09-09" and "2026-10-05"); the Files rows' two rhythms and the attach picker's tiles ("2026-10-05 (UI_MODERNISATION_PLAN ...)"); 621 and 622 ("2026-10-05 (INBOX 621 and 622 ...)").
 
 ## Settings information architecture (INBOX 444)
 
@@ -1185,12 +1184,6 @@ inside a 4,000px section.
 
 ## Placed from INBOX, 2026-10-05 (OPEN.md triage)
 
-- The Files rows' two rhythms: a measuring error, closed; HISTORY.md, "Moved
-  from the plans, 2026-10-05 (UI_MODERNISATION_PLAN: the Files rows' two
-  rhythms, a measuring error)".
-- The picker's other four sources: built; HISTORY.md, "Moved from the plans,
-  2026-10-05 (UI_MODERNISATION_PLAN: the attach picker's tiles)".
-
 460. **The owner, 2026-10-03 night, verbatim.** "I keep experiencing scroll
      jump when scrolling with two fingers on my trackpad?? idk". Placed: the
      orchestrator (reproduce with synthetic wheel streams; suspects: a
@@ -1214,10 +1207,6 @@ inside a 4,000px section.
      and the distance moved equalled the distance sent. No listener writes
      a scrollTop under a wheel, no scroller snaps or smooth-scrolls. Left:
      a real precision touchpad's momentum phase, which CDP cannot send.
-
-## Placed from INBOX, 2026-10-05 (header bars, Settings navigation)
-
-621 and 622 are built. Moved whole to [`HISTORY.md`](HISTORY.md) ("Moved from the plans, 2026-10-05 (INBOX 621 and 622: the header bars and the Settings navigation)"), with what they measured before and after.
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1608,5 +1597,4 @@ Decisions taken (order 3): (a) an Appearance quick panel, non-modal (no scrim, t
 The two pictures: `randomPng` draws six random-walk strokes (400 steps of up to 3px each, a 2x2 dot per step, a random dark colour) on white; `render.js` draws value noise (hashed lattice, smoothstep blend, 5 octaves) mapped between a dark and a light colour 40 degrees apart in hue, computed per pixel at full resolution (the CPU-heavy part, on purpose).
 Decisions taken: two new `bg-art.js` canvas styles, held to that file's per-frame rules (typed arrays, nothing allocated per frame, reduced pixel density, 30 or 20 fps, still mode by capture):
 - "Wander" (the sketches): a few strokes (accent hue and two offsets) walk and are drawn as they go, a segment a frame per stroke onto a persistent canvas, so the drawing grows; old marks fade by a low-alpha clear every few seconds rather than per frame; a stroke that leaves the window turns back. Still: a finished drawing.
-- "Drift" (the noise): value noise with 3 octaves, not 5, on a grid of about 1/8 of the window per side (a 180x113 buffer at 1440x900), written to one reused `ImageData` and scaled by the compositor, never by `drawImage`; colours between a dark and a light tone of the accent 40 degrees apart (light theme: ink tones at the art's opacity); animated by a slow offset in the noise field, recomputed at a few frames a second at most, or a third of the rows per frame. Still: one frame.
-Measure with `scratchpad/ui-sweeps/bgartcost.js` (paint per frame, allocations over ten seconds) against the cheapest existing style; neither may cost more than the most expensive style there now. Help moves with the UI (the style names and their one-line help, the Guide topic for background art).
+- "Drift" (the noise): value noise with 3 octaves, not 5, on a grid of about 1/8 of the window per side (a 180x113 buffer at 1440x900), written to one reused `ImageData` and scaled by the compositor, never by `drawImage`; colours between a dark and a light tone of the accent 40 degrees apart (light theme: ink tones at the art's opacity); animated by a slow offset in the noise field, recomputed at a few frames a second at most, or a third of the rows per frame. Still: one frame. Measure with `scratchpad/ui-sweeps/bgartcost.js` (paint per frame, allocations over ten seconds) against the cheapest existing style; neither may cost more than the most expensive style there now. Help moves with the UI (the style names and their one-line help, the Guide topic for background art).
