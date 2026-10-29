@@ -18,3 +18,12 @@ Ratchets: boot CSS gzip 179,097 before row 57, 179,069 after (cap 179,100); cust
 - Row 58: a popup that cannot be beside its node because the node is at the map's far edge stays clamped (by design); the local-graph pane popup (size not full) still does not follow.
 - Row 57: the topic card (right column) and the minimap's top-right corner are not on the rail; only the Trace strips are.
 - Not verified: phone widths for the Help panel and the count span; the dark theme for the new rim share (it keeps the old 25%); real inference not involved.
+
+## Row 35 (G3), 2,000-note cold layout
+
+Sweeps in the session scratch `r35/` (`measure.js` cold open with longtask and event observers, `timeline.js` worker messages, `wbench.js` per-force times in the real worker in Chromium, `wprof.js` node profile); fixture `scratchpad/graph-fixture.js 2000 4000` (3,796 links) and `500 1000` (951). A/B against the base on a copy of the same data, machine load 4 to 7 from other agents.
+
+- done: 3f118d5 clearance corridor; 3fecbc2 draw once a tick, 8 ms yield, untangleGroups budget; 6e80fe0 no line grid while a costly map moves. Rest 27.9-29.7 s to 16.0-21.6 s; click p50 57-80 to 42-48 ms; 500 notes 8.5-10.4 to 6.2-9.2 s.
+- left: each tick's full draw at 2,000 notes is 140-230 ms under load (gcDraw self, drawImage, gcDrawComposed's layers, minimap, then raster as "(program)"); click max 240-310 ms against the 100 ms target. Next: paint dots only (no curves or names) while `s.layoutRunning` on a costly map, or post at a fixed 100 ms on big maps (graph-worker.js `post`, graph-canvas.js tick handler near `gcTickSnaps`).
+- left: the live phase is still about 110-180 ticks at 60-90 ms each; charge 12 ms and collide 8 ms a tick remain, clear about 45 ms. A typed-array grid in `clearanceForce` (graph-worker.js, the `grid` Map) is the next cut.
+- not verified: a real GPU, an idle machine, a 2-core machine (performance mode keeps the old duty cycle there; not measured).

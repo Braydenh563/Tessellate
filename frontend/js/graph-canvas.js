@@ -3184,8 +3184,8 @@ function gcDraw(s = gcTab) {
     //: Names keep off the lines once the layout is at rest, or nearly so on
     //: a map cheap to draw: rebuilt per tick it was a fifth of each tick's
     //: draw at 2,000 notes (audit 1029 row 35).
-    const moving = s.alpha > 0.03 || (s.layoutRunning && gcTickSnaps(s));
-    const lines = over || s.tree || s.dragNode || moving ? null : gcLineGrid(s, curvedLinks);
+    const costly = s.layoutRunning && gcTickSnaps(s);
+    const lines = over || s.tree || s.dragNode || costly || s.alpha > 0.03 ? null : gcLineGrid(s, curvedLinks);
     // The canvas itself, a few pixels in: a name is never cut by its edge
     // (INBOX 693, labels "cut by the viewport"; `gcPlaceLabels`).
     const inset = 4 / k;
