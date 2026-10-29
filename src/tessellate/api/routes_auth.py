@@ -2142,7 +2142,15 @@ def open_reset_code_logs(request: Request) -> dict:
     from tessellate.api.routes_files import reveal_folder
     from tessellate.core import maintenance
 
-    reveal_folder(maintenance.logs_dir(get_config().data_dir), "the launcher logs")
+    folder = maintenance.logs_dir(get_config().data_dir)
+    try:
+        reveal_folder(folder, "the launcher logs")
+    except HTTPException:
+        # reveal_folder's detail names the path; a locked page gets a fixed line.
+        logging.getLogger("tessellate.auth").warning("couldn't open the launcher logs at %s", folder)
+        raise HTTPException(
+            status_code=500, detail="Couldn't open the logs folder. Look in the logs folder inside your data folder."
+        ) from None
     return {"ok": True}
 
 

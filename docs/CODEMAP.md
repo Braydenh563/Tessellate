@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6769, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7013, test files 1491, tests 13115, plan headings 985.
+Counts: frontend functions 6769, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7013, test files 1491, tests 13119, plan headings 985.
 
 ## Frontend functions (6769)
 
@@ -11098,7 +11098,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/link-suggestions/reasons` | POST | `link_suggestion_reasons` | src/tessellate/api/routes_entries.py:2170 |
 | `/links/backfill-reasons` | POST | `backfill_link_reasons` | src/tessellate/api/routes_entries.py:2218 |
 | `/lock` | POST | `lock` | src/tessellate/api/routes_auth.py:1511 |
-| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2187 |
+| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2195 |
 | `/logs` | DELETE | `clear_server_logs` | src/tessellate/api/routes_settings.py:2395 |
 | `/logs` | GET | `server_logs` | src/tessellate/api/routes_settings.py:2292 |
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2328 |
@@ -11228,7 +11228,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/reindex` | POST | `rebuild_search_index` | src/tessellate/api/routes_models.py:1136 |
 | `/releases` | GET | `list_releases` | src/tessellate/api/routes_update.py:601 |
 | `/rename` | POST | `rename_tag` | src/tessellate/api/routes_tags.py:76 |
-| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2149 |
+| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2157 |
 | `/reset-code` | POST | `request_reset_code` | src/tessellate/api/routes_auth.py:2098 |
 | `/reset-code/open-logs` | POST | `open_reset_code_logs` | src/tessellate/api/routes_auth.py:2134 |
 | `/restore` | POST | `restore_ask_turns` | src/tessellate/api/routes_ask_history.py:230 |
@@ -15626,7 +15626,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_lan_state` | src/tessellate/api/routes_auth.py:1163 |
 | `_new_password_problem` | src/tessellate/api/routes_auth.py:548 |
 | `_no_password_yet` | src/tessellate/api/routes_auth.py:637 |
-| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2198 |
+| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2206 |
 | `_password_matches` | src/tessellate/api/routes_auth.py:523 |
 | `_password_set` | src/tessellate/api/routes_auth.py:613 |
 | `_pin_binding` | src/tessellate/api/routes_auth.py:885 |
@@ -15657,7 +15657,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `lan_access` | src/tessellate/api/routes_auth.py:1208 |
 | `lan_watch` | src/tessellate/api/routes_auth.py:1414 |
 | `lock` | src/tessellate/api/routes_auth.py:1512 |
-| `lock_all` | src/tessellate/api/routes_auth.py:2188 |
+| `lock_all` | src/tessellate/api/routes_auth.py:2196 |
 | `make_recovery_key` | src/tessellate/api/routes_auth.py:1968 |
 | `media_link` | src/tessellate/api/routes_auth.py:1017 |
 | `media_session` | src/tessellate/api/routes_auth.py:1000 |
@@ -15670,7 +15670,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `request_reset_code` | src/tessellate/api/routes_auth.py:2099 |
 | `require_unlock` | src/tessellate/api/routes_auth.py:659 |
 | `require_unlock_media` | src/tessellate/api/routes_auth.py:673 |
-| `reset` | src/tessellate/api/routes_auth.py:2150 |
+| `reset` | src/tessellate/api/routes_auth.py:2158 |
 | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1761 |
 | `save_recovery_key` | src/tessellate/api/routes_auth.py:2015 |
 | `set_lan_access` | src/tessellate/api/routes_auth.py:1444 |
@@ -19829,29 +19829,29 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_Refused` | src/tessellate/mcp_server.py:282 |
-| `_annotations` | src/tessellate/mcp_server.py:88 |
-| `_call_tool` | src/tessellate/mcp_server.py:261 |
-| `_clean_label` | src/tessellate/mcp_server.py:247 |
-| `_error` | src/tessellate/mcp_server.py:228 |
-| `_first_line` | src/tessellate/mcp_server.py:118 |
-| `_initialize` | src/tessellate/mcp_server.py:291 |
-| `_is_read_only` | src/tessellate/mcp_server.py:84 |
-| `_prompts_get` | src/tessellate/mcp_server.py:209 |
-| `_prompts_get_method` | src/tessellate/mcp_server.py:324 |
-| `_prompts_list` | src/tessellate/mcp_server.py:189 |
-| `_resource_templates` | src/tessellate/mcp_server.py:149 |
-| `_resources_list` | src/tessellate/mcp_server.py:124 |
-| `_resources_offered` | src/tessellate/mcp_server.py:104 |
-| `_resources_read` | src/tessellate/mcp_server.py:164 |
-| `_resources_read_method` | src/tessellate/mcp_server.py:317 |
-| `_run_tool` | src/tessellate/mcp_server.py:109 |
-| `_skills` | src/tessellate/mcp_server.py:183 |
-| `_tool_list_payload` | src/tessellate/mcp_server.py:232 |
-| `_tools_call` | src/tessellate/mcp_server.py:312 |
-| `handle_request` | src/tessellate/mcp_server.py:346 |
-| `offered_tools` | src/tessellate/mcp_server.py:62 |
-| `serve` | src/tessellate/mcp_server.py:373 |
+| `_Refused` | src/tessellate/mcp_server.py:287 |
+| `_annotations` | src/tessellate/mcp_server.py:91 |
+| `_call_tool` | src/tessellate/mcp_server.py:266 |
+| `_clean_label` | src/tessellate/mcp_server.py:252 |
+| `_error` | src/tessellate/mcp_server.py:233 |
+| `_first_line` | src/tessellate/mcp_server.py:123 |
+| `_initialize` | src/tessellate/mcp_server.py:296 |
+| `_is_read_only` | src/tessellate/mcp_server.py:87 |
+| `_prompts_get` | src/tessellate/mcp_server.py:214 |
+| `_prompts_get_method` | src/tessellate/mcp_server.py:332 |
+| `_prompts_list` | src/tessellate/mcp_server.py:194 |
+| `_resource_templates` | src/tessellate/mcp_server.py:154 |
+| `_resources_list` | src/tessellate/mcp_server.py:129 |
+| `_resources_offered` | src/tessellate/mcp_server.py:109 |
+| `_resources_read` | src/tessellate/mcp_server.py:169 |
+| `_resources_read_method` | src/tessellate/mcp_server.py:325 |
+| `_run_tool` | src/tessellate/mcp_server.py:114 |
+| `_skills` | src/tessellate/mcp_server.py:188 |
+| `_tool_list_payload` | src/tessellate/mcp_server.py:237 |
+| `_tools_call` | src/tessellate/mcp_server.py:317 |
+| `handle_request` | src/tessellate/mcp_server.py:354 |
+| `offered_tools` | src/tessellate/mcp_server.py:65 |
+| `serve` | src/tessellate/mcp_server.py:388 |
 
 ### src/tessellate/search/chunks.py (18)
 
@@ -20189,7 +20189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13115)
+## Tests (13119)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20998,7 +20998,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_markdown_link_schemes.py | 3 |
 | tests/test_marquee_cost.py | 4 |
 | tests/test_math_editor.py | 5 |
-| tests/test_mcp_server.py | 28 |
+| tests/test_mcp_server.py | 31 |
 | tests/test_mcp_tool_parity.py | 2 |
 | tests/test_md_blocks.py | 12 |
 | tests/test_md_footnotes.py | 7 |
@@ -21276,7 +21276,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_reply_cards.py | 14 |
 | tests/test_reply_variety.py | 11 |
 | tests/test_repo_files_helper.py | 6 |
-| tests/test_reset_code.py | 15 |
+| tests/test_reset_code.py | 16 |
 | tests/test_restart_everywhere.py | 7 |
 | tests/test_restore_roundtrip.py | 2 |
 | tests/test_resurface_spec.py | 16 |
