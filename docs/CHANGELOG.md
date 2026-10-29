@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Movable panels move the whole panel (INBOX 1448): the OCR workspace's head sat in a wrapper, so a drag moved the head bar alone; the moved box is now the dialog or its direct-child card for every panel.
 - Mind map left-drag pan (INBOX 1445): a left-button drag on empty map canvas pans, Shift-drag draws the selection box, a drag from a topic still moves it; boards keep the box select.
 - Connections column and its forgotten notes name a note in plain words (INBOX 1442): "**Gym Routine Overview**" showed its stars; both now use the chip label.
 - Update bar instead of the update dialog (INBOX 1440): a found version shows a closable bar under the top bar, once per version, with an Update button that is the only thing that installs (`/update/apply` no longer needs the install switch; elsewhere the button opens the release page); Settings, About has Show the update bar (on by default), and the old install switch is now Pull the latest code when start.sh or start.bat runs, which saying yes to checking no longer turns on.

@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6792, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1512, tests 13275, plan headings 985.
+Counts: frontend functions 6792, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1513, tests 13276, plan headings 985.
 
 ## Frontend functions (6792)
 
@@ -5284,38 +5284,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `panelAdopt` | frontend/js/panel-movable.js:324 |
-| `panelApply` | frontend/js/panel-movable.js:171 |
-| `panelClamp` | frontend/js/panel-movable.js:190 |
+| `panelAdopt` | frontend/js/panel-movable.js:334 |
+| `panelApply` | frontend/js/panel-movable.js:181 |
+| `panelClamp` | frontend/js/panel-movable.js:200 |
 | `panelClampMove` | frontend/js/panel-movable.js:45 |
 | `panelClampSize` | frontend/js/panel-movable.js:53 |
-| `panelDock` | frontend/js/panel-movable.js:269 |
-| `panelFit` | frontend/js/panel-movable.js:255 |
-| `panelFull` | frontend/js/panel-movable.js:304 |
-| `panelGripDown` | frontend/js/panel-movable.js:437 |
-| `panelGripKey` | frontend/js/panel-movable.js:488 |
-| `panelHeadDown` | frontend/js/panel-movable.js:368 |
-| `panelHeadOf` | frontend/js/panel-movable.js:186 |
-| `panelId` | frontend/js/panel-movable.js:156 |
-| `panelInset` | frontend/js/panel-movable.js:234 |
+| `panelDock` | frontend/js/panel-movable.js:279 |
+| `panelFit` | frontend/js/panel-movable.js:265 |
+| `panelFull` | frontend/js/panel-movable.js:314 |
+| `panelGripDown` | frontend/js/panel-movable.js:447 |
+| `panelGripKey` | frontend/js/panel-movable.js:498 |
+| `panelHeadDown` | frontend/js/panel-movable.js:378 |
+| `panelHeadOf` | frontend/js/panel-movable.js:196 |
+| `panelId` | frontend/js/panel-movable.js:166 |
+| `panelInset` | frontend/js/panel-movable.js:244 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:112 |
 | `panelMovableOn` | frontend/js/panel-movable.js:145 |
-| `panelOf` | frontend/js/panel-movable.js:149 |
-| `panelPreviewEl` | frontend/js/panel-movable.js:224 |
-| `panelReset` | frontend/js/panel-movable.js:308 |
+| `panelOf` | frontend/js/panel-movable.js:155 |
+| `panelPreviewEl` | frontend/js/panel-movable.js:234 |
+| `panelReset` | frontend/js/panel-movable.js:318 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:109 |
 | `panelSafe` | frontend/js/panel-movable.js:90 |
-| `panelSave` | frontend/js/panel-movable.js:318 |
-| `panelShowZone` | frontend/js/panel-movable.js:237 |
+| `panelSave` | frontend/js/panel-movable.js:328 |
+| `panelShowZone` | frontend/js/panel-movable.js:247 |
 | `panelSnapZone` | frontend/js/panel-movable.js:62 |
-| `panelSt` | frontend/js/panel-movable.js:163 |
+| `panelSt` | frontend/js/panel-movable.js:173 |
 | `panelStoreParse` | frontend/js/panel-movable.js:118 |
 | `panelStoreRead` | frontend/js/panel-movable.js:126 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:133 |
-| `panelSync` | frontend/js/panel-movable.js:281 |
-| `panelUnsnap` | frontend/js/panel-movable.js:274 |
-| `panelWatchOpen` | frontend/js/panel-movable.js:288 |
-| `panelWindowResized` | frontend/js/panel-movable.js:526 |
+| `panelSync` | frontend/js/panel-movable.js:291 |
+| `panelUnsnap` | frontend/js/panel-movable.js:284 |
+| `panelWatchOpen` | frontend/js/panel-movable.js:298 |
+| `panelWindowResized` | frontend/js/panel-movable.js:536 |
 | `panelZoneFor` | frontend/js/panel-movable.js:105 |
 | `panelZoneRect` | frontend/js/panel-movable.js:74 |
 
@@ -20335,7 +20335,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13275)
+## Tests (13276)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21317,6 +21317,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
 | tests/test_panel_movable.py | 12 |
+| tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_passes.py | 7 |
 | tests/test_passive_capture.py | 9 |
 | tests/test_password_floor.py | 6 |
