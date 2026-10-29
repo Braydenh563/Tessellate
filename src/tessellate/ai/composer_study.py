@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import note_rank, study
+from tessellate.ai import note_rank, realise, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -280,13 +280,31 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     return None, _nothing_named(ctx, topic, verb)
 
 
+def _stopped(sentences: list[str]) -> str:
+    """Sentences read as one run: each ends with a stop, so a label line
+    ("Attendees: Sara, Tom, Priya") is not glued to the next one."""
+    return " ".join(s if s.rstrip().endswith((".", "!", "?", ":", "…")) else s.rstrip() + "." for s in sentences)
+
+
+def _list_said(note: dict) -> str:
+    """A note that is only a list, summarised by its items and counts."""
+    gist = study.list_gist(str(note.get("content") or ""))
+    if gist is None:
+        return ""
+    kind, items, ticked = gist
+    shown = realise.join_items(items[:6]) + ("" if len(items) <= 6 else f", and {len(items) - 6} more")
+    count = f"{len(items)} item{'s' if len(items) != 1 else ''}"
+    state = "" if kind == "list" else (", none ticked" if not ticked else ", all ticked" if ticked == len(items) else f", {ticked} ticked")
+    return f"{_link(note)} is a {kind} of {count}{state}: {shown}."
+
+
 def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     note = notes[0]
     head = compose.head("study_summary", ctx.mood, link=_link(note)) if level <= 0 else f"{_link(note)} in more detail:"
     lines = [head, ""]
     for title, sents in parts:
         title = "" if title == _title(note) else title
-        lines.append("- " + (f"**{title}**: " if title else "") + " ".join(sents))
+        lines.append("- " + (f"**{title}**: " if title else "") + _stopped(sents))
     if len(notes) > 1:
         lines += ["", "Other notes that match: " + "; ".join(_link(n) for n in notes[1:]) + "."]
     more = sum(len(s) for _t, s in study.summary(str(note.get("content") or ""), 1)) > sum(len(s) for _t, s in parts)
@@ -309,7 +327,7 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
         return _summaries(ctx, notes)
     parts = study.summary(str(notes[0].get("content") or ""), level)
     if not parts:
-        return Reply(f"{_link(notes[0])} has too little in it to summarise.")
+        return Reply(_list_said(notes[0]) or f"{_link(notes[0])} has too little in it to summarise.")
     return Reply(_summary_text(ctx, notes, parts, level))
 
 
@@ -324,7 +342,7 @@ def _summaries(ctx: Ctx, notes: list[dict]) -> Reply:
         parts = study.summary(str(note.get("content") or ""), -1)
         if len(parts) < 2:
             parts = study.summary(str(note.get("content") or ""), 1)
-        body = " ".join(" ".join(sents) for _t, sents in parts[:3] if sents)
+        body = " ".join(_stopped(sents) for _t, sents in parts[:3] if sents)
         body = " ".join(re.split(r"(?<=[.!?])\s+", body)[:4]) if len(parts) < 2 else body
         body = body or "Too little in it to summarise."
         lines += [f"- {_link(note)}: {body}"]

@@ -2183,15 +2183,9 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
   );
 }
 
-//: **Numbered by first mention** (audit 1029 rank 49, INBOX 1420: markers read
-//: 3, 2, 1, 1, 4, 5, and a screen reader hears 3 before 1). The number a note
-//: carries is its place in this list, so the list is put in the order the
-//: answer first cites its notes: the cited notes take the note places in
-//: that order and the uncited ones follow in their old order; a web page or a
-//: file keeps its place, because the answer never marks one. Live rows are
-//: answer-ordered and arrive as a prefix, so a digit shown mid-answer is the
-//: digit it keeps. Every caller that draws a marker, a chip or a row passes the
-//: same `sentences`, which is why the order lives here and not in each.
+//: Numbered by first mention (audit 1029 rank 49): the cited notes take the
+//: note places in the order the answer cites them, the rest follow; a web page
+//: or file keeps its place. One order here, so every marker and card agrees.
 function sourcesByFirstMention(sources, sentences) {
   const rank = new Map();
   for (const g of sentences || []) if (!rank.has(g.note_id)) rank.set(g.note_id, rank.size);

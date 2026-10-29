@@ -1265,9 +1265,7 @@ function collapseCitationRuns(targets) {
   }
 }
 
-//: What a mark is called aloud (audit 1029 C9): the note's first line as
-//: words, cut at a word, and never its list markup ("Lisbon packing list - [x]
-//: passport - [x…" was read out). `plainText` is chat-attach.js's.
+//: What a mark is called aloud (audit 1029 C9): the first line as words, never its list markup.
 function citationName(content, length = 40) {
   const first = stripFrontmatter(content || "").split("\n").map((line) => line.trim()).find(Boolean) || "";
   const text = plainText(first.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s*)?/, ""));

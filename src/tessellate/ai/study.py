@@ -26,6 +26,7 @@ import re
 from dataclasses import dataclass, field
 
 from tessellate.ai import realise
+from tessellate.entry import properties
 
 _HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _BULLET = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)])\s+(?!\[[ xX]\])(.+)$")
@@ -152,7 +153,9 @@ def sections(content: str) -> list[Section]:
     Code is not prose: a fence, an indented block or a pasted run of
     statements is never a sentence to quiz or summarise."""
     out = [Section(0, "")]
-    for line in _drop_code((content or "").splitlines()):
+    #: A properties block is the note's settings, never its prose ("tags:
+    #: [meeting] date: ..." was the summary of a note, audit 1029 X19).
+    for line in _drop_code(properties.strip(content or "").splitlines()):
         found = _HEADING.match(line)
         if found:
             out.append(Section(len(found.group(1)), clean(found.group(2))))
@@ -165,7 +168,7 @@ def title_of(content: str) -> str:
     """The name a note is listed by: its heading, else its first sentence,
     cut at a word with an ellipsis (`realise.cut_title`, audit 1029 C9) and
     never through one."""
-    for line in (content or "").splitlines():
+    for line in properties.strip(content or "").splitlines():
         if line.strip():
             found = _HEADING.match(line)
             if found:
@@ -441,12 +444,60 @@ def _picks(sec: Section, level: int) -> list[str]:
     return picks
 
 
+_LABEL_ONLY = re.compile(r"^\W*[\w' -]{1,30}:\W*$")
+
+
+def _says_something(pick: str, titles: set[str]) -> bool:
+    """Not the note's own name said again, and not a bare label ("Actions:")
+    left standing where its text was cut (audit 1029 C35)."""
+    words = clean(pick).strip(" -*+")
+    return bool(words) and words.rstrip(":").lower() not in titles and not _LABEL_ONLY.match(words)
+
+
 def summary(content: str, level: int = 0) -> list[tuple[str, list[str]]]:
     """(heading, sentences) per section. level -1 is one sentence a section
     and at most four sections, 0 the lead and the best second, 1 everything
-    worth saying. Sentences are the note's own, with the markup kept."""
-    out = [(sec.title, picks) for sec in sections(content or "") if (picks := [p for p in _picks(sec, level) if clean(p).strip(" -*+")])]
+    worth saying. Sentences are the note's own, with the markup kept; a title
+    is never the summary."""
+    titles = {title_of(content or "").lower().rstrip("…")}
+    out = []
+    for sec in sections(content or ""):
+        said = titles | {sec.title.lower()}
+        if picks := [p for p in _picks(sec, level) if _says_something(p, said)]:
+            out.append((sec.title, picks))
     return out[: 4 if level < 0 else 8 if level == 0 else 20]
+
+
+def _plain_lines(text: str, lines: list[str]) -> list[str]:
+    """The lines of a note that is nothing but short lines, the title line
+    aside, or []: a single sentence among them makes it prose."""
+    first = (text.lstrip().splitlines() or [""])[0]
+    body = lines if _HEADING.match(first) else lines[1:]
+    plain = [clean(ln) for ln in body if len(ln.split()) <= 8 and not re.search(r"[.!?:]\s*$", ln)]
+    return plain if len(plain) >= 2 and len(plain) == len(body) else []
+
+
+def _marked_items(lines: list[str]) -> tuple[str, list[str], int] | None:
+    """A checklist or a bullet list among the lines: (kind, items, ticked)."""
+    checks = [m for m in map(_CHECK.match, lines) if m]
+    if checks:
+        return "checklist", [clean(m.group(2)) for m in checks], sum(1 for m in checks if m.group(1) in "xX")
+    bullets = [m.group(1) for m in map(_BULLET.match, lines) if m]
+    return ("list", [clean(b) for b in bullets], 0) if len(bullets) >= 2 else None
+
+
+def list_gist(content: str) -> tuple[str, list[str], int] | None:
+    """What a note that is only a list holds, for a summary that has no
+    sentence to give: ("checklist" or "list", its items, how many are ticked),
+    or None. A bare line list counts when it has two or more short lines
+    that are not sentences ("Reading list" over two titles)."""
+    text = properties.strip(content or "")
+    lines = [ln for ln in text.splitlines() if ln.strip() and not _HEADING.match(ln)]
+    marked = _marked_items(lines)
+    if marked:
+        return marked
+    plain = _plain_lines(text, lines)
+    return ("list", plain, 0) if plain else None
 
 
 # --- grading ---------------------------------------------------------------------

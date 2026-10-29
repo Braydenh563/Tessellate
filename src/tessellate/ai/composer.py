@@ -81,6 +81,7 @@ from typing import Any
 from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_overview, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
+from tessellate.entry import properties
 from tessellate.search import query as query_understanding
 
 #: At most this many quoted points in one answer. Six is about what reads as an
@@ -1182,13 +1183,20 @@ def read_note(note: dict, rank: int) -> NoteView | None:
     content = str(note.get("content") or "")
     if not content.strip() or note.get("id") is None:
         return None
-    title, body_start = _title(content)
-    view = NoteView(note=note, rank=rank, title=title, written=_written(note), titled=bool(title) and body_start > 0, kind=source_kind(note))
+    #: A note that opens with a properties block ("---", "tags: [meeting]",
+    #: "---") is read from after it: its name and every quote start at the
+    #: note's words, never at "---" (audit 1029 X19). Offsets stay the
+    #: content's own.
+    front = properties.block_end(content)
+    title, body_start = _title(content[front:])
+    titled = bool(title) and body_start > 0
+    body_start = front + body_start
+    view = NoteView(note=note, rank=rank, title=title, written=_written(note), titled=titled, kind=source_kind(note))
     if view.kind != "note" and not view.titled and title:
         #: A document or a map arrives as its title, a blank line, its text:
         #: its first line is its name, never a sentence of it.
         view.titled = True
-        body_start = len(content.split("\n", 1)[0])
+        body_start = front + len(content[front:].split("\n", 1)[0])
     view.title_words = set(_words(title))
     filed = [str(t) for t in (note.get("tags") or [])] + [str(note.get("category") or "")]
     view.filed_words = set(_words(" ".join(filed)))
