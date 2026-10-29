@@ -89,6 +89,8 @@ function notesSpySchedule() {
 //: hairline goes on that card and off every other, and the column fades
 //: across when the note changes.
 function notesRailMark(entry) {
+  if (notesRailHandle) notesRailHandle.hidden = !entry; // the drag handle follows the rail
+  if (entry && notesRailRestore) notesRailRestore();
   const list = $("entry-list");
   if (!list) return;
   const id = entry ? String(entry.id) : "";
@@ -148,4 +150,101 @@ function notesRailMark(entry) {
   });
   observeAll();
   notesSpyPick();
+})();
+
+// --- the column's width (INBOX 1443, the owner: "the connections sidebar also
+// cant be resized") ------------------------------------------------------------
+// The width is the layout's `grid-auto-columns` (the rail is its implicit third
+// track, 04-chat-dock-appearance.css); removed, the stylesheet's clamp() is back. The handle is a sibling of
+// the rail on its left edge (not inside it, which scrolls), shown only on a
+// fine pointer at 600px or wider. Arrows move 16px (WCAG 2.5.7), Home resets.
+const NOTES_RAIL_W_MIN = 240;
+const NOTES_RAIL_W_MAX = 560;
+const NOTES_RAIL_STEP = 16;
+const NOTES_RAIL_W_KEY = "notesRailWidth";
+let notesRailHandle = null;
+//: Puts the kept width back once, when the rail is first drawn, against the room there is then.
+let notesRailRestore = null;
+
+//: `room` is the widest the list beside it allows (it keeps its reading width).
+function notesRailClamp(width, room) {
+  const max = Math.max(NOTES_RAIL_W_MIN, Math.min(NOTES_RAIL_W_MAX, room));
+  return Math.min(Math.max(Math.round(width), NOTES_RAIL_W_MIN), max);
+}
+
+//: The next width for a key, null to reset, undefined for a key that is not ours.
+function notesRailKeyWidth(key, width) {
+  if (key === "ArrowLeft") return width + NOTES_RAIL_STEP;
+  if (key === "ArrowRight") return width - NOTES_RAIL_STEP;
+  return key === "Home" ? null : undefined;
+}
+
+(function wireNotesRailResize() {
+  const rail = $("notes-rail");
+  if (!rail || !window.matchMedia("(pointer: fine) and (min-width: 600px)").matches) return;
+  const layout = rail.parentElement;
+  const handle = document.createElement("div");
+  handle.className = "sidebar-resize notes-rail-resize";
+  handle.setAttribute("role", "separator");
+  handle.setAttribute("aria-orientation", "vertical");
+  handle.setAttribute("tabindex", "0");
+  handle.setAttribute("aria-label", "Resize the connections column: arrow keys, or drag");
+  handle.title = "Drag to resize; double-click to reset";
+  //: `.sidebar-resize` gives the look; here it sits in column 3 as a grid item, on the rail's left edge.
+  Object.assign(handle.style, { position: "static", gridArea: "1 / 3", justifySelf: "start", translate: "-50% 0" });
+  handle.hidden = true; // shown by notesRailMark with the rail
+  notesRailHandle = handle;
+  rail.after(handle);
+  const room = () => Math.floor(rail.getBoundingClientRect().width + ($("entry-list")?.getBoundingClientRect().width || 0)) - NOTES_RAIL_MIN_READING - 2;
+  const report = (px) => {
+    handle.setAttribute("aria-valuemin", String(NOTES_RAIL_W_MIN));
+    handle.setAttribute("aria-valuemax", String(NOTES_RAIL_W_MAX));
+    handle.setAttribute("aria-valuenow", String(Math.round(px)));
+    handle.setAttribute("aria-valuetext", `${Math.round(px)} pixels wide`);
+  };
+  //: null puts the stylesheet's own width back.
+  const apply = (width) => {
+    if (width == null) {
+      layout.style.removeProperty("grid-auto-columns");
+      try { prefs.remove(NOTES_RAIL_W_KEY); } catch { /* blocked storage */ }
+      return report(rail.getBoundingClientRect().width);
+    }
+    const px = notesRailClamp(width, room());
+    layout.style.gridAutoColumns = `${px}px`;
+    try { prefs.set(NOTES_RAIL_W_KEY, String(px)); } catch { /* this session only */ }
+    report(px);
+  };
+  let saved = null;
+  try { saved = Number(prefs.get(NOTES_RAIL_W_KEY, "")) || null; } catch { /* blocked */ }
+  if (saved) {
+    notesRailRestore = () => {
+      notesRailRestore = null;
+      layout.style.gridAutoColumns = `${notesRailClamp(saved, room())}px`;
+    };
+  }
+  handle.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    handle.setPointerCapture(event.pointerId);
+    const startX = event.clientX;
+    const startW = rail.getBoundingClientRect().width;
+    document.body.classList.add("resizing-sidebar");
+    const move = (e) => apply(startW + (startX - e.clientX));
+    const stop = () => {
+      document.body.classList.remove("resizing-sidebar");
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", stop);
+      handle.removeEventListener("pointercancel", stop);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
+  });
+  handle.addEventListener("keydown", (event) => {
+    const next = notesRailKeyWidth(event.key, rail.getBoundingClientRect().width);
+    if (next === undefined) return;
+    event.preventDefault();
+    apply(next);
+  });
+  handle.addEventListener("dblclick", () => apply(null));
+  handle.addEventListener("focus", () => report(rail.getBoundingClientRect().width));
 })();

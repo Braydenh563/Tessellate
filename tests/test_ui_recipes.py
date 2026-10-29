@@ -6325,3 +6325,11 @@ def test_the_appearance_panel_recipe_is_in_the_index_and_the_guide() -> None:
     assert "position: sticky" not in css, "the strip is outside the scroller, not stuck inside it"
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
     assert '"id": "appearance-panel"' in topics and "Pop out" in topics
+
+
+def test_the_notes_rail_resize_recipe_is_in_the_index() -> None:
+    """INBOX 1443: a width property the grid reads, a sibling separator, keys and Home."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`notesRailResize`" in design and "`grid-auto-columns`" in design
+    js = (ROOT / "frontend" / "js" / "notes-rail-spy.js").read_text(encoding="utf-8")
+    assert "NOTES_RAIL_STEP = 16" in js and '"Home"' in js and "(pointer: fine) and (min-width: 600px)" in js

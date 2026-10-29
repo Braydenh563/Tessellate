@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Connections column is resizable (INBOX 1443): drag its left edge, or focus the edge and press the arrow keys (16px) and Home to reset; 240 to 560px, kept on this device, on a fine pointer at 600px or wider, the list beside it reflowing.
 - Update bar instead of the update dialog (INBOX 1440): a found version shows a closable bar under the top bar, once per version, with an Update button that is the only thing that installs (`/update/apply` no longer needs the install switch; elsewhere the button opens the release page); Settings, About has Show the update bar (on by default), and the old install switch is now Pull the latest code when start.sh or start.bat runs, which saying yes to checking no longer turns on.
 - Update dialogs (audit 1029 X12): the apply poll gives up after ten missed answers instead of spinning, Escape or the backdrop on any confirm answers "decide later" (the update choice is then not stored), and the copy names Tessellate.
 - Bidi control characters (U+202E and kin) are dropped from note titles and previews, so a label reads as the note does (audit 1029 N20).
