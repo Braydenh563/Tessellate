@@ -198,7 +198,7 @@ async function openResetLogs() {
   try {
     await apiJson("/auth/reset-code/open-logs", { method: "POST", ownsAuthErrors: true, silent: true });
   } catch (error) {
-    forgotError(error.message || "Could not open the logs folder. Open the logs folder in the data folder yourself.");
+    forgotError(error.message);
   }
 }
 
