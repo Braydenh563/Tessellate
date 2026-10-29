@@ -3113,6 +3113,7 @@ function toggleBgArt(on) {
 }
 
 $("theme-btn").addEventListener("click", toggleTheme);
+$("theme-btn").addEventListener("contextmenu", (e) => { e.preventDefault(); openAppearancePanel(); });
 //: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
 //: 69), kept on this device: absent reads as on.
 $("pref-search-suggest")?.addEventListener("change", (event) => {

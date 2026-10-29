@@ -411,7 +411,7 @@ HELP_TOPICS: list[dict] = [
         "keywords": (
             "theme", "dark mode", "light mode", "accent colour", "accent color", "font",
             "density", "glass", "performance", "performance mode", "animation", "animations",
-            "slow", "laggy", "blur",
+            "slow", "laggy", "blur", "appearance panel", "pop out", "peek",
         ),
         "body": (
             "Settings, Appearance controls theme (light/dark/system), accent "
@@ -433,7 +433,9 @@ HELP_TOPICS: list[dict] = [
             "the frosted-glass blur, the large animations and the animated "
             "background and slows the graph physics, for a slow or small machine; Auto "
             "switches it on by itself on a machine with 2 cores or 4 GB or fewer, "
-            "and On or Off overrides that."
+            "and On or Off overrides that. The Appearance panel (Pop out at the top, "
+            "or Ctrl+K, Appearance) holds the same settings beside the app, with "
+            "a strip of sections and a Peek button."
         ),
         "badge": {"label": "Appearance", "section": "appearance"},
     },

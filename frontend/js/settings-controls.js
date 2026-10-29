@@ -3169,7 +3169,23 @@ function ensureSettingsFoldAll(box) {
     actions.insertBefore(button, actions.querySelector(".icon-only"));
     box.addEventListener("toggle", paint, true);
   }
+  if (box.id === "settings-appearance") ensureAppearancePopOut(box);
   paint();
+}
+
+//: The Pop out button at the top of Settings, Appearance: the same controls in
+//: a panel beside the app (appearance-panel.js, INBOX 1435).
+function ensureAppearancePopOut(box) {
+  const actions = box.querySelector(":scope > .settings-pane-title .dock-actions");
+  if (!actions || actions.querySelector("[data-pop-out]")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small";
+  button.dataset.popOut = "appearance";
+  button.title = "Open Appearance in a panel beside the app, so you see each change without closing Settings";
+  setLabel(button, "ph:arrow-square-out Pop out");
+  button.addEventListener("click", () => openAppearancePanel());
+  actions.insertBefore(button, actions.firstChild);
 }
 
 //: **A model per feature, the list in Settings, Models** (moved here from

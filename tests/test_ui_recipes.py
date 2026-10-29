@@ -6312,3 +6312,16 @@ def test_the_panel_movable_recipe_is_in_the_index_and_the_guide() -> None:
     assert "`panelMovable`" in design and "panel-movable.js" in design
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
     assert "drag its head" in topics
+
+
+def test_the_appearance_panel_recipe_is_in_the_index_and_the_guide() -> None:
+    """INBOX 1435: moved nodes, a strip outside the scroller, Peek by token mix."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`appearancePanel`" in design and "appearance-panel.js" in design
+    assert "never copied" in design and "`.appearance-strip`" in design
+    css = (ROOT / "frontend" / "css" / "appearance-panel-own-lazy.css").read_text(encoding="utf-8")
+    strip = css[css.index(".appearance-strip {") : css.index("}", css.index(".appearance-strip {"))]
+    assert "flex: none" in strip and "overflow-x: auto" in strip, "the strip is outside the scroller and never wraps"
+    assert "position: sticky" not in css, "the strip is outside the scroller, not stuck inside it"
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8")
+    assert '"id": "appearance-panel"' in topics and "Pop out" in topics

@@ -124,6 +124,10 @@ CSS_FILES = [
     CSS_DIR / "mermaid-lazy.css",
     #: Settings, Appearance, Glass controls: icon buttons in glass (lazy-entries.js `glassControls`, INBOX 1409).
     CSS_DIR / "glass-controls-lazy.css",
+    #: The Appearance quick panel (lazy-entries.js `appearancePanel`, INBOX 1435): the Settings
+    #: rules copied under #appearance-panel (scripts/appearance_panel_css.py), then its own.
+    CSS_DIR / "appearance-panel-lazy.css",
+    CSS_DIR / "appearance-panel-own-lazy.css",
 ]
 
 
