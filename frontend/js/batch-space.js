@@ -2,7 +2,7 @@
 // section 5), its space picker and its Undo. Out of skills.js on 2026-10-05
 // to leave the boot (tests/test_boot_budget.py): it runs only from the
 // selection bar's More menu. Loaded by `LAZY_MODULES.batchSpace` (app.js),
-// whose stand-in for `batchMoveToSpace` fetches it and calls the real one.
+// whose stand-ins for `batchMoveToSpace` and `rmSpace` fetch it and calls the real one.
 
 //: **Move the selection to another space** (WORLD_CLASS_PLAN 5 item 5, INBOX
 //: 1: a note filed into the wrong space could only leave it with the space).
@@ -71,4 +71,89 @@ async function batchMoveToSpace() {
     settleUndoFromToast(action);
     await back();
   });
+}
+
+// --- delete a space (audit 1029 X5; out of spaces-find.js to keep the boot small) ---
+
+function rmSpace(id) {
+  $("space-delete-id").value = id;
+  $("space-delete-error").textContent = "";
+  //: Delete everything, or move it all to another space first (owner,
+  //: 0.3.31). The safe option is selected (audit 1029 X5): the move to the
+  //: default space, with the count of what the other option would take.
+  const fate = $("space-delete-fate");
+  fate.replaceChildren();
+  const wipe = document.createElement("option");
+  wipe.value = "";
+  wipe.textContent = "Delete everything in it";
+  fate.appendChild(wipe);
+  for (const space of spacesCache) {
+    if (space.id === id || space.id === "all") continue;
+    const option = document.createElement("option");
+    option.value = space.id;
+    option.textContent = `Move everything to ${space.name}`;
+    fate.appendChild(option);
+  }
+  const safe = [...fate.options].find((o) => o.value === "default") || fate.options[1];
+  if (safe) fate.value = safe.value;
+  const count = $("space-delete-count");
+  count.textContent = "Counting what is in it.";
+  const sync = () => {
+    $("space-delete-submit").textContent = fate.value ? "Move and delete space" : "Delete space and contents";
+  };
+  fate.onchange = sync;
+  sync();
+  $("space-delete-submit").onclick = spaceDeleteSubmit;
+  $("space-delete-dialog").showModal();
+  fate.focus();
+  apiJson(`/spaces/${encodeURIComponent(id)}/counts`).then((c) => {
+    const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+    const text = `${part(c.notes, "note")}, ${part(c.documents, "document")}`;
+    count.textContent = `In this space: ${text}.`;
+    wipe.textContent = `Delete everything in it (${text})`;
+  }).catch(() => { count.textContent = ""; });
+}
+
+async function spaceDeleteSubmit() {
+  const id = $("space-delete-id").value;
+  const error = $("space-delete-error");
+  error.textContent = "";
+  try {
+    const moveTo = $("space-delete-fate").value;
+    const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "";
+    const wasOpen = activeSpaceId() === id;
+    const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
+    //: The moved notes by id (`refreshEntries` reads the notebook whole
+    //: if it cannot patch them in safely).
+    if (moveTo) await refreshEntries(gone?.restore?.moved?.entries || []);
+    $("space-delete-dialog").close();
+    // Standing in the space you just deleted has to move you somewhere real,
+    // and reload() alone would leave the header naming a space that is gone.
+    if (activeSpaceId() === id) setActiveSpace("default");
+    else await loadSpaces();
+    //: Undo (undo-1005) when the delete lost nothing: an empty space, or one
+    //: whose contents moved, which go back row by row. A delete that took
+    //: the contents with it has no Undo (`restore` is null): its files are
+    //: gone from the disk, which is why the dialog asks first. Deleting the
+    //: open space reloads the page, which empties the stack, so none then.
+    let restore = wasOpen ? null : gone?.restore;
+    if (restore) {
+      const remake = async () => {
+        await apiJson("/spaces/restore", { method: "POST", body: JSON.stringify(restore) });
+        await loadSpaces();
+        if (moveTo) await refreshEntries(restore.moved?.entries || []);
+      };
+      const action = pushUndo(`Deleted the space “${gone.name}”`, remake, async () => {
+        restore = (await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" })).restore || restore;
+        await loadSpaces();
+        if (moveTo) await refreshEntries(restore.moved?.entries || []);
+      });
+      toastAction(`Deleted “${gone.name}”.`, "Undo", async () => {
+        settleUndoFromToast(action);
+        await remake().catch((e) => toast(e.message, true));
+      });
+    }
+  } catch (err) {
+    error.textContent = err.message;
+  }
 }

@@ -400,8 +400,9 @@ HELP_TOPICS: list[dict] = [
             "documents, chats and tags kept apart from other spaces. Switch or "
             "create one from the picker at the top of the sidebar; \"All "
             "spaces\" shows everything together. Deleting a space asks what "
-            "happens to its contents: delete everything in it, or move "
-            "everything to another space (a category both have is merged)."
+            "happens to its contents: move everything to another space (the "
+            "default choice, with a count of what is inside), or delete everything in it; "
+            "a category both spaces have is merged."
         ),
         "badge": {"label": "Account & security", "section": "account"},
     },

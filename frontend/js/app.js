@@ -2153,7 +2153,7 @@ const LAZY_ENTRY_POINTS = {
   companionMenu: ["nameMarkBuddyMenu", "openNameMarkViewer", "mountBuddyPresets"],
   //: Opened, asked or drawn for their effect; `openHelpChat`'s close is read by no caller.
   helpChat: ["openHelpChat", "toggleHelpChat", "askAtlas", "renderAtlasStarters"],
-  batchSpace: ["batchMoveToSpace"],
+  batchSpace: ["batchMoveToSpace", "rmSpace"],
   notifications: ["openNotifications"],
   sharedIntake: ["takeSharedIntake"],
   undoKit: ["pushEntryCreateUndo", "pushLinkCreateUndo", "pushRequestUndo", "pushEntriesPutUndo", "pushBinPairUndo", "pushRoutePairUndo", "pushTensionLinkUndo", "pushTokenUndo", "pushUploadUndo", "pushCorrectionUndo", "pushMadeUndo", "pushTextUndo", "pushWikiRenameUndo"],
@@ -2177,7 +2177,7 @@ const LAZY_ENTRY_POINTS = {
   statistics: ["openStatistics", "renderWeekWidget"],
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
   askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn", "toggleAskHistoryPin", "deleteAskHistoryTurn"],
-  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "deleteCategory", "restoreCategoryMoves", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
+  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "restoreCategoryMoves", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],

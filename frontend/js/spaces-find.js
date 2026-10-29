@@ -12,12 +12,7 @@
 // window draws them. What is hidden is stored, and applied here.
 
 function hiddenStatusSlots() {
-  // `prefsCache`, not `window.prefsCache`. It is declared with `let` at the
-  // top level of a classic script, which puts it in the *global lexical*
-  // scope, shared with every other script here, so a bare reference works , 
-  // and explicitly NOT on `window`. Two existing call sites in this file get
-  // that wrong and silently read `undefined` forever; this one measured as a
-  // toggle that ticked and did nothing.
+  // `prefsCache` is a global `let`, not on `window`: read it bare.
   const stored = typeof prefsCache === "object" && prefsCache ? prefsCache.status_bar_hidden : null;
   return new Set(Array.isArray(stored) ? stored : []);
 }
@@ -25,9 +20,6 @@ function hiddenStatusSlots() {
 function applyStatusBarSlots() {
   const hidden = hiddenStatusSlots();
   for (const element of document.querySelectorAll("[data-status-slot]")) {
-    // `.hidden` rather than a style: everything else in this app that shows
-    // and hides uses the class, and one of these slots (`status-task`) is
-    // already driven by it from another code path.
     element.classList.toggle("status-slot-off", hidden.has(element.dataset.statusSlot));
   }
 }
@@ -297,7 +289,7 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
       ["ph-pencil-simple", "Rename this space", () => openSpaceEdit(id, name, icon)],
-      ["ph-trash", "Delete this space", () => openSpaceDelete(id)],
+      ["ph-trash", "Delete this space", () => rmSpace(id)],
     ]) {
       const action = document.createElement("span");
       action.className = "ghost small";
@@ -448,33 +440,6 @@ function openSpaceEdit(id, name, icon) {
   $("space-edit-name").focus();
 }
 
-function openSpaceDelete(id) {
-  $("space-delete-id").value = id;
-  $("space-delete-error").textContent = "";
-  //: Delete everything, or move it all to another space first (owner,
-  //: 0.3.31). Deleting is the first option because it is what the button
-  //: has always done; every other space is offered as a move.
-  const fate = $("space-delete-fate");
-  fate.replaceChildren();
-  const wipe = document.createElement("option");
-  wipe.value = "";
-  wipe.textContent = "Delete everything in it";
-  fate.appendChild(wipe);
-  for (const space of spacesCache) {
-    if (space.id === id || space.id === "all") continue;
-    const option = document.createElement("option");
-    option.value = space.id;
-    option.textContent = `Move everything to ${space.name}`;
-    fate.appendChild(option);
-  }
-  const sync = () => {
-    $("space-delete-submit").textContent = fate.value ? "Move and delete space" : "Delete space and contents";
-  };
-  fate.onchange = sync;
-  sync();
-  $("space-delete-dialog").showModal();
-}
-
 async function loadSpaces() {
   if (!$("space-switcher-btn")) return;
   const wasEmpty = !spacesCache.length;
@@ -604,50 +569,6 @@ function initSpaceSwitcher() {
       $("space-edit-dialog").close();
       await loadSpaces();
       toast(`Renamed to “${name}”.`);
-    } catch (err) {
-      error.textContent = err.message;
-    }
-  });
-
-  $("space-delete-submit")?.addEventListener("click", async () => {
-    const id = $("space-delete-id").value;
-    const error = $("space-delete-error");
-    error.textContent = "";
-    try {
-      const moveTo = $("space-delete-fate").value;
-      const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "";
-      const wasOpen = activeSpaceId() === id;
-      const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
-      //: The moved notes by id (`refreshEntries` reads the notebook whole
-      //: if it cannot patch them in safely).
-      if (moveTo) await refreshEntries(gone?.restore?.moved?.entries || []);
-      $("space-delete-dialog").close();
-      // Standing in the space you just deleted has to move you somewhere real,
-      // and reload() alone would leave the header naming a space that is gone.
-      if (activeSpaceId() === id) setActiveSpace("default");
-      else await loadSpaces();
-      //: Undo (undo-1005) when the delete lost nothing: an empty space, or one
-      //: whose contents moved, which go back row by row. A delete that took
-      //: the contents with it has no Undo (`restore` is null): its files are
-      //: gone from the disk, which is why the dialog asks first. Deleting the
-      //: open space reloads the page, which empties the stack, so none then.
-      let restore = wasOpen ? null : gone?.restore;
-      if (restore) {
-        const remake = async () => {
-          await apiJson("/spaces/restore", { method: "POST", body: JSON.stringify(restore) });
-          await loadSpaces();
-          if (moveTo) await refreshEntries(restore.moved?.entries || []);
-        };
-        const action = pushUndo(`Deleted the space “${gone.name}”`, remake, async () => {
-          restore = (await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" })).restore || restore;
-          await loadSpaces();
-          if (moveTo) await refreshEntries(restore.moved?.entries || []);
-        });
-        toastAction(`Deleted “${gone.name}”.`, "Undo", async () => {
-          settleUndoFromToast(action);
-          await remake().catch((e) => toast(e.message, true));
-        });
-      }
     } catch (err) {
       error.textContent = err.message;
     }
