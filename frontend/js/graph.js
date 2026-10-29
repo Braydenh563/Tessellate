@@ -2597,6 +2597,8 @@ async function renderGraphSvg() {
           //: not at its end, so a modifier pressed or released mid-drag
           //: cannot change what the gesture meant halfway through.
           d.dragShift = Boolean(event.sourceEvent && event.sourceEvent.shiftKey);
+          //: Alt is what links (audit 1029 G15); a plain drag only places.
+          d.dragAlt = Boolean(event.sourceEvent && event.sourceEvent.altKey);
           // Where this gesture began, so "end" can tell a placement from a
           // bare click: see its own comment.
           d.dragStartX = d.x;
@@ -2633,7 +2635,7 @@ async function renderGraphSvg() {
           // Drag-to-link (§9): light up whatever this note is currently over,
           // so the gesture says what it will do *before* it does it. Without
           // this, dropping is a guess and every miss is an accidental link.
-          graphDropTarget = graphNodeUnder(d, event);
+          graphDropTarget = d.dragAlt ? graphNodeUnder(d, event) : null;
           nodeGroups.classed("graph-drop-target", (other) => other === graphDropTarget);
         })
         // A regular function, not an arrow: `d3.select(this)` below needs the
