@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6803, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7187, test files 1523, tests 13359, plan headings 985.
+Counts: frontend functions 6803, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7187, test files 1523, tests 13358, plan headings 985.
 
 ## Frontend functions (6803)
 
@@ -11300,13 +11300,13 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sketches/{sketch_id}` | PUT | `update_sketch` | src/tessellate/api/routes_whiteboard.py:3214 |
 | `/skills` | GET | `list_skills` | src/tessellate/api/routes_settings.py:1492 |
 | `/source-status` | GET | `source_update_status` | src/tessellate/api/routes_update.py:672 |
-| `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:83 |
-| `/spaces` | POST | `create_space` | src/tessellate/api/routes_spaces.py:102 |
-| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:215 |
-| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:328 |
-| `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:116 |
-| `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:88 |
-| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:501 |
+| `/spaces` | GET | `get_spaces` | src/tessellate/api/routes_spaces.py:75 |
+| `/spaces` | POST | `create_space` | src/tessellate/api/routes_spaces.py:94 |
+| `/spaces/restore` | POST | `restore_space` | src/tessellate/api/routes_spaces.py:207 |
+| `/spaces/{space_id}` | DELETE | `delete_space` | src/tessellate/api/routes_spaces.py:320 |
+| `/spaces/{space_id}` | PUT | `update_space` | src/tessellate/api/routes_spaces.py:108 |
+| `/spaces/{space_id}/counts` | GET | `space_counts` | src/tessellate/api/routes_spaces.py:80 |
+| `/spaces/{space_id}/move-notes` | POST | `move_notes_to_space` | src/tessellate/api/routes_spaces.py:493 |
 | `/spec` | GET | `model_spec` | src/tessellate/api/routes_models.py:597 |
 | `/start` | POST | `start` | src/tessellate/api/routes_captions.py:96 |
 | `/statistics` | GET | `statistics` | src/tessellate/api/routes_statistics.py:25 |
@@ -17471,25 +17471,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:497 |
-| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:301 |
-| `SpaceRestore` | src/tessellate/api/routes_spaces.py:206 |
-| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:307 |
-| `_detach_references` | src/tessellate/api/routes_spaces.py:271 |
-| `_generate_space_id` | src/tessellate/api/routes_spaces.py:40 |
-| `_move_space_contents` | src/tessellate/api/routes_spaces.py:142 |
-| `_refuse_duplicate_name` | src/tessellate/api/routes_spaces.py:74 |
-| `_slugify` | src/tessellate/api/routes_spaces.py:35 |
-| `_space_has_rows` | src/tessellate/api/routes_spaces.py:198 |
-| `_validate_icon` | src/tessellate/api/routes_spaces.py:56 |
-| `_validate_name` | src/tessellate/api/routes_spaces.py:62 |
-| `create_space` | src/tessellate/api/routes_spaces.py:103 |
-| `delete_space` | src/tessellate/api/routes_spaces.py:329 |
-| `get_spaces` | src/tessellate/api/routes_spaces.py:84 |
-| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:502 |
-| `restore_space` | src/tessellate/api/routes_spaces.py:216 |
-| `space_counts` | src/tessellate/api/routes_spaces.py:89 |
-| `update_space` | src/tessellate/api/routes_spaces.py:117 |
+| `MoveNotesBody` | src/tessellate/api/routes_spaces.py:489 |
+| `SpaceDeleted` | src/tessellate/api/routes_spaces.py:293 |
+| `SpaceRestore` | src/tessellate/api/routes_spaces.py:198 |
+| `_delete_space_moving` | src/tessellate/api/routes_spaces.py:299 |
+| `_detach_references` | src/tessellate/api/routes_spaces.py:263 |
+| `_generate_space_id` | src/tessellate/api/routes_spaces.py:35 |
+| `_move_space_contents` | src/tessellate/api/routes_spaces.py:134 |
+| `_refuse_duplicate_name` | src/tessellate/api/routes_spaces.py:66 |
+| `_slugify` | src/tessellate/api/routes_spaces.py:30 |
+| `_space_has_rows` | src/tessellate/api/routes_spaces.py:190 |
+| `_validate_icon` | src/tessellate/api/routes_spaces.py:51 |
+| `_validate_name` | src/tessellate/api/routes_spaces.py:57 |
+| `create_space` | src/tessellate/api/routes_spaces.py:95 |
+| `delete_space` | src/tessellate/api/routes_spaces.py:321 |
+| `get_spaces` | src/tessellate/api/routes_spaces.py:76 |
+| `move_notes_to_space` | src/tessellate/api/routes_spaces.py:494 |
+| `restore_space` | src/tessellate/api/routes_spaces.py:208 |
+| `space_counts` | src/tessellate/api/routes_spaces.py:81 |
+| `update_space` | src/tessellate/api/routes_spaces.py:109 |
 
 ### src/tessellate/api/routes_statistics.py (3)
 
@@ -20451,7 +20451,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13359)
+## Tests (13358)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21133,7 +21133,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_inline_citations.py | 11 |
 | tests/test_inline_math.py | 3 |
 | tests/test_input_bounds_1029.py | 14 |
-| tests/test_input_normalise_1029.py | 12 |
+| tests/test_input_normalise_1029.py | 11 |
 | tests/test_insight_b11.py | 8 |
 | tests/test_insight_verdicts.py | 12 |
 | tests/test_insights.py | 15 |
@@ -22559,7 +22559,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:35 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:583 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:585 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -22594,7 +22594,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:362 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:537 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:539 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |

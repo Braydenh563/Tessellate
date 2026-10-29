@@ -60,11 +60,6 @@ def test_a_space_name_of_only_invisible_characters_is_refused(client, name):
     assert response.status_code in (400, 422)
 
 
-@pytest.mark.parametrize("name", ["All", "all spaces", "ALL", "All\u200b Spaces"])
-def test_reserved_space_names_are_refused(client, name):
-    assert client.post("/spaces", json={"name": name}).status_code in (400, 409, 422)
-
-
 def test_a_space_rename_obeys_the_same_rule(client):
     client.post("/spaces", json={"name": "Alpha"})
     beta = client.post("/spaces", json={"name": "Beta"}).json()

@@ -27,11 +27,6 @@ _ICON_RE = re.compile(r"^ph-[a-z0-9-]{1,40}$")
 
 _MAX_NAME_LEN = 60
 
-#: Names the space picker already uses for the whole notebook; a space called
-#: either would read as that choice (compared by `name_key`).
-_RESERVED_NAMES = frozenset({"all", "all spaces"})
-
-
 def _slugify(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
     return slug[:49] or "space"
@@ -59,13 +54,10 @@ def _validate_icon(icon: str) -> str:
     return icon
 
 
-def _validate_name(name: str, *, restoring: bool = False) -> str:
+def _validate_name(name: str) -> str:
     name = clean_name(name)
     if is_blank(name):
         raise HTTPException(400, "A space needs a name.")
-    # Undo puts a space back as it was, even one made before this rule.
-    if not restoring and name_key(name) in _RESERVED_NAMES:
-        raise HTTPException(400, "That name is the picker's own. Pick another.")
     if len(name) > _MAX_NAME_LEN:
         raise HTTPException(400, f"A space name can be at most {_MAX_NAME_LEN} characters.")
     return name
@@ -224,7 +216,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         raise HTTPException(400, "The default spaces cannot be made again.")
     if session.get(Space, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
-    name = _validate_name(body.space.name, restoring=True)
+    name = _validate_name(body.space.name)
     icon = _validate_icon(body.space.icon)
     session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
     session.flush()
