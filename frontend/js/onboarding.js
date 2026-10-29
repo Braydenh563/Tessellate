@@ -295,7 +295,6 @@ function renderOnboardingSlide() {
   skip.title = last
     ? "Go straight to the app. You can start the tour any time from Settings, Help."
     : "Close the welcome and go straight to the app";
-  skip.setAttribute("aria-label", skip.title);
 }
 
 //: **First run: one thing at a time** (the owner, 2026-10-10: "popups and

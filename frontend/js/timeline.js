@@ -1256,7 +1256,8 @@ async function renderTimelineDayStrip() {
     button.title = has ? `Open the page for ${long}` : `Start the page for ${long}`;
     const name = document.createElement("span");
     name.className = "timeline-day-name";
-    name.textContent = day.toLocaleDateString(undefined, { weekday: "short" });
+    //: A trailing space: the weekday and the number are read apart ("Fri 23").
+    name.textContent = `${day.toLocaleDateString(undefined, { weekday: "short" })} `;
     const num = document.createElement("span");
     num.className = "timeline-day-num";
     num.textContent = String(day.getDate());

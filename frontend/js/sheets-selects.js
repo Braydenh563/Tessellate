@@ -777,10 +777,13 @@ function enhanceSelect(select) {
     .map((id) => id && document.getElementById(id)?.textContent.trim())
     .filter(Boolean)
     .join(" ");
+  //: A `<label>` that wraps the select would otherwise lend its options too.
+  const wrapper = select.labels?.[0]?.cloneNode(true);
+  wrapper?.querySelectorAll("select, .select-shell").forEach((part) => part.remove());
   const label =
     select.getAttribute("aria-label") ||
     labelledBy ||
-    select.labels?.[0]?.textContent.trim().replace(/\s+/g, " ") ||
+    wrapper?.textContent.trim().replace(/\s+/g, " ") ||
     select.title ||
     "Choose an option";
   opener.setAttribute("aria-label", label);

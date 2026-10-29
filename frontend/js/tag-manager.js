@@ -551,7 +551,7 @@ async function drawTurnedDown(box) {
       }
       drawTurnedDown(box);
     });
-    again.setAttribute("aria-label", `Offer ${tag} again`);
+    again.setAttribute("aria-label", `Offer again: ${tag}`);
     row.append(names, again);
     box.appendChild(row);
   }
@@ -613,7 +613,7 @@ function drawTagRows(list, footer, state) {
     glyph.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     label.className = "manage-cat-name";
-    label.textContent = name;
+    label.textContent = `${name} `;
     label.title = name;
     main.append(glyph, label, manageCountButton(count, () => showTagNotes(name)));
     li.appendChild(main);

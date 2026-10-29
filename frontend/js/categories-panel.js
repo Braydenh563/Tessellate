@@ -217,7 +217,7 @@ function drawManageCategoryRows(list, footer, state) {
     dot.setAttribute("aria-hidden", "true");
     const name = document.createElement("span");
     name.className = "manage-cat-name";
-    name.textContent = meta.name;
+    name.textContent = `${meta.name} `;
     name.title = meta.name;
     main.setAttribute("aria-label", `${meta.name}, ${nounCount(meta.count, "note")}`);
     main.append(dot, name, manageCountButton(meta.count, () => showCategoryNotes(meta.name)));
