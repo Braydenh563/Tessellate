@@ -13748,20 +13748,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `read` | src/tessellate/ai/note_order.py:45 |
 | `say` | src/tessellate/ai/note_order.py:94 |
 
-### src/tessellate/ai/note_rank.py (10)
+### src/tessellate/ai/note_rank.py (8)
 
 | Name | File:line |
 |---|---|
-| `Recent` | src/tessellate/ai/note_rank.py:151 |
 | `_content` | src/tessellate/ai/note_rank.py:35 |
-| `_defines` | src/tessellate/ai/note_rank.py:63 |
-| `_stems` | src/tessellate/ai/note_rank.py:57 |
-| `_written` | src/tessellate/ai/note_rank.py:98 |
-| `key` | src/tessellate/ai/note_rank.py:81 |
-| `lead` | src/tessellate/ai/note_rank.py:114 |
-| `recency` | src/tessellate/ai/note_rank.py:160 |
-| `stems_of` | src/tessellate/ai/note_rank.py:52 |
+| `_defines` | src/tessellate/ai/note_rank.py:64 |
+| `_stems` | src/tessellate/ai/note_rank.py:58 |
+| `_written` | src/tessellate/ai/note_rank.py:99 |
+| `key` | src/tessellate/ai/note_rank.py:82 |
+| `lead` | src/tessellate/ai/note_rank.py:115 |
+| `stems_of` | src/tessellate/ai/note_rank.py:53 |
 | `subject` | src/tessellate/ai/note_rank.py:41 |
+
+### src/tessellate/ai/note_recency.py (2)
+
+| Name | File:line |
+|---|---|
+| `Recent` | src/tessellate/ai/note_recency.py:30 |
+| `recency` | src/tessellate/ai/note_recency.py:39 |
 
 ### src/tessellate/ai/notebook_filters.py (13)
 

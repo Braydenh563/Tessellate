@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, personal, phrasing, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1667,7 +1667,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     )
     #: "The latest notes about running", "my last 2 notes": the notes the
     #: request counted, not those widened by what the subject sounds like.
-    counted = note_rank.recency(question, bare=len(question.split()) <= 3)
+    counted = note_recency.recency(question, bare=len(question.split()) <= 3)
     if counted is not None and (counted.subject or counted.said_count or hit.mode == "recent"):
         found.entries = list(hit.entries)
     else:

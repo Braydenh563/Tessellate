@@ -589,6 +589,9 @@ def open_named(ctx: Ctx) -> Reply | None:
     notes = topic_notes(topic, ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
     if not notes:
         return None
+    #: Several in Chat: its open tool picks or asks, as the starter expects.
+    if len(notes) > 1 and not ctx.ask:
+        return None
     if len(notes) == 1:
         return Reply(pick(ctx.seed, "openone", ("Here it is:", "Open it from here:", "This one:")) + f" {_link(notes[0])}")
     return Reply(f"{len(notes)} notes match. Pick one:\n\n" + "\n".join(f"- {_link(n)}" for n in notes))

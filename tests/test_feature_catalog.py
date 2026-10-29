@@ -89,6 +89,8 @@ SCRIPTS = (
     "manual.js",
     #: Copy diagnostics (INBOX 1430): the palette loads `diagnostics`, then calls diagCopy.
     "diag-report.js",
+    #: The Appearance panel (INBOX 1435), lazy behind `LAZY_MODULES.appearancePanel`.
+    "appearance-panel.js",
 )
 
 #: Names a row may call that are the platform rather than the app. Kept short

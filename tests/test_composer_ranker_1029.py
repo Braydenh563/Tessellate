@@ -16,7 +16,7 @@ import re
 
 import pytest
 
-from tessellate.ai import note_rank
+from tessellate.ai import note_rank, note_recency
 from tessellate.api import routes_chat
 from tessellate.core import config
 from tessellate.entry import manager
@@ -196,13 +196,13 @@ def test_a_count_is_a_count(notebook, phrasing, count, chat):
     ],
 )
 def test_recency_reads_count_and_subject(text, count, subject):
-    got = note_rank.recency(text)
+    got = note_recency.recency(text)
     assert got is not None and (got.count, got.subject) == (count, subject)
 
 
 @pytest.mark.parametrize("text", ["what did I write last week", "my last note", "last night", "what did I eat last month", "show me everything"])
 def test_recency_leaves_windows_and_plain_questions_alone(text):
-    assert note_rank.recency(text) is None
+    assert note_recency.recency(text) is None
 
 
 # --- the ranker itself ---------------------------------------------------------------
