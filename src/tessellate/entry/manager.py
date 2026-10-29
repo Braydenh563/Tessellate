@@ -2763,7 +2763,7 @@ def extract_title(content: str) -> str | None:
     """
     from tessellate.entry.properties import strip as strip_properties
 
-    for line in strip_properties(content or "").splitlines():
+    for line in strip_bidi(strip_properties(content or "")).splitlines():
         stripped = line.strip()
         if not stripped:
             continue
@@ -3283,9 +3283,20 @@ def wiki_shown(inner: str) -> str:
     return (shown.strip() if bar else "") or target.strip()
 
 
+#: Bidi embedding, override and isolate controls: they reorder what follows on
+#: screen, so a label could read differently from the note (audit 1029 N20).
+_BIDI_CONTROLS = re.compile("[\u202a-\u202e\u2066-\u2069]")
+
+
+def strip_bidi(text: str) -> str:
+    """`text` without bidi controls, for anything shown as a label."""
+    return _BIDI_CONTROLS.sub("", text or "")
+
+
 def wiki_plain(text: str) -> str:
-    """Some text with each `[[link]]` replaced by the words it draws."""
-    return WIKI_LINK.sub(lambda match: wiki_shown(match.group(1)), text or "")
+    """Some text with each `[[link]]` replaced by the words it draws, bidi
+    controls dropped (it builds previews)."""
+    return WIKI_LINK.sub(lambda match: wiki_shown(match.group(1)), strip_bidi(text))
 
 
 def wiki_link_targets(content: str) -> list[str]:

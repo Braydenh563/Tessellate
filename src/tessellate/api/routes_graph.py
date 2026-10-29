@@ -237,7 +237,7 @@ def _preview(text: str, length: int = 40) -> str:
     from tessellate.entry.properties import strip as strip_properties
 
     #: KG4: a note's properties block is never its label.
-    for line in strip_properties(text).splitlines():
+    for line in manager.strip_bidi(strip_properties(text)).splitlines():
         words = _preview_line(line)
         if words:
             return words if len(words) <= length else words[: length - 1] + "…"

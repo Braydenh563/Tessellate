@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6788, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7083, test files 1505, tests 13234, plan headings 985.
+Counts: frontend functions 6788, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7084, test files 1506, tests 13236, plan headings 985.
 
 ## Frontend functions (6788)
 
@@ -793,43 +793,43 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `addReminder` | frontend/js/shell-reminders.js:1552 |
-| `buildSelect` | frontend/js/shell-reminders.js:1723 |
-| `clearDoneReminders` | frontend/js/shell-reminders.js:982 |
+| `addReminder` | frontend/js/shell-reminders.js:1553 |
+| `buildSelect` | frontend/js/shell-reminders.js:1724 |
+| `clearDoneReminders` | frontend/js/shell-reminders.js:983 |
 | `clipText` | frontend/js/shell-reminders.js:763 |
-| `curtainShell` | frontend/js/shell-reminders.js:1685 |
-| `defaultDueValue` | frontend/js/shell-reminders.js:1596 |
+| `curtainShell` | frontend/js/shell-reminders.js:1686 |
+| `defaultDueValue` | frontend/js/shell-reminders.js:1597 |
 | `glideStrip` | frontend/js/shell-reminders.js:296 |
-| `liftLockScreen` | frontend/js/shell-reminders.js:1706 |
-| `loadReminders` | frontend/js/shell-reminders.js:835 |
+| `liftLockScreen` | frontend/js/shell-reminders.js:1707 |
+| `loadReminders` | frontend/js/shell-reminders.js:836 |
 | `markScrollEdge` | frontend/js/shell-reminders.js:444 |
 | `markTabBarRecede` | frontend/js/shell-reminders.js:519 |
 | `notePreviewText` | frontend/js/shell-reminders.js:785 |
-| `nudgeDue` | frontend/js/shell-reminders.js:1383 |
+| `nudgeDue` | frontend/js/shell-reminders.js:1384 |
 | `onScrollEdge` | frontend/js/shell-reminders.js:551 |
-| `openCalendarPage` | frontend/js/shell-reminders.js:1216 |
-| `paginateDoneReminders` | frontend/js/shell-reminders.js:931 |
-| `presetDate` | frontend/js/shell-reminders.js:1272 |
-| `refreshMediaSession` | frontend/js/shell-reminders.js:1649 |
-| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1404 |
-| `relativeWhen` | frontend/js/shell-reminders.js:1252 |
-| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1392 |
-| `reminderEditForm` | frontend/js/shell-reminders.js:1436 |
-| `reminderItem` | frontend/js/shell-reminders.js:1023 |
-| `reminderMadeUndo` | frontend/js/shell-reminders.js:1543 |
-| `reminderPutUndoably` | frontend/js/shell-reminders.js:1531 |
-| `reminderTarget` | frontend/js/shell-reminders.js:1233 |
+| `openCalendarPage` | frontend/js/shell-reminders.js:1217 |
+| `paginateDoneReminders` | frontend/js/shell-reminders.js:932 |
+| `presetDate` | frontend/js/shell-reminders.js:1273 |
+| `refreshMediaSession` | frontend/js/shell-reminders.js:1650 |
+| `refreshReminderDefaults` | frontend/js/shell-reminders.js:1405 |
+| `relativeWhen` | frontend/js/shell-reminders.js:1253 |
+| `reminderComposeIsPristine` | frontend/js/shell-reminders.js:1393 |
+| `reminderEditForm` | frontend/js/shell-reminders.js:1437 |
+| `reminderItem` | frontend/js/shell-reminders.js:1024 |
+| `reminderMadeUndo` | frontend/js/shell-reminders.js:1544 |
+| `reminderPutUndoably` | frontend/js/shell-reminders.js:1532 |
+| `reminderTarget` | frontend/js/shell-reminders.js:1234 |
 | `revealActiveTab` | frontend/js/shell-reminders.js:256 |
 | `safeMdSlice` | frontend/js/shell-reminders.js:677 |
-| `setDue` | frontend/js/shell-reminders.js:1321 |
-| `snoozeReminderTo` | frontend/js/shell-reminders.js:1413 |
+| `setDue` | frontend/js/shell-reminders.js:1322 |
+| `snoozeReminderTo` | frontend/js/shell-reminders.js:1414 |
 | `startClockTicker` | frontend/js/shell-reminders.js:59 |
 | `startMinuteTicker` | frontend/js/shell-reminders.js:34 |
 | `stopClockTicker` | frontend/js/shell-reminders.js:63 |
 | `stripFrontmatter` | frontend/js/shell-reminders.js:773 |
-| `syncDueFromParts` | frontend/js/shell-reminders.js:1335 |
+| `syncDueFromParts` | frontend/js/shell-reminders.js:1336 |
 | `syncEdgeFade` | frontend/js/shell-reminders.js:375 |
-| `syncPartsFromDue` | frontend/js/shell-reminders.js:1327 |
+| `syncPartsFromDue` | frontend/js/shell-reminders.js:1328 |
 | `syncScrollEdges` | frontend/js/shell-reminders.js:602 |
 | `syncTabOverflowFade` | frontend/js/shell-reminders.js:214 |
 | `tabBarMode` | frontend/js/shell-reminders.js:208 |
@@ -837,9 +837,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tabContentWidth` | frontend/js/shell-reminders.js:185 |
 | `tabRowSpace` | frontend/js/shell-reminders.js:120 |
 | `tickClocks` | frontend/js/shell-reminders.js:12 |
-| `toLocalInputValue` | frontend/js/shell-reminders.js:1265 |
-| `updateDueReadout` | frontend/js/shell-reminders.js:1347 |
-| `updateReminderBadge` | frontend/js/shell-reminders.js:950 |
+| `toLocalInputValue` | frontend/js/shell-reminders.js:1266 |
+| `updateDueReadout` | frontend/js/shell-reminders.js:1348 |
+| `updateReminderBadge` | frontend/js/shell-reminders.js:951 |
 | `wikiLinkLabel` | frontend/js/shell-reminders.js:724 |
 | `wikiLinkShown` | frontend/js/shell-reminders.js:750 |
 | `wikiLinkTarget` | frontend/js/shell-reminders.js:741 |
@@ -11488,7 +11488,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7083)
+## Backend modules (7084)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19559,7 +19559,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `title` | src/tessellate/entry/link_wording.py:203 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
 
-### src/tessellate/entry/manager.py (139)
+### src/tessellate/entry/manager.py (140)
 
 | Name | File:line |
 |---|---|
@@ -19596,7 +19596,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_unseal_link_reasons` | src/tessellate/entry/manager.py:2977 |
 | `_update_entry_fields` | src/tessellate/entry/manager.py:654 |
 | `_upload_path` | src/tessellate/entry/manager.py:1463 |
-| `_wiki_name_pattern` | src/tessellate/entry/manager.py:3447 |
+| `_wiki_name_pattern` | src/tessellate/entry/manager.py:3458 |
 | `_word_runs` | src/tessellate/entry/manager.py:3069 |
 | `add_attachment` | src/tessellate/entry/manager.py:1406 |
 | `all_categories` | src/tessellate/entry/manager.py:2451 |
@@ -19634,7 +19634,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `entry_space` | src/tessellate/entry/manager.py:144 |
 | `entry_tags` | src/tessellate/entry/manager.py:2426 |
 | `extract_title` | src/tessellate/entry/manager.py:2756 |
-| `find_by_wiki_name` | src/tessellate/entry/manager.py:3305 |
+| `find_by_wiki_name` | src/tessellate/entry/manager.py:3316 |
 | `forget_relation_types` | src/tessellate/entry/manager.py:2260 |
 | `get_entry` | src/tessellate/entry/manager.py:543 |
 | `get_or_create_category` | src/tessellate/entry/manager.py:149 |
@@ -19659,7 +19659,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `readable_content` | src/tessellate/entry/manager.py:2633 |
 | `record_dates` | src/tessellate/entry/manager.py:782 |
 | `record_filing` | src/tessellate/entry/manager.py:572 |
-| `record_revision` | src/tessellate/entry/manager.py:3584 |
+| `record_revision` | src/tessellate/entry/manager.py:3595 |
 | `reindex_properties` | src/tessellate/entry/manager.py:742 |
 | `rekey_private_extras` | src/tessellate/entry/manager.py:2990 |
 | `relation_label` | src/tessellate/entry/manager.py:2271 |
@@ -19672,14 +19672,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `rename_tag` | src/tessellate/entry/manager.py:1762 |
 | `rename_tags` | src/tessellate/entry/manager.py:1734 |
 | `reset_tag_cache` | src/tessellate/entry/manager.py:1614 |
-| `resolve_links_to` | src/tessellate/entry/manager.py:3389 |
+| `resolve_links_to` | src/tessellate/entry/manager.py:3400 |
 | `restore_entry` | src/tessellate/entry/manager.py:1018 |
 | `review_queue_count` | src/tessellate/entry/manager.py:67 |
-| `revisions_for` | src/tessellate/entry/manager.py:3622 |
-| `rewrite_wiki_name` | src/tessellate/entry/manager.py:3468 |
+| `revisions_for` | src/tessellate/entry/manager.py:3633 |
+| `rewrite_wiki_name` | src/tessellate/entry/manager.py:3479 |
 | `scrub_private_leftovers` | src/tessellate/entry/manager.py:3232 |
 | `seal_private_events` | src/tessellate/entry/manager.py:1104 |
-| `seed_example_notes` | src/tessellate/entry/manager.py:3548 |
+| `seed_example_notes` | src/tessellate/entry/manager.py:3559 |
 | `set_category` | src/tessellate/entry/manager.py:227 |
 | `set_link_props` | src/tessellate/entry/manager.py:2283 |
 | `set_link_reason` | src/tessellate/entry/manager.py:2203 |
@@ -19688,18 +19688,19 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `set_private` | src/tessellate/entry/manager.py:3158 |
 | `shown_tags` | src/tessellate/entry/manager.py:2441 |
 | `soft_delete_entry` | src/tessellate/entry/manager.py:1000 |
+| `strip_bidi` | src/tessellate/entry/manager.py:3291 |
 | `strip_inline_markdown` | src/tessellate/entry/manager.py:2891 |
-| `sync_wiki_links` | src/tessellate/entry/manager.py:3413 |
+| `sync_wiki_links` | src/tessellate/entry/manager.py:3424 |
 | `tags_from_json` | src/tessellate/entry/manager.py:2415 |
 | `unarchive_entry` | src/tessellate/entry/manager.py:1053 |
 | `undo_tag_edit` | src/tessellate/entry/manager.py:1805 |
 | `unlink_document` | src/tessellate/entry/manager.py:889 |
 | `update_entry` | src/tessellate/entry/manager.py:603 |
 | `validate_attachment_filename` | src/tessellate/entry/manager.py:1503 |
-| `wiki_holders` | src/tessellate/entry/manager.py:3452 |
-| `wiki_link_targets` | src/tessellate/entry/manager.py:3291 |
-| `wiki_opening` | src/tessellate/entry/manager.py:3380 |
-| `wiki_plain` | src/tessellate/entry/manager.py:3286 |
+| `wiki_holders` | src/tessellate/entry/manager.py:3463 |
+| `wiki_link_targets` | src/tessellate/entry/manager.py:3302 |
+| `wiki_opening` | src/tessellate/entry/manager.py:3391 |
+| `wiki_plain` | src/tessellate/entry/manager.py:3296 |
 | `wiki_shown` | src/tessellate/entry/manager.py:3280 |
 | `wiki_target` | src/tessellate/entry/manager.py:3269 |
 
@@ -20310,7 +20311,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13234)
+## Tests (13236)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20418,6 +20419,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_bg_art_1436.py | 8 |
 | tests/test_bg_art_styles.py | 24 |
 | tests/test_bgtasks.py | 22 |
+| tests/test_bidi_controls_n20.py | 2 |
 | tests/test_bin_documents_reminders_row30.py | 6 |
 | tests/test_board2_1028.py | 9 |
 | tests/test_board_acts.py | 6 |

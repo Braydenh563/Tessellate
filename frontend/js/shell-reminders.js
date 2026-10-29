@@ -784,6 +784,7 @@ function stripFrontmatter(text) {
 
 function notePreviewText(content) {
   return stripFrontmatter(content || "")
+    .replace(/[\u202a-\u202e\u2066-\u2069]/g, "") // bidi controls reorder a label (N20)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
     .replace(
