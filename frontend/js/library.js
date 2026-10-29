@@ -1260,6 +1260,10 @@ function keepLibraryScroll() {
   const pending = new Set();
   const sections = [...document.querySelectorAll("#tab-library .library-view-section")];
   const restore = () => {
+    //: Every section is read, then the offsets are put back (INBOX 1446): a
+    //: `scrollTop` written between two sections' reads made the next read
+    //: lay the page out again (230ms at this line in a trace at 4x CPU).
+    const put = [];
     for (const el of sections) {
       if (!el.clientHeight) {
         if (saved.get(el.id)) pending.add(el.id);
@@ -1268,10 +1272,11 @@ function keepLibraryScroll() {
       if (!pending.has(el.id)) continue;
       const want = saved.get(el.id) || 0;
       if (el.scrollHeight - el.clientHeight >= want) {
-        el.scrollTop = want;
+        put.push([el, want]);
         pending.delete(el.id);
       }
     }
+    for (const [el, want] of put) el.scrollTop = want;
   };
   const observer = typeof ResizeObserver === "function" ? new ResizeObserver(restore) : null;
   for (const el of sections) {

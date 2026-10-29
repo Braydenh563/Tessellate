@@ -884,18 +884,22 @@ function toastStack(box, change) {
   const ms = parseFloat(cs.getPropertyValue("--ui-base")) * 1000;
   if (!ms || toastReduced()) return;
   const ease = cs.getPropertyValue("--ease-out");
+  //: Every toast is measured, then every one slides (INBOX 1446): an `animate`
+  //: between two reads makes the next read recalculate style again.
   let shift = 0;
+  const slides = [];
   for (const [t, at] of was) {
     if (!t.isConnected || !shown(t)) continue;
     const dy = at - t.getBoundingClientRect().top;
     if (!dy) continue;
     shift = dy;
-    t.animate([{ translate: `0 ${dy}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
+    slides.push([t, dy]);
   }
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   const step = (parseFloat(cs.getPropertyValue("--space-4")) || 1) * rem * (top ? -1 : 1);
-  for (const t of box.children) {
-    if (was.has(t) || !shown(t) || t.classList.contains("toast-more")) continue;
+  const arrivals = [...box.children].filter((t) => !was.has(t) && shown(t) && !t.classList.contains("toast-more"));
+  for (const [t, dy] of slides) t.animate([{ translate: `0 ${dy}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
+  for (const t of arrivals) {
     t.animate([{ translate: `0 ${shift || step}px` }, { translate: "0 0" }], { duration: ms, easing: ease });
   }
 }
