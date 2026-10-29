@@ -107,7 +107,7 @@ function panelZoneFor(panel, zone) {
   return !only || only.split(/\s+/).includes(zone) ? zone : "";
 }
 function panelRestoreOn() {
-  return prefs.get("panel-restore", "on") !== "off";
+  return prefs.get("panel-pos", "on") !== "off";
 }
 function panelKeyDelta(key, shift) {
   const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];

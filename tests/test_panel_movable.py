@@ -63,9 +63,9 @@ for (const z of ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"]) out.
 out.noRect = a.panelZoneRect("", 1000, 800, 12);
 out.safe = a.panelZoneRect("left", 1000, 800, 12, { left: 60, top: 50, right: 1000, bottom: 770 });
 out.restoreDefault = a.panelRestoreOn();
-store["panel-restore"] = "off";
+store["panel-pos"] = "off";
 out.restoreOff = a.panelRestoreOn();
-store["panel-restore"] = "on";
+store["panel-pos"] = "on";
 out.restoreOn = a.panelRestoreOn();
 console.log(JSON.stringify(out));
 """
@@ -170,8 +170,8 @@ def test_the_setting_row_is_wired_like_its_neighbours() -> None:
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     assert 'id="panel-restore-toggle"' in html and "Panels open where you left them" in html
     rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
-    assert '{ key: "panel-restore", id: "panel-restore-toggle", on: "on", off: "off", base: "on" }' in rows
-    assert '["panel-restore-toggle", "panel-restore"]' in rows
+    assert '{ key: "panel-pos", id: "panel-restore-toggle", on: "on", off: "off", base: "on" }' in rows
+    assert '["panel-restore-toggle", "panel-pos"]' in rows
 
 
 def test_the_reset_button_and_the_snap_preview_are_recipe_shaped() -> None:

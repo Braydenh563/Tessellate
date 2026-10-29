@@ -94,7 +94,7 @@ const LOOK_ROWS = [
   { key: "motion", id: "reduce-motion-toggle", on: "reduced", off: "auto" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },
   { key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" },
-  { key: "panel-restore", id: "panel-restore-toggle", on: "on", off: "off", base: "on" },
+  { key: "panel-pos", id: "panel-restore-toggle", on: "on", off: "off", base: "on" },
   { key: "progress-motion", id: "progress-motion" },
   { key: "show-thinking-words", id: "pref-show-thinking-words", on: "on", off: "off" },
   { key: "perf", id: "perf-mode" },
@@ -526,7 +526,7 @@ function wireSettingsFile() {
 //: Settings, Appearance, Reveal replies (INBOX 1300 C28: `replyReveal`,
 //: reply-kit.js) and Panels open where you left them (INBOX 1434:
 //: panel-movable.js): kept on this device, like Interface animations.
-for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-restore"]]) {
+for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-pos"]]) {
   const box = $(id);
   if (!box) continue;
   box.checked = prefs.get(key, "on") !== "off";
