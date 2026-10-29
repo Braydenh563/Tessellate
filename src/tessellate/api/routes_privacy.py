@@ -30,7 +30,7 @@ router = APIRouter(prefix="/privacy", tags=["privacy"])
 _SWITCHES = (
     ("web_search_enabled", "Web search", "The search engine you chose, with the words you searched for, and a page you clip, when you clip it."),
     ("update_check_enabled", "Check for updates", "GitHub's releases page, with nothing about your notebook."),
-    ("auto_update_enabled", "Install updates", "GitHub, to download a new version."),
+    ("auto_update_enabled", "Pull new code at start", "GitHub, to fetch the latest code when a launcher copy starts."),
     ("searxng_autostart", "Start SearXNG with the app", "Only this computer, until a search is made."),
 )
 

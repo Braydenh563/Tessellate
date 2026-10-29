@@ -287,7 +287,7 @@ FAULTS = {
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },
     'update-dialogs.js': {
-        'progress.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
+        'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',

@@ -442,6 +442,7 @@ class PreferencesBody(BaseModel):
     # Separate switch: "notify me" vs. "download and run the installer
     # without asking each time", see core.config's own comment.
     auto_update_enabled: bool | None = None
+    show_update_bar: bool | None = None
     update_channel: Literal["stable", "main"] | None = None
     update_beta: bool | None = None
     searxng_autostart: bool | None = None
@@ -844,6 +845,7 @@ def _preferences_from(config) -> dict:
         "web_search_enabled": config.get_preference("web_search_enabled", False),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
         "auto_update_enabled": config.get_preference("auto_update_enabled", False),
+        "show_update_bar": config.get_preference("show_update_bar", True),
         "update_choice_made": config.get_preference("update_choice_made", False) is True,
         "update_channel": config.get_preference("update_channel", "stable"),
         "update_beta": config.get_preference("update_beta", False) is True,
