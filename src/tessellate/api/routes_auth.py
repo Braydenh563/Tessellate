@@ -21,6 +21,7 @@ import logging
 import os
 import re
 import secrets
+import sys
 import threading
 import time
 import urllib.parse
@@ -2106,7 +2107,43 @@ def request_reset_code(request: Request, session: Session = Depends(get_session)
     _refuse_unless_this_computer(request)
     if _get_user(session) is None:
         raise HTTPException(status_code=400, detail="No password is set yet. Set one up first.")
-    return {"expires_in": reset_code.issue()}
+    try:
+        expires_in = reset_code.issue()
+    except reset_code.TooSoon as soon:
+        raise HTTPException(
+            status_code=429,
+            detail=f"A code was just printed. Look for it, or ask again in {soon.retry_after} seconds.",
+            headers={"Retry-After": str(soon.retry_after)},
+        ) from None
+    if reset_code.stderr_is_terminal():
+        return {"expires_in": expires_in, "where": "terminal"}
+    return {"expires_in": expires_in, "where": "log", "log_file": _stderr_log_name()}
+
+
+def _stderr_log_name() -> str:
+    """The file name (never the path) the code went to when there is no terminal."""
+    name = Path(str(getattr(sys.stderr, "name", ""))).name
+    if name.endswith(".log"):
+        return name
+    from tessellate.core import maintenance
+
+    logs = sorted(maintenance.logs_dir(get_config().data_dir).glob("launcher-*.log"), key=lambda f: f.stat().st_mtime)
+    return logs[-1].name if logs else "desktop-stdio.log"
+
+
+@router.post("/reset-code/open-logs")
+def open_reset_code_logs(request: Request) -> dict:
+    """Open the logs folder for the lock card when the code went to a log file.
+
+    This computer only, the same guard as the code. It opens a file manager
+    window and answers `ok` and nothing else, so no path leaks to a locked page.
+    """
+    _refuse_unless_this_computer(request)
+    from tessellate.api.routes_files import reveal_folder
+    from tessellate.core import maintenance
+
+    reveal_folder(maintenance.logs_dir(get_config().data_dir), "the launcher logs")
+    return {"ok": True}
 
 
 @router.post("/reset")

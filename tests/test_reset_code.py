@@ -4,7 +4,7 @@
 could seal every private note. It now needs a code the server prints to its
 own terminal. Held here: no code or a wrong code changes nothing, the code is
 never in a response or the log buffer, one use, ten minutes (fixed clock),
-one live code, five wrong tries, asking again buys no extra guesses, this
+two live codes at most, 30 seconds between asks, five wrong tries, asking again buys no extra guesses, this
 computer only, and only a hash is kept.
 """
 
@@ -49,7 +49,7 @@ def test_the_code_is_printed_to_the_terminal_and_never_returned(client, capsys, 
     _notebook(client)
     caplog.set_level(logging.DEBUG)
     asked = _local(client).post("/auth/reset-code")
-    assert asked.json() == {"expires_in": 600}
+    assert asked.json()["expires_in"] == 600 and asked.json()["where"] in ("terminal", "log")
     assert CODE not in asked.text and CODE not in str(asked.headers)
     assert CODE in capsys.readouterr().err
     assert CODE not in caplog.text
@@ -90,17 +90,78 @@ def test_just_inside_the_ten_minutes_still_works(client, monkeypatch):
     assert _try(local, CODE) == 200
 
 
-def test_a_new_code_replaces_the_old_one(client, monkeypatch):
+def _fixed_clock(monkeypatch):
+    from tessellate.core import reset_code
+
+    clock = [1_000_000.0]
+    monkeypatch.setattr(reset_code, "_now", lambda: clock[0])
+    return clock
+
+
+def test_a_second_code_leaves_the_first_working_and_a_correct_one_consumes_all(client, monkeypatch):
     from tessellate.core import reset_code
 
     _notebook(client)
     local = _local(client)
+    clock = _fixed_clock(monkeypatch)
     draws = iter([111111, 222222])
     monkeypatch.setattr(reset_code.secrets, "randbelow", lambda n: next(draws))
-    local.post("/auth/reset-code")
-    local.post("/auth/reset-code")
+    assert local.post("/auth/reset-code").status_code == 200
+    clock[0] += 31
+    assert local.post("/auth/reset-code").status_code == 200
+    assert _try(local, "111111") == 200
+    assert _try(local, "222222") in (400, 401)
+
+
+def test_a_third_issue_within_thirty_seconds_is_refused(client, monkeypatch):
+    _notebook(client)
+    local = _local(client)
+    clock = _fixed_clock(monkeypatch)
+    assert local.post("/auth/reset-code").status_code == 200
+    clock[0] += 10
+    refused = local.post("/auth/reset-code")
+    assert refused.status_code == 429
+    assert refused.headers["Retry-After"] == "21"
+    assert refused.json()["detail"] == "A code was just printed. Look for it, or ask again in 21 seconds."
+    clock[0] += 21
+    assert local.post("/auth/reset-code").status_code == 200
+
+
+def test_only_two_codes_stay_live_and_each_keeps_its_own_expiry(client, monkeypatch):
+    from tessellate.core import reset_code
+
+    _notebook(client)
+    local = _local(client)
+    clock = _fixed_clock(monkeypatch)
+    draws = iter([111111, 222222, 333333])
+    monkeypatch.setattr(reset_code.secrets, "randbelow", lambda n: next(draws))
+    for _ in range(3):
+        local.post("/auth/reset-code")
+        clock[0] += 31
+    assert len(reset_code._state["live"]) == 2
     assert _try(local, "111111") == 401
-    assert _try(local, "222222") == 200
+    assert _try(local, "333333") == 200
+
+
+def test_the_log_answer_names_a_file_and_never_a_path(client, monkeypatch):
+    from tessellate.core import reset_code
+
+    _notebook(client)
+    monkeypatch.setattr(reset_code, "stderr_is_terminal", lambda: False)
+    body = _local(client).post("/auth/reset-code").json()
+    assert body["where"] == "log" and "/" not in body["log_file"] and body["log_file"].endswith(".log")
+    assert CODE not in str(body)
+
+
+def test_open_logs_answers_ok_only_and_this_computer_only(client, monkeypatch):
+    from tessellate.api import routes_files
+
+    _notebook(client)
+    opened = []
+    monkeypatch.setattr(routes_files, "reveal_folder", lambda folder, label: opened.append(label))
+    ok = _local(client).post("/auth/reset-code/open-logs")
+    assert ok.json() == {"ok": True} and opened == ["the launcher logs"]
+    assert _lan(client).post("/auth/reset-code/open-logs").status_code == 403
 
 
 def test_five_wrong_codes_kill_the_code(client):
@@ -147,5 +208,5 @@ def test_the_code_is_kept_only_as_a_hash():
     assert "compare_digest" in source and "pbkdf2_hmac" in source
     reset_code.issue()
     live = reset_code._state["live"]
-    assert live is not None and not hasattr(live, "code")
+    assert live and not hasattr(live[0], "code")
     reset_code._forget()

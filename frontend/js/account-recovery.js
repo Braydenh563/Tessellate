@@ -64,6 +64,7 @@ function wireForgotCard() {
     copyToClipboard($("lock-reset-command").textContent, event.currentTarget)
   );
   $("lock-reset-send").addEventListener("click", requestResetCode);
+  $("lock-reset-open-logs").addEventListener("click", openResetLogs);
   //: The button wakes only for the word and a full code, so a stray Enter cannot reset.
   for (const id of ["lock-reset-confirm", "lock-reset-code"]) $(id).addEventListener("input", syncResetSubmit);
   $("lock-forgot-card").addEventListener("keydown", (event) => {
@@ -96,6 +97,8 @@ async function openForgotPassword() {
   $("lock-forgot-remote").classList.toggle("hidden", here);
   $("lock-forgot-paths").classList.toggle("hidden", !here);
   $("lock-reset-submit").disabled = true;
+  $("lock-reset-where").classList.add("hidden");
+  $("lock-reset-open-logs").classList.add("hidden");
   $("lock-reset-code").value = "";
   if (here) forgotChoose("key");
   else $("lock-forgot-close").focus();
@@ -164,23 +167,39 @@ function syncResetSubmit() {
   $("lock-reset-submit").disabled = !(word && code);
 }
 
-//: Asks the server to print a code in its own terminal (INBOX 1424). The
-//: answer never carries the code: only someone who can see that terminal can.
+//: Asks the server to print a code on its stderr (INBOX 1424). The answer
+//: never carries the code, only where it went: a terminal, or a log file
+//: (a desktop launch has no terminal), named without its folder.
 async function requestResetCode() {
   forgotError("");
   const button = $("lock-reset-send");
   setBusy(button, true, "Printing…");
+  let answer;
   try {
-    await apiJson("/auth/reset-code", { method: "POST", ownsAuthErrors: true, silent: true });
+    answer = await apiJson("/auth/reset-code", { method: "POST", ownsAuthErrors: true, silent: true });
   } catch (error) {
     forgotError(error.message);
     return;
   } finally {
     setBusy(button, false);
   }
+  const inLog = answer.where === "log";
+  $("lock-reset-where").textContent = inLog
+    ? `A code is printed in the log file ${answer.log_file || "desktop-stdio.log"}, in the logs folder. It works for 10 minutes.`
+    : "A code is printed in the terminal. It works for 10 minutes.";
+  $("lock-reset-where").classList.remove("hidden");
+  $("lock-reset-open-logs").classList.toggle("hidden", !inLog);
   $("lock-reset-code").value = "";
   $("lock-reset-code").focus();
-  toast("A code is printed in the terminal. It works for 10 minutes.", "info");
+}
+
+async function openResetLogs() {
+  forgotError("");
+  try {
+    await apiJson("/auth/reset-code/open-logs", { method: "POST", ownsAuthErrors: true, silent: true });
+  } catch (error) {
+    forgotError(error.message || "Could not open the logs folder. Open the logs folder in the data folder yourself.");
+  }
 }
 
 //: "I don't have it": the terminal command's reset, after the typed word and the printed code.
@@ -188,7 +207,7 @@ async function submitPasswordReset() {
   forgotError("");
   if ($("lock-reset-confirm").value.trim() !== "RESET") return forgotError("Type RESET to confirm.");
   const code = $("lock-reset-code").value.trim();
-  if (!/^\d{6}$/.test(code)) return forgotError("Enter the six-digit code from the terminal.");
+  if (!/^\d{6}$/.test(code)) return forgotError("Enter the six-digit code that was printed.");
   const button = $("lock-reset-submit");
   setBusy(button, true, "Resetting…");
   try {

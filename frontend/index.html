@@ -428,7 +428,7 @@
           Without it, a reset clears the password so you can set a new one.
           Private notes stay sealed for good; a sealed backup still opens
           with its own password. You need a six-digit code that Tessellate
-          prints in the terminal it runs in, valid for ten minutes, one use. "Allow other devices on this network" is
+          prints in the terminal it runs in (or its log file, when there is no terminal), valid for ten minutes, one use. "Allow other devices on this network" is
           turned off. Either way it can only be done on this computer.
         </p>
       </div>
@@ -466,9 +466,11 @@
             <button type="button" id="lock-reset-copy" class="ghost small"
               title="Copy the command" aria-label="Copy the command"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
           </div>
-          <p class="muted">Or reset here. A six-digit code is printed in the terminal where Tessellate is running, so only someone at this computer can reset.</p>
-          <button id="lock-reset-send" type="button" class="ghost lock-forgot-action">Print a code in the terminal</button>
-          <label class="stacked-label" for="lock-reset-code">Code from the terminal</label>
+          <p class="muted">Or reset here. A six-digit code is printed in the terminal where Tessellate is running, or in its log file if it has no terminal, so only someone at this computer can reset.</p>
+          <button id="lock-reset-send" type="button" class="ghost lock-forgot-action">Print a code</button>
+          <p id="lock-reset-where" class="muted hidden" role="status"></p>
+          <button id="lock-reset-open-logs" type="button" class="ghost small hidden">Open the logs folder</button>
+          <label class="stacked-label" for="lock-reset-code">Code that was printed</label>
           <input id="lock-reset-code" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
             maxlength="6" pattern="[0-9]{6}" placeholder="000000">
           <label class="stacked-label" for="lock-reset-confirm">Type RESET to confirm</label>

@@ -809,7 +809,7 @@ MORE_TOPICS: list[dict] = [
             "keep away from this computer; the old one stops working. Forgot "
             "your password? on the lock screen, on this computer only, has two "
             "paths: the recovery key and a new password keeps private notes "
-            "and hands you a new key; I don't have it asks for a six-digit code Tessellate prints in its terminal (ten minutes, one use) and then resets the password like "
+            "and hands you a new key; I don't have it asks for a six-digit code Tessellate prints in its terminal or log (ten minutes, one use) and then resets the password like "
             "python -m tessellate --reset-password, which keeps ordinary notes, "
             "documents, boards and settings, leaves private notes sealed for "
             "good, and turns other devices off."

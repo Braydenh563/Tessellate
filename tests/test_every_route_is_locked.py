@@ -50,6 +50,7 @@ OPEN = {
     "/auth/recover",
     "/auth/reset",
     "/auth/reset-code",
+    "/auth/reset-code/open-logs",  # this computer only, answers ok and nothing else
     # The LAN authority's public certificate (INBOX 866): iOS installs a
     # profile only from a plain navigation, which carries no token, and every
     # TLS handshake on the LAN port already sends it. Never a key.
