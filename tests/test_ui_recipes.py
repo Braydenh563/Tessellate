@@ -1564,7 +1564,8 @@ def test_one_writing_finding_is_drawn_by_one_builder() -> None:
 FAILING_SURFACES = {
     "frontend/js/app.js": ("notes", "reminders"),
     "frontend/js/timeline.js": ("timeline",),
-    "frontend/js/graph.js": ("map",),
+    #: The map's failed read is the canvas renderer's; graph.js held the
+    #: SVG renderer's copy until that renderer was removed (audit 1029 row 60).
     "frontend/js/graph-canvas.js": ("map",),
     "frontend/js/library.js": ("library",),
     "frontend/js/documents.js": ("documents",),

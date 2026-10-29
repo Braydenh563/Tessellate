@@ -55,7 +55,8 @@ def test_layout_ticks_queue_the_minimap_rather_than_paint_it() -> None:
     graph = _source("graph.js")
     assert "graphMinimapTick % 8 === 0) graphMinimapQueuePaint();" in canvas
     assert 'if (s.size === "full") graphMinimapQueuePaint();' in canvas
-    assert "graphMinimapTick++ % 8 === 0) graphMinimapQueuePaint();" in graph
+    # graph.js held the SVG renderer's copy of the tick until that renderer
+    # was removed (audit 1029 row 60); the canvas tick above is the one left.
     queue = _body(graph, "graphMinimapQueuePaint")
     assert "requestAnimationFrame(" in queue
     assert "graphMinimapCanShow()" in queue
