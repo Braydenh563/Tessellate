@@ -110,6 +110,13 @@ document.addEventListener("meaning-ready", () => {
   if (help?.value) helpApplySearch(help.value);
 });
 
+//: A Guide topic is a row of the Help pane: its entries carry keywords, but a
+//: topic with none, and the group heads above them, are the pane's too (the
+//: "Boards and maps" head ranked as a setting before the feature it names).
+function settingRowIsTopic(row) {
+  return Boolean(row.keys) || row.section === "help";
+}
+
 function findSettings(query, limit = 8) {
   const words = meaningNamed(query);
   if (!words.length) return [];
@@ -166,7 +173,7 @@ function findSettings(query, limit = 8) {
     const key = `${row.section}|${row.text.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    (row.keys ? topics : settings).push(row);
+    (settingRowIsTopic(row) ? topics : settings).push(row);
   }
   //: **Settings first, then help topics** (INBOX 448): "password" is a
   //: question about the password settings before it is one about the help

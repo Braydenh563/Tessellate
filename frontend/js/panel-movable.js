@@ -146,10 +146,20 @@ function panelMovableOn() {
   return window.matchMedia(PANEL_MEDIA).matches;
 }
 //: The nearest ancestor-or-self that holds a head and sits in a dialog.
+//: **Always the whole panel: the dialog itself, or the card that is its direct
+//: child.** The head's own parent used to be taken, which is the card only when
+//: the head sits straight in it; the OCR workspace wraps its head and tool row
+//: in `.ocr-head`, so a drag moved that wrapper alone, the head bar drawn across
+//: the middle of a body that stayed put (INBOX 1448). Climb from the element
+//: that holds the head to the host's top-most box.
 function panelOf(node) {
-  if (!(node instanceof Element) || !node.closest('dialog, [role="dialog"]')) return null;
+  const host = node instanceof Element ? node.closest('dialog, [role="dialog"]') : null;
+  if (!host) return null;
   for (let el = node; el; el = el.parentElement) {
-    if (el.querySelector(":scope > .dialog-head")) return el.closest("[data-panel-fixed]") ? null : el;
+    if (!el.querySelector(":scope > .dialog-head")) continue;
+    let top = el;
+    while (top !== host && top.parentElement && top.parentElement !== host) top = top.parentElement;
+    return top.closest("[data-panel-fixed]") ? null : top;
   }
   return null;
 }

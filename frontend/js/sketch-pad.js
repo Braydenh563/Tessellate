@@ -28,6 +28,9 @@
     save: null,
     //: (message, isError) => void. Null leaves the status line to say it.
     toast: null,
+    //: (message, label, run) => void: a notice with one button. Null leaves
+    //: the status line to say it, without the button.
+    toastAction: null,
     //: (message, { confirmLabel, cancelLabel }) => Promise<boolean>.
     confirm: async (message) => window.confirm(message),
     //: { get(key, fallback), set(key, value) }. With none the settings last
@@ -283,7 +286,7 @@
     const keys = TOOLS.map((t) => h("li", {}, h("kbd", {}, t.key), ` ${t.label}`));
     const areas = [
       ["Tools", "pick one on the left or press its letter. A shape runs corner to corner; Alt draws it from the centre, Shift keeps it square, round or at 45 degrees."],
-      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them. A recent colour's x, or Delete on it, takes it off."],
+      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them. A recent colour's small x, or Delete on it, takes it off, with an Undo; the plus saves the colour you have as a swatch again."],
       ["Shape style", "outline, outline and fill, or fill only, for rectangles, ellipses and polygons."],
       ["Size", "[ and ] change it; with the Text tool it is the text size."],
       ["More", "sets the paper colour or adds a picture under the ink; Clear keeps both."],
@@ -324,11 +327,15 @@
     const swatches = h("div", { class: "sp-swatches", role: "group", "aria-label": "Palette", "data-sp": "swatches" },
       SWATCHES.map(([hex, name]) => swatch(hex, name)));
     const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent", onkeydown: forgetRecentKey });
-    const custom = h("label", { class: "sp-custom", title: "Any colour" },
-      h("span", { class: "sp-visually-hidden" }, "Any colour"),
+    const custom = h("label", { class: "sp-custom", title: "Pick any colour" },
+      h("span", { class: "sp-visually-hidden" }, "Pick any colour"),
       h("input", { type: "color", "data-sp": "custom", value: S.ink, oninput: (e) => setColour(e.target.value), onchange: (e) => rememberColour(e.target.value) }),
-      icon("plus"));
-    const palette = h("div", { class: "sp-group sp-palette", role: "group", "aria-label": "Palette and any colour", "data-sp": "palette", "data-rove": "" }, swatches, recent, custom);
+      icon("eyedropper"));
+    //: The current colour, kept as a swatch again (the owner, 2026-10-29: a
+    //: removed swatch was "hard to resave"): a plus that is live while the
+    //: colour is not already one of the swatches, and says why when it is not.
+    const keep = h("button", { type: "button", class: "ghost icon-button sp-keep", "data-sp": "keep", title: "Save colour", "aria-label": "Save colour", "aria-disabled": "true", onclick: keepColour }, icon("plus"));
+    const palette = h("div", { class: "sp-group sp-palette", role: "group", "aria-label": "Palette and any colour", "data-sp": "palette", "data-rove": "" }, swatches, recent, custom, keep);
     return [wells, h("div", { class: "sp-style", id: "sp-style", "data-sp": "style" }, palette, buildStroke())];
   }
 
@@ -619,6 +626,22 @@
       b.setAttribute("aria-pressed", String(on));
     }
     S.host.prefs.set("colours", { ink: S.ink, fill: S.fill });
+    paintKeep(current);
+  }
+
+  //: Save colour is live only for a colour that is not a swatch already.
+  function paintKeep(current) {
+    if (!S.el.keep) return;
+    const known = SWATCHES.some(([c]) => c.toLowerCase() === current) || S.recent.some((c) => c.toLowerCase() === current);
+    S.el.keep.setAttribute("aria-disabled", String(known));
+    S.el.keep.title = known ? "Save colour: this colour is already a swatch" : `Save colour ${current}`;
+  }
+
+  function keepColour() {
+    const current = (S.well === "fill" ? S.fill : S.ink).toLowerCase();
+    if (S.el.keep.getAttribute("aria-disabled") === "true") return say("This colour is already a swatch.");
+    rememberColour(current);
+    say(`Saved ${current} as a swatch.`);
   }
 
   function swapColours() {
@@ -639,10 +662,21 @@
   //: A colour added by eye can be taken off again (the owner, 2026-10-29):
   //: the x sits beside the swatch, never inside it (a button in a button),
   //: and stays out of the arrow rove; Delete on the swatch is the key way.
+  //: Taking one off says so with an Undo, since a press on a 16px x is easy to
+  //: land by accident; the colour goes back where it was.
   function forgetColour(hex) {
+    const at = Math.max(0, S.recent.indexOf(hex));
     S.recent = S.recent.filter((c) => c !== hex);
     S.host.prefs.set("recent", S.recent);
     paintRecent();
+    const restore = () => {
+      if (S.recent.includes(hex)) return;
+      S.recent = [...S.recent.slice(0, at), hex, ...S.recent.slice(at)].slice(0, 6);
+      S.host.prefs.set("recent", S.recent);
+      paintRecent();
+    };
+    if (S.host.toastAction) S.host.toastAction(`Removed ${hex} from the recent colours.`, "Undo", restore);
+    else say(`Removed ${hex}. Save colour puts it back.`);
   }
 
   function forgetRecentKey(e) {
