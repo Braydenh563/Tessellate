@@ -181,8 +181,9 @@ def test_a_verb_finds_the_note_that_says_it_as_a_noun(notebook, noun, phrasing, 
 def test_the_verb_noun_pairs_are_synonyms():
     from tessellate.ai import composer_tables
 
-    assert len(composer_tables.VERB_NOUN_PAIRS) >= 20
-    for pair in composer_tables.VERB_NOUN_PAIRS:
+    assert len(composer_tables.VERB_NOUN_PAIRS) >= 12
+    grouped = [("fly", "flight"), ("travel", "trip"), ("depart", "departure"), ("arrive", "arrival"), ("exercise", "workout"), ("cook", "recipe"), ("celebrate", "celebration")]
+    for pair in [*composer_tables.VERB_NOUN_PAIRS, *grouped]:
         verb, *nouns = pair
         for noun in nouns:
             assert composer._stem(noun) in composer._alternatives(composer._stem(verb)), (verb, noun)
@@ -255,3 +256,65 @@ def test_how_old_with_no_start_date_says_so(notebook, chat):
     notes = [("# Sourdough starter\n\nFeed it daily. It smells fine.", D(2026, 10, 27, 9)), NOISE]
     said = notebook(notes)("how old is my sourdough starter", chat)
     assert _does_not_say(said), said
+
+
+# --- 4. kind questions (C34) ------------------------------------------------------------
+
+KINDS = [
+    ("# Packing\n\n- [x] Passport\n- [ ] Charger\n- [ ] Sunscreen", D(2026, 10, 20, 9)),
+    ("# Chores\n\n- [ ] Bins out\n- [x] Mow lawn", D(2026, 10, 21, 9)),
+    ("# Dentist\n\nCheck-up on 4 November at 9am.", D(2026, 10, 22, 9)),
+    ("# Ideas\n\n- Paint the shed\n- Learn Rust\n- Visit Oslo", D(2026, 10, 23, 9)),
+    ("# Journal\n\nA quiet day, nothing to report.", D(2026, 10, 24, 9)),
+]
+
+
+@MODES
+@pytest.mark.parametrize("phrasing", ["which notes have checklists", "which of my notes have checklists", "what notes contain a checklist", "which notes have tasks"])
+def test_which_notes_have_checklists_names_each(notebook, phrasing, chat):
+    said = notebook(KINDS)(phrasing, chat)
+    assert "Packing" in said and "Chores" in said, said
+    assert "Journal" not in said and "Dentist" not in said and "Ideas" not in said, said
+
+
+@MODES
+@pytest.mark.parametrize("phrasing", ["which notes have dates", "which of my notes have dates"])
+def test_which_notes_have_dates_names_each(notebook, phrasing, chat):
+    said = notebook(KINDS)(phrasing, chat)
+    assert "Dentist" in said and "Journal" not in said and "Ideas" not in said, said
+
+
+@MODES
+def test_which_notes_have_lists_names_each(notebook, chat):
+    said = notebook(KINDS)("which notes have lists", chat)
+    assert "Ideas" in said and "Journal" not in said and "Dentist" not in said, said
+
+
+@MODES
+@pytest.mark.parametrize("phrasing", ["open checklist items", "what are my open checklist items", "which checklist items are open"])
+def test_open_checklist_items_lists_the_unticked_ones(notebook, phrasing, chat):
+    said = notebook(KINDS)(phrasing, chat)
+    assert "Charger" in said and "Sunscreen" in said and "Bins out" in said, said
+    assert "Passport" not in said and "Mow lawn" not in said and "Paint the shed" not in said, said
+
+
+@MODES
+def test_a_kind_no_note_has_says_so(notebook, chat):
+    said = notebook([KINDS[2], KINDS[4]])("which notes have checklists", chat)
+    assert "none of your notes have checklists" in said.lower(), said
+
+
+@MODES
+def test_no_open_items_says_so(notebook, chat):
+    said = notebook([("# Done\n\n- [x] Everything", D(2026, 10, 20, 9)), KINDS[4]])("open checklist items", chat)
+    assert "no open checklist items" in said.lower() and "Everything" not in said, said
+
+
+def test_kind_questions_are_read_in_code_and_others_are_left_alone():
+    from tessellate.ai import composer_lists
+
+    assert composer_lists.holding_ask("which notes have checklists") == ("tasks", False, "which")
+    assert composer_lists.holding_ask("how many notes have dates") == ("dates", False, "count")
+    assert composer_lists.holding_ask("open checklist items") == ("tasks", True, "items")
+    for q in ["which notes have dates about Lisbon", "which notes mention Porto", "what is open", "which notes have the tag work", "open the checklist note"]:
+        assert composer_lists.holding_ask(q) is None, q

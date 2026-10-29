@@ -882,7 +882,7 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("baby", "infant", "newborn"),
     ("grandma", "granny", "gran", "nan", "nana", "grandmother"),
     ("grandpa", "grandad", "granddad", "grandfather"),
-    ("party", "celebration", "gathering", "get-together"),
+    ("party", "celebration", "celebrate", "gathering", "get-together"),
     # Feelings.
     ("happy", "glad", "pleased", "delighted", "cheerful"),
     ("sad", "unhappy", "upset", "gloomy", "miserable"),
@@ -1213,20 +1213,18 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
  ['use', 'utilize', 'employ', 'apply', 'operate', 'consume']])
 
 #: The verb a person asks with and the noun a note is written with ("when do I
-#: fly" is the "Flight to Lisbon" note; audit 1029 C21). `flight`, `trip`,
-#: `departure`, `arrival` and `workout` already sit in groups above; the pairs
-#: below are the ones that did not. One pair is one thing said two ways.
+#: fly" is the "Flight to Lisbon" note; audit 1029 C21). `fly` and `flight`,
+#: `travel` and `trip`, `depart` and `departure`, `arrive` and `arrival`,
+#: `exercise` and `workout` already sit in groups above (a word is in one
+#: group only); the pairs below are the ones that did not.
 VERB_NOUN_PAIRS: tuple[tuple[str, ...], ...] = (
-    ("cook", "recipe"),
     ("decide", "decision"),
     ("invite", "invitation"),
-    ("celebrate", "celebration"),
     ("marry", "marriage", "wedding"),
     ("graduate", "graduation"),
     ("retire", "retirement"),
     ("register", "registration", "enrol", "enrolment"),
     ("subscribe", "subscription"),
-    ("apply", "application"),
     ("submit", "submission"),
     ("deliver", "delivery"),
     ("renew", "renewal"),
@@ -1234,11 +1232,6 @@ VERB_NOUN_PAIRS: tuple[tuple[str, ...], ...] = (
     ("donate", "donation"),
     ("complain", "complaint"),
     ("vote", "ballot", "election"),
-    ("fly", "flight"),
-    ("travel", "trip", "journey"),
-    ("depart", "departure"),
-    ("arrive", "arrival"),
-    ("exercise", "workout"),
 )
 EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + VERB_NOUN_PAIRS
 EXTRA_ASKING_WORDS = EXTRA_ASKING_WORDS | frozenset(['af',

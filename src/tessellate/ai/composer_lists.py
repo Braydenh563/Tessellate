@@ -185,6 +185,8 @@ def kind(question: str) -> str | None:
         return "order"
     if _MENTION.match(q):
         return "mentions"
+    if holding_ask(q):
+        return "holding"
     due = due_ask(q)
     found = _DATES.search(q)
     if found and _only_a_window(found.group("rest")):
@@ -521,7 +523,108 @@ def _say_due(out, inside: list, label: str, said: str, today: date) -> None:  # 
         out.lines.append(f"{realise.count_word(len(inside) - SHOWN).capitalize()} more are on the right.")
 
 
-_SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for}
+# --- kind questions (audit 1029 C34) ---------------------------------------------------------
+#
+# "Which notes have checklists" asks for a KIND of note, not a word to find: it
+# is answered from every note's shape (task lines, bullet lines, days), counted.
+
+_HOLD_KIND = {
+    "checklist": "tasks", "checklists": "tasks", "task": "tasks", "tasks": "tasks", "todo": "tasks", "todos": "tasks", "to-do": "tasks",
+    "to-dos": "tasks", "checkbox": "tasks", "checkboxes": "tasks",
+    "date": "dates", "dates": "dates", "deadline": "dates", "deadlines": "dates",
+    "list": "items", "lists": "items", "bullet": "items", "bullets": "items",
+}
+_HOLD_OPEN = frozenset({"open", "unticked", "unchecked", "incomplete", "unfinished", "outstanding"})
+#: Words that join the question to its kind and say nothing about it.
+_HOLD_JOIN = frozenset("that which with have has contain contains containing include includes any a an some got i do are is there in them me all of my the your".split())
+#: Words that may sit beside the kind ("bullet lists", "due dates", "to do lists").
+_HOLD_BESIDE = frozenset({"bulleted", "numbered", "check", "to", "do", "due", "new", "item", "items", "task", "checklist"})
+_HOLD_LABEL = {"tasks": "checklists", "dates": "dates", "items": "lists"}
+
+
+def holding_ask(question: str) -> tuple[str, bool, str] | None:
+    """`(kind, open_only, mode)` for "which notes have checklists" (mode
+    "which"), "how many notes have dates" ("count") or "open checklist items"
+    ("items"); None for anything else. Read word by word, so a long question
+    costs nothing and "which notes have dates about Lisbon" (a subject, not a
+    kind) is left to the search."""
+    t = _q(question).lower().split()
+    if not 2 <= len(t) <= 12:
+        return None
+    if t[0] in ("which", "what", "list", "show", "find", "give", "how") and ("notes" in t or "entries" in t):
+        tail = [w for w in t[min(t.index(x) for x in ("notes", "entries") if x in t) + 1:] if w not in _HOLD_JOIN]
+        mode = "count" if t[:2] == ["how", "many"] else "which"
+    elif _HOLD_OPEN & set(t) and "notes" not in t:
+        tail = [w for w in t if w not in _HOLD_JOIN and w not in ("what", "show", "list", "give", "find", "which", "still", "across", "me", "tick")]
+        mode = "items"
+    else:
+        return None
+    open_only = bool(_HOLD_OPEN & set(tail))
+    tail = [w for w in tail if w not in _HOLD_OPEN]
+    kinds = [_HOLD_KIND[w] for w in tail if w in _HOLD_KIND]
+    if mode == "items":
+        if not open_only or not tail or any(w not in ("checklist", "checklists", "item", "items") for w in tail):
+            return None
+        return "tasks", True, "items"
+    if not tail or any(w not in _HOLD_KIND and w not in _HOLD_BESIDE for w in tail):
+        return None
+    if kinds:
+        return kinds[-1], open_only, mode
+    return ("tasks", True, mode) if open_only and tail[-1] in ("item", "items") else None
+
+
+def _holding_sentences(view, kind: str, open_only: bool, today: date) -> list:  # noqa: ANN001
+    """The sentences that make `view` a note of `kind`."""
+    if kind == "dates":
+        found = [_sentence_at(view, at) for _day_, at in _dated(view, today, "future") + _dated(view, today, "past")]
+        return [s for s in found if s is not None]
+    if kind == "tasks":
+        return [s for s in view.sentences if s.kind == "task" and not (open_only and s.done)]
+    return [s for s in view.sentences if s.kind in ("item", "task")]
+
+
+_TICK = re.compile(r"^\s*[-*+]\s*\[[ xX]\]\s*")
+
+
+def _holding_detail(view, got: list, kind: str, today: date) -> str:  # noqa: ANN001
+    """What makes the note one of its kind, in a few words."""
+    if kind == "tasks":
+        tasks = [s for s in view.sentences if s.kind == "task"]
+        return f"{sum(1 for s in tasks if s.done)} of {len(tasks)} ticked"
+    if kind == "dates":
+        days = _dated(view, today, "future") or _dated(view, today, "past")
+        return _day(days[0][0], today)
+    return _plural(len(got), "item")
+
+
+def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    kind, open_only, mode = holding_ask(asked)  # type: ignore[misc]
+    hits = [(v, got) for v in views if (got := _holding_sentences(v, kind, open_only, today))]
+    hits.sort(key=lambda h: (h[0].written or date.min, -h[0].rank), reverse=True)
+    label = "open checklist items" if open_only else _HOLD_LABEL[kind]
+    if not hits:
+        out.lines.append(f"You have no {label}." if mode == "items" else f"None of your notes have {label}.")
+        return True
+    if mode == "items":
+        items = [(v, s) for v, got in hits for s in got]
+        header = f"You have {_plural_words(len(items), 'open checklist item')} across {_plural_words(len(hits), 'note')}:"
+        lines = [(f"{_TICK.sub('', s.text).strip()}, in {_title(v)}", v, s) for v, s in items[:SHOWN]]
+        _block(out, header, lines)
+        if len(items) > SHOWN:
+            out.lines.append(f"{realise.count_word(len(items) - SHOWN).capitalize()} more are on the right.")
+        return True
+    verb = "has" if len(hits) == 1 else "have"
+    if mode == "count":
+        out.lines.append(f"{_plural_words(len(hits), 'note').capitalize()} {verb} {label}.")
+        return True
+    lines = [(f"{_title(v)}, {_holding_detail(v, got, kind, today)}", v, got[0]) for v, got in hits[:SHOWN]]
+    _block(out, f"{_plural_words(len(hits), 'note').capitalize()} {verb} {label}:", lines)
+    if len(hits) > SHOWN:
+        out.lines.append(f"{realise.count_word(len(hits) - SHOWN).capitalize()} more are on the right.")
+    return True
+
+
+_SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
 
 
 def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

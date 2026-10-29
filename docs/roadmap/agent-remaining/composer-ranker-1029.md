@@ -1,13 +1,9 @@
 # Composer ranker and slot-first answers (audit 1029 ranks 18 and 19)
 
-Built: `ai/note_rank.py` (one ranker: exact title, defining note, title holds the subject, rest; newest first inside a tier; `recency` for "latest about X" and counts) and `ai/composer_slots.py` (did-I with a tick verdict, what is left on a named list, how long since from a dated line, compare the two X notes). Tests: `tests/test_composer_ranker_1029.py`, `tests/test_composer_slots_1029.py`.
+Built: `ai/note_rank.py` (one ranker: exact title, defining note, title holds the subject, rest; newest first inside a tier; `recency` for "latest about X" and counts) and `ai/composer_slots.py` (did-I with a tick verdict, what is left on a named list, how long since from a dated line, compare the two X notes), then a slot table (`SLOTS`: temperature, date, quantity with a unit) with a `_value` reader beside `_did`, so a value question is answered by the sentence that holds the value or says none does and cites the nearest note (C21); verb and noun synonym pairs (`composer_tables.VERB_NOUN_PAIRS`, C21); how often by notes titled or tagged and how old by the note's start date (C23); kind questions, "which notes have checklists / dates / lists" and "open checklist items" (`composer_lists.holding_ask`, `list_pool`, C34). Tests: `tests/test_composer_ranker_1029.py`, `tests/test_composer_slots_1029.py`, `tests/test_composer_slots_1029b.py`.
 
-Remaining, in order:
+Remaining, in order (items 1 to 4 are built, above; numbers kept):
 
-1. C21 value slots: "what temperature do I bake at", "when is the race", "what is the beta date", "how many km did I run on Sunday". The answer sentence must hold the slot (a number with a unit, a date); none found says so. `composer_slots` has the shape to extend (a `_value` reader beside `_did`).
-2. C21 synonyms: "when do I fly" finds nothing because "fly" does not stem to "flight"; add the verb to noun pairs to `query_understanding` (flight, travel, depart).
-3. C23: "how often do I write about baking" (count notes tagged or titled baking, not one mention), "how often do I run", "how old is my sourdough starter" (from the note's start date).
-4. C34: "which notes have checklists / dates / lists" and "open checklist items" are kind questions, not keywords; count notes with task sentences.
 5. C36: "compare sourdough loaf one and two" (prefix expansion: "sourdough loaf" + "one", "two"), "how are Deep Work and The Overstory different" (a `compare_sides` pattern), "which is longer, the budget or the Lisbon trip" (state both lengths), "what changed between the two".
 6. C33 residue: "what do I need to do before the Lisbon trip" with no task list in the trip note falls through to the generic list lens; it should say which notes hold dates or tasks for the trip.
 7. `composer_plan._until` prefers the exact-title note only when it counts down to a later day; a Dentist note dated today still loses to a later "Dentist booked for Friday" line (kept for `test_plan_phrasings`).

@@ -258,6 +258,10 @@ class Slot(NamedTuple):
     #: What is missing when no sentence holds it ("a temperature"); `{unit}`
     #: is the question's own unit word.
     noun: str
+    #: The ordinary readers already word a value they find (a day is worked
+    #: out against the note's own date, "tomorrow" in a July note is not
+    #: tomorrow): the slot only speaks to say that no sentence holds one.
+    plain: bool = False
 
 
 _WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
@@ -357,11 +361,10 @@ def _read_date(text: str, unit: str | None) -> str | None:
     return None
 
 
-#: The table. A new kind is a row here and a line in `_shown` if its value
-#: needs working out (a date is worked out against today).
+#: The table. A new kind is a row here.
 SLOTS = (
     Slot("temperature", _ask_temperature, _read_temperature, "temperature"),
-    Slot("date", _ask_date, _read_date, "date"),
+    Slot("date", _ask_date, _read_date, "date", plain=True),
     Slot("quantity", _ask_quantity, _read_quantity, "number of {unit}"),
 )
 
@@ -390,19 +393,6 @@ def _score(view, sentence, stems: list[str]) -> int:  # noqa: ANN001
     have = set(_norm(sentence.text))
     head = set(view.title_words) | set(view.filed_words)
     return sum(2 * composer._holds(s, have) + composer._holds(s, head) for s in stems)  # noqa: SLF001
-
-
-def _shown(slot: Slot, value: str, today: date) -> str:
-    """The value as it is said: a date is worked out against today."""
-    if slot.kind != "date":
-        return value
-    found = when_words.span(value, today, "future") or when_words.span(value, today, "past")
-    if not found:
-        return value
-    day = found[0]
-    n = (day - today).days
-    when = "today" if n == 0 else "tomorrow" if n == 1 else "yesterday" if n == -1 else f"in {n} days" if n > 0 else f"{-n} days ago"
-    return f"{composer_lists._day(day, today)}, {when}"  # noqa: SLF001
 
 
 def _weekday_fits(ask: Ask, view, sentence) -> int:  # noqa: ANN001
@@ -435,9 +425,11 @@ def _value(out, slot: Slot, ask: Ask, views: list, today: date) -> bool:  # noqa
             fit = _weekday_fits(ask, view, s)
             if value and fit >= 0:
                 held.append((score, fit, -view.rank, view, s, value))
+    if held and slot.plain:
+        return False
     if held:
         _score_, _fit, _rank, view, s, value = max(held, key=lambda h: h[:3])
-        line = f"Your notes say {_shown(slot, value, today)}, in {composer_lists._title(view)}: {s.text.strip()}"  # noqa: SLF001
+        line = f"Your notes say {value}, in {composer_lists._title(view)}: {s.text.strip()}"  # noqa: SLF001
         out.lines.append(line)
         composer_lists._cite(out, view, s, line)  # noqa: SLF001
         return True
@@ -470,6 +462,8 @@ def _filed_under(views: list, stems: list[str]) -> list:
 def _often(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN001
     """"How often do I write about baking": the notes titled or tagged baking,
     counted, with the gap between them; a mention in another note is not one."""
+    if rest[0] in ("mention", "mentioned"):
+        return False  # a count of mentions: `composer_lists` counts them
     stems = _stems(" ".join(w for w in rest if w not in _ABOUT))
     if not stems:
         return False
