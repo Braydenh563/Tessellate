@@ -1,16 +1,14 @@
 mode: continue
-status: stopped (usage, context)
+status: running
 max-continues: 40
 max-idle-minutes: 90
-started: 2026-10-28 night
-stop: owner's 62% weekly usage line
+started: 2026-10-29 02:50Z
+stop: owner's 70% weekly usage line, then finish up and wait
 
-- [x] Clean-eye audit A: whiteboard + mind map (audit-1028-board.md)
-- [x] Clean-eye audit B: documents + code editor (audit-1028-docs.md)
-- [x] Clean-eye audit C: backend security, architecture, perf (audit-1028-backend.md)
-- [x] Clean-eye audit D: shell, notes, library, dashboard, graph, timeline, settings, every action/command (audit-1028-shell.md)
-- [x] Clean-eye audit E: agent (chat, tools, Ask), composer, Guide (audit-1028-agent.md)
-- [x] Compare audits to plans; rank by impact (audit-1028-ranked.md)
-- [x] Fix batch 1 (top impact), PR 211
-- [x] Fix batch 2, PR 211 (composer, board2, help, E10)
-- [x] Morning summary, retro
+- [ ] Merge the 1436 backgrounds agent (Wander, Drift, paused art as a picture, cheaper-equivalent pass)
+- [ ] Rank audit-1029 composer, extras, notes, graph, harness into audit-1029-ranked.md
+- [ ] Fix batch A: high findings (harness H1 confirm card, H2 write tools confirm, graph 2,000-note worker crash, graph popup drops edits, orphaned link rows N13)
+- [ ] Fix batch B: next by rank (deadlines on AI routes H3/H4, decorate routes waiting on a hung model H5/H6, MCP exits on bad JSON-RPC H9)
+- [ ] INBOX 1435 Appearance panel (UI_MODERNISATION_PLAN, "Placed from INBOX, 2026-10-29")
+- [ ] Fix batch C onward by rank until 70%
+- [ ] Morning summary, retro
