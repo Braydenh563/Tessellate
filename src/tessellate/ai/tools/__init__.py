@@ -23,7 +23,7 @@ from datetime import timedelta
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, skills, toolrank, toolwords
+from tessellate.ai import librarian, note_rank, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events
@@ -87,7 +87,9 @@ def _search_notes(session: Session, args: dict) -> dict:
         session, str(args["query"]), deps.get_embeddings(), limit=limit
     )
     notes = []
-    for entry in found.entries:
+    #: The same order Ask lists in (audit 1029 C20), unless the search gave the newest.
+    entries = found.entries if found.mode == "recent" else note_rank.lead(found.entries, str(args["query"]))
+    for entry in entries:
         summary = _note_summary(session, entry)
         if entry.id in found.connected_ids:
             # **Why this note is here.** It did not match the search, it is

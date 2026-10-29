@@ -1382,6 +1382,27 @@ def _dated_candidates(session: Session, mentioned: set, limit: int) -> list[Entr
     return list(session.scalars(select(Entry).where(Entry.id.in_(mentioned)).order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
 
 
+def _latest_about(session: Session, query: str, embeddings: EmbeddingService, limit: int, found: dict, locale: str | None):  # noqa: ANN202
+    """"The latest notes about running", "the last three notes": the subject
+    filters first, then the newest of what it left (audit 1029 C31); the
+    newest notes of the whole notebook were the answer to a subject never
+    searched. None when the query is no such request."""
+    from tessellate.ai import note_rank
+
+    #: A find's topic keeps no noun ("latest", "last three"): short, it is read bare.
+    bare = len(query.split()) <= 3
+    rec = note_rank.recency(query, bare=bare)
+    if rec is None:
+        return None
+    if not rec.subject:
+        return (_without_private(recent_entries(session, limit=rec.count)), "recent") if rec.said_count or bare else None
+    entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)
+    terms = _meaningful_terms(rec.subject)
+    held = [e for e in entries if mode != "recent" and any(t in (e.content or "").lower() for t in terms)]
+    held.sort(key=lambda e: (e.created_at, e.id), reverse=True)
+    return _without_private(held[: rec.count]), mode if held else "keyword"
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1403,6 +1424,9 @@ def _retrieve(
     found["connected"] = set()
     mentioned = day_mentions(session, asked.since, asked.until, asked.when_phrase) if asked.has_range else set()
     found["mentioned"] = mentioned
+    latest = _latest_about(session, query, embeddings, limit, found, locale)
+    if latest is not None:
+        return latest
     early = _early_answer(session, query, asked, limit, mentioned)
     if early is not None:
         return early

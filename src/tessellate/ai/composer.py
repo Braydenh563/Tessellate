@@ -408,7 +408,7 @@ _ASKING_WORDS = frozenset(
     wrote written write mention mentions mentioning mentioned explain should
     could would way am i me my mine whose whom anyone someone near after
     before during without within over under around across through since
-    until also again just only some other one any every each
+    until also again just only some other one any every each main
     remind idea forgot forget remember wonder wondering deal hows whats
     wheres whens whos whys going happen happened happening news anything
     something stuff info information details please thanks thank check
