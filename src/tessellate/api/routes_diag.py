@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session, aliased
 from tessellate import __version__
 from tessellate.core import deps, diagring, jobruns, lagwatch, maintenance
 from tessellate.core.database import Document, Entry, EntryLink
+from tessellate.entry import manager
 from tessellate.core.deps import get_session
 
 router = APIRouter(tags=["logs"])
@@ -39,10 +40,11 @@ def counts(session: Session) -> dict:
         return _counts["value"]
     try:
         live_from, live_to = aliased(Entry), aliased(Entry)
-        notes_q = select(func.count(Entry.id)).where(Entry.is_deleted == False)  # noqa: E712
-        boards = session.scalar(notes_q.where(Entry.board_settings.is_not(None))) or 0
+        boards = session.scalar(
+            select(func.count(Entry.id)).where(Entry.is_deleted == False, Entry.board_settings.is_not(None))  # noqa: E712
+        ) or 0
         value = {
-            "notes": (session.scalar(notes_q) or 0) - boards,
+            "notes": manager.count_notes(session),
             "boards": boards,
             "docs": session.scalar(select(func.count(Document.id)).where(Document.deleted_at.is_(None))) or 0,
             #: Links between notes still in the notebook, the graph's own count: a binned

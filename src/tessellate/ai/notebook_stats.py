@@ -44,6 +44,7 @@ from sqlalchemy.orm import Session, aliased
 
 from tessellate.ai import spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
+from tessellate.entry import manager
 
 #: How many rows a "top N" answer lists. Ten is a glance; fifty is a report
 #: nobody reads in a chat bubble, and the follow-up question ("show me all of
@@ -995,7 +996,7 @@ def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -
         exists().where(EntryLink.target_entry_id == Entry.id, EntryLink.id.in_(visible_link)),
     )
     return {
-        "notes": len(rows),
+        "notes": manager.count_notes(session),
         "words": words,
         "tags": len(tags),
         "categories": session.scalar(select(func.count(Category.id))) or 0,

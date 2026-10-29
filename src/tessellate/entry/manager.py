@@ -337,6 +337,9 @@ def _list_entries_filter(
         query = query.where(Entry.is_deleted == False)  # noqa: E712
     if not include_archived:
         query = query.where(Entry.archived_at.is_(None))
+    #: A blank note (whitespace only, INBOX 1439) is nobody's note: no list
+    #: row, no count, no graph node, whichever surface asks.
+    query = query.where(func.trim(Entry.content, " \t\r\n") != "")
     if boards == BOARDS_EXCLUDE:
         query = query.where(Entry.is_board == False)  # noqa: E712
     elif boards == BOARDS_ONLY:
@@ -395,19 +398,46 @@ def list_sort_key(entry: Entry) -> tuple:
     return (bool(entry.pinned), entry.created_at, entry.id)
 
 
-def count_entries(
+def note_filter(
+    query,
+    *,
+    include_archived: bool = True,
+    boards: str = BOARDS_EXCLUDE,
+    include_drafts: bool = False,
+):
+    """The where-clause that says what a note is (see `count_notes`); a
+    surface that lists or groups notes builds on this, never its own."""
+    #: `deleted_at` too: the bin is both flags, and some writers set one.
+    query = _list_entries_filter(query, False, include_archived, boards).where(Entry.deleted_at.is_(None))
+    return query if include_drafts else query.where(Entry.is_draft == False)  # noqa: E712
+
+
+def count_notes(
     session: Session,
-    include_deleted: bool = False,
-    include_archived: bool = False,
-    boards: str = BOARDS_INCLUDE,
+    *,
+    include_archived: bool = True,
+    boards: str = BOARDS_EXCLUDE,
+    include_drafts: bool = False,
 ) -> int:
-    """How many `list_entries` would return with no `limit`, the total a
-    paginated caller needs to know when it has seen everything. Takes the
-    same `boards` mode for the reason `_list_entries_filter` exists at all:
-    a count that includes boards over a list that does not is a header that
-    lies about the list under it."""
-    query = _list_entries_filter(
-        select(func.count()).select_from(Entry), include_deleted, include_archived, boards
+    """How many notes there are: the one definition every count in the app uses.
+
+    A note is every entry not in the bin, archived included; boards, drafts
+    (the graph, the categories and the Notes tab each keep them out, and a
+    blank one is a draft nobody wrote) and blank entries are not notes.
+    INBOX 1439: six surfaces counted six ways, 282, 279 and 277 in the same
+    minute. Private notes count: that a note exists is not what privacy hides.
+    A surface that shows a subset, such as the Notes list (`include_archived=
+    False`, the archive is its own view; `include_drafts=True`, because the
+    list endpoint still returns the rows and the client sorts drafts out),
+    passes the flag that widens or narrows it; the predicate is
+    `_list_entries_filter`'s, so a paginated list's total cannot drift from the
+    rows under it either.
+    """
+    query = note_filter(
+        select(func.count()).select_from(Entry),
+        include_archived=include_archived,
+        boards=boards,
+        include_drafts=include_drafts,
     )
     return session.scalar(query) or 0
 
@@ -2431,12 +2461,7 @@ def all_categories(session: Session) -> list[dict]:
     cannot drift apart again by one of them gaining a filter.
     """
     rows = list(session.scalars(select(Category).order_by(Category.name)))
-    query = _list_entries_filter(
-        select(Entry.category_id, func.count(Entry.id)),
-        include_deleted=False,
-        include_archived=False,
-        boards=BOARDS_EXCLUDE,
-    ).where(Entry.is_draft == False)  # noqa: E712
+    query = note_filter(select(Entry.category_id, func.count(Entry.id)), include_archived=False)
     counts = {
         category_id: total
         for category_id, total in session.execute(query.group_by(Entry.category_id))

@@ -2504,7 +2504,7 @@ def list_entries(
             )
         wanted = [int(part) for part in parts]
         entries = manager.list_entries(session, boards=boards, ids=wanted)
-        response.headers["X-Total-Count"] = str(manager.count_entries(session, boards=boards))
+        response.headers["X-Total-Count"] = str(manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True))
         return _to_out_bulk(session, entries)
 
     if deleted or archived:
@@ -2538,7 +2538,7 @@ def list_entries(
             response.headers[paging.NEXT_CURSOR] = paging.keyset_cursor(
                 manager.list_sort_key(entries[-1])
             )
-        total = manager.count_entries(session, boards=boards)
+        total = manager.count_notes(session, include_archived=False, boards=boards, include_drafts=True)
     response.headers["X-Total-Count"] = str(total)
     return _to_out_bulk(session, entries)
 
@@ -2558,7 +2558,7 @@ def most_accessed(session: Session = Depends(get_session)) -> list[EntryOut]:
 # content over the wire just to find out it isn't empty.
 @router.get("/count")
 def count_entries(session: Session = Depends(get_session)) -> dict:
-    return {"count": session.scalar(select(func.count(Entry.id))) or 0}
+    return {"count": manager.count_notes(session)}
 
 
 #: The most ids one `/entries/changes` answer carries; past it, `more` says

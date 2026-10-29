@@ -519,7 +519,7 @@ def test_a_verifier_may_not_write(app_state, fake_ollama, fake_embeddings, sessi
     run = run_for_test(fake_ollama, skill="sneaky")
     assert run.verification.ok is False
     assert "cannot check anything" in run.verification.reason
-    assert manager.count_entries(session) == 1
+    assert manager.count_notes(session, include_archived=False, boards=manager.BOARDS_INCLUDE, include_drafts=True) == 1
 
 
 def test_the_read_only_built_ins_say_they_change_nothing_and_are_checked():
@@ -647,7 +647,7 @@ def test_a_verify_argument_only_ever_narrows_a_reading(app_state, session):
     )
     assert got is None
     assert "cannot check anything" in why
-    assert manager.count_entries(session) == 1
+    assert manager.count_notes(session, include_archived=False, boards=manager.BOARDS_INCLUDE, include_drafts=True) == 1
 
 
 def test_the_write_skill_in_the_catalogue_declares_its_own_postcondition():

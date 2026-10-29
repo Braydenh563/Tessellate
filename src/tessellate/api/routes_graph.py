@@ -829,10 +829,7 @@ def _build_graph(
     #: same way, so every helper below takes it unchanged.
     entries = list(
         session.execute(
-            select(*_GRAPH_COLUMNS).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_draft == False,  # noqa: E712
-            )
+            manager.note_filter(select(*_GRAPH_COLUMNS), boards=manager.BOARDS_INCLUDE)
         )
     )
     #: **A board is an `Entry`, so "off" has to mean "not on the map at all".**
