@@ -654,6 +654,30 @@ def _summarise(text: str) -> dict | None:
 OWN_WORDS = ("content", "title", "tags", "text", "said")
 
 
+def _about_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
+    """Only slang spelled out, no misspelling put right: the notes a command
+    names keep the person's own word ("delete notes about uni" is their
+    category Uni, not "university"; audit 1028 E9)."""
+    typed = read(text, now, locale)
+    if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
+        return {**found, "about": typed["about"]}
+    return found
+
+
+def _words_as_typed(found: dict, text: str, now: datetime, locale: str | None) -> dict:
+    """The act's own words from the typed reading, for the same intent."""
+    from tessellate.ai import question_noise
+
+    head, _, tail = (text or "").partition(" ")
+    typed = read(text, now, locale) or (read(f"{question_noise.repair(head)} {tail}", now, locale) if tail else None)
+    #: A reminder's words are cut at its time ("tmrw" is left in the typed
+    #: reading), so those are taken only when they are the same length.
+    if typed is None or typed.get("intent") != found.get("intent"):
+        return found
+    own = {k: typed[k] for k in OWN_WORDS if k in typed and k in found and (not isinstance(typed[k], str) or len(typed[k].split()) == len(str(found[k]).split()))}
+    return {**found, **own}
+
+
 def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """`read` of the sentence as the speller puts it right ("remnd me to pay
     rent on friday", "delte my old wifi note"), else as typed: the owner's
@@ -667,20 +691,9 @@ def read_typed(text: str, now: datetime, locale: str | None = None) -> dict | No
     #: ("add oat milk to the packing list" must not write "At milk"); the
     #: speller only serves the verb and the target (audit 1029 C40).
     if found is not None and "about" in found and fixed != text and not fixes:
-        #: Only slang spelled out, no misspelling put right: the notes a
-        #: command names keep the person's own word ("delete notes about uni"
-        #: is their category Uni, not "university"; audit 1028 E9).
-        typed = read(text, now, locale)
-        if typed is not None and typed.get("intent") == found.get("intent") and "about" in typed:
-            found = {**found, "about": typed["about"]}
+        found = _about_as_typed(found, text, now, locale)
     if found is not None and fixed != text:
-        head, _, tail = (text or "").partition(" ")
-        typed = read(text, now, locale) or (read(f"{question_noise.repair(head)} {tail}", now, locale) if tail else None)
-        #: A reminder's words are cut at its time ("tmrw" is left in the typed
-        #: reading), so those are taken only when they are the same length.
-        if typed is not None and typed.get("intent") == found.get("intent"):
-            own = {k: typed[k] for k in OWN_WORDS if k in typed and k in found and (not isinstance(typed[k], str) or len(typed[k].split()) == len(str(found[k]).split()))}
-            found = {**found, **own}
+        found = _words_as_typed(found, text, now, locale)
     if found is not None or not text:
         return found
     #: One word a slip from a word the commands read ("pin the dentist noe",
