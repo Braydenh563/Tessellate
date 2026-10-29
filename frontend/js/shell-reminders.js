@@ -516,14 +516,6 @@ const PHONE_BAR_RECEDE_PX = 12;
 //: coming back to one mid-page should not read as a scroll up.
 const phoneBarLastTop = new WeakMap();
 
-//: The attribute on the dock and a mirror on the root: the status bar's rule
-//: reads the root's, so no `:root:has(...)` has to be re-matched on a scroll.
-function setTabBarReceded(dock, on) {
-  if (!dock) return;
-  dock.toggleAttribute("data-receded", on);
-  document.documentElement.toggleAttribute("data-dock-receded", on);
-}
-
 function markTabBarRecede(region) {
   const dock = document.getElementById("phone-tab-dock");
   if (!dock) return;
@@ -531,7 +523,7 @@ function markTabBarRecede(region) {
   //: recede, and an attribute left behind would be waiting for the next
   //: resize down.
   if (!window.matchMedia(PHONE_TABS).matches) {
-    setTabBarReceded(dock, false);
+    dock.removeAttribute("data-receded");
     return;
   }
   const top = region.scrollTop;
@@ -541,7 +533,7 @@ function markTabBarRecede(region) {
   //: list with the captions still folded away is the state nobody asked for,
   //: and it is the state a threshold alone leaves you in.
   if (top <= PHONE_BAR_RECEDE_PX) {
-    setTabBarReceded(dock, false);
+    dock.removeAttribute("data-receded");
     return;
   }
   //: The first scroll event a region ever sends has no previous reading, and
@@ -551,8 +543,8 @@ function markTabBarRecede(region) {
   const delta = top - (last ?? 0);
   //: A dead band in both directions, so a finger resting on a list does not
   //: flicker the bar between its two heights.
-  if (delta > PHONE_BAR_RECEDE_PX) setTabBarReceded(dock, true);
-  else if (delta < -PHONE_BAR_RECEDE_PX) setTabBarReceded(dock, false);
+  if (delta > PHONE_BAR_RECEDE_PX) dock.setAttribute("data-receded", "1");
+  else if (delta < -PHONE_BAR_RECEDE_PX) dock.removeAttribute("data-receded");
 }
 
 let scrollEdgeFrame = 0;
@@ -627,7 +619,7 @@ function syncScrollEdges() {
   //: And a tab you have just arrived on shows its bar whole, whatever the tab
   //: you left was scrolled to. `syncScrollEdges` already runs on a tab change
   //: and on a resize, which are the two moments this is true of.
-  setTabBarReceded(document.getElementById("phone-tab-dock"), false);
+  document.getElementById("phone-tab-dock")?.removeAttribute("data-receded");
 }
 
 window.addEventListener("resize", syncScrollEdges, { passive: true });

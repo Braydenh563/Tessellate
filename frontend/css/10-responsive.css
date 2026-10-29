@@ -786,7 +786,7 @@ header#top-bar[data-scrolled="1"],
      and the status bar at the end of a page). Its reservation stays put, for
      the reason above, so it is moved rather than resized: a transform, which
      changes nothing the scroll that receded the bar can see. */
-  :root[data-dock-receded] #status-bar {
+  :root:has(#phone-tab-dock[data-receded]) #status-bar {
     transform: translateY(calc(var(--bottom-tabs-h) - var(--target-min)));
   }
   #phone-tab-dock[data-receded] #tab-bar button .tab-label,

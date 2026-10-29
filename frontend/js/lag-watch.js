@@ -65,7 +65,7 @@ function lagFile(url) {
 
 //: The scripts that ran in a long frame, longest first: "documents.js
 //: docRender 412ms (layout 120ms)".
-function lagScriptCause(scripts) {
+function lagScriptCause(scripts, frame) {
   return [...(scripts || [])]
     .sort((a, b) => b.duration - a.duration)
     .slice(0, 3)
@@ -75,9 +75,30 @@ function lagScriptCause(scripts) {
       //: The sampler's own wrapper runs every animation callback, so LoAF names this file for
       //: them: say what they are and which loop cost most this second.
       const file = lagFile(s.sourceURL) === "lag-watch.js" ? `animation loops (top: ${lagRafTop()})` : `${lagFile(s.sourceURL)} ${name}`;
-      return `${file} ${Math.round(s.duration)}ms${layout}`;
+      return `${file} ${Math.round(s.duration)}ms${layout}${lagApiWho(name, frame)}`;
     })
     .join("; ");
+}
+
+//: `Response.json.then` is how LoAF names the continuation of `apiJson`'s caller.
+//: Each answer is stamped with its path and the first script that asked.
+const LAG_API = [];
+
+function lagApi(path) {
+  Error.stackTraceLimit = 8;
+  const who = lagStackOwner(new Error().stack, /lag-watch\.js|at (?:async )?apiJson /);
+  Error.stackTraceLimit = 10;
+  return (data) => {
+    LAG_API.push({ t: performance.now(), label: `${String(path).split("?")[0]} from ${who}` });
+    if (LAG_API.length > 24) LAG_API.shift();
+    return data;
+  };
+}
+
+function lagApiWho(name, frame) {
+  if (!/Response\.json\.then/.test(name)) return "";
+  const seen = new Set(LAG_API.filter((a) => a.t >= frame.startTime && a.t <= frame.startTime + frame.duration).map((a) => a.label));
+  return seen.size ? ` [apiJson ${[...seen].slice(0, 3).join(", ")}]` : "";
 }
 
 function lagNote(kind, ms, cause, extra = {}) {
@@ -135,7 +156,7 @@ function lagFlush() {
 function lagFrame(e) {
   if (e.duration < LAG_FRAME_MS) return;
   const layout = e.styleAndLayoutStart ? e.startTime + e.duration - e.styleAndLayoutStart : 0;
-  const cause = lagScriptCause(e.scripts) || (layout >= 50 ? "style and layout" : "");
+  const cause = lagScriptCause(e.scripts, e) || (layout >= 50 ? "style and layout" : "");
   lagNote("frame", e.duration, cause, { blocking_ms: Math.round(e.blockingDuration || 0), layout_ms: Math.round(layout) });
 }
 
@@ -163,9 +184,9 @@ function lagObserve(type, handle, options = {}) {
 }
 
 //: The first stack line outside this file: "atlas-motion.js tick".
-function lagStackOwner(stack) {
+function lagStackOwner(stack, skip) {
   for (const line of String(stack).split("\n").slice(1)) {
-    if (line.includes("lag-watch.js")) continue;
+    if (skip ? skip.test(line) : line.includes("lag-watch.js")) continue;
     const m = line.match(/at (?:(\S+) \()?[^\s()]*?([^/\s()]+\.js)[?:\d]/);
     if (m) return m[1] ? `${m[2]} ${m[1].replace(/^.*\./, "")}` : m[2];
   }
@@ -320,6 +341,15 @@ function lagStart() {
   }
   //: A report waiting for its batch is sent when the page is hidden or closed.
   document.addEventListener("visibilitychange", () => document.hidden && lagFlush());
+}
+
+//: Wrapped here rather than edited in app.js (the boot scripts are at their gzip cap; status.js
+//: wraps it the same way). The caller is read before the call, while it is still on the stack.
+if (typeof apiJson === "function") {
+  const apiJsonInner = apiJson;
+  apiJson = function apiJson(path, options) {
+    return apiJsonInner(path, options).then(lagApi(path));
+  };
 }
 
 lagStart();

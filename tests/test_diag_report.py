@@ -163,3 +163,33 @@ def test_bare_stalls_merge_into_one_counted_report():
         ("diag-report.js", "lag-watch.js"),
     )
     assert out == [1, 5, 600, "no script attributed"]
+
+
+API_HARNESS = r"""
+const vm = require("vm");
+const fs = require("fs");
+const ctx = vm.createContext({ console, navigator: {}, document: { hidden: false, getElementsByTagName: () => [], addEventListener() {} }, window: {}, Error, Map, WeakMap, Set, Promise, performance: { now: () => 100 }, setTimeout: () => 1 });
+vm.runInContext("var LAZY_MODULES = {}; var prefs = { get: (k, d) => d, set() {} }; var recordBrowserLog = () => {}; var api = () => Promise.resolve(); var apiJson = async (p) => ({ p });", ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8"), ctx);
+new vm.Script("async function loadNotes() { return apiJson('/entries?limit=5'); }", { filename: "http://h/js/notes-list.js?v=1" }).runInContext(ctx);
+const script = { duration: 500, sourceFunctionName: "", invoker: "Response.json.then", sourceURL: "http://h/js/app.js?v=1", forcedStyleAndLayoutDuration: 400 };
+vm.runInContext("loadNotes()", ctx).then((data) => {
+  const hit = vm.runInContext("lagScriptCause", ctx)([script], { startTime: 50, duration: 200 });
+  const miss = vm.runInContext("lagScriptCause", ctx)([script], { startTime: 500, duration: 200 });
+  console.log(JSON.stringify({ data, hit, miss }));
+});
+"""
+
+
+def test_a_long_frame_in_apijsons_continuation_names_the_path_and_the_awaiting_caller():
+    """INBOX 1433: `app.js Response.json.then` named nobody. The frame line
+    now ends with the paths whose answers landed in it and the first script
+    outside the plumbing that asked."""
+    result = subprocess.run(
+        ["node", "-e", API_HARNESS, str(JS / "lag-watch.js")], capture_output=True, text=True, check=True, timeout=30
+    )
+    out = json.loads(result.stdout)
+    assert out["data"] == {"p": "/entries?limit=5"}, "the answer passes through untouched"
+    assert out["hit"].startswith("app.js Response.json.then 500ms (forced layout 400ms)")
+    assert "[apiJson /entries from notes-list.js loadNotes]" in out["hit"]
+    assert "apiJson" not in out["miss"], "an answer outside the frame is not blamed"

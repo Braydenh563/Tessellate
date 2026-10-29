@@ -40,7 +40,7 @@ def test_a_toast_between_600_and_1100_leaves_the_sub_tabs_alone() -> None:
     css = _css("08-consistency.css")
     block = css[css.index("@media (min-width: 600px) and (max-width: 1099.98px)"):]
     block = block[: block.index("\n}\n")]
-    assert "#tab-chat:not(.hidden)" in block
+    assert 'body:not([data-tab="chat"]) #toast-box' in block
     assert "top: auto;" in block and "bottom: calc(var(--status-bar-h)" in block
 
 
