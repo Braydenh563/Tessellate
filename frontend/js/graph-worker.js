@@ -3182,6 +3182,20 @@ self.onmessage = (event) => {
       settleGlide.left = 0;
       pending.on = false;
       untangle.holding = false;
+      //: **A layout restored at rest stays there** (audit G6; GRAPH_PLAN, the
+      //: map opens settled). Alpha 0 with every note placed is a saved or held
+      //: map that was untangled before it was kept: owing the passes again ran
+      //: them and their relax over it, every note moved (500 notes: RMS 99 px).
+      //: Nothing is stepped (the collision ignores alpha); it is posted as it
+      //: came and is at rest. Any later message that heats it runs as before.
+      if (message.alpha === 0 && nodes.every((n) => n.x !== undefined)) {
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        untangle.cleaned = true;
+        post(true);
+        self.postMessage({ type: "end", alpha: 0, epoch });
+        break;
+      }
       if (message.warm) pendingStart(true, message.intro === true, message.bloom === true);
       run();
       break;

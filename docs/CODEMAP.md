@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6786, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7046, test files 1499, tests 13186, plan headings 985.
+Counts: frontend functions 6786, frontend ids 2578, CSS sections 505, backend routes 632, backend modules 7046, test files 1500, tests 13188, plan headings 985.
 
 ## Frontend functions (6786)
 
@@ -20261,7 +20261,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13186)
+## Tests (13188)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20854,6 +20854,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_graph_popup_phone.py | 5 |
 | tests/test_graph_popup_props.py | 3 |
 | tests/test_graph_popup_room.py | 3 |
+| tests/test_graph_restore_holds.py | 2 |
 | tests/test_graph_settles.py | 3 |
 | tests/test_graph_similarity.py | 7 |
 | tests/test_graph_size_key.py | 5 |
