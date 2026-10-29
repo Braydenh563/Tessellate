@@ -391,12 +391,15 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: the switch left it on the button: a tab that focuses its own field on
 //: arrival (Chat's composer) keeps that. From the keyboard (`detail` 0) the
 //: focus stays in the strip, where its arrows are expected.
+//: Found two frames on (INBOX 1446): `switchTab` reveals after an await.
 function focusTabPage(button) {
-  if (document.activeElement !== button) return;
-  const target = tabPageScroller(button.dataset.tab);
-  if (!target) return;
-  if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
-  target.focus({ preventScroll: true });
+  afterFrames(() => {
+    if (document.activeElement !== button) return;
+    const target = tabPageScroller(button.dataset.tab);
+    if (!target) return;
+    if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  });
 }
 
 //: The region that scrolls a tab's page: the page itself, or the biggest
@@ -404,16 +407,16 @@ function focusTabPage(button) {
 function tabPageScroller(tab) {
   const page = document.getElementById(`tab-${tab}`);
   if (!page || !page.getClientRects().length) return null;
-  const scrolls = (el) => /(auto|scroll)/.test(getComputedStyle(el).overflowY) &&
-    el.scrollHeight > el.clientHeight + 1;
+  //: The size test first: a hidden or short box fails it without a style lookup.
+  const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
+    /(auto|scroll)/.test(getComputedStyle(el).overflowY);
   let target = scrolls(page) ? page : null;
   if (!target) {
     //: The page's biggest scrolling region: a tab whose own box does not
     //: scroll (Notes, the Library) scrolls a list inside it.
     let best = 0;
     for (const el of page.querySelectorAll("*")) {
-      if (!el.getClientRects().length || !scrolls(el)) continue;
-      const area = el.clientWidth * el.clientHeight;
+      const area = scrolls(el) ? el.clientWidth * el.clientHeight : 0;
       if (area > best) {
         best = area;
         target = el;

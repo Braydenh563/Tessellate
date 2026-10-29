@@ -202,7 +202,15 @@ function timelineCalDraw(box, span, first, last) {
   const ghosts = [...days.entries()].reduce((n, [key, day]) => n + (key >= first && key <= last ? day.rows.filter((r) => r.also).length : 0), 0);
   const head = timelineCalHead(span, first);
   const feed = $("timeline-feed");
+  const period = span === "day" ? TIMELINE_CAL_LONG.format(timelineCalDate(first))
+    : span === "week" ? `${TIMELINE_CAL_SHORT.format(timelineCalDate(first))} to ${TIMELINE_CAL_SHORT.format(timelineCalDate(last))}`
+      : TIMELINE_CAL_MONTH.format(timelineCalDate(first));
+  const shown = rows.length + ghosts;
+  //: Writes, then reads, then the trim (INBOX 1446): cells have fixed
+  //: heights, so the trim moves nothing the reads below measure.
   feed.classList.toggle("hidden", span !== "agenda");
+  $("timeline-count").textContent = `${shown}${timelineCal.more ? "+" : ""} item${shown === 1 ? "" : "s"} · ${period}`;
+  let trim = null;
   if (span === "agenda") {
     timelineCalMount(box, head);
     paintTimelineFeed([...rows].sort((a, b) => b.when - a.when));
@@ -210,13 +218,8 @@ function timelineCalDraw(box, span, first, last) {
     feed.replaceChildren();
     const grid = span === "month" ? timelineCalMonth(first, last, days) : timelineCalWeek(first, last, days, span);
     timelineCalMount(box, head, grid);
-    timelineCalFit(grid);
+    trim = timelineCalFit(grid);
   }
-  const period = span === "day" ? TIMELINE_CAL_LONG.format(timelineCalDate(first))
-    : span === "week" ? `${TIMELINE_CAL_SHORT.format(timelineCalDate(first))} to ${TIMELINE_CAL_SHORT.format(timelineCalDate(last))}`
-      : TIMELINE_CAL_MONTH.format(timelineCalDate(first));
-  const shown = rows.length + ghosts;
-  $("timeline-count").textContent = `${shown}${timelineCal.more ? "+" : ""} item${shown === 1 ? "" : "s"} · ${period}`;
   //: The hour rows open on the working day the first time a week is drawn,
   //: not at midnight; a repaint keeps where the reader scrolled to.
   const drawn = `${span}:${first}`;
@@ -230,6 +233,7 @@ function timelineCalDraw(box, span, first, last) {
   if (span === "month" && timelineCal.painted !== drawn) timelineCalShowToday(box);
   timelineCal.painted = drawn;
   timelineCalMoreHint(box);
+  if (trim) trim();
   timelineCalRefocus(box);
 }
 
@@ -455,19 +459,34 @@ function timelineCalFill(cell, key, day, items, place, stop) {
 //: How many one-line rows a month cell or all-day row has room for, then
 //: shows that many chips; the last slot is "+n more" when some are left, and
 //: a cell with room for no chip beside its "+n" shows dots for the notes.
-//: Run after the grid is attached, because it reads the laid-out height.
+//: Run once the grid is attached; returns the trim for the caller to run last.
 function timelineCalFit(root) {
+  //: Three passes, not one per cell (INBOX 1446): show all, measure all,
+  //: trim all. Cells have fixed heights (`--cal-month-cell`, `--cal-allday`).
+  const cells = [];
   for (const cell of root.querySelectorAll(".timeline-cal-monthcell, .timeline-cal-alldaycell")) {
     const chips = [...cell.querySelectorAll(":scope > .timeline-cal-item")];
     const more = cell.querySelector(":scope > .timeline-cal-more");
     const head = cell.querySelector(":scope > .timeline-cal-cellhead");
-    if (!more || !head || !cell.clientHeight) continue;
+    if (!more || !head) continue;
     for (const chip of chips) chip.hidden = false;
     more.hidden = false;
+    cells.push({ cell, chips, more, head });
+  }
+  const rooms = cells.map(({ cell, more, head }) => {
+    //: A cell with no box (the calendar is not on screen) is left as drawn.
+    if (!cell.clientHeight) return null;
     const style = getComputedStyle(cell);
     const gap = parseFloat(style.rowGap) || 0;
     const room = cell.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) - head.offsetHeight - gap;
-    const slots = Math.max(0, Math.floor((room + gap) / (more.offsetHeight + gap)));
+    return Math.max(0, Math.floor((room + gap) / (more.offsetHeight + gap)));
+  });
+  return () => cells.forEach(({ cell, chips, more }, n) => {
+    const slots = rooms[n];
+    if (slots === null) {
+      more.hidden = true;
+      return;
+    }
     const notes = chips.filter((chip) => chip.classList.contains("is-note"));
     const extra = Number(more.dataset.extra || 0);
     const total = chips.length + extra;
@@ -481,7 +500,7 @@ function timelineCalFit(root) {
     const left = dots ? chips.length - notes.length - keep : total - keep;
     more.hidden = left <= 0 || slots < 1;
     if (!more.hidden) more.textContent = `+${left} more`;
-  }
+  });
 }
 
 //: Whether a row has a time of its own (a reminder always does; a meeting

@@ -3298,15 +3298,19 @@ function ensureOneCardCount(list, generation, source) {
         const given = counts[String(id)];
         source.cache.set(id, given === undefined || given === null ? source.empty : given);
       }
+      //: Every chip in, then one fit: a fit reads widths (INBOX 1446).
+      const fitted = [];
       for (const id of wanted) {
         const li = list.querySelector(`li[data-id="${id}"]`);
         const meta = li && li.querySelector(":scope > .entry-meta");
         if (!meta || meta.querySelector(source.marker)) continue;
         const entry = allEntries.find((e) => e.id === id);
         const built = entry && source.chip(entry);
-        if (built) meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
-        if (built) fitNoteMetas([meta]);
+        if (!built) continue;
+        meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
+        fitted.push(meta);
       }
+      fitNoteMetas(fitted);
       // The page may hold more than one batch; the next call finds the rest.
       if (list.querySelectorAll("li[data-id]:not(.row-shell)").length > wanted.length) {
         ensureOneCardCount(list, generation, source);

@@ -388,7 +388,9 @@ function askNotificationPermission() {
 // 2026-10-03: `new AudioContext()` cost 44 to 56 ms inside the unlock click);
 // every gesture resumes a suspended context, which is WebKit's unlock, and
 // the listeners leave once it runs.
-const reminderAudio = { ctx: null, building: false };
+//: Built only when an alert is near (`nextAt`) or a chime is wanted
+//: (`after`): the device opens on the main thread (INBOX 1446).
+const reminderAudio = { ctx: null, building: false, nextAt: Infinity, after: null };
 function primeReminderAudio() {
   if (reminderAudio.ctx) {
     if (reminderAudio.ctx.state === "running") {
@@ -399,7 +401,7 @@ function primeReminderAudio() {
     }
     return;
   }
-  if (reminderAudio.building) return;
+  if (reminderAudio.building || (!reminderAudio.after && reminderAudio.nextAt - Date.now() > 3e5)) return;
   reminderAudio.building = true;
   const build = () => {
     try {
@@ -407,6 +409,8 @@ function primeReminderAudio() {
     } catch {
       // No Web Audio support, reminders still show as a toast/notification.
     }
+    if (reminderAudio.ctx) reminderAudio.after?.();
+    reminderAudio.after = null;
   };
   if (window.requestIdleCallback) window.requestIdleCallback(build, { timeout: 1500 });
   else setTimeout(build, 300);
@@ -415,7 +419,11 @@ document.addEventListener("pointerdown", primeReminderAudio, { passive: true });
 document.addEventListener("keydown", primeReminderAudio, { passive: true });
 
 function playReminderChime() {
-  if (!reminderAudio.ctx) return;
+  if (!reminderAudio.ctx) {
+    reminderAudio.after = playReminderChime;
+    primeReminderAudio();
+    return;
+  }
   reminderAudio.ctx.resume().catch(() => {});
   const now = reminderAudio.ctx.currentTime;
   // Two short notes, rising, reads as "an alert" rather than a UI click,
@@ -513,6 +521,7 @@ function armReminderTimer(list) {
     return r.alert_minutes ? [due, due - r.alert_minutes * 60000] : [due];
   });
   const next = Math.min(...times.filter((t) => t > now));
+  reminderAudio.nextAt = next;
   if (!Number.isFinite(next)) return;
   //: Past the browser's 24.8-day ceiling a timeout fires at once; the poll
   //: re-arms long before such a reminder comes due.

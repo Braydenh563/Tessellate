@@ -8365,15 +8365,22 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     const style = getComputedStyle(el);
     return { el, from: Object.fromEntries(BODY.map((key) => [key, style[key]])) };
   });
+  //: Read every part, then ease them: `animate` dirties style, so a read
+  //: between two eases flushed it each time (INBOX 1446). Keys the held pass
+  //: eases are skipped in the second.
+  const eases = [];
+  const eased = new Map();
   change();
   for (const { anim, el, from } of held) {
     if (el.getAnimations().includes(anim)) continue;
     //: Only what moved (the body's note below says why).
     const style = getComputedStyle(el);
-    const moved = Object.fromEntries(Object.keys(from).filter((key) => style[key] !== from[key]).map((key) => [key, from[key]]));
+    const done = eased.get(el) || new Set();
+    const moved = Object.fromEntries(Object.keys(from).filter((key) => !done.has(key) && style[key] !== from[key]).map((key) => [key, from[key]]));
     if (!Object.keys(moved).length) continue;
-    //: `offset: 0`: a lone keyframe with none is the end, not the start.
-    el.animate([{ ...moved, offset: 0 }], { duration: ms, easing: "cubic-bezier(0.4, 0, 0.2, 1)", id: "nmb-blend" });
+    for (const key of Object.keys(moved)) done.add(key);
+    eased.set(el, done);
+    eases.push({ el, moved });
   }
   //: A part eased above is read again, not passed over: what that loop
   //: eased now reads as it was, and anything else it moved is eased here
@@ -8381,11 +8388,16 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
   //: left the walk's lean, 3.2 degrees, to go in a frame).
   for (const { el, from } of bodies) {
     const style = getComputedStyle(el);
+    const done = eased.get(el);
     //: Only what moved: a key held at its old value that the next act
     //: animates from the same value (a hang's turn starting at 0) was
     //: pinned there for the whole blend and then jumped (atlas669-blendcheck.js).
-    const moved = Object.fromEntries(BODY.filter((key) => style[key] !== from[key]).map((key) => [key, from[key]]));
+    const moved = Object.fromEntries(BODY.filter((key) => style[key] !== from[key]).filter((key) => !done?.has(key)).map((key) => [key, from[key]]));
     if (!Object.keys(moved).length) continue;
+    eases.push({ el, moved });
+  }
+  for (const { el, moved } of eases) {
+    //: `offset: 0`: a lone keyframe with none is the end, not the start.
     el.animate([{ ...moved, offset: 0 }], { duration: ms, easing: "cubic-bezier(0.4, 0, 0.2, 1)", id: "nmb-blend" });
   }
 }
