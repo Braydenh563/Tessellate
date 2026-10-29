@@ -3181,7 +3181,11 @@ function gcDraw(s = gcTab) {
     //: 1,100 links, for names that are moving anyway. The names step to
     //: their clear places when it settles, cross-fading (`gcDrawLabels`).
     //: The hover places its few labels against its own notes only: no line grid.
-    const lines = over || s.tree || s.dragNode || s.alpha > 0.03 ? null : gcLineGrid(s, curvedLinks);
+    //: Names keep off the lines once the layout is at rest, or nearly so on
+    //: a map cheap to draw: rebuilt per tick it was a fifth of each tick's
+    //: draw at 2,000 notes (audit 1029 row 35).
+    const moving = s.alpha > 0.03 || (s.layoutRunning && gcTickSnaps(s));
+    const lines = over || s.tree || s.dragNode || moving ? null : gcLineGrid(s, curvedLinks);
     // The canvas itself, a few pixels in: a name is never cut by its edge
     // (INBOX 693, labels "cut by the viewport"; `gcPlaceLabels`).
     const inset = 4 / k;
@@ -5079,6 +5083,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         s.alpha = message.alpha;
         s.ticks = message.ticks || 0;
         s.tickMs = message.tickMs || 0;
+        s.layoutRunning = message.running !== false;
         const positions = message.positions;
         const count = Math.min(s.nodes.length, positions.length / 2);
         //: **Drawn between ticks, not at them** (INBOX 586, "the graph is a
@@ -5177,6 +5182,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
       } else if (message.type === "frame") {
         gcFrameIntro(s, message.positions, message.start);
       } else if (message.type === "end") {
+        s.layoutRunning = false;
         //: At rest is where the last tick said: the glide is finished here,
         //: not by the next paint, so the fit below frames the final shape.
         gcGlideFinish(s);

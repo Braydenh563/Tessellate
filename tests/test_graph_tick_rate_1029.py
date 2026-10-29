@@ -68,6 +68,9 @@ console.log(JSON.stringify(out));
 def test_the_tick_handler_snaps_and_the_frame_measures_full_draws() -> None:
     handler = CANVAS[CANVAS.index('if (message.type === "tick")') : CANVAS.index('} else if (message.type === "frame")')]
     assert re.search(r"s\.gliding = true;\s*\n(?:\s*//.*\n)*\s*if \(gcTickSnaps\(s\)\) gcGlideFinish\(s\);", handler)
+    assert "s.layoutRunning = message.running !== false;" in handler
+    assert "const moving = s.alpha > 0.03 || (s.layoutRunning && gcTickSnaps(s));" in CANVAS
+    assert re.search(r'message\.type === "end"\) \{\n\s*s\.layoutRunning = false;', CANVAS)
     request = _function(CANVAS, "gcRequestDraw")
     assert "const full = s.sceneStale;" in request and "gcNoteDrawCost(s, performance.now() - drawn)" in request
 
