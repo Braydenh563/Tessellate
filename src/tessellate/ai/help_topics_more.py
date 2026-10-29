@@ -2966,7 +2966,7 @@ MORE_TOPICS.append({
         "Escape cancels it; with the Text tool Escape places the text. The "
         "bar holds the ink and fill colours (X swaps them), the palette and "
         "a custom colour (the last six you picked show as recent colours; "
-        "the x on one, or Delete on it, takes it off), the size ([ and ] change it; for Text it is the "
+        "the small x on one, or Delete on it, takes it off, with an Undo; the plus saves the current colour again), the size ([ and ] change it; for Text it is the "
         "text size), outline, fill or both for shapes, Undo, Redo (Ctrl+Shift+Z "
         "or Ctrl+Y), Clear and a More menu (a picture under the ink, the paper "
         "colour). On a narrow window the palette, size and style are under "

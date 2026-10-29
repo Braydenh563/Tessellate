@@ -2,7 +2,7 @@
 
 Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6794, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1514, tests 13280, plan headings 985.
+Counts: frontend functions 6794, frontend ids 2579, CSS sections 505, backend routes 632, backend modules 7092, test files 1515, tests 13284, plan headings 985.
 
 ## Frontend functions (6794)
 
@@ -1006,17 +1006,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeSketch` | frontend/js/media.js:109 |
-| `hideSketchOverlay` | frontend/js/media.js:117 |
+| `closeSketch` | frontend/js/media.js:110 |
+| `hideSketchOverlay` | frontend/js/media.js:118 |
 | `highlighterBlend` | frontend/js/media.js:61 |
 | `highlighterWidth` | frontend/js/media.js:48 |
-| `micAudioConstraints` | frontend/js/media.js:202 |
-| `openSketch` | frontend/js/media.js:97 |
-| `saveSketch` | frontend/js/media.js:125 |
+| `micAudioConstraints` | frontend/js/media.js:203 |
+| `openSketch` | frontend/js/media.js:98 |
+| `saveSketch` | frontend/js/media.js:126 |
 | `sketchHost` | frontend/js/media.js:76 |
-| `speakText` | frontend/js/media.js:365 |
-| `startMicLevelMeter` | frontend/js/media.js:212 |
-| `toggleDictation` | frontend/js/media.js:293 |
+| `speakText` | frontend/js/media.js:366 |
+| `startMicLevelMeter` | frontend/js/media.js:213 |
+| `toggleDictation` | frontend/js/media.js:294 |
 
 ### frontend/js/status.js (122)
 
@@ -10566,7 +10566,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1588 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
 | held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4938 |
-| help | frontend/css/sketch-pad.css:557 |
+| help | frontend/css/sketch-pad.css:577 |
 | help guide accordion | frontend/css/04-chat-dock-appearance.css:2383 |
 | help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2415 |
 | hovering a node | frontend/css/02-chat-graph.css:1306 |
@@ -10594,7 +10594,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | moved from 07-whiteboard-misc.css (canvasui, the boot CSS budget): board-only rules whose class names no boot file draws and no later boot rule competes with, in their old order | frontend/css/library-lazy.css:4993 |
 | moved from the boot sheets (Brief 101a, room under the boot CSS cap): rules whose selectors name only the Library | frontend/css/library-lazy.css:16 |
 | moved from the boot sheets (the boot CSS budget, test_boot_budget.py): rules only the Library | frontend/css/library-lazy.css:832 |
-| narrow windows | frontend/css/sketch-pad.css:612 |
+| narrow windows | frontend/css/sketch-pad.css:632 |
 | note card density (§36B) | frontend/css/06-timeline-dialogs.css:1559 |
 | note history | frontend/css/05-sidebars-themes.css:1742 |
 | notes page polish | frontend/css/03-dashboard-widgets.css:2028 |
@@ -10636,7 +10636,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | space dialogs | frontend/css/07-whiteboard-misc.css:2605 |
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2424 |
 | spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1980 |
-| status and foot | frontend/css/sketch-pad.css:463 |
+| status and foot | frontend/css/sketch-pad.css:483 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3502 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
 | the "/" menu and block frames | frontend/css/05-sidebars-themes.css:845 |
@@ -10783,7 +10783,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10410 |
 | the writing room | frontend/css/04-chat-dock-appearance.css:3415 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1773 |
-| tools and page | frontend/css/sketch-pad.css:356 |
+| tools and page | frontend/css/sketch-pad.css:376 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4372 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1593 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:10049 |
@@ -10853,7 +10853,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/settings-controls-lazy.css | 121 |
 | frontend/css/settings-data-lazy.css | 60 |
 | frontend/css/sidebar-folds-lazy.css | 28 |
-| frontend/css/sketch-pad.css | 735 |
+| frontend/css/sketch-pad.css | 755 |
 | frontend/css/tidy-lazy.css | 333 |
 | frontend/css/timeline-calendar-lazy.css | 299 |
 | frontend/css/timeline-ticks-lazy.css | 42 |
@@ -20337,7 +20337,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13280)
+## Tests (13284)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21533,6 +21533,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_sketch_media.py | 15 |
 | tests/test_sketch_pad.py | 18 |
 | tests/test_sketch_recent_remove.py | 6 |
+| tests/test_sketch_swatch_1447.py | 4 |
 | tests/test_skill_composer.py | 11 |
 | tests/test_skill_evals.py | 3 |
 | tests/test_skill_fixtures.py | 11 |

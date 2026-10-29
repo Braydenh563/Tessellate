@@ -178,7 +178,8 @@
   gap: var(--space-1);
 }
 .sp-recent {
-  grid-template-columns: repeat(3, var(--target-min));
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
 }
 /* The app's target floor, as every other control: 28px, 44 under 820 and
    on a finger (it was 24, the WCAG minimum, under DESIGN's floor). */
@@ -201,30 +202,38 @@
   min-height: 0;
 }
 /* A recent colour's remove button, beside the swatch (a sibling, not nested):
-   shown on hover, focus and a finger, where there is no hover. */
+   shown on hover, focus and a finger, where there is no hover. It is a small x
+   in a cell of its own, never over the disc, so a press on the swatch cannot
+   land on it (INBOX 1447: the old one was 24px and covered most of the swatch
+   and a third of the next). The 24px target floor (WCAG 2.5.8) is met by
+   spacing: a 24px circle round its centre meets no other target, because the
+   x is as far from each swatch as it is wide. Its cell is always there, so
+   showing it moves nothing. */
 .sp-recent-item {
-  position: relative;
-  display: inline-grid;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 .sp-unpick {
-  position: absolute;
-  top: calc(-1 * var(--space-2));
-  right: calc(-1 * var(--space-2));
   display: grid;
   place-items: center;
-  width: var(--space-8);
-  height: var(--space-8);
+  flex: none;
+  width: var(--space-6);
+  height: var(--space-6);
+  min-width: 0;
+  min-height: 0;
   padding: 0;
-  border: 1px solid var(--control-edge);
+  border: 0;
   border-radius: var(--radius-pill);
-  background: var(--modal-bg-opaque);
+  background: transparent;
   color: var(--muted);
+  font-size: var(--text-xs);
   cursor: pointer;
   visibility: hidden;
 }
-.sp-unpick svg {
-  width: 70%;
-  height: 70%;
+.sp-unpick:hover {
+  background: var(--ghost-btn-bg);
+  color: var(--ink);
 }
 .sp-recent-item:is(:hover, :focus-within) .sp-unpick {
   visibility: visible;
@@ -233,6 +242,17 @@
   .sp-unpick {
     visibility: visible;
   }
+}
+/* Save colour: the plus after the picker, the size of the picker beside it. */
+.sp-keep {
+  width: var(--target-min);
+  height: var(--target-min);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}
+.sp-keep[aria-disabled="true"] {
+  opacity: 0.45;
 }
 .sp-swatch.active {
   box-shadow: 0 0 0 2px var(--modal-bg-opaque), 0 0 0 4px var(--accent);

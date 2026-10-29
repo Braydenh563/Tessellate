@@ -78,6 +78,7 @@ function sketchHost() {
     title: "Quick sketch",
     save: saveSketch,
     toast: (message, isError = false) => toast(message, isError),
+    toastAction: (message, label, run) => toastAction(message, label, run),
     confirm: (message, options) => confirmDialog(message, options),
     prefs: {
       get: (key, fallback) => prefs.json(`sketch-pad-${key}`, fallback),

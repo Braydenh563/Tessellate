@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Quick sketch swatches (INBOX 1447): removing a recent colour offers Undo, a plus beside the picker saves the current colour as a swatch again, and the remove x is a small control beside the swatch (16 px, nothing over the disc; the 24 px target floor met by spacing); the picker's icon is an eyedropper.
 - Find anything and the palette rank the row that opens a feature above a Guide topic about it, for every feature (INBOX 1449): Help-pane rows are a "Guide" group listed after the rows that name the thing; "ocr workspace" had the Guide topic first.
 - Movable panels move the whole panel (INBOX 1448): the OCR workspace's head sat in a wrapper, so a drag moved the head bar alone; the moved box is now the dialog or its direct-child card for every panel.
 - Mind map left-drag pan (INBOX 1445): a left-button drag on empty map canvas pans, Shift-drag draws the selection box, a drag from a topic still moves it; boards keep the box select.
