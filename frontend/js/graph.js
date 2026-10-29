@@ -4450,6 +4450,17 @@ function watchGraphPopupSize(popup, place) {
 
 // Clamp the popup inside the graph box. Called on open and again once the
 // note has loaded, since the popup is taller by then.
+//: **The popup keeps room to follow its node in y** (audit 1029 G25). A long
+//: note took the map's whole height less 16 (517 of 533 at 1280x640), so its
+//: slide was 16px: the node moved 280px and the popup 0, which read as
+//: following in x only. An undragged popup is held to 60% of the room (never
+//: under 280px; the body scrolls inside it and the dock stays pinned); one the
+//: head has moved stays where put and keeps the whole room.
+function graphPopupCap(room, dragged) {
+  const full = Math.max(120, room - 16);
+  return dragged ? full : Math.min(full, Math.max(280, Math.round(room * 0.6)));
+}
+
 function placeGraphPopup() {
   const popup = $("graph-popup");
   watchGraphPopupSize(popup, placeGraphPopup);
@@ -4483,7 +4494,7 @@ function placeGraphPopup() {
   popup.classList.remove("graph-popup-sheet");
   // Never taller than the room it has, beyond that its body scrolls inside
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
-  popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
+  popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
   const size = popup.getBoundingClientRect();
   const maxLeft = Math.max(8, box.width - size.width - 8);
   const maxTop = Math.max(8, room - size.height - 8);
