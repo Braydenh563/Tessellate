@@ -5019,7 +5019,10 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   //: that render heats the layout as it always did.
   const sig = JSON.stringify([
     init.perf,
-    init.nodes.map((n) => [n.id, n.fx, n.fy, n.r]),
+    //: Not the radius (audit G4): the Size rule only changes how big a dot is drawn, and
+    //: a settled map stays where it is rather than re-laying out (12 s at 2,000 notes).
+    //: The new radii still reach the worker in `init`, for the next drag or real change.
+    init.nodes.map((n) => [n.id, n.fx, n.fy]),
     init.edges.map((e) => [e.source, e.target, e.kind, e.score, e.curated]),
     init.params,
     world,
