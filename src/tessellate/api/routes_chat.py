@@ -35,6 +35,7 @@ from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
+from tessellate.api import bounds
 from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, personal, phrasing, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
@@ -356,8 +357,8 @@ def chat_followups(body: FollowupBody) -> list[str]:
 
 
 class ChatTurn(BaseModel):
-    question: str
-    answer: str
+    question: str = Field(max_length=bounds.TURN_TEXT_MAX)
+    answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
     #: The notes the answer named, by title, for a spoken follow-up such as
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
@@ -397,7 +398,7 @@ class ChatRequest(BaseModel):
     #: question reads in the asker's date order.
     locale: str | None = Field(default=None, max_length=35)
     # Prior turns for follow-up context (Round 1); the server clips this.
-    history: list[ChatTurn] = Field(default_factory=list)
+    history: list[ChatTurn] = Field(default_factory=list, max_length=bounds.HISTORY_MAX_TURNS)
     # Persona name; None → the active persona preference.
     persona: str | None = None
     # Agent mode: may the model call tools to change things?
