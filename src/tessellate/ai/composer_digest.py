@@ -1105,7 +1105,15 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
         return _in_named(named, stems)
     if not stems:
         return []
-    scored = [(hits, v) for v in views if (hits := sum(1 for st in stems if composer._holds(st, _pool(v))))]
+    #: A doing word ("buy", "get") says what is wanted, not which note: "what
+    #: should I buy for my sister" is about the sister, not the note that has
+    #: "buy a capo" in it. A note must hold a word that names something (when
+    #: the question has one); the doing words then count with the rest.
+    named = [st for st in stems if st not in _VERBS()] or stems
+    scored = [
+        (hits, v) for v in views
+        if any(composer._holds(st, _pool(v)) for st in named) and (hits := sum(1 for st in stems if composer._holds(st, _pool(v))))
+    ]
     if not scored or _unanswerable(stems, views):
         return []
     best = max(h for h, _ in scored)

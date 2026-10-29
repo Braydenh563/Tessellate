@@ -141,3 +141,24 @@ def test_a_summary_of_a_subject_is_not_a_recap(question):
     from tessellate.ai import activity
 
     assert activity.read(question, NOW.date()) is None
+
+
+# --- 5: the lead note is the one the subject names, not the one a verb matches ------------
+
+LEADS = [
+    ("what should I buy for my sister", "Sister", "Guitar"),
+    ("what should I get my sister", "Sister", "Guitar"),
+    ("what can I buy for my sister", "Sister", "Guitar"),
+    ("what do I need to buy for the guitar", "Guitar", "Sister"),
+]
+
+
+@MODES
+@pytest.mark.parametrize(("question", "lead", "never"), LEADS)
+def test_the_lead_note_is_the_one_the_subject_names(book, question, lead, never, chat):  # noqa: F811
+    ask = book([
+        ("# Guitar\n\n- [ ] buy a capo\n- [ ] restring the guitar", D(2026, 10, 15, 9)),
+        ("# Sister\n\nMy sister's birthday is on 3 December. She likes the sourdough I make.", D(2026, 10, 16, 9)),
+    ])
+    said = ask(question, chat)
+    assert lead in said and f"{never} note" not in said and f"**{never}**" not in said, said
