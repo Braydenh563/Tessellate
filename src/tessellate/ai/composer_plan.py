@@ -386,7 +386,11 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     today = ctx.now.date()
     far = today + timedelta(days=900)
     found, _o = events(ctx, today, far)
-    ev = next((e for e in found if wanted <= _stems(e.text)), None) or next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
+    #: The note titled as the subject answers first (note_rank's order) when
+    #: it counts down to a later day: "the dentist" is the Dentist note, not a
+    #: "Call the dentist" to-do that names tomorrow (audit 1029 C23).
+    titled = next((e for e in found if e.day > today and _stems(e.title) == wanted and wanted <= _stems(e.text + " " + e.title)), None)
+    ev = titled or next((e for e in found if wanted <= _stems(e.text)), None) or next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
     if ev is None:
         return None
     days = (ev.day - today).days
