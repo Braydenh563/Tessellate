@@ -61,3 +61,14 @@ def test_the_image_notes_share_one_class() -> None:
     assert ".entry-image-note {" in css
     assert "entry-inline-image-deleted" not in css
     assert "entry-inline-image-deleted" not in (JS / "notes-list.js").read_text(encoding="utf-8")
+
+
+def test_no_other_thumbnail_asks_the_web_either() -> None:
+    """The dashboard's rows (and the chat sources and history rows that share
+    `noteRowImage`) and the Library's cards made the same four CSP errors for
+    a note's first remote picture; they now skip it and fall through to an
+    attachment or no thumbnail."""
+    row = _decl("dashboard.js", "noteRowImage")
+    assert "!isRemoteImage(embedded.url)" in row
+    card = (JS / "library.js").read_text(encoding="utf-8")
+    assert "!isRemoteImage(item.thumb_url)" in card

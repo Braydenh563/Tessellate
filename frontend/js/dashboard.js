@@ -2947,7 +2947,8 @@ function firstNoteImage(content) {
 //: all, in every widget, forever.
 function noteRowImage(entry) {
   const embedded = firstNoteImage((entry.content || "").replace(/\[\[([^[\]]{1,120})\]\]/g, "$1"));
-  if (embedded) return embedded;
+  //: A picture at another address is never requested (audit 1029 N7), here as in the card.
+  if (embedded && !isRemoteImage(embedded.url)) return embedded;
   const attached = (entry.attachments || []).find((file) => file.is_image);
   return attached ? { alt: attached.filename || "", url: `/files/${attached.id}` } : null;
 }

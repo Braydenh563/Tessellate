@@ -113,6 +113,7 @@ REACHED_AFTER_LOAD = {
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
     "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
+    "linkCancel": "settings-wiring's Escape handler, only while `linkSource !== null`, which beginOrCompleteLink (the same notePanels bundle) alone sets",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
     "companionThrowPlan": "companionThrow, called by the release only when `thrown`, which is false unless typeof nameMarkBuddyThrow (same bundle) is a function",

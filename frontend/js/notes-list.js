@@ -1671,6 +1671,10 @@ function renderNoteInline(element, text, terms) {
       else offerToCreateWikiTarget(name);
     });
     element.appendChild(link);
+    //: A link to nothing says so and offers the note (audit 1029 N22).
+    if (!mapTarget && wikiLinkTarget(name).trim()) {
+      element.appendChild(chip("Create", "", (event) => { event.stopPropagation(); offerToCreateWikiTarget(name); }));
+    }
     cursor = pattern.lastIndex;
   }
   if (cursor < text.length) {

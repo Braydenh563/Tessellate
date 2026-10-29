@@ -1411,7 +1411,7 @@ function libraryCard(item) {
     card.appendChild(thumb);
   } else if (
     (item.kind === "note" || item.kind === "shelved" || item.kind === "archived") &&
-    (item.thumb_attachment_id || item.thumb_url)
+    (item.thumb_attachment_id || (item.thumb_url && !isRemoteImage(item.thumb_url)))
   ) {
     // A sketch is a note whose actual content is a file attachment, not
     // text: without this a sketch card in the Library was a bare title
@@ -6088,6 +6088,8 @@ function openOcrWorkspace(image, images, page = 0) {
   //: card and becomes the page a frame later is a flash of the wrong thing.
   ocrPhonePage(window.matchMedia(PHONE_TABS).matches);
   overlay.classList.remove("hidden");
+  //: Focus starts inside the window, on its first control, not on <body> (audit 1029 X21).
+  $("ocr-close")?.focus({ preventScroll: true });
   //: The tool row is measured once it has a size (INBOX 717), and again
   //: whenever the card does.
   ocrWatchDock();
@@ -6761,6 +6763,9 @@ function ocrSyncCanRead() {
   };
   mark($("ocr-read-page"), !any, why);
   mark($("ocr-region-read"), !any, why);
+  //: The reason is words on the page too, not only a tooltip: the empty reading's line says it until a reader arrives (audit 1029 X21).
+  const line = $("ocr-empty")?.querySelector(".ocr-empty-line");
+  if (line) line.textContent = any ? ocrEmptyLine() : why;
   mark($("ocr-region-describe"), !ocrCan("vision"), whyDescribe);
 }
 
@@ -7486,7 +7491,6 @@ function ocrPaintEmpty(body, hasReading) {
     box.replaceChildren();
     return;
   }
-  const pdf = ocrIsPdf(ocrWorkspaceCurrent);
   const icon = document.createElement("span");
   icon.className = "ocr-empty-icon";
   setLabel(icon, "ph:scan");
@@ -7496,13 +7500,18 @@ function ocrPaintEmpty(body, hasReading) {
   title.textContent = "Nothing read yet";
   const line = document.createElement("p");
   line.className = "muted ocr-empty-line";
-  line.textContent = pdf
-    ? `Press Read this page to turn page ${ocrWorkspacePage + 1} into text, or open Read's menu for every page.`
-    : "Press Read this image to turn it into text you can copy, search and save.";
+  line.textContent = ocrEmptyLine();
   const hint = document.createElement("p");
   hint.className = "muted ocr-empty-line";
   hint.textContent = "Or drag on the page to read or describe just one part.";
   box.replaceChildren(icon, title, line, hint);
+  ocrReadersLoading.then(ocrSyncCanRead);
+}
+
+function ocrEmptyLine() {
+  return ocrIsPdf(ocrWorkspaceCurrent)
+    ? `Press Read this page to turn page ${ocrWorkspacePage + 1} into text, or open Read's menu for every page.`
+    : "Press Read this image to turn it into text you can copy, search and save.";
 }
 
 //: **The rail and the reading walk with the arrow keys** (INBOX 717). One tab

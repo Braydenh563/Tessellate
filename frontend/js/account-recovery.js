@@ -67,6 +67,7 @@ function wireForgotCard() {
   $("lock-reset-open-logs").addEventListener("click", openResetLogs);
   //: The button wakes only for the word and a full code, so a stray Enter cannot reset.
   for (const id of ["lock-reset-confirm", "lock-reset-code"]) $(id).addEventListener("input", syncResetSubmit);
+  $("lock-forgot-card").addEventListener("input", (event) => event.target.removeAttribute("aria-invalid"));
   $("lock-forgot-card").addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
@@ -112,8 +113,10 @@ function closeForgotPassword() {
   $("lock-password").focus();
 }
 
-function forgotError(text) {
-  $("lock-forgot-error").textContent = text;
+//: A failure about a field goes through the lock screen's one helper: the field is marked, described by the message and takes the focus back (audit 1029 X23).
+function forgotError(text, field = null) {
+  if (text && field) lockFail(text, field, $("lock-forgot-error"));
+  else $("lock-forgot-error").textContent = text;
 }
 
 //: "I have my recovery key". The same checks as setup before the request
@@ -124,9 +127,9 @@ async function submitRecovery() {
   const key = fields.key.value.trim();
   const fresh = fields.fresh.value;
   forgotError("");
-  if (!key) return forgotError("Enter your recovery key.");
-  if (fresh.length < 8) return forgotError("Use at least 8 characters for the new password.");
-  if (fresh !== fields.again.value) return forgotError("The two new passwords don't match.");
+  if (!key) return forgotError("Enter your recovery key.", fields.key);
+  if (fresh.length < 8) return forgotError("Use at least 8 characters for the new password.", fields.fresh);
+  if (fresh !== fields.again.value) return forgotError("The two new passwords don't match.", fields.again);
   const button = $("lock-recovery-submit");
   setBusy(button, true, "Checking…");
   let body = null;
@@ -139,7 +142,7 @@ async function submitRecovery() {
       silent: true,
     });
   } catch (error) {
-    forgotError(error.message);
+    forgotError(error.message, fields.key);
     return;
   } finally {
     setBusy(button, false);
@@ -205,9 +208,9 @@ async function openResetLogs() {
 //: "I don't have it": the terminal command's reset, after the typed word and the printed code.
 async function submitPasswordReset() {
   forgotError("");
-  if ($("lock-reset-confirm").value.trim() !== "RESET") return forgotError("Type RESET to confirm.");
+  if ($("lock-reset-confirm").value.trim() !== "RESET") return forgotError("Type RESET to confirm.", $("lock-reset-confirm"));
   const code = $("lock-reset-code").value.trim();
-  if (!/^\d{6}$/.test(code)) return forgotError("Enter the six-digit code that was printed.");
+  if (!/^\d{6}$/.test(code)) return forgotError("Enter the six-digit code that was printed.", $("lock-reset-code"));
   const button = $("lock-reset-submit");
   setBusy(button, true, "Resetting…");
   try {
@@ -218,7 +221,7 @@ async function submitPasswordReset() {
       silent: true,
     });
   } catch (error) {
-    forgotError(error.message);
+    forgotError(error.message, $("lock-reset-code"));
     return;
   } finally {
     setBusy(button, false);

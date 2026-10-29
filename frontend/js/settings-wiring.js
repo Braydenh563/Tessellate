@@ -244,11 +244,11 @@ window.addEventListener("storage", (event) => {
   showLockScreen(false);
 });
 //: The lock form's submit (moved from app.js, whose only caller is here).
-//: A wrong password is said under the field, the field is marked and described by it, and focus goes back to it selected (sweep 1028b W9).
-function lockFail(message) {
-  const field = $("lock-password");
-  $("lock-error").textContent = message;
+//: The one failure helper (sweep 1028b W9, audit 1029 X23): the message is said under the field, the field is marked and described by it, and focus goes back to it selected. The recovery card uses it with its own field and line.
+function lockFail(message, field = $("lock-password"), line = $("lock-error")) {
+  line.textContent = message;
   field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", line.id);
   field.focus();
   field.select();
 }
@@ -269,7 +269,7 @@ async function submitLockForm() {
     try {
       await prompt.submit(password);
     } catch (error) {
-      errorLine.textContent = error.message;
+      lockFail(error.message);
       return;
     }
     settleLockPrompt(true);
@@ -673,7 +673,7 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape" && !$("graph-popup").classList.contains("hidden")) {
-    closeGraphPopup();
+    closeGraphPopup(true);
     return;
   }
   if (e.key === "Escape" && !$("palette-overlay").classList.contains("hidden")) {
@@ -847,10 +847,7 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.key === "Escape" && settingsModalOpen()) closeSettingsModal();
   if (e.key === "Escape") closeActionMenus();
-  if (e.key === "Escape" && linkSource !== null) {
-    linkSource = null;
-    renderEntries();
-  }
+  if (e.key === "Escape" && linkSource !== null) linkCancel();
 });
 
 // Clicking anywhere outside an open ⋯ menu closes it (Wave L).

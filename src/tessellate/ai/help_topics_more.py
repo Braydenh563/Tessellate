@@ -1574,14 +1574,17 @@ MORE_TOPICS.extend(
             "keywords": (
                 "table in a note", "code block in a note", "remote image",
                 "picture from the web", "image not loaded", "note card",
-                "what a card shows",
+                "what a card shows", "create a linked note", "link mode",
             ),
             "body": (
                 "What a note's card draws. A table or a code block is drawn the "
                 "way a document draws it, with its Copy button; a search does not "
                 "mark words inside one. A picture from the web is not loaded, "
                 "because this notebook works offline: the card says so and links "
-                "to it, to open in a new tab."
+                "to it, to open in a new tab. A [[link]] to a note that does not "
+                "exist has a Create chip beside it, which offers to make the note "
+                "or a document of that name. Esc leaves link mode (Link to "
+                "another) and takes its notice down."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
         },
