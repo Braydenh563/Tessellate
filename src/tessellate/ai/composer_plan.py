@@ -444,21 +444,30 @@ def _busiest(found: list[Event], days: list[date], load: dict) -> str:
     return f"Busiest day: {_long(busiest)} with {load[busiest]}." + (f" Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "")
 
 
-def _task_lines(tasks: list, days: list[date], load: dict) -> list[str]:
+def _task_groups(tasks: list) -> list[str]:
     lines: list[str] = []
     for heading, rows in (("Open tasks with no day", [t for t in tasks if not t[2]]), ("Open tasks dated outside this time", [t for t in tasks if t[2]])):
         if rows:
             lines += ["", f"**{heading} ({len(rows)})**"]
             lines += [f"- {task} ([{study.title_of(str(note.get('content') or ''))}](#/notes/{note['id']}))" for task, note, _d in rows]
+    return lines
+
+
+def _spread_line(undated: list, days: list[date], load: dict) -> list[str]:
+    work = [d for d in days if d.weekday() < 5] or days
+    placed: dict[date, list[str]] = {}
+    for task in undated:
+        day = min(work, key=lambda d: (load[d], d))
+        load[day] += 1
+        placed.setdefault(day, []).append(task)
+    return ["", "A way to spread them over the lighter days: " + "; ".join(f"{d:%A}: {', '.join(t)}" for d, t in sorted(placed.items())) + "."]
+
+
+def _task_lines(tasks: list, days: list[date], load: dict) -> list[str]:
+    lines = _task_groups(tasks)
     undated = [t[0] for t in tasks if not t[2]]
     if len(days) > 1 and undated:
-        work = [d for d in days if d.weekday() < 5] or days
-        placed: dict[date, list[str]] = {}
-        for task in undated:
-            day = min(work, key=lambda d: (load[d], d))
-            load[day] += 1
-            placed.setdefault(day, []).append(task)
-        lines += ["", "A way to spread them over the lighter days: " + "; ".join(f"{d:%A}: {', '.join(t)}" for d, t in sorted(placed.items())) + "."]
+        lines += _spread_line(undated, days, load)
     return lines
 
 
@@ -483,6 +492,20 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     return Reply("\n".join(lines), asks=["What's due next week"] if said == "this week" else [])
 
 
+def _event_counting_down_to(found: list[Event], wanted: set, today: date) -> Event | None:
+    #: The note titled as the subject answers first (note_rank's order) when
+    #: it counts down to a later day: "the dentist" is the Dentist note, not a
+    #: "Call the dentist" to-do that names tomorrow (audit 1029 C23).
+    titled = next((e for e in found if e.day > today and _stems(e.title) == wanted and wanted <= _stems(e.text + " " + e.title)), None)
+    return titled or next((e for e in found if wanted <= _stems(e.text)), None) or next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
+
+
+def _until_source(ev: Event) -> str:
+    if ev.kind == "reminder":
+        return " From your reminder."
+    return f" From {('[' + ev.title + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
+
+
 def _until(ctx: Ctx, subject: str) -> Reply | None:
     wanted = _stems(subject) - _FILLER_STEMS
     if not wanted:
@@ -490,20 +513,15 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
     today = ctx.now.date()
     far = today + timedelta(days=900)
     found, _o = events(ctx, today, far)
-    #: The note titled as the subject answers first (note_rank's order) when
-    #: it counts down to a later day: "the dentist" is the Dentist note, not a
-    #: "Call the dentist" to-do that names tomorrow (audit 1029 C23).
-    titled = next((e for e in found if e.day > today and _stems(e.title) == wanted and wanted <= _stems(e.text + " " + e.title)), None)
-    ev = titled or next((e for e in found if wanted <= _stems(e.text)), None) or next((e for e in found if wanted <= _stems(e.text + " " + e.title)), None)
+    ev = _event_counting_down_to(found, wanted, today)
     if ev is None:
         return None
     days = (ev.day - today).days
-    source = " From your reminder." if ev.kind == "reminder" else f" From {('[' + ev.title + '](#/notes/' + str(ev.note_id) + ')') if ev.title else 'your note'}."
     lead = pick(ctx.seed, "until", (
         f"{subject.strip().capitalize()} is {_days_away(days)} away, on {_long(ev.day)}." if days > 1 else f"{subject.strip().capitalize()} is {_days_away(days)}, {_long(ev.day)}.",
         f"{_long(ev.day).capitalize()} is when it falls, which is {_days_away(days)} from today." if days > 1 else f"That falls {_days_away(days)}: {_long(ev.day)}.",
     ))
-    return Reply(f"{lead}{source}\n\n“{ev.text}”")
+    return Reply(f"{lead}{_until_source(ev)}\n\n“{ev.text}”")
 
 
 def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
