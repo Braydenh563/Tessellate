@@ -496,6 +496,17 @@ def _respell(text: str) -> str:
     return question_noise.repair(text, known=_KNOWN.get())
 
 
+#: "define X" and "the meaning of X" ask what "what is X" asks, so they take
+#: its answer (audit 1029 C18). The text is single-spaced by here, so the
+#: pattern reads one literal space: linear on any input.
+_DEFINE = re.compile(r"^(?:define|(?:the )?(?:definition|meaning) of) (.+)$", re.I)
+
+
+def what_is(text: str) -> str:
+    """"define X" read as "what is X"; any other text as it came."""
+    return _DEFINE.sub(r"what is \1", " ".join(text.split()))
+
+
 def rephrase(question: str) -> str:
     """The question with its casual wrapper off: "hey, can you remind me
     when the dentist is please?" reads as "when the dentist is?". Text-speak
@@ -512,6 +523,7 @@ def rephrase(question: str) -> str:
             text = pattern.sub(spelled, text)
         if text == before:
             break
+    text = what_is(text)
     last = _LAST_WORD.match(text)
     if last and not _ASKS_FIRST.match(text):
         text = f"{last.group('q')} {last.group('rest')}{last.group('p')}"
@@ -545,7 +557,7 @@ def classify(question: str, embed=None) -> str:  # noqa: ANN001
 
 #: Words whose final "s" is not a plural: "news" is not "new", "lens" not
 #: "len" (the stemmer's own rule, below; found by the 2026-10-10 triage).
-_NOT_PLURAL = frozenset("news lens gas yes always perhaps series species means mathematics physics".split())
+_NOT_PLURAL = frozenset("atlas canvas news lens gas yes always perhaps series species means mathematics physics".split())
 _VOWELS = "aeiou"
 
 
@@ -675,6 +687,41 @@ def _words(text: str) -> list[str]:
 
 
 
+#: The verbs the app does or answers as acts: a question that opens with one
+#: is about what follows it, never about the verb (audit 1029 C15).
+_COMMAND_VERBS = frozenset(
+    "read open show draft write compose compare explain define summarise summarize archive unarchive restore split merge "
+    "duplicate clone combine rename retitle tag untag pin unpin delete remove move file link unlink append add".split()
+)
+_COMMAND_LEADS = frozenset("please pls can could would will you just ok okay hey and then".split())
+_COMMAND_FILLER = frozenset("me my the a an this that these those all both every two three four five".split())
+_DRAFTED = frozenset("message messages email emails text reply letter note".split())
+_BIN_WORDS = frozenset("bin trash".split())
+
+
+def _without_command(text: str) -> str:
+    """The subject without the command that wraps it, one pass over the words:
+    "draft a message to Sara" is Sara, "move the budget to the bin" is budget,
+    "merge the two lentil soup notes" is lentil soup. Only a verb that opens
+    the sentence is a command, so "books I am reading" keeps its verb."""
+    words = text.split()
+    at = 0
+    while at < len(words) and words[at].casefold() in _COMMAND_LEADS:
+        at += 1
+    if at >= len(words) or words[at].casefold() not in _COMMAND_VERBS:
+        return text
+    drafting = words[at].casefold() in ("draft", "write", "compose")
+    at += 1
+    while at < len(words) and (words[at].casefold() in _COMMAND_FILLER or (drafting and words[at].casefold() in _DRAFTED)):
+        at += 1
+    if drafting and at < len(words) and words[at].casefold() in ("to", "for"):
+        at += 1
+    rest = words[at:]
+    if len(rest) >= 3 and rest[-3].casefold() == "to" and rest[-2].casefold() == "the" and rest[-1].casefold().rstrip("?.!") in _BIN_WORDS:
+        rest = rest[:-3]
+    return " ".join(rest) or text
+
+
 def subject_terms(question: str) -> list[str]:
     """The words the question is about, as typed, without the asking words."""
     question = rephrase(question)
@@ -692,6 +739,10 @@ def subject_terms(question: str) -> list[str]:
     if re.match(r"^\s*(list|name|show|tell)\b", question, re.I):
         source = re.sub(r"^\s*(list|name|show|tell)\b", "", source, flags=re.I)
     seen: list[str] = []
+    #: Only a command the question itself opens with: "what did I add to the
+    #: pasta" keeps its "add", which understanding may have moved to the front.
+    if _without_command(question) != question:
+        source = _without_command(source)
     for word in query_understanding.search_terms(source):
         if word in _ASKING_WORDS or word in seen:
             continue
@@ -2358,6 +2409,16 @@ def _seen(term: str, found: set[str]) -> bool:
     return len(stem) >= 4 and any(_one_edit(stem, word) for word in found if word[:1] == stem[:1])
 
 
+#: Words that tell the composer how to answer, never what to find: a note
+#: that does not hold "sentences" is not missing anything (audit 1029 C37).
+_INSTRUCTION_STEMS = frozenset(
+    _stem_plain(w)
+    for w in """main two three four five six seven eight nine ten both sentence paragraph line point bullet tag category categories
+    improve improvement related similar recur recurring older newer oldest newest favourite favorite best worst everything
+    summary list top first second third""".split()
+)
+
+
 def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     """"None of these notes mention “hotel”." for the question's words that no
     note found contains, measured over every word of every one of them.
@@ -2376,7 +2437,7 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
     quoted |= {w for v in views if v.id in out.named for w in v.title_words | v.filed_words}
     missing = [
         t for t in terms
-        if len(t) >= _MISSING_MIN and not _seen(t, found) and not (_alternatives(_stem(t)) & quoted)
+        if len(t) >= _MISSING_MIN and _stem(t) not in _INSTRUCTION_STEMS and not _seen(t, found) and not (_alternatives(_stem(t)) & quoted)
         and (not out.question or t.lower() in out.question.lower())
     ]
     if not missing or len(missing) == len(terms):
