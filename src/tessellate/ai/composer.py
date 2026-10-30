@@ -4381,11 +4381,9 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
 _FEATURE_WORDS = 3
 
 
-def _feature_instead(question: str, absent: list[str]) -> dict | None:
-    """Nothing in the notes, and a two- or three-word message that names an
-    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
-    say the notes are silent on it in one clause, then how to use the feature
-    from the Guide's topic. None for anything longer or no topic."""
+def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
+    """The help line of the app feature a two- or three-word message names
+    (the words are the line's own), or None."""
     words = re.findall(r"[a-z]+", (question or "").lower())
     if not words or len(words) > _FEATURE_WORDS:
         return None
@@ -4404,11 +4402,37 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     wanted = absent or [w for w in words if len(w) >= 4]
     if not wanted or not all(re.search(rf"\b{re.escape(w)}", line, re.I) for w in wanted):
         return None
+    return best
+
+
+def _feature_instead(question: str, absent: list[str]) -> dict | None:
+    """Nothing in the notes, and a two- or three-word message that names an
+    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
+    say the notes are silent on it in one clause, then how to use the feature
+    from the Guide's topic. None for anything longer or no topic."""
+    best = _feature_help(question, absent)
+    if best is None:
+        return None
+    words = re.findall(r"[a-z]+", (question or "").lower())
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
     lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
     return _result([("template", lead), ("help", best[0], best[1])], "help")
+
+
+def offered(result: dict | None, question: str) -> dict | None:
+    """A note does mention the word a short message names as a feature
+    ("timer" with a Kitchen timer note): the note answers, and the tool is
+    offered after it from the same help line (INBOX 1334, the open half).
+    The digest and `compose` both answer a chat turn, so both pass through."""
+    if not result or result.get("shape") in ("help", None) or result.get("missed") or not result.get("parts"):
+        return result
+    best = _feature_help(question, [])
+    if best is None:
+        return result
+    more = [("template", "\n\nThe app has a tool by that name too. "), ("help", best[0], best[1])]
+    return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 
 def decap(text: str) -> str:
@@ -5244,6 +5268,7 @@ def compose(
     try:
         result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
     finally:

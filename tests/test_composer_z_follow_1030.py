@@ -79,3 +79,24 @@ def test_z53_a_turn_without_sources_is_named_by_the_links_in_its_answer():
     turn = ChatTurn(question="q", answer="- Dentist on 4 November. ([Dentist](#/notes/13))\n- [**Diary: Saturday 25 October**](#/notes/37)")
     assert turn.objects == ["Dentist", "Diary"]
     assert ChatTurn(question="q", answer="no links", objects=["Kept"]).objects == ["Kept"]
+
+
+@pytest.mark.parametrize(("asked", "carried"), [
+    ("what is on 4 November", False),
+    ("how much is rent", False),
+    ("what does she like", True),
+    ("tell me more about Sara", True),
+])
+def test_z52_the_last_topic_is_carried_only_to_a_question_with_no_subject_of_its_own(asked, carried):
+    from tessellate.ai import composer_aware
+
+    aw = composer_aware.build(tab="ask", topic="Sara")
+    said = composer_aware.closing(aw, "seed", asked=asked, related=False)
+    assert bool(said) is carried, said
+    assert not carried or "Sara" in said, said
+
+
+def test_z52_a_topic_keeps_the_capital_it_was_typed_with():
+    from tessellate.api.routes_chat import _chat_topic
+
+    assert _chat_topic([{"question": "tell me about Sara", "answer": "Sara is your sister."}]) == "Sara"

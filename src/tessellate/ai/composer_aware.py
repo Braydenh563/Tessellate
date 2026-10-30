@@ -164,6 +164,7 @@ def unfinished(aw: Awareness) -> bool:
 
 
 _THIS = re.compile(r"\b(?:this|it|that|the open)\b(?:\s+(?:note|doc|document|page|draft|one))?|\bwhat(?:'s| is) left\b", re.I)
+_PRONOUN = re.compile(r"\b(?:she|he|her|him|his|they|them|their|there)\b", re.I)
 _SMALL = frozenset("the a an of to in on and or for my your what about is are do does i me with".split())
 
 
@@ -205,8 +206,11 @@ def closing(
     howto = _closing_howto(aw, related, asked)
     #: The answer drew on the open note, or the question is about it.
     open_said = bool(aw.open_title) and (aw.open_title in cited or about_open(aw.open_title, asked))
+    #: The topic carries over only to a question with no subject of its own
+    #: (audit 1030 Z52): after Sara, "what is on 4 November" is not about her.
+    topic_said = bool(aw.topic) and (about_open(aw.topic, asked) or bool(_PRONOUN.search(asked)))
     for step in range(4):
-        line = _closing_line(aw, f"{seed}:{step}", open_said, howto)
+        line = _closing_line(aw, f"{seed}:{step}", open_said, howto, topic_said)
         if line and line not in said:
             return line
     return ""
@@ -219,12 +223,12 @@ def _closing_howto(aw: Awareness, related: bool, asked: str) -> str:
     return "" if howto and _asked_already(howto, asked) else howto
 
 
-def _closing_line(aw: Awareness, salted: str, open_said: bool, howto: str) -> str:
+def _closing_line(aw: Awareness, salted: str, open_said: bool, howto: str, topic_said: bool = True) -> str:
     """One wording of the closing for one salt."""
     lines: list[str] = []
     if open_said:
         lines.append(_pick(_PICK_UP_OPEN, salted, "title").format(title=aw.open_title))
-    elif aw.topic:
+    elif aw.topic and topic_said:
         lines.append(_pick(_TOPIC, salted, "topic").format(topic=aw.topic))
     if howto and not aw.open_title:
         lines.append(_pick(_HOWTO, salted, "howto").format(howto=howto))

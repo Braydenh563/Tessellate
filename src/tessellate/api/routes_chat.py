@@ -3481,11 +3481,11 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
         return digest
     try:
-        return composer_digest.answer(
+        return composer.offered(composer_digest.answer(
             follow.question if restated else req.question, current, today=today,
             voice=_answer_voice(), turn=len(req.history or []),
             insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-        )
+        ), req.question)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None
@@ -3644,7 +3644,9 @@ def _chat_topic(history: list[dict]) -> str:
         answer = str(turn.get("answer") or "").lower()
         for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
             if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
-                return term
+                #: As it was typed, so a name keeps its capital ("We were on Sara").
+                typed = re.search(rf"\b{re.escape(term)}\b", str(turn.get("question") or ""), re.I)
+                return typed.group(0) if typed else term
     return ""
 
 
