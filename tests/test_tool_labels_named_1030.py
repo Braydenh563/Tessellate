@@ -4,11 +4,12 @@ title, never its id ("Done: added to Favourites: note #29")."""
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from tessellate.ai import tools
 from tessellate.entry import manager
 
-SOURCE = (tools.__file__ and open(tools.__file__, encoding="utf-8").read())
+SOURCE = Path(tools.__file__).read_text(encoding="utf-8")
 
 
 def test_no_result_label_shows_a_note_id():

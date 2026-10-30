@@ -23,6 +23,9 @@ from test_forgot_password import (  # noqa: F401  # the fixtures are autouse the
     _notebook,
 )
 
+#: Named so the autouse fixtures above read as used: pytest finds them by import.
+AUTOUSE = (_clean, _devices_already_allowed, _known_code)
+
 ROOT = Path(__file__).resolve().parent.parent
 SPACES_JS = (ROOT / "frontend" / "js" / "spaces-find.js").read_text(encoding="utf-8")
 
