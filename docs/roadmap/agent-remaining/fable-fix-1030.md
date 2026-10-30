@@ -1,6 +1,6 @@
 # fable-fix-1030 (agent fable-fix, branch agent/fable-fix-1030)
 
-Done: HASH (F2, F3, F6, F7, F8, F9, F10, F13, F14, F15; Z64, Z69, Z71). F1, F4, F5, F11, F12 were fixed before this run (1ffd38b, 34612fa).
+Done: c5a24ea (F2, F3, F6, F7, F8, F9, F10, F13, F14, F15; Z64, Z69, Z71). F1, F4, F5, F11, F12 were fixed before this run (1ffd38b, 34612fa).
 Fixed on the base before this run, not reproduced here: Z67 (the Sara, Tokyo trip and Books notebook answers from the Sara notes only).
 
 Found, not fixed:

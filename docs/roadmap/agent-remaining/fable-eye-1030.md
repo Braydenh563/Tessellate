@@ -17,12 +17,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F2 (high): "who is X" cites one note for sentences taken from several
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro: `composer_digest.answer("Who is Sam?", notes)` on the stress notebook: six lines (`Sam comes up in nine notes.`, `Sam Patel is your manager...`, `Sam Hoyle is your cousin...`, `Sam wants PTO requests...`), one grounding row, `note_id` 1 only. The cousin line is note 2, the PTO line note 5.
 - Root cause: `src/tessellate/ai/composer_digest.py:2891-2900` `_who` appends a line per found sentence in the loop but one row, for the lead fact, after it.
 - Class: every person named in two or more notes; the sources column under the answer names the wrong note for most lines and `validate.report` cannot trace them.
 - Fix: inside the loop append `_row(body, Fact(v, s2, "", ""))` (or the dict form used at line 2900) per line; test "who is X" over three notes expects three rows with three ids.
 
 ### F3 (high): "still on my list" says a box is ticked that is not, and contradicts "what is still open"
+
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
 
 - Repro (stress notes 6 and 7): `Is renewing the library membership still on my list?` answers `No, "Renew library membership - due 28 October." is ticked off in Admin bits.` citing note 6, whose box is `[ ]`. The record of the doing is note 7 (`Renewed my library membership today`), which is not cited. In the same notebook `What's still open in Admin bits?` answers `2 still to do on Admin bits: Renew library membership ... Back up laptop`, and `When is the laptop backup due?` closes with `Remind you to renew library membership - due 28 October?`.
 - Root cause: `src/tessellate/ai/composer_slots.py:395-400` `_is_still` folds `_done_later` into `done` and then words it as the checkbox state (`is ticked off in {title}`) citing the task line; the open-list reader at `composer_slots.py:110-127` and the digest's offers never consult `_done_later`, so three answers disagree about one item.
@@ -49,12 +53,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F6 (medium): model on and model off disagree on money and checklist questions
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro by reading (no real model ran): `_facts_turn` (`src/tessellate/api/routes_chat.py:4402-4423`) hands a model-on turn the engine's answer only for `prepared["stats"]` (counts, arithmetic) and `tool_read`. `composer_money` sums and `composer_slots` yes/no answers are not facts, so with a model on, "how much have I spent" is written by the model from up to 400 raw notes (`routes_chat.py:1686-1693` still swaps retrieval for every amount note), and "did I renew the membership" from the five retrieved notes. `_check_model_prose` (`routes_chat.py:4674-4700`) can only append a heads-up when the sum is in no note; a wrong sum of figures that are in the notes is not caught.
 - Class: every question the composer answers exactly (money, slots, computed dates, counts by list) on the Chat tab or Ask with a model, which the owner said should be "what the composer can do but better".
 - Fix: let `_facts_turn` run `composer_money.answer` and `composer_slots.answer` over `prepared["notes"]` and pass the lines as facts (the same `fact_check.keeps` gate), so the figure is the engine's on both paths.
 - Not verified with a model: the seam only.
 
 ### F7 (medium): the digest's ContextVars are set per answer and never reset
+
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
 
 - Repro: in one thread, `answer("Who is my manager?", notes, voice="playful")` then `composer_digest._VOICE.get()` is `playful`, `_VIEWS.get()` holds 59 views after a following `answer(q, [])` returned None before `_begin`, and `_TIMED` keeps the previous question's value. On the live route each `next()` of the stream runs in a copied context (`routes_chat.py:4926` `run_in_threadpool`), so requests do not see each other (verified: a fresh context reads the defaults).
 - Root cause: `src/tessellate/ai/composer_digest.py:3068-3084` `_begin` sets ten vars (`_NAMES`, `_TODAY`, `_TIMED`, `_CURRENT`, `_VOICE`, `_TURN`, `_SEED`, `_GAPS`, `_VIEWS`, `_KNOWN`, `_ASKS_WORDS`) with no token or reset; `all_said` (3043) sets two of them and reads the rest; `web` and `PHRASES` read `_TIMED`/`_VOICE` wherever they are called.
@@ -63,6 +71,8 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F8 (medium, perf): every answer re-reads every note it was given, and a "more" turn does it four times
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro: `composer_digest.answer("What do I know about Hobart?")` on 600 notes: 0.78 s, of which `_begin` → `composer.read_note` 0.53 s (33,000 `_stem` calls); 60 notes 0.32 s. The money path (F1) hands up to 400 notes to the same reader; `_told_sources` (`routes_chat.py:3435`) answers the last three questions again over the same notes before `composer.compose` answers "tell me more".
 - Root cause: `composer_digest.py:3071` builds `NoteView`s from scratch per call; `composer.py:1228` `read_note` has no cache; the route builds the same list for the digest, the fallback and each re-answer.
 - Class: every composed turn; cost grows with notes retrieved, which the money and recall windows (`routes_chat.py:1628`) make large.
@@ -70,12 +80,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F9 (medium): passive yes/no questions miss the checklist reader
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro: `Did I renew the library membership?` → `Yes, your note of 29 October says so`; `Have I renewed my library membership?` → the same; `Is the library membership renewed?` → a quote of the Admin bits checklist with no yes or no. `Did I back up the laptop?` → `Not yet: "Back up laptop - due 2 November." is still open`; `Is the laptop backed up?` → the checklist quoted plus `You have just the one note on that so far.`
 - Root cause: `src/tessellate/ai/composer_slots.py:825` `answer` routes on `did I`, `have I` and `still` openers; `is X done/renewed/backed up/paid` (be-verb plus participle) is not a shape, so the ordinary digest quotes.
 - Class: every passive form of a checklist question, and "is X paid", "is X booked", "is X sent".
 - Fix: add `^(?:is|are|was) (?:the |my )?(?P<thing>.+?) (?P<verb>\w+ed|done|paid|sent|booked)\??$` to the did reader, mapping the participle to `_verb_forms`.
 
 ### F10 (medium): "count my notes about X" answers one note and claims it is the only one
+
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
 
 - Repro: `Count my notes about Hobart.` → `Don't count the balance as spending yet, from one of your notes. ... You have just the one note on that so far.` Six notes are tagged Hobart; `How many notes do I have about Hobart?` says six. `Do I have notes about Hobart?` and `How much have I written about Hobart?` each quote one note.
 - Root cause: the question's verb (`count`) becomes a subject word and matches `Don't count the balance` (the class of Z16 to Z18); new here is `composer_digest.py:2780-2783` `_single_close`, which says `only_note` from `len(members) == 1` without checking how many views carry the topic, so the footer asserts a false count.
@@ -102,6 +116,8 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F13 (low, architecture): eight readers of a note's title disagree
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro: run `commands._title`, `composer._title`, `composer_lists._title`, `composer_study._title`, `questions._title`, `study.title_of`, `tool_say._title`, `composer_frame.note_label` on `[ ] Renew library membership - due 28 October.\n[x] Email the landlord`: results `'[ ] Renew library membership -…'`, `'your untitled list'`, `'[ ] Renew library membership - due 28 October'` (three spellings) and `''`; on `**Admin bits**\nRenew membership` seven say `Admin bits` and `commands._title` says `**Admin bits**`.
 - Root cause: eight private readers (`commands.py:848`, `composer.py:1018`, `composer_lists.py:378`, `composer_study.py:115`, `questions.py:87`, `study.py:167`, `tool_say.py:71`, `composer_frame.py:262`) each with their own markdown and checkbox rules.
 - Class: every surface that names a note (the sources column, the why line, chips, the open-note answer, study decks) can name the same note differently in one answer.
@@ -109,12 +125,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F14 (low, security): two compare regexes are quadratic on whitespace; not reachable through the route today
 
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
+
 - Repro: `composer._COMPARE_SIDES[0].search(" " * 20000)` 65 s, `composer_digest._ASKS["compare"].search(" " * 20000)` 47 s (1.5 s and 0.9 s at 3,000). `ChatRequest.question` allows 20,000 characters (`routes_chat.py:392`). Through `POST /chat/stream` the same 20,000-space question answers in 0.04 s because `composer.rephrase` (`composer.py:530`) and `composer_lists.clean` collapse whitespace before any reader. Smaller ones on 3,000 spaces: `task_acts._DONE_TAIL` 0.60 s, `activity._DATE_STUB` 0.54 s, `composer_frame._PRESENTED_END` 0.36 s, `task_acts._TAIL_KIND` 0.36 s, `recognise._CLOCK_TAIL` 0.34 s (1,016 patterns timed; the rest under 0.1 s).
 - Root cause: `composer.py:787` `^(?:...\s+)?(?P<a>.+?)\s+...` and `composer_digest.py` `_ASKS["compare"]` `[\w' -]{2,30}?\s+or\s+`: a lazy group followed by `\s+` backtracks over every split of a long run of spaces.
 - Class: any new caller that passes raw text (a note's own line, an imported question list) to these readers; the guard is one `" ".join(q.split())` away from each of them, not in the pattern.
 - Fix: collapse whitespace once in a `ChatRequest` validator and in `read_note`'s line splitter, and bound the lazy groups (`[^\n]{1,200}?`).
 
 ### F15 (low): an offer suggests a reminder for a task a later note records as done
+
+**Fixed c5a24ea.** Agent `fable-fix-1030`.
 
 - Repro: `When is the laptop backup due?` on the stress notebook ends `Remind you to renew library membership - due 28 October?` after note 7 (29 October) says it was renewed.
 - Root cause: the offers in `composer_digest._offer`/`_finish` pick the first open checklist line of the lead note and never ask `composer_slots._done_later` (`composer_slots.py:222`).
