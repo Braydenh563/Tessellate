@@ -70,3 +70,9 @@ date | item | type | rung | rework | note
 2026-10-30 | D34 failed save said once | bug | opus | 0 | 
 2026-10-30 | K18 thumbnails off the loop | perf | opus | 0 | 
 2026-10-30 | D31 Ctrl+H replace | feature | opus | 0 | 
+2026-10-30 | E66 delete all names every match | bug | opus | 0 | 
+2026-10-30 | U29 one New document | ui | opus | 0 | 
+2026-10-30 | S17 one past-time helper | refactor | opus | 0 | 
+2026-10-30 | D32 find chords in palette | ui | opus | 0 | 
+2026-10-30 | U33 prompt headings | ui | opus | 0 | 
+2026-10-30 | S13 placeholder fields labelled | ui | opus | 0 | 
