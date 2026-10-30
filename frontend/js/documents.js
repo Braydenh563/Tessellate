@@ -11554,9 +11554,9 @@ function docImagePick(box, boxId) {
   input.click();
 }
 
-async function docImageUpload(box, boxId, file) {
+async function docImageUpload(box, boxId, file, said = "") {
   const { selectionStart: start, selectionEnd: end, value } = box;
-  const alt = value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
+  const alt = said || value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
   try {
     const form = new FormData();
     form.append("file", file);
@@ -11579,10 +11579,33 @@ async function docImageUpload(box, boxId, file) {
         box.value = before;
         box.setSelectionRange(start, end);
       }
-      docImageUpload(box, boxId, file);
+      docImageUpload(box, boxId, file, said);
     };
     toast("Could not upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
   }
+}
+
+//: **A picture pasted into a markdown document asks what it shows** (audit
+//: 1028 D27). The upload and the embed were already there (settings-wiring.js'
+//: paste handler), with the file's own name for alt text, "image.png". On
+//: `window` in the capture phase so it runs ahead of that one, and only for a
+//: clipboard that is a picture and nothing else; a copy with words in it is
+//: the words' paste. An empty answer or Escape still adds the picture.
+window.addEventListener("paste", (event) => {
+  const view = docCmView;
+  if (!view || !view.dom.contains(event.target) || view.dom.classList.contains("doc-content-code") || view.state.readOnly) return;
+  const data = event.clipboardData;
+  if (!data || data.getData("text/plain")) return;
+  const file = [...data.files].find((f) => f.type.startsWith("image/"));
+  if (!file) return;
+  event.preventDefault();
+  event.stopPropagation();
+  docImagePasteAsk(file);
+}, true);
+
+async function docImagePasteAsk(file) {
+  const said = await promptDialog("Describe this picture (optional)", "", { confirmLabel: "Add picture" });
+  await docImageUpload(docSurface(), "doc-content", file, said);
 }
 
 //: The address-by-hand form: the selection becomes the *alt text* and the

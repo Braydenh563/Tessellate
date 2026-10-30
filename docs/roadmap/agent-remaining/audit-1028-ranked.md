@@ -45,7 +45,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
 | 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
-| 42 | D27 | med | no image resize handles or alt-text prompt on paste | new | M |
+| 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (this commit) | M |
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
@@ -137,10 +137,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 131 | U28 | med | font size stepper mixes 22px and M | new | S |
 | 132 | U29 | med | two New document buttons on the empty state | fixed | S |
 | 133 | U31 | med | formatting toolbar hidden by default | skipped (decision PLAN.md D1: the strip starts collapsed, chrome 171 to 89px; the Formatting button already says Show or Hide formatting toolbar and carries aria-pressed) | S |
-| 134 | U32 | med | export three clicks deep in More menu | fixed (this commit) | S |
+| 134 | U32 | med | export three clicks deep in More menu | fixed (efa1ffd) | S |
 | 135 | U33 | med | new document prompt lacks heading and placeholder | fixed | S |
-| 136 | U34 | med | titled blank creation leaves a stray empty document | fixed (this commit) | M |
-| 137 | U35 | med | small targets in document list and header | fixed (this commit; the suggest switch sits in a 228x34.5 row, .card-open's overlay covers its whole card, library search inputs are the Library's) | S |
+| 136 | U34 | med | titled blank creation leaves a stray empty document | fixed (efa1ffd) | M |
+| 137 | U35 | med | small targets in document list and header | fixed (efa1ffd; the suggest switch sits in a 228x34.5 row, .card-open's overlay covers its whole card, library search inputs are the Library's) | S |
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |
 | 139 | U37 | med | disabled Run reason link is low contrast | fixed (already: reason link opacity 1, 7.7:1 light and 8.8:1 dark, measured) | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
