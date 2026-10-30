@@ -138,7 +138,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 132 | U29 | med | two New document buttons on the empty state | fixed | S |
 | 133 | U31 | med | formatting toolbar hidden by default | new | S |
 | 134 | U32 | med | export three clicks deep in More menu | new | S |
-| 135 | U33 | med | new document prompt lacks heading and placeholder | new | S |
+| 135 | U33 | med | new document prompt lacks heading and placeholder | fixed | S |
 | 136 | U34 | med | titled blank creation leaves a stray empty document | new | M |
 | 137 | U35 | med | small targets in document list and header | new | S |
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |

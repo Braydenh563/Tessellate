@@ -1602,7 +1602,7 @@ function gcShowTopic(topic, colour) {
   //: "Topics and categories": neither writes the other on its own). One
   //: move with one Undo, the batch bar's own (`moveNotesToCategory`).
   const file = smallButton("ph:folder-simple-plus File as a category", "File these notes under one category, named for the topic", async () => {
-    const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category:`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
+    const wanted = (await promptDialog(`File these ${nounCount(topic.size, "note")} under the category`, topic.name.replace(/^#/, ""), { confirmLabel: "File" })).trim();
     if (wanted) await moveNotesToCategory(topic.ids, wanted);
   });
   actions.append(ask, file);

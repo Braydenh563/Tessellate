@@ -1863,7 +1863,7 @@ async function loadConversationList() {
     );
     items.push(
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptTitle("Rename this chat:", conversation.title);
+        const next = await promptTitle("Rename this chat", conversation.title);
         if (!next) return;
         await apiJson(`/conversations/${conversation.id}`, {
           method: "PUT",

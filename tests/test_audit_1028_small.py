@@ -30,3 +30,15 @@ def test_the_document_palette_names_every_find_chord():
     assert 'id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",\n    code: true,' in src
     assert 'id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",\n    prose: true,' in src
     assert 'id: "replace-here", icon: "ph:swap", label: "Find and replace in this document", keys: "Ctrl+H",' in src
+
+
+def test_a_prompt_heading_has_no_trailing_colon():
+    """U33: `promptDialog` shows its message as the dialog's heading, so
+    "Rename this document:" read as a label cut off; every caller says it as
+    a title now."""
+    import re
+
+    for path in JS.glob("*.js"):
+        src = path.read_text(encoding="utf-8")
+        found = re.findall(r'(?:promptDialog|promptTitle|docPromptInModal)\(\s*(["`])((?:(?!\1).)*?):\1', src, re.S)
+        assert not found, f"{path.name}: {[text for _, text in found]}"

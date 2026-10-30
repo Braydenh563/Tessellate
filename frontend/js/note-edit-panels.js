@@ -368,7 +368,7 @@ function renderEditForm(li, entry) {
       run: async () => {
         let value = option.value;
         if (value === "__new__") {
-          const name = await promptDialog("Name for the new category:", "", { confirmLabel: "Create" });
+          const name = await promptDialog("Name for the new category", "", { confirmLabel: "Create" });
           if (!name) return;
           const made = Object.assign(document.createElement("option"), { value: name, textContent: name });
           categorySelect.insertBefore(made, option);

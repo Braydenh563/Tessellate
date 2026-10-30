@@ -18928,7 +18928,7 @@ async function createNewBoard(preset = null, { reveal = false } = {}) {
     }
     return;
   }
-  const answer = await promptDialog("Name the new board:", "", {
+  const answer = await promptDialog("Name the new board", "", {
     //: "Save" is what `promptDialog` says by default and it is the wrong verb
     //: for a dialog whose whole job is to make something that does not exist
     //: yet.
@@ -24407,7 +24407,7 @@ function drawLibraryBoardsGallery(listed) {
             remindAbout({ title: board.title, entryId: board.id })
           ),
           makeMenuItem("ph:pencil-simple Rename", "Rename this board", async () => {
-            const next = await promptDialog("Rename this board:", board.title);
+            const next = await promptDialog("Rename this board", board.title);
             if (!next) return;
             const named = (title) => apiJson(`/whiteboard/boards/${board.id}`, {
               method: "PUT",

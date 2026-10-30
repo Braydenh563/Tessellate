@@ -1723,7 +1723,7 @@ async function docEmmetWrap() {
     from = first.from + indent.length;
     to = first.to;
   }
-  const abbr = await promptDialog("Wrap with an abbreviation:", docEmmetLastWrap, { confirmLabel: "Wrap" });
+  const abbr = await promptDialog("Wrap with an abbreviation", docEmmetLastWrap, { confirmLabel: "Wrap" });
   if (!abbr || !docCmView) return false;
   const text = docEmmetWrapText(view.state.sliceDoc(from, to), indent, abbr);
   const expansion = docEmmetExpansion(window.EMMET, abbr, syntax, text);

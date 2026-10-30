@@ -716,7 +716,7 @@ let chatPendingTitle = null;
 async function renameCurrentConversation() {
   if (!chatConv) return;
   const current = $("chat-title").textContent;
-  const next = await promptTitle("Rename this conversation:", current);
+  const next = await promptTitle("Rename this conversation", current);
   if (!next || next === current) return;
   if (chatConv.id === null) {
     chatPendingTitle = next;

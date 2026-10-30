@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6851, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7381, test files 1574, tests 13720, plan headings 987.
+Counts: frontend functions 6851, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7381, test files 1574, tests 13721, plan headings 987.
 
 ## Frontend functions (6851)
 
@@ -20707,7 +20707,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13720)
+## Tests (13721)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20790,7 +20790,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_attachment_path_containment.py | 3 |
 | tests/test_attachment_rename_route.py | 4 |
 | tests/test_audio_section.py | 4 |
-| tests/test_audit_1028_small.py | 3 |
+| tests/test_audit_1028_small.py | 4 |
 | tests/test_audit_1030_ai_acts.py | 5 |
 | tests/test_audit_1030_ai_routes.py | 5 |
 | tests/test_audit_1030_ai_ui.py | 12 |

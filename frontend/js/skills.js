@@ -1291,7 +1291,7 @@ function fillBatchCategories(hostId = "batch-category-host") {
   );
   items.push(
     makeMenuItem("ph:plus New category…", "Move them to a category you name now", async () => {
-      const category = await promptDialog("New category name:", "", { confirmLabel: "Move" });
+      const category = await promptDialog("New category name", "", { confirmLabel: "Move" });
       if (category) await batchMove(category);
     })
   );

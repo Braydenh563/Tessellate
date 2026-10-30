@@ -483,7 +483,7 @@ async function wbOpenSnapshots() {
       card.classList.add("wb-snapshots-card");
       const save = smallButton("ph:camera Save a snapshot…", "Name the board as it is now, to come back to", async () => {
         const at = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        const name = await promptDialog("Name this snapshot:", `Snapshot ${at}`, { confirmLabel: "Save" });
+        const name = await promptDialog("Name this snapshot", `Snapshot ${at}`, { confirmLabel: "Save" });
         if (name === null || name === undefined) return;
         try {
           await apiJson("/whiteboard/history/snapshots", { method: "POST", body: JSON.stringify({ board_id: boardId, name: String(name).trim() || `Snapshot ${at}` }) });

@@ -61,7 +61,7 @@ async function persistSavedSearches(next) {
 async function saveCurrentSearch() {
   const query = $("note-search").value.trim();
   if (!query) return;
-  const name = await promptDialog("Name this filter:", query.slice(0, 40), { confirmLabel: "Save filter" });
+  const name = await promptDialog("Name this filter", query.slice(0, 40), { confirmLabel: "Save filter" });
   if (!name) return;
   // Re-saving an existing name updates it rather than adding a duplicate you
   // then have to hunt down and remove.

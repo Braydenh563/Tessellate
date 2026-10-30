@@ -935,7 +935,7 @@ function renderDocList() {
     const menu = kebabMenu(
       [
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-          const next = await promptDialog("Rename this document:", doc.title || "");
+          const next = await promptDialog("Rename this document", doc.title || "");
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
         }),
@@ -13842,7 +13842,7 @@ function docPromptInModal(message, initial) {
 }
 
 async function docNameVersion(entry) {
-  const next = await docPromptInModal(entry.name ? "Rename this version:" : "Name this version:", entry.name || "");
+  const next = await docPromptInModal(entry.name ? "Rename this version" : "Name this version", entry.name || "");
   if (next === null || next === undefined) return;
   await docSetVersionName(entry, next);
 }
@@ -13867,7 +13867,7 @@ async function docSetVersionName(entry, name) {
 //: the name holds what is on screen.
 async function docNameCurrentVersion() {
   if (!currentDoc) return;
-  const name = await docPromptInModal("Name this version:", "");
+  const name = await docPromptInModal("Name this version", "");
   if (!name || !name.trim()) return;
   if (docDirty) await saveDocument({ silent: true });
   const docId = currentDoc.id;
