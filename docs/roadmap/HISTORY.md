@@ -51532,3 +51532,32 @@ export it drove.
 
 1465. **The owner, 2026-10-31 08:15, verbatim:** "also I centred an image in the graph popup and it started reading it again?? also why cant I have the image alignment or resizing in the notes and boards etc and other places like the timeline and documents editor idk wherever notes are have the same thing??" With a log: 08:10:12 an edit started "Reading text from an image", "Describing an image" and "Reading an image with the vision model" for the same png (vision model not running, "Reading text from images failed"). Lag lines in the same log: `settings-wiring.js #document.onkeydown` 158 to 314 ms (forced layout up to 311 ms) with `dashboard.js resync` 64 to 89 ms on keydown on the dashboard; `avatars.js nameMarkBuddyTick` 198 to 202 ms and `avatars.js TimerHandler:setTimeout` 436 ms (forced layout 362 ms) on chat and timeline; `navigation.js scheduleUpdate` 28 calls/s; `/auth/unlock` 3,898 ms; `/models/status` 3,200 ms; `notes-list.js` 143 ms. Classes: an edit that moves or sizes an image never reads it again (read once per image content); image align and resize wherever a note's body is edited (note editor, graph popup, boards, timeline, documents) from one shared control; each lag line fixed by cause. Hub: the re-read and the keydown and avatar lag; the shared image control after attach-1031.
 
+
+## Moved from the plans, 2026-10-31 (wbopen-1031: OPEN batches B45 and B48)
+
+From OPEN.md, "Unassigned, proposed batches", ids 806 to 819 and 848 to 861, as each stood. Each row was checked against the code and the running app (port 8810, fresh data dir, machine load 6 to 14 on four cores) before anything was built.
+
+Built already (evidence from this pass):
+
+- 806 "what is there about X" with no model: `ai/composer_overview.py` matches it as the overview (decision 64); `tests/test_composer_overview_787.py` 33 passed, including `test_what_is_there_about_a_topic_is_the_overview_not_one_quote`.
+- 808 whiteboard gaps: the hand-drawn look (`rough` in the Format fields), tables (`wbInsertTable`, a 2-row table inserts), Edit data (Format panel tabs Style, Text, Arrange, Data; `wbFmtPropRow`), the current layer (`wbSetCurrentLayer`, `tests/test_board_current_layer.py` and `test_board_named_layers.py` 7 passed), `.drawio` pages after the first (`wbDrawioCells` returns every page), and an item's eye on a hidden named layer (marked `is-by-layer`, titled "Hidden by its layer, ...", and pressing it says why and changes nothing: 2 of 2 in a probe at 1440).
+- 809 laser sweep: `wblaser.js` had a stale call (`wbFrameZ`, gone) and a 3-dot bar; fixed and put back to 10 dots; 7 of 7 at 390, at 1440 and at 390 in the dark theme. A real draw.io file from the app is still unobtained.
+- 810 a note's fold: `edit_board_item` takes `fold` with its Undo (`tests/test_ai_board_edit.py::test_a_sticky_s_folded_corner_is_set_and_undone`); the board's JSON export carries the whole data blob and the SVG export reads the drawn `wb-no-fold` class (`wbSvgStickyFold`).
+- 812 ids in an imported folder: `_fix_object_links` and `_hang_connector_ends` (`entry/export_folder.py`) remap an object's parent, a map note's `ref_id` and a connector's two ends; comment ids are per-thread and stay valid copied. `tests/test_folder_roundtrip.py` 8 passed. Still not verified: private notes, several spaces, a browser upload of 5,000 files.
+- 814 `mapstrip.js`: the five named fails pass on this head (43 of 43 at 1440); the sweep itself stopped at its second board because `newBoard` clicked a tab that is hidden while a board is open, now opened as `map78.js` does.
+- 849 `GET /entries/count`: counts notes through `count_notes` (boards and the bin out); two boards and no note read 0, one note 1, binned 0.
+- 850 the Timeline's kind chip reads "Boards and maps" (`timeline.js:270`).
+- 851 Brief 10 has its section in HISTORY ("Brief 10 (Fri, Sonnet): Library one card recipe, Dashboard widget frame").
+- 852 and 853 mention counts and every date: `ai/composer_lists.py`, `tests/test_composer_lists_1018.py` 33 passed (HISTORY "Moved from the plans, 2026-10-18 (chat-1018 ...)").
+- 854 the p5.js sketch kind: `runP5` in `api/run_sandbox.py` with the vendored `frontend/vendor/p5.min.js`; the document tooltip names p5 sketches.
+- 857 `scratchpad/ui-sweeps/frames.js` has the notes and documents surfaces ("OPEN 857").
+
+Not a fault, by design:
+
+- 811 at 390 the sidebar is a sheet 525 of 713px tall, so the free area above it is 120px, under the third `wbFreeArea` keeps; a fit into a sliver is worse than one that runs under a sheet (the comment above `WB_FIT_OCCLUDERS`). Measured, left as decided.
+- 848 the two red toasts (a partial link run, a clear that left items) are partial failures and read as errors on purpose.
+- 859 the first-ever Graph open plays the warm-up spread (INBOX 775), by design.
+
+Fixed:
+
+- 807 the `.drawio` export: Export, draw.io writes a free board as one uncompressed page (`wbBoardToDrawio`, `wbExportDrawio`). `%name%` placeholders (`wbExpandPlaceholders`) and the layer order (`wbLayerRestack`) were already built. The importer now reads a cell styled `html=0` as typed. `tests/test_wb_drawio_export.py` 6 passed; in Chromium a board of a frame, a text box, two shapes and a connector exports as 4 shapes and 1 connector and the importer reads back 1 frame, 1 text, 2 shapes and the joined connector with its label and arrow (7 of 7 at 1440 and at 390).
