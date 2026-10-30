@@ -68,7 +68,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 62 | E39 | med | model download has no timeout or disk check | new | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
-| 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (HASH) | S |
+| 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (b8cfb46) | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |
 | 68 | S28 | med | no wiki-style [[ ]] autocomplete in notes | already built ([[ ]] autocomplete, measured) | M |
@@ -103,19 +103,19 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
-| 100 | S15 | med | only one forced-colors rule in the whole CSS | fixed (HASH) | M |
+| 100 | S15 | med | only one forced-colors rule in the whole CSS | fixed (b8cfb46) | M |
 | 101 | S18 | med | support email hard-coded in toast code | fixed (one string, tests/test_support_email.py keeps it equal) | S |
 | 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | fixed (this batch) | S |
-| 103 | S21 | med | select button folded away at narrow widths | fixed (HASH) | M |
-| 104 | S22 | med | filter, sort and view toggle use three control styles | fixed (HASH, already one dock grammar; menu overflow fixed) | M |
+| 103 | S21 | med | select button folded away at narrow widths | fixed (b8cfb46) | M |
+| 104 | S22 | med | filter, sort and view toggle use three control styles | fixed (b8cfb46, already one dock grammar; menu overflow fixed) | M |
 | 105 | S23 | med | palette lacks recent-first order and shortcut hints | fixed (already: most used first at rest, learned order as you type, the key in the preview) | S |
 | 106 | S24 | med | no in-app cheat sheet reached with the ? key | fixed (already built; reconciled 2026-10-30) | S |
 | 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | fixed (aef5a83, S26: banner one in-flow line 111px, toast only when the question is owed; its phone size 178px to 152px, covering the Ask button 32px to 6px at 390x667; 360x640 still covers, see shellux-1030.md) | S |
 | 108 | S39 | med | focus ring contrast inconsistent across custom controls | fixed (measured, already holds: contrastui.js, 40 surfaces, 1037 focused controls per theme, 0 under 3:1 in light and dark; 11 custom controls 5.47 to 5.9:1 light and 6.24 to 7.33:1 dark; 51 of 54 outline colours are `var(--accent)`, the rest tokens) | S |
-| 109 | S40 | med | icon-only buttons rely on title for accessible names | fixed (HASH, lint; all icon buttons already named) | S |
+| 109 | S40 | med | icon-only buttons rely on title for accessible names | fixed (b8cfb46, lint; all icon buttons already named) | S |
 | 110 | S41 | med | touch targets under 24px in dense rows | fixed (measured, already holds: notes row chips min 24x24, row icon buttons 28x28 (44x32 touch), 9 surfaces at 1280 and 390: 0 failing WCAG 2.5.8 except one library title beside the status bar; the 14px suggested-tag take has a 44px band) | S |
 | 111 | S42 | med | first run has no sample notes, lists look empty | left (large, shell-1031.md) | M |
-| 112 | S43 | med | help split across popovers, Guide and Settings | fixed (HASH) | S |
+| 112 | S43 | med | help split across popovers, Guide and Settings | fixed (b8cfb46) | S |
 | 113 | S45 | med | no palette deep link to each Settings pane | fixed (already built; reconciled 2026-10-30) | S |
 | 114 | S46 | med | no back stack after following a note link | fixed (already: back and forward in the status bar, nav-history.js; reconciled 2026-10-30) | M |
 | 115 | S51 | med | dashboard has no resume where you left off | fixed (already built; reconciled 2026-10-30) | S |
@@ -157,7 +157,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | left (large; notes list already windowed, shell-1031.md) | L |
 | 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
-| 154 | S38 | med | many timers run independent intervals | fixed (HASH) | S |
+| 154 | S38 | med | many timers run independent intervals | fixed (b8cfb46) | S |
 | 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
 | 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
 | 157 | U20 | med | code file open long task of 305 ms | new | M |
@@ -172,7 +172,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 166 | E45 | med | five AI surfaces with separate stream consumers | new | L |
 | 167 | S17 | med | four copies of the relative-time helper | fixed | S |
 | 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
-| 169 | S44 | med | mixed button heights and radii across toolbars | fixed (HASH, lint; toolbar sizes already tokens) | M |
+| 169 | S44 | med | mixed button heights and radii across toolbars | fixed (b8cfb46, lint; toolbar sizes already tokens) | M |
 | 170 | U25 | med | collapse chevrons overlap node edges | new | S |
 | 171 | U30 | med | editor toolbar heights inconsistent | new | S |
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
@@ -214,7 +214,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
 | 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
-| 211 | S72 | low | no quick-capture hint on first run | fixed (HASH) | S |
+| 211 | S72 | low | no quick-capture hint on first run | fixed (b8cfb46) | S |
 | 212 | S73 | low | no word count or reading time in editor footer | already built (editor footer word count, measured) | S |
 | 213 | S74 | low | no outline or table of contents for long notes | new | M |
 | 214 | S75 | low | no daily note shortcut | already built (daily note, measured) | S |

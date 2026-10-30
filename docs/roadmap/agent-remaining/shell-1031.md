@@ -1,6 +1,6 @@
 # shell-1031 remaining list
 
-done: one commit for S11, S15, S21, S22, S38, S40, S43, S44, S72 (hash in audit-1028-ranked.md).
+done: one commit for S11, S15, S21, S22, S38, S40, S43, S44, S72 (b8cfb46).
 Already built, measured in the running app: S28, S29, S31, S32, S33, S50, S70, S73, S75.
 
 Left:
