@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "what's still on my grocery list" lists only the open items, and "what do I need to do for the trip" answers from to-dos written as sentences when there is no checklist.
 - Composer: "what does Priya do" and "what is Tom's job" lead with the sentence that says the work; "goals for Q1" gives Q1's whole list and leaves Q2 out.
 - Composer: words that shape a question ("how hot", "do I turn", "total", "him") are no longer named as missing from notes that answer it.
 - Composer: a typo no longer costs 4 to 10 seconds (the spelling candidates are cached and a comparison reads the question once).

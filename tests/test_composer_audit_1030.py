@@ -118,3 +118,14 @@ def test_z12_the_asked_property_or_label_leads(question, lead, absent):
     said = composer_digest.answer(question, _PEOPLE, today=_N.date())["text"]
     assert said.startswith(lead), said
     assert absent is None or absent not in said, said
+
+
+def test_to_dos_written_as_sentences_answer_what_is_left():
+    """2026-10-30 probe: "what do I need to do for the trip" said no checklist
+    had anything left, beside "Book the train to Leeds and then draft the
+    itinerary"."""
+    notes = [{"id": 1, "content": "# Trip plan\n\nBook the train to Leeds and then draft the itinerary for Sam.",
+              "created_at": _N, "updated_at": _N, "category": "Personal"}]
+    said = composer_digest.answer("what do I need to do for the trip", notes, today=_N.date())["text"]
+    assert said.startswith("There is no checklist for it, but Trip plan has this to do:"), said
+    assert "Book the train to Leeds" in said, said

@@ -22,6 +22,12 @@ from tessellate.ai import when as when_words
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
 _LEFT = re.compile(r"^what(?:'s|\s+is|\s+else\s+is|\s+is\s+still)?\s+(?:still\s+)?(?:left|remaining|outstanding|open)\s*(.*)$", re.I)
+#: "What's still on my grocery list", "what haven't I bought from it yet":
+#: the open items, not the whole list (2026-10-30 probe).
+_STILL_ON = re.compile(
+    r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+((?:on|in)\s+.+)|(?:have\s*n[o']t\s+i|haven't\s+i|have\s+i\s+not)\s+(?:bought|got|ticked(?:\s+off)?|packed|done)(?:\s+yet)?\s+((?:on|from|in)\s+.+?)(?:\s+yet)?)$",
+    re.I,
+)
 _NEED = re.compile(r"^what\s+(?:else\s+)?(?:do|should)\s+i\s+(?:still\s+)?(?:need|have)\s+to\s+(.+)$", re.I)
 _SINCE = re.compile(r"^how\s+long\s+(?:has\s+it\s+been\s+)?since\s+(?:i|we)\s+(?:last\s+)?(.+)$", re.I)
 #: Words that carry no subject: the framing of the request itself.
@@ -72,6 +78,28 @@ def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
     return [], []
 
 
+#: A sentence that sets something to do: "Book the train to Leeds",
+#: "Need to call the bank".
+_TO_DO = re.compile(r"^\s*(?:[-*]\s*)?(?:(?:i\s+)?(?:need|have|want|plan) to\s+|remember to\s+|don't forget to\s+)?(?:go|buy|call|book|get|ask|pay|send|bring|check|email|text|draft|write|pack|order|fix|renew|sort|finish|print|post|return|clean)\b", re.I)
+
+
+def _left_in_prose(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
+    """No checklist for it, but a note on it says what to do in sentences
+    ("Book the train to Leeds and then draft the itinerary"): those, not "no
+    checklist has anything left to tick" (2026-10-30 probe)."""
+    for view in sorted(views, key=lambda v: v.rank):
+        if not all(st in view.title_words or st in view.words for st in stems):
+            continue
+        todo = [s for s in view.sentences if s.kind == "prose" and _TO_DO.match(s.text)]
+        if todo:
+            out.lines.append(f"There is no checklist for it, but {composer_lists._title(view)} has this to do:")  # noqa: SLF001
+            for s in todo[:6]:
+                out.lines.append(f"- {s.text.strip()}")
+                composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+            return True
+    return False
+
+
 def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     stems = _list_subject(rest)
     if not stems:
@@ -80,7 +108,7 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     #: No list the subject names ("what do I need to buy" names a verb, not a
     #: list): the composer's own readers answer, as they did before the slots.
     if not open_ and not done:
-        return False
+        return _left_in_prose(out, stems, views)
     view = open_[0][0] if open_ else done[0][0]
     title = composer_lists._title(view)  # noqa: SLF001
     if not open_:
@@ -642,9 +670,9 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     shaped = _by_words(out, tokens, views, today)
     if shaped is not None:
         return shaped
-    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left)):
+    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left)):
         if m := pattern.match(q):
-            return say(out, m.group(1), views, today)
+            return say(out, next((g for g in m.groups() if g), ""), views, today)
     return False
 
 

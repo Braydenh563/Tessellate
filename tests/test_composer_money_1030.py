@@ -106,3 +106,12 @@ def test_a_spending_total_asked_any_way_is_summed_from_the_notes(ask, client, qu
     said += agent
     assert "search" not in said.lower(), said
 
+
+
+@pytest.mark.parametrize("question", ["what's still on my groceries list", "what haven't I bought from the groceries list yet"])
+def test_whats_still_on_a_list_is_its_open_items_only(ask, question):
+    """2026-10-30 probe: "what's still on my grocery list" listed every item,
+    ticked ones too, and a spending line came after it."""
+    said = ask(question)
+    assert said.startswith("3 still to do on Groceries:"), said
+    assert "Bread" not in said and "$" not in said, said
