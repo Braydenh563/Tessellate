@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -260,6 +260,7 @@ PHRASES: dict[str, str] = {
     # The close.
     "missing": "None of these notes mention ",
     "newest_lead": "Your ",
+    "newest_guess": "I could not tell what that asks about, so here are your ",
     "newest_mid": " newest notes",
     "until_ahead_days": " days from today, on ",
     "until_ahead_day": " day from today, on ",
@@ -359,6 +360,7 @@ PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
 PHRASES.update(composer_open.PHRASES)
 
+
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of
     both voices when none is named (the tests, which pin a phrase by its key,
@@ -367,6 +369,20 @@ def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     for name in composer_tables.VOICES if voice is None else (voice,):
         names.update(composer_tables.VOICE_VARIANTS[name].get(key, ()))
     return tuple(sorted(PHRASES[n] for n in names))
+
+
+def user_now() -> datetime:
+    """Now on the person's own clock (their saved timezone), as a naive
+    datetime: the server's `date.today()` names the wrong day for someone far
+    from it (audit 1028 K22). `deps._config`, not `get_config()`, which would
+    start the app in a unit test; with no settings it is the server's zone."""
+    from tessellate.core import config, deps
+
+    return config.user_now(deps._config).replace(tzinfo=None)  # noqa: SLF001
+
+
+def user_today() -> date:
+    return user_now().date()
 
 
 #: Number words for counts a reader takes in at a glance. Measured values,
@@ -503,6 +519,17 @@ def _still_recent(question: str) -> bool:
     return not subject_terms(question) or is_recency_ask(question)
 
 
+_UNNAMED_ASK = re.compile(r"^(?:who|where|how (?:much|many)|what (?:should|do you think|would you))\b")
+
+
+def _guessing_recent(question: str) -> bool:
+    """A fallback to the newest notes for a who, where or how-much that names
+    nothing to look for: the answer says it is a fallback (audit 1030 Z34)."""
+    from tessellate.search.search_manager import is_recency_ask
+
+    return bool(_UNNAMED_ASK.match(" ".join(question.lower().split()))) and not is_recency_ask(question) and rec.without_windows(question) == question
+
+
 def _respell(text: str) -> str:
     """Slang and text-speak spelled out, misspelt asking words put right,
     run-together words split (`question_noise`, INBOX 741: "does it cover
@@ -613,12 +640,31 @@ def _stem(word: str) -> str:
 _F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": "loaf", "leaves": "leaf", "halves": "half", "calves": "calf"}
 
 
+#: Past forms no suffix rule folds, so a question that says "run" meets the
+#: note that says "Ran" (audit 1030 Z4: "when did I run 8 km" answered with
+#: another run's sentence). Only forms that are rarely another word: not
+#: "saw", "left", "found", "felt".
+IRREGULAR_PAST = {
+    "ran": "run", "wrote": "write", "written": "write", "ate": "eat", "eaten": "eat", "swam": "swim", "swum": "swim",
+    "rode": "ride", "ridden": "ride", "drove": "drive", "driven": "drive", "bought": "buy", "went": "go", "gone": "go",
+    "flew": "fly", "flown": "fly", "took": "take", "taken": "take", "made": "make", "sold": "sell", "gave": "give",
+    "given": "give", "came": "come", "told": "tell", "spoke": "speak", "spoken": "speak", "slept": "sleep", "paid": "pay",
+    "met": "meet", "began": "begin", "begun": "begin", "broke": "break", "broken": "break", "chose": "choose",
+    "chosen": "choose", "forgot": "forget", "forgotten": "forget", "sent": "send", "built": "build", "heard": "hear",
+    "won": "win", "lost": "lose", "sat": "sit", "stood": "stand", "taught": "teach", "caught": "catch",
+    "brought": "bring", "drank": "drink", "drunk": "drink", "sang": "sing", "sung": "sing", "wore": "wear", "worn": "wear",
+    "woke": "wake", "grew": "grow", "grown": "grow",
+}
+
+
 def _stem_plain(word: str) -> str:
     """`_stem` without the spelling key: what the import-time tables use, so
     importing the composer never loads the English list."""
     w = word.lower()
     if w in _NOT_PLURAL:
         return w
+    if w in IRREGULAR_PAST:
+        return IRREGULAR_PAST[w]
     if w in _F_PLURALS:
         return _F_PLURALS[w]
     return _strip_suffix(w)
@@ -2000,6 +2046,13 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 #: now"): only then does a newer correction outrank the note it corrects;
 #: otherwise both are said, older first, "but" the newer (`but_newer`).
 _ASKS_NOW: contextvars.ContextVar[bool] = contextvars.ContextVar("composer_asks_now", default=False)
+def figures_of(text: str) -> frozenset:
+    """The amounts `text` names ("run 8 km"), as (dimension, base value). The
+    search drops a lone digit, so a sentence that holds the same amount is
+    ranked for it (audit 1030 Z4: "when did I run 8 km" led with a 6 km run)."""
+    return frozenset((d, round(v, 6)) for d, v, _unit, _at in rec.measures(text))
+
+
 _NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
 
 
@@ -2646,13 +2699,14 @@ def _said_by_shape(term: str, quoted_text: str) -> bool:
 _FRAME_SHAPES = re.compile(
     r"\bhow (?!to\b)(\w+)"
     r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
-    r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)",
+    r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)"
+    r"|\bwhat (\w+s) (?:in|into|inside|with|on)\b",
     re.I,
 )
 _FRAME_WORDS = frozenset(
     _stem_plain(w)
     for w in """total sum plus overall whole altogether notebook theme themes him her them myself yourself ourselves
-    more less sooner later further farther right now""".split()
+    more less sooner later further farther right now ingredient ingredients contents details information""".split()
 )
 
 
@@ -2746,7 +2800,7 @@ def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     asked = _LENGTH_ASK.search(question or "")
     if not asked or len(own[0]) != 1 or len(own[1]) != 1:
         return False
-    sized = sorted(((sum(len(s.text.split()) for s in v.sentences), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
+    sized = sorted(((composer_frame.note_words(v.note.get("content")), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
     if sized[0][0] == sized[1][0]:
         return False
     shorter = asked.group(0).lower() in ("shorter", "smaller")
@@ -3191,19 +3245,21 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
     return dated
 
 
-def _newest(out: _Answer, views: list[NoteView]) -> None:
-    """The newest notes, each by its first sentence, newest first."""
+def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
+    """The newest notes, each by its first sentence, newest first. When the
+    question named nothing to look for, the lead says these are a fallback."""
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    out.t("newest_lead").m(out.count(len(shown))).t("newest_mid")
+    out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
     _span(out, shown)
     out.t("end_colon")
     for view in shown:
         out.t("line", "bullet")
         #: Each line's name opens its note (brief composer item 4: a listing
-        #: offers the way to what it lists, as the tools' lists do).
-        linked = view.kind == "note" and isinstance(view.id, int) and view.id > 0 and view.titled
+        #: offers the way to what it lists, as the tools' lists do), a
+        #: title-less note by the day it was written.
+        linked = view.kind == "note" and isinstance(view.id, int) and view.id > 0 and (view.titled or bool(view.written))
         if linked:
             out.address("[")
         if view.titled:
@@ -3213,6 +3269,8 @@ def _newest(out: _Answer, views: list[NoteView]) -> None:
             out.dated(view)
         elif view.written:
             out.t("list_from").m(out.day(view.written))
+            if linked:
+                out.address(f"](#/notes/{view.id})")
         else:
             out.name(view, cap=True)
         out.t("colon")
@@ -3289,6 +3347,27 @@ _MORE = re.compile(
 _ORDINALS = {"first": 0, "1st": 0, "second": 1, "2nd": 1, "third": 2, "3rd": 2, "fourth": 3, "4th": 3, "fifth": 4, "5th": 4, "last": -1}
 _ORDINAL = re.compile(r"\bthe (first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last) (?:one|note)\b", re.I)
 _PRONOUN = re.compile(r"\b(it|that|this|them|those|they)\b", re.I)
+#: A question that leans on the answer before it (audit 1030 Z53): it opens
+#: with an asking word and either says "it" or has no subject of its own.
+_ASKS_SLOT = re.compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
+_SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
+#: A pronoun that is the point of the phrase, not a reference to a note.
+_NOT_REFERRING = re.compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
+
+
+def refers_back(question: str) -> bool:
+    """Whether `question` is about whatever the last answer was about: it says
+    "it" ("when is it", "how much does it cost", "what did we decide about
+    it") or has no subject of its own ("what time", "who is it with"). Not a
+    question with a name, a number or a time window of its own, nor one that
+    compares: those stand alone."""
+    q = " ".join((question or "").split()).rstrip("?.! ")
+    if not q or not _ASKS_SLOT.match(q) or _NOT_REFERRING.search(q) or rec.without_windows(q) != q:
+        return False
+    if re.search(r"\b[A-Z][a-z]|\d|\b(?:compare|versus|vs|than|between)\b", q[1:]):
+        return False
+    pronoun = bool(_SLOT_PRONOUN.search(q))
+    return pronoun or not [t for t in subject_terms(q) if not _SLOT_PRONOUN.fullmatch(t)]
 #: "what about the boiler?", "and the boiler?", "how about Porto": the turn
 #: before asked again of something else (INBOX 741, turn-aware follow-ons).
 _SWAP = re.compile(
@@ -4061,6 +4140,14 @@ def invitation(message: str, subject: str, voice: str, seed: str) -> str:
     return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
+def greeting_ask(message: str, voice: str, seed: str) -> str:
+    """A plain offer to end a welcome that already names the last note (the
+    invitation would say it twice, audit 1030 Z51)."""
+    mood = composer_compose.voice_for(composer_tables.voice_of(voice))
+    pool = [x.text for x in composer_lines.SOCIAL_TAILS["*"] if not x.emotions and mood in x.voices and x.text.endswith("?")]
+    return _pick(message, f"greeting_ask:{seed}", pool) if pool else ""
+
+
 def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001
     """The stored opener of `kind`, and a next step after an acknowledgement."""
     recent = [r for r in recent if r] or ([previous] if previous else [])
@@ -4262,7 +4349,7 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     """The query plan for `question` on `today` (the person's own day), read
     from its first `PLAN_CHARS` characters."""
     question = _planned_text(question)
-    today = today or date.today()
+    today = today or user_today()
     utility = utilities.kind_of(question)
     shape = "recent" if recent else classify(question, embed)
     terms = subject_terms(question)
@@ -4294,11 +4381,9 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
 _FEATURE_WORDS = 3
 
 
-def _feature_instead(question: str, absent: list[str]) -> dict | None:
-    """Nothing in the notes, and a two- or three-word message that names an
-    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
-    say the notes are silent on it in one clause, then how to use the feature
-    from the Guide's topic. None for anything longer or no topic."""
+def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
+    """The help line of the app feature a two- or three-word message names
+    (the words are the line's own), or None."""
     words = re.findall(r"[a-z]+", (question or "").lower())
     if not words or len(words) > _FEATURE_WORDS:
         return None
@@ -4317,11 +4402,37 @@ def _feature_instead(question: str, absent: list[str]) -> dict | None:
     wanted = absent or [w for w in words if len(w) >= 4]
     if not wanted or not all(re.search(rf"\b{re.escape(w)}", line, re.I) for w in wanted):
         return None
+    return best
+
+
+def _feature_instead(question: str, absent: list[str]) -> dict | None:
+    """Nothing in the notes, and a two- or three-word message that names an
+    app feature (INBOX 1334, "timer\\" got "Which note might it be in?"):
+    say the notes are silent on it in one clause, then how to use the feature
+    from the Guide's topic. None for anything longer or no topic."""
+    best = _feature_help(question, absent)
+    if best is None:
+        return None
+    words = re.findall(r"[a-z]+", (question or "").lower())
     said = absent[0] if absent else " ".join(words)
     #: The feature first: "Nothing in your notes mentions timer" was a
     #: not-found answer to a request for the timer (INBOX 1357, class B).
     lead = f"“{said[:1].upper()}{said[1:]}” is one of the app's own tools, not something in your notes. "
     return _result([("template", lead), ("help", best[0], best[1])], "help")
+
+
+def offered(result: dict | None, question: str) -> dict | None:
+    """A note does mention the word a short message names as a feature
+    ("timer" with a Kitchen timer note): the note answers, and the tool is
+    offered after it from the same help line (INBOX 1334, the open half).
+    The digest and `compose` both answer a chat turn, so both pass through."""
+    if not result or result.get("shape") in ("help", None) or result.get("missed") or not result.get("parts"):
+        return result
+    best = _feature_help(question, [])
+    if best is None:
+        return result
+    more = [("template", "\n\nThe app has a tool by that name too. "), ("help", best[0], best[1])]
+    return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 
 def decap(text: str) -> str:
@@ -4909,8 +5020,9 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
 def window_said(phrase: str) -> str:
     """A time window as an adverbial, with the preposition it needs ("on 20
     October", "in the last 7 days"; "last week" and "today" as they are):
-    `recognise.adverbial`, the one reader of it."""
-    return rec.adverbial(phrase)
+    `recognise.adverbial`, the one reader of it; said with its capitals (audit
+    1030 Z45)."""
+    return rec.proper_days(rec.adverbial(phrase))
 
 
 def _as_typed(word: str, question: str) -> str:
@@ -5015,7 +5127,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
     if register:
         voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
-    today = today or date.today()
+    today = today or user_today()
     when = window_said(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
@@ -5047,7 +5159,7 @@ def _nothing(
     more a voice: never one the last three answers opened with (`out`)."""
     chips = _did_you_mean(unsure or [])
     if out is None:
-        out = _Answer({}, date.today())
+        out = _Answer({}, user_today())
         out.voice = composer_tables.voice_of(voice)
     parts: list[tuple] = [("template", PHRASES[out.voiced("nothing")])]
     if _REGISTER.get():
@@ -5156,6 +5268,7 @@ def compose(
     try:
         result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
+        result = offered(result, asked)
         result = _acknowledged(result, asked, voice=composer_tables.voice_of(voice), seed=f"{asked.strip().lower()}:{salt}:{turn}",
                                history=dialogue.history if dialogue is not None else [{"answer": previous}], previous=previous, known=words)
     finally:
@@ -5252,7 +5365,7 @@ def _answer_turn(question: str, notes: list[dict], **kwargs) -> dict:
     """A topic asked about as a whole is an overview (INBOX 787); anything
     else, or a topic with one note about it, is `_compose`'s."""
     return _overview_answer(
-        question, notes, today=kwargs["today"] or date.today(), voice=kwargs["voice"], said=kwargs["said"],
+        question, notes, today=kwargs["today"] or user_today(), voice=kwargs["voice"], said=kwargs["said"],
         prefer=kwargs["prefer"], dialogue=kwargs["dialogue"],
     ) or _compose(question, notes, **kwargs)
 
@@ -5288,7 +5401,7 @@ def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, 
     #: listed instead of the 84 (engine probe P3).
     if said:
         return None
-    worked = _utility(question, now or datetime.combine(today, datetime.now().time()), salt)
+    worked = _utility(question, now or datetime.combine(today, user_now().time()), salt)
     if worked:
         return worked
     parts = split_parts(question) if not recent else []
@@ -5320,7 +5433,8 @@ def _lead_act_verb(question: str) -> str | None:
     first, _, rest = text.partition(" ")
     if first not in _ACT_VERBS or not rest or len(text.split()) > 14:
         return None
-    return first
+    #: "add up the budget" is a sum, not a line to add to a note.
+    return None if first == "add" and rest.split()[0] in ("up", "together") else first
 
 
 def _unfinished_act(question: str, now: datetime) -> dict | None:
@@ -5340,6 +5454,19 @@ def _unfinished_act(question: str, now: datetime) -> dict | None:
     if act is None:
         return None
     line = f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
+    return {**_result([("template", line)], "none"), "answered": True}
+
+
+_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+
+
+def _cannot_untick(question: str) -> dict | None:
+    """"Untick bread": a tick is undone in the note, not by a sentence, and
+    the answer says so rather than quoting the list with a word no note
+    mentions (audit 1030 Z37)."""
+    if not _UNTICK.match(" ".join((question or "").split())):
+        return None
+    line = "I can tick items off, but I cannot untick one yet. Open the note and clear the box."
     return {**_result([("template", line)], "none"), "answered": True}
 
 
@@ -5572,7 +5699,7 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     """Write the answer the shape asks for; the (possibly changed) shape and a
     result only when there is nothing to say."""
     if shape == "recent":
-        _newest(out, views_list)
+        _newest(out, views_list, guessing=_guessing_recent(question))
         return shape, None
     sides = compare_sides(question) if shape == "compare" else None
     if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed), question):
@@ -5616,7 +5743,7 @@ def _compose(
 ) -> dict:
     """`compose`'s body, inside the conversation's salt."""
     voice = composer_tables.voice_of(voice)
-    today = today or date.today()
+    today = today or user_today()
     #: The newest notes answer a question with a time and no subject. When
     #: retrieval fell back to them for a question with a subject ("summarise
     #: my gym notes" with no gym note), the subject is answered, or said to
@@ -5625,6 +5752,7 @@ def _compose(
     #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
     recent = recent and _still_recent(question)
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
+    early = early or (None if said else _cannot_untick(question))
     early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time())))
     if early:
         return early
@@ -5803,11 +5931,11 @@ def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") 
     """The open note's answer to `question` as a composer result, or None
     when the question is not one of this module's kinds."""
     ask = composer_open.kind(question)
-    if ask not in ("left", "when", "who"):
+    if ask not in ("left", "when", "who", "done"):
         return None
     view = read_note(note, 0)
     if view is None:
         return None
     out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
-    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who}[ask](out, view, question, salt)
+    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who, "done": composer_open._done}[ask](out, view, question, salt)
     return _answer_dict(out, "open_" + ask, question, [], [view], [])

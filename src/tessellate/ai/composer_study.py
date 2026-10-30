@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import note_rank, realise, study
+from tessellate.ai import note_rank, realise, recognise, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -175,7 +175,10 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
         return []
     #: "my lecture notes" is the category "Lecture notes" as well as "Lecture".
     names = {wanted, f"{wanted} notes"}
-    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names][:limit]
+    #: A tag names notes as a category does ("list my running notes" says
+    #: three tagged #running, so "summarise my running notes" is the same three).
+    tagged = {t.lower() for t in names}
+    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names or tagged & {str(t).lower() for t in n.get("tags") or []}][:limit]
 
 
 def _link(note: dict) -> str:
@@ -599,6 +602,15 @@ _OPEN = re.compile(r"^(?:ok(?:ay)?[, ]+|please[, ]+|can you |could you )*(?P<ver
 _OPEN_NOT = re.compile(r"^(?:a new|new|a|an|settings?|chat|the chat|help|guide|the guide|tab|statistics|calendar|timeline|graph|reminders?|tasks?|whiteboard|board|map|the app|search|library|inbox|today)\b", re.I)
 
 
+#: "Show notes from October": the notes of a time, not a note called that
+#: (audit 1030 Z28); the listing reader answers it.
+_LISTING = re.compile(r"^(?:all |my |the )*(?:notes|entries)\b", re.I)
+
+
+def _lists_a_time(topic: str) -> bool:
+    return bool(_LISTING.match(topic)) and recognise.without_windows(topic) != topic
+
+
 def open_named(ctx: Ctx) -> Reply | None:
     """Ask cannot open things itself, but it can point: "open my lecture
     notes" is the links to the notes that name it. Chat answers the same
@@ -612,7 +624,7 @@ def open_named(ctx: Ctx) -> Reply | None:
     if not ctx.ask and found.group("verb").lower().startswith("show"):
         return None
     topic = found.group("t")
-    if _OPEN_NOT.match(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
+    if _OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
         return None
     notes = topic_notes(topic, ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
     if not notes:

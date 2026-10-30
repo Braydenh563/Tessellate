@@ -31,13 +31,13 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -357,6 +357,22 @@ def chat_followups(body: FollowupBody) -> list[str]:
     )
 
 
+#: A note link in an answer: `[Dentist](#/notes/13)`.
+_NOTE_LINK = re.compile(r"\[([^\]\n]{1,200})\]\(#/notes/\d+\)")
+
+
+def _linked_labels(answer: str) -> list[str]:
+    """The notes an answer linked, as `_turn_label` names them, in order: a
+    date list cites no sources, but its links say what it was about (audit
+    1030 Z53, "what time" after "what is on 4 November")."""
+    labels: list[str] = []
+    for text in _NOTE_LINK.findall(answer or ""):
+        label = re.split(r"[:.!?]", re.sub(r"[*_`]|…$", "", text).strip())[0].strip()[:80]
+        if label and label not in labels:
+            labels.append(label)
+    return labels[:5]
+
+
 class ChatTurn(BaseModel):
     question: str = Field(max_length=bounds.TURN_TEXT_MAX)
     answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
@@ -364,6 +380,14 @@ class ChatTurn(BaseModel):
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
+
+    @model_validator(mode="after")
+    def _objects_from_links(self):  # noqa: ANN202
+        #: The client names them from the answer's sources; an answer with
+        #: none (a date list) is named by the links it wrote.
+        if not self.objects:
+            self.objects = _linked_labels(self.answer) or None
+        return self
 
 
 class PlanRun(BaseModel):
@@ -583,6 +607,13 @@ def _category_note_ids(session: Session, name: str) -> list[int]:
     return list(rows)
 
 
+def _first_more_is_this(body: ChatRequest) -> None:
+    """"Tell me more" as the first thing said with a note open is about that
+    note (audit 1030 Z54), read as "summarise this"."""
+    if body.open_note_id and not body.history and composer_digest.more_of_this(body.question):
+        body.question = "summarise this"
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
@@ -590,6 +621,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     search finds. Notes attached by hand, or a scope, win over both."""
     if body.note_ids or body.document_ids or body.scope:
         return
+    _first_more_is_this(body)
     if composer_digest.about_this(body.question):
         #: A note binned or made private since it was opened is not read;
         #: the open category stands in (`_attached_notes`' own rule).
@@ -1659,6 +1691,42 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     return merged
 
 
+_CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
+
+
+def _whole_pool(session: Session, question: str, found: _Found) -> None:
+    """"How much have I spent", "my biggest expense", "what's unpacked": the
+    answer is over every note that records the thing (spending, an amount, a
+    checklist), which the five likest never were ("spent" does not match
+    "Spending October"; 2026-10-30 sweep). None at all keeps the ordinary
+    retrieval, so the answer can say no note holds it."""
+    mode = "money"
+    if composer_money.asks(question) or composer_sum.asks_most(question):
+        holds = lambda text: composer_money.records_amounts(text) or composer_sum.holds_amount(question, text)  # noqa: E731
+    elif composer_slots.asks_state(question):
+        holds, mode = (lambda text: bool(_CHECKBOX.search(text))), "checklist"  # noqa: E731
+    else:
+        return
+    if recorded := _scan_notes(session, holds):
+        found.entries = recorded
+        found.mode, found.connected_ids, found.match_info = mode, set(), {}
+
+
+def _scan_notes(session: Session, holds) -> list:  # noqa: ANN001
+    """The newest notes `holds` is true of, page by page and stopping at the
+    scan's hit cap, never at the first page (a notebook past 400 notes
+    answered "no amounts"; second eye F1)."""
+    found: list = []
+    offset = 0
+    while len(found) < composer_money.SCAN_HITS:
+        page = manager.list_entries(session, limit=composer_money.SCAN_PAGE, offset=offset)
+        found += [e for e in page if holds(e.content or "")]
+        if len(page) < composer_money.SCAN_PAGE:
+            break
+        offset += composer_money.SCAN_PAGE
+    return found[: composer_money.SCAN_HITS]
+
+
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
@@ -1684,14 +1752,8 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     found.mentioned = set(hit.mentioned)
     if not attached and as_of is None:
         _recall_window(session, question, found)
-    if not attached and composer_money.asks(question):
-        #: "How much have I spent", "my biggest expense": a sum over every
-        #: note that records spending, which the five likest never were
-        #: ("spent" does not match "Spending October"; 2026-10-30 sweep).
-        #: None at all keeps the ordinary retrieval, so the answer can say no note holds it.
-        if recorded := composer_money.recorded_notes(lambda **page: manager.list_entries(session, **page)):
-            found.entries = recorded
-            found.mode, found.connected_ids, found.match_info = "money", set(), {}
+    if not attached:
+        _whole_pool(session, question, found)
 
 
 def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -2074,6 +2136,7 @@ def _prepare(
     attached_files = _attached_files(session, file_ids or [])
     attached_boards = _attached_boards(session, board_ids or [])
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
+    detected = _notes_first(session, question, detected)
     detected, stats = _computed_answer(session, question, detected, as_of, attached)
     found = _Found(detected=detected, stats=stats)
     #: `skip_search`: the app's own reader has already answered this turn (a
@@ -2983,19 +3046,26 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
         return ""
 
 
+def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
+    """A hello answered with a welcome built from the day (CHAT_PLAN 1353), or
+    "" when the day's numbers cannot be read."""
+    welcome = _welcome(req, seed, recent)
+    if not welcome:
+        return ""
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    #: The welcome already names the last note: no second sentence about it.
+    invite = "" if "“" in welcome else _newest_word(req.session)
+    asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else composer.greeting_ask(req.question, _composer_voice(), seed)
+    return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+
+
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     """The app's own reply to small talk (INBOX 741), never echoing the last
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
-    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning"):
-        #: A hello is answered with a welcome built from the day (CHAT_PLAN 1353).
-        welcome = _welcome(req, seed, recent)
-        if welcome:
-            sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
-            invite = _newest_word(req.session)
-            asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else ""
-            return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
+        return hello
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3024,7 +3094,10 @@ def _newest_word(session: Session) -> str:
     newest = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).first()
     if not newest:
         return ""
-    for term in query_understanding.search_terms(str(newest[0] or "")[:400]):
+    #: Not a word of its title: "Weekly review" is about weekly nothing.
+    text = str(newest[0] or "")
+    start = composer._title(text)[1]
+    for term in query_understanding.search_terms((text[start:] if start else text)[:400]):
         if len(term) >= 4 and term.isalpha() and term not in _NOT_A_SUBJECT and query_understanding.is_topic_word(term) and spelling.is_word(term):
             return term
     return ""
@@ -3111,10 +3184,22 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
     rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
     titles: list[str] = []
     for (content,) in rows:
-        title = composer._title(str(content or ""))[0].strip()
+        title = _closing_name(str(content or ""))
         if title and title not in titles:
-            titles.append(realise.cut_title(title, 60))
+            titles.append(title)
     return titles[:count]
+
+
+def _closing_name(content: str) -> str:
+    """What a next-step line calls a note: its heading, a whole short first
+    line, or, for a title-less note whose first words would be cut mid
+    sentence, its first sentence whole (audit 1030 Z38; never its date,
+    INBOX 1441)."""
+    name, start = composer._title(content)
+    name = name.strip()
+    if start == 0 and name.endswith("…"):
+        name = re.split(r"(?<=[.!?;])\s|\n", content.strip(), maxsplit=1)[0].strip(" .:;")
+    return realise.cut_title(name, 60) if name else ""
 
 
 #: The stats kinds that ask about the notebook as a whole, which carry the
@@ -3477,11 +3562,11 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     if digest is not None or (follow and not restated) or not _may_digest(prepared, req.question):
         return digest
     try:
-        return composer_digest.answer(
+        return composer.offered(composer_digest.answer(
             follow.question if restated else req.question, current, today=today,
             voice=_answer_voice(), turn=len(req.history or []),
             insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
-        )
+        ), req.question)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
         return None
@@ -3640,7 +3725,9 @@ def _chat_topic(history: list[dict]) -> str:
         answer = str(turn.get("answer") or "").lower()
         for term in query_understanding.search_terms(str(turn.get("question") or "")[:200]):
             if len(term) >= 4 and term.isalpha() and query_understanding.is_topic_word(term) and term.lower() in answer:
-                return term
+                #: As it was typed, so a name keeps its capital ("We were on Sara").
+                typed = re.search(rf"\b{re.escape(term)}\b", str(turn.get("question") or ""), re.I)
+                return typed.group(0) if typed else term
     return ""
 
 
@@ -3675,7 +3762,7 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
         else:
             row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = realise.cut_title(composer._title(str(row[0] or ""))[0].strip(), 60) if row else ""
+            title = _closing_name(str(row[0] or "")) if row else ""
         if title:
             titles.append(title)
     return titles
@@ -4300,6 +4387,31 @@ def _follow_up(req: _StreamRequest):
     return None
 
 
+def _turn_label(content: str) -> str:
+    """A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
+    its first line without heading or list marks, up to the first stop."""
+    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
+    return re.split(r"[:.!?]", first)[0].strip()[:80]
+
+
+def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
+    """The note the last answer led with, when this question only leans on it
+    ("when is it", "how much does it cost", "what time", "what did we decide
+    about it": audit 1030 Z53). It is read like an open note: the follow-on
+    keeps its subject, and the slot runs on that note rather than on
+    whichever note best matches the bare words."""
+    objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
+    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer.refers_back(req.question):
+        return []
+    label = str(objects[0]).strip().lower()
+    rows = req.session.execute(
+        select(Entry.id, Entry.content).where(
+            Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(label)}%", escape=LIKE_ESCAPE)  # noqa: E712
+        ).limit(25)
+    ).all()
+    return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
+
+
 def _searched_question(req: _StreamRequest, follow) -> str:
     """A correction ("no, the gym one") searches the question it corrects
     with the note it names (decision 35)."""
@@ -4395,12 +4507,13 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
     early = _app_first_events(req, follow, req.ollama.is_running())
+    scoped = _cited_scope(req, follow)
     prepared = _prepare(
         req.session,
         _searched_question(req, follow),
-        req.body.note_ids,
+        scoped or req.body.note_ids,
         force_notes_intent=_forced_notes(req, follow),
-        attached_notes_only=req.body.attached_notes_only,
+        attached_notes_only=bool(scoped) or req.body.attached_notes_only,
         document_ids=req.body.document_ids,
         file_ids=req.body.file_ids,
         board_ids=req.body.board_ids,
@@ -4885,6 +4998,26 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     return question, address, (None if skill or not tail else question + tail)
 
 
+_BARE_NAME = re.compile(r"^(?:(?:what|who)(?:'s| is| was) |tell me about |about )?(?P<name>[a-z][a-z-]{2,})\??$", re.I)
+
+
+def _names_a_note_word(session: Session, question: str, detected: str) -> bool:
+    """"What is Atlas" and a bare "atlas" are a lookup when a note holds the
+    word, not a question about the assistant that shares the name (audit 1030
+    Z50): the notebook comes first."""
+    if detected not in (intent.ABOUT_APP, intent.SMALLTALK):
+        return False
+    found = _BARE_NAME.match(" ".join((question or "").split()))
+    return bool(found and _in_notes(session)(found.group("name").lower()))
+
+
+def _notes_first(session: Session, question: str, detected: str) -> str:
+    """The intent, but NOTES for a lookup of a word a note holds and for a
+    checklist's state ("what's unpacked", "what have I ticked off"), which is
+    never general knowledge."""
+    return intent.NOTES if _names_a_note_word(session, question, detected) or composer_slots.asks_state(question) else detected
+
+
 def _address(question: str, session: Session, skill: dict | None) -> tuple:
     """The question and a name in address position (a `vocative.Address`,
     or None), taken off before anything reads the question, so "brotato
@@ -4894,6 +5027,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     #: Keys pressed at random are not a nickname for the assistant.
     address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(question, in_notes=_in_notes(session))
     if address is None or not address.names:
+        return question, None
+    #: A bare word that a note holds is that note's name, not a call.
+    if address.call and _in_notes(session)(address.names[0].lower()):
         return question, None
     #: A slipped word at the end of a command is the command's, not a name:
     #: "pin the dentist noe" lost "noe" as a nickname and pinned nothing (O3).

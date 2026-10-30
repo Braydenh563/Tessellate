@@ -556,4 +556,8 @@ def search_terms(text: str) -> list[str]:
     from the raw words is how a search box answers with the whole notebook.
     """
     words = [w for w in re.split(r"\W+", (text or "").lower()) if w]
-    return [w for w in words if len(w) > 1 and w not in STOPWORDS]
+    terms = [w for w in words if len(w) > 1 and w not in STOPWORDS]
+    #: "what do I know about Lisbon": "about" introduces the subject and is not
+    #: part of it, so it matched every note that merely says "about" (audit
+    #: 1030 Z41). Alone, it is still a word to look for.
+    return [w for w in terms if w != "about"] if len(terms) > 1 and "about" in terms else terms

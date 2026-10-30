@@ -106,8 +106,17 @@ class Event:
             when = f"was due {_short(self.day)}, {self.at}" if overdue else self.at
             tail = f" (reminder{', ' + when if when else ''}{', high priority' if self.priority == 'high' else ''})"
         elif self.note_id is not None and self.title:
+            if self._is_title():
+                return f"- [{self.text}](#/notes/{self.note_id})"
             tail = f" ([{self.title}](#/notes/{self.note_id}))"
         return f"- {self.text}{tail}"
+
+    def _is_title(self) -> bool:
+        """The line is the note's own title (or the words a title-less note is
+        named by), so it is the link, said once (audit 1030 Z43)."""
+        text, title = self.text.strip().rstrip("."), self.title.strip().rstrip(".")
+        cut = title.endswith("…")
+        return text.lower() == title.lower() or (cut and text.lower().startswith(title.rstrip("…").strip().lower()))
 
 
 def _name(day: date, today: date) -> str:

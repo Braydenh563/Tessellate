@@ -176,6 +176,7 @@ _QUOTED = re.compile(r'"[^"\n]{1,80}"|\u201c[^\u201d\n]{1,80}\u201d')
 #: The general English list lives with the spelling pairs (`variants`, a
 #: leaf: search reads it too, and must not reach the speller's help text).
 english = variants.english
+short_english = variants.short_english
 
 
 #: A long word of the general list is a target, never above a listed word:
@@ -584,6 +585,9 @@ def _fix_short(word: str, after: str, before: str, distance):  # noqa: ANN001
     """A two- or three-letter token that is no word: read as a small word only
     when a letter was dropped or swapped, and between words (not alone)."""
     if len(word) < 2 or word in KNOWN_SHORT or not (after or before):
+        return None
+    #: "oat milk" is not "at milk": a word of the general list stays (Z66).
+    if len(word) == 3 and word in short_english():
         return None
     if len(word) == 2:
         return _two_letter_reading(word, after, distance)

@@ -111,6 +111,19 @@ def english() -> frozenset:
         return frozenset(w for w in (line.strip() for line in handle) if len(w) >= 4 and w.isalpha() and w.isascii())
 
 
+@lru_cache(maxsize=1)
+def short_english() -> frozenset:
+    """The three-letter words of the general list that are words ("oat",
+    "gin", "yam", "fog": audit 1030 Z66), which a three-letter slip is never
+    read away from. Left out of `english`, whose short entries include
+    abbreviations; here a vowel is required, which drops those."""
+    path = _wordlist_path()
+    if path is None:
+        return frozenset()
+    with open(path, encoding="utf-8") as handle:
+        return frozenset(w for w in (line.strip() for line in handle) if len(w) == 3 and w.isalpha() and w.isascii() and set(w) & set("aeiouy"))
+
+
 
 @lru_cache(maxsize=1)
 def pairs() -> dict[str, str]:

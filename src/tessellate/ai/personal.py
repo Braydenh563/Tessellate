@@ -64,6 +64,8 @@ _READERS: tuple[tuple[str, re.Pattern, Callable[[re.Match], tuple[str, str]]], .
      lambda m: (f"your {m.group(1)} is {m.group(2)}", f"{m.group(1)}={m.group(2)}")),
     ("person", re.compile(r"\b([A-Z][a-z]+),? my (" + _REL + r")\b"),
      lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
+    ("person", re.compile(r"\b([A-Z][a-z]+) (?:is|was) my (" + _REL + r")\b"),
+     lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
     ("learning", re.compile(r"\b(?:I'm|I am|started|been|now|currently) learning ([A-Za-z]+(?: [a-z]+)?)(?= on| at| with|" + _STOP[3:], re.I),
      lambda m: (f"you're learning {m.group(1)}", m.group(1))),
 )
@@ -294,11 +296,12 @@ def _profile(_what: str, held: list[Fact], today: date) -> tuple:
     return ["\n".join(lines)], rows
 
 
-def _advice(what: str, held: list[Fact], today: date) -> tuple:
+def _advice(what: str, held: list[Fact], today: date) -> tuple | None:
     topic = _ADVICE.get(what, "")
     hit = next((f for f in held if f.key == "favourite" and f.value.split("=")[0].rstrip("s") == topic), None)
     if not hit:
-        return ["That's your call: I only know what your notes say, and none of them points either way."], []
+        #: No favourite to go by: the notes may still say ("Next up is Past Lives"), so the search answers.
+        return None
     value = hit.value.split("=", 1)[1]
     line = f"Your call, but your favourite {topic} is {value}, going by your note of {_day(hit, today)}."
     return [line], [_row(hit, line)]

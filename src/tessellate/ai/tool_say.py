@@ -238,10 +238,13 @@ def _search_notes(result: dict, args: dict) -> Said:
     about = f" about “{query}”" if query else ""
     total = int(result.get("found") or len(notes))
     if result.get("search_mode") == "recent":
+        #: The count said is the count shown: "ten newest, here are the first
+        #: eight" was two sentences for one fact (audit 1030 Z35).
+        notes, total = notes[:8], min(total, 8)
         newest = f"your {count_word_of(len(notes))} newest notes" if len(notes) > 1 else "your newest note"
         #: "latest" and "last three" ask for the newest notes: nothing failed to match.
         asked_newest = not query or note_recency.recency(query, bare=True) is not None
-        lead = f"Here are {newest}." if asked_newest else f"Nothing matched “{query}”, so here are {newest} instead."
+        lead = (f"Here are {newest}." if len(notes) > 1 else f"Here is {newest}.") if asked_newest else f"Nothing matched “{query}”; here are {newest}."
         return _found_notes(lead, notes, total, f"I found no notes{about}.")
     return _found_notes(f"I found {count_noun(total, 'note')}{about}.", notes, total, f"I found no notes{about}. Try other words, or browse them in Notes.")
 

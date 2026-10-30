@@ -42,7 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import spelling
+from tessellate.ai import composer_frame, spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 from tessellate.entry import manager
 
@@ -225,6 +225,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         #: matcher rather than by reading the code.
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
+        or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
         or re.search(r"\bstat(?:istic)?s\b", text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
@@ -684,7 +685,7 @@ def _word_count(session: Session) -> StatAnswer:
     not millions; this is a millisecond.
     """
     rows = session.scalars(_visible(select(Entry.content))).all()
-    words = sum(len(str(row or "").split()) for row in rows)
+    words = sum(composer_frame.note_words(row) for row in rows)
     if not rows:
         return StatAnswer("word-count", "There are no notes to count yet.")
     average = round(words / len(rows))
@@ -694,6 +695,42 @@ def _word_count(session: Session) -> StatAnswer:
         f"roughly {average} words a note.",
         [{"label": "words", "count": words}, {"label": "notes", "count": len(rows)}],
     )
+
+
+def _has_title(content: str) -> bool:
+    """A note has a title when its first line is a heading."""
+    first = next((ln for ln in str(content or "").splitlines() if ln.strip()), "")
+    return first.lstrip().startswith("#")
+
+
+def _untitled(session: Session) -> StatAnswer:
+    """The notes with no heading: they are named by their first words, which
+    is the one thing a person might want to fix (audit 1030 Z36)."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    bare = [(note_id, content) for note_id, content in rows if not _has_title(content)]
+    if not bare:
+        return StatAnswer("untitled", "Every note has a title.")
+    facts = [{"label": composer_frame.plain_snippet(content), "count": composer_frame.note_words(content), "id": note_id} for note_id, content in bare[:TOP_N]]
+    return StatAnswer("untitled", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} no title. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
+
+
+def _same_text(content: str) -> str:
+    return " ".join(re.sub(r"[#*_>\-\[\]]", " ", str(content or "").lower()).split())
+
+
+def _duplicates(session: Session) -> StatAnswer:
+    """Notes whose whole text is the same once case, spacing and marks are
+    set aside: said by the notes, not by a guess about near matches."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    groups: dict[str, list[tuple[int, str]]] = {}
+    for note_id, content in rows:
+        if key := _same_text(content):
+            groups.setdefault(key, []).append((note_id, content))
+    twins = [g for g in groups.values() if len(g) > 1]
+    if not twins:
+        return StatAnswer("duplicates", "I found no two notes with the same text.")
+    facts = [{"label": composer_frame.plain_snippet(g[0][1]), "count": len(g), "id": g[0][0]} for g in twins[:TOP_N]]
+    return StatAnswer("duplicates", f"{_plural(len(twins), 'note')} {'is' if len(twins) == 1 else 'are'} written out more than once; the copies are counted below.", facts)
 
 
 def _longest_notes(session: Session) -> StatAnswer:
@@ -714,8 +751,8 @@ def _longest_notes(session: Session) -> StatAnswer:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
-            "count": len(str(content or "").split()),
+            "label": composer_frame.plain_snippet(content),
+            "count": composer_frame.note_words(content),
             "id": note_id,
         }
         for note_id, content in rows
@@ -755,7 +792,7 @@ def _stale_notes(session: Session) -> StatAnswer:
         )
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
+            "label": composer_frame.plain_snippet(content),
             "id": note_id,
             "when": touched.isoformat() if touched else "",
         }
@@ -814,6 +851,11 @@ _COVERAGE = re.compile(
     rf"|^what (?:have i|did i|do i) (?:been )?(?:writing|written|write|wrote|noting|noted|saving|saved|note|save)(?: (?:about|on))?{_SOFAR}$"
     rf"|^what (?:topics|subjects|themes|things|areas) (?:do i|have i|did i) (?:write|writing|written|wrote|note|noted|cover|covered|keep notes)(?: (?:about|on))?{_SOFAR}$"
     rf"|^(?:give me |show me |can i get |i want )?(?:an? )?(?:overview|summary|rundown|run down|breakdown|tour) of (?:my |the )?(?:notes|notebook|everything){_SOFAR}$"
+    #: The notebook itself is the subject, not a word to search for (audit
+    #: 1030 Z17: "summarise my notebook" said no note mentions "notebook").
+    rf"|^(?:summari[sz]e|describe|sum up) (?:my |the )?(?:whole |entire )?(?:notes|notebook|everything){_SOFAR}$"
+    rf"|^what(?:'s| is) (?:my |the )?(?:notes|notebook) about{_SOFAR}$"
+    rf"|^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas){_SOFAR}$"
 )
 
 
@@ -932,7 +974,7 @@ USAGE_ROWS = 200
 
 
 def _words(text: str | None) -> int:
-    return len(str(text or "").split())
+    return composer_frame.note_words(text)
 
 
 def _month_keys(now: datetime, months: int = GROWTH_MONTHS) -> list[str]:
@@ -1161,6 +1203,8 @@ _FIRST_RULES = (
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
+    (lambda t: _asks(t, r"untitled|title-?less|(?:no|without|missing|lack\w*) (?:a )?titles?"), _untitled),
+    (lambda t: _asks(t, r"duplicat|same text|written twice|copies of"), _duplicates),
     (
         lambda t: _asks(t, _COUNT, r"\bnotes?\b")
         and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),

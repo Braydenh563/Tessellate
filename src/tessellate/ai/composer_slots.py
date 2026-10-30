@@ -69,22 +69,28 @@ def _list_subject(rest: str) -> list[str]:
     cut = [rest.find(m) for m in _MARKERS if rest.find(m) >= 0]
     if cut and not rest.strip().startswith(("on ", "for ", "at ")):
         rest = rest[min(cut):]
-    return _stems(rest)
+    return _stems(rest) or [w for w in ("todo", "checklist") if w in rest.split()]
 
 
 def _title_holds(view, stems: list[str]) -> bool:  # noqa: ANN001
     return bool(stems) and all(s in view.title_words for s in stems)
 
 
+#: What is bought is on the shopping list: "what do I need to buy" names a
+#: verb, and the list that verb is about (audit 1030 Z56).
+_VERB_LISTS = {"buy": (["shop"], ["grocer"]), "bought": (["shop"], ["grocer"]), "get": (["shop"], ["grocer"])}
+
+
 def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
     """`(open, done)` task sentences of the best note the stems name: one
     whose title holds every stem first, then one filed or worded so
     (`composer._notes_named_by`, the reader "still open" questions share)."""
-    named = composer._notes_named_by(views, set(stems))  # noqa: SLF001
-    for view in sorted(named, key=lambda v: (not _title_holds(v, stems), v.rank)):
-        tasks = [s for s in view.sentences if s.kind == "task"]
-        if tasks:
-            return [(view, t) for t in tasks if not t.done], [(view, t) for t in tasks if t.done]
+    for want in (stems, *_VERB_LISTS.get(stems[0], ())) if stems else ():
+        named = composer._notes_named_by(views, set(want))  # noqa: SLF001
+        for view in sorted(named, key=lambda v: (not _title_holds(v, want), v.rank)):
+            tasks = [s for s in view.sentences if s.kind == "task"]
+            if tasks:
+                return [(view, t) for t in tasks if not t.done], [(view, t) for t in tasks if t.done]
     return [], []
 
 
@@ -173,6 +179,82 @@ def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
     for v, task in picked:
         composer_lists._cite(out, v, task, line)  # noqa: SLF001
     return True
+
+
+#: "Is the passport packed", "is everything bought yet", "what's unpacked",
+#: "what have I ticked off": one checklist state, read the same by every
+#: phrasing (audit 1030 Z56).
+_STATE = r"packed|bought|ticked(?:\s+off)?|checked(?:\s+off)?|done|finished|completed|sorted|booked|crossed\s+off"
+_IS_STATE = re.compile(rf"^(?:is|are|has|have)\s+(?:all\s+(?:of\s+)?)?(?P<obj>.+?)\s+(?:been\s+)?(?P<verb>{_STATE})(?:\s+(?:yet|already))?$", re.I)
+_UN_STATE = re.compile(r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+)?(?:un(?P<un>packed|ticked|checked|bought|done)|not\s+(?P<not>packed|ticked|checked|bought|done)(?:\s+yet)?)$", re.I)
+_TICKED_SO_FAR = re.compile(r"^what(?:'s|\s+have\s+i|\s+did\s+i|\s+i've)\s+(?:i\s+)?(?:ticked|checked|crossed)\s+off(?:\s+(?:so\s+far|already|yet))?$", re.I)
+_EVERYTHING = frozenset({"everything", "all", "it all", "all of it", "everything on the list"})
+
+
+def _task_name(task) -> str:  # noqa: ANN001
+    return re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", task.text).strip().rstrip(".")
+
+
+def _all_of(out, open_: list, done: list) -> None:  # noqa: ANN001
+    """Whether a whole list is done, said with what is open."""
+    view = (open_ or done)[0][0]
+    title = composer_lists._title(view)  # noqa: SLF001
+    if open_:
+        names = realise.join_items([_task_name(t).lower() for _v, t in open_])
+        out.lines.append(f"Not yet: {realise.count_word(len(open_))} of {realise.count_word(len(open_) + len(done))} still open on {title}: {names}.")
+    else:
+        out.lines.append(f"Yes, all {realise.count_word(len(done))} items on {title} are ticked off.")
+    for v, task in open_ or done:
+        composer_lists._cite(out, v, task, out.lines[-1])  # noqa: SLF001
+
+
+def _item_state(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
+    """Yes or no for one item: its own checklist line."""
+    for view in sorted(views, key=lambda v: v.rank):
+        for task in (s for s in view.sentences if s.kind == "task" and _holds(s, stems)):
+            _verdict(out, view, task, "")
+            return True
+    return False
+
+
+def _is_state(out, found, views: list) -> bool:  # noqa: ANN001
+    obj, verb = " ".join(found.group("obj").lower().split()), found.group("verb").lower().split()[0]
+    if obj in _EVERYTHING:
+        open_, done = _tasks(views, _stems(verb))
+        if open_ or done:
+            _all_of(out, open_, done)
+            return True
+        return False
+    return _item_state(out, _stems(obj), views)
+
+
+def _ticked_so_far(out, views: list) -> bool:  # noqa: ANN001
+    """Every ticked item, by the note it is in."""
+    ticked = [(v, s) for v in sorted(views, key=lambda v: v.rank) for s in v.sentences if s.kind == "task" and s.done]
+    if not ticked:
+        return False
+    notes = len({id(v) for v, _s in ticked})
+    out.lines.append(f"You have ticked off {realise.count_word(len(ticked))} item{'s' if len(ticked) != 1 else ''} across {realise.count_word(notes)} note{'s' if notes != 1 else ''}:")
+    for v, s in ticked[:12]:
+        out.lines.append(f"- {_task_name(s)}, in {composer_lists._title(v)}")  # noqa: SLF001
+        composer_lists._cite(out, v, s, _task_name(s))  # noqa: SLF001
+    return True
+
+
+def asks_state(question: str) -> bool:
+    """Whether `question` asks a checklist's state by its verb ("what's
+    unpacked", "what have I ticked off")."""
+    q = " ".join(str(question or "").lower().split()).rstrip("?.!")
+    return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q))
+
+
+def _state(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """A checklist's state asked by its verb; False when `q` is not one."""
+    if m := _IS_STATE.match(q):
+        return _is_state(out, m, views)
+    if m := _UN_STATE.match(q):
+        return _left(out, m.group("un") or m.group("not"), views, today)
+    return bool(_TICKED_SO_FAR.match(q)) and _ticked_so_far(out, views)
 
 
 def _verdict(out, view, task, verb_said: str) -> None:  # noqa: ANN001
@@ -418,22 +500,30 @@ def _when_said(view, sentence, today: date) -> date | None:  # noqa: ANN001
     return view.written
 
 
-def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
-    words = rest.split()
-    if len(words) < 2:
-        return False
-    verb, obj = _stems(words[0]), _stems(" ".join(words[1:]))
-    if not (verb and obj):
-        return False
+def _since_found(views: list, verb: list[str], obj: list[str], today: date) -> list:
+    """The dated sentences that say the verb with the object, the object
+    being in the sentence or in its note's title or filing ("I called her"
+    in the Sara note); audit 1030 Z22."""
     found = []
     for view in views:
+        head = set(view.title_words) | set(view.filed_words)
         for s in view.sentences:
             if s.kind == "task" and not s.done:
                 continue
-            if _holds(s, verb + obj):
+            have = set(composer._words(s.text))  # noqa: SLF001
+            if all(v in have for v in verb) and all(o in have or o in head for o in obj):
                 day = _when_said(view, s, today)
                 if day and day <= today:
                     found.append((day, view, s))
+    return found
+
+
+def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    words = rest.split()
+    verb, obj = _stems(words[0]) if words else [], _stems(" ".join(words[1:]))
+    if not verb:
+        return False
+    found = _since_found(views, verb, obj, today)
     if not found:
         out.lines.append(f"Your notes do not say when you {rest}, so I cannot work out how long it has been.")
         return True
@@ -540,12 +630,9 @@ _DONE = frozenset({"did", "have", "has"})
 _CUES = frozenset({"temperature", "temp", "degrees", "date", "day", "many", "much", "time", "when", "what", "which", "at", "to", "of"})
 #: A superlative asks which note is first or next, the ranker's question.
 _RANKED = frozenset({"next", "first", "last", "latest", "newest", "upcoming", "previous", "earliest"})
-#: Past forms the stemmer does not fold ("ran" is "run"), so a question that
-#: says the verb meets the note that says it in the past.
-_IRREGULAR = {
-    "ran": "run", "wrote": "write", "ate": "eat", "swam": "swim", "rode": "ride", "drove": "drive", "bought": "buy",
-    "went": "go", "flew": "fly", "took": "take", "made": "make", "baked": "bake", "cycled": "cycle", "walked": "walk",
-}
+#: Regular pasts the unit and slot readers match by their lemma too; the
+#: irregular ones are the stemmer's own (`composer.IRREGULAR_PAST`).
+_IRREGULAR = {**composer.IRREGULAR_PAST, "baked": "bake", "cycled": "cycle", "walked": "walk"}
 #: Unit aliases by the unit a question names; the first is how the note's own
 #: figure is read back to the person.
 _UNITS = {
@@ -570,16 +657,26 @@ def _flat(words: list[str], drop=()) -> list[str]:  # noqa: ANN001
     return [w for w in words if w not in drop]
 
 
+#: How a temperature is asked: "how hot is the oven", "what temp for the loaf",
+#: "what oven setting", "how warm should the starter be" (audit 1030 Z25).
+_HEAT = frozenset({"hot", "warm", "cold", "cool", "chilled", "temperature", "temp", "temps", "degrees", "setting", "heat"})
+_COPULA = frozenset({"is", "are", "be", "was", "were", "need", "needs", "set", "for", "at", "oven", "ovens"})
+
+
 def _ask_temperature(t: list[str]) -> Ask | None:
-    """"what temperature do I bake at", "how hot do I bake the bread": a
-    temperature asked of something I do."""
+    """"what temperature do I bake at", "how hot is the oven": a temperature
+    asked of something I do or keep."""
     if t[:2] == ["at", "what"]:
         t = t[1:]
-    if t[:2] == ["how", "hot"]:
-        t = ["what", "temperature", *t[2:]]
-    if len(t) < 5 or t[0] != "what" or t[1] not in ("temperature", "temp") or t[2] not in _AUX or t[3] not in _SELF:
+    if t[:1] == ["how"] and len(t) > 2 and t[1] in _HEAT:
+        rest = t[2:]
+    elif t[:1] == ["what"] and len(t) > 2 and any(w in _HEAT for w in t[1:4]):
+        rest = [w for w in t[1:] if w not in _HEAT]
+    else:
         return None
-    return Ask(_flat(t[4:], ("at",)))
+    subject = _flat(rest, _AUX | _SELF | _COPULA | _FILLER)
+    #: A bare "the oven" is what is baked in it: the notes say "bake at 230C".
+    return Ask(subject or ["bake"]) if rest else None
 
 
 def _ask_date(t: list[str]) -> Ask | None:
@@ -828,7 +925,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     q = composer_lists._q(asked)  # noqa: SLF001
     if _PAIR_LEAD.match(" ".join(q.lower().split())) and _pair(out, q, views, today):
         return True
-    if _counted(out, q, views):
+    if _counted(out, q, views) or _state(out, " ".join(q.lower().split()).rstrip("?.!"), views, today):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
     shaped = _by_words(out, tokens, views, today)

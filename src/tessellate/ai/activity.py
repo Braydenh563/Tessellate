@@ -423,11 +423,43 @@ def _head(asked: Asked, today: date) -> str:
     return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
 
 
-def _recap_lines(rows: list[_Event], asked: Asked, today: date) -> list[str]:
+_NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
+
+
+def _first_sentence(text: str) -> str:
+    return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
+
+
+def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
+    """The line a made note is said as on a "what did I do on 25 October":
+    what the note says, not that it was made (audit 1030 Z28). A titled note
+    is its link and its first sentence; one with no title is its sentence as
+    the link."""
+    from tessellate.ai import composer
+    from tessellate.core.database import Entry
+
+    found = {r[3]: int(m.group(1)) for r in rows if r[1] == "made" and r[2] == "note" and (m := _NOTE_ID.search(r[3]))}
+    contents = dict(session.execute(select(Entry.id, Entry.content).where(Entry.id.in_(set(found.values())))).all()) if found else {}
+    said: dict[str, str] = {}
+    for key, ident in found.items():
+        content = str(contents.get(ident) or "")
+        name, start = composer._title(content)  # noqa: SLF001
+        body = _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip())) if start else ""
+        if start:
+            said[key] = f"{key}: {body}" if body else key
+        elif name:
+            said[key] = f"[{realise.cut_title(content, 140)}](#/notes/{ident})"
+    return said
+
+
+def _recap_lines(rows: list[_Event], asked: Asked, today: date, glosses: dict[str, str] | None = None) -> list[str]:
     by_day = _by_day(rows)
     if asked.start == asked.end:
         #: One day: the head already says which, so no day label per line.
-        return [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
+        said = [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
+        if glosses:
+            said = [f"- {glosses[r[3]]}" if r[1] == "made" and r[3] in glosses else line for r, line in zip(rows[:_LIMIT], said)]
+        return said
     return _day_lines(by_day, today)
 
 
@@ -444,7 +476,9 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
     rows = _filtered(_events(session, asked.start, asked.end, zone), asked)
     if not rows:
         return notebook_stats.StatAnswer(kind="activity", text=_empty(asked, session, today, zone), facts=[])
-    lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today)]
+    #: Only a "what did I do" (every kind of change) is said as what the notes hold.
+    glosses = _glosses(session, rows) if asked.verb == "all" else None
+    lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today, glosses)]
     if len(rows) > _LIMIT:
         lines.append(f"And {len(rows) - _LIMIT} more.")
     facts = [{"when": r[0].isoformat(), "doing": r[1], "kind": r[2], "what": r[3]} for r in rows[:_LIMIT]]

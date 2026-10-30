@@ -159,6 +159,32 @@ def groups(notes: list[dict]) -> list[Group]:
     return out
 
 
+_MARKS = re.compile(r"(?m)^\s*(?:#{1,6}\s+|[-*+]\s+(?:\[[ xX]\]\s+)?|\d+[.)]\s+)|\*\*|__|`")
+
+
+def plain_snippet(content: str | None, limit: int = 60) -> str:
+    """A note's opening as one plain line for a lead: heading, list and
+    checkbox marks off, cut at a word or a sentence end, never mid-word and
+    never with a space before the closing quote (audit 1030 Z44)."""
+    text = " ".join(_MARKS.sub("", str(content or "")).split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    stop = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
+    if stop >= limit // 2:
+        return cut[: stop + 1]
+    return cut[: cut.rfind(" ")].rstrip(" ,;:-") + "…" if " " in cut else cut + "…"
+
+
+def note_words(content: str | None) -> int:
+    """How many words a note has: its tokens that hold a letter or a digit, so
+    a list dash is not one, and not its title line, which names the note
+    rather than says anything in it. The one counter for "how long is this
+    note", "which is longer" and "your longest note" (audit 1030 Z10)."""
+    body = re.sub(r"\A\s*#{1,6}[ \t][^\n]*", "", str(content or ""))
+    return sum(1 for token in body.split() if any(c.isalnum() for c in token))
+
+
 def _lower(text: str) -> str:
     """"Movie review" as "movie review"; "League of Legends" and "Gym
     Routine Overview" keep their capitals: a later capital marks a name."""
