@@ -1401,6 +1401,35 @@ def _heading_hits(view: NoteView, stems: list[str], term_weight: dict[str, float
     return title, filed
 
 
+#: Words a note uses when it changes what an older one said: "Moved the
+#: dentist appointment from 3 November to 4 November", "These replace the
+#: dates from 6 October".
+CORRECTS = re.compile(
+    r"\b(?:moved|rescheduled|postponed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
+    re.I,
+)
+
+
+def correcting(terms: list[str], views: list) -> list:
+    """The dated views with a sentence that changes something about the
+    subject ("Sam moved the launch to 27 November")."""
+    return [
+        v for v in views
+        if v.written and any(CORRECTS.search(x.text) and any(_holds(t, set(_words(x.text))) for t in terms) for x in v.sentences)
+    ]
+
+
+def superseded(terms: list[str], views: list) -> set[int]:
+    """The ids of the views on the subject that a newer correcting view
+    outdates: the digest and the plain composer both rank them below it
+    (stress run 2026-10-30: "when's the dentist now" quoted the first booking
+    whenever the digest stood down)."""
+    newest = max((v.written for v in correcting(terms, views)), default=None)
+    if not newest:
+        return set()
+    return {id(v) for v in views if v.written and v.written < newest and any(_holds(_stem(t), v.words | v.title_words) for t in terms)}
+
+
 def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence]:
     """Every sentence scored: BM25 over the sentences of the notes found, plus
     the note's title, the question's shape and the note's retrieval rank.
@@ -1421,6 +1450,7 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
     total = len(pool)
     average = sum(len(s.words) for s in pool) / total
     by_id = {view.id: view for view in views}
+    outdated = _outdated(terms, views)
     dated = sorted((v for v in views if v.written), key=lambda v: v.written, reverse=True)
     recency = {v.id: 1.0 - i / max(1, len(dated)) for i, v in enumerate(dated)}
     for s in pool:
@@ -1455,9 +1485,18 @@ def _score(shape: str, terms: list[str], views: list[NoteView]) -> list[Sentence
             s.score *= 0.5
         if shape == "status":
             s.score += recency.get(s.note_id, 0.0)
-        if view.note.get("connected"):
-            s.score *= 0.7
+        s.score *= _view_factor(view, outdated)
     return [s for s in pool if s.score > 0]
+
+
+def _outdated(terms: list[str], views: list[NoteView]) -> set[int]:
+    return superseded(terms, views) if _ASKS_NOW.get() else set()
+
+
+def _view_factor(view: NoteView, outdated: set[int]) -> float:
+    """A connected note counts less than one found, and a note a newer one
+    corrects less than the correction."""
+    return (0.7 if view.note.get("connected") else 1.0) * (0.5 if id(view) in outdated else 1.0)
 
 
 def _was_said(s: Sentence, said: str) -> bool:
@@ -1957,6 +1996,11 @@ _LEARNED: contextvars.ContextVar = contextvars.ContextVar("composer_learned", de
 #: The words the notes under question hold: the person's own, so the speller
 #: never "corrects" a name or a term they wrote (`question_noise.repair`).
 _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_known", default=frozenset())
+#: Whether the question asks for the value as it stands ("when's the dentist
+#: now"): only then does a newer correction outrank the note it corrects;
+#: otherwise both are said, older first, "but" the newer (`but_newer`).
+_ASKS_NOW: contextvars.ContextVar[bool] = contextvars.ContextVar("composer_asks_now", default=False)
+_NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
 
 
 def _pick(question: str, salt: str, options: list[str]) -> str:
@@ -5108,6 +5152,7 @@ def compose(
     known = _LEARNED.set(learned)
     words = _note_words(notes)
     owned = _KNOWN.set(words)
+    current = _ASKS_NOW.set(bool(_NOW_WORDS.search(question)))
     try:
         result = _answer_turn(question, notes, today=today, recent=recent, embed=embed, said=said, previous=previous,
                               voice=voice, now=now, salt=salt, turn=turn, dialogue=dialogue, prefer=prefer)
@@ -5118,6 +5163,7 @@ def compose(
         _REGISTER.reset(registered)
         _LEARNED.reset(known)
         _KNOWN.reset(owned)
+        _ASKS_NOW.reset(current)
     #: A how-to the notes have nothing on that plainly names the app ("how do
     #: I connect a model") is the help register's (O1): it was answered 'No
     #: note I found says anything about "connect" or "model"'.

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: shorthand and spoken repairs are read ("whens dentist now no the new one"), a total with no verb ("how much desk all up after that money back thing") nets the refund, "how many grocery items are checked off" counts and names them, and a newer note that moves or replaces something outranks the older one in every answer, not only the digest's.
 - Composer: an everyday verb in a question (meet, go, get) counts less than its noun, so "how did we meet the plumber" answers from the plumber's note; a goal ("run a 10k") is not added to the distance run.
 - Composer: distances, weights and time the notes record are added up ("how far did I run", "how many hours did I spend on the deck", "what's my total distance"), by the unit table the converter uses, filtered by what was done and on what.
 - Composer (money, CodeQL 1866 to 1868): the subject in "what do my X payments add up to", "how much X spending" and "how much is left on" is read word by word, so a long run of spaces or repeated words cannot make the match slow.

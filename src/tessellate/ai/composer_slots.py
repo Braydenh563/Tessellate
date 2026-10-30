@@ -17,7 +17,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_lists, factgraph, recognise
+from tessellate.ai import composer, composer_lists, factgraph, realise, recognise
 from tessellate.ai import when as when_words
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
@@ -129,6 +129,49 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         text = re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip()
         out.lines.append(f"- {text}")
         composer_lists._cite(out, v, task, text)  # noqa: SLF001
+    return True
+
+
+_TICKED_WORDS = frozenset({"checked", "ticked", "done", "bought", "got", "completed", "finished", "packed"})
+_OPEN_WORDS = frozenset({"left", "open", "unchecked", "unticked", "remaining", "outstanding"})
+_COUNT_VERBS = frozenset({"are", "is", "have", "has", "did", "do", "were", "was"})
+_COUNT_FILLER = frozenset({"of", "the", "my", "items", "item", "things", "thing", "tasks", "boxes", "on", "in", "list"})
+
+
+def _counted_ask(q: str) -> tuple[list[str], bool] | None:
+    """"How many grocery items are checked off" -> (grocery stems, True);
+    "how many things on the packing list are still open" -> (packing, False).
+    Read word by word (CodeQL)."""
+    tokens = re.sub(r"[^\w' ]", " ", q.lower()).split()
+    if tokens[:2] != ["how", "many"]:
+        return None
+    at = next((i for i, t in enumerate(tokens) if i > 1 and t in _COUNT_VERBS), None)
+    tail = set(tokens[at:]) if at else set()
+    ticked, still = bool(tail & _TICKED_WORDS), bool(tail & _OPEN_WORDS) or "to do" in " ".join(tokens[at or 0:])
+    if at is None or ticked == still:
+        return None
+    stems = _stems(" ".join(t for t in tokens[2:at] if t not in _COUNT_FILLER))
+    return (stems, ticked) if stems else None
+
+
+def _counted(out, q: str, views: list) -> bool:  # noqa: ANN001
+    """How many of a checklist's items are ticked, or still open, named."""
+    asked = _counted_ask(q)
+    if not asked:
+        return False
+    open_, done = _tasks(views, asked[0])
+    if not open_ and not done:
+        return False
+    picked = done if asked[1] else open_
+    view = (open_ or done)[0][0]
+    names = [re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", t.text).strip().rstrip(".") for _v, t in picked]
+    state = "ticked off" if asked[1] else "still open"
+    total = len(open_) + len(done)
+    line = f"{realise.count_word(len(picked)).capitalize()} of {realise.count_word(total)} {'is' if len(picked) == 1 else 'are'} {state} on {composer_lists._title(view)}"  # noqa: SLF001
+    line += f": {realise.join_items(names)}." if names else "."
+    out.lines.append(line)
+    for v, task in picked:
+        composer_lists._cite(out, v, task, line)  # noqa: SLF001
     return True
 
 
@@ -784,6 +827,8 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     not a slot question this module reads."""
     q = composer_lists._q(asked)  # noqa: SLF001
     if _PAIR_LEAD.match(" ".join(q.lower().split())) and _pair(out, q, views, today):
+        return True
+    if _counted(out, q, views):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
     shaped = _by_words(out, tokens, views, today)

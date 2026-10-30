@@ -22,7 +22,7 @@
  "src/tessellate/ai/composer.py::_opening": 28,
  "src/tessellate/ai/composer.py::_others": 30,
  "src/tessellate/ai/composer.py::_readings": 17,
- "src/tessellate/ai/composer.py::_score": 29,
+ "src/tessellate/ai/composer.py::_score": 28,
  "src/tessellate/ai/composer.py::brief": 23,
  "src/tessellate/ai/composer.py::read_note": 20,
  "src/tessellate/ai/composer.py::select": 24,

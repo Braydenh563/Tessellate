@@ -342,7 +342,26 @@ def _total_rest(q: str):  # noqa: ANN202
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
     if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
         return f"{kind[0]} {kind[1]}"
-    return None
+    return _bare_total(q)
+
+
+_ALL_UP = ("all up", "altogether", "in total", "overall")
+_NOT_A_THING = frozenset({"is", "are", "was", "were", "did", "do", "does", "have", "has", "had", "i", "we", "money", "time", "can", "should", "will", "would"})
+
+
+def _bare_total(q: str) -> str | None:
+    """"How much desk all up after that money back thing": a thing and a
+    total word with no verb, read word by word (CodeQL); "money back" is a
+    refund (stress run 2026-10-30)."""
+    low = q.lower()
+    at = min((i for i in (low.find(f" {w}") for w in _ALL_UP) if i > 0), default=-1)
+    if not low.startswith("how much ") or at < 0:
+        return None
+    thing = low[len("how much "):at].split()
+    if not thing or set(thing) & _NOT_A_THING or not all(re.fullmatch(r"[\w'-]+", w) for w in thing):
+        return None
+    rest = re.sub(r"\b(?:(?:that|the) )?money back(?: thing)?\b", "refunds", q[at:], flags=re.I)
+    return f"{' '.join(thing)} {rest}"
 
 
 def _due(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001

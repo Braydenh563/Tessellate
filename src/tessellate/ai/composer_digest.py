@@ -2576,7 +2576,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     weight = composer._term_weights(sorted(stems))  # noqa: SLF001
     #: A note a newer one corrects says the old value: "when's the dentist
     #: now" is the moved slot, not the first booking (stress run 2026-10-30).
-    old = _superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
+    old = composer.superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3241,15 +3241,6 @@ def _defining_first(asked: str, members: list) -> list:
     return [lead] + [v for v in members if v is not lead]
 
 
-#: Words a note uses when it changes what an older one said: "Moved the
-#: dentist appointment from 3 November to 4 November", "These replace the
-#: dates from 6 October".
-_CORRECTS = re.compile(
-    r"\b(?:moved|rescheduled|postponed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
-    re.I,
-)
-
-
 def _corrected_first(asked: str, members: list) -> list:
     """A newer note that corrects the subject leads ahead of the older note
     it corrects (stress run 2026-10-30: "when's my dentist appointment now"
@@ -3258,26 +3249,11 @@ def _corrected_first(asked: str, members: list) -> list:
     if len(members) < 2 or not members[0].written:
         return members
     lead = members[0]
-    later = [v for v in _correcting(composer.subject_terms(clean(asked)), members) if v.written > lead.written]
+    later = [v for v in composer.correcting(composer.subject_terms(clean(asked)), members) if v.written > lead.written]
     if not later:
         return members
     newest = max(later, key=lambda v: v.written)
     return [newest] + [v for v in members if v is not newest]
-
-
-def _correcting(terms: list[str], views: list) -> list:
-    """The dated views with a sentence that changes something about the
-    subject ("Sam moved the launch to 27 November")."""
-    return [
-        v for v in views
-        if v.written and any(_CORRECTS.search(x.text) and any(composer._holds(t, set(composer._words(x.text))) for t in terms) for x in v.sentences)
-    ]
-
-
-def _superseded(terms: list[str], views: list) -> set[int]:
-    """The ids of the views a newer correcting view outdates."""
-    newest = max((v.written for v in _correcting(terms, views)), default=None)
-    return {id(v) for v in views if newest and v.written and v.written < newest}
 
 
 def _named_checklist(kind: str, asked: str, members: list):  # noqa: ANN202

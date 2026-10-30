@@ -58,12 +58,24 @@ _DATES = re.compile(
 _NOT_A_FILING = frozenset({"your", "our", "their", "his", "her", "its", "recent", "latest", "newest", "last", "new", "old", "oldest", "some", "any", "other"})
 
 
+#: Spoken shorthand a hurried hand types (stress run 2026-10-30): "whens" is
+#: "when's", and a repair at the end ("no the new one", "I mean the moved
+#: one") asks for the newer value, as "now" does.
+_NO_APOSTROPHE = re.compile(r"\b(when|where|what|who|how)s\b", re.I)
+_REPAIR = re.compile(r"[,;]? (?:no|nah|sorry|i mean|wait),? (?:wait,? )?(?:the )?(?:new|newer|latest|updated|moved|current|rescheduled) one$", re.I)
+
+
 def clean(question: str) -> str:
     """The question without the stray marks a hurried hand leaves (INBOX 808:
     "'what is there about a gaming mouse?\\\\'" searched with the backslash
-    kept): slashes and quotes at its ends, doubled spaces."""
+    kept): slashes and quotes at its ends, doubled spaces, shorthand."""
     text = " ".join((question or "").split())
-    return text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
+    text = text.lstrip("\\/'\"` ").rstrip("\\/'\"` ")
+    text = _NO_APOSTROPHE.sub(r"\1's", text)
+    if (repair := _REPAIR.search(text.rstrip("?.! "))) is not None:
+        kept = text[:repair.start()]
+        text = kept if re.search(r"\bnow\b", kept, re.I) else kept + " now"
+    return text
 
 
 def _q(question: str) -> str:

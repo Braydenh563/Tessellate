@@ -58,6 +58,10 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 - Next: full suite on the head (not run this span; serial merged-test runs and gates passed), then reviews above, then 1407 plus 1408 (one Sonnet), then 1403 plus 1404 (one Sonnet).
 - Disk: /tmp/pytest-of-root held about 15 GB from old runs; clearing it was denied to agents.
 
+## Built, 2026-10-30 (stress run, informal classes)
+
+`composer_lists.clean` reads "whens" as "when's" and drops a trailing repair ("no the new one", "I mean the moved one"), asking "now". `composer_money._bare_total` reads "how much desk all up" word by word, "money back" as refunds. `composer_slots._counted` answers "how many grocery items are checked off" and "how many are still open" with the count and the items. `composer.superseded` (moved from the digest) halves a note a newer correction outdates in the plain composer's ranking too, when the question asks for the value now (otherwise both are said, older "but" newer). Tests: `tests/test_composer_informal_1030.py`.
+
 ## Moved from the plans, 2026-10-30 (measures)
 
 **CHAT_PLAN, placed 2026-10-30, item 1, first step.** `recognise.measures` reads every unit amount but money and temperature in its dimension's base unit (the converter's `UNITS`, glued-only names kept). `composer_money` answers "how far did I run", "how many km have I walked", "how many hours did I spend on the deck" and "what's my total distance" with a sum by note, filtered by the verb asked (ran, running) and the subject, before the one-value slots read a single sentence. "How many days until", "how far is" and "how many km did I run on Sunday" stay a day, a fact and one day's value. Tests: `tests/test_composer_measures_1030.py`. A goal or plan ("Q1: run a 10k") adds nothing.
