@@ -25,6 +25,8 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
+from tessellate.ai import realise
+
 #: A group leads as "the closest" only when its notes score this far above
 #: every note outside it; nearer than that, no group is closer than another.
 CLOSEST_MARGIN = 0.1
@@ -274,7 +276,10 @@ def _clipped(note: dict) -> str:
 #: A verb that makes a short line a sentence, after its first word (the
 #: first is the imperative's or the dropped "I"'s, read by own_title's guards).
 _FINITE = re.compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|ends|ended|opens|closes|"
-                     r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took)\b")
+                     r"comes|came|goes|went|looks|sent|wants|needs|says|said|gets|got|takes|took|"
+                     #: A regular past with its place or time after it: "Group
+                     #: project meeting moved to Friday" says something (1461).
+                     r"[a-z]{3,}ed\s+(?:to|on|at|in|for|from|until|till|back|up|off|out|by)\b)\b", re.I)
 
 
 #: Labels that open a section of a note and never name the note: "Your
@@ -338,11 +343,48 @@ def _presented(body: str) -> str:
     return f"your {thing}" if 1 <= len(thing.split()) <= _NAME_WORDS else ""
 
 
+#: A diary line with its "I" dropped opens on a verb in the past: "had
+#: design class today", "went to the gym", "finished my assignment".
+_DIARY_VERB = re.compile(
+    r"^(?:had|went|met|got|made|did|saw|took|ate|bought|came|felt|found|gave|heard|kept|left|lost|paid|ran|sent|"
+    r"slept|spent|told|wore|won|wrote|began|brought|caught|drove|flew|forgot|knew|rode|sat|sold|spoke|swam|"
+    r"taught|woke|built|held|"
+    #: A regular past only before a thing's article or a place's word:
+    #: "advanced calculus" and "grilled cheese recipe" stay names.
+    r"[a-z]{2,}ed(?<!need)(?<!feed)(?<!seed)(?<!speed)(?=\s+(?:a|an|the|my|our|some|to|at|for|with|on|in|into|up|out|over|back)\b))"
+    r"\s+(?:(?:to|at|for|with|on|in|into|up|out|over|back)\s+)?",
+    re.I,
+)
+#: Words of when, said by the sentence and never by a name ("today" is the
+#: note's own day; the digest says it as a date, INBOX 1461).
+_WHEN_WORDS = re.compile(r"\s*\b(?:today|yesterday|tonight|this (?:morning|afternoon|evening|week)|last (?:night|week))\b", re.I)
+_TRAILING_PARTICLE = re.compile(r"\s+(?:back|up|out|off|again|too)$", re.I)
+
+
+def _diary_name(line: str, lower) -> str:  # noqa: ANN001
+    """A title-less diary line by what it is about: "had design class today
+    for prototyping" is "your note on design class for prototyping", never
+    "the had design class ..." (INBOX 1461); "" when the line is not one."""
+    verb = _DIARY_VERB.match(line)
+    if not verb or re.search(r"[,;:.!?]", line):
+        return ""
+    rest = _TRAILING_PARTICLE.sub("", _WHEN_WORDS.sub("", line[verb.end():])).strip()
+    #: What follows must be a thing, not "to buy milk" or "it" or "that".
+    if not rest or len(rest.split()) > _NAME_WORDS or re.match(
+            r"(?:to|it|that|this|so|very|really|not|no|and|but|i|me|him|her|them|us)\b", rest, re.I):
+        return ""
+    #: Mid-line words keep their own case ("Sam", "Lisbon").
+    return "your note on " + re.sub(r"\bmy\b", "your", rest, flags=re.I)
+
+
 def short_name(note: dict, lower=_lower) -> str:  # noqa: ANN001
     """A note as a list names it: its title, its own label, or what it is
     about; quoted when it is an instruction ("go to the gym at 9pm") or a
     sentence of the person's own; never a phrase cut mid-thought (1420)."""
     content = str(note.get("content") or "").strip()
+    diary = "" if "\n" in content else _diary_name(_first_line(content), lower)
+    if diary:
+        return diary
     title = _title_of(content) or own_title(content)
     if title:
         return _titled(title)
@@ -379,7 +421,9 @@ def _named_by_subject(body: str, lower) -> str:  # noqa: ANN001
     #: never a subject to name the note by ("the note on what your notes
     #: currently leave out", INBOX 1420); the sentence is quoted instead.
     if about and not re.match(r"(?:i|it|this|that|there|here|they|we|he|she|you|what|how|why|which|who|where|when|whether)\b", about.group(1), re.I):
-        return "the note on " + re.sub(r"\bmy\b", "your", lower(about.group(1)), flags=re.I)
+        #: "this week" was the note's week, not the reader's (INBOX 1461).
+        subject = _WHEN_WORDS.sub("", about.group(1)).strip() or about.group(1)
+        return "the note on " + re.sub(r"\bmy\b", "your", lower(subject), flags=re.I)
     return ""
 
 
@@ -408,9 +452,18 @@ def _named_by_clause(body: str, note: dict, lower) -> str:  # noqa: ANN001
     return re.sub(r"^my\b", "your", clause, flags=re.I)
 
 
+#: A group names at most this many of its notes; the rest are counted
+#: ("A, B and four more"), since each is told on its own line below (INBOX
+#: 1461: a line of ten names was a list, not a summary).
+NAMED_MAX = 3
+
+
 def _names(ids: list[int], by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
     #: Two notes of the same words are named once.
     said = list(dict.fromkeys(short_name(by_id[i], lower) for i in ids))
+    if len(said) > NAMED_MAX:
+        rest = len(said) - 2
+        said = [*said[:2], f"{realise.count_word(rest)} more"]
     if len(said) <= 2:
         return " and ".join(said)
     return ", ".join(said[:-1]) + " and " + said[-1]

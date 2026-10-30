@@ -267,10 +267,80 @@ _ASKS_CURRENT = re.compile(
     r"^\W*(?:so,? )?(?:do|am) i (?:really )?(?:like|love|enjoy|prefer|hate|into)\b", re.I)
 
 
+#: **How a day a note named is said back** (the owner, 2026-10-31, INBOX
+#: 1461: "both", the date and how far back, and "changed in how they are
+#: referred based on context or perceived user speech patterns"). The
+#: register is the question's; the distance is the day's from today.
+#: "close" is today or yesterday, "near" within five weeks, "far" beyond.
+_REGISTER: ContextVar[str] = ContextVar("digest_register", default="plain")
+_SAY_WHEN: dict[str, dict[str, str]] = {
+    "plain": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})"},
+    "casual": {"close": "{rel}", "near": "{rel}", "far": "back in {month}"},
+    "exact": {"close": "{on} ({rel})", "near": "{on} ({rel})", "far": "{on} ({rel})"},
+}
+#: "When did I ...", "what date ...": the exact date first, every time.
+_EXACT = re.compile(r"^\W*(?:when (?:did|was|were|have|had|is|are)|what (?:date|day)|which (?:date|day))\b", re.I)
+#: A question said casually, or with a relative time of its own, is
+#: answered in kind ("what did I do last week", "yooo what's been going on").
+_CASUAL = re.compile(
+    r"\b(?:yo+|lol|haha|gonna|wanna|kinda|lately|been up to|going on|what'?s up|the other day|recently|"
+    r"last (?:week|month|weekend|night)|yesterday|this (?:week|month)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b",
+    re.I,
+)
+
+
 def _set_timing(question: str) -> None:
-    """What this answer may say about time, from the question (INBOX 1441)."""
+    """What this answer may say about time, from the question (INBOX 1441),
+    and in which register (INBOX 1461)."""
     _TIMED.set(composer.asks_time(question))
     _CURRENT.set(bool(_ASKS_CURRENT.search(question or "")))
+    asked = question or ""
+    _REGISTER.set("exact" if _EXACT.search(asked) else "casual" if _CASUAL.search(asked) else "plain")
+
+
+def _ago(day: date, today: date) -> str:
+    """How far back `day` is, as a person says it: "yesterday", "five days
+    ago", "three weeks ago", "three months ago"."""
+    gap = (today - day).days
+    if gap <= 1:
+        return ("today", "yesterday")[max(gap, 0)]
+    if gap < 7:
+        return f"{realise.count_word(gap)} days ago"
+    if gap < 14:
+        return "a week ago"
+    if gap < 35:
+        return f"{realise.count_word(gap // 7)} weeks ago"
+    #: Whole months gone, as people count them: 109 days is "three months ago".
+    months = int(gap / 30.44)
+    if months < 12:
+        return "a month ago" if months <= 1 else f"{realise.count_word(months)} months ago"
+    years = gap // 365
+    return "a year ago" if years <= 1 else f"{realise.count_word(years)} years ago"
+
+
+def _week_first() -> int:
+    """The person's first day of the week (0 Monday), from the settings the
+    app has loaded; Monday with none (a unit test, a prompt before start)."""
+    from tessellate.core import config
+
+    deps = sys.modules.get("tessellate.core.deps")
+    loaded = deps.peek_config() if deps else None
+    return config.week_first_day(loaded) if loaded is not None else 0
+
+
+def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
+    """A day (or a week from its first day) that has gone by, said by the
+    rule table: `on` is its exact form ("on 20 July", "in the week of 13 July")."""
+    gap = (today - start).days
+    this_monday = today - timedelta(days=(today.weekday() - _week_first()) % 7)
+    if week:
+        rel = "last week" if this_monday - timedelta(days=7) <= start < this_monday else _ago(start, today)
+        distance = "close" if rel == "last week" else ("near" if gap < 35 else "far")
+    else:
+        rel = _ago(start, today)
+        distance = "close" if gap <= 1 else ("near" if gap < 35 else "far")
+    month = composer._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
+    return _SAY_WHEN[_REGISTER.get()][distance].format(on=on, rel=rel, month=month)
 
 
 #: A phrase's date clause, marked ‹...› whole: kept when the question is
@@ -834,6 +904,7 @@ def _pin(text: str, written: date) -> str:
     B3): true on the day it was written, and wrong said today with no day.
     "The 14th of next month" written in October is 14 November."""
     today = _TODAY.get() or written
+    gone: list[str] = []
 
     def said(m: re.Match) -> str:
         step = {"next": 1, "this": 0, "last": -1}[m.group("which").lower()]
@@ -853,8 +924,18 @@ def _pin(text: str, written: date) -> str:
         #: Monday, a day the person can check (the owner, 2026-10-11).
         found = when_words.span(f"{m.group('which').lower()} week", written, "future")
         monday = found[0] if found else written + timedelta(days=7 * step)
+        first = _week_first()
+        if first:
+            #: The person's own first day of the week (Settings, or the
+            #: browser's locale): "last week" in a note of Sunday 26 July is
+            #: the week of 19 July where weeks start on a Sunday (INBOX 1461).
+            monday = written - timedelta(days=(written.weekday() - first) % 7) + timedelta(days=7 * step)
         if pre.strip().lower() in ("before", "by", "until"):
             return f"{pre}{_day(monday, today)}"
+        if not pre and monday + timedelta(days=7) <= today:
+            #: A week gone by: its date and how far back (INBOX 1461).
+            gone.append(_when_gone(f"in the week of {_day(monday, today)}", monday, today, week=True))
+            return gone[-1]
         return f"{pre}the week of {_day(monday, today)}"
 
     text = _PIN.sub(said, text)
@@ -863,7 +944,32 @@ def _pin(text: str, written: date) -> str:
     for found in reversed(_spans(text, written)):
         if found.kind in ("date", "datetime") and (found.text.lower() in _DEICTIC or (found.text.lower() == "tomorrow" and written != today)):
             day = found.value.date() if isinstance(found.value, datetime) else found.value
-            text = f"{text[:found.start].rstrip()} on {_day(day, today)}{text[found.end:]}"
+            if day == today and written == today:
+                #: Today's "today" and "tonight" are still true (INBOX 1461).
+                continue
+            on = f"on {_day(day, today)}"
+            if day < today:
+                gone.append(_when_gone(on, day, today))
+                on = gone[-1]
+            text = f"{text[:found.start].rstrip()} {on}{text[found.end:]}"
+    return _said_gone(text, gone)
+
+
+_COPULA_PAST = {"is": "was", "are": "were", "am": "was", "'s": " was", "'re": " were"}
+
+
+def _said_gone(text: str, gone: list[str]) -> str:
+    """A sentence about a time gone by in the past tense ("your uni days ...
+    were Tuesday and Thursday"), its one time said first when the sentence
+    is the person's own ("In the week of 13 July (three months ago), your
+    uni days were ..."), as the owner wrote it (INBOX 1461)."""
+    if not gone:
+        return text
+    text = re.sub(r"\b(is|are|am)\b", lambda m: _COPULA_PAST[m.group(1).lower()], text)
+    phrase = gone[0]
+    if len(gone) == 1 and phrase.startswith(("on ", "in ")) and re.match(r"(?:you|your)\b", text, re.I) and phrase in text:
+        rest = re.sub(r"\s{2,}", " ", text.replace(f" {phrase}", "", 1)).strip(" ,")
+        return f"{phrase}, {rest[:1].lower()}{rest[1:]}"
     return text
 
 
@@ -1387,7 +1493,9 @@ def _cleaned_body(line_body: str, label: str) -> str:
     #: A note that opens on its own day ("on 21 September, you have work")
     #: already has it in the lead: kept, it read "on 21 September, on 21
     #: September, you have work", and the present tense went unshifted.
-    line_body = re.sub(rf"^on {re.escape(label)},?\s*", "", line_body, flags=re.I) or line_body
+    #: Only when the lead says it (`_dated_lead`, a question about time).
+    if _TIMED.get():
+        line_body = re.sub(rf"^on {re.escape(label)}(?: \([^)]*\))?,?\s*", "", line_body, flags=re.I) or line_body
     #: A pasted summary's "however" answers text that is not there (1420).
     line_body = re.sub(r",\s*however,", "", line_body)
     #: "Here are some refined ... starters" is what was saved, not said.
@@ -1477,7 +1585,11 @@ def _said_body(f: Fact, label: str) -> str:
     is named, never said as if spoken ("you noted atlas retro meeting", C2)."""
     if _title_only(f.view) and f.body.strip().rstrip(".") == f.view.title.strip():
         return f"you started {_note_called(f.view.title)}"
-    return _fragment(f.body.replace(f" on {label}", ""), _NAMES.get())
+    #: Under that day's own label the day is said once, by the label; with
+    #: no label said (a question not about time) the day stays (INBOX 1461:
+    #: "had design class today" lost its day).
+    body = re.sub(rf"(?:^|\s)on {re.escape(label)}(?: \([^)]*\))?,?", "", f.body).strip() if _TIMED.get() else f.body
+    return _fragment(body, _NAMES.get())
 
 
 def _bodies_of(held: list[Fact], label: str) -> tuple[list[str], str]:
@@ -3692,7 +3804,9 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
         #: four notes about uni" says nothing new.
         #: Except a hobby forming: the count is old news, the hobby is not.
         hobby = item.slots.get("hedge") == composer_tables.INSIGHT_HEDGES["hobby"]
-        if item.rule in ("recurrence", "streak") and not hobby and realise.count_word(len(members)) in said:
+        #: Its own count too: "ten notes" then "10 times" said one count twice (1461).
+        counts = {realise.count_word(len(members)), realise.count_word(int(item.slots.get("count") or 0))}
+        if item.rule in ("recurrence", "streak") and not hobby and any(re.search(rf"\b{c}\b", said, re.I) for c in counts):
             continue
         relevance = len(set(item.note_ids) & ids) / len(item.note_ids)
         if relevance >= insight_bar(learned):
@@ -4142,7 +4256,55 @@ def _polish_out(out: _Out, kind: str) -> None:
         out.offer = {**out.offer, "label": polish(str(out.offer["label"]), keep)}
 
 
+#: Shapes whose chips are their own (a web answer, a "more" turn).
+_OWN_NEXT = frozenset({"web", "more"})
+
+
+def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
+    """Two or three questions to ask next, built the way a composed answer
+    builds them (`composer._next_questions`): a thread through the notes
+    found, a note found and not quoted, the latest on the subject (INBOX
+    1466: a digest handed none, so under it only "Why this answer" showed)."""
+    if kind in _OWN_NEXT:
+        return []
+    cited = {r.get("note_id") for r in rows}
+    views = list(_VIEWS.get())
+    picks = composer._next_questions(question, kind, composer.subject_terms(question), views, cited)
+    said = ["".join(part[1] for part in p) for p in picks]
+    members = [v for v in views if v.id in cited]
+    topic = _topic(question, members) if members else ""
+    if topic and topic != "this" and len(topic) <= 40:
+        #: The subject as the person typed it, with its "the" ("the dentist").
+        topic = f"the {topic}" if re.search(rf"\bthe {re.escape(topic)}\b", question, re.I) else topic
+        said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
+    seen = {_ask_key(question)}
+    out = []
+    for q in said:
+        if _ask_key(q) not in seen:
+            seen.add(_ask_key(q))
+            out.append(q)
+    return out[:3]
+
+
+#: Questions about the subject asked, by the answer's shape: what an answer
+#: of that shape leaves to ask (INBOX 1466).
+_NEXT_ABOUT = {
+    "overview": ("What's the latest on {t}?", "When did I last write about {t}?"),
+    "when": ("What else have I saved about {t}?", "What's the latest on {t}?"),
+    "fact": ("What else have I saved about {t}?", "When did I last write about {t}?"),
+}
+
+
+def _ask_key(question: str) -> str:
+    """A question's words, so "What is the latest on X?" and "What's the
+    latest on X" are one chip, and the question just asked is none."""
+    words = re.sub(r"\bwhat's\b", "what is", question.lower())
+    return " ".join(re.findall(r"[a-z0-9]+", re.sub(r"\b(?:the|my|a|an|last)\b", " ", words)))
+
+
 def _result(out: _Out, kind: str, question: str) -> dict:
+    if not out.next:
+        out.next = _next_asks(kind, question, out.rows)
     _polish_out(out, kind)
     #: One paragraph a line: a single newline inside a paragraph is a space
     #: to every markdown reader, so the labelled lines ran together.

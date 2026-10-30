@@ -60,6 +60,10 @@ _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "Augu
 #: round, practice, a game. With one of them, a recurring subject "may be a
 #: hobby forming"; without, it "keeps coming up".
 _LEISURE = re.compile(r"\b(?:after work|weekend|session|round|practi[cs]e|played|game|class|lesson|hobby|for fun|drills?)\b", re.I)
+#: Study and paid work are duties, never "a hobby forming", whatever their
+#: "class" or "session" (INBOX 1461: uni notes were called a hobby).
+_DUTY = re.compile(r"\b(?:uni|university|lectures?|exams?|assignments?|semester|courses?|subjects?|tutorials?|homework|"
+                   r"essays?|degree|school|college|shifts?|deadlines?|clients?|meetings?)\b", re.I)
 
 
 @dataclass
@@ -107,6 +111,13 @@ def _fill(rule: str, slots: dict) -> str:
     return composer_tables.INSIGHT_TEMPLATES[rule].format(**{k: v for k, v in slots.items()})
 
 
+def _leisure(notes: list[dict]) -> bool:
+    """Whether the notes read as free time: a class or a session, and no
+    study or paid work (INBOX 1461)."""
+    texts = [f"{n.get('content') or ''} {n.get('category') or ''}" for n in notes]
+    return any(_LEISURE.search(t) for t in texts) and not any(_DUTY.search(t) for t in texts)
+
+
 def recurrence(subject: str, notes: list[dict], today: date) -> Insight | None:
     """`subject` in at least `MIN_NOTES` notes across at least `MIN_WEEKS`
     weeks: how many, since when, how many of them after work, and a hedge."""
@@ -114,7 +125,7 @@ def recurrence(subject: str, notes: list[dict], today: date) -> Insight | None:
     if len(dated) < MIN_NOTES or len({_week(d) for d, _ in dated}) < MIN_WEEKS:
         return None
     after = sum(1 for _d, n in dated if recognise.part_of_day(str(n.get("content") or "")) == "evening")
-    leisure = any(_LEISURE.search(str(n.get("content") or "")) for _d, n in dated)
+    leisure = _leisure([n for _d, n in dated])
     slots = {
         "subject": subject,
         "count": len(dated),
