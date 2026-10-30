@@ -913,14 +913,14 @@ const LOCK_PURGE_IDS = [
 //: invisibly.
 function purgeLockedContent() {
   for (const id of LOCK_PURGE_IDS) {
-    const el = document.getElementById(id);
+    const el = $(id);
     if (el) el.replaceChildren();
   }
   // A textarea's text lives in `.value`, which `replaceChildren` never
   // touches: the document editor would otherwise keep the whole document
   // readable behind the lock screen.
   for (const id of ["doc-content", "doc-title", "entry-input", "chat-input"]) {
-    const field = document.getElementById(id);
+    const field = $(id);
     if (field && "value" in field) field.value = "";
   }
 }
@@ -952,11 +952,11 @@ async function lockNow() {
 //: for good (measured: still there, `display: none`, after every boot). Its
 //: own leaving class, and a timer behind the event.
 function hideBootSplash() {
-  const splash = document.getElementById("boot-splash");
+  const splash = $("boot-splash");
   if (!splash || splash.classList.contains("boot-splash-leaving")) return;
   // Snap the bar to 100% before the fade starts, so it never visibly
   // disappears mid-crawl: it always reads as "finished", never "cut off".
-  document.getElementById("boot-splash-progress-fill")?.classList.add("done");
+  $("boot-splash-progress-fill")?.classList.add("done");
   splash.classList.add("boot-splash-leaving");
   const gone = () => splash.remove();
   splash.addEventListener("transitionend", gone, { once: true });
@@ -1089,7 +1089,7 @@ function startApp() {
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
     if (indicator) {
-      if (prefsCache && prefsCache.battery_efficient_mode) {
+      if (prefsCache?.battery_efficient_mode) {
         indicator.classList.remove("hidden");
       } else {
         indicator.classList.add("hidden");
@@ -1142,8 +1142,8 @@ function startApp() {
   // After the templates, which is what fills `prefsCache`: run beside them it
   // read null and neither asked nor checked (found 2026-10-05, measured).
   templatesReady.then(() => step("check for an update", () => {
-    if (prefsCache && prefsCache.update_choice_made === false) return askUpdateChoiceOnce();
-    if (prefsCache && prefsCache.update_check_enabled) return checkForUpdate(true);
+    if (prefsCache?.update_choice_made === false) return askUpdateChoiceOnce();
+    if (prefsCache?.update_check_enabled) return checkForUpdate(true);
   }));
   // Independent of update_check_enabled above, this isn't a network
   // check, it's reporting a fact: start.sh/start.bat already git-pulled a
@@ -1276,14 +1276,14 @@ function setLabel(el, label) {
   //: first turned every icon-only button (`smallButton("ph:x")`) into a
   //: `ph-trail`, a decoration's margin and opacity on a control.
   const tail = PH_LABEL_TRAILING.exec(text);
-  if (tail && tail.index > 0) text = text.slice(0, tail.index);
+  if (tail?.index > 0) text = text.slice(0, tail.index);
   else if (tail) tail.length = 0;
   const match = PH_LABEL.exec(text);
   //: The trailing icon is appended after whatever the rest of this builds, so
   //: it is the last child in every shape a label can take: text only, icon
   //: and text, or icon only.
   const withTail = (built) => {
-    if (tail && tail.length) {
+    if (tail?.length) {
       const mark = document.createElement("i");
       mark.className = `ph ph-${tail[1]} ph-trail`;
       mark.setAttribute("aria-hidden", "true");
@@ -1341,7 +1341,7 @@ function setLabel(el, label) {
 //: another file; moving it removes the window entirely rather than papering
 //: over it at each caller.
 function settingsModalOpen() {
-  const modal = document.getElementById("settings-modal");
+  const modal = $("settings-modal");
   return Boolean(modal) && !modal.classList.contains("hidden");
 }
 
@@ -2056,7 +2056,7 @@ document.addEventListener("focusin", (event) => {
   mountNoteSurfaceNow(host).then((surface) => {
     //: Focus moved on while the bundle was fetching: mount, but do not
     //: steal the caret back.
-    if (surface && surface.kind === "codemirror" && document.activeElement === host) surface.focus();
+    if (surface?.kind === "codemirror" && document.activeElement === host) surface.focus();
   });
 });
 
@@ -2176,8 +2176,8 @@ const LAZY_ENTRY_POINTS = {
   search: ["openFinder"],
   statistics: ["openStatistics", "renderWeekWidget"],
   meetings: ["openNewMeeting", "openMeetingSheet", "openMeetingRecorder"],
-  askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn", "toggleAskHistoryPin", "deleteAskHistoryTurn"],
-  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "restoreCategoryMoves", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
+  askHistory: ["toggleAskHistoryPanel", "loadAskHistoryPage", "clearAskHistory", "viewAskHistoryTurn", "toggleAskHistoryPin"],
+  categories: ["openManageCategories", "mergeCategoryFromPanel", "splitCategoryFromPanel", "deleteCategoryFromPanel", "renameCategory", "chooseNoteCategory", "showCategoryNotes", "moveNotesToCategory", "pickCategoryColour", "foldSide"],
   tagManager: ["openTagsSheet", "openBulkTags", "renameTagEverywhere", "removeTagFromNote"],
   chipMenus: ["openCategoryChipMenu", "openTagChipMenu"],
   attachments: ["attachmentAction"],
@@ -2236,4 +2236,7 @@ function installStandIns(table) {
 installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "library"].forEach(ensureModule), 3000);
+//: The library bundle (boards and documents, a third of a megabyte) waits for
+//: first use when the browser asks to save data (audit 1030 Y16; `true` names
+//: no module, so ensureModule skips it).
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", navigator.connection?.saveData || "library"].forEach(ensureModule), 3000);

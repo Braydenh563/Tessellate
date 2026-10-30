@@ -197,3 +197,24 @@ def test_y7_upkeep_jobs_stay_out_of_the_bell_unless_they_fail():
     assert 'agentActivityNotice(`Failed: ${ended.label || task.label}`, { isError: true });' in status
     for path in ("src/tessellate/ai/spelling.py", "src/tessellate/search/search_manager.py"):
         assert 'name="warm the' not in (ROOT / path).read_text(encoding="utf-8"), path
+
+
+def test_y3_a_folds_summary_heading_is_never_hidden_as_an_echo():
+    """Audit 1030 Y3: on a phone the Packages fold's summary h3 was hidden as
+    an echo of the jump list, leaving a bare chevron with no name."""
+    from tests._app_js import app_js_text
+
+    js = app_js_text()
+    body = js.split("function echoSettingsPaneTitle", 1)[1].split("\n}\n", 1)[0]
+    assert '!head.closest("summary")' in body
+
+
+def test_y16_the_library_preload_waits_when_the_browser_saves_data():
+    """Audit 1030 Y16: boards and documents (330 KB gzipped) were fetched
+    three seconds after unlock on every link, metered or not."""
+    from tests._app_js import app_js_text
+
+    js = app_js_text()
+    line = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
+    assert 'navigator.connection?.saveData || "library"' in line
+    assert line.rstrip().endswith(".forEach(ensureModule), 3000);")

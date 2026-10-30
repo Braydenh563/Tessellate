@@ -1688,12 +1688,13 @@ initKeyboardInset();
 //: The jump list already says the pane's name, so the pane's own first heading
 //: saying it again one row below is dropped on a phone (`.jump-echo`, 07-whiteboard-misc.css;
 //: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
+//: An h3 in a fold's summary is that fold's only name, so it stays (audit 1030 Y3).
 function echoSettingsPaneTitle(select) {
   for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
   if (select.value.includes("#")) return;
   const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
   const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  if (head && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+  if (head && !head.closest("summary") && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
 }
 
 function buildSettingsJumpList() {
