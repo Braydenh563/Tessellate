@@ -211,6 +211,17 @@ def test_the_open_tab_answers_only_what_points_at_it():
         assert help_chat.topics_for(question, "dashboard"), question
 
 
+def test_a_request_for_the_persons_own_list_is_not_a_help_topic():
+    """A18: "what are my tasks" matched Mind map controls; the list is Chat's, the Guide says so honestly."""
+    from tessellate.ai import help_chat
+
+    for question in ("what are my tasks", "show my tasks", "what tasks do I have", "what's on my to do list", "what are my reminders", "list my tasks"):
+        assert not help_chat.topics_for(question, "mindmap"), question
+        assert "nothing in the app's own help text" in help_chat.offline_answer(question, "mindmap", "Mind map")["content"], question
+    for question in ("how do I see my tasks", "how do I set a reminder", "what are reminders"):
+        assert help_chat.topics_for(question, "mindmap"), question
+
+
 def test_the_web_tools_are_not_on_the_wire_for_a_first_person_question(monkeypatch, app_state):
     """A3: the model holding the prompt "Sara is my sister" is not also handed web_search."""
     from tessellate.ai import agent
