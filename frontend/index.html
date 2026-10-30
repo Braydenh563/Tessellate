@@ -9149,7 +9149,7 @@ Link to another note with [[its first few words]]."></textarea>
        Nothing here invents structure the extractor does not have: regions are
        Tesseract's own blocks, and the only label beyond "text" is "heading",
        computed from box height. See core/ocr.py's `extract_regions`. -->
-  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog"
+  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
@@ -11705,7 +11705,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="panel-restore-toggle" checked>
                 <span>
                   Panels open where you left them
-                  <small class="muted">Off: every panel opens in the middle. Drag a panel's head to a screen edge to dock it; the reset button in its head puts it back.</small>
+                  <small class="muted">Off: every panel opens in the middle. Drag a panel's head to a screen edge to dock it; the reset button in its head puts it back, and a double-click on the corner mark puts back the size.</small>
                 </span>
               </label>
 

@@ -123,23 +123,44 @@ function panelStoreParse(raw) {
     return {};
   }
 }
-function panelStoreRead(id) {
+//: An entry is `[x, y, w, h, dock?, layout?]`. `layout` is the panel's
+//: `data-panel-layout` when it was stored (INBOX 1454): a panel whose layout
+//: changed under a stored entry bumps it, and the old entry is not applied.
+function panelStoreRead(id, layout = 0) {
   const e = panelStoreParse(prefs.get(PANEL_KEY, ""))[id];
-  if (!Array.isArray(e) || (e.length !== 4 && e.length !== 5)) return null;
-  const [x, y, w, h, dock] = e;
+  if (!Array.isArray(e) || e.length < 4 || e.length > 6) return null;
+  const [x, y, w, h, dock, ver] = e;
   if (![x, y].every(Number.isFinite) || (w !== null && !Number.isFinite(w)) || (h !== null && !Number.isFinite(h))) return null;
+  if ((ver || 0) !== layout) return null;
   return PANEL_ZONES.includes(dock) ? { x, y, w, h, dock } : { x, y, w, h };
 }
-function panelStoreWrite(id, st) {
+function panelStoreWrite(id, st, layout = 0) {
   //: prefs swallows a private window or blocked storage: the panel still works.
   const all = panelStoreParse(prefs.get(PANEL_KEY, ""));
   if (st) {
     all[id] = [Math.round(st.x), Math.round(st.y), st.w, st.h];
-    if (st.dock) all[id].push(st.dock);
+    if (st.dock || layout) all[id].push(st.dock || "");
+    if (layout) all[id].push(layout);
   } else {
     delete all[id];
   }
   prefs.setJSON(PANEL_KEY, all);
+}
+//: Whether a stored entry still makes sense for the panel as it is now: a
+//: size under the minimum (the panel's own natural size when that is smaller),
+//: a size past the window, a place a whole window away, or a zone the panel
+//: does not allow. The old check only clamped a place into the window, and its
+//: size minimum was the stored size itself, so a squashed entry stayed squashed.
+function panelStoreFits(saved, nat, vw, vh, zones) {
+  if (Math.abs(saved.x) > vw || Math.abs(saved.y) > vh) return false;
+  if (saved.w !== null && (saved.w < Math.min(PANEL_MIN_W, nat.width) || saved.w > vw)) return false;
+  if (saved.h !== null && (saved.h < Math.min(PANEL_MIN_H, nat.height) || saved.h > vh)) return false;
+  return !saved.dock || !zones || zones.split(/\s+/).includes(saved.dock);
+}
+//: `data-panel-layout` on the panel or its dialog host, 0 when absent.
+function panelLayout(panel) {
+  const host = panel.closest('dialog, [role="dialog"]');
+  return Number(panel.dataset.panelLayout || (host && host.dataset.panelLayout)) || 0;
 }
 
 function panelMovableOn() {
@@ -173,7 +194,7 @@ function panelId(panel) {
 function panelSt(panel) {
   let st = PANEL_STATE.get(panel);
   if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, id: panelId(panel), grip: null, reset: null, skip: false };
+    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, skip: false };
     PANEL_STATE.set(panel, st);
   }
   return st;
@@ -236,7 +257,10 @@ function panelClamp(panel, st) {
   place();
   if (st.w !== null || st.h !== null) {
     const r = panel.getBoundingClientRect();
-    const c = panelClampSize(r, st.w ?? r.width, st.h ?? r.height, vw, vh);
+    //: The minimum is the panel's natural size at most, not the size it was
+    //: just given (that made a stored squash its own floor).
+    const ref = st.nat ? { left: r.left, top: r.top, width: st.nat.width, height: st.nat.height } : r;
+    const c = panelClampSize(ref, st.w ?? r.width, st.h ?? r.height, vw, vh);
     if (st.w !== null) st.w = c.w;
     if (st.h !== null) st.h = c.h;
     panelApply(panel, st);
@@ -342,9 +366,23 @@ function panelReset(panel) {
   if (st.id) panelStoreWrite(st.id, null);
   panelSync(panel);
 }
+//: The grip's double-click: the size goes back, the place stays (a docked
+//: panel is all size, so it goes back to the middle like the head's).
+function panelResetSize(panel) {
+  const st = panelSt(panel);
+  if (st.dock) {
+    panelReset(panel);
+    return;
+  }
+  st.w = st.h = null;
+  st.pre = null;
+  panelApply(panel, st);
+  panelClamp(panel, st);
+  panelSave(panel);
+}
 function panelSave(panel) {
   const st = panelSt(panel);
-  if (st.id) panelStoreWrite(st.id, st);
+  if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
   panelScrimLift(panel, st);
   panelSync(panel);
 }
@@ -355,9 +393,19 @@ function panelAdopt(panel) {
   if (st.skip) return;
   if (!panel.classList.contains("panel-movable-on")) {
     if (panelFull(panel)) { st.skip = true; return; }
+    //: Not laid out yet (a panel touched while hidden): adopt it next time.
+    const nat = panel.getBoundingClientRect();
+    if (!nat.width || !nat.height) return;
+    st.nat = { width: nat.width, height: nat.height };
     panel.classList.add("panel-movable-on");
     panelWatchOpen(panel);
-    const saved = st.id && panelRestoreOn() ? panelStoreRead(st.id) : null;
+    let saved = st.id && panelRestoreOn() ? panelStoreRead(st.id, panelLayout(panel)) : null;
+    //: A stored entry that does not fit this panel opens it at the default and
+    //: is forgotten, rather than applied and left broken (INBOX 1454).
+    if (saved && !panelStoreFits(saved, nat, window.innerWidth, window.innerHeight, panel.dataset.panelZones)) {
+      panelStoreWrite(st.id, null);
+      saved = null;
+    }
     if (saved) {
       Object.assign(st, saved);
       panelApply(panel, st);
@@ -389,7 +437,7 @@ function panelAdopt(panel) {
     grip.type = "button";
     grip.className = "panel-grip";
     grip.setAttribute("aria-label", "Move or resize this panel");
-    grip.title = "Drag to resize. Arrow keys move, Shift and arrow keys resize, Home resets.";
+    grip.title = "Drag to resize. Double-click resets the size. Arrow keys move, Shift and arrow keys resize, Home resets.";
     panel.appendChild(grip);
     st.grip = grip;
     panelGripRoom(panel, grip);
@@ -428,6 +476,7 @@ function panelHeadDown(e) {
   let ox = st.x;
   let oy = st.y;
   let zone = "";
+  let lifted = false;
   panel.classList.add("panel-moving");
   head.setPointerCapture(e.pointerId);
   const move = (ev) => {
@@ -451,6 +500,11 @@ function panelHeadDown(e) {
     st.x = m.x;
     st.y = m.y;
     panel.style.translate = `${m.x}px ${m.y}px`;
+    //: The dim lifts as the drag starts, not as it ends (it popped on release).
+    if (!lifted && Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY) > 4) {
+      lifted = true;
+      panelScrimLift(panel, st);
+    }
     moved = Math.max(moved, Math.abs(ev.clientX - e.clientX) + Math.abs(ev.clientY - e.clientY));
     const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (z !== zone) {
@@ -595,13 +649,25 @@ if (typeof document !== "undefined" && document.addEventListener) {
     if (e.target.closest(".panel-grip")) panelGripDown(e);
     else if (e.target.closest(".dialog-head")) panelHeadDown(e);
   }, true);
+  //: A press on a head must not take the focus from the control that has it
+  //: nor start a text selection (a pointerdown handler cannot stop either).
+  document.addEventListener("mousedown", (e) => {
+    const head = e.target instanceof Element && e.target.closest(".dialog-head.panel-drag-head");
+    if (head && e.button === 0 && !e.target.closest(PANEL_SKIP) && panelMovableOn()) e.preventDefault();
+  }, true);
   document.addEventListener("click", (e) => {
     const btn = e.target instanceof Element && e.target.closest(".panel-reset");
     const panel = btn && panelOf(btn);
     if (panel) panelReset(panel);
   }, true);
   document.addEventListener("dblclick", (e) => {
-    if (!(e.target instanceof Element) || e.target.closest(PANEL_SKIP)) return;
+    if (!(e.target instanceof Element)) return;
+    const grip = e.target.closest(".panel-grip");
+    if (grip) {
+      if (grip.parentElement && grip.parentElement.classList.contains("panel-movable-on")) panelResetSize(grip.parentElement);
+      return;
+    }
+    if (e.target.closest(PANEL_SKIP)) return;
     const head = e.target.closest(".dialog-head");
     const panel = head && panelOf(head);
     if (panel && panel.classList.contains("panel-movable-on")) panelReset(panel);
