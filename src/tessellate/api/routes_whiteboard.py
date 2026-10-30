@@ -27,6 +27,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Annotated
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
@@ -2464,22 +2465,26 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _thumb_board(db, board_id)
+    #: The lookup and the write go to the thread pool, and the body grows in a
+    #: bytearray (audit 1028 K18): in the event loop they stalled every other
+    #: request while a board list's thumbnails came in.
+    await run_in_threadpool(_thumb_board, db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
     if declared > board_thumbs.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    data = b""
+    data = bytearray()
     async for chunk in request.stream():
         data += chunk
         if len(data) > board_thumbs.MAX_BYTES:
             raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    mime = board_thumbs.sniff(data)
+    body = bytes(data)
+    mime = board_thumbs.sniff(body)
     if mime is None:
         raise HTTPException(status_code=415, detail="A thumbnail must be a WebP or JPEG image.")
-    board_thumbs.save(deps.get_config().data_dir, board_id, fp, mime, data)
-    return {"fp": fp, "bytes": len(data)}
+    await run_in_threadpool(board_thumbs.save, deps.get_config().data_dir, board_id, fp, mime, body)
+    return {"fp": fp, "bytes": len(body)}
 
 
 #: Served under `/media` because an `<img src>` cannot send the auth header and

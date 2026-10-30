@@ -9891,7 +9891,6 @@ function wbBoardBg() {
 }
 
 function wbDeleteFailed(entry, redoBefore, e, retry) {
-  console.error(e);
   wbDropUndoEntry(entry);
   if (!wbRedoStack.length) wbRedoStack = redoBefore;
   wbUpdateUndoRedoButtons();
@@ -18439,7 +18438,8 @@ async function initWhiteboard() {
         wbScheduleRender();
       }
     } catch (err) {
-      console.error("Failed to save sketch:", err);
+      //: Said on screen, not only in a console nobody has open (audit 1028 B22).
+      toast(voiceLine("failed", { what: "save that drawing", why: err?.message }), true);
       if (currentDrawPath) currentDrawPath.remove();
     }
 
@@ -18514,13 +18514,12 @@ async function initWhiteboard() {
         await wbAnchorPlaced([{ kind: "node", item: res }], at);
       });
     } catch (err) {
-      //: `console.error("...", err)` printed "{}": an Error's `message` is not
+      //: A console line printed "{}": an Error's `message` is not
       //: an enumerable own property, so the console's object view showed
       //: nothing at all and the reader was told a card failed without being
       //: told why. The message is what the server sent, and it belongs on
       //: screen rather than in a console nobody has open.
       const why = (err && err.message) || "the server refused it";
-      console.error("Error creating node:", why);
       toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
     }
   });
@@ -18629,7 +18628,7 @@ async function fetchWhiteboardState() {
     wbSyncSidebarKind();
     await refreshBoardList();
   } catch (err) {
-    console.error("Whiteboard fetch error:", err);
+    toast(voiceLine("failed", { what: "open that board", why: err?.message }), true);
   }
 }
 
@@ -23962,7 +23961,7 @@ async function dragEndNode(event, d) {
            toast("Cross-link made: it joins two branches without changing the tree.");
          }
        } catch (err) {
-         console.error(err);
+         toast(voiceLine("failed", { what: "connect those", why: err?.message }), true);
        }
     }
     d.linkSourceAnchor = null;

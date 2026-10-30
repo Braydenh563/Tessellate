@@ -103,3 +103,22 @@ process.stdout.write(JSON.stringify(out));
 """
     got = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
     assert json.loads(got) == [[True, "Untitled document 2"], [True, "Untitled document 4"], [False, "Kept"]]
+
+
+def test_a_failed_drop_puts_the_document_back_in_the_list():
+    """D36 (audit 1028): a refused DELETE left the row on the server while
+    the list forgot it."""
+    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    start = text.index("async function docDropIfUntouched(")
+    body = text[start: text.index("\n}\n", start)]
+    assert '.catch(() => { docs = [doc, ...docs]; })' in body
+    assert body.index("docs = [doc, ...docs]") < body.index("renderDocList()")
+
+
+def test_a_failed_save_says_so_once_with_try_again():
+    """D34 (audit 1028): a failed save was two words in the status bar."""
+    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    start = text.index("async function docSaveOnce(silent)")
+    body = text[start: text.index("\n}\n", start)]
+    assert "if (!docSaveFailedSaid) {" in body and 'action: ["Try again", () => saveDocument({ silent: false })]' in body
+    assert body.index("docSaveFailedSaid = false;") < body.index('$("doc-saved").textContent = "Saved";')

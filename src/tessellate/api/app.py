@@ -1635,6 +1635,8 @@ def create_app() -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        if deps._db is not None:
+            deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread
         # (`egress.configure`) flushes within a second of a connection and the
         # route on every read, so this is the last drain on a clean quit.

@@ -1000,7 +1000,11 @@ def daily_journal(
     including today would make the number drop every midnight and reappear
     when they wrote, which is a counter that punishes the morning.
     """
-    last = _daily_date(through) if through else date.today()
+    #: Today on the user's clock (audit 1028 K22): a LAN phone in another zone
+    #: saw its streak break at the server's midnight.
+    from tessellate.core.config import user_now
+
+    last = _daily_date(through) if through else user_now(deps.get_config()).date()
     window = [last - timedelta(days=offset) for offset in range(days)]
     heading_of = {DAILY_HEADING.format(date=day.isoformat()): day for day in window}
     written = {

@@ -1979,7 +1979,8 @@ async function docDropIfUntouched(nextId = null) {
   if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
-  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  //: A delete that failed leaves the row on the server, so it goes back in the list (D36).
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => { docs = [doc, ...docs]; });
   renderDocList();
 }
 
@@ -2240,6 +2241,8 @@ function docFillBlankTitle() {
   return true;
 }
 
+let docSaveFailedSaid = false;
+
 async function docSaveOnce(silent) {
   clearTimeout(docSaveTimer);
   const savingId = currentDoc.id;
@@ -2272,6 +2275,7 @@ async function docSaveOnce(silent) {
       return docSetStatusText($("doc-saved"), "Unsaved…");
     }
     forgetDocEditLocally(saved.id);
+    docSaveFailedSaid = false;
     $("doc-saved").textContent = "Saved";
     if (!silent) toast("Document saved.");
     //: An open preview shows what was saved (D6).
@@ -2285,6 +2289,15 @@ async function docSaveOnce(silent) {
     keepDocEditLocally();
     $("doc-status").classList.add("error");
     $("doc-status").textContent = error.message;
+    //: Said once per run of failures, with a way to try again (audit 1028
+    //: D34): the status bar's two words were the only sign, and autosave
+    //: retrying every pause must not stack a toast each time.
+    if (!docSaveFailedSaid) {
+      docSaveFailedSaid = true;
+      toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+        action: ["Try again", () => saveDocument({ silent: false })],
+      });
+    }
   }
 }
 
@@ -2506,6 +2519,12 @@ function docReplaceAll() {
   box.dispatchEvent(new Event("input", { bubbles: true }));
   $("doc-find-count").textContent = `Replaced ${count}`;
   docFindIndex = -1;
+}
+
+function docOpenReplace() {
+  toggleDocFindBar(true);
+  docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus();
+  return true;
 }
 
 function toggleDocFindBar(open) {
@@ -23076,12 +23095,14 @@ function docCmKeymap(CM) {
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
-    //: Ctrl+H is Replace in every word processor and editor; the panel is the
-    //: same, with the cursor in its Replace field.
     //: VS Code's Go to line. A code file only; CodeMirror's own binding for
     //: the key (find next) stays for prose and on F3.
     { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
-    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field. Cmd+H hides the app on a
+    //: Mac, so Cmd+Option+F, VS Code's Mac chord, does the same (audit 1028 D31).
+    { key: "Mod-h", run: () => docOpenReplace() },
+    { key: "Mod-Alt-f", run: () => docOpenReplace() },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).

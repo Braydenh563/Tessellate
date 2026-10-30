@@ -70,27 +70,27 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | new | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
-| 67 | S27 | med | no backlinks panel in the note editor | new | M |
+| 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |
 | 68 | S28 | med | no wiki-style [[ ]] autocomplete in notes | docs/roadmap/BACKLOG.md:3124 | M |
 | 69 | S29 | med | no note templates | docs/roadmap/BACKLOG.md:2928 | M |
-| 70 | S30 | med | no pin-to-top for notes in the list | new | M |
+| 70 | S30 | med | no pin-to-top for notes in the list | fixed (already built; reconciled 2026-10-30) | M |
 | 71 | S31 | med | no bulk move or bulk tag from the selection bar | new | M |
 | 72 | S32 | med | no Trash view with restore, existing state unverified | docs/roadmap/WORLD_CLASS_PLAN.md:693 | M |
 | 73 | S33 | med | no saved searches or smart folders | docs/roadmap/WORLD_CLASS_PLAN.md:680 | M |
-| 74 | S34 | med | no single-note export from the overflow menu | new | M |
-| 75 | S35 | med | no scheduled automatic backup or last-backup status | new | M |
+| 74 | S34 | med | no single-note export from the overflow menu | fixed (already built; reconciled 2026-10-30) | M |
+| 75 | S35 | med | no scheduled automatic backup or last-backup status | fixed (already built; reconciled 2026-10-30) | M |
 | 76 | S36 | med | import does not preview what it will create | new | M |
-| 77 | S47 | med | no keyboard j/k movement in the notes list | new | S |
-| 78 | S48 | med | no tag rename or merge in the tags UI | new | M |
-| 79 | S49 | med | no note version history view | new | L |
+| 77 | S47 | med | no keyboard j/k movement in the notes list | fixed (already: arrow keys, Home, End and Enter walk the list; reconciled 2026-10-30) | S |
+| 78 | S48 | med | no tag rename or merge in the tags UI | fixed (already built; reconciled 2026-10-30) | M |
+| 79 | S49 | med | no note version history view | fixed (already built; reconciled 2026-10-30) | L |
 | 80 | S50 | med | no search operators such as tag: and before: | docs/roadmap/WORLD_CLASS_PLAN.md:677 | M |
 | 81 | B12 | med | same keys mean different things by mode | new | M |
-| 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | new | S |
+| 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | new | S |
-| 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | new | S |
+| 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | new | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
-| 87 | D34 | med | autosave failure is tiny status text, no banner or retry | new | S |
+| 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | new | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | new | S |
@@ -100,7 +100,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 94 | E38 | med | no-model Models page hides suggested cards and pickers | new | M |
 | 95 | E40 | med | two search-by-meaning toasts stack over Settings | new | S |
 | 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
-| 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | new | S |
+| 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | new | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
 | 100 | S15 | med | only one forced-colors rule in the whole CSS | new | M |
@@ -109,16 +109,16 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 103 | S21 | med | select button folded away at narrow widths | new | M |
 | 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
 | 105 | S23 | med | palette lacks recent-first order and shortcut hints | new | S |
-| 106 | S24 | med | no in-app cheat sheet reached with the ? key | new | S |
+| 106 | S24 | med | no in-app cheat sheet reached with the ? key | fixed (already built; reconciled 2026-10-30) | S |
 | 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | new | S |
 | 108 | S39 | med | focus ring contrast inconsistent across custom controls | new | S |
 | 109 | S40 | med | icon-only buttons rely on title for accessible names | docs/roadmap/UI_MODERNISATION_PLAN.md:1334 | S |
 | 110 | S41 | med | touch targets under 24px in dense rows | new | S |
 | 111 | S42 | med | first run has no sample notes, lists look empty | docs/roadmap/BACKLOG.md:1807 | M |
 | 112 | S43 | med | help split across popovers, Guide and Settings | new | S |
-| 113 | S45 | med | no palette deep link to each Settings pane | new | S |
-| 114 | S46 | med | no back stack after following a note link | new | M |
-| 115 | S51 | med | dashboard has no resume where you left off | new | S |
+| 113 | S45 | med | no palette deep link to each Settings pane | fixed (already built; reconciled 2026-10-30) | S |
+| 114 | S46 | med | no back stack after following a note link | fixed (already: back and forward in the status bar, nav-history.js; reconciled 2026-10-30) | M |
+| 115 | S51 | med | dashboard has no resume where you left off | fixed (already built; reconciled 2026-10-30) | S |
 | 116 | S52 | med | graph has no find box on the main bar | new | S |
 | 117 | S53 | med | timeline and notes list page separately | new | M |
 | 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
@@ -171,7 +171,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 165 | E44 | med | chatSendTurn is one 1,164-line function | new | L |
 | 166 | E45 | med | five AI surfaces with separate stream consumers | new | L |
 | 167 | S17 | med | four copies of the relative-time helper | new | S |
-| 168 | S20 | med | cache prefix still carries the old product name | new | S |
+| 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
 | 169 | S44 | med | mixed button heights and radii across toolbars | new | M |
 | 170 | U25 | med | collapse chevrons overlap node edges | new | S |
 | 171 | U30 | med | editor toolbar heights inconsistent | new | S |
@@ -182,13 +182,13 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 176 | K15 | low | xmind import trusts header file_size before reading member | new | S |
 | 177 | K16 | low | workspace isolation is an ORM filter, not a boundary | new | S |
 | 178 | E43 | low | tools execute runs any tool after confirm, unsigned | new | M |
-| 179 | B22 | low | eight console calls are the only error surfacing | new | S |
+| 179 | B22 | low | eight console calls are the only error surfacing | fixed (this batch) | S |
 | 180 | B25 | low | minimap redraws all items on any render | docs/roadmap/WHITEBOARD_PLAN.md:1219 | M |
 | 181 | B28 | low | image paste lacks URL and HTML paste and size cap | new | S |
 | 182 | B29 | low | inline rich text in map topics unverified | new | S |
 | 183 | B33 | low | 24 NaN guards suggest NaN has leaked before | new | M |
 | 184 | D35 | low | openDocument silently returns when the fetch fails | new | S |
-| 185 | D36 | low | failed DELETE in docDropIfUntouched is swallowed | new | S |
+| 185 | D36 | low | failed DELETE in docDropIfUntouched is swallowed | fixed (this batch) | S |
 | 186 | D37 | low | anonymous observers never disconnected | docs/roadmap/DOCUMENTS_PLAN.md:1500 | S |
 | 187 | D38 | low | run heartbeat interval created after await, can outlive run | new | S |
 | 188 | D41 | low | selection-only word count missing | docs/roadmap/UI_MODERNISATION_PLAN.md:1482 | S |
@@ -196,10 +196,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 190 | D43 | low | no real-time collaboration or presence | docs/roadmap/MINDMAP_PLAN.md:535 | L |
 | 191 | D44 | low | no page breaks, headers, footers or margin preview | new | M |
 | 192 | D52 | low | code editor has no tabs, workspace or split panes | new | L |
-| 193 | K18 | low | put_thumbnail is async with sync DB and file write | new | S |
-| 194 | K20 | low | malformed folder sidecar raises KeyError and aborts import | new | S |
-| 195 | K21 | low | DDL default with an apostrophe breaks startup | new | S |
-| 196 | K22 | low | server-local date.today used for streak, not user_now | new | M |
+| 193 | K18 | low | put_thumbnail is async with sync DB and file write | fixed (this batch) | S |
+| 194 | K20 | low | malformed folder sidecar raises KeyError and aborts import | fixed (already: a record with no file is skipped; reconciled 2026-10-30) | S |
+| 195 | K21 | low | DDL default with an apostrophe breaks startup | fixed (this batch) | S |
+| 196 | K22 | low | server-local date.today used for streak, not user_now | fixed in part (journal streak and utilities; composer.py's own date.today() calls are the composer agent's) | M |
 | 197 | K23 | low | token and ticket dicts mutated from several threads | new | S |
 | 198 | K38 | low | media-link tickets reusable and in URL query string | new | S |
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
@@ -224,7 +224,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 218 | B27 | low | resize and rotation handle hit size unverified | docs/roadmap/WHITEBOARD_PLAN.md:1698 | S |
 | 219 | B34 | low | empty-board hint lost after dismiss, no inline cue | new | S |
 | 220 | D39 | low | typo autocorrect rewrites silently with a 5s undo only | new | S |
-| 221 | D40 | low | no selection word count in the status bar | new | S |
+| 221 | D40 | low | no selection word count in the status bar | fixed (already: the caret line counts selected words; reconciled 2026-10-30) | S |
 | 222 | D48 | low | controls hidden in dock-menu flyouts reparented to body | new | M |
 | 223 | D53 | low | code run output truncated silently at 4,000 chars | new | S |
 | 224 | E37 | low | AI status control reads as an error, red circle with x | new | S |
@@ -242,7 +242,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 236 | S55 | low | settings labels mix case against sentence case | new | S |
 | 237 | S56 | low | toast stack covers bottom nav at phone width | new | S |
 | 238 | S58 | low | modal return-focus target is not consistent | new | S |
-| 239 | S59 | low | no skip link to main content | new | S |
+| 239 | S59 | low | no skip link to main content | fixed (already built; reconciled 2026-10-30) | S |
 | 240 | S60 | low | reduced-motion not applied to every animation | docs/roadmap/BACKLOG.md:1290 | S |
 | 241 | S61 | low | muted text contrast near threshold in dark theme | new | S |
 | 242 | S62 | low | palette empty state offers no suggestion | new | S |
@@ -270,7 +270,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 264 | B32 | low | whiteboard-map.js rAF and timers never cancelled | new | S |
 | 265 | B38 | low | single-object PUTs may still serve multi-select nudge | new | S |
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
-| 267 | K32 | low | tabs poll all reminders every minute for a due check | new | S |
+| 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
 | 268 | K33 | low | token sweep runs on every authenticated request | new | S |
 | 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
 | 270 | K35 | low | startup PRAGMA table_info for every table each launch | new | S |
@@ -290,7 +290,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 284 | K27 | low | dead routes with no frontend caller | new | S |
 | 285 | K28 | low | duplicated containment helpers and LOOPBACK_HOSTS | new | S |
 | 286 | K29 | low | async routes mixed with sync, blocking calls stall SSE | new | S |
-| 287 | K37 | low | no ANALYZE or PRAGMA optimize | new | S |
+| 287 | K37 | low | no ANALYZE or PRAGMA optimize | fixed (this batch) | S |
 | 288 | S57 | low | floating New note button overlaps content at 390px | new | S |
 | 289 | S66 | low | 27 global scripts with no duplicate-global lint | new | M |
 | 290 | S67 | low | duplicate plural and count helpers across views | new | S |
