@@ -40,7 +40,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
 | 35 | B14 | med | map branch export and board export use two dialogs | fixed | M |
 | 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | fixed | L |
-| 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
+| 37 | D9 | med | edit-conflict modal steals focus during autosave | fixed (this commit) | M |
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
@@ -148,8 +148,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
 | 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
 | 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
-| 145 | D19 | med | docText toString called 35 times, each O(n) | fixed (this commit) | M |
-| 146 | D20 | med | five whole-document renders per pause even when hidden | fixed (this commit) | M |
+| 145 | D19 | med | docText toString called 35 times, each O(n) | fixed (7add0bf) | M |
+| 146 | D20 | med | five whole-document renders per pause even when hidden | fixed (7add0bf) | M |
 | 147 | D21 | med | four document-wide listeners run on every tab | fixed (already: 4000 mouseover + 2000 click events on the dashboard tab cost 5.5 ms and 24 ms in all of documents.js, 1.4 and 12 microseconds per event) | S |
 | 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | new | L |
 | 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |

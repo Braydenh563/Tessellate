@@ -1038,7 +1038,10 @@ async function openDocument(id) {
   //: holds that document (see `docRememberPositionNow`).
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
-  if (docDirty) await saveDocument({ silent: true });
+  //: A document waiting on its conflict asks now (not silently): leaving is
+  //: the moment the answer is owed, and the banner is about to go.
+  if (docDirty) await saveDocument({ silent: !docConflictPending });
+  docConflictPending = null;
   await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
@@ -2216,6 +2219,7 @@ function markDocDirty() {
     return;
   }
   docDirty = true;
+  if (docConflictPending?.id === currentDoc.id) return;
   docSetStatusText($("doc-saved"), "Unsaved…");
   clearTimeout(docSaveTimer);
   // Autosave, but not on every keystroke, a pause is the natural moment.
@@ -2225,13 +2229,27 @@ function markDocDirty() {
 //: While the edit-conflict prompt is up, autosave waits for its answer
 //: rather than asking again every 1.2s of typing behind it.
 let docConflictOpen = false;
+//: **An autosave's conflict waits in the status line, not in a dialog** (audit
+//: 1028 D9). A silent save hit the modal in the middle of a sentence, which
+//: took the focus and sent the next keystrokes to it. Now the save stops, the
+//: status says the document changed in another window and offers "Resolve",
+//: and the dialog opens when asked for (or on an explicit save). `{ id,
+//: current }`: the other window's version, for the document it is about.
+let docConflictPending = null;
 
 //: One save at a time: a second PUT in flight carried the old base_hash (a
 //: false 409). One asked for meanwhile runs once after (audit 1028 D1).
 const docSaveQueue = { inFlight: null, again: null };
 
 async function saveDocument({ silent = false } = {}) {
+  if (docConflictPending && docConflictPending.id !== currentDoc?.id) docConflictPending = null;
   if (!currentDoc || docConflictOpen) return;
+  //: A save asked for by hand is the answer the banner waits for: it opens the
+  //: dialog. The autosave stays quiet.
+  if (docConflictPending) {
+    if (!silent) await docResolveConflict(docConflictPending.current, docText(), false, false);
+    return;
+  }
   if (docSaveQueue.inFlight) {
     docSaveQueue.again = { silent: silent && (docSaveQueue.again ? docSaveQueue.again.silent : true) };
     await docSaveQueue.inFlight;
@@ -2324,8 +2342,17 @@ async function docSaveOnce(silent) {
 //: as every content change does). "Take theirs" puts the other text in the
 //: editor as saved. No answer leaves the text here, unsaved, and the next
 //: edit asks again.
-async function docResolveConflict(current, mine, silent) {
+async function docResolveConflict(current, mine, silent, fromSave = true) {
   $("doc-saved").textContent = "Not saved";
+  if (silent) {
+    docConflictPending = { id: current.id, current };
+    keepDocEditLocally();
+    const saved = $("doc-saved");
+    saved.textContent = "Changed in another window. ";
+    saved.append(smallButton("Resolve", "Compare the two versions, keep yours or take the other window's", () => docResolveConflict(current, docText(), false, false)));
+    return;
+  }
+  docConflictPending = null;
   docConflictOpen = true;
   let answer = null;
   try {
@@ -2336,8 +2363,10 @@ async function docResolveConflict(current, mine, silent) {
   if (!currentDoc || currentDoc.id !== current.id) return;
   if (answer === "mine") {
     currentDoc = { ...currentDoc, content_hash: current.content_hash };
-    //: Directly, not through saveDocument: this runs inside the save in flight.
-    await docSaveOnce(silent);
+    //: Directly, not through saveDocument, when this runs inside the save in
+    //: flight; from the banner there is none, so the queue is the way in.
+    if (fromSave) await docSaveOnce(silent);
+    else await saveDocument({ silent: false });
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
     //: The title box too (audit 1028 D10): left on the old title, the next

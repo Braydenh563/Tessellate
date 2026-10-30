@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: an autosave that finds the document changed in another window no longer opens a dialog over the sentence being typed (focus stayed in the editor): the status line says "Changed in another window" with a Resolve button, autosave waits, and the dialog opens from Resolve, from Ctrl+S or on leaving the document (audit 1028 D9).
 - Documents: the editor's text is joined once per version, not 24 times per typed character (3 joins per character on a 20k-word document, was 24), and the stats, outline, counts, comments and properties pass skips while the Documents tab is hidden and runs once on return (0 renders per hidden change, was 5 costing 65 ms); the four document-wide listeners measured at 7 microseconds per event across all of documents.js on another tab, so they stay (audit 1028 D19, D20, D21).
 - Chat: /categories and /tags draw the per-category or per-tag bar chart, as the same question in words does (INBOX 1333 b).
 - Accessibility: the widget filter, the always-do field and the custom rewrite field have names, not just placeholders, and a lint keeps every placeholder field labelled (audit 1028 S13).
