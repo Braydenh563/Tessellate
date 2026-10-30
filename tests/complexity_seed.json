@@ -154,7 +154,7 @@
  "src/tessellate/api/routes_whiteboard.py::list_boards": 20,
  "src/tessellate/api/routes_whiteboard.py::move_map_nodes": 21,
  "src/tessellate/api/routes_whiteboard.py::rename_board": 16,
- "src/tessellate/core/backup_bundle.py::restore_zip": 18,
+ "src/tessellate/core/backup_bundle.py::restore_zip": 16,
  "src/tessellate/core/docmeta.py::properties": 19,
  "src/tessellate/core/docview.py::_HtmlToMarkdown.handle_starttag": 24,
  "src/tessellate/core/docview.py::_extract_converted": 20,
