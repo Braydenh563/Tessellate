@@ -136,7 +136,7 @@ Run targeted tests against the base branch first.
 
 Quality first; never downgrade for quality-sensitive work. Cost is turns times
 context: batch tool calls, grep then read line ranges, no screenshots where a
-number will do, a fresh session per milestone, compact past 200k per turn;
+number will do, a fresh session per milestone, compact past 150k per turn (the dash budget);
 an idle gap over an hour rewrites the cache (avoid idle check-ins).
 `python scripts/usage_report.py` prints a session's split.
 
