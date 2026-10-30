@@ -6334,3 +6334,20 @@ def test_the_notes_rail_resize_recipe_is_in_the_index() -> None:
     assert "`notesRailResize`" in design and "`grid-auto-columns`" in design
     js = (ROOT / "frontend" / "js" / "notes-rail-spy.js").read_text(encoding="utf-8")
     assert "NOTES_RAIL_STEP = 16" in js and '"Home"' in js and "(pointer: fine) and (min-width: 600px)" in js
+
+
+def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
+    """INBOX 1467 parts 1 and 2: one reference shape, one reorder engine, none in the boot."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`objRefFromCard(el)`" in design and "`obj-reorder.js`" in design
+    js = ROOT / "frontend" / "js"
+    ref = (js / "obj-ref.js").read_text(encoding="utf-8")
+    assert "function objRefFromCard" in ref and "function objRender" in ref
+    drag = (js / "obj-drag.js").read_text(encoding="utf-8")
+    assert "OBJ_DRAG_PX = 5" in drag and "OBJ_DRAG_MS = 150" in drag and '"Escape"' in drag
+    reorder = (js / "obj-reorder.js").read_text(encoding="utf-8")
+    assert "offerUndo" in reorder and "altKey" in reorder
+    css = (ROOT / "frontend" / "css" / "objmove-lazy.css").read_text(encoding="utf-8")
+    assert ".obj-gap" in css and ".obj-ghost" in css
+    edge = (js / "drag-edge.js").read_text(encoding="utf-8")
+    assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge

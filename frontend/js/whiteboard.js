@@ -24323,6 +24323,8 @@ const BOARD_SORTS = {
   az: (a, b) => String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" }),
   za: (a, b) => String(b.title || "").localeCompare(String(a.title || ""), undefined, { sensitivity: "base" }),
   fullest: (a, b) => boardItemCount(b) - boardItemCount(a),
+  //: Looked up when it runs: library.js, which defines `libraryCustomCmp`, is the last file of the bundle.
+  custom: (a, b) => libraryCustomCmp("boards", (board) => `${board.type === "map" ? "map" : "board"}:${board.id}`)(a, b),
 };
 
 const BOARD_SORT_KEY = "library-boards-sort";
@@ -24521,6 +24523,8 @@ function drawLibraryBoardsGallery(listed) {
     const card = document.createElement("article");
     card.className = "library-card library-board-card";
     card.wbBoard = board; // the tick's board (`syncLibraryBoardsTicks`)
+    //: What a drag, a copy and the tray read the card as (obj-ref.js).
+    Object.assign(card.dataset, { obj: `${board.type === "map" ? "map" : "board"}:${board.id}`, objTitle: board.title });
     const open = () => openWhiteboardBoard(board.id);
     card.addEventListener("click", open);
 

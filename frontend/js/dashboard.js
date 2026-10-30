@@ -3001,6 +3001,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
   ul.className = "dash-list";
   for (const entry of entries) {
     const li = document.createElement("li");
+    li.dataset.obj = `note:${entry.id}`;
     // The wiki-link unwrap notePreviewText also did, renderInlineMarkdown
     // itself doesn't know `[[...]]`, only the full note-body renderer does.
     //: A `---` properties block is never the note's words (stripFrontmatter).
@@ -4162,8 +4163,9 @@ wireBackdropClose($("features-overlay"), () => closeFeatures());
 // "no data".
 
 /** A row that opens something other than a note, styled like `.dash-list`. */
-function dashActionRow(ul, { title, meta, onOpen, hint, thumb, chip = null }) {
+function dashActionRow(ul, { title, meta, onOpen, hint, thumb, chip = null, obj = "" }) {
   const li = document.createElement("li");
+  if (obj) li.dataset.obj = obj;
   if (thumb) {
     li.classList.add("dash-has-thumb");
     li.appendChild(thumb);
@@ -4491,6 +4493,7 @@ async function renderDocumentsWidget(body) {
     const words = doc.words ? `${doc.words.toLocaleString()} word${doc.words === 1 ? "" : "s"}` : "Empty";
     dashActionRow(ul, {
       title: doc.title || "Untitled document",
+      obj: `document:${doc.id}`,
       meta: `${words} · ${relativeTime(doc.updated_at)}`,
       hint: "Open this document",
       onOpen: () => {

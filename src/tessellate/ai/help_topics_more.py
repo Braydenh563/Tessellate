@@ -1940,6 +1940,23 @@ MORE_TOPICS.extend(
             "badge": {"label": "Appearance", "section": "appearance"},
         },
         {
+            "id": "object-move",
+            "keywords": (
+                "reorder", "drag to reorder", "custom order", "move a card", "change the order",
+                "put in order", "alt arrow", "drag a note", "drag a document", "drag a board",
+                "drag an image", "sort my own way",
+            ),
+            "body": (
+                "Drag a card to put a list in your own order: Notes, and Library's "
+                "Documents, Boards and maps, Images and Files. Press and hold a card, "
+                "then move; a dashed gap shows where it will land. The sort then reads "
+                "Custom order. Drop it where it started, or press Escape, and nothing "
+                "changes. The toast has Undo. From the keyboard, focus a card and press "
+                "Alt+Up or Alt+Down to move it one place."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "movable-panels",
             "keywords": (
                 "move a panel", "move a popup", "drag a panel", "drag a popup",
@@ -2430,6 +2447,7 @@ TOPIC_META: dict[str, dict] = {
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
+    "object-move": {"title": "Putting a list in your own order", "path": "Notes tab, or Library tab, drag a card"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},
     "model-downloads": {"title": "Downloading a model", "path": "Settings, Models, Suggested downloads"},
@@ -2472,7 +2490,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
-        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
+        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "object-move", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",

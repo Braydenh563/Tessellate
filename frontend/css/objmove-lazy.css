@@ -1,0 +1,47 @@
+/* objmove-lazy.css: the drag ghost, the reorder gap, drop outlines and the
+   tray (INBOX 1467). Lazy with obj-ref.js. Motion is on the --ui-* tokens, so
+   the Interface animations switch is the only thing that stills it. */
+
+.obj-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3000;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: min(16rem, 60vw);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg-opaque);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  pointer-events: none;
+  will-change: transform;
+}
+.obj-ghost span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The slot a dragged card would land in: the card's own size, dashed. */
+.obj-gap {
+  box-sizing: border-box;
+  min-height: var(--space-6);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  list-style: none;
+}
+.obj-lifted {
+  display: none !important;
+}
+
+html.obj-dragging,
+html.obj-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
