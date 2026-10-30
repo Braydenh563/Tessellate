@@ -367,7 +367,7 @@ FACETS: tuple[tuple[str, re.Pattern, tuple[tuple[str, re.Pattern], ...]], ...] =
 )
 
 _DAYS_PLURAL = re.compile(r"\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?(?:\s+(?:and|or|,)\s+|,\s*)?)+\b", re.I)
-_RELATIVE = re.compile(r"\s*\b(?:before |by |until )?(?:next|this|last) (?:week|month|weekend)\b", re.I)
+_RELATIVE = re.compile(r"(?<!\s)\s*\b(?:before |by |until )?(?:next|this|last) (?:week|month|weekend)\b", re.I)
 _PREFIX = re.compile(r"^([^:.!?\n]{2,34}):\s+(\S.*)$")
 _TIME_LABEL = re.compile(r"^((?:this|next|last) (?:semester|term|year|month|week|weekend)),?\s+(.+)$", re.I)
 _ACTION = re.compile(r"(?:^|,\s*|;\s*|\band\s+)((?:ask|call|email|text|book|buy|order|read|check|remember to|pay|send|bring)\b[^.;,]*)$", re.I)
@@ -850,7 +850,7 @@ _UNDATED = date(2000, 1, 1)
 #: 2026-10-11: "You just bought a new gaming mouse ... haha" is "you bought a
 #: gaming mouse"): laughter, emoji, and "just" or "literally" before a verb
 #: in the past ("just bought"), never "just two left", which is "only".
-_LAUGHED = re.compile(r"[\s,]*\b(?:(?:ha|he){2,}h?|lo+l+|lmf?a+o+|rofl|xd+)\b[.!]*", re.I)
+_LAUGHED = re.compile(r"(?<![\s,])[\s,]*\b(?:(?:ha|he){2,}h?|lo+l+|lmf?a+o+|rofl|xd+)\b[.!]*", re.I)
 _EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u200D]+")
 _JUST = re.compile(
     r"\b(?:just|literally|finally just)\s+(?=(?:\w+ed|bought|got|went|made|found|sold|paid|spent|won|lost|had|took|saw|met|"
@@ -1587,7 +1587,7 @@ _PLACE_NOUN = re.compile(r"^(library|gym|pool|office|park|bus|train|cafe|range|s
 _LIFT = re.compile(r"^(squats?|bench(?: press(?:es)?)?|deadlifts?|rows?|overhead press(?:es)?|presses|curls?|lunges?)\s+(up to\s+)?(\d.+)$", re.I)
 _LIFTED = {"squat": "squatted", "bench": "benched", "deadlift": "deadlifted", "row": "rowed", "overhead": "overhead pressed", "press": "pressed", "curl": "curled", "lunge": "lunged"}
 _BODY_PART = re.compile(r"^(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
-_PLANNED_FOR = re.compile(r"^(.+?)\s+(planned|booked|set|moved|pencilled in)\s+(for|to)\s+(.+)$", re.I)
+_PLANNED_FOR = re.compile(r"^\s*(\S+(?:\s+\S+)*?)\s+(planned|booked|set|moved|pencilled in)\s+(for|to)\s+(.+)$", re.I)
 _WEEKDAY_WORD = re.compile(r"\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b")
 
 
@@ -1974,7 +1974,7 @@ def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     return {"kind": "reminder", "label": PHRASES["remind"].format(action=action), "text": action[0].upper() + action[1:]}
 
 
-_ON_DAY = re.compile(r"\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b", re.I)
+_ON_DAY = re.compile(r"(?<!\s)\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b", re.I)
 #: What makes an instruction a task rather than advice: a thing or person
 #: it is about ("the tutor", "my passport", "Daniel") or a day or number.
 _SPECIFIC_CASED = re.compile(r"(?<=\s)[A-Z][a-z]+")
@@ -2354,7 +2354,7 @@ _TRAINING = re.compile(r"^(?:push|pull|legs?|upper|lower|chest|back|arms?|should
 _REST = re.compile(r"^rest(?: days?)?$", re.I)
 
 
-_DAY_LINE = re.compile(r"^\s*[-*]?\s*([A-Za-z][\w ]{0,20}?)\s*:\s*(\S.*)$")
+_DAY_LINE = re.compile(r"^\s*(?:[-*]\s*)?([A-Za-z][\w ]{0,20}?)\s*:\s*(\S.*)$")
 
 
 def _split_days(content: str) -> tuple[dict[str, list[str]], bool]:
@@ -2618,7 +2618,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
 #: its day, against "when are my uni days" (a habit, said as its days).
 _WHEN_DID = re.compile(r"^\s*when (?:did|was|were|have|had|do i|i)\b", re.I)
 #: "have bought", "'ve got": said in the past once its day leads.
-_PERFECT = re.compile(r"(?:'ve|\s+have|\s+has)\s+(?=(?:\w+ed|bought|got|gone|made|found|sold|paid|spent|won|lost|had|taken|seen|met|left|done|read|heard|sent|built|kept|written)\b)", re.I)
+_PERFECT = re.compile(r"(?:'ve|(?<!\s)\s+have|(?<!\s)\s+has)\s+(?=(?:\w+ed|bought|got|gone|made|found|sold|paid|spent|won|lost|had|taken|seen|met|left|done|read|heard|sent|built|kept|written)\b)", re.I)
 _PARTICIPLE = {"gone": "went", "taken": "took", "seen": "saw", "done": "did", "written": "wrote"}
 
 

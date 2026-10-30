@@ -67,7 +67,7 @@ _REFUND = re.compile(r"\brefund\w*\b", re.I)
 _STILL_DUE = re.compile(r"\b(?:due|unpaid|balance|haven't paid|not paid)\b", re.I)
 #: A note is a spending note when its title or text says so.
 _SPENDING = re.compile(r"\b(?:spen[dt]\w*|expenses?|costs?|paid|bought|purchases?|bills?|receipts?)\b", re.I)
-_DATE_TAIL = re.compile(r"\s+(?:on|in|at|from|for)\s+.*$", re.I)
+_DATE_TAIL = re.compile(r"(?<!\s)\s+(?:on|in|at|from|for)\s+.*$", re.I)
 
 
 class Item(NamedTuple):
