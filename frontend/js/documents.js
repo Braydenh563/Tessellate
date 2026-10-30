@@ -3073,6 +3073,15 @@ const DOC_COMMANDS = [
     code: true, run: () => docGoToDefinition() },
   { id: "references", icon: "ph:list-magnifying-glass", label: "List every use of the name at the caret", keys: "Shift+F12",
     code: true, run: () => docShowReferences() },
+  //: Every find chord named in one list, since Ctrl+G reads by file type
+  //: (VS Code's Go to line in code, find next in prose, where F3 does it
+  //: too and is the key listed; audit 1028 D32).
+  { id: "replace-here", icon: "ph:swap", label: "Find and replace in this document", keys: "Ctrl+H",
+    run: () => docOpenReplace() },
+  { id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",
+    code: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
+  { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
+    prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
     run: () => docFindInDocuments() },
   { id: "replace-documents", icon: "ph:swap", label: "Replace in every document", keys: "none",

@@ -7,7 +7,7 @@ function nightKindWords(kind, n) {
 
 function nightRunSummary(run) {
   const read = `Read ${nounCount(run.scanned, "note")}`;
-  const when = dashRelativeTime(run.finished_at || run.started_at);
+  const when = relativeTime(run.finished_at || run.started_at);
   const stopped = run.stopped_reason === "budget" ? "stopped at its budget, carries on next time" : "";
   return [read, when, stopped].filter(Boolean).join(" · ");
 }
@@ -236,7 +236,8 @@ async function renderNightCard(body) {
     counts = card.previous.counts || {};
     const earlier = document.createElement("p");
     earlier.className = "muted";
-    earlier.textContent = `Nothing new last time. ${dashRelativeTime(shown.finished_at || shown.started_at)}, it found:`;
+    const ago = relativeTime(shown.finished_at || shown.started_at);
+    earlier.textContent = `Nothing new last time. ${ago.charAt(0).toUpperCase()}${ago.slice(1)}, it found:`;
     body.appendChild(earlier);
   }
   const kinds = document.createElement("ul");

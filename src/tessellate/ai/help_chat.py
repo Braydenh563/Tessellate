@@ -1861,7 +1861,7 @@ HELP_TOPICS.extend(
                 "Tab and Shift+Tab "
                 "indent and outdent, Ctrl+/ comments the selection, Alt+Up / "
                 "Alt+Down moves the block at the caret, and typing / opens "
-                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter next, "
+                "the blocks menu. Ctrl+F finds and Ctrl+H (Mac: Cmd+Option+F) replaces (Enter or F3 next, "
                 "Shift+Enter previous, Esc closes), Ctrl+Shift+F finds in every "
                 "document, and Replace in every document (the ⋯ menu or Ctrl+K) replaces in "
                 "all in one undo step. Views: Edit, where Live renders as you write, Source "

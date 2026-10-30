@@ -32,9 +32,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 26 | K5 | med | installer run silently with no signature or pinned hash | docs/roadmap/BACKLOG.md:398 | M |
 | 27 | K6 | med | SearXNG installed from unpinned master tarball | fixed in part (commit and tree digest pinned; requirements not hash-pinned) | M |
 | 28 | K19 | med | restore disposes the engine with jobs in flight | fixed 2026-10-30: restores hold the job pool, 409 while a job still runs | M |
-| 29 | E42 | med | pasted note text reaches write tools with no confirm | new | M |
+| 29 | E42 | med | pasted note text reaches write tools with no confirm | fixed (1029 H2: edit_note parks via CHANGE_TOOLS) | M |
 | 30 | E66 | med | delete all notes silently reduces to one match | fixed | S |
-| 31 | E70 | med | regenerate and resend repeat web search and write tools | new | M |
+| 31 | E70 | med | regenerate and resend repeat web search and write tools | fixed (E2: Run again confirm on a writing answer) | M |
 | 32 | B7 | med | delete handlers recreated each render and stashed in module refs | new | M |
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
@@ -88,7 +88,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | new | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
-| 85 | D32 | med | Mod-g means go to line in code and find-next in prose | new | S |
+| 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
@@ -104,7 +104,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | new | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
 | 100 | S15 | med | only one forced-colors rule in the whole CSS | new | M |
-| 101 | S18 | med | support email hard-coded in toast code | new | S |
+| 101 | S18 | med | support email hard-coded in toast code | fixed (one string, tests/test_support_email.py keeps it equal) | S |
 | 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | fixed (this batch) | S |
 | 103 | S21 | med | select button folded away at narrow widths | new | M |
 | 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
@@ -135,13 +135,13 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 129 | U26 | med | template strip clipped at right edge | new | S |
 | 130 | U27 | med | layout menu is text-only, two clicks | new | M |
 | 131 | U28 | med | font size stepper mixes 22px and M | new | S |
-| 132 | U29 | med | two New document buttons on the empty state | new | S |
+| 132 | U29 | med | two New document buttons on the empty state | fixed | S |
 | 133 | U31 | med | formatting toolbar hidden by default | new | S |
 | 134 | U32 | med | export three clicks deep in More menu | new | S |
 | 135 | U33 | med | new document prompt lacks heading and placeholder | new | S |
 | 136 | U34 | med | titled blank creation leaves a stray empty document | new | M |
 | 137 | U35 | med | small targets in document list and header | new | S |
-| 138 | U36 | med | low contrast on doc AI label and submenu arrow | new | S |
+| 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |
 | 139 | U37 | med | disabled Run reason link is low contrast | new | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | new | M |
@@ -170,7 +170,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 164 | K25 | med | 18 functions over 150 lines, _start_tray at 346 | new | L |
 | 165 | E44 | med | chatSendTurn is one 1,164-line function | new | L |
 | 166 | E45 | med | five AI surfaces with separate stream consumers | new | L |
-| 167 | S17 | med | four copies of the relative-time helper | new | S |
+| 167 | S17 | med | four copies of the relative-time helper | fixed | S |
 | 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
 | 169 | S44 | med | mixed button heights and radii across toolbars | new | M |
 | 170 | U25 | med | collapse chevrons overlap node edges | new | S |

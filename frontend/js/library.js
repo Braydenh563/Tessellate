@@ -3334,6 +3334,9 @@ async function renderLibraryDocuments() {
   list.replaceChildren();
   const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
   empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
+  //: One New document at a time: the empty state's own button is the action
+  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
+  document.getElementById("library-docs-new")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
