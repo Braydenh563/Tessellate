@@ -1351,6 +1351,8 @@ def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> d
         return _plan_meeting(parsed)
     if intent in ("tag", "move"):
         return _plan_tag_or_move(session, parsed, note_ids, intent)
+    if _deletes_all(parsed):
+        return _plan_delete_all(session, parsed["about"])
     if intent in ("delete", "pin", "unpin", "rename", "append", "link", "unlink"):
         return _plan_one(session, parsed, note_ids)
     if intent == "untag":
@@ -1461,6 +1463,28 @@ def appended(content: str, text: str) -> str:
     if _BULLET_LINE.match(last):
         return f"{body}\n- {item}"
     return f"{body}\n\n{text}"
+
+
+def _deletes_all(parsed: dict) -> bool:
+    """"delete all notes about Z" or "delete my Z notes": plural, by subject."""
+    return parsed["intent"] == "delete" and bool(parsed.get("about")) and parsed.get("single") is False
+
+
+def _plan_delete_all(session: Session, about: str) -> dict:
+    """"delete all notes about Z": every match goes on the card, counted, so
+    "all" is never quietly the one best match (audit 1028 E66)."""
+    found = _notes_about(session, about, single=False)
+    if not found:
+        return {"line": _which_note(about)}
+    ok, skipped = _split_allowed(found)
+    if not ok:
+        return {"line": summarise_done([], skipped)}
+    steps = [{"name": "delete_note", "arguments": {"note_id": e.id}} for e in ok]
+    if len(ok) == 1:
+        label = f"Move the only note about “{about}”, “{_title(ok[0])}”, to the bin"
+    else:
+        label = f"Move the {len(ok)} notes about “{about}” to the bin"
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
 
 
 def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:

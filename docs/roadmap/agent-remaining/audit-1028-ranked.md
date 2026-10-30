@@ -33,7 +33,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 27 | K6 | med | SearXNG installed from unpinned master tarball | fixed in part (commit and tree digest pinned; requirements not hash-pinned) | M |
 | 28 | K19 | med | restore disposes the engine with jobs in flight | fixed 2026-10-30: restores hold the job pool, 409 while a job still runs | M |
 | 29 | E42 | med | pasted note text reaches write tools with no confirm | new | M |
-| 30 | E66 | med | delete all notes silently reduces to one match | new | S |
+| 30 | E66 | med | delete all notes silently reduces to one match | fixed | S |
 | 31 | E70 | med | regenerate and resend repeat web search and write tools | new | M |
 | 32 | B7 | med | delete handlers recreated each render and stashed in module refs | new | M |
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
