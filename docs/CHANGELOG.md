@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "what does Priya do" and "what is Tom's job" lead with the sentence that says the work; "goals for Q1" gives Q1's whole list and leaves Q2 out.
 - Composer: words that shape a question ("how hot", "do I turn", "total", "him") are no longer named as missing from notes that answer it.
 - Composer: a typo no longer costs 4 to 10 seconds (the spelling candidates are cached and a comparison reads the question once).
 - Composer: "did I pay rent" beside "Remember to pay rent" says not yet; "did I write about X" finds the note that names X; "did I pay the phone bill" meets "Paid the phone bill"; a no is a sentence, not the question echoed back.

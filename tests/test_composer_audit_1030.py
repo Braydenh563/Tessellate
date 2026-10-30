@@ -93,3 +93,28 @@ def test_z16_a_questions_frame_words_are_never_called_missing(question, framed):
     assert {composer._stem(w) for w in framed} <= stems, stems  # noqa: SLF001
     #: The thing asked for after "what" is the topic, and stays checkable.
     assert composer._stem("hotel") not in composer._frame_stems("What hotel is near the Porto lodge?")  # noqa: SLF001
+
+
+_PEOPLE = [
+    {"id": i, "content": c, "created_at": _N - dt.timedelta(days=i), "updated_at": _N - dt.timedelta(days=i), "category": "Personal"}
+    for i, c in enumerate([
+        "# Tom\n\nMet Tom at the conference in June. He works on the data team at Atlas. Likes climbing.",
+        "# Priya\n\nOn 28 October we talked about the Atlas scope. Priya is the product lead for Atlas.",
+        "# Goals\n\nQ1: run a 10k, read 12 books. Q2: learn Spanish basics.",
+    ], 1)
+]
+
+
+@pytest.mark.parametrize(("question", "lead", "absent"), [
+    # Z12: the sentence that says the work leads.
+    ("what does Priya do", "Priya is the product lead for Atlas", None),
+    ("what is Tom's job", "He works on the data team at Atlas", None),
+    ("where does Tom work", "He works on the data team at Atlas", None),
+    # A labelled list keeps every item, and a named label keeps to itself.
+    ("what are my goals for Q1", "From your Goals note: run a 10k, read 12 books.", "Spanish"),
+    ("what are my Q2 goals", "From your Goals note: learn Spanish basics.", "10k"),
+])
+def test_z12_the_asked_property_or_label_leads(question, lead, absent):
+    said = composer_digest.answer(question, _PEOPLE, today=_N.date())["text"]
+    assert said.startswith(lead), said
+    assert absent is None or absent not in said, said

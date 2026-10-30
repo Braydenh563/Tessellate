@@ -998,12 +998,19 @@ def _only_the_subject(body: str, own: bool, subject: set[str] | None) -> bool:
     return bool(content) and all(any(composer._holds(st, {w}) for st in subject) for w in content)
 
 
+def _labelled_list(split: _Split) -> bool:
+    """"Q1: run a 10k, read 12 books" is a list under its label, and its last
+    item is one of the list, not a to-do split off it (audit 1030 C)."""
+    parts = [p for p in re.split(r",\s*", split.body) if p.strip()]
+    return bool(split.label) and len(parts) >= 2 and all(len(p.split()) <= 5 for p in parts)
+
+
 def _sentence_facts(view: composer.NoteView, s, split: _Split, note_label: str, subject: set[str] | None, pinned) -> list[Fact]:  # noqa: ANN001
     """The facts one sentence gives: its to-do split off, and a sentence of
     two halves ("booked, flights still to book") said as two."""
     if _only_the_subject(split.body, split.own, subject):
         return []
-    action, body = _action_of(split.body)
+    action, body = ("", split.body) if _labelled_list(split) else _action_of(split.body)
     pieces = _pieces_of(body)
     out: list[Fact] = []
     for n, (piece, fixed) in enumerate(pieces):
@@ -2562,7 +2569,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         words = set(f.sentence.words)
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: Between sources that say it equally well, the one the search ranked first.
-        return (bool(cue and cue.search(f.sentence.text)), hits, -f.view.rank, -f.sentence.order)
+        return (bool(cue and cue.search(f.sentence.text)), _label_asked(f.label, question), hits, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -2777,15 +2784,46 @@ def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[
 #: "Where is book club", "where do I keep the spare key": the sentence that
 #: names a place leads ("Meeting at Ana's"), not the first one that names
 #: the subject ("Next book is Piranesi"; 2026-10-30 sweep).
+#: "What does Priya do", "what is Tom's job": the sentence that says the
+#: work leads, not the note's first line (audit 1030 Z12).
+_ROLE_ASK = re.compile(
+    r"^\s*(?:what (?:does|did) [\w' -]+ do(?: for (?:a )?(?:living|work))?|what(?:'s| is) [\w' -]+'s? (?:job|role|work|title|job title|position|occupation)"
+    r"|where (?:does|did) [\w' -]+ work)\s*\??$",
+    re.I,
+)
+_ROLE_CUE = re.compile(r"\b(?:works?|worked|job|role|position|employed|is (?:a|an|the|our) )", re.I)
 _WHERE_ASK = re.compile(r"^\s*where(?:'s| is| are| was| were| do| does| did| can| should)?\b", re.I)
 _WHERE_CUE = re.compile(
     r"\b(?:at|in|on|near|under|behind|beside|inside|above|below|next to|outside|by)\s+(?:the\s+|my\s+|a\s+|an\s+|our\s+)?[\w'-]+", re.I
 )
 
 
+def _same_label_asked(lead: Fact, f: Fact, question: str) -> bool:
+    """Asked for "goals for Q1", a fact under Q2 is another answer."""
+    if not lead.label or f.label == lead.label:
+        return True
+    return not _label_asked(lead.label, question)
+
+
+def _label_asked(label: str, question: str) -> bool:
+    """The question names this label, "Q1" in "goals for Q1". Read from the
+    raw words: the subject reader takes "Q1" for a window of dates."""
+    asked = set(composer._words(question))  # noqa: SLF001
+    return bool(label) and {composer._stem(w) for w in label.split()} <= asked
+
+
+def _single_cue(kind: str, asked: str) -> re.Pattern | None:
+    """What the leading sentence should say: the kind's own cue, the work for
+    "what does Priya do", the place for a where."""
+    if kind in _SINGLE_CUES:
+        return _SINGLE_CUES[kind]
+    if _ROLE_ASK.match(asked):
+        return _ROLE_CUE
+    return _WHERE_CUE if _WHERE_ASK.match(asked) else None
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
-    cue = _SINGLE_CUES.get(kind) or (_WHERE_CUE if _WHERE_ASK.match(clean(question)) else None)
-    lead = _best(facts, question, cue)
+    lead = _best(facts, question, _single_cue(kind, clean(question)))
     if lead is None:
         return
     rest = [f for f in facts if f is not lead]
@@ -2800,7 +2838,7 @@ def _single(out: _Out, kind: str, question: str, members, facts, today: date) ->
         rest = _single_heading(out, lead, rest, today)
     else:
         _say_fact(out, lead, today, question)
-        rest = [f for f in rest if f.view.id == lead.view.id]
+        rest = [f for f in rest if f.view.id == lead.view.id and _same_label_asked(lead, f, question)]
     _lines(out, rest, LINES.get(kind, 2))
     _single_close(out, kind, rest, members, question)
 
