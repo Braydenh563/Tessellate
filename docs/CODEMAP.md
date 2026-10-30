@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7529, test files 1602, tests 13925, plan headings 987.
+Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7530, test files 1602, tests 13926, plan headings 989.
 
 ## Frontend functions (6880)
 
@@ -11598,7 +11598,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7529)
+## Backend modules (7530)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18479,20 +18479,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `strip_leftovers` | src/tessellate/core/backup.py:174 |
 | `verify_copy` | src/tessellate/core/backup.py:357 |
 
-### src/tessellate/core/backup_bundle.py (10)
+### src/tessellate/core/backup_bundle.py (11)
 
 | Name | File:line |
 |---|---|
-| `BundleError` | src/tessellate/core/backup_bundle.py:88 |
-| `_db_member` | src/tessellate/core/backup_bundle.py:60 |
-| `_nonce` | src/tessellate/core/backup_bundle.py:92 |
-| `_readable_preferences` | src/tessellate/core/backup_bundle.py:178 |
-| `_safe_target` | src/tessellate/core/backup_bundle.py:190 |
-| `build_zip` | src/tessellate/core/backup_bundle.py:145 |
-| `decrypt_file` | src/tessellate/core/backup_bundle.py:118 |
-| `encrypt_file` | src/tessellate/core/backup_bundle.py:96 |
-| `is_sealed` | src/tessellate/core/backup_bundle.py:113 |
-| `restore_zip` | src/tessellate/core/backup_bundle.py:201 |
+| `BundleError` | src/tessellate/core/backup_bundle.py:92 |
+| `_check_unpackable` | src/tessellate/core/backup_bundle.py:205 |
+| `_db_member` | src/tessellate/core/backup_bundle.py:64 |
+| `_nonce` | src/tessellate/core/backup_bundle.py:96 |
+| `_readable_preferences` | src/tessellate/core/backup_bundle.py:182 |
+| `_safe_target` | src/tessellate/core/backup_bundle.py:194 |
+| `build_zip` | src/tessellate/core/backup_bundle.py:149 |
+| `decrypt_file` | src/tessellate/core/backup_bundle.py:122 |
+| `encrypt_file` | src/tessellate/core/backup_bundle.py:100 |
+| `is_sealed` | src/tessellate/core/backup_bundle.py:117 |
+| `restore_zip` | src/tessellate/core/backup_bundle.py:216 |
 
 ### src/tessellate/core/bgtasks.py (11)
 
@@ -20891,7 +20892,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13925)
+## Tests (13926)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20995,7 +20996,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_background_registry_shutdown.py | 1 |
 | tests/test_background_rows_keep_their_space.py | 3 |
 | tests/test_backlog_status_rows.py | 6 |
-| tests/test_backup_bundle.py | 9 |
+| tests/test_backup_bundle.py | 10 |
 | tests/test_backup_copy.py | 8 |
 | tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
@@ -22500,7 +22501,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (987)
+## Plan headings (989)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -23078,7 +23079,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:35 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:589 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:591 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4261 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -23113,7 +23114,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:710 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:362 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:543 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:545 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -23309,6 +23310,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-28 (present bar picker, lag, movable panels, companion) | docs/roadmap/PLAN.md:304 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1588 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1704 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:667 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/WHITEBOARD_PLAN.md:1708 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1093 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |
 | Placed from INBOX: the composer everywhere (the owner, 2026-10-06) | docs/roadmap/CHAT_PLAN.md:699 |

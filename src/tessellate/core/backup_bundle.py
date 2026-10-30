@@ -33,7 +33,7 @@ from pathlib import Path
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from tessellate.core import backup, crypto
+from tessellate.core import backup, crypto, diskspace
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,10 @@ _FOLDERS = ("media", "uploads")
 #: A zip that claims more than this once unpacked is refused before anything
 #: is written (a zip bomb, or a notebook this app was never going to hold).
 MAX_UNPACKED_BYTES = 64 * 1024**3
+#: Bytes are bounded by the sum above (zipfile stops a member at its declared
+#: size), but not the number of files: a zip of a million empty entries fills
+#: the folder's inodes (audit 1028 K14). A real notebook has thousands.
+MAX_ENTRIES = 200_000
 
 
 #: The settings file inside the zip. Audit 2026-10-10 (item 1): the bundle
@@ -198,6 +202,17 @@ def _safe_target(data_dir: Path, member: str) -> Path | None:
     return target if target.is_relative_to(root) and target != root else None
 
 
+def _check_unpackable(infos: list[zipfile.ZipInfo], data_dir: Path) -> None:
+    """Refused before anything is written: too many files, too many bytes, or
+    more than the disk holding the notebook has free."""
+    total = sum(info.file_size for info in infos)
+    if len(infos) > MAX_ENTRIES or total > MAX_UNPACKED_BYTES:
+        raise BundleError("That backup is larger than this app will unpack.")
+    short = diskspace.shortfall(data_dir, total)
+    if short:
+        raise BundleError(f"Not enough free space to restore that backup: free up {diskspace.human_bytes(short)} and try again.")
+
+
 def restore_zip(archive_path: Path, db_path: Path, data_dir: Path, keep: int) -> dict:
     """Replace the notebook with the one in the zip.
 
@@ -218,8 +233,7 @@ def restore_zip(archive_path: Path, db_path: Path, data_dir: Path, keep: int) ->
         member = _db_member(names)
         if member is None:
             raise BundleError("That zip has no notebook in it, so nothing was changed.")
-        if sum(info.file_size for info in archive.infolist()) > MAX_UNPACKED_BYTES:
-            raise BundleError("That backup is larger than this app will unpack.")
+        _check_unpackable(archive.infolist(), data_dir)
         staged = db_path.with_name(f"{db_path.name}.import-tmp")
         try:
             with archive.open(member) as source, open(staged, "wb") as sink:
