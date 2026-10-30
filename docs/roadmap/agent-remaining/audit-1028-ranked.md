@@ -266,7 +266,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 260 | U48 | low | export defaults to On screen, not whole board | new | S |
 | 261 | U49 | low | board toolbar has 33 tab stops | new | M |
 | 262 | B23 | low | export SVG built from live DOM, blocks main thread | new | M |
-| 263 | B31 | low | timers and frames not cancelled on board switch | new | M |
+| 263 | B31 | low | timers and frames not cancelled on board switch | fixed | M |
 | 264 | B32 | low | whiteboard-map.js rAF and timers never cancelled | new | S |
 | 265 | B38 | low | single-object PUTs may still serve multi-select nudge | new | S |
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |

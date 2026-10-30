@@ -24459,6 +24459,29 @@ function wbLeaveFullscreen() {
   }
 }
 
+//: Everything the board just left may still have a frame or a timer in
+//: flight (audit 1028 B31): a reveal of the old selection scrolled the new
+//: board, a moving flag stuck on. They are cancelled and their guards reset;
+//: an unsaved nudge is written out, not dropped.
+function wbCancelBoardTimers() {
+  const frames = [wbClampSyncFrame, wbZoomFrame, wbCullFrame, wbSelectionBarFrame, wbRenderFrame];
+  for (const id of frames) if (id) cancelAnimationFrame(id);
+  wbClampSyncFrame = null;
+  wbZoomFrame = 0;
+  wbZoomPending = null;
+  wbCullFrame = 0;
+  wbSelectionBarFrame = 0;
+  wbRenderFrame = 0;
+  wbRenderQueued = false;
+  for (const id of [wbRevealTimer, wbStickyDates.timer, wbAddGate.panBarTimer, wbMarkMoving.timer]) clearTimeout(id);
+  wbRevealTimer = 0;
+  wbStickyDates.timer = 0;
+  wbAddGate.panBarTimer = 0;
+  wbMarkMoving.timer = 0;
+  document.getElementById("wb-canvas-view")?.classList.remove("wb-moving");
+  return wbFlushNudge();
+}
+
 // Jump to the real whiteboard canvas with a specific board loaded.
 async function openWhiteboardBoard(boardId) {
   wbRememberBoardView();
@@ -24466,7 +24489,9 @@ async function openWhiteboardBoard(boardId) {
   const wbSubtab = document.querySelector('#library-subtabs button[data-target="library-view-whiteboard"]');
   wbSubtab?.click();
   wbShowCanvasView();
+  const nudgeSaved = wbCancelBoardTimers();
   await new Promise((resolve) => setTimeout(resolve, 60));
+  await nudgeSaved;
   window.currentBoardId = boardId ?? null;
   wbUpdateUndoRedoButtons();
   // Anything a previous board's selection drag left behind goes now. The

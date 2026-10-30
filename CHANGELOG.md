@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards (audit 1028 B31): switching boards cancels the frames and timers the last board left pending (a reveal of the old selection, the moving flag, a queued render and cull) and writes out an unsaved nudge; 5 pending frames and timers before, none after.
 - Boards (audit 1028 B20): a locked item shows a small lock at its top right all the time, not only under the pointer; the first press on it still says how to unlock it.
 - Chat: "delete all notes about gym" puts every match on one Confirm card and counts them ("the 2 notes", "the only note"), instead of quietly binning the best match (audit 1028 E66).
 - Fixes: an added column whose default has an apostrophe no longer breaks every start (audit 1028 K21); a clean quit runs SQLite's `PRAGMA optimize` so query plans keep up as a notebook grows (K37); an untouched document whose delete failed goes back in the list (D36); Duplicate sits with a note's own actions, not in the Add flyout (S12). The journal's today and the utility answers' today are the user's day, not the server's (K22). A board whose drawing, connection or load fails says so on screen instead of only in the console (B22). A failed document save says so once, with Try again (D34). A board thumbnail upload no longer stalls other requests (K18). Cmd+Option+F opens Replace in a document on a Mac, where Cmd+H hides the app (D31).
