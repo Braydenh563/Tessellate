@@ -142,7 +142,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 136 | U34 | med | titled blank creation leaves a stray empty document | fixed (efa1ffd) | M |
 | 137 | U35 | med | small targets in document list and header | fixed (efa1ffd; the suggest switch sits in a 228x34.5 row, .card-open's overlay covers its whole card, library search inputs are the Library's) | S |
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |
-| 139 | U37 | med | disabled Run reason link is low contrast | fixed (#doc-code-run-why is .linklike in --accent-text, clamped to L 0.8 in dark; only the disabled button is dim, which is exempt) | S |
+| 139 | U37 | med | disabled Run reason link is low contrast | fixed (#doc-code-run-why is .linklike in --accent-text, clamped to L 0.8 in dark; only the disabled button is dim, which is exempt; measured 7.7:1 light, 8.8:1 dark) | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
