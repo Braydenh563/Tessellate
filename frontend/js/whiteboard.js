@@ -19568,19 +19568,23 @@ function wbExpandPlaceholders(text, props, builtin) {
   if (!own && !builtin) return source;
   return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => {
     if (own && Object.prototype.hasOwnProperty.call(own, name)) return String(own[name]);
-    const value = builtin && (name === "date" || name === "page") ? builtin(name) : "";
+    const value = builtin && /^(date|page|length|width|height)$/.test(name) ? builtin(name) : "";
     return value ? String(value) : mark;
   });
 }
 
 //: `%date%` is today in the reader's own locale; `%page%` is the title of the
 //: smallest frame holding the item's centre (decision 22: frames are the
-//: pages), none when it sits in no frame.
-function wbPlaceholderBuiltins(kind, item) {
+//: pages), none when it sits in no frame. `%length%` is a connector's drawn
+//: length (a dimension line, INBOX 1313 row 7), read from its element so a
+//: drag shows it live; `%width%` and `%height%` are the item's box, rounded.
+function wbPlaceholderBuiltins(kind, item, groupEl) {
   return (name) => {
     if (name === "date") return new Date().toLocaleDateString(undefined, { dateStyle: "medium" });
+    if (name === "length") return wbLinkLength(groupEl?.querySelector(".sketch-hitbox")?.getAttribute("d")) || "";
     const box = wbItemBBox(kind, item);
     if (!box) return "";
+    if (name === "width" || name === "height") return Math.round(name === "width" ? box.maxX - box.minX : box.maxY - box.minY);
     const cx = (box.minX + box.maxX) / 2, cy = (box.minY + box.maxY) / 2;
     let best = null;
     for (const f of wbState.objects || []) {
@@ -19784,9 +19788,27 @@ function wbLinkMidpoint(d, t = 0.5) {
   }
 }
 
+//: A link's drawn length in board units, rounded: the same hidden path as
+//: `wbLinkMidpoint`, set to the line and measured whole.
+function wbLinkLength(d) {
+  if (!wbLinkMidpoint(d, 0)) return null;
+  try {
+    return Math.round(wbLinkMeasurePath.getTotalLength());
+  } catch {
+    return null;
+  }
+}
+
 function wbLayoutLinkLabel(groupEl) {
   const label = groupEl?.querySelector?.(":scope > .wb-link-label");
   if (!label) return;
+  //: A label that shows the length is worded again on every layout, so a drag
+  //: of either end shows the new number as it moves, not after the drop.
+  const src = groupEl.__wbMeasured;
+  if (src) {
+    const text = wbExpandPlaceholders(src.parsed.label, src.parsed.props, wbPlaceholderBuiltins("sketch", src.sketch, groupEl));
+    if (text && label.textContent !== text) label.textContent = text;
+  }
   const t = groupEl.dataset.labelT ? Number(groupEl.dataset.labelT) : 0.5;
   //: The plain line (the hitbox): a jump's gap would cut the drawn shaft.
   const p = wbLinkMidpoint(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), Number.isFinite(t) ? t : 0.5);
@@ -19846,7 +19868,8 @@ function wbWireLinkLabelDrag(label, groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch)) : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch, groupEl)) : "";
+  groupEl.__wbMeasured = text && parsed.label.includes("%length%") ? { sketch, parsed } : null;
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();

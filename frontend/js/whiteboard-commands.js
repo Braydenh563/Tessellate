@@ -60,6 +60,7 @@ const wbCommandNeeds = {
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
   swappable: () => Boolean(wbSwapTarget()),
   joinable: () => wbJoinableEntries().length >= 2,
+  measurable: () => wbJoinableEntries().length >= 2 || wbCommandTextTarget()?.kind === "link",
   linkable: () => wbMultiSelection.size <= 1 && Boolean(wbSelectedItem) && wbTakesLink(wbSelectedItem.kind, wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)),
   two: () => wbCommandSelectionCount() >= 2,
   three: () => wbCommandSelectionCount() >= 3,
@@ -198,6 +199,7 @@ const WB_COMMANDS = [
   { id: "tidy-right", group: "Arrange", icon: "ph:tree-view", label: "Tidy as a tree, left to right", menu: "Left to right", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("right") },
   { id: "join-chain", group: "Arrange", icon: "ph:arrow-elbow-down-right", label: "Connect the selected in a line, one to the next", menu: "In a line", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("chain") },
   { id: "join-fan", group: "Arrange", icon: "ph:share-network", label: "Connect the selected to the first one picked", menu: "All to the first picked", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("fan") },
+  { id: "measure", group: "Arrange", icon: "ph:ruler", label: "Measure: a dimension line with its length", menu: "Measure with a dimension line", keys: "", surface: "board", needs: "measurable", run: () => wbMeasureSelection() },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
   { id: "item-link", group: "Edit", icon: "ph:link-simple", label: "Link to a note or a web page…", menu: "Link…", keys: "", surface: "board", needs: "linkable", run: () => wbEditItemLink() },
@@ -318,6 +320,7 @@ function wbRunCommand(id) {
       tree: "Select two or more shapes and the connectors between them first.",
       swappable: "Select one closed shape first.",
       joinable: "Select two or more shapes, text boxes or notes first.",
+      measurable: "Select two or more shapes, or one connector, first.",
       linkable: "Select one shape, text box or picture first.",
       shape: "Select one closed shape or one connector first.",
       link: "Select one connector first.",
@@ -872,6 +875,47 @@ async function wbJoinSelection(mode) {
   });
   wbScheduleRender();
   wbAnnounce(`Joined ${nounCount(plan.length, "pair")}.`);
+}
+
+//: **A dimension line** (draw.io's; INBOX 1313 row 7): a connector with an
+//: arrow at each end and `%length%` for its label, so it reads its own drawn
+//: length and keeps it right as either end moves. Two or more shapes selected:
+//: one is drawn across each gap, in reading order. One connector selected: it
+//: becomes one. The label is plain text a person can retype.
+const WB_MEASURE_LABEL = "%length%";
+
+async function wbMeasureSelection() {
+  const own = wbCommandTextTarget();
+  if (own?.kind === "link") {
+    await wbRecordGesture(() => wbSaveSketchProps(own.sketch, { label: WB_MEASURE_LABEL, startCap: "arrow", endCap: "arrow" }));
+    wbScheduleRender();
+    wbAnnounce("This connector now shows its length.");
+    return;
+  }
+  const entries = wbJoinableEntries();
+  if (entries.length < 2) {
+    toast("Select two or more shapes, or one connector, to measure.");
+    return;
+  }
+  const plan = wbJoinPlan(entries, "chain");
+  const color = window.currentStrokeColor || "#888888";
+  await wbRecordGesture(async () => {
+    for (const [a, b] of plan) {
+      const data = {
+        type: "link-straight", color, width: 2, startCap: "arrow", endCap: "arrow", label: WB_MEASURE_LABEL,
+        sourceId: a.id, targetId: b.id, ...wbFacingAnchors(a, b),
+      };
+      if (a.kind !== "node") data.sourceKind = a.kind;
+      if (b.kind !== "node") data.targetKind = b.kind;
+      const link = await apiJson("/whiteboard/sketches", {
+        method: "POST",
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
+      });
+      wbState.sketches.push(link);
+    }
+  });
+  wbScheduleRender();
+  wbAnnounce(`Measured ${nounCount(plan.length, "gap")}.`);
 }
 
 // --- Pasting onto a board or a map, and Paste special (wbpaste-1026) ---

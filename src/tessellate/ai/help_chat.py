@@ -1655,6 +1655,7 @@ HELP_TOPICS.extend(
                 "state diagram", "drawio", "draw.io file", "open a drawio file", "import a flowchart",
                 "clone and connect", "copy and connect", "next shape", "copy a shape",
                 "connect it to the copy", "connect the copy", "new note next to", "arrows round a card",
+                "dimension line", "measure", "measure between", "length of a line", "show the length",
             ),
             "body": (
                 "Connector bends and importing. Every connector takes bends: drag the small ring in the middle "
@@ -1669,7 +1670,7 @@ HELP_TOPICS.extend(
                 "it along the line. The ends include the entity-relationship marks (one, zero or one, many, "
                 "one or many, zero or many). With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Select a connector and drag a square at either end onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
                 "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline and a Mermaid flowchart."
