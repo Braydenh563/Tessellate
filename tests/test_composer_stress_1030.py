@@ -93,3 +93,25 @@ def test_a_subject_with_a_balance_due_says_the_whole_and_what_is_owed(ask):
 
 def test_a_question_about_the_words_is_not_a_sum(ask):
     assert not ask("What did I mean by recorded spending?").startswith("Your notes record")
+
+
+@pytest.mark.parametrize("message", [
+    "That helped, thank you.", "You're a lifesaver lol", "bye for now", "Sorry, wrong chat.",
+    "Can you keep things brief?", "Please use normal sentence case.", "Let's leave it there.", "Sweet, that's all.",
+])
+def test_closers_and_reactions_are_small_talk_not_a_search(message):
+    """Each of these was searched for and answered with a note's sentence."""
+    from tessellate.ai import intent
+
+    assert intent.classify(message) == intent.SMALLTALK
+
+
+def test_a_manner_word_is_never_reported_missing():
+    """"What did I personally think of Piranesi" ended "It looks like these
+    notes omit “personally”"; "my manager's preferred update style", "style"."""
+    from tessellate.ai import composer
+
+    notes = [{"id": 1, "content": "# Piranesi finished\n\nFinished Piranesi by Susanna Clarke. Loved the strange setting.", "created_at": NOW, "updated_at": NOW}]
+    for question in ("What did I personally think of Piranesi?", "What is my preferred Piranesi style?"):
+        said = composer.compose(question, notes)["text"]
+        assert "personally" not in said.split("[")[-1] and "“style”" not in said, said

@@ -2542,8 +2542,13 @@ _INSTRUCTION_STEMS = frozenset(
     _stem_plain(w)
     for w in """main two three four five six seven eight nine ten both sentence paragraph line point bullet tag category categories
     improve improvement related similar recur recurring older newer oldest newest favourite favorite best worst everything
-    summary list top first second third biggest largest smallest cheapest priciest""".split()
+    summary list top first second third biggest largest smallest cheapest priciest
+    gist overview story stuff style preferred prefer relationship give quick rough general overall kind sort type
+    recorded outgoing mean meaning refer referring exact""".split()
 )
+#: An adverb says how, not what: "what did I personally think", "is it
+#: actually recorded" are never missing their "personally" (stress run 2026-10-30).
+_MANNER = re.compile(r"(?:ally|ely|ently|antly|ously|ively|edly|icitly)$", re.I)
 
 
 def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
@@ -2595,7 +2600,7 @@ def _frame_stems(question: str) -> frozenset[str]:
 
 
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
-    if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _seen(term, found):
+    if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _MANNER.search(term) or _seen(term, found):
         return False
     if _stem(term) in _frame_stems(out.question or ""):
         return False
@@ -3894,7 +3899,7 @@ _SOCIAL_KIND = (
     ("morning", re.compile(r"\bgood (?:morning|afternoon|evening|day)\b|^morning\b", re.I)),
     ("thanks", re.compile(r"\b(?:thanks?|thank you|ta|cheers|nice one|appreciated?)\b", re.I)),
     ("how", re.compile(r"\bhow(?:'?s| is| are)(?: it going| things| you|you)\b|\bwhat'?s up\b|\bare you (?:ok|okay|there|awake|alive)\b", re.I)),
-    ("bye", re.compile(r"\b(?:bye|goodbye|good night|night|see (?:ya|you)|later|cya)\b", re.I)),
+    ("bye", re.compile(r"\b(?:bye|goodbye|good night|night|see (?:ya|you)|later|cya)\b|\bthat'?s all\b|\bleave it there\b|\bcall it a day\b", re.I)),
     ("sorry", re.compile(r"\b(?:sorry|my bad)\b", re.I)),
     ("who", re.compile(r"\bwho are you\b|\byour name\b|\bare you (?:an? )?(?:ai|bot|robot|human|real|person|real person)\b", re.I)),
     ("greeting", re.compile(r"^\W*(?:hi|hey|hello|hiya|yo|sup|howdy)\b", re.I)),

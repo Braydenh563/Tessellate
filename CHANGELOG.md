@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (stress run 2026-10-30): closers and reactions ("That helped, thank you", "bye for now", "Sorry, wrong chat", "Sweet, that's all", "Can you keep things brief?") are small talk and get a reply instead of a note; an adverb or a frame word ("personally", "style", "recorded") is never reported as missing from the notes.
 - Composer (stress run 2026-10-30, money): a money question about one thing sums only that thing ("how much did I pay the plumber" gave every expense); asking prices, budgets, balances still due and amounts a note denies ("not $320 each way") are no longer counted as paid; refunds are taken off with the net shown; a balance still due is named; "net", "total of all payments", "add up to", "altogether" and "how much is left to pay" are understood.
 - Composer (audit 1030 Z11): the note named for a person, book or topic now leads its answer ahead of a passing mention; "did I like Piranesi" reads the Piranesi note's "Loved it. 9/10." (short verdicts and ratings are no longer dropped); a list line like "Sara: a jazz record" names its list; "everything" is no longer a subject the notes must hold.
 - Docs: docs/ARCHITECTURE.md now draws the whole app, the chat turn and the composer as mermaid diagrams, replacing the old ASCII picture and the outdated "asking a question" steps.

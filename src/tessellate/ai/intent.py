@@ -53,6 +53,16 @@ _SMALLTALK_PATTERNS = (
     r"are you (?:there|awake|ok|okay|alive|real|human|(?:an )?ai|a (?:robot|bot|person|real person))",
     r"nice to meet you|glad to meet you",
     r"(?:tell|say) (?:me )?(?:a joke|something funny)|make me laugh|know any jokes",
+    #: Closers and reactions that are whole turns (stress run 2026-10-30:
+    #: "That helped, thank you", "bye for now", "Sorry, wrong chat" were
+    #: searched for and answered with a note).
+    r"that (?:helped|helps|works|worked|did it|was (?:helpful|useful|great|perfect)|is (?:helpful|useful|great|perfect))",
+    r"(?:that'?s|thats|that is) (?:all|it|great|perfect|helpful|fine|good|enough|fair)(?: for now| thanks?)?",
+    r"(?:you'?re|ur|you are) (?:a |an |the )?(?:lifesaver|life saver|legend|star|gem|hero|best|amazing|awesome|great|brilliant)",
+    r"(?:let'?s|lets) (?:leave it|stop|call it a day|wrap up|end)(?: (?:there|here|for now|for today))?",
+    r"(?:bye|done|all done|all good|got it|fair enough|makes sense|perfect|lmao|for now|wrong chat|never ?mind|nvm)",
+    r"(?:can|could) you keep (?:things|it|answers|replies) (?:brief|short)|keep it (?:brief|short)",
+    r"(?:please )?use (?:normal |plain )?sentence case",
 )
 
 # "What can you do?", questions about the assistant rather than the notebook.
@@ -114,6 +124,16 @@ def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     trailing name or address ("hey there", "hi mate")."""
     tail = r"(?:\s+(?:there|mate|buddy|friend|again|assistant|tessellate|memorymap|bot))*"
     return any(re.fullmatch(rf"{pattern}{tail}", text) for pattern in patterns)
+
+
+def _social_run(text: str) -> bool:
+    """True when the whole message is two or three pleasantries in a row
+    ("that helped thank you", "sweet that's all", "sorry wrong chat")."""
+    words = text.split()
+    if len(words) > 8:
+        return False
+    one = "(?:" + "|".join(_SMALLTALK_PATTERNS) + ")"
+    return bool(re.fullmatch(rf"{one}(?:\s+(?:and\s+)?{one}){{1,2}}(?:\s+(?:mate|lol|haha))?", text))
 
 
 #: How to use the app, asked with a note word in it ("how do i export my
@@ -223,7 +243,7 @@ def _classify(message: str) -> str:
     if _reads_as_app_question(text):
         return ABOUT_APP
 
-    if _matches_any(text, _SMALLTALK_PATTERNS):
+    if _matches_any(text, _SMALLTALK_PATTERNS) or _social_run(text):
         return SMALLTALK
 
     return NOTES
