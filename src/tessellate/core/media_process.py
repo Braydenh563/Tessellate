@@ -48,6 +48,22 @@ def _module(name: str):
     return importlib.import_module(name)
 
 
+#: (upload id, reader) asked in this run. A note saved again (an image
+#: centred in the graph popup, INBOX 1465) asked all three readers again for
+#: every picture it holds: Tesseract on a sketch with no text, a vision model
+#: that is not running. Each is asked once per run; the tile's own Read and
+#: Describe buttons go through their endpoints and still read on demand.
+_ASKED: set[tuple[int, str]] = set()
+
+
+def _due(upload: MediaUpload, reader: str, stored: str | None) -> bool:
+    key = (upload.id, reader)
+    if stored or key in _ASKED:
+        return False
+    _ASKED.add(key)
+    return True
+
+
 def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
     """Fire the three background readers for one upload that just became
     permanent. Never raises: a missing file or an unsupported suffix for
@@ -74,18 +90,18 @@ def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
 
     path = media_dir / upload.filename
     suffix = Path(upload.filename).suffix.lower()
-    if read_text and suffix in ocr.OCR_SUFFIXES:
+    if read_text and suffix in ocr.OCR_SUFFIXES and _due(upload, "ocr", upload.ocr_text):
         ocr.extract_in_background(upload.id, path)
-    if describe and suffix in captioning.CAPTION_SUFFIXES:
+    if describe and suffix in captioning.CAPTION_SUFFIXES and _due(upload, "caption", upload.caption):
         captioning.caption_in_background(upload.id, path)
-    if read_text and suffix in vision_ocr.VISION_OCR_SUFFIXES:
+    if read_text and suffix in vision_ocr.VISION_OCR_SUFFIXES and _due(upload, "vision", upload.vision_ocr_text):
         vision_ocr.vision_ocr_in_background(upload.id, path)
     # A PDF is neither of the above: `OCR_SUFFIXES` and `VISION_OCR_SUFFIXES`
     # are both raster-only, so filing a scanned PDF used to start no reader at
     # all and the file stayed unsearchable until somebody opened it and pressed
     # a button. `pdf_vision_ocr_and_store` skips PDFs that already have a text
     # layer, so this costs a model round trip only for the scans that need one.
-    if read_text and suffix == ".pdf":
+    if read_text and suffix == ".pdf" and _due(upload, "pdf", upload.vision_ocr_text):
         vision_ocr.pdf_vision_ocr_in_background(upload.id, path)
 
 

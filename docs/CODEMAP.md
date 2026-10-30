@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7530, test files 1602, tests 13926, plan headings 989.
+Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7531, test files 1602, tests 13927, plan headings 989.
 
 ## Frontend functions (6880)
 
@@ -11598,7 +11598,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7530)
+## Backend modules (7531)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19418,15 +19418,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `referenced_names` | src/tessellate/core/media_gc.py:37 |
 | `usage_map` | src/tessellate/core/media_gc.py:138 |
 
-### src/tessellate/core/media_process.py (5)
+### src/tessellate/core/media_process.py (6)
 
 | Name | File:line |
 |---|---|
+| `_due` | src/tessellate/core/media_process.py:59 |
 | `_module` | src/tessellate/core/media_process.py:36 |
-| `media_text_for` | src/tessellate/core/media_process.py:124 |
-| `process_committed_upload` | src/tessellate/core/media_process.py:51 |
-| `process_committed_upload_ids` | src/tessellate/core/media_process.py:106 |
-| `process_referenced_uploads` | src/tessellate/core/media_process.py:92 |
+| `media_text_for` | src/tessellate/core/media_process.py:140 |
+| `process_committed_upload` | src/tessellate/core/media_process.py:67 |
+| `process_committed_upload_ids` | src/tessellate/core/media_process.py:122 |
+| `process_referenced_uploads` | src/tessellate/core/media_process.py:108 |
 
 ### src/tessellate/core/model_gate.py (3)
 
@@ -20892,7 +20893,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13926)
+## Tests (13927)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21789,7 +21790,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_media_api.py | 54 |
 | tests/test_media_cookie.py | 20 |
 | tests/test_media_gc.py | 18 |
-| tests/test_media_process.py | 15 |
+| tests/test_media_process.py | 16 |
 | tests/test_media_size.py | 3 |
 | tests/test_media_size_backfill.py | 3 |
 | tests/test_meeting_card_glance.py | 4 |
@@ -23207,7 +23208,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:293 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:294 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
