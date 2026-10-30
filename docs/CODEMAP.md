@@ -2,9 +2,9 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6830, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7342, test files 1566, tests 13644, plan headings 986.
+Counts: frontend functions 6831, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7342, test files 1566, tests 13644, plan headings 986.
 
-## Frontend functions (6830)
+## Frontend functions (6831)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5313,7 +5313,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:410 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
-### frontend/js/panel-movable.js (36)
+### frontend/js/panel-movable.js (37)
 
 | Name | File:line |
 |---|---|
@@ -5325,9 +5325,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelDock` | frontend/js/panel-movable.js:296 |
 | `panelFit` | frontend/js/panel-movable.js:282 |
 | `panelFull` | frontend/js/panel-movable.js:331 |
-| `panelGripDown` | frontend/js/panel-movable.js:466 |
-| `panelGripKey` | frontend/js/panel-movable.js:517 |
-| `panelHeadDown` | frontend/js/panel-movable.js:397 |
+| `panelGripDown` | frontend/js/panel-movable.js:481 |
+| `panelGripKey` | frontend/js/panel-movable.js:532 |
+| `panelGripRoom` | frontend/js/panel-movable.js:403 |
+| `panelHeadDown` | frontend/js/panel-movable.js:412 |
 | `panelHeadOf` | frontend/js/panel-movable.js:213 |
 | `panelId` | frontend/js/panel-movable.js:166 |
 | `panelInset` | frontend/js/panel-movable.js:261 |
@@ -5350,7 +5351,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelSync` | frontend/js/panel-movable.js:308 |
 | `panelUnsnap` | frontend/js/panel-movable.js:301 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:315 |
-| `panelWindowResized` | frontend/js/panel-movable.js:555 |
+| `panelWindowResized` | frontend/js/panel-movable.js:570 |
 | `panelZoneFor` | frontend/js/panel-movable.js:105 |
 | `panelZoneRect` | frontend/js/panel-movable.js:74 |
 
@@ -10879,7 +10880,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/offline-split-lazy.css | 71 |
-| frontend/css/panel-movable-lazy.css | 88 |
+| frontend/css/panel-movable-lazy.css | 101 |
 | frontend/css/questions-lazy.css | 102 |
 | frontend/css/quick-access-lazy.css | 105 |
 | frontend/css/quickadd-lazy.css | 35 |

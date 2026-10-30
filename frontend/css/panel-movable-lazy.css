@@ -25,12 +25,24 @@
     cursor: grabbing;
     user-select: none;
   }
-  /* Zero net height: it overlaps the foot's corner and stays there while the
-     card scrolls (the card is the scroll box). At the target floor it covered
-     the centre of a foot's last button (the Guide's send, an E2E click), so it
-     reaches into the card's right padding instead (sticky keeps it inside the
-     content box vertically, so only the sideways shift holds). */
-  .panel-movable-on > .panel-grip {
+  /* **The grip has its own corner and never sits on a control** (INBOX 1454,
+     the owner: "that resize 3 corner lines partially covers that button").
+     It was zero net height, pulled over the foot's last 28px, so a foot's
+     right-hand button lost its corner to it (measured at 1440 by 900: 23 of
+     35 panels had a control under the grip). Now it is the last row of the
+     card: a full target-min square whose bottom 16px or so is the card's own
+     bottom padding (`panelGripRoom` reads the padding once when the panel is
+     adopted and writes the grip's margins and `bottom` with the CSSOM, so
+     there is no token to keep), so only the rest is new height, and it hangs
+     into the right padding.
+     Sticky keeps it in view while the card scrolls (the card is the scroll
+     box); sticky measures from the content box, so `bottom` is minus the
+     bottom padding (measured: the grip's bottom edge is the content box's bottom
+     less `bottom`). */
+  /* `button` in the selector: a panel inside `.header-controls` (the
+     notifications panel) met `.header-controls button:not(.ai-status)` and
+     got its height, display and margin (measured: 36px tall, 22px margin). */
+  .panel-movable-on > button.panel-grip {
     display: block;
     position: sticky;
     bottom: 0;
@@ -38,11 +50,12 @@
     flex: none;
     width: var(--target-min);
     height: var(--target-min);
-    margin: calc(-1 * var(--target-min)) calc(-1 * var(--space-5)) 0 auto;
+    min-height: 0;
+    margin: 0 0 0 auto;
     padding: 0;
     border: 0;
     border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, transparent 50%, var(--muted) 50%, var(--muted) 58%, transparent 58%, transparent 72%, var(--muted) 72%, var(--muted) 80%, transparent 80%);
+    background: linear-gradient(135deg, transparent 62%, var(--muted) 62%, var(--muted) 70%, transparent 70%, transparent 82%, var(--muted) 82%, var(--muted) 90%, transparent 90%);
     opacity: 0.55;
     cursor: nwse-resize;
     touch-action: none;

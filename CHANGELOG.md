@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Panels (INBOX 1454): the resize grip is the card's last row, hung into its padding, instead of an overlay on the foot, so it no longer covers a button's corner (22 of 35 panels at 1440 by 900 and at 1024 by 768 had a control under it, 0 now); `scratchpad/ui-sweeps/panels1030.js` measures it.
 - Composer: shorthand and spoken repairs are read ("whens dentist now no the new one"), a total with no verb ("how much desk all up after that money back thing") nets the refund, "how many grocery items are checked off" counts and names them, and a newer note that moves or replaces something outranks the older one in every answer, not only the digest's.
 - Composer: an everyday verb in a question (meet, go, get) counts less than its noun, so "how did we meet the plumber" answers from the plumber's note; a goal ("run a 10k") is not added to the distance run.
 - Composer: distances, weights and time the notes record are added up ("how far did I run", "how many hours did I spend on the deck", "what's my total distance"), by the unit table the converter uses, filtered by what was done and on what.

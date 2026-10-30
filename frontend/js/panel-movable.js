@@ -392,7 +392,22 @@ function panelAdopt(panel) {
     grip.title = "Drag to resize. Arrow keys move, Shift and arrow keys resize, Home resets.";
     panel.appendChild(grip);
     st.grip = grip;
+    panelGripRoom(panel, grip);
   }
+}
+//: The grip is the card's last row and hangs into its padding (INBOX 1454):
+//: the padding in pixels is read once here and written as the grip's margins
+//: and sticky `bottom`, capped at the grip's own size so a deep padding does
+//: not float it. Cards differ (20 by 16 on `.card`, 12.8 on a popup, 0 on the
+//: palette), which is why the CSS cannot say it.
+function panelGripRoom(panel, grip) {
+  const cs = getComputedStyle(panel);
+  const size = grip.offsetHeight || 28;
+  const cap = (v) => Math.max(0, Math.min(parseFloat(v) || 0, size));
+  const pb = cap(cs.paddingBottom);
+  grip.style.marginRight = `${-cap(cs.paddingRight)}px`;
+  grip.style.marginBottom = `${-pb}px`;
+  grip.style.bottom = `${-pb}px`;
 }
 function panelHeadDown(e) {
   const head = e.target.closest(".dialog-head");
