@@ -60,7 +60,9 @@ Away run 2026-10-27, branch claude/loving-edison-4d0din, PR 204, head bc27f5d; s
 
 ## Moved from the plans, 2026-10-30 (measures)
 
-**CHAT_PLAN, placed 2026-10-30, item 1, first step.** `recognise.measures` reads every unit amount but money and temperature in its dimension's base unit (the converter's `UNITS`, glued-only names kept). `composer_money` answers "how far did I run", "how many km have I walked", "how many hours did I spend on the deck" and "what's my total distance" with a sum by note, filtered by the verb asked (ran, running) and the subject, before the one-value slots read a single sentence. "How many days until", "how far is" and "how many km did I run on Sunday" stay a day, a fact and one day's value. Tests: `tests/test_composer_measures_1030.py`.
+**CHAT_PLAN, placed 2026-10-30, item 1, first step.** `recognise.measures` reads every unit amount but money and temperature in its dimension's base unit (the converter's `UNITS`, glued-only names kept). `composer_money` answers "how far did I run", "how many km have I walked", "how many hours did I spend on the deck" and "what's my total distance" with a sum by note, filtered by the verb asked (ran, running) and the subject, before the one-value slots read a single sentence. "How many days until", "how far is" and "how many km did I run on Sunday" stay a day, a fact and one day's value. Tests: `tests/test_composer_measures_1030.py`. A goal or plan ("Q1: run a 10k") adds nothing.
+
+**Item 2.** Everyday verbs (`composer.COMMON_VERBS`, 60 words) weigh as a timing word beside a noun: "how did we meet the plumber" leads with Tap repair's plumber, not "We meet on Thursdays".
 
 ## Moved from the plans, 2026-10-29 (mind map pan 1445)
 

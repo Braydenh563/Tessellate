@@ -1370,10 +1370,25 @@ def _timing_stems() -> frozenset[str]:
     return frozenset(_stem(w) for w in TIMING_WORDS)
 
 
+#: Everyday verbs say what was done, not to what: beside a noun they count
+#: as little as a timing word ("how did we meet the plumber" is the plumber's
+#: note, not "We meet on Thursdays"; CHAT_PLAN, placed 2026-10-30, item 2).
+COMMON_VERBS = frozenset(
+    "meet met go went get got make made know knew see saw come came take took think say said tell told find found give gave "
+    "use work call try ask need feel leave left keep kept start begin began show hear heard play run move live bring brought "
+    "happen write wrote sit stand lose lost pay paid speak spoke read spend spent".split()
+)
+
+
+@functools.lru_cache(maxsize=1)
+def _verb_stems() -> frozenset[str]:
+    return frozenset(_stem(w) for w in COMMON_VERBS)
+
+
 def _term_weights(stems: list[str]) -> dict[str, float]:
     """What each term of the question counts for: a kind or timing word beside
     others counts `KIND_WORD_WEIGHT`, any other word, or one alone, 1."""
-    light = KIND_WORDS | _timing_stems()
+    light = KIND_WORDS | _timing_stems() | _verb_stems()
     named = [t for t in stems if t not in light]
     return {t: KIND_WORD_WEIGHT if named and t in light else 1.0 for t in stems}
 

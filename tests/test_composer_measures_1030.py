@@ -21,6 +21,7 @@ NOTES = [
     "# Long run\n\nDid a 12 km run up the hill, slow but steady.",
     "# Deck build\n\nSpent 3 hours on the deck frame. Another 90 minutes sanding the boards.",
     "# Bike commute\n\nCycled 14 km to work and back.",
+    "# Q1 goals\n\nRun a 10k. Read 12 books.",
     "# Spending October\n\nGroceries $86 on the 3rd. Rent $1200.",
 ]
 

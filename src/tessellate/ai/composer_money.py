@@ -369,8 +369,6 @@ _MEASURE = re.compile(
     r"|what(?:'s|s| is| was)? (?:my |our |the )?total (?P<noun>distance|weight|time))(?P<rest>(?: .*)?)$",
     re.I,
 )
-#: "How many km did I run on Sunday" is one day's value, the slot's to read.
-_ONE_DAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b|\b(?:today|yesterday|tonight|last night|this morning)\b", re.I)
 _CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights", "month", "months", "year", "years"})
 _DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
 _DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
@@ -385,6 +383,12 @@ class _Measure(NamedTuple):
     unit: str
     verb: str
     after: str
+
+
+def _one_day(rest: str) -> bool:
+    """"How many km did I run on Sunday" is one day's value, the slots' to
+    read. The anchor only places the day; whether it is one does not move."""
+    return any((got := recognise.span(phrase, date(2026, 1, 5), "past")) and got[0] == got[1] for _s, _e, phrase in recognise.find(rest.lower()))
 
 
 def _dimension_of(word: str) -> tuple[str | None, bool]:
@@ -405,10 +409,14 @@ def _measure_asked(q: str) -> _Measure | None:
     doer = _DOER.match(m.group("rest"))
     #: "How many days until..." and "how far is the station" are a day and a
     #: fact, not a sum: a sum is asked of something done.
-    if not doer and not m.group("noun") or word in _CALENDAR or _ONE_DAY.search(m.group("rest")):
+    if not doer and not m.group("noun") or word in _CALENDAR or _one_day(m.group("rest")):
         return None
     verb = doer.group("verb").lower() if doer and doer.group("verb").lower() not in _ANY_VERB else ""
     return _Measure(dimension, word if named else "", _BASE.get(verb, verb), doer.group("after") if doer else m.group("rest"))
+
+
+#: A goal or a plan is not a measure done: "Q1: run a 10k" adds nothing.
+_PLANNED = re.compile(r"\b(?:goals?|plan(?:s|ned|ning)?|targets?|want(?:s|ed)? to|aim(?:s|ing)? to|hope to|going to|will|should|wishlist)\b", re.I)
 
 
 def _forms(verb: str) -> set[str]:
@@ -432,7 +440,7 @@ def _measured(views: list, asked: _Measure, month: int | None, subject: list[str
             continue
         for sentence in view.sentences:
             said = set(re.findall(r"[a-z]+", (sentence.text + " " + str(view.title)).lower()))
-            if _about(view, sentence, subject) and (not forms or forms & said):
+            if _about(view, sentence, subject) and (not forms or forms & said) and not _PLANNED.search(sentence.text + " " + str(view.title)):
                 found += [Item(composer_lists._title(view), unit, value, view, sentence) for dim, value, unit, _ in recognise.measures(sentence.text) if dim == asked.dimension]  # noqa: SLF001
     return found
 
@@ -440,7 +448,8 @@ def _measured(views: list, asked: _Measure, month: int | None, subject: list[str
 def _figure(value: float, unit: str) -> str:
     size = recognise.UNITS[unit][1]
     shown = f"{value / size:,.2f}".rstrip("0").rstrip(".")
-    name = recognise.UNITS[unit][2] if len(unit) == 1 else unit
+    #: "10k" is said "10 km"; another glued letter by its name ("800m", 800 metres).
+    name = unit if len(unit) > 1 else "km" if unit == "k" else recognise.UNITS[unit][2]
     return f"{shown} {name[:-1] if shown == '1' and name.endswith('s') and len(name) > 3 else name}"
 
 
