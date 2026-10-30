@@ -6262,12 +6262,7 @@ select {
    section is shown by dropping `.hidden`, so the animation restarts each time.
    CSS only; Interface animations off and reduced motion zero it globally. */
 #settings-modal .settings-section:not(.hidden) {
-  animation: settings-pane-in var(--motion-slow) var(--ease-out);
-}
-@keyframes settings-pane-in {
-  from {
-    opacity: 0;
-  }
+  animation: ui-fade var(--ui-base) var(--ease-out);
 }
 
 /* A finished job's Logs button stays top right on one line (BACKLOG). */

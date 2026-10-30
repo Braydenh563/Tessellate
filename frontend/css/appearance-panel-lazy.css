@@ -200,7 +200,7 @@
   display: none;
 }
 #appearance-panel .settings-section:not(.hidden) {
-  animation: settings-pane-in var(--motion-slow) var(--ease-out);
+  animation: ui-fade var(--ui-base) var(--ease-out);
 }
 #appearance-panel .settings-section .row > label:first-child:not(.setting-check):not(.check-row):not(.checkbox-label) {
   flex: 1 1 16rem;
