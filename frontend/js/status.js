@@ -738,26 +738,15 @@ function renderAgentActivityMode() {
 // already been read is just something left to wait out otherwise, the
 // timer clears when this fires, so a stray late setTimeout can't reach for
 // a note the click already removed.
-//: **One stack in the corner** (the owner 2026-10-11: "lots of the same
-//: notifcations dont neatly stack when they appear fast in the corner").
-//: Measured before: ten identical toasts in 500 ms drew six cards (a 400 ms
-//: repeat guard let every other one through), each slid in on its own
-//: keyframe while the others slid by `translate`, so a card arriving at the
-//: corner crossed the one it pushed away for about 120 ms.
-//: The rules, each held by tests/test_notification_actions.py and
-//: `scratchpad/ui-sweeps/toaststack.js`:
-//: - the same words of the same kind (and, with an action, the same action)
-//:   within `TOAST_MERGE_MS` are one card with a count ("×3"), its timer
-//:   restarted; an Undo merges only with the same Undo, never another's;
-//: - the newest is nearest the corner (the bottom on a desktop, the top
-//:   below 1100 where the box hangs from the header), the gap is the box's
-//:   `--space-2`;
-//: - positions come from the stack: measured, changed, played back by
-//:   `translate` (FLIP), and an arrival rides in by the same distance the
-//:   others move, on the same curve, so two cards never cross;
-//: - three show; the rest fold into one "+N more" card that opens the bell,
-//:   and a folded notice is written to the bell so it is not lost;
-//: - reduced motion fades and never slides; interface animations off jumps.
+//: **One stack in the corner** (the owner 2026-10-11), held by
+//: tests/test_notification_actions.py and ui-sweeps/toaststack.js:
+//: - the same words, kind and action within `TOAST_MERGE_MS` are one card
+//:   with a count ("×3"); an Undo merges only with the same Undo;
+//: - the newest is nearest the corner, `--space-2` apart;
+//: - positions are played back by `translate` (FLIP), an arrival riding the
+//:   same distance and curve, so two cards never cross;
+//: - three show; the rest fold into "+N more", written to the bell;
+//: - reduced motion fades, never slides.
 const TOAST_MERGE_MS = 4000;
 const TOAST_VISIBLE = 3;
 let toastBorn = 0;
@@ -905,6 +894,19 @@ function dismissToast(note) {
   const done = () => note.isConnected && toastStack(note.parentElement, () => note.remove());
   note.addEventListener("animationend", done, { once: true });
   setTimeout(done, 400);
+}
+
+//: A toast holds while pointed at or focused, then gets its whole life again
+//: (audit 1028 S19, WCAG 2.2.1). A held one keeps its timer id: unset is sticky.
+function toastHold(event, on) {
+  const note = event.target.closest?.(".toast");
+  if (!note?.toastTimer || note.classList.contains("is-leaving")) return;
+  if (!on && note.contains(event.relatedTarget)) return;
+  clearTimeout(note.toastTimer);
+  if (!on && !note.matches(":hover, :focus-within")) note.toastTimer = setTimeout(() => dismissToast(note), note.toastLife || 5500);
+}
+for (const [kind, on] of [["pointerover", true], ["pointerout", false], ["focusin", true], ["focusout", false]]) {
+  document.addEventListener(kind, (event) => toastHold(event, on));
 }
 
 function toastCloseButton(note, timer) {
@@ -2069,39 +2071,6 @@ function openModelGate(control) {
   if (!control.dataset.modelGated) return;
   control.disabled = false;
   delete control.dataset.modelGated;
-}
-
-function openModelOffer(control) {
-  closeHelpPopovers();
-  const panel = document.createElement("div");
-  panel.className = "help-body model-offer";
-  panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "Needs a model");
-  const why = document.createElement("p");
-  why.textContent = `${control.dataset.needsModel}, and no model is connected. ${control.dataset.modelOffer}`.trim();
-  const setUp = smallButton("ph:plugs Set up a model", "Open Settings at Models, where a local or remote model is connected", () => {
-    entry.close();
-    openSettingsModal("models");
-  });
-  setUp.classList.add("primary");
-  panel.append(why, setUp);
-  const entry = {
-    panel,
-    trigger: control,
-    close() {
-      openHelpPopovers.delete(entry);
-      panel.remove();
-      control.setAttribute("aria-expanded", "false");
-    },
-  };
-  panel.style.visibility = "hidden";
-  panel.classList.add("help-popover");
-  (control.closest("dialog[open]") || document.body).appendChild(panel);
-  panel.addEventListener("click", (event) => event.stopPropagation());
-  openHelpPopovers.add(entry);
-  control.setAttribute("aria-expanded", "true");
-  placeHelpPopover(panel, control);
-  setUp.focus();
 }
 
 //: Capture, so the control's own handler (which would start the AI act)

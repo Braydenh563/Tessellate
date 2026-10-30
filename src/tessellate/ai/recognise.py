@@ -3648,14 +3648,9 @@ def as_of_then(text: str) -> str:
 
 #: Money and scores, for an answer that sums amounts or finds a word a note
 #: says by its shape ("money" by "$40", "rate" by "8/10"; 2026-10-30 sweep).
-_AMOUNT = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)")
+_AMOUNT = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)(k\b)?")
 _MONEY = re.compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|quid|bucks|usd|gbp|eur)\b", re.I)
 _SCORE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
-
-
-def amounts(text: str) -> list[tuple[str, float, int]]:
-    """Each amount of money with a currency sign: (sign, value, offset)."""
-    return [(m.group(1), float(m.group(2).replace(",", "")), m.start()) for m in _AMOUNT.finditer(text or "")]
 
 
 def says_shape(shape: str, text: str) -> bool:
@@ -3664,17 +3659,37 @@ def says_shape(shape: str, text: str) -> bool:
     return bool(pattern and pattern.search(text or ""))
 
 
-def measures(text: str) -> list[tuple[str, float, str, int]]:
-    """Each measured amount, money and temperature aside: (dimension, value in
-    the dimension's base unit, the unit as written, offset). "5 km" and
-    "800 m" add up because both are metres here (CHAT_PLAN, placed 2026-10-30)."""
+class Measure(tuple):
+    """(dimension, value, unit, offset), and `end` (where the figure and its
+    unit stop), so a caller can read the words after it."""
+
+    end: int
+
+    @property
+    def at(self) -> int:
+        return self[3]
+
+    def __new__(cls, dimension: str, value: float, unit: str, at: int, end: int) -> "Measure":
+        made = super().__new__(cls, (dimension, value, unit, at))
+        made.end = end
+        return made
+
+
+def measures(text: str) -> list[Measure]:
+    """Each measured amount, temperature aside: (dimension, value in the
+    dimension's base unit, the unit as written, offset). "5 km" and "800 m"
+    add up because both are metres here (CHAT_PLAN, placed 2026-10-30).
+    Money is a dimension too ("money"), its base unit the currency, so "$86"
+    is (money, 86.0, "$", offset) and "$1.5k" is 1500."""
     raw = text or ""
     found = []
+    for m in _AMOUNT.finditer(raw):
+        found.append(Measure("money", float(m.group(2).replace(",", "")) * (1000 if m.group(3) else 1), m.group(1), m.start(), m.end()))
     for m in _rx("quantity").finditer(raw.lower()):
         name, glued, written = m.group(3), not m.group(2), raw[m.start(3):m.end(3)]
         if name in _NOT_IN_TEXT or name in CURRENCY_NAMES or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
             continue
         dimension, size, _said = UNITS[name]
         if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):
-            found.append((dimension, _figure(m.group(1)) * size, name, m.start()))
-    return found
+            found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
+    return sorted(found, key=lambda x: x[3])

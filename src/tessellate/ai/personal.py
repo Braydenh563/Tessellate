@@ -410,8 +410,36 @@ def about_own_notes(question: str) -> bool:
     return bool(_OWN_NOTES.search(_clean(question)))
 
 
-def general_reply(web_on: bool) -> str:
+#: Possessives name the person's own record ("who is my sister", "my wifi
+#: password"); "I" names it only with a verb that reports a fact about them
+#: ("how much do I owe", "how far did I run", "have I been sleeping"). A bare
+#: "how do I install Python" is a how-to the web can answer, so it is not here.
+_OWN_RECORD = re.compile(
+    r"\b(?:my|mine|myself|our|ours)\b"
+    r"|\b(?:did|have|had|was|am) (?:i|we)\b"
+    r"|\bdo (?:i|we) (?:owe|own|weigh|earn|spend|pay|have)\b"
+    r"|\bi(?:'ve| have| had| am|'m| was| spent| owe| paid| weigh| ran| felt| feel| earn| own| got)\b"
+)
+
+
+def about_own_record(question: str) -> bool:
+    """A first-person question about the person's own facts: the notes hold
+    the answer or nothing does, and the web has no copy. Never sent to a
+    search service, and never offered the web tools (audit 1030 A1 to A3)."""
+    return bool(_OWN_RECORD.search(_clean(question)))
+
+
+def general_reply(web_on: bool, *, web_pref: bool = False, by_choice: bool = False) -> str:
+    """A question about the world with nothing in the notes. `web_on`: the web
+    could run this turn and found nothing. `web_pref`: Settings has web on but
+    this mode cannot search (Ask, or Chat without Agent), so the reply names
+    the mode, never "turn it on". `by_choice`: the model is up but the person
+    chose to answer from notes only (audit 1030 A6, A7)."""
     if web_on:
         return "That's general knowledge rather than something in your notes, and the web search found nothing to go on."
-    return ("That's general knowledge, and with no model running I only know what your notes say, and none of them covers it. "
+    if web_pref:
+        return ("That's general knowledge rather than something in your notes. Web search is on, but it runs in Agent mode in Chat, "
+                "not in Ask, so this answer comes from your notes only.")
+    why = "you chose to answer from your notes only" if by_choice else "with no model running I only know what your notes say"
+    return (f"That's general knowledge, and {why}, and none of them covers it. "
             "Turn on web search in [Settings](#/settings/websearch) to look it up.")

@@ -526,6 +526,10 @@ MAX_IMPORT_BYTES = 50 * 1024 * 1024
 class ContentItem(BaseModel):
     id: int
     content: str = Field(max_length=MAX_CONTENT)
+    #: The `content_hash` of the text this item was worked out from (audit
+    #: 1028 D11): an undo of a replace wrote the old text back over any edit
+    #: made since. One stale item refuses the batch, which lands whole.
+    base_hash: str | None = Field(default=None, max_length=64)
 
 
 class ContentBatch(BaseModel):
@@ -553,7 +557,10 @@ def read_contents(
         query = query.where(Document.file_type == filetypes.normalise(file_type))
     rows = session.scalars(query.order_by(Document.updated_at.desc(), Document.id.desc()).limit(CONTENTS_READ_MAX))
     return [
-        {"id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type), "content": d.content or ""}
+        {
+            "id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type),
+            "content": d.content or "", "content_hash": content_hash(d.content),
+        }
         for d in rows
     ]
 
@@ -569,6 +576,7 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     if len(set(ids)) != len(ids):
         raise HTTPException(status_code=422, detail="A document is listed twice.")
     documents = {doc.id: doc for doc in (_existing(session, doc_id) for doc_id in ids)}
+    _refuse_unwritable(body.documents, documents)
     updated = []
     for item in body.documents:
         document = documents[item.id]
@@ -581,7 +589,29 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     if updated:
         log_action(session, "edited", "document", updated[0], f"{len(updated)} documents in one replace")
     session.commit()
-    return {"updated": updated}
+    #: The hook a save runs (audit 1028 D13): a replace that adds a picture
+    #: reference is a committed save of it.
+    for doc_id in updated:
+        _process_committed_media(session, documents[doc_id].content)
+    return {"updated": updated, "hashes": {str(doc_id): content_hash(doc.content) for doc_id, doc in documents.items()}}
+
+
+def _refuse_unwritable(items: list[ContentItem], documents: dict[int, Document]) -> None:
+    """Nothing is written when one item cannot be: an archived document is
+    read-only until it is restored, and a stale `base_hash` means the text
+    changed after the batch was worked out."""
+    if any(doc.archived_at for doc in documents.values()):
+        raise HTTPException(status_code=409, detail="An archived document can't be changed. Restore it first.")
+    stale = [
+        item.id for item in items
+        if item.base_hash and item.content != documents[item.id].content
+        and content_hash(documents[item.id].content) != item.base_hash
+    ]
+    if stale:
+        raise HTTPException(
+            status_code=409,
+            detail=f"{len(stale)} of these documents changed since; nothing was written.",
+        )
 
 
 @router.post("/import", status_code=201)

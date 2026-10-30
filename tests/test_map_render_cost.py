@@ -146,7 +146,10 @@ def test_the_link_sketches_are_parsed_once_per_capture() -> None:
     assert "wbLinkSketchIndex()" in body
     assert "wbLinkedSketchesFor(id, kind, linkIndex)" in body
     # One parse per sketch in the index, and the lookup is a lookup.
-    assert _code("wbLinkSketchIndex").count("JSON.parse") == 1
+    # (audit 1028 B17: through `wbParsedLink`, which holds the one parse and
+    # remembers it per version of the sketch's data.)
+    assert "wbParsedLink(sketch)" in _code("wbLinkSketchIndex")
+    assert _code("wbParsedLink").count("JSON.parse") == 1
     assert "if (index) return index.get(" in _code("wbLinkedSketchesFor")
 
 

@@ -28,7 +28,7 @@ const ctx = { localStorage: { getItem: (k) => (k in store ? store[k] : null), se
 // The app's storage door (prefs.js), over the same store.
 ctx.prefs = { get: (k, f = "") => ctx.localStorage.getItem(k) ?? f, setJSON: (k, v) => { ctx.localStorage.setItem(k, JSON.stringify(v)); return true; } };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.api = { panelClampMove, panelClampSize, panelKeyDelta, panelStoreRead, panelStoreWrite, panelSnapZone, panelZoneRect, panelRestoreOn };", ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.api = { panelClampMove, panelClampSize, panelKeyDelta, panelStoreRead, panelStoreWrite, panelSnapZone, panelZoneRect, panelRestoreOn, panelStoreFits };", ctx);
 const a = ctx.api;
 const rect = { left: 300, top: 100, width: 500, height: 400 };
 const out = {
@@ -62,6 +62,30 @@ out.rects = {};
 for (const z of ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"]) out.rects[z] = a.panelZoneRect(z, 1000, 800, 12);
 out.noRect = a.panelZoneRect("", 1000, 800, 12);
 out.safe = a.panelZoneRect("left", 1000, 800, 12, { left: 60, top: 50, right: 1000, bottom: 770 });
+// INBOX 1454: an entry stored before the panel's layout changed, or one that no
+// longer fits, is not applied.
+a.panelStoreWrite("ocr", { x: 3, y: 4, w: 700, h: 500 }, 2);
+out.verSame = a.panelStoreRead("ocr", 2);
+out.verOld = a.panelStoreRead("ocr", 3);
+out.verNone = a.panelStoreRead("ocr");
+a.panelStoreWrite("plain", { x: 3, y: 4, w: null, h: null });
+out.plainNow = a.panelStoreRead("plain", 0);
+out.plainAfterBump = a.panelStoreRead("plain", 2);
+a.panelStoreWrite("dockver", { x: 0, y: 0, w: 500, h: 600, dock: "left" }, 2);
+out.dockVer = a.panelStoreRead("dockver", 2);
+const nat = { width: 1382, height: 792 };
+out.fits = {
+  good: a.panelStoreFits({ x: 0, y: 0, w: 900, h: 600 }, nat, 1440, 900),
+  position: a.panelStoreFits({ x: -310, y: 200, w: null, h: null }, nat, 1440, 900),
+  tiny: a.panelStoreFits({ x: 40, y: 20, w: 120, h: 60 }, nat, 1440, 900),
+  squashed: a.panelStoreFits({ x: 0, y: 0, w: 1340, h: 87 }, nat, 1440, 900),
+  offscreen: a.panelStoreFits({ x: 5000, y: -4000, w: null, h: null }, nat, 1440, 900),
+  tooBig: a.panelStoreFits({ x: 0, y: 0, w: 3000, h: 2000 }, nat, 1440, 900),
+  smallNatural: a.panelStoreFits({ x: 0, y: 0, w: 200, h: 100 }, { width: 200, height: 100 }, 1440, 900),
+  dockElsewhere: a.panelStoreFits({ x: 0, y: 0, w: 500, h: 700, dock: "right" }, nat, 1440, 900, "left max"),
+  dockAllowed: a.panelStoreFits({ x: 0, y: 0, w: 500, h: 700, dock: "left" }, nat, 1440, 900, "left max"),
+};
+delete store["tessellate.panels"];
 out.restoreDefault = a.panelRestoreOn();
 store["panel-pos"] = "off";
 out.restoreOff = a.panelRestoreOn();
@@ -109,6 +133,34 @@ def test_storage_round_trips_and_survives_garbage(maths) -> None:
     assert maths["read"] == {"x": 12, "y": -3, "w": 600, "h": None}
     assert maths["missing"] is None and maths["gone"] is None
     assert maths["corrupt"] is None and maths["bad"] is None
+
+
+@node
+def test_an_entry_from_an_older_layout_or_that_no_longer_fits_is_not_applied(maths) -> None:
+    """INBOX 1454: the OCR workspace "wasn't normal" because an entry stored for
+    the head wrapper (before INBOX 1448 moved the whole card) was applied to the
+    card. A layout version per entry and a fit check on open are the class fix."""
+    assert maths["verSame"] == {"x": 3, "y": 4, "w": 700, "h": 500}
+    assert maths["verOld"] is None and maths["verNone"] is None
+    assert maths["plainNow"] == {"x": 3, "y": 4, "w": None, "h": None}
+    assert maths["plainAfterBump"] is None
+    assert maths["dockVer"] == {"x": 0, "y": 0, "w": 500, "h": 600, "dock": "left"}
+    f = maths["fits"]
+    assert f["good"] is True and f["position"] is True and f["smallNatural"] is True and f["dockAllowed"] is True
+    assert not any([f["tiny"], f["squashed"], f["offscreen"], f["tooBig"], f["dockElsewhere"]])
+
+
+def test_a_double_click_on_the_grip_puts_the_size_back() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    assert "function panelResetSize(" in js
+    assert 'e.target.closest(".panel-grip")' in js and "panelResetSize(" in js[js.index('addEventListener("dblclick"') :]
+    # the grip's own help says so, and so does the head's reset line
+    assert "Double-click resets the size" in js
+
+
+def test_a_press_on_a_head_keeps_the_focus_and_selects_nothing() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    assert 'addEventListener("mousedown"' in js
 
 
 def test_the_module_is_lazy_and_loads_its_stylesheet() -> None:

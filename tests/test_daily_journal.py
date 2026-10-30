@@ -122,3 +122,24 @@ def test_the_window_is_bounded(client):
     assert client.get("/entries/daily?through=2026-09-13&days=100000").status_code == 422
     assert client.get("/entries/daily?through=2026-09-13&days=366").status_code == 200
     assert client.get("/entries/daily?through=nonsense").status_code == 422
+
+
+def test_today_is_the_users_day_not_the_servers(client, monkeypatch):
+    """Audit 1028 K22: with no `through`, today was the server's
+    `date.today()`, so a phone across the date line saw the wrong day."""
+    from datetime import datetime, timezone
+
+    from tessellate.core import config as config_module
+
+    fixed = datetime(2026, 9, 13, 20, 0, tzinfo=timezone.utc)
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return fixed.astimezone(tz) if tz else fixed.replace(tzinfo=None)
+
+    monkeypatch.setattr(config_module, "datetime", Clock)
+    saved = client.put("/preferences", json={"timezone": "Pacific/Kiritimati"})
+    assert saved.status_code == 200
+    answer = client.get("/entries/daily?days=3").json()
+    assert answer["through"] == "2026-09-14", "20:00 UTC is 10:00 the next day at UTC+14"

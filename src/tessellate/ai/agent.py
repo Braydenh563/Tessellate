@@ -649,6 +649,11 @@ _RECOVERY_HINTS = {
         "Web access is off in Settings. Do not retry. Answer from the "
         "notebook, and say that a web lookup would need turning on."
     ),
+    "web_down": (
+        "The web could not be reached from here. Do not retry or rephrase the "
+        "search. Answer from the notes you already have, or tell the user the "
+        "web is unreachable and what to check in Settings, Web search."
+    ),
     "generic": (
         "That call failed. Do not repeat it unchanged. Either retry once with "
         "different arguments, try a different tool, or tell the user plainly "
@@ -678,29 +683,47 @@ _RECOVERY_HINTS = {
 }
 
 
+#: Failure phrases and the advice each earns, first match wins; the tables
+#: sit either side of the checks in `_recovery_hint`.
+_HINTS_FIRST = ((("not part of this skill",), "not_in_skill"),)
+_HINTS_MID = (
+    (("turned off in settings",), "disabled"),
+    (("web search is disabled",), "web_off"),
+    (("rate limit", "too many requests", "429"), "rate_limited"),
+)
+_HINTS_AFTER = (
+    (("timeout", "timed out"), "timeout"),
+    #: "nothing found" and "returned nothing" are about the *search*; "empty" on
+    #: its own is not, and matching it here sent "the note body is empty", an
+    #: argument mistake the model can fix, down the "it isn't there, stop
+    #: looking" path. Match the phrases that mean an empty result, not the word.
+    (("nothing found", "returned nothing", "no results"), "empty_result"),
+    (("not found", "no note", "no such"), "not_found"),
+)
+
+
+def _hint_in(table: tuple, lowered: str) -> str | None:
+    return next((_RECOVERY_HINTS[key] for phrases, key in table if any(p in lowered for p in phrases)), None)
+
+
 def _recovery_hint(name: str, message: str) -> str:
     """Pick the advice that fits this failure."""
     lowered = message.lower()
-    if "not part of this skill" in lowered:
-        return _RECOVERY_HINTS["not_in_skill"]
+    found = _hint_in(_HINTS_FIRST, lowered)
+    if found:
+        return found
     if lowered.startswith("unknown tool"):
         return _RECOVERY_HINTS["unknown_tool"]
-    if "turned off in settings" in lowered:
-        return _RECOVERY_HINTS["disabled"]
-    if "web search is disabled" in lowered:
-        return _RECOVERY_HINTS["web_off"]
-    if "rate limit" in lowered or "too many requests" in lowered or "429" in lowered:
-        return _RECOVERY_HINTS["rate_limited"]
-    if "timeout" in lowered or "timed out" in lowered:
-        return _RECOVERY_HINTS["timeout"]
-    # "nothing found" and "returned nothing" are about the *search*; "empty" on
-    # its own is not, and matching it here sent "the note body is empty", an
-    # argument mistake the model can fix, down the "it isn't there, stop
-    # looking" path. Match the phrases that mean an empty result, not the word.
-    if "nothing found" in lowered or "returned nothing" in lowered or "no results" in lowered:
-        return _RECOVERY_HINTS["empty_result"]
-    if "not found" in lowered or "no note" in lowered or "no such" in lowered:
-        return _RECOVERY_HINTS["not_found"]
+    found = _hint_in(_HINTS_MID, lowered)
+    if found:
+        return found
+    #: A search or page service that failed is not an argument fault: the
+    #: tool's own "no URL was given" is (audit 1030 A5).
+    if name in ("web_search", "read_url") and not any(m in lowered for m in ("was given", "is required", "required", "must be")):
+        return _RECOVERY_HINTS["web_down"]
+    found = _hint_in(_HINTS_AFTER, lowered)
+    if found:
+        return found
     # ValueError/KeyError/TypeError from a handler are argument problems, and
     # execute_tool prefixes those with the tool's own name.
     if lowered.startswith(f"{name}:"):
@@ -1823,8 +1846,11 @@ def _prepare_turn(
     # happening. Withdrawn from the wire *and* refused below, because a model
     # that calls a tool it was never offered must not get it either.
     barred = set(blocked_tools or ())
-    if barred:
-        offered = [t for t in offered if t["function"]["name"] not in barred]
+    #: The web tools a first-person question does not need are only left off
+    #: the wire (audit 1030 A3); a call a model makes anyway is judged as before.
+    unoffered = barred | tools.web_barred(question)
+    if unoffered:
+        offered = [t for t in offered if t["function"]["name"] not in unoffered]
     # On a small window, trim the descriptions even when the full set would
     # fit. `within_budget` compacts only once the schemas overflow their share,
     # which is the right rule for a large model, but on an 8k window the
@@ -1878,9 +1904,9 @@ def _prepare_turn(
             tools.ollama_tools(_focus(question, history) if tier.narrow_toolbox else None),
             session,
         )
-        if barred:
+        if unoffered:
             every_tool = [
-                t for t in every_tool if t["function"]["name"] not in barred
+                t for t in every_tool if t["function"]["name"] not in unoffered
             ]
         if budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS:
             every_tool = tools.compact_schemas(every_tool)
@@ -2378,6 +2404,12 @@ def _count_call() -> None:
         spend.count_call()
 
 
+def _query_said(name: str, arguments: dict) -> list[dict]:
+    """A web search's words, said before they leave this computer (audit 1030 A2)."""
+    query = str(arguments.get("query") or "")[:200] if name == "web_search" and isinstance(arguments, dict) else ""
+    return [{"type": "status", "stage": "web", "query": query, "said": f"searching the web for “{query}”"}] if query else []
+
+
 def _run_and_record(
     session: Session, plan: _TurnPlan, state: _TurnState, name: str, arguments: dict
 ) -> Iterator[dict]:
@@ -2396,6 +2428,7 @@ def _run_and_record(
         #: instead of running before the next yield notices (Brief 101b).
         result = {"error": "Stopped before this ran: you pressed Stop."}
     else:
+        yield from _query_said(name, arguments)
         result = tools.execute_tool(
             session, name, arguments, context_tokens=plan.window, model=plan.agent_model
         )

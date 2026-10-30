@@ -194,6 +194,31 @@ _SUBJECT_HEADS = frozenset(("about", "regarding", "re", "on", "of"))
 _SUBJECT_ENDING = ("ics", "sis", "tion", "sion", "ology", "ism", "ment", "ness", "ity", "ance", "ence", "ure", "ship")
 
 
+def _tail_is_the_question(tokens: list[re.Match], size: int, words: list[str], known) -> bool:  # noqa: ANN001
+    """Whether the last `size` words, with no comma before them, are the
+    question's own (an object, a title, a subject, someone talked about) and
+    so no name for the assistant."""
+    previous = tokens[-size - 1].group(0).lower()
+    if previous in OBJECT_HEADS or len(tokens) - size < 2:
+        return True
+    #: "tell me about project atlas": the two words end a title the
+    #: notes hold, so "atlas" is the thing, not the assistant called
+    #: at the end (audit 1030 A17).
+    held = _IN_NOTES.get()
+    if size == 1 and held and held(f"{previous} {words[-1].lower()}"):
+        return True
+    #: "about quantum chromodynamics": a subject two words long, not
+    #: "quantum" and a nickname (INBOX 1357, class H).
+    if (len(tokens) - size >= 2 and tokens[-size - 2].group(0).lower() in _SUBJECT_HEADS
+            and words[-1].lower().endswith(_SUBJECT_ENDING)):
+        return True
+    #: A capital mid-sentence is someone talked about ("when did I
+    #: meet Zorgblat"); a nickname is typed as it is said.
+    if words[-1][0].isupper() and words[-1].lower() not in ADDRESS:
+        return True
+    return not _name(words, known, False)
+
+
 def _tail(text: str, tokens: list[re.Match], known) -> Address | None:  # noqa: ANN001
     stripped = text.rstrip(" ?!.")
     mark = text[len(stripped) :].strip()
@@ -211,19 +236,7 @@ def _tail(text: str, tokens: list[re.Match], known) -> Address | None:  # noqa: 
                 continue
             head = before.rstrip()[:-1].rstrip()
         else:
-            previous = tokens[-size - 1].group(0).lower()
-            if previous in OBJECT_HEADS or len(tokens) - size < 2:
-                continue
-            #: "about quantum chromodynamics": a subject two words long, not
-            #: "quantum" and a nickname (INBOX 1357, class H).
-            if (len(tokens) - size >= 2 and tokens[-size - 2].group(0).lower() in _SUBJECT_HEADS
-                    and words[-1].lower().endswith(_SUBJECT_ENDING)):
-                continue
-            #: A capital mid-sentence is someone talked about ("when did I
-            #: meet Zorgblat"); a nickname is typed as it is said.
-            if words[-1][0].isupper() and words[-1].lower() not in ADDRESS:
-                continue
-            if not _name(words, known, False):
+            if _tail_is_the_question(tokens, size, words, known):
                 continue
             head = before.rstrip()
         return Address(question=f"{head}{mark}", names=[" ".join(words)])

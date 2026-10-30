@@ -70,3 +70,23 @@ def test_the_shared_row_says_the_same_thing_everywhere():
         for line in source.splitlines():
             if "Ask Atlas about this" in line and ("label" in line or "makeMenuItem(" in line):
                 assert "ph:chat-circle Ask Atlas about this" in line, line.strip()
+
+
+def test_duplicate_sits_with_the_notes_own_actions_not_under_add():
+    """Audit 1028 S12: Duplicate lived in the Add flyout, beside "Make a mind
+    map" and "Accept the filing", where nobody looks for a copy."""
+    menus = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "menus.js").read_text(encoding="utf-8")
+    top = menus.index("const topLevel = [")
+    add = menus.index("const addItems = [")
+    duplicate = menus.index('label: "ph:copy Duplicate"')
+    assert top < duplicate < add
+
+
+def test_board_failures_are_said_on_screen_not_in_the_console():
+    """Audit 1028 B22: a failed drawing save, board fetch or connection was a
+    `console.error` and nothing else. The remaining `console.warn` lines are
+    diagnostics for menus refused at the window's corner, not failures."""
+    board = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "whiteboard.js").read_text(encoding="utf-8")
+    assert "console.error(" not in board and "console.log(" not in board
+    for what in ("save that drawing", "open that board", "connect those"):
+        assert f'voiceLine("failed", {{ what: "{what}"' in board, what

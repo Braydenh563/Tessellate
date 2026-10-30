@@ -885,7 +885,7 @@ function libraryActions(item) {
         }
       ),
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptDialog("Rename this chat:", item.title);
+        const next = await promptTitle("Rename this chat", item.title);
         if (!next) return;
         const renamed = await apiJson(`/conversations/${item.id}`, {
           method: "PUT",
@@ -901,7 +901,6 @@ function libraryActions(item) {
         );
         if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
         if (chatConv && chatConv.id === item.id) newChatConversation();
-        toast("Archived.");
         reload();
         loadConversationList();
       }),
@@ -921,7 +920,7 @@ function libraryActions(item) {
   if (item.kind === "document") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-        const next = await promptDialog("Rename this document:", item.title);
+        const next = await promptDialog("Rename this document", item.title);
         if (!next) return;
         await renameDocumentWithUndo(item, next).catch((e) => toast(e.message, true));
         reload();
@@ -1077,7 +1076,7 @@ function libraryActions(item) {
   if (item.kind === "tag") {
     return [
       makeMenuItem("ph:pencil-simple Rename", "Rename this tag everywhere (merge if it exists)", async () => {
-        const next = await promptDialog(`Rename tag “${item.title}” to:`, item.title);
+        const next = await promptDialog(`Rename the tag “${item.title}”`, item.title);
         if (!next || next === item.title) return;
         if (!(await ensureModule("tagManager"))) return;
         await runTagEdit(`Renamed “${item.title}” to “${next}”`, "/tags/rename", { old: item.title, new: next }, { [item.title]: next });
@@ -3335,6 +3334,9 @@ async function renderLibraryDocuments() {
   list.replaceChildren();
   const isFilteredEmpty = (Boolean(needle) || propertyFiltered) && !docs.length;
   empty?.classList.toggle("hidden", docs.length > 0 || isFilteredEmpty);
+  //: One New document at a time: the empty state's own button is the action
+  //: while there is nothing, so the head's copy steps aside (audit 1028 U29).
+  document.getElementById("library-docs-new")?.classList.toggle("hidden", !docs.length && !isFilteredEmpty);
   noMatch?.classList.toggle("hidden", !isFilteredEmpty);
   if (noMatch && isFilteredEmpty) {
     //: Which of the two narrowings came up empty, said by name: "no documents
@@ -3493,7 +3495,7 @@ async function renderLibraryDocuments() {
           );
         }),
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-          const next = await promptDialog("Rename this document:", doc.title || "");
+          const next = await promptDialog("Rename this document", doc.title || "");
           if (!next) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
           renderLibraryDocuments();
@@ -11159,7 +11161,7 @@ async function bulkMoveLibraryLinks() {
   const links = [...libraryLinksSelection.values()];
   if (!links.length) return;
   const value = await promptDialog(
-    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it):`,
+    `Group for ${nounCount(links.length, "bookmark")} (e.g. Work/Reading, blank clears it)`,
     ""
   );
   //: Cancel and an empty field both resolve "" (see `moveToGroup`), so a bulk
@@ -11255,7 +11257,7 @@ async function deleteBookmarkGroup(group) {
 }
 
 async function newBookmarkGroup() {
-  const name = (await promptDialog("Name for the new group (e.g. Work/Reading):", "")).trim();
+  const name = (await promptDialog("Name for the new group (e.g. Work/Reading)", "")).trim();
   if (!name) return;
   if (allBookmarkGroups().includes(name)) {
     toast(`"${name}" already exists.`);
@@ -11337,7 +11339,7 @@ function manageBookmarkGroups() {
       actions.className = "row bookmark-group-row-actions";
       actions.append(
         smallButton("ph:pencil-simple", `Rename "${group}"`, async () => {
-          const next = (await promptDialog(`Rename "${group}" to:`, group)).trim();
+          const next = (await promptDialog(`Rename "${group}"`, group)).trim();
           if (!next || next === group) return;
           const moved = await renameBookmarkGroup(group, next);
           await renderBookmarks();
@@ -11822,7 +11824,7 @@ function bookmarkRow(bookmark) {
 
   const moveToGroup = async () => {
     const value = await promptDialog(
-      "Group (e.g. Work/Reading: blank clears it):", bookmark.group_name
+      "Group (e.g. Work/Reading: blank clears it)", bookmark.group_name
     );
     // Unlike the title prompt above, an intentionally blank group is a real,
     // useful answer ("ungroup this link"), so only an actual Cancel/Escape

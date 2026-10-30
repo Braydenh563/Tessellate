@@ -6,7 +6,10 @@ import difflib
 import json
 import random
 import re
+import threading
 from collections.abc import Iterator
+from concurrent.futures import Future
+from concurrent.futures import TimeoutError as FutureTimeout
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -189,7 +192,57 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     ollama = deps.get_ollama()
     if not backend_hint.running(ollama):
         return fallback
+    return _greeting_within(config, ollama, block, fallback)
 
+
+#: How long the banner waits for the model's greeting before it shows the
+#: composed one (audit 1030 A39: a hung model held the route 4,005 ms).
+GREETING_WAIT = 0.5
+_GREETING_FLIGHT: dict[str, Future] = {}
+
+
+def _spawn(fn, *args) -> Future:  # noqa: ANN001, ANN002
+    """`fn(*args)` on a daemon thread, so a model that never answers cannot
+    hold the app open when it quits (a pool's threads are joined at exit)."""
+    future: Future = Future()
+
+    def run() -> None:
+        try:
+            future.set_result(fn(*args))
+        except BaseException as exc:  # noqa: BLE001  # carried to whoever reads the result
+            future.set_exception(exc)
+
+    threading.Thread(target=run, name="greeting", daemon=True).start()
+    return future
+
+
+def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
+    """The model's greeting if it comes within `GREETING_WAIT`, else the
+    composed one now. A call that runs late is not cancelled: the next
+    request takes its result, and while one is still running no second is
+    started, so a hung model costs one thread and no wait."""
+    flight = _GREETING_FLIGHT.get(block)
+    if flight is not None:
+        if not flight.done():
+            return fallback
+        _GREETING_FLIGHT.pop(block, None)
+        try:
+            return flight.result()
+        except Exception:  # noqa: BLE001  # a failed late call is the composed greeting
+            return fallback
+    flight = _spawn(_ai_greeting, config, ollama, block, fallback)
+    _GREETING_FLIGHT[block] = flight
+    try:
+        result = flight.result(timeout=GREETING_WAIT)
+    except FutureTimeout:
+        return fallback
+    except Exception:  # noqa: BLE001  # any model failure degrades to the composed greeting
+        result = fallback
+    _GREETING_FLIGHT.pop(block, None)
+    return result
+
+
+def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     # The name is read from preferences here rather than trusted from the
     # client, so there is exactly one source of truth for it.
     name = str(config.get_preference("display_name", "") or "").strip()

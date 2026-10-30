@@ -340,7 +340,7 @@ function nameMarkBuddyMenu(buddy, at = null) {
   //: In the enlarged view (`nmb.visit`) only who it is, its look and its
   //: size: a place on the page, Enlarge and Hide mean nothing inside the card.
   const shown = nmb.visit ? items.filter((item) => item.group === "who") : items;
-  openMenuAtPoint(shown, "Companion", at ? at[0] : box.left, at ? at[1] : box.top);
+  openMenuAtPoint(shown, "Companion", at ? at[0] : box.left, at ? at[1] : box.top, face); // Escape returns to the companion (A36)
   const menu = [...document.querySelectorAll(".pointer-menu-host .action-menu, .action-menu.action-menu-escaped")]
     .find((el) => !el.classList.contains("hidden") && el.getBoundingClientRect().width);
   nmb.menu = menu || null;

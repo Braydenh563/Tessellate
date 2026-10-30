@@ -549,7 +549,7 @@ async function mergeCategoriesFromPanel(metas, target = null) {
 //: sidebar row's ⋯ both draw from it.
 
 async function createCategoryFromPanel() {
-  const name = await promptDialog("Name the new category:", "", { confirmLabel: "Create" });
+  const name = await promptDialog("Name the new category", "", { confirmLabel: "Create" });
   if (!name || !name.trim()) return;
   try {
     const made = await apiJson("/categories", { method: "POST", body: JSON.stringify({ name: name.trim() }) });
@@ -779,7 +779,7 @@ function splitCategoryFromPanel(meta) {
 // reaches them through LAZY_ENTRY_POINTS (app.js).
 
 async function renameCategory(meta, currentName) {
-  const name = await promptDialog(`Rename "${currentName}" to:`, currentName, { confirmLabel: "Rename" });
+  const name = await promptDialog(`Rename "${currentName}"`, currentName, { confirmLabel: "Rename" });
   if (!name || name === currentName) return;
 
   // Renaming onto a category that already exists merges them, which is
@@ -875,7 +875,7 @@ function chooseNoteCategory(ids, current = "") {
       list.appendChild(
         sheetRow("ph ph-plus", "New category…", async () => {
           close();
-          const name = await promptDialog("Name the new category:", "", { confirmLabel: "Move" });
+          const name = await promptDialog("Name the new category", "", { confirmLabel: "Move" });
           if (name && name.trim()) await moveNotesToCategory(noteIds, name.trim());
         })
       );

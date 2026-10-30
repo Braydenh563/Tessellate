@@ -4317,7 +4317,7 @@ async function renderActivityWidget(body) {
     //: `snapshot` count says how many it stands for).
     const run = item.snapshot ? ` (${item.snapshot} edits)` : "";
     const who = historyActorLabel(item.actor);
-    const meta = [who, dashRelativeTime(item.created_at)].filter(Boolean).join(" · ");
+    const meta = [who, relativeTime(item.created_at)].filter(Boolean).join(" · ");
     const open = entry && !entry.is_deleted
       ? () => flashEntry(entry.id)
       : item.entity_type === "document" && item.action !== "deleted"
@@ -4491,7 +4491,7 @@ async function renderDocumentsWidget(body) {
     const words = doc.words ? `${doc.words.toLocaleString()} word${doc.words === 1 ? "" : "s"}` : "Empty";
     dashActionRow(ul, {
       title: doc.title || "Untitled document",
-      meta: `${words} · ${dashRelativeTime(doc.updated_at)}`,
+      meta: `${words} · ${relativeTime(doc.updated_at)}`,
       hint: "Open this document",
       onOpen: () => {
         switchTab("documents");
@@ -4524,31 +4524,12 @@ async function renderBookmarksWidget(body) {
   for (const bookmark of bookmarks.slice(0, 6)) {
     dashActionRow(ul, {
       title: bookmark.title || bookmark.url,
-      meta: dashRelativeTime(bookmark.created_at),
+      meta: relativeTime(bookmark.created_at),
       hint: `Open ${bookmark.url}`,
       onOpen: () => window.open(safeHref(bookmark.url), "_blank", "noopener,noreferrer"),
     });
   }
   body.appendChild(ul);
-}
-
-/** "3 days ago" from an ISO timestamp, with a plain date once it is old. */
-//: Read through `parseServerTime` (audit 2026-10-05, FE-16): a timestamp
-//: with no zone is the server's UTC, and `new Date` reads it as local time,
-//: so "3 hours ago" was off by the offset. The Library and the reminders
-//: read times the same way now.
-function dashRelativeTime(iso) {
-  const when = parseServerTime(iso);
-  if (!when) return "";
-  const seconds = Math.max(0, (Date.now() - when.getTime()) / 1000);
-  if (seconds < 90) return "just now";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${nounCount(hours, "hour")} ago`;
-  const days = Math.round(hours / 24);
-  if (days <= 30) return `${nounCount(days, "day")} ago`;
-  return when.toLocaleDateString();
 }
 
 //: A markdown task line: `- [ ]` / `* [x]` / `1. [ ]`, with the loose leading
@@ -4681,7 +4662,7 @@ function dashTensionRow(tension, onGone) {
   const meta = document.createElement("span");
   meta.className = "dash-list-preview";
   const who = tension.model === "local" ? "Found without a model" : tension.model === "person" ? "Linked by you" : `Found by ${tension.model}`;
-  meta.textContent = [who, tension.computed_at ? dashRelativeTime(tension.computed_at) : ""].filter(Boolean).join(" · ");
+  meta.textContent = [who, tension.computed_at ? relativeTime(tension.computed_at) : ""].filter(Boolean).join(" · ");
   text.append(title, why, meta);
   const actions = document.createElement("span");
   actions.className = "night-fact-actions";

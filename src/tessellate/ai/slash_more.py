@@ -137,9 +137,26 @@ def _random(session: Session, arg: str, now: datetime) -> str:
     return f"Here is one of your {len(rows)} notes, picked at random:\n\n{_rows(session, [pick])}"
 
 
-def _tags(session: Session, arg: str, now: datetime) -> str:
+def tag_counts(session: Session) -> Counter:
+    """How many visible notes carry each tag."""
     entry, visible = _notes()
-    counts = Counter(t for raw in session.scalars(select(entry.tags).where(*visible)) for t in _tags_of(raw))
+    return Counter(t for raw in session.scalars(select(entry.tags).where(*visible)) for t in _tags_of(raw))
+
+
+def category_counts(session: Session) -> tuple[list, int]:
+    """((name, notes) per category, most first; the notes filed nowhere)."""
+    from tessellate.core.database import Category
+
+    entry, visible = _notes()
+    count = func.count(entry.id)
+    rows = session.execute(
+        select(Category.name, count).join(entry, entry.category_id == Category.id).where(*visible).group_by(Category.id).order_by(count.desc(), Category.name)
+    ).all()
+    return rows, session.scalar(select(count).where(*visible, entry.category_id.is_(None))) or 0
+
+
+def _tags(session: Session, arg: str, now: datetime) -> str:
+    counts = tag_counts(session)
     if not counts:
         return "No note has a tag yet."
     top = counts.most_common(15)
@@ -149,14 +166,7 @@ def _tags(session: Session, arg: str, now: datetime) -> str:
 
 
 def _categories(session: Session, arg: str, now: datetime) -> str:
-    from tessellate.core.database import Category
-
-    entry, visible = _notes()
-    count = func.count(entry.id)
-    rows = session.execute(
-        select(Category.name, count).join(entry, entry.category_id == Category.id).where(*visible).group_by(Category.id).order_by(count.desc(), Category.name)
-    ).all()
-    unfiled = session.scalar(select(count).where(*visible, entry.category_id.is_(None))) or 0
+    rows, unfiled = category_counts(session)
     parts = [f"{name} ({n})" for name, n in rows] + ([f"not filed ({unfiled})"] if unfiled else [])
     if not parts:
         return "You have no notes yet."
@@ -204,6 +214,14 @@ def _calc(session: Session, arg: str, now: datetime) -> str:
     try:
         value = arithmetic.evaluate(expression)
     except arithmetic.NotArithmetic:
+        #: What the Calculator dialog reads ("12% of 340", a unit, a currency):
+        #: the one reader, so the chat does not refuse what the dialog does
+        #: (audit 1030 A28).
+        from tessellate.ai import tools
+
+        got = tools.execute_tool(session, "calculate", {"question": expression[:300]})
+        if got.get("answer"):
+            return f"{expression} = {got['answer']}"
         return f"I can only work out sums with numbers, + - * / % ^ and brackets, so not “{expression}”."
     return f"{expression} = {arithmetic.spoken(value)}"
 

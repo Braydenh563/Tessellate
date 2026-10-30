@@ -22,3 +22,14 @@ def test_the_editors_send_the_hash_they_started_from_and_ask_on_a_conflict():
     # One prompt, on the dialog recipe, for both editors.
     assert "function editConflictPrompt(" in app
     assert docs.count("editConflictPrompt(") >= 1 and notes.count("editConflictPrompt(") >= 1
+
+
+def test_taking_their_document_takes_their_title_too():
+    """Audit 1028 D10: "Take theirs" updated `currentDoc` but left the title
+    box on the old text, so the next save sent the old title back."""
+    from pathlib import Path
+
+    docs = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "documents.js").read_text(encoding="utf-8")
+    start = docs.index("async function docResolveConflict(")
+    theirs = docs[docs.index('answer === "theirs"', start): docs.index("\n}\n", start)]
+    assert '$("doc-title").value = current.title' in theirs

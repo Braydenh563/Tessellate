@@ -2945,8 +2945,8 @@ body.printing-doc #doc-preview p,
   cursor: text;
 }
 
-/* The hover lock (decision 28): a quiet lock at a locked item's top right
-   while the pointer is on it, one size at any zoom like the comment mark
+/* The lock badge (decision 28, audit 1028 B20): a quiet lock at a locked
+   item's top right, always shown, one size at any zoom like the comment mark
    beside it. It takes no pointer: the item lets the pointer through, and so
    does its mark. */
 .wb-lock-pin {
@@ -2956,6 +2956,10 @@ body.printing-doc #doc-preview p,
   transform-origin: 0 0;
   transform: scale(var(--wb-inv-zoom));
   pointer-events: none;
+}
+
+#library-view-whiteboard.wb-presenting #wb-lock-marks {
+  display: none;
 }
 
 .wb-lock-mark {
@@ -7449,4 +7453,35 @@ input[type="color"].wb-mixed {
    theme's adopted `.cm-scroller` face by specificity. */
 .doc-editor .cm-editor.doc-content-code :is(.cm-content, .cm-gutters) {
   font-family: var(--mono, ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace);
+}
+/* A live diagram (INBOX 1451): its drawing fills its box at its own shape,
+   or the parser's one line while the source has a mistake in it. The
+   dialog's preview is the same image. */
+.wb-object-diagram > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.wb-diagram-note {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.wb-diagram-preview {
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--control-h-lg) * 4);
+  max-height: 40vh;
+  margin: var(--space-2) 0;
+  overflow: auto;
+}
+.wb-diagram-preview > img {
+  max-width: 100%;
+  max-height: 38vh;
 }

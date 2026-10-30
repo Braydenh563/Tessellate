@@ -1712,3 +1712,8 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 1403. Rich text runs on a board card and the ⋯ menu top: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
 
 1404. Drag a connector label by its words: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
+
+## Placed from INBOX, 2026-10-30
+
+1452. Left drag selects, right drag pans: built; moved to HISTORY.md, "INBOX resolved, 2026-10-30".
+

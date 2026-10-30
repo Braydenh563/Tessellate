@@ -93,3 +93,29 @@ def test_tensions_compare_the_pairs_once_per_vector_set(ai_client, session, fake
 def test_no_embeddings_means_no_pairs(session, monkeypatch):
     monkeypatch.setattr(engine, "_backend_id", lambda: None)
     assert engine.cached_similar_pairs(session, 0.5) == []
+
+
+def test_link_suggestions_are_kept_until_the_notebook_changes(client, session, monkeypatch):
+    """Audit 1028 K30: every request read every note, link and mention and
+    ran the recogniser. A second ask with nothing written is answered from
+    the kept list; a flush or a bulk statement starts it again."""
+    from sqlalchemy import update
+
+    from tessellate.ai import relations
+
+    runs = []
+    real = relations.recognise
+    monkeypatch.setattr(relations, "recognise", lambda *a, **k: runs.append(1) or real(*a, **k))
+    first = _note(session, "Sam Lee came by the studio about the kiln")
+    _note(session, "Sam Lee and the kiln firing schedule")
+    asks = [client.get("/entries/link-suggestions") for _ in range(2)]
+    assert [a.status_code for a in asks] == [200, 200]
+    assert asks[0].json() == asks[1].json()
+    assert len(runs) == 1, "nothing was written between the two asks"
+    _note(session, "A third note")
+    client.get("/entries/link-suggestions")
+    assert len(runs) == 2, "a flush starts it again"
+    session.execute(update(Entry).where(Entry.id == first.id).values(is_private=True))
+    session.commit()
+    client.get("/entries/link-suggestions")
+    assert len(runs) == 3, "so does a bulk statement"

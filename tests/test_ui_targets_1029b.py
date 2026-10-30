@@ -74,11 +74,17 @@ def test_a_search_field_input_fills_its_well():
 
 def test_the_panel_grip_is_the_floor_not_a_space_step():
     text = (CSS / "panel-movable-lazy.css").read_text(encoding="utf-8")
-    body = _rule(text, ".panel-movable-on > .panel-grip")
+    body = _rule(text, ".panel-movable-on > button.panel-grip")
     assert "width: var(--target-min)" in body and "height: var(--target-min)" in body
-    # Zero net height, shifted into the right padding so it does not cover a
-    # foot's last button (the margin moved; the floor size it pins did not).
-    assert "margin: calc(-1 * var(--target-min)) calc(-1 * var(--space-5)) 0 auto" in body
+    # INBOX 1454: the grip is the card's last row, not an overlay on the foot
+    # (it covered a foot's last button on 22 of 35 panels). Its bottom hangs
+    # into the card's own padding (margins and sticky `bottom` written once by
+    # `panelGripRoom`), so the floor size it pins is unchanged (the mechanism
+    # that kept it off the button moved; the intent did not).
+    assert "margin: 0 0 0 auto" in body
+    js = (JS / "panel-movable.js").read_text(encoding="utf-8")
+    assert "function panelGripRoom(" in js and "grip.style.marginBottom" in js
+    assert "margin: calc(-1 * var(--target-min))" not in body
     assert "--space-6" not in body
 
 

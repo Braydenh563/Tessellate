@@ -4768,9 +4768,16 @@ mark.lightbox-hit {
    the formatting strip's menus, and for the same reason: where it should go
    depends on where the badge has ended up, which CSS here cannot know. The
    `top`/`left` below are only the pre-measurement seed. */
+/* The floating panels the app stays usable behind share one layer: level
+   with the top bar, over every bar the page pins below it (the notes dock at
+   19 drew over the Appearance panel at 2, INBOX 1453), under every menu,
+   dialog and toast. Later in the page, a panel wins the tie with the bar. */
+.chat-model-panel,
+.appearance-panel {
+  z-index: 40;
+}
 .chat-model-panel {
   position: fixed;
-  z-index: 40;
   top: 0;
   left: 0;
   margin-top: var(--space-2);

@@ -12,7 +12,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+#: status-panels.js holds the popover since it left the boot scripts (gzip budget).
+STATUS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("status.js", "status-panels.js"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 

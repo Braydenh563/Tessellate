@@ -129,7 +129,7 @@ async function resolveCategoryChoice(select) {
   if (select.value !== "__new__") return select.value;
   // promptDialog resolves to trimmed text, or "" for cancel: one shape for
   // both, so there is no null to check the way window.prompt needed.
-  const name = await promptDialog("Name for the new category:", "", { confirmLabel: "Create" });
+  const name = await promptDialog("Name for the new category", "", { confirmLabel: "Create" });
   return name || undefined;
 }
 

@@ -50,3 +50,29 @@ date | item | type | rung | rework | note
 2026-10-28 | E10 tasks as acts | feature | sonnet | 1 | 
 2026-10-28 | help text parity 1028 | docs | sonnet | 0 | 
 2026-10-28 | import cycles in commands.py | bugfix | opus | 0 | 
+2026-10-30 | INBOX 1452 left-drag select, right-drag pan | ui | opus | 0 | 
+2026-10-30 | INBOX 1451/1453/1455/1456 diagram, panel layer, offered open, spending lists | feature | opus | 0 | 
+2026-10-30 | K30 link suggestion cache | bug | sonnet | 0 | 
+2026-10-30 | K31 entity counts in SQL | bug | sonnet | 0 | 
+2026-10-30 | S14 documents tab label | ui | sonnet | 0 | 
+2026-10-30 | S19 toast hold on hover and focus | ui | sonnet | 0 | 
+2026-10-30 | U13 two Library buttons | ui | sonnet | 0 | 
+2026-10-30 | D17 blank title autosave | bug | sonnet | 0 | 
+2026-10-30 | D29 replace whole word and leave-out | feature | sonnet | 0 | 
+2026-10-30 | U9 find match count | ui | sonnet | 0 | 
+2026-10-30 | K6 SearXNG pinned commit and tree digest | security | opus | 0 | 
+2026-10-30 | K21 quoted string defaults | bug | opus | 0 | 
+2026-10-30 | K37 PRAGMA optimize at shutdown | perf | opus | 0 | 
+2026-10-30 | D36 failed drop re-adds document | bug | opus | 0 | 
+2026-10-30 | S12 Duplicate at top level | ui | opus | 0 | 
+2026-10-30 | K22 user-day dates | bug | opus | 0 | 
+2026-10-30 | B22 board failures toasted | bug | opus | 0 | 
+2026-10-30 | D34 failed save said once | bug | opus | 0 | 
+2026-10-30 | K18 thumbnails off the loop | perf | opus | 0 | 
+2026-10-30 | D31 Ctrl+H replace | feature | opus | 0 | 
+2026-10-30 | E66 delete all names every match | bug | opus | 0 | 
+2026-10-30 | U29 one New document | ui | opus | 0 | 
+2026-10-30 | S17 one past-time helper | refactor | opus | 0 | 
+2026-10-30 | D32 find chords in palette | ui | opus | 0 | 
+2026-10-30 | U33 prompt headings | ui | opus | 0 | 
+2026-10-30 | S13 placeholder fields labelled | ui | opus | 0 | 

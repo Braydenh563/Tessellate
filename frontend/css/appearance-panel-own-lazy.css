@@ -1,12 +1,11 @@
 /* The Appearance quick panel (INBOX 1435, DESIGN.md recipe `appearancePanel`). Loaded with
    js/appearance-panel.js. The Settings rows inside it are styled by
    appearance-panel-lazy.css (generated). Non-modal: no scrim, the app stays usable behind it.
-   Layer 2 sits over the page and under every dialog, menu and toast. */
+   Its layer is the floating panels' (02-chat-graph.css, `.chat-model-panel`). */
 .appearance-panel {
   position: fixed;
   top: calc(var(--space-9) * 2);
   right: var(--space-6);
-  z-index: 2;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;

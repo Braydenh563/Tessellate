@@ -164,7 +164,7 @@
            depth of the click. So the fix landed in the Library's own sub-tabs
            instead, where Documents now has a section of its own. `documents`
            is still in TABS and still switchable-to; see revealTab on why the
-           Library button lights up while it is showing. -->
+           Sidebar button lights up while it is showing. -->
       <button role="tab" id="tab-btn-library" data-tab="library"
         aria-selected="false" aria-controls="tab-library" tabindex="-1" aria-label="Library"><i class="ph ph-books tab-icon" aria-hidden="true"></i><span class="tab-label">Library</span></button>
       <button role="tab" id="tab-btn-timeline" data-tab="timeline"
@@ -1121,6 +1121,24 @@
     </div>
   </dialog>
 
+  <!-- A live Mermaid diagram on the board (INBOX 1451; whiteboard-interchange.js). -->
+  <dialog id="wb-diagram-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-diagram-title">
+    <div class="dialog-head">
+      <h2 id="wb-diagram-title" class="dialog-head-title">Mermaid diagram</h2>
+      <span class="dialog-head-actions">
+        <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-diagram-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </span>
+    </div>
+    <p class="muted wb-import-about" id="wb-diagram-about">Write any Mermaid diagram. It stays live: double-click it on the board to change it.</p>
+    <textarea id="wb-diagram-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid source" aria-describedby="wb-diagram-about"></textarea>
+    <div id="wb-diagram-preview" class="wb-diagram-preview" aria-live="polite"></div>
+    <div class="row right space-dialog-actions">
+      <button type="button" class="ghost small" id="wb-diagram-shapes" title="Replace it with shapes and connectors you can move one by one (flowchart, state, class and sequence diagrams)">Turn into shapes</button>
+      <button type="button" class="ghost small" data-close-dialog="wb-diagram-dialog">Cancel</button>
+      <button type="button" class="accent small" id="wb-diagram-save">Add to board</button>
+    </div>
+  </dialog>
+
   <dialog id="wb-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="wb-template-title">
     <div class="dialog-head">
@@ -1273,6 +1291,7 @@
     <div class="row">
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-regex"> <span>Regular expression</span></label>
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-case"> <span>Match case</span></label>
+      <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-word"> <span>Whole word</span></label>
     </div>
     <p id="doc-replace-summary" class="muted text-sm" role="status"></p>
     <ul id="doc-replace-list" class="doc-ai-history-list"></ul>
@@ -1323,7 +1342,7 @@
       </span>
     </div>
     <p class="muted">Add, remove or widen any dashboard widget. Changes save right away.</p>
-    <input type="search" id="dash-widgets-search" placeholder="Filter widgets…" autocomplete="off">
+    <input type="search" id="dash-widgets-search" aria-label="Filter widgets" placeholder="Filter widgets…" autocomplete="off">
     <div id="dash-widgets-list" class="dash-widgets-list"></div>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="dash-widgets-dialog">Done</button>
@@ -4694,7 +4713,7 @@ Link to another note with [[its first few words]]."></textarea>
        note is a captured thought, a document is something you sit down and
        write, and mixing them would put every half-finished draft into search
        results and the graph. -->
-  <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-labelledby="tab-btn-documents" tabindex="-1">
+  <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-label="Documents" tabindex="-1">
     <!-- **Focus mode's own dock** (INBOX 425 i). Everything else on the
          page is gone while the mode is on, so this is what is left of it:
          which document this is, whether it is saved, full screen when the
@@ -6859,6 +6878,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram" data-wb-surface="board"><i class="ph ph-graph ph-lead" aria-hidden="true"></i><span>Mermaid diagram…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
@@ -7132,7 +7152,7 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </div>
         <span class="wb-topbar-divider" aria-hidden="true"></span>
-        <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Library</span></button>
+        <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Sidebar</span></button>
         <button id="wb-format-btn" type="button" class="ghost small wb-panel-primary" aria-pressed="false" aria-controls="wb-format" title="Format panel: style, text, arrange and data for what is selected (Ctrl+Shift+P)"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Format</span></button>
         <button id="wb-fullscreen" class="ghost small icon-button" title="Full screen (Esc to leave)" aria-label="Toggle full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
       </div>
@@ -9149,7 +9169,7 @@ Link to another note with [[its first few words]]."></textarea>
        Nothing here invents structure the extractor does not have: regions are
        Tesseract's own blocks, and the only label beyond "text" is "heading",
        computed from box height. See core/ocr.py's `extract_regions`. -->
-  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog"
+  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
@@ -10910,7 +10930,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Adding one by hand. The tool covers "tell it in conversation";
                  this covers "I already know what I want it to always do". -->
             <div class="row memory-add">
-              <input id="memory-new" type="text" maxlength="200"
+              <input id="memory-new" type="text" maxlength="200" aria-label="Something to always do in answers"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
@@ -11705,7 +11725,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="panel-restore-toggle" checked>
                 <span>
                   Panels open where you left them
-                  <small class="muted">Off: every panel opens in the middle. Drag a panel's head to a screen edge to dock it; the reset button in its head puts it back.</small>
+                  <small class="muted">Off: every panel opens in the middle. Drag a panel's head to a screen edge to dock it; the reset button in its head puts it back, and a double-click on the corner mark puts back the size.</small>
                 </span>
               </label>
 
@@ -15079,7 +15099,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small improve-mode" data-mode="custom">Custom…</button>
       </div>
       <div class="row hidden" id="improve-custom-row">
-        <input id="improve-custom-input" type="text" maxlength="200"
+        <input id="improve-custom-input" type="text" maxlength="200" aria-label="How to change the text"
           placeholder="e.g. make it sound more formal, or translate to French">
         <button id="improve-custom-go" class="small">Go</button>
       </div>

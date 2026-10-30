@@ -104,7 +104,15 @@ def test_it_is_non_modal_and_on_panel_movable():
     assert "aria-modal" not in PANEL
     assert 'ensureModule("panelMovable")' in PANEL
     css = _own_css()
-    assert "position: fixed" in css and "z-index: 2" in css
+    assert "position: fixed" in css
+    #: Level with the top bar and over every bar the page pins below it (the
+    #: notes dock at 19 drew over it at 2, INBOX 1453), under the menus (50
+    #: and up), dialogs (1010) and toasts; later in the page, it wins a tie.
+    boot = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    layer = int(re.search(r"\.chat-model-panel,\n\.appearance-panel \{\n  z-index: (\d+);", boot).group(1))
+    sticky = [int(z) for sheet in (ROOT / "frontend" / "css").glob("*.css")
+              for z in re.findall(r"position: sticky;[^}]*?z-index: (\d+);", sheet.read_text(encoding="utf-8"))]
+    assert max(sticky) <= layer < 50, (max(sticky), layer)
     assert "scrim" not in css and "inset: 0" not in css
     # The foot of the file is the phone's sheet.
     assert "@media (max-width: 599.98px)" in css

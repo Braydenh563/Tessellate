@@ -236,7 +236,13 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
 
 
 def now_day() -> date:
-    return date.today()
+    """Today on the user's own clock, not the server's (audit 1028 K22).
+    The settings as loaded, never `get_config()`, which would start the app
+    from a unit test; with none, `user_now` is the server's zone."""
+    from tessellate.core import deps
+    from tessellate.core.config import user_now
+
+    return user_now(deps._config).date()
 
 
 def until_subject(question: str) -> tuple[str, str] | None:

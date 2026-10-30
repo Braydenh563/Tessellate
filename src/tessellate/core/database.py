@@ -2960,10 +2960,23 @@ class DatabaseManager:
                         if isinstance(value, bool):
                             value = int(value)
                         if isinstance(value, str):
-                            ddl += f" DEFAULT '{value}'"
+                            # A quote in the default doubled (audit 1028 K21):
+                            # left as it was, one apostrophe broke every start.
+                            quoted = value.replace("'", "''")
+                            ddl += f" DEFAULT '{quoted}'"
                         else:
                             ddl += f" DEFAULT {value}"
                     connection.exec_driver_sql(ddl)
+
+    def optimize(self) -> None:
+        """`PRAGMA optimize` at a clean quit (audit 1028 K37), as SQLite advises:
+        it gathers the statistics the planner lacks, only for tables the
+        launch's queries used, so plans keep up as a notebook grows."""
+        try:
+            with self.engine.connect() as connection:
+                connection.exec_driver_sql("PRAGMA optimize")
+        except Exception as exc:  # noqa: BLE001  # a quit must not fail over statistics
+            logging.getLogger(__name__).info("PRAGMA optimize skipped: %s", exc)
 
     def session(self) -> Session:
         """A fresh session; caller is responsible for closing it."""

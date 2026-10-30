@@ -1602,6 +1602,40 @@ function entryOverflowMenu(entry) {
           renderEntries();
         },
       },
+      //: Beside Select, not inside the Add flyout (audit 1028 S12): a copy of
+      //: the note is an action on it, found where the note's other actions are.
+      {
+        label: "ph:copy Duplicate",
+        title: "Make a copy of this note, opens ready to edit",
+        run: async () => {
+          closeActionMenus();
+          try {
+            const copy = await apiJson("/entries", {
+              method: "POST",
+              body: JSON.stringify({
+                //: The copy's title is its first "# " line: the API takes no
+                //: `title`, so the "(Copy)" this sent was dropped and the two
+                //: notes were indistinguishable (INBOX 432).
+                content: /^#\s+\S/.test(entry.content || "")
+                  ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
+                  : entry.content,
+                category: entry.category,
+                tags: entry.tags || [],
+              }),
+            });
+            await loadEntries();
+            pushEntryCreateUndo(copy, "Duplicated a note");
+            // Open the new note in edit mode straight away.
+            if (copy && copy.id) {
+              flashEntry(copy.id);
+              await openNoteEditor(copy.id);
+            }
+            toast("Note duplicated.");
+          } catch (err) {
+            toast(err.message || "Couldn't duplicate note.", true);
+          }
+        },
+      },
       //: The one correction a notebook that files for you is asked for most
       //: (INBOX 432); the card's category chip opens the same sheet.
       {
@@ -1782,38 +1816,6 @@ function entryOverflowMenu(entry) {
     ];
 
     const addItems = [
-      {
-        label: "ph:copy Duplicate",
-        title: "Make a copy of this note, opens ready to edit",
-        run: async () => {
-          closeActionMenus();
-          try {
-            const copy = await apiJson("/entries", {
-              method: "POST",
-              body: JSON.stringify({
-                //: The copy's title is its first "# " line: the API takes no
-                //: `title`, so the "(Copy)" this sent was dropped and the two
-                //: notes were indistinguishable (INBOX 432).
-                content: /^#\s+\S/.test(entry.content || "")
-                  ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
-                  : entry.content,
-                category: entry.category,
-                tags: entry.tags || [],
-              }),
-            });
-            await loadEntries();
-            pushEntryCreateUndo(copy, "Duplicated a note");
-            // Open the new note in edit mode straight away.
-            if (copy && copy.id) {
-              flashEntry(copy.id);
-              await openNoteEditor(copy.id);
-            }
-            toast("Note duplicated.");
-          } catch (err) {
-            toast(err.message || "Couldn't duplicate note.", true);
-          }
-        },
-      },
       //: OPEN row 566: the note's headings and lists as a mind map, the same
       //: build as the agent's `map_from_note`, so no model is needed.
       ...(entry.is_private ? [] : [{

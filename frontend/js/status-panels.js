@@ -1,4 +1,4 @@
-// status-panels.js: the search engine health rows, the backend picker, the undo history menu and Email support report, moved out of status.js on 2026-10-12 for the boot gzip budget. Each is called for its effect: `lazy-entries.js` stands in until this loads.
+// status-panels.js: the search engine health rows, the backend picker, the undo history menu and Email support report, moved out of status.js on 2026-10-12 (the model offer popover on 2026-10-30) for the boot gzip budget. Each is called for its effect: `lazy-entries.js` stands in until this loads.
 
 //: **A report by email, with the bundle saved first** (INBOX 256, the owner:
 //: "suggest that they download the support bundle and send it to my email
@@ -175,4 +175,39 @@ function renderBackendPicker(status) {
   if (lock && document.activeElement !== lock) {
     lock.checked = status.local_only_ai !== false;
   }
+}
+
+//: The popover a model-gated control opens with no model (DOCUMENTS_PLAN 24
+//: row 3); moved here for the boot gzip budget, a stand-in until it loads.
+function openModelOffer(control) {
+  closeHelpPopovers();
+  const panel = document.createElement("div");
+  panel.className = "help-body model-offer";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Needs a model");
+  const why = document.createElement("p");
+  why.textContent = `${control.dataset.needsModel}, and no model is connected. ${control.dataset.modelOffer}`.trim();
+  const setUp = smallButton("ph:plugs Set up a model", "Open Settings at Models, where a local or remote model is connected", () => {
+    entry.close();
+    openSettingsModal("models");
+  });
+  setUp.classList.add("primary");
+  panel.append(why, setUp);
+  const entry = {
+    panel,
+    trigger: control,
+    close() {
+      openHelpPopovers.delete(entry);
+      panel.remove();
+      control.setAttribute("aria-expanded", "false");
+    },
+  };
+  panel.style.visibility = "hidden";
+  panel.classList.add("help-popover");
+  (control.closest("dialog[open]") || document.body).appendChild(panel);
+  panel.addEventListener("click", (event) => event.stopPropagation());
+  openHelpPopovers.add(entry);
+  control.setAttribute("aria-expanded", "true");
+  placeHelpPopover(panel, control);
+  setUp.focus();
 }

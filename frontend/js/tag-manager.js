@@ -154,7 +154,7 @@ function chooseTagSheet({ label, sub, exclude = [], counts }) {
 
 async function renameTagEverywhere(tag) {
   const counts = await fetchTagCounts();
-  const answer = await promptDialog(`Rename the tag “${tag}” to:`, tag, { confirmLabel: "Rename" });
+  const answer = await promptDialog(`Rename the tag “${tag}”`, tag, { confirmLabel: "Rename" });
   const next = (answer || "").trim().replace(/^#/, "");
   if (!next || next === tag) return;
   const existing = Object.keys(counts).find((name) => name !== tag && name.toLowerCase() === next.toLowerCase());

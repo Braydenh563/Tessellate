@@ -935,7 +935,7 @@ function renderDocList() {
     const menu = kebabMenu(
       [
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-          const next = await promptDialog("Rename this document:", doc.title || "");
+          const next = await promptDialog("Rename this document", doc.title || "");
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
         }),
@@ -1979,7 +1979,8 @@ async function docDropIfUntouched(nextId = null) {
   if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
-  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  //: A delete that failed leaves the row on the server, so it goes back in the list (D36).
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => { docs = [doc, ...docs]; });
   renderDocList();
 }
 
@@ -2232,13 +2233,24 @@ async function saveDocument({ silent = false } = {}) {
   }
 }
 
+//: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
+function docFillBlankTitle() {
+  const field = $("doc-title");
+  if (!currentDoc || field.value.trim()) return false;
+  field.value = /^untitled document \d+$/i.test(currentDoc.title || "") ? currentDoc.title : docNextName();
+  return true;
+}
+
+let docSaveFailedSaid = false;
+
 async function docSaveOnce(silent) {
   clearTimeout(docSaveTimer);
   const savingId = currentDoc.id;
   const seqAtStart = docEditSeq;
-  //: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
-  const title = $("doc-title").value.trim()
-    || (/^untitled document \d+$/i.test(currentDoc.title || "") ? currentDoc.title : docNextName());
+  //: A title emptied while typing is not written: the autosave keeps the
+  //: stored one, and leaving the field (or saving by hand) names it (D17).
+  if (!silent) docFillBlankTitle();
+  const title = $("doc-title").value.trim() || currentDoc.title || docNextName();
   const content = docText();
   try {
     const saved = await apiJson(`/documents/${currentDoc.id}`, {
@@ -2263,6 +2275,7 @@ async function docSaveOnce(silent) {
       return docSetStatusText($("doc-saved"), "Unsaved…");
     }
     forgetDocEditLocally(saved.id);
+    docSaveFailedSaid = false;
     $("doc-saved").textContent = "Saved";
     if (!silent) toast("Document saved.");
     //: An open preview shows what was saved (D6).
@@ -2276,6 +2289,15 @@ async function docSaveOnce(silent) {
     keepDocEditLocally();
     $("doc-status").classList.add("error");
     $("doc-status").textContent = error.message;
+    //: Said once per run of failures, with a way to try again (audit 1028
+    //: D34): the status bar's two words were the only sign, and autosave
+    //: retrying every pause must not stack a toast each time.
+    if (!docSaveFailedSaid) {
+      docSaveFailedSaid = true;
+      toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+        action: ["Try again", () => saveDocument({ silent: false })],
+      });
+    }
   }
 }
 
@@ -2301,6 +2323,9 @@ async function docResolveConflict(current, mine, silent) {
     await docSaveOnce(silent);
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
+    //: The title box too (audit 1028 D10): left on the old title, the next
+    //: save sent it back over the one just taken.
+    $("doc-title").value = current.title || "";
     docSurface().text = current.content || "";
     renderDocPreview();
     docDirty = false;
@@ -2494,6 +2519,12 @@ function docReplaceAll() {
   box.dispatchEvent(new Event("input", { bubbles: true }));
   $("doc-find-count").textContent = `Replaced ${count}`;
   docFindIndex = -1;
+}
+
+function docOpenReplace() {
+  toggleDocFindBar(true);
+  docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus();
+  return true;
 }
 
 function toggleDocFindBar(open) {
@@ -3042,6 +3073,15 @@ const DOC_COMMANDS = [
     code: true, run: () => docGoToDefinition() },
   { id: "references", icon: "ph:list-magnifying-glass", label: "List every use of the name at the caret", keys: "Shift+F12",
     code: true, run: () => docShowReferences() },
+  //: Every find chord named in one list, since Ctrl+G reads by file type
+  //: (VS Code's Go to line in code, find next in prose, where F3 does it
+  //: too and is the key listed; audit 1028 D32).
+  { id: "replace-here", icon: "ph:swap", label: "Find and replace in this document", keys: "Ctrl+H",
+    run: () => docOpenReplace() },
+  { id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",
+    code: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
+  { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
+    prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
     run: () => docFindInDocuments() },
   { id: "replace-documents", icon: "ph:swap", label: "Replace in every document", keys: "none",
@@ -13802,7 +13842,7 @@ function docPromptInModal(message, initial) {
 }
 
 async function docNameVersion(entry) {
-  const next = await docPromptInModal(entry.name ? "Rename this version:" : "Name this version:", entry.name || "");
+  const next = await docPromptInModal(entry.name ? "Rename this version" : "Name this version", entry.name || "");
   if (next === null || next === undefined) return;
   await docSetVersionName(entry, next);
 }
@@ -13827,7 +13867,7 @@ async function docSetVersionName(entry, name) {
 //: the name holds what is on screen.
 async function docNameCurrentVersion() {
   if (!currentDoc) return;
-  const name = await docPromptInModal("Name this version:", "");
+  const name = await docPromptInModal("Name this version", "");
   if (!name || !name.trim()) return;
   if (docDirty) await saveDocument({ silent: true });
   const docId = currentDoc.id;
@@ -13907,15 +13947,17 @@ async function toggleDocHistoryDiff(entry, row, button, box) {
 // request (`POST /documents/contents`), and the one undo step writes the
 // originals back the same way, so fifty documents change, or change back,
 // whole. Each changed document keeps the version it replaced in its history.
-const docReplace = { matches: [], timer: 0 };
+const docReplace = { matches: [], skipped: new Set(), timer: 0 };
 
 function docReplacePattern() {
   const find = $("doc-replace-find").value;
   if (!find) return null;
   const flags = $("doc-replace-case").checked ? "g" : "gi";
   const source = $("doc-replace-regex").checked ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  //: Whole word by letters in any script, not `\b`, which ends a word at "é" (D29).
+  const word = $("doc-replace-word").checked;
   try {
-    return new RegExp(source, flags);
+    return word ? new RegExp(`(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])`, `${flags}u`) : new RegExp(source, flags);
   } catch (error) {
     return { error: error.message };
   }
@@ -13965,17 +14007,53 @@ async function renderDocReplace() {
   summary.textContent = matches.length
     ? `${total} match${total === 1 ? "" : "es"} in ${nounCount(matches.length, "document")}.`
     : "No document has it.";
-  for (const match of matches) {
-    const row = document.createElement("li");
-    row.className = "doc-ai-history-entry";
-    row.textContent = `${match.title || "Untitled"} · ${match.count}`;
-    list.appendChild(row);
-  }
+  docReplace.skipped = new Set();
+  for (const match of matches) list.appendChild(docReplaceRow(match, pattern));
   run.disabled = !matches.length;
 }
 
-async function docWriteContents(items) {
-  await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: items }) });
+//: A row per document: a box to leave it out, and the first match in its
+//: line, so a pattern that catches the wrong thing shows before it runs (D29).
+function docReplaceRow(match, pattern) {
+  const row = document.createElement("li");
+  row.className = "doc-ai-history-entry doc-replace-row";
+  const label = document.createElement("label");
+  label.className = "row align-center checkbox-label small";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = true;
+  box.addEventListener("change", () => {
+    docReplace.skipped[box.checked ? "delete" : "add"](match.id);
+    $("doc-replace-run").disabled = docReplace.matches.every((m) => docReplace.skipped.has(m.id));
+  });
+  const name = document.createElement("span");
+  name.textContent = `${match.title || "Untitled"} · ${match.count}`;
+  label.append(box, name);
+  const snippet = document.createElement("span");
+  snippet.className = "muted text-sm doc-replace-snippet";
+  snippet.textContent = docReplaceSnippet(match.content, pattern);
+  row.append(label, snippet);
+  return row;
+}
+
+function docReplaceSnippet(text, pattern) {
+  pattern.lastIndex = 0;
+  const hit = pattern.exec(text);
+  pattern.lastIndex = 0;
+  if (!hit) return "";
+  const from = Math.max(0, hit.index - 30);
+  const to = Math.min(text.length, hit.index + hit[0].length + 30);
+  return `${from ? "…" : ""}${text.slice(from, to).replace(/\s+/g, " ")}${to < text.length ? "…" : ""}`;
+}
+
+//: Each write carries the hash of the text it was worked out from and keeps
+//: the hashes it gets back in `hashes`, so an undo or redo after one of these
+//: documents was edited is refused whole instead of writing over the edit
+//: (audit 1028 D11).
+async function docWriteContents(items, hashes) {
+  const sent = items.map((item) => ({ ...item, base_hash: hashes[item.id] || null }));
+  const res = await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: sent }) });
+  Object.assign(hashes, res.hashes || {});
   const open = items.find((item) => item.id === currentDoc?.id);
   if (open) docShowSaved(await apiJson(`/documents/${open.id}`));
   loadDocuments(currentDoc?.id);
@@ -13983,15 +14061,17 @@ async function docWriteContents(items) {
 
 async function runDocReplace() {
   const pattern = docReplacePattern();
-  if (!pattern || pattern.error || !docReplace.matches.length) return;
+  const chosen = docReplace.matches.filter((m) => !docReplace.skipped?.has(m.id));
+  if (!pattern || pattern.error || !chosen.length) return;
   //: A plain replace is plain: `$&` and `$1` mean something only to a pattern.
   const typed = $("doc-replace-with").value;
   const replacement = $("doc-replace-regex").checked ? typed : typed.replace(/\$/g, "$$$$");
-  const before = docReplace.matches.map((m) => ({ id: m.id, content: m.content }));
-  const after = docReplace.matches.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
-  const total = docReplace.matches.reduce((sum, m) => sum + m.count, 0);
+  const before = chosen.map((m) => ({ id: m.id, content: m.content }));
+  const after = chosen.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
+  const total = chosen.reduce((sum, m) => sum + m.count, 0);
+  const hashes = Object.fromEntries(chosen.map((m) => [m.id, m.content_hash]));
   try {
-    await docWriteContents(after);
+    await docWriteContents(after, hashes);
   } catch (error) {
     return toast(error.message || "Couldn't replace. Nothing was changed.", true);
   }
@@ -13999,12 +14079,12 @@ async function runDocReplace() {
   offerUndo(
     `Replaced ${total} in ${nounCount(after.length, "document")}`,
     `Replaced ${total} in ${nounCount(after.length, "document")}. Undo takes it all back.`,
-    () => docWriteContents(before),
-    () => docWriteContents(after)
+    () => docWriteContents(before, hashes),
+    () => docWriteContents(after, hashes)
   );
 }
 
-for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case"]) {
+for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case", "doc-replace-word"]) {
   $(id)?.addEventListener(id === "doc-replace-find" ? "input" : "change", () => {
     clearTimeout(docReplace.timer);
     docReplace.timer = setTimeout(renderDocReplace, 250);
@@ -14106,6 +14186,7 @@ $("doc-browse-all").addEventListener("click", () => {
 // delegation set up below, Escape for free from <dialog>.showModal().
 $("doc-storage-toggle").addEventListener("click", () => $("doc-storage-dialog").showModal());
 $("doc-title").addEventListener("input", () => { markDocDirty(); scheduleDocPreview(); });
+$("doc-title").addEventListener("blur", () => { if (docFillBlankTitle()) markDocDirty(); });
 //: **Enter in the title starts the body** (audit 2026-10-05, UX-05), the way
 //: Notion, Apple Notes and Obsidian behave: "Trip plan", Enter, "Day one..."
 //: used to type on into the title and save it as one long name over an empty
@@ -21761,6 +21842,44 @@ function docListGuides(depth) {
   };
 }
 
+//: How many matches the find panel's query has, said in the panel (audit
+//: 1028 U9): the library's panel finds without ever saying how many. Counted
+//: only while the panel is open and only when the text or the query changed,
+//: and stopped at 1,000 so a one-letter query in a long file stays cheap.
+const DOC_SEARCH_COUNT_CAP = 1000;
+function docSearchCountText(state, CM) {
+  const query = CM.search.getSearchQuery(state);
+  if (!query.search || !query.valid) return "";
+  let n = 0;
+  for (const cursor = query.getCursor(state); n < DOC_SEARCH_COUNT_CAP && !cursor.next().done;) n += 1;
+  if (!n) return "No matches";
+  return n >= DOC_SEARCH_COUNT_CAP ? "1,000+ matches" : `${n} match${n === 1 ? "" : "es"}`;
+}
+
+function docCmSearchCount(CM) {
+  return CM.view.ViewPlugin.fromClass(class {
+    constructor(view) { this.query = null; this.update({ view, docChanged: true, state: view.state }); }
+    update(update) {
+      const { view } = update;
+      if (!CM.search.searchPanelOpen(view.state)) return void (this.query = null);
+      const query = CM.search.getSearchQuery(view.state);
+      if (!update.docChanged && this.query?.eq(query)) return;
+      const panel = view.dom.querySelector(".cm-search");
+      if (!panel) return;
+      this.query = query;
+      let out = panel.querySelector(".cm-search-count");
+      if (!out) {
+        out = Object.assign(document.createElement("span"), { className: "cm-search-count muted text-sm" });
+        out.setAttribute("role", "status");
+        const lineBreak = panel.querySelector("br");
+        if (lineBreak) lineBreak.before(out);
+        else panel.appendChild(out);
+      }
+      out.textContent = docSearchCountText(view.state, CM);
+    }
+  });
+}
+
 function docCmTheme(CM) {
   const dark = document.documentElement.dataset.mode === "dark";
   return CM.view.EditorView.theme(
@@ -22985,12 +23104,14 @@ function docCmKeymap(CM) {
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
-    //: Ctrl+H is Replace in every word processor and editor; the panel is the
-    //: same, with the cursor in its Replace field.
     //: VS Code's Go to line. A code file only; CodeMirror's own binding for
     //: the key (find next) stays for prose and on F3.
     { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
-    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field. Cmd+H hides the app on a
+    //: Mac, so Cmd+Option+F, VS Code's Mac chord, does the same (audit 1028 D31).
+    { key: "Mod-h", run: () => docOpenReplace() },
+    { key: "Mod-Alt-f", run: () => docOpenReplace() },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).
@@ -23109,6 +23230,7 @@ function docCmExtensions(CM) {
     //: fallback. Its chrome is restyled in 09-editor.css onto this app's
     //: field and button recipe.
     CM.search.search({ top: true }),
+    docCmSearchCount(CM),
     CM.view.rectangularSelection(),
     CM.view.crosshairCursor(),
     docCmParts.wrap.of(docCmDrawFor(CM, type)),

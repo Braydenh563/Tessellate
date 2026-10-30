@@ -285,7 +285,7 @@ async function loadCaptureDocuments() {
 // Ask for a title and start an empty document. Shared by the capture box and
 // the note card's "Add to a document", so both offer the same thing.
 async function createDocumentNamed(suggestion = "") {
-  const asking = promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  const asking = promptDialog("Title for the new document", suggestion, { confirmLabel: "Create" });
   //: Create with nothing typed closed the dialog and said nothing (dog2 item
   //: 15); `required` makes it say so (promptDialog checks the field's validity).
   document.querySelector(".prompt-card input").required = true;
@@ -2488,7 +2488,7 @@ function streamChat(options) {
   return streamChatEvents({
     ...options,
     onStatus: (event) => {
-      phase("reading");
+      phase(event.said ? "tool" : "reading", event.said);
       return options.onStatus?.(event);
     },
     onMeta: (meta) => {
@@ -2814,6 +2814,7 @@ function liveMarkdownRenderer(box, afterPaint = null) {
   let timer = null;
   let lastRun = 0;
 
+  let gap = LIVE_RENDER_INTERVAL_MS;
   const flush = () => {
     timer = null;
     lastRun = performance.now();
@@ -2821,12 +2822,13 @@ function liveMarkdownRenderer(box, afterPaint = null) {
     rendered = latest;
     renderMarkdown(box, holdPictureTokens(latest));
     afterPaint?.();
+    gap = Math.max(LIVE_RENDER_INTERVAL_MS, (performance.now() - lastRun) * 4);
   };
 
   const render = (text) => {
     latest = text;
     if (timer) return;
-    const wait = Math.max(0, LIVE_RENDER_INTERVAL_MS - (performance.now() - lastRun));
+    const wait = Math.max(0, gap - (performance.now() - lastRun));
     timer = setTimeout(flush, wait);
   };
   //: **The last paint has to be cancellable, or it lands after the turn is
@@ -3004,9 +3006,7 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    ensureModule("askHistory")
-      .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
-      .catch(() => {});
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.

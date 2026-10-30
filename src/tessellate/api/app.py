@@ -973,6 +973,16 @@ def _register_error_handlers(app: FastAPI) -> None:
             content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
         )
 
+    @app.exception_handler(OverflowError)
+    async def _overflow_handler(_request, exc: OverflowError) -> JSONResponse:
+        """A number beyond what the store holds (an id or offset above 2^63)
+        names nothing: a refused request, not a server fault (audit 1030 A41)."""
+        error_logger.info("a number was too large: %s", exc)
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},
+        )
+
     @app.exception_handler(Exception)
     async def _unhandled_exception_handler(_request, exc: Exception) -> JSONResponse:
         if _is_out_of_space(exc):
@@ -1625,6 +1635,8 @@ def create_app() -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        if deps._db is not None:
+            deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread
         # (`egress.configure`) flushes within a second of a connection and the
         # route on every read, so this is the last drain on a clean quit.

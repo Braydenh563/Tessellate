@@ -1968,7 +1968,7 @@ async function chatSendTurn(preset, opts = {}) {
   try {
     //: A silent model used to leave "Waking the model..." up forever (H8).
     slowLoadTimeout = setTimeout(() => {
-      if (!heard && viewing()) status.textContent = "Waiting for the model…";
+      if (!heard && viewing()) status.textContent = "Waiting for the model… Stop, or ask again.";
     }, 8e3);
     await streamChat({
       progress: pendingLine,
@@ -2000,7 +2000,7 @@ async function chatSendTurn(preset, opts = {}) {
       onMeta: (m) => {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
-        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "The model is writing…";
+        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {
         ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
@@ -2951,6 +2951,7 @@ async function deleteChatTurn(assistantBubble) {
   if (userBubble && userBubble.classList.contains("user")) userBubble.remove();
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
+  renderChatTurnCount();
   // The turn below is the end of the thread now, so its saved chips come back.
   refreshFollowupVisibility();
   if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
@@ -3165,6 +3166,14 @@ function chatDeleteUndo(gone, after = () => {}) {
 
 //: **Every chat write is on the undo bar** (CHAT_PLAN 8 row 5): the helpers
 //: are chat-undo.js, fetched on the first write, out of the boot scripts.
+async function promptTitle(message, initial) {
+  const asked = promptDialog(message, initial);
+  document.querySelector(".prompt-card input").maxLength = 120;
+  const next = (await asked)?.trim();
+  if (next === "") toast("Title kept.");
+  return next || null;
+}
+
 function chatWriteRecord(name, ...args) {
   lazyScript("/js/chat-undo.js").then(() => window[name](...args));
 }

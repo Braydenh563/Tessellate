@@ -1599,7 +1599,7 @@ onDomReady(() => {
     importInput.value = "";
     wbLibImportFile(file);
   });
-  //: The top bar's Library button opens the sidebar where it was left.
+  //: The top bar's Sidebar button opens the sidebar where it was left.
   const state = wbSideState();
   if (state.open && !window.matchMedia("(max-width: 600px)").matches) wbOpenSidebar(state.tab, { focus: false });
 });

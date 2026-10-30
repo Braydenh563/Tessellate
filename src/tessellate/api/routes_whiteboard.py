@@ -27,6 +27,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Annotated
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
@@ -258,7 +259,12 @@ FRAME_KIND = "frame"
 TABLE_KIND = "table"
 MAX_TABLE_ROWS = 50
 MAX_TABLE_COLS = 20
-VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND} | MAP_REFERENCE_KINDS
+#: A live Mermaid diagram (INBOX 1451): its source is `data.mermaid`, drawn
+#: by the browser's diagram frame; nothing drawn is stored, so a theme
+#: change or an edit redraws it.
+DIAGRAM_KIND = "diagram"
+MAX_MERMAID_CHARS = 20_000
+VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND, DIAGRAM_KIND} | MAP_REFERENCE_KINDS
 
 
 #: A card/sketch/object's own persisted group, asked for directly (Ctrl+G).
@@ -358,6 +364,8 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: A diagram's Mermaid source (`DIAGRAM_KIND`).
+    mermaid: str | None = Field(default=None, max_length=MAX_MERMAID_CHARS)
     #: **A table's column widths** (wb5): one relative weight per column, so
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
@@ -855,6 +863,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         raise HTTPException(
             status_code=422, detail=f"A {body.kind} item needs some content."
         )
+    elif body.kind == DIAGRAM_KIND and not (body.data.mermaid or "").strip():
+        raise HTTPException(status_code=422, detail="A diagram needs its Mermaid source.")
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
@@ -2455,22 +2465,26 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _thumb_board(db, board_id)
+    #: The lookup and the write go to the thread pool, and the body grows in a
+    #: bytearray (audit 1028 K18): in the event loop they stalled every other
+    #: request while a board list's thumbnails came in.
+    await run_in_threadpool(_thumb_board, db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
     if declared > board_thumbs.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    data = b""
+    data = bytearray()
     async for chunk in request.stream():
         data += chunk
         if len(data) > board_thumbs.MAX_BYTES:
             raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    mime = board_thumbs.sniff(data)
+    body = bytes(data)
+    mime = board_thumbs.sniff(body)
     if mime is None:
         raise HTTPException(status_code=415, detail="A thumbnail must be a WebP or JPEG image.")
-    board_thumbs.save(deps.get_config().data_dir, board_id, fp, mime, data)
-    return {"fp": fp, "bytes": len(data)}
+    await run_in_threadpool(board_thumbs.save, deps.get_config().data_dir, board_id, fp, mime, body)
+    return {"fp": fp, "bytes": len(body)}
 
 
 #: Served under `/media` because an `<img src>` cannot send the auth header and

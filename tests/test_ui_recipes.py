@@ -6243,7 +6243,7 @@ PANEL_FIXED_JS = {
     "settings-controls.js": "an anchored control overlay",
     "sheets-selects.js": "the select popup",
     "skills.js": "an anchored panel",
-    "status.js": "an anchored readout",
+    "status-panels.js": "an anchored readout (the model offer popover)",
     "tag-suggest.js": "an anchored suggestion panel",
     "update-dialogs.js": "update prompts: small, blocking",
     "whiteboard-format.js": "an anchored panel",

@@ -1563,8 +1563,8 @@ function promptDialog(message, initial = "", { confirmLabel = "Save", segment = 
     //: dialogs off the modal recipe: this card's first child was a `<p>`, so
     //: the "New board" dialog had no heading at all while every other dialog
     //: in the app leads with one. Every `promptDialog` message is a short
-    //: prompt ("Name the new board:", "Rename this chat:", "Tag to add to the
-    //: selected notes:"), which is a title, so all twenty-odd callers are
+    //: prompt ("Name the new board", "Rename this chat", "Tag to add to the
+    //: selected notes"), which is a title, so all twenty-odd callers are
     //: right to promote it rather than only this one.
     //:
     //: `confirmDialog`'s message stays a `<p>`: that one really is a

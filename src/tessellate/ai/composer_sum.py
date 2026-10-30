@@ -68,9 +68,9 @@ def asks(question: str) -> bool:
 def _period(sentence, value: float) -> str:  # noqa: ANN001
     """The word a rate is per ("a month" gives "month"), or "": the first
     amount of `value` and the two words after it."""
-    for _sign, found, at in recognise.amounts(sentence.text):
-        if found == value:
-            tail = re.sub(r"^[$£€]?\s*[\d,.]+", "", sentence.text[at:]).split()
+    for measure in recognise.measures(sentence.text):
+        if measure[0] == "money" and measure[1] == value:
+            tail = sentence.text[measure.end:].split()
             return tail[1].strip(".,;") if len(tail) > 1 and tail[0].lower() in _PER else ""
     return ""
 
@@ -204,6 +204,9 @@ def most(out, question: str, views: list, today: date) -> bool:  # noqa: ANN001
     items = _items_for(views, scope)[0] if scope else composer_money.spent_only(composer_money._items(views), today)  # noqa: SLF001
     if not items:
         return _holds_none(out, views, scope)
+    #: A dollar and a pound are not ranked: composer_money says the biggest of each currency.
+    if len({i.symbol for i in items}) > 1:
+        return False
     pick = (min if size in _SMALL else max)(items, key=lambda i: i.value)
     where = f" in {composer_lists._title(pick.view)}" if scope or len({id(i.view) for i in items}) == 1 else ""  # noqa: SLF001
     line = f"{_label(pick)}, at {composer_money._money(pick.symbol, pick.value)}, is the {size} {'amount' if size in _AMOUNT_SIZES else 'one'}{where}."  # noqa: SLF001
@@ -215,4 +218,4 @@ def most(out, question: str, views: list, today: date) -> bool:  # noqa: ANN001
 def holds_amount(question: str, text: str) -> bool:
     """Whether a note belongs in the pool of a scoped superlative ("the
     biggest expense in my budget"): it holds an amount, and the ask is one."""
-    return asks_most(question) and bool(recognise.amounts(text))
+    return asks_most(question) and any(m[0] == "money" for m in recognise.measures(text))

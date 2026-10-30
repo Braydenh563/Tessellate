@@ -4,7 +4,6 @@
  "src/tessellate/ai/agent.py::_first_round_tools": 16,
  "src/tessellate/ai/agent.py::_fit_result": 16,
  "src/tessellate/ai/agent.py::_prepare_turn": 40,
- "src/tessellate/ai/agent.py::_recovery_hint": 17,
  "src/tessellate/ai/agent.py::_run_and_record": 23,
  "src/tessellate/ai/agent.py::_tool_sources": 30,
  "src/tessellate/ai/agent.py::build_agent_messages": 16,
@@ -122,7 +121,7 @@
  "src/tessellate/api/routes_entries.py::entry_connections": 25,
  "src/tessellate/api/routes_entries.py::filing_status": 26,
  "src/tessellate/api/routes_entries.py::find_tensions": 17,
- "src/tessellate/api/routes_entries.py::link_suggestions": 28,
+ "src/tessellate/api/routes_entries.py::_link_suggestions": 28,
  "src/tessellate/api/routes_entries.py::list_entries": 26,
  "src/tessellate/api/routes_entries.py::reevaluate_entry": 17,
  "src/tessellate/api/routes_entries.py::update_entry": 27,
@@ -136,7 +135,7 @@
  "src/tessellate/api/routes_graph.py::_slim": 16,
  "src/tessellate/api/routes_graph.py::graph_local": 23,
  "src/tessellate/api/routes_graph.py::graph_path": 26,
- "src/tessellate/api/routes_insights.py::greeting": 20,
+ "src/tessellate/api/routes_insights.py::_ai_greeting": 19,
  "src/tessellate/api/routes_library.py::_notes": 18,
  "src/tessellate/api/routes_library.py::_shelved": 18,
  "src/tessellate/api/routes_map_from_notes.py::build_tree": 26,
@@ -199,6 +198,5 @@
  "src/tessellate/search/index.py::_index_on_flush": 16,
  "src/tessellate/search/search_manager.py::graph_expansion": 19,
  "src/tessellate/search/searxng_process.py::_start_from_source": 20,
- "src/tessellate/search/websearch.py::_searxng_target": 18,
- "src/tessellate/search/websearch.py::fetch_readable": 17
+ "src/tessellate/search/websearch.py::_searxng_target": 18
 }

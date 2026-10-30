@@ -769,7 +769,7 @@ async function saveFinderSearch() {
     toast("Removed the saved search.");
     return;
   }
-  const name = await promptDialog("Name this search:", query.slice(0, 40), { confirmLabel: "Save search" });
+  const name = await promptDialog("Name this search", query.slice(0, 40), { confirmLabel: "Save search" });
   if (!name) return;
   //: Saving a name again replaces it, as the saved filters do.
   const next = savedFinds().filter((item) => item.name !== name);
@@ -779,7 +779,7 @@ async function saveFinderSearch() {
 }
 
 async function renameSavedFind(item) {
-  const name = await promptDialog("Rename this search:", item.name, { confirmLabel: "Rename" });
+  const name = await promptDialog("Rename this search", item.name, { confirmLabel: "Rename" });
   if (!name || name === item.name) return;
   const next = savedFinds()
     .filter((other) => other.name !== name)

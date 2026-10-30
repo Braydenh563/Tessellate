@@ -11,6 +11,7 @@ import contextlib
 import json
 import logging
 import threading
+import time
 import re
 from datetime import date, datetime, timedelta
 from collections import OrderedDict
@@ -19,7 +20,7 @@ from types import SimpleNamespace
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import func, or_, select, text
+from sqlalchemy import event, func, or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -999,7 +1000,11 @@ def daily_journal(
     including today would make the number drop every midnight and reappear
     when they wrote, which is a counter that punishes the morning.
     """
-    last = _daily_date(through) if through else date.today()
+    #: Today on the user's clock (audit 1028 K22): a LAN phone in another zone
+    #: saw its streak break at the server's midnight.
+    from tessellate.core.config import user_now
+
+    last = _daily_date(through) if through else user_now(deps.get_config()).date()
     window = [last - timedelta(days=offset) for offset in range(days)]
     heading_of = {DAILY_HEADING.format(date=day.isoformat()): day for day in window}
     written = {
@@ -1786,8 +1791,40 @@ class _LazyNoteFacts:
         return self._label
 
 
+#: **The suggestions are kept until the notebook changes** (audit 1028 K30:
+#: every request read every note, link and mention, and the Inbox asks on
+#: every open, from every tab). Any session write moves `_writes`: a flush,
+#: or a bulk statement run through `session.execute`. A write past both (a
+#: raw connection) is caught by the age bound.
+_writes = [0]
+_LINK_CACHE_SECONDS = 300.0
+_link_cache: dict = {"key": None, "at": 0.0, "value": None}
+
+
+@event.listens_for(Session, "after_flush")
+def _count_flush(_session: Session, _context) -> None:  # noqa: ANN001
+    _writes[0] += 1
+
+
+@event.listens_for(Session, "do_orm_execute")
+def _count_statement(state) -> None:  # noqa: ANN001
+    if not state.is_select:
+        _writes[0] += 1
+
+
 @router.get("/link-suggestions")
 def link_suggestions(session: Session = Depends(get_session)) -> list[dict]:
+    """The pairs `_link_suggestions` finds, kept until something is written."""
+    key = (id(deps.get_db()), _writes[0], deps.get_embeddings().is_ready())
+    now = time.monotonic()
+    if _link_cache["key"] == key and now - _link_cache["at"] < _LINK_CACHE_SECONDS:
+        return _link_cache["value"]
+    value = _link_suggestions(session)
+    _link_cache.update(key=key, at=now, value=value)
+    return value
+
+
+def _link_suggestions(session: Session) -> list[dict]:
     """Pairs of notes that mean similar things but aren't linked yet: 
     the auto-linker. Suggestion-only: it never links anything on
     its own, it hands the pairs to the UI to approve. Empty when the
