@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat and Ask: a money or measure question on a month reads its year: "in October" is the latest October the notes hold (not every October added together), "in October 2025", "this year" and "last year" scope the sum, and "last month" in January is December of the year before (second eye F5).
 - Chat and Ask: a difference between two stretches is two sums and a subtraction, both cited: "how much further did I run than last week", "how much more did I spend in October than September", "how much heavier am I this month than last month" (CHAT_PLAN, one quantity engine, step 3).
 - Chat and Ask: a goal, a target, a budget, a stretch still to go and a refund read of any quantity, not only money: "how far short of my 10k goal am I", "how many km left to my 50 km target", "how many hours are left on the deck" and "how much of my $400 budget is left" answer from the notes with the sums cited; a window of "last week" or "this year" now scopes a sum (CHAT_PLAN, one quantity engine, step 2).
 - Chat and Ask: money is one dimension of the quantity reader (`recognise.measures`), so spending, refunds and balances still due are read by the same code as a distance, a weight or a stretch of time; `recognise.amounts` is gone and "$1.5k" reads as 1500 (CHAT_PLAN, one quantity engine, step 1).

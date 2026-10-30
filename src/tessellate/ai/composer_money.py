@@ -166,39 +166,82 @@ def _month_asked(rest: str, today: date) -> int | None:
 
 
 class _Win(NamedTuple):
-    """The window a question names: a month (of any year) or a span of days."""
+    """The window a question names: a month of a year, or a span of days."""
 
     month: int | None = None
     span: tuple | None = None
     said: str = ""
+    year: int | None = None
 
 
-def _window_asked(rest: str, today: date) -> _Win | None:
+def _note_month(view) -> tuple[int | None, int | None]:  # noqa: ANN001
+    """(year, month) a note's title names ("Spending October"): its month,
+    in the year it was written, or the one before when the month is later
+    than the day it was written ("December" written on 2 January)."""
+    named = [recognise._MONTHS[w] for w in re.findall(r"[a-z]+", str(view.title).lower()) if w in recognise.MONTH_NAMES]  # noqa: SLF001
+    if not named:
+        return None, None
+    month, written = named[0], view.written
+    return (written.year - (1 if month > written.month + 1 else 0) if written else None), month
+
+
+def _month_dates(views: list, month: int) -> list[date]:
+    """The months of `month` the notes are of, as the first of each."""
+    found = []
+    for view in views:
+        year, named = _note_month(view)
+        if named == month and year:
+            found.append(date(year, month, 1))
+        elif named is None and view.written and view.written.month == month:
+            found.append(date(view.written.year, month, 1))
+    return found
+
+
+def _year_of(rest: str, month: int, today: date, views: list) -> int:
+    """The year a month asked means: the one said ("October 2025", "last
+    year"), else the latest year the notes hold that month, else the most
+    recent one that has begun."""
+    low = rest.lower()
+    if said := re.search(r"\b(20\d\d)\b", low):
+        return int(said.group(1))
+    if "last year" in low:
+        return today.year - 1
+    if "this year" in low or "this month" in low:
+        return today.year
+    if "last month" in low:
+        return today.year - (1 if month > today.month else 0)
+    held = [d.year for d in _month_dates(views, month) if d <= today]
+    return max(held) if held else today.year - (1 if month > today.month else 0)
+
+
+def _window_asked(rest: str, today: date, views: tuple | list = ()) -> _Win | None:
     """"in October", "this month", "last week", "this year": the notes that
     count, or None for all of them."""
     month = _month_asked(rest, today)
     if month is not None:
-        return _Win(month=month, said=f"in {date(2000, month, 1):%B}")
+        year = _year_of(rest, month, today, list(views))
+        return _Win(month=month, said=f"in {date(2000, month, 1):%B}" + (f" {year}" if year != today.year else ""), year=year)
     for _s, _e, phrase in recognise.find(rest.lower()):
         if got := recognise.span(phrase, today, "past"):
             return _Win(span=got, said=phrase.lower().strip())
     return None
 
 
-def _in_month(view, month: int | None) -> bool:  # noqa: ANN001
+def _in_month(view, month: int | None, year: int | None = None) -> bool:  # noqa: ANN001
+    """Whether a note is of a month: by the month its title names, else by
+    the day it was written; of the year asked, when one is."""
     if month is None:
         return True
-    names = {n for n, number in recognise._MONTHS.items() if number == month}  # noqa: SLF001
-    title = set(re.findall(r"[a-z]+", str(view.title).lower()))
-    if names & title:
-        return True
-    return bool(view.written and view.written.month == month and not title & recognise.MONTH_NAMES)
+    named_year, named = _note_month(view)
+    if named is not None:
+        return named == month and (year is None or named_year is None or named_year == year)
+    return bool(view.written and view.written.month == month and (year is None or view.written.year == year))
 
 
-def _months_of(first: date, last: date) -> set[int]:
+def _months_of(first: date, last: date) -> set[tuple[int, int]]:
     months, day = set(), first.replace(day=1)
     while day <= last:
-        months.add(day.month)
+        months.add((day.year, day.month))
         day = (day.replace(day=28) + timedelta(days=4)).replace(day=1)
     return months
 
@@ -209,11 +252,11 @@ def _in_window(view, win: _Win | None) -> bool:  # noqa: ANN001
     if win is None:
         return True
     if win.span is None:
-        return _in_month(view, win.month)
+        return _in_month(view, win.month, win.year)
     first, last, grain = win.span
-    named = {recognise._MONTHS[w] for w in re.findall(r"[a-z]+", str(view.title).lower()) if w in recognise.MONTH_NAMES}  # noqa: SLF001
+    year, named = _note_month(view)
     if named and grain in ("month", "year"):
-        return bool(named & _months_of(first, last))
+        return (year, named) in _months_of(first, last) if year else named in {m for _y, m in _months_of(first, last)}
     return bool(view.written and first <= view.written <= last)
 
 
@@ -304,7 +347,7 @@ def _cite_all(out, items: list[Item], said: str) -> None:  # noqa: ANN001
 _WINDOW = re.compile(
     r"\b(?:so far|altogether|all up|in total|overall|"
     r"(?:before|after) refunds?|across the notebook|in (?:these|my) notes|(?:have i |i've )?recorded|actually|explicitly|"
-    r"net|gross|total|(?:that )?(?:have|has|with) amounts?|(?:in |during |for |on |over |across |throughout )?(?:" + "|".join(sorted(recognise.MONTH_NAMES - {"may"})) + r"))\b",
+    r"net|gross|total|(?:that )?(?:have|has|with) amounts?|(?:in |during |for |on |over |across |throughout )?(?:" + "|".join(sorted(recognise.MONTH_NAMES - {"may"})) + r")(?:\s+(?:of\s+)?20\d\d)?|(?:in |of |during )?(?:this|last) year|(?:in |of )20\d\d)\b",
     re.I,
 )
 _STOP = frozenset(composer._words("me my i in on for of the a an to have has did do is it that from all money spent spend spending paid pay amounts amount outgoing payments payment expenses expense notes note these this and with you your"))  # noqa: SLF001
@@ -312,7 +355,7 @@ _STOP = frozenset(composer._words("me my i in on for of the a an to have has did
 
 def _subject(rest: str) -> tuple[list[str], str]:
     """The stems of what the money went on, and those words as typed ("the plumber")."""
-    said = " ".join(_WINDOW.sub(" ", recognise.without_windows(re.sub(r"[^\w\s'-]", " ", rest))).split())
+    said = " ".join(_WINDOW.sub(" ", recognise.without_windows(re.sub(r"\b(?:of )?20\d\d\b", " ", re.sub(r"[^\w\s'-]", " ", rest)))).split())
     said = re.sub(r"^(?:on|for|to|in)\s+", "", said, flags=re.I)
     said = re.sub(r"\bmy\b", "your", said, flags=re.I)
     stems = [w for w in composer._words(said) if w not in _STOP]  # noqa: SLF001
@@ -369,7 +412,7 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
 
 
 def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
-    win = _window_asked(rest, today)
+    win = _window_asked(rest, today, views)
     subject, said = _subject(rest)
     items = _items(views, win, subject)
     when = f" {win.said}" if win else ""
@@ -603,7 +646,7 @@ def _measures_line(items: list[Item], unit: str, tail: str) -> str:
 
 
 def _measure(out, asked: _Measure, views: list, today: date) -> bool:  # noqa: ANN001
-    win = _window_asked(asked.after, today)
+    win = _window_asked(asked.after, today, views)
     subject, said = _subject(asked.after)
     prep = re.match(r"\s*(on|for|with|to|at|in)\s", asked.after)
     tail = (f" {_done(asked.verb)}" if asked.verb else "") + (f" {prep.group(1) if prep else 'on'} {said}" if said else "") + (f" {win.said}" if win else "")
@@ -744,7 +787,7 @@ def _verdict(noun: str, aim: str, left: float, unit: str) -> str:
 def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN001
     """What is left of a goal, target or budget: the figure aimed at less the
     quantity the notes record, both cited."""
-    win = _window_asked(ask.after, today)
+    win = _window_asked(ask.after, today, views)
     aim, goal = ask.value, None
     if aim is None:
         goal = _goal_in(views, ask.dimension)
@@ -899,8 +942,8 @@ def _gap_line(d: _Diff, gap: float, unit: str, said: str, first: _Win, second: _
 def _difference(out, d: _Diff, views: list, today: date) -> bool:  # noqa: ANN001
     """Two sums over the same quantity in two windows, their difference, and
     both sets cited."""
-    second = _window_asked(d.second, today)
-    first = _window_asked(d.first, today) or (_first_window(second, today) if second else None)
+    second = _window_asked(d.second, today, views)
+    first = _window_asked(d.first, today, views) or (_first_window(second, today) if second else None)
     if not first or not second:
         return False
     one, two, said = _both_sets(d, views, first, second)
