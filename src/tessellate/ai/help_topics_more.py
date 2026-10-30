@@ -1985,7 +1985,8 @@ MORE_TOPICS.extend(
             "keywords": (
                 "reorder", "drag to reorder", "custom order", "move a card", "change the order",
                 "put in order", "alt arrow", "drag a note", "drag a document", "drag a board",
-                "drag an image", "sort my own way",
+                "drag an image", "sort my own way", "copy a note", "paste a note", "copy a card",
+                "paste into chat", "paste on a board",
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
@@ -1993,7 +1994,11 @@ MORE_TOPICS.extend(
                 "then move; a dashed gap shows where it will land. The sort then reads "
                 "Custom order. Drop it where it started, or press Escape, and nothing "
                 "changes. The toast has Undo. From the keyboard, focus a card and press "
-                "Alt+Up or Alt+Down to move it one place."
+                "Alt+Up or Alt+Down to move it one place. To copy a card, focus it and "
+                "press Ctrl+C (Cmd+C on a Mac), or choose Copy in its menu: a toast "
+                "names it. Ctrl+V then attaches it in the chat box, puts a card on an "
+                "open whiteboard, or writes its link in a note, a document or a "
+                "reminder."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2490,7 +2495,7 @@ TOPIC_META: dict[str, dict] = {
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
-    "object-move": {"title": "Putting a list in your own order", "path": "Notes tab, or Library tab, drag a card"},
+    "object-move": {"title": "Moving, copying and pasting cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},
     "model-downloads": {"title": "Downloading a model", "path": "Settings, Models, Suggested downloads"},

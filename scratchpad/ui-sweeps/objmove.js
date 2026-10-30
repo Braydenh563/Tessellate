@@ -89,8 +89,98 @@ async function reorder(page) {
   }
 }
 
+// Part 3: copy a card, paste it in the chat composer and on a board.
+async function focusCard(page, s, i) {
+  await page.evaluate(([unit, i]) => {
+    const u = [...document.querySelectorAll(unit)].filter((e) => e.offsetParent)[i];
+    const stop = u.matches('[tabindex]') ? u : u.querySelector('[tabindex]');
+    stop.focus();
+  }, [s.unit, i]);
+}
+async function chatCounts(page) {
+  return page.evaluate(() => ({
+    notes: attachedNoteIds.length, docs: attachedDocuments.length, boards: typeof attachedBoards !== 'undefined' ? attachedBoards.length : -1,
+    cards: document.querySelectorAll('#chat-attachments > *, #chat-doc-attachments > *, #chat-board-attachments > *, #chat-image-attachments > *, #chat-file-attachments > *').length,
+  }));
+}
+async function clipState(page) {
+  return page.evaluate(() => (objClip ? { key: objKey(objClip.ref), title: objClip.ref.title, text: objClip.text } : null));
+}
+async function clearChat(page) {
+  await page.evaluate(() => { attachedNoteIds.length = 0; attachedDocuments.length = 0; renderAttachments(); renderDocumentAttachments(); });
+}
+async function copy(page) {
+  const toasts = () => page.evaluate(() => [...document.querySelectorAll('.toast, [role="status"] .toast-message, #toast-region *')].map((e) => e.textContent.trim()).filter(Boolean).slice(-2));
+  // a note: focus, Ctrl+C, the toast, then paste into the chat composer
+  await SURFACES.notes.tab(page); await page.waitForTimeout(2000);
+  await focusCard(page, SURFACES.notes, 1);
+  await page.keyboard.press('Control+C');
+  await page.waitForTimeout(300);
+  say('copy note: in-app clipboard', await clipState(page));
+  say('copy note: toast', await toasts());
+  await page.evaluate(() => switchTab('chat')); await page.waitForTimeout(900);
+  await clearChat(page);
+  await page.focus('#chat-input');
+  await page.keyboard.press('Control+V');
+  await page.waitForTimeout(500);
+  say('paste note in chat: staged', await chatCounts(page));
+  say('paste note in chat: composer text', await page.inputValue('#chat-input'));
+  // a document through the card menu's Copy
+  await SURFACES.docs.tab(page); await page.waitForTimeout(2200);
+  await page.evaluate(() => { const c = document.querySelector('#library-docs-list > li'); c.querySelector('.kebab-opener').click(); });
+  await page.waitForTimeout(300);
+  say('card menu rows', await page.evaluate(() => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item, .action-menu-card .menu-item')].map((e) => e.textContent.trim())));
+  await page.evaluate(() => [...document.querySelectorAll('.action-menu:not(.hidden) .menu-item, .action-menu-card .menu-item')].find((e) => e.textContent.trim() === 'Copy').click());
+  await page.waitForTimeout(300);
+  say('copy document via menu: in-app clipboard', await clipState(page));
+  await page.evaluate(() => switchTab('chat')); await page.waitForTimeout(900);
+  await clearChat(page);
+  await page.focus('#chat-input');
+  await page.keyboard.press('Control+V');
+  await page.waitForTimeout(500);
+  say('paste document in chat: staged', await chatCounts(page));
+  // words copied after the object are an ordinary paste
+  await page.fill('#chat-input', 'hello');
+  await page.evaluate(() => navigator.clipboard.writeText('plain words').catch(() => {}));
+  await clearChat(page);
+  // a note on a board: open the board first, then copy a note it does not hold
+  await page.evaluate(() => { switchTab('library'); });
+  await page.waitForTimeout(800);
+  await page.evaluate(() => document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]').click());
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => [...document.querySelectorAll('#library-boards-grid > .library-board-card')].find((c) => (c.dataset.obj || '').startsWith('board:')).click());
+  await page.waitForTimeout(2500);
+  const held = await page.evaluate(() => wbState.nodes.map((n) => n.entry_id));
+  await SURFACES.notes.tab(page); await page.waitForTimeout(1500);
+  const free = await page.evaluate((held) => [...document.querySelectorAll('#entry-list > li[data-id]')].findIndex((li) => !held.includes(Number(li.dataset.id))), held);
+  await focusCard(page, SURFACES.notes, free);
+  await page.keyboard.press('Control+C');
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { switchTab('library'); });
+  await page.waitForTimeout(1500);
+  const nodes = () => page.evaluate(() => ({ nodes: wbState.nodes.length, objects: wbState.objects ? wbState.objects.length : -1 }));
+  const b0 = await nodes();
+  await page.mouse.click(700, 500);
+  await page.keyboard.press('Control+V');
+  await page.waitForTimeout(1500);
+  const b1 = await nodes();
+  say('paste note on board: items before', b0);
+  say('paste note on board: items after', b1);
+  // a document on a board: a text box with its link
+  await page.evaluate(() => { document.activeElement?.blur(); });
+  await page.evaluate(() => objClipPut(objRef('document', 1, 'Pasted doc'), null));
+  await page.mouse.click(760, 520);
+  await page.keyboard.press('Control+V');
+  await page.waitForTimeout(1500);
+  say('paste document on board: items after', await nodes());
+  await page.keyboard.press('Control+Z');
+  await page.waitForTimeout(800);
+  say('Ctrl+Z takes the last one back', await nodes());
+}
+
 (async () => {
-  const { browser, page } = await boot();
+  const { browser, page } = await boot({ permissions: ['clipboard-read', 'clipboard-write'] });
   if (PART === 'all' || PART === 'reorder') await reorder(page);
+  if (PART === 'all' || PART === 'copy') await copy(page);
   await browser.close();
 })();

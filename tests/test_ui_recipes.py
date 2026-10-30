@@ -6365,5 +6365,8 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "offerUndo" in reorder and "altKey" in reorder
     css = (ROOT / "frontend" / "css" / "objmove-lazy.css").read_text(encoding="utf-8")
     assert ".obj-gap" in css and ".obj-ghost" in css
+    clip = (js / "obj-clip.js").read_text(encoding="utf-8")
+    assert "OBJ_MENU_ROWS" in clip and "function objPasteAt" in clip and 'addEventListener("copy"' in clip
+    assert "`objKebabRows`" in design and "`wbPlaceNote`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge

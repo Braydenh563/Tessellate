@@ -137,7 +137,7 @@ function objInsertText(el, text) {
   return Boolean(focus) && Boolean(document.execCommand?.("insertText", false, text));
 }
 
-//: A destination type's renderer; later files add `board` and `tray`.
+//: A destination type's renderer; obj-clip.js adds `board`, the tray its own.
 const OBJ_RENDERERS = {
   chat: (ref) => OBJ_STAGE[ref.kind](ref),
   text: (ref, dest) => objInsertText(dest.el, objLinkText(ref)),
@@ -154,4 +154,4 @@ function objRender(ref, dest) {
 //: The rest of the object-move scripts ride with this one, in this order (each
 //: only calls upwards at load); `lazyScript` is app.js's own loader, which keeps
 //: dynamic scripts in order.
-["/js/obj-order.js", "/js/obj-drag.js", "/js/obj-reorder.js"].forEach(lazyScript);
+["/js/obj-order.js", "/js/obj-drag.js", "/js/obj-reorder.js", "/js/obj-clip.js"].forEach(lazyScript);

@@ -19,10 +19,15 @@ const vm = require("vm");
 const fs = require("fs");
 const files = JSON.parse(process.argv[1]);
 const log = [];
+const handlers = {};
 const ctx = {
+  handlers,
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, RegExp, Promise, Boolean,
   log,
-  document: { execCommand: () => true, activeElement: null, documentElement: { dataset: {} } },
+  document: {
+    execCommand: () => true, activeElement: null, documentElement: { dataset: {} },
+    addEventListener: (type, fn) => { (handlers[type] = handlers[type] || []).push(fn); }, removeEventListener: () => {},
+  },
   allEntries: [{ id: 5, title: "", content: "# Five\n\nbody" }],
   noteNamePlain: (text) => String(text).replace(/^#+\s*/, "").split("\n")[0],
   attachedNoteIds: [], attachedImages: [], renderAttachments: () => log.push("renderAttachments"),
@@ -32,6 +37,7 @@ const ctx = {
   attachLibraryFile: (id, name) => { log.push(["file", id, name]); return true; },
   $: () => null, lazyScript: (file) => log.push(["lazy", file]),
 };
+ctx.window = ctx;
 vm.createContext(ctx);
 for (const file of files) vm.runInContext(fs.readFileSync(file, "utf8"), ctx, { filename: file });
 ctx.__out = (value) => process.stdout.write(JSON.stringify(value));
