@@ -50,3 +50,21 @@ def test_b18_a_render_does_not_remeasure_unchanged_topics() -> None:
     # The no-op render of a 200-topic map reads layout 0 times (wb1030-map.js):
     # an element measured once keeps its own number.
     assert "known = this._wbMeasuredH" in BOARD
+
+
+def test_b17_link_lookups_parse_each_sketch_once_per_version_of_its_data() -> None:
+    parsed = _function(BOARD, "wbParsedLink")
+    assert "hit.data === sketch.data" in parsed, "an edited sketch is parsed again"
+    for name in ("wbLinkedSketchesFor", "wbLinkSketchIndex"):
+        body = _function(BOARD, name)
+        assert "wbParsedLink(sketch)" in body and "JSON.parse(sketch" not in body, name
+    assert "wbLinkParseCache.clear()" in _function(BOARD, "openWhiteboardBoard")
+
+
+def test_b14_branch_export_opens_the_one_export_dialog() -> None:
+    mapjs = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    branch = _function(mapjs, "wbMapExportBranch")
+    assert "wbExportBoard();" in branch and "wbMultiSelection.add(" in branch, "selection, then the one dialog"
+    assert BOARD.count("function wbExportBoard()") == 1
+    assert 'overlay.className = "modal-overlay confirm-overlay wb-export-overlay"' in BOARD
+    assert mapjs.count("wb-export-overlay") == 0, "no second export dialog in the map file"

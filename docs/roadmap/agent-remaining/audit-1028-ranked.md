@@ -38,7 +38,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 32 | B7 | med | delete handlers recreated each render and stashed in module refs | fixed | M |
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
-| 35 | B14 | med | map branch export and board export use two dialogs | new | M |
+| 35 | B14 | med | map branch export and board export use two dialogs | fixed | M |
 | 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | new | L |
 | 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
@@ -144,7 +144,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | new | S |
 | 139 | U37 | med | disabled Run reason link is low contrast | new | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
-| 141 | B17 | med | link-sketch lookups parse every sketch JSON | new | M |
+| 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
 | 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
 | 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |

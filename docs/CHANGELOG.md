@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards (audit 1028 B14): measured, not changed: a topic's Export this branch and the board's Export already open the same export dialog (the branch with its scope on Selection); a test and wb1030-map.js pin it.
+- Boards (audit 1028 B17): link lookups parse a sketch's JSON once per version of its data instead of on every lookup; 20 lookups over 600 sketches went from 8.9 ms to 0.7 ms.
 - Boards (audit 1028 B18): measured, not changed: a render of a 200-topic map that changed nothing reads layout 0 times (an edited topic 2), because a measured topic keeps its size; a test and wb1030-map.js pin it.
 - Boards (audit 1028 B6): measured, not changed: initWhiteboard was already guarded (a second call adds 0 window or document listeners); a test now pins the guard.
 - Boards (audit 1028 B7): the delete functions for sketches, cards and objects are plain top-level functions, so the Delete key, eraser, menus and selection bar share one function and the per-render closures and their module refs are gone.

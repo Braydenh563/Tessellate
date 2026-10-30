@@ -38,6 +38,25 @@ const N = Number(process.env.N || 200);
   });
   console.log("B18", JSON.stringify(r));
   check("B18: a no-op render of the map reads layout for at most 10% of the topics", r.noop[2].reads <= r.count * 2 * 0.1, r.noop[2]);
+  // B14: the branch export and the whole-map export are one dialog.
+  const dlg = await page.evaluate(async () => {
+    const read = () => {
+      const o = document.querySelectorAll(".wb-export-overlay");
+      const card = o[0];
+      return { count: o.length, id: card?.getAttribute("aria-label"), go: Boolean(card?.querySelector("#wb-export-go")), on: [...(card?.querySelectorAll("[aria-pressed='true'], [aria-checked='true']") || [])].map((b) => b.textContent.trim()) };
+    };
+    const root = wbState.objects.find((o) => WB_MAP_KINDS.has(o.kind) && !o.parent_id);
+    wbMapExportBranch(root.id);
+    const branch = read();
+    document.querySelector(".wb-export-overlay #wb-export-go").parentElement.firstChild.click();
+    clearWbSelection();
+    wbExportBoard();
+    const board = read();
+    document.querySelector(".wb-export-overlay").remove();
+    return { branch, board };
+  });
+  console.log("B14", JSON.stringify(dlg));
+  check("B14: branch and board export open the same dialog, the branch with its scope chosen", dlg.branch.count === 1 && dlg.board.count === 1 && dlg.branch.id === dlg.board.id && dlg.branch.go && dlg.branch.on.some((t) => /election|ranch|opic/i.test(t)), dlg);
   check("no console errors", errors.length === 0, errors);
   summary();
   await browser.close();

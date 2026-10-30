@@ -23577,13 +23577,8 @@ function wbMapTaskTallyKey(index, id) {
 function wbLinkSketchIndex() {
   const byEnd = new Map();
   for (const sketch of wbState.sketches || []) {
-    let parsed;
-    try {
-      parsed = JSON.parse(sketch.data);
-    } catch {
-      continue;
-    }
-    if (!parsed.type || !parsed.type.startsWith("link-")) continue;
+    const parsed = wbParsedLink(sketch);
+    if (!parsed) continue;
     const pair = { sketch, parsed };
     const source = `${parsed.sourceKind || "node"}:${parsed.sourceId}`;
     const target = `${parsed.targetKind || "node"}:${parsed.targetId}`;
@@ -23594,6 +23589,28 @@ function wbLinkSketchIndex() {
     }
   }
   return byEnd;
+}
+
+//: **A sketch's JSON parsed once per version of its data** (audit 1028 B17):
+//: the link lookups walk every sketch on the board, strokes included, and
+//: most of them are not links. Keyed by id and checked against the data
+//: string itself, so an edit (a new string) is parsed again and nothing stale
+//: is served. Only link records are kept, as the callers only read them; a
+//: stroke or a bad blob is remembered as null so it is not parsed again.
+const wbLinkParseCache = new Map();
+
+function wbParsedLink(sketch) {
+  const hit = wbLinkParseCache.get(sketch.id);
+  if (hit && hit.data === sketch.data) return hit.link;
+  let link = null;
+  try {
+    const parsed = JSON.parse(sketch.data);
+    if (parsed && typeof parsed.type === "string" && parsed.type.startsWith("link-")) link = parsed;
+  } catch {
+    link = null;
+  }
+  wbLinkParseCache.set(sketch.id, { data: sketch.data, link });
+  return link;
 }
 
 //: The sketches touching `nodeId`, pre-parsed once. `wbUpdateLinkedSketches`
@@ -23614,13 +23631,8 @@ function wbLinkedSketchesFor(nodeId, kind = "node", index = null) {
   if (index) return index.get(`${kind}:${nodeId}`) || [];
   const found = [];
   for (const sketch of wbState.sketches) {
-    let parsed;
-    try {
-      parsed = JSON.parse(sketch.data);
-    } catch {
-      continue;
-    }
-    if (!parsed.type || !parsed.type.startsWith("link-")) continue;
+    const parsed = wbParsedLink(sketch);
+    if (!parsed) continue;
     const atSource = parsed.sourceId === nodeId && (parsed.sourceKind || "node") === kind;
     const atTarget = parsed.targetId === nodeId && (parsed.targetKind || "node") === kind;
     if (!atSource && !atTarget) continue;
@@ -24481,6 +24493,7 @@ async function openWhiteboardBoard(boardId) {
   wbSubtab?.click();
   wbShowCanvasView();
   const nudgeSaved = wbCancelBoardTimers();
+  wbLinkParseCache.clear(); // the next board's sketches are other ids
   await new Promise((resolve) => setTimeout(resolve, 60));
   await nudgeSaved;
   window.currentBoardId = boardId ?? null;
