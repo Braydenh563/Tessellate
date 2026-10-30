@@ -350,7 +350,7 @@ document.addEventListener("click", (event) => {
 //: Escape closes it from anywhere (A27).
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
-  if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden), .modal-overlay:not(.hidden)")) return;
+  if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
   closeChatDockMore();
   $("chat-dock-more-btn").focus();
 });
@@ -1379,7 +1379,7 @@ function renderWebSearchToggle() {
   button.title = !agentModeAvailable()
     ? "Browse the web here. With no model, answers come from your notes only."
     : on && !$("tools-toggle").checked
-      ? "Atlas searches in Agent mode. You can still browse here."
+      ? "Atlas searches in Agent mode, not Ask."
       : button.dataset.enabledTitle;
 }
 // Plan Plan: send what is in the box as a request that must be planned first.
@@ -1477,7 +1477,6 @@ async function toggleWebSearch({ openFirst = false } = {}) {
 //: 2026-10-26: it took off-then-on to see it). A click with the panel open turns web off.
 $("web-search-toggle").addEventListener("click", () => toggleWebSearch({ openFirst: true }));
 $("web-panel-close").addEventListener("click", () => toggleWebPanel(false));
-//: Escape shuts the Web panel (A23).
 $("web-panel").addEventListener("keydown", (e) => {
   if (e.key !== "Escape" || e.defaultPrevented) return;
   toggleWebPanel(false);

@@ -1980,7 +1980,6 @@ async function compressChatContext() {
   }
 }
 
-//: "40 characters", then "6.3k characters" (A31).
 function compressSizeText(n) {
   return n < 1000 ? `${Math.round(n)} characters` : `${Math.round(n / 10) / 100}k characters`;
 }

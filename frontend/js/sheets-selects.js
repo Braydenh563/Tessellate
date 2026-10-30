@@ -1888,12 +1888,8 @@ async function loadConversationList() {
         });
         if (!named) return;
         if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        //: One toast, with Undo when the title changed (A34).
-        if (named.title !== conversation.title) {
-          chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : `Used the first question as the title, “${named.title}”.`);
-        } else {
-          toast("Kept the first question as the title.");
-        }
+        if (named.title === conversation.title) toast("Kept the first question as the title.");
+        else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
         loadConversationList();
       })
     );

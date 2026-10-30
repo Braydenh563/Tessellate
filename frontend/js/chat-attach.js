@@ -2000,7 +2000,6 @@ async function chatSendTurn(preset, opts = {}) {
       onMeta: (m) => {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
-        //: Meta comes before the first word, so not "writing" yet (A38).
         status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {

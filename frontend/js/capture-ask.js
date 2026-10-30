@@ -2814,6 +2814,7 @@ function liveMarkdownRenderer(box, afterPaint = null) {
   let timer = null;
   let lastRun = 0;
 
+  let gap = LIVE_RENDER_INTERVAL_MS;
   const flush = () => {
     timer = null;
     lastRun = performance.now();
@@ -2821,12 +2822,13 @@ function liveMarkdownRenderer(box, afterPaint = null) {
     rendered = latest;
     renderMarkdown(box, holdPictureTokens(latest));
     afterPaint?.();
+    gap = Math.max(LIVE_RENDER_INTERVAL_MS, (performance.now() - lastRun) * 4);
   };
 
   const render = (text) => {
     latest = text;
     if (timer) return;
-    const wait = Math.max(0, LIVE_RENDER_INTERVAL_MS - (performance.now() - lastRun));
+    const wait = Math.max(0, gap - (performance.now() - lastRun));
     timer = setTimeout(flush, wait);
   };
   //: **The last paint has to be cancellable, or it lands after the turn is
@@ -3004,7 +3006,6 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    //: The chart route refuses over 500 characters (422); a count is short (A26).
     if (question.length <= 500) {
       ensureModule("askHistory")
         .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
