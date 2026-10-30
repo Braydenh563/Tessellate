@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: distances, weights and time the notes record are added up ("how far did I run", "how many hours did I spend on the deck", "what's my total distance"), by the unit table the converter uses, filtered by what was done and on what.
 - Composer (money, CodeQL 1866 to 1868): the subject in "what do my X payments add up to", "how much X spending" and "how much is left on" is read word by word, so a long run of spaces or repeated words cannot make the match slow.
 - Composer: the money total and the filing count are split into their steps, under the complexity ratchet.
 - Composer (CodeQL): "how much grocery spending" finds its noun word by word instead of by a pattern that could split the subject many ways.

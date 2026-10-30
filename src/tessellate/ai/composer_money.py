@@ -1,10 +1,13 @@
-"""Amounts worked out from the notes (2026-10-30 sweep).
+"""Amounts and measures worked out from the notes (2026-10-30 sweep).
 
 "How much have I spent this month" and "what's my biggest expense" found
 nothing, or quoted the spending note whole: the answer is a sum or a
 maximum of the amounts the notes hold, so it is computed here and every
 figure is cited to the sentence it came from. Money owed, lent or earned is
-not spending and is left out. No model, and the same with one on.
+not spending and is left out. A distance, a weight or a stretch of time
+is added up the same way, in the unit table the converter uses ("how far
+did I run", "how many hours did I spend on the deck"). No model, and the
+same with one on.
 """
 
 from __future__ import annotations
@@ -359,22 +362,142 @@ def _due(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
+#: A measure asked by its dimension's word or by a unit: "how far did I run",
+#: "how many km have I walked", "what's my total distance".
+_MEASURE = re.compile(
+    r"^(?:how (?P<far>far)|how (?:many|much) (?P<unit>[a-zµ]+)|how (?P<long>long)(?= (?:have|did) (?:i|we) (?:spen[dt]|practi[sc]ed|worked|studied)\b)"
+    r"|what(?:'s|s| is| was)? (?:my |our |the )?total (?P<noun>distance|weight|time))(?P<rest>(?: .*)?)$",
+    re.I,
+)
+#: "How many km did I run on Sunday" is one day's value, the slot's to read.
+_ONE_DAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b|\b(?:today|yesterday|tonight|last night|this morning)\b", re.I)
+_CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights", "month", "months", "year", "years"})
+_DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
+_DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
+#: Verbs that say a measure was recorded, not what was done: no filter.
+_ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have"})
+_PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
+_BASE = {forms[0]: verb for verb, forms in _PAST.items()} | {forms[1]: verb for verb, forms in _PAST.items()}
+
+
+class _Measure(NamedTuple):
+    dimension: str
+    unit: str
+    verb: str
+    after: str
+
+
+def _dimension_of(word: str) -> tuple[str | None, bool]:
+    """"far" is a length and "km" one by the unit table; "pounds" is money's."""
+    named = recognise.UNITS.get(word) if word not in recognise.CURRENCY_NAMES and len(word) > 1 else None
+    return _DIMENSION_WORDS.get(word) or (named[0] if named and named[0] != "temperature" else None), bool(named)
+
+
+def _measure_asked(q: str) -> _Measure | None:
+    """The dimension, the unit asked, the doing verb and the rest, or None."""
+    m = _MEASURE.match(q)
+    if not m:
+        return None
+    word = (m.group("far") or m.group("long") or m.group("noun") or m.group("unit")).lower()
+    dimension, named = _dimension_of(word)
+    if not dimension:
+        return None
+    doer = _DOER.match(m.group("rest"))
+    #: "How many days until..." and "how far is the station" are a day and a
+    #: fact, not a sum: a sum is asked of something done.
+    if not doer and not m.group("noun") or word in _CALENDAR or _ONE_DAY.search(m.group("rest")):
+        return None
+    verb = doer.group("verb").lower() if doer and doer.group("verb").lower() not in _ANY_VERB else ""
+    return _Measure(dimension, word if named else "", _BASE.get(verb, verb), doer.group("after") if doer else m.group("rest"))
+
+
+def _forms(verb: str) -> set[str]:
+    """"run": ran, runs, running, run; "cycle": cycled, cycling."""
+    stem = verb[:-1] if verb.endswith("e") else verb
+    double = verb + verb[-1] if re.fullmatch(r"[^aeiou]*[aeiou][^aeiouwy]", verb) else verb
+    return {verb, verb + "s", stem + "ed", stem + "ing", double + "ing", double + "ed", *_PAST.get(verb, ())}
+
+
+def _done(verb: str) -> str:
+    if verb in _PAST:
+        return _PAST[verb][1]
+    return verb + ("d" if verb.endswith("e") else "ed")
+
+
+def _measured(views: list, asked: _Measure, month: int | None, subject: list[str]) -> list[Item]:
+    forms = _forms(asked.verb) if asked.verb else set()
+    found = []
+    for view in views:
+        if not _in_month(view, month):
+            continue
+        for sentence in view.sentences:
+            said = set(re.findall(r"[a-z]+", (sentence.text + " " + str(view.title)).lower()))
+            if _about(view, sentence, subject) and (not forms or forms & said):
+                found += [Item(composer_lists._title(view), unit, value, view, sentence) for dim, value, unit, _ in recognise.measures(sentence.text) if dim == asked.dimension]  # noqa: SLF001
+    return found
+
+
+def _figure(value: float, unit: str) -> str:
+    size = recognise.UNITS[unit][1]
+    shown = f"{value / size:,.2f}".rstrip("0").rstrip(".")
+    name = recognise.UNITS[unit][2] if len(unit) == 1 else unit
+    return f"{shown} {name[:-1] if shown == '1' and name.endswith('s') and len(name) > 3 else name}"
+
+
+def _measures_line(items: list[Item], unit: str, tail: str) -> str:
+    by_note: dict[str, float] = {}
+    for item in items:
+        by_note[item.label] = by_note.get(item.label, 0) + item.value
+    total = _figure(sum(by_note.values()), unit)
+    if len(by_note) == 1:
+        return f"Your notes record {total}{tail}, going by {items[0].label}: {_listed([_figure(i.value, i.symbol) for i in items])}."
+    ranked = sorted(by_note.items(), key=lambda kv: -kv[1])
+    return f"Your notes record {total}{tail}: {_listed([f'{name} {_figure(v, unit)}' for name, v in ranked])}."
+
+
+def _measure(out, asked: _Measure, views: list, today: date) -> bool:  # noqa: ANN001
+    month = _month_asked(asked.after, today)
+    subject, said = _subject(asked.after)
+    prep = re.match(r"\s*(on|for|with|to|at|in)\s", asked.after)
+    tail = (f" {_done(asked.verb)}" if asked.verb else "") + (f" {prep.group(1) if prep else 'on'} {said}" if said else "") + (f" in {date(2000, month, 1):%B}" if month else "")
+    items = _measured(views, asked, month, subject)
+    if not items:
+        out.lines.append(f"I found no {asked.unit or _DIMENSION_NOUN[asked.dimension]}{tail} in your notes.")
+        return True
+    unit = asked.unit if asked.unit and len(asked.unit) > 1 else max(items, key=lambda i: i.value).symbol
+    line = _measures_line(items, unit, tail)
+    out.lines.append(line)
+    _cite_all(out, items, line)
+    return True
+
+
+_DIMENSION_NOUN = {"length": "distance", "mass": "weight", "time": "time", "volume": "volume", "area": "area", "speed": "speed"}
+
+
 def asks(question: str) -> bool:
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
-    if _total_asked(q) is not None or _DUE_ASK.match(q):
+    if _total_asked(q) is not None or _DUE_ASK.match(q) or _measure_asked(q):
         return True
     m = _MOST.match(q)
     return bool(m and set(m.group(2).lower().rstrip("?. ").split()) & _MONEY_NOUNS)
 
 
-def records_spending(text: str) -> bool:
-    """A note that names spending or a refund and holds an amount."""
-    return bool(recognise.amounts(text) and (_SPENDING.search(text) or _REFUND.search(text)))
+def sums_a_measure(question: str) -> bool:
+    """"How many km have I run" is a sum, asked before the one-value slots
+    ("how many km is the walk") read a single sentence."""
+    return _measure_asked(" ".join(composer_lists._q(question).split())) is not None  # noqa: SLF001
+
+
+def records_amounts(text: str) -> bool:
+    """A note that names spending or a refund and holds an amount, or holds a measure."""
+    return bool(recognise.amounts(text) and (_SPENDING.search(text) or _REFUND.search(text))) or bool(recognise.measures(text))
 
 
 def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """A sum or a maximum of the amounts spent; False when `asked` is not one."""
     q = " ".join(composer_lists._q(asked).split())  # noqa: SLF001
+    if measure := _measure_asked(q):
+        return _measure(out, measure, views, today)
     if (rest := _total_asked(q)) is not None:
         return _spent(out, rest, views, today)
     if m := _DUE_ASK.match(q):

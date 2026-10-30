@@ -3123,6 +3123,8 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
         return True
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).
+    if composer_money.sums_a_measure(question) and composer_money.answer(out, question, views, today):
+        return True
     if composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
         return True
     #: A day, a count or a filing worked out from the notes (probes P10 to

@@ -3656,3 +3656,19 @@ def says_shape(shape: str, text: str) -> bool:
     """Whether `text` holds a "money" amount or a "score" ("8/10", "4 stars")."""
     pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
     return bool(pattern and pattern.search(text or ""))
+
+
+def measures(text: str) -> list[tuple[str, float, str, int]]:
+    """Each measured amount, money and temperature aside: (dimension, value in
+    the dimension's base unit, the unit as written, offset). "5 km" and
+    "800 m" add up because both are metres here (CHAT_PLAN, placed 2026-10-30)."""
+    raw = text or ""
+    found = []
+    for m in _rx("quantity").finditer(raw.lower()):
+        name, glued, written = m.group(3), not m.group(2), raw[m.start(3):m.end(3)]
+        if name in _NOT_IN_TEXT or name in CURRENCY_NAMES or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
+            continue
+        dimension, size, _said = UNITS[name]
+        if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):
+            found.append((dimension, _figure(m.group(1)) * size, name, m.start()))
+    return found

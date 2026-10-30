@@ -1687,8 +1687,10 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         #: "How much have I spent", "my biggest expense": a sum over every
         #: note that records spending, which the five likest never were
         #: ("spent" does not match "Spending October"; 2026-10-30 sweep).
-        found.entries = [e for e in manager.list_entries(session, limit=400) if composer_money.records_spending(e.content or "")]
-        found.mode, found.connected_ids, found.match_info = "money", set(), {}
+        #: None at all keeps the ordinary retrieval, so the answer can say no note holds it.
+        if recorded := [e for e in manager.list_entries(session, limit=400) if composer_money.records_amounts(e.content or "")]:
+            found.entries = recorded
+            found.mode, found.connected_ids, found.match_info = "money", set(), {}
 
 
 def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
