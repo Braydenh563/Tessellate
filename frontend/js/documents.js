@@ -2301,6 +2301,9 @@ async function docResolveConflict(current, mine, silent) {
     await docSaveOnce(silent);
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
+    //: The title box too (audit 1028 D10): left on the old title, the next
+    //: save sent it back over the one just taken.
+    $("doc-title").value = current.title || "";
     docSurface().text = current.content || "";
     renderDocPreview();
     docDirty = false;
@@ -13974,8 +13977,14 @@ async function renderDocReplace() {
   run.disabled = !matches.length;
 }
 
-async function docWriteContents(items) {
-  await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: items }) });
+//: Each write carries the hash of the text it was worked out from and keeps
+//: the hashes it gets back in `hashes`, so an undo or redo after one of these
+//: documents was edited is refused whole instead of writing over the edit
+//: (audit 1028 D11).
+async function docWriteContents(items, hashes) {
+  const sent = items.map((item) => ({ ...item, base_hash: hashes[item.id] || null }));
+  const res = await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: sent }) });
+  Object.assign(hashes, res.hashes || {});
   const open = items.find((item) => item.id === currentDoc?.id);
   if (open) docShowSaved(await apiJson(`/documents/${open.id}`));
   loadDocuments(currentDoc?.id);
@@ -13990,8 +13999,9 @@ async function runDocReplace() {
   const before = docReplace.matches.map((m) => ({ id: m.id, content: m.content }));
   const after = docReplace.matches.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
   const total = docReplace.matches.reduce((sum, m) => sum + m.count, 0);
+  const hashes = Object.fromEntries(docReplace.matches.map((m) => [m.id, m.content_hash]));
   try {
-    await docWriteContents(after);
+    await docWriteContents(after, hashes);
   } catch (error) {
     return toast(error.message || "Couldn't replace. Nothing was changed.", true);
   }
@@ -13999,8 +14009,8 @@ async function runDocReplace() {
   offerUndo(
     `Replaced ${total} in ${nounCount(after.length, "document")}`,
     `Replaced ${total} in ${nounCount(after.length, "document")}. Undo takes it all back.`,
-    () => docWriteContents(before),
-    () => docWriteContents(after)
+    () => docWriteContents(before, hashes),
+    () => docWriteContents(after, hashes)
   );
 }
 

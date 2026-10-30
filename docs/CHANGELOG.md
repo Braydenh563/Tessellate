@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Documents: undoing a Replace in every document no longer writes over an edit made since (the batch is refused whole and says so); the batch write refuses an archived document and processes pictures it adds, as a save does (audit 1028 D11, D13). "Take theirs" on a document conflict takes their title too (D10).
 - Security: a signed-in request's JSON body (or one with no type) is capped at 16 MB; only uploads and a file's text keep the 320 MB cap (audit 1028 K4).
 - Boards and maps: a left drag on empty canvas draws the selection box again, a right drag pans and a plain right click still opens the menu (INBOX 1452).
 - Chat and Ask: a list of spending asked as "what expenses have I recorded", "list my expenses" or "what have I bought" names every purchase and its total; a price that moved counts what was paid (INBOX 1456). A note the app offered to open is opened, with a model up too (INBOX 1455).
