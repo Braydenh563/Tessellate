@@ -7485,3 +7485,44 @@ input[type="color"].wb-mixed {
   max-width: 100%;
   max-height: 38vh;
 }
+
+/* Voting dots and the workshop timer (INBOX 1313 row 14; DESIGN.md recipe index).
+   The tally is a pill on an item's top-right corner, never a pointer target; the
+   timer is the presenting bar's own floating panel (glass-off with the rest),
+   centred on the board's top edge and kept in view while presenting. */
+.wb-votes {
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  right: calc(-1 * var(--space-3));
+  z-index: 2;
+  min-width: var(--space-6);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: var(--space-6);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.wb-timer-bar {
+  left: 50%;
+  top: var(--space-5);
+  transform: translateX(-50%);
+  border-radius: var(--radius-pill);
+}
+.wb-timer-time {
+  min-width: 4ch;
+  text-align: center;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.wb-timer-bar.wb-timer-done .wb-timer-time {
+  color: var(--error);
+}
+#library-view-whiteboard.wb-presenting .whiteboard-floating-panel.wb-timer-bar:not(.hidden) {
+  display: flex;
+}

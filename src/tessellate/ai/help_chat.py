@@ -1703,6 +1703,22 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "board-workshop",
+            "keywords": (
+                "vote", "voting", "voting dots", "dot voting", "vote dot", "dots on a note", "workshop",
+                "timer", "workshop timer", "countdown", "time box", "timebox", "retro", "brainstorm",
+            ),
+            "body": (
+                "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
+                "choose Board, Workshop, Add a vote dot: each takes a dot, drawn as a count on its top-right "
+                "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
+                "Clear all vote dots empties the board; one Undo takes back a press. Workshop timer… opens "
+                "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
+                "when time is up; its X stops it. The timer is for this window only and is not saved."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "board-paste",
             "keywords": (
                 "paste on a board", "paste options on a board", "board paste special", "paste text on the board",
