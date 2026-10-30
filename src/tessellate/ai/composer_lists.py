@@ -349,6 +349,19 @@ def _trim(text: str, width: int = 110) -> str:
     return text[:width].rsplit(" ", 1)[0].rstrip(",;:") + "..."
 
 
+#: A first line that is itself an item: a list with no title is named by
+#: where it is filed, never "[x] Milk" (stress run 2026-10-30).
+_LIST_LINE = re.compile(r"^\s*(?:(?:[-*+]|\d{1,3}[.)])\s+)?\[[ xX]\]|^\s*[-*+]\s")
+
+
+def _named_by_filing(view) -> str:  # noqa: ANN001
+    tags = view.note.get("tags") or []
+    tags = tags.split(",") if isinstance(tags, str) else tags
+    label = next((str(t).strip() for t in tags if str(t).strip() and str(t).strip().lower() not in {"checklist", "list", "todo"}), "")
+    label = label or str(view.note.get("category") or "").strip()
+    return f"your {label.lower()} list" if label else "your untitled list"
+
+
 def _title(view) -> str:  # noqa: ANN001
     if view.titled:
         first = view.title
@@ -356,6 +369,8 @@ def _title(view) -> str:  # noqa: ANN001
         #: The note's first line, not its first unit: "Launch checklist:" is
         #: the name of a list whose first item is "domain".
         line = next((ln for ln in str(view.note.get("content") or "").splitlines() if ln.strip()), view.title)
+        if _LIST_LINE.match(line):
+            return _named_by_filing(view)
         first = re.split(r"(?<=[.!?])\s", line.strip().lstrip("#").strip(), maxsplit=1)[0]
     return _trim(first.strip().rstrip(":.!"), 70)
 

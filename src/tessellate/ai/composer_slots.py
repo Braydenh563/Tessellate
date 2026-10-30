@@ -25,9 +25,19 @@ _LEFT = re.compile(r"^what(?:'s|\s+is|\s+else\s+is|\s+is\s+still)?\s+(?:still\s+
 #: "What's still on my grocery list", "what haven't I bought from it yet":
 #: the open items, not the whole list (2026-10-30 probe).
 _STILL_ON = re.compile(
-    r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+((?:on|in)\s+.+)|(?:have\s*n[o']t\s+i|haven't\s+i|have\s+i\s+not)\s+(?:bought|got|ticked(?:\s+off)?|packed|done)(?:\s+yet)?\s+((?:on|from|in)\s+.+?)(?:\s+yet)?)$",
+    r"^what(?:'s|\s+is|\s+are)?\s+(?:still\s+(?:unchecked\s+|unticked\s+|open\s+|left\s+|to\s+(?:buy|do|get)\s+)?((?:on|in)\s+.+)|(?:have\s*n[o']t\s+i|haven't\s+i|have\s+i\s+not)\s+(?:bought|got|ticked(?:\s+off)?|packed|done)(?:\s+yet)?\s+((?:on|from|in)\s+.+?)(?:\s+yet)?)$",
     re.I,
 )
+#: "Is buying mint still on my list", "is comparing headphones still
+#: outstanding": a yes or no about one open item (stress run 2026-10-30
+#: quoted a journal line, or dumped the whole list).
+_IS_STILL = re.compile(
+    r"^is\s+(.+?)\s+still\s+(?:on\s+(?:my|the)\b.*|outstanding|open|pending|to\s+do|unticked|unchecked|left)$",
+    re.I,
+)
+_IS_DONE = re.compile(r"^(?:is|has)\s+(.+?)\s+(?:been\s+)?(?:ticked(?:\s+off)?|done|finished|completed)(?:\s+yet)?$", re.I)
+#: A line that says the doing did not happen ("Didn't buy replacement mint").
+_UNDONE = re.compile(r"\b(?:did\s*n[o']t|didnt|not|never|forgot|failed|yet\s+to)\b", re.I)
 _NEED = re.compile(r"^what\s+(?:else\s+)?(?:do|should)\s+i\s+(?:still\s+)?(?:need|have)\s+to\s+(.+)$", re.I)
 _SINCE = re.compile(r"^how\s+long\s+(?:has\s+it\s+been\s+)?since\s+(?:i|we)\s+(?:last\s+)?(.+)$", re.I)
 #: Words that carry no subject: the framing of the request itself.
@@ -151,19 +161,35 @@ def _says_verb(sentence, forms: frozenset[str]) -> bool:  # noqa: ANN001
 
 def _first_did(views: list, verb: frozenset[str], obj):  # noqa: ANN001
     """The (view, sentence) that says the doing: a task that holds the object
-    and the verb at once, else the first task or prose that holds the object."""
-    best = None
+    and the verb at once, else prose that does, else a task that holds the
+    object alone ("[ ] Buy mint" does not answer "did I water the mint"
+    while a line says the watering)."""
+    said = task = None
     for view in sorted(views, key=lambda v: v.rank):
         for s in view.sentences:
             if not _holds(s, obj):
                 continue
             if s.kind == "task":
-                best = best or (view, s)
+                task = task or (view, s)
                 if _says_verb(s, verb):
                     return view, s
             elif _says_verb(s, verb):
-                best = best or (view, s)
-    return best
+                said = said or (view, s)
+    return said or task
+
+
+def _done_later(views: list, verb: frozenset[str], obj, task_view):  # noqa: ANN001, ANN202
+    """A line written no earlier than an open task that says the doing
+    ("Renewed my library membership today" beside "[ ] Renew library
+    membership"): the box was never ticked, the later note is the record."""
+    since = task_view.written
+    for view in sorted(views, key=lambda v: v.written or since, reverse=True):
+        if since and view.written and view.written < since:
+            continue
+        for s in view.sentences:
+            if s.kind != "task" and _holds(s, obj) and _says_verb(s, verb) and not (_INTENT.search(s.text) or _UNDONE.search(s.text)):
+                return view, s
+    return None
 
 
 #: A line that plans the doing is not a record of it: "did I pay rent"
@@ -191,6 +217,8 @@ def _say_line(out, view, s, lead: str) -> None:  # noqa: ANN001
 def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
     if s.kind == "task":
         _verdict(out, view, s, verb_word)
+    elif _UNDONE.search(s.text):
+        _say_line(out, view, s, f"No, {_note_of(view, today)} says")
     elif _INTENT.search(s.text):
         _say_line(out, view, s, f"Not yet, as far as your notes go. {_note_of(view, today).capitalize()} only plans it")
     else:
@@ -269,11 +297,40 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         _say_line(out, *seen, f"Yes, {_note_of(seen[0], today)} mentions {_asked_thing(words)}")
         return True
     best = _first_did(views, verb, obj)
+    if best is not None and best[1].kind == "task" and not best[1].done:
+        best = _done_later(views, verb, obj, best[0]) or best
     if best is None:
         _not_said(out, views, obj, words, today)
         return True
     _say_did(out, *best, words[0], today)
     return True
+
+
+def _is_still(out, rest: str, views: list, today: date, *, asks_done: bool = False) -> bool:  # noqa: ANN001, ARG001
+    """Only a checklist line answers; with none, the question goes on to the
+    readers that know prose ("Is the empty-title bug done?")."""
+    words = rest.split()
+    if len(words) < 2:
+        return False
+    verb, obj = _verb_forms(words[0]), _stems(_asked_thing(words))
+    best = _first_did(views, verb, obj) if obj else None
+    if best is None or best[1].kind != "task":
+        return False
+    view, task = best
+    done = task.done or _done_later(views, verb, obj, view) is not None
+    text = re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", task.text).strip()
+    title = composer_lists._title(view)  # noqa: SLF001
+    if asks_done:
+        line = f"Yes, “{text}” is ticked off in {title}." if done else f"Not yet: “{text}” is still open in {title}."
+    else:
+        line = f"No, “{text}” is ticked off in {title}." if done else f"Yes, “{text}” is still open in {title}."
+    out.lines.append(line)
+    composer_lists._cite(out, view, task, line)  # noqa: SLF001
+    return True
+
+
+def _is_done(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    return _is_still(out, rest, views, today, asks_done=True)
 
 
 def _one_line(found):  # noqa: ANN001, ANN202
@@ -701,7 +758,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     shaped = _by_words(out, tokens, views, today)
     if shaped is not None:
         return shaped
-    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left)):
+    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left), (_STILL_ON, _left), (_IS_STILL, _is_still), (_IS_DONE, _is_done)):
         if m := pattern.match(q):
             return say(out, next((g for g in m.groups() if g), ""), views, today)
     return False

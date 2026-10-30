@@ -115,3 +115,57 @@ def test_a_manner_word_is_never_reported_missing():
     for question in ("What did I personally think of Piranesi?", "What is my preferred Piranesi style?"):
         said = composer.compose(question, notes)["text"]
         assert "personally" not in said.split("[")[-1] and "“style”" not in said, said
+
+
+def _note(i, content, day):
+    return {"id": i, "content": content, "created_at": day, "updated_at": day, "category": "Personal"}
+
+
+def test_a_bare_checkbox_is_a_task_and_a_later_note_that_did_it_is_the_record():
+    """"Did I renew my library membership?" answered "Yes" from the open
+    "[ ] Renew library membership" (no bullet, so read as prose), and never
+    saw the later "Renewed my library membership today"."""
+    from tessellate.ai import composer_digest
+
+    day = datetime(2026, 10, 20, 9)
+    later = datetime(2026, 10, 29, 9)
+    open_only = [_note(1, "# Errands\n\n[ ] Renew library membership\n[x] Buy stamps", day)]
+    said = composer_digest.answer("did I renew my library membership", open_only, today=later.date())["text"]
+    assert said.startswith("Not yet"), said
+    done = [*open_only, _note(2, "# Membership sorted\n\nRenewed my library membership today.", later)]
+    said = composer_digest.answer("did I renew my library membership", done, today=later.date())["text"]
+    assert said.startswith("Yes, your note of 29 October says so: Renewed my library membership today"), said
+
+
+_BALCONY = [
+    _note(1, "# Balcony jobs\n\n[x] Repot basil.\n[ ] Buy mint.\n[ ] Patch the cracked blue pot.", datetime(2026, 10, 18, 9)),
+    _note(2, "# Garden recap\n\nForgot to water the mint and it died. Didn't buy replacement mint in September.", datetime(2026, 9, 30, 9)),
+]
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("Is buying mint still on my list?", "Yes, “Buy mint.” is still open in Balcony jobs."),
+    ("Is the blue pot still outstanding?", "Yes, “Patch the cracked blue pot.” is still open in Balcony jobs."),
+    ("Is repotting the basil done?", "Yes, “Repot basil.” is ticked off in Balcony jobs."),
+    ("Has buying mint been finished?", "Not yet: “Buy mint.” is still open in Balcony jobs."),
+    #: A line that says it did not happen is a no, never "Yes, says so".
+    ("did I water the mint", "No, your note of 30 September says: Forgot to water the mint"),
+])
+def test_is_it_still_open_answers_from_the_checklist_line(question, lead):
+    """Stress run 2026-10-30: "Is buying mint still on my list?" quoted the
+    garden journal; "still outstanding" dumped the whole list."""
+    from tessellate.ai import composer_digest
+
+    said = composer_digest.answer(question, _BALCONY, today=datetime(2026, 10, 30).date())["text"]
+    assert said.startswith(lead), said
+
+
+def test_a_list_with_no_title_is_named_by_its_filing_not_its_first_item():
+    """"What's still unchecked on my grocery list?" answered from a note
+    called "[x] Milk"; "still unchecked" was not read as "still on"."""
+    from tessellate.ai import composer_digest
+
+    groceries = {**_note(1, "[x] Milk.\n[ ] Oats.\n[x] Red lentils.", datetime(2026, 10, 30, 9)), "tags": ["groceries", "checklist"]}
+    said = composer_digest.answer("What's still unchecked on my grocery list?", [groceries], today=datetime(2026, 10, 30).date())["text"]
+    assert said.startswith("1 still to do on your groceries list:"), said
+    assert "Oats" in said and "[x]" not in said, said

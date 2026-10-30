@@ -922,7 +922,10 @@ class NoteView:
 #: Only a heading's marks: the text after them is read in code, as a pattern
 #: running on to the line's end backtracks over runs of whitespace (CodeQL).
 _HEADING_LEAD = re.compile(r"[ \t]{0,3}#{1,6}[ \t]+")
-_ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+)(\[[ xX]\]\s+)?")
+#: A list line, or a checkbox written with no bullet ("[ ] Buy mint.", as
+#: pasted from many apps; stress run 2026-10-30 read those as prose, so an
+#: open task answered "did I" with "Yes").
+_ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]\s+)?")
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
 #: abbreviations; never merges two sentences, the safer direction here.
