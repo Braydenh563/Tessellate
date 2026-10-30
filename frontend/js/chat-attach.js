@@ -40,6 +40,7 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
       body: JSON.stringify({ text: trimmed, source_entry_ids: sourceEntryIds }),
     });
     extractProposal = { ...body, source_document_id: sourceDocumentId };
+    await lazyScript("/js/extract-preview.js");
     renderExtractPreview(body);
   } catch (error) {
     status.classList.add("error");
@@ -48,119 +49,8 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
 }
 
 // What a link's `kind` (from `ai.extractor`) reads as in the preview.
-const EXTRACT_LINK_KIND_LABEL = { sibling: "new note", source: "source", related: "related" };
-
-function extractRefLabel(ref, notes) {
-  if (ref.startsWith("existing:")) return "an existing note";
-  const note = notes.find((n) => n.ref === ref);
-  return note ? note.title || clipText(notePreviewText(note.content), 30) : ref;
-}
-
-function renderExtractPreview(body) {
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent =
-    body.message ||
-    `${nounCount(body.notes.length, "note")} proposed: review, then save.`;
-
-  // Built with createElement, not an `innerHTML` template per iteration.
-  // The old version escaped everything correctly, so this is not a security
-  // fix: it is this file's own rule (see the header comment: "All DOM nodes
-  // are built with createElement/textContent, never innerHTML"), and the rule
-  // exists because an `innerHTML` assignment inside a loop re-invokes the HTML
-  // parser once per proposed note, and because the next person to add a field
-  // here is one forgotten `escapeHtml` away from an injection.
-  const field = (type, className, { placeholder, label, value } = {}) => {
-    const input = document.createElement("input");
-    input.type = type;
-    input.className = className;
-    if (placeholder) input.placeholder = placeholder;
-    if (label) input.setAttribute("aria-label", label);
-    if (value !== undefined) input.value = value;
-    return input;
-  };
-
-  const list = $("extract-notes-list");
-  list.replaceChildren();
-  for (const note of body.notes) {
-    const card = document.createElement("div");
-    card.className = "extract-note-card";
-    card.dataset.ref = note.ref;
-
-    const keepLabel = document.createElement("label");
-    keepLabel.className = "row align-center checkbox-label";
-    const keep = field("checkbox", "extract-note-keep");
-    keep.checked = true;
-    keepLabel.append(keep, document.createTextNode(" Keep this note"));
-
-    const title = field("text", "extract-note-title", {
-      placeholder: "Title (optional)",
-      label: "Note title",
-      value: note.title || "",
-    });
-
-    const content = document.createElement("textarea");
-    content.className = "extract-note-content";
-    content.rows = 6;
-    content.setAttribute("aria-label", "Note content");
-    content.value = note.content;
-
-    const meta = document.createElement("div");
-    meta.className = "row extract-note-meta";
-    const category = document.createElement("span");
-    category.className = "muted extract-note-category";
-    category.textContent = `Filed under: ${note.category}`;
-    meta.append(
-      category,
-      field("text", "extract-note-tags", {
-        placeholder: "Tags, comma separated",
-        label: "Tags for this note",
-      })
-    );
-
-    card.append(keepLabel, title, content, meta);
-    list.appendChild(card);
-  }
-
-  const linksBox = $("extract-links-list");
-  linksBox.replaceChildren();
-  if (body.links.length) {
-    const heading = document.createElement("p");
-    heading.className = "muted";
-    heading.textContent = "Links";
-    linksBox.appendChild(heading);
-  }
-  for (const link of body.links) {
-    const row = document.createElement("label");
-    row.className = "row align-center extract-link-row checkbox-label";
-    row.dataset.sourceRef = link.source_ref;
-    row.dataset.targetRef = link.target_ref;
-    const kindLabel = EXTRACT_LINK_KIND_LABEL[link.kind] || "note";
-    // Raw, not escaped: this now goes into a text node, where escaping would
-    // render the entities literally ("A &amp; B" on screen).
-    const target = link.target_preview || extractRefLabel(link.target_ref, body.notes);
-    const keep = document.createElement("input");
-    keep.type = "checkbox";
-    keep.className = "extract-link-keep";
-    keep.checked = true;
-    const desc = document.createElement("span");
-    desc.className = "extract-link-desc";
-    const why = document.createElement("span");
-    why.className = "muted";
-    why.textContent = `(${kindLabel}: ${link.reason})`;
-    desc.append(
-      document.createTextNode(
-        `${extractRefLabel(link.source_ref, body.notes)} → ${target} `
-      ),
-      why
-    );
-    row.append(keep, desc);
-    linksBox.appendChild(row);
-  }
-
-  $("extract-commit").disabled = body.notes.length === 0;
-}
-
+//: The proposal's cards (`renderExtractPreview`) are extract-preview.js, fetched
+//: with the first proposal: only an extraction reaches them.
 function closeExtractPreview() {
   $("extract-panel").classList.add("hidden");
   extractProposal = null;
@@ -190,8 +80,11 @@ let lastChatImageAttachments = [];
 //: A tile (the picture, or the kind's glyph), the name with its extension kept
 //: when the stem is cut, one facts line, a bar while it uploads, a round x.
 //: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
-//: facts line then says why).
-function attachmentChip({ name, size, thumb, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
+//: facts line then says why). A notebook item (`notebookCard`, chat-agent.js)
+//: passes its own `icon` and `facts` (a note's name is words, not a file name,
+//: so no extension is split off) and `onOpen`, which makes the tile and the
+//: words one button; the remove x stays its sibling.
+function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
   const chipEl = document.createElement("span");
   chipEl.className = "chip attachment-chip att-chip";
   chipEl.dataset.state = state;
@@ -203,11 +96,11 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
     tile.alt = "";
   } else {
     tile = document.createElement("i");
-    tile.className = `ph ${attachmentIconClass("", name) || "ph-file"}`;
+    tile.className = `ph ${icon || attachmentIconClass("", name) || "ph-file"}`;
     tile.setAttribute("aria-hidden", "true");
   }
   tile.classList.add("att-chip-tile");
-  const ext = attachmentExt(name);
+  const ext = icon ? "" : attachmentExt(name);
   const stem = document.createElement("span");
   stem.className = "att-chip-stem";
   stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
@@ -228,11 +121,19 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
         ? error || "Could not attach"
-        : [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+        : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
   const body = document.createElement("span");
   body.className = "att-chip-body";
   body.append(nameEl, facts);
-  chipEl.append(tile, body);
+  if (onOpen) {
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "att-chip-open";
+    open.setAttribute("aria-haspopup", "dialog");
+    open.append(tile, body);
+    open.addEventListener("click", onOpen);
+    chipEl.append(open);
+  } else chipEl.append(tile, body);
   if (state === "uploading") {
     const bar = document.createElement("progress");
     bar.className = "att-chip-bar";
@@ -578,23 +479,16 @@ function renderBoardAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedBoards.length === 0);
   for (const board of attachedBoards) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:tree-structure ${board.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${board.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
-      renderBoardAttachments();
-      announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "map", id: board.id, name: board.name }, {
+        removeTitle: `Don't send “${board.name}” with this message`,
+        onRemove: () => {
+          attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
+          renderBoardAttachments();
+          announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -632,8 +526,7 @@ function renderDocumentAttachments() {
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
     box.appendChild(
-      attachmentChip({
-        name: document_.name,
+      notebookCard({ kind: "document", id: document_.id, name: document_.name }, {
         removeTitle: `Don't send “${document_.name}” with this message`,
         onRemove: () => {
           attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
@@ -942,25 +835,17 @@ function renderAttachments() {
   box.classList.toggle("hidden", notes.length === 0);
   $("attach-note").classList.toggle("has-attachments", notes.length > 0);
   for (const entry of notes) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    chipEl.title = entry.content;
-    const label = document.createElement("span");
-    setLabel(label, `ph:paperclip ${noteLabel(entry)}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Remove "${noteLabel(entry, 24)}"`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
-      renderAttachments();
-      renderNotePickerList();
-      announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "note", id: entry.id, name: entry.content }, {
+        removeTitle: `Remove “${noteNamePlain(entry.content, 24) || "this note"}”`,
+        onRemove: () => {
+          attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
+          renderAttachments();
+          renderNotePickerList();
+          announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -2960,7 +2845,7 @@ async function deleteChatTurn(assistantBubble) {
   }
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
-  if (userBubble && userBubble.classList.contains("user")) userBubble.remove();
+  if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
   renderChatTurnCount();

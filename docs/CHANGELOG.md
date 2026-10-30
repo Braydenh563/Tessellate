@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Security: the media ticket and device token tables are read as snapshots, so a sign-in on one device during a sweep on another no longer fails (audit 1028 K23).
+- Chat (INBOX 1460): a note, document, mind map or library file attached to a message is the staged file card (a glyph, its name in words with one ellipsis at the end, one muted line such as "Note · 3 days ago", a remove x) in the composer and, once sent, above the message bubble on its side (a note shows its next words, two lines) instead of a black bar cut off on both sides or a blue chip; a press previews it with an Open button, by keyboard too, and a reloaded chat draws the same (51px tall at 1280 and 390, was 21px chips and a 37px bar; 8px above the bubble).
 - Notes: saving a note again (centring or resizing an image) no longer reads its pictures and PDFs again; each reader runs once per upload (INBOX 1465).
 - Backup restore (audit 1028 K14): a zip of more than 200,000 files, or one larger than the free space on the notebook's disk, is refused before anything is written, with the amount to free.
 - The companion (INBOX 1463, 1432): it is drawn whole while it falls or moves; riding a panel it was clipped to that panel's box in flight, so a drop from the Library's sub-tabs onto a card was cut at the list's edge for 528 ms (34 of 69 frames, now 0) and the fall from above the window at the top bar (30 of 139 frames, now 0).
