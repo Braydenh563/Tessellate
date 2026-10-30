@@ -1630,13 +1630,13 @@ HELP_TOPICS.extend(
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
                 "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "jump size", "connector gap", "clear waypoints", "clear bends", "gradient", "hatch", "fill style", "pattern fill",
-                "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
+                "crop a picture", "crop to a circle", "picture shape", "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from open and "
                 "filled arrows to circles, diamonds, a cross and a crow's foot, "
@@ -1658,6 +1658,7 @@ HELP_TOPICS.extend(
                 "state diagram", "drawio", "draw.io file", "open a drawio file", "import a flowchart",
                 "clone and connect", "copy and connect", "next shape", "copy a shape",
                 "connect it to the copy", "connect the copy", "new note next to", "arrows round a card",
+                "dimension line", "measure", "measure between", "length of a line", "show the length",
             ),
             "body": (
                 "Connector bends and importing. Every connector takes bends: drag the small ring in the middle "
@@ -1672,7 +1673,7 @@ HELP_TOPICS.extend(
                 "it along the line. The ends include the entity-relationship marks (one, zero or one, many, "
                 "one or many, zero or many). With one shape or text box selected, the four arrows round it "
                 "(or Alt+Shift and an arrow key) copy it that way and join facing sides with an elbow; "
-                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Select a connector and drag a square at either end onto another shape to re-point it. "
+                "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
                 "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
                 "here exported, as shapes and connectors; Export writes an Outline and a Mermaid flowchart."
@@ -1701,6 +1702,22 @@ HELP_TOPICS.extend(
                 "a page in a new tab, and the same Link… changes or removes it. Fit, in the Format "
                 "panel's Text tab for a shape (or Ctrl+K, Shrink the text to fit), makes long words shrink "
                 "until they fit inside the shape, never past the size you gave them."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "board-workshop",
+            "keywords": (
+                "vote", "voting", "voting dots", "dot voting", "vote dot", "dots on a note", "workshop",
+                "timer", "workshop timer", "countdown", "time box", "timebox", "retro", "brainstorm",
+            ),
+            "body": (
+                "Voting dots and a timer, for a workshop. Select notes, text boxes, pictures or frames and "
+                "choose Board, Workshop, Add a vote dot: each takes a dot, drawn as a count on its top-right "
+                "corner, and each press adds one (up to 99). Ctrl+K, Take a vote dot off, removes one; "
+                "Clear all vote dots empties the board; one Undo takes back a press. Workshop timer… opens "
+                "1, 3, 5, 10, 15 or 30 minutes: a clock under the board's top bar counts down and says "
+                "when time is up; its X stops it. The timer is for this window only and is not saved."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

@@ -1740,6 +1740,197 @@ function wbShadowOf(look) {
   return { x: n(look?.shadow_x, 0), y: n(look?.shadow_y, 2), blur: n(look?.shadow_blur, 4) };
 }
 
+//: **Crop a picture to a shape** (`data.crop`; INBOX 1313 row 13). Corner
+//: points as shares of the picture's box, so one table draws the board's CSS
+//: clip and the export's path at any size. An ellipse is a circle on a square.
+const WB_CROPS = {
+  ellipse: null,
+  diamond: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]],
+  hexagon: [[0.25, 0], [0.75, 0], [1, 0.5], [0.75, 1], [0.25, 1], [0, 0.5]],
+  triangle: [[0.5, 0], [1, 1], [0, 1]],
+};
+
+function wbCropClip(crop) {
+  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
+  const points = WB_CROPS[crop];
+  return points ? `polygon(${points.map(([x, y]) => `${x * 100}% ${y * 100}%`).join(", ")})` : "ellipse(50% 50% at 50% 50%)";
+}
+
+function wbCropPath(crop, w, h) {
+  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
+  const points = WB_CROPS[crop];
+  if (points) return `M ${points.map(([x, y]) => `${x * w} ${y * h}`).join(" L ")} Z`;
+  return `M 0 ${h / 2} A ${w / 2} ${h / 2} 0 1 0 ${w} ${h / 2} A ${w / 2} ${h / 2} 0 1 0 0 ${h / 2} Z`;
+}
+
+//: **Voting dots** (Miro's; INBOX 1313 row 14): `data.votes`, how many dots a
+//: board item holds, drawn as a pill on its top-right corner. Added and taken
+//: off from the Board menu and Ctrl+K, one Undo step each
+//: for every selected item; zero is none and is not stored.
+const WB_VOTE_MAX = 99;
+
+function wbVotesAfter(current, delta) {
+  const next = Math.max(0, Math.min(WB_VOTE_MAX, (Number(current) || 0) + delta));
+  return next || undefined;
+}
+
+function wbVoteTargets() {
+  return wbFmtEntries().filter((e) => e.kind === "object" && !WB_MAP_KINDS.has(e.item.kind) && !wbIsLocked(e.kind, e.item));
+}
+
+async function wbSetVotes(entries, change) {
+  await wbRecordGesture(async () => {
+    for (const e of entries) {
+      const votes = change(e.item.data?.votes);
+      const data = { ...e.item.data };
+      if (votes) data.votes = votes;
+      else delete data.votes;
+      e.item.data = data;
+      await wbSaveObject(e.item);
+    }
+  });
+  wbScheduleRender();
+}
+
+async function wbVoteSelection(delta) {
+  const targets = wbVoteTargets();
+  if (!targets.length) {
+    toast("Select a note, text box, picture or frame to vote on.");
+    return;
+  }
+  await wbSetVotes(targets, (n) => wbVotesAfter(n, delta));
+  const total = targets.reduce((sum, e) => sum + (e.item.data?.votes || 0), 0);
+  wbAnnounce(delta > 0 ? `Dot added: ${nounCount(total, "dot")} on the selection.` : `Dot taken off: ${nounCount(total, "dot")} on the selection.`);
+}
+
+async function wbClearVotes() {
+  const held = (wbState.objects || []).filter((o) => !WB_MAP_KINDS.has(o.kind) && o.data?.votes && !wbIsLocked("object", o));
+  if (!held.length) {
+    toast("No item on this board has a vote dot.");
+    return;
+  }
+  await wbSetVotes(held.map((item) => ({ kind: "object", item })), () => undefined);
+  wbAnnounce(`Dots cleared from ${nounCount(held.length, "item")}.`);
+}
+
+//: The dots in an export: the same pill, at the corner the board draws it,
+//: in the colours the live badge shows.
+function wbSvgVotes(obj) {
+  const badge = document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"] > .wb-votes`);
+  const fill = badge ? wbExportColour(getComputedStyle(badge).backgroundColor) : "#2f5bd3";
+  const ink = badge ? wbExportColour(getComputedStyle(badge).color) : "#ffffff";
+  const w = Math.max(16, 8 + String(obj.data.votes).length * 7);
+  return `<rect x="${obj.width - w + 8}" y="-8" width="${w}" height="16" rx="8" fill="${fill}" />` +
+    `<text x="${obj.width - w / 2 + 8}" y="0" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="${ink}">${obj.data.votes}</text>`;
+}
+
+function wbPaintVotes(el, d) {
+  const n = d.data?.votes || 0;
+  let badge = el.querySelector(":scope > .wb-votes");
+  if (!n) {
+    badge?.remove();
+    return;
+  }
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.className = "wb-votes";
+    badge.setAttribute("role", "img");
+    el.appendChild(badge);
+  }
+  badge.textContent = String(n);
+  badge.setAttribute("aria-label", n === 1 ? "1 vote" : `${n} votes`);
+}
+
+//: **A workshop timer**: a countdown pill at the board's top, from the Board
+//: menu's Workshop group. Kept in the page only (a workshop is now, not a
+//: property of the board), read against the clock rather than counted, so a
+//: backgrounded tab is still right. One timeout at a time, aimed at the next
+//: change of the shown second, and none once it ends or is stopped.
+const wbTimer = { end: 0, tick: 0, bar: null, time: null };
+
+function wbTimerLeft(end, now) {
+  return Math.max(0, end - now);
+}
+
+function wbTimerText(ms) {
+  const seconds = Math.ceil(Math.max(0, ms) / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function wbTimerBar() {
+  if (wbTimer.bar?.isConnected) return wbTimer.bar;
+  const host = document.getElementById("wb-present-bar")?.parentElement;
+  if (!host) return null;
+  const bar = document.createElement("div");
+  bar.id = "wb-timer-bar";
+  bar.className = "whiteboard-floating-panel wb-timer-bar card glass hidden";
+  bar.setAttribute("role", "timer");
+  bar.setAttribute("aria-label", "Workshop timer");
+  const glyph = document.createElement("i");
+  glyph.className = "ph ph-timer";
+  glyph.setAttribute("aria-hidden", "true");
+  const time = document.createElement("span");
+  time.className = "wb-timer-time";
+  const stop = document.createElement("button");
+  stop.type = "button";
+  stop.className = "ghost small icon-only";
+  stop.title = "Stop the timer";
+  stop.setAttribute("aria-label", "Stop the timer");
+  const x = document.createElement("i");
+  x.className = "ph ph-x";
+  x.setAttribute("aria-hidden", "true");
+  stop.appendChild(x);
+  stop.addEventListener("click", () => wbTimerStop());
+  bar.append(glyph, time, stop);
+  host.appendChild(bar);
+  Object.assign(wbTimer, { bar, time });
+  return bar;
+}
+
+function wbTimerStart(minutes) {
+  wbTimerStop(true);
+  const bar = wbTimerBar();
+  if (!bar) return;
+  wbTimer.end = Date.now() + minutes * 60000;
+  bar.classList.remove("hidden", "wb-timer-done");
+  wbTimerPaint();
+  wbAnnounce(`Timer started: ${nounCount(minutes, "minute")}.`);
+}
+
+function wbTimerPaint() {
+  const left = wbTimerLeft(wbTimer.end, Date.now());
+  wbTimer.time.textContent = wbTimerText(left);
+  //: Just under the board's top bar wherever it wraps to (measured: the
+  //: bar's two rows at a phone's width), read once a second, never on a frame.
+  const top = document.getElementById("wb-topbar")?.getBoundingClientRect().bottom;
+  const box = wbTimer.bar.offsetParent?.getBoundingClientRect();
+  if (top != null && box) wbTimer.bar.style.top = `${Math.round(top - box.top + 8)}px`;
+  if (left > 0) {
+    clearTimeout(wbTimer.tick);
+    wbTimer.tick = setTimeout(wbTimerPaint, (left % 1000 || 1000) + 5);
+    return;
+  }
+  wbTimer.tick = 0;
+  wbTimer.bar.classList.add("wb-timer-done");
+  toast("Time is up.");
+  wbAnnounce("Time is up.");
+}
+
+function wbTimerStop(quiet) {
+  clearTimeout(wbTimer.tick);
+  wbTimer.tick = 0;
+  wbTimer.bar?.classList.add("hidden");
+  wbTimer.bar?.classList.remove("wb-timer-done");
+  if (!quiet) wbAnnounce("Timer stopped.");
+}
+
+function wbOpenTimerMenu() {
+  const items = [1, 3, 5, 10, 15, 30].map((m) => makeMenuItem(`ph:timer ${nounCount(m, "minute")}`, `Count down ${nounCount(m, "minute")} on the board`, () => wbTimerStart(m)));
+  if (wbTimer.bar && !wbTimer.bar.classList.contains("hidden")) items.push(makeMenuItem("ph:x Stop the timer", "Take the timer off the board", () => wbTimerStop()));
+  const at = document.getElementById("whiteboard-container")?.getBoundingClientRect();
+  openMenuAtPoint(items, "Workshop timer", at ? at.left + at.width / 2 - 80 : 120, at ? at.top + 64 : 120);
+}
+
 function wbShadowCss(look) {
   if (!look?.shadow) return null;
   const { x, y, blur } = wbShadowOf(look);
@@ -13315,8 +13506,10 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: A picture with rounded corners (Format > Corners) is clipped to the
       //: same path the board draws, read off the drawn element as a box's is.
       const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
-      const clip = radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
-      if (clip) parts.push(`<clipPath id="${clip}"><path d="${wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
+      //: A crop to a shape wins over rounded corners, as it does on the board.
+      const cropPath = wbCropPath(obj.data.crop, obj.width, obj.height);
+      const clip = cropPath || radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
+      if (clip) parts.push(`<clipPath id="${clip}"><path d="${cropPath || wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
       parts.push(
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
@@ -13443,6 +13636,7 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
     } else if (obj.kind === "table") {
       parts.push(wbSvgTable(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj));
     }
+    if (obj.data?.votes) parts.push(wbSvgVotes(obj));
     parts.push("</g>");
   };
   for (const e of stack) {
@@ -19568,19 +19762,23 @@ function wbExpandPlaceholders(text, props, builtin) {
   if (!own && !builtin) return source;
   return source.replace(/%([A-Za-z][\w .-]{0,39})%/g, (mark, name) => {
     if (own && Object.prototype.hasOwnProperty.call(own, name)) return String(own[name]);
-    const value = builtin && (name === "date" || name === "page") ? builtin(name) : "";
+    const value = builtin && /^(date|page|length|width|height)$/.test(name) ? builtin(name) : "";
     return value ? String(value) : mark;
   });
 }
 
 //: `%date%` is today in the reader's own locale; `%page%` is the title of the
 //: smallest frame holding the item's centre (decision 22: frames are the
-//: pages), none when it sits in no frame.
-function wbPlaceholderBuiltins(kind, item) {
+//: pages), none when it sits in no frame. `%length%` is a connector's drawn
+//: length (a dimension line, INBOX 1313 row 7), read from its element so a
+//: drag shows it live; `%width%` and `%height%` are the item's box, rounded.
+function wbPlaceholderBuiltins(kind, item, groupEl) {
   return (name) => {
     if (name === "date") return new Date().toLocaleDateString(undefined, { dateStyle: "medium" });
+    if (name === "length") return wbLinkLength(groupEl?.querySelector(".sketch-hitbox")?.getAttribute("d")) || "";
     const box = wbItemBBox(kind, item);
     if (!box) return "";
+    if (name === "width" || name === "height") return Math.round(name === "width" ? box.maxX - box.minX : box.maxY - box.minY);
     const cx = (box.minX + box.maxX) / 2, cy = (box.minY + box.maxY) / 2;
     let best = null;
     for (const f of wbState.objects || []) {
@@ -19784,9 +19982,27 @@ function wbLinkMidpoint(d, t = 0.5) {
   }
 }
 
+//: A link's drawn length in board units, rounded: the same hidden path as
+//: `wbLinkMidpoint`, set to the line and measured whole.
+function wbLinkLength(d) {
+  if (!wbLinkMidpoint(d, 0)) return null;
+  try {
+    return Math.round(wbLinkMeasurePath.getTotalLength());
+  } catch {
+    return null;
+  }
+}
+
 function wbLayoutLinkLabel(groupEl) {
   const label = groupEl?.querySelector?.(":scope > .wb-link-label");
   if (!label) return;
+  //: A label that shows the length is worded again on every layout, so a drag
+  //: of either end shows the new number as it moves, not after the drop.
+  const src = groupEl.__wbMeasured;
+  if (src) {
+    const text = wbExpandPlaceholders(src.parsed.label, src.parsed.props, wbPlaceholderBuiltins("sketch", src.sketch, groupEl));
+    if (text && label.textContent !== text) label.textContent = text;
+  }
   const t = groupEl.dataset.labelT ? Number(groupEl.dataset.labelT) : 0.5;
   //: The plain line (the hitbox): a jump's gap would cut the drawn shaft.
   const p = wbLinkMidpoint(groupEl.querySelector(".sketch-hitbox")?.getAttribute("d"), Number.isFinite(t) ? t : 0.5);
@@ -19846,7 +20062,8 @@ function wbWireLinkLabelDrag(label, groupEl) {
 }
 
 function wbPaintLinkLabel(groupEl, sketch, parsed) {
-  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch)) : "";
+  const text = wbLinkTakesLabel(sketch, parsed) && typeof parsed.label === "string" ? wbExpandPlaceholders(parsed.label, parsed.props, wbPlaceholderBuiltins("sketch", sketch, groupEl)) : "";
+  groupEl.__wbMeasured = text && parsed.label.includes("%length%") ? { sketch, parsed } : null;
   let label = groupEl.querySelector(":scope > .wb-link-label");
   if (!text) {
     label?.remove();
@@ -23396,9 +23613,11 @@ function renderWbObjects(canvas) {
       this.style.filter = wbShadowCss(d.data) || "";
       this.style.borderRadius = Array.isArray(d.data?.radii) ? d.data.radii.map((r) => `${r}px`).join(" ") : "";
       if (d.kind === "text") this.style.padding = d.data?.pad != null ? `${d.data.pad}px` : "";
+      wbPaintVotes(this, d);
     }
     if (d.kind === "image") {
-      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null);
+      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
+        .style("clip-path", wbCropClip(d.data.crop) || null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
     } else if (d.kind === "frame") {

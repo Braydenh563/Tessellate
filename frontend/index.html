@@ -6961,6 +6961,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Connect the selected</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="measure"><i class="ph ph-ruler ph-lead" aria-hidden="true"></i><span>Measure with a dimension line</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
@@ -7091,6 +7092,11 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Boards</span>
               <button id="wb-rename-board" type="button" class="wb-menu-item" title="Rename this board"><i class="ph ph-pencil-simple ph-lead" aria-hidden="true"></i><span>Rename this board</span></button>
               <button id="wb-new-board" type="button" class="wb-menu-item" title="Create a new board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span>New board</span></button>
+            </div>
+            <div class="wb-menu-section" role="group" aria-label="Workshop" data-wb-surface="board">
+              <button type="button" class="wb-menu-item" data-wb-cmd="vote"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Add a vote dot</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="clear-votes"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all vote dots</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="timer"><i class="ph ph-timer ph-lead" aria-hidden="true"></i><span>Workshop timer…</span></button>
             </div>
             <!-- **Plain icon rows, never a label with an action beside it**
                  (INBOX 793, the owner: the Board menu "needs a bit of a
@@ -8343,6 +8349,15 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
             </span>
           </div>
+          <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
+            <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
+              <option value="">Rectangle</option>
+              <option value="ellipse">Ellipse</option>
+              <option value="diamond">Diamond</option>
+              <option value="hexagon">Hexagon</option>
+              <option value="triangle">Triangle</option>
+            </select>
+          </label>
           <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
             <span class="wb-fmt-quad">
               <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
