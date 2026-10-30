@@ -1,6 +1,6 @@
 # composer-z-1030 (agent composer-z, branch agent/composer-z-1030)
 
-Done: b2bccba (Z1-Z6, Z8-Z10, Z13, Z14, Z44, Z54, Z55; part Z21, Z25, Z33), 13df2e9 (Z15, Z17, Z20, Z22, Z24 part), b404434 (`_since`, K22 start), 07d7194 (Z28, Z29-Z32, Z34-Z38, Z41, Z42, Z45, Z47, Z48, Z50, Z53, K22: user's day in every composer module), c2de394 (Z43, Z46 part, Z51, Z56, Z66), then Z52 (see git log).
+Done: b2bccba (Z1-Z6, Z8-Z10, Z13, Z14, Z44, Z54, Z55; part Z21, Z25, Z33), 13df2e9 (Z15, Z17, Z20, Z22, Z24 part), b404434 (`_since`, K22 start), 07d7194 (Z28, Z29-Z32, Z34-Z38, Z41, Z42, Z45, Z47, Z48, Z50, Z53, K22: user's day in every composer module), c2de394 (Z43, Z46 part, Z51, Z56, Z66), 53a4bb6 (Z52, INBOX 1334 open half: `composer.offered`), 7f37151 (merge of d406a52: composer_sum reads `recognise.measures`; mixed currencies stay with composer_money).
 Fixed on the base before this run: Z11, Z12, Z16 (partial), Z18, Z19, Z60, Z65.
 
 Found, not fixed (each needs a decision or a bigger change):
