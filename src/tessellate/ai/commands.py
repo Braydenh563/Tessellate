@@ -254,6 +254,9 @@ def _without_lead(text: str, leads: tuple[str, ...], *, once: bool = True) -> st
     return text
 
 
+_DANGLING = frozenset({"before", "by", "on", "until", "at", "after"})
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -278,6 +281,10 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
     words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
+    #: "renew rego before 3 december": the date came off, its joining word stays behind.
+    tail = words.rstrip().rsplit(" ", 1)
+    if len(tail) == 2 and tail[1].lower() in _DANGLING:
+        words = tail[0]
     said_words = words.strip(" ,.;:-")
     if rest[:1].islower():
         #: As typed: the time parser raises the first letter for the stored

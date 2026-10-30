@@ -63,3 +63,31 @@ def test_a_title_ending_in_the_assistants_name_is_not_an_address():
     assert kept.question == "tell me about project atlas" and not kept.names
     called = vocative.split("what is the plan for friday atlas", in_notes=held)
     assert called.names == ["atlas"] and called.question == "what is the plan for friday"
+
+
+def test_looser_reminder_cancel_and_done_forms_a15():
+    """A15: ping/alert/schedule/make-me/I-need openers, and the looser cancel and done leads."""
+    from datetime import datetime
+
+    from tessellate.ai import commands, task_acts
+
+    now = datetime(2026, 10, 30, 10, 0)
+    for question, text in (
+        ("ping me about the dentist on 3 november", "The dentist"),
+        ("alert me at 6pm to take the bins out", "Take the bins out"),
+        ("make me a reminder to book flights on 14 november", "Book flights"),
+        ("i need a reminder to renew rego before 3 december", "Renew rego"),
+    ):
+        found = commands.read(question, now)
+        assert found and found["intent"] == "reminder" and found["text"] == text, question
+    assert not commands.read("ping me", now)
+    for question, about in (
+        ("get rid of the reminder about the parcel", "parcel"),
+        ("i don't need the reminder to call the bank any more", "call the bank"),
+        ("stop reminding me about the dentist", "dentist"),
+        ("never mind the reminder to buy milk", "buy milk"),
+    ):
+        assert task_acts.read_cancel(question)["about"] == about, question
+    assert task_acts.read_cancel("clear my cache") is None
+    assert task_acts.read_complete("finish the reminder to call mum")["about"] == "call mum"
+    assert task_acts.read_complete("i finished the report") is None

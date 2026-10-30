@@ -119,14 +119,26 @@ def _complete_rest(text: str) -> str | None:
     return None
 
 
+#: Looser ways to say a reminder or task is done; each needs the kind word said
+#: ("finish the reminder to call mum"), or "I finished the report" would be an
+#: act on a task that was never named (audit 1030 A15).
+_DONE_LEADS = ("finish ", "i finished ", "i've finished ", "i have finished ", "done with ", "i'm done with ", "im done with ")
+
+
 def read_complete(text: str) -> dict | None:
     """The task a sentence completes, as {"intent": "complete", "about",
     "kind"?}, or None. kind is "reminder" or "checklist" when the sentence
     says which, else both are looked in."""
     rest = _complete_rest(text)
-    if rest is None:
-        return None
+    loose = rest is None
+    if loose:
+        lead = next((w for w in _DONE_LEADS if text.lower().startswith(w)), None)
+        if lead is None:
+            return None
+        rest = text[len(lead):]
     about, said = _split_kind(_ON_LIST_TAIL.sub("", _OFF_TAIL.sub("", rest.strip()), count=1))
+    if loose and not said:
+        return None
     return _task_found("complete", about, said)
 
 
@@ -172,11 +184,33 @@ _OFF_LIST = re.compile(
 _NOT_TASK_TAIL = re.compile(r"\s(?:notes?|tags?|categor(?:y|ies)|documents?|boards?|maps?|meetings?)$", re.IGNORECASE)
 
 
+_CANCEL_LEADS = ("get rid of ", "never mind ", "clear ")
+_NO_LONGER = (" any more", " anymore", " any longer")
+
+
+def _cancel_form(text: str) -> str:
+    """The plain "cancel ..." a looser way of saying it stands for."""
+    low = text.lower().strip()
+    for lead in _CANCEL_LEADS:
+        if low.startswith(lead):
+            return "cancel " + text.strip()[len(lead):]
+    if low.startswith("stop reminding me about "):
+        return "cancel the reminder about " + text.strip()[len("stop reminding me about "):]
+    if low.startswith(("i don't need ", "i do not need ", "i dont need ")):
+        rest = text.strip().split(" need ", 1)[1]
+        for tail in _NO_LONGER:
+            if rest.lower().endswith(tail):
+                rest = rest[: -len(tail)]
+        return "cancel " + rest
+    return text
+
+
 def read_cancel(text: str) -> dict | None:
     """The task a sentence cancels ("cancel the dentist task", "remove buy
     milk from my tasks"), as {"intent": "cancel", "about", "kind"?}. A task
     must be said as one (a kind word or the list), or "delete the dentist
     note" and "cancel my subscription" would be read as tasks."""
+    text = _cancel_form(text)
     found = _CANCEL.match(text)
     if not found:
         return None
