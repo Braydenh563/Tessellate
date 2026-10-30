@@ -419,7 +419,9 @@ _SHAPE_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
         "explain",
         re.compile(r"^\s*(why|how come|explain|what (made|makes|caused|causes)|how (do|does|did|can|could|should|to|is|are|was|were|would))\b", re.I),
     ),
-    ("list", re.compile(r"^\s*(list|which|name)\b|^\s*what are (the|my|all)\b", re.I)),
+    #: "What's in the soup", "what do I need for camping": what a note holds (Z46).
+    ("list", re.compile(r"^\s*(list|which|name)\b|^\s*what are (the|my|all)\b|^\s*what(?:'s| is| goes| go)? in(?:to)?\b(?! (?:my|the|your) (?:notes?|journal|diary|library)\b)"
+                        r"|^\s*what do (?:i|you) need (?:for|to make)\b", re.I)),
     ("yesno", re.compile(r"^\s*(is|are|do|does|did|can|could|was|were|has|have|had|should|will|would|am)\b", re.I)),
 )
 
@@ -3251,9 +3253,19 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
         if ahead and _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
             again = when_words.span(phrase, today, tense)
             day = again[0] if again else day
+        if ahead and told_as_past(str(note.get("content") or ""), fact.start):
+            continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
+
+
+def told_as_past(content: str, at: int) -> bool:
+    """Whether the sentence of `content` holding `at` tells of something that
+    happened (`recognise.told_as_past`, audit 1030 Z26)."""
+    start = max(content.rfind(m, 0, at) for m in (". ", "! ", "? ", "\n")) + 1
+    stops = [i for i in (content.find(m, at) for m in (". ", "! ", "? ", "\n")) if i >= 0]
+    return rec.told_as_past(content[start: min(stops) if stops else len(content)])
 
 
 def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
@@ -4169,10 +4181,22 @@ def _social_line(message: str, kind: str, previous: str, last_question: str, voi
         line = phrasing.choose(composer_compose.eligible(f"social_{kind}", mood), f"social:{kind}:{message}", recent, seed or _SESSION.get())
     else:
         line = _stored_social(message, kind, professional, recent, seed)
-    subject = _asked_span(last_question, subject_terms(last_question)) if last_question else ""
+    subject = _talked_about(last_question)
     if kind in _NEXT_STEP_KINDS and subject and len(subject) <= 40:
         line = f"{line} {_next_step(line, message, subject, professional)}"
     return line
+
+
+def _talked_about(last_question: str) -> str:
+    """What the turn before asked about, for a next step, or "" when it asked
+    nothing of the notes: "fuck" after "yooooo" once offered more on
+    “yooooo” (INBOX 1459). Whether its notes matched is the caller's to
+    say: the chat passes `last_question` only for a turn that named notes."""
+    from tessellate.ai import intent as intent_module
+
+    if not last_question or intent_module.classify(last_question) != intent_module.NOTES:
+        return ""
+    return _asked_span(last_question, subject_terms(last_question))
 
 
 def social_surfaces(kind: str, professional: bool = False) -> list[str]:

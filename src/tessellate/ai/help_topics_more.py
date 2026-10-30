@@ -1205,6 +1205,28 @@ MORE_TOPICS: list[dict] = [
         ),
         "badge": {"label": "Install as an app", "section": "about", "target": "about-install"},
     },
+    {
+        "id": "desktop-companion",
+        "keywords": (
+            "desktop companion", "companion on the desktop", "companion outside the app",
+            "companion in the corner of the screen", "desktop pet", "quick note from the desktop",
+            "companion when the window is closed", "show desktop companion",
+        ),
+        "body": (
+            "In the desktop app on Windows the companion can sit in the bottom-right "
+            "corner of your screen, above the taskbar, while the Tessellate window is "
+            "in the tray, and go away when the window is open. It is off until you turn "
+            "it on: Settings, About, Show the companion on the desktop while the window "
+            "is in the tray, or Show desktop companion in the tray icon's menu. It is "
+            "whoever you chose in Appearance (Atlas if you chose nobody). Click it for "
+            "Quick note, Quick search or Open Tessellate; a note saved there is filed "
+            "like any other, and a search result opens in the app. Right-click it for "
+            "Settings or Hide (Hide turns the setting off). Drag it to move it; it "
+            "remembers where you left it. While Tessellate is locked it shows only the "
+            "companion and Open Tessellate, never a note or a result."
+        ),
+        "badge": {"label": "Desktop companion", "section": "about", "target": "desktop-companion-row"},
+    },
 ]
 
 #: **Every feature since 0.3.0, large and small** (INBOX 448 (1), the owner:
@@ -1328,6 +1350,25 @@ MORE_TOPICS.extend(
                 "upload is only deleted once nothing else uses it."
             ),
             "badge": {"label": "Notes", "tab": "notes"},
+        },
+        {
+            "id": "chat-attach-cards",
+            "keywords": (
+                "attached note", "attached a note", "attach a note to chat", "note card in chat",
+                "notebook card", "attachment card in chat", "preview an attachment", "chat attachment",
+            ),
+            "body": (
+                "What you attach to a chat message from the notebook (a note, a "
+                "document, a mind map or a library file) is one card: a glyph for "
+                "what it is, its name in words, and one line under it (a note's "
+                "age, or its next words once sent). In the box it has an x to take "
+                "it off. Once sent, the cards sit above your message, on its side, "
+                "and a reopened chat draws the same. Press a card, or Tab to it and "
+                "press Enter, for a preview with an Open button (Open note, Open "
+                "document, Open mind map, Open file); Escape closes the preview and "
+                "returns to the card."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
         },
         {
             "id": "filing",
@@ -2326,6 +2367,7 @@ TOPIC_META: dict[str, dict] = {
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "desktop-companion": {"title": "The companion on the desktop", "path": "Settings, About, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2429,6 +2471,7 @@ TOPIC_META: dict[str, dict] = {
     "quick-add": {"title": "Dates and tags read as you type", "path": "Reminders, Quick note, New meeting, Timeline search, the command palette"},
     "note-outbox": {"title": "Saving while the server is away", "path": "Notes tab, above Capture"},
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
+    "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2476,7 +2519,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (
@@ -2511,7 +2554,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",
     )),
     ("Settings and support", (
-        "profile", "general-settings", "updates", "maintenance", "logs", "troubleshooting", "credits",
+        "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",
     )),
 ]
 

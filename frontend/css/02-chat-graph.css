@@ -3269,6 +3269,14 @@ mark.lightbox-hit {
 .msg-attachment {
   margin: 0;
 }
+/* Above the user's bubble, on its side (INBOX 1460). */
+#chat-messages > .msg-attachments {
+  align-self: flex-end;
+  justify-content: flex-end;
+  max-width: min(82%, 54rem);
+  /* Not the list's actions-row gap: only a space-3 to its own bubble. */
+  margin: 0 0 calc((var(--space-9) + var(--space-3)) * -1 + var(--space-3));
+}
 .msg-attachment-image {
   display: flex;
   flex-direction: column;
@@ -3328,44 +3336,6 @@ mark.lightbox-hit {
 }
 .msg-attachment-missing {
   border-style: dashed;
-}
-/* A note clipped to the question, and a document: the same card, because
-   they are the same statement, "the answer was given this to read, click to
-   open it". */
-.msg-attachment-note,
-.msg-attachment-doc {
-  cursor: pointer;
-  max-width: 16rem;
-  /* Aligned with the image card beside it rather than floating as a bare
-     chip: two attachments on one message are one row of cards, and a chip
-     with no box next to a boxed thumbnail read as an unrelated stray. */
-  align-self: flex-start;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  background: var(--chip-bg);
-  /* A long filename must not stretch the chip past the bubble. */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* **On the user's own bubble, which is a solid accent fill.** Measured in a
-   screenshot before this existed: `--chip-bg` over accent is very nearly the
-   accent itself, and `--muted` caption text on it was grey-on-blue, the card
-   was there and could not be read. The tokens are page-surface tokens and
-   there is no page surface here, so the whole strip switches to the same
-   translucent-white treatment the lightbox uses over a photograph, which
-   works against any accent the user has picked rather than against one. */
-.msg.user .msg-attachment-image,
-.msg.user .msg-attachment-note,
-.msg.user .msg-attachment-doc {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-.msg.user .msg-attachment-actions button:hover,
-.msg.user .msg-attachment-actions button:focus-visible {
-  background: rgba(255, 255, 255, 0.26);
 }
 .lightbox-info {
   /* Reported directly: hovering this panel still showed the zoom-out cursor

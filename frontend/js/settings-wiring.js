@@ -619,9 +619,7 @@ document.addEventListener("keydown", (e) => {
   //: board's own chords; the same handoff undo already makes
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
-    const inTextField =
-      ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) ||
-      document.activeElement?.isContentEditable;
+    const inTextField = inEditable(document.activeElement);
     //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
     //: button and Edit menu already print "Ctrl+Y" and nothing answered it
     //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
@@ -741,26 +739,30 @@ document.addEventListener("keydown", (e) => {
   //: correction (measured by `scratchpad/ui-sweeps/typingguard.js`). Fixing
   //: the shared guard means the one after that is born working.
   const el = document.activeElement;
-  const typing =
-    ["INPUT", "TEXTAREA", "SELECT"].includes(el && el.tagName) || Boolean(el && el.isContentEditable);
-  //: Any open modal, not a list of three: the voice dialog and every native
-  //: `<dialog>` took a typed "t" or "a" for a chord (audit 1029 X1).
-  const overlayOpen = Boolean(activeOverlay() || document.querySelector("dialog[open]"));
+  const typing = el?.tagName === "SELECT" || inEditable(el);
   // Unchorded shortcuts ("/", "?") only fire when you're not typing and no
   // overlay is open, so they never steal a literal slash mid-sentence.
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
   //: letters.
   const singleKeys = singleKeysOn();
   const now = performance.now();
-  if (typing) typingBurst.at = now;
-  const burst = !typing && e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
+  //: Only Escape's tail below answers a key typed in a field, so any other
+  //: returns here. The overlay test used to run first, on every keystroke: a
+  //: `getClientRects()` per dialog, a forced layout (INBOX 1465: 158 to 314 ms).
+  if (typing) {
+    typingBurst.at = now;
+    if (e.key !== "Escape") return;
+  }
+  const burst = e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!typing && !burst && !overlayOpen && singleKeys && !boardOwns) {
+  if (!burst && singleKeys && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
       if (bare && matchesShortcut(e, def.keys)) {
+        //: Any open modal, not a list of three (audit 1029 X1), asked only for a matching key.
+        if (activeOverlay() || document.querySelector("dialog[open]")) break;
         e.preventDefault();
         runShortcut(id);
         return;
@@ -845,7 +847,6 @@ document.addEventListener("keydown", (e) => {
       return; // wait for the second key; a lone "m" does nothing on its own
     }
   }
-  if (e.key === "Escape" && settingsModalOpen()) closeSettingsModal();
   if (e.key === "Escape") closeActionMenus();
   if (e.key === "Escape" && linkSource !== null) linkCancel();
 });
@@ -892,6 +893,9 @@ document.addEventListener("pointerdown", (e) => {
 // Topmost is the last match in document order, so a confirm opened from
 // Settings traps Tab, not Settings. Visibility is `.hidden` plus
 // `getClientRects()`, because a fixed overlay's `offsetParent` is null.
+//: A text field, or a contenteditable host or its child, read from the markup: `isContentEditable` flushes style.
+const inEditable = (el) => el?.closest("input,textarea,[contenteditable]:not([contenteditable=false])");
+
 function activeOverlay() {
   const open = [
     ...document.querySelectorAll('[role="dialog"][aria-modal="true"]'),

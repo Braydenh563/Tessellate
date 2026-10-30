@@ -25,18 +25,26 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENTS_JS = ROOT / "frontend" / "js" / "documents.js"
+IMAGE_LAYOUT_JS = ROOT / "frontend" / "js" / "image-layout.js"
 
 BEGIN = "// DOC-BLOCKS-BEGIN"
 END = "// DOC-BLOCKS-END"
 
 
+def _region(path: Path, begin: str, end: str) -> str:
+    text = path.read_text(encoding="utf-8")
+    start = text.find(begin)
+    stop = text.find(end)
+    assert start != -1, f"{begin} marker is missing from {path.name}"
+    assert stop > start, f"{end} marker is missing or before {begin}"
+    return text[start + len(begin) : stop]
+
+
 def blocks_source() -> str:
-    text = DOCUMENTS_JS.read_text(encoding="utf-8")
-    start = text.find(BEGIN)
-    stop = text.find(END)
-    assert start != -1, f"{BEGIN} marker is missing from documents.js"
-    assert stop > start, f"{END} marker is missing or before {BEGIN}"
-    return text[start + len(BEGIN) : stop]
+    """The columns parser (documents.js) and the image-option parsers, which
+    moved to image-layout.js so every surface that draws a note's picture
+    shares them (INBOX 1465); both are pure string work."""
+    return _region(DOCUMENTS_JS, BEGIN, END) + _region(IMAGE_LAYOUT_JS, "// IMAGE-LAYOUT-BEGIN", "// IMAGE-LAYOUT-END")
 
 
 #: What the toolbar and the "/" menu actually insert for a columns block, read
@@ -183,12 +191,12 @@ function check(name, ok, detail) {
     ['  photo.png  |  300  ', { name: 'photo.png', width: 300, align: null, caption: '' }],
   ];
   for (const [spec, want] of cases) {
-    const got = docImageOptions(spec);
+    const got = imageOptions(spec);
     for (const key of Object.keys(want)) {
       check(`options/${spec}/${key}`, got[key] === want[key], `${key}=${JSON.stringify(got[key])}`);
     }
   }
-  check('options/empty', docImageOptions('').name === '', docImageOptions('').name);
+  check('options/empty', imageOptions('').name === '', imageOptions('').name);
 }
 
 process.stdout.write(JSON.stringify(results));

@@ -778,14 +778,11 @@ function enhanceSelect(select) {
     .filter(Boolean)
     .join(" ");
   //: A `<label>` that wraps the select would otherwise lend its options too.
-  const wrapper = select.labels?.[0]?.cloneNode(true);
+  //: Only a select nothing has named reads its label: `labels` walks the tree and the clone copies a whole row, the hot line of 117 selects at boot.
+  const named = select.getAttribute("aria-label") || labelledBy;
+  const wrapper = named ? null : select.labels?.[0]?.cloneNode(true);
   wrapper?.querySelectorAll("select, .select-shell").forEach((part) => part.remove());
-  const label =
-    select.getAttribute("aria-label") ||
-    labelledBy ||
-    wrapper?.textContent.trim().replace(/\s+/g, " ") ||
-    select.title ||
-    "Choose an option";
+  const label = named || wrapper?.textContent.trim().replace(/\s+/g, " ") || select.title || "Choose an option";
   opener.setAttribute("aria-label", label);
   opener.title = select.title || label;
 
@@ -957,7 +954,7 @@ function enhanceSelect(select) {
   }
 
   wireMenuKeyboard(menu, opener);
-  rebuild();
+  syncValue();
 }
 
 // **Double-click any slider to put it back to its default.** Asked for

@@ -387,6 +387,28 @@ def test_the_palette_offers_a_typed_question_to_atlas():
     assert "docs" not in body
 
 
+def test_the_palette_offers_a_how_question_without_its_question_mark():
+    """Audit 1028 S43: help is a typed question away. "how do I export" has
+    the same answer as the same line with a "?", so the palette offers both to
+    the Guide; a command's own name ("how to use focus") is still a command."""
+
+    import re
+
+    from tests._app_js import app_js_text
+
+    app = app_js_text()
+    rule = re.search(r"const PALETTE_ASKS = (/.+?/i);", app)
+    assert rule, "the palette has no PALETTE_ASKS rule"
+    body = app[app.index("function paletteMatches(") :]
+    body = body[: body.index("\n}\n")]
+    assert "PALETTE_ASKS.test(" in body and "askAtlasAbout" in body
+    pattern = re.compile(rule.group(1)[1:-2], re.I)
+    for typed in ("how do I export my notes", "where is the bin", "how to turn off web search", "can I change the font", "why is search slow"):
+        assert pattern.search(typed), typed
+    for typed in ("export", "bin", "how", "graph", "font size", "whatever"):
+        assert not pattern.search(typed), typed
+
+
 def test_atlas_has_a_shortcut_and_it_is_in_the_registry():
     """In `DEFAULT_SHORTCUTS`, which is what puts it in the shortcuts sheet and
     in the collision check, rather than bound in a listener of its own."""

@@ -10,6 +10,14 @@
 // the step that shows what the notes are for. Lazy: dashboard.js's
 // `renderFirstStepsLazy` fetches it while the steps may still be shown.
 
+//: Step two's line names the quick-note chord as it is bound now (rebindable),
+//: so a new notebook learns the fastest way to capture on its first screen
+//: (audit 1028 S72).
+function writeNoteHint() {
+  const keys = typeof shortcuts === "object" && shortcuts?.quickNote?.keys;
+  return `A half sentence is fine; add a #tag if you like.${keys ? ` ${keys} saves one from any tab.` : ""}`;
+}
+
 async function firstStepsState() {
   const named = Boolean(((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim());
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
@@ -231,7 +239,7 @@ function firstStepsCard(host, state) {
       : firstStepName(host),
     firstStepButton({
       number: 2, done: state.noted, icon: "ph:pencil-simple", label: "Write a note",
-      note: "A half sentence is fine; add a #tag if you like.", doneNote: "Done. Write another any time.",
+      note: writeNoteHint(), doneNote: "Done. Write another any time.",
       run: () => startNewNote(),
     }),
     firstStepButton({
@@ -277,7 +285,7 @@ function getStartedSteps(state) {
     },
     {
       done: state.noted, label: "Write a note",
-      note: "A half sentence is fine; add a #tag if you like.", doneNote: "Done. Write another any time.",
+      note: writeNoteHint(), doneNote: "Done. Write another any time.",
       run: () => startNewNote(),
     },
     {

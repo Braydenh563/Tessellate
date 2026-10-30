@@ -793,7 +793,7 @@ details[open] > .about-whats-new::before,
      risks. */
   min-width: min-content;
 }
-[data-dock-name="notes"] .dock-arrange .select-shell {
+[data-dock-name="notes"] .dock-arrange:not(.dock-arrange-folded) .select-shell {
   max-width: 9rem;
 }
 /* Tidy's count (INBOX 691) on the broom's corner, the phone More's run count
@@ -4920,23 +4920,6 @@ body .chip.item-label,
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-.msg.user :is(.msg-attachment-image, .msg-attachment-note, .msg-attachment-doc) {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-image figcaption,
-.msg.user .msg-attachment-missing p {
-  color: var(--muted);
-}
-.msg.user .msg-attachment-actions button {
-  border-color: var(--border);
-  background: var(--card);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-actions button:is(:hover, :focus-visible) {
-  background: var(--surface-2);
 }
 /* --- Two floating buttons that sit over content: opaque, readable hover --- */
 /* The owner: "the back to top hover state is too transparent" and "when I
@@ -9841,17 +9824,22 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    13 of 14 switches, which is the flash that read as a glitch. From 0.4 the
    new page is there on the first frame and settles in over `--motion-base`;
    0 blank frames. */
-/* Over `--ui-fast` (the motion pass, 2026-10-05). A sub-tab's panel does
+/* Over `--ui-base`, and it settles up from `--space-1` (INBOX 1462: "slightly
+   smoother ... not confronting"): `translate` is the compositor's, and the page
+   is at rest, `none`, after it, so nothing inside it is ever left with a
+   containing block (no `position: fixed` lives in a page: measured on all
+   seven tabs). A sub-tab's panel does
    not fade with it: `@starting-style` cannot tell a section switch from its
    page arriving, so the section faded inside the page's own fade (0.4 of
    0.4, two layers), measured as the frames the switch missed; the sub-tab's
    sliding line is its motion. */
 .tab-page:not(.hidden) {
-  transition: opacity var(--ui-fast) var(--ease-out);
+  transition: opacity var(--ui-base) var(--ease-out), translate var(--ui-base) var(--ease-out);
 }
 @starting-style {
   .tab-page:not(.hidden) {
     opacity: 0.4;
+    translate: 0 var(--space-1);
   }
 }
 /* --- motion: a heavy page's first visit (INBOX 580) ------------------------

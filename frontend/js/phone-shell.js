@@ -1636,9 +1636,9 @@ function initKeyboardInset() {
     // few pixels of covered strip is a toolbar settling, not a keyboard.
     root.classList.toggle("keyboard-open", inset > 120);
   };
+  //: Not written at init: the stylesheet's own `0px` is the answer until the viewport moves, and reading `innerHeight` here forced the first layout of the whole page (INBOX 1465).
   viewport.addEventListener("resize", write);
   viewport.addEventListener("scroll", write);
-  write();
   // iOS animates the keyboard in over about a quarter of a second and does
   // not always fire a resize at the end of it, so the covered strip written
   // at the start can be stale for the whole time the person is typing (the
@@ -2005,7 +2005,14 @@ function foldDockActions(narrow) {
         control.replaceWith(slot);
         control.dataset.rowClass = control.className;
         control.className = "doc-dock-menu-item dock-folded-action";
-        if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
+        //: A worded control (Select) shows its own short word in the menu, not
+        //: its title as a second one: the title ran 437px wide on a phone and
+        //: pushed the menu off the window (audit 1028 S21).
+        const own = control.querySelector(".dock-word");
+        if (own) {
+          own.classList.replace("dock-word", "dock-folded-word");
+          own.dataset.folded = "1";
+        } else if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
           const word = document.createElement("span");
           word.className = "dock-folded-word";
           word.textContent = control.getAttribute("aria-label") || control.title || "";
@@ -2021,7 +2028,11 @@ function foldDockActions(narrow) {
         if (!slot) continue;
         control.className = control.dataset.rowClass || "";
         delete control.dataset.rowClass;
-        control.querySelector(":scope > .dock-folded-word")?.remove();
+        const kept = control.querySelector(":scope > .dock-folded-word[data-folded]");
+        if (kept) {
+          kept.classList.replace("dock-folded-word", "dock-word");
+          delete kept.dataset.folded;
+        } else control.querySelector(":scope > .dock-folded-word")?.remove();
         //: The space `append(" ", word)` put before the word, left behind as
         //: a trailing text node that would widen the icon button by a glyph.
         if (control.lastChild?.nodeType === Node.TEXT_NODE && !control.lastChild.data.trim()) {

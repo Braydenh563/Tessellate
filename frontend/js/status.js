@@ -599,6 +599,10 @@ function openLanPanel() {
   });
 }
 
+//: Windows High Contrast gets its own small sheet (audit 1028 S15); everyone
+//: else never downloads it.
+if (window.matchMedia("(forced-colors: active)").matches) lazyScript("/css/forced-colors-lazy.css");
+
 let reminderWatchStarted = false;
 function startReminderWatch() {
   checkDueReminders();
@@ -615,10 +619,14 @@ function startReminderWatch() {
   //: One minute tick for both: the reminders, and the Local chip every
   //: fifth (PRIVACY_CHIP_MS), rather than a second interval waking the page.
   let ticks = 0;
-  setInterval(() => {
+  //: On the shared minute tick (startMinuteTicker), whose first paint is the
+  //: check this function has just made, so that one is skipped.
+  let first = true;
+  startMinuteTicker(() => {
+    if (first) return void (first = false);
     checkDueReminders();
     if (++ticks % (PRIVACY_CHIP_MS / REMINDER_POLL_MS) === 0) refreshPrivacyChip();
-  }, REMINDER_POLL_MS);
+  });
   // A machine that was asleep wakes up with reminders long past due, and the
   // interval will not have run. Checking on focus catches that immediately
   // rather than up to a minute later.

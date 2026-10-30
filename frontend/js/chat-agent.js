@@ -314,67 +314,57 @@ function chatAttachmentStrip(attachments) {
       continue;
     }
 
-    if (item.kind === "note") {
-      // A note: the chip carries its first line and opens it in Notes. Same
-      // shape as the document chip below and for the same reason, the note's
-      // full text is already one click away and repeating it in the bubble
-      // would bury the question that was asked about it.
-      const noteChip = document.createElement("button");
-      noteChip.type = "button";
-      noteChip.className = "chip msg-attachment msg-attachment-note";
-      setLabel(noteChip, `ph:paperclip ${item.name}`);
-      noteChip.title = `Open this note (#${item.id})`;
-      // `flashEntry` is the app's one "take me to this note" path: it also
-      // switches sub-tab, clears the filters that would hide the card, and
-      // announces the jump. Re-implementing three of those here is how they
-      // drift apart.
-      noteChip.addEventListener("click", () => flashEntry(item.id));
-      strip.appendChild(noteChip);
-      continue;
-    }
-
-    if (item.kind === "map") {
-      // A mind map attached to the question (MINDMAP_PLAN.md §5 item 11).
-      // `mapChip` is the app's one map chip, so a map in a sent bubble reads
-      // exactly as it does in a note, on the timeline and in a dashboard row
-      //, the whole point of §5 item 12. `msg-attachment` on top of it so it
-      // sits in the strip like every other kind.
-      const board = mapBoardById(item.id) || { id: item.id, title: item.name, type: "map" };
-      const chipEl = mapChip(board);
-      chipEl.classList.add("msg-attachment");
-      strip.appendChild(chipEl);
-      continue;
-    }
-
-    if (item.kind === "file") {
-      // A Library file. Same shape as the document chip below, and the same
-      // reason -- its text may be a hundred pages -- but it opens in the
-      // Library's Files sub-tab rather than in the Documents editor, because
-      // that is where an Attachment row actually lives.
-      const fileChip = document.createElement("button");
-      fileChip.type = "button";
-      fileChip.className = "chip msg-attachment msg-attachment-doc";
-      setLabel(fileChip, `ph:paperclip ${item.name}`);
-      fileChip.title = `Find “${item.name}” in your library`;
-      fileChip.addEventListener("click", () => focusLibraryFile(item.name, `/files/${item.id}`));
-      strip.appendChild(fileChip);
-      continue;
-    }
-
-    // A document: there is nothing to preview inline (its text may be a
-    // hundred pages), so the chip is the navigation.
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "chip msg-attachment msg-attachment-doc";
-    setLabel(chip, `ph:file-text ${item.name}`);
-    chip.title = `Open “${item.name}” in Documents`;
-    chip.addEventListener("click", () => {
-      switchTab("documents");
-      openDocument(item.id);
-    });
-    strip.appendChild(chip);
+    strip.appendChild(notebookCard(item));
   }
   return strip;
+}
+
+//: **What the notebook gave a message, as one card** (INBOX 1460, DESIGN.md
+//: "A notebook item on a message"). A note, document, mind map or library
+//: file is the staged file card (`attachmentChip`) with its kind's glyph and
+//: one muted line (a note's: "Note · 3 days ago"), in the composer with a
+//: remove x and above the sent question without. A press previews it
+//: (`attachmentPeek`, the citation peek with an Open button); `open` is the
+//: card's own door, the one the preview's Open button takes. The name is the
+//: note's first line as words, cut at its end only by the card's ellipsis.
+const NOTEBOOK_KINDS = {
+  note: { icon: "ph-note", word: "Note", open: (i) => flashEntry(i.id) },
+  map: { icon: "ph-tree-structure", word: "Mind map", open: (i) => openWhiteboardBoard(i.id) },
+  file: { icon: "", word: "File", open: (i) => focusLibraryFile(i.name, `/files/${i.id}`) },
+  document: {
+    icon: "ph-file-text",
+    word: "Document",
+    open: (i) => {
+      switchTab("documents");
+      openDocument(i.id);
+    },
+  },
+};
+
+function notebookCard(item, extra = {}) {
+  const kind = NOTEBOOK_KINDS[item.kind] || NOTEBOOK_KINDS.document;
+  const entry = item.kind === "note" ? allEntries.find((e) => e.id === item.id) : null;
+  const board = item.kind === "map" ? mapBoardById(item.id) : null;
+  const name = (item.kind === "note" ? noteNamePlain(entry?.content ?? item.name, 160) || "Untitled note" : item.name) || kind.word;
+  const facts = [kind.word, entry?.created_at ? relativeTime(entry.created_at) : "", board ? mapCountLabel(board) : ""].filter(Boolean).join(" · ");
+  //: Sent, a note shows its next words (two lines) in place of the kind line;
+  //: staged, the card stays the file card's height.
+  const rest = !extra.onRemove && entry ? plainText(stripFrontmatter(entry.content).trim().split("\n").slice(1).join("\n")).slice(0, 160) : "";
+  const card = attachmentChip({
+    name,
+    icon: kind.icon || undefined,
+    facts: item.kind === "file" ? undefined : rest || facts,
+    title: `Preview ${kind.word.toLowerCase()} “${name}”`,
+    onOpen: (event) => {
+      const door = event.currentTarget;
+      const keyboard = event.detail === 0;
+      Promise.all(["/css/reply-kit-lazy.css", "/js/attachment-peek.js"].map(lazyScript)).then(() => attachmentPeek({ ...item, name, entry, facts }, door, () => kind.open(item), keyboard));
+    },
+    ...extra,
+  });
+  card.dataset.kind = item.kind;
+  if (rest) card.querySelector(".att-chip-facts").classList.add("att-chip-lines");
+  return card;
 }
 
 //: The seed for the person's own mark: their profile name, or "You".
@@ -445,8 +435,11 @@ function addBubble(role, text, attachments = null) {
   //: padding and text are exactly what they were (chatmarks.js measures
   //: that): the label row that used to hold an avatar is hidden on purpose.
   if (role === "user") bubble.appendChild(userMarkEl());
+  //: **Above the bubble, on its side** (INBOX 1460, the hub's decision: the
+  //: way chat apps show what was attached). The strip is the bubble's
+  //: previous sibling, not a child, because the bubble's fill is the bubble;
+  //: `dropChatBubble` removes it when the bubble goes.
   const strip = chatAttachmentStrip(attachments);
-  if (strip) bubble.appendChild(strip);
 
   if (role === "user") {
     bubble.appendChild(
@@ -457,11 +450,21 @@ function addBubble(role, text, attachments = null) {
       ])
     );
   }
+  if (strip) {
+    $("chat-messages").appendChild(strip);
+    bubble.cards = strip;
+  }
   $("chat-messages").appendChild(bubble);
   chatScrollToEnd();
   return bubble;
 }
 
+//: A user bubble and the cards above it go together (every place a turn is
+//: deleted, edited away or regenerated calls this).
+function dropChatBubble(node) {
+  node.cards?.remove();
+  node.remove();
+}
 //: **The one Thinking fold** (INBOX 457), on every surface that shows
 //: reasoning; `tests/test_ui_recipes.py` holds it to this builder.
 function thinkingFold(open = true) {

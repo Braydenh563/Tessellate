@@ -116,7 +116,10 @@ _MASH = re.compile(r"asdf|sdfg|dfgh|fghj|ghjk|hjkl|qwer|wert|erty|rtyu|tyui|yuio
 
 def _normalise(text: str) -> str:
     """Lowercase, strip punctuation and filler, collapse whitespace."""
-    cleaned = (text or "").strip().lower()
+    from tessellate.ai import question_noise
+
+    #: "yooooo" is "yo" before anything is matched (INBOX 1459).
+    cleaned = question_noise.destretch((text or "").strip()).lower()
     cleaned = re.sub(r"[^\w\s']", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     # Leading filler ("so hey", "um hi") shouldn't stop a greeting matching.

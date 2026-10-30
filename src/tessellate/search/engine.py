@@ -1222,12 +1222,29 @@ def _by_tags(rows: list, asked) -> list:  # noqa: ANN001
 
 
 def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
-    """The rows that also carry the `is:`, `has:` and `tag:` the query named."""
+    """The rows that also carry the `is:`, `has:` and `tag:` the query named,
+    less those carrying a `-tag:`, `-kind:`, `-is:` or `-title:` it ruled out."""
     wanted_is, wanted_has = _flag_filters(asked)
     rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    return _by_tags(rows, asked)
+    return _without(_by_tags(rows, asked), asked)
+
+
+#: How a negated operator rules a row out, matched as the positive ones match.
+_RULE_OUT = {
+    "tag": lambda row, value: value in (row["tags"] or "").lower(),
+    "title": lambda row, value: value in (row["title"] or "").lower(),
+    "is": lambda row, value: value in (row["flags"] or "").split(),
+    "kind": lambda row, value: row["kind"] == value,
+}
+
+
+def _without(rows: list, asked) -> list:  # noqa: ANN001
+    """Drop rows a negated operator (`-tag:`, `-kind:`, `-is:`, `-title:`) rules out."""
+    out = getattr(asked, "without", None) or {}
+    tests = [(_RULE_OUT[key], value.lower()) for key, values in out.items() if key in _RULE_OUT for value in values]
+    return [row for row in rows if not any(test(row, value) for test, value in tests)] if tests else rows
 
 
 def _hit_for(row, best_raw: float, filters_only: bool, cosines: dict, hops: dict, terms: list) -> Hit | None:  # noqa: ANN001
