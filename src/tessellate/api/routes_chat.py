@@ -2712,26 +2712,31 @@ def _counted_lead(req: _StreamRequest, asked: str) -> tuple[str, dict]:
     return "", {}
 
 
+def _things_lead(name: str, result: dict) -> str:
+    """"You have three recipes: A, B and C." The names only when they are few."""
+    from tessellate.ai import study
+
+    total = int(result.get("total_matching") or 0)
+    titles = [study.title_of(str(n.get("content") or "")) for n in result.get("notes") or [] if isinstance(n, dict)]
+    noun = name if total != 1 or not name.endswith("s") else name[:-1]
+    lead = f"You have {realise.count_word(total)} {noun}"
+    if total <= 6 and len(titles) == total and all(titles):
+        lead += ": " + realise.join_items(titles)
+    return lead + "."
+
+
 def _things_counted(req: _StreamRequest, asked: str) -> tuple[str, dict]:
     """"how many recipes have I saved": the notes filed or tagged under that
     name, counted and, a few at most, named; ("", {}) when the name is
     neither a category nor a tag."""
-    from tessellate.ai import study
     from tessellate.ai import tools as agent_tools
 
     name = composer_lists.counted_things(asked)
-    for value in dict.fromkeys((name, name[:-1] if name.endswith("s") else name)) if name else ():
-        for key in ("category", "tag"):
-            result = agent_tools.execute_tool(req.session, "list_notes", {key: value})
-            total = int(result.get("total_matching") or 0) if isinstance(result, dict) else 0
-            if not total:
-                continue
-            titles = [study.title_of(str(n.get("content") or "")) for n in result.get("notes") or [] if isinstance(n, dict)]
-            noun = name if total != 1 or not name.endswith("s") else name[:-1]
-            lead = f"You have {realise.count_word(total)} {noun}"
-            if total <= 6 and len(titles) == total and all(titles):
-                lead += ": " + realise.join_items(titles)
-            return lead + ".", fact_check.result_counts("list_notes", result)
+    tries = [(key, value) for value in dict.fromkeys((name, name.removesuffix("s"))) for key in ("category", "tag")] if name else []
+    for key, value in tries:
+        result = agent_tools.execute_tool(req.session, "list_notes", {key: value})
+        if isinstance(result, dict) and result.get("total_matching"):
+            return _things_lead(name, result), fact_check.result_counts("list_notes", result)
     return "", {}
 
 

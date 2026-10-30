@@ -238,6 +238,36 @@ def _listed(parts: list[str]) -> str:
     return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
 
 
+def _one_of_several(items: list, views: list, month: int | None, subject: list[str]) -> bool:
+    """One amount in a note of several, with no refund or balance beside it:
+    nothing to add up, so the digest says it with its week and what sits
+    beside it (gold answer 15)."""
+    if len(items) != 1 or len(recognise.amounts(" ".join(s.text for s in items[0].view.sentences))) <= 1:
+        return False
+    return not _items(views, month, subject, refunds=True) and not _still_due(views, month, subject)
+
+
+def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, float]:
+    """The total said once, by note or by label within one note, and the total."""
+    by_note: dict[str, float] = {}
+    for item in items:
+        name = composer_lists._title(item.view)  # noqa: SLF001
+        by_note[name] = by_note.get(name, 0) + item.value
+    total = sum(by_note.values())
+    if len(items) == 1:
+        name = next(iter(by_note))
+        what = "" if items[0].label == name else f" for {items[0].label}"
+        return f"You paid {_money(symbol, total)}{what}, going by {name}.", total
+    if len(by_note) == 1:
+        by_label: dict[str, float] = {}
+        for item in items:
+            by_label[item.label] = by_label.get(item.label, 0) + item.value
+        listed = _listed([f"{label.lower() if i else label} {_money(symbol, v)}" for i, (label, v) in enumerate(by_label.items())])
+        return f"You spent {_money(symbol, total)}{on}{when}, going by {next(iter(by_note))}: {listed}.", total
+    listed = _listed([f"{name} {_money(symbol, v)}" for name, v in by_note.items()])
+    return f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}.", total
+
+
 def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     month = _month_asked(rest, today)
     subject, said = _subject(rest)
@@ -249,29 +279,9 @@ def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         return True
     symbol = items[0].symbol
     items = [i for i in items if i.symbol == symbol]
-    if len(items) == 1 and len(recognise.amounts(" ".join(s.text for s in items[0].view.sentences))) > 1 \
-            and not _items(views, month, subject, refunds=True) and not _still_due(views, month, subject):
-        #: One amount in a note of several is nothing to add up: the digest
-        #: says it with its week and what sits beside it (gold answer 15).
+    if _one_of_several(items, views, month, subject):
         return False
-    by_note: dict[str, float] = {}
-    for item in items:
-        name = composer_lists._title(item.view)  # noqa: SLF001
-        by_note[name] = by_note.get(name, 0) + item.value
-    total = sum(by_note.values())
-    if len(items) == 1:
-        name = next(iter(by_note))
-        what = "" if items[0].label == name else f" for {items[0].label}"
-        line = f"You paid {_money(symbol, total)}{what}, going by {name}."
-    elif len(by_note) == 1:
-        by_label: dict[str, float] = {}
-        for item in items:
-            by_label[item.label] = by_label.get(item.label, 0) + item.value
-        listed = _listed([f"{label.lower() if i else label} {_money(symbol, v)}" for i, (label, v) in enumerate(by_label.items())])
-        line = f"You spent {_money(symbol, total)}{on}{when}, going by {next(iter(by_note))}: {listed}."
-    else:
-        listed = _listed([f"{name} {_money(symbol, v)}" for name, v in by_note.items()])
-        line = f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}."
+    line, total = _spent_line(items, symbol, on, when)
     out.lines.append(line)
     _cite_all(out, items, line)
     _refunds_and_due(out, views, month, subject, symbol, total)
