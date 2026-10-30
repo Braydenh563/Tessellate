@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6851, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7381, test files 1574, tests 13721, plan headings 987.
+Counts: frontend functions 6851, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7418, test files 1576, tests 13754, plan headings 987.
 
 ## Frontend functions (6851)
 
@@ -11567,7 +11567,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7381)
+## Backend modules (7418)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12807,50 +12807,87 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:323 |
 | `window_of` | src/tessellate/ai/composer_lists.py:128 |
 
-### src/tessellate/ai/composer_money.py (40)
+### src/tessellate/ai/composer_money.py (77)
 
 | Name | File:line |
 |---|---|
-| `Item` | src/tessellate/ai/composer_money.py:90 |
-| `_Measure` | src/tessellate/ai/composer_money.py:431 |
-| `_about` | src/tessellate/ai/composer_money.py:164 |
-| `_bare_total` | src/tessellate/ai/composer_money.py:383 |
-| `_cite_all` | src/tessellate/ai/composer_money.py:216 |
-| `_clause_items` | src/tessellate/ai/composer_money.py:123 |
-| `_dimension_of` | src/tessellate/ai/composer_money.py:444 |
-| `_done` | src/tessellate/ai/composer_money.py:479 |
-| `_due` | src/tessellate/ai/composer_money.py:398 |
-| `_due_by` | src/tessellate/ai/composer_money.py:199 |
-| `_figure` | src/tessellate/ai/composer_money.py:498 |
-| `_forms` | src/tessellate/ai/composer_money.py:472 |
-| `_in_month` | src/tessellate/ai/composer_money.py:154 |
-| `_items` | src/tessellate/ai/composer_money.py:174 |
-| `_items_by` | src/tessellate/ai/composer_money.py:180 |
-| `_items_of` | src/tessellate/ai/composer_money.py:138 |
+| `Item` | src/tessellate/ai/composer_money.py:99 |
+| `_Diff` | src/tessellate/ai/composer_money.py:848 |
+| `_Measure` | src/tessellate/ai/composer_money.py:587 |
+| `_Target` | src/tessellate/ai/composer_money.py:716 |
+| `_Win` | src/tessellate/ai/composer_money.py:168 |
+| `_about` | src/tessellate/ai/composer_money.py:263 |
+| `_adjective` | src/tessellate/ai/composer_money.py:785 |
+| `_bare_total` | src/tessellate/ai/composer_money.py:530 |
+| `_both_sets` | src/tessellate/ai/composer_money.py:954 |
+| `_cite_all` | src/tessellate/ai/composer_money.py:338 |
+| `_clause_items` | src/tessellate/ai/composer_money.py:142 |
+| `_difference` | src/tessellate/ai/composer_money.py:976 |
+| `_difference_asked` | src/tessellate/ai/composer_money.py:885 |
+| `_dimension_asked` | src/tessellate/ai/composer_money.py:873 |
+| `_dimension_of` | src/tessellate/ai/composer_money.py:600 |
+| `_done` | src/tessellate/ai/composer_money.py:631 |
+| `_due` | src/tessellate/ai/composer_money.py:553 |
+| `_due_by` | src/tessellate/ai/composer_money.py:319 |
+| `_due_line` | src/tessellate/ai/composer_money.py:469 |
+| `_figure` | src/tessellate/ai/composer_money.py:637 |
+| `_first_window` | src/tessellate/ai/composer_money.py:905 |
+| `_forms` | src/tessellate/ai/composer_money.py:624 |
+| `_gap_line` | src/tessellate/ai/composer_money.py:967 |
+| `_goal_in` | src/tessellate/ai/composer_money.py:775 |
+| `_in_month` | src/tessellate/ai/composer_money.py:230 |
+| `_in_one_currency` | src/tessellate/ai/composer_money.py:935 |
+| `_in_window` | src/tessellate/ai/composer_money.py:249 |
+| `_ing_forms` | src/tessellate/ai/composer_money.py:725 |
+| `_is_done` | src/tessellate/ai/composer_money.py:287 |
+| `_items` | src/tessellate/ai/composer_money.py:274 |
+| `_items_by` | src/tessellate/ai/composer_money.py:296 |
 | `_kind_spent` | src/tessellate/ai/composer_money.py:36 |
-| `_listed` | src/tessellate/ai/composer_money.py:244 |
-| `_measure` | src/tessellate/ai/composer_money.py:517 |
-| `_measure_asked` | src/tessellate/ai/composer_money.py:450 |
-| `_measured` | src/tessellate/ai/composer_money.py:485 |
-| `_measures_line` | src/tessellate/ai/composer_money.py:506 |
-| `_money` | src/tessellate/ai/composer_money.py:212 |
-| `_month_asked` | src/tessellate/ai/composer_money.py:142 |
-| `_most` | src/tessellate/ai/composer_money.py:333 |
-| `_note_name` | src/tessellate/ai/composer_money.py:266 |
-| `_one_day` | src/tessellate/ai/composer_money.py:438 |
-| `_one_of_several` | src/tessellate/ai/composer_money.py:248 |
-| `_refunds_and_due` | src/tessellate/ai/composer_money.py:313 |
-| `_spent` | src/tessellate/ai/composer_money.py:293 |
-| `_spent_line` | src/tessellate/ai/composer_money.py:272 |
-| `_still_due` | src/tessellate/ai/composer_money.py:195 |
-| `_subject` | src/tessellate/ai/composer_money.py:235 |
-| `_total_asked` | src/tessellate/ai/composer_money.py:347 |
-| `_total_rest` | src/tessellate/ai/composer_money.py:353 |
-| `_what` | src/tessellate/ai/composer_money.py:103 |
-| `answer` | src/tessellate/ai/composer_money.py:555 |
-| `asks` | src/tessellate/ai/composer_money.py:536 |
-| `records_amounts` | src/tessellate/ai/composer_money.py:550 |
-| `sums_a_measure` | src/tessellate/ai/composer_money.py:544 |
+| `_left_asked` | src/tessellate/ai/composer_money.py:691 |
+| `_left_out` | src/tessellate/ai/composer_money.py:946 |
+| `_listed` | src/tessellate/ai/composer_money.py:372 |
+| `_measure` | src/tessellate/ai/composer_money.py:659 |
+| `_measure_asked` | src/tessellate/ai/composer_money.py:606 |
+| `_measures_line` | src/tessellate/ai/composer_money.py:647 |
+| `_money` | src/tessellate/ai/composer_money.py:334 |
+| `_month_asked` | src/tessellate/ai/composer_money.py:156 |
+| `_month_dates` | src/tessellate/ai/composer_money.py:188 |
+| `_months_of` | src/tessellate/ai/composer_money.py:241 |
+| `_most` | src/tessellate/ai/composer_money.py:478 |
+| `_moved` | src/tessellate/ai/composer_money.py:129 |
+| `_names_window` | src/tessellate/ai/composer_money.py:858 |
+| `_note_month` | src/tessellate/ai/composer_money.py:177 |
+| `_note_name` | src/tessellate/ai/composer_money.py:394 |
+| `_noted` | src/tessellate/ai/composer_money.py:280 |
+| `_one_day` | src/tessellate/ai/composer_money.py:594 |
+| `_one_of_several` | src/tessellate/ai/composer_money.py:376 |
+| `_past` | src/tessellate/ai/composer_money.py:911 |
+| `_read` | src/tessellate/ai/composer_money.py:136 |
+| `_refunds_and_due` | src/tessellate/ai/composer_money.py:451 |
+| `_say` | src/tessellate/ai/composer_money.py:443 |
+| `_side` | src/tessellate/ai/composer_money.py:925 |
+| `_spent` | src/tessellate/ai/composer_money.py:421 |
+| `_spent_line` | src/tessellate/ai/composer_money.py:400 |
+| `_still_due` | src/tessellate/ai/composer_money.py:310 |
+| `_subject` | src/tessellate/ai/composer_money.py:360 |
+| `_target_asked` | src/tessellate/ai/composer_money.py:754 |
+| `_target_dimension` | src/tessellate/ai/composer_money.py:745 |
+| `_target_verb` | src/tessellate/ai/composer_money.py:735 |
+| `_total_asked` | src/tessellate/ai/composer_money.py:494 |
+| `_total_rest` | src/tessellate/ai/composer_money.py:500 |
+| `_toward` | src/tessellate/ai/composer_money.py:798 |
+| `_unit_named` | src/tessellate/ai/composer_money.py:863 |
+| `_unit_of` | src/tessellate/ai/composer_money.py:545 |
+| `_verdict` | src/tessellate/ai/composer_money.py:792 |
+| `_what` | src/tessellate/ai/composer_money.py:112 |
+| `_window_asked` | src/tessellate/ai/composer_money.py:217 |
+| `_word_for` | src/tessellate/ai/composer_money.py:917 |
+| `_year_of` | src/tessellate/ai/composer_money.py:200 |
+| `answer` | src/tessellate/ai/composer_money.py:1040 |
+| `asks` | src/tessellate/ai/composer_money.py:997 |
+| `recorded_notes` | src/tessellate/ai/composer_money.py:1019 |
+| `records_amounts` | src/tessellate/ai/composer_money.py:1035 |
+| `sums_a_measure` | src/tessellate/ai/composer_money.py:1005 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 
@@ -14513,6 +14550,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
+| `Measure` | src/tessellate/ai/recognise.py:3656 |
 | `Span` | src/tessellate/ai/recognise.py:2694 |
 | `_add_months` | src/tessellate/ai/recognise.py:794 |
 | `_alert_cands` | src/tessellate/ai/recognise.py:3250 |
@@ -14666,7 +14704,6 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `adverbial` | src/tessellate/ai/recognise.py:2120 |
 | `ahead_window` | src/tessellate/ai/recognise.py:1445 |
 | `alert_words` | src/tessellate/ai/recognise.py:3263 |
-| `amounts` | src/tessellate/ai/recognise.py:3650 |
 | `as_of_then` | src/tessellate/ai/recognise.py:3635 |
 | `asks_computed` | src/tessellate/ai/recognise.py:246 |
 | `asks_time` | src/tessellate/ai/recognise.py:258 |
@@ -14687,7 +14724,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `is_lately` | src/tessellate/ai/recognise.py:2449 |
 | `iso_figures` | src/tessellate/ai/recognise.py:346 |
 | `looks_dated` | src/tessellate/ai/recognise.py:2074 |
-| `measures` | src/tessellate/ai/recognise.py:3661 |
+| `measures` | src/tessellate/ai/recognise.py:3672 |
 | `mid_sentence` | src/tessellate/ai/recognise.py:2140 |
 | `names_a_day` | src/tessellate/ai/recognise.py:2083 |
 | `next_occurrence` | src/tessellate/ai/recognise.py:809 |
@@ -14703,7 +14740,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `resolve` | src/tessellate/ai/recognise.py:668 |
 | `says_ahead` | src/tessellate/ai/recognise.py:2496 |
 | `says_past` | src/tessellate/ai/recognise.py:2520 |
-| `says_shape` | src/tessellate/ai/recognise.py:3655 |
+| `says_shape` | src/tessellate/ai/recognise.py:3650 |
 | `shift_day` | src/tessellate/ai/recognise.py:2624 |
 | `since_question` | src/tessellate/ai/recognise.py:2594 |
 | `span` | src/tessellate/ai/recognise.py:2018 |
@@ -20707,7 +20744,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13721)
+## Tests (13754)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20979,8 +21016,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_lists_1018.py | 22 |
 | tests/test_composer_long_question.py | 7 |
 | tests/test_composer_longer_1029.py | 5 |
-| tests/test_composer_measures_1030.py | 5 |
+| tests/test_composer_measures_1030.py | 7 |
 | tests/test_composer_money_1030.py | 8 |
+| tests/test_composer_money_years_1030.py | 13 |
 | tests/test_composer_notes_1025.py | 8 |
 | tests/test_composer_offers_1029b.py | 9 |
 | tests/test_composer_open_2210.py | 14 |
@@ -20992,6 +21030,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_phrasings_1025.py | 11 |
 | tests/test_composer_place_not_person_1029.py | 2 |
 | tests/test_composer_polish.py | 8 |
+| tests/test_composer_quantity_1030.py | 18 |
 | tests/test_composer_ranker_1029.py | 12 |
 | tests/test_composer_redos_1026.py | 4 |
 | tests/test_composer_regex_linear_1029.py | 3 |

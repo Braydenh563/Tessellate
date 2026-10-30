@@ -1689,7 +1689,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         #: note that records spending, which the five likest never were
         #: ("spent" does not match "Spending October"; 2026-10-30 sweep).
         #: None at all keeps the ordinary retrieval, so the answer can say no note holds it.
-        if recorded := [e for e in manager.list_entries(session, limit=400) if composer_money.records_amounts(e.content or "")]:
+        if recorded := composer_money.recorded_notes(lambda **page: manager.list_entries(session, **page)):
             found.entries = recorded
             found.mode, found.connected_ids, found.match_info = "money", set(), {}
 
