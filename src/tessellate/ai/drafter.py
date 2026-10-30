@@ -135,6 +135,16 @@ BULLETS = (
 #: What each kind is *for*, keyed by the value the client's select holds. An
 #: empty kind (an older client, or the plain "draft this" path) keeps the
 #: original behaviour: the prompt is chosen by whether a draft exists.
+#: A diagram, drawn by the app from a ```mermaid fence (mermaid-draw.js).
+#: With no model, `composer_mermaid` writes one by rule (INBOX 1466).
+DIAGRAM = (
+    "Turn the writing below into one Mermaid diagram.\n"
+    "- Pick the shape the content has: flowchart TD for steps, timeline for "
+    "dated events, mindmap for a topic and its points.\n"
+    "- Use only what the text says. Put every label in double quotes.\n"
+    "- Return only the diagram, inside a ```mermaid fence."
+)
+
 KIND_PROMPTS = {
     "note": FIRST_DRAFT,
     "revise": REVISION,
@@ -142,6 +152,7 @@ KIND_PROMPTS = {
     "rewrite": REWRITE,
     "expand": EXPAND,
     "bullets": BULLETS,
+    "diagram": DIAGRAM,
 }
 
 #: **Translation** (INBOX 405, the owner: "is multilingual translation and
@@ -296,7 +307,7 @@ def compose(
     alongside an explanation, because losing a draft to an outage would be far
     worse than not improving it.
     """
-    if not (thoughts or "").strip() and not (draft or "").strip():
+    if not (thoughts or "").strip() and not (draft or "").strip() and not sources:
         return "", None
     if not ollama.is_running():
         return (draft or ""), offline_message()
@@ -346,17 +357,11 @@ def compose_stream(
     over the top of settled writing is the one outcome this feature must
     never produce.
     """
-    if not (thoughts or "").strip() and not (draft or "").strip():
+    if not (thoughts or "").strip() and not (draft or "").strip() and not sources:
         yield {"type": "done", "draft": "", "thinking": "", "message": "", "ollama_running": True}
         return
     if not ollama.is_running():
-        yield {
-            "type": "done",
-            "draft": draft or "",
-            "thinking": "",
-            "message": OFFLINE_MESSAGE,
-            "ollama_running": False,
-        }
+        yield {"type": "done", **composed(thoughts, draft, instruction=instruction, kind=kind, tone=tone, length=length, sources=sources)}
         return
 
     model = model_manager.chat_model()
@@ -396,6 +401,42 @@ def compose_stream(
         "thinking": "".join(thinking),
         "message": "",
         "ollama_running": True,
+    }
+
+
+def composed(
+    thoughts: str,
+    draft: str | None,
+    *,
+    instruction: str = "",
+    kind: str = "",
+    tone: str = "",
+    length: str = "",
+    sources: list[dict] | None = None,
+    today=None,  # noqa: ANN001  # a date; the person's today when left out
+) -> dict:
+    """**The pass with no model** (INBOX 1466, CHAT_PLAN decision 75): what
+    `composer_write` can do by rule, marked `by: "composer"` with the line
+    `said` gives; else the draft untouched and `message` saying the pass
+    needs a model. A plain revision (no kind) keeps the offline message it
+    always had, which names the way to a model."""
+    from tessellate.ai import composer, composer_mermaid, composer_write
+
+    done = composer_write.compose(
+        kind=kind, thoughts=thoughts, draft=draft or "", instruction=instruction, tone=tone, length=length,
+        sources=sources, today=today or composer.user_today(),
+    )
+    if done.shape == "diagram":
+        text, said = composer_mermaid.drafted(draft if (draft or "").strip() else thoughts, instruction, sources)
+        done = composer_write.Pass(text, said if text else "", "diagram") if text else composer_write.Pass("", said)
+    if done.text.strip():
+        return {"draft": done.text, "thinking": "", "message": "", "said": done.message, "by": "composer", "ollama_running": False}
+    plain_revision = not (kind or "").strip() and not (instruction or "").strip()
+    return {
+        "draft": draft or "",
+        "thinking": "",
+        "message": OFFLINE_MESSAGE if plain_revision else done.message,
+        "ollama_running": False,
     }
 
 

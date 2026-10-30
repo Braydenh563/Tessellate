@@ -49,32 +49,44 @@ def _run(script: str):
 # --- X20 --------------------------------------------------------------------
 
 
+def _chip_note() -> str:
+    """The offline line a chip press runs, inlined in its click handler (one
+    function less in the boot scripts' gzip total)."""
+    chips = _function(CHAT_AGENT, "renderDraftQuickstarts")
+    line = re.search(r"^\s*(if \(aiIsOff\(\) && start\.model\) setDraftStatus\(.*\);)$", chips, re.M)
+    assert line, "the chip press no longer says why"
+    return f"function chipNote(start) {{ {line.group(1)} }}\n"
+
+
 @needs_node
 def test_a_quick_start_chip_says_why_when_no_model_is_connected() -> None:
+    """INBOX 1466 moved the intent: with no model the composer does most chips
+    by rule, so only a chip that needs a model (Carry on writing, Translate)
+    says why; the others say nothing until Draft is pressed."""
     script = (
-        _function(CHAT_AGENT, "draftChipOfflineNote")
+        _chip_note()
         + """
         const AI_OFFLINE_HINT = "Connect a model in Settings";
-        const refine = { dataset: { needsModel: "Refining needs a model connected" } };
         const said = [];
         const setDraftStatus = (text, isError) => said.push([text, !!isError]);
-        const $ = () => refine;
         let off = true;
         const aiIsOff = () => off;
-        draftChipOfflineNote();
+        chipNote({ label: "Carry on writing", model: 1 });
+        chipNote({ label: "Prose to bullets" });
         off = false;
-        draftChipOfflineNote();
+        chipNote({ label: "Translate", model: 1 });
         console.log(JSON.stringify(said));
         """
     )
-    assert _run(script) == [["Refining needs a model connected. Connect a model in Settings.", False]]
+    assert _run(script) == [["Carry on writing needs a model. Connect a model in Settings.", False]]
 
 
-def test_every_chip_press_goes_through_the_offline_note() -> None:
-    chips = _function(CHAT_AGENT, "renderDraftQuickstarts")
-    assert "draftChipOfflineNote()" in chips
+def test_only_the_chips_that_need_a_model_are_marked() -> None:
+    starts = CHAT_AGENT[CHAT_AGENT.index("const DRAFT_QUICKSTARTS") : CHAT_AGENT.index("];", CHAT_AGENT.index("const DRAFT_QUICKSTARTS"))]
+    marked = re.findall(r'kind: "(\w+)", model: 1', starts)
+    assert marked == ["continue", "translate"]
     sentence = re.search(r"`\$\{reason\}\. \$\{AI_OFFLINE_HINT\}\.`", STATUS)
-    assert sentence, "the Refine title sentence this one must match moved"
+    assert sentence, "the gate's sentence this one must match moved"
 
 
 # --- X24 --------------------------------------------------------------------

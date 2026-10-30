@@ -1075,15 +1075,19 @@ HELP_TOPICS.extend(
             "keywords": (
                 "write for me", "write with atlas", "writing room", "draft a note",
                 "rewrite", "continue the draft", "bullets to prose", "prose to bullets",
-                "write an essay", "write an email", "draft",
+                "write an essay", "write an email", "draft", "make a diagram", "make a flowchart",
+                "mind map from text", "writing without a model",
             ),
             "body": (
                 "Notes tab, Writing room: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
-                "or translate), add notes as sources if you want it grounded in "
-                "them, and press Write. The draft stays in the box to edit; save it "
+                "a diagram, or translate), add notes as sources if you want it grounded in "
+                "them, and press Draft. The draft stays in the box to edit; save it "
                 "as a note when it reads right. Which model writes is set on the "
-                "same row, or in Settings, Models."
+                "same row, or in Settings, Models. With no model Atlas does it by "
+                "rule, marked From your words: write up your notes by date, plain words, "
+                "bullets either way, and Refine's shorter, a summary or a flowchart, "
+                "timeline or mind map; Carry on and Translate need a model."
             ),
             "badge": {"label": "Writing room", "tab": "notes"},
         },
