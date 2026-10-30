@@ -1884,7 +1884,7 @@ const LAZY_MODULES = {
   notifications: ["/js/notifications.js"],
   //: Tidy, the reviews with no AI (INBOX 691): tidy.js's header.
   tidy: ["/css/tidy-lazy.css", "/js/tidy.js"],
-  semanticNotice: ["/js/semantic-notice.js"],
+  semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"],
   //: The order the `<script>` tags had, kept: every cross-file call between
   //: these three is inside a function rather than at parse time, so it is not
   //: load-bearing, but it is the order the three files' own headers describe.

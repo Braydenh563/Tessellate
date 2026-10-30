@@ -8,7 +8,7 @@ Found, not fixed (each needs a decision or a bigger change):
 - Z67 fuzzy name pool: "what does Sara want for her birthday" lists Tokyo trip (Nara) and Books; restrict the overview members to notes holding the exact name when the notebook has it (composer_digest overview path).
 - Z36 people/places/ideas lists and "find untitled notes" (the find tool answers first); Z37 "show my reminders"; Z45 tight bullets and the "show the rest" chip; Z32 shopping-to-Groceries map; Z50 persona wording for "what is your name".
 - Z28 a week's recap is still the creation log; Z22/O11 `_current_notes` drops the Sara note; Z17 "9/10" read as a date, "bought" not folded to "buy"; Z25 oven temperature; Z21 "when did I last" in chat; Z20 "what makes me happy"; Z23 counts and sums of runs; Z26/Z27 past lines listed as upcoming; Z56 "what have I finished".
-- Not started: Z57, Z58, Z59, Z64, Z68 (a model-up Ask run), Z69, Z70, Z71, Z46 recast list sentence.
+- Fixed c5a24ea (fable-fix-1030): Z64, Z69, Z71; Z67 not reproduced. Not started: Z57, Z58, Z59, Z68 (a model-up Ask run), Z70, Z46 recast list sentence.
 
-Next: Z57-Z59, Z64, Z67, Z68-Z71, then Z23, Z26, Z27.
+Next: Z57-Z59, Z68, Z70, then Z23, Z26, Z27.
 Probe: `bash scratchpad/probe.sh <questions file> [1 for chat] [1 for dialogue]` (tests/_zprobe.py, never committed).

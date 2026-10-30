@@ -164,18 +164,25 @@ def sections(content: str) -> list[Section]:
     return [s for s in out if s.title or s.text]
 
 
-def title_of(content: str) -> str:
-    """The name a note is listed by: its heading, else its first sentence,
-    cut at a word with an ellipsis (`realise.cut_title`, audit 1029 C9) and
-    never through one."""
-    for line in properties.strip(content or "").splitlines():
-        if line.strip():
-            found = _HEADING.match(line)
-            if found:
-                return realise.cut_title(clean(found.group(2)), 80)
-            text = clean(line)
-            first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
-            return realise.cut_title(first.rstrip(".") if len(first.split()) >= 3 else text, 80)
+#: A list marker before a line's words: "- ", "* ", "3. ", "[ ] ", "- [x] ".
+_TITLE_MARK = re.compile(r"^(?:[-*+]\s+|\d{1,3}[.)]\s+)?(?:\[[ xX]\]\s+)?")
+
+
+def title_of(content: str, *, size: int = 80) -> str:
+    """**The one reader of a note's name from its text** (second eye F13: eight
+    readers named one note eight ways; `composer_frame.note_title` is its
+    public door): its heading, else its first line with a list or checkbox
+    marker, emphasis and links off, cut at a sentence when the line has two and
+    at a word with an ellipsis past `size` (`realise.cut_title`, audit 1029 C9)."""
+    for line in properties.strip(str(content or "")).splitlines():
+        if not line.strip():
+            continue
+        heading = _HEADING.match(line)
+        text = clean(_TITLE_MARK.sub("", heading.group(2) if heading else line.strip(), count=1))
+        if heading:
+            return realise.cut_title(text, size)
+        first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+        return realise.cut_title(first.rstrip(".") if len(first.split()) >= 3 else text, size)
     return ""
 
 

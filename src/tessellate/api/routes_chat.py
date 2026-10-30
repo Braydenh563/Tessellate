@@ -19,6 +19,7 @@ import mimetypes
 import re
 import threading
 import time
+from collections import OrderedDict
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
@@ -1690,6 +1691,23 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     return merged
 
 
+def _with_records(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
+    """An open checklist item may be done in a later note ("Renewed my library
+    membership today" beside "[ ] Renew library membership"): a question
+    about the checklist's state also fetches the notes that name its open
+    items, so the answer reads one state for the item (second eye F3)."""
+    if not composer_slots.asks_open(question):
+        return entries
+    doings = [d for e in entries for d in composer_slots.open_doings(e.content or "")][:6]
+    merged, seen = list(entries), {e.id for e in entries}
+    for doing in doings:
+        for entry in search_manager.retrieve_detailed(session, doing, deps.get_embeddings(), limit=2, locale=locale).entries:
+            if entry.id not in seen:
+                seen.add(entry.id)
+                merged.append(entry)
+    return merged
+
+
 _CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
 
 
@@ -1742,7 +1760,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         found.entries = list(hit.entries)
     else:
         entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
-        entries = _with_each_side(session, question, entries, locale)
+        entries = _with_records(session, question, _with_each_side(session, question, entries, locale), locale)
         found.entries = list_pool.pool(session, question, entries)
     found.mode = hit.mode
     found.connected_ids = hit.connected_ids
@@ -3589,16 +3607,45 @@ def _told_sources(req: _StreamRequest, current: list, today) -> str:  # noqa: AN
     by_id = {n.get("source_id", n.get("id")): str(n.get("content") or "") for n in current}
     told: list[str] = []
     for question in _asked_before(req):
-        try:
-            result = composer_digest.answer(question, current, today=today, voice=_answer_voice()) or composer.compose(
-                question, current, today=today, voice=_composer_voice(), now=user_now(deps.get_config()).replace(tzinfo=None)
-            )
-        except Exception:  # noqa: BLE001  # the words of the earlier answers still stand
-            logging.getLogger("tessellate.chat").exception("chat: an earlier question could not be answered again for its sources")
-            continue
-        for row in result.get("grounding") or []:
+        for row in _earlier_rows(question, current, today):
             told.extend(_row_source(by_id, part) for part in [row, *(row.get("parts") or [])])
     return "\n".join(t for t in told if t)
+
+
+#: The grounding rows of the latest answers by (question, day, notes), so a
+#: "tell me more" reads the rows the answer before it wrote instead of
+#: answering up to three earlier questions again over the same notes (second
+#: eye F8: four reads of every note on a "more" turn).
+_ROWS_KEPT: OrderedDict[tuple, list] = OrderedDict()
+_ROWS_LIMIT = 24
+
+
+def _rows_key(question: str, current: list, today) -> tuple:  # noqa: ANN001
+    return (question, today, tuple((n.get("id"), hash(str(n.get("content") or "")), n.get("updated_at")) for n in current))
+
+
+def _remember_rows(question: str, current: list, today, result: dict) -> None:  # noqa: ANN001
+    _ROWS_KEPT[_rows_key(question, current, today)] = list(result.get("grounding") or [])
+    while len(_ROWS_KEPT) > _ROWS_LIMIT:
+        _ROWS_KEPT.popitem(last=False)
+
+
+def _earlier_rows(question: str, current: list, today) -> list:  # noqa: ANN001
+    """The grounding rows an earlier question's answer would have: the ones
+    that answer wrote when it is remembered, else the question answered again."""
+    key = _rows_key(question, current, today)
+    if key in _ROWS_KEPT:
+        _ROWS_KEPT.move_to_end(key)
+        return _ROWS_KEPT[key]
+    try:
+        result = composer_digest.answer(question, current, today=today, voice=_answer_voice()) or composer.compose(
+            question, current, today=today, voice=_composer_voice(), now=user_now(deps.get_config()).replace(tzinfo=None)
+        )
+    except Exception:  # noqa: BLE001  # the words of the earlier answers still stand
+        logging.getLogger("tessellate.chat").exception("chat: an earlier question could not be answered again for its sources")
+        return []
+    _remember_rows(question, current, today, result)
+    return result.get("grounding") or []
 
 
 def _asked_before(req: _StreamRequest) -> list[str]:
@@ -3676,7 +3723,9 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     result = _open_note_answer(req, follow, current, today) or _digest_for(req, prepared, follow, current, restated, today) or _compose_for(req, prepared, follow, current, today)
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
-        result = composer_digest.all_said(follow.question, prepared["notes"], today=today) or result
+        result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
+    if follow is None and result.get("grounding"):
+        _remember_rows(req.question, current, today, result)
     return result, follow, current, older
 
 
@@ -3833,6 +3882,17 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     return events
 
 
+def _search_footer(prepared: dict, result: dict) -> str:
+    """How a miss was searched (words only, meaning off or loading). An app-tool
+    answer ("undo") never read the notes, so it carries none (Z64)."""
+    if result.get("shape") == "help":
+        return ""
+    for key in ("meaning_loading", "meaning_off"):
+        if prepared.get(key):
+            return "\n\n" + composer_digest.PHRASES[key]
+    return ""
+
+
 def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> str:  # noqa: ANN001
     text = result["text"]
     if missed and not follow and personal.general(req.question or ""):
@@ -3840,10 +3900,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(
             _web_allowed(req), web_pref=_web_pref_on(), by_choice=req.body.answer_from == "notes" and req.ollama.is_running())
-    if missed and prepared.get("meaning_loading"):
-        text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
-    elif missed and prepared.get("meaning_off"):
-        text += "\n\n" + composer_digest.PHRASES["meaning_off"]
+    if missed:
+        text += _search_footer(prepared, result)
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
         text = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
@@ -4349,6 +4407,18 @@ def _spoken_act(req: _StreamRequest) -> str | None:
     return resolved[0]
 
 
+def _exact_note_events(req: _StreamRequest, notes: list) -> list[dict]:
+    """The engine's exact answer over the turn's notes, as events (an answer
+    and its grounding), or none (`composer_digest.exact`)."""
+    if not notes:
+        return []
+    current, _older = _current_notes(req, notes)
+    result = composer_digest.exact(req.question or "", current, today=user_now(deps.get_config()).date())
+    if not result:
+        return []
+    return [{"type": "answer", "delta": result["text"]}, _composed_grounding_event(req, result)]
+
+
 def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     """A read tool's answer (decision 59) is the whole notebook's, so the
     notes retrieval found are not its sources. Read with a model up too: a
@@ -4362,6 +4432,11 @@ def _note_tool_read(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     reads = prepared["intent"] != intent.ACT or (t.ollama_running and not t.composed and not _asks_change(req.question or ""))
     if prepared["stats"] is None and reads and not req.skill:
         prepared["tool_read"] = _tool_read_events(req, prepared["notes"])
+        if not prepared["tool_read"] and t.ollama_running and not t.composed and prepared["intent"] != intent.ACT:
+            #: A figure or a tick the notes settle (a sum, a day, "did I"):
+            #: the engine's own, handed to the model as facts too, so the
+            #: answer is the same with a model on and off (second eye F6).
+            prepared["tool_read"] = _exact_note_events(req, prepared["notes"])
         if prepared["tool_read"]:
             #: Not composed from them either: the Ask box's "Composed from
             #: your notes" label is for a quoted answer (INBOX 801).
@@ -4884,6 +4959,12 @@ def _trim_answer(t: _Turn) -> Iterator[str]:
         yield _event({"type": "answer_final", "text": t.answer_text})
 
 
+def _note_with_hint(note: dict) -> str:
+    """A note's words plus the time words the prompt worked out for it ("in 5
+    days"): the model is told those figures, so they are backed (Z69)."""
+    return f"{note.get('content') or ''}{librarian._dates_hint(note)}"
+
+
 def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
     """**The model proposes, the engine decides** (CHAT_PLAN decision 53): a
     model's plain answer passes the same validators as the engine's, so a
@@ -4902,7 +4983,7 @@ def _check_model_prose(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterato
             str(req.image_context or ""),
             #: The date the prompt told the model, so "today is 10 October" is backed.
             user_now(deps.get_config()).strftime("%A %d %B %Y %H:%M"),
-            *(str(n.get("content") or "") for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
+            *(_note_with_hint(n) for n in [*prepared["notes"], *(prepared.get("model_notes") or [])]),
         ],
         question=req.question or "",
     )
@@ -4945,7 +5026,16 @@ def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
     }
 
 
+def _unsaid_greeting(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
+    """A model that answered small talk with nothing at all ("hello" under an
+    empty reply) leaves a blank bubble: the app's own reply stands in (Z71)."""
+    if t.conversational and t.ollama_running and not t.answer_text.strip():
+        t.answer_text = _social_reply(req, prepared)
+        yield _event({"type": "answer", "delta": t.answer_text})
+
+
 def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
+    yield from _unsaid_greeting(req, prepared, t)
     yield from _trim_answer(t)
     yield from _check_model_prose(req, prepared, t)
     grounding, grounding_event = _ground_final(req, prepared, t)

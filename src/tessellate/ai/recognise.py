@@ -892,7 +892,7 @@ def _reminder_words(text: str, spans: list) -> tuple[str, str]:
     return (rest or text.strip() or "Reminder"), priority
 
 
-_CLOCK_TAIL = re.compile(r"\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
+_CLOCK_TAIL = re.compile(r"(?<!\s)\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
 
 
 def _keep_due_day(rest: str, cut_words: list[str]) -> str:

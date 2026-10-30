@@ -929,7 +929,7 @@ _WHICH = r"which(?: (?:one|note|entry|of (?:the|these|those|my) (?:two|notes)|of
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
-    re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
