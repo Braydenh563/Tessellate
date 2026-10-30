@@ -471,7 +471,8 @@ _WRAPPERS = (
 _LAST_WORD = re.compile(r"^(?P<rest>[^?]*?\S)[,\s]+(?P<q>when|where|who|why|how many|how much|how long|how often)(?P<p>\s*\?*)$", re.I)
 _ASKS_FIRST = re.compile(r"^(?:what|when|where|who|whom|whose|why|how|which|is|are|do|does|did|can|could|should|will|would|was|were|has|have|had|am|if|whether|compare|list|name|tell|explain)\b", re.I)
 _TRAILERS = re.compile(
-    r"(?:[,\s]+(?:please|thanks|thank you|again|for me|real quick|quickly|by any chance|"
+    #: Starts after a word, so a run of blanks is tried once, not from each blank (CodeQL).
+    r"(?<![,\s])(?:[,\s]+(?:please|thanks|thank you|again|for me|real quick|quickly|by any chance|"
     + "|".join(re.escape(t) for t in composer_tables.EXTRA_TRAILERS)
     + r"))+\s*([?.!]*)\s*$",
     re.I,

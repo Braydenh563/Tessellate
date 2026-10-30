@@ -26,7 +26,8 @@ SHOWN = 8
 POOL_LIMIT = 300
 
 _ORDER = re.compile(
-    r"^(?:is|was|does|will)\s+(?:the\s+|my\s+)?(?P<a>[\w' -]{2,40}?)\s+(?P<rel>before|after|earlier than|later than|sooner than)\s+(?:the\s+|my\s+)?(?P<b>[\w' -]{2,40})$",
+    #: Word by word, so a run of blanks cannot be split every way (CodeQL).
+    r"^(?:is|was|does|will)\s+(?:the\s+|my\s+)?(?P<a>[\w'-]+(?:\s[\w'-]+){0,7}?)\s+(?P<rel>before|after|earlier than|later than|sooner than)\s+(?:the\s+|my\s+)?(?P<b>[\w'-]+(?:\s[\w'-]+){0,7})$",
     re.I,
 )
 _MENTION = re.compile(

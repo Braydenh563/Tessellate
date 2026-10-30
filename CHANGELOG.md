@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Composer (money, CodeQL 1866 to 1868): the subject in "what do my X payments add up to", "how much X spending" and "how much is left on" is read word by word, so a long run of spaces or repeated words cannot make the match slow.
+- Composer (CodeQL): the polite-trailer trim and "is A before B" read word by word, so a question padded with blanks no longer stalls a reply for seconds.
 - Composer: "how many recipes have I saved" counts and names the notes filed or tagged so; "how did I meet Mia" is answered by the note that says who Mia is, not one that shares the verb.
 - Composer (CodeQL): "is X still on my list", "is X done" and "keep spending under" read word by word, so long runs of spaces no longer slow a reply.
 - Composer (stress run 2026-10-30, not found): a "did I" with no record names the nearest note ("The closest is your note of 2 January: Q1: run a 10k.") or a title-only note, and says "your" for "my", instead of "I found nothing in your notes about my Q1 running goal".
