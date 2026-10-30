@@ -26,14 +26,15 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1464 desktop companion (agent desktop-1031, merged)
 - [x] Audit 1028 S rows (agent shell-1031, merged; S3, S16, S36, S42, S53 left)
 - [x] INBOX 1465 image read again after centring (hub, ec64c8a)
-- [ ] INBOX 1465 image align and resize everywhere (agent imgalign-1031)
+- [x] INBOX 1465 image align and resize everywhere (agent imgalign-1031, merged 92bb57f)
 - [x] INBOX 1465 lag log, speed sweep (agent speed-1031, merged; graph open 207 ms forced layout left)
 - [ ] Speed pass 2: graph open, Library and Timeline opens, notes-list compile (agent speed2-1031)
 - [ ] Chat attachment leftovers: reloaded chat loses an attached map (agent fixes-1031)
 - [ ] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
 - [ ] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
 - [ ] Companion: Fable pass after companion-1031 hands over (owner named Fable)
-- [ ] Audit 1028 K rows (hub)
+- [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
+- [ ] UI review of the 1031 merges (ux-auditor)
 - [ ] OPEN.md: proposed batches
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
