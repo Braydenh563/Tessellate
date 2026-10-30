@@ -28,7 +28,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 22 | B9 | med | undo during an in-flight delete can restore a deleted object | new | M |
 | 23 | D11 | med | replace-in-all undo writes old text with no hash check | new | M |
 | 24 | K1 | med | POST /auth/reset needs no credential and seals private notes | docs/roadmap/INBOX.md:37 | S |
-| 25 | K4 | med | body cap is 320 MB on every route, JSON included | new | M |
+| 25 | K4 | med | body cap is 320 MB on every route, JSON included | fixed 2026-10-30: JSON and untyped bodies capped at 16 MB, uploads and `/files/` keep 320 MB | M |
 | 26 | K5 | med | installer run silently with no signature or pinned hash | docs/roadmap/BACKLOG.md:398 | M |
 | 27 | K6 | med | SearXNG installed from unpinned master tarball | new | M |
 | 28 | K19 | med | restore disposes the engine with jobs in flight | new | M |

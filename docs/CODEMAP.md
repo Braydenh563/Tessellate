@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6838, frontend ids 2587, CSS sections 505, backend routes 632, backend modules 7346, test files 1568, tests 13650, plan headings 987.
+Counts: frontend functions 6838, frontend ids 2587, CSS sections 505, backend routes 632, backend modules 7347, test files 1568, tests 13651, plan headings 987.
 
 ## Frontend functions (6838)
 
@@ -11553,7 +11553,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7346)
+## Backend modules (7347)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -19539,33 +19539,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `issue` | src/tessellate/core/reset_code.py:85 |
 | `stderr_is_terminal` | src/tessellate/core/reset_code.py:77 |
 
-### src/tessellate/core/security.py (24)
+### src/tessellate/core/security.py (25)
 
 | Name | File:line |
 |---|---|
-| `BodyCapMiddleware` | src/tessellate/core/security.py:201 |
-| `CspForPage` | src/tessellate/core/security.py:547 |
+| `BodyCapMiddleware` | src/tessellate/core/security.py:210 |
+| `CspForPage` | src/tessellate/core/security.py:563 |
 | `HostCheckMiddleware` | src/tessellate/core/security.py:101 |
-| `OriginCheckMiddleware` | src/tessellate/core/security.py:314 |
-| `SecurityHeadersMiddleware` | src/tessellate/core/security.py:595 |
-| `UnsafeUrl` | src/tessellate/core/security.py:898 |
-| `_BodyTooLarge` | src/tessellate/core/security.py:192 |
-| `_backend_addresses` | src/tessellate/core/security.py:712 |
-| `_body_limit` | src/tessellate/core/security.py:271 |
+| `OriginCheckMiddleware` | src/tessellate/core/security.py:330 |
+| `SecurityHeadersMiddleware` | src/tessellate/core/security.py:611 |
+| `UnsafeUrl` | src/tessellate/core/security.py:914 |
+| `_BodyTooLarge` | src/tessellate/core/security.py:201 |
+| `_backend_addresses` | src/tessellate/core/security.py:728 |
+| `_body_limit` | src/tessellate/core/security.py:280 |
 | `_is_same_site` | src/tessellate/core/security.py:58 |
-| `_notebook_has_password` | src/tessellate/core/security.py:302 |
+| `_notebook_has_password` | src/tessellate/core/security.py:318 |
 | `_origin_of` | src/tessellate/core/security.py:44 |
-| `_refuses` | src/tessellate/core/security.py:776 |
-| `_resolve` | src/tessellate/core/security.py:704 |
-| `_session_is_live` | src/tessellate/core/security.py:297 |
-| `_too_large` | src/tessellate/core/security.py:263 |
-| `assert_public_url` | src/tessellate/core/security.py:959 |
-| `build_csp` | src/tessellate/core/security.py:448 |
-| `check_backend_url` | src/tessellate/core/security.py:806 |
-| `inline_script_hashes` | src/tessellate/core/security.py:424 |
-| `is_internal_address` | src/tessellate/core/security.py:902 |
-| `public_addresses` | src/tessellate/core/security.py:926 |
-| `register_auth` | src/tessellate/core/security.py:292 |
+| `_refuses` | src/tessellate/core/security.py:792 |
+| `_resolve` | src/tessellate/core/security.py:720 |
+| `_session_is_live` | src/tessellate/core/security.py:313 |
+| `_signed_in_limit` | src/tessellate/core/security.py:292 |
+| `_too_large` | src/tessellate/core/security.py:272 |
+| `assert_public_url` | src/tessellate/core/security.py:975 |
+| `build_csp` | src/tessellate/core/security.py:464 |
+| `check_backend_url` | src/tessellate/core/security.py:822 |
+| `inline_script_hashes` | src/tessellate/core/security.py:440 |
+| `is_internal_address` | src/tessellate/core/security.py:918 |
+| `public_addresses` | src/tessellate/core/security.py:942 |
+| `register_auth` | src/tessellate/core/security.py:308 |
 | `without_userinfo` | src/tessellate/core/security.py:88 |
 
 ### src/tessellate/core/startup_status.py (2)
@@ -20658,7 +20659,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13650)
+## Tests (13651)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21857,7 +21858,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_searxng_install.py | 42 |
 | tests/test_searxng_recovery.py | 33 |
 | tests/test_season_hemisphere_1027.py | 14 |
-| tests/test_security_boundaries.py | 60 |
+| tests/test_security_boundaries.py | 61 |
 | tests/test_security_hardening.py | 13 |
 | tests/test_seed_examples.py | 6 |
 | tests/test_select_focus.py | 2 |

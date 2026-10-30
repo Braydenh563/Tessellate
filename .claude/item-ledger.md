@@ -50,3 +50,5 @@ date | item | type | rung | rework | note
 2026-10-28 | E10 tasks as acts | feature | sonnet | 1 | 
 2026-10-28 | help text parity 1028 | docs | sonnet | 0 | 
 2026-10-28 | import cycles in commands.py | bugfix | opus | 0 | 
+2026-10-30 | INBOX 1452 left-drag select, right-drag pan | ui | opus | 0 | 
+2026-10-30 | INBOX 1451/1453/1455/1456 diagram, panel layer, offered open, spending lists | feature | opus | 0 | 
