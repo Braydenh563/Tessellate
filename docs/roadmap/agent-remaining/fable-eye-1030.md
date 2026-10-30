@@ -8,6 +8,8 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F1 (high): the spending sum reads only the newest 400 notes and says "no amounts" past them
 
+**Fixed 1ffd38b.** Agent `quantity-1030`.
+
 - Repro: live server, 483 notes, the ten notes with amounts older than 420 filler notes. `POST /chat/stream {"question":"How much have I spent?","answer_from":"notes","notes_only":true}` answers `I found no amounts spent in your notes.` With 63 notes the same question answered `$783 spent ... $753 net`. `What is my biggest expense?` becomes `None of your notes mention "biggest expense"`.
 - Root cause: `src/tessellate/api/routes_chat.py:1691` `manager.list_entries(session, limit=400)` (pinned first, newest first) is the only scan for `records_amounts`; nothing past 400 is read, and `composer_money._spent` (`composer_money.py:280`) then states the absence as a fact.
 - Class: every total, net, due, biggest and measure question (`composer_money.asks`) on a notebook over 400 notes, which is the ordinary case for a daily notebook. The oldest spending drops out first, so "this year" and "all time" answers go quietly wrong before "no amounts" appears.
@@ -29,12 +31,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F4 (medium): mixed currencies are dropped from the total without a word
 
+**Fixed 1ffd38b.** Agent `quantity-1030`.
+
 - Repro: three notes `Paid $100 for the lamp`, `Paid £50 for the train`, `Paid €20 for lunch`; `How much have I spent?` answers `You paid $100 for the lamp, going by Paid $100 for the lamp on 2 October.` The £50 and €20 are not mentioned. `What is my biggest expense?` also says the lamp.
 - Root cause: `src/tessellate/ai/composer_money.py:283-284` keeps only items whose symbol equals the first item's symbol.
 - Class: any notebook with two currencies (travel, a move, an overseas shop); "biggest expense" compares numbers inside one currency only.
 - Fix: group items by symbol and say each group (`$100 and £50 and €20`); for "biggest" say the largest per currency or decline to compare across them.
 
 ### F5 (medium): month sums ignore the year; "this year" and "last year" are not read
+
+**Fixed 34612fa.** Agent `quantity-1030`.
 
 - Repro: notes `Paid $100 for the lamp` (2026-10-02) and `Paid $400 for the boiler repair` (2025-10-11). `How much did I spend in October?` answers `$500 spent in October`; `How much have I spent this year?` and `How much did I spend last year?` both answer `$500`.
 - Root cause: `src/tessellate/ai/composer_money.py:138-156` `_month_asked` and `_in_month` hold a month number only; `_subject` strips `this year` and `last year` as window words (`recognise.without_windows`) and nothing reads them.
@@ -78,12 +84,16 @@ Counts: high 3, medium 7, low 5. Ranked by severity times reach.
 
 ### F11 (low): the money subject keeps the question's verbs ("on book is")
 
+**Fixed 1ffd38b.** Agent `quantity-1030`.
+
 - Repro: two notes `Paid $36 for my copy of Piranesi` and `Paid $20 for a used copy of Earthsea`; `How much book spending is actually recorded?` → `I found no amounts spent on book is in your notes.` On the live server with two matching items it read `You spent $72 on book is, going by Bookshop receipt`.
 - Root cause: `src/tessellate/ai/composer_money.py:231-237` `_subject` strips a leading preposition and `my` only; `is`, `actually`, `recorded` stay as the "subject as typed".
 - Class: every total question with words after the subject (`how much X spending is there`, `what did X cost me in total`).
 - Fix: cut `said` at the first auxiliary or adverb (`is|was|are|actually|really|recorded|logged`) and drop `_STOP` words from the typed form too.
 
 ### F12 (low): a subject matches by exact stem only, so "books" misses "Bookshop receipt"
+
+**Fixed 1ffd38b.** Agent `quantity-1030`.
 
 - Repro: the same two notes; `How much have I spent on books?` → `I found no amounts spent on books in your notes.`
 - Root cause: `src/tessellate/ai/composer_money.py:160-168` `_about` tests `st in have` on stems; `book` is not `bookshop`.
