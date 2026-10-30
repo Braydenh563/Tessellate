@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6880, frontend ids 2592, CSS sections 505, backend routes 632, backend modules 7545, test files 1603, tests 13958, plan headings 988.
+Counts: frontend functions 6880, frontend ids 2592, CSS sections 505, backend routes 632, backend modules 7547, test files 1603, tests 13960, plan headings 990.
 
 ## Frontend functions (6880)
 
@@ -11602,7 +11602,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7545)
+## Backend modules (7547)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -18484,20 +18484,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `strip_leftovers` | src/tessellate/core/backup.py:174 |
 | `verify_copy` | src/tessellate/core/backup.py:357 |
 
-### src/tessellate/core/backup_bundle.py (10)
+### src/tessellate/core/backup_bundle.py (11)
 
 | Name | File:line |
 |---|---|
-| `BundleError` | src/tessellate/core/backup_bundle.py:88 |
-| `_db_member` | src/tessellate/core/backup_bundle.py:60 |
-| `_nonce` | src/tessellate/core/backup_bundle.py:92 |
-| `_readable_preferences` | src/tessellate/core/backup_bundle.py:178 |
-| `_safe_target` | src/tessellate/core/backup_bundle.py:190 |
-| `build_zip` | src/tessellate/core/backup_bundle.py:145 |
-| `decrypt_file` | src/tessellate/core/backup_bundle.py:118 |
-| `encrypt_file` | src/tessellate/core/backup_bundle.py:96 |
-| `is_sealed` | src/tessellate/core/backup_bundle.py:113 |
-| `restore_zip` | src/tessellate/core/backup_bundle.py:201 |
+| `BundleError` | src/tessellate/core/backup_bundle.py:92 |
+| `_check_unpackable` | src/tessellate/core/backup_bundle.py:205 |
+| `_db_member` | src/tessellate/core/backup_bundle.py:64 |
+| `_nonce` | src/tessellate/core/backup_bundle.py:96 |
+| `_readable_preferences` | src/tessellate/core/backup_bundle.py:182 |
+| `_safe_target` | src/tessellate/core/backup_bundle.py:194 |
+| `build_zip` | src/tessellate/core/backup_bundle.py:149 |
+| `decrypt_file` | src/tessellate/core/backup_bundle.py:122 |
+| `encrypt_file` | src/tessellate/core/backup_bundle.py:100 |
+| `is_sealed` | src/tessellate/core/backup_bundle.py:117 |
+| `restore_zip` | src/tessellate/core/backup_bundle.py:216 |
 
 ### src/tessellate/core/bgtasks.py (11)
 
@@ -19442,15 +19443,16 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `referenced_names` | src/tessellate/core/media_gc.py:37 |
 | `usage_map` | src/tessellate/core/media_gc.py:138 |
 
-### src/tessellate/core/media_process.py (5)
+### src/tessellate/core/media_process.py (6)
 
 | Name | File:line |
 |---|---|
+| `_due` | src/tessellate/core/media_process.py:59 |
 | `_module` | src/tessellate/core/media_process.py:36 |
-| `media_text_for` | src/tessellate/core/media_process.py:124 |
-| `process_committed_upload` | src/tessellate/core/media_process.py:51 |
-| `process_committed_upload_ids` | src/tessellate/core/media_process.py:106 |
-| `process_referenced_uploads` | src/tessellate/core/media_process.py:92 |
+| `media_text_for` | src/tessellate/core/media_process.py:140 |
+| `process_committed_upload` | src/tessellate/core/media_process.py:67 |
+| `process_committed_upload_ids` | src/tessellate/core/media_process.py:122 |
+| `process_referenced_uploads` | src/tessellate/core/media_process.py:108 |
 
 ### src/tessellate/core/model_gate.py (3)
 
@@ -20916,7 +20918,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13958)
+## Tests (13960)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21020,7 +21022,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_background_registry_shutdown.py | 1 |
 | tests/test_background_rows_keep_their_space.py | 3 |
 | tests/test_backlog_status_rows.py | 6 |
-| tests/test_backup_bundle.py | 9 |
+| tests/test_backup_bundle.py | 10 |
 | tests/test_backup_copy.py | 8 |
 | tests/test_backup_details.py | 7 |
 | tests/test_backup_roundtrip_full.py | 2 |
@@ -21814,7 +21816,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_media_api.py | 54 |
 | tests/test_media_cookie.py | 20 |
 | tests/test_media_gc.py | 18 |
-| tests/test_media_process.py | 15 |
+| tests/test_media_process.py | 16 |
 | tests/test_media_size.py | 3 |
 | tests/test_media_size_backfill.py | 3 |
 | tests/test_meeting_card_glance.py | 4 |
@@ -22526,7 +22528,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (988)
+## Plan headings (990)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -23232,7 +23234,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:295 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:286 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -23335,6 +23337,8 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-28 (present bar picker, lag, movable panels, companion) | docs/roadmap/PLAN.md:304 |
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1588 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1704 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:667 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/UI_MODERNISATION_PLAN.md:1594 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/WHITEBOARD_PLAN.md:1708 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1093 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |

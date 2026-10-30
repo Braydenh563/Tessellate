@@ -1590,3 +1590,7 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 **1435** (Appearance quick panel): built e22c9f8, moved to HISTORY.md ("Moved from the plans, 2026-10-29 (appearance 1435)"); leftovers in `agent-remaining/appearance-1435.md`.
 
 **1436** (Wander and Drift, paused art as a picture, the cheaper-equivalent pass): built, moved to HISTORY.md ("Moved from the plans, 2026-10-29 (backgrounds 1436)"); left over in `agent-remaining/bgart-1436.md`.
+
+## Placed from INBOX, 2026-10-31
+
+- 1351 (the owner, 2026-10-25, verbatim in HISTORY): usable daily for life and uni, fast, reliable, accurate, no bug found in five minutes of use; standing, served by every polish and speed agent.

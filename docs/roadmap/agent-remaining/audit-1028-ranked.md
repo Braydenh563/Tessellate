@@ -178,8 +178,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
 | 173 | K11 | low | llm_api_key stored in plain text in preferences.json | new | M |
 | 174 | K13 | low | MCP server has no auth and offers write tools | docs/roadmap/BACKLOG.md:4396 | M |
-| 175 | K14 | low | backup restore has no per-file size or entry count cap | new | S |
-| 176 | K15 | low | xmind import trusts header file_size before reading member | new | S |
+| 175 | K14 | low | backup restore has no per-file size or entry count cap | fixed 1031 | S |
+| 176 | K15 | low | xmind import trusts header file_size before reading member | not reproduced 1031 (zipfile stops a member at its declared size: a 10 MB member declared 100 bytes reads 100, then Bad CRC) | S |
 | 177 | K16 | low | workspace isolation is an ORM filter, not a boundary | new | S |
 | 178 | E43 | low | tools execute runs any tool after confirm, unsigned | new | M |
 | 179 | B22 | low | eight console calls are the only error surfacing | fixed (this batch) | S |
