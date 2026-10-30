@@ -50,8 +50,10 @@ def test_measures_are_read_in_the_dimensions_base_unit():
     assert [(d, v, w) for d, v, w, _ in recognise.measures("Ran 5 km, then 800m, and 2 hours later 10k")] == [
         ("length", 5000.0, "km"), ("length", 800.0, "m"), ("time", 7200.0, "hours"), ("length", 10000.0, "k"),
     ]
-    #: Money is the amounts reader's, and "5 in the morning" is no length.
-    assert recognise.measures("$10k for the car at 5 in the morning") == []
+    #: "5 in the morning" is no length, and "$10k" is no distance (the
+    #: stated intent kept; money is now the "money" dimension of the same
+    #: reader, 2026-10-30 quantity engine step 1, so it is read as 10000 dollars).
+    assert [(d, v, w) for d, v, w, _ in recognise.measures("$10k for the car at 5 in the morning")] == [("money", 10000.0, "$")]
 
 
 @pytest.mark.parametrize(("question", "unit"), [("how far did I run", "km"), ("how many km have I run", "km"), ("how many kilometres did I run in total", "kilometres")])
@@ -77,3 +79,18 @@ def test_a_measure_question_is_not_a_money_one():
     assert not composer_money.asks("how many recipes have I saved")
     assert not composer_money.asks("how long is the drive to Sam's")
     assert composer_money.records_amounts("Ran 5 km on Tuesday")
+
+
+@pytest.mark.parametrize(("text", "read"), [
+    ("Groceries $86 on the 3rd, rent $1,200.50", [("money", 86.0, "$"), ("money", 1200.5, "$")]),
+    ("Flight £320 and a 12 km taxi", [("money", 320.0, "£"), ("length", 12000.0, "km")]),
+    ("Saved €1.5k, ran 5 km", [("money", 1500.0, "€"), ("length", 5000.0, "km")]),
+])
+def test_money_is_one_dimension_of_the_same_reader(text, read):
+    got = recognise.measures(text)
+    assert [(d, v, w) for d, v, w, _ in got] == read
+    assert all(m.end > m.at for m in got)
+
+
+def test_money_has_no_reader_of_its_own():
+    assert not hasattr(recognise, "amounts")

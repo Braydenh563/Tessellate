@@ -117,26 +117,31 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
     return re.sub(r"^my\b", "your", after.group("what").strip())
 
 
-_PRICE_MOVED = re.compile(r"\bfrom\s+(?:[A-Z]{3}\s*)?[$£€¥]?\s*\d[\d,.]*\s*k?\s+(?:down |up )?to\b", re.I)
+def _moved(clause: str, said: list) -> bool:
+    """"Discounted from $150 to $68": the first figure is where it was, the
+    last is where it went."""
+    between = clause[said[0].end:said[1].at]
+    return bool(re.search(r"\bfrom\s+(?:[A-Z]{3}\s*)?$", clause[:said[0].at], re.I) and re.fullmatch(r"\s*(?:down |up )?to\s*(?:[A-Z]{3}\s*)?", between, re.I))
 
 
-def _clause_items(view, sentence, refunds: bool) -> list[Item]:  # noqa: ANN001
+def _read(text: str, dimension: str = "money") -> list:
+    """The measures of one dimension in `text`, left to right: money is read
+    by the same reader as a distance or a stretch of time."""
+    return [m for m in recognise.measures(text) if m[0] == dimension]
+
+
+def _clause_items(view, sentence, refunds: bool, dimension: str = "money") -> list[Item]:  # noqa: ANN001
     found: list[Item] = []
     last = ""
     for clause in re.split(r"[;,.](?!\d)|\band\b", sentence.text):
-        said = recognise.amounts(clause)
+        said = _read(clause, dimension)
         if not said or bool(_REFUND.search(clause)) != refunds or (not refunds and _NOT_SPENT.search(clause)):
             continue
         #: "Discounted from $150 to $68": what was paid is where the price went.
-        sign, value, at = said[-1] if len(said) > 1 and _PRICE_MOVED.search(clause) else said[0]
-        tail = re.match(r"[$£€]?\s*[\d,.]+", clause[at:])
-        last = _what(clause, at, at + (tail.end() if tail else 1), last) or composer_lists._title(view)  # noqa: SLF001
-        found.append(Item(last, sign, value, view, sentence))
+        pick = said[-1] if len(said) > 1 and _moved(clause, said) else said[0]
+        last = _what(clause, pick.at, pick.end, last) or composer_lists._title(view)  # noqa: SLF001
+        found.append(Item(last, pick[2], pick[1], view, sentence))
     return found
-
-
-def _items_of(view, sentence) -> list[Item]:  # noqa: ANN001
-    return _clause_items(view, sentence, refunds=False)
 
 
 def _month_asked(rest: str, today: date) -> int | None:
@@ -204,8 +209,8 @@ def _due_by(views: list, month: int | None, subject: list[str], test) -> list[It
         for sentence in view.sentences:
             if _about(view, sentence, subject, test) and _STILL_DUE.search(sentence.text) and _SPENDING.search(" ".join(s.text for s in view.sentences)):
                 for clause in re.split(r"[;,.](?!\d)", sentence.text):
-                    if (said := recognise.amounts(clause)) and _STILL_DUE.search(sentence.text) and re.search(r"\b(?:another|balance|due|unpaid)\b", clause, re.I):
-                        due.append(Item(composer_lists._title(view), said[0][0], said[0][1], view, sentence))  # noqa: SLF001
+                    if (said := _read(clause)) and _STILL_DUE.search(sentence.text) and re.search(r"\b(?:another|balance|due|unpaid)\b", clause, re.I):
+                        due.append(Item(composer_lists._title(view), said[0][2], said[0][1], view, sentence))  # noqa: SLF001
     return due
 
 
@@ -249,7 +254,7 @@ def _one_of_several(items: list, views: list, month: int | None, subject: list[s
     """One amount in a note of several, with no refund or balance beside it:
     nothing to add up, so the digest says it with its week and what sits
     beside it (gold answer 15)."""
-    if len(items) != 1 or len(recognise.amounts(" ".join(s.text for s in items[0].view.sentences))) <= 1:
+    if len(items) != 1 or len(_read(" ".join(s.text for s in items[0].view.sentences))) <= 1:
         return False
     return not _items(views, month, subject, refunds=True) and not _still_due(views, month, subject)
 
@@ -549,7 +554,7 @@ def sums_a_measure(question: str) -> bool:
 
 def records_amounts(text: str) -> bool:
     """A note that names spending or a refund and holds an amount, or holds a measure."""
-    return bool(recognise.amounts(text) and (_SPENDING.search(text) or _REFUND.search(text))) or bool(recognise.measures(text))
+    return bool(_read(text) and (_SPENDING.search(text) or _REFUND.search(text))) or any(m[0] != "money" for m in recognise.measures(text))
 
 
 def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
