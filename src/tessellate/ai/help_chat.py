@@ -2955,11 +2955,22 @@ _INJECTION = re.compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )
 _WHO_IS_MY = re.compile(r"^(?:who(?:'s| is| are| was)|what(?:'s| is) the name of) (?:my|our) \w+(?: \w+)?[?.!]*$", re.I)
 
 
+#: A request for the person's own list ("what are my tasks", "show my
+#: reminders", "what tasks do I have"): the contents are in Chat, and a keyword
+#: match with the help ("tasks" is Mind map controls) is no answer (A18).
+_ITEMS = r"(?:open |due |overdue |upcoming |current |pending )?(?:tasks?|to-?dos?|to do(?: list)?|todo list|reminders?)"
+_MY_ITEMS = re.compile(
+    rf"^\s*(?:(?:what|which)(?: are| is|'s)?(?: on)?|show|list|get|see|tell me|give me)(?: me)?(?: all)?(?: of)? (?:my|our) {_ITEMS}\b"
+    rf"|^\s*(?:what|which) {_ITEMS} do i have\b",
+    re.I,
+)
+
+
 def _off_topic(question: str) -> bool:
     """A request the help text cannot answer however a keyword in it matches:
     a prompt injection, or a question about a person in the person's life
     ("who is my sister" matched the Entities topic). Neither is the app (A18)."""
-    return bool(_INJECTION.search(question) or _WHO_IS_MY.match(question.strip()))
+    return bool(_INJECTION.search(question) or _WHO_IS_MY.match(question.strip()) or _MY_ITEMS.match(question))
 
 
 def topics_for(question: str, tab: str | None = None) -> list[dict]:
@@ -3001,6 +3012,11 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     topics = _aliased_topics(question) or _reading_topics(question)
     if not tab or topics or _outside_the_app(question):
         return topics
+    return _tab_topics(tab, topics)
+
+
+def _tab_topics(tab: str, topics: list[dict]) -> list[dict]:
+    """`topics` with the open tab's own topics after them, up to `MAX_TOPICS`."""
     seen = {topic["id"] for topic in topics}
     by_id = {topic["id"]: topic for topic in HELP_TOPICS}
     for topic_id in TAB_TOPICS.get(tab, ()):

@@ -211,6 +211,17 @@ def test_the_open_tab_answers_only_what_points_at_it():
         assert help_chat.topics_for(question, "dashboard"), question
 
 
+def test_a_request_for_the_persons_own_list_is_not_a_help_topic():
+    """A18: "what are my tasks" matched Mind map controls; the list is Chat's, the Guide says so honestly."""
+    from tessellate.ai import help_chat
+
+    for question in ("what are my tasks", "show my tasks", "what tasks do I have", "what's on my to do list", "what are my reminders", "list my tasks"):
+        assert not help_chat.topics_for(question, "mindmap"), question
+        assert "nothing in the app's own help text" in help_chat.offline_answer(question, "mindmap", "Mind map")["content"], question
+    for question in ("how do I see my tasks", "how do I set a reminder", "what are reminders"):
+        assert help_chat.topics_for(question, "mindmap"), question
+
+
 def test_the_web_tools_are_not_on_the_wire_for_a_first_person_question(monkeypatch, app_state):
     """A3: the model holding the prompt "Sara is my sister" is not also handed web_search."""
     from tessellate.ai import agent
@@ -235,3 +246,26 @@ def test_the_web_tools_are_not_on_the_wire_for_a_first_person_question(monkeypat
     assert "web_search" not in seen[0] and "read_url" not in seen[0] and "search_notes" in seen[0]
     #: The same turn with the guard lifted is offered both (the control).
     assert "web_search" in seen[-1] and "read_url" in seen[-1]
+
+
+def test_a_web_search_says_its_words_before_they_leave(ai_client, fake_ollama, monkeypatch):
+    """A2: the agent streams the query as a status event ahead of the tool, and the client puts it in the progress line."""
+    import json as _json
+
+    from tessellate.search import websearch
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+
+    seen: list[str] = []
+    monkeypatch.setattr(websearch, "search_web", lambda q, **kw: seen.append(q) or [])
+    ai_client.put("/preferences", json={"web_search_enabled": True})
+    fake_ollama.tool_script = [[{"name": "web_search", "arguments": {"query": "tide times lisbon"}}]]
+    with ai_client.stream("POST", "/chat/stream", json={"question": "use your tools to check tide times in lisbon", "use_tools": True}) as response:
+        events = [_json.loads(line) for line in response.iter_lines() if line]
+    kinds = [e["type"] for e in events]
+    said = next(i for i, e in enumerate(events) if e.get("stage") == "web")
+    assert events[said]["query"] == "tide times lisbon"
+    assert not seen or said < kinds.index("tool")
+    js = (root / "frontend" / "js" / "capture-ask.js").read_text("utf-8")
+    assert events[said]["said"] == "searching the web for “tide times lisbon”" and "event.said" in js

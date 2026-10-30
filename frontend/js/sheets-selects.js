@@ -2153,7 +2153,6 @@ async function openConversation(id) {
     renderChatEmptyState();
   }
   if (lastQuestionText) lastChatQuestion = lastQuestionText;
-  //: The loop above filled the turns after the header first drew (A20).
   renderChatTurnCount();
   lazyScript("/js/chat-time.js").then(() => stampChatTimes(full.messages));
   loadConversationList();

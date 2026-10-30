@@ -347,7 +347,6 @@ document.addEventListener("click", (event) => {
   if (event.target.closest(".chat-dock-more, .action-menu, .select-menu, .sheet-overlay")) return;
   closeChatDockMore();
 });
-//: Escape closes it from anywhere (A27).
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape" || event.defaultPrevented || !chatDockMoreOpen()) return;
   if (document.querySelector(".sheet-overlay:not(.hidden), .action-menu:not(.hidden)")) return;
@@ -1375,7 +1374,6 @@ function renderWebSearchToggle() {
   //: which works with no model at all, so greying it would take browsing away
   //: to say something a title can say.
   button.dataset.enabledTitle ??= button.title;
-  //: In Ask mode a search is a tool call that does not run: say where it does (A6).
   button.title = !agentModeAvailable()
     ? "Browse the web here. With no model, answers come from your notes only."
     : on && !$("tools-toggle").checked

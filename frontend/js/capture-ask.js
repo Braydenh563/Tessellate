@@ -2488,7 +2488,7 @@ function streamChat(options) {
   return streamChatEvents({
     ...options,
     onStatus: (event) => {
-      phase("reading");
+      phase(event.said ? "tool" : "reading", event.said);
       return options.onStatus?.(event);
     },
     onMeta: (meta) => {
@@ -3006,11 +3006,7 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    if (question.length <= 500) {
-      ensureModule("askHistory")
-        .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
-        .catch(() => {});
-    }
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.

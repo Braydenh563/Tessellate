@@ -3166,7 +3166,6 @@ function chatDeleteUndo(gone, after = () => {}) {
 
 //: **Every chat write is on the undo bar** (CHAT_PLAN 8 row 5): the helpers
 //: are chat-undo.js, fetched on the first write, out of the boot scripts.
-//: 120 characters at most; blank keeps the title (A33).
 async function promptTitle(message, initial) {
   const asked = promptDialog(message, initial);
   document.querySelector(".prompt-card input").maxLength = 120;

@@ -114,7 +114,6 @@ function chatMessageActions(actions) {
 //:
 //: The order is Odysseus's footer order, with this app's own capture actions
 //: after it: what you do to the *answer* first, what you do with it second.
-//: Source marks as " [n]", not digits run into words (A21).
 function bodyTextWithCitations(node) {
   const links = [...node.querySelectorAll(".answer-citation-link")];
   const digits = links.map((l) => l.textContent);
