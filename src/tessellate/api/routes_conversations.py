@@ -109,6 +109,11 @@ class TurnBody(BaseModel):
     #: same plain text, so the answer's whole basis was invisible after the
     #: fact. Same fix as images and documents above, one release later.
     note_ids: list[int] | None = None
+    #: Mind maps attached to this question. Kept apart from `note_ids` for the
+    #: reason the request keeps them apart (a board's text is one heading; the
+    #: model reads its outline), and stored so a reloaded chat draws the same
+    #: card the send did (INBOX 1460: "Restored chats (reload) render the same").
+    board_ids: list[int] | None = Field(default=None, max_length=4)
     #: Which mode actually answered this turn, Ask (read-only) or Request
     #: (tools allowed). Reported directly: a conversation can span mode
     #: switches, and each past message should say what answered it, not what
@@ -175,6 +180,8 @@ def _user_message(turn: TurnBody, asked: datetime) -> dict:
         user["file_ids"] = turn.file_ids
     if turn.note_ids:
         user["note_ids"] = turn.note_ids
+    if turn.board_ids:
+        user["board_ids"] = turn.board_ids
     followup_of = (turn.followup_of or "").strip()
     if followup_of:
         user["followup_of"] = followup_of
@@ -472,7 +479,8 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
     doc_ids = {i for m in messages for i in (m.get("document_ids") or [])}
     note_ids = {i for m in messages for i in (m.get("note_ids") or [])}
     file_ids = {i for m in messages for i in (m.get("file_ids") or [])}
-    if not media_ids and not doc_ids and not note_ids and not file_ids:
+    board_ids = {i for m in messages for i in (m.get("board_ids") or [])}
+    if not (media_ids or doc_ids or note_ids or file_ids or board_ids):
         return
 
     media = {}
@@ -506,23 +514,33 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
                 "name": attachment.filename,
             }
 
+    from tessellate.entry import manager as entry_manager
+    from tessellate.entry.properties import strip as strip_properties
+
     notes = {}
-    if note_ids:
-        for entry in session.query(Entry).filter(Entry.id.in_(note_ids)).all():
-            # A binned or private note is treated exactly like a deleted
-            # upload: the chip disappears. Listing a private note's first line
-            # in a conversation would put it back on screen in the one place
-            # the private-notebook rule cannot reach.
-            if entry.is_deleted or entry.is_private:
-                continue
-            first_line = (entry.content or "").strip().splitlines()
-            notes[entry.id] = {
+    maps = {}
+    for entry in (
+        session.query(Entry).filter(Entry.id.in_(note_ids | board_ids)).all() if note_ids or board_ids else []
+    ):
+        # A binned or private note is treated exactly like a deleted
+        # upload: the chip disappears. Listing a private note's first line
+        # in a conversation would put it back on screen in the one place
+        # the private-notebook rule cannot reach. A map is held to the same.
+        if entry.is_deleted or entry.is_private:
+            continue
+        if entry.id in note_ids:
+            # Notes have no title of their own, so the card says what the
+            # note says. The *words* are the page's to make (`noteNamePlain`,
+            # which also reads the Markdown), exactly as at send time; here is
+            # only the first line after the properties block, uncut (bounded
+            # for the wire), so send and reload cannot name one note twice.
+            body_lines = [ln.strip() for ln in strip_properties(entry.content or "").splitlines() if ln.strip()]
+            notes[entry.id] = {"id": entry.id, "kind": "note", "name": body_lines[0][:400] if body_lines else ""}
+        if entry.id in board_ids:
+            maps[entry.id] = {
                 "id": entry.id,
-                "kind": "note",
-                # Notes have no title of their own, so the chip says what the
-                # note says: the same first-line preview the picker uses, for
-                # the same reason: it is how the user recognises it.
-                "name": (first_line[0][:60] if first_line else f"Note #{entry.id}"),
+                "kind": "map",
+                "name": entry_manager.extract_title(entry.content) or "Mind map",
             }
 
     for message in messages:
@@ -534,6 +552,8 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
             files[i] for i in (message.get("file_ids") or []) if i in files
         ] + [
             notes[i] for i in (message.get("note_ids") or []) if i in notes
+        ] + [
+            maps[i] for i in (message.get("board_ids") or []) if i in maps
         ]
         if attachments:
             message["attachments"] = attachments

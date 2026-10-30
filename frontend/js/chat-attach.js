@@ -1806,6 +1806,7 @@ async function chatSendTurn(preset, opts = {}) {
         document_ids: sentDocuments.length ? sentDocuments : null,
         file_ids: sentFiles.length ? sentFiles : null,
         note_ids: sentAttachments.length ? sentAttachments : null,
+        board_ids: sentBoards.length ? sentBoards : null,
         followup_of: followupOf,
         persona: savedPersona(sentPersona),
       };
@@ -2514,6 +2515,7 @@ async function chatSendTurn(preset, opts = {}) {
       // build one prompt and then forgotten, the bubble showed no sign the
       // answer had been given a note to read.
       note_ids: sentAttachments.length ? sentAttachments : null,
+      board_ids: sentBoards.length ? sentBoards : null,
       followup_of: followupOf,
       //: The thumbnails' words, so a reopened chat keeps them (INBOX 502).
       picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,

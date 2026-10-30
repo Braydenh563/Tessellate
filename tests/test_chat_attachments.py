@@ -350,3 +350,66 @@ def test_a_retrieved_note_with_words_of_its_own_does_not(ai_client, fake_ollama,
     ai_client.post("/entries", json={"content": f"{words}\n\n![](/media/side123.png)"})
     ai_client.post("/chat", json={"question": "what are my feature ideas for the timeline?"})
     assert "SIDEBAR READING" not in _prompt_text(fake_ollama)
+
+
+# --- maps, and a note's name, on reload (INBOX 1460) ---------------------------
+#
+# "Restored chats (reload) render the same." A mind map rides `board_ids`, a
+# field of its own, and the turn dropped it, so a reloaded chat lost the card.
+# A note's name was the server's first line cut at 60; the page now makes the
+# name (`noteNamePlain`) from the same line it was given at send time.
+
+
+def test_the_page_saves_the_maps_with_both_turn_paths():
+    assert app_js_text().count("board_ids: sentBoards") == 2
+
+
+def test_a_reloaded_turn_brings_its_mind_map_back_as_a_card(client):
+    from tests.test_mindmap import _map
+
+    board = _map(client, name="Thesis")
+    made = client.post(
+        "/conversations",
+        json={"question": "what is on it?", "answer": "An argument.", "board_ids": [board["id"]]},
+    )
+    assert made.status_code == 201, made.text
+    user = client.get(f"/conversations/{made.json()['id']}").json()["messages"][0]
+    assert user["board_ids"] == [board["id"]]
+    assert user["attachments"] == [{"id": board["id"], "kind": "map", "name": "Thesis"}]
+
+
+def test_a_binned_map_loses_its_card_on_reload(client):
+    from tests.test_mindmap import _map
+
+    board = _map(client, name="Gone")
+    made = client.post(
+        "/conversations", json={"question": "q", "answer": "a", "board_ids": [board["id"]]}
+    )
+    client.delete(f"/entries/{board['id']}")
+    full = client.get(f"/conversations/{made.json()['id']}").json()
+    assert "attachments" not in full["messages"][0]
+
+
+def test_a_reloaded_note_is_named_by_the_line_the_page_names_it_from(ai_client, session):
+    """Titled or not, the server hands back the whole first line after the
+    properties block, not a 60-character cut, so `noteNamePlain` draws the same
+    words it drew at send time; a note with no words comes back unnamed and
+    the page says "Untitled note"."""
+    from tessellate.core.database import Entry
+
+    long_title = "# " + "A heading that runs well past sixty characters " * 2
+    titled = Entry(content=f"---\ntags: x\n---\n\n{long_title}\nbody line")
+    plain = Entry(content="no heading just words that also run on past the old sixty character cut")
+    blank = Entry(content="  \n \n")
+    session.add_all([titled, plain, blank])
+    session.commit()
+
+    made = ai_client.post(
+        "/conversations",
+        json={"question": "q", "answer": "a", "note_ids": [titled.id, plain.id, blank.id]},
+    )
+    cards = ai_client.get(f"/conversations/{made.json()['id']}").json()["messages"][0]["attachments"]
+    names = {c["id"]: c["name"] for c in cards}
+    assert names[titled.id] == long_title.strip()
+    assert names[plain.id] == plain.content
+    assert names[blank.id] == ""
