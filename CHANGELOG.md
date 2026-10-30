@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards and maps: a left drag on empty canvas draws the selection box again, a right drag pans and a plain right click still opens the menu (INBOX 1452).
 - Chat and Ask: a list of spending asked as "what expenses have I recorded", "list my expenses" or "what have I bought" names every purchase and its total; a price that moved counts what was paid (INBOX 1456). A note the app offered to open is opened, with a model up too (INBOX 1455).
 - Boards: Insert, Mermaid diagram adds a live diagram that keeps its source, draws as in a note, edits on double-click with a preview, fits its drawing's shape, and turns into shapes on request (INBOX 1451).
 - The Appearance panel sits over every bar the page pins; the notes dock drew across it (INBOX 1453).
