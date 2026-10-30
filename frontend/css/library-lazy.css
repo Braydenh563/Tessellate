@@ -3351,6 +3351,40 @@ body.printing-doc #doc-preview p,
   opacity: 1;
 }
 
+/* The same frame round a note's picture where it is read (image-layout.js:
+   a card, the timeline's note view, chat, a board card). A block that is only
+   as wide as the picture, so a plain picture stacks as it always did; a
+   figure's alignment moves the block, not the text inside it. */
+.md-picture {
+  display: block;
+  width: fit-content;
+  margin: var(--space-3) 0;
+}
+
+.md-picture > .entry-inline-image {
+  margin: 0;
+}
+
+.cm-md-figure.cm-md-figure-center > :is(.md-picture, .thumb-wrap) {
+  margin-inline: auto;
+}
+
+.cm-md-figure.cm-md-figure-right > :is(.md-picture, .thumb-wrap) {
+  margin-inline-start: auto;
+}
+
+/* A thumbnail has its remove button at the top right; the align button waits
+   at the top left. */
+.thumb-wrap > .cm-md-image-align {
+  right: auto;
+  left: var(--space-1);
+}
+
+.thumb-wrap:hover > .cm-md-image-align,
+.thumb-wrap:focus-within > .cm-md-image-align {
+  opacity: 1;
+}
+
 @media (pointer: coarse) {
   .cm-md-image-grip {
     width: 24px;

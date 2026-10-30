@@ -774,7 +774,7 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     $("lock-cancel").classList.remove("hidden");
     $("lock-error").textContent = "";
     $("lock-password").value = "";
-    $("lock-password").setAttribute("type", "password");
+    $("lock-password").type = "password";
     $("lock-password").setAttribute("aria-label", "Password");
     $("lock-password").placeholder = "Password"; // a prompt never takes the PIN
     $("lock-password").autocomplete = "current-password";
@@ -1088,13 +1088,7 @@ function startApp() {
     
     // Always check battery efficient mode regardless of ui_state seeding
     const indicator = $("power-saver-indicator");
-    if (indicator) {
-      if (prefsCache?.battery_efficient_mode) {
-        indicator.classList.remove("hidden");
-      } else {
-        indicator.classList.add("hidden");
-      }
-    }
+    indicator?.classList.toggle("hidden", !prefsCache?.battery_efficient_mode);
     // The bell's own icon reads the mute preference, re-render now that
     // prefsCache actually has it, rather than leaving the pre-load default
     // (unmuted) on screen until the notifications panel happens to be opened.
@@ -1342,7 +1336,7 @@ function setLabel(el, label) {
 //: over it at each caller.
 function settingsModalOpen() {
   const modal = $("settings-modal");
-  return Boolean(modal) && !modal.classList.contains("hidden");
+  return !!modal && !modal.classList.contains("hidden");
 }
 
 //: A chip's words are always a `.ph-text` span (DESIGN.md, "A chip"): bare
@@ -1362,7 +1356,7 @@ function chip(text, extraClass = "", onClick = null) {
   if (onClick) {
     span.classList.add("chip-interactive");
     span.setAttribute("role", "button");
-    span.setAttribute("tabindex", "0");
+    span.tabIndex = 0;
     span.addEventListener("click", onClick);
     span.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -1904,6 +1898,7 @@ const LAZY_MODULES = {
     "/js/undo-store.js",
     //: The Attach picker's row, drawn synchronously by the board pickers.
     "/js/pick-row.js",
+    "/js/image-layout.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
     "/js/documents.js",
