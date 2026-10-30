@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: the media ticket and device token tables are read as snapshots, so a sign-in on one device during a sweep on another no longer fails (audit 1028 K23).
 - Notes: saving a note again (centring or resizing an image) no longer reads its pictures and PDFs again; each reader runs once per upload (INBOX 1465).
 - Backup restore (audit 1028 K14): a zip of more than 200,000 files, or one larger than the free space on the notebook's disk, is refused before anything is written, with the amount to free.
 - Chat and models (audit 1028 E35, E36, E39, E40): a finished answer is said once to a screen reader; a saved chat in the sidebar opens with Enter or Space; a model download that goes silent for five minutes ends instead of freezing its bar, and a layer bigger than the free space stops with the amount to free; "Search by meaning is not working" waits while the download question is up, so one toast says it, not two.

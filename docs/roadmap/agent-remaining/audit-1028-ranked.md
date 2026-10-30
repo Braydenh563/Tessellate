@@ -200,7 +200,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 194 | K20 | low | malformed folder sidecar raises KeyError and aborts import | fixed (already: a record with no file is skipped; reconciled 2026-10-30) | S |
 | 195 | K21 | low | DDL default with an apostrophe breaks startup | fixed (this batch) | S |
 | 196 | K22 | low | server-local date.today used for streak, not user_now | fixed in part (journal streak and utilities; composer.py's own date.today() calls are the composer agent's) | M |
-| 197 | K23 | low | token and ticket dicts mutated from several threads | new | S |
+| 197 | K23 | low | token and ticket dicts mutated from several threads | fixed 1031 (snapshots and pop) | S |
 | 198 | K38 | low | media-link tickets reusable and in URL query string | new | S |
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
 | 200 | E47 | low | no search of chats in the chat sidebar | new | S |
@@ -271,7 +271,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 265 | B38 | low | single-object PUTs may still serve multi-select nudge | new | S |
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
 | 267 | K32 | low | tabs poll all reminders every minute for a due check | won't fix (the poll already asks only open reminders; the timer, badge and early alerts need the rows, 2026-10-30) | S |
-| 268 | K33 | low | token sweep runs on every authenticated request | new | S |
+| 268 | K33 | low | token sweep runs on every authenticated request | won't fix 1031: the per-request sweep is what drops the key the moment the last granted session expires (test_vault_sessions); O(tokens) with a handful of tokens | S |
 | 269 | K34 | low | 200 MB uploads read into memory as bytes | new | M |
 | 270 | K35 | low | startup PRAGMA table_info for every table each launch | new | S |
 | 271 | K36 | low | list_boards and list_images run per-board queries | new | M |

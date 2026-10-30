@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7531, test files 1602, tests 13927, plan headings 989.
+Counts: frontend functions 6880, frontend ids 2589, CSS sections 505, backend routes 632, backend modules 7531, test files 1602, tests 13927, plan headings 990.
 
 ## Frontend functions (6880)
 
@@ -10998,7 +10998,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 |  | POST | `create_type` | src/tessellate/api/routes_relations.py:76 |
 |  | POST | `start` | src/tessellate/api/routes_bench.py:200 |
 | `/` | GET | `get_whiteboard_state` | src/tessellate/api/routes_whiteboard.py:991 |
-| `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1549 |
+| `/account` | GET | `account` | src/tessellate/api/routes_auth.py:1552 |
 | `/activity` | GET | `list_activity` | src/tessellate/api/routes_tasks.py:979 |
 | `/activity/{job_id:path}/stop` | POST | `stop_activity` | src/tessellate/api/routes_tasks.py:1060 |
 | `/all` | GET | `ranked` | src/tessellate/api/routes_resurface.py:110 |
@@ -11010,7 +11010,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/audit` | GET | `audit_log` | src/tessellate/api/routes_settings.py:1754 |
 | `/audit/export.csv` | GET | `audit_export_csv` | src/tessellate/api/routes_settings.py:1845 |
 | `/auto` | PUT | `tidy_auto` | src/tessellate/api/routes_tidy.py:60 |
-| `/auto-session` | POST | `auto_session` | src/tessellate/api/routes_auth.py:1030 |
+| `/auto-session` | POST | `auto_session` | src/tessellate/api/routes_auth.py:1033 |
 | `/backups` | GET | `list_backups` | src/tessellate/api/routes_backups.py:111 |
 | `/backups` | POST | `backup_now` | src/tessellate/api/routes_backups.py:120 |
 | `/backups/bundle` | POST | `export_bundle` | src/tessellate/api/routes_backups.py:241 |
@@ -11057,7 +11057,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/bulk` | POST | `bulk_action` | src/tessellate/api/routes_learned.py:282 |
 | `/bulk` | POST | `bulk_edit_tags` | src/tessellate/api/routes_tags.py:104 |
 | `/capabilities` | GET | `capabilities` | src/tessellate/api/routes_capabilities.py:77 |
-| `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1589 |
+| `/change-password` | POST | `change_password` | src/tessellate/api/routes_auth.py:1592 |
 | `/changelog` | GET | `changelog` | src/tessellate/api/app.py:1551 |
 | `/changes` | GET | `entry_changes` | src/tessellate/api/routes_entries.py:2609 |
 | `/charts/question` | POST | `chart_for_question` | src/tessellate/api/routes_vision.py:390 |
@@ -11211,20 +11211,20 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/jobs/passes/{kind}/run` | POST | `run_pass_now` | src/tessellate/api/routes_tasks.py:603 |
 | `/jobs/stream` | GET | `jobs_stream` | src/tessellate/api/routes_tasks.py:647 |
 | `/jobs/{job_id}/cancel` | POST | `cancel_job` | src/tessellate/api/routes_tasks.py:625 |
-| `/lan-access` | GET | `lan_access` | src/tessellate/api/routes_auth.py:1207 |
-| `/lan-access` | POST | `set_lan_access` | src/tessellate/api/routes_auth.py:1443 |
-| `/lan-certificate` | POST | `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1234 |
-| `/lan-certificate.pem` | GET | `download_lan_certificate` | src/tessellate/api/routes_auth.py:1213 |
-| `/lan-devices/{device_id}` | DELETE | `forget_device` | src/tessellate/api/routes_auth.py:1395 |
-| `/lan-devices/{device_id}/{verdict}` | POST | `answer_device` | src/tessellate/api/routes_auth.py:1374 |
-| `/lan-networks/allow` | POST | `allow_this_network` | src/tessellate/api/routes_auth.py:1285 |
-| `/lan-networks/{key}` | DELETE | `forget_network` | src/tessellate/api/routes_auth.py:1305 |
-| `/lan-networks/{key}/trust` | POST | `trust_network` | src/tessellate/api/routes_auth.py:1316 |
-| `/lan-networks/{key}/untrust` | POST | `untrust_network` | src/tessellate/api/routes_auth.py:1335 |
-| `/lan-notice/dismiss` | POST | `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1345 |
-| `/lan-options` | POST | `set_lan_option` | src/tessellate/api/routes_auth.py:1353 |
+| `/lan-access` | GET | `lan_access` | src/tessellate/api/routes_auth.py:1210 |
+| `/lan-access` | POST | `set_lan_access` | src/tessellate/api/routes_auth.py:1446 |
+| `/lan-certificate` | POST | `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1237 |
+| `/lan-certificate.pem` | GET | `download_lan_certificate` | src/tessellate/api/routes_auth.py:1216 |
+| `/lan-devices/{device_id}` | DELETE | `forget_device` | src/tessellate/api/routes_auth.py:1398 |
+| `/lan-devices/{device_id}/{verdict}` | POST | `answer_device` | src/tessellate/api/routes_auth.py:1377 |
+| `/lan-networks/allow` | POST | `allow_this_network` | src/tessellate/api/routes_auth.py:1288 |
+| `/lan-networks/{key}` | DELETE | `forget_network` | src/tessellate/api/routes_auth.py:1308 |
+| `/lan-networks/{key}/trust` | POST | `trust_network` | src/tessellate/api/routes_auth.py:1319 |
+| `/lan-networks/{key}/untrust` | POST | `untrust_network` | src/tessellate/api/routes_auth.py:1338 |
+| `/lan-notice/dismiss` | POST | `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1348 |
+| `/lan-options` | POST | `set_lan_option` | src/tessellate/api/routes_auth.py:1356 |
 | `/lan-qr.svg` | GET | `lan_qr` | src/tessellate/api/routes_privacy.py:132 |
-| `/lan-watch` | GET | `lan_watch` | src/tessellate/api/routes_auth.py:1413 |
+| `/lan-watch` | GET | `lan_watch` | src/tessellate/api/routes_auth.py:1416 |
 | `/latest` | GET | `latest` | src/tessellate/api/routes_night.py:84 |
 | `/library` | GET | `library` | src/tessellate/api/routes_library.py:1056 |
 | `/link-offers` | POST | `document_link_offers` | src/tessellate/api/routes_documents.py:347 |
@@ -11233,8 +11233,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/link-suggestions` | GET | `link_suggestions` | src/tessellate/api/routes_entries.py:1815 |
 | `/link-suggestions/reasons` | POST | `link_suggestion_reasons` | src/tessellate/api/routes_entries.py:2209 |
 | `/links/backfill-reasons` | POST | `backfill_link_reasons` | src/tessellate/api/routes_entries.py:2257 |
-| `/lock` | POST | `lock` | src/tessellate/api/routes_auth.py:1511 |
-| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2197 |
+| `/lock` | POST | `lock` | src/tessellate/api/routes_auth.py:1514 |
+| `/lock-all` | POST | `lock_all` | src/tessellate/api/routes_auth.py:2200 |
 | `/logs` | DELETE | `clear_server_logs` | src/tessellate/api/routes_settings.py:2408 |
 | `/logs` | GET | `server_logs` | src/tessellate/api/routes_settings.py:2305 |
 | `/logs/client` | POST | `record_client_error` | src/tessellate/api/routes_settings.py:2341 |
@@ -11247,8 +11247,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/maps/from-notes` | POST | `map_from_notes` | src/tessellate/api/routes_map_from_notes.py:258 |
 | `/maps/from-text` | POST | `map_from_text` | src/tessellate/api/routes_map_from_notes.py:474 |
 | `/media` | GET | `list_media` | src/tessellate/api/routes_files.py:1456 |
-| `/media-link` | POST | `media_link` | src/tessellate/api/routes_auth.py:1016 |
-| `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:999 |
+| `/media-link` | POST | `media_link` | src/tessellate/api/routes_auth.py:1019 |
+| `/media-session` | POST | `media_session` | src/tessellate/api/routes_auth.py:1002 |
 | `/media/board-thumb/{board_id}` | GET | `get_thumbnail` | src/tessellate/api/routes_whiteboard.py:2505 |
 | `/media/meta/{filename}` | GET | `media_meta` | src/tessellate/api/routes_files.py:1613 |
 | `/media/orphans` | DELETE | `clean_orphaned_media` | src/tessellate/api/routes_files.py:1588 |
@@ -11309,11 +11309,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/openapi.json` | GET | `openapi_schema` | src/tessellate/api/app.py:1448 |
 | `/outline` | GET | `documents_outline` | src/tessellate/api/routes_documents.py:470 |
 | `/parse` | POST | `magic_add_reminder` | src/tessellate/api/routes_reminders.py:640 |
-| `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1118 |
+| `/password-on-open` | POST | `set_password_on_open` | src/tessellate/api/routes_auth.py:1121 |
 | `/patterns` | GET | `patterns` | src/tessellate/api/routes_insights.py:441 |
 | `/personas/suggest-thinking-words` | POST | `suggest_persona_thinking_words` | src/tessellate/api/routes_settings.py:190 |
-| `/pin` | POST | `set_pin` | src/tessellate/api/routes_auth.py:1697 |
-| `/pin/forget` | POST | `forget_pin` | src/tessellate/api/routes_auth.py:1740 |
+| `/pin` | POST | `set_pin` | src/tessellate/api/routes_auth.py:1700 |
+| `/pin/forget` | POST | `forget_pin` | src/tessellate/api/routes_auth.py:1743 |
 | `/preferences` | GET | `get_preferences` | src/tessellate/api/routes_settings.py:770 |
 | `/preferences` | PUT | `update_preferences` | src/tessellate/api/routes_settings.py:1179 |
 | `/preferences/defaults` | GET | `get_preference_defaults` | src/tessellate/api/routes_settings.py:1203 |
@@ -11356,23 +11356,23 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/recordings/{recording_id}/transcript` | GET | `read_transcript` | src/tessellate/api/routes_recordings.py:420 |
 | `/recordings/{recording_id}/transcript.srt` | GET | `transcript_srt` | src/tessellate/api/routes_recordings.py:475 |
 | `/recordings/{recording_id}/transcript.vtt` | GET | `transcript_vtt` | src/tessellate/api/routes_recordings.py:480 |
-| `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2044 |
-| `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:1967 |
-| `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2014 |
+| `/recover` | POST | `recover` | src/tessellate/api/routes_auth.py:2047 |
+| `/recovery-key` | POST | `make_recovery_key` | src/tessellate/api/routes_auth.py:1970 |
+| `/recovery-key/save` | POST | `save_recovery_key` | src/tessellate/api/routes_auth.py:2017 |
 | `/recycle-bin/empty` | POST | `empty_recycle_bin` | src/tessellate/api/routes_settings.py:2046 |
 | `/reference-counts` | GET | `entry_reference_counts` | src/tessellate/api/routes_entries.py:2671 |
 | `/reindex` | POST | `rebuild_search_index` | src/tessellate/api/routes_models.py:1156 |
 | `/releases` | GET | `list_releases` | src/tessellate/api/routes_update.py:601 |
 | `/rename` | POST | `rename_tag` | src/tessellate/api/routes_tags.py:76 |
-| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2159 |
-| `/reset-code` | POST | `request_reset_code` | src/tessellate/api/routes_auth.py:2098 |
-| `/reset-code/open-logs` | POST | `open_reset_code_logs` | src/tessellate/api/routes_auth.py:2134 |
+| `/reset` | POST | `reset` | src/tessellate/api/routes_auth.py:2162 |
+| `/reset-code` | POST | `request_reset_code` | src/tessellate/api/routes_auth.py:2101 |
+| `/reset-code/open-logs` | POST | `open_reset_code_logs` | src/tessellate/api/routes_auth.py:2137 |
 | `/restore` | POST | `restore_ask_turns` | src/tessellate/api/routes_ask_history.py:230 |
 | `/restore` | POST | `restore_conversation` | src/tessellate/api/routes_conversations.py:1004 |
 | `/restore` | POST | `restore_tags` | src/tessellate/api/routes_tags.py:110 |
 | `/review-queue` | GET | `review_queue` | src/tessellate/api/routes_vision.py:83 |
 | `/review-queue/{entry_id}/accept` | POST | `accept_filing` | src/tessellate/api/routes_vision.py:94 |
-| `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1760 |
+| `/rotate-vault-key` | POST | `rotate_vault_key` | src/tessellate/api/routes_auth.py:1763 |
 | `/run` | POST | `run_now` | src/tessellate/api/routes_night.py:50 |
 | `/runs/{run_id}/facts` | GET | `run_facts` | src/tessellate/api/routes_night.py:92 |
 | `/sample-notebook` | DELETE | `remove_sample_notebook` | src/tessellate/api/routes_help.py:162 |
@@ -11381,7 +11381,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/sampling` | GET | `sampling_settings` | src/tessellate/api/routes_models.py:641 |
 | `/sampling` | PUT | `save_sampling_settings` | src/tessellate/api/routes_models.py:689 |
 | `/seed-examples` | POST | `seed_example_entries` | src/tessellate/api/routes_entries.py:2656 |
-| `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:763 |
+| `/setup` | POST | `setup` | src/tessellate/api/routes_auth.py:766 |
 | `/shutdown` | POST | `shutdown` | src/tessellate/api/routes_tasks.py:870 |
 | `/sketches` | POST | `create_sketch` | src/tessellate/api/routes_whiteboard.py:3207 |
 | `/sketches/{sketch_id}` | DELETE | `delete_sketch` | src/tessellate/api/routes_whiteboard.py:3262 |
@@ -11402,7 +11402,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/stats` | GET | `ask_history_stats` | src/tessellate/api/routes_ask_history.py:84 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_insights.py:35 |
 | `/stats` | GET | `stats` | src/tessellate/api/routes_search.py:184 |
-| `/status` | GET | `status` | src/tessellate/api/routes_auth.py:736 |
+| `/status` | GET | `status` | src/tessellate/api/routes_auth.py:739 |
 | `/status` | GET | `status` | src/tessellate/api/routes_models.py:391 |
 | `/status` | GET | `status` | src/tessellate/api/routes_translate.py:22 |
 | `/status` | GET | `status` | src/tessellate/api/routes_voice.py:31 |
@@ -11458,8 +11458,8 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/types/dismiss` | POST | `dismiss_type` | src/tessellate/api/routes_inbox.py:186 |
 | `/undo/{undo_id}` | POST | `tidy_undo` | src/tessellate/api/routes_tidy.py:70 |
 | `/unforget` | POST | `unforget_everything` | src/tessellate/api/routes_learned.py:264 |
-| `/unlock` | POST | `unlock` | src/tessellate/api/routes_auth.py:924 |
-| `/unlock-vault` | POST | `unlock_vault` | src/tessellate/api/routes_auth.py:1069 |
+| `/unlock` | POST | `unlock` | src/tessellate/api/routes_auth.py:927 |
+| `/unlock-vault` | POST | `unlock_vault` | src/tessellate/api/routes_auth.py:1072 |
 | `/utilities/units` | GET | `units` | src/tessellate/api/routes_utilities.py:28 |
 | `/utilities/work` | GET | `work` | src/tessellate/api/routes_utilities.py:22 |
 | `/utility-model` | POST | `set_utility_model` | src/tessellate/api/routes_models.py:903 |
@@ -16189,106 +16189,106 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `ChangePasswordBody` | src/tessellate/api/routes_auth.py:1542 |
-| `ForgetPinBody` | src/tessellate/api/routes_auth.py:1679 |
-| `LanAccessBody` | src/tessellate/api/routes_auth.py:1158 |
-| `LanOptionBody` | src/tessellate/api/routes_auth.py:1272 |
-| `LanPasswordBody` | src/tessellate/api/routes_auth.py:1268 |
-| `MediaLinkIn` | src/tessellate/api/routes_auth.py:1012 |
-| `PasswordBody` | src/tessellate/api/routes_auth.py:586 |
-| `PasswordOnOpenBody` | src/tessellate/api/routes_auth.py:1113 |
-| `PinBody` | src/tessellate/api/routes_auth.py:1674 |
-| `RecoverBody` | src/tessellate/api/routes_auth.py:1937 |
-| `RecoveryKeyBody` | src/tessellate/api/routes_auth.py:1933 |
-| `ResetBody` | src/tessellate/api/routes_auth.py:1942 |
-| `RotateVaultKeyBody` | src/tessellate/api/routes_auth.py:1756 |
-| `SaveRecoveryKeyBody` | src/tessellate/api/routes_auth.py:2005 |
+| `ChangePasswordBody` | src/tessellate/api/routes_auth.py:1545 |
+| `ForgetPinBody` | src/tessellate/api/routes_auth.py:1682 |
+| `LanAccessBody` | src/tessellate/api/routes_auth.py:1161 |
+| `LanOptionBody` | src/tessellate/api/routes_auth.py:1275 |
+| `LanPasswordBody` | src/tessellate/api/routes_auth.py:1271 |
+| `MediaLinkIn` | src/tessellate/api/routes_auth.py:1015 |
+| `PasswordBody` | src/tessellate/api/routes_auth.py:589 |
+| `PasswordOnOpenBody` | src/tessellate/api/routes_auth.py:1116 |
+| `PinBody` | src/tessellate/api/routes_auth.py:1677 |
+| `RecoverBody` | src/tessellate/api/routes_auth.py:1940 |
+| `RecoveryKeyBody` | src/tessellate/api/routes_auth.py:1936 |
+| `ResetBody` | src/tessellate/api/routes_auth.py:1945 |
+| `RotateVaultKeyBody` | src/tessellate/api/routes_auth.py:1759 |
+| `SaveRecoveryKeyBody` | src/tessellate/api/routes_auth.py:2008 |
 | `VaultScope` | src/tessellate/api/routes_auth.py:132 |
-| `_answered` | src/tessellate/api/routes_auth.py:370 |
-| `_auto_session_allowed` | src/tessellate/api/routes_auth.py:272 |
-| `_bcrypt_input` | src/tessellate/api/routes_auth.py:506 |
-| `_bucket` | src/tessellate/api/routes_auth.py:395 |
-| `_check_current_password` | src/tessellate/api/routes_auth.py:1683 |
-| `_check_password_for_lan` | src/tessellate/api/routes_auth.py:1253 |
-| `_clear_unlock_failures` | src/tessellate/api/routes_auth.py:364 |
-| `_client_key` | src/tessellate/api/routes_auth.py:382 |
-| `_cookie_secure` | src/tessellate/api/routes_auth.py:192 |
-| `_current_network_key` | src/tessellate/api/routes_auth.py:1200 |
-| `_device_cookie` | src/tessellate/api/routes_auth.py:816 |
-| `_device_must_wait` | src/tessellate/api/routes_auth.py:845 |
-| `_drop_stale_pending` | src/tessellate/api/routes_auth.py:424 |
-| `_end_network_sessions` | src/tessellate/api/routes_auth.py:803 |
-| `_end_sessions_and_issue` | src/tessellate/api/routes_auth.py:1956 |
+| `_answered` | src/tessellate/api/routes_auth.py:373 |
+| `_auto_session_allowed` | src/tessellate/api/routes_auth.py:275 |
+| `_bcrypt_input` | src/tessellate/api/routes_auth.py:509 |
+| `_bucket` | src/tessellate/api/routes_auth.py:398 |
+| `_check_current_password` | src/tessellate/api/routes_auth.py:1686 |
+| `_check_password_for_lan` | src/tessellate/api/routes_auth.py:1256 |
+| `_clear_unlock_failures` | src/tessellate/api/routes_auth.py:367 |
+| `_client_key` | src/tessellate/api/routes_auth.py:385 |
+| `_cookie_secure` | src/tessellate/api/routes_auth.py:195 |
+| `_current_network_key` | src/tessellate/api/routes_auth.py:1203 |
+| `_device_cookie` | src/tessellate/api/routes_auth.py:819 |
+| `_device_must_wait` | src/tessellate/api/routes_auth.py:848 |
+| `_drop_stale_pending` | src/tessellate/api/routes_auth.py:427 |
+| `_end_network_sessions` | src/tessellate/api/routes_auth.py:806 |
+| `_end_sessions_and_issue` | src/tessellate/api/routes_auth.py:1959 |
 | `_forget_dead_tickets` | src/tessellate/api/routes_auth.py:186 |
-| `_from_the_network` | src/tessellate/api/routes_auth.py:834 |
-| `_from_this_computer` | src/tessellate/api/routes_auth.py:248 |
-| `_get_user` | src/tessellate/api/routes_auth.py:594 |
-| `_grant_media` | src/tessellate/api/routes_auth.py:280 |
-| `_hash_password` | src/tessellate/api/routes_auth.py:519 |
-| `_hold_new_device` | src/tessellate/api/routes_auth.py:856 |
-| `_is_loopback_address` | src/tessellate/api/routes_auth.py:237 |
-| `_iso` | src/tessellate/api/routes_auth.py:1585 |
-| `_issue_token` | src/tessellate/api/routes_auth.py:729 |
-| `_lan_state` | src/tessellate/api/routes_auth.py:1163 |
-| `_new_password_problem` | src/tessellate/api/routes_auth.py:548 |
-| `_no_password_yet` | src/tessellate/api/routes_auth.py:637 |
-| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2208 |
-| `_password_matches` | src/tessellate/api/routes_auth.py:523 |
-| `_password_set` | src/tessellate/api/routes_auth.py:613 |
-| `_pin_binding` | src/tessellate/api/routes_auth.py:885 |
-| `_record_failure` | src/tessellate/api/routes_auth.py:471 |
-| `_refuse_if_throttled` | src/tessellate/api/routes_auth.py:434 |
-| `_refuse_unless_this_computer` | src/tessellate/api/routes_auth.py:1948 |
-| `_require_this_computer` | src/tessellate/api/routes_auth.py:1278 |
-| `_revoke_media` | src/tessellate/api/routes_auth.py:302 |
-| `_set_device_cookie` | src/tessellate/api/routes_auth.py:821 |
-| `_stderr_log_name` | src/tessellate/api/routes_auth.py:2123 |
+| `_from_the_network` | src/tessellate/api/routes_auth.py:837 |
+| `_from_this_computer` | src/tessellate/api/routes_auth.py:251 |
+| `_get_user` | src/tessellate/api/routes_auth.py:597 |
+| `_grant_media` | src/tessellate/api/routes_auth.py:283 |
+| `_hash_password` | src/tessellate/api/routes_auth.py:522 |
+| `_hold_new_device` | src/tessellate/api/routes_auth.py:859 |
+| `_is_loopback_address` | src/tessellate/api/routes_auth.py:240 |
+| `_iso` | src/tessellate/api/routes_auth.py:1588 |
+| `_issue_token` | src/tessellate/api/routes_auth.py:732 |
+| `_lan_state` | src/tessellate/api/routes_auth.py:1166 |
+| `_new_password_problem` | src/tessellate/api/routes_auth.py:551 |
+| `_no_password_yet` | src/tessellate/api/routes_auth.py:640 |
+| `_notebook_has_password_now` | src/tessellate/api/routes_auth.py:2211 |
+| `_password_matches` | src/tessellate/api/routes_auth.py:526 |
+| `_password_set` | src/tessellate/api/routes_auth.py:616 |
+| `_pin_binding` | src/tessellate/api/routes_auth.py:888 |
+| `_record_failure` | src/tessellate/api/routes_auth.py:474 |
+| `_refuse_if_throttled` | src/tessellate/api/routes_auth.py:437 |
+| `_refuse_unless_this_computer` | src/tessellate/api/routes_auth.py:1951 |
+| `_require_this_computer` | src/tessellate/api/routes_auth.py:1281 |
+| `_revoke_media` | src/tessellate/api/routes_auth.py:305 |
+| `_set_device_cookie` | src/tessellate/api/routes_auth.py:824 |
+| `_stderr_log_name` | src/tessellate/api/routes_auth.py:2126 |
 | `_sweep_expired` | src/tessellate/api/routes_auth.py:159 |
-| `_token_valid` | src/tessellate/api/routes_auth.py:314 |
-| `_unlock_failed` | src/tessellate/api/routes_auth.py:464 |
-| `_unlock_succeeded` | src/tessellate/api/routes_auth.py:480 |
-| `_unlock_with_pin` | src/tessellate/api/routes_auth.py:892 |
-| `_wait_left` | src/tessellate/api/routes_auth.py:413 |
-| `account` | src/tessellate/api/routes_auth.py:1550 |
-| `allow_this_network` | src/tessellate/api/routes_auth.py:1286 |
-| `answer_device` | src/tessellate/api/routes_auth.py:1375 |
-| `auto_session` | src/tessellate/api/routes_auth.py:1031 |
-| `change_password` | src/tessellate/api/routes_auth.py:1590 |
-| `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1346 |
-| `download_lan_certificate` | src/tessellate/api/routes_auth.py:1214 |
-| `end_every_session` | src/tessellate/api/routes_auth.py:705 |
-| `forget_device` | src/tessellate/api/routes_auth.py:1396 |
-| `forget_network` | src/tessellate/api/routes_auth.py:1306 |
-| `forget_pin` | src/tessellate/api/routes_auth.py:1741 |
-| `lan_access` | src/tessellate/api/routes_auth.py:1208 |
-| `lan_watch` | src/tessellate/api/routes_auth.py:1414 |
-| `lock` | src/tessellate/api/routes_auth.py:1512 |
-| `lock_all` | src/tessellate/api/routes_auth.py:2198 |
-| `make_recovery_key` | src/tessellate/api/routes_auth.py:1968 |
-| `media_link` | src/tessellate/api/routes_auth.py:1017 |
-| `media_session` | src/tessellate/api/routes_auth.py:1000 |
-| `notebook_open` | src/tessellate/api/routes_auth.py:626 |
-| `open_reset_code_logs` | src/tessellate/api/routes_auth.py:2135 |
-| `password_on_open` | src/tessellate/api/routes_auth.py:232 |
-| `password_warning` | src/tessellate/api/routes_auth.py:555 |
-| `recover` | src/tessellate/api/routes_auth.py:2045 |
-| `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1235 |
-| `request_reset_code` | src/tessellate/api/routes_auth.py:2099 |
-| `require_unlock` | src/tessellate/api/routes_auth.py:659 |
-| `require_unlock_media` | src/tessellate/api/routes_auth.py:673 |
-| `reset` | src/tessellate/api/routes_auth.py:2160 |
-| `rotate_vault_key` | src/tessellate/api/routes_auth.py:1761 |
-| `save_recovery_key` | src/tessellate/api/routes_auth.py:2015 |
-| `set_lan_access` | src/tessellate/api/routes_auth.py:1444 |
-| `set_lan_option` | src/tessellate/api/routes_auth.py:1354 |
-| `set_password_on_open` | src/tessellate/api/routes_auth.py:1119 |
-| `set_pin` | src/tessellate/api/routes_auth.py:1698 |
-| `setup` | src/tessellate/api/routes_auth.py:764 |
-| `status` | src/tessellate/api/routes_auth.py:737 |
-| `trust_network` | src/tessellate/api/routes_auth.py:1317 |
-| `unlock` | src/tessellate/api/routes_auth.py:925 |
-| `unlock_vault` | src/tessellate/api/routes_auth.py:1070 |
-| `untrust_network` | src/tessellate/api/routes_auth.py:1336 |
+| `_token_valid` | src/tessellate/api/routes_auth.py:317 |
+| `_unlock_failed` | src/tessellate/api/routes_auth.py:467 |
+| `_unlock_succeeded` | src/tessellate/api/routes_auth.py:483 |
+| `_unlock_with_pin` | src/tessellate/api/routes_auth.py:895 |
+| `_wait_left` | src/tessellate/api/routes_auth.py:416 |
+| `account` | src/tessellate/api/routes_auth.py:1553 |
+| `allow_this_network` | src/tessellate/api/routes_auth.py:1289 |
+| `answer_device` | src/tessellate/api/routes_auth.py:1378 |
+| `auto_session` | src/tessellate/api/routes_auth.py:1034 |
+| `change_password` | src/tessellate/api/routes_auth.py:1593 |
+| `dismiss_lan_notice` | src/tessellate/api/routes_auth.py:1349 |
+| `download_lan_certificate` | src/tessellate/api/routes_auth.py:1217 |
+| `end_every_session` | src/tessellate/api/routes_auth.py:708 |
+| `forget_device` | src/tessellate/api/routes_auth.py:1399 |
+| `forget_network` | src/tessellate/api/routes_auth.py:1309 |
+| `forget_pin` | src/tessellate/api/routes_auth.py:1744 |
+| `lan_access` | src/tessellate/api/routes_auth.py:1211 |
+| `lan_watch` | src/tessellate/api/routes_auth.py:1417 |
+| `lock` | src/tessellate/api/routes_auth.py:1515 |
+| `lock_all` | src/tessellate/api/routes_auth.py:2201 |
+| `make_recovery_key` | src/tessellate/api/routes_auth.py:1971 |
+| `media_link` | src/tessellate/api/routes_auth.py:1020 |
+| `media_session` | src/tessellate/api/routes_auth.py:1003 |
+| `notebook_open` | src/tessellate/api/routes_auth.py:629 |
+| `open_reset_code_logs` | src/tessellate/api/routes_auth.py:2138 |
+| `password_on_open` | src/tessellate/api/routes_auth.py:235 |
+| `password_warning` | src/tessellate/api/routes_auth.py:558 |
+| `recover` | src/tessellate/api/routes_auth.py:2048 |
+| `regenerate_lan_certificate` | src/tessellate/api/routes_auth.py:1238 |
+| `request_reset_code` | src/tessellate/api/routes_auth.py:2102 |
+| `require_unlock` | src/tessellate/api/routes_auth.py:662 |
+| `require_unlock_media` | src/tessellate/api/routes_auth.py:676 |
+| `reset` | src/tessellate/api/routes_auth.py:2163 |
+| `rotate_vault_key` | src/tessellate/api/routes_auth.py:1764 |
+| `save_recovery_key` | src/tessellate/api/routes_auth.py:2018 |
+| `set_lan_access` | src/tessellate/api/routes_auth.py:1447 |
+| `set_lan_option` | src/tessellate/api/routes_auth.py:1357 |
+| `set_password_on_open` | src/tessellate/api/routes_auth.py:1122 |
+| `set_pin` | src/tessellate/api/routes_auth.py:1701 |
+| `setup` | src/tessellate/api/routes_auth.py:767 |
+| `status` | src/tessellate/api/routes_auth.py:740 |
+| `trust_network` | src/tessellate/api/routes_auth.py:1320 |
+| `unlock` | src/tessellate/api/routes_auth.py:928 |
+| `unlock_vault` | src/tessellate/api/routes_auth.py:1073 |
+| `untrust_network` | src/tessellate/api/routes_auth.py:1339 |
 
 ### src/tessellate/api/routes_backups.py (15)
 
@@ -22502,7 +22502,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 
-## Plan headings (989)
+## Plan headings (990)
 
 Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, except the HISTORY.md archive. Sorted by heading.
 
@@ -23208,7 +23208,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:294 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:288 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
@@ -23312,6 +23312,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art) | docs/roadmap/UI_MODERNISATION_PLAN.md:1588 |
 | Placed from INBOX, 2026-10-30 | docs/roadmap/WHITEBOARD_PLAN.md:1704 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/GRAPH_PLAN.md:667 |
+| Placed from INBOX, 2026-10-31 | docs/roadmap/UI_MODERNISATION_PLAN.md:1594 |
 | Placed from INBOX, 2026-10-31 | docs/roadmap/WHITEBOARD_PLAN.md:1708 |
 | Placed from INBOX, built (pointers) | docs/roadmap/UI_MODERNISATION_PLAN.md:1093 |
 | Placed from INBOX: 107d, the segmented mini bars | docs/roadmap/DOCUMENTS_PLAN.md:480 |

@@ -25,6 +25,11 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1463 companion behaviour and fall (agent companion-1031)
 - [ ] INBOX 1464 desktop companion (agent desktop-1031)
 - [ ] Audit 1028 S rows (agent shell-1031)
+- [x] INBOX 1465 image read again after centring (hub, ec64c8a)
+- [ ] INBOX 1465 image align and resize everywhere (agent imgalign-1031)
+- [ ] INBOX 1465 lag log, speed sweep (agent speed-1031)
+- [ ] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
+- [ ] Companion: Fable pass after companion-1031 hands over (owner named Fable)
 - [ ] Audit 1028 K rows (hub)
 - [ ] OPEN.md: proposed batches
 - [ ] Plan phases (ROADMAP table order)

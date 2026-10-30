@@ -185,8 +185,11 @@ def _sweep_expired(idle_ttl: int) -> None:
 
 def _forget_dead_tickets() -> None:
     """Drop every media ticket whose session is gone."""
-    for ticket in [t for t, token in _media_tickets.items() if token not in _active_tokens]:
-        del _media_tickets[ticket]
+    # Snapshots and pop: a sync route runs in the threadpool, and a grant on
+    # one device mid-sweep on another raised "dictionary changed size
+    # during iteration" (audit 1028 K23, as K2).
+    for ticket in [t for t, token in list(_media_tickets.items()) if token not in _active_tokens]:
+        _media_tickets.pop(ticket, None)
 
 
 def _cookie_secure(request: Request) -> bool:
@@ -283,8 +286,8 @@ def _grant_media(request: Request, response: Response, token: str) -> None:
     # session's earlier ticket is already gone from the jar it was set in;
     # keeping it here would only let the table grow by one per reload (the
     # boot path asks again every time) until the session ends.
-    for stale in [t for t, owner in _media_tickets.items() if owner == token]:
-        del _media_tickets[stale]
+    for stale in [t for t, owner in list(_media_tickets.items()) if owner == token]:
+        _media_tickets.pop(stale, None)
     ticket = secrets.token_urlsafe(32)
     _media_tickets[ticket] = token
     for path in MEDIA_COOKIE_PATHS:
@@ -802,7 +805,7 @@ _network_tokens: set[str] = set()
 
 def _end_network_sessions() -> int:
     """Sign out every other device now: LAN mode was switched off."""
-    ended = [t for t in _network_tokens if t in _active_tokens]
+    ended = [t for t in list(_network_tokens) if t in _active_tokens]
     for token in ended:
         _active_tokens.pop(token, None)
         _device_tokens.pop(token, None)
@@ -1020,8 +1023,8 @@ def media_link(body: MediaLinkIn, x_auth_token: str | None = Header(default=None
     if not _MEDIA_LINK_PATH.fullmatch(body.path) or "/.." in path or "//" in path:
         raise HTTPException(status_code=422, detail="Only a picture or file of this notebook can open in a tab.")
     now = time.time()
-    for stale in [t for t, (_, expires, _) in _media_links.items() if expires <= now]:
-        del _media_links[stale]
+    for stale in [t for t, (_, expires, _) in list(_media_links.items()) if expires <= now]:
+        _media_links.pop(stale, None)
     ticket = secrets.token_urlsafe(32)
     _media_links[ticket] = (path, now + MEDIA_LINK_SECONDS, x_auth_token or "")
     return {"url": f"{body.path}?once={ticket}"}
@@ -1398,7 +1401,7 @@ def forget_device(device_id: str, request: Request, config: ConfigManager = Depe
     sessions end now."""
     if not lantrust.forget_device(config.data_dir, device_id):
         raise HTTPException(status_code=404, detail="That device is not on the list.")
-    for token in [t for t, owner in _device_tokens.items() if owner == device_id]:
+    for token in [t for t, owner in list(_device_tokens.items()) if owner == device_id]:
         _device_tokens.pop(token, None)
         _active_tokens.pop(token, None)
         vault.revoke([token])
