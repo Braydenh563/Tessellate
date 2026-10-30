@@ -30,13 +30,13 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_sum, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -356,6 +356,22 @@ def chat_followups(body: FollowupBody) -> list[str]:
     )
 
 
+#: A note link in an answer: `[Dentist](#/notes/13)`.
+_NOTE_LINK = re.compile(r"\[([^\]\n]{1,200})\]\(#/notes/\d+\)")
+
+
+def _linked_labels(answer: str) -> list[str]:
+    """The notes an answer linked, as `_turn_label` names them, in order: a
+    date list cites no sources, but its links say what it was about (audit
+    1030 Z53, "what time" after "what is on 4 November")."""
+    labels: list[str] = []
+    for text in _NOTE_LINK.findall(answer or ""):
+        label = re.split(r"[:.!?]", re.sub(r"[*_`]|…$", "", text).strip())[0].strip()[:80]
+        if label and label not in labels:
+            labels.append(label)
+    return labels[:5]
+
+
 class ChatTurn(BaseModel):
     question: str = Field(max_length=bounds.TURN_TEXT_MAX)
     answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
@@ -363,6 +379,14 @@ class ChatTurn(BaseModel):
     #: "delete the other one" (`reading.follow`, decision 57). Optional, and
     #: dropped from the dump when absent, so a turn without it is unchanged.
     objects: list[Annotated[str, Field(max_length=200)]] | None = Field(default=None, max_length=8)
+
+    @model_validator(mode="after")
+    def _objects_from_links(self):  # noqa: ANN202
+        #: The client names them from the answer's sources; an answer with
+        #: none (a date list) is named by the links it wrote.
+        if not self.objects:
+            self.objects = _linked_labels(self.answer) or None
+        return self
 
 
 class PlanRun(BaseModel):
@@ -1666,6 +1690,18 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     return merged
 
 
+def _money_pool(session: Session, question: str, found: _Found) -> None:
+    """"How much have I spent", "my biggest expense": a sum over every note
+    that records spending, which the five likest never were ("spent" does not
+    match "Spending October"; 2026-10-30 sweep). None at all keeps the
+    ordinary retrieval, so the answer can say no note holds it."""
+    if not (composer_money.asks(question) or composer_sum.asks_most(question)):
+        return
+    if recorded := [e for e in manager.list_entries(session, limit=400) if composer_money.records_amounts(e.content or "") or composer_sum.holds_amount(question, e.content or "")]:
+        found.entries = recorded
+        found.mode, found.connected_ids, found.match_info = "money", set(), {}
+
+
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
@@ -1691,14 +1727,8 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     found.mentioned = set(hit.mentioned)
     if not attached and as_of is None:
         _recall_window(session, question, found)
-    if not attached and composer_money.asks(question):
-        #: "How much have I spent", "my biggest expense": a sum over every
-        #: note that records spending, which the five likest never were
-        #: ("spent" does not match "Spending October"; 2026-10-30 sweep).
-        #: None at all keeps the ordinary retrieval, so the answer can say no note holds it.
-        if recorded := [e for e in manager.list_entries(session, limit=400) if composer_money.records_amounts(e.content or "")]:
-            found.entries = recorded
-            found.mode, found.connected_ids, found.match_info = "money", set(), {}
+    if not attached:
+        _money_pool(session, question, found)
 
 
 def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -2081,6 +2111,7 @@ def _prepare(
     attached_files = _attached_files(session, file_ids or [])
     attached_boards = _attached_boards(session, board_ids or [])
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
+    detected = intent.NOTES if _names_a_note_word(session, question, detected) else detected
     detected, stats = _computed_answer(session, question, detected, as_of, attached)
     found = _Found(detected=detected, stats=stats)
     #: `skip_search`: the app's own reader has already answered this turn (a
@@ -3050,13 +3081,24 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
     """The names of the newest notes, newest first, for a choice to open one."""
     from tessellate.ai.tools._common import _visible
 
-    rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
+    rows = session.query(Entry.content, Entry.created_at).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
     titles: list[str] = []
-    for (content,) in rows:
-        title = composer._title(str(content or ""))[0].strip()
+    for content, created in rows:
+        title = _closing_name(str(content or ""), created)
         if title and title not in titles:
-            titles.append(realise.cut_title(title, 60))
+            titles.append(title)
     return titles[:count]
+
+
+def _closing_name(content: str, created) -> str:  # noqa: ANN001
+    """What a next-step line calls a note: its heading, a whole short first
+    line, or, for a title-less note whose first words would be cut mid
+    sentence, the day it was written ("Note of 25 October"; audit 1030 Z38)."""
+    name, start = composer._title(content)
+    name = name.strip()
+    if start == 0 and name.endswith("…") and created:
+        return f"Note of {created.day} {created:%B}"
+    return realise.cut_title(name, 60) if name else ""
 
 
 #: The stats kinds that ask about the notebook as a whole, which carry the
@@ -3616,8 +3658,8 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
             title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
         else:
-            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
-            title = realise.cut_title(composer._title(str(row[0] or ""))[0].strip(), 60) if row else ""
+            row = session.query(Entry.content, Entry.created_at).filter(Entry.id == nid, *_visible()).first()
+            title = _closing_name(str(row[0] or ""), row[1]) if row else ""
         if title:
             titles.append(title)
     return titles
@@ -4837,6 +4879,19 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     return question, address, (None if skill or not tail else question + tail)
 
 
+_BARE_NAME = re.compile(r"^(?:(?:what|who)(?:'s| is| was) |tell me about |about )?(?P<name>[a-z][a-z-]{2,})\??$", re.I)
+
+
+def _names_a_note_word(session: Session, question: str, detected: str) -> bool:
+    """"What is Atlas" and a bare "atlas" are a lookup when a note holds the
+    word, not a question about the assistant that shares the name (audit 1030
+    Z50): the notebook comes first."""
+    if detected not in (intent.ABOUT_APP, intent.SMALLTALK):
+        return False
+    found = _BARE_NAME.match(" ".join((question or "").split()))
+    return bool(found and _in_notes(session)(found.group("name").lower()))
+
+
 def _address(question: str, session: Session, skill: dict | None) -> tuple:
     """The question and a name in address position (a `vocative.Address`,
     or None), taken off before anything reads the question, so "brotato
@@ -4846,6 +4901,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     #: Keys pressed at random are not a nickname for the assistant.
     address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(question, in_notes=_in_notes(session))
     if address is None or not address.names:
+        return question, None
+    #: A bare word that a note holds is that note's name, not a call.
+    if address.call and _in_notes(session)(address.names[0].lower()):
         return question, None
     #: A slipped word at the end of a command is the command's, not a name:
     #: "pin the dentist noe" lost "noe" as a nickname and pinned nothing (O3).

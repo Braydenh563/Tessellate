@@ -100,6 +100,9 @@ _VERB = re.compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eu
 _AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
 
 
+_LABEL_TAIL = frozenset({"is", "are", "was", "were", "cost", "costs", "about"})
+
+
 def _what(clause: str, at: int, end: int, last: str) -> str:
     """What an amount bought: the words before it ("Groceries $86"), else the
     words after it ("Paid $42 for the plumber", "$24 at the market"), else
@@ -108,6 +111,9 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
     while (cut := _VERB.sub("", before.strip())) != before.strip():
         before = cut
     words = [w for w in re.sub(r"[^\w\s'-]", " ", _DATE_TAIL.sub("", before)).split() if w.lower() not in ("and", "the", "a", "an", "my", "for")]
+    #: "Flights cost $420" is flights, not "flights cost" (audit 1030 Z32).
+    while words and words[-1].lower() in _LABEL_TAIL:
+        words.pop()
     if words:
         return " ".join(words[-3:])
     after = _AFTER.match(clause[end:])
@@ -254,7 +260,8 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
     """The total said once, by note or by label within one note, and the total."""
     by_note: dict[str, float] = {}
     for item in items:
-        name = composer_lists._title(item.view)  # noqa: SLF001
+        #: A title-less note is its first line: the thing bought names it better.
+        name = composer_lists._title(item.view) if item.view.titled else item.label  # noqa: SLF001
         by_note[name] = by_note.get(name, 0) + item.value
     total = sum(by_note.values())
     if len(items) == 1:
@@ -271,10 +278,38 @@ def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, floa
     return f"Your notes record {_money(symbol, total)} spent{on}{when}: {listed}.", total
 
 
+_PAID = re.compile(r"\b(?:paid|spent|bought|booked|purchased|ordered|charged|got)\b", re.I)
+
+
+def _planned(view, today: date) -> bool:  # noqa: ANN001
+    """A note about something still ahead (a dated trip) that says nothing was
+    paid: its amounts are prices, not spending (audit 1030 Z30)."""
+    return not any(_PAID.search(s.text) for s in view.sentences) and bool(composer_lists._dated(view, today, "future"))  # noqa: SLF001
+
+
+def spent_only(items: list[Item], today: date) -> list[Item]:
+    """`items` without the amounts of notes that are plans."""
+    plans: dict[int, bool] = {}
+    return [i for i in items if not plans.setdefault(id(i.view), _planned(i.view, today))]
+
+
+def _only_priced(out, items: list[Item]) -> bool:  # noqa: ANN001
+    """Every amount found sits in a note about something ahead: said as a
+    price, not as money spent."""
+    parts = [f"{i.label.lower()} {_money(i.symbol, i.value)}" for i in items]
+    line = f"Nothing says that was paid yet; your notes price it: {_listed(parts)}."
+    out.lines.append(line)
+    _cite_all(out, items, line)
+    return True
+
+
 def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     month = _month_asked(rest, today)
     subject, said = _subject(rest)
-    items = _items(views, month, subject)
+    every = _items(views, month, subject)
+    items = spent_only(every, today)
+    if every and not items:
+        return _only_priced(out, every)
     when = f" in {date(2000, month, 1):%B}" if month else ""
     on = f" on {said}" if said else ""
     if not items:

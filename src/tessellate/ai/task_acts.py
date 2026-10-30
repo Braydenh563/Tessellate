@@ -34,7 +34,7 @@ _NOT_A_TASK_BODY = ("list", "lists", "manager", "app", "view", "page", "board", 
 #: Words that open the sentence, left out of the task's own words.
 _LEAD_TO = ("to ", "that ", "for me to ")
 
-_DONE_WORD = r"(?:done|complete|completed|finished|ticked|checked|ticked off|checked off|crossed off|sorted)"
+_DONE_WORD = r"(?:done|complete|completed|finished|ticked|checked|ticked off|checked off|crossed off|sorted|packed|bought|booked|paid|sent|handled|got)"
 _DONE_TAIL = re.compile(rf"\s+(?:as |to be )?{_DONE_WORD}$", re.IGNORECASE)
 _OFF_TAIL = re.compile(r"\s+off(?:\s+(?:of\s+)?(?:my |the |this |that )?(?:list|checklist|to-?do list|todo list|task list|tasks))?$", re.IGNORECASE)
 _ON_LIST_TAIL = re.compile(r"\s+(?:on|from|in)\s+(?:my |the )?(?:list|checklist|to-?do list|todo list|task list)$", re.IGNORECASE)

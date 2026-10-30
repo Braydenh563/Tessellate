@@ -260,6 +260,7 @@ PHRASES: dict[str, str] = {
     # The close.
     "missing": "None of these notes mention ",
     "newest_lead": "Your ",
+    "newest_guess": "I could not tell what that asks about, so here are your ",
     "newest_mid": " newest notes",
     "until_ahead_days": " days from today, on ",
     "until_ahead_day": " day from today, on ",
@@ -359,6 +360,7 @@ PHRASES.update(composer_tables.EXTRA_PHRASES)
 PHRASES.update(composer_ack.PHRASES)
 PHRASES.update(composer_open.PHRASES)
 
+
 def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     """Every wording of `key`: the original and the variants of `voice`, or of
     both voices when none is named (the tests, which pin a phrase by its key,
@@ -367,6 +369,20 @@ def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
     for name in composer_tables.VOICES if voice is None else (voice,):
         names.update(composer_tables.VOICE_VARIANTS[name].get(key, ()))
     return tuple(sorted(PHRASES[n] for n in names))
+
+
+def user_now() -> datetime:
+    """Now on the person's own clock (their saved timezone), as a naive
+    datetime: the server's `date.today()` names the wrong day for someone far
+    from it (audit 1028 K22). `deps._config`, not `get_config()`, which would
+    start the app in a unit test; with no settings it is the server's zone."""
+    from tessellate.core import config, deps
+
+    return config.user_now(deps._config).replace(tzinfo=None)  # noqa: SLF001
+
+
+def user_today() -> date:
+    return user_now().date()
 
 
 #: Number words for counts a reader takes in at a glance. Measured values,
@@ -501,6 +517,17 @@ def _still_recent(question: str) -> bool:
     from tessellate.search.search_manager import is_recency_ask
 
     return not subject_terms(question) or is_recency_ask(question)
+
+
+_UNNAMED_ASK = re.compile(r"^(?:who|where|how (?:much|many)|what (?:should|do you think|would you))\b")
+
+
+def _guessing_recent(question: str) -> bool:
+    """A fallback to the newest notes for a who, where or how-much that names
+    nothing to look for: the answer says it is a fallback (audit 1030 Z34)."""
+    from tessellate.search.search_manager import is_recency_ask
+
+    return bool(_UNNAMED_ASK.match(" ".join(question.lower().split()))) and not is_recency_ask(question) and rec.without_windows(question) == question
 
 
 def _respell(text: str) -> str:
@@ -3217,19 +3244,21 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
     return dated
 
 
-def _newest(out: _Answer, views: list[NoteView]) -> None:
-    """The newest notes, each by its first sentence, newest first."""
+def _newest(out: _Answer, views: list[NoteView], guessing: bool = False) -> None:
+    """The newest notes, each by its first sentence, newest first. When the
+    question named nothing to look for, the lead says these are a fallback."""
     shown = [v for v in views if v.sentences][:5]
     if not shown:
         return
-    out.t("newest_lead").m(out.count(len(shown))).t("newest_mid")
+    out.t("newest_guess" if guessing else "newest_lead").m(out.count(len(shown))).t("newest_mid")
     _span(out, shown)
     out.t("end_colon")
     for view in shown:
         out.t("line", "bullet")
         #: Each line's name opens its note (brief composer item 4: a listing
-        #: offers the way to what it lists, as the tools' lists do).
-        linked = view.kind == "note" and isinstance(view.id, int) and view.id > 0 and view.titled
+        #: offers the way to what it lists, as the tools' lists do), a
+        #: title-less note by the day it was written.
+        linked = view.kind == "note" and isinstance(view.id, int) and view.id > 0 and (view.titled or bool(view.written))
         if linked:
             out.address("[")
         if view.titled:
@@ -3239,6 +3268,8 @@ def _newest(out: _Answer, views: list[NoteView]) -> None:
             out.dated(view)
         elif view.written:
             out.t("list_from").m(out.day(view.written))
+            if linked:
+                out.address(f"](#/notes/{view.id})")
         else:
             out.name(view, cap=True)
         out.t("colon")
@@ -4309,7 +4340,7 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
     """The query plan for `question` on `today` (the person's own day), read
     from its first `PLAN_CHARS` characters."""
     question = _planned_text(question)
-    today = today or date.today()
+    today = today or user_today()
     utility = utilities.kind_of(question)
     shape = "recent" if recent else classify(question, embed)
     terms = subject_terms(question)
@@ -5062,7 +5093,7 @@ def empty_window(when: str, first: date | None, last: date | None, *, voice: str
     voice = "professional" if composer_tables.voice_of(voice) == "professional" else "natural"
     if register:
         voice = {"warm": "natural", "formal": "professional"}.get(composer_compose.voice_for(register), composer_compose.voice_for(register))
-    today = today or date.today()
+    today = today or user_today()
     when = window_said(when)
     lead = _pick(seed or when, "empty_window", list(_EMPTY_WINDOW[voice])).format(when=when, When=when[:1].upper() + when[1:])
     if first is None or last is None:
@@ -5094,7 +5125,7 @@ def _nothing(
     more a voice: never one the last three answers opened with (`out`)."""
     chips = _did_you_mean(unsure or [])
     if out is None:
-        out = _Answer({}, date.today())
+        out = _Answer({}, user_today())
         out.voice = composer_tables.voice_of(voice)
     parts: list[tuple] = [("template", PHRASES[out.voiced("nothing")])]
     if _REGISTER.get():
@@ -5299,7 +5330,7 @@ def _answer_turn(question: str, notes: list[dict], **kwargs) -> dict:
     """A topic asked about as a whole is an overview (INBOX 787); anything
     else, or a topic with one note about it, is `_compose`'s."""
     return _overview_answer(
-        question, notes, today=kwargs["today"] or date.today(), voice=kwargs["voice"], said=kwargs["said"],
+        question, notes, today=kwargs["today"] or user_today(), voice=kwargs["voice"], said=kwargs["said"],
         prefer=kwargs["prefer"], dialogue=kwargs["dialogue"],
     ) or _compose(question, notes, **kwargs)
 
@@ -5335,7 +5366,7 @@ def _early_answer(question: str, notes: list[dict], *, said: str, recent: bool, 
     #: listed instead of the 84 (engine probe P3).
     if said:
         return None
-    worked = _utility(question, now or datetime.combine(today, datetime.now().time()), salt)
+    worked = _utility(question, now or datetime.combine(today, user_now().time()), salt)
     if worked:
         return worked
     parts = split_parts(question) if not recent else []
@@ -5367,7 +5398,8 @@ def _lead_act_verb(question: str) -> str | None:
     first, _, rest = text.partition(" ")
     if first not in _ACT_VERBS or not rest or len(text.split()) > 14:
         return None
-    return first
+    #: "add up the budget" is a sum, not a line to add to a note.
+    return None if first == "add" and rest.split()[0] in ("up", "together") else first
 
 
 def _unfinished_act(question: str, now: datetime) -> dict | None:
@@ -5387,6 +5419,19 @@ def _unfinished_act(question: str, now: datetime) -> dict | None:
     if act is None:
         return None
     line = f"I could not tell which note to {first}, or what to change. To {act.label[0].lower() + act.label[1:]}, say it like this: {act.example}."
+    return {**_result([("template", line)], "none"), "answered": True}
+
+
+_UNTICK = re.compile(r"^(?:please |can you |could you )?(?:un-?tick|un-?check|un-?mark|un-?cross)\b", re.I)
+
+
+def _cannot_untick(question: str) -> dict | None:
+    """"Untick bread": a tick is undone in the note, not by a sentence, and
+    the answer says so rather than quoting the list with a word no note
+    mentions (audit 1030 Z37)."""
+    if not _UNTICK.match(" ".join((question or "").split())):
+        return None
+    line = "I can tick items off, but I cannot untick one yet. Open the note and clear the box."
     return {**_result([("template", line)], "none"), "answered": True}
 
 
@@ -5619,7 +5664,7 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
     """Write the answer the shape asks for; the (possibly changed) shape and a
     result only when there is nothing to say."""
     if shape == "recent":
-        _newest(out, views_list)
+        _newest(out, views_list, guessing=_guessing_recent(question))
         return shape, None
     sides = compare_sides(question) if shape == "compare" else None
     if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed), question):
@@ -5663,7 +5708,7 @@ def _compose(
 ) -> dict:
     """`compose`'s body, inside the conversation's salt."""
     voice = composer_tables.voice_of(voice)
-    today = today or date.today()
+    today = today or user_today()
     #: The newest notes answer a question with a time and no subject. When
     #: retrieval fell back to them for a question with a subject ("summarise
     #: my gym notes" with no gym note), the subject is answered, or said to
@@ -5672,6 +5717,7 @@ def _compose(
     #: recently?": "saved" is a verb there, not a subject; owner, 2026-10-17).
     recent = recent and _still_recent(question)
     early = _early_answer(question, notes, said=said, recent=recent, today=today, embed=embed, voice=voice, salt=salt, turn=turn, now=now)
+    early = early or (None if said else _cannot_untick(question))
     early = early or (None if said else _unfinished_act(question, now or datetime.combine(today, datetime.min.time())))
     if early:
         return early

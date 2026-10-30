@@ -697,6 +697,42 @@ def _word_count(session: Session) -> StatAnswer:
     )
 
 
+def _has_title(content: str) -> bool:
+    """A note has a title when its first line is a heading."""
+    first = next((ln for ln in str(content or "").splitlines() if ln.strip()), "")
+    return first.lstrip().startswith("#")
+
+
+def _untitled(session: Session) -> StatAnswer:
+    """The notes with no heading: they are named by their first words, which
+    is the one thing a person might want to fix (audit 1030 Z36)."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    bare = [(note_id, content) for note_id, content in rows if not _has_title(content)]
+    if not bare:
+        return StatAnswer("untitled", "Every note has a title.")
+    facts = [{"label": composer_frame.plain_snippet(content), "count": composer_frame.note_words(content), "id": note_id} for note_id, content in bare[:TOP_N]]
+    return StatAnswer("untitled", f"{_plural(len(bare), 'note')} out of {len(rows)} {'has' if len(bare) == 1 else 'have'} no title. The newest {'is' if len(facts) == 1 else 'are'} listed below.", facts)
+
+
+def _same_text(content: str) -> str:
+    return " ".join(re.sub(r"[#*_>\-\[\]]", " ", str(content or "").lower()).split())
+
+
+def _duplicates(session: Session) -> StatAnswer:
+    """Notes whose whole text is the same once case, spacing and marks are
+    set aside: said by the notes, not by a guess about near matches."""
+    rows = session.execute(_visible(select(Entry.id, Entry.content)).order_by(Entry.created_at.desc())).all()
+    groups: dict[str, list[tuple[int, str]]] = {}
+    for note_id, content in rows:
+        if key := _same_text(content):
+            groups.setdefault(key, []).append((note_id, content))
+    twins = [g for g in groups.values() if len(g) > 1]
+    if not twins:
+        return StatAnswer("duplicates", "I found no two notes with the same text.")
+    facts = [{"label": composer_frame.plain_snippet(g[0][1]), "count": len(g), "id": g[0][0]} for g in twins[:TOP_N]]
+    return StatAnswer("duplicates", f"{_plural(len(twins), 'note')} {'is' if len(twins) == 1 else 'are'} written out more than once; the copies are counted below.", facts)
+
+
 def _longest_notes(session: Session) -> StatAnswer:
     """The notes with the most in them.
 
@@ -1167,6 +1203,8 @@ _FIRST_RULES = (
     (lambda t: _asks(t, _TAG_WORDS, _MOST), _top_tags),
     (lambda t: _asks(t, _CATEGORY_WORDS, _MOST), _top_categories),
     (lambda t: _asks(t, r"untagged|no tags|without (?:a )?tags?|missing tags?"), _untagged),
+    (lambda t: _asks(t, r"untitled|title-?less|(?:no|without|missing|lack\w*) (?:a )?titles?"), _untitled),
+    (lambda t: _asks(t, r"duplicat|same text|written twice|copies of"), _duplicates),
     (
         lambda t: _asks(t, _COUNT, r"\bnotes?\b")
         and re.search(r"\b(?:per|by|in each|for each|across)\s+(?:categor(?:y|ies)|folders?|spaces?)", t),

@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_tables, glossary, realise, verdicts
+from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -2716,6 +2716,9 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
+    if isinstance(cue, _MoneyCue):
+        #: "what does the hotel cost" is about the hotel; "cost" is the ask.
+        stems -= {composer._stem(w) for w in ("cost", "price", "pay", "paid", "charge", "much")}  # noqa: SLF001
     #: A timing or kind word counts less than the subject ("when are the
     #: designs coming": the designs, not the plumber who is coming).
     weight = composer._term_weights(sorted(stems))  # noqa: SLF001
@@ -3001,9 +3004,23 @@ def _label_asked(label: str, question: str) -> bool:
     return bool(label) and {composer._stem(w) for w in label.split()} <= asked
 
 
+class _MoneyCue:
+    """A sentence that holds an amount of money as the recogniser reads one
+    ("$420", "85 euros"): "how much are the flights" leads with the price, not
+    with the line that merely holds a digit (audit 1030 Z32)."""
+
+    def search(self, text: str) -> bool:
+        return recogniser.says_shape("money", text)
+
+
+_MONEY_ASK = re.compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
+
+
 def _single_cue(kind: str, asked: str) -> re.Pattern | None:
     """What the leading sentence should say: the kind's own cue, the work for
     "what does Priya do", the place for a where."""
+    if kind != "when" and _MONEY_ASK.search(asked):
+        return _MoneyCue()
     if kind in _SINGLE_CUES:
         return _SINGLE_CUES[kind]
     if _ROLE_ASK.match(asked):
@@ -3240,7 +3257,7 @@ def all_said(question: str, notes: list[dict], *, today: date | None = None) -> 
     """"Tell me more" when the answer before said everything (B8): that it
     did, how many notes and over which days, rather than "Nothing in the
     notes found answers that" about a topic it has just answered."""
-    today = today or date.today()
+    today = today or composer.user_today()
     asked = clean(question)
     views = [v for v in (composer.read_note(n, i) for i, n in enumerate(composer._distinct_ids(notes or []))) if v]
     members = _members(asked, views) if asked and views else []
@@ -3321,7 +3338,11 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).
     if composer_money.sums_a_measure(question) and composer_money.answer(out, question, views, today):
         return True
+    if composer_sum.most(out, question, views, today):
+        return True
     if composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
+        return True
+    if composer_sum.answer(out, question, views, today):
         return True
     #: A day, a count or a filing worked out from the notes (probes P10 to
     #: P13); when the notes do not hold what it needs the ordinary shapes
@@ -3546,7 +3567,7 @@ def answer(
     """The decision-70 answer to `question` from the route's `notes`, or None
     when the question is not one this shape answers (a sum, a time, a
     command, nothing found): the caller then asks `composer.compose`."""
-    today = today or date.today()
+    today = today or composer.user_today()
     asked = composer.what_is(clean(question))
     kind = _kind_if_mine(asked)
     #: An act ("rename my gym log") is not a topic to digest: with its verb off

@@ -2050,7 +2050,7 @@ def _window_words() -> re.Pattern[str]:
                                  _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
             r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
             r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
-            r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
+            r"|(?:since|in|during|from)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
             re.I,
         )
     return _WINDOW_WORDS
@@ -2123,7 +2123,7 @@ def adverbial(phrase: str) -> str:
     "friday" is "on friday", "october" and "2025" are "in" them, a rolling
     window is "in the last 7 days"; "last week", "today", "3 days ago" and
     "since 3 October" stand as they are. A range of days is "from" the first."""
-    text = " ".join(str(phrase or "").split())
+    text = _proper_days(" ".join(str(phrase or "").split()))
     low = text.lower()
     if not text or _ADVERB_LEAD.match(low):
         return text
@@ -2132,6 +2132,12 @@ def adverbial(phrase: str) -> str:
     if _ADVERB_BARE.search(low):
         return text
     return _dated_said(text, low) or (f"in {text}" if low.startswith(("a ", "an ")) else text)
+
+
+def _proper_days(text: str) -> str:
+    """A month or a weekday typed small is said with its capital: "in
+    october" is "in October" in an answer (audit 1030 Z45)."""
+    return re.sub(r"\b[a-z]+\b", lambda m: m.group(0).capitalize() if m.group(0) in MONTH_NAMES or m.group(0) in WEEKDAY_NAMES else m.group(0), text)
 
 
 _DEICTIC_LEAD = re.compile(r"^(?:Today|Tomorrow|Yesterday|Tonight)\b")

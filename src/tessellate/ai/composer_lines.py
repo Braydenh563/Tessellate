@@ -32,8 +32,8 @@ def c(text: str, v: str = "", e: str = "", k: str = "") -> Cand:
 
 
 OPENERS: tuple[Cand, ...] = (
-    c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Let me see.", "w"),
-    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Let me check.", "wf"),
+    c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Here is what I have.", "w"),
+    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Here is the answer.", "wf"),
     c("Okay, steady. Let us take this one step at a time.", "w", "S"), c("Take a breath, this is manageable.", "w", "S"),
     c("No rush. We will go through it together.", "w", "S"), c("Okay, steady.", "t", "S"), c("One thing at a time.", "t", "S"),
     c("Sorry about that.", "wt", "U"), c("That sounds frustrating, so let me help.", "w", "U"), c("Fair enough, let me put it right.", "w", "U"),
@@ -43,8 +43,8 @@ OPENERS: tuple[Cand, ...] = (
     c("I will keep this orderly, and take it in turn.", "f", "S"), c("Let us proceed in order.", "f", "S"),
     c("My apologies for the difficulty.", "f", "U"), c("I understand the frustration.", "f", "U"),
     c("Pleased to help.", "f", "H"), c("A pleasure.", "f", "H"),
-    c("On it, notebook open.", "p"), c("Let me rummage through the notebook.", "p"), c("Consider it handled.", "p"),
-    c("One moment, flipping pages.", "p"), c("Right, sleeves rolled up.", "p"), c("Notebook is open.", "p"),
+    c("On it, here you go.", "p"), c("Right, here is what the notebook says.", "p"), c("Consider it handled.", "p"),
+    c("Right, here it is.", "p"), c("Right, sleeves rolled up.", "p"), c("Here it is, from the notebook.", "p"),
     c("Deep breath, we have got this.", "p", "S"), c("Easy does it, one page at a time.", "p", "S"),
     c("Ugh, fair. Let me fix that.", "p", "U"), c("That is annoying. Let me try again.", "p", "U"),
     c("Love the energy.", "p", "H"), c("That is a fun one.", "p", "H"),
@@ -72,7 +72,7 @@ BRIDGES: tuple[Cand, ...] = (
 )
 
 ABILITY_OPENERS: dict[str, tuple[Cand, ...]] = {
-    "due": (c("Looking at the calendar.", "wf"), c("Checking what is dated.", "wt"), c("Calendar open.", "tp")),
+    "due": (c("Here is what is dated.", "wf"), c("What is dated:", "wt"), c("Your calendar:", "tp")),
     "plan": (c("Let us lay it out.", "w"), c("Here is a shape for it.", "wf"), c("Planning mode.", "tp")),
     "study": (c("Study time.", "tp"), c("Let us get you ready.", "w"), c("Right, to the books.", "p")),
 }

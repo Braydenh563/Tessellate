@@ -17,6 +17,7 @@ import importlib
 import json
 import logging
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -588,6 +589,20 @@ class EntityMention(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+#: Markdown a model puts in a link reason ("The packing list is for the
+#: **Lisbon trip**"): a reason is read as plain text everywhere it shows.
+_REASON_LINK = re.compile(r"\[([^\]\n]{1,200})\]\([^)\n]{0,300}\)")
+_REASON_MARKS = re.compile(r"\*\*|__|`|\[\[|\]\]|(?<!\w)#(?=\w)|^#+[ \t]+")
+
+
+def plain_reason(text: str | None) -> str | None:
+    """`text` with its markdown marks off: bold, code, a [[wiki link]], a
+    [text](url) link and a #tag read as the words (audit 1030 Z42)."""
+    if not text:
+        return text
+    return _REASON_MARKS.sub("", _REASON_LINK.sub(r"\1", text)).replace("[", "").replace("]", "")
+
+
 class LinkReason(TypeDecorator):
     """`entry_links.reason`: plain text, or ciphertext on a link touching a
     private note, read back as plain text while the vault is open.
@@ -616,12 +631,12 @@ class LinkReason(TypeDecorator):
         from tessellate.core import crypto
 
         if not crypto.is_encrypted(value):
-            return value
+            return plain_reason(value)
         key = LinkReason.key_source()
         if key is None:
             return None
         try:
-            return crypto.decrypt(key, value)
+            return plain_reason(crypto.decrypt(key, value))
         except crypto.DecryptionError:
             return None
 

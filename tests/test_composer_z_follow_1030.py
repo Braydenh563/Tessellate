@@ -59,3 +59,23 @@ def test_z53_a_question_with_a_subject_of_its_own_is_not_pulled_back(ask):
     first, _ = ask("what do I know about Lisbon")
     said, _ = ask("how much is the rent", history=[_turn("what do I know about Lisbon", first, "Lisbon trip")])
     assert "$1,200" in said, said
+
+
+@pytest.mark.parametrize(("first", "then", "lead"), [
+    ("what is on 4 November", "what time", "Here's the exact date: Dentist appointment on 4 November 2026 at 9:30"),
+    ("what is on 4 November", "when is it", "The day noted down: Dentist appointment on 4 November 2026"),
+    ("what is on saturday", "who is it with", "Your own words: Coffee with Anna"),
+])
+def test_z53_a_follow_on_after_a_date_list_keeps_its_first_item(ask, first, then, lead):
+    """A date list cites no sources; the links it wrote name what it was about."""
+    said = ask(first)[0]
+    said2 = ask(then, history=[{"question": first, "answer": said}])[0]
+    assert said2.startswith(lead), said2
+
+
+def test_z53_a_turn_without_sources_is_named_by_the_links_in_its_answer():
+    from tessellate.api.routes_chat import ChatTurn
+
+    turn = ChatTurn(question="q", answer="- Dentist on 4 November. ([Dentist](#/notes/13))\n- [**Diary: Saturday 25 October**](#/notes/37)")
+    assert turn.objects == ["Dentist", "Diary"]
+    assert ChatTurn(question="q", answer="no links", objects=["Kept"]).objects == ["Kept"]
