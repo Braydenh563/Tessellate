@@ -221,6 +221,7 @@ const WB_COMMANDS = [
   { id: "insert-frame", group: "Insert", icon: "ph:frame-corners", label: "Frame", keys: "F", surface: "board", run: wbTool("frame") },
   //: canvasdepth2: draw.io's table, rows and columns of text cells.
   { id: "insert-table", group: "Insert", icon: "ph:table", label: "Table", keys: "", surface: "board", run: () => wbInsertTable() },
+  { id: "insert-diagram", group: "Insert", icon: "ph:graph", label: "Mermaid diagram, live", menu: "Mermaid diagram…", keys: "", surface: "board", run: () => wbOpenDiagramDialog() },
   //: draw.io's Edit data (Ctrl+M): the Format panel's Data tab.
   { id: "edit-data", group: "Edit", icon: "ph:database", label: "Edit data", keys: "", surface: "board", needs: "selection", run: () => wbFormatOpen("data") },
   { id: "insert-image", group: "Insert", icon: "ph:image", label: "Image from a file", keys: "I", surface: "board", run: wbClickId("wb-add-image") },

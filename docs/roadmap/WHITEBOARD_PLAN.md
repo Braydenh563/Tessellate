@@ -1712,3 +1712,8 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 1403. Rich text runs on a board card and the ⋯ menu top: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
 
 1404. Drag a connector label by its words: built (`wb-1027`); moved to HISTORY.md, "Moved from the plans, 2026-10-27 (wb-1027)".
+
+## Placed from INBOX, 2026-10-30
+
+- **1452.** **The owner, 2026-10-30, verbatim.** "i think left click drag select instead of pan on the whiteboard and mindmap is the way to go, that way right click hold can be pan and trackpad users two finger pan or zoom liek touch or smth idk"
+     Recommendation (order 3, taken): on the board and the map, a left drag on empty board draws the selection box with Select (it already does) and is the default tool's gesture; a right-button drag pans (a right click with no movement still opens the menu); a trackpad's two-finger scroll pans and its pinch (wheel with ctrlKey) zooms, a mouse wheel zooms as now; the Hand and Space-drag stay. Check the present handlers first (`wbClientToBoard`, the zoom and pan handlers in whiteboard.js) and measure in the running app.

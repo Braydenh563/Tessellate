@@ -1247,3 +1247,144 @@ async function wbThumbFlush() {
     if (document.visibilityState === "hidden" && wbThumbState.pending !== null) wbThumbFlush();
   });
 })();
+
+// --- A live Mermaid diagram (INBOX 1451) -----------------------------------
+//
+// The owner: "allow mermaid diagrams to actually be added as objects like
+// with draw.io into the whiteboard". An object of kind `diagram` keeps its
+// source (`data.mermaid`) and nothing drawn: the notes' own hidden frame
+// (mermaid-draw.js, loaded only when a board has one) draws it, so a theme
+// change redraws it and an edit is one Save. Double-click edits it; "Turn
+// into shapes" hands the source to `wbImportMermaid` for editable shapes.
+
+const WB_DIAGRAM_SAMPLE = "flowchart TD\n  A[Start] --> B{Ready?}\n  B -->|yes| C[Ship it]";
+const wbDiagramDialogState = { target: null, timer: 0 };
+
+//: The drawing already made for this item's source in the theme in force, as
+//: an image address, or "": export and the thumbnail are synchronous.
+function wbDiagramDataUrl(obj) {
+  const known = typeof mermaidKnown === "function" ? mermaidKnown(obj?.data?.mermaid || "") : null;
+  return known?.svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(known.svg)}` : "";
+}
+
+function wbBuildDiagram(el, d) {
+  el.attr("role", "img").on("dblclick", (event) => {
+    event.stopPropagation();
+    if (!wbIsLocked("object", d)) wbOpenDiagramDialog(d);
+  });
+}
+
+//: Draws the source once per source and theme; a mistake shows the parser's
+//: one line in the box instead of a broken picture.
+function wbPaintDiagram(node, d) {
+  const source = d.data?.mermaid || "";
+  node.setAttribute("aria-label", `Mermaid ${wbMermaidKind(source) || ""} diagram`.replace("  ", " "));
+  ensureModule("mermaid").then(() => {
+    const key = `${source}\u0000${mermaidThemeNow().key}`;
+    if (node._wbDiagramKey === key) return;
+    node._wbDiagramKey = key;
+    mermaidRequest(source).then((result) => {
+      if (node._wbDiagramKey !== key) return;
+      const url = wbDiagramDataUrl(d);
+      const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "", draggable: false }) : null;
+      const note = img ? null : Object.assign(document.createElement("div"), { className: "wb-diagram-note", textContent: result?.error || "This diagram could not be drawn." });
+      node.replaceChildren(img || note);
+    });
+  });
+}
+
+//: The box a drawing fits at its own shape: its longer side 480, neither
+//: under 40 (a wide flowchart drew as a strip inside a 320 by 220 box).
+async function wbDiagramSize(source) {
+  await ensureModule("mermaid");
+  const svg = (await mermaidRequest(source))?.svg || "";
+  const box = /viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/.exec(svg);
+  const ratio = box ? Number(box[1]) / Number(box[2]) || 1.45 : 1.45;
+  const w = ratio >= 1 ? 480 : Math.max(40, 480 * ratio);
+  return { width: Math.round(w), height: Math.round(Math.max(40, w / ratio)) };
+}
+
+async function wbInsertDiagram(source) {
+  const [cx, cy] = wbViewCentre();
+  const { width, height } = await wbDiagramSize(source);
+  const made = await wbCreateObject("diagram", { mermaid: source }, cx - width / 2, cy - height / 2, width, height);
+  if (!made) return null;
+  clearWbSelection();
+  wbHandleItemClick("object", made.id, { shiftKey: false });
+  wbAnnounce("Diagram added. Double-click it to change it.");
+  return made;
+}
+
+//: Insert opens it empty with a sample; double-click opens it on an item.
+function wbOpenDiagramDialog(d = null) {
+  const dialog = document.getElementById("wb-diagram-dialog");
+  const field = document.getElementById("wb-diagram-text");
+  if (!dialog || !field) return;
+  wbDiagramDialogState.target = d;
+  field.value = d?.data?.mermaid || WB_DIAGRAM_SAMPLE;
+  document.getElementById("wb-diagram-title").textContent = d ? "Edit diagram" : "Mermaid diagram";
+  document.getElementById("wb-diagram-save").textContent = d ? "Save" : "Add to board";
+  const shapes = document.getElementById("wb-diagram-shapes");
+  shapes.hidden = !d;
+  shapes.disabled = !wbMermaidKind(field.value);
+  wbDiagramPreview();
+  dialog.showModal();
+  field.focus();
+}
+
+function wbDiagramPreview() {
+  const source = document.getElementById("wb-diagram-text")?.value || "";
+  const well = document.getElementById("wb-diagram-preview");
+  if (!well) return;
+  ensureModule("mermaid").then(() => mermaidRequest(source)).then((result) => {
+    if ((document.getElementById("wb-diagram-text")?.value || "") !== source) return;
+    const url = wbDiagramDataUrl({ data: { mermaid: source } });
+    const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "Preview of the diagram" }) : null;
+    well.replaceChildren(img || Object.assign(document.createElement("p"), { className: "muted", textContent: result?.error || "Nothing to draw yet." }));
+  });
+}
+
+async function wbSaveDiagramDialog() {
+  const dialog = document.getElementById("wb-diagram-dialog");
+  const source = (document.getElementById("wb-diagram-text")?.value || "").trim();
+  if (!source) {
+    toast("Write the diagram first, or Cancel.");
+    return;
+  }
+  dialog.close();
+  const d = wbDiagramDialogState.target;
+  if (!d) return wbInsertDiagram(source);
+  if (source === d.data?.mermaid) return;
+  wbPushUndo({ action: "move", kind: "object", id: d.id, before: WB_KIND_INFO.object.payload(d) });
+  //: The new drawing's own shape, about the box's centre.
+  const fit = await wbDiagramSize(source);
+  d.data = { ...d.data, mermaid: source };
+  Object.assign(d, { x: Math.round(d.x + (d.width - fit.width) / 2), y: Math.round(d.y + (d.height - fit.height) / 2) }, fit);
+  await wbSaveObject(d);
+  wbScheduleRender();
+  wbAnnounce("Diagram saved.");
+}
+
+//: Editable shapes where the diagram stood, as one Undo step.
+async function wbDiagramToShapes() {
+  const d = wbDiagramDialogState.target;
+  const source = document.getElementById("wb-diagram-text")?.value || "";
+  if (!d || !wbMermaidKind(source)) return;
+  document.getElementById("wb-diagram-dialog")?.close();
+  await wbRecordGesture(async () => {
+    const made = await wbImportMermaid(source, [d.x + d.width / 2, d.y + d.height / 2]);
+    if (made) await wbDeleteObjectRef?.(d);
+  });
+}
+
+onDomReady(() => {
+  const field = document.getElementById("wb-diagram-text");
+  if (!field) return;
+  field.addEventListener("input", () => {
+    clearTimeout(wbDiagramDialogState.timer);
+    document.getElementById("wb-diagram-shapes").disabled = !wbMermaidKind(field.value);
+    wbDiagramDialogState.timer = setTimeout(wbDiagramPreview, 300);
+  });
+  document.getElementById("wb-diagram-save")?.addEventListener("click", wbSaveDiagramDialog);
+  document.getElementById("wb-diagram-shapes")?.addEventListener("click", wbDiagramToShapes);
+});

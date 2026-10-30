@@ -258,7 +258,12 @@ FRAME_KIND = "frame"
 TABLE_KIND = "table"
 MAX_TABLE_ROWS = 50
 MAX_TABLE_COLS = 20
-VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND} | MAP_REFERENCE_KINDS
+#: A live Mermaid diagram (INBOX 1451): its source is `data.mermaid`, drawn
+#: by the browser's diagram frame; nothing drawn is stored, so a theme
+#: change or an edit redraws it.
+DIAGRAM_KIND = "diagram"
+MAX_MERMAID_CHARS = 20_000
+VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND, DIAGRAM_KIND} | MAP_REFERENCE_KINDS
 
 
 #: A card/sketch/object's own persisted group, asked for directly (Ctrl+G).
@@ -358,6 +363,8 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: A diagram's Mermaid source (`DIAGRAM_KIND`).
+    mermaid: str | None = Field(default=None, max_length=MAX_MERMAID_CHARS)
     #: **A table's column widths** (wb5): one relative weight per column, so
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
@@ -855,6 +862,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         raise HTTPException(
             status_code=422, detail=f"A {body.kind} item needs some content."
         )
+    elif body.kind == DIAGRAM_KIND and not (body.data.mermaid or "").strip():
+        raise HTTPException(status_code=422, detail="A diagram needs its Mermaid source.")
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):

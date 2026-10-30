@@ -117,6 +117,9 @@ def _what(clause: str, at: int, end: int, last: str) -> str:
     return re.sub(r"^my\b", "your", after.group("what").strip())
 
 
+_PRICE_MOVED = re.compile(r"\bfrom\s+(?:[A-Z]{3}\s*)?[$£€¥]?\s*\d[\d,.]*\s*k?\s+(?:down |up )?to\b", re.I)
+
+
 def _clause_items(view, sentence, refunds: bool) -> list[Item]:  # noqa: ANN001
     found: list[Item] = []
     last = ""
@@ -124,7 +127,8 @@ def _clause_items(view, sentence, refunds: bool) -> list[Item]:  # noqa: ANN001
         said = recognise.amounts(clause)
         if not said or bool(_REFUND.search(clause)) != refunds or (not refunds and _NOT_SPENT.search(clause)):
             continue
-        sign, value, at = said[0]
+        #: "Discounted from $150 to $68": what was paid is where the price went.
+        sign, value, at = said[-1] if len(said) > 1 and _PRICE_MOVED.search(clause) else said[0]
         tail = re.match(r"[$£€]?\s*[\d,.]+", clause[at:])
         last = _what(clause, at, at + (tail.end() if tail else 1), last) or composer_lists._title(view)  # noqa: SLF001
         found.append(Item(last, sign, value, view, sentence))
@@ -250,11 +254,26 @@ def _one_of_several(items: list, views: list, month: int | None, subject: list[s
     return not _items(views, month, subject, refunds=True) and not _still_due(views, month, subject)
 
 
+#: What an untitled note says was bought ("I just bought a new gaming mouse
+#: discounted from $150 to $68": "a new gaming mouse"), its name in a list of
+#: spending rather than the whole sentence with its old price (INBOX 1456).
+_BOUGHT = re.compile(
+    r"\b(?:bought|purchased|ordered|got|paid for)\s+(?P<what>(?:(?!for|at|from|on|discounted|reduced|marked|haha|lol)[\w'-]+\s?){1,5})",
+    re.I,
+)
+
+
+def _note_name(view) -> str:  # noqa: ANN001
+    if not view.titled and (m := _BOUGHT.search(str(view.note.get("content") or ""))):
+        return m.group("what").strip()
+    return composer_lists._title(view)  # noqa: SLF001
+
+
 def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, float]:
     """The total said once, by note or by label within one note, and the total."""
     by_note: dict[str, float] = {}
     for item in items:
-        name = composer_lists._title(item.view)  # noqa: SLF001
+        name = _note_name(item.view)
         by_note[name] = by_note.get(name, 0) + item.value
     total = sum(by_note.values())
     if len(items) == 1:
@@ -342,8 +361,20 @@ def _total_rest(q: str):  # noqa: ANN202
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
     if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
         return f"{kind[0]} {kind[1]}"
+    if m := _LISTING.match(q):
+        return " ".join(x.strip() for x in m.groups() if x and x.strip())
     return _bare_total(q)
 
+
+#: "What expenses have I recorded", "list my purchases", "what have I bought"
+#: (INBOX 1456): a list of what was spent is the sum with its items named.
+_LISTING = re.compile(
+    r"^(?:what|which) ([\w'-]+ )?(?:expenses|purchases|payments|costs|bills|spending) (?:have|did|do) (?:i|we) "
+    r"(?:recorded|logged|noted|tracked|made|had|written down|got)\b(.*)$"
+    r"|^(?:list|show)(?: me)? (?:all )?(?:my|our|the) (?:recorded )?([\w'-]+ )?(?:expenses|purchases|payments|spending)\b(.*)$"
+    r"|^what (?:have|did) (?:i|we) (?:bought|buy|purchased|purchase|paid for|pay for)\b(.*)$",
+    re.I,
+)
 
 _ALL_UP = ("all up", "altogether", "in total", "overall")
 _NOT_A_THING = frozenset({"is", "are", "was", "were", "did", "do", "does", "have", "has", "had", "i", "we", "money", "time", "can", "should", "will", "would"})

@@ -471,6 +471,8 @@ def _find_by_head(text: str) -> dict | None:
         if head is None:
             continue
         rest = text[len(head):].strip()
+        if intent == "find" and _sums_money(text):
+            return None
         if intent == "find":
             listed = _listing(text, head, rest)
             if listed is not None:
@@ -479,10 +481,19 @@ def _find_by_head(text: str) -> dict | None:
     return None
 
 
+def _sums_money(text: str) -> bool:
+    """"List my expenses" is the spending sum with its items, not a find for
+    the word (INBOX 1456). Imported here: the money reader loads the composer."""
+    from tessellate.ai import composer_money
+
+    return composer_money.asks(text)
+
+
 def _found_object(intent: str, head: str, rest: str) -> dict | None:
     """What an open or a find names: "#12", "note 12", a target, or for a
     free find ("find dentist") its topic."""
-    rest = _NOTES_SCOPE.sub("", rest)
+    #: A name the app cut short ("I had work today…", a chip's label).
+    rest = _NOTES_SCOPE.sub("", rest).rstrip("…").rstrip()
     number = re.fullmatch(r"(?:(?:note|entry) )?#?(\d{1,9})", rest, re.IGNORECASE)
     if number and (rest.startswith("#") or not rest.isdigit()):
         return {"intent": intent, "note_id": int(number.group(1))}

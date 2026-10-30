@@ -6421,7 +6421,7 @@ function wbSelectSimilar() {
 //: picture on the board (INBOX 445).
 function wbSelectableItems() {
   const out = wbLinkCandidates();
-  for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame") out.push(["object", o]);
+  for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame" || o.kind === "diagram") out.push(["object", o]);
   //: A locked item is out of reach until it is unlocked (decision 15): not
   //: in Select all, not in the Tab walk.
   return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item));
@@ -6453,6 +6453,7 @@ function wbItemSpokenName(kind, item) {
     return title ? `Note card: ${title}` : "Note card";
   }
   if (item.kind === "image") return "Picture";
+  if (item.kind === "diagram") return "Mermaid diagram";
   if (item.kind === "frame") return `Frame: ${wbFrameTitle(item)}`;
   const isTopic = WB_MAP_KINDS.has(item.kind);
   const raw = isTopic ? wbMapLabel(item) : item.data?.content;
@@ -13359,6 +13360,12 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
       );
+    } else if (obj.kind === "diagram") {
+      //: What the board shows, already drawn (`wbDiagramDataUrl`); an edge
+      //: while it has not been drawn yet, never an empty gap.
+      const url = wbDiagramDataUrl(obj);
+      parts.push(url ? `<image href="${wbSvgEscape(url)}" width="${obj.width}" height="${obj.height}" preserveAspectRatio="xMidYMid meet" />`
+        : `<rect width="${obj.width}" height="${obj.height}" fill="none" stroke="#9aa3b5" stroke-dasharray="6 4" />`);
     } else if (WB_MAP_KINDS.has(obj.kind)) {
       // A map node exports as what it looks like: a rounded box with the
       // branch's colour down its leading edge and its label inside. Without
@@ -23217,6 +23224,8 @@ function renderWbObjects(canvas) {
       wbBuildFrame(el, d);
     } else if (d.kind === "table") {
       wbBuildTable(el, d);
+    } else if (d.kind === "diagram") {
+      wbBuildDiagram(el, d);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       // A map node, not a text box. Checked before the `else` below because
       // that branch is "everything that isn't an image", which is what drew a
@@ -23445,6 +23454,8 @@ function renderWbObjects(canvas) {
       wbPaintFrame(this, d);
     } else if (d.kind === "table") {
       wbPaintTable(this, d);
+    } else if (d.kind === "diagram") {
+      wbPaintDiagram(this, d);
     } else {
       const sticky = wbIsSticky(d);
       el.classed("wb-sticky", sticky);
