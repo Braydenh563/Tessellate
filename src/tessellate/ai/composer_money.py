@@ -59,7 +59,7 @@ _NOT_SPENT = re.compile(
     r"\b(?:owes?|owed|lent|lend|borrow\w*|earn\w*|salary|income|refund\w*|saved|savings|save|goal|targets?|budget\w*"
     r"|listing|listed|asking|quoted|due|balance|unpaid|reached|aim\w*|limit|cap)\b|\bnot\s+(?:[A-Z]{3}\s*)?[$£€]"
     #: "keep food under $100" is the aim, not money spent (gold answer 15).
-    r"|\bkeep\b[^$£€]*\b(?:under|below)\b",
+    r"|\bkeep(?:\s+\w+){0,4}\s+(?:under|below)\b",
     re.I,
 )
 _REFUND = re.compile(r"\brefund\w*\b", re.I)

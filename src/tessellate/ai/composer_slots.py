@@ -32,10 +32,10 @@ _STILL_ON = re.compile(
 #: outstanding": a yes or no about one open item (stress run 2026-10-30
 #: quoted a journal line, or dumped the whole list).
 _IS_STILL = re.compile(
-    r"^is\s+(.+?)\s+still\s+(?:on\s+(?:my|the)\b.*|outstanding|open|pending|to\s+do|unticked|unchecked|left)$",
+    r"^is\s+(\S+(?:\s\S+)*?)\s+still\s+(?:on\s+(?:my|the)\b.*|outstanding|open|pending|to\s+do|unticked|unchecked|left)$",
     re.I,
 )
-_IS_DONE = re.compile(r"^(?:is|has)\s+(.+?)\s+(?:been\s+)?(?:ticked(?:\s+off)?|done|finished|completed)(?:\s+yet)?$", re.I)
+_IS_DONE = re.compile(r"^(?:is|has)\s+(\S+(?:\s\S+)*?)\s+(?:been\s+)?(?:ticked(?:\s+off)?|done|finished|completed)(?:\s+yet)?$", re.I)
 #: A line that says the doing did not happen ("Didn't buy replacement mint").
 _UNDONE = re.compile(r"\b(?:did\s*n[o']t|didnt|not|never|forgot|failed|yet\s+to)\b", re.I)
 _NEED = re.compile(r"^what\s+(?:else\s+)?(?:do|should)\s+i\s+(?:still\s+)?(?:need|have)\s+to\s+(.+)$", re.I)
