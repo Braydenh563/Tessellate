@@ -128,8 +128,8 @@ const ALPHA_DECAY = 0.0228;
 //:   moved it (an init, a drag released, a reheat), the loop stops and says
 //:   `end`, as if it had cooled. Nothing is lost: a drag or a reheat starts it
 //:   again from where it stands.
-const SETTLE_FULL_TICKS_UP_TO = 1500;
-const SETTLE_TICKS_BIG = 120;
+const SETTLE_FULL_TICKS_UP_TO = 750;
+const SETTLE_TICKS_BIG = 100;
 const SETTLE_BUDGET_MS = 20000;
 let settleFrom = 0;
 
@@ -1129,7 +1129,16 @@ const CLEAR_CELL = 40;
 //: (a note flung far out) the cell doubles instead.
 const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
-const clear = { curved: true, stamp: 0, start: new Int32Array(1), items: new Int32Array(0) };
+const clear = {
+  curved: true,
+  stamp: 0,
+  start: new Int32Array(1),
+  items: new Int32Array(0),
+  sx: new Float64Array(0),
+  sy: new Float64Array(0),
+  sneed: new Float64Array(0),
+  mark: new Int32Array(0),
+};
 
 function clearCurve(a, b) {
   // Drawn straight in every shape but Organic, whose long curves are its
@@ -1259,16 +1268,41 @@ function clearanceForce() {
   }
   for (let i = 1; i <= cells; i++) start[i] += start[i - 1];
   //: Filled in the notes' order, as the lists were, so pushes sum the same.
+  //: The cell-sorted coordinates are kept beside the indices (`sx`, `sy`,
+  //: `sneed`), so the scan reads three flat arrays and touches a note's
+  //: object only when the note is within reach of the chord.
+  const count = nodes.length;
+  if (clear.sx.length < count) {
+    clear.sx = new Float64Array(count);
+    clear.sy = new Float64Array(count);
+    clear.sneed = new Float64Array(count);
+    clear.mark = new Int32Array(count);
+  }
+  const { sx, sy, sneed, mark } = clear;
   const fill = start.slice(0, cells);
-  nodes.forEach((node, index) => {
+  for (let index = 0; index < count; index++) {
+    const node = nodes[index];
     const at = cellOf(node);
-    if (at >= 0) items[fill[at]++] = index;
-  });
+    if (at < 0) continue;
+    const slot = fill[at]++;
+    items[slot] = index;
+    sx[slot] = node.x;
+    sy[slot] = node.y;
+    sneed[slot] = (node.r || 8) + CLEAR_GAP;
+  }
+  //: A mark per note says it was already asked for this line; stamps only
+  //: grow, so the marks are cleared once, when the stamp first outgrows them.
+  if (clear.stamp > 2000000000) {
+    mark.fill(0);
+    clear.stamp = 0;
+  }
   for (const link of links) {
     const a = link.source;
     const b = link.target;
-    const count = clearCurve(a, b);
-    clear.stamp += 1;
+    const points = clearCurve(a, b);
+    const stamp = ++clear.stamp;
+    const ai = a.index;
+    const bi = b.index;
     //: Chord by chord, not the whole line's box: a note within `reach` of the
     //: line is within it of a chord, so the cells round each chord hold every
     //: note the box did. A long diagonal line's box is mostly empty air (the
@@ -1277,7 +1311,7 @@ function clearanceForce() {
     //: column of cells takes the rows the chord crosses within it, padded by
     //: the reach. A long diagonal's box at 2,000 notes asked 290,000 notes a
     //: tick, 81% of the worker's time.
-    for (let c = 1; c < count; c++) {
+    for (let c = 1; c < points; c++) {
       const ax = clearPts[c * 2 - 2];
       const ay = clearPts[c * 2 - 1];
       const dx = clearPts[c * 2] - ax;
@@ -1296,15 +1330,21 @@ function clearanceForce() {
         for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
           const end = start[column + gy + 1];
           for (let k = start[column + gy]; k < end; k++) {
-            const node = nodes[items[k]];
-            if (node === a || node === b || node._clear === clear.stamp) continue;
+            const at = items[k];
+            if (at === ai || at === bi || mark[at] === stamp) continue;
             // Clear of this chord: no push from it, and a chord it is near
             // finds it in its own corridor.
-            const u = Math.max(0, Math.min(1, ((node.x - ax) * dx + (node.y - ay) * dy) / l2));
-            const need = (node.r || 8) + CLEAR_GAP;
-            if ((node.x - ax - u * dx) ** 2 + (node.y - ay - u * dy) ** 2 >= need * need) continue;
-            node._clear = clear.stamp;
-            clearNearest(node, count);
+            const px = sx[k] - ax;
+            const py = sy[k] - ay;
+            let u = (px * dx + py * dy) / l2;
+            u = u < 0 ? 0 : u > 1 ? 1 : u;
+            const ex = px - u * dx;
+            const ey = py - u * dy;
+            const need = sneed[k];
+            if (ex * ex + ey * ey >= need * need) continue;
+            mark[at] = stamp;
+            const node = nodes[at];
+            clearNearest(node, points);
             clearPush(node, a, b);
           }
         }

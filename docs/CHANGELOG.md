@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Graph: a 2,000-note map settles in about 9 to 10 s, not 25 s, and no longer holds the page: while its layout moves, a map of 2,500 notes and links or more is drawn plain (the shortest links in one stroke, dots in one path per colour), the line-clearance force reads cell-sorted typed arrays (55 to 77 ms a tick down to 30 to 40), and a big map cools in about 100 ticks, not 225 (audit 1029 G3, 1028 S2). Cold open at 1x: 149 main-thread long tasks summing 15.7 s (max 559 ms) down to 20 summing 2.0 s, one over 100 ms after the first paint; 4x CPU 120 tasks summing 21.2 s down to 59 summing 8.7 s. 40 and 500 notes unchanged (500: 5.4 to 5.0 s).
 - Polish: a naming prompt's heading reads as a title ("Rename this document", "Name the new board"), no trailing colon, across all 25 callers (audit 1028 U33).
 - Polish: the empty Documents library shows one New document, not two (audit 1028 U29); the dashboard says "how long ago" with the Library's wording, and the night reader's "Nothing new last time" sentence starts with a capital (S17); the document palette lists Go to line (Ctrl+G, code), Find next (F3, prose) and Find and replace (Ctrl+H) (D32).
 - Chat: "delete all notes about gym" puts every match on one Confirm card and counts them ("the 2 notes", "the only note"), instead of quietly binning the best match (audit 1028 E66).
