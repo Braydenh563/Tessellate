@@ -42,7 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, exists, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import spelling
+from tessellate.ai import composer_frame, spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 from tessellate.entry import manager
 
@@ -684,7 +684,7 @@ def _word_count(session: Session) -> StatAnswer:
     not millions; this is a millisecond.
     """
     rows = session.scalars(_visible(select(Entry.content))).all()
-    words = sum(len(str(row or "").split()) for row in rows)
+    words = sum(composer_frame.note_words(row) for row in rows)
     if not rows:
         return StatAnswer("word-count", "There are no notes to count yet.")
     average = round(words / len(rows))
@@ -714,8 +714,8 @@ def _longest_notes(session: Session) -> StatAnswer:
         return StatAnswer("longest-notes", "There are no notes long enough to rank yet.")
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
-            "count": len(str(content or "").split()),
+            "label": composer_frame.plain_snippet(content),
+            "count": composer_frame.note_words(content),
             "id": note_id,
         }
         for note_id, content in rows
@@ -755,7 +755,7 @@ def _stale_notes(session: Session) -> StatAnswer:
         )
     facts = [
         {
-            "label": " ".join(str(content or "").split())[:60],
+            "label": composer_frame.plain_snippet(content),
             "id": note_id,
             "when": touched.isoformat() if touched else "",
         }
@@ -932,7 +932,7 @@ USAGE_ROWS = 200
 
 
 def _words(text: str | None) -> int:
-    return len(str(text or "").split())
+    return composer_frame.note_words(text)
 
 
 def _month_keys(now: datetime, months: int = GROWTH_MONTHS) -> list[str]:

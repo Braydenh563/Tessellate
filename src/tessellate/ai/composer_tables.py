@@ -1562,7 +1562,7 @@ for _kind, _lines in {
 INSIGHT_TEMPLATES: dict[str, str] = {
     "recurrence": "You have written about {subject} {count} times since {since}{after}; {hedge}.",
     "streak": "You have written about {subject} {weeks} weeks running.",
-    "drift": "Since {since}, no later note picks up this plan: {plan}. It may be still open.",
+    "drift": "Since {since}, no later note picks up this plan: {plan}. It may still be open.",
     "contrast": "On {first} you wrote {before}; on {last}, {after_said}. You may have changed your mind.",
     "load": "The week of {week} had {count} notes against a usual {usual}; a busy week.",
 }

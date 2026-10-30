@@ -175,7 +175,10 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
         return []
     #: "my lecture notes" is the category "Lecture notes" as well as "Lecture".
     names = {wanted, f"{wanted} notes"}
-    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names][:limit]
+    #: A tag names notes as a category does ("list my running notes" says
+    #: three tagged #running, so "summarise my running notes" is the same three).
+    tagged = {t.lower() for t in names}
+    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names or tagged & {str(t).lower() for t in n.get("tags") or []}][:limit]
 
 
 def _link(note: dict) -> str:

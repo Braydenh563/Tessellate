@@ -540,12 +540,9 @@ _DONE = frozenset({"did", "have", "has"})
 _CUES = frozenset({"temperature", "temp", "degrees", "date", "day", "many", "much", "time", "when", "what", "which", "at", "to", "of"})
 #: A superlative asks which note is first or next, the ranker's question.
 _RANKED = frozenset({"next", "first", "last", "latest", "newest", "upcoming", "previous", "earliest"})
-#: Past forms the stemmer does not fold ("ran" is "run"), so a question that
-#: says the verb meets the note that says it in the past.
-_IRREGULAR = {
-    "ran": "run", "wrote": "write", "ate": "eat", "swam": "swim", "rode": "ride", "drove": "drive", "bought": "buy",
-    "went": "go", "flew": "fly", "took": "take", "made": "make", "baked": "bake", "cycled": "cycle", "walked": "walk",
-}
+#: Regular pasts the unit and slot readers match by their lemma too; the
+#: irregular ones are the stemmer's own (`composer.IRREGULAR_PAST`).
+_IRREGULAR = {**composer.IRREGULAR_PAST, "baked": "bake", "cycled": "cycle", "walked": "walk"}
 #: Unit aliases by the unit a question names; the first is how the note's own
 #: figure is read back to the person.
 _UNITS = {
@@ -570,16 +567,26 @@ def _flat(words: list[str], drop=()) -> list[str]:  # noqa: ANN001
     return [w for w in words if w not in drop]
 
 
+#: How a temperature is asked: "how hot is the oven", "what temp for the loaf",
+#: "what oven setting", "how warm should the starter be" (audit 1030 Z25).
+_HEAT = frozenset({"hot", "warm", "cold", "cool", "chilled", "temperature", "temp", "temps", "degrees", "setting", "heat"})
+_COPULA = frozenset({"is", "are", "be", "was", "were", "need", "needs", "set", "for", "at", "oven", "ovens"})
+
+
 def _ask_temperature(t: list[str]) -> Ask | None:
-    """"what temperature do I bake at", "how hot do I bake the bread": a
-    temperature asked of something I do."""
+    """"what temperature do I bake at", "how hot is the oven": a temperature
+    asked of something I do or keep."""
     if t[:2] == ["at", "what"]:
         t = t[1:]
-    if t[:2] == ["how", "hot"]:
-        t = ["what", "temperature", *t[2:]]
-    if len(t) < 5 or t[0] != "what" or t[1] not in ("temperature", "temp") or t[2] not in _AUX or t[3] not in _SELF:
+    if t[:1] == ["how"] and len(t) > 2 and t[1] in _HEAT:
+        rest = t[2:]
+    elif t[:1] == ["what"] and len(t) > 2 and any(w in _HEAT for w in t[1:4]):
+        rest = [w for w in t[1:] if w not in _HEAT]
+    else:
         return None
-    return Ask(_flat(t[4:], ("at",)))
+    subject = _flat(rest, _AUX | _SELF | _COPULA | _FILLER)
+    #: A bare "the oven" is what is baked in it: the notes say "bake at 230C".
+    return Ask(subject or ["bake"]) if rest else None
 
 
 def _ask_date(t: list[str]) -> Ask | None:

@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -613,12 +613,31 @@ def _stem(word: str) -> str:
 _F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": "loaf", "leaves": "leaf", "halves": "half", "calves": "calf"}
 
 
+#: Past forms no suffix rule folds, so a question that says "run" meets the
+#: note that says "Ran" (audit 1030 Z4: "when did I run 8 km" answered with
+#: another run's sentence). Only forms that are rarely another word: not
+#: "saw", "left", "found", "felt".
+IRREGULAR_PAST = {
+    "ran": "run", "wrote": "write", "written": "write", "ate": "eat", "eaten": "eat", "swam": "swim", "swum": "swim",
+    "rode": "ride", "ridden": "ride", "drove": "drive", "driven": "drive", "bought": "buy", "went": "go", "gone": "go",
+    "flew": "fly", "flown": "fly", "took": "take", "taken": "take", "made": "make", "sold": "sell", "gave": "give",
+    "given": "give", "came": "come", "told": "tell", "spoke": "speak", "spoken": "speak", "slept": "sleep", "paid": "pay",
+    "met": "meet", "began": "begin", "begun": "begin", "broke": "break", "broken": "break", "chose": "choose",
+    "chosen": "choose", "forgot": "forget", "forgotten": "forget", "sent": "send", "built": "build", "heard": "hear",
+    "won": "win", "lost": "lose", "sat": "sit", "stood": "stand", "taught": "teach", "caught": "catch",
+    "brought": "bring", "drank": "drink", "drunk": "drink", "sang": "sing", "sung": "sing", "wore": "wear", "worn": "wear",
+    "woke": "wake", "grew": "grow", "grown": "grow",
+}
+
+
 def _stem_plain(word: str) -> str:
     """`_stem` without the spelling key: what the import-time tables use, so
     importing the composer never loads the English list."""
     w = word.lower()
     if w in _NOT_PLURAL:
         return w
+    if w in IRREGULAR_PAST:
+        return IRREGULAR_PAST[w]
     if w in _F_PLURALS:
         return _F_PLURALS[w]
     return _strip_suffix(w)
@@ -2000,6 +2019,13 @@ _KNOWN: contextvars.ContextVar[frozenset] = contextvars.ContextVar("composer_kno
 #: now"): only then does a newer correction outrank the note it corrects;
 #: otherwise both are said, older first, "but" the newer (`but_newer`).
 _ASKS_NOW: contextvars.ContextVar[bool] = contextvars.ContextVar("composer_asks_now", default=False)
+def figures_of(text: str) -> frozenset:
+    """The amounts `text` names ("run 8 km"), as (dimension, base value). The
+    search drops a lone digit, so a sentence that holds the same amount is
+    ranked for it (audit 1030 Z4: "when did I run 8 km" led with a 6 km run)."""
+    return frozenset((d, round(v, 6)) for d, v, _unit, _at in rec.measures(text))
+
+
 _NOW_WORDS = re.compile(r"\b(?:now|currently|current|latest|these days|any ?more|new one)\b", re.I)
 
 
@@ -2746,7 +2772,7 @@ def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     asked = _LENGTH_ASK.search(question or "")
     if not asked or len(own[0]) != 1 or len(own[1]) != 1:
         return False
-    sized = sorted(((sum(len(s.text.split()) for s in v.sentences), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
+    sized = sorted(((composer_frame.note_words(v.note.get("content")), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
     if sized[0][0] == sized[1][0]:
         return False
     shorter = asked.group(0).lower() in ("shorter", "smaller")
@@ -3289,6 +3315,27 @@ _MORE = re.compile(
 _ORDINALS = {"first": 0, "1st": 0, "second": 1, "2nd": 1, "third": 2, "3rd": 2, "fourth": 3, "4th": 3, "fifth": 4, "5th": 4, "last": -1}
 _ORDINAL = re.compile(r"\bthe (first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|last) (?:one|note)\b", re.I)
 _PRONOUN = re.compile(r"\b(it|that|this|them|those|they)\b", re.I)
+#: A question that leans on the answer before it (audit 1030 Z53): it opens
+#: with an asking word and either says "it" or has no subject of its own.
+_ASKS_SLOT = re.compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
+_SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
+#: A pronoun that is the point of the phrase, not a reference to a note.
+_NOT_REFERRING = re.compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
+
+
+def refers_back(question: str) -> bool:
+    """Whether `question` is about whatever the last answer was about: it says
+    "it" ("when is it", "how much does it cost", "what did we decide about
+    it") or has no subject of its own ("what time", "who is it with"). Not a
+    question with a name, a number or a time window of its own, nor one that
+    compares: those stand alone."""
+    q = " ".join((question or "").split()).rstrip("?.! ")
+    if not q or not _ASKS_SLOT.match(q) or _NOT_REFERRING.search(q) or rec.without_windows(q) != q:
+        return False
+    if re.search(r"\b[A-Z][a-z]|\d|\b(?:compare|versus|vs|than|between)\b", q[1:]):
+        return False
+    pronoun = bool(_SLOT_PRONOUN.search(q))
+    return pronoun or not [t for t in subject_terms(q) if not _SLOT_PRONOUN.fullmatch(t)]
 #: "what about the boiler?", "and the boiler?", "how about Porto": the turn
 #: before asked again of something else (INBOX 741, turn-aware follow-ons).
 _SWAP = re.compile(
@@ -5803,11 +5850,11 @@ def open_note_answer(question: str, note: dict, *, today: date, salt: str = "") 
     """The open note's answer to `question` as a composer result, or None
     when the question is not one of this module's kinds."""
     ask = composer_open.kind(question)
-    if ask not in ("left", "when", "who"):
+    if ask not in ("left", "when", "who", "done"):
         return None
     view = read_note(note, 0)
     if view is None:
         return None
     out = _fresh_answer([view], today, None, "", "", composer_open.composer_voice(), question)
-    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who}[ask](out, view, question, salt)
+    {"left": composer_open._left, "when": composer_open._when, "who": composer_open._who, "done": composer_open._done}[ask](out, view, question, salt)
     return _answer_dict(out, "open_" + ask, question, [], [view], [])

@@ -33,6 +33,10 @@ PHRASES: dict[str, str] = {
     "open_left_one": "One thing is left: ",
     "open_left_none": "Nothing in this note is marked as still to do.",
     "open_left_text": "This note does not keep a checklist, but it says: ",
+    "open_done_a1": "Done so far: ",
+    "open_done_a2": "Already ticked off: ",
+    "open_done_none": "Nothing in this note is ticked off yet.",
+    "open_done_no_list": "This note does not keep a checklist.",
     "open_when_a1": "The date this note gives: ",
     "open_when_a2": "On timing, this note says: ",
     "open_when_a3": "Here is what it says about when: ",
@@ -53,11 +57,18 @@ _KINDS: tuple[tuple[str, re.Pattern], ...] = (
         r"\bwhat(?:'s| is| else)?\s+(?:is |are )?(?:left|remaining|outstanding|still (?:to do|open|needed))\b|"
         r"\bwhat\s+(?:do|should|must|can|could)\s+i\s+(?:still\s+)?(?:do|need to|have to)\b|"
         r"\bwhat(?:'s| is)\s+next\b|\bnext steps?\b|\bto-?dos?\b|\baction items?\b|\bremaining tasks?\b|"
-        r"\bwhat\s+(?:do|should)\s+i\s+do\b|\bwhat\s+(?:is\s+)?still\s+outstanding\b", re.I)),
+        r"\bwhat\s+(?:do|should)\s+i\s+do\b|\bwhat\s+(?:is\s+)?still\s+outstanding\b|"
+        #: "what is not done yet", "how many are left", "what's unpacked" (audit 1030 Z33).
+        r"\bwhat(?:'s| is| are)\s+(?:not\s+(?:done|finished|ticked|checked|packed|complete\w*)|un(?:done|ticked|checked|packed|finished|complete\w*))\b|"
+        r"\bhow\s+many\b[^?]*\b(?:left|remaining|open|to\s+go)\b", re.I)),
+    ("done", re.compile(
+        r"\bwhat(?:'s| is| have i| has been)?\s+(?:i\s+)?(?:done|finished|ticked(?: off)?|checked(?: off)?|packed|completed)\b|"
+        r"\bwhat\s+have\s+i\s+(?:done|finished|ticked|packed|completed)\b|\bhow\s+many\b[^?]*\b(?:done|ticked|checked|packed|finished|complete\w*)\b", re.I)),
     ("who", re.compile(
-        r"\bwho\b[^?]*\b(?:involved|mentioned|named|in (?:it|this)|on (?:it|this)|there)\b|\bwhich people\b|\bwho(?:'s| is) here\b", re.I)),
+        r"\bwho\b[^?]*\b(?:involved|mentioned|named|in (?:it|this)|on (?:it|this)|there)\b|\bwhich people\b|\bwho(?:'s| is) here\b|"
+        r"\bwho(?:'s| is) (?:this|it)(?: note)? (?:about|for|with)\b", re.I)),
     ("when", re.compile(
-        r"\bdeadlines?\b|\bdue (?:date|when|by)\b|\bwhen\s+(?:is|does|do|are|will|should|was)\s+(?:it|this|that)?\s*(?:due|happening|happen|start|end|finish|over)?\b|"
+        r"\bdeadlines?\b|\bdue (?:date|when|by)\b|\bwhen\s+(?:is|does|do|did|are|will|should|was)\s+(?:it|this|that|we)?\s*(?:due|happening|happen|start|end|finish|over)?\b|"
         r"\bwhat (?:date|day)\b|\bby when\b|\bwhen is (?:it )?due\b|\bwhen\s+(?:is|are)\s+the\b", re.I)),
     ("point", re.compile(
         r"\b(?:main|key|big|core)\s+(?:point|idea|takeaway)s?\b|\btake-?aways?\b|\bwhat(?:'s| is)\s+important\b|\bwhat matters\b|\bgist\b", re.I)),
@@ -68,12 +79,14 @@ _GENERIC = frozenset(
     "what whats when who whom which where how is are was were do does did can could should would will the a an this that these it its "
     "here there left remaining outstanding still next step steps todo todos action actions item items task tasks need needs have has "
     "to of in on at for by deadline deadlines due date day time main key point points idea takeaway takeaways important matters "
-    "gist involved mentioned named people person me my i you we be get about any all".split()
+    "gist involved mentioned named people person me my i you we be get about any all open done packed ticked checked finished "
+    "complete completed not yet un total many much".split()
 )
 
 _DO = re.compile(
     r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step|"
-    r"book|buy|call|email|send|ask|check|finish|write|pay|order|renew|book|schedule|plan|prepare|fix)\b",
+    r"book|buy|call|email|send|ask|check|finish|write|pay|order|renew|schedule|plan|prepare|fix|bring|take|pack|get|pick up|"
+    r"collect|print|submit|sign|confirm|cancel|return|reply|clean|wash|charge)\b",
     re.I,
 )
 _NAME = re.compile(r"[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?")
@@ -106,7 +119,18 @@ def reads_note(question: str, note: dict) -> bool:
     if not kind(question):
         return False
     text = str(note.get("content") or "").lower()
-    return all(t in text or t.rstrip("s") in text for t in _terms(question))
+    return all(_in_text(t, text) for t in _terms(question))
+
+
+def _in_text(term: str, text: str) -> bool:
+    """A subject word is in the note's text, as typed, as a plural or as the
+    verb's irregular past ("meet" is "met": audit 1030 Z54)."""
+    if term in text or term.rstrip("s") in text:
+        return True
+    from tessellate.ai import factgraph
+
+    factgraph._tables()  # noqa: SLF001
+    return any(factgraph._PAST.get(w) == term for w in set(re.findall(r"[a-z]+", text)))  # noqa: SLF001
 
 
 def _pick(options: list[str], question: str, salt: str) -> str:
@@ -154,6 +178,23 @@ def _left(out, view, question: str, salt: str) -> None:  # noqa: ANN001
         return
     _say(out, "open_left_text")
     _quotes(out, said, view)
+
+
+def _done(out, view, question: str, salt: str) -> None:  # noqa: ANN001
+    tasks = [s for s in view.sentences if s.kind == "task"]
+    if not tasks:
+        _say(out, "open_done_no_list")
+        return
+    ticked = [s for s in tasks if s.done][:4]
+    if not ticked:
+        _say(out, "open_done_none")
+        return
+    _say(out, _pick(["open_done_a1", "open_done_a2"], question, salt))
+    for i, s in enumerate(ticked):
+        if i:
+            _say(out, "open_and" if i == len(ticked) - 1 else "open_comma")
+        out.q(s, [])
+    out.parts.append(("measure", "."))
 
 
 def _when(out, view, question: str, salt: str) -> None:  # noqa: ANN001

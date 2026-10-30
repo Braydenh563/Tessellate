@@ -582,6 +582,13 @@ def _category_note_ids(session: Session, name: str) -> list[int]:
     return list(rows)
 
 
+def _first_more_is_this(body: ChatRequest) -> None:
+    """"Tell me more" as the first thing said with a note open is about that
+    note (audit 1030 Z54), read as "summarise this"."""
+    if body.open_note_id and not body.history and composer_digest.more_of_this(body.question):
+        body.question = "summarise this"
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
@@ -589,6 +596,7 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     search finds. Notes attached by hand, or a scope, win over both."""
     if body.note_ids or body.document_ids or body.scope:
         return
+    _first_more_is_this(body)
     if composer_digest.about_this(body.question):
         #: A note binned or made private since it was opened is not read;
         #: the open category stands in (`_attached_notes`' own rule).
@@ -4233,6 +4241,31 @@ def _follow_up(req: _StreamRequest):
     return None
 
 
+def _turn_label(content: str) -> str:
+    """A note as a history turn names it (`chatTurnObjects` in chat-attach.js):
+    its first line without heading or list marks, up to the first stop."""
+    first = re.sub(r"^[#*>\-\s]+", "", (content or "").strip().split("\n", 1)[0])
+    return re.split(r"[:.!?]", first)[0].strip()[:80]
+
+
+def _cited_scope(req: _StreamRequest, follow) -> list[int]:  # noqa: ANN001
+    """The note the last answer led with, when this question only leans on it
+    ("when is it", "how much does it cost", "what time", "what did we decide
+    about it": audit 1030 Z53). It is read like an open note: the follow-on
+    keeps its subject, and the slot runs on that note rather than on
+    whichever note best matches the bare words."""
+    objects = ((req.history or [{}])[-1].get("objects") or []) if req.history else []
+    if not objects or req.body.note_ids or (follow is not None and follow.kind != "pronoun") or not composer.refers_back(req.question):
+        return []
+    label = str(objects[0]).strip().lower()
+    rows = req.session.execute(
+        select(Entry.id, Entry.content).where(
+            Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(label)}%", escape=LIKE_ESCAPE)  # noqa: E712
+        ).limit(25)
+    ).all()
+    return [row.id for row in rows if _turn_label(row.content).lower() == label][:1]
+
+
 def _searched_question(req: _StreamRequest, follow) -> str:
     """A correction ("no, the gym one") searches the question it corrects
     with the note it names (decision 35)."""
@@ -4328,12 +4361,13 @@ def _stream_prepare(req: _StreamRequest) -> dict:
     recognise.note_locale(req.body.locale)
     follow = _follow_up(req)
     early = _app_first_events(req, follow, req.ollama.is_running())
+    scoped = _cited_scope(req, follow)
     prepared = _prepare(
         req.session,
         _searched_question(req, follow),
-        req.body.note_ids,
+        scoped or req.body.note_ids,
         force_notes_intent=_forced_notes(req, follow),
-        attached_notes_only=req.body.attached_notes_only,
+        attached_notes_only=bool(scoped) or req.body.attached_notes_only,
         document_ids=req.body.document_ids,
         file_ids=req.body.file_ids,
         board_ids=req.body.board_ids,

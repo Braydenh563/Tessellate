@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (audit 1030 Z1 to Z14, Z21, Z25 partly): a note's own words are quoted or reported and never spoken for the writer, an open note answers "what is this" and "tell me more", follow-ons keep the cited note, the count and the list share one set, one word count, a name in a short line gets a sentence, "which note mentions X" is the who lookup, past forms (ran, wrote) meet their verb, the amount asked about leads, and a "when" prefers a dated sentence.
 - Composer: shorthand and spoken repairs are read ("whens dentist now no the new one"), a total with no verb ("how much desk all up after that money back thing") nets the refund, "how many grocery items are checked off" counts and names them, and a newer note that moves or replaces something outranks the older one in every answer, not only the digest's.
 - Composer: an everyday verb in a question (meet, go, get) counts less than its noun, so "how did we meet the plumber" answers from the plumber's note; a goal ("run a 10k") is not added to the distance run.
 - Composer: distances, weights and time the notes record are added up ("how far did I run", "how many hours did I spend on the deck", "what's my total distance"), by the unit table the converter uses, filtered by what was done and on what.
