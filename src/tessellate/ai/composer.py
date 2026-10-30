@@ -4169,10 +4169,22 @@ def _social_line(message: str, kind: str, previous: str, last_question: str, voi
         line = phrasing.choose(composer_compose.eligible(f"social_{kind}", mood), f"social:{kind}:{message}", recent, seed or _SESSION.get())
     else:
         line = _stored_social(message, kind, professional, recent, seed)
-    subject = _asked_span(last_question, subject_terms(last_question)) if last_question else ""
+    subject = _talked_about(last_question)
     if kind in _NEXT_STEP_KINDS and subject and len(subject) <= 40:
         line = f"{line} {_next_step(line, message, subject, professional)}"
     return line
+
+
+def _talked_about(last_question: str) -> str:
+    """What the turn before asked about, for a next step, or "" when it asked
+    nothing of the notes: "fuck" after "yooooo" once offered more on
+    “yooooo” (INBOX 1459). Whether its notes matched is the caller's to
+    say: the chat passes `last_question` only for a turn that named notes."""
+    from tessellate.ai import intent as intent_module
+
+    if not last_question or intent_module.classify(last_question) != intent_module.NOTES:
+        return ""
+    return _asked_span(last_question, subject_terms(last_question))
 
 
 def social_surfaces(kind: str, professional: bool = False) -> list[str]:

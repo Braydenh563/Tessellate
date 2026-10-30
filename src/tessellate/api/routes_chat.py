@@ -3082,20 +3082,25 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
+    #: A next step names only a subject whose notes were found: the turn
+    #: before named notes (its `objects`), never "nothing matched" (INBOX 1459).
+    asked = str(last.get("question") or "") if last.get("objects") else ""
     if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
     said = composer.social(
         req.question,
         prepared["intent"],
         str(last.get("answer") or ""),
-        str(last.get("question") or ""),
+        asked,
         voice=_chat_voice(req),
         recent=recent,
         seed=seed,
         invite=_newest_word(req.session),
     )
-    #: A hello also says what the app can see (composer awareness).
-    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    #: Only a hello says what the app can see (composer awareness): after
+    #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
+    hello = composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning", "how")
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen and hello else ""
     return f"{said}\n\n{sees}" if sees else said
 
 
@@ -5133,7 +5138,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     brotatockiibidyrizzler" is a call, never a search. A skill's question
     is its own."""
     #: Keys pressed at random are not a nickname for the assistant.
-    address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(question, in_notes=_in_notes(session))
+    #: "thxxx" is "thx", never a nickname "Thxxx" (INBOX 1459).
+    plain = question_noise.destretch(question)
+    address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(plain, in_notes=_in_notes(session))
     if address is None or not address.names:
         return question, None
     #: A bare word that a note holds is that note's name, not a call.
