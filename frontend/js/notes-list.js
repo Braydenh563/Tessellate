@@ -806,30 +806,18 @@ function unlatex(text) {
   return out;
 }
 
-// `compact`: skip the actual <img> and show the alt text instead, for a
-// label-sized surface (a link chip, a document sidebar button) where a
-// note's own image markdown would otherwise cram a thumbnail into a spot
-// sized for a line of text. The note card's own body always gets the real
-// image; everywhere smaller gets the same treatment `notePreviewText`
-// already gives one to a plain-text preview.
+// `compact`: show the alt text, not the <img>, on a label-sized surface (a
+// link chip, a sidebar button); the note card's body always gets the image.
 //
-// `options`: appendInline's five differences from the note-card grammar:
-//   - `dismissible` (default true): render an image with the note-card
-//     delete/lightbox chrome. appendInline's callers (chat, documents, table
-//     cells) pass false: there is no note markdown line for a "remove this
-//     image" click to edit there, so they get a plain <img>.
-//   - `autolinkBareUrls` (default false): turn a plain `https://…` run into
-//     a real link. Off for note cards (unchanged), on for appendInline.
-//   - `underscoreSyntax` (default false): also recognize `__bold__`/
-//     `_italic_` and bare-URL autolinking, using INLINE_MD_LEGACY instead of
-//     INLINE_MD: see that constant's comment for why this is a second
-//     literal pattern rather than a superset with the extra alternatives
-//     suppressed after matching.
-//   - `strikeTag` (default "s"): appendInline's callers always used <del>,
-//     not the note-card renderer's <s>; style.css has separate rules for
-//     `.entry-content s` vs `.answer/.bubble-answer/.dash-body del`.
-//   - `applyLatex` (default true): appendInline never ran unlatex() on its
-//     text, so it stays off for that mode to keep behaviour unchanged.
+// `options`, appendInline's differences from the note-card grammar:
+//   - `dismissible` (default true): the note-card delete/lightbox chrome.
+//     Chat, documents and table cells pass false: no note line to edit.
+//   - `autolinkBareUrls` (default false): a plain `https://…` becomes a link.
+//   - `underscoreSyntax` (default false): also `__bold__`/`_italic_`, using
+//     INLINE_MD_LEGACY (see that constant for why it is a second pattern).
+//   - `strikeTag` (default "s"): appendInline's callers use <del>; style.css
+//     has separate rules for `.entry-content s` and `.answer del`.
+//   - `applyLatex` (default true): appendInline never ran unlatex().
 // The allow-list for anything a note's own text can turn into an href:
 // web links, mail, this app's own paths and in-page anchors. Everything
 // else (javascript:, data:, vbscript:, file:) becomes a dead link rather
@@ -1024,24 +1012,19 @@ function appendInlineRun(element, text, terms, compact, options) {
       } else if (isRemoteImage(imageUrl)) {
         appendPictureBox(element, remoteImageNote(imageUrl));
       } else if (isRenderableUrl(imageUrl)) {
+        const img = document.createElement("img");
+        img.src = mediaSrc(imageUrl);
+        img.alt = imageAlt || "";
+        img.className = dismissible ? "attachment-thumb" : "entry-inline-image";
+        img.loading = "lazy";
         if (!dismissible) {
-          const img = document.createElement("img");
-          img.src = mediaSrc(imageUrl);
-          img.alt = imageAlt || "";
-          img.className = "entry-inline-image";
-          img.loading = "lazy";
           element.appendChild(img);
+          window.imageLayout?.(img);
           cursor = pattern.lastIndex;
           continue;
         }
         const wrapper = document.createElement("span");
         wrapper.className = "thumb-wrap";
-        const img = document.createElement("img");
-        img.src = mediaSrc(imageUrl);
-        img.alt = imageAlt || "";
-        img.className = "attachment-thumb";
-        img.loading = "lazy";
-        img.style.cursor = "zoom-in";
         img.addEventListener("click", (e) => {
           e.stopPropagation();
           openLightbox([{ filename: imageAlt || "Image", getUrl: () => mediaSrc(imageUrl) }], 0);
@@ -1083,6 +1066,7 @@ function appendInlineRun(element, text, terms, compact, options) {
           wrapper.replaceWith(placeholder);
         });
         appendPictureBox(element, wrapper);
+        window.imageLayout?.(img);
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }

@@ -836,7 +836,7 @@
           <li><code>is:pinned</code> pinned, archived, done, open or a draft; <code>is:deleted</code> looks in the bin, which is otherwise left out</li>
           <li><code>title:budget</code> only titles that say it</li>
           <li><code>"exact phrase"</code> those words in that order</li>
-          <li><code>-word</code> leaves out anything that says it</li>
+          <li><code>-word</code> leaves out anything that says it; <code>-tag:work</code>, <code>-kind:</code>, <code>-is:</code> or <code>-title:</code> leave out what matches</li>
         </ul>
         <p>
           Up and Down walk the results, Enter opens one, Escape closes.
@@ -3096,6 +3096,8 @@ Link to another note with [[its first few words]]."></textarea>
                     button uploads something new instead.</p>
                   <p>Keys: the arrows move, Space or Enter ticks, Enter in the search box is Done and Escape closes.
                     Each tab's count says how many of its kind are attached.</p>
+                  <p>What you tick shows as a card above the box, with an x to take it off. Press a card for a preview with Open.
+                    Once sent, the cards sit above your message.</p>
                 </div>
                 <!-- Asked for directly: "I want to be able to attach not just
                      existing notes to a chat for context, but also already
@@ -14765,6 +14767,31 @@ Link to another note with [[its first few words]]."></textarea>
                 stops any background work). With it off, closing the window
                 quits.
               </p>
+              <!-- The desktop companion (BACKLOG 16, INBOX 1464): the chosen
+                   companion in a small window at the screen's corner while the
+                   app window is in the tray. Off until turned on; the tray's
+                   "Show desktop companion" is the same switch. -->
+              <div class="row help-head hidden" id="desktop-companion-row">
+                <label class="check-row">
+                  <input type="checkbox" id="pref-desktop-companion">
+                  <span>Show the companion on the desktop while the window is in the tray</span>
+                </label>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="desktop-companion-help" aria-controls="desktop-companion-help"
+                  aria-expanded="false" title="About the desktop companion"
+                  aria-label="About the desktop companion">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="desktop-companion-help" role="dialog" aria-label="About the desktop companion">
+                <p>
+                  Your companion (Appearance picks who; Atlas if none) waits in the
+                  bottom-right corner while the window is in the tray, and goes away when
+                  the window is open. Click it for Quick note, Quick search or Open
+                  Tessellate; right-click for Settings or Hide. Drag it to move it.
+                  While Tessellate is locked it shows the companion and Open only.
+                </p>
+              </div>
               <!-- The owner's decision: one running copy per notebook, and a
                    second launch brings its window forward. This switch is the
                    one exception, and only for windows: on, each launch opens
@@ -14881,6 +14908,7 @@ Link to another note with [[its first few words]]."></textarea>
         <li><strong>Timer.</strong> Type timer 10 minutes (or 90s timer, countdown 2h) and press Enter. The time runs on the status bar; press that chip to stop it.</li>
         <li><strong>Stopwatch.</strong> Start a stopwatch counts up on the status bar; press it to stop.</li>
         <li><strong>Count words.</strong> Words, characters and reading time of the selected text, or of the editor.</li>
+        <li><strong>A question.</strong> A line that ends in a question mark, or starts like one (how do I, where is, can I), is offered to Atlas first, with the commands that matched underneath.</li>
       </ul>
     </div>
   </div>

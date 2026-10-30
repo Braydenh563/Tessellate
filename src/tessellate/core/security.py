@@ -33,7 +33,7 @@ from starlette.responses import JSONResponse
 # "localhost:8000" and a desktop shell that loaded "127.0.0.1:8000" are the
 # same user on the same notebook, and neither should be told they are
 # cross-origin.
-_LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 # Methods a browser will send cross-origin without a preflight, and which
 # therefore reach the app before CORS has any say. GET and HEAD are here too
@@ -72,7 +72,7 @@ def _is_same_site(candidate: str, host_header: str | None, scheme: str) -> bool:
         return True
     # Loopback aliases of each other on the same port: 127.0.0.1 and localhost
     # are one machine, and which one appears depends on what the user typed.
-    if mine is not None and host in _LOOPBACK_HOSTS and mine[1] in _LOOPBACK_HOSTS:
+    if mine is not None and host in LOOPBACK_HOSTS and mine[1] in LOOPBACK_HOSTS:
         return port == mine[2]
     #: Behind a reverse proxy that ends TLS the app sees http and the page's
     #: Origin is https on 443: the same name the operator listed in
@@ -754,7 +754,7 @@ def _backend_addresses(host: str) -> list:
     # times a second, to be told what it means on every machine, is a round
     # trip for nothing: and on a host with a slow or misconfigured resolver it
     # is a round trip for nothing that takes seconds.
-    if host.lower() in _LOOPBACK_HOSTS:
+    if host.lower() in LOOPBACK_HOSTS:
         return [ipaddress.ip_address("127.0.0.1")]
 
     # A **daemon thread**, not a ThreadPoolExecutor, and the difference is the
@@ -861,7 +861,7 @@ def check_backend_url(url: str, local_only: bool = False) -> tuple[bool, str, bo
         # the normal order. Treated as non-local, which is the safe direction:
         # under the lock an unverifiable name is refused rather than trusted,
         # and without it the honest warning is the one that shows.
-        unresolved_local = host in _LOOPBACK_HOSTS
+        unresolved_local = host in LOOPBACK_HOSTS
         if local_only and not unresolved_local:
             return False, _LOCKED_REASON.format(host=host), False
         return True, "", unresolved_local

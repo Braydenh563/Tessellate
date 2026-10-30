@@ -1,0 +1,28 @@
+/* Windows High Contrast (forced colours), audit 1028 S15. The browser repaints
+   every background and drops every shadow, so what the app says with a fill is
+   lost. Measured with Chromium's forced-colors emulation on Notes and
+   Settings, Appearance: the open tab, the chosen category, the pressed theme
+   card and every filled button (New note, Send, Add) carried no mark, and the
+   theme and accent swatches were blank. This sheet is loaded by app.js only
+   while `(forced-colors: active)` matches, so no other user pays for it. The
+   system colours are the only ones used. */
+@media (forced-colors: active) {
+  /* A chosen thing is outlined: the fill that said so is gone. */
+  :is([aria-selected="true"], [aria-pressed="true"], [aria-checked="true"], [aria-current]:not([aria-current="false"]), button.active, li.active, .chip.active, .seg > .active) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  /* A filled button has no border to stand on once its fill is gone. */
+  :is(button.small, button.accent, #chat-send, #reminder-add):not(.ghost, .icon-only, .linklike, .menu-item, .doc-dock-menu-item, [role="tab"], [aria-pressed]) {
+    border: 1px solid ButtonText;
+  }
+  /* Colour is the content in these: kept, and ringed so the edge reads. */
+  :is(.theme-swatch, .theme-preview, .accent-swatch, .contents-dot) {
+    forced-color-adjust: none;
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  :disabled, [aria-disabled="true"] {
+    color: GrayText;
+  }
+}

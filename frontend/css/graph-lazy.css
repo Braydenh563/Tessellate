@@ -434,6 +434,12 @@
 .graph-hovercard[hidden] {
   display: none;
 }
+/* --- motion: a note's hover card fades in (INBOX 1462) -------------------
+   `opacity` only: the card is placed by its own `transform`, which a rise
+   would fight, and it leaves at once. */
+.graph-hovercard:not([hidden]) {
+  animation: ui-fade var(--ui-fast) var(--ease-out);
+}
 .graph-hovercard-head {
   display: flex;
   align-items: baseline;

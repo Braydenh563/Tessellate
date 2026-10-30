@@ -70,3 +70,42 @@ def test_the_dashboard_line_welcomes_an_empty_notebook(client):
         assert got["kind"] == "welcome" and got["text"] and "!" not in got["text"]
         seen.add(got["text"])
     assert len(seen) >= 3
+
+
+def _welcomes(session):
+    return {chat_extra.welcome_line(session, NOW, voice="natural", seed=f"s{n}") for n in range(30)}
+
+
+def test_an_overdue_reminder_is_due_today_as_the_dashboard_counts_it(session):
+    """Audit 1028 S11: the dashboard's "N due today" counts every open reminder
+    due before tomorrow, overdue included; the welcome counted only today's
+    own and said "No reminders are due today" beside an overdue one."""
+    manager.create_entry(session, "# Tides\n\nSpring tides follow the new moon.")
+    session.add(Reminder(text="Renew the passport", due_at=NOW - timedelta(days=2)))
+    session.add(Reminder(text="Done long ago", due_at=NOW - timedelta(days=1), done=True))
+    session.commit()
+    for text in _welcomes(session):
+        assert "1 reminder" in text, text
+        assert "no reminders" not in text.lower() and "nothing is due" not in text.lower(), text
+
+
+def test_a_draft_or_archived_note_is_not_the_last_note_the_welcome_names(session):
+    """The dashboard counts neither a draft nor an archived note as a note, so
+    the welcome neither names one as the last note nor calls the notebook
+    started when it holds only those."""
+    from tessellate.core.database import Entry
+
+    manager.create_entry(session, "# Tides\n\nSpring tides follow the new moon.")
+    session.add(Entry(content="# Half written thought", is_draft=True, created_at=NOW))
+    session.commit()
+    for text in _welcomes(session):
+        assert "Tides" in text and "Half written" not in text, text
+
+
+def test_a_notebook_of_only_drafts_is_welcomed_as_new(session):
+    from tessellate.core.database import Entry
+
+    session.add(Entry(content="# Half written thought", is_draft=True, created_at=NOW))
+    session.commit()
+    for text in _welcomes(session):
+        assert "Half written" not in text and "last" not in text.lower(), text

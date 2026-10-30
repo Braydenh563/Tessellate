@@ -5,7 +5,7 @@ stream events. Kept out of `routes_chat.py`, which is large enough."""
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,11 +21,11 @@ log = logging.getLogger("tessellate.chat")
 
 def _notes(session: Session) -> list[dict]:
     rows = (
-        session.query(Entry.id, Entry.content, Entry.created_at, Category.name, Entry.archived_at)
+        session.query(Entry.id, Entry.content, Entry.created_at, Category.name, Entry.archived_at, Entry.is_draft)
         .outerjoin(Category, Entry.category_id == Category.id)
         .filter(*_visible()).order_by(Entry.created_at.desc()).limit(NOTE_LIMIT).all()
     )
-    return [{"id": i, "content": c or "", "created_at": made, "category": cat or "", "archived": gone is not None} for i, c, made, cat, gone in rows]
+    return [{"id": i, "content": c or "", "created_at": made, "category": cat or "", "archived": gone is not None, "draft": bool(draft)} for i, c, made, cat, gone, draft in rows]
 
 
 def _reminders(session: Session) -> list[dict]:
@@ -70,14 +70,20 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     leaves that clause out; it never fails the greeting."""
     from tessellate.ai import composer_compose, greeting_compose, study
 
-    notes = _notes(session)[:1]
+    #: The dashboard counts neither a draft nor an archived note as a note, so
+    #: neither is "the last note" here (audit 1028 S11).
+    notes = [n for n in _notes(session) if not n["archived"] and not n["draft"]][:1]
     try:
         facts = greeting_compose.gather(session, now)
+        total = facts.total
     except Exception:  # noqa: BLE001  # the clause is left out
         log.exception("welcome: the notebook's numbers failed")
-        facts = greeting_compose.NotebookFacts(total=len(notes))
-    today = now.date()
-    due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() == today)
+        facts = greeting_compose.NotebookFacts()
+        total = len(notes)
+    #: "N due today" is the dashboard's count: every open reminder due before
+    #: tomorrow, an overdue one included.
+    tomorrow = now.date() + timedelta(days=1)
+    due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() < tomorrow)
     last = study.title_of(notes[0]["content"]) if notes else ""
     mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=facts.total or len(notes), question=question)
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question)

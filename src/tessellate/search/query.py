@@ -90,6 +90,10 @@ class Understood:
     #: Words after a leading `-`. A hit containing any of these is dropped,
     #: which is the whole of what the operator promises.
     excluded: list[str] = field(default_factory=list)
+    #: Operators after a leading `-` (`-tag:work`, `-kind:document`): a hit
+    #: carrying any of these is dropped, as `excluded` drops a word. Same
+    #: keys as `filters`, always present (shell audit S50 left them out).
+    without: dict[str, list[str]] = field(default_factory=_empty_filters)
     #: Sentences about what the query asked for that nothing answers: a flag
     #: or `has:` word the search does not know, or `name:` that is no
     #: operator. Reported beside the results rather than swallowed (audit
@@ -106,6 +110,7 @@ class Understood:
             any(self.filters.values())
             or bool(self.phrases)
             or bool(self.excluded)
+            or any(self.without.values())
         )
 
 
@@ -301,6 +306,27 @@ _PHRASE = re.compile(r'"([^"]+)"')
 #: token, so "state-of-the-art" and a negative number keep their hyphens.
 _EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
 
+#: `-tag:work`: an operator the person does not want. Read before the
+#: positive operators and before `_EXCLUDED`, which would otherwise take
+#: `-tag` as an unwanted word and leave `:work` behind as text.
+_NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+
+
+def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
+    """Lift `-name:value` operators out of a query: the rest and what to drop."""
+    without = _empty_filters()
+
+    def take(match: re.Match) -> str:
+        key = _OPERATOR_NAMES[match.group(1).lower()]
+        raw = match.group(2) if match.group(2) is not None else (match.group(3) or "")
+        for value in _split_values(raw):
+            value = _VALUE_ALIASES.get(key, {}).get(value.lower(), value)
+            if value not in without[key]:
+                without[key].append(value)
+        return " "
+
+    return _NEGATED.sub(take, text), without
+
 
 def _parse_date_operator(value: str) -> date | None:
     """`2026-01-01`, `2026-01` or `2026` as a date. Anything else is None.
@@ -449,6 +475,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.
+    text, without = _take_negated(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
     operator_dates = since is not None or until is not None
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
@@ -469,11 +496,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # range: `kind:document before:2026-01-01` has a constraint to apply, and
     # answering it with "every note in the window" would drop the one thing
     # the person actually typed.
-    time_only = (
-        since is not None
-        and not _has_content(subject)
-        and not (any(filters.values()) or phrases or excluded)
-    )
+    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded)
     return Understood(
         subject=subject if _has_content(subject) else "",
         since=since,
@@ -484,6 +507,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         filters=filters,
         phrases=phrases,
         excluded=excluded,
+        without=without,
         notices=operator_notices(remainder, filters),
     )
 
@@ -495,6 +519,11 @@ _FILLER = frozenset(
     something stuff things thing about down i me my have has had did do does
     was were been get got all any show find list tell""".split()
 )
+
+
+def _constrained(filters: dict, without: dict, phrases: list, excluded: list) -> bool:
+    """Whether the query named any operator, phrase or unwanted word."""
+    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded)
 
 
 def _has_content(subject: str) -> bool:

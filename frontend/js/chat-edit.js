@@ -89,7 +89,7 @@ function editAndResend(bubble, text) {
       }
     }
     // Drop this bubble and everything after it, then ask again.
-    for (const later of bubbles.slice(bubbles.indexOf(bubble))) later.remove();
+    for (const later of bubbles.slice(bubbles.indexOf(bubble))) dropChatBubble(later);
     chatConv.turns = chatConv.turns.slice(0, turnIndex);
     close();
     loadConversationList();
@@ -181,7 +181,7 @@ async function regenerateFrom(bubble) {
     }
   }
   //: The question stays; everything after it goes, including this answer.
-  for (const node of kept.slice(from + 1)) node.remove();
+  for (const node of kept.slice(from + 1)) dropChatBubble(node);
   sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true });
 }
 

@@ -1,6 +1,6 @@
 """A picture's width and alignment written back into its markdown
-(DOCUMENTS_PLAN decision 8, the audit's D5): `docImageAltWith`, in the pure
-`DOC-BLOCKS` region of documents.js, run in node. The grip and the align menu
+(DOCUMENTS_PLAN decision 8, the audit's D5): `imageAltWith`, in the pure
+`IMAGE-LAYOUT` region of image-layout.js, run in node. The grip and the align menu
 in Live call it; `scratchpad/ui-sweeps/mmd2-1005-imagegrip.js` drives them.
 """
 
@@ -35,7 +35,7 @@ def test_an_images_options_are_rewritten_in_place():
     if not node:
         pytest.skip("node is not installed")
     body = blocks_source() + "\nconst cases = " + json.dumps(CASES) + ";\n" + (
-        "console.log(JSON.stringify(cases.map(([alt, change]) => docImageAltWith(alt, change))));"
+        "console.log(JSON.stringify(cases.map(([alt, change]) => imageAltWith(alt, change))));"
     )
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
         handle.write(body)

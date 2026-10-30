@@ -254,28 +254,37 @@ header#top-bar[data-scrolled="1"],
 }
 .action-menu:not(.hidden),
 .dock-menu[open] > .dock-menu-list,
-.help-popover {
+.help-popover,
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup, .selection-popup,
+  .doc-suggest-menu, .ocr-region-popover):not(.hidden) {
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);
   animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
 }
 /* Flipped upward, so it grows out of the bottom of the button instead. */
-.action-menu.action-menu-flip:not(.hidden) {
+.action-menu.action-menu-flip:not(.hidden),
+.help-popover.help-popover-above,
+:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
   --menu-origin-y: 100%;
 }
 /* A dock's `<details>` menu and a select's list hang under their opener's
    left edge; a help popover from its caret, above or below. */
 .dock-menu[open] > .dock-menu-list,
-.action-menu.action-menu-start {
+.action-menu.action-menu-start,
+:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu, .doc-suggest-menu):not(.hidden) {
   --menu-origin-x: 0%;
 }
 .help-popover {
   --menu-origin-x: var(--help-caret-x);
 }
-.help-popover.help-popover-above {
-  --menu-origin-y: 100%;
-}
+/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
+   Panels that hang off an opener and show by `.hidden` took no part in the
+   fade and grow (audit: `animation: none`), so they take the same two rules.
+   In-flow panels are not here: a fade does not cure the shift. The text
+   selection popup, the spelling menu and the OCR region popover arrive
+   the same way (INBOX 1462); they leave at once. */
 /* **The way out** (perfpolish: "menus leave instantly though they enter
    with a reveal"; the motion pass gave it the grow's path back). Every close
    path (the opener again, Escape, a press outside, `closeActionMenus`) is
@@ -295,23 +304,6 @@ header#top-bar[data-scrolled="1"],
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
     display var(--ui-exit) linear allow-discrete;
-}
-/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
-   Panels that hang off an opener and show by `.hidden` took no part in the
-   fade and grow (audit: `animation: none`), so they take the same two rules.
-   In-flow panels are not here: a fade does not cure the shift. */
-:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
-  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup):not(.hidden) {
-  --menu-origin-x: 100%;
-  --menu-origin-y: 0%;
-  transform-origin: var(--menu-origin-x) var(--menu-origin-y);
-  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
-}
-:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu):not(.hidden) {
-  --menu-origin-x: 0%;
-}
-:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
-  --menu-origin-y: 100%;
 }
 :is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
   .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup).hidden {

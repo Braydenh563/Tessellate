@@ -1521,6 +1521,12 @@ def _stop_background_work() -> None:
     Never raises and never blocks for long: the process is going away, and a
     Quit button that hangs is worse than a stray subprocess.
     """
+    # The corner companion's window goes first: a hidden second window would
+    # keep the web view's loop from ending, and it must not be shown by the
+    # main window's own hide on the way out.
+    from tessellate.core import desk_companion
+
+    desk_companion.shutdown()
     try:
         from tessellate.core import bgtasks
 
@@ -1983,6 +1989,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         if sys.platform == "win32"
         else None
     )
+    _attach_desk_companion(webview, window, tray_icon)
     if tray_icon is not None:
         # **Closing the window is not quitting the app, and it now says so.**
         # The hide itself has been here since the tray was added; what was
@@ -2077,6 +2084,31 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
         instance_lock.release()
 
 
+def _attach_desk_companion(webview, window, tray_icon):  # noqa: ANN001
+    """The corner companion (`core/desk_companion.py`, BACKLOG 16): a second
+    window shown while this one is in the tray and the preference is on.
+    Only where there is a tray to put the window in. Returns None without one.
+
+    `open_main` is what the companion's "Open Tessellate", a search hit and
+    its Settings do: the window comes forward (which hides the companion) and,
+    for the last two, a line of script the companion module has already
+    checked. A locked app only comes forward: Settings carries the lock guard
+    the tray's items carry, and a hit's address is only a route."""
+    if tray_icon is None:
+        return None
+    from tessellate.core import desk_companion
+
+    def _open_main(script: str = "") -> None:
+        window.show()
+        _focus_window(window)
+        if script:
+            window.evaluate_js(script)
+
+    return desk_companion.attach(
+        webview, window, _open_main, lambda: f"http://{page_host()}:{PORT}/desktop-companion.html"
+    )
+
+
 def _start_reminder_notifier(window, icon_path: Path, data_dir: Path):  # noqa: ANN001
     """Due reminders as the system's own notifications, window shown or not
     (WORLD_CLASS_PLAN decision 69; `core/reminder_notifier.py`). A click on
@@ -2149,6 +2181,8 @@ def _start_tray(
         # missing package does rather than take the whole launcher down.
         logger.warning("system tray unavailable, continuing without one: %s", exc, exc_info=True)
         return None
+
+    from tessellate.core import desk_companion
 
     image = None
     if icon_path.is_file():
@@ -2422,6 +2456,9 @@ def _start_tray(
         # now does, reachable from here so the behaviour is discoverable
         # rather than only ever happening to you.
         pystray.MenuItem("Hide to tray", lambda icon, item: window.hide()),
+        # The corner companion (core/desk_companion.py): the same switch as
+        # Settings, so a person who finds the tray first can turn it on there.
+        desk_companion.tray_menu_item(pystray),
     ]
     if console_hwnd is not None:
         menu_items.append(
