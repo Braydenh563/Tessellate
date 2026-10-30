@@ -259,12 +259,18 @@ def _plain(sentence: str) -> str:
 def _sentence_day(sentence: str, anchor: datetime) -> date | None:
     """The day a sentence names, read against the day its note was written:
     its first date, whichever window is asked about."""
-    for span in recognise.recognise(sentence, now=anchor, tense="future"):
-        if span.rank or span.kind not in ("date", "datetime"):
-            continue
+    spans = [x for x in recognise.recognise(sentence, now=anchor, tense="future") if not x.rank and x.kind in ("date", "datetime")]
+    for i, span in enumerate(spans):
+        after = spans[i + 1] if i + 1 < len(spans) else None
+        if after is not None and _WEEKDAY_ONLY.match(span.text) and 0 <= after.start - span.end <= 2:
+            #: "Friday 6 November" is 6 November, never this Friday (Z26).
+            span = after
         value = span.value
         return value.date() if isinstance(value, datetime) else value if isinstance(value, date) else None
     return None
+
+
+_WEEKDAY_ONLY = re.compile(r"^(?:on |this |next )?(?:mon|tues|wednes|thurs|fri|satur|sun)day$", re.I)
 
 
 def _dated_lines(content: str):  # noqa: ANN202
@@ -290,6 +296,9 @@ def _note_days(note: dict, now: datetime) -> tuple[tuple[date, str], ...]:
         return hit
     found: list[tuple[date, str]] = []
     for sentence in _dated_lines(content):
+        if recognise.told_as_past(sentence) and not re.search(r"\d{4}", sentence):
+            #: "Slept badly on Tuesday." happened; its day is never ahead (Z26).
+            continue
         day = _sentence_day(sentence, anchor)
         text = _plain(sentence.lstrip("# ") if sentence.strip().startswith("#") else sentence)
         if day is not None and 3 <= len(text) <= 160:

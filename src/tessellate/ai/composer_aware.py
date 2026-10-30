@@ -106,13 +106,19 @@ def _lower(action: str) -> str:
     return action[:1].lower() + action[1:]
 
 
+#: The surfaces the chat itself is typed in: "you're in Chat", said in Chat,
+#: tells the person nothing (INBOX 1459), so they are never said alone.
+_TALKING_IN = frozenset({"Chat", "Ask"})
+
+
 def _where(aw: Awareness) -> str:
-    if aw.open_title and aw.tab:
-        return f"you're in {aw.tab} with “{aw.open_title}” open"
+    tab = "" if aw.tab in _TALKING_IN else aw.tab
+    if aw.open_title and tab:
+        return f"you're in {tab} with “{aw.open_title}” open"
     if aw.open_title:
         return f"“{aw.open_title}” is open"
-    if aw.tab:
-        return f"you're in {aw.tab}"
+    if tab:
+        return f"you're in {tab}"
     return ""
 
 

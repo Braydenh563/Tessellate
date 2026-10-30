@@ -534,7 +534,7 @@ SOCIAL.update({
     "awesome": "ack", "perfect": "ack", "sweet": "ack", "lovely": "ack", "fine": "ack", "agreed": "ack",
     "true": "ack", "same": "ack", "yes": "ack", "no": "ack", "yeh": "ack", "ya": "ack", "mhm": "ack",
     "damn": "reaction", "oof": "reaction", "rip": "reaction", "yikes": "reaction", "whoa": "reaction",
-    "woah": "reaction", "ugh": "reaction", "wild": "reaction", "crazy": "reaction", "dang": "reaction",
+    "woah": "reaction", "ugh": "frustrated", "wild": "reaction", "crazy": "reaction", "dang": "reaction",
     "huh": "confused", "wym": "confused", "wdym": "confused", "eh": "confused", "hm": "confused",
     "hmm": "confused", "hmmm": "confused", "what": "confused", "confused": "confused",
     "wyd": "how", "morning": "morning", "evening": "greeting", "night": "bye", "goodbye": "bye",
@@ -564,7 +564,7 @@ SOCIAL.update({
     "omfg": "reaction", "omgg": "reaction", "omggg": "reaction", "wowza": "reaction", "woo": "reaction",
     "woohoo": "reaction", "yay": "reaction", "yayy": "reaction", "hooray": "reaction", "phew": "reaction",
     "sheesh": "reaction", "blimey": "reaction", "crikey": "reaction", "bummer": "reaction",
-    "dammit": "reaction", "damnit": "reaction", "congrats": "reaction", "congratulations": "reaction",
+    "dammit": "frustrated", "damnit": "frustrated", "congrats": "reaction", "congratulations": "reaction",
     "laters": "bye", "ttfn": "bye", "peace": "bye", "adios": "bye", "ciao": "bye", "seeya": "bye",
     "gnite": "bye", "nini": "bye", "nite": "bye", "goodnight": "bye", "farewell": "bye",
     "hola": "greeting", "heya": "greeting", "hiyaa": "greeting", "howdy": "greeting",
@@ -1889,8 +1889,12 @@ SOCIAL.update({
     "garbage": "insult", "rubbish": "insult", "junk": "insult", "sucks": "insult",
     "stinks": "insult", "boring": "insult", "lame": "insult", "weak": "insult",
     "pathetic": "insult", "worthless": "insult", "pointless": "insult", "hurray": "reaction",
-    "yippee": "reaction", "jesus": "reaction", "christ": "reaction", "shit": "reaction",
-    "fuck": "reaction", "wtf": "reaction",
+    "yippee": "reaction", "jesus": "reaction", "christ": "reaction",
+    #: A swear or a groan is frustration, answered calmly with an offer of
+    #: help, never "Quite something" (INBOX 1459).
+    "shit": "frustrated", "fuck": "frustrated", "fucking": "frustrated", "fuckin": "frustrated",
+    "wtf": "frustrated", "ffs": "frustrated", "argh": "frustrated", "arg": "frustrated",
+    "grr": "frustrated", "fml": "frustrated",
 })
 SOCIAL_PHRASES.update({
     "g'day": "greeting", "hiya mate": "greeting", "howdy partner": "greeting",
@@ -1907,7 +1911,11 @@ SOCIAL_PHRASES.update({
     "you're the best": "compliment", "ur the best": "compliment", "good boy": "compliment",
     "good girl": "compliment", "ur so cute": "compliment", "you know that": "ack",
     "u know that": "ack", "shut up": "insult", "fuck you": "insult", "fuck off": "insult",
-    "go away": "insult",
+    "go away": "insult", "for fucks sake": "frustrated", "for fuck's sake": "frustrated",
+    "fuck sake": "frustrated", "fucks sake": "frustrated", "fucking hell": "frustrated", "bloody hell": "frustrated",
+    "for god's sake": "frustrated", "for gods sake": "frustrated", "this is useless": "frustrated",
+    "this sucks": "frustrated", "this is shit": "frustrated", "this is rubbish": "frustrated",
+    "this is annoying": "frustrated", "so annoying": "frustrated", "not working": "frustrated",
     "you suck": "insult", "you're great": "compliment", "you are great": "compliment",
     "ur great": "compliment", "nice work": "compliment", "great job": "compliment",
     "great work": "compliment", "love it": "compliment", "feeling down": "emotion",
@@ -1928,11 +1936,45 @@ SOCIAL.update({
 })
 
 
+#: A letter typed three times or more ("yooooo", "heyyy", "thxxx").
+_STRETCH = re.compile(r"([A-Za-z])\1{2,}")
+_LETTERS = re.compile(r"[A-Za-z]+")
+
+
+def _unstretched(word: str) -> str:
+    """`word` with each run of three or more of a letter cut to one or two,
+    whichever reads as a word: a small-talk word first ("heyyy" is "hey"),
+    then a dictionary word with the double kept ("goood" is "good", not
+    "god"); as typed when neither does or the runs are many."""
+    runs = list(_STRETCH.finditer(word))
+    if not runs or len(runs) > 3:
+        return word
+    shapes = [""]
+    last = 0
+    for run in runs:
+        head = word[last:run.start()]
+        shapes = [f"{s}{head}{run.group(1) * n}" for s in shapes for n in (1, 2)]
+        last = run.end()
+    shapes = [f"{s}{word[last:]}" for s in shapes if len(f"{s}{word[last:]}") >= 2]
+    social = next((s for s in shapes if s.lower() in SOCIAL or s.lower() in SOCIAL_PHRASES), None)
+    if social:
+        return social
+    return next((s for s in sorted(shapes, key=len, reverse=True) if spelling.is_word(s.lower())), word)
+
+
+def destretch(text: str) -> str:
+    """`text` with each stretched word read as its word (INBOX 1459: "yooooo"
+    was answered as stray keys). Words with no run of three are untouched."""
+    if not text or not _STRETCH.search(text):
+        return text
+    return _LETTERS.sub(lambda m: _unstretched(m.group(0)), text)
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
     alone), else None: a turn with a question in it is a question."""
-    raw = (message or "").strip()
+    raw = destretch((message or "").strip())
     if raw and not strip_symbols(raw):
         return "reaction" if re.search(r"[\U0001F600-\U0001F64F]", raw) else "ack"
     text = strip_symbols(raw).lower()
@@ -1956,7 +1998,7 @@ def social_kind(message: str) -> str | None:
         else:
             return None
     #: "ok thanks" is thanks; "lol ok" is laughter: the most telling part.
-    for kind in ("confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "reaction", "laugh", "compliment", "insult", "emotion", "glad"):
+    for kind in ("confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad"):
         if kind in kinds:
             return kind
     return "ack"

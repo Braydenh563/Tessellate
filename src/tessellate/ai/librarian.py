@@ -474,6 +474,17 @@ def build_facts_messages(
     return messages
 
 
+#: The names a note in no category carries: no label for the model (audit
+#: 1030 Z70: "[Uncategorised]" opened every note and told it nothing).
+_NO_CATEGORY = frozenset({"", "none", "uncategorised", "uncategorized"})
+
+
+def category_hint(note: dict) -> str:
+    """" [Health]", or "" for a note in no category."""
+    name = str(note.get("category") or "").strip()
+    return "" if name.lower() in _NO_CATEGORY else f" [{name}]"
+
+
 def _written_hint(note: dict) -> str:
     """" (written Tuesday 22 September 2026)", or "" when the caller did not
     date the note. See the comment where `build_messages` uses it."""
@@ -728,7 +739,7 @@ def build_messages(
         # opposite reason: it did not match, and an answer that presents it as
         # though it did is telling the user their search found something it
         # did not.
-        f"{i}. [{note['category']}]"
+        f"{i}.{category_hint(note)}"
         # The day the note was written, when the caller knows it matters: a
         # note that says "tonight" means the night it was written, and a
         # model that cannot see that date reads it as tonight (the weekly

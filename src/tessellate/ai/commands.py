@@ -1429,11 +1429,21 @@ def ask_when_for(parsed: dict) -> str:
     return ask_when(parsed.get("said") or parsed["text"])
 
 
+#: A task said as a thing, not a doing ("don't let me forget the bins"):
+#: reminded about, never "remind you to the bins" (INBOX 1459).
+_THING = re.compile(r"^(?:the|my|a|an|your|our|his|her|their|this|that|these|those)\b", re.I)
+
+
 def ask_when(said: str) -> str:
     """"When should I remind you to call the dentist?", one of four."""
-    from tessellate.ai import composer_replies
+    from tessellate.ai import composer_replies, realise
 
-    return _said(composer_replies.act_line(composer_replies.ASK_WHEN, _voice(), tuple(_LAST), said=said.rstrip(".")))
+    #: Said back to the person: "do my tax return" is "do your tax return".
+    said = realise.shift_person(said.rstrip("."))
+    line = composer_replies.act_line(composer_replies.ASK_WHEN, _voice(), tuple(_LAST), said=said)
+    if _THING.match(said):
+        line = line.replace(f" to {said}", f" about {said}")
+    return _said(line)
 
 
 def _which_note(about: str) -> str:

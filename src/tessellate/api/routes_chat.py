@@ -614,12 +614,20 @@ def _first_more_is_this(body: ChatRequest) -> None:
         body.question = "summarise this"
 
 
+def _attached_only(body: ChatRequest) -> None:
+    """"What is this about" with a note attached is that note alone, never a
+    list of the newest (INBOX 1461)."""
+    if not body.scope and composer_digest.about_this(body.question):
+        body.attached_notes_only = True
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
     Travel" reads that category's notes rather than the few a keyword
     search finds. Notes attached by hand, or a scope, win over both."""
     if body.note_ids or body.document_ids or body.scope:
+        _attached_only(body)
         return
     _first_more_is_this(body)
     if composer_digest.about_this(body.question):
@@ -3082,20 +3090,25 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
+    #: A next step names only a subject whose notes were found: the turn
+    #: before named notes (its `objects`), never "nothing matched" (INBOX 1459).
+    asked = str(last.get("question") or "") if last.get("objects") else ""
     if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
     said = composer.social(
         req.question,
         prepared["intent"],
         str(last.get("answer") or ""),
-        str(last.get("question") or ""),
+        asked,
         voice=_chat_voice(req),
         recent=recent,
         seed=seed,
         invite=_newest_word(req.session),
     )
-    #: A hello also says what the app can see (composer awareness).
-    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    #: Only a hello says what the app can see (composer awareness): after
+    #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
+    hello = composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning", "how")
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen and hello else ""
     return f"{said}\n\n{sees}" if sees else said
 
 
@@ -4204,6 +4217,47 @@ _BULK_DELETE = re.compile(
 )
 
 
+def _this_note_said(req: _StreamRequest) -> str | None:
+    """"When did I make this note?" with one note attached or open: said from
+    that note's own record, no other note read (INBOX 1461, `composer_this`)."""
+    from tessellate.ai import composer_this
+
+    ids = req.body.note_ids or ([req.body.open_note_id] if req.body.open_note_id else [])
+    if not composer_this.kind(req.question or "") or len(ids) > 1:
+        return None
+    if not ids:
+        #: "This note" with none attached or open: asked, never the week's list.
+        return composer_this.NOTHING_ATTACHED
+    found = _attached_notes(req.session, ids)
+    if not found:
+        return None
+    now = user_now(deps.get_config())
+
+    def mine(when):  # noqa: ANN001, ANN202  # stored in UTC, said in the person's time
+        if when is None:
+            return None
+        aware = when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+        return aware.astimezone(now.tzinfo).replace(tzinfo=None) if now.tzinfo else aware.replace(tzinfo=None)
+
+    entry = found[0]
+    return composer_this.answer(req.question, entry.content or "", mine(entry.created_at), mine(entry.edited_at), now.date())
+
+
+def _extra_events(req: _StreamRequest, follow) -> list[dict] | None:  # noqa: ANN001
+    """`chat_extra`'s readers (a study, a plan, a sum) on this turn."""
+    return chat_extra.events(
+        req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
+        seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
+        follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
+        voice=_chat_voice(req),
+    )
+
+
+def _this_note_events(req: _StreamRequest) -> list[dict] | None:
+    said = _this_note_said(req)
+    return [{"type": "answer", "delta": said}] if said else None
+
+
 def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list[dict] | None:  # noqa: ANN001
     """What the app's own engine says before an act or a note search, when it
     answers this turn (no model, or From your notes): a study, plan or sum
@@ -4212,12 +4266,7 @@ def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list
         return None
     question = req.question or ""
     if not req.skill:
-        found = chat_extra.events(
-            req.session, follow.question if follow else req.question, req.history or [], now=user_now(deps.get_config()).replace(tzinfo=None),
-            seed=_reply_seed(req)[1], open_ids=[i for i in [req.body.open_note_id, *req.body.note_ids] if i],
-            follow_kind=follow.kind if follow else "", said=follow.said if follow else "", asked=req.body.question, ask=bool(req.body.notes_only),
-            voice=_chat_voice(req),
-        )
+        found = _this_note_events(req) or _extra_events(req, follow)
         if found is not None:
             return found
     link = composer_web.url_in(question)
@@ -5133,7 +5182,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     brotatockiibidyrizzler" is a call, never a search. A skill's question
     is its own."""
     #: Keys pressed at random are not a nickname for the assistant.
-    address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(question, in_notes=_in_notes(session))
+    #: "thxxx" is "thx", never a nickname "Thxxx" (INBOX 1459).
+    plain = question_noise.destretch(question)
+    address = None if skill or intent.is_mash(question) or intent.is_test(question) else vocative.split(plain, in_notes=_in_notes(session))
     if address is None or not address.names:
         return question, None
     #: A bare word that a note holds is that note's name, not a call.

@@ -2585,6 +2585,25 @@ _DATED_WIDE = re.compile(
     r"\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?|\d{4}-\d{2}-\d{2}|by (?:the )?end of|before (?:we|i) (?:go|leave)|deadline|due)\b", re.I)
 
 
+#: A verb that says a thing happened: an irregular past, or a regular one.
+_PAST_VERB = re.compile(
+    r"\b(?:was|were|had|did|went|slept|ate|felt|saw|met|ran|got|came|left|took|made|spent|lost|won|"
+    r"[a-z]{3,}ed)\b", re.I)
+#: Words that set a thing up for later, so the day they name is ahead:
+#: "booked for", "moved to", "due", "will", "next".
+_ARRANGED = re.compile(
+    r"\b(?:booked|scheduled|planned|moved|arranged|organised|organized|confirmed|registered|signed up|set|"
+    r"rescheduled|postponed|pushed|due|will|going to|gonna|next|upcoming|deadline|need|needs|have to|has to)\b", re.I)
+
+
+def told_as_past(sentence: str) -> bool:
+    """Whether a sentence tells of something that happened ("Slept badly on
+    Tuesday.", "Went to the gym on Monday"), not a thing set for its day
+    ("Dentist booked for Thursday", "The essay is due Friday"): its day is
+    behind the writer, never one ahead (audit 1030 Z26)."""
+    return bool(_PAST_VERB.search(sentence or "")) and not _ARRANGED.search(sentence or "")
+
+
 def dated_sentence(text: str) -> bool:
     """Whether a sentence may name a day or a deadline at all."""
     return bool(_DATED_WIDE.search(text or ""))
