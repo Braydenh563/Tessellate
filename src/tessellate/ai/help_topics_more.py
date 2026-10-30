@@ -1205,6 +1205,28 @@ MORE_TOPICS: list[dict] = [
         ),
         "badge": {"label": "Install as an app", "section": "about", "target": "about-install"},
     },
+    {
+        "id": "desktop-companion",
+        "keywords": (
+            "desktop companion", "companion on the desktop", "companion outside the app",
+            "companion in the corner of the screen", "desktop pet", "quick note from the desktop",
+            "companion when the window is closed", "show desktop companion",
+        ),
+        "body": (
+            "In the desktop app on Windows the companion can sit in the bottom-right "
+            "corner of your screen, above the taskbar, while the Tessellate window is "
+            "in the tray, and go away when the window is open. It is off until you turn "
+            "it on: Settings, About, Show the companion on the desktop while the window "
+            "is in the tray, or Show desktop companion in the tray icon's menu. It is "
+            "whoever you chose in Appearance (Atlas if you chose nobody). Click it for "
+            "Quick note, Quick search or Open Tessellate; a note saved there is filed "
+            "like any other, and a search result opens in the app. Right-click it for "
+            "Settings or Hide (Hide turns the setting off). Drag it to move it; it "
+            "remembers where you left it. While Tessellate is locked it shows only the "
+            "companion and Open Tessellate, never a note or a result."
+        ),
+        "badge": {"label": "Desktop companion", "section": "about", "target": "desktop-companion-row"},
+    },
 ]
 
 #: **Every feature since 0.3.0, large and small** (INBOX 448 (1), the owner:
@@ -2328,6 +2350,7 @@ TOPIC_META: dict[str, dict] = {
     "image-viewer": {"title": "The picture and PDF viewer", "path": "Library, open a picture or PDF"},
     "companion-throw": {"title": "Throwing the companion", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
     "companion-travel": {"title": "How the companion moves", "path": "Settings, Appearance, Atlas and faces, Corner companion"},
+    "desktop-companion": {"title": "The companion on the desktop", "path": "Settings, About, Show the companion on the desktop"},
     "what-is-atlas": {"title": "What Atlas does", "path": "The Chat tab, or Ctrl+Shift+A over any tab"},
     "atlas-look": {"title": "How Atlas looks", "path": "Settings, Appearance, Atlas and faces, Atlas style and Atlas look"},
     "faces": {"title": "Generated faces", "path": "Settings, Appearance, Atlas and faces"},
@@ -2513,7 +2536,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "privacy", "security", "encryption", "lock", "phone", "lan-networks", "two-computers", "delete-data", "storage", "import-export", "import-apps", "usage-ledger", "background-tasks", "activity", "health",
     )),
     ("Settings and support", (
-        "profile", "general-settings", "updates", "maintenance", "logs", "troubleshooting", "credits",
+        "profile", "general-settings", "desktop-companion", "updates", "maintenance", "logs", "troubleshooting", "credits",
     )),
 ]
 

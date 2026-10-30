@@ -323,6 +323,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   $("desktop-tray-row")?.classList.toggle("hidden", !isDesktop);
   $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
   $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
+  $("desktop-companion-row")?.classList.toggle("hidden", !isDesktop);
   // Same reasoning as the tray/console rows above: /system/restart can only
   // ever do something in the packaged desktop app on Windows specifically
   // (the one platform _spawn_desktop knows how to relaunch), not desktop in
@@ -347,6 +348,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
     //: Off unless chosen: a second launch brings the open window forward.
     $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
+    //: Off unless chosen: the corner companion only shows once it is turned on.
+    $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
   }
   // Rebuilt each open rather than once at startup: the list reflects saved
   // preferences, and those can change from another window or a restore.

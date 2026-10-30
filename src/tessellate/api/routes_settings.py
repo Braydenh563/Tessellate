@@ -468,6 +468,9 @@ class PreferencesBody(BaseModel):
     #: server rather than bringing the running window forward. Read by
     #: __main__.py before any window opens (core/instance_lock.py).
     new_window_on_launch: bool | None = None
+    #: The corner companion in a window of its own while the app window is in
+    #: the tray (core/desk_companion.py). Off until turned on.
+    desktop_companion: bool | None = None
     #: The person's own face: a shuffle and per-part overrides (AvatarStyle).
     avatar_style: AvatarStyle | None = None
     #: Which status-bar slots the user has switched off. **The list of what is
@@ -940,6 +943,7 @@ def _preferences_from(config) -> dict:
         "close_to_tray": config.get_preference("close_to_tray", True),
         # Default False, matching `_run_desktop` in __main__.py.
         "new_window_on_launch": config.get_preference("new_window_on_launch", False),
+        "desktop_companion": config.get_preference("desktop_companion", False),
         "avatar_style": _clean_avatar_style(config.get_preference("avatar_style", {})),
         "status_bar_hidden": config.get_preference("status_bar_hidden", []),
         "status_bar_clock": config.get_preference("status_bar_clock", False),
@@ -1065,6 +1069,7 @@ _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "show_console_on_startup": None,
     "close_to_tray": None,
     "new_window_on_launch": None,
+    "desktop_companion": None,
     "searxng_autostart": False,
     "semantic_auto_install": False,
     "auto_update_enabled": False,

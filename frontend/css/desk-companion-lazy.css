@@ -1,0 +1,135 @@
+/* The desktop companion's window (desktop-companion.html, desk-companion.js).
+   A page of its own, never on the app's boot path. The window is a few fixed
+   sizes the script asks pywebview for (SIZES there); the layout is a column
+   pinned to the bottom-right corner, the panel above the companion, so a
+   resize about that corner never moves the companion on the screen. Clear
+   where the window can be see-through; a rounded card where it cannot
+   (`?card=1`, set by the launcher on Windows). */
+.desk-page {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text);
+}
+.desk-card {
+  background: var(--bg);
+}
+.desk-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  box-sizing: border-box;
+}
+.desk-panel {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  min-height: 0;
+  overflow: auto;
+}
+.desk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.desk-title {
+  margin: 0;
+  font-size: var(--text-md);
+}
+.desk-actions {
+  justify-content: flex-end;
+}
+.desk-panel textarea,
+.desk-panel input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.desk-panel textarea {
+  resize: none;
+}
+.desk-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  justify-content: flex-start;
+}
+.desk-note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.desk-hits {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.desk-hit {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  text-align: start;
+  justify-items: start;
+}
+.desk-hit-title {
+  font-size: var(--text-base);
+}
+.desk-hit-kind,
+.desk-hit-snippet {
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+/* The companion: the resting window's box, its figure at 1.5 times, on its feet. */
+.desk-pet {
+  flex: none;
+  align-self: flex-end;
+  /* The resting window's own box (REST_SIZE in core/desk_companion.py): window
+     geometry, not a control's height, so sized in the logical properties. */
+  inline-size: 112px;
+  block-size: 152px;
+  display: grid;
+  place-items: end center;
+  padding: 0 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.desk-card .desk-pet {
+  background: var(--surface-2);
+}
+.desk-pet:active {
+  cursor: grabbing;
+}
+.desk-figure {
+  position: relative;
+  display: block;
+  /* The companion's own 64 by 92 box (nm-buddy), drawn at 1.5 times. */
+  inline-size: 64px;
+  block-size: 92px;
+  scale: 1.5;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+.desk-figure > .nm-figure {
+  position: absolute;
+  inset: 0;
+}
+.desk-page[data-state="rest"] .desk-root {
+  padding: 0;
+}

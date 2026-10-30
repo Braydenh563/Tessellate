@@ -79,6 +79,7 @@ const SETTING_ROWS = [
   { key: "show_console_on_startup", id: "pref-show-console" },
   { key: "close_to_tray", id: "pref-close-to-tray" },
   { key: "new_window_on_launch", id: "pref-new-window-on-launch" },
+  { key: "desktop_companion", id: "pref-desktop-companion" },
   { key: "status_bar_clock", id: "status-bar-clock-toggle" },
 ];
 
