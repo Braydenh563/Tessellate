@@ -39,6 +39,20 @@ const { check, summary } = checker();
   }, [board.id, other.id]);
   console.log("B6 listeners", JSON.stringify(counts));
   check("B6: re-init adds no window or document listener", counts.reinitAdds.window === 0 && counts.reinitAdds.document === 0, counts);
+  // B7: the Delete key and the top-level deletes still remove an object and a sketch.
+  const del = await page.evaluate(async (id) => {
+    await openWhiteboardBoard(id);
+    const obj = await apiJson("/whiteboard/objects", { method: "POST", body: JSON.stringify({ kind: "text", data: { content: "gone" }, board_id: id, x: 10, y: 10, width: 100, height: 40 }) });
+    const sk = await apiJson("/whiteboard/sketches", { method: "POST", body: JSON.stringify({ data: JSON.stringify({ d: "M 0 0 L 50 50", color: "#333", width: 2 }), x: 0, y: 0, z: 1, board_id: id }) });
+    await fetchWhiteboardState();
+    renderWhiteboardNow();
+    const before = { obj: wbState.objects.some((o) => o.id === obj.id), sk: wbState.sketches.some((s) => s.id === sk.id) };
+    await wbDeleteObject(wbState.objects.find((o) => o.id === obj.id));
+    await wbDeleteSketch(wbState.sketches.find((s) => s.id === sk.id));
+    return { before, after: { obj: wbState.objects.some((o) => o.id === obj.id), sk: wbState.sketches.some((s) => s.id === sk.id) }, refs: typeof wbDeleteObjectRef };
+  }, other.id);
+  console.log("B7", JSON.stringify(del));
+  check("B7: deletes remove an object and a sketch with no render ref", del.before.obj && del.before.sk && !del.after.obj && !del.after.sk && del.refs === "undefined", del);
   check("no console errors", errors.length === 0, errors);
   summary();
   await browser.close();

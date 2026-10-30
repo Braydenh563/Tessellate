@@ -221,12 +221,6 @@ let wbSelectedItem = null;
 // this is populated only once a second item joins, via shift-click or a
 // marquee drag.
 const wbMultiSelection = new Set();
-// `deleteSketch`/`deleteNode` are closures defined fresh inside every
-// `wbScheduleRender()` call; these hold whichever pair is current, so code
-// outside that closure (the Delete-key handler) can still call them.
-let wbDeleteSketchRef = null;
-let wbDeleteNodeRef = null;
-let wbDeleteObjectRef = null;
 // `selectWbTool` is a closure defined inside `initWhiteboard` (it needs that
 // scope's `container`/`toolGroup`); this holds the current one so code
 // outside it, placing a text box switches back to Select once typed , 
@@ -7229,7 +7223,7 @@ const WB_LIST_BY_KIND = { sketch: "sketches", node: "nodes", object: "objects" }
 
 // Delete/Backspace with something selected, the other half of "select as
 // a real tool": today, deleting anything meant switching to the Delete
-// tool first. Reuses `deleteSketch`/`deleteNode`/`deleteObject`, so a
+// tool first. Reuses `wbDeleteSketch`/`wbDeleteNode`/`wbDeleteObject`, so a
 // selection-delete gets undo/redo for free, the same as every other way of
 // deleting one. A non-empty multi-selection takes priority over the
 // single-item one: the two are mutually exclusive by construction
@@ -7250,9 +7244,9 @@ function deleteWbSelection() {
         const kind = key.slice(0, sep), id = Number(key.slice(sep + 1));
         const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
         if (!item) continue;
-        if (kind === "sketch") await wbDeleteSketchRef?.(item);
-        else if (kind === "node") await wbDeleteNodeRef?.(item);
-        else await wbDeleteObjectRef?.(item);
+        if (kind === "sketch") await wbDeleteSketch(item);
+        else if (kind === "node") await wbDeleteNode(item);
+        else await wbDeleteObject(item);
       }
     });
     wbApplySelectionHighlight();
@@ -7263,9 +7257,9 @@ function deleteWbSelection() {
   const item = (wbState[WB_LIST_BY_KIND[kind]] || []).find((i) => i.id === id);
   clearWbSelection();
   if (!item) return false;
-  if (kind === "sketch") wbDeleteSketchRef?.(item);
-  else if (kind === "node") wbDeleteNodeRef?.(item);
-  else wbDeleteObjectRef?.(item);
+  if (kind === "sketch") wbDeleteSketch(item);
+  else if (kind === "node") wbDeleteNode(item);
+  else wbDeleteObject(item);
   return true;
 }
 
@@ -8043,9 +8037,9 @@ async function wbTrashDelete(keys) {
     for (const key of ordered) {
       const [kind, item] = find(key);
       if (!item) continue;
-      if (kind === "sketch") await wbDeleteSketchRef?.(item);
-      else if (kind === "node") await wbDeleteNodeRef?.(item);
-      else await wbDeleteObjectRef?.(item);
+      if (kind === "sketch") await wbDeleteSketch(item);
+      else if (kind === "node") await wbDeleteNode(item);
+      else await wbDeleteObject(item);
     }
   });
   wbApplySelectionHighlight();
@@ -17101,19 +17095,19 @@ async function initWhiteboard() {
     const sketchEl = el?.closest(".sketch-group");
     if (sketchEl) {
       const item = wbState.sketches.find((s) => s.id === Number(sketchEl.dataset.id));
-      if (item) wbDeleteSketchRef?.(item);
+      if (item) wbDeleteSketch(item);
       return;
     }
     const cardEl = el?.closest(".node-card");
     if (cardEl) {
       const item = wbState.nodes.find((n) => n.id === Number(cardEl.dataset.id));
-      if (item) wbDeleteNodeRef?.(item);
+      if (item) wbDeleteNode(item);
       return;
     }
     const objEl = el?.closest(".wb-object");
     if (objEl) {
       const item = (wbState.objects || []).find((o) => o.id === Number(objEl.dataset.id));
-      if (item) wbDeleteObjectRef?.(item);
+      if (item) wbDeleteObject(item);
     }
   }
   containerEl.addEventListener("pointermove", (e) => {
@@ -21317,6 +21311,100 @@ function renderWhiteboardNow() {
   wbMapAfterRender();
 }
 
+//: Delete a sketch, node or object by item (audit 1028 B7). Plain top-level
+//: functions: nothing here closes over a render, so the Delete key, the
+//: eraser, the menus and the selection bar all call the one function and no
+//: stale closure can be the one that runs. The eraser is a drag: mouseenter
+//: fires for everything the pointer crosses while `wbErasing` is true.
+async function wbDeleteSketch(d) {
+  const deletingKey = `sketch:${d.id}`;
+  if (wbDeleting.has(deletingKey)) return;
+  wbDeleting.add(deletingKey);
+  //: With the links that end on it, which the server drops too (INBOX 537),
+  //: and taken off the stack by identity, not by `pop`: a second delete in
+  //: flight may have pushed after this one.
+  const links = wbLinksTouching("sketch", d.id);
+  const entry = { action: "delete", kind: "sketch", payload: WB_KIND_INFO.sketch.payload(d), oldId: d.id, links };
+  const redoBefore = wbRedoStack;
+  wbPushUndo(entry);
+  try {
+    await apiJson(`/whiteboard/sketches/${d.id}`, { method: "DELETE" });
+    wbState.sketches = wbState.sketches.filter((s) => s.id !== d.id);
+    wbForgetLinks(links);
+    wbScheduleRender();
+  } catch (e) {
+    wbDeleteFailed(entry, redoBefore, e, () => wbDeleteSketch(d)); // the delete never happened, so neither did the undo entry
+  } finally {
+    wbDeleting.delete(deletingKey);
+  }
+}
+
+async function wbDeleteNode(d) {
+  const deletingKey = `node:${d.id}`;
+  if (wbDeleting.has(deletingKey)) return;
+  wbDeleting.add(deletingKey);
+  const links = wbLinksTouching("node", d.id);
+  const entry = { action: "delete", kind: "node", payload: WB_KIND_INFO.node.payload(d), oldId: d.id, links };
+  const redoBefore = wbRedoStack;
+  wbPushUndo(entry);
+  try {
+    await apiJson(`/whiteboard/nodes/${d.id}`, { method: "DELETE" });
+    wbState.nodes = wbState.nodes.filter((n) => n.id !== d.id);
+    wbForgetLinks(links);
+    wbScheduleRender();
+  } catch (e) {
+    wbDeleteFailed(entry, redoBefore, e, () => wbDeleteNode(d));
+  } finally {
+    wbDeleting.delete(deletingKey);
+  }
+}
+
+async function wbDeleteObject(d) {
+  // The same rule as the map's own subtree delete, at the other door: this
+  // is what the Delete tool, the context menu's Delete and the selection
+  // bar all call, and a rule enforced at one of two doors is not a rule.
+  if (WB_MAP_KINDS.has(d.kind) && wbMapDeleteEmptiesMap(d.id)) {
+    wbMapRefuseLastTopic();
+    return;
+  }
+  const deletingKey = `object:${d.id}`;
+  if (wbDeleting.has(deletingKey)) return;
+  wbDeleting.add(deletingKey);
+  const entry = { action: "delete", kind: "object", payload: WB_KIND_INFO.object.payload(d), oldId: d.id, parentId: d.parent_id ?? null, links: wbLinksTouching("object", d.id) };
+  const redoBefore = wbRedoStack;
+  wbPushUndo(entry);
+  try {
+    const res = await apiJson(`/whiteboard/objects/${d.id}`, { method: "DELETE" });
+    //: **A topic's branch is on the entry too** (INBOX 537): the server took
+    //: the whole subtree, and an entry of one row brought back one topic.
+    if (Array.isArray(res?.deleted) && res.deleted.length > 1) {
+      Object.assign(entry, { action: "subtree", rows: res.deleted, links: Array.isArray(res.links) ? res.links : [] });
+    }
+    wbForgetLinks(Array.isArray(res?.links) ? res.links : entry.links);
+    // **Whatever the server says it deleted, not just the row we asked
+    // about.** On a map this endpoint takes the node's whole subtree and
+    // returns it as `deleted[]` (§9.1), so dropping only `d.id` here left
+    // every descendant on the canvas as a card pointing at a row that no
+    // longer exists: visible as nodes that survive a delete and then 404
+    // on the next save. Found by deleting a branch with the Delete key and
+    // counting: the server removed two rows, the board still drew one of
+    // them. An ordinary text box or image has no children, so `deleted`
+    // is a single row there and this is exactly what it always was.
+    const gone = new Set(
+      Array.isArray(res?.deleted) && res.deleted.length
+        ? res.deleted.map((row) => row.id)
+        : [d.id]
+    );
+    wbState.objects = wbState.objects.filter((o) => !gone.has(o.id));
+    wbScheduleRender();
+  } catch (e) {
+    wbDeleteFailed(entry, redoBefore, e, () => wbDeleteObject(d));
+  } finally {
+    wbDeleting.delete(deletingKey);
+  }
+}
+
+
 function renderWhiteboard() {
   wbPruneSelection();
   //: A render replaces every map node's element, so every measurement taken
@@ -21364,38 +21452,6 @@ function renderWhiteboard() {
   const sketchSelection = svgGroup.selectAll(() => document.querySelectorAll("#wb-zoom-group > g.sketch-group, #wb-html-layer > svg.wb-sketch-band > g.sketch-group"))
     .data((wbState.sketches || []).filter(wbSketchIsDrawable), d => d.id);
     
-  // Deleting a sketch two ways: "delete" is a click on the one thing you
-  // mean to remove; "eraser" is a drag: mouseenter fires for everything the
-  // pointer crosses while wbErasing is true, matching how an eraser tool
-  // behaves in every other drawing app.
-  async function deleteSketch(d) {
-    const deletingKey = `sketch:${d.id}`;
-    if (wbDeleting.has(deletingKey)) return;
-    wbDeleting.add(deletingKey);
-    //: With the links that end on it, which the server drops too (INBOX 537),
-    //: and taken off the stack by identity, not by `pop`: a second delete in
-    //: flight may have pushed after this one.
-    const links = wbLinksTouching("sketch", d.id);
-    const entry = { action: "delete", kind: "sketch", payload: WB_KIND_INFO.sketch.payload(d), oldId: d.id, links };
-    const redoBefore = wbRedoStack;
-    wbPushUndo(entry);
-    try {
-      await apiJson(`/whiteboard/sketches/${d.id}`, { method: "DELETE" });
-      wbState.sketches = wbState.sketches.filter((s) => s.id !== d.id);
-      wbForgetLinks(links);
-      wbScheduleRender();
-    } catch (e) {
-      wbDeleteFailed(entry, redoBefore, e, () => deleteSketch(d)); // the delete never happened, so neither did the undo entry
-    } finally {
-      wbDeleting.delete(deletingKey);
-    }
-  }
-  // `deleteSketch`/`deleteNode` are re-created on every render (they close
-  // over this render's own `d3` selections), so the Delete-key handler set
-  // up once in `initWhiteboard` can't reference them directly, it always
-  // needs *this* render's version, not whichever one existed when it was
-  // first wired.
-  wbDeleteSketchRef = deleteSketch;
 
   // Move: reported directly: "can't move objects made or drawn on
   // whiteboard". Cards/objects get this from their own `d3.drag`; a sketch
@@ -21612,11 +21668,11 @@ function renderWhiteboard() {
       // needs movement to fire at all. The eraser is "delete, but you can
       // also drag across several", a single click should erase the one
       // thing clicked, the same as the delete tool does.
-      if (window.currentTool === "delete" || window.currentTool === "eraser") deleteSketch(d);
+      if (window.currentTool === "delete" || window.currentTool === "eraser") wbDeleteSketch(d);
       if (window.currentTool === "bucket") { event.stopPropagation(); wbBucketFillSketch(d); }
     })
     .on("pointerenter", (event, d) => {
-      if (window.currentTool === "eraser" && wbErasing) deleteSketch(d);
+      if (window.currentTool === "eraser" && wbErasing) wbDeleteSketch(d);
     });
 
   sketchEnter.append("path")
@@ -21825,26 +21881,6 @@ function renderWhiteboard() {
   const nodeSelection = canvas.selectAll(".wb-card.node-card")
     .data(wbState.nodes, d => d.id);
     
-  async function deleteNode(d) {
-    const deletingKey = `node:${d.id}`;
-    if (wbDeleting.has(deletingKey)) return;
-    wbDeleting.add(deletingKey);
-    const links = wbLinksTouching("node", d.id);
-    const entry = { action: "delete", kind: "node", payload: WB_KIND_INFO.node.payload(d), oldId: d.id, links };
-    const redoBefore = wbRedoStack;
-    wbPushUndo(entry);
-    try {
-      await apiJson(`/whiteboard/nodes/${d.id}`, { method: "DELETE" });
-      wbState.nodes = wbState.nodes.filter((n) => n.id !== d.id);
-      wbForgetLinks(links);
-      wbScheduleRender();
-    } catch (e) {
-      wbDeleteFailed(entry, redoBefore, e, () => deleteNode(d));
-    } finally {
-      wbDeleting.delete(deletingKey);
-    }
-  }
-  wbDeleteNodeRef = deleteNode; // see the matching comment on wbDeleteSketchRef above
 
   //: Card resize: asked for directly ("resizing... cards"). `width`/`height`
   //: are nullable (unset means "auto", the CSS-sized default every card used
@@ -22029,10 +22065,10 @@ function renderWhiteboard() {
       // Same fix as the sketch group above: a single eraser click, no drag,
       // now erases the one card clicked instead of needing movement to
       // trigger a mouseenter.
-      if (window.currentTool === "delete" || window.currentTool === "eraser") deleteNode(d);
+      if (window.currentTool === "delete" || window.currentTool === "eraser") wbDeleteNode(d);
     })
     .on("pointerenter", (event, d) => {
-      if (window.currentTool === "eraser" && wbErasing) deleteNode(d);
+      if (window.currentTool === "eraser" && wbErasing) wbDeleteNode(d);
     });
       
   // Reported directly: "when I attach notes to a whiteboard I want to see
@@ -22625,51 +22661,6 @@ async function wbStickyRemind(d, day) {
 function renderWbObjects(canvas) {
   wbScheduleStickyDates();
   const stackRank = wbStackRanks();
-  async function deleteObject(d) {
-    // The same rule as the map's own subtree delete, at the other door: this
-    // is what the Delete tool, the context menu's Delete and the selection
-    // bar all call, and a rule enforced at one of two doors is not a rule.
-    if (WB_MAP_KINDS.has(d.kind) && wbMapDeleteEmptiesMap(d.id)) {
-      wbMapRefuseLastTopic();
-      return;
-    }
-    const deletingKey = `object:${d.id}`;
-    if (wbDeleting.has(deletingKey)) return;
-    wbDeleting.add(deletingKey);
-    const entry = { action: "delete", kind: "object", payload: WB_KIND_INFO.object.payload(d), oldId: d.id, parentId: d.parent_id ?? null, links: wbLinksTouching("object", d.id) };
-    const redoBefore = wbRedoStack;
-    wbPushUndo(entry);
-    try {
-      const res = await apiJson(`/whiteboard/objects/${d.id}`, { method: "DELETE" });
-      //: **A topic's branch is on the entry too** (INBOX 537): the server took
-      //: the whole subtree, and an entry of one row brought back one topic.
-      if (Array.isArray(res?.deleted) && res.deleted.length > 1) {
-        Object.assign(entry, { action: "subtree", rows: res.deleted, links: Array.isArray(res.links) ? res.links : [] });
-      }
-      wbForgetLinks(Array.isArray(res?.links) ? res.links : entry.links);
-      // **Whatever the server says it deleted, not just the row we asked
-      // about.** On a map this endpoint takes the node's whole subtree and
-      // returns it as `deleted[]` (§9.1), so dropping only `d.id` here left
-      // every descendant on the canvas as a card pointing at a row that no
-      // longer exists: visible as nodes that survive a delete and then 404
-      // on the next save. Found by deleting a branch with the Delete key and
-      // counting: the server removed two rows, the board still drew one of
-      // them. An ordinary text box or image has no children, so `deleted`
-      // is a single row there and this is exactly what it always was.
-      const gone = new Set(
-        Array.isArray(res?.deleted) && res.deleted.length
-          ? res.deleted.map((row) => row.id)
-          : [d.id]
-      );
-      wbState.objects = wbState.objects.filter((o) => !gone.has(o.id));
-      wbScheduleRender();
-    } catch (e) {
-      wbDeleteFailed(entry, redoBefore, e, () => deleteObject(d));
-    } finally {
-      wbDeleting.delete(deletingKey);
-    }
-  }
-  wbDeleteObjectRef = deleteObject;
 
   // Shared by both `objDrag` (bound to the whole `.wb-object`) and
   // `gripDrag` (bound only to `.wb-object-grip`, see below): `this` is
@@ -23138,10 +23129,10 @@ function renderWbObjects(canvas) {
         wbHandleItemClick("object", d.id, event);
         return;
       }
-      if (window.currentTool === "delete" || window.currentTool === "eraser") deleteObject(d);
+      if (window.currentTool === "delete" || window.currentTool === "eraser") wbDeleteObject(d);
     })
     .on("pointerenter", (event, d) => {
-      if (window.currentTool === "eraser" && wbErasing) deleteObject(d);
+      if (window.currentTool === "eraser" && wbErasing) wbDeleteObject(d);
     });
 
   objectEnter.each(function (d) {
@@ -23179,7 +23170,7 @@ function renderWbObjects(canvas) {
               //: everywhere else in this bar. d3 has no icon idiom, so the
               //: element is handed to the app's own one.
               .each(function () { setLabel(this, "ph:x"); })
-              .on("click", (event) => { event.stopPropagation(); deleteObject(d); });
+              .on("click", (event) => { event.stopPropagation(); wbDeleteObject(d); });
           }
         });
     } else if (d.kind === "frame") {

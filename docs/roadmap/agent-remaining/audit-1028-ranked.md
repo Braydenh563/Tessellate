@@ -35,7 +35,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 29 | E42 | med | pasted note text reaches write tools with no confirm | new | M |
 | 30 | E66 | med | delete all notes silently reduces to one match | fixed | S |
 | 31 | E70 | med | regenerate and resend repeat web search and write tools | new | M |
-| 32 | B7 | med | delete handlers recreated each render and stashed in module refs | new | M |
+| 32 | B7 | med | delete handlers recreated each render and stashed in module refs | fixed | M |
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
 | 35 | B14 | med | map branch export and board export use two dialogs | new | M |
@@ -145,7 +145,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 139 | U37 | med | disabled Run reason link is low contrast | new | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | new | M |
-| 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | new | M |
+| 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
 | 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
 | 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
 | 145 | D19 | med | docText toString called 35 times, each O(n) | new | M |
@@ -161,7 +161,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
 | 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
 | 157 | U20 | med | code file open long task of 305 ms | new | M |
-| 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | new | M |
+| 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
 | 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
 | 161 | D24 | med | document paste upload lives in settings-wiring.js | new | S |

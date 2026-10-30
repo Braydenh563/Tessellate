@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boards (audit 1028 B18): measured, not changed: a render of a 200-topic map that changed nothing reads layout 0 times (an edited topic 2), because a measured topic keeps its size; a test and wb1030-map.js pin it.
+- Boards (audit 1028 B6): measured, not changed: initWhiteboard was already guarded (a second call adds 0 window or document listeners); a test now pins the guard.
+- Boards (audit 1028 B7): the delete functions for sketches, cards and objects are plain top-level functions, so the Delete key, eraser, menus and selection bar share one function and the per-render closures and their module refs are gone.
 - Boards (audit 1028 B31): switching boards cancels the frames and timers the last board left pending (a reveal of the old selection, the moving flag, a queued render and cull) and writes out an unsaved nudge; 5 pending frames and timers before, none after.
 - Boards (audit 1028 B20): a locked item shows a small lock at its top right all the time, not only under the pointer; the first press on it still says how to unlock it.
 - Chat: "delete all notes about gym" puts every match on one Confirm card and counts them ("the 2 notes", "the only note"), instead of quietly binning the best match (audit 1028 E66).
