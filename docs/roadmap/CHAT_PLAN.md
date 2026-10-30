@@ -342,21 +342,14 @@ supported sentences carry a mark to the right note (fixtures name the
 note); a skill run cites the notes it read; hover highlights the passage;
 "I don't know" appears on the two unanswerable fixtures.
 
-**Built, all four gate lines and the replay tail, 2026-09-20 to 2026-09-23.**
-Moved to HISTORY.md ("Moved from the plans, 2026-09-23", CHAT_PLAN.md): the
-fixtures, the passage-scored attribution, the low-support notice and its
-replay on a reopened turn, with every measurement.
+**Built, all four gate lines and the replay tail, 2026-09-20 to 2026-09-23:** HISTORY.md "Moved from the plans, 2026-09-23".
 
 ### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 3: Ask unified, popup agent: **built 2026-09-13**, decisions 8, 9, 11 and 12; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 4: skills that finish (one session; Brief 13)
-Decisions 10 and 10a to 10h. Built, 2026-09-12: see HISTORY.md, "Moved from
-the plans", Brief 13. The harness items that were left with it are closed as
-of 2026-09-20 (the `verify` control in the editor, the two audit skills that
-had no check, `count_notes`'s filters, and the page-cap question, now decision
-10h): see HISTORY.md, "Moved from the plans, 2026-09-20".
+Decisions 10 and 10a to 10h. Built 2026-09-12 (HISTORY.md "Moved from the plans", Brief 13); its leftovers closed 2026-09-20 (HISTORY.md "Moved from the plans, 2026-09-20").
 
 **The `evals` marker and its fixture set: built 2026-10-05**
 (`tests/test_skill_evals.py`, the seventy-note loose-ends fixture with eight
