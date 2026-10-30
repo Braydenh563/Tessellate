@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6830, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7297, test files 1563, tests 13617, plan headings 985.
+Counts: frontend functions 6830, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7307, test files 1564, tests 13623, plan headings 985.
 
 ## Frontend functions (6830)
 
@@ -11538,7 +11538,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7297)
+## Backend modules (7307)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12756,24 +12756,34 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:310 |
 | `window_of` | src/tessellate/ai/composer_lists.py:115 |
 
-### src/tessellate/ai/composer_money.py (14)
+### src/tessellate/ai/composer_money.py (24)
 
 | Name | File:line |
 |---|---|
-| `Item` | src/tessellate/ai/composer_money.py:38 |
-| `_cite_all` | src/tessellate/ai/composer_money.py:103 |
-| `_in_month` | src/tessellate/ai/composer_money.py:79 |
-| `_items` | src/tessellate/ai/composer_money.py:89 |
-| `_items_of` | src/tessellate/ai/composer_money.py:54 |
-| `_label` | src/tessellate/ai/composer_money.py:46 |
-| `_money` | src/tessellate/ai/composer_money.py:99 |
-| `_month_asked` | src/tessellate/ai/composer_money.py:68 |
-| `_most` | src/tessellate/ai/composer_money.py:133 |
-| `_spent` | src/tessellate/ai/composer_money.py:112 |
-| `_total_asked` | src/tessellate/ai/composer_money.py:152 |
-| `answer` | src/tessellate/ai/composer_money.py:170 |
-| `asks` | src/tessellate/ai/composer_money.py:157 |
-| `records_spending` | src/tessellate/ai/composer_money.py:165 |
+| `Item` | src/tessellate/ai/composer_money.py:71 |
+| `_about` | src/tessellate/ai/composer_money.py:140 |
+| `_cite_all` | src/tessellate/ai/composer_money.py:188 |
+| `_clause_items` | src/tessellate/ai/composer_money.py:100 |
+| `_due` | src/tessellate/ai/composer_money.py:309 |
+| `_due_by` | src/tessellate/ai/composer_money.py:171 |
+| `_in_month` | src/tessellate/ai/composer_money.py:130 |
+| `_items` | src/tessellate/ai/composer_money.py:150 |
+| `_items_by` | src/tessellate/ai/composer_money.py:156 |
+| `_items_of` | src/tessellate/ai/composer_money.py:114 |
+| `_listed` | src/tessellate/ai/composer_money.py:216 |
+| `_money` | src/tessellate/ai/composer_money.py:184 |
+| `_month_asked` | src/tessellate/ai/composer_money.py:118 |
+| `_most` | src/tessellate/ai/composer_money.py:275 |
+| `_refunds_and_due` | src/tessellate/ai/composer_money.py:255 |
+| `_spent` | src/tessellate/ai/composer_money.py:220 |
+| `_still_due` | src/tessellate/ai/composer_money.py:167 |
+| `_subject` | src/tessellate/ai/composer_money.py:207 |
+| `_total_asked` | src/tessellate/ai/composer_money.py:289 |
+| `_total_rest` | src/tessellate/ai/composer_money.py:295 |
+| `_what` | src/tessellate/ai/composer_money.py:83 |
+| `answer` | src/tessellate/ai/composer_money.py:339 |
+| `asks` | src/tessellate/ai/composer_money.py:326 |
+| `records_spending` | src/tessellate/ai/composer_money.py:334 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 
@@ -20594,7 +20604,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13617)
+## Tests (13623)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20882,6 +20892,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_social.py | 15 |
 | tests/test_composer_social_1420.py | 14 |
 | tests/test_composer_streak_1029.py | 13 |
+| tests/test_composer_stress_1030.py | 6 |
 | tests/test_composer_study_1025.py | 20 |
 | tests/test_composer_subject_1029.py | 11 |
 | tests/test_composer_suggest_2210.py | 13 |
@@ -22870,7 +22881,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:298 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:301 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
