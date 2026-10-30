@@ -5102,8 +5102,27 @@ def _slash_lines(req: _StreamRequest) -> list[str] | None:
         return None
     events = [{"type": "answer", "delta": said}]
     typed = slash.parse(req.body.question or "")
+    drawn = _slash_chart(req.session, typed[0]) if typed else None
+    if drawn is not None:
+        events.append({"type": "chart", "chart": drawn})
     panel = reply_panel(typed[0], typed[1]) if typed else None
     return _composed_lines(req, events + ([panel] if panel else []))
+
+
+def _slash_chart(session: Session, name: str) -> dict | None:
+    """/categories and /tags draw the bar the same question asked in words
+    does (`_stats_chart`; INBOX 1333 b: "/categories" was one prose line)."""
+    from tessellate.ai import realise, slash_more
+
+    if name == "categories":
+        pairs = slash_more.category_counts(session)[0]
+    elif name == "tags":
+        pairs = slash_more.tag_counts(session).most_common(15)
+    else:
+        return None
+    by = _STATS_BY[name]
+    rows = [{"name": str(label), "notes": int(n)} for label, n in pairs]
+    return realise.chart(f"Notes per {by}", by, rows) if realise.form_of(rows) == "chart" else None
 
 
 def _composed_lines(req: _StreamRequest, events: list[dict]) -> list[str]:

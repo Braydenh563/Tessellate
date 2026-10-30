@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: /categories and /tags draw the per-category or per-tag bar chart, as the same question in words does (INBOX 1333 b).
 - Accessibility: the widget filter, the always-do field and the custom rewrite field have names, not just placeholders, and a lint keeps every placeholder field labelled (audit 1028 S13).
 - Polish: a naming prompt's heading reads as a title ("Rename this document", "Name the new board"), no trailing colon, across all 25 callers (audit 1028 U33).
 - Polish: the empty Documents library shows one New document, not two (audit 1028 U29); the dashboard says "how long ago" with the Library's wording, and the night reader's "Nothing new last time" sentence starts with a capital (S17); the document palette lists Go to line (Ctrl+G, code), Find next (F3, prose) and Find and replace (Ctrl+H) (D32).
