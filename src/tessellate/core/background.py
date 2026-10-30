@@ -17,6 +17,7 @@ import logging
 import threading
 import time
 from collections.abc import Callable
+from concurrent.futures import Future
 from dataclasses import dataclass
 
 logger = logging.getLogger("tessellate.background")
@@ -52,6 +53,22 @@ def start(name: str, target: Callable[[], None], stop: Callable[[], None] | None
         if thread.is_alive():
             _entries[thread.ident] = Entry(name, time.time(), stop, thread)
     return thread
+
+
+def future(name: str, fn: Callable, *args) -> Future:  # noqa: ANN002
+    """`fn(*args)` on a registered daemon thread, its result in a Future: a
+    call that may hang (a model, a web page) waits under a deadline and is
+    then left to finish, never holding the app open when it quits."""
+    out: Future = Future()
+
+    def run() -> None:
+        try:
+            out.set_result(fn(*args))
+        except Exception as exc:  # noqa: BLE001  # carried to whoever reads the result
+            out.set_exception(exc)
+
+    start(name, run)
+    return out
 
 
 def running() -> list[dict]:

@@ -2927,7 +2927,7 @@ def _about_the_guide(question: str) -> list[dict]:
 #: A question that points at the screen ("how does this work", "what is here").
 _DEICTIC = re.compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
 #: How-to forms that are about the app whatever else they name.
-_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?\s*[?.!]*\s*$", re.I)
+_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?[\s?.!]*$", re.I)
 
 
 #: A request for writing or a performance, never a question about the app.

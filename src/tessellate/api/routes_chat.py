@@ -20,7 +20,6 @@ import re
 import threading
 import time
 from collections.abc import Iterator
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
 from datetime import date, datetime, timezone
@@ -71,7 +70,7 @@ from tessellate.ai.grounding import (
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
-from tessellate.core import activity, deps, docview, model_gate
+from tessellate.core import activity, background, deps, docview, model_gate
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Attachment,
@@ -2694,19 +2693,18 @@ def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
         except websearch.WebSearchError:
             return None
 
-    pool = ThreadPoolExecutor(max_workers=max(1, len(hits)))
-    futures = [pool.submit(read, hit) for hit in hits]
+    futures = [background.future("web page", read, hit) for hit in hits]
     deadline = time.monotonic() + WEB_PAGES_DEADLINE
     pages: list[dict] = []
     for i, (hit, future) in enumerate(zip(hits, futures)):
         try:
             page = future.result(timeout=max(0.0, deadline - time.monotonic()))
-        except Exception:  # noqa: BLE001  # a late or failed read is skipped
+        except Exception as exc:  # noqa: BLE001  # a late or failed read is skipped
+            logging.getLogger("tessellate.chat").info("chat: web page %s skipped: %s", hit.get("url"), type(exc).__name__)
             continue
         row = _web_page_row(i, hit, page) if page else None
         if row:
             pages.append(row)
-    pool.shutdown(wait=False, cancel_futures=True)
     if pages:
         return pages
     #: No page read: the snippets, each cited by its address.

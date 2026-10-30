@@ -478,6 +478,15 @@ def week_first_day(config: "ConfigManager") -> int:
     return reported if 0 <= reported <= 6 else 0
 
 
+def loaded_user_now() -> datetime:
+    """`user_now` on the settings the app has loaded, or the server's zone.
+    `deps` is read from `sys.modules`, not imported: it pulls in the embedding
+    stack (1.2 s on a composed answer's first call), and when it is not loaded
+    there are no settings to read."""
+    deps = sys.modules.get("tessellate.core.deps")
+    return user_now(deps.peek_config() if deps else None)
+
+
 def user_now(config: "ConfigManager | None") -> datetime:
     """Right now, on the user's own clock.
 

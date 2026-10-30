@@ -655,10 +655,17 @@ def _measure_asked(q: str) -> _Measure | None:
     return _Measure(dimension, word if named else "", _BASE.get(verb, verb), doer.group("after") if doer else m.group("rest"))
 
 
+def _one_short_vowel(verb: str) -> bool:
+    """One vowel, second from last, then a consonant ("run", "stop"): the
+    last letter doubles before -ing. Said without a regex (CodeQL 1872)."""
+    vowels = [i for i, c in enumerate(verb) if c in "aeiou"]
+    return len(verb) >= 2 and vowels == [len(verb) - 2] and verb[-1] not in "aeiouwy"
+
+
 def _forms(verb: str) -> set[str]:
     """"run": ran, runs, running, run; "cycle": cycled, cycling."""
     stem = verb[:-1] if verb.endswith("e") else verb
-    double = verb + verb[-1] if re.fullmatch(r"[^aeiou]*[aeiou][^aeiouwy]", verb) else verb
+    double = verb + verb[-1] if _one_short_vowel(verb) else verb
     return {verb, verb + "s", stem + "ed", stem + "ing", double + "ing", double + "ed", *_PAST.get(verb, ())}
 
 
@@ -862,7 +869,9 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
 #: A difference between two stretches of the notes: "how much further did I
 #: run than last week", "how much more did I spend in October than
 #: September", "how much heavier am I this month than last month".
-_LINK = re.compile(r"\s(?P<link>than|compared (?:to|with)|versus|vs\.?)\s+(?P<other>\S.*)$", re.I)
+#: DOTALL and no `$`: the rest always matches, so a failed start cannot
+#: rescan the tail (CodeQL 1873, polynomial on "than vs vs ...").
+_LINK = re.compile(r"\s(?P<link>than|compared (?:to|with)|versus|vs\.?)\s+(?P<other>\S.*)", re.I | re.S)
 _HOW = re.compile(r"^(?:and )?how (?:much|many)\b(?P<body>.*)$", re.I)
 _DOING = re.compile(r"\b(?:did|have|had|do) (?:i|we) (?P<verb>[a-z]+)\b", re.I)
 _MORE = {"more": "less", "further": "less", "farther": "less", "longer": "less", "heavier": "lighter"}

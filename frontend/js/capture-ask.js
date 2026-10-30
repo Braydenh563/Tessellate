@@ -2488,7 +2488,8 @@ function streamChat(options) {
   return streamChatEvents({
     ...options,
     onStatus: (event) => {
-      phase(event.said ? "tool" : "reading", event.said);
+      if (event.said) phase("tool", event.said);
+      else phase("reading");
       return options.onStatus?.(event);
     },
     onMeta: (meta) => {

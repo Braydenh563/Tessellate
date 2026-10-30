@@ -16,19 +16,21 @@ def test_a_hung_model_never_holds_the_greeting(ai_client, fake_ollama, monkeypat
     release = []
 
     def hung(*args, **kwargs):  # noqa: ANN002, ANN003
-        while not release:
+        give_up = time.monotonic() + 30
+        while not release and time.monotonic() < give_up:
             time.sleep(0.02)
         return {"content": "Rise and shine"}
 
     monkeypatch.setattr(fake_ollama, "chat", hung)
-    started = time.monotonic()
     body = ai_client.get("/insights/greeting?block=morning").json()
-    assert time.monotonic() - started < 2.0
+    #: Answered while the model call is still running: not held by it. Said
+    #: by the flight, not a wall clock, which a slow CI runner's first
+    #: request (2.3 s, app warm-up included) broke.
+    assert not routes_insights._GREETING_FLIGHT["morning"].done()
     assert body["source"] in ("composed", "fallback")
     #: While the first call still runs a second request waits for nothing.
-    started = time.monotonic()
     again = ai_client.get("/insights/greeting?block=morning").json()
-    assert time.monotonic() - started < 1.0 and again["source"] in ("composed", "fallback")
+    assert not routes_insights._GREETING_FLIGHT["morning"].done() and again["source"] in ("composed", "fallback")
     release.append(1)
     deadline = time.monotonic() + 3
     while time.monotonic() < deadline and not routes_insights._GREETING_FLIGHT["morning"].done():

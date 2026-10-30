@@ -18408,7 +18408,7 @@ async function initWhiteboard() {
       }
     } catch (err) {
       //: Said on screen, not only in a console nobody has open (audit 1028 B22).
-      toast(voiceLine("failed", { what: "save that drawing", why: err?.message }), true);
+      toast(voiceLine("failed", { what: "save that drawing", why: err.message }), true);
       if (currentDrawPath) currentDrawPath.remove();
     }
 
@@ -18597,7 +18597,7 @@ async function fetchWhiteboardState() {
     wbSyncSidebarKind();
     await refreshBoardList();
   } catch (err) {
-    toast(voiceLine("failed", { what: "open that board", why: err?.message }), true);
+    toast(voiceLine("failed", { what: "open that board", why: err.message }), true);
   }
 }
 
@@ -23939,7 +23939,7 @@ async function dragEndNode(event, d) {
            toast("Cross-link made: it joins two branches without changing the tree.");
          }
        } catch (err) {
-         toast(voiceLine("failed", { what: "connect those", why: err?.message }), true);
+         toast(voiceLine("failed", { what: "connect those", why: err.message }), true);
        }
     }
     d.linkSourceAnchor = null;

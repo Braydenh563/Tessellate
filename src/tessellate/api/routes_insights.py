@@ -6,7 +6,6 @@ import difflib
 import json
 import random
 import re
-import threading
 from collections.abc import Iterator
 from concurrent.futures import Future
 from concurrent.futures import TimeoutError as FutureTimeout
@@ -21,7 +20,7 @@ from sqlalchemy.orm import Session
 from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps
+from tessellate.core import background, deps
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -201,21 +200,6 @@ GREETING_WAIT = 0.5
 _GREETING_FLIGHT: dict[str, Future] = {}
 
 
-def _spawn(fn, *args) -> Future:  # noqa: ANN001, ANN002
-    """`fn(*args)` on a daemon thread, so a model that never answers cannot
-    hold the app open when it quits (a pool's threads are joined at exit)."""
-    future: Future = Future()
-
-    def run() -> None:
-        try:
-            future.set_result(fn(*args))
-        except BaseException as exc:  # noqa: BLE001  # carried to whoever reads the result
-            future.set_exception(exc)
-
-    threading.Thread(target=run, name="greeting", daemon=True).start()
-    return future
-
-
 def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     """The model's greeting if it comes within `GREETING_WAIT`, else the
     composed one now. A call that runs late is not cancelled: the next
@@ -230,7 +214,7 @@ def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noq
             return flight.result()
         except Exception:  # noqa: BLE001  # a failed late call is the composed greeting
             return fallback
-    flight = _spawn(_ai_greeting, config, ollama, block, fallback)
+    flight = background.future("greeting", _ai_greeting, config, ollama, block, fallback)
     _GREETING_FLIGHT[block] = flight
     try:
         result = flight.result(timeout=GREETING_WAIT)

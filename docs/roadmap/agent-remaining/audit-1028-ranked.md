@@ -119,7 +119,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 113 | S45 | med | no palette deep link to each Settings pane | fixed (already built; reconciled 2026-10-30) | S |
 | 114 | S46 | med | no back stack after following a note link | fixed (already: back and forward in the status bar, nav-history.js; reconciled 2026-10-30) | M |
 | 115 | S51 | med | dashboard has no resume where you left off | fixed (already built; reconciled 2026-10-30) | S |
-| 116 | S52 | med | graph has no find box on the main bar | new | S |
+| 116 | S52 | med | graph has no find box on the main bar | fixed (#graph-search on the graph bar, 1029 rank 39) | S |
 | 117 | S53 | med | timeline and notes list page separately | new | M |
 | 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
 | 119 | U12 | med | insert menu hides key hints for most tools | new | S |
@@ -142,7 +142,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 136 | U34 | med | titled blank creation leaves a stray empty document | new | M |
 | 137 | U35 | med | small targets in document list and header | new | S |
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |
-| 139 | U37 | med | disabled Run reason link is low contrast | new | S |
+| 139 | U37 | med | disabled Run reason link is low contrast | fixed (#doc-code-run-why is .linklike in --accent-text, clamped to L 0.8 in dark; only the disabled button is dim, which is exempt) | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |

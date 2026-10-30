@@ -467,6 +467,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "edge_bend": None,
         "edge_slide": None,
         "image": None,
+        # And with the live Mermaid diagram object (INBOX 1451).
+        "mermaid": None,
         # And with a topic's place among its siblings (INBOX 445).
         "order": None,
         # And with a board item held in place (WHITEBOARD_PLAN decision 15).

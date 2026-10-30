@@ -184,9 +184,10 @@ def _day(fact: Fact, today: date) -> str:
     written = _written(fact.note)
     if written is None:
         return ""
-    from tessellate.ai import composer_digest
-
-    return composer_digest._day(written, today)
+    #: Said here, not borrowed from composer_digest: help_chat reads this
+    #: module, so that import closed a cycle back through the composer.
+    month = realise._MONTHS[written.month - 1]
+    return f"{written.day} {month}" if written.year == today.year else f"{written.day} {month} {written.year}"
 
 
 def _written(note: dict) -> date | None:

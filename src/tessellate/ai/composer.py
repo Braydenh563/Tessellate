@@ -374,11 +374,12 @@ def phrase_options(key: str, voice: str | None = None) -> tuple[str, ...]:
 def user_now() -> datetime:
     """Now on the person's own clock (their saved timezone), as a naive
     datetime: the server's `date.today()` names the wrong day for someone far
-    from it (audit 1028 K22). `deps._config`, not `get_config()`, which would
-    start the app in a unit test; with no settings it is the server's zone."""
-    from tessellate.core import config, deps
+    from it (audit 1028 K22). The settings as loaded, never `get_config()`,
+    which would start the app in a unit test; with none, the server's zone.
+    """
+    from tessellate.core import config
 
-    return config.user_now(deps._config).replace(tzinfo=None)  # noqa: SLF001
+    return config.loaded_user_now().replace(tzinfo=None)
 
 
 def user_today() -> date:
