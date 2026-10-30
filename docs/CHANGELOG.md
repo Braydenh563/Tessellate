@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board (OPEN 807): Export, draw.io writes a free board as a `.drawio` file (frames as swimlanes, text boxes and stickies, shapes in their own shape and look, connectors joined to what they join); pictures, tables, notes and drawn lines are named as not kept. The import reads a plain-text cell (`html=0`) as typed, so a label with `<` or `&` comes back whole.
 - Security: one loopback host list, in core/security, shared by sign-in and the request guard (audit 1028 K28).
 - Security: the media ticket and device token tables are read as snapshots, so a sign-in on one device during a sweep on another no longer fails (audit 1028 K23).
 - Chat (INBOX 1460): a note, document, mind map or library file attached to a message is the staged file card (a glyph, its name in words with one ellipsis at the end, one muted line such as "Note · 3 days ago", a remove x) in the composer and, once sent, above the message bubble on its side (a note shows its next words, two lines) instead of a black bar cut off on both sides or a blue chip; a press previews it with an Open button, by keyboard too, and a reloaded chat draws the same (51px tall at 1280 and 390, was 21px chips and a 37px bar; 8px above the bubble).

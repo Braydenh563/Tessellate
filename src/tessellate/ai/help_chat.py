@@ -1680,7 +1680,7 @@ HELP_TOPICS.extend(
                 "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
                 "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
-                "here exported, as shapes and connectors; Export writes an Outline and a Mermaid flowchart."
+                "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

@@ -33,9 +33,9 @@ function check(label, ok, detail) {
 }
 
 async function newBoard(page, name, type) {
-  await page.click('[data-tab="library"]');
-  await page.waitForTimeout(500);
-  await page.click('[data-target="library-view-whiteboard"]');
+  await page.evaluate(async () => { await switchTab("library"); await ensureModule("library"); document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]')?.click(); });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { if (typeof wbShowBoardsLanding === "function") wbShowBoardsLanding(); });
   await page.waitForTimeout(700);
   await page.evaluate(() => document.getElementById("wb-boards-new-template").click());
   await page.waitForTimeout(700);
