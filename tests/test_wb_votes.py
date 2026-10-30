@@ -59,7 +59,7 @@ def test_every_command_is_in_the_table_and_the_edit_menu() -> None:
     board = board[: board.index("</nav>") if "</nav>" in board else 20000]
     for command in ("vote", "clear-votes", "timer"):
         assert f'data-wb-cmd="{command}"' in board, command
-    assert "Workshop" in board
+    assert 'aria-label="Workshop"' in board
 
 
 def test_the_dots_paint_from_the_items_own_data() -> None:
