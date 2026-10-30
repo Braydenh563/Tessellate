@@ -90,6 +90,7 @@ _BASE = {
     "none_own": "None of them has a note of its own yet.",
     "gone_quiet": "Nothing on {word} since {month}.",
     "also": "Also",
+    "no_place": "Your notes don't say where, but they do say this.",
     "only_note": "It's your only note on that so far.",
     "only_kind": "It's your only {noun} so far.",
     #: The joins between lines and the closing pattern (INBOX 870: "one or
@@ -2976,6 +2977,16 @@ _WHERE_CUE = re.compile(
 )
 
 
+class _PlaceCue:
+    """A place phrase ("at Hotel Alfama", "near the castle"): not "on 14
+    November", whose object is a day the recogniser reads (audit 1030 Z24:
+    "where is the Lisbon trip" led with the flight dates)."""
+
+    def search(self, text: str) -> bool:
+        days = [(s.start, s.end) for s in _spans(text, None) if s.kind in ("date", "datetime", "range", "time")]
+        return any(not any(a < m.end() <= b for a, b in days) for m in _WHERE_CUE.finditer(text))
+
+
 def _same_label_asked(lead: Fact, f: Fact, question: str) -> bool:
     """Asked for "goals for Q1", a fact under Q2 is another answer."""
     if not lead.label or f.label == lead.label:
@@ -2997,13 +3008,21 @@ def _single_cue(kind: str, asked: str) -> re.Pattern | None:
         return _SINGLE_CUES[kind]
     if _ROLE_ASK.match(asked):
         return _ROLE_CUE
-    return _WHERE_CUE if _WHERE_ASK.match(asked) else None
+    return _PlaceCue() if _WHERE_ASK.match(asked) else None
+
+
+def _no_place(out: _Out, cue, lead: Fact) -> None:  # noqa: ANN001
+    """A "where" whose best sentence names no place says so first."""
+    if isinstance(cue, _PlaceCue) and not cue.search(lead.sentence.text):
+        out.lines.append(PHRASES["no_place"])
 
 
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
-    lead = _best(facts, question, _single_cue(kind, clean(question)))
+    cue = _single_cue(kind, clean(question))
+    lead = _best(facts, question, cue)
     if lead is None:
         return
+    _no_place(out, cue, lead)
     rest = [f for f in facts if f is not lead]
     rest = _drop_tasks(kind, lead, rest, question)
     if kind == "when":

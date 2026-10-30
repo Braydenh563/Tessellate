@@ -93,3 +93,14 @@ def test_z17_the_notebook_itself_is_a_subject_not_a_word_to_find(ask, question):
 def test_z20_a_feeling_question_leads_with_the_sentence_that_says_a_feeling(ask, question):
     said = ask(question)[0]
     assert "Felt really good" in said.split("\n")[0], said
+
+
+@pytest.mark.parametrize("question", ["where is the Lisbon trip", "where am I flying", "where am I staying"])
+def test_z24_a_where_answer_leads_with_the_place_not_the_dates(ask, question):
+    said = ask(question)[0]
+    assert said.split("\n")[0].startswith("Staying at Hotel Alfama"), said
+
+
+@pytest.mark.parametrize("question", ["where is the dentist", "where is the gym"])
+def test_z24_a_where_with_no_place_in_the_notes_says_so(ask, question):
+    assert "don't say where" in ask(question)[0]
