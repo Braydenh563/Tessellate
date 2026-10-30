@@ -570,7 +570,7 @@ function cmSurface(view, meta = null) {
     isDocument: meta ? false : true,
     view,
     get scrollEl() { return view.scrollDOM; },
-    get text() { return view.state.doc.toString(); },
+    get text() { return docStr(view.state.doc); },
     //: **The smallest change that gets there, not "the document is now this
     //: string".** Several callers still hand over a whole rebuilt document
     //: (the live view rewrites it on every keystroke, the AI panel replaces a
@@ -579,7 +579,7 @@ function cmSurface(view, meta = null) {
     //: proportional to the document on every character *and* makes Ctrl+Z
     //: undo the whole thing. The same prefix/suffix diff the D3 stack used.
     set text(next) {
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       const [from, to, insert] = docUndoDiffRange(current, next);
       view.dispatch({ changes: { from, to, insert }, annotations: docCmIsolate() });
@@ -685,6 +685,22 @@ function docSurfaceChanged() {
 function docSurface() {
   if (docCmView) return cmSurface(docCmView);
   return textareaSurface(docBoxEl());
+}
+
+//: **A document's text, read once per version** (audit 1028 D19). CodeMirror's
+//: `Text.toString()` joins every line, so it costs the length of the document,
+//: and one typed character used to ask for it 24 times (the facts pass, the
+//: prose pass, the findings plugin, the autosave). A `Text` is immutable, so
+//: the string is keyed by the object: every state has its own, the old ones are
+//: collected with their states, and a second read is one map lookup.
+const docStrCache = new WeakMap();
+function docStr(doc) {
+  let text = docStrCache.get(doc);
+  if (text === undefined) {
+    text = doc.toString();
+    docStrCache.set(doc, text);
+  }
+  return text;
 }
 
 //: The document's text: the single most-read thing in this file.
@@ -827,6 +843,7 @@ function setDocView(mode, { persist = true } = {}) {
 
 async function loadDocuments(selectId = null) {
   warmDocumentEngine();
+  if (docFactsStale && currentDoc) runDocFacts();
   //: Placeholders while it loads (INBOX 435 (6)); cleared on either answer.
   const sideList = document.getElementById("doc-list");
   showSkeletons(sideList, 4, "li");
@@ -3487,7 +3504,7 @@ function docBlockMoveRun(view, delta) {
   if (!docFileType().previewable) return false;
   const selection = view.state.selection;
   if (selection.ranges.length !== 1 || !selection.main.empty) return false;
-  const edit = docBlockMoveEdit(view.state.doc.toString(), selection.main.head, delta);
+  const edit = docBlockMoveEdit(docStr(view.state.doc), selection.main.head, delta);
   if (!edit) return false;
   if (edit.noop) return true;
   view.dispatch({
@@ -5680,7 +5697,7 @@ function docTableCaretTo(context, row, col) {
 
 //: Leave a table downwards through `docTableExitEdit`, the way out as data.
 function docTableExit(view, table, dropLast) {
-  const out = docTableExitEdit(table, view.state.doc.toString(), dropLast);
+  const out = docTableExitEdit(table, docStr(view.state.doc), dropLast);
   view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
   return true;
 }
@@ -5768,7 +5785,7 @@ function docTablePasteEvent(event, view) {
     event.preventDefault();
     docUndoBreak();
     view.dispatch({ changes: result.edit, userEvent: "input.paste", scrollIntoView: true });
-    const table = docTableParse(view.state.doc.toString(), context.table.from);
+    const table = docTableParse(docStr(view.state.doc), context.table.from);
     if (table) docTableCaretTo({ surface: context.surface, table }, result.row, result.col);
     return true;
   }
@@ -6333,7 +6350,7 @@ function docTableGripsPlugin(CM) {
         //: in a table, and reading the document to say so on every keystroke of a
         //: long page would be the cost of a feature most lines never use.
         if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
-        const table = docTableParse(doc.toString(), head);
+        const table = docTableParse(docStr(doc), head);
         if (!table) return null;
         const scroller = view.scrollDOM;
         const sr = scroller.getBoundingClientRect();
@@ -10189,7 +10206,7 @@ function docColumnsField(CM) {
   }
 
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     //: The cheap test first: a document with no `:::` in it at all is most of
     //: them, and this runs on every keystroke.
     if (!text.includes(":::")) return Decoration.none;
@@ -10237,7 +10254,7 @@ function docColumnsArrowKeymap(CM) {
     const state = view.state;
     const sel = state.selection.main;
     if (!sel.empty) return false;
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes(":::")) return false;
     const line = state.doc.lineAt(sel.head);
     const next = back ? line.from - 1 : line.to + 1;
@@ -10640,7 +10657,7 @@ function docMermaidField(CM) {
     }
   }
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
     const sel = state.selection.main;
     const ranges = [];
@@ -12739,7 +12756,7 @@ function docWriteOutsideHistory(text) {
     docSurface().text = text;
     return;
   }
-  const current = docCmView.state.doc.toString();
+  const current = docStr(docCmView.state.doc);
   if (current === text) return;
   const [from, to, insert] = docUndoDiffRange(current, text);
   docCmView.dispatch({ changes: { from, to, insert }, annotations: CM.state.Transaction.addToHistory.of(false) });
@@ -15003,7 +15020,7 @@ function noteSurfaceMirrorTools(host, view, valueProto) {
     clearTimeout(host.noteMirrorTimer);
     if (!host.noteMirrorStale) return;
     host.noteMirrorStale = false;
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const range = view.state.selection.main;
     noteSurfaceMirroring = true;
     try {
@@ -15040,13 +15057,13 @@ function noteSurfaceOwnValue(host, view) {
     configurable: true,
     //: Live: the textarea behind it is only brought level once typing pauses.
     get() {
-      return view.state.doc.toString();
+      return docStr(view.state.doc);
     },
     set(next) {
       proto.set.call(this, next);
       host.noteMirrorStale = false;
       if (noteSurfaceMirroring) return;
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       host.noteSettingValue = true;
       try {
@@ -17205,23 +17222,48 @@ function renderDocStatusBar() {
 //: Anything that needs them *now* (opening a document, a restore, a view
 //: switch) still calls the three directly.
 let docFactsTimer = null;
+//: Set when a pass was due while the Documents tab was hidden; the next visit
+//: runs it (`loadDocuments`), so nothing is out of date when it is seen again.
+let docFactsStale = false;
+let docFactsIdle = 0;
+
+function runDocFacts() {
+  docFactsStale = false;
+  renderDocStats();
+  renderDocOutline();
+  renderDocCounts();
+  renderDocComments();
+  //: The properties panel is drawn from the frontmatter's own text and
+  //: redraws only when that text moves, so it costs one parse of the top
+  //: of the document per pause in the typing.
+  renderDocProperties();
+}
 
 function scheduleDocFacts() {
   clearTimeout(docFactsTimer);
   docFactsTimer = setTimeout(() => {
     docFactsTimer = null;
     const run = () => {
-      renderDocStats();
-      renderDocOutline();
-      renderDocCounts();
-      renderDocComments();
-      //: The properties panel is drawn from the frontmatter's own text and
-      //: redraws only when that text moves, so it costs one parse of the top
-      //: of the document per pause in the typing.
-      renderDocProperties();
+      //: **Not while nobody can see it** (audit 1028 D20). A change that lands
+      //: with another tab in front (a sync, a restore, the AI's edit arriving)
+      //: used to rebuild the stats, outline, counts, comments and properties
+      //: for a hidden page: measured 65 ms of work on a 20k-word document per
+      //: change. Marked stale instead, and run once on the way back in.
+      if ($("tab-documents")?.classList.contains("hidden")) {
+        docFactsStale = true;
+        return;
+      }
+      runDocFacts();
     };
-    if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 300 });
-    else requestAnimationFrame(run);
+    //: One queued pass at most: a second pause that arrives before the idle
+    //: callback has run replaces it, so a busy tab does not stack two.
+    if (typeof requestIdleCallback === "function") {
+      if (docFactsIdle) cancelIdleCallback(docFactsIdle);
+      docFactsIdle = requestIdleCallback(() => {
+        docFactsIdle = 0;
+        run();
+      }, { timeout: 300 });
+    } else requestAnimationFrame(run);
   }, 120);
 }
 
@@ -23395,7 +23437,7 @@ function docFindingsPlugin(CM) {
   const { Decoration, ViewPlugin } = CM.view;
 
   function build(view) {
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const ranges = [];
     docProseFound.forEach((finding, index) => {
       if (DOC_FINDING_SKIP.has(finding.rule)) return;
@@ -24166,7 +24208,7 @@ function docHistoryRestore(id, text) {
     const CM = window.CM6;
     const field = CM?.commands?.historyField;
     if (!stored || !field || !docCmView || docHistoryOwner !== id || stored.doc !== text) return;
-    if (docCmView.state.doc.toString() !== text) return;
+    if (docStr(docCmView.state.doc) !== text) return;
     try {
       docCmView.setState(CM.state.EditorState.fromJSON(stored, { extensions: docCmExtensions(CM) }, { history: field }));
       docSetLiveDecorations(docView === "live");
