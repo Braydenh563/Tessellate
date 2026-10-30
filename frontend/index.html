@@ -1342,7 +1342,7 @@
       </span>
     </div>
     <p class="muted">Add, remove or widen any dashboard widget. Changes save right away.</p>
-    <input type="search" id="dash-widgets-search" placeholder="Filter widgets…" autocomplete="off">
+    <input type="search" id="dash-widgets-search" aria-label="Filter widgets" placeholder="Filter widgets…" autocomplete="off">
     <div id="dash-widgets-list" class="dash-widgets-list"></div>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="dash-widgets-dialog">Done</button>
@@ -10930,7 +10930,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Adding one by hand. The tool covers "tell it in conversation";
                  this covers "I already know what I want it to always do". -->
             <div class="row memory-add">
-              <input id="memory-new" type="text" maxlength="200"
+              <input id="memory-new" type="text" maxlength="200" aria-label="Something the assistant should always do"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
@@ -15099,7 +15099,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small improve-mode" data-mode="custom">Custom…</button>
       </div>
       <div class="row hidden" id="improve-custom-row">
-        <input id="improve-custom-input" type="text" maxlength="200"
+        <input id="improve-custom-input" type="text" maxlength="200" aria-label="How to change the text"
           placeholder="e.g. make it sound more formal, or translate to French">
         <button id="improve-custom-go" class="small">Go</button>
       </div>

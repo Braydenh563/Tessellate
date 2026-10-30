@@ -42,3 +42,26 @@ def test_a_prompt_heading_has_no_trailing_colon():
         src = path.read_text(encoding="utf-8")
         found = re.findall(r'(?:promptDialog|promptTitle|docPromptInModal)\(\s*(["`])((?:(?!\1).)*?):\1', src, re.S)
         assert not found, f"{path.name}: {[text for _, text in found]}"
+
+
+def test_no_field_in_the_page_is_named_by_its_placeholder_alone():
+    """S13: a placeholder goes the moment someone types and many readers skip
+    it, so every field that has one has a label, `for` or wrapping, or an
+    aria-label."""
+    import re
+
+    html = (JS.parent / "index.html").read_text(encoding="utf-8")
+    labelled = set(re.findall(r'<label[^>]*\bfor="([^"]+)"', html))
+    bare = []
+    for match in re.finditer(r"<(?:input|textarea)\b([^>]*)>", html, re.S):
+        attrs = match.group(1)
+        if "placeholder=" not in attrs or re.search(r'aria-label=|aria-labelledby=|type="hidden"', attrs):
+            continue
+        ident = re.search(r'\bid="([^"]+)"', attrs)
+        if ident and ident.group(1) in labelled:
+            continue
+        before = html[: match.start()]
+        if before.rfind("<label") > before.rfind("</label>"):
+            continue
+        bare.append(ident.group(1) if ident else attrs[:60])
+    assert not bare, bare
