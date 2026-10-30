@@ -22,7 +22,7 @@ from tessellate.ai import composer, composer_lists, recognise
 #: are the same total: the ask can say where the figures are kept.
 _SPENT = re.compile(
     r"^(?:how much|what) (?:money )?(?:have|did|do|has) (?:i|we) "
-    r"(?:(?:recorded|logged|noted|tracked|written(?: down)?|put down)(?: (?:that|as))? (?:(?:i|we)(?:'ve| have|ve)? )?)?"
+    r"(?:(?:really|actually|ever|just|already|even) )?(?:(?:recorded|logged|noted|tracked|written(?: down)?|put down)(?: (?:that|as))? (?:(?:i|we)(?:'ve| have|ve)? )?)?"
     r"(?:spen[dt]|paid|pay|spending)\b(.*)$",
     re.I,
 )
@@ -267,7 +267,8 @@ def _about(view, sentence, subject: list[str], test=all) -> bool:  # noqa: ANN00
     if not subject:
         return True
     have = set(sentence.words) | set(view.title_words) | set(view.filed_words)
-    return test(st in have for st in subject)
+    #: A compound names its stem: "books" finds "Bookshop receipt", "rent" "Rental bond".
+    return test(st in have or (len(st) >= 4 and any(w.startswith(st) for w in have)) for st in subject)
 
 
 def _items(views: list, win: _Win | None = None, subject: list[str] | None = None, refunds: bool = False, dimension: str = "money", forms: frozenset = frozenset()) -> list[Item]:
@@ -353,11 +354,17 @@ _WINDOW = re.compile(
 _STOP = frozenset(composer._words("me my i in on for of the a an to have has did do is it that from all money spent spend spending paid pay amounts amount outgoing payments payment expenses expense notes note these this and with you your"))  # noqa: SLF001
 
 
+_AUX = frozenset("is are was were am be been being do does did have has had there it actually really recorded logged noted tracked".split())
+
+
 def _subject(rest: str) -> tuple[list[str], str]:
     """The stems of what the money went on, and those words as typed ("the plumber")."""
     said = " ".join(_WINDOW.sub(" ", recognise.without_windows(re.sub(r"\b(?:of )?20\d\d\b", " ", re.sub(r"[^\w\s'-]", " ", rest)))).split())
     said = re.sub(r"^(?:on|for|to|in)\s+", "", said, flags=re.I)
     said = re.sub(r"\bmy\b", "your", said, flags=re.I)
+    #: "book spending is actually recorded": the subject stops at the verb.
+    words = said.split()
+    said = " ".join(words[:next((i for i, w in enumerate(words) if w.lower() in _AUX), len(words))])
     stems = [w for w in composer._words(said) if w not in _STOP]  # noqa: SLF001
     return stems, said if stems else ""
 
@@ -420,14 +427,16 @@ def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if not items:
         out.lines.append(f"I found no amounts spent{on}{when} in your notes.")
         return True
-    symbol = items[0].symbol
-    items = [i for i in items if i.symbol == symbol]
-    if _one_of_several(items, views, win, subject):
+    signs = list(dict.fromkeys(i.symbol for i in items))
+    if len(signs) == 1 and _one_of_several(items, views, win, subject):
         return False
-    line, total = _spent_line(items, symbol, on, when)
-    out.lines.append(line)
-    _cite_all(out, items, line)
-    _refunds_and_due(out, views, win, subject, "money", symbol, total)
+    for sign in signs:
+        #: Each currency is said on its own, never dropped or added to another.
+        mine = [i for i in items if i.symbol == sign]
+        line, total = _spent_line(mine, sign, on, when)
+        out.lines.append(line)
+        _cite_all(out, mine, line)
+        _refunds_and_due(out, views, win, subject, "money", sign, total)
     return True
 
 
@@ -473,10 +482,12 @@ def _most(out, size: str, noun: str, views: list) -> bool:  # noqa: ANN001
     if not items:
         out.lines.append("I found no amounts spent in your notes.")
         return True
-    pick = (min if size.lower() in _SMALL else max)(items, key=lambda i: i.value)
-    line = f"{pick.label}, at {_money(pick.symbol, pick.value)}, is the {size.lower()} amount in {composer_lists._title(pick.view)}."  # noqa: SLF001
-    out.lines.append(line)
-    _cite_all(out, [pick], line)
+    for sign in dict.fromkeys(i.symbol for i in items):
+        #: The most of each currency: a dollar is not weighed against a pound.
+        pick = (min if size.lower() in _SMALL else max)((i for i in items if i.symbol == sign), key=lambda i: i.value)
+        line = f"{pick.label}, at {_money(pick.symbol, pick.value)}, is the {size.lower()} amount in {composer_lists._title(pick.view)}."  # noqa: SLF001
+        out.lines.append(line)
+        _cite_all(out, [pick], line)
     return True
 
 
@@ -798,8 +809,10 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
     items = _items(views, win, [], dimension=ask.dimension, forms=ask.forms)
     pool = items or ([goal] if goal else [])
     unit = _unit_of(pool, ask.dimension, ask.unit) if pool else ask.unit or _DEFAULT_UNIT[ask.dimension]
+    left: list[Item] = []
     if ask.dimension == "money":
-        items = [i for i in items if i.symbol == unit]
+        ([items], left) = _in_one_currency(items)
+        unit = items[0].symbol if items else unit
     done = sum(i.value for i in items)
     out.lines.append(_verdict(ask.noun, _adjective(unit, aim), aim - done, unit))
     if items:
@@ -808,6 +821,7 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
         _cite_all(out, items, line)
     if goal:
         _cite_all(out, [goal], out.lines[0])
+    _left_out(out, left)
     return True
 
 
@@ -918,16 +932,36 @@ def _side(items: list[Item], win: _Win, unit: str) -> str:
     return f"{_say(unit, sum(by_note.values()))} {win.said} ({_listed([f'{name} {_say(unit, v)}' for name, v in by_note.items()])})"
 
 
-def _both_sets(d: _Diff, views: list, first: _Win, second: _Win) -> tuple[list[Item], list[Item], str]:
-    """The items of each window, in one currency when money, and the subject said."""
+def _in_one_currency(*sets: list[Item]) -> tuple[list[list[Item]], list[Item]]:
+    """The sets kept to the currency most of their amounts are in, and the
+    amounts of any other, which the answer names and does not add."""
+    both = [i for one in sets for i in one]
+    if not both:
+        return list(sets), []
+    signs = list(dict.fromkeys(i.symbol for i in both))
+    sign = max(signs, key=lambda g: sum(1 for i in both if i.symbol == g))
+    return [[i for i in one if i.symbol == sign] for one in sets], [i for i in both if i.symbol != sign]
+
+
+def _left_out(out, left: list[Item]) -> None:  # noqa: ANN001
+    """"Not counted": an amount in another currency, named beside the total."""
+    if left:
+        line = f"Not counted, in another currency: {_listed([f'{_money(i.symbol, i.value)} ({composer_lists._title(i.view)})' for i in left])}."  # noqa: SLF001
+        out.lines.append(line)
+        _cite_all(out, left, line)
+
+
+def _both_sets(d: _Diff, views: list, first: _Win, second: _Win) -> tuple[list[Item], list[Item], str, list[Item]]:
+    """The items of each window, in one currency when money, the subject
+    said, and the amounts left out for being in another."""
     drop = {*(_forms(d.verb) if d.verb else ()), d.comparative, d.unit, "did", "have", "had", "do", "am", "was", "i", "we", "much", "many"}
     subject, said = _subject(" ".join(w for w in d.first.split() if w.lower().strip("?.,") not in drop))
     forms = frozenset(_forms(d.verb)) if d.verb and d.dimension != "money" else frozenset()
     one, two = (_items(views, win, subject, dimension=d.dimension, forms=forms) for win in (first, second))
-    if d.dimension == "money" and (one or two):
-        sign = (one or two)[0].symbol
-        one, two = ([i for i in side if i.symbol == sign] for side in (one, two))
-    return one, two, said
+    left: list[Item] = []
+    if d.dimension == "money":
+        (one, two), left = _in_one_currency(one, two)
+    return one, two, said, left
 
 
 def _gap_line(d: _Diff, gap: float, unit: str, said: str, first: _Win, second: _Win, shown: float) -> str:
@@ -946,7 +980,7 @@ def _difference(out, d: _Diff, views: list, today: date) -> bool:  # noqa: ANN00
     first = _window_asked(d.first, today, views) or (_first_window(second, today) if second else None)
     if not first or not second:
         return False
-    one, two, said = _both_sets(d, views, first, second)
+    one, two, said, left = _both_sets(d, views, first, second)
     if not one and not two:
         out.lines.append(f"I found no {d.unit or _DIMENSION_NOUN.get(d.dimension, 'amounts spent')} {first.said} or {second.said} in your notes.")
         return True
@@ -956,6 +990,7 @@ def _difference(out, d: _Diff, views: list, today: date) -> bool:  # noqa: ANN00
     both = f"That is {_side(one, first, unit)} against {_side(two, second, unit)}."
     out.lines.append(both)
     _cite_all(out, one + two, both)
+    _left_out(out, left)
     return True
 
 
@@ -972,6 +1007,29 @@ def sums_a_measure(question: str) -> bool:
     ("how many km is the walk") read a single sentence."""
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
     return _measure_asked(q) is not None or _left_asked(q) is not None or _target_asked(q) is not None or _difference_asked(q) is not None
+
+
+#: The notes the money path reads: a page at a time, newest first, so a
+#: notebook past one page is scanned whole, and at most this many hits are
+#: read (the composer's cost, not the notebook's size, is the bound).
+SCAN_PAGE = 400
+SCAN_HITS = 400
+
+
+def recorded_notes(list_page) -> list:  # noqa: ANN001
+    """The newest notes that record an amount or a measure. `list_page` is
+    `manager.list_entries` bound to a session; scanning stops at `SCAN_HITS`
+    hits, never at the first page (second eye F1: a notebook past 400 notes
+    answered "no amounts")."""
+    found: list = []
+    offset = 0
+    while len(found) < SCAN_HITS:
+        page = list_page(limit=SCAN_PAGE, offset=offset)
+        found += [e for e in page if re.search(r"\d", e.content or "") and records_amounts(e.content or "")]
+        if len(page) < SCAN_PAGE:
+            break
+        offset += SCAN_PAGE
+    return found[:SCAN_HITS]
 
 
 def records_amounts(text: str) -> bool:
