@@ -6106,6 +6106,10 @@ button.ghost.doc-template-choice[aria-checked="true"] {
      titl" with no ellipsis at all (INBOX 425 i). */
   display: block;
   text-align: start;
+  /* 22.8px high before (audit 1028 U35, WCAG 2.5.8). The line box carries the
+     height, so the ellipsis above still applies. */
+  min-height: var(--target-min);
+  line-height: calc(var(--target-min) - 0.3rem);
 }
 .doc-crumb:hover,
 .doc-crumb:focus-visible {

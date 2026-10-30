@@ -316,6 +316,7 @@ function foldDocMenuGroup(label, ids) {
   //: open, and so did every download row.
   const panel = group.querySelector(".action-menu.submenu");
   if (panel) panel.dataset.docDockSubmenu = "1";
+  return group;
 }
 
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
@@ -335,9 +336,13 @@ function foldDocMenuGroup(label, ids) {
 //: the list: each is a verb on this document, none is a preference, and
 //: hiding a one-off action behind a flyout costs a click every time to save a
 //: row once.
-foldDocMenuGroup("ph:download-simple Download or print", [
+//: **First in the list** (audit 1028 U32): taking a document out was the
+//: ninth row, behind the layout switches. The rows keep their markup order;
+//: the group is moved, so ids and handlers are untouched.
+const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
   "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
+docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 foldDocMenuGroup("ph:layout Editor and layout", [
   "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
@@ -570,7 +575,7 @@ function cmSurface(view, meta = null) {
     isDocument: meta ? false : true,
     view,
     get scrollEl() { return view.scrollDOM; },
-    get text() { return view.state.doc.toString(); },
+    get text() { return docStr(view.state.doc); },
     //: **The smallest change that gets there, not "the document is now this
     //: string".** Several callers still hand over a whole rebuilt document
     //: (the live view rewrites it on every keystroke, the AI panel replaces a
@@ -579,7 +584,7 @@ function cmSurface(view, meta = null) {
     //: proportional to the document on every character *and* makes Ctrl+Z
     //: undo the whole thing. The same prefix/suffix diff the D3 stack used.
     set text(next) {
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       const [from, to, insert] = docUndoDiffRange(current, next);
       view.dispatch({ changes: { from, to, insert }, annotations: docCmIsolate() });
@@ -685,6 +690,22 @@ function docSurfaceChanged() {
 function docSurface() {
   if (docCmView) return cmSurface(docCmView);
   return textareaSurface(docBoxEl());
+}
+
+//: **A document's text, read once per version** (audit 1028 D19). CodeMirror's
+//: `Text.toString()` joins every line, so it costs the length of the document,
+//: and one typed character used to ask for it 24 times (the facts pass, the
+//: prose pass, the findings plugin, the autosave). A `Text` is immutable, so
+//: the string is keyed by the object: every state has its own, the old ones are
+//: collected with their states, and a second read is one map lookup.
+const docStrCache = new WeakMap();
+function docStr(doc) {
+  let text = docStrCache.get(doc);
+  if (text === undefined) {
+    text = doc.toString();
+    docStrCache.set(doc, text);
+  }
+  return text;
 }
 
 //: The document's text: the single most-read thing in this file.
@@ -827,6 +848,7 @@ function setDocView(mode, { persist = true } = {}) {
 
 async function loadDocuments(selectId = null) {
   warmDocumentEngine();
+  if (docFactsStale && currentDoc) runDocFacts();
   //: Placeholders while it loads (INBOX 435 (6)); cleared on either answer.
   const sideList = document.getElementById("doc-list");
   showSkeletons(sideList, 4, "li");
@@ -1021,7 +1043,10 @@ async function openDocument(id) {
   //: holds that document (see `docRememberPositionNow`).
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
-  if (docDirty) await saveDocument({ silent: true });
+  //: A document waiting on its conflict asks now (not silently): leaving is
+  //: the moment the answer is owed, and the banner is about to go.
+  if (docDirty) await saveDocument({ silent: !docConflictPending });
+  docConflictPending = null;
   await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
@@ -1919,7 +1944,7 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   },
 ];
 
-function docTemplateFill(template) {
+function docTemplateFill(template, typedTitle = "") {
   const now = new Date();
   const date = now.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   //: **`{{isodate}}` is the local day, built by hand rather than from
@@ -1936,7 +1961,8 @@ function docTemplateFill(template) {
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
   //: document it makes is called by its day (`docTitle`, section 14).
-  const title = template.id === "blank" ? docNextName() : fill(template.docTitle || template.title);
+  //: A title the person already typed is the name they chose (audit 1028 U34).
+  const title = typedTitle || (template.id === "blank" ? docNextName() : fill(template.docTitle || template.title));
   return {
     title,
     content: fill(template.content).replaceAll("{{title}}", title),
@@ -1973,10 +1999,13 @@ const docNextName = () => docUntitledName(docs.map((d) => d.title));
 //: Leaving a document that was made and never written in (a keystroke in the
 //: title, then undone; New, then another document) bins it, so the list does
 //: not fill with "Untitled document N". Anything with a word in it stays.
-async function docDropIfUntouched(nextId = null) {
+async function docDropIfUntouched(nextId = null, { titled = false } = {}) {
   const doc = currentDoc;
+  //: `titled`: a template is about to be made from the title the person typed, so
+  //: the empty document that title started is the stray (audit 1028 U34).
+  const untouched = titled ? !docText().trim() : docIsUntouched($("doc-title").value, docText());
   // Only a document made in this session: an older empty "Untitled document N" is the owner's.
-  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !untouched) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
   //: A delete that failed leaves the row on the server, so it goes back in the list (D36).
@@ -2004,7 +2033,11 @@ async function startBlankDocument() {
 
 async function createDocument(template = null) {
   if (!template) return startBlankDocument();
-  const body = docTemplateFill(template);
+  //: A titled blank the person started and then swapped for a template is not
+  //: left behind empty: its title carries into the template's document (U34).
+  const started = currentDoc && docsMadeThisSession.has(currentDoc.id) && !docText().trim() ? $("doc-title").value.trim() : "";
+  await docDropIfUntouched(null, { titled: true });
+  const body = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
@@ -2199,6 +2232,7 @@ function markDocDirty() {
     return;
   }
   docDirty = true;
+  if (docConflictPending?.id === currentDoc.id) return;
   docSetStatusText($("doc-saved"), "Unsaved…");
   clearTimeout(docSaveTimer);
   // Autosave, but not on every keystroke, a pause is the natural moment.
@@ -2208,13 +2242,27 @@ function markDocDirty() {
 //: While the edit-conflict prompt is up, autosave waits for its answer
 //: rather than asking again every 1.2s of typing behind it.
 let docConflictOpen = false;
+//: **An autosave's conflict waits in the status line, not in a dialog** (audit
+//: 1028 D9). A silent save hit the modal in the middle of a sentence, which
+//: took the focus and sent the next keystrokes to it. Now the save stops, the
+//: status says the document changed in another window and offers "Resolve",
+//: and the dialog opens when asked for (or on an explicit save). `{ id,
+//: current }`: the other window's version, for the document it is about.
+let docConflictPending = null;
 
 //: One save at a time: a second PUT in flight carried the old base_hash (a
 //: false 409). One asked for meanwhile runs once after (audit 1028 D1).
 const docSaveQueue = { inFlight: null, again: null };
 
 async function saveDocument({ silent = false } = {}) {
+  if (docConflictPending && docConflictPending.id !== currentDoc?.id) docConflictPending = null;
   if (!currentDoc || docConflictOpen) return;
+  //: A save asked for by hand is the answer the banner waits for: it opens the
+  //: dialog. The autosave stays quiet.
+  if (docConflictPending) {
+    if (!silent) await docResolveConflict(docConflictPending.current, docText(), false, false);
+    return;
+  }
   if (docSaveQueue.inFlight) {
     docSaveQueue.again = { silent: silent && (docSaveQueue.again ? docSaveQueue.again.silent : true) };
     await docSaveQueue.inFlight;
@@ -2307,8 +2355,17 @@ async function docSaveOnce(silent) {
 //: as every content change does). "Take theirs" puts the other text in the
 //: editor as saved. No answer leaves the text here, unsaved, and the next
 //: edit asks again.
-async function docResolveConflict(current, mine, silent) {
+async function docResolveConflict(current, mine, silent, fromSave = true) {
   $("doc-saved").textContent = "Not saved";
+  if (silent) {
+    docConflictPending = { id: current.id, current };
+    keepDocEditLocally();
+    const saved = $("doc-saved");
+    saved.textContent = "Changed in another window. ";
+    saved.append(smallButton("Resolve", "Compare the two versions, keep yours or take the other window's", () => docResolveConflict(current, docText(), false, false)));
+    return;
+  }
+  docConflictPending = null;
   docConflictOpen = true;
   let answer = null;
   try {
@@ -2319,8 +2376,10 @@ async function docResolveConflict(current, mine, silent) {
   if (!currentDoc || currentDoc.id !== current.id) return;
   if (answer === "mine") {
     currentDoc = { ...currentDoc, content_hash: current.content_hash };
-    //: Directly, not through saveDocument: this runs inside the save in flight.
-    await docSaveOnce(silent);
+    //: Directly, not through saveDocument, when this runs inside the save in
+    //: flight; from the banner there is none, so the queue is the way in.
+    if (fromSave) await docSaveOnce(silent);
+    else await saveDocument({ silent: false });
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
     //: The title box too (audit 1028 D10): left on the old title, the next
@@ -3487,7 +3546,7 @@ function docBlockMoveRun(view, delta) {
   if (!docFileType().previewable) return false;
   const selection = view.state.selection;
   if (selection.ranges.length !== 1 || !selection.main.empty) return false;
-  const edit = docBlockMoveEdit(view.state.doc.toString(), selection.main.head, delta);
+  const edit = docBlockMoveEdit(docStr(view.state.doc), selection.main.head, delta);
   if (!edit) return false;
   if (edit.noop) return true;
   view.dispatch({
@@ -5680,7 +5739,7 @@ function docTableCaretTo(context, row, col) {
 
 //: Leave a table downwards through `docTableExitEdit`, the way out as data.
 function docTableExit(view, table, dropLast) {
-  const out = docTableExitEdit(table, view.state.doc.toString(), dropLast);
+  const out = docTableExitEdit(table, docStr(view.state.doc), dropLast);
   view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
   return true;
 }
@@ -5768,7 +5827,7 @@ function docTablePasteEvent(event, view) {
     event.preventDefault();
     docUndoBreak();
     view.dispatch({ changes: result.edit, userEvent: "input.paste", scrollIntoView: true });
-    const table = docTableParse(view.state.doc.toString(), context.table.from);
+    const table = docTableParse(docStr(view.state.doc), context.table.from);
     if (table) docTableCaretTo({ surface: context.surface, table }, result.row, result.col);
     return true;
   }
@@ -6333,7 +6392,7 @@ function docTableGripsPlugin(CM) {
         //: in a table, and reading the document to say so on every keystroke of a
         //: long page would be the cost of a feature most lines never use.
         if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
-        const table = docTableParse(doc.toString(), head);
+        const table = docTableParse(docStr(doc), head);
         if (!table) return null;
         const scroller = view.scrollDOM;
         const sr = scroller.getBoundingClientRect();
@@ -10189,7 +10248,7 @@ function docColumnsField(CM) {
   }
 
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     //: The cheap test first: a document with no `:::` in it at all is most of
     //: them, and this runs on every keystroke.
     if (!text.includes(":::")) return Decoration.none;
@@ -10237,7 +10296,7 @@ function docColumnsArrowKeymap(CM) {
     const state = view.state;
     const sel = state.selection.main;
     if (!sel.empty) return false;
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes(":::")) return false;
     const line = state.doc.lineAt(sel.head);
     const next = back ? line.from - 1 : line.to + 1;
@@ -10640,7 +10699,7 @@ function docMermaidField(CM) {
     }
   }
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
     const sel = state.selection.main;
     const ranges = [];
@@ -11495,9 +11554,9 @@ function docImagePick(box, boxId) {
   input.click();
 }
 
-async function docImageUpload(box, boxId, file) {
+async function docImageUpload(box, boxId, file, said = "") {
   const { selectionStart: start, selectionEnd: end, value } = box;
-  const alt = value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
+  const alt = said || value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
   try {
     const form = new FormData();
     form.append("file", file);
@@ -11520,10 +11579,33 @@ async function docImageUpload(box, boxId, file) {
         box.value = before;
         box.setSelectionRange(start, end);
       }
-      docImageUpload(box, boxId, file);
+      docImageUpload(box, boxId, file, said);
     };
     toast("Could not upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
   }
+}
+
+//: **A picture pasted into a markdown document asks what it shows** (audit
+//: 1028 D27). The upload and the embed were already there (settings-wiring.js'
+//: paste handler), with the file's own name for alt text, "image.png". On
+//: `window` in the capture phase so it runs ahead of that one, and only for a
+//: clipboard that is a picture and nothing else; a copy with words in it is
+//: the words' paste. An empty answer or Escape still adds the picture.
+window.addEventListener("paste", (event) => {
+  const view = docCmView;
+  if (!view || !view.dom.contains(event.target) || view.dom.classList.contains("doc-content-code") || view.state.readOnly) return;
+  const data = event.clipboardData;
+  if (!data || data.getData("text/plain")) return;
+  const file = [...data.files].find((f) => f.type.startsWith("image/"));
+  if (!file) return;
+  event.preventDefault();
+  event.stopPropagation();
+  docImagePasteAsk(file);
+}, true);
+
+async function docImagePasteAsk(file) {
+  const said = await promptDialog("Describe this picture (optional)", "", { confirmLabel: "Add picture" });
+  await docImageUpload(docSurface(), "doc-content", file, said);
 }
 
 //: The address-by-hand form: the selection becomes the *alt text* and the
@@ -12739,7 +12821,7 @@ function docWriteOutsideHistory(text) {
     docSurface().text = text;
     return;
   }
-  const current = docCmView.state.doc.toString();
+  const current = docStr(docCmView.state.doc);
   if (current === text) return;
   const [from, to, insert] = docUndoDiffRange(current, text);
   docCmView.dispatch({ changes: { from, to, insert }, annotations: CM.state.Transaction.addToHistory.of(false) });
@@ -15003,7 +15085,7 @@ function noteSurfaceMirrorTools(host, view, valueProto) {
     clearTimeout(host.noteMirrorTimer);
     if (!host.noteMirrorStale) return;
     host.noteMirrorStale = false;
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const range = view.state.selection.main;
     noteSurfaceMirroring = true;
     try {
@@ -15040,13 +15122,13 @@ function noteSurfaceOwnValue(host, view) {
     configurable: true,
     //: Live: the textarea behind it is only brought level once typing pauses.
     get() {
-      return view.state.doc.toString();
+      return docStr(view.state.doc);
     },
     set(next) {
       proto.set.call(this, next);
       host.noteMirrorStale = false;
       if (noteSurfaceMirroring) return;
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       host.noteSettingValue = true;
       try {
@@ -17205,23 +17287,48 @@ function renderDocStatusBar() {
 //: Anything that needs them *now* (opening a document, a restore, a view
 //: switch) still calls the three directly.
 let docFactsTimer = null;
+//: Set when a pass was due while the Documents tab was hidden; the next visit
+//: runs it (`loadDocuments`), so nothing is out of date when it is seen again.
+let docFactsStale = false;
+let docFactsIdle = 0;
+
+function runDocFacts() {
+  docFactsStale = false;
+  renderDocStats();
+  renderDocOutline();
+  renderDocCounts();
+  renderDocComments();
+  //: The properties panel is drawn from the frontmatter's own text and
+  //: redraws only when that text moves, so it costs one parse of the top
+  //: of the document per pause in the typing.
+  renderDocProperties();
+}
 
 function scheduleDocFacts() {
   clearTimeout(docFactsTimer);
   docFactsTimer = setTimeout(() => {
     docFactsTimer = null;
     const run = () => {
-      renderDocStats();
-      renderDocOutline();
-      renderDocCounts();
-      renderDocComments();
-      //: The properties panel is drawn from the frontmatter's own text and
-      //: redraws only when that text moves, so it costs one parse of the top
-      //: of the document per pause in the typing.
-      renderDocProperties();
+      //: **Not while nobody can see it** (audit 1028 D20). A change that lands
+      //: with another tab in front (a sync, a restore, the AI's edit arriving)
+      //: used to rebuild the stats, outline, counts, comments and properties
+      //: for a hidden page: measured 65 ms of work on a 20k-word document per
+      //: change. Marked stale instead, and run once on the way back in.
+      if ($("tab-documents")?.classList.contains("hidden")) {
+        docFactsStale = true;
+        return;
+      }
+      runDocFacts();
     };
-    if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 300 });
-    else requestAnimationFrame(run);
+    //: One queued pass at most: a second pause that arrives before the idle
+    //: callback has run replaces it, so a busy tab does not stack two.
+    if (typeof requestIdleCallback === "function") {
+      if (docFactsIdle) cancelIdleCallback(docFactsIdle);
+      docFactsIdle = requestIdleCallback(() => {
+        docFactsIdle = 0;
+        run();
+      }, { timeout: 300 });
+    } else requestAnimationFrame(run);
   }, 120);
 }
 
@@ -23395,7 +23502,7 @@ function docFindingsPlugin(CM) {
   const { Decoration, ViewPlugin } = CM.view;
 
   function build(view) {
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const ranges = [];
     docProseFound.forEach((finding, index) => {
       if (DOC_FINDING_SKIP.has(finding.rule)) return;
@@ -24166,7 +24273,7 @@ function docHistoryRestore(id, text) {
     const CM = window.CM6;
     const field = CM?.commands?.historyField;
     if (!stored || !field || !docCmView || docHistoryOwner !== id || stored.doc !== text) return;
-    if (docCmView.state.doc.toString() !== text) return;
+    if (docStr(docCmView.state.doc) !== text) return;
     try {
       docCmView.setState(CM.state.EditorState.fromJSON(stored, { extensions: docCmExtensions(CM) }, { history: field }));
       docSetLiveDecorations(docView === "live");

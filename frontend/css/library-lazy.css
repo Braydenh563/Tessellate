@@ -6950,6 +6950,11 @@ input[type="color"].wb-mixed {
 .doc-statusbar-link {
   cursor: pointer;
   border-radius: var(--radius-sm);
+  /* A press target of its own, 16.8px high before (audit 1028 U35, WCAG
+     2.5.8). The line box carries the height, not a flex box, so the phone's
+     ellipsis on the counts still applies. */
+  min-height: var(--target-min);
+  line-height: var(--target-min);
 }
 .doc-statusbar-link:hover {
   color: var(--text);

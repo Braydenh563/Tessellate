@@ -342,7 +342,7 @@ function docCodeLintSource(CM) {
     const type = docFileType();
     const ext = type.ext;
     const state = view.state;
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     const unit = type.indent || "  ";
     let found = [];
     if (ext === "json") {
@@ -629,7 +629,7 @@ function docP5Source() {
     if (context.matchBefore(/\.\w*$/)) return null;
     const word = context.matchBefore(/[A-Za-z_]\w*/);
     if (!word || (word.from === word.to && !context.explicit)) return null;
-    if (!DOC_P5_SKETCH.test(context.state.doc.toString())) return null;
+    if (!DOC_P5_SKETCH.test(docStr(context.state.doc))) return null;
     return { from: word.from, options, validFor: /^\w*$/ };
   };
 }
@@ -712,7 +712,7 @@ function docPyStdlibSource(CM) {
     if (!before) return null;
     const dot = before.text.lastIndexOf(".");
     const modules = await docPyStdlibTable();
-    const rows = docPyStdlibRows(modules, docPyImports(context.state.doc.toString()), before.text.slice(0, dot));
+    const rows = docPyStdlibRows(modules, docPyImports(docStr(context.state.doc)), before.text.slice(0, dot));
     if (!rows) return null;
     const type = { function: "function", class: "class", constant: "constant", namespace: "namespace" };
     return {
@@ -743,7 +743,7 @@ function docCodeCompletionSource(CM) {
     const snipped = new Set(snippets.map((o) => o.label));
     for (const label of snipped) seen.add(label);
     const options = [...snippets, ...keywords.filter((k) => !snipped.has(k)).map((label) => ({ label, type: "keyword" }))];
-    const text = context.state.doc.toString();
+    const text = docStr(context.state.doc);
     const names = /[A-Za-z_$][\w$]{2,}/g;
     let match;
     while ((match = names.exec(text)) !== null && options.length < 2000) {
@@ -1747,7 +1747,7 @@ function docEmmetBalance(inward) {
   const E = window.EMMET;
   if (!syntax || !E) return false;
   const view = docCmView;
-  const text = view.state.doc.toString();
+  const text = docStr(view.state.doc);
   const { from, to } = view.state.selection.main;
   const options = { xml: syntax !== "html" };
   const into = inward && from !== to;
@@ -1915,7 +1915,7 @@ function docTagLink(CM, syntax) {
       }
       if (!inTag) return tr;
     }
-    const partner = docTagRename(E, start.doc.toString(), fromA, toA, insert, syntax !== "html");
+    const partner = docTagRename(E, docStr(start.doc), fromA, toA, insert, syntax !== "html");
     if (!partner) return tr;
     return [tr, { changes: partner, sequential: true }];
   });
@@ -2121,7 +2121,7 @@ async function docPyHover(CM, view, pos, side) {
   if (node.name !== "PropertyName" || node.parent?.name !== "MemberExpression") return null;
   const dotted = view.state.sliceDoc(node.parent.from, node.from).replace(/\.\s*$/, "").replace(/\s+/g, "");
   if (!/^[A-Za-z_][\w.]*$/.test(dotted)) return null;
-  const rows = docPyStdlibRows(await docPyStdlibTable(), docPyImports(view.state.doc.toString()), dotted);
+  const rows = docPyStdlibRows(await docPyStdlibTable(), docPyImports(docStr(view.state.doc)), dotted);
   const name = view.state.sliceDoc(node.from, node.to);
   const row = rows?.find((r) => r[0] === name);
   if (!row) return null;
@@ -2499,7 +2499,7 @@ function docWordAt(state, pos) {
 
 //: Every use of `name` as a whole word in code, as `{ from, to }`.
 function docReferencesOf(CM, state, name) {
-  const text = state.doc.toString();
+  const text = docStr(state.doc);
   if (text.length > DOC_CHECK_MAX_CHARS) return [];
   const tree = CM.language.ensureSyntaxTree(state, state.doc.length, 200) || CM.language.syntaxTree(state);
   const found = [];
@@ -6046,7 +6046,7 @@ async function docFormatCode(scope = "auto") {
     return false;
   }
   const state = view.state;
-  const text = state.doc.toString();
+  const text = docStr(state.doc);
   const sel = state.selection.main;
   const selection = scope === "selection" || (scope === "auto" && !sel.empty);
   if (selection && sel.empty) {
@@ -6064,7 +6064,7 @@ async function docFormatCode(scope = "auto") {
   //: The server check is a round trip, and so is the formatter's first
   //: load; typing during either would make the result a format of text
   //: that is no longer there.
-  if (docCmView !== view || view.state.doc.toString() !== text) {
+  if (docCmView !== view || docStr(view.state.doc) !== text) {
     toast("The text changed while it was being checked. Format again.", "info");
     return false;
   }
@@ -6144,7 +6144,7 @@ async function docFormatCode(scope = "auto") {
 //: for again: "scan" (brackets, strings, comments), "json", "py-colon",
 //: "indent-mix".
 function docCodeFixNow(view, source, key, name, from) {
-  const text = view.state.doc.toString();
+  const text = docStr(view.state.doc);
   const type = docFileType();
   const unit = type.indent || "  ";
   if (source === "py-colon") {
