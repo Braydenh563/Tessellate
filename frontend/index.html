@@ -1910,7 +1910,7 @@ Link to another note with [[its first few words]]."></textarea>
                     title="Clear the desk: the thoughts, the draft and its earlier versions"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Discard this draft</button>
                 </div>
               </details>
-              <button id="draft-compose" data-needs-model="Drafting needs a model connected" data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
+              <button id="draft-compose"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
             </div>
           </div>
           <div class="help-body hidden" id="draft-help-body" role="dialog" aria-label="What is this?">
@@ -1982,6 +1982,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="rewrite">Rewrite the draft</option>
                   <option value="expand">Bullets to prose</option>
                   <option value="bullets">Prose to bullets</option>
+                  <option value="diagram">Make a diagram</option>
                   <!-- Translation through the same model (INBOX 405); the
                        codes are drafter.TRANSLATE_LANGUAGES', which drops any
                        other. -->
@@ -2043,6 +2044,10 @@ Link to another note with [[its first few words]]."></textarea>
                   <!-- Which note this draft goes back to, when it came from
                        one. A fact about the draft, so a chip. -->
                   <span id="draft-target" class="chip hidden"></span>
+                  <!-- With no model a pass is composed by rule (INBOX 1466), and
+                       says so the way a composed answer does (`#answered-by`). -->
+                  <span id="draft-by" class="chip item-label answer-model hidden"
+                    title="Atlas wrote this by plain rule, with no model: every word is yours or a joining word">From your words</span>
                   <span id="draft-count" class="muted"></span>
                 </span>
               </div>
@@ -2071,9 +2076,7 @@ Link to another note with [[its first few words]]."></textarea>
                 <input id="draft-instruction" type="text" maxlength="300"
                   placeholder="Refine: “make it shorter”, “add a summary”…"
                   aria-label="An instruction for the next pass">
-                <button id="draft-refine" data-needs-model="Refining needs a model connected"
-                  data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."
-                  class="ghost" type="button"
+                <button id="draft-refine" class="ghost" type="button"
                   title="Run this instruction over the draft"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Refine</button>
               </div>
               <!-- Out of the action row and onto a labelled row of its own, so

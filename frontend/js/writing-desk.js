@@ -25,7 +25,7 @@ async function composeDraft() {
     ? written.slice(foldedThoughts.length).trim()
     : written.trim();
   const draft = $("draft-text").value;
-  if (!thoughts && !draft.trim()) {
+  if (!thoughts && !draft.trim() && !draftSources.length) {
     setDraftStatus("Write a thought first.", true);
     $("draft-thoughts").focus();
     return;
@@ -100,6 +100,9 @@ async function composeDraft() {
   setDraftBusy(false);
 
   const finished = done && typeof done.draft === "string" ? done.draft : streamed;
+  //: A composed pass (no model) has no delta to take the undo point at.
+  const composed = done?.by === "composer";
+  if (composed && !started && draft.trim() && finished !== draft) pushDraftUndo();
   $("draft-text").value = finished || draft;
   updateDraftCount();
   // Collapsed once it lands: the thinking is worth watching and not worth
@@ -116,14 +119,24 @@ async function composeDraft() {
     if (thoughts) foldedThoughts = written;
     $("draft-instruction").value = "";
     rememberDraftVersion($("draft-text").value);
+    markDraftComposed(composed);
     setDraftStatus(
-      thoughts
-        ? "Folded your thoughts into the draft, your notes above are untouched."
-        : "Draft updated: edit it, or add more thoughts."
+      composed
+        ? done.said
+        : thoughts
+          ? "Folded your thoughts into the draft, your notes above are untouched."
+          : "Draft updated: edit it, or add more thoughts."
     );
     announce("The draft has been updated.");
   }
   saveDraftLocally();
+}
+
+//: The chip on a pass the composer wrote with no model (INBOX 1466).
+function markDraftComposed(on) {
+  const chip = $("draft-by");
+  chip.textContent = draftSources.length ? "From your notes" : "From your words";
+  chip.classList.toggle("hidden", !on);
 }
 
 //: The NDJSON reader for the writing desk. Hand-rolled rather than through
@@ -284,6 +297,7 @@ async function saveDraftAsNote(asDraft = false) {
     $("draft-text").value = "";
     $("draft-tags").value = "";
     $("draft-thinking").classList.add("hidden");
+    markDraftComposed(false);
     // The desk is clear, so its earlier versions and the notes this one was
     // written from go too: a row of "v1 v2 v3" over an empty box offers a way
     // back to drafts of a note that has already been filed.

@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Writing room with no model (INBOX 1466): Draft and Refine work by rule instead of being greyed out: Write up my notes (your words tidied, each picked note under its name and date, its key points as bullets), Say it plainly, Bullets to prose, Prose to bullets, and Refine shorter, add a summary or make a flowchart, timeline or mind map; the draft is marked From your words, and Carry on writing and Translate say in one line that they need a model. A new Make a diagram mode and chip; with a model, the model still writes.
+- Chat and Ask with no model (INBOX 1466): "make a diagram of my notes on X", "show my notes as a timeline" and "turn this into a flowchart" answer with a Mermaid diagram the page draws, from the notes found, the text after a colon or the answer before.
 - Notes: saving a note again (centring or resizing an image) no longer reads its pictures and PDFs again; each reader runs once per upload (INBOX 1465).
 - Backup restore (audit 1028 K14): a zip of more than 200,000 files, or one larger than the free space on the notebook's disk, is refused before anything is written, with the amount to free.
 - Chat and models (audit 1028 E35, E36, E39, E40): a finished answer is said once to a screen reader; a saved chat in the sidebar opens with Enter or Space; a model download that goes silent for five minutes ends instead of freezing its bar, and a layer bigger than the free space stops with the amount to free; "Search by meaning is not working" waits while the download question is up, so one toast says it, not two.

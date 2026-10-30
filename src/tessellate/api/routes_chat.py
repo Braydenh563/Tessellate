@@ -3925,9 +3925,28 @@ def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | 
     return None
 
 
+def _diagram_events(req: _StreamRequest, prepared: dict) -> list | None:
+    """"Make a diagram of my notes on X", "turn this into a flowchart" with no
+    model (INBOX 1466): a ```mermaid fence the page draws, written by rule
+    (`ai/composer_mermaid.py`) from the notes found, the open note, the text
+    after a colon, or the answer before."""
+    from tessellate.ai import composer_mermaid
+
+    if not composer_mermaid.asks(req.question or ""):
+        return None
+    opened = next((str(n.get("content") or "") for n in prepared["notes"] if req.body.open_note_id and n.get("id") == req.body.open_note_id), "")
+    previous = str(req.history[-1].get("answer") or "") if req.history else ""
+    result = composer_mermaid.answer(req.question or "", prepared["notes"], previous=previous, opened=opened)
+    return [{"type": "answer", "delta": result["text"]}] if result else None
+
+
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
     """The events for a notes question the app answers itself (web, nothing
     found, or composed), or None when a model streams the answer."""
+    if not ollama_running and not req.images_raw:
+        drawn = _diagram_events(req, prepared)
+        if drawn is not None:
+            return drawn
     if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).
