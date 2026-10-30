@@ -20,6 +20,7 @@ import re
 import threading
 import time
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from dataclasses import replace as with_changes
 from datetime import date, datetime, timezone
@@ -2508,7 +2509,7 @@ def _assist(req: _StreamRequest, prepared: dict) -> None:
     about or attached (the composer reads words, and the model is asked about
     what it sees), or a turn with nothing retrieved.
     """
-    prepared["model_notes"] = prepared["notes"]
+    prepared["model_notes"] = [] if _unmatched_recents(req, prepared) else prepared["notes"]
     prepared["preview"] = None
     if (
         req.skill
@@ -2552,6 +2553,23 @@ WEB_PAGES = 3
 WEB_PAGE_CHARS = 4000
 
 
+def _unmatched_recents(req: _StreamRequest, prepared: dict) -> bool:
+    """A question with subject words that matched no note, answered by the
+    "never look empty" fallback of the newest notes: those are not evidence,
+    and a model prompt carrying about 6 KB of them answers from the wrong
+    notes (audit 1030 A12). A question with no subject ("my latest notes",
+    "what is in my notebook"), or one with notes attached, keeps them."""
+    if not str(prepared.get("search_mode") or "") == "recent" or req.body.note_ids or req.images_raw or req.skill:
+        return False
+    if not req.ollama.is_running() or _composed(req, True):
+        return False
+    from tessellate.search.search_manager import is_recency_ask
+
+    #: Two or more subject words is a topic ("mortgage rate zebra paddock");
+    #: one is as often the notebook itself ("tell me about my notebook").
+    return not is_recency_ask(req.question or "") and len(note_rank.subject(req.question or "")) >= 2
+
+
 def _web_first(req: _StreamRequest, prepared: dict) -> bool:
     """The web before the notes: when no note matched, or when the turn asks
     for the web outright ("search the web for ...")."""
@@ -2565,29 +2583,76 @@ def _web_allowed(req: _StreamRequest) -> bool:
         on = bool(deps.get_config().get_preference("web_search_enabled", False)) and bool(req.use_tools)
         #: A spending total is the notes' sum: the web cannot know it.
         q = req.question or ""
-        return on and not personal.about_own_notes(q) and not composer_money.asks(q)
+        #: A first-person question is the person's own record: only an
+        #: explicit "search the web for" sends it out (audit 1030 A1, A2).
+        own = personal.about_own_notes(q) or composer_money.asks(q) or (personal.about_own_record(q) and not toolwords.asks_web(q))
+        return on and not own
     except Exception:  # noqa: BLE001  # no preference is off
         return False
 
 
+def _web_pref_on() -> bool:
+    """Settings, Web search is on (whatever this turn's mode can do with it)."""
+    try:
+        return bool(deps.get_config().get_preference("web_search_enabled", False))
+    except Exception:  # noqa: BLE001  # no preference is off
+        return False
+
+
+#: One shared deadline for reading the hits, so three slow pages cost about
+#: this and not three times a page's own timeout (audit 1030 A4: 14.7 s).
+WEB_PAGES_DEADLINE = 6.0
+
+
+def _web_page_row(i: int, hit: dict, page: dict) -> dict | None:
+    text = str(page.get("text") or "")[:WEB_PAGE_CHARS]
+    title = " ".join(str(page.get("title") or hit.get("title") or page.get("domain") or "A web page").split())
+    if not text.strip():
+        return None
+    return {
+        "id": -(i + 1), "kind": "web", "url": str(page.get("url") or hit.get("url")), "domain": page.get("domain", ""),
+        "content": f"{title}\n\n{text}",
+        #: The result's one line for the panel: the engine's snippet,
+        #: else the page's opening.
+        "snippet": " ".join(str(hit.get("snippet") or text[:200]).split())[:200],
+    }
+
+
 def _web_pages(websearch, results: list[dict]) -> list[dict]:  # noqa: ANN001
-    """The top hits read as pages, each a source of kind "web"; a page that cannot be read is skipped."""
-    pages: list[dict] = []
-    for i, hit in enumerate(results[:WEB_PAGES]):
+    """The top hits read as pages, in parallel under one deadline, each a
+    source of kind "web"; a page that cannot be read is skipped. When none
+    reads, the engine's own snippets stand in for the pages (they are the
+    search's answer), so a down page never turns results into "nothing"."""
+    hits = results[:WEB_PAGES]
+
+    def read(hit: dict) -> dict | None:
         try:
-            page = websearch.fetch_readable_cached(str(hit.get("url") or ""))
+            return websearch.fetch_readable_cached(str(hit.get("url") or ""))
         except websearch.WebSearchError:
+            return None
+
+    pool = ThreadPoolExecutor(max_workers=max(1, len(hits)))
+    futures = [pool.submit(read, hit) for hit in hits]
+    deadline = time.monotonic() + WEB_PAGES_DEADLINE
+    pages: list[dict] = []
+    for i, (hit, future) in enumerate(zip(hits, futures)):
+        try:
+            page = future.result(timeout=max(0.0, deadline - time.monotonic()))
+        except Exception:  # noqa: BLE001  # a late or failed read is skipped
             continue
-        text = str(page.get("text") or "")[:WEB_PAGE_CHARS]
-        title = " ".join(str(page.get("title") or hit.get("title") or page.get("domain") or "A web page").split())
-        if text.strip():
-            pages.append({
-                "id": -(i + 1), "kind": "web", "url": str(page.get("url") or hit.get("url")), "domain": page.get("domain", ""),
-                "content": f"{title}\n\n{text}",
-                #: The result's one line for the panel: the engine's snippet,
-                #: else the page's opening.
-                "snippet": " ".join(str(hit.get("snippet") or text[:200]).split())[:200],
-            })
+        row = _web_page_row(i, hit, page) if page else None
+        if row:
+            pages.append(row)
+    pool.shutdown(wait=False, cancel_futures=True)
+    if pages:
+        return pages
+    #: No page read: the snippets, each cited by its address.
+    for i, hit in enumerate(hits):
+        snippet = " ".join(str(hit.get("snippet") or "").split())
+        if snippet:
+            row = _web_page_row(i, hit, {"url": hit.get("url"), "title": hit.get("title"), "domain": hit.get("domain", ""), "text": snippet})
+            if row:
+                pages.append(row)
     return pages
 
 
@@ -2881,7 +2946,8 @@ def _in_notes(session: Session):  # noqa: ANN202
     a word that is otherwise invented, so at most once or twice a message."""
 
     def holds(word: str) -> bool:
-        if not word.isalpha():
+        #: A word, or two ("project atlas") that a note or a person names.
+        if not word.replace(" ", "").isalpha():
             return False
         try:
             found = session.execute(
@@ -3678,7 +3744,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
     if missed and not follow and personal.general(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
-        text = personal.general_reply(_web_allowed(req))
+        text = personal.general_reply(
+            _web_allowed(req), web_pref=_web_pref_on(), by_choice=req.body.answer_from == "notes" and req.ollama.is_running())
     if missed and prepared.get("meaning_loading"):
         text += "\n\n" + composer_digest.PHRASES["meaning_loading"]
     elif missed and prepared.get("meaning_off"):
@@ -3727,7 +3794,7 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
 def _notes_messages(req: _StreamRequest, prepared: dict) -> list:
     return librarian.build_messages(
         f"{_in_full(req)}\n\n{req.image_context}" if req.image_context else _in_full(req),
-        prepared.get("model_notes") or prepared["notes"],
+        prepared.get("model_notes", prepared["notes"]),
         style=prepared["style"],
         profile=prepared["profile"],
         history=req.history,
@@ -4123,7 +4190,7 @@ def _agent_events(req: _StreamRequest, prepared: dict, tools_provider) -> Iterat
         agent_events = agent.run_agent(
             req.session,
             _in_full(req),
-            prepared.get("model_notes") or prepared["notes"],
+            prepared.get("model_notes", prepared["notes"]),
             req.model_manager,
             tools_provider,
             mode=req.mode,
@@ -4498,7 +4565,7 @@ def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
         #: written in, as context; grounding reads them as they are.
         known = _verdicts(req.session)
         if known:
-            prepared["model_notes"] = verdicts.for_model(prepared.get("model_notes") or prepared["notes"], known)
+            prepared["model_notes"] = verdicts.for_model(prepared.get("model_notes", prepared["notes"]), known)
 
 
 def _meta_event(req: _StreamRequest, prepared: dict, t: _Turn) -> dict:

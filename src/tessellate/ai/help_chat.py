@@ -572,13 +572,16 @@ HELP_TOPICS: list[dict] = [
         "id": "websearch",
         "keywords": ("web search", "websearch", "internet search", "searxng", "search the web", "search online", "look it up online"),
         "body": (
-            "Web search is opt-in and off by default. Turn it on in Settings, Web "
+            "Web search is opt-in. Turn it on in Settings, Web "
             "search, or with the Web button in Chat (with web on and the panel "
             "shut, a click opens the panel; with it open, a click turns web off): only your search words are sent out, "
-            "never your notes, so the assistant can look something up online "
-            "when asked. With it on and no model running, a Chat question your "
-            "notes do not answer is answered from the pages found, one line a "
-            "page under its title, cited by its address. The pages are in the "
+            "never your notes, and never a question about your own notes or records. "
+            "It runs in Agent mode: there the assistant looks something up online "
+            "when asked, and a Chat question your notes do not answer is answered "
+            "from the pages found, one line a "
+            "page under its title, cited by its address. In Ask and in Chat's Ask "
+            "mode answers come from your notes only, and the Web button says so; the "
+            "Web panel still searches by hand. The pages are in the "
             "Web results fold under the answer: each with its site and one "
             "line; press a title to read the page there, as text, with Back to "
             "results, or the arrow beside it to open it in your browser. "
@@ -2921,6 +2924,44 @@ def _about_the_guide(question: str) -> list[dict]:
     return []
 
 
+#: A question that points at the screen ("how does this work", "what is here").
+_DEICTIC = re.compile(r"\b(?:this|here|these|that one|on screen|this page|this tab)\b", re.I)
+#: How-to forms that are about the app whatever else they name.
+_HOW_TO_APP = re.compile(r"^\s*(?:how (?:do|can|should|would|to)|where (?:do|can|is|are)|can i|is there a way|what can i do|what does|why (?:is|does|can't|won't))\b|^\s*help(?: me)?\s*[?.!]*\s*$", re.I)
+
+
+#: A request for writing or a performance, never a question about the app.
+_CREATIVE = re.compile(r"^\s*(?:please\s+)?(?:tell me (?:a|an|some) \w+|write|compose|draft|sing|recite|translate|give me (?:a|an) \w+|make me (?:a|an) \w+)\b", re.I)
+
+
+def _outside_the_app(question: str) -> bool:
+    """Whether the open tab's blurb must NOT stand in for an answer: the
+    world's questions, requests ("tell me a joke"), prompt injection and
+    questions about the person's own notes get the honest "nothing in the
+    help matches". A question that points at the screen or asks how to do
+    something, or is gibberish, still falls back to the tab (audit 1030 A18)."""
+    from tessellate.ai import personal
+
+    if _DEICTIC.search(question):
+        return False
+    if _off_topic(question) or _CREATIVE.match(question):
+        return True
+    return bool(personal.general(question) or (personal.about_own_record(question) and not _HOW_TO_APP.match(question)))
+
+
+_INJECTION = re.compile(r"\b(?:ignore|disregard|forget) (?:all |any |your |the )?(?:previous|prior|above|earlier|system) (?:instructions|rules|prompt)\b|\b(?:print|show|reveal|repeat) (?:me )?(?:your|the) (?:system )?prompt\b", re.I)
+
+
+_WHO_IS_MY = re.compile(r"^(?:who(?:'s| is| are| was)|what(?:'s| is) the name of) (?:my|our) \w+(?: \w+)?[?.!]*$", re.I)
+
+
+def _off_topic(question: str) -> bool:
+    """A request the help text cannot answer however a keyword in it matches:
+    a prompt injection, or a question about a person in the person's life
+    ("who is my sister" matched the Entities topic). Neither is the app (A18)."""
+    return bool(_INJECTION.search(question) or _WHO_IS_MY.match(question.strip()))
+
+
 def topics_for(question: str, tab: str | None = None) -> list[dict]:
     """The reference entries for one question, asked from one tab.
 
@@ -2955,8 +2996,10 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     read = guide_intent.topics(question, tab, {topic["id"]: topic for topic in HELP_TOPICS}, TAB_TOPICS)
     if read:
         return read
+    if _off_topic(question):
+        return []
     topics = _aliased_topics(question) or _reading_topics(question)
-    if not tab or topics:
+    if not tab or topics or _outside_the_app(question):
         return topics
     seen = {topic["id"] for topic in topics}
     by_id = {topic["id"]: topic for topic in HELP_TOPICS}
@@ -3370,7 +3413,7 @@ def offline_answer(
         #: a question this could not place is still a question asked *from
         #: somewhere*, and that somewhere describes itself.
         on_screen = (context or "").strip()[:MAX_CONTEXT_CHARS]
-        if on_screen:
+        if on_screen and not _outside_the_app(question):
             return {
                 "content": on_screen,
                 "badges": [],

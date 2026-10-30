@@ -114,52 +114,16 @@ function chatMessageActions(actions) {
 //:
 //: The order is Odysseus's footer order, with this app's own capture actions
 //: after it: what you do to the *answer* first, what you do with it second.
-//: **Copy copies the whole turn, not the last paragraph of it.** The owner:
-//: "when I copy text from a chat or assistant message bubble, it only shows
-//: the last agent section of the message, I want it to capture everything
-//: in the whole chat and assistant messages, including thinking processes
-//: (if toggled), tool calls, and everything in the chat." The bubble is
-//: walked in document order: a thinking step is included only while it is
-//: open (the toggle is the person's say on whether it is part of the
-//: message), a plan step as its text, each tool chip as one "Tool:" line
-//: with its arguments and result when they are shown, and every answer body
-//: as its text. `text` is the raw Markdown of the final answer, used in
-//: place of the last body's rendered text so headings and links survive.
-function chatTurnTranscript(bubble, text) {
-  const parts = [];
-  const seen = new Set();
-  const nodes = bubble
-    ? [...bubble.querySelectorAll(".agent-step, .tool-chip, .msg-body")]
-    : [];
-  const bodies = nodes.filter((n) => n.classList.contains("msg-body"));
-  for (const node of nodes) {
-    if ([...seen].some((s) => s.contains(node))) continue;
-    seen.add(node);
-    if (node.classList.contains("thinking-fold")) {
-      if (!node.open) continue;
-      const body = node.querySelector(".thinking")?.innerText.trim();
-      if (body) parts.push(`Thinking:\n${body}`);
-    } else if (node.classList.contains("step-plan")) {
-      const body = node.innerText.replace(/^\s*Plan\s*/i, "").trim();
-      if (body) parts.push(`Plan:\n${body}`);
-    } else if (node.classList.contains("tool-chip")) {
-      const label = node.querySelector("summary")?.innerText.trim() || node.innerText.trim();
-      const args = node.querySelector(".tool-chip-args")?.textContent.trim();
-      const result = node.querySelector(".tool-chip-result")?.textContent.trim();
-      let line = `Tool: ${label}`;
-      if (args) line += `\n${args}`;
-      if (result) line += `\nResult: ${result}`;
-      parts.push(line);
-    } else if (node.classList.contains("msg-body")) {
-      const last = node === bodies.at(-1);
-      const body = last && text ? text : node.innerText.trim();
-      if (body) parts.push(body);
-    } else {
-      const body = node.innerText.trim();
-      if (body) parts.push(body);
-    }
+//: Source marks as " [n]", not digits run into words (A21).
+function bodyTextWithCitations(node) {
+  const links = [...node.querySelectorAll(".answer-citation-link")];
+  const digits = links.map((l) => l.textContent);
+  links.forEach((l) => { l.textContent = `[${l.textContent}]`; l.before(" "); });
+  try {
+    return node.innerText.trim();
+  } finally {
+    links.forEach((l, i) => { l.previousSibling.remove(); l.textContent = digits[i]; });
   }
-  return parts.length ? parts.join("\n\n") : text || "";
 }
 
 function assistantMessageActions({ bubble, text, question, onEdit }) {
@@ -168,7 +132,11 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     {
       label: "ph:copy",
       title: "Copy message",
-      onClick: (e) => copyToClipboard(chatTurnTranscript(bubble, text), e.currentTarget),
+      onClick: async (e) => {
+        const button = e.currentTarget;
+        await ensureModule("gestureKit"); // chatTurnTranscript lives there, off the boot scripts
+        copyToClipboard(chatTurnTranscript(bubble, text), button);
+      },
     },
     {
       label: "ph:arrow-clockwise",
@@ -1889,11 +1857,7 @@ function renderChatContextMeter(stats) {
 }
 
 
-//: How long the thread is, beside what it has cost. Asked for with the header
-//: redesign ("the metadata, model used, chat functions, token usage data and
-//: more"), and it is the fact the two controls next to it are actually about:
-//: Compress and Fork are both answers to "this conversation has got long", and
-//: a token count alone does not say that in a unit anyone thinks in.
+//: How long the thread is, beside what it has cost: Compress and Fork both answer "this has got long", which a token count does not say in a unit anyone thinks in.
 function renderChatTurnCount() {
   const el = $("chat-turns");
   if (!el) return;
@@ -1972,7 +1936,7 @@ function chatTranscriptText() {
   for (const msg of $("chat-messages")?.querySelectorAll(".msg") || []) {
     const who = msg.classList.contains("user") ? "You" : msg.dataset.persona || aiNameNow();
     const body = msg.querySelector(".msg-body, .bubble-answer");
-    const text = (body?.innerText || "").trim();
+    const text = body ? bodyTextWithCitations(body) : "";
     if (text) parts.push(`**${who}:** ${text}`);
   }
   return parts.join("\n\n");
@@ -2009,9 +1973,16 @@ async function compressChatContext() {
       body: JSON.stringify({ history: chatConv.turns.slice(0, covered) }),
     });
     showCompressReview(result, covered);
+  } catch (error) {
+    toast(error?.message || "Couldn't summarise this conversation.");
   } finally {
     setBusy(button, false);
   }
+}
+
+//: "40 characters", then "6.3k characters" (A31).
+function compressSizeText(n) {
+  return n < 1000 ? `${Math.round(n)} characters` : `${Math.round(n / 10) / 100}k characters`;
 }
 
 // The summary, before it is used, editable, because a summary you cannot
@@ -2022,8 +1993,8 @@ function showCompressReview(result, covered) {
   const box = $("chat-compress-text");
   box.value = result.summary;
   $("chat-compress-stats").textContent =
-    `${covered} messages → ${Math.round(result.chars_after / 10) / 100}k characters ` +
-    `(was ${Math.round(result.chars_before / 10) / 100}k). Edit it if it missed something.`;
+    `${covered} messages → ${compressSizeText(result.chars_after)} ` +
+    `(was ${compressSizeText(result.chars_before)}). Edit it if it missed something.`;
   panel.classList.remove("hidden");
   panel.dataset.covered = String(covered);
   box.focus();

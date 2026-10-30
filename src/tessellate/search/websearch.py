@@ -48,6 +48,10 @@ logger = logging.getLogger(__name__)
 
 DDG_URL = "https://html.duckduckgo.com/html/"
 REQUEST_TIMEOUT = 10
+#: Opening a page: connect in 4 s, then 8 s between bytes. A dead host used to
+#: hold the reader on "Opening..." for the whole 10 s per hop (audit 1030 A10);
+#: the panel's Stop is beside it, and the failure says what happened.
+READER_TIMEOUT = (4, 8)
 
 # Phrases DuckDuckGo serves to clients it has decided are not browsers. When
 # one of these comes back the response is a 200 with no results in it, which
@@ -734,7 +738,7 @@ def _get_external(url: str) -> requests.Response:
             response = session.get(
                 pinned,
                 headers={"Host": host_header},
-                timeout=REQUEST_TIMEOUT,
+                timeout=READER_TIMEOUT,
                 stream=True,
                 allow_redirects=False,
             )
@@ -837,6 +841,10 @@ def fetch_readable(url: str) -> dict:
             ) from exc
         raise WebSearchError(
             f"Couldn't open that page: {domain_of(url)} answered with an error ({status})."
+        ) from exc
+    except requests.Timeout as exc:
+        raise WebSearchError(
+            f"{domain_of(url)} took too long to answer. Try again, or open the link in your browser."
         ) from exc
     except requests.RequestException as exc:
         logger.warning("Couldn't open a page for the reader (%s): %s", type(exc).__name__, safe_value(str(exc), 300))

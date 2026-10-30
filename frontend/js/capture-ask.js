@@ -3004,9 +3004,12 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    ensureModule("askHistory")
-      .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
-      .catch(() => {});
+    //: The chart route refuses over 500 characters (422); a count is short (A26).
+    if (question.length <= 500) {
+      ensureModule("askHistory")
+        .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
+        .catch(() => {});
+    }
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.

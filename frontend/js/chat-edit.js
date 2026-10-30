@@ -33,7 +33,7 @@ function editAndResend(bubble, text) {
   const hint = document.createElement("p");
   hint.className = "muted msg-edit-hint";
   hint.textContent =
-    "Saving replaces this question and clears the replies that came after it.";
+    "Saving replaces this question and clears the replies that came after it. Ctrl+Enter saves.";
 
   const row = document.createElement("div");
   row.className = "row msg-edit-actions";

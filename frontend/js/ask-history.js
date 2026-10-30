@@ -95,7 +95,13 @@ async function loadAskHistoryPage(reset) {
   if (reset) list.replaceChildren();
   for (const turn of body.turns) list.appendChild(askHistoryRow(turn));
   askHistoryOffset += body.turns.length;
-  $("ask-history-empty").classList.toggle("hidden", askHistoryOffset > 0);
+  //: A search or the pinned filter that matches nothing is not the first-use
+  //: state; it says so and names the way out (audit 1030 A29).
+  const empty = $("ask-history-empty");
+  empty.dataset.firstUse ??= empty.textContent;
+  const filtered = Boolean(q) || Boolean($("ask-history-pinned-only")?.checked);
+  empty.textContent = filtered ? "No saved question matches. Clear the search or the pinned filter to see them all." : empty.dataset.firstUse;
+  empty.classList.toggle("hidden", askHistoryOffset > 0);
   $("ask-history-more").classList.toggle("hidden", askHistoryOffset >= askHistoryTotal);
 }
 

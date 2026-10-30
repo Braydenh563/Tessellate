@@ -885,7 +885,7 @@ function libraryActions(item) {
         }
       ),
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptDialog("Rename this chat:", item.title);
+        const next = await promptTitle("Rename this chat:", item.title);
         if (!next) return;
         const renamed = await apiJson(`/conversations/${item.id}`, {
           method: "PUT",
@@ -901,7 +901,6 @@ function libraryActions(item) {
         );
         if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
         if (chatConv && chatConv.id === item.id) newChatConversation();
-        toast("Archived.");
         reload();
         loadConversationList();
       }),

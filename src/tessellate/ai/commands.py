@@ -30,7 +30,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -83,14 +83,27 @@ _MAX_NOTES = 50
 # `_MAX_TEXT`, and splits are done with `str` methods where a lazy `.+?` would
 # otherwise sit before a separator (CodeQL, polynomial regular expression).
 
-_POLITE = ("please ", "can you ", "could you ", "would you ", "will you ", "i want to ",
-           "i'd like to ", "i would like to ", "let's ", "lets ", "ok ", "okay ")
-_TRAILING = (" please", " pls", " plz", " for me", " thanks", " thank you", " ty", " thx")
+#: Longest first inside a family, so "i'd like you to " goes before "i'd like to ".
+_POLITE = ("please ", "pls ", "plz ", "kindly ", "can you ", "could you ", "would you ", "will you ", "can u ", "could u ",
+           "i want you to ", "i need you to ", "i'd like you to ", "i would like you to ", "i want to ",
+           "i'd like to ", "i would like to ", "go ahead and ", "if you could ", "if you can ", "when you can, ", "when you can ",
+           "let's ", "lets ", "ok so ", "okay so ", "ok ", "okay ", "just ", "also ", "so ", "and ", "then ")
+_TRAILING = (" please", " pls", " plz", " for me", " thanks", " thank you so much", " thank you", " ty", " thx", " now", " if you can",
+             " when you can", " if you could")
+#: Said of when: it is a due hint, never part of the words an act writes ("call
+#: mum as soon as possible" is a reminder soon, not a title).
+_URGENT_TAIL = (" asap", " as soon as possible", " right now")
 _ASKING = re.compile(r"^(?:what|who|where|when|how|why|which|whether|if|of|out)\b", re.IGNORECASE)
 
 
 def _fold(text: str) -> tuple[str, bool, bool]:
     """(the command text, said as a question, said politely)."""
+    return _fold_urgent(text)[:3]
+
+
+def _fold_urgent(text: str) -> tuple[str, bool, bool, bool]:
+    """`_fold`, and whether the person asked for it at once (asap)."""
+    urgent = False
     text = " ".join(str(text or "").split())[:_MAX_TEXT].strip(" .!")
     question = text.endswith("?")
     text = text.rstrip("?").strip(" ,")
@@ -108,7 +121,11 @@ def _fold(text: str) -> tuple[str, bool, bool]:
             if low.endswith(word):
                 text, changed = text[: -len(word)].rstrip(" ,"), True
                 break
-    return text, question, polite
+        for word in _URGENT_TAIL:
+            if low.endswith(word):
+                text, changed, urgent = text[: -len(word)].rstrip(" ,"), True, True
+                break
+    return text, question, polite, urgent
 
 
 def _cap(text: str) -> str:
@@ -733,7 +750,7 @@ _TO_THE_BIN = re.compile(r"^(?:move|put|send|throw|chuck) (\S+(?: \S+)*?) (?:in|
 def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
     """The command `text` is, as {"intent", ...arguments}, or None. `locale`
     orders a numeric date in a reminder ("3/4"); none reads day first."""
-    command, question, polite = _fold(text)
+    command, question, polite, urgent = _fold_urgent(text)
     if not command:
         return None
     #: "move the lentil soup note to the bin" says delete in other words.
@@ -752,6 +769,9 @@ def read(text: str, now: datetime, locale: str | None = None) -> dict | None:
         if question and not polite and found["intent"] in WRITE_INTENTS:
             # "Note: is the boiler code 4471?" asks; it does not tell.
             return None
+        if urgent and found["intent"] == "reminder" and not found.get("time_given"):
+            #: "asap" is when: a few minutes on, said so, and the card shows it.
+            found = {**found, "due_at": now + timedelta(minutes=10), "time_given": True}
         return found
     return None
 
@@ -982,7 +1002,15 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
     if not words:
         return None
     found = _notes_about(session, " ".join(words), single=True)
-    return found[0] if found and not getattr(found[0], "is_private", False) else None
+    if not found or getattr(found[0], "is_private", False):
+        return None
+    #: One common word in a body is not a source ("call mum" met the Lentil
+    #: soup note): the object must name the title, or two words must meet
+    #: (audit 1030 A16).
+    title = _title(found[0]).lower()
+    if len(words) < 2 and not all(re.search(rf"\b{re.escape(w)}", title) for w in words):
+        return None
+    return found[0]
 
 
 def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) -> dict | None:

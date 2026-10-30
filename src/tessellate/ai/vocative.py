@@ -214,6 +214,12 @@ def _tail(text: str, tokens: list[re.Match], known) -> Address | None:  # noqa: 
             previous = tokens[-size - 1].group(0).lower()
             if previous in OBJECT_HEADS or len(tokens) - size < 2:
                 continue
+            #: "tell me about project atlas": the two words end a title the
+            #: notes hold, so "atlas" is the thing, not the assistant called
+            #: at the end (audit 1030 A17).
+            held = _IN_NOTES.get()
+            if size == 1 and held and held(f"{previous} {words[-1].lower()}"):
+                continue
             #: "about quantum chromodynamics": a subject two words long, not
             #: "quantum" and a nickname (INBOX 1357, class H).
             if (len(tokens) - size >= 2 and tokens[-size - 2].group(0).lower() in _SUBJECT_HEADS

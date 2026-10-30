@@ -1863,14 +1863,14 @@ async function loadConversationList() {
     );
     items.push(
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptDialog("Rename this chat:", conversation.title);
-        if (!next || !next.trim()) return;
+        const next = await promptTitle("Rename this chat:", conversation.title);
+        if (!next) return;
         await apiJson(`/conversations/${conversation.id}`, {
           method: "PUT",
-          body: JSON.stringify({ title: next.trim() }),
+          body: JSON.stringify({ title: next }),
         });
-        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next.trim());
-        if (chatConv.id === conversation.id) $("chat-title").textContent = next.trim();
+        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
+        if (chatConv.id === conversation.id) $("chat-title").textContent = next;
         loadConversationList();
       })
     );
@@ -1887,16 +1887,13 @@ async function loadConversationList() {
           return null;
         });
         if (!named) return;
-        if (named.title !== conversation.title) chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title);
         if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        toast(named.ai_named ? `Named “${named.title}”.` : "Kept the first question as the title.");
-        //: The AI naming a conversation is activity, not something the user
-        //: did: so it obeys the same "pop up, or only in the centre" choice
-        //: as every other thing the AI does on its own.
-        agentActivityNotice(
-          named.ai_named ? `Renamed to “${named.title}”.` : "Used the first question as the title.",
-          { kind: "run" }
-        );
+        //: One toast, with Undo when the title changed (A34).
+        if (named.title !== conversation.title) {
+          chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : `Used the first question as the title, “${named.title}”.`);
+        } else {
+          toast("Kept the first question as the title.");
+        }
         loadConversationList();
       })
     );
@@ -1910,7 +1907,6 @@ async function loadConversationList() {
         await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
         chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
         if (chatConv.id === conversation.id) newChatConversation();
-        toast("Archived.");
         loadConversationList();
       })
     );
@@ -2161,6 +2157,8 @@ async function openConversation(id) {
     renderChatEmptyState();
   }
   if (lastQuestionText) lastChatQuestion = lastQuestionText;
+  //: The loop above filled the turns after the header first drew (A20).
+  renderChatTurnCount();
   lazyScript("/js/chat-time.js").then(() => stampChatTimes(full.messages));
   loadConversationList();
   //: Where it was left, not always its end (Placed 2026-09-09 item 99 (b)).

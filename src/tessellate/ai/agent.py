@@ -649,6 +649,11 @@ _RECOVERY_HINTS = {
         "Web access is off in Settings. Do not retry. Answer from the "
         "notebook, and say that a web lookup would need turning on."
     ),
+    "web_down": (
+        "The web could not be reached from here. Do not retry or rephrase the "
+        "search. Answer from the notes you already have, or tell the user the "
+        "web is unreachable and what to check in Settings, Web search."
+    ),
     "generic": (
         "That call failed. Do not repeat it unchanged. Either retry once with "
         "different arguments, try a different tool, or tell the user plainly "
@@ -691,6 +696,10 @@ def _recovery_hint(name: str, message: str) -> str:
         return _RECOVERY_HINTS["web_off"]
     if "rate limit" in lowered or "too many requests" in lowered or "429" in lowered:
         return _RECOVERY_HINTS["rate_limited"]
+    #: A search or page service that failed is not an argument fault: the
+    #: tool's own "no URL was given" is (audit 1030 A5).
+    if name in ("web_search", "read_url") and not any(m in lowered for m in ("was given", "is required", "required", "must be")):
+        return _RECOVERY_HINTS["web_down"]
     if "timeout" in lowered or "timed out" in lowered:
         return _RECOVERY_HINTS["timeout"]
     # "nothing found" and "returned nothing" are about the *search*; "empty" on
@@ -1823,8 +1832,11 @@ def _prepare_turn(
     # happening. Withdrawn from the wire *and* refused below, because a model
     # that calls a tool it was never offered must not get it either.
     barred = set(blocked_tools or ())
-    if barred:
-        offered = [t for t in offered if t["function"]["name"] not in barred]
+    #: The web tools a first-person question does not need are only left off
+    #: the wire (audit 1030 A3); a call a model makes anyway is judged as before.
+    unoffered = barred | tools.web_barred(question)
+    if unoffered:
+        offered = [t for t in offered if t["function"]["name"] not in unoffered]
     # On a small window, trim the descriptions even when the full set would
     # fit. `within_budget` compacts only once the schemas overflow their share,
     # which is the right rule for a large model, but on an 8k window the
@@ -1878,9 +1890,9 @@ def _prepare_turn(
             tools.ollama_tools(_focus(question, history) if tier.narrow_toolbox else None),
             session,
         )
-        if barred:
+        if unoffered:
             every_tool = [
-                t for t in every_tool if t["function"]["name"] not in barred
+                t for t in every_tool if t["function"]["name"] not in unoffered
             ]
         if budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS:
             every_tool = tools.compact_schemas(every_tool)

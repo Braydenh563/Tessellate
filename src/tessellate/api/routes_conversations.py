@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from tessellate.api import paging
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
@@ -148,7 +148,17 @@ class TurnBody(BaseModel):
 
 
 class RenameBody(BaseModel):
+    #: Trimmed before it is measured, so a title of spaces is refused rather than
+    #: saved as a blank row in the list (audit 1030 A33).
     title: str = Field(min_length=1, max_length=120)
+
+    @field_validator("title")
+    @classmethod
+    def _trimmed(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("A title needs at least one character.")
+        return value
 
 
 class PinBody(BaseModel):

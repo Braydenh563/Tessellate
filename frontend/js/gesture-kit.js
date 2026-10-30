@@ -1,11 +1,55 @@
 // Gesture-only chat panels, moved out of the boot scripts on 2026-10-26 for the
 // gzip budget (tests/test_static_compression.py): the active-model badge's
 // spec panel (from ai-tools.js), editing an answer in place (from
-// sheets-selects.js), a note's "Explain this note" menu row (from menus.js)
-// and the extract preview's Save (from chat-attach.js).
+// sheets-selects.js), a note's "Explain this note" menu row (from menus.js),
+// the extract preview's Save (from chat-attach.js) and the chat's Copy message
+// (`chatTurnTranscript`, awaited by its button).
 // Each is reached only by a click, and no caller reads a return value, so
 // `LAZY_ENTRY_POINTS`-style stand-ins (`gestureKit`, lazy-entries.js) fetch
 // this file on first use and then call the real function.
+
+//: **Copy copies the whole turn, not the last paragraph of it** (the owner:
+//: "everything in the whole chat and assistant messages, including thinking
+//: processes (if toggled), tool calls"). The bubble is walked in document
+//: order: a thinking step only while open, a plan step as its text, a tool
+//: chip as one "Tool:" line, every body as its text; `text` is the raw
+//: Markdown of the final answer, so headings and links survive.
+function chatTurnTranscript(bubble, text) {
+  const parts = [];
+  const seen = new Set();
+  const nodes = bubble
+    ? [...bubble.querySelectorAll(".agent-step, .tool-chip, .msg-body")]
+    : [];
+  const bodies = nodes.filter((n) => n.classList.contains("msg-body"));
+  for (const node of nodes) {
+    if ([...seen].some((s) => s.contains(node))) continue;
+    seen.add(node);
+    if (node.classList.contains("thinking-fold")) {
+      if (!node.open) continue;
+      const body = node.querySelector(".thinking")?.innerText.trim();
+      if (body) parts.push(`Thinking:\n${body}`);
+    } else if (node.classList.contains("step-plan")) {
+      const body = node.innerText.replace(/^\s*Plan\s*/i, "").trim();
+      if (body) parts.push(`Plan:\n${body}`);
+    } else if (node.classList.contains("tool-chip")) {
+      const label = node.querySelector("summary")?.innerText.trim() || node.innerText.trim();
+      const args = node.querySelector(".tool-chip-args")?.textContent.trim();
+      const result = node.querySelector(".tool-chip-result")?.textContent.trim();
+      let line = `Tool: ${label}`;
+      if (args) line += `\n${args}`;
+      if (result) line += `\nResult: ${result}`;
+      parts.push(line);
+    } else if (node.classList.contains("msg-body")) {
+      const last = node === bodies.at(-1);
+      const body = last && text ? text : bodyTextWithCitations(node);
+      if (body) parts.push(body);
+    } else {
+      const body = bodyTextWithCitations(node);
+      if (body) parts.push(body);
+    }
+  }
+  return parts.length ? parts.join("\n\n") : text || "";
+}
 
 async function openChatModelPanel() {
   const name = modelStatus && modelStatus.chat_model;
@@ -31,6 +75,26 @@ async function openChatModelPanel() {
   panel.append(list, loading);
   panel.classList.remove("hidden");
   placeChatModelPanel();
+  //: Escape and a press outside shut it, and focus goes back to the badge
+  //: (audit 1030 A27). One pair of listeners at a time, dropped on the first
+  //: event that finds the panel closed, so reopening never stacks them.
+  if (panel._dismiss) off(panel._dismiss);
+  const dismiss = (event) => {
+    if (panel.classList.contains("hidden")) return off(dismiss);
+    const key = event.type === "keydown";
+    if (key ? event.key !== "Escape" : panel.contains(event.target) || event.target.closest?.("#chat-active-model")) return;
+    panel.classList.add("hidden");
+    off(dismiss);
+    if (key) $("chat-active-model")?.focus();
+  };
+  function off(fn) {
+    document.removeEventListener("keydown", fn);
+    document.removeEventListener("mousedown", fn);
+    if (panel._dismiss === fn) panel._dismiss = null;
+  }
+  panel._dismiss = dismiss;
+  document.addEventListener("keydown", dismiss);
+  document.addEventListener("mousedown", dismiss);
 
   const spec = await apiJson(`/models/spec?name=${encodeURIComponent(name)}`).catch(() => null);
   //: The panel was measured empty a moment ago; it is a different height now.
