@@ -385,6 +385,16 @@ _WORK = re.compile(r"^(?:watched|saw|read|played|finished|listened to)\s+(.+?)\.
 _GOOD = re.compile(r"\b(incredible|amazing|great|loved|love|brilliant|beautiful|fun|good|excellent|fantastic|enjoyed|perfect)\b", re.I)
 _BAD = re.compile(r"\b(dragged|boring|bad|hated|awful|terrible|slow|meh|disappointing|too long|weak|annoying)\b", re.I)
 
+#: What a feeling question looks for in a sentence (audit 1030 Z20: "how did
+#: I feel on Saturday" dropped "Felt happy."), and how such a question is asked.
+_FELT_LINE = re.compile(r"\b(?:felt|feel|feels|happy|sad|calm|calmer|tired|anxious|stressed|glad|proud|relaxed|annoyed|excited|liked|enjoyed)\b", re.I)
+_FEELING_ASK = re.compile(r"\b(?:feel|feeling|felt|happy|sad|calm|tired|anxious|stressed|mood|enjoy|enjoyed|like|liked|think of|think about)\b", re.I)
+
+
+def _feeling(text: str) -> bool:
+    return bool(_FELT_LINE.search(text) or _GOOD.search(text) or _BAD.search(text))
+
+
 #: Labels for a fact in a note with no heading of its own, first match wins.
 _CUES: tuple[tuple[str, re.Pattern], ...] = (
     ("Booked", re.compile(r"\b(is|are|was|were|all) booked\b", re.I)),
@@ -1511,6 +1521,19 @@ def _line_row(line_body: str, held: list[Fact]) -> dict:
     return row
 
 
+ALSO_ITEMS = 3
+
+
+def _also_held(held: list[Fact]) -> list[Fact]:
+    """What "Also" carries: the few facts that speak to the question, in the
+    note's order, not the rest of the note (audit 1030 Z15)."""
+    if len(held) <= ALSO_ITEMS:
+        return held
+    stems = _SUBJECT_STEMS.get()
+    ranked = sorted(range(len(held)), key=lambda i: (-sum(w in stems for w in composer._words(held[i].body)), i))
+    return [held[i] for i in sorted(ranked[:ALSO_ITEMS])]
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -1519,6 +1542,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
     seen_days: list[date] = []
     last = None
     for i, (label, held) in enumerate(list(groups.items())[: limit + (MORE_LINES if more else 0)]):
+        held = _also_held(held) if label == PHRASES["also"] else held
         written = held[0].view.written
         #: The time since the latest note told above that came before this
         #: one (gold Q2: "a week later, you tried the Viper", though the line
@@ -1528,6 +1552,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
         last = held[0].view.id
         if written:
             seen_days.append(written)
+        said = said[:1].upper() + said[1:] if label == PHRASES["also"] else said
         (out.lines if i < limit else out.more).append(f"{said}." if heading else f"**{label}:** {said}.")
         out.rows.append(_line_row(line_body, held))
         shown += 1
@@ -2698,6 +2723,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     old = composer.superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
 
     figures = composer.figures_of(question)
+    asks_feeling = bool(_FEELING_ASK.search(question))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -2705,7 +2731,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
         same_figure = bool(figures & composer.figures_of(f.sentence.text)) if figures else False
         #: Between sources that say it equally well, the one the search ranked first.
-        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, same_figure, -f.view.rank, -f.sentence.order)
+        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 

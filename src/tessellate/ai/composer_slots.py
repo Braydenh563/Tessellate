@@ -418,22 +418,30 @@ def _when_said(view, sentence, today: date) -> date | None:  # noqa: ANN001
     return view.written
 
 
-def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
-    words = rest.split()
-    if len(words) < 2:
-        return False
-    verb, obj = _stems(words[0]), _stems(" ".join(words[1:]))
-    if not (verb and obj):
-        return False
+def _since_found(views: list, verb: list[str], obj: list[str], today: date) -> list:
+    """The dated sentences that say the verb with the object, the object
+    being in the sentence or in its note's title or filing ("I called her"
+    in the Sara note); audit 1030 Z22."""
     found = []
     for view in views:
+        head = set(view.title_words) | set(view.filed_words)
         for s in view.sentences:
             if s.kind == "task" and not s.done:
                 continue
-            if _holds(s, verb + obj):
+            have = set(composer._words(s.text))  # noqa: SLF001
+            if all(v in have for v in verb) and all(o in have or o in head for o in obj):
                 day = _when_said(view, s, today)
                 if day and day <= today:
                     found.append((day, view, s))
+    return found
+
+
+def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    words = rest.split()
+    verb, obj = _stems(words[0]) if words else [], _stems(" ".join(words[1:]))
+    if not verb:
+        return False
+    found = _since_found(views, verb, obj, today)
     if not found:
         out.lines.append(f"Your notes do not say when you {rest}, so I cannot work out how long it has been.")
         return True

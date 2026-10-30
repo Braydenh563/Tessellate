@@ -225,6 +225,7 @@ def looks_like_a_question_about_the_notebook(message: str) -> bool:
         #: matcher rather than by reading the code.
         or re.search(r"\bwords?\b|word ?count|writ(?:ten|ing)|\bwr(?:ite|ote)\b", text)
         or re.search(r"stale|forgotten|untouched|abandoned", text)
+        or re.search(r"^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas)\b", text)
         or re.search(r"\bstat(?:istic)?s\b", text)
         or re.search(r"\b(?:pinned|archived|checklists?|reminders?|unticked|unchecked|tasks?)\b", text)
     )
@@ -814,6 +815,11 @@ _COVERAGE = re.compile(
     rf"|^what (?:have i|did i|do i) (?:been )?(?:writing|written|write|wrote|noting|noted|saving|saved|note|save)(?: (?:about|on))?{_SOFAR}$"
     rf"|^what (?:topics|subjects|themes|things|areas) (?:do i|have i|did i) (?:write|writing|written|wrote|note|noted|cover|covered|keep notes)(?: (?:about|on))?{_SOFAR}$"
     rf"|^(?:give me |show me |can i get |i want )?(?:an? )?(?:overview|summary|rundown|run down|breakdown|tour) of (?:my |the )?(?:notes|notebook|everything){_SOFAR}$"
+    #: The notebook itself is the subject, not a word to search for (audit
+    #: 1030 Z17: "summarise my notebook" said no note mentions "notebook").
+    rf"|^(?:summari[sz]e|describe|sum up) (?:my |the )?(?:whole |entire )?(?:notes|notebook|everything){_SOFAR}$"
+    rf"|^what(?:'s| is) (?:my |the )?(?:notes|notebook) about{_SOFAR}$"
+    rf"|^what (?:are|were) (?:my |the )?(?:main |biggest |top |common |recurring )?(?:themes|topics|subjects|areas){_SOFAR}$"
 )
 
 

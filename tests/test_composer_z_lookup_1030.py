@@ -50,3 +50,46 @@ def test_z4_the_amount_asked_about_picks_the_sentence_and_the_rewrite_keeps_its_
 def test_z4_a_day_moved_to_the_front_takes_its_preposition_with_it(ask, question):
     said = ask(question)[0]
     assert " on in " not in said and " on," not in said.split("\n")[0], said
+
+
+def _digest(question):
+    from datetime import date, datetime, timedelta
+
+    from tessellate.ai import composer_digest
+
+    notes = [
+        {"id": i + 1, "content": c, "tags": t, "category": "", "created_at": datetime(2026, 10, 30, 9) - timedelta(days=d)}
+        for i, (c, t, d) in enumerate(seed_1030.NOTES)
+    ]
+    return composer_digest.answer(question, notes, today=date(2026, 10, 30))["text"]
+
+
+@pytest.mark.parametrize("question", ["how long since I called Sara", "how long since I last called Sara"])
+def test_z22_how_long_since_finds_a_line_whose_object_is_the_note_title(question):
+    said = _digest(question)
+    assert "do not say" not in said and "ago" in said, said
+
+
+def test_z22_how_long_since_takes_a_verb_alone():
+    said = _digest("how long since I last ran")
+    assert "do not say" not in said and ("today" in said or "ago" in said), said
+
+
+@pytest.mark.parametrize("question", ["how much are the flights", "what is the budget", "when is the beta"])
+def test_z15_also_is_three_facts_at_most_and_starts_with_a_capital(ask, question):
+    said = ask(question)[0]
+    also = next((line for line in said.splitlines() if line.startswith("**Also:**")), "")
+    assert also.count(";") <= 2, said
+    assert not also or also.removeprefix("**Also:** ")[:1].isupper(), said
+
+
+@pytest.mark.parametrize("question", ["summarise my notebook", "what is my notebook about", "what are my main themes"])
+def test_z17_the_notebook_itself_is_a_subject_not_a_word_to_find(ask, question):
+    said = ask(question)[0]
+    assert "mention" not in said and "43 notes" in said, said
+
+
+@pytest.mark.parametrize("question", ["how do I feel about running", "how did I feel about the run"])
+def test_z20_a_feeling_question_leads_with_the_sentence_that_says_a_feeling(ask, question):
+    said = ask(question)[0]
+    assert "Felt really good" in said.split("\n")[0], said
