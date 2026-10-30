@@ -515,7 +515,11 @@ class OllamaClient(Provider):
                 f"{self.base_url}/api/pull",
                 json={"name": name},
                 stream=True,
-                timeout=None,  # a multi-GB download has no sane timeout
+                #: No total timeout (a multi-GB download takes what it takes),
+                #: but a connection silent for five minutes is dead: it froze
+                #: the progress bar for good (audit 1028 E39). Ollama's
+                #: slowest quiet step, the digest check, is well inside it.
+                timeout=(10, 300),
             ) as response:
                 response.raise_for_status()
                 for line in response.iter_lines():

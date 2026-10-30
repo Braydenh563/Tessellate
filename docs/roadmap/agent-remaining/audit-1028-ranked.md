@@ -65,7 +65,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 60 | E32 | med | ChatGPT question gets local model not running answer | fixed 1030 | S |
 | 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | new | M |
-| 62 | E39 | med | model download has no timeout or disk check | new | S |
+| 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | new | S |
@@ -95,10 +95,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | new | S |
 | 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | new | S |
-| 92 | E35 | med | chat transcript is not a live region for screen readers | new | S |
-| 93 | E36 | med | saved-chat rows are li with click and no keyboard path | new | S |
+| 92 | E35 | med | chat transcript is not a live region for screen readers | fixed 1031 | S |
+| 93 | E36 | med | saved-chat rows are li with click and no keyboard path | fixed 1031 | S |
 | 94 | E38 | med | no-model Models page hides suggested cards and pickers | new | M |
-| 95 | E40 | med | two search-by-meaning toasts stack over Settings | new | S |
+| 95 | E40 | med | two search-by-meaning toasts stack over Settings | fixed 1031 | S |
 | 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
@@ -178,8 +178,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
 | 173 | K11 | low | llm_api_key stored in plain text in preferences.json | new | M |
 | 174 | K13 | low | MCP server has no auth and offers write tools | docs/roadmap/BACKLOG.md:4396 | M |
-| 175 | K14 | low | backup restore has no per-file size or entry count cap | new | S |
-| 176 | K15 | low | xmind import trusts header file_size before reading member | new | S |
+| 175 | K14 | low | backup restore has no per-file size or entry count cap | fixed 1031 | S |
+| 176 | K15 | low | xmind import trusts header file_size before reading member | not reproduced 1031 (zipfile stops a member at its declared size: a 10 MB member declared 100 bytes reads 100, then Bad CRC) | S |
 | 177 | K16 | low | workspace isolation is an ORM filter, not a boundary | new | S |
 | 178 | E43 | low | tools execute runs any tool after confirm, unsigned | new | M |
 | 179 | B22 | low | eight console calls are the only error surfacing | fixed (this batch) | S |

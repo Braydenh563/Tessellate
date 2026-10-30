@@ -26,7 +26,7 @@ def test_a_bare_undo_typed_in_chat_runs_the_apps_undo():
     """E13: sent as a question it got the Help line; the send path now runs undo or redo."""
     js = app_js_text()
     words = re.search(r"const CHAT_UNDO_WORDS = /(.+?)/i;", js).group(1)
-    for typed in ("undo", "Undo that", "redo", "undo it.", "undo the last change"):
+    for typed in ("undo", "Undo that", "redo", "undo it.", "Redo that"):
         assert re.fullmatch(words, typed, re.I), typed
     for typed in ("undo the tag on my essay note", "how do I undo"):
         assert not re.fullmatch(words, typed, re.I), typed

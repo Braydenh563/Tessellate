@@ -268,3 +268,31 @@ def test_both_automatic_passes_are_on_by_default(
     media_process.process_committed_upload(_upload(session), tmp_path)
 
     assert set(calls) == {"ocr", "caption", "vision_ocr"}
+
+
+def test_a_note_saved_again_does_not_read_its_pictures_again(monkeypatch, tmp_path):
+    """INBOX 1465: centring an image re-saved the note, and every save asked
+    Tesseract, the captioner and the vision model again for each picture."""
+    from types import SimpleNamespace
+
+    from tessellate.core import media_process
+
+    asked = []
+    fakes = {
+        "tessellate.core.ocr": SimpleNamespace(OCR_SUFFIXES={".png"}, extract_in_background=lambda *a: asked.append("ocr")),
+        "tessellate.ai.captioning": SimpleNamespace(CAPTION_SUFFIXES={".png"}, caption_in_background=lambda *a: asked.append("caption")),
+        "tessellate.ai.vision_ocr": SimpleNamespace(
+            VISION_OCR_SUFFIXES={".png"}, vision_ocr_in_background=lambda *a: asked.append("vision"),
+            pdf_vision_ocr_in_background=lambda *a: asked.append("pdf"),
+        ),
+        "tessellate.core.deps": SimpleNamespace(get_config=lambda: SimpleNamespace(get_preference=lambda key, default: True)),
+    }
+    monkeypatch.setattr(media_process, "_module", fakes.__getitem__)
+    upload = SimpleNamespace(id=7, filename="abc.png", ocr_text=None, caption=None, vision_ocr_text=None)
+    media_process.process_committed_upload(upload, tmp_path)
+    media_process.process_committed_upload(upload, tmp_path)
+    assert asked == ["ocr", "caption", "vision"]
+    #: A reading already stored is never asked for again.
+    stored = SimpleNamespace(id=8, filename="def.png", ocr_text="hello", caption="a cat", vision_ocr_text="hello")
+    media_process.process_committed_upload(stored, tmp_path)
+    assert asked == ["ocr", "caption", "vision"]

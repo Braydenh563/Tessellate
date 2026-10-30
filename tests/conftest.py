@@ -349,6 +349,18 @@ def _forget_ollama_down():
 
 
 @pytest.fixture(autouse=True)
+def _forget_asked_image_readers():
+    """`media_process._ASKED` is per run; a test's upload ids and hashed file
+    names repeat in the next test's notebook (INBOX 1465)."""
+    module = sys.modules.get("tessellate.core.media_process")
+    if module is not None:
+        module._ASKED.clear()
+    yield
+    if module is not None:
+        module._ASKED.clear()
+
+
+@pytest.fixture(autouse=True)
 def _reset_the_librarian():
     """The librarian's Quit flag and hold are module level (one scheduler per
     process), so a test that pressed Quit left them set for every test after
