@@ -79,7 +79,8 @@ class Item(NamedTuple):
 
 
 _VERB = re.compile(r"^(?:i\s+)?(?:paid|spent|bought|cost|was|were|aud|usd|gbp|eur|nzd|cad)\b\s*", re.I)
-_AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w' -]+?)(?:\s+(?:to|because|as|in|on)\b.*)?$", re.I)
+#: Word by word: a blank run is split one way only (CodeQL).
+_AFTER = re.compile(r"^\s*(?:for|on|at|to)\s+(?P<what>[\w'-]+(?:\s+[\w'-]+)*?)(?:\s+(?:to|because|as|in|on)\b.*)?\s*$", re.I)
 
 
 def _what(clause: str, at: int, end: int, last: str) -> str:

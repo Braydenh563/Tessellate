@@ -7,6 +7,7 @@ below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
 - Composer (money, CodeQL 1866 to 1868): the subject in "what do my X payments add up to", "how much X spending" and "how much is left on" is read word by word, so a long run of spaces or repeated words cannot make the match slow.
+- Composer (CodeQL): what an amount bought ("for the plumber") is read word by word; a note with "for" and a long blank run hung the money answer for minutes.
 - Composer (CodeQL): seven more note-reading patterns (date tails, "next week", laughter, "planned for", weekdays, day lines, "have done") start a blank run once, so a note or question full of blanks reads in a millisecond, not seconds.
 - Composer (CodeQL): the polite-trailer trim and "is A before B" read word by word, so a question padded with blanks no longer stalls a reply for seconds.
 - Composer: "how many recipes have I saved" counts and names the notes filed or tagged so; "how did I meet Mia" is answered by the note that says who Mia is, not one that shares the verb.
