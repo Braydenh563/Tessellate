@@ -903,7 +903,7 @@ function enhanceSelect(select) {
   // `#library-media-read` was 0x0 (`setLibraryMediaKind` adds `hidden`, since a
   // read filter is a Files idea) while the shell this function wraps it in
   // still rendered a 124x36 dropdown reading "Read or not", on a tab where
-  // "read" means nothing. `#update-version-select` in Settings → About is
+  // "read" means nothing. `#update-version-select` in Settings, About is
   // toggled the same way and had the same hole.
   //
   // This is the shape CLAUDE.md names: the value was set correctly on the
@@ -1618,7 +1618,7 @@ document.addEventListener(
 //: form): three segments of which only the last identifies the model, and
 //: the first two eat the width a badge has. The org is kept off too: two
 //: models from the same org differ in their last segment, never their first.
-//: Settings → Models is deliberately *not* a caller: choosing a model to pull
+//: Settings, Models is deliberately *not* a caller: choosing a model to pull
 //: needs the id you would actually type.
 //:
 //: Only prefixes that are registry addresses are stripped. `llama3.2:3b` and

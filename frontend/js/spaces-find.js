@@ -509,9 +509,13 @@ function initSpaceSwitcher() {
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();
     const error = $("space-create-error");
+    //: The lock card's failure helper: said under the field, the field marked
+    //: and described by it (audit 1030 Y14).
+    const fail = (message) => lockFail(message, $("space-create-name"), error);
     error.textContent = "";
+    $("space-create-name").removeAttribute("aria-invalid");
     if (!name) {
-      error.textContent = "Give the space a name.";
+      fail("Give the space a name.");
       return;
     }
     try {
@@ -540,7 +544,7 @@ function initSpaceSwitcher() {
       await loadSpaces();
       toastAction(`Made the space “${name}”.`, "Open it", () => setActiveSpace(live.id));
     } catch (err) {
-      error.textContent = err.message;
+      fail(err.message);
     }
   });
 
@@ -548,9 +552,11 @@ function initSpaceSwitcher() {
     const id = $("space-edit-id").value;
     const name = $("space-edit-name").value.trim();
     const error = $("space-edit-error");
+    const fail = (message) => lockFail(message, $("space-edit-name"), error);
     error.textContent = "";
+    $("space-edit-name").removeAttribute("aria-invalid");
     if (!name) {
-      error.textContent = "Give the space a name.";
+      fail("Give the space a name.");
       return;
     }
     try {
@@ -564,7 +570,7 @@ function initSpaceSwitcher() {
       await loadSpaces();
       toast(`Renamed to “${name}”.`);
     } catch (err) {
-      error.textContent = err.message;
+      fail(err.message);
     }
   });
 

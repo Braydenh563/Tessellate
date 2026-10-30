@@ -192,7 +192,7 @@ function renderChatModelPicker(status) {
 }
 
 // Nielsen #6, recognition over recall: which model answers was previously
-// knowable only by opening Settings → Models, and only then if the backend
+// knowable only by opening Settings, Models, and only then if the backend
 // is Ollama (the picker above is gated on ollama_running). status.chat_model
 // itself isn't backend-specific, so this reads it straight off the poll
 // loop instead of piggybacking on that gated render.
@@ -517,8 +517,10 @@ function syncFeatureModelSelects() {
     //: install check reads "unknown" as installed, so a disconnected app still
     //: said "Inherited: llama3.2" under the no-model banner (the owner: "if an
     //: ai model isnt connected, it shouldnt show a model being used right??").
+    //: "Default (off)": the banner beside it already says no model is
+    //: connected, and saying it twice was noise (audit 1030 Y18).
     const inherited = modelStatus?.ollama_running === false
-      ? "No model connected"
+      ? "Default (off)"
       : `Inherited: ${shortModelName(row.inherits)}${isInstalled ? "" : " (not installed)"}`;
     fillModelSelect(
       select,

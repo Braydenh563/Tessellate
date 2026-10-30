@@ -166,7 +166,7 @@ def vision_ocr_text(image_path: Path, model: str, ollama) -> str | None:
     text: an ordinary, common result for a plain photo, not a failure.
     Returns `None` when the attempt itself didn't produce a usable result
     (missing file, unreachable backend, request error), the one case
-    worth a "failed" entry in Settings → Background tasks. Callers that
+    worth a "failed" entry in Settings, Background tasks. Callers that
     only care about "is there text" can still treat both as falsy; the
     distinction exists for `vision_ocr_and_store`'s taskhistory recording.
     """

@@ -6,6 +6,16 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web clip: a page that sent no text answers "This page sent no text to clip. Reload it and clip again." instead of saving an empty note.
+- Uploads: an image whose first bytes are not its type (a renamed file) is refused before it is stored.
+- Spaces: a refused name in New space or Rename marks the field and says why; the mark clears on the next try.
+- First run: the welcome waits until no other dialog is open, a blank name says to type one, and focus moves on after saving.
+- Display name: angle brackets, control and direction characters are taken out, and runs of spaces closed up.
+- Copy: "Settings → Models" and the like now read "Settings, Models" everywhere.
+- Statistics: changes read "up from 4 last week" and "the same as last week", and "unused" waits until the ledger is a week old.
+- Greeting: "A productive week" needs three notes beyond today's; the model picker says "Default (off)" when Ollama is down.
+- Utility timers: the countdown wakes once when the soonest timer ends instead of every second.
+- Bell: warming up, housekeeping, reading dates and backups the app starts itself no longer add a "Started" row; a failure still does. "Warm: warm the spelling lists" reads "Warming up: the spelling lists".
 - Meetings: when saving a recording's audio fails, the status line says so at once ("Not saving: ... Retrying") and the unsaved slices are retried in order, so the file has no gap; at Stop, what could not be written is named and the rest is kept. The server no longer writes a retried slice twice, and cuts back a write a full disk stopped part way.
 - Search by meaning that was never allowed to download (or was declined) shows as off, not as an error: no red chip, no "not working" toast, no bell row. A download that was allowed and failed is still an error.
 - Spaces: each space's menu actions name it ("Delete Work"), and "All", "All spaces" and "Everything" are refused as space names.

@@ -587,7 +587,7 @@ function appendAgentLog(record) {
   // logger produced it: so a failed embedding backend, a bad request, a
   // stray traceback all popped open a panel labelled "Agent Activity" and
   // left it there. Errors already have somewhere to go (a toast, and
-  // Settings → Logs); this panel is a tail of one specific thing.
+  // Settings, Logs); this panel is a tail of one specific thing.
   const logger = record.logger || "";
   const isAgent =
     logger.startsWith("tessellate.ai") ||

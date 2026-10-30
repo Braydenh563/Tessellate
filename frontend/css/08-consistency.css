@@ -4985,7 +4985,7 @@ body .chip.item-label,
 }
 /* --- a generated face that moves (the owner: "can they be animated as a
    togglable option??") ----------------------------------------------------
-   Settings > Appearance > Avatar animation: always (the default; only the
+   Settings, Appearance, Avatar animation: always (the default; only the
    faces on screen, which `watchNameMark` marks), on hover, or off. Reduce motion wins over both, and so does the system's own
    setting. "On hover" means the row the face stands for (a persona's list
    item, a chat message, the picker), not any ancestor: every container up

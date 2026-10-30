@@ -3242,7 +3242,7 @@ button.outline-twist:focus-visible {
   overflow-wrap: anywhere;
 }
 /* ================================================================================
-   Curated palettes (Settings → Appearance → Theme)
+   Curated palettes (Settings, Appearance, Theme)
    Each palette is a point of view, not a hue rotation: a paper-and-ink one for
    writing, a cool clinical one, a warm one for evenings. Every palette ships
    BOTH a light and a dark set, so choosing one is orthogonal to the light/dark

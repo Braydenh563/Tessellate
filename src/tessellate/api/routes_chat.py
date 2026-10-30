@@ -3754,7 +3754,7 @@ def _model_stream_events(req: _StreamRequest, prepared: dict, messages: list) ->
         # distinction matters).
         #
         # Logged, not just shown in the answer: reported directly: this
-        # failure reached the chat bubble but never the Settings → Logs
+        # failure reached the chat bubble but never the Settings, Logs
         # viewer, since nothing here ever routed it through `logging` at
         # all. The exception is already fully described in the message
         # this yields; logging it is what makes it show up in the one
@@ -5047,7 +5047,7 @@ def list_modes() -> dict:
 
 @router.get("/tools")
 def list_tools() -> list[dict]:
-    """The agent-tool catalog for Settings → Tools toggles."""
+    """The agent-tool catalog for Settings, Tools toggles."""
     return tools.tool_catalog()
 
 

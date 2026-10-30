@@ -2704,7 +2704,7 @@ async function streamChatEvents({
         throw new Error(
           "The model stopped responding. It may still be loading a large " +
             "model, or Ollama may have stalled, try again, or check " +
-            "Settings → Models."
+            "Settings, Models."
         );
       }
       throw err;

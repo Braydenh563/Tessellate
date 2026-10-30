@@ -31,7 +31,7 @@ def _require_web_search() -> str:
     if not config.get_preference("web_search_enabled", False):
         raise HTTPException(
             status_code=403,
-            detail="Web search is turned off. Enable it in Settings → Web search "
+            detail="Web search is turned off. Enable it in Settings, Web search "
             "(one of the two features that can go online, with the update check).",
         )
     return str(config.get_preference("searxng_url", "") or "")
@@ -39,7 +39,7 @@ def _require_web_search() -> str:
 
 @router.get("/websearch/providers")
 def web_search_providers() -> dict:
-    """The engine choices, for the selector in Settings → Web search.
+    """The engine choices, for the selector in Settings, Web search.
 
     Served rather than duplicated in the frontend so the list can't drift from
     what `search_web` will actually accept.

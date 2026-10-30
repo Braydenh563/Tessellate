@@ -434,7 +434,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
 }
 
-// CHANGELOG.md, rendered in Settings → About (§36E). Loaded once per session
+// CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
 // and nobody is waiting for it at startup.
 let changelogLoaded = false;
@@ -4615,7 +4615,7 @@ async function refreshJobRuns() {
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 
-// Settings → Background tasks → Background jobs: every kind in one column,
+// Settings, Background tasks, Background jobs: every kind in one column,
 // the ones that have never run included, so the absence of a job reads as
 // "not run yet" rather than "this app cannot do that".
 function renderJobOverview() {

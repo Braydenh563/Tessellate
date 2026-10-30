@@ -509,7 +509,7 @@ const REVEAL_TARGETS = {
   "set-updates": { settings: "about", el: "update-check-now", fallback: "settings-about" },
   //: One row per tool the agent can call, built from the backend's own list
   //: when the features browser opens (`renderFeatures`): the tool's own row
-  //: in Settings → Tools it can use, where it is switched on or off.
+  //: in Settings, Tools it can use, where it is switched on or off.
   "ai-tool": { settings: "tools", sel: '#tool-list [data-tool="{arg}"]', built: "renderToolSettings", fallback: "settings-tools" },
   // One package's row in Settings, Packages (`extra-row-<id>`, settings-packages.js):
   // the OCR workspace's "RapidOCR, not installed" Install (INBOX 717).

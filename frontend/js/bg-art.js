@@ -1,4 +1,4 @@
-// The generative background (Settings > Appearance > Background art): what
+// The generative background (Settings, Appearance, Background art): what
 // each style draws, and the runtime that mounts, pauses, stills and removes
 // it. settings.js decides *whether* and *how* (the setting, the motion and
 // performance rules, the intensity, the accent) and calls `bgArtRun` and

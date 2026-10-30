@@ -15,7 +15,7 @@
 //: clock, so a throttled tab reads true, several can run, and the list is
 //: kept in `prefs` so a reload gets them back (`utilityRestore`).
 const utilityClocks = [];
-const utilityTick = { id: 0 };
+const utilityTick = { id: 0, end: 0 };
 
 function utilityTimeText(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -78,6 +78,12 @@ function utilityEnsureTick() {
     clearInterval(utilityTick.id);
     utilityTick.id = 0;
   }
+  //: A one-shot at the soonest end: a hidden tab runs the interval about
+  //: once a minute after a while, so "Time is up" came up to a minute late;
+  //: a lone timeout is not throttled that hard (audit 1030 Y6).
+  clearTimeout(utilityTick.end);
+  const next = Math.min(...utilityClocks.filter((c) => c.kind === "timer").map((c) => c.end));
+  if (Number.isFinite(next)) utilityTick.end = setTimeout(paintUtilityChip, Math.max(0, next - Date.now()) + 50);
 }
 
 function utilityDrop(clock) {

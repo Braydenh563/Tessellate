@@ -725,10 +725,10 @@ async function renderPrefs() {
   markPrefsSaved();
 }
 
-// --- Settings → Web search ------------------------------------------------------
+// --- Settings, Web search ------------------------------------------------------
 //
 // Its own screen, and its own save. Web search used to be four controls inside
-// Preferences, which is why every error message that said "Settings → Web
+// Preferences, which is why every error message that said "Settings, Web
 // search" pointed at a screen that did not exist.
 //
 // The engine list comes from the server rather than being written out here:
@@ -739,7 +739,7 @@ async function renderPrefs() {
 // them the moment *that* section opens, not only as a side effect of opening
 // Web search. They used to be filled in exclusively by `renderWebSearch`
 // despite living in `#settings-tasks`, a different section entirely, open
-// Settings → Background tasks directly in a fresh session (never having
+// Settings, Background tasks directly in a fresh session (never having
 // visited Web search) and every checkbox here read its raw HTML default
 // (unchecked) instead of what was actually saved. Toggling one of them then
 // called `savePrefs()`, which rebuilds the *entire* preferences object from
@@ -1480,19 +1480,19 @@ function paletteCommands() {
       reveal: "notes-filter-help",
       about: "The words the notes filter understands, like is:favourite.",
     },
-    { label: "ph:gear Settings → Models", reveal: "settings:models", about: "Which local model answers, and where it runs." },
-    { label: "ph:mask-happy Settings → Personas", reveal: "settings:personas" },
-    { label: "ph:lightning Settings → Skills", reveal: "settings:skills" },
-    { label: "ph:toolbox Settings → Tools it can use", reveal: "settings:tools" },
-    { label: "ph:palette Settings → Appearance", reveal: "settings:appearance", keywords: "theme colour color accent font text size look", about: "The look, the accent colour, the glass and the text size." },
-    { label: "ph:user-circle Settings → Profile", reveal: "settings:preferences", about: "Your name, and what the app knows to call you." },
-    { label: "ph:sliders Settings → General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
-    { label: "ph:floppy-disk Settings → Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
-    { label: "ph:brain Settings → What it remembers", reveal: "settings:memory" },
-    { label: "ph:note-blank Settings → Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
-    { label: "ph:shield-check Settings → Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
-    { label: "ph:globe-hemisphere-west Settings → Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
-    { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
+    { label: "ph:gear Settings, Models", reveal: "settings:models", about: "Which local model answers, and where it runs." },
+    { label: "ph:mask-happy Settings, Personas", reveal: "settings:personas" },
+    { label: "ph:lightning Settings, Skills", reveal: "settings:skills" },
+    { label: "ph:toolbox Settings, Tools it can use", reveal: "settings:tools" },
+    { label: "ph:palette Settings, Appearance", reveal: "settings:appearance", keywords: "theme colour color accent font text size look", about: "The look, the accent colour, the glass and the text size." },
+    { label: "ph:user-circle Settings, Profile", reveal: "settings:preferences", about: "Your name, and what the app knows to call you." },
+    { label: "ph:sliders Settings, General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
+    { label: "ph:floppy-disk Settings, Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
+    { label: "ph:brain Settings, What it remembers", reveal: "settings:memory" },
+    { label: "ph:note-blank Settings, Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
+    { label: "ph:shield-check Settings, Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
+    { label: "ph:globe-hemisphere-west Settings, Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
+    { label: "ph:list-checks Settings, Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
     { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
     { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
     { label: "ph:book-open-text Open the manual", reveal: "manual" },
@@ -1505,10 +1505,10 @@ function paletteCommands() {
     { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
-    { label: "ph:package Settings → Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
-    { label: "ph:tree-evergreen Settings → Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
-    { label: "ph:question Settings → Help", reveal: "settings:help", about: "How the app works, a section at a time." },
-    { label: "ph:info Settings → About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
+    { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
+    { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
+    { label: "ph:question Settings, Help", reveal: "settings:help", about: "How the app works, a section at a time." },
+    { label: "ph:info Settings, About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
     { label: "ph:archive Back up now", keywords: "backup snapshot save a copy", about: "Save a copy of the whole notebook, now.", act: () => { openSettingsModal("data"); backupNow(); } },
     { label: "ph:export Export markdown", about: "Every note as a Markdown file, in one download.", act: () => downloadExport("markdown") },
     { label: "ph:palette Appearance panel", keywords: "pop out theme colour text font layout background art motion peek look panel", about: "Every look setting in a panel beside the app.", act: () => openAppearancePanel() },

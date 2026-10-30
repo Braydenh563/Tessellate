@@ -870,7 +870,7 @@
    real console rather than the app's own theme. Fixed dark colours on
    purpose, not theme tokens, the point is "what would have printed to a
    terminal window", and a terminal doesn't switch to light mode along with
-   the rest of the app just because Settings → Appearance does. Doubles as
+   the rest of the app just because Settings, Appearance does. Doubles as
    the answer to User view hiding the console entirely: this is where that
    output goes instead. */
 .log-terminal {
@@ -1360,7 +1360,7 @@
   top: 0;
   z-index: 2;
 }
-/* The changelog inside Settings → About (§36E). Capped and scrollable: it is
+/* The changelog inside Settings, About (§36E). Capped and scrollable: it is
    the whole project history, and letting it push the rest of the About panel
    off the screen would make the version number harder to find, not easier. */
 .changelog-body {

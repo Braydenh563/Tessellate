@@ -116,12 +116,12 @@ function statsDay(iso) {
   return new Date(`${iso}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
-//: "3 more than last week", "the same as last week": said in words beside the
-//: two counts, so the line reads without comparing two numbers by eye.
+//: "up from 3 last week", "the same as last week": said in words beside the
+//: count, so the line reads without comparing two numbers by eye ("14 more
+//: than last week (0)" said the 0 twice; audit 1030 Y10).
 function statsChange(now, before) {
   if (now === before) return "the same as last week";
-  const diff = Math.abs(now - before).toLocaleString();
-  return now > before ? `${diff} more than last week` : `${diff} fewer than last week`;
+  return `${now > before ? "up" : "down"} from ${before.toLocaleString()} last week`;
 }
 
 //: This week against last, day by day: last week's seven days as a quiet
@@ -168,7 +168,7 @@ function statsWeekCard(week) {
     value.textContent = now.toLocaleString();
     const change = document.createElement("span");
     change.className = "muted stats-week-change";
-    change.textContent = `${statsChange(now, before)} (${before.toLocaleString()})`;
+    change.textContent = statsChange(now, before);
     const daily = week.daily && week.daily[key];
     if (daily) {
       //: Days of this week so far: Monday on the clock to the week's last counted day.
@@ -192,6 +192,10 @@ async function statsUnused(usage, asOf) {
   cutoff.setDate(cutoff.getDate() - (usage.unused_days || 90));
   const since = cutoff.toISOString().slice(0, 10);
   const used = new Map(usage.features.map((f) => [f.name, f]));
+  //: "Not used lately" needs a ledger older than the window: on a day-old
+  //: notebook it named 112 palette commands (audit 1030 Y10).
+  const first = usage.features.reduce((oldest, f) => (f.first && f.first < oldest ? f.first : oldest), since);
+  if (first >= since) return { labels, unused: null };
   const unused = Object.keys(labels).filter((name) => !used.has(name) || String(used.get(name).last || "") < since);
   return { labels, unused };
 }

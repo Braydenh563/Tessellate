@@ -28,7 +28,7 @@
 // message; and `lagSnapshot` is the "why is it heavy" page of the report
 // (diag-report.js builds the text).
 //
-// Written twice: a WARN line in Settings > Logs at once, and a batch every 10
+// Written twice: a WARN line in Settings, Logs at once, and a batch every 10
 // seconds to POST /logs/lag, which keeps them in `<data dir>/logs/lag.log`
 // (core/lagwatch.py) across restarts. Nothing is sent anywhere but this app's
 // own server. A hidden page reports nothing: a background tab's timers are
@@ -309,7 +309,7 @@ function lagSnapshot() {
   };
 }
 
-//: Settings > Logs, the three dots: Copy diagnostics, Save as file and the sampler switch. Wired
+//: Settings, Logs, the three dots: Copy diagnostics, Save as file and the sampler switch. Wired
 //: here, not in settings.js, so the buttons cost the boot scripts nothing; this file is in by the
 //: time anyone has opened Settings. The report itself (diag-report.js) is fetched on the first press.
 function lagWireSettings() {

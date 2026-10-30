@@ -2059,7 +2059,7 @@ initAutoGrow(); // capture + magic-add boxes follow their content
 // api()'s isLockout path; with none at all, the common case, lock screen
 // still up: it was ~20 requests a load, every one with an empty
 // X-Auth-Token header, logged as browser console errors and, for the
-// non-silent calls among them, into Settings → Logs. None of it painted
+// non-silent calls among them, into Settings, Logs. None of it painted
 // anything (the lock overlay covers the tab), and startApp() already reloads
 // the real data once a session exists (`entriesReady.then(refreshActiveTab)`
 // above): so the early fetch was pure waste, not a second source of truth.
@@ -2101,7 +2101,7 @@ for (const button of document.querySelectorAll("#chat-mode-seg button")) {
 
 // ROADMAP item C: "several extras only take effect on restart and the app
 // says so without offering one." This is that offer, a plain restart, not
-// tied to any preference changing, for Settings → About.
+// tied to any preference changing, for Settings, About.
 //: The app's own caches, forgotten (INBOX 487): service worker, Cache Storage,
 //: the server's compressed files. Each part is best effort; the caller reloads.
 async function clearAppCache() {
@@ -2223,7 +2223,7 @@ async function renderAutonomousReview() {
 $("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
 $("note-template-use")?.addEventListener("click", () => useNoteTemplate());
 //: Manage templates, from the picker (the owner at release): the list is
-//: made and edited in Settings > Templates, so the way there is here too.
+//: made and edited in Settings, Templates, so the way there is here too.
 $("note-template-manage")?.addEventListener("click", () => {
   $("note-template-dialog")?.close?.();
   openSettingsModal("templates");

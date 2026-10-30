@@ -75,7 +75,12 @@ function firstStepName(host) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const name = input.value.trim();
-    if (!name) return;
+    //: Said, not silent, and focus kept on the step (audit 1030 Y9).
+    if (!name) {
+      toast("Type a name first, then press Enter.");
+      input.focus();
+      return;
+    }
     try {
       prefsCache = await apiJson("/preferences", { method: "PUT", body: JSON.stringify({ display_name: name }) });
     } catch (err) {
@@ -84,6 +89,7 @@ function firstStepName(host) {
     }
     renderDashboardGreeting();
     renderFirstSteps(host);
+    host.querySelector("input, button")?.focus({ preventScroll: true });
   });
   return form;
 }
@@ -138,7 +144,7 @@ function getStartedHide() {
   $("dash-first-steps")?.replaceChildren();
   $("dash-start")?.replaceChildren();
   renderDashMore();
-  toastAction("Get started is hidden. Settings > Help, Customise or the palette brings it back.", "Show again", getStartedShow);
+  toastAction("Get started is hidden. Settings, Help, Customise or the palette brings it back.", "Show again", getStartedShow);
 }
 
 function getStartedMarkDone() {
@@ -165,7 +171,7 @@ function firstStepsMenuItems(host, state) {
     { label: "ph:compass Take the tour", title: "Two minutes through what is here", group: "help", run: () => openTour("basics") },
     { label: "ph:book-open-text Read the manual", title: "Every help topic on one page", group: "help", run: () => lazyScript("/js/manual.js").then((ok) => ok && openManual()) },
     { label: "ph:checks Mark all as done", title: "Tick every step and put this card away", group: "away", run: getStartedMarkDone },
-    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings > Help or Customise shows them again", group: "away", run: getStartedHide }
+    { label: "ph:eye-slash Hide Get started", title: "Hide this card and the Get started button; Settings, Help or Customise shows them again", group: "away", run: getStartedHide }
   );
   return items;
 }

@@ -602,6 +602,16 @@ class PreferencesBody(BaseModel):
     # than to store a key nobody reads.
     ui_state: dict[str, str] | None = None
 
+    @field_validator("display_name")
+    @classmethod
+    def _plain_display_name(cls, value: str | None) -> str | None:
+        """A name, not markup: angle brackets and control characters go, and
+        runs of space close up. `<img src=x> Ada` showed as that in the
+        greeting and the Profile heading (audit 1030 Y9)."""
+        if value is None:
+            return value
+        return " ".join(re.sub(r"[<>\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069]", " ", value).split())
+
     @field_validator("ui_state")
     @classmethod
     def _small_ui_state(cls, value: dict | None) -> dict | None:
@@ -815,7 +825,7 @@ def _preferences_from(config) -> dict:
         # Saved correctly and honoured correctly (routes_auth.py's three
         # idle-timeout checks all read it) but never once echoed back here, 
         # the same shape of bug Tier 1 item 4a already fixed for eight other
-        # preferences. Settings → Account's timeout field showed its HTML
+        # preferences. Settings, Account's timeout field showed its HTML
         # default on every reload no matter what had actually been saved and
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
@@ -2294,7 +2304,7 @@ def remove_embedding_model(model_id: str) -> dict:
 
 @router.get("/logs")
 def server_logs(limit: int = Query(default=200, ge=1, le=logbuffer.MAX_RECORDS)) -> list[dict]:
-    """Recent server-side log records for the Settings → Logs viewer."""
+    """Recent server-side log records for the Settings, Logs viewer."""
     return logbuffer.recent(limit=limit)
 
 
@@ -2338,7 +2348,7 @@ def record_client_error(body: ClientError, request: Request, response: Response)
 
     The gap was real and had just cost a session. A JavaScript error aborts
     the rest of the file it is in, so the app can hang on its loading screen
-    with **nothing** in the terminal, nothing in Settings → Logs, and the only
+    with **nothing** in the terminal, nothing in Settings, Logs, and the only
     record sitting in a browser console nobody opens, least of all in the
     desktop shell, which has no obvious way to open one. The crash that
     prompted this (`Cannot access 'captureStagedFiles' before initialization`)
@@ -2346,7 +2356,7 @@ def record_client_error(body: ClientError, request: Request, response: Response)
 
     Deliberately `logger.error`, not a new channel: `logbuffer`'s handler is
     already attached to the root logger, so this reaches the terminal, the
-    Settings → Logs viewer and `/logs/stream` at once, with no new plumbing to
+    Settings, Logs viewer and `/logs/stream` at once, with no new plumbing to
     keep in step. The `[browser]` prefix is what tells a reader the failure
     happened on the other side of the wire, which changes what they should
     look at next.
@@ -2367,7 +2377,7 @@ def record_client_error(body: ClientError, request: Request, response: Response)
     # **Through `safe_value`, not raw.** Everything in this payload is
     # attacker-shaped by construction: it is text the browser was handed by
     # whatever failed, and a message containing a newline would draw a forged
-    # second row in the Settings → Logs viewer while control characters can
+    # second row in the Settings, Logs viewer while control characters can
     # rewrite what a terminal shows. `logbuffer.sanitise` runs at the ring
     # buffer and so protects the viewer only; the terminal sees the raw
     # record, which is exactly why this module's own helper exists and says

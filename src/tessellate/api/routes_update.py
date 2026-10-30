@@ -321,7 +321,7 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         logger.exception("update download failed")
         _state.outcome = "failed"
         if not _state.error:
-            _state.error = "Download failed: see Settings → Logs for details."
+            _state.error = "Download failed: see Settings, Logs for details."
         _state.step = (
             "Couldn't download the update, this can happen if a firewall, "
             "proxy, or antivirus is blocking the download, or if you're "
@@ -370,7 +370,7 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         _state.outcome = "failed"
         # Not str(exc): a WinError from Popen/the filesystem can carry a
         # real local path. See the download except block's own comment.
-        _state.error = "Couldn't start the installer, see Settings → Logs for details."
+        _state.error = "Couldn't start the installer, see Settings, Logs for details."
         _state.step = (
             "The downloaded update was blocked from running, this is "
             "usually antivirus or Windows SmartScreen quarantining a new "
@@ -381,8 +381,8 @@ def _run_apply(download_url: str, asset_name: str) -> None:
     except Exception:
         logger.exception("update apply failed")
         _state.outcome = "failed"
-        _state.error = "Update failed: see Settings → Logs for details."
-        _state.step = "Couldn't apply the update, see Settings → Logs for why."
+        _state.error = "Update failed: see Settings, Logs for details."
+        _state.step = "Couldn't apply the update, see Settings, Logs for why."
     finally:
         _state.running = False
 

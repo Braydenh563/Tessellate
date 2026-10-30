@@ -81,7 +81,7 @@ async function openChatModelPanel() {
   fact("Can show its reasoning", flag(spec.supports_thinking));
   fact("Can see images", flag(spec.supports_vision), "Whether it can read a picture or a scanned page");
 
-  const change = smallButton("ph:gear Change the model", "Open Settings → Models", () => {
+  const change = smallButton("ph:gear Change the model", "Open Settings, Models", () => {
     panel.classList.add("hidden");
     openSettingsModal("models", "chat-model-select");
   });

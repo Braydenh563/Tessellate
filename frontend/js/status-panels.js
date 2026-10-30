@@ -123,9 +123,9 @@ function renderSearchEngineHealth(status) {
   const reindex = status.reindex;
   const cover = status.embedding_coverage;
   const parts = [state];
-  if (reindex && reindex.status === "running" && reindex.total) {
+  if (reindex?.status === "running" && reindex.total) {
     parts.push(`indexing ${reindex.done} of ${nounCount(reindex.total, "note")}`);
-  } else if (status.embedding_ready && cover && cover.total) {
+  } else if (status.embedding_ready && cover?.total) {
     parts.push(
       cover.indexed >= cover.total
         ? `all ${nounCount(cover.total, "note")} searchable by meaning`

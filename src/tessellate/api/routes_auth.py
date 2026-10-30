@@ -77,7 +77,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 # rather than a gap in one. The one cookie this app sets is the media ticket
 # below, which opens pictures and files and nothing else.
 _SESSION_IDLE_TTL = 12 * 60 * 60  # fallback default; overridden by the
-# session_idle_ttl_minutes preference (Settings → Account) once one is set
+# session_idle_ttl_minutes preference (Settings, Account) once one is set
 _SESSION_MAX_AGE = 7 * 24 * 60 * 60  # this old → expired, however busy
 
 # token -> [issued_at, last_used_at]
@@ -1552,7 +1552,7 @@ def account(
     session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
 ) -> dict:
-    """What Settings → Account needs to describe the current state.
+    """What Settings, Account needs to describe the current state.
 
     Deliberately says nothing secret: whether a password exists, whether the
     vault is open, and how many sessions are live.
@@ -1572,7 +1572,7 @@ def account(
         # When the recovery key was made, or None: Settings says which button
         # to show (INBOX 663). Behind the lock, unlike `/auth/status`.
         "recovery_key_created_at": _iso(vault.recovery_created_at(session)),
-        # Settings > Security: whether this computer can keep a PIN, whether
+        # Settings, Security: whether this computer can keep a PIN, whether
         # one is set, and whether the caller is this computer (only it may).
         "pin": {
             "available": pinstore.available(config.data_dir),
@@ -1744,7 +1744,7 @@ def forget_pin(
     session: Session = Depends(get_session),
     config: ConfigManager = Depends(get_config),
 ) -> dict:
-    """Settings > Security, "Forget PIN": the password, then it is gone."""
+    """Settings, Security, "Forget PIN": the password, then it is gone."""
     user = _check_current_password(request, session, body.current_password)
     forgotten = pinstore.forget(config.data_dir)
     if forgotten:

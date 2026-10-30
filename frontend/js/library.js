@@ -1815,7 +1815,7 @@ async function flashLibraryItem(kind, id) {
 
 // "+ New Skill" on the Library's AI Skills page. Reported as doing nothing,
 // and it did nothing: the button was in the markup and no handler was ever
-// attached to it. The skill editor lives in Settings → Skills, so this opens
+// attached to it. The skill editor lives in Settings, Skills, so this opens
 // that with a blank form rather than growing a second editor that would then
 // have to be kept in step with the first.
 $("skills-add-new")?.addEventListener("click", async () => {
@@ -2811,7 +2811,7 @@ async function renderSkillsDashboard() {
 
   // --- background workers, in this app's own controls ------------------------
   //
-  // The same three preferences as Settings → Background tasks, and written
+  // The same three preferences as Settings, Background tasks, and written
   // through `setPreference` for the reason that fix already documents: these
   // used to write straight to the server and update nothing locally, so
   // `savePrefs`, which rebuilds the whole object from the *other* screen's
@@ -9426,8 +9426,8 @@ function filterLibraryImagesGallery() {
           toast(
             updated.message ||
               (image._isImage
-                ? "No description was written. Is a vision model running in Settings > Models?"
-                : "No description was written. Check a model is running in Settings > Models."),
+                ? "No description was written. Is a vision model running in Settings, Models?"
+                : "No description was written. Check a model is running in Settings, Models."),
             "info",
           );
         }
@@ -12527,7 +12527,7 @@ async function renderContents() {
     hint.textContent =
       "Folders come from an imported Obsidian vault, they are not created in "
       + "Tessellate. Nothing has been imported yet, so every note is grouped "
-      + "here. Import a vault from Settings → Import & export to see its folder tree.";
+      + "here. Import a vault from Settings, Import & export to see its folder tree.";
     hint.classList.remove("hidden");
   }
   if (hint && contentsMode === "topic") {

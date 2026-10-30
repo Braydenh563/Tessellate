@@ -865,7 +865,7 @@ def warm_in_background() -> None:
     _WARMED["started"] = True
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", _warm, name="warm the spelling lists", dedupe_key="spelling-warm")
+    jobs.enqueue("warm", _warm, name="the spelling lists", dedupe_key="spelling-warm")
 
 
 def _warm() -> None:

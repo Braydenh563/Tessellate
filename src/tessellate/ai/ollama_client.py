@@ -336,7 +336,7 @@ class OllamaClient(Provider):
         """The model's own specification, in one flat shape for the UI (§11).
 
         Reading these was the gap: the app knew the context length and nothing
-        else, so Settings → Models could not say how big a model was, how it
+        else, so Settings, Models could not say how big a model was, how it
         was quantised, or whether it could use tools at all, which is the
         first thing to check when "agent mode does nothing".
         """

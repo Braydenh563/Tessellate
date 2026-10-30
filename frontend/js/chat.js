@@ -767,7 +767,7 @@ function renderChatEmptyState() {
   }
   box.appendChild(empty);
   // Animated like the ai-mark: a new chat is the AI waiting, and the slow
-  // turn says so. Stills itself under Settings → Appearance → reduced motion.
+  // turn says so. Stills itself under Settings, Appearance → reduced motion.
   renderEmblem(emblem, 52, { animate: true }); // after insertion: see addAssistantBubble
   fitChatEmpty();
   //: **Watched, but never from inside the observer's own callback** (the
@@ -898,7 +898,7 @@ function toggleWebPanel(force) {
       const link = document.createElement("button");
       link.type = "button";
       link.className = "link-button";
-      link.textContent = "Settings → Web search";
+      link.textContent = "Settings, Web search";
       link.addEventListener("click", () => {
         toggleWebPanel(false);
         openSettingsModal("websearch");
@@ -928,7 +928,7 @@ function toggleWebPanel(force) {
 
 // Feedforward for whether the private, local SearXNG instance is actually
 // running: not just the after-the-fact "answered by SearXNG" a result
-// already carries. Deliberately far lighter than Settings → Web search's
+// already carries. Deliberately far lighter than Settings, Web search's
 // full management UI (install progress, port diagnostics, reinstall): only
 // "is it on", as a dot in the head, and "turn it on or off", in the kebab
 // beside it.
@@ -982,7 +982,7 @@ function renderWebPanelMenu(engine) {
     if (engine.state === "installing") {
       items.push({
         label: "ph:hourglass Installing SearXNG",
-        title: "SearXNG is installing; Settings → Web search shows its progress",
+        title: "SearXNG is installing; Settings, Web search shows its progress",
         disabled: true,
         run: () => openSettingsModal("websearch"),
       });
@@ -1566,7 +1566,7 @@ function webPageContextBlock(page) {
 //: **The context window, per model, set by hand.**
 //:
 //: Asked for (INBOX 77): "the window itself should be manageable by the user
-//: and auto when set ... a `num_ctx` preference per model in Settings > Models
+//: and auto when set ... a `num_ctx` preference per model in Settings, Models
 //: with Auto (the model file's value) or a number, sent on every request; the
 //: badge shows 'used / window'". The badge half shipped first; this is the
 //: window half.

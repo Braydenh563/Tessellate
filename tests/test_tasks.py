@@ -1,4 +1,4 @@
-"""Settings → Background tasks has to show *every* background job.
+"""Settings, Background tasks has to show *every* background job.
 
 It listed two, a re-index and a model download, because it was assembled in
 `app.js` out of whatever happened to be in `/models/status`. The embedding

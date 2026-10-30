@@ -225,7 +225,7 @@ def test_a_badge_with_no_text_is_hidden():
 
 
 def test_a_backup_row_label_takes_the_ink_not_muted_on_its_tint():
-    """UX audit 2026-10-19, Settings > Data at 1440 light: "Automatic daily
+    """UX audit 2026-10-19, Settings, Data at 1440 light: "Automatic daily
     backup" was muted rgb(102, 100, 95) on rgb(219, 219, 221), 4.27:1. It is
     rgb(28, 28, 26) now (the ink), as the Skills rows' labels already were."""
     css = _front_css("settings-controls-lazy.css")

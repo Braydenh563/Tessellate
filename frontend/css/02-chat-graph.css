@@ -2136,7 +2136,7 @@ kbd {
    the setting, because everything else is decoration. A new progress
    animation has to be added here, and that is the intended cost: the
    alternative is a rule that quietly exempts things nobody meant to exempt.
-   Governed by `progress-motion` (Settings → Appearance), which defaults to
+   Governed by `progress-motion` (Settings, Appearance), which defaults to
    "always", see APPEARANCE_DEFAULTS in settings.js for why a spinner is not
    chrome. Choosing "Still" removes the attribute's value from this selector
    and the blanket takes over again, which is what that option means.

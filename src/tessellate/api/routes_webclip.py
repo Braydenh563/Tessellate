@@ -3,7 +3,7 @@
 The fetch, the address checks and the extraction are `core/webclip.py`; this
 is the door, and the one rule that belongs at the door: **nothing goes online
 unless the person has said the web may be used.** The clipper shares the web
-reader's opt-in (`web_search_enabled`, Settings → Web search) rather than
+reader's opt-in (`web_search_enabled`, Settings, Web search) rather than
 having a switch of its own, because "may this app reach the web when I ask"
 is one question, and two switches that answer it differently would be a
 promise kept in one place and broken in the other.
@@ -33,7 +33,7 @@ router = APIRouter(prefix="/links", tags=["links"])
 
 WEB_OFF = (
     "Clipping a page needs the web, and the web is turned off. Allow it in "
-    "Settings → Web search, then clip the page again."
+    "Settings, Web search, then clip the page again."
 )
 
 
@@ -122,7 +122,9 @@ def clip_page(body: ClipPageIn, response: Response, session: Session = Depends(g
     elif body.html.strip():
         extracted = webclip.extract(body.html, url)
     else:
-        extracted = {"title": _plain_title(body.title, url), "markdown": "", "words": 0}
+        #: Nothing sent but the address: a bookmarklet fired on a blank page
+        #: filled the notebook with hollow notes (audit 1030 Y12).
+        raise HTTPException(status_code=422, detail="This page sent no text to clip. Reload it and clip again.")
     note = routes_entries.create_entry(
         EntryCreate(
             content=webclip.note_content(extracted, url),

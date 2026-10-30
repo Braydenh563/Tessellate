@@ -1104,7 +1104,7 @@ def test_the_lab_keeps_what_you_pick_and_no_cap_is_worn_upright() -> None:
 
 
 def test_faces_in_round_holders_stay_inside_their_circle() -> None:
-    # The owner: "in Settings > Personas, the Atlas avatar spills outside its
+    # The owner: "in Settings, Personas, the Atlas avatar spills outside its
     # black circle". Measured (personaclip.js): every persona and profile
     # face in Settings clipped to circle(50%).
     css01 = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")

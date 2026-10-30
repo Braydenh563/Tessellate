@@ -1,4 +1,4 @@
-"""Changing the password, and the state Settings → Account reports.
+"""Changing the password, and the state Settings, Account reports.
 
 The risk this file guards is specific: the vault key is wrapped with a key
 derived from the password, so a password change that doesn't re-wrap it leaves

@@ -217,6 +217,8 @@ LABELS: dict[str, str] = {
     "vision-pdf": "Reading a scan with the vision model",
     "file-entry": "Filing a note",
     "warm-filing": "Warming up the filing model",
+    #: "Warm: warm the spelling lists" said the kind twice (audit 1030 Y7).
+    "warm": "Warming up",
     #: INBOX 696: a "Background job" row says nothing a person can read.
     "embed-entry": "Updating a note's search vector",
     "bench": "Timing a model",

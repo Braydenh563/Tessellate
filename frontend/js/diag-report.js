@@ -1,6 +1,6 @@
 // diag-report.js: the one copyable diagnostics report (INBOX 1430, the owner,
 // 2026-10-28: "improve the app's ability to register and log issues and lag and
-// complexity so I can just give you the logs"). Settings > Logs > Copy
+// complexity so I can just give you the logs"). Settings, Logs, Copy
 // diagnostics, "Save diagnostics as file" and the palette command run
 // `diagCopy` / `diagSave`; lag-watch.js (the same lazy module, `diagnostics`)
 // holds what the browser saw, `GET /diagnostics` what the server did.

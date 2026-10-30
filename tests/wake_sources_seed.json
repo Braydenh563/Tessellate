@@ -103,6 +103,7 @@
  "timeline-ticks.js::resize-observer": 1,
  "timeline.js::raf": 3,
  "tour.js::raf": 4,
+ "update-dialogs.js::mutation-observer": 1,
  "utility-tools.js::interval": 1,
  "whiteboard-format.js::mutation-observer": 1,
  "whiteboard-format.js::raf": 1,

@@ -1093,7 +1093,7 @@ function nameMarkTitle(reading) {
 //:
 //: Motion is CSS only, keyed off classes set here: the eyes blink, the face
 //: breathes, and each mood has its own move (the tear falls, the "zz"
-//: drifts, the vein throbs, an excited face bounces). Settings > Appearance >
+//: drifts, the vein throbs, an excited face bounces). Settings, Appearance >
 //: Avatar animation chooses off, on hover, or always; Reduce motion wins.
 //: Each mark starts its loop at its own point (`--nm-delay`, from the seed),
 //: so a list of faces does not blink in unison.

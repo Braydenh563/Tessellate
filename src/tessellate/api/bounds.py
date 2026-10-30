@@ -52,10 +52,34 @@ def display_name(raw: str | None, fallback: str) -> str:
     return stem[: NAME_MAX - len(suffix) - 1] + "." + suffix
 
 
-def check_image_upload(head: bytes, size: int) -> None:
-    """Refuse an empty upload and markup named like a picture. Anything else
-    passes: the suffix allowlist and `nosniff` already decide what is served."""
+#: The first bytes each picture type opens with. Text named `.png` was kept
+#: and served as `image/png` (audit 1030 Y15): safe behind `nosniff` and the
+#: CSP, but not a picture.
+_OPENS_WITH = {
+    ".png": (b"\x89PNG\r\n\x1a\n",),
+    ".jpg": (b"\xff\xd8\xff",),
+    ".jpeg": (b"\xff\xd8\xff",),
+    ".gif": (b"GIF87a", b"GIF89a"),
+    ".bmp": (b"BM",),
+    ".ico": (b"\x00\x00\x01\x00",),
+}
+
+
+def _is_its_type(head: bytes, suffix: str) -> bool:
+    if suffix == ".webp":
+        return head[:4] == b"RIFF" and head[8:12] == b"WEBP"
+    if suffix == ".avif":
+        return head[4:8] == b"ftyp"
+    if suffix == ".pdf":
+        return b"%PDF-" in head
+    opens = _OPENS_WITH.get(suffix)
+    return opens is None or head.startswith(opens)
+
+
+def check_image_upload(head: bytes, size: int, suffix: str = "") -> None:
+    """Refuse an empty upload, markup named like a picture, and a file that
+    does not open the way its type does."""
     if size <= 0:
         raise HTTPException(status_code=422, detail="That file is empty.")
-    if head.lstrip()[:1] == b"<":
+    if head.lstrip()[:1] == b"<" or not _is_its_type(head, suffix):
         raise HTTPException(status_code=415, detail="That file is not an image or PDF.")

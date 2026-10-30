@@ -1635,7 +1635,7 @@ def _picture_in_hand(question: str, notes: list[dict]) -> bool:
 def _focus(question: str, history: list[dict] | None = None) -> list[str] | None:
     """Which tools this turn is offered, unless the user asked for all of them.
 
-    Settings → Tools has the switch, because the honest failure mode of a
+    Settings, Tools has the switch, because the honest failure mode of a
     keyword rule is a request phrased in words it doesn't know, and the fix
     for that has to be reachable without editing code.
 
@@ -1890,7 +1890,7 @@ def _prepare_turn(
         every_tool, _ = tools.within_budget(every_tool, budget.tool_schema_chars, keep, exempt, chances)
         offered, dropped = tools.within_budget(offered, budget.tool_schema_chars, keep, exempt, chances)
         if dropped:
-            # Visible in Settings → Logs, because "the AI didn't use the tool I
+            # Visible in Settings, Logs, because "the AI didn't use the tool I
             # expected" is otherwise indistinguishable from the model choosing
             # not to. Each name carries the chance the question gave it.
             logging.getLogger("tessellate.agent").info(

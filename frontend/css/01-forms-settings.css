@@ -4472,7 +4472,7 @@ html.modal-open body {
   margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
 }
-/* Advanced response settings (Settings → Models). One row per sampling knob:
+/* Advanced response settings (Settings, Models). One row per sampling knob:
    a label with a badge saying where the value came from, the plain-language
    help, then the slider, its readout and a per-row reset. */
 .sampling-row {
@@ -4837,7 +4837,7 @@ html.modal-open body {
 select {
   font-size: var(--text-md);
 }
-/* The "worth rebuilding now" line in Settings → Search index. An accent
+/* The "worth rebuilding now" line in Settings, Search index. An accent
    ground rather than a warning colour: nothing is broken, there is simply
    something useful to do. See `renderReindex` in ai-tools.js. */
 /* The box itself is `.notice.notice-warn` now (08-consistency.css, the recipe
@@ -5615,7 +5615,7 @@ select {
 #learned-switches .learned-master {
   margin-bottom: var(--space-3);
 }
-/* --- a model per feature (Settings → Models) ---------------------------------
+/* --- a model per feature (Settings, Models) ---------------------------------
    One row per feature: what it is, then what it runs on, then the way back to
    the default. Three columns rather than a `.row` of loose controls because
    the whole point of the list is comparison down the column: which of these is

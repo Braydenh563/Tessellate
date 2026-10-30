@@ -2,7 +2,7 @@
 "improve the app's ability to register and log issues and lag and complexity so
 I can just give you the logs").
 
-The server half of the one copyable report in Settings > Logs: slow requests
+The server half of the one copyable report in Settings, Logs: slow requests
 (route, ms, status), exceptions with their frames, and slow database
 statements. Memory only, bounded, and written so that nothing a person typed
 can be in it:

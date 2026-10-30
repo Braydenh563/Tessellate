@@ -241,7 +241,7 @@ def test_custom_css_does_not_inject_a_style_tag():
     """The one feature the strict policy broke, and the only thing that found
     it was a browser, 757 green tests said nothing.
 
-    Settings → Appearance lets the user write their own CSS. It was applied by
+    Settings, Appearance lets the user write their own CSS. It was applied by
     creating a <style> element, which is exactly what style-src 'self' refuses,
     so the feature silently stopped working while every test stayed green. It
     now adopts a constructed stylesheet, which CSP does not treat as inline

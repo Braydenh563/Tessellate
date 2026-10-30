@@ -66,7 +66,7 @@ def test_counts_reflect_real_rows(client, session):
     session.add(Document(title="doc", content="body"))
     session.add(Reminder(text="water plants", due_at=utcnow()))
     session.commit()
-    client.post("/media/upload", files={"file": ("p.png", io.BytesIO(b"x"), "image/png")})
+    client.post("/media/upload", files={"file": ("p.png", io.BytesIO(b"\x89PNG\r\n\x1a\n"), "image/png")})
 
     counts = client.get("/debug/health").json()["counts"]
     assert counts["entries"] == 1

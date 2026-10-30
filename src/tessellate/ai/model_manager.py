@@ -134,7 +134,7 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
         {"name": "bge-m3", "size": "~1.2 GB", "purpose": "Better on long notes and mixed languages"},
     ],
     # Any of these can be picked as the explicit vision-model override in
-    # Settings → Models (ModelManager.vision_model()), for chat image
+    # Settings, Models (ModelManager.vision_model()), for chat image
     # captions (ai/captioning.py) and image-carrying chat turns
     # (routes_chat._chat_model_sees_images). Asked for directly.
     #

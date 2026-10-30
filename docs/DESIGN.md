@@ -51,7 +51,7 @@ before they need it.
 Use for every `margin`, `padding`, `gap`, `row-gap` and `column-gap`.
 
 Every step is wrapped in `calc(… * var(--density))`, so the density setting
-(Settings → Appearance: compact / comfortable / spacious) tightens or loosens
+(Settings, Appearance: compact / comfortable / spacious) tightens or loosens
 the **whole interface** with one multiplier. It used to be nine rules in two
 places, each re-stating literal paddings for the four components somebody
 remembered, `.card`, `.layout`, `.dash-hero`, `.entry-list li`: so "compact"
@@ -107,7 +107,7 @@ sign it should be using `--text-display` instead.
 --radius-pill: 999px                       pills, round buttons
 ```
 
-`--radius` is a **user preference** (Settings → Appearance, 2–16px across the
+`--radius` is a **user preference** (Settings, Appearance, 2–16px across the
 built-in themes). Before this, ~90 declarations used literal pixels, so choosing
 square corners squared the cards and left every chip, popup and button rounded.
 Deriving the tiers makes the whole interface respond to one setting, which is a
@@ -239,7 +239,7 @@ from 0.05 to 0.5, one tinted family (`rgba(31, 38, 135, …)`, matching
 flat-black ones never adapted in dark mode the way `--glass-shadow` already
 did, because they weren't built from it. All three tiers are dark-mode-aware
 (`--shadow-sm`/`--shadow-lg` scale off `--shadow-intensity`, the same knob
-Settings → Appearance already drives; `--shadow-md` is `--glass-shadow`,
+Settings, Appearance already drives; `--shadow-md` is `--glass-shadow`,
 already themed). Two literal shadows remain on purpose: the lightbox image's
 (its backdrop is always near-black regardless of theme, so a themed shadow
 would be wrong there) and the accent-glow on the CTA button family, which
@@ -512,7 +512,7 @@ inventing a third option.
 
 ### Surface tiers, and the border budget
 
-Measured before this existed, on Settings → Tools it can use: the modal drew
+Measured before this existed, on Settings, Tools it can use: the modal drew
 a hairline, the group inside it drew a hairline, and all 54 rows inside the
 group drew one more, three nested boxes, each saying "this is a thing" with
 the same 1px line, so none of them said anything. Skills, Personas, Templates
@@ -1734,7 +1734,7 @@ empty, capture a thought to begin": three tones for one situation.
   line.
 - **Errors say what to do next**, inline under the control that failed;
   toasts are for background work finishing. "Ollama isn't reachable: check
-  Settings → Models and try again." (the exact string `skill_runner.py`
+  Settings, Models and try again." (the exact string `skill_runner.py`
   raises), not "Error".
 - **Say the thing, not the mechanism.** "Reading the model's own
   specification…" is fine; "Fetching /models/spec" is not.

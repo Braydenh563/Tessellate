@@ -836,7 +836,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     # Best effort: a failed embedding only means this entry is invisible
     # to semantic search until re-indexed, never a failed save. It is logged
     # rather than swallowed, so a backend that has stopped working shows up in
-    # Settings → Logs instead of quietly shrinking search.
+    # Settings, Logs instead of quietly shrinking search.
     #
     # Skipped when filing is deferred: the same background thread does it,
     # right before the near-duplicate search that depends on it.

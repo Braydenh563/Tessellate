@@ -39,9 +39,9 @@ def test_media_upload_refuses_empty_and_markup_posing_as_an_image(client):
 
 def test_media_upload_keeps_a_short_name_without_folders(client):
     long_name = "x" * 400 + ".png"
-    body = client.post("/media/upload", files={"file": (long_name, b"\x89PNG\r\n", "image/png")}).json()
+    body = client.post("/media/upload", files={"file": (long_name, b"\x89PNG\r\n\x1a\n", "image/png")}).json()
     assert len(body["filename"]) <= bounds.NAME_MAX and body["filename"].endswith(".png")
-    evil = client.post("/media/upload", files={"file": ("../../evil.png", b"\x89PNG\r\n", "image/png")}).json()
+    evil = client.post("/media/upload", files={"file": ("../../evil.png", b"\x89PNG\r\n\x1a\n", "image/png")}).json()
     assert evil["filename"] == "evil.png"
 
 

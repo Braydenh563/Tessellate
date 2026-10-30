@@ -1912,7 +1912,7 @@ def _web_search(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     # Read through the same helper the HTTP route uses, so the engine the
     # user picked is the engine the agent uses. Two readers is how a tool
     # ends up quietly ignoring a setting the rest of the app honours.
@@ -1988,7 +1988,7 @@ def _read_url(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     url = str(args.get("url") or "").strip()
     if not url:
         raise ToolError("No URL was given")
@@ -4430,7 +4430,7 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
 
 
 def tool_enabled(name: str) -> bool:
-    """A tool is offered unless the user turned it off in Settings → Tools.
+    """A tool is offered unless the user turned it off in Settings, Tools.
     web_search additionally requires the online opt-in."""
     # Listing the tools must not start the app: without settings the defaults
     # hold (web off, nothing disabled), which is what a fresh notebook has.
@@ -4534,7 +4534,7 @@ def ollama_tools(allowed: list[str] | None = None, session: Session | None = Non
     roadmap §11a in one line: 28 schemas are ~77% of the fixed per-round
     overhead, and a skill that needs three of them should pay for three. The
     user's own switches still win, a skill cannot re-enable something turned
-    off in Settings → Tools.
+    off in Settings, Tools.
     """
     wanted = set(allowed) if allowed else None
     offered = [
@@ -4823,7 +4823,7 @@ COUNTING_TOOLS = ("count_notes", "list_notes")
 
 
 def tool_catalog() -> list[dict]:
-    """Metadata for the Settings → Tools toggles."""
+    """Metadata for the Settings, Tools toggles."""
     return [
         {
             "name": spec.name,
@@ -5148,7 +5148,7 @@ def execute_tool(
         return {"error": f"Unknown tool '{name}'"}
     deps.get_config()  # a call runs inside the app: the user's settings, never the defaults
     if not tool_enabled(name):
-        return {"error": f"The '{name}' tool is turned off in Settings → Tools it can use"}
+        return {"error": f"The '{name}' tool is turned off in Settings, Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:
     #: the write is discarded, not done late (the stream only sees Stop between
     #: yields, `activity.bind`). Reads are harmless and still run.
@@ -5156,7 +5156,7 @@ def execute_tool(
         return {"error": "You stopped this run before this step ran, so nothing was changed."}
     args, problem = check_arguments(name, dict(arguments or {}))
     if problem:
-        # Logged like a handler's argument failure, so Settings → Logs shows
+        # Logged like a handler's argument failure, so Settings, Logs shows
         # what the model sent; the text is the app's own, safe to hand back.
         logging.getLogger("tessellate.tools").warning("tool %s refused: %s", safe_value(name, 40), safe_value(problem, 200))
         return {"error": problem}

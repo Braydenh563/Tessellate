@@ -337,7 +337,7 @@ def search_web(
 ) -> list[dict]:
     """[{title, url, snippet, domain, engine}] for a query, best first.
 
-    `provider` is the user's choice from Settings → Web search, and "searxng"
+    `provider` is the user's choice from Settings, Web search, and "searxng"
     means it. The old behaviour: try SearXNG, silently fall back to
     DuckDuckGo: is still available as "auto" and is still the default, but it
     could not be turned off, and it is the wrong answer for somebody who runs
@@ -352,7 +352,7 @@ def search_web(
     if provider == "searxng" and not searxng_url:
         raise WebSearchError(
             "Web search is set to use SearXNG only, but no SearXNG address is "
-            "configured. Set one in Settings → Web search, or switch the "
+            "configured. Set one in Settings, Web search, or switch the "
             "engine to Automatic."
         )
 

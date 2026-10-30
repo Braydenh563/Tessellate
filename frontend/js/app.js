@@ -15,7 +15,7 @@
 
 // --- browser log capture (Wave A) -----------------------------------------------
 // Installed before anything else runs so no message is missed. Shown in
-// Settings → Logs alongside the server's records.
+// Settings, Logs alongside the server's records.
 
 const browserLogs = [];
 const MAX_BROWSER_LOGS = 500;
@@ -515,7 +515,7 @@ async function api(path, options = {}) {
       errMsg = `${errMsg} ${detail.hint}`;
     }
     if (!silent) {
-      // Log HTTP errors so they always appear in Settings → Logs for debugging.
+      // Log HTTP errors so they always appear in Settings, Logs for debugging.
       recordBrowserLog("ERROR", [
         `[HTTP ${response.status}] ${fetchOptions.method || 'GET'} ${path}: ${rawMsg}`
       ]);

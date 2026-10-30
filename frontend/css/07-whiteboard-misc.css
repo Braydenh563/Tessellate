@@ -4174,7 +4174,7 @@ summary:not(.icon-only):not(.icon-button):not(.fold-summary, .chat-sources-summa
   padding: var(--space-2) var(--space-3);
 }
 /* --- a settings row where nothing squashes anything else -----------------
-   Reported with a screenshot of Settings → Web search: "ui elements are
+   Reported with a screenshot of Settings, Web search: "ui elements are
    different heights and everything is squashed together."
    Measured, and it was one cause with two symptoms. A `.row` is a flex line
    whose items all default to `flex: 0 1 auto`, every item may shrink. In the

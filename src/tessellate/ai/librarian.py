@@ -137,7 +137,7 @@ ABOUT_APP_BRIEF = (
     "of their actual notes."
 )
 
-# Built-in personas. Users add their own in Settings → Personas.
+# Built-in personas. Users add their own in Settings, Personas.
 #: The built-in librarian is Atlas (INBOX 237: "the librarian persona hasnt
 #: been adjusted to be atlas acting as the librarian"). A preference saved
 #: under the old name still resolves through `PERSONA_ALIASES`.
@@ -211,7 +211,7 @@ STYLE_HINTS = {
 }
 
 
-#: **The local profile's share of the system prompt, capped.** Settings > Your
+#: **The local profile's share of the system prompt, capped.** Settings, Your
 #: profile holds a display name and a short "About me", and both reach the
 #: model through `profile_context` below, in the system message beside the
 #: persona and the tools guide. That message is resent on every round of every

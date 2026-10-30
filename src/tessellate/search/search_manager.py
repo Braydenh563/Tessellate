@@ -413,7 +413,7 @@ def _load_later(embeddings: EmbeddingService) -> None:
 
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", load, name="warm the search model", dedupe_key="search-warm")
+    jobs.enqueue("warm", load, name="the search model", dedupe_key="search-warm")
 
 
 def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
@@ -611,7 +611,7 @@ def _score_from_table(session: Session, query_vector, query_norm: float, backend
     # Only over the rows whose vector is the same width as the query, though.
     # `model_version` narrows this to one backend, and a backend is not a
     # dimension: swapping the embedding *model* inside the same backend (which
-    # Settings → Embedding models offers as a button) leaves the old rows in
+    # Settings, Embedding models offers as a button) leaves the old rows in
     # place at their old width. Stacking those into one array raises on the
     # ragged list and took the whole search down with it, every query
     # returning nothing, until a reindex that the error gave no hint to run.

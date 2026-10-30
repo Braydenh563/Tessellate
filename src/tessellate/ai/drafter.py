@@ -50,7 +50,7 @@ def was_offline(note: str | None) -> bool:
 #: Kept for anything still importing the name.
 OFFLINE_MESSAGE = (
     "Atlas isn't running, so there is nothing to draft with yet. Start Ollama, "
-    "or connect a model in Settings → Models. Nothing you've typed is lost."
+    "or connect a model in Settings, Models. Nothing you've typed is lost."
 )
 
 FIRST_DRAFT = (

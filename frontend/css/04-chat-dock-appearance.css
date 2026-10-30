@@ -1970,7 +1970,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   margin-top: 0;
 }
 
-/* About's own hero box (Settings → About): the emblem and app name read as
+/* About's own hero box (Settings, About): the emblem and app name read as
    a title card, not one more scannable row, so this is the one settings-group
    whose top is centred rather than left-aligned like the rest of the page.
    The description and version stay left-aligned underneath: a paragraph of
@@ -2150,7 +2150,7 @@ label.setting-check,
 
 /* Hover only where there is a pointer to hover with: on a phone the
    emulated hover stays on the row last tapped (measured, contrast.js at
-   390: Settings > Learned's first row held the 18% fill, its muted hint
+   390: Settings, Learned's first row held the 18% fill, its muted hint
    at 3.83:1). */
 @media (hover: hover) {
   .setting-check:hover,

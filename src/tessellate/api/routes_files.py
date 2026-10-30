@@ -594,7 +594,7 @@ def analyse_attachment(
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     ollama = deps.get_ollama()
 
@@ -788,7 +788,7 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
             pages=0,
             message=(
                 "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings → Packages."
+                "“Read scanned PDFs” in Settings, Packages."
             ),
         )
     count = pdfpages.page_count(path)
@@ -1346,7 +1346,7 @@ def upload_media(
 
     try:
         with destination.open("rb") as written:
-            bounds.check_image_upload(written.read(64), size)
+            bounds.check_image_upload(written.read(64), size, suffix)
     except HTTPException:
         destination.unlink(missing_ok=True)
         raise
@@ -1751,7 +1751,7 @@ def media_pdf_info(filename: str, session: Session = Depends(get_session)) -> Pd
             pages=0,
             message=(
                 "Viewing PDF pages needs a small rasteriser: install "
-                "“Read scanned PDFs” in Settings → Packages."
+                "“Read scanned PDFs” in Settings, Packages."
             ),
         )
     count = pdfpages.page_count(path)
@@ -2044,7 +2044,7 @@ def caption_media(
             raise HTTPException(
                 status_code=409,
                 detail="No installed model can read images. Install or "
-                "pick one in Settings → Models.",
+                "pick one in Settings, Models.",
             )
         media_dir = deps.get_config().data_dir / "media"
         captioning.caption_and_store(upload.id, media_dir / upload.filename, force=body.force)
@@ -2757,7 +2757,7 @@ def _vision_read_page(path: Path, index: int, reader: str = "vision") -> OcrPage
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     count = pdfpages.page_count(path)
     if count <= 0:
@@ -3143,7 +3143,7 @@ def _read_page(
     """One page, by whichever reader was asked for.
 
     Registered in `vision_ocr`'s running-reads list for the length of the call,
-    which is what puts it in Settings → Background tasks. Asked for directly:
+    which is what puts it in Settings, Background tasks. Asked for directly:
     "make sure eveyrhting appears in the bg processes in settings." A read is a
     model round-trip of several seconds and it appeared there nowhere, so
     closing the workspace mid-read left no sign anywhere that the app was still
@@ -3210,7 +3210,7 @@ def _describe_page(
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     count = pdfpages.page_count(path)
     if count <= 0:
@@ -3220,7 +3220,7 @@ def _describe_page(
     if not png:
         return OcrPageReadOut(page=index, message=f"Page {index + 1} could not be rendered.")
     #: Registered in the same running-reads list a page read uses, so a
-    #: describe shows up in Settings → Background tasks like everything else, 
+    #: describe shows up in Settings, Background tasks like everything else, 
     #: "make sure eveyrhting appears in the bg processes in settings."
     token = vision_ocr.register_page_read(f"Describing page {index + 1} of {path.name}", model=model)
     try:
@@ -3665,7 +3665,7 @@ def _region_model(mode: str, reader: str, local: bool) -> str:
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     return model
 
@@ -4117,7 +4117,7 @@ def vision_ocr_media(
         raise HTTPException(
             status_code=409,
             detail="No installed model can read images. Install or "
-            "pick one in Settings → Models.",
+            "pick one in Settings, Models.",
         )
     media_dir = deps.get_config().data_dir / "media"
     vision_ocr.vision_ocr_and_store(upload.id, media_dir / upload.filename, force=body.force)

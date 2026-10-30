@@ -1362,7 +1362,7 @@ $("tools-toggle").addEventListener("change", async () => {
 });
 
 // In-chat web-search toggle: reflects and flips the web_search_enabled pref,
-// with a clear active state (it's the same setting as Settings → Web search).
+// with a clear active state (it's the same setting as Settings, Web search).
 function renderWebSearchToggle() {
   const on = Boolean(prefsCache && prefsCache.web_search_enabled);
   const button = $("web-search-toggle");

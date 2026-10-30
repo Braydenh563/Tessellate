@@ -753,7 +753,7 @@ def _backup_if_due() -> None:
         # daily local backups, and without this line a backup that has been
         # failing for months looks exactly like one that has been working.
         logging.getLogger("tessellate.startup").warning(
-            "today's local backup didn't run: check Settings → Logs",
+            "today's local backup didn't run: check Settings, Logs",
             exc_info=True,
         )
 
@@ -1015,7 +1015,7 @@ def _register_error_handlers(app: FastAPI) -> None:
             content={
                 "detail": (
                     "Something went wrong inside Tessellate. Try again, and if it "
-                    "keeps happening, check Settings > Logs."
+                    "keeps happening, check Settings, Logs."
                 ),
                 "code": "internal",
                 "ref": ref,

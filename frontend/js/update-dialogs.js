@@ -71,6 +71,21 @@ async function checkForUpdate(silent = false) {
 //: Closing the question is "no", the answer that touches nothing; Settings,
 //: About holds the switch and the Check for updates button either way.
 //: start.sh may already have asked in the terminal, and then this never runs.
+//: Resolves once no dialog or overlay is open: the question took clicks
+//: inside a voice note 5 s after boot (audit 1030 Y17).
+function untilNoDialogOpen() {
+  const open = () => document.querySelector("dialog[open], .modal-overlay:not(.hidden)");
+  if (!open()) return Promise.resolve();
+  return new Promise((done) => {
+    const watch = new MutationObserver(() => {
+      if (open()) return;
+      watch.disconnect();
+      done();
+    });
+    watch.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["open", "class"] });
+  });
+}
+
 async function askUpdateChoiceOnce() {
   //: Never over the welcome, the tour it hands on to, the recovery-key offer
   //: or the desktop's console question: the first-run queue holds its slot,
@@ -83,6 +98,7 @@ async function askUpdateChoiceOnce() {
     { confirmLabel: "Check automatically", cancelLabel: "Don't check", danger: false }
   );
   await ensureModule("onboarding").catch(() => {});
+  await untilNoDialogOpen();
   const yes = typeof firstRunTurn === "function" ? await firstRunTurn(ask, "updates") : await ask();
   //: Escape or the backdrop answers undefined (not a "no"): nothing stored,
   //: asked again next start (X12).

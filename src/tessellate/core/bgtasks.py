@@ -143,7 +143,7 @@ def _cancel_searxng_start(_name: str) -> tuple[bool, str]:
         searxng_manager.stop(deps.get_config().data_dir)
     except Exception as exc:  # noqa: BLE001  # a stop that fails is not a 500
         logger.warning("couldn't stop SearXNG: %s", exc)
-        return False, "Couldn't stop it: see Settings → Logs."
+        return False, "Couldn't stop it: see Settings, Logs."
     return True, "Stopped SearXNG."
 
 
@@ -201,7 +201,7 @@ def cancel(kind: str, name: str = "") -> tuple[bool, str]:
         # legitimately contains a line break.
         safe_kind = kind.replace("\r", "").replace("\n", "")
         logger.warning("couldn't stop the %s job: %s", safe_kind, exc, exc_info=True)
-        return False, "Couldn't stop that job, see Settings → Logs."
+        return False, "Couldn't stop that job, see Settings, Logs."
 
 
 def stop_all() -> list[str]:

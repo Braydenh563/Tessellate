@@ -129,10 +129,10 @@ function settleNotification(id, { key, kind, title, detail = "" }) {
 //: "Finished: X, took 4 s", "Failed: X" with the reason, "Stopped: X".
 function taskEndingWords(ended, label) {
   const took = ended ? jobDurationWords(ended.duration_ms) : "";
-  const name = (ended && ended.label) || label;
-  if (ended && ended.outcome === "failed") return { kind: "error", title: `Failed: ${name}`, detail: ended.detail || "" };
-  if (ended && ended.outcome === "cancelled") return { kind: "task", title: `Stopped: ${name}`, detail: ended.detail || "" };
-  return { kind: "task", title: `Finished: ${name}${took ? `, took ${took}` : ""}`, detail: (ended && ended.detail) || "" };
+  const name = ended?.label || label;
+  if (ended?.outcome === "failed") return { kind: "error", title: `Failed: ${name}`, detail: ended.detail || "" };
+  if (ended?.outcome === "cancelled") return { kind: "task", title: `Stopped: ${name}`, detail: ended.detail || "" };
+  return { kind: "task", title: `Finished: ${name}${took ? `, took ${took}` : ""}`, detail: ended?.detail || "" };
 }
 
 function notificationsReadAt() {
@@ -634,7 +634,7 @@ function startReminderWatch() {
 // least meant to hide. Everything else (background jobs, agent runs, general
 // activity) is what the toggle actually quiets.
 function notificationsMuted() {
-  return Boolean(prefsCache && prefsCache.notifications_muted_except_reminders);
+  return Boolean(prefsCache?.notifications_muted_except_reminders);
 }
 
 //: **Where the AI's own activity is announced.**
@@ -649,7 +649,7 @@ function notificationsMuted() {
 //: well, so a muted app forgets what it did. This keeps the history and drops
 //: the interruption, which is what was actually asked for.
 function agentActivityQuiet() {
-  return (prefsCache && prefsCache.agent_activity_notices) === "centre";
+  return prefsCache?.agent_activity_notices === "centre";
 }
 
 //: One call for "the AI did something worth mentioning". Always recorded,
@@ -864,7 +864,7 @@ function toastReduced() {
 
 function toastStack(box, change) {
   if (!box) return change();
-  const shown = (t) => t.getClientRects().length > 0;
+  const shown = (t) => t.getClientRects().length;
   const was = new Map([...box.children].filter(shown).map((t) => [t, t.getBoundingClientRect().top]));
   const before = new Set(box.children);
   change();
@@ -1003,7 +1003,7 @@ function toastHost() {
 // the bare word "Internal error"; a missing route was "Not Found". A detail
 // the app's own code wrote as a sentence ("Entry not found") is kept exactly,
 // because a few callers read it. Only the shapes no person should see are
-// replaced; `api()` still logs the raw text to Settings > Logs, where
+// replaced; `api()` still logs the raw text to Settings, Logs, where
 // someone diagnosing it wants it.
 //
 // `fallback` is for a caller that knows what it was doing ("Upload failed.")
@@ -1026,7 +1026,7 @@ function plainHttpError(status, detail, fallback = "") {
   if (status === 404) return "That could not be found. It may have been deleted.";
   if (status === 400 || status === 405 || status === 422) return "That was not accepted. Try again.";
   if (status === 403) return "That is not allowed.";
-  if (status >= 500) return "Something went wrong inside Tessellate. Try again; if it keeps happening, Settings > Logs has the details.";
+  if (status >= 500) return "Something went wrong inside Tessellate. Try again; if it keeps happening, Settings, Logs has the details.";
   return "That did not work. Try again.";
 }
 
@@ -1299,7 +1299,7 @@ const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
 function showServerDownBanner() {
-  if (serverDownNote && serverDownNote.isConnected) return; // already up
+  if (serverDownNote?.isConnected) return; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";
@@ -1537,8 +1537,8 @@ function pushEntryPutUndo(entryId, label, beforeBody, afterBody) {
 //: **An open board, not the boards list**: the list's own actions (rename,
 //: delete a board) are the app's, and went to an empty board history.
 function boardHistoryActive() {
-  const board = document.getElementById("library-view-whiteboard");
-  const canvas = document.getElementById("wb-canvas-view");
+  const board = $("library-view-whiteboard");
+  const canvas = $("wb-canvas-view");
   //: Showing, not merely un-hidden (INBOX 898, found by the live check): the
   //: board's view keeps no `hidden` class when another main tab covers it, so
   //: Ctrl+Z on Notes walked the last board's history and the app's own steps
@@ -1557,7 +1557,7 @@ function surfaceHistory(dir = "undo") {
   if (boardHistoryActive()) {
     return { where: "board", undo: () => window.wbUndo(), redo: () => window.wbRedo?.(), canUndo: window.wbCanUndo, canRedo: window.wbCanRedo };
   }
-  const docs = document.getElementById("tab-documents");
+  const docs = $("tab-documents");
   if (docs && !docs.classList.contains("hidden") && typeof currentDoc !== "undefined" && currentDoc && window.docCanUndo && !appStackIsNewer(dir)) {
     return { where: "document", undo: () => window.docUndo(), redo: () => window.docRedo(), canUndo: window.docCanUndo, canRedo: window.docCanRedo };
   }
@@ -1931,7 +1931,7 @@ async function refreshModelStatus() {
     //: **Nothing has answered yet is not an answer** (INBOX 1426 L1): the
     //: server's first seconds after a start, with the runner still busy. Keep
     //: what the page had, show "Checking", and ask again soon.
-    if (next && next.ollama_checking) {
+    if (next?.ollama_checking) {
       modelStatusProblem = "checking";
     } else {
       modelStatus = next;
@@ -2374,7 +2374,7 @@ function aiStatusState() {
       title: off ? "Search by meaning off" : "Search AI didn't load",
       detail:
         `${modelStatus.embedding_error}\n\nSearching by word still works, and ` +
-        "notes, tags, reminders and the graph are unaffected." + (off ? "" : " Settings → Logs has the details."),
+        "notes, tags, reminders and the graph are unaffected." + (off ? "" : " Settings, Logs has the details."),
     };
   }
   if (chatReady && searchReady) {
@@ -2851,7 +2851,7 @@ async function setChatMode(mode) {
 }
 
 function backendLabel(status) {
-  return (status && status.provider) === "openai" ? "The model server" : "Ollama";
+  return status?.provider === "openai" ? "The model server" : "Ollama";
 }
 
 // True while the user is mid-edit, so a status poll doesn't overwrite the
@@ -2936,7 +2936,7 @@ function renderSettings() {
       `Search engine problem: ${status.embedding_error}: semantic search is ` +
       "falling back to keywords. Quick fix: switch the search engine below to " +
       "an Ollama embedding model (download nomic-embed-text from the list), " +
-      "it runs fully offline. Full details in Settings → Logs."
+      "it runs fully offline. Full details in Settings, Logs."
     );
   }
   // The one-click version of the "quick fix" sentence above: only offered
@@ -3023,7 +3023,7 @@ async function refreshBackgroundTasks() {
     return;
   }
   const body = await apiJson("/tasks", { silent: true }).catch(() => null);
-  backgroundTasks = (body && body.tasks) || [];
+  backgroundTasks = body?.tasks || [];
   //: While anything runs, the slot keeps its own beat (INBOX 805, B77): on
   //: the status loop alone it waited behind `/models/status`, which a busy
   //: runner makes slow exactly while jobs run, and it said "running" for 12 s
@@ -3032,7 +3032,7 @@ async function refreshBackgroundTasks() {
   if (backgroundTasks.length && !document.hidden) {
     tasksState.beat = setTimeout(() => refreshBackgroundTasks().catch(() => {}), TASKS_RUNNING_MS);
   }
-  noticeTaskTransitions(backgroundTasks, (body && body.history) || []);
+  noticeTaskTransitions(backgroundTasks, body?.history || []);
   renderStatusBar();
   // One fetch, not two: the panel renders from this payload rather than asking
   // again a few milliseconds later.
@@ -3040,7 +3040,7 @@ async function refreshBackgroundTasks() {
   //: `followTaskLines`); the poll then only keeps the bar current.
   if (settingsModalOpen() && currentSettingsSection === "tasks") {
     if (!taskLineStream.controller) renderTasks(body);
-  } else renderTaskHistory((body && body.history) || []);
+  } else renderTaskHistory(body?.history || []);
 }
 
 // --- a background job starting and finishing, said out loud --------------------
@@ -3092,6 +3092,7 @@ const QUIET_TASK_KINDS = new Set([
   "job-warm-filing", "job-file-entry", "filing-late",
   "embeddings", "embedding-model", "reindex", "searxng-start", "searxng",
   "job-caption", "caption", "page-read", "pull", "extra",
+  "job-warm", "maintenance", "job-maintenance", "redate", "job-redate", "backup",
 ]);
 
 function noticeTaskTransitions(running, history) {
@@ -3126,7 +3127,9 @@ function noticeTaskTransitions(running, history) {
     renderAgentRunSummary(run);
     backgroundRunRows.set(key, run);
     if (!QUIET_TASK_KINDS.has(task.kind)) openPanelForRun(run);
-    task.noticeId = recordNotification({
+    //: Upkeep the app starts itself is not news for the bell: only its
+    //: failure is, which agentActivityNotice records below (audit 1030 Y7).
+    if (!QUIET_TASK_KINDS.has(task.kind)) task.noticeId = recordNotification({
       kind: "task",
       title: `Started: ${task.label}`,
       detail: task.detail || "",
@@ -3161,17 +3164,17 @@ function noticeTaskTransitions(running, history) {
       const endKey = ended ? `task:${ended.kind || ended.label}:${ended.at}` : `${task.noticeId}:end`;
       settleNotification(task.noticeId, { key: endKey, ...taskEndingWords(ended, task.label) });
     }
-    if (ended && ended.outcome === "failed") {
+    if (ended?.outcome === "failed") {
       endAgentRun(row, { state: "failed" });
       agentActivityNotice(`Failed: ${ended.label || task.label}`, { isError: true });
-    } else if (ended && ended.outcome === "cancelled") {
+    } else if (ended?.outcome === "cancelled") {
       endAgentRun(row, { state: "stalled", detail: "cancelled" });
       // Not an error and not an achievement, the user stopped it and already
       // knows. Recorded in the centre by renderTaskHistory; no toast.
       continue;
     } else {
       endAgentRun(row, { state: "done" });
-      if (!QUIET_TASK_KINDS.has(task.kind)) agentActivityNotice(`Finished: ${(ended && ended.label) || task.label}`);
+      if (!QUIET_TASK_KINDS.has(task.kind)) agentActivityNotice(`Finished: ${ended?.label || task.label}`);
     }
   }
 }

@@ -1,5 +1,5 @@
 """`GET /diagnostics`: the server's half of the copyable diagnostics report
-(INBOX 1430; Settings > Logs > Copy diagnostics, frontend/js/diag-report.js).
+(INBOX 1430; Settings, Logs, Copy diagnostics, frontend/js/diag-report.js).
 
 Counts, versions and the ring buffers of `core/diagring.py`, as JSON the page
 turns into one plain-text report. Everything here is a number, a route, a

@@ -170,7 +170,7 @@ PX = re.compile(r"(?<![\w.-])([0-9]+)px\b")
 
 
 def test_no_corner_is_hard_coded_in_pixels():
-    """Corners have to follow the slider in Settings → Appearance.
+    """Corners have to follow the slider in Settings, Appearance.
 
     Everything rounded used to be one of twelve hard-coded pixel values, none
     of which moved when that slider did, so choosing square corners squared

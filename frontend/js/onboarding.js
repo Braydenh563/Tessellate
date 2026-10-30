@@ -63,7 +63,7 @@ const onboardingRun = { index: 0, diagnosticsToken: 0 };
 
 // §27's first-run diagnostics: Ollama reachability and where the notebook
 // actually lives, both already computed for other UI (the AI-status pill,
-// Settings → Data) and just not surfaced before a first capture could fail
+// Settings, Data) and just not surfaced before a first capture could fail
 // silently into Uncategorised.
 async function loadOnboardingDiagnostics(forSlide) {
   const token = ++onboardingRun.diagnosticsToken;
@@ -110,7 +110,7 @@ async function loadOnboardingDiagnostics(forSlide) {
       lines.push(
         "That folder isn't writable right now, so new notes and edits won't " +
           "save. Check its permissions, or move the notebook somewhere " +
-          "Tessellate can write to (Settings → Account & security)."
+          "Tessellate can write to (Settings, Account & security)."
       );
     }
   } else {

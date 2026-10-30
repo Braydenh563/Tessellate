@@ -603,7 +603,7 @@ def model_spec(name: str = "") -> dict:
     """What the backend says about one model, size, quantisation, window,
     and what it can actually do.
 
-    The app read a context length and nothing else, so Settings → Models could
+    The app read a context length and nothing else, so Settings, Models could
     not tell you how big a model was, how it was quantised, or whether it
     supports tool calls: which is the first thing worth knowing when "agent
     mode does nothing", and until now was only discoverable by trying it and
@@ -1091,7 +1091,7 @@ def set_provider(body: ProviderBody, session: Session = Depends(get_session)) ->
 
 @router.post("/jobs/cancel")
 def cancel_job(kind: str, name: str = "") -> dict:
-    """Quit a stuck or slow background job from Settings → Tasks.
+    """Quit a stuck or slow background job from Settings, Tasks.
     kind is 'reindex' or 'pull' (with the model name for a pull)."""
     if kind == "reindex":
         stopped = jobs.cancel_reindex()

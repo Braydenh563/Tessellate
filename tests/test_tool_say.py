@@ -81,7 +81,7 @@ def test_a_failure_is_a_plain_sentence_with_the_next_step(name):
         f"{name}: No note with id 4242",
         f"{name}: note_id must be a whole number, like 12",
         f"{name}: {{'board_id': 3}} is not a board",
-        f"The '{name}' tool is turned off in Settings → Tools it can use",
+        f"The '{name}' tool is turned off in Settings, Tools it can use",
     ):
         text = tool_say.say(name, {"error": error}, {})["text"]
         _house_style(text, f"{name}: {error}")
