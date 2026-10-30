@@ -2222,8 +2222,9 @@ function gcRequestDraw(s = gcTab, cheap = false) {
     s.drawQueued = false;
     const full = s.sceneStale;
     const drawn = performance.now();
+    s.lightDrawn = false;
     gcDraw(s);
-    if (full) gcNoteDrawCost(s, performance.now() - drawn);
+    if (full && !s.lightDrawn) gcNoteDrawCost(s, performance.now() - drawn);
     if (s.minimapQueued) {
       s.minimapQueued = false;
       graphMinimapFrame();
@@ -2507,9 +2508,106 @@ function gcDrawComposed(s) {
   return true;
 }
 
+//: **A map this big is drawn plain while its layout is moving** (audit 1029
+//: G3 / 1028 S2: 2,000 notes held the main thread for 100 to 230 ms a tick,
+//: 62 long tasks over 100 ms in a cold open). Nobody reads names or curves on
+//: notes still in flight, so a tick on such a map paints straight lines in one
+//: stroke and one dot path per colour, and the full frame (curves, sprites,
+//: names) is painted when it comes to rest, or when something needs it: the
+//: first fit's reveal, a search, a trace, a hover, a drag, a tree layout.
+const GC_LIGHT_ITEMS = 2500;
+const GC_LIGHT_LINE_PX = 120000;
+let gcLightLens = new Float32Array(0);
+function gcLightFrame(s) {
+  if (!s.layoutRunning || s.size !== "full" || s.tree || s.dragNode || s.hoveredId != null || s.paintMode) return false;
+  if (s.fitCheck > 0 || s.revealAfterFit || s.nodes.length + s.edges.length < GC_LIGHT_ITEMS || !gcTickSnaps(s)) return false;
+  const box = gcEl("graph-search");
+  return !(graphTrace || graphHighlightIds || (box && box.value.trim()));
+}
+
+function gcDrawLight(s) {
+  gcGlideStep(s);
+  s.lightDrawn = true;
+  s.scene = null;
+  s.sceneStale = true;
+  s.composed = false;
+  s.bornPending = false;
+  const ctx = s.ctx;
+  const t = s.transform || d3.zoomIdentity;
+  const k = t.k;
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+  ctx.clearRect(0, 0, s.dims.w, s.dims.h);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(k, k);
+  const m = 40 / k;
+  const left = -t.x / k - m;
+  const top = -t.y / k - m;
+  const right = (s.dims.w - t.x) / k + m;
+  const bottom = (s.dims.h - t.y) / k + m;
+  //: Raster time is the length of line stroked, not the number of lines (3,796
+  //: links, 1x: 23 ms, and 284 ms at 2x with the whole map in view; only the
+  //: links under 300 units: 28 ms). So the frame strokes the shortest links
+  //: up to `GC_LIGHT_LINE_PX` device pixels of line and leaves the long ones
+  //: for the frame at rest.
+  const reach = [];
+  const lens = (gcLightLens.length < s.edges.length ? (gcLightLens = new Float32Array(s.edges.length)) : gcLightLens);
+  const scale = k * s.dpr;
+  let total = 0;
+  for (const e of s.edges) {
+    const a = e.source;
+    const b = e.target;
+    if (!a || !b || !(a.x === a.x) || !(b.x === b.x)) continue;
+    if ((a.x < left && b.x < left) || (a.x > right && b.x > right) || (a.y < top && b.y < top) || (a.y > bottom && b.y > bottom)) continue;
+    lens[reach.length] = Math.hypot(a.x - b.x, a.y - b.y) * scale;
+    total += lens[reach.length];
+    reach.push(e);
+  }
+  let cutoff = Infinity;
+  if (total > GC_LIGHT_LINE_PX) {
+    const sorted = lens.slice(0, reach.length).sort();
+    let sum = 0;
+    for (let i = 0; i < sorted.length && cutoff === Infinity; i++) {
+      sum += sorted[i];
+      if (sum > GC_LIGHT_LINE_PX) cutoff = sorted[i];
+    }
+  }
+  const lines = new Path2D();
+  for (let i = 0; i < reach.length; i++) {
+    if (lens[i] >= cutoff) continue;
+    lines.moveTo(reach[i].source.x, reach[i].source.y);
+    lines.lineTo(reach[i].target.x, reach[i].target.y);
+  }
+  ctx.strokeStyle = gcTokens.muted;
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1 / k;
+  ctx.stroke(lines);
+  const dots = new Map();
+  for (const n of s.nodes) {
+    if (!(n.x === n.x) || n.x < left || n.x > right || n.y < top || n.y > bottom) continue;
+    let path = dots.get(n.colour);
+    if (!path) dots.set(n.colour, (path = new Path2D()));
+    //: A dot under 3 device pixels across is a square: the same to the eye,
+    //: a third of the raster time of an arc.
+    if (n.r * scale < 1.5) path.rect(n.x - n.r, n.y - n.r, 2 * n.r, 2 * n.r);
+    else {
+      path.moveTo(n.x + n.r, n.y);
+      path.arc(n.x, n.y, n.r, 0, 6.2832);
+    }
+  }
+  ctx.globalAlpha = 0.9;
+  for (const [colour, path] of dots) {
+    ctx.fillStyle = colour;
+    ctx.fill(path);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function gcDraw(s = gcTab) {
   if (!s.ctx || !s.canvas) return;
   if (gcTabHidden(s)) return;
+  if (gcLightFrame(s)) return gcDrawLight(s);
   if (!s.paintMode && gcDrawComposed(s)) return;
   //: `paintMode` (`gcDrawComposed`): null paints the frame whole; "rest" and
   //: "dim" paint a scene layer offscreen; "over" paints the hover on top.
