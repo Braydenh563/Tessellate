@@ -246,6 +246,11 @@ PHRASES: dict[str, str] = {
     # A comparison.
     "of_found": "Of the notes found, ",
     "mentions_one": " mentions ",
+    #: "which is longer, the budget or the Lisbon trip" (audit 1029 C36).
+    "is_longer": " is the longer note: ",
+    "is_shorter": " is the shorter note: ",
+    "words_against": " words against ",
+    "words_in": " in ",
     "mention_many": " mention ",
     "each_side": "Here is what each says.",
     "side_notes": " notes",
@@ -2586,7 +2591,24 @@ def _compare_lead(out: _Answer, sides: tuple[str, str], counts: list[int]) -> No
         out.m(out.count(n)).t("mentions_one" if n == 1 else "mention_many").asked(label)
 
 
-def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for) -> bool:  # noqa: ANN001
+_LENGTH_ASK = re.compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)
+
+
+def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
+    """"which is longer, A or B" with one note a side: both lengths first."""
+    asked = _LENGTH_ASK.search(question or "")
+    if not asked or len(own[0]) != 1 or len(own[1]) != 1:
+        return False
+    sized = sorted(((sum(len(s.text.split()) for s in v.sentences), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
+    if sized[0][0] == sized[1][0]:
+        return False
+    shorter = asked.group(0).lower() in ("shorter", "smaller")
+    (n, first), (m, second) = sized[::-1] if shorter else sized
+    out.name(first, cap=True).t("is_shorter" if shorter else "is_longer").m(str(n)).t("words_against").m(str(m)).t("words_in").name(second)
+    return True
+
+
+def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
     """A line that counts each side, each side its own short list, then what
     speaks of both."""
     terms, stems, own, picks = _side_picks(sides, views, meaning_for)
@@ -2596,7 +2618,8 @@ def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meanin
     both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
     if not (a_only or b_only):
         return False
-    _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
+    if not _length_lead(out, question, own):
+        _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the two headings that say it.
     out.t("stop")
@@ -5398,7 +5421,7 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
         _newest(out, views_list)
         return shape, None
     sides = compare_sides(question) if shape == "compare" else None
-    if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed)):
+    if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed), question):
         return shape, None
     shape = "what" if shape == "compare" else shape
     return shape, _fill_selected(out, p, shape, question, terms, typed, unsure, views_list, said, embed, voice)

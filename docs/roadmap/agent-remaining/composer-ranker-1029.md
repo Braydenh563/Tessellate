@@ -4,7 +4,7 @@ Built: `ai/note_rank.py` (one ranker: exact title, defining note, title holds th
 
 Remaining, in order (items 1 to 4 are built, above; numbers kept):
 
-5. C36: fixed 2026-10-29 ("how are A and B different" and "alike", "loaf one and two", "plan a and b"; tests/test_composer_compare_1029.py). Open: "which is longer, the budget or the Lisbon trip" (state both lengths), "what changed between the two".
+5. C36: fixed 2026-10-29 ("how are A and B different" and "alike", "loaf one and two", "plan a and b"; tests/test_composer_compare_1029.py). "which is longer, the budget or the Lisbon trip" leads with both lengths (tests/test_composer_longer_1029.py). Open: "what changed between the two", "which note is longer, budget or Lisbon trip" (not read as a comparison).
 6. C33 residue: fixed 2026-10-29. "what do I need to do before the Lisbon trip" and "what is left for the Lisbon trip" answer with the Lisbon packing list when the trip note holds no checklist; the name keeps the Tokyo trip off it (tests/test_composer_open_trip_1029.py).
 7. `composer_plan._until`: kept by decision 2026-10-29. A Dentist note dated today against a later "Dentist booked for Friday" line: the later line may be a rebooking, and `test_plan_phrasings[how long until the dentist]` pins Friday. Tried `>=`: that test fails; reverted.
 8. C47 (one confirmation template, no ids shown) was not started.
