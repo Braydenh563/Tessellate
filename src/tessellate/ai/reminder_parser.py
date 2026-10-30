@@ -295,6 +295,8 @@ _TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "
 _REMINDER_HEADS = (
     "remind me", "remember to", "set me a reminder", "set a reminder", "make a reminder", "add a reminder",
     "create a reminder", "new reminder", "reminder", "don't let me forget", "dont let me forget", "do not let me forget",
+    "schedule a reminder", "make me a reminder", "give me a reminder", "i need a reminder", "i want a reminder",
+    "ping me", "alert me",
 )
 
 

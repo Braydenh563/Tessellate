@@ -58,11 +58,16 @@ def web_search_providers() -> dict:
 def web_search(
     q: str,
     limit: int = Query(default=5, ge=1, le=20),
+    provider: str | None = Query(default=None, max_length=32),
     session: Session = Depends(get_session),
 ) -> dict:
-    """Opt-in web lookup through whichever engine the user chose."""
+    """Opt-in web lookup through whichever engine the user chose (or, for this
+    one search, the `provider` asked for; an unknown name is a 422, audit 1030 A11)."""
     _require_web_search()
-    searxng, provider = websearch.settings_from(deps.get_config())
+    if provider is not None and provider not in websearch.PROVIDERS:
+        raise HTTPException(status_code=422, detail=f"Unknown search provider {provider!r}: expected one of {', '.join(websearch.PROVIDERS)}.")
+    searxng, chosen = websearch.settings_from(deps.get_config())
+    provider = provider or chosen
     try:
         results = websearch.search_web(
             q,

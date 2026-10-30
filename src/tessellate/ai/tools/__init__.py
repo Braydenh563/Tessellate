@@ -23,7 +23,7 @@ from datetime import timedelta
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, note_rank, skills, toolrank, toolwords
+from tessellate.ai import librarian, note_rank, personal, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events
@@ -4427,6 +4427,15 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
         asking_about=asking,
         followed_through=following,
     )
+
+
+def web_barred(question: str) -> set[str]:
+    """The web tools a first-person question must not be offered: "who is my
+    sister" is in the notes, and a model holding `web_search` sends it out
+    (audit 1030 A3). An explicit "search the web for" keeps them."""
+    if personal.about_own_record(question or "") and not toolwords.asks_web(question or ""):
+        return {"web_search", "read_url"}
+    return set()
 
 
 def tool_enabled(name: str) -> bool:

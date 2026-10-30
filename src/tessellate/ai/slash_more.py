@@ -204,6 +204,14 @@ def _calc(session: Session, arg: str, now: datetime) -> str:
     try:
         value = arithmetic.evaluate(expression)
     except arithmetic.NotArithmetic:
+        #: What the Calculator dialog reads ("12% of 340", a unit, a currency):
+        #: the one reader, so the chat does not refuse what the dialog does
+        #: (audit 1030 A28).
+        from tessellate.ai import tools
+
+        got = tools.execute_tool(session, "calculate", {"question": expression[:300]})
+        if got.get("answer"):
+            return f"{expression} = {got['answer']}"
         return f"I can only work out sums with numbers, + - * / % ^ and brackets, so not “{expression}”."
     return f"{expression} = {arithmetic.spoken(value)}"
 
