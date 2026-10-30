@@ -4382,16 +4382,18 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
 _FEATURE_WORDS = 3
 
 
+def _may_name_a_tool(question: str, words: list[str]) -> bool:
+    """Short enough, and not a follow-on or a length control ("tell me more",
+    "shorter"), which is about the answer before, never a tool: the Follow-up
+    trail's help line says "tell me more" in its own words."""
+    return bool(words) and len(words) <= _FEATURE_WORDS and not (_MORE.match(question) or length_wish(question))
+
+
 def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     """The help line of the app feature a two- or three-word message names
     (the words are the line's own), or None."""
     words = re.findall(r"[a-z]+", (question or "").lower())
-    if not words or len(words) > _FEATURE_WORDS:
-        return None
-    #: A follow-on or a length control ("tell me more", "shorter") is about
-    #: the answer before, never a tool: the Follow-up trail's help line says
-    #: "tell me more" in its own words.
-    if _MORE.match(question or "") or length_wish(question or ""):
+    if not _may_name_a_tool(question or "", words):
         return None
     from tessellate.ai import help_chat
 
