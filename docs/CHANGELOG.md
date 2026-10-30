@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Web search (audit 1030 A2): a web search the agent runs now streams its query ahead of the call, and the progress line reads "searching the web for ..." before the words leave.
 - Guide (audit 1030 A18): a request for the person's own list ("what are my tasks", "show my reminders") gets the honest no-match line instead of the Mind map controls topic.
 - Chat acts (audit 1030 A15): the tag, untag, move, pin, link, rename, append, new note, summarise, navigate and meeting acts read their other phrasings ("put the tag X on", "take the urgent tag off", "shift X to", "keep X pinned", "relate X to Y", "call the X note Y", "put eggs on my shopping list", "tl;dr", "recap my X", "start recording a meeting"); the 54 bare-verb misses in the 100-per-act matrix are 13, each left one a statement, a bare reference or one the harness reads wrongly.
 - Chat acts (audit 1030 A15): "ping me", "alert me", "make me a reminder", "i need a reminder" and "schedule a reminder" set reminders, a dangling "before" or "by" stays out of the reminder's words; "get rid of", "clear", "never mind", "stop reminding me about" and "i don't need ... any more" cancel a named reminder or task; "finish the reminder ..." completes it.

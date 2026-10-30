@@ -246,3 +246,26 @@ def test_the_web_tools_are_not_on_the_wire_for_a_first_person_question(monkeypat
     assert "web_search" not in seen[0] and "read_url" not in seen[0] and "search_notes" in seen[0]
     #: The same turn with the guard lifted is offered both (the control).
     assert "web_search" in seen[-1] and "read_url" in seen[-1]
+
+
+def test_a_web_search_says_its_words_before_they_leave(ai_client, fake_ollama, monkeypatch):
+    """A2: the agent streams the query as a status event ahead of the tool, and the client puts it in the progress line."""
+    import json as _json
+
+    from tessellate.search import websearch
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+
+    seen: list[str] = []
+    monkeypatch.setattr(websearch, "search_web", lambda q, **kw: seen.append(q) or [])
+    ai_client.put("/preferences", json={"web_search_enabled": True})
+    fake_ollama.tool_script = [[{"name": "web_search", "arguments": {"query": "tide times lisbon"}}]]
+    with ai_client.stream("POST", "/chat/stream", json={"question": "use your tools to check tide times in lisbon", "use_tools": True}) as response:
+        events = [_json.loads(line) for line in response.iter_lines() if line]
+    kinds = [e["type"] for e in events]
+    said = next(i for i, e in enumerate(events) if e.get("stage") == "web")
+    assert events[said]["query"] == "tide times lisbon"
+    assert not seen or said < kinds.index("tool")
+    js = (root / "frontend" / "js" / "capture-ask.js").read_text("utf-8")
+    assert events[said]["said"] == "searching the web for “tide times lisbon”" and "event.said" in js

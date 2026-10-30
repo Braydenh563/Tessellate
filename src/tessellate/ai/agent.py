@@ -2408,6 +2408,10 @@ def _run_and_record(
         #: instead of running before the next yield notices (Brief 101b).
         result = {"error": "Stopped before this ran: you pressed Stop."}
     else:
+        if name == "web_search" and isinstance(arguments, dict) and arguments.get("query"):
+            #: Said before it goes (audit 1030 A2): the words that leave this computer.
+            query = str(arguments["query"])[:200]
+            yield {"type": "status", "stage": "web", "query": query, "said": f"searching the web for “{query}”"}
         result = tools.execute_tool(
             session, name, arguments, context_tokens=plan.window, model=plan.agent_model
         )

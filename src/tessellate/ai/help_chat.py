@@ -3012,6 +3012,11 @@ def topics_for(question: str, tab: str | None = None) -> list[dict]:
     topics = _aliased_topics(question) or _reading_topics(question)
     if not tab or topics or _outside_the_app(question):
         return topics
+    return _tab_topics(tab, topics)
+
+
+def _tab_topics(tab: str, topics: list[dict]) -> list[dict]:
+    """`topics` with the open tab's own topics after them, up to `MAX_TOPICS`."""
     seen = {topic["id"] for topic in topics}
     by_id = {topic["id"]: topic for topic in HELP_TOPICS}
     for topic_id in TAB_TOPICS.get(tab, ()):

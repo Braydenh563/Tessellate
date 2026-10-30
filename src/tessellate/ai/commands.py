@@ -257,6 +257,18 @@ def _without_lead(text: str, leads: tuple[str, ...], *, once: bool = True) -> st
 _DANGLING = frozenset({"before", "by", "on", "until", "at", "after"})
 
 
+def _without_dangling(words: str) -> str:
+    """"renew rego before 3 december": the date came off, its joining word stays behind."""
+    tail = words.rstrip().rsplit(" ", 1)
+    return tail[0] if len(tail) == 2 and tail[1].lower() in _DANGLING else words
+
+
+def _as_typed_case(said: str, rest: str) -> str:
+    """As typed: the time parser raises the first letter for the stored
+    reminder; the object is said back in the person's own case."""
+    return said[:1].lower() + said[1:] if rest[:1].islower() else said
+
+
 def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | None:
     text, head = _reminder_head(text)
     if head is None:
@@ -281,15 +293,8 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     else:
         due, said, words = parsed["due_at"], True, parsed["text"]
     words = _without_lead(words, ("to ", "about ", "that ", "for "), once=False)
-    #: "renew rego before 3 december": the date came off, its joining word stays behind.
-    tail = words.rstrip().rsplit(" ", 1)
-    if len(tail) == 2 and tail[1].lower() in _DANGLING:
-        words = tail[0]
-    said_words = words.strip(" ,.;:-")
-    if rest[:1].islower():
-        #: As typed: the time parser raises the first letter for the stored
-        #: reminder; the object is said back in the person's own case.
-        said_words = said_words[:1].lower() + said_words[1:]
+    words = _without_dangling(words)
+    said_words = _as_typed_case(words.strip(" ,.;:-"), rest)
     words = _cap(words)
     if not words or due is None:
         return None
@@ -301,14 +306,9 @@ def _tag(text: str) -> dict | None:
     if low.startswith(("tag ", "label ")):
         body = text.split(" ", 1)[1]
         return _tag_with(body) or _note_then_tags(body) or _tag_these(body)
-    for lead in ("add the tags ", "add the tag ", "add tags ", "add tag ", "add the label ", "add label ", "add a tag ", "add a label "):
-        if low.startswith(lead):
-            split = _split_last(text[len(lead):], (" to ",))
-            if split:
-                tags, target = split
-                found = _target(target) or _bare_target(target)
-                if found and _tags(tags):
-                    return {"intent": "tag", **found, "tags": _tags(tags)}
+    added = _tag_added(text)
+    if added:
+        return added
     placed = _tag_placed(text)
     if placed:
         return placed
@@ -320,6 +320,20 @@ def _tag(text: str) -> dict | None:
             found = _target(target) or _bare_target(target)
             if found and _tags(tags):
                 return {"intent": "tag", **found, "tags": _tags(tags)}
+    return None
+
+
+def _tag_added(text: str) -> dict | None:
+    """"add the tag finance to the expenses note"."""
+    low = text.lower()
+    for lead in ("add the tags ", "add the tag ", "add tags ", "add tag ", "add the label ", "add label ", "add a tag ", "add a label "):
+        if low.startswith(lead):
+            split = _split_last(text[len(lead):], (" to ",))
+            if split:
+                tags, target = split
+                found = _target(target) or _bare_target(target)
+                if found and _tags(tags):
+                    return {"intent": "tag", **found, "tags": _tags(tags)}
     return None
 
 
@@ -427,6 +441,15 @@ _NOTE_HEADS_NEW = (
 _NAMED = ("called ", "titled ", "named ")
 
 
+def _note_at_the_end(rest: str) -> dict | None:
+    """"write down that the hotel is booked at the end of the lisbon trip note": an add, not a new note."""
+    at_end = _split_last(rest, (" at the end of ",))
+    found = _one_target(at_end[1]) if at_end else None
+    if found and at_end[0].strip() and found.get("single"):
+        return {"intent": "append", **found, "content": _cap(at_end[0])}
+    return None
+
+
 def _new_note(text: str) -> dict | None:
     low = text.lower()
     for head, needs_colon in _NOTE_HEADS_NEW:
@@ -442,11 +465,9 @@ def _new_note(text: str) -> dict | None:
             if rest.lower().startswith(lead):
                 rest = rest[len(lead):]
                 break
-        at_end = _split_last(rest, (" at the end of ",))
-        found = _one_target(at_end[1]) if at_end else None
-        if found and at_end[0].strip() and found.get("single"):
-            #: "write down that the hotel is booked at the end of the lisbon trip note"
-            return {"intent": "append", **found, "content": _cap(at_end[0])}
+        appended_to = _note_at_the_end(rest)
+        if appended_to:
+            return appended_to
         rest = _cap(rest)
         return {"intent": "new_note", "content": rest} if rest else None
     return None
