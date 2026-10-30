@@ -201,7 +201,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 195 | K21 | low | DDL default with an apostrophe breaks startup | fixed (this batch) | S |
 | 196 | K22 | low | server-local date.today used for streak, not user_now | fixed in part (journal streak and utilities; composer.py's own date.today() calls are the composer agent's) | M |
 | 197 | K23 | low | token and ticket dicts mutated from several threads | fixed 1031 (snapshots and pop) | S |
-| 198 | K38 | low | media-link tickets reusable and in URL query string | new | S |
+| 198 | K38 | low | media-link tickets reusable and in URL query string | not reproduced 1031: `once` is redacted in the access line (QueryScrubFilter, tests/test_audit_1028_k_rows.py); reusable by design for PDF range requests | S |
 | 199 | E46 | low | chat sidebar sort covers only the first page | docs/roadmap/BACKLOG.md:1148 | S |
 | 200 | E47 | low | no search of chats in the chat sidebar | new | S |
 | 201 | E49 | low | editAndResend derives turn from DOM bubble index | new | S |
@@ -288,7 +288,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 282 | D47 | low | textarea fallback surface duplicated through aliases | new | L |
 | 283 | K26 | low | two schema systems, ad hoc DDL and alembic | docs/roadmap/WORLD_CLASS_PLAN.md:3878 | M |
 | 284 | K27 | low | dead routes with no frontend caller | new | S |
-| 285 | K28 | low | duplicated containment helpers and LOOPBACK_HOSTS | new | S |
+| 285 | K28 | low | duplicated containment helpers and LOOPBACK_HOSTS | fixed 1031: one LOOPBACK_HOSTS in core/security; `_within_exports`/`_within_dir` kept apart on purpose (CodeQL guard shape); the two RestoreBody models take different fields | S |
 | 286 | K29 | low | async routes mixed with sync, blocking calls stall SSE | new | S |
 | 287 | K37 | low | no ANALYZE or PRAGMA optimize | fixed (this batch) | S |
 | 288 | S57 | low | floating New note button overlaps content at 390px | new | S |

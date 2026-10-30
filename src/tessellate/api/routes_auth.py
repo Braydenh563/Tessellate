@@ -202,10 +202,8 @@ def _cookie_secure(request: Request) -> bool:
     every picture in the notebook would stop loading."""
     if request.url.scheme == "https":
         return True
-    return (request.url.hostname or "") in _LOOPBACK_HOSTS
+    return (request.url.hostname or "") in security.LOOPBACK_HOSTS
 
-
-_LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 # **Optional sign-in** (INBOX 426 aa, the owner's brother: "some people might
 # not care about it and find it annoying"). One switch in Settings, Account
@@ -269,7 +267,7 @@ def _from_this_computer(request: Request) -> bool:
     if any(name in request.headers for name in _FORWARDING_HEADERS):
         return False
     hostname = request.url.hostname or ""
-    return hostname in _LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
+    return hostname in security.LOOPBACK_HOSTS or (bool(hostname) and hostname == netbind.local_name())
 
 
 def _auto_session_allowed(request: Request, session: Session, config: ConfigManager) -> bool:
