@@ -15,7 +15,16 @@ from typing import NamedTuple
 
 from tessellate.ai import composer_lists, recognise
 
-_SPENT = re.compile(r"^how much (?:money )?(?:have|did|do|has) (?:i|we) (?:spen[dt]|paid|pay)\b(.*)$", re.I)
+#: "How much money have I recorded I've spent" and "what have I spent so far"
+#: are the same total: the ask can say where the figures are kept.
+_SPENT = re.compile(
+    r"^(?:how much|what) (?:money )?(?:have|did|do|has) (?:i|we) "
+    r"(?:(?:recorded|logged|noted|tracked|written(?: down)?|put down)(?: (?:that|as))? (?:(?:i|we)(?:'ve| have|ve)? )?)?"
+    r"(?:spen[dt]|paid|pay|spending)\b(.*)$",
+    re.I,
+)
+#: "What's my total spending", "total spent in October".
+_TOTAL = re.compile(r"^(?:what(?:'s|s| is| was)? )?(?:my |our |the )?total (?:spend(?:ing)?|spent|expenses?)\b(.*)$", re.I)
 _MOST = re.compile(r"^what(?:'s| is| was| were)? (?:my|the|our) (biggest|largest|highest|smallest|cheapest|lowest|priciest) (.+)$", re.I)
 _MONEY_NOUNS = frozenset({"expense", "expenses", "cost", "costs", "bill", "bills", "purchase", "purchases", "payment", "payments", "spend", "spending"})
 _SMALL = frozenset({"smallest", "cheapest", "lowest"})
@@ -141,7 +150,7 @@ _ON_ONE = re.compile(r"\b(?:on|for)\s+(?!this\b|last\b|the month\b)", re.I)
 
 
 def _total_asked(q: str):  # noqa: ANN202
-    m = _SPENT.match(q)
+    m = _SPENT.match(q) or _TOTAL.match(q)
     return m if m and not _ON_ONE.search(m.group(1)) else None
 
 

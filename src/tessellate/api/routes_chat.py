@@ -2561,7 +2561,9 @@ def _web_allowed(req: _StreamRequest) -> bool:
     the turn may use tools (decision 43: never fetched without the toggle)."""
     try:
         on = bool(deps.get_config().get_preference("web_search_enabled", False)) and bool(req.use_tools)
-        return on and not personal.about_own_notes(req.question or "")
+        #: A spending total is the notes' sum: the web cannot know it.
+        q = req.question or ""
+        return on and not personal.about_own_notes(q) and not composer_money.asks(q)
     except Exception:  # noqa: BLE001  # no preference is off
         return False
 

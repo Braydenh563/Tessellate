@@ -81,3 +81,28 @@ def test_a_word_said_by_its_shape_is_not_missing(ask, question, word):
 
 def test_the_shops_are_the_grocery_list(ask):
     assert "Groceries" in ask("what do I need from the shops")
+
+
+@pytest.mark.parametrize("question", [
+    "how much money have I recorded Ive spent?",
+    "what have I spent so far",
+    "whats my total spending",
+])
+def test_a_spending_total_asked_any_way_is_summed_from_the_notes(ask, client, question):
+    """The owner, 2026-10-30 (screenshot): "how much money have I recorded
+    Ive spent?" in Agent with Web on and no model answered with a SearXNG
+    error and "your notes did not hold an answer"."""
+    from tessellate.core import deps
+
+    deps.get_config().set_preference("web_search_enabled", True)
+    said = ask(question)
+    assert said.startswith("You spent $1,488"), said
+    agent = ""
+    with client.stream("POST", "/chat/stream", json={"question": question, "use_tools": True}) as response:
+        for line in response.iter_lines():
+            if line.strip() and (event := json.loads(line))["type"] == "answer":
+                agent += event["delta"]
+    assert agent.startswith("You spent $1,488"), agent
+    said += agent
+    assert "search" not in said.lower(), said
+

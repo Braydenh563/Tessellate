@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat: "How much money have I recorded I've spent", "what have I spent so far" and "my total spending" are summed from your spending notes, and a question about what you recorded never goes to web search (it answered with a search service error before).
 - Settings on a phone: a fold whose heading matches the page name keeps it, so the Packages section is named, not a bare chevron.
 - Boot: with the browser's data saver on, boards and documents load on first use instead of three seconds after unlock.
 - Web clip: a page that sent no text answers "This page sent no text to clip. Reload it and clip again." instead of saving an empty note.

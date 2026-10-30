@@ -395,6 +395,9 @@ _OWN_NOTES = re.compile(
     r"|\b(?:notes?|entries|documents?|docs?|boards?|maps?|things?) (?:i|we) (?:did|edited|deleted|created|worked on|added|changed)\b"
     r"|\b(?:what|which|where) (?:did|have) (?:i|we) (?:do|done|make|made|write|written|edit|edited|delete|deleted|create|created|work on|worked on|add|added|change|changed)\b"
     r"|\bmy (?:history|activity)\b|\bmy (?:day|week|month) so far\b"
+    #: "How much money have I recorded I've spent": what the person kept a
+    #: record of is in the notes, and the web has no copy.
+    r"|\bi(?:'ve| have|ve)? (?:recorded|logged|tracked|written down|noted down|jotted down)\b"
 )
 
 
