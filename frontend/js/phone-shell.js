@@ -1636,9 +1636,9 @@ function initKeyboardInset() {
     // few pixels of covered strip is a toolbar settling, not a keyboard.
     root.classList.toggle("keyboard-open", inset > 120);
   };
+  //: Not written at init: the stylesheet's own `0px` is the answer until the viewport moves, and reading `innerHeight` here forced the first layout of the whole page (INBOX 1465).
   viewport.addEventListener("resize", write);
   viewport.addEventListener("scroll", write);
-  write();
   // iOS animates the keyboard in over about a quarter of a second and does
   // not always fire a resize at the end of it, so the covered strip written
   // at the start can be stale for the whole time the person is typing (the

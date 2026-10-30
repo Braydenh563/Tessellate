@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Speed (INBOX 1465): a key typed in a field no longer reads layout (the overlay test waits for a matching shortcut), the scroll-to-top button ignores scrolling lists inside the tab, the constellation reads its width from its observer, the keyboard inset is not measured at boot, and the 117 selects at boot build their menus when opened; a keydown on a dirty page went from 1.8 to 10 ms down to 0.05 to 0.17 ms, the boot select pass from 148 ms to 8 to 21 ms.
 - Notes: saving a note again (centring or resizing an image) no longer reads its pictures and PDFs again; each reader runs once per upload (INBOX 1465).
 - Backup restore (audit 1028 K14): a zip of more than 200,000 files, or one larger than the free space on the notebook's disk, is refused before anything is written, with the amount to free.
 - Chat and models (audit 1028 E35, E36, E39, E40): a finished answer is said once to a screen reader; a saved chat in the sidebar opens with Enter or Space; a model download that goes silent for five minutes ends instead of freezing its bar, and a layer bigger than the free space stops with the amount to free; "Search by meaning is not working" waits while the download question is up, so one toast says it, not two.

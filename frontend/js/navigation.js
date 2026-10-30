@@ -2435,14 +2435,8 @@ function scrollTopTargetEl() {
 // end up outside the visible viewport no matter how tall the panel's box
 // actually is.
 function positionScrollTopForNested(button, tab) {
-  if (tab === "chat") {
-    // Reparented into .chat-dock by the MutationObserver below and
-    // positioned by that container's own CSS instead, inline right/bottom
-    // here would fight it rather than help it.
-    button.style.right = "";
-    button.style.bottom = "";
-    return;
-  }
+  // Chat reparents it into .chat-dock (the MutationObserver below), where that
+  // container's CSS positions it: inline right/bottom would fight that.
   // Anchoring to the actual scrolling content panel, not the viewport,
   // for every tab: not just Library and Notes. A flat `right`/`bottom`
   // offset from the *window* edge is correct only when the panel happens to
@@ -2454,9 +2448,9 @@ function positionScrollTopForNested(button, tab) {
   // Notes' "Your notes" and "Ask" sub-tabs): and every tab shares the same
   // scroll container shape (`scrollTopTargetEl()`), so the fix has to be
   // general rather than three more special cases in `NESTED_SCROLL_TABS`.
-  const panel = scrollTopTargetEl();
+  const panel = tab === "chat" ? null : scrollTopTargetEl();
   const rect = panel?.getBoundingClientRect();
-  if (!panel || !rect) {
+  if (!rect) {
     button.style.right = "";
     button.style.bottom = "";
     return;
@@ -2475,17 +2469,10 @@ function positionScrollTopForNested(button, tab) {
   // rather than beside it. Notes' sidebar is on the *left*, so it never
   // needs this branch; most panels don't have one at all.
   const rightPanel = document.querySelector("#library-view-skills:not(.hidden) #skills-sidebar");
-  if (rightPanel) {
-    const rightPanelRect = rightPanel.getBoundingClientRect();
-    const right = `${Math.max(margin, window.innerWidth - rightPanelRect.left + margin + scrollbarClearance)}px`;
-    if (button.style.right !== right) button.style.right = right;
-  } else {
-    const right = `${Math.max(margin, window.innerWidth - rect.right + margin + scrollbarClearance)}px`;
-    if (button.style.right !== right) button.style.right = right;
-  }
+  const edge = rightPanel ? rightPanel.getBoundingClientRect().left : rect.right;
+  const right = `${Math.max(margin, window.innerWidth - edge + margin + scrollbarClearance)}px`;
+  if (button.style.right !== right) button.style.right = right;
 
-  // **Bottom**: a panel shorter than the viewport must not leave the button
-  // floating below its own content.
   const bottom = `${Math.max(margin, window.innerHeight - Math.min(rect.bottom, window.innerHeight) + margin)}px`;
   //: Only when it moved: an inline-style write invalidates style even when
   //: the value is the same, and this runs on every scroll frame.
@@ -2689,7 +2676,10 @@ function initScrollTopButton() {
       update();
     });
   };
-  document.addEventListener("scroll", scheduleUpdate, { passive: true, capture: true });
+  //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
+  //: capture listener hears every scroller in the page, and a list, a rail or
+  //: the timeline scrolling inside the tab has no bearing on the button.
+  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
   return update;
