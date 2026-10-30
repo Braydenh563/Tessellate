@@ -1705,3 +1705,6 @@ Missing (items 1 to 5, zoom to the selection, tidy as a tree, change the shape, 
 
 1452. Left drag selects, right drag pans: built; moved to HISTORY.md, "INBOX resolved, 2026-10-30".
 
+## Placed from INBOX, 2026-10-31
+
+1432. **Guarded, not reproduced** (cc5380d: nothing pans the board while the companion is held; a try is logged as "Lag: companion ... board pan refused" with its source. Chromium never panned, mouse or touch; the owner's answer: "when I move the companion the board pans a bit with it as well". Close when a log names the path or the owner confirms.) **The owner, 2026-10-29, verbatim.** "the companion is hard to move and throw on the whiteboard as it pans" **Again 2026-10-30, verbatim:** "als the companion just well down from the library roof but at like 3 spots along the way it looked like it went bhind parts of the elements and got cut in half for a split second??" (the same stacking class as 1453: check the companion's layer against every pinned bar and card it falls past, and whether a roof it lands on clips it)
