@@ -61,8 +61,9 @@ _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "Augu
 #: hobby forming"; without, it "keeps coming up".
 _LEISURE = re.compile(r"\b(?:after work|weekend|session|round|practi[cs]e|played|game|class|lesson|hobby|for fun|drills?)\b", re.I)
 #: Study and paid work are duties, never "a hobby forming", whatever their
-#: "class" or "session" (INBOX 1461: uni notes were called a hobby).
-_DUTY = re.compile(r"\b(?:uni|university|lectures?|exams?|assignments?|semester|courses?|subjects?|tutorials?|homework|"
+#: "class" or "session" (INBOX 1461: uni notes were called a hobby). Not
+#: "course": a golf course is free time.
+_DUTY = re.compile(r"\b(?:uni|university|lectures?|exams?|assignments?|semester|coursework|stud(?:y|ies|ying)|subjects?|tutorials?|homework|"
                    r"essays?|degree|school|college|shifts?|deadlines?|clients?|meetings?)\b", re.I)
 
 

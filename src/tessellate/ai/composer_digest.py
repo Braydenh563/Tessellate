@@ -3665,16 +3665,38 @@ def _named_checklist(kind: str, asked: str, members: list):  # noqa: ANN202
     and the question asks for it plainly ("what is the checklist note", "tell
     me about gear"), else None: its list is shown with its ticks
     (`_show_checklist`), never quoted as a lead fact with "Also" the rest."""
+    named = _named_note(kind, asked, members)
+    if named is None:
+        return None
+    tasks = [s for s in named.sentences if s.kind == "task"]
+    return named if len(tasks) >= 2 and len(tasks) == len(named.sentences) else None
+
+
+def _named_note(kind: str, asked: str, members: list):  # noqa: ANN202
+    """The one note a plain question names by its heading, else None."""
     if kind not in ("fact", "overview") or not members:
         return None
     stems = _subject(asked)
     #: "the gear list" names Gear; "list" and "checklist" only say what kind.
     needed = [st for st in stems if st not in _KIND_WORDS] or stems
     named = [v for v in members if needed and all(composer._holds(st, v.title_words) for st in needed)]
-    if len(named) != 1:
-        return None
-    tasks = [s for s in named[0].sentences if s.kind == "task"]
-    return named[0] if len(tasks) >= 2 and len(tasks) == len(named[0].sentences) else None
+    return named[0] if len(named) == 1 else None
+
+
+#: "What's in", "what goes in", "what do I need for": a question for what a
+#: note holds, which a list note answers whole (audit 1030 Z46).
+_HOLDS_ASK = re.compile(r"^\W*what(?:'s| is| goes| go)? in(?:to)?\b|^\W*what do (?:i|you) need (?:for|to make)\b|\bingredients\b", re.I)
+
+
+def _named_list(kind: str, asked: str, members: list) -> bool:
+    """Whether the question asks what a list note holds: the composer says
+    the list whole and counted ("lists four: onions, carrots, ..."), where a
+    digest said one entry then "Also" the rest (audit 1030 Z46)."""
+    if kind not in ("fact", "overview") or not _HOLDS_ASK.search(asked):
+        return False
+    named = _named_note(kind, asked, members) or (members[0] if len(members) == 1 else None)
+    items = [s for s in named.sentences if s.kind in ("item", "task")] if named else []
+    return len(items) >= 2 and len(items) >= len(named.sentences) - 1
 
 
 def _show_checklist(out: _Out, view: composer.NoteView) -> None:
@@ -3756,6 +3778,8 @@ def answer(
     if early is not _ORDINARY:
         return early
     members, tie = _chosen(asked, kind, views, wants_context)
+    if _named_list(kind, asked, members):
+        return None
     if checklist := _named_checklist(kind, asked, members):
         _show_checklist(out, checklist)
         return _result(out, "fact", asked)

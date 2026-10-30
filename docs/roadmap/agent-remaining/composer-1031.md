@@ -18,3 +18,10 @@ Left, found and not fixed (owner's words, file:line):
 - The stray "[Current Commitments]" bracket (1461) did not reproduce in the server text: every bracket was a markdown link; likely the client's render.
 - Awareness closing "I can see you've been working on ..." with no screen; "notes in october" lower case; "list my notes oldest first" fails.
 - The model-up path for attached-note questions (dates reach the model via `_note_dates`) is unverified against a real model.
+
+Done: 4cf2cf8 (INBOX 1461, 1466 first part). Then Z26 (past-told lines not upcoming, weekday plus date read as the date: `recognise.told_as_past`, `composer_plan._sentence_day`) and Z70 (no "[Uncategorised]" label in model prompts: `librarian.category_hint`).
+Next: Z27 (one due window: `composer_lists._due_window` and `composer_plan` "Coming up, the next 7 days" disagree), Z46 recast ("what's in mum's lentil soup" says one item then "**Also:** Carrots; red lentils; cumin", digest fact path), Z57, Z58, Z23, Z59, F15.
+
+Done: Z26, Z46 recast (a list note asked "what's in", "what goes in", "what do I need for" is answered by its whole list, `composer_digest._named_list`; "what is in my notes about" stays a search), Z70, F15 guard (does not reproduce on head; 20 cases kept as a guard).
+Left for the hub (not started): Z27 one due window, Z57, Z58, Z23, Z59, F13 and F14 partials.
+Pre-existing, not mine: `tests/test_ask_focus.py::test_a_greeting_gets_a_hint_not_an_answer` reads the real clock ("Good night") and fails at base 301e03c too.

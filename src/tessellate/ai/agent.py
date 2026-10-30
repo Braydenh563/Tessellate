@@ -1484,7 +1484,7 @@ def build_agent_messages(
         # left agent-mode-only silent about them. Nothing new to compute:
         # `prepared["notes"]` already carries this from routes_chat.py; the
         # agent path just never read it before.
-        f"{i}. (note id {note.get('id', '?')}) [{note['category']}]"
+        f"{i}. (note id {note.get('id', '?')}){librarian.category_hint(note)}"
         #: When it was written and what its time words meant (INBOX 441: the
         #: chat read a two-week-old "this Friday" as this week's).
         f"{librarian._written_hint(note)}{librarian._dates_hint(note)}"
