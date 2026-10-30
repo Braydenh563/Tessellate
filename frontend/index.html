@@ -14765,6 +14765,31 @@ Link to another note with [[its first few words]]."></textarea>
                 stops any background work). With it off, closing the window
                 quits.
               </p>
+              <!-- The desktop companion (BACKLOG 16, INBOX 1464): the chosen
+                   companion in a small window at the screen's corner while the
+                   app window is in the tray. Off until turned on; the tray's
+                   "Show desktop companion" is the same switch. -->
+              <div class="row help-head hidden" id="desktop-companion-row">
+                <label class="check-row">
+                  <input type="checkbox" id="pref-desktop-companion">
+                  <span>Show the companion on the desktop while the window is in the tray</span>
+                </label>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="desktop-companion-help" aria-controls="desktop-companion-help"
+                  aria-expanded="false" title="About the desktop companion"
+                  aria-label="About the desktop companion">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="desktop-companion-help" role="dialog" aria-label="About the desktop companion">
+                <p>
+                  Your companion (Appearance picks who; Atlas if none) waits in the
+                  bottom-right corner while the window is in the tray, and goes away when
+                  the window is open. Click it for Quick note, Quick search or Open
+                  Tessellate; right-click for Settings or Hide. Drag it to move it.
+                  While Tessellate is locked it shows the companion and Open only.
+                </p>
+              </div>
               <!-- The owner's decision: one running copy per notebook, and a
                    second launch brings its window forward. This switch is the
                    one exception, and only for windows: on, each launch opens

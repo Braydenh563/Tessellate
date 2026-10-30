@@ -219,6 +219,9 @@ DEFAULT_PREFERENCES: dict[str, Any] = {
     #: running server instead (never a second server on one data directory,
     #: core/instance_lock.py). Advanced, off by default.
     "new_window_on_launch": False,
+    #: The chosen companion in a small window at the screen's corner while the
+    #: app window is in the tray (core/desk_companion.py). Off by default.
+    "desktop_companion": False,
 }
 
 

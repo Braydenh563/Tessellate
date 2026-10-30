@@ -261,7 +261,7 @@ def asset_stamps() -> dict[str, str]:
 #: served. `clip.html` and `capture.html` joined (OPEN 1101): a plain
 #: `?v=<version>` let an edit inside one version be served stale from the
 #: immutable HTTP cache.
-STAMPED_PAGES = ("offline.html", "clip.html", "capture.html")
+STAMPED_PAGES = ("offline.html", "clip.html", "capture.html", "desktop-companion.html")
 
 
 def served_offline_html(name: str = "offline.html") -> bytes:
