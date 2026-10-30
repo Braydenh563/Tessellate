@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6856, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7381, test files 1574, tests 13723, plan headings 987.
+Counts: frontend functions 6856, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7381, test files 1574, tests 13724, plan headings 987.
 
 ## Frontend functions (6856)
 
@@ -20712,7 +20712,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13723)
+## Tests (13724)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22169,7 +22169,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_wb_audit_keys.py | 23 |
 | tests/test_wb_bar_1025.py | 6 |
 | tests/test_wb_board_1028.py | 13 |
-| tests/test_wb_board_1030.py | 6 |
+| tests/test_wb_board_1030.py | 7 |
 | tests/test_wb_board_to_client.py | 4 |
 | tests/test_wb_clone_grips_follow.py | 8 |
 | tests/test_wb_colour.py | 6 |

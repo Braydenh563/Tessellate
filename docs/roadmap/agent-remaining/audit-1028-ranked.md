@@ -39,7 +39,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
 | 35 | B14 | med | map branch export and board export use two dialogs | fixed | M |
-| 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | new | L |
+| 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | fixed | L |
 | 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |

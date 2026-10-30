@@ -47,7 +47,7 @@ def test_b6_init_is_guarded_so_a_second_call_adds_no_listeners() -> None:
 
 
 def test_b18_a_render_does_not_remeasure_unchanged_topics() -> None:
-    # The no-op render of a 200-topic map reads layout 0 times (wb1030-map.js):
+    # The no-op render of a 200-topic map reads layout 0 times (wb1030-board.js):
     # an element measured once keeps its own number.
     assert "known = this._wbMeasuredH" in BOARD
 
@@ -68,3 +68,9 @@ def test_b14_branch_export_opens_the_one_export_dialog() -> None:
     assert BOARD.count("function wbExportBoard()") == 1
     assert 'overlay.className = "modal-overlay confirm-overlay wb-export-overlay"' in BOARD
     assert mapjs.count("wb-export-overlay") == 0, "no second export dialog in the map file"
+
+
+def test_b19_an_arrow_end_on_a_shape_is_bound_to_it() -> None:
+    bound = _function(BOARD, "wbBoundArrowData")
+    assert 'type: "link-straight"' in bound and "`${name}Id`" in bound, "the end keeps the shape's id, so it reroutes"
+    assert "wbBoundArrowData(sx, sy, x, y," in BOARD, "the Arrow and Line tools call it at draw time"
