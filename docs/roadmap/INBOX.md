@@ -57,9 +57,6 @@ with its owner named in the entry.
 1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
      Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (archive/agent-remaining/composer1324-1019.md).
 
-1318. **The owner, 2026-10-19, verbatim** (screenshot, dark: the Dashboard Stats widget, "37 notes", a 14-day bar strip, five category chips). "and I want to be able to view the status popup from the stats widget and other related widgets as well like the streak."
-     Orchestrator: Stats and Streak widgets got the heatmap's Statistics button (`dashStatsButton`), the Stats strip opens it too; not yet driven in the app (the test dashboard has no Stats widget). The statistics agent verifies it.
-
 1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
      Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
 

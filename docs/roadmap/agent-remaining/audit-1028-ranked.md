@@ -108,7 +108,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | fixed (this batch) | S |
 | 103 | S21 | med | select button folded away at narrow widths | new | M |
 | 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
-| 105 | S23 | med | palette lacks recent-first order and shortcut hints | new | S |
+| 105 | S23 | med | palette lacks recent-first order and shortcut hints | fixed (already: most used first at rest, learned order as you type, the key in the preview) | S |
 | 106 | S24 | med | no in-app cheat sheet reached with the ? key | fixed (already built; reconciled 2026-10-30) | S |
 | 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | new | S |
 | 108 | S39 | med | focus ring contrast inconsistent across custom controls | new | S |
@@ -156,7 +156,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
 | 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | docs/roadmap/WORLD_CLASS_PLAN.md:1852 | L |
-| 153 | S37 | med | list filter re-renders without debounce | new | S |
+| 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
 | 154 | S38 | med | many timers run independent intervals | docs/roadmap/WORLD_CLASS_PLAN.md:3956 | S |
 | 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
 | 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
