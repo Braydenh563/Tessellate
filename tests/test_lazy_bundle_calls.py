@@ -109,6 +109,7 @@ REACHED_AFTER_LOAD = {
     "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
     "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
+    "imageLayout": "appendInlineRun (notes-list.js), called as window.imageLayout?.(): a picture drawn before the library bundle arrives is plain, and image-layout.js lays out what is already on the page when it loads (its sweep), so nothing is lost",
     "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",

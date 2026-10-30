@@ -296,3 +296,27 @@ def test_a_note_saved_again_does_not_read_its_pictures_again(monkeypatch, tmp_pa
     stored = SimpleNamespace(id=8, filename="def.png", ocr_text="hello", caption="a cat", vision_ocr_text="hello")
     media_process.process_committed_upload(stored, tmp_path)
     assert asked == ["ocr", "caption", "vision"]
+
+
+def test_centring_a_picture_saves_the_note_without_reading_the_picture_again(ai_client, monkeypatch):
+    """INBOX 1465, end to end: the shared picture control rewrites only the
+    alt text (`![A river|200|center](url)`) and saves the note with a PUT. The
+    save names the same upload, so no reader may run for it a second time."""
+    from tessellate.ai import captioning, vision_ocr
+    from tessellate.core import ocr
+
+    asked: list[str] = []
+    monkeypatch.setattr(ocr, "extract_in_background", lambda *a, **k: asked.append("ocr"))
+    monkeypatch.setattr(captioning, "caption_in_background", lambda *a, **k: asked.append("caption"))
+    monkeypatch.setattr(vision_ocr, "vision_ocr_in_background", lambda *a, **k: asked.append("vision"))
+    uploaded = ai_client.post(
+        "/media/upload", files={"file": ("shot.png", b"\x89PNG\r\n\x1a\n", "image/png")}
+    ).json()
+    made = ai_client.post("/entries", json={"content": f"look: ![River]({uploaded['url']})"}).json()
+    before = list(asked)
+    assert before, "creating the note should have asked the readers once"
+    centred = ai_client.put(
+        f"/entries/{made['id']}", json={"content": f"look: ![River|200|center]({uploaded['url']})"}
+    )
+    assert centred.status_code == 200
+    assert asked == before

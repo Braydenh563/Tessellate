@@ -4148,7 +4148,7 @@ function renderDocPreview() {
     preview.insertBefore(docPropsReadNode(fm), preview.children[title ? 1 : 0] || null);
   }
   layerDocWikiLinks(preview);
-  docLayerImageOptions(preview);
+  imageLayoutRoot(preview);
   docRenderMermaidIn(preview);
   docWireReadTasks(preview, text);
 }
@@ -7442,58 +7442,6 @@ function docColumnsAt(text, offset) {
   return docColumnsBlocks(text).find((block) => offset >= block.from && offset <= block.to) || null;
 }
 
-//: An image's `|`-separated options, by shape rather than by position.
-//: `width` is a number of pixels, `align` is one of left/center/right, and
-//: everything else is the caption (joined with a space, so a caption with a
-//: pipe in it survives as the sentence it was).
-function docImageOptions(spec) {
-  const parts = String(spec == null ? "" : spec).split("|");
-  const name = parts.shift();
-  const options = { name: (name || "").trim(), width: null, align: null, caption: "" };
-  const caption = [];
-  for (const raw of parts) {
-    const part = raw.trim();
-    if (!part) continue;
-    if (/^\d{1,4}$/.test(part)) {
-      options.width = Number(part);
-      continue;
-    }
-    //: `x`-separated dimensions are Obsidian's too (`300x200`). The height is
-    //: read and deliberately dropped: an image with both fixed is an image
-    //: with a stretched aspect ratio, and nobody means that.
-    const pair = /^(\d{1,4})x(\d{1,4})$/i.exec(part);
-    if (pair) {
-      options.width = Number(pair[1]);
-      continue;
-    }
-    const align = /^(left|centre|center|right)$/i.exec(part);
-    if (align) {
-      options.align = align[1].toLowerCase() === "centre" ? "center" : align[1].toLowerCase();
-      continue;
-    }
-    caption.push(part);
-  }
-  options.caption = caption.join(" ");
-  return options;
-}
-
-//: **An image's alt with its width or alignment changed** (DOCUMENTS_PLAN
-//: decision 8, the audit's D5): the name first, then the width, then the
-//: alignment, then the caption's words in the order they were written; an
-//: option set to null is taken out. Written back by the Live editor's grip
-//: and align menu, so the markdown stays the one place the size lives.
-function docImageAltWith(alt, change) {
-  const parts = String(alt == null ? "" : alt).split("|");
-  const name = parts.shift();
-  const now = docImageOptions(alt);
-  const kept = parts
-    .map((part) => part.trim())
-    .filter((part) => part && !/^\d{1,4}(x\d{1,4})?$/i.test(part) && !/^(left|centre|center|right)$/i.test(part));
-  const width = "width" in change ? change.width : now.width;
-  const align = "align" in change ? change.align : now.align;
-  return [name, ...(width ? [String(Math.round(width))] : []), ...(align ? [align] : []), ...kept].join("|");
-}
-
 // DOC-BLOCKS-END
 
 // =============================================================================
@@ -8709,7 +8657,7 @@ function docLivePlugin(CM) {
       this.underSource = underSource;
       //: `![A river|400|center](/media/river.jpg)`: the options ride in the alt
       //: text, which is the form that survives being opened somewhere else.
-      this.options = docImageOptionsFromAlt(alt);
+      this.options = imageOptionsFromAlt(alt);
     }
     eq(other) {
       return other.src === this.src && other.alt === this.alt && other.underSource === this.underSource;
@@ -8728,17 +8676,17 @@ function docLivePlugin(CM) {
       //: paths. The embed path below already did this; this one never did.
       img.src = mediaSrc(this.src);
       img.alt = this.options.caption || this.options.name || "";
-      if (this.underSource) return docApplyImageOptions(img, this.options);
+      if (this.underSource) return imageApplyOptions(img, this.options);
       //: **Resized and aligned where it is shown** (decision 8, the audit's
       //: D5): a frame round the picture holding a grip on its lower right
       //: corner and an align button, both writing the options back into the
-      //: alt text (`docImageAltWith`), so Read, a print and an export agree.
+      //: alt text (`imageAltWith`), so Read, a print and an export agree.
       const frame = document.createElement("span");
       frame.className = "cm-md-image-frame";
       frame.appendChild(img);
       if (this.options.width) frame.dataset.sized = "1";
-      docWireImageEdit(view, frame, this.options);
-      return docApplyImageOptions(frame, this.options);
+      docImageLive(view, frame, this.options);
+      return imageApplyOptions(frame, this.options);
     }
   }
 
@@ -9099,7 +9047,7 @@ function docLivePlugin(CM) {
     constructor(spec) {
       super();
       this.spec = spec;
-      this.options = docImageOptions(spec);
+      this.options = imageOptions(spec);
       this.name = this.options.name;
     }
     eq(other) {
@@ -10828,183 +10776,45 @@ function docEmbedNode(target, name) {
   return null;
 }
 
-//: **An image's options, applied.** One function for both surfaces: the widget
-//: in Live and the `<img>` the preview's renderer produced, because "300 means
-//: 300 pixels wide" has to mean the same thing in the two views of one
-//: document or the width is a property of the view rather than of the image.
-//:
-//: The width is written through `style.width` rather than an attribute or an
-//: inline `style=`: this app's CSP refuses the attribute (DESIGN.md's note on
-//: a policy silently refusing the work), and the theme's own `max-width: 100%`
-//: still wins on a narrow pane, so an over-wide number cannot break the
-//: column.
-function docApplyImageOptions(img, options) {
-  if (!img || !options) return img;
-  if (options.width) img.style.width = `${options.width}px`;
-  if (!options.align && !options.caption) return img;
-  const figure = document.createElement("span");
-  figure.className = "cm-md-figure";
-  if (options.align) figure.classList.add(`cm-md-figure-${options.align}`);
-  if (img.parentNode) img.replaceWith(figure);
-  figure.appendChild(img);
-  if (options.caption) {
-    const caption = document.createElement("span");
-    caption.className = "cm-md-caption";
-    caption.textContent = options.caption;
-    figure.appendChild(caption);
-  }
-  return figure;
-}
-
-//: The grip and the align button on a picture in Live (decision 8). The
-//: picture's markdown is found from where its widget sits (`posAtDOM`), its
-//: alt rewritten in one change, one Undo step. The grip is a slider to a
-//: screen reader and to the keys (the arrows, 10px; with Shift, 50px), and a
-//: drag to the hand, held to between 40px and the text column's width.
-const DOC_IMAGE_MIN = 40;
-
-function docWireImageEdit(view, frame, options) {
-  const grip = document.createElement("span");
-  grip.className = "cm-md-image-grip";
-  grip.tabIndex = 0;
-  grip.setAttribute("role", "slider");
-  grip.setAttribute("aria-label", "Picture width");
-  grip.title = "Drag to resize the picture, or use the arrow keys";
-  const align = document.createElement("button");
-  align.type = "button";
-  align.className = "ghost icon-only small cm-md-image-align";
-  align.setAttribute("aria-label", "Align the picture");
-  align.title = "Align the picture: left, centre or right";
-  const glyph = document.createElement("i");
-  glyph.className = `ph ph-text-align-${options.align || "left"}`;
-  glyph.setAttribute("aria-hidden", "true");
-  align.appendChild(glyph);
-  frame.append(grip, align);
-  const widest = () => Math.max(DOC_IMAGE_MIN, Math.floor(view.contentDOM.getBoundingClientRect().width - 48));
-  const shown = () => Math.round(frame.getBoundingClientRect().width);
-  const setValue = () => {
-    grip.setAttribute("aria-valuemin", String(DOC_IMAGE_MIN));
-    grip.setAttribute("aria-valuemax", String(widest()));
-    grip.setAttribute("aria-valuenow", String(options.width || shown() || DOC_IMAGE_MIN));
-    grip.setAttribute("aria-valuetext", `${options.width || shown()} pixels wide`);
-  };
-  requestAnimationFrame(setValue);
-  //: Where this picture's markdown starts, read at the moment of writing:
-  //: the document may have moved under it since it was drawn.
+//: The Live editor's half of the picture control (image-layout.js
+//: `imageWireEdit`): the picture's markdown is found from where its widget
+//: sits (`posAtDOM`), its alt rewritten in one change, one Undo step.
+function docImageLive(view, frame, options) {
+  const root = () => frame.closest(".cm-md-figure") || frame;
   const write = (change) => {
-    const root = frame.closest(".cm-md-figure") || frame;
     let at;
     try {
-      at = view.posAtDOM(root);
+      at = view.posAtDOM(root());
     } catch {
       return false;
     }
     const head = view.state.doc.sliceString(at, Math.min(view.state.doc.length, at + 2000));
     const m = /^!\[([^\]\n]*)\]\(/.exec(head);
     if (!m) return false;
-    const alt = docImageAltWith(m[1], change);
+    const alt = imageAltWith(m[1], change);
     if (alt === m[1]) return false;
     docPhase2State.imageRefocus = change.align !== undefined ? null : at;
     view.dispatch({ changes: { from: at + 2, to: at + 2 + m[1].length, insert: alt } });
     return true;
   };
-  grip.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    grip.setPointerCapture?.(event.pointerId);
-    const startX = event.clientX;
-    const start = shown();
-    const max = widest();
-    let width = start;
-    frame.classList.add("is-resizing");
-    const move = (e) => {
-      width = Math.max(DOC_IMAGE_MIN, Math.min(max, Math.round(start + e.clientX - startX)));
-      frame.style.width = `${width}px`;
-      frame.dataset.sized = "1";
-    };
-    const up = () => {
-      grip.removeEventListener("pointermove", move);
-      grip.removeEventListener("pointerup", up);
-      grip.removeEventListener("pointercancel", up);
-      frame.classList.remove("is-resizing");
-      if (width !== start) write({ width });
-    };
-    grip.addEventListener("pointermove", move);
-    grip.addEventListener("pointerup", up);
-    grip.addEventListener("pointercancel", up);
-  });
-  grip.addEventListener("keydown", (event) => {
-    const step = event.shiftKey ? 50 : 10;
-    const now = options.width || shown();
-    let next = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowUp") next = now + step;
-    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") next = now - step;
-    else if (event.key === "Home") next = DOC_IMAGE_MIN;
-    else if (event.key === "End") next = widest();
-    else if (event.key === "Delete" || event.key === "Backspace") next = 0;
-    if (next == null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    write({ width: next ? Math.max(DOC_IMAGE_MIN, Math.min(widest(), next)) : null });
-  });
-  align.addEventListener("mousedown", (event) => event.preventDefault());
-  align.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const box = align.getBoundingClientRect();
-    const pick = (value) => () => write({ align: value });
-    openMenuAtPoint([
-      makeMenuItem("ph:text-align-left Left", "On the left, text below it", pick("left")),
-      makeMenuItem("ph:text-align-center Centre", "In the middle of the column", pick("center")),
-      makeMenuItem("ph:text-align-right Right", "On the right", pick("right")),
-      makeMenuItem("ph:x Inline", "In the line, as written", pick(null)),
-    ], "Align the picture", box.left, box.bottom + 4);
-  });
+  const widest = () => Math.max(IMAGE_MIN, Math.floor(view.contentDOM.getBoundingClientRect().width - 48));
+  const grip = imageWireEdit(frame, options, { write, widest });
   //: The grip that was being pressed keeps the keys after its write redraws
   //: the picture.
-  if (docPhase2State.imageRefocus != null) {
-    requestAnimationFrame(() => {
-      if (docPhase2State.imageRefocus == null || !frame.isConnected) return;
-      let at = -1;
-      try {
-        at = view.posAtDOM(frame.closest(".cm-md-figure") || frame);
-      } catch {
-        at = -1;
-      }
-      if (at === docPhase2State.imageRefocus) {
-        docPhase2State.imageRefocus = null;
-        grip.focus({ preventScroll: true });
-      }
-    });
-  }
-}
-
-//: **A markdown image's alt text is its caption once it carries options.**
-//: `![A river](/media/river.jpg)` is an image with alt text and stays one;
-//: `![A river|400](/media/river.jpg)` is a figure four hundred pixels wide
-//: captioned "A river", because somebody who writes an option has said this
-//: image is a figure. A wiki embed does not do this and must not: the part
-//: before the first pipe there is a file name, and captioning every embedded
-//: picture `photo.png` is worse than captioning none of them.
-function docImageOptionsFromAlt(alt) {
-  const text = String(alt == null ? "" : alt);
-  const options = docImageOptions(text);
-  if (text.includes("|") && !options.caption) options.caption = options.name;
-  return options;
-}
-
-//: The preview's half of the same thing. The renderer puts an image's options
-//: in its `alt`, because that is where they are written in the markdown
-//: (`![A river|400|center](/media/river.jpg)`), so reading them back off the
-//: alt is the same information rather than a second parse of the document.
-function docLayerImageOptions(root) {
-  if (!root) return;
-  for (const img of root.querySelectorAll("img")) {
-    const alt = img.getAttribute("alt") || "";
-    if (!alt.includes("|")) continue;
-    const options = docImageOptionsFromAlt(alt);
-    img.setAttribute("alt", options.caption || options.name);
-    docApplyImageOptions(img, options);
-  }
+  if (docPhase2State.imageRefocus == null || !grip) return;
+  requestAnimationFrame(() => {
+    if (docPhase2State.imageRefocus == null || !frame.isConnected) return;
+    let at = -1;
+    try {
+      at = view.posAtDOM(root());
+    } catch {
+      at = -1;
+    }
+    if (at === docPhase2State.imageRefocus) {
+      docPhase2State.imageRefocus = null;
+      grip.focus({ preventScroll: true });
+    }
+  });
 }
 
 //: The chip an embed falls back to: a name that resolves to nothing yet, and a
@@ -11029,7 +10839,7 @@ function docEmbedFill(host, name, options = null) {
     host.replaceChildren(node);
     //: An image embed is the one kind these options mean anything for; a note
     //: card with a width of 300 is a card somebody has squashed.
-    if (node.tagName === "IMG") docApplyImageOptions(node, options);
+    if (node.tagName === "IMG") imageApplyOptions(node, options);
     return;
   }
   //: A block embed of a document nobody has opened has no text to draw yet.
@@ -11064,7 +10874,7 @@ function docEmbedFill(host, name, options = null) {
       const later = docEmbedNode(docEmbedTarget(name), name);
       if (later) {
         host.replaceChildren(later);
-        if (later.tagName === "IMG") docApplyImageOptions(later, options);
+        if (later.tagName === "IMG") imageApplyOptions(later, options);
       }
     })
     .catch(() => {});
