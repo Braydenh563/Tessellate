@@ -107,7 +107,7 @@ def _made(session: Session, arg: str, now: datetime) -> str:
         from tessellate.ai import composer
 
         first, last = session.execute(select(func.min(entry.created_at), func.max(entry.created_at)).where(*visible)).one()
-        return composer.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg)
+        return composer.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg, today=now.date())
     from tessellate.ai import composer
 
     lead = f"You wrote {realise.count_noun(len(rows), 'note')} {composer.window_said(phrase)}:"
@@ -219,6 +219,21 @@ def answer(session: Session, text: str, now: datetime, *, typed_only: bool = Fal
     if command is None:
         return _help(session, name, now)
     return command.run(session, arg, now)
+
+
+def timeline(session: Session, name: str, arg: str, now: datetime) -> dict | None:
+    """The timeline strip under /recent, /today, /yesterday and /made (INBOX 1333 b): the
+    span of the notes listed, or the day or span asked; when that holds no
+    note, where the notes run up to today."""
+    today = now.date()
+    if name == "recent":
+        entry, visible = _notes()
+        days = [d.date() for d in session.scalars(select(entry.created_at).where(*visible).order_by(entry.created_at.desc(), entry.id.desc()).limit(slash_more.count_arg(arg)))]
+        return slash_more.timeline_panel(session, min(days), max(days), today) if days else None
+    span = _window(name if name in ("today", "yesterday") else arg, today) if name in ("today", "yesterday", "made") and (arg or name != "made") else None
+    if span is None:
+        return None
+    return slash_more.timeline_panel(session, span[0], span[1], today) or slash_more.empty_timeline(session, today)
 
 
 def catalogue() -> list[dict]:

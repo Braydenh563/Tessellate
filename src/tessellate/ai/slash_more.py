@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -135,6 +135,57 @@ def _random(session: Session, arg: str, now: datetime) -> str:
         return "You have no notes yet."
     pick = rows[int(now.timestamp() * 1000) % len(rows)]
     return f"Here is one of your {len(rows)} notes, picked at random:\n\n{_rows(session, [pick])}"
+
+
+#: The most points a strip carries, and the longest span it draws by the day
+#: and by the week: past them it counts in months.
+_STRIP_MOST, _STRIP_DAYS, _STRIP_WEEKS = 60, 31, 182
+
+
+def _strip_day(d: date, today: date) -> str:
+    return "Today" if d == today else f"{d.day} {d:%b}" + (f" {d.year}" if d.year != today.year else "")
+
+
+def timeline_panel(session: Session, start: date, end: date, today: date) -> dict | None:
+    """The small timeline strip a time answer carries (INBOX 1333 b): notes
+    counted over `start` to `end`, a point a day, a week or a month by how
+    long that is (one day: a point an hour), for the lazy reply kit's spark
+    line (`replyTimelinePanel`). None when nothing was written in it or it is
+    one point."""
+    entry, visible = _notes()
+    end = min(end, today)
+    if start > end:
+        return None
+    stamps = [d for d in session.scalars(select(entry.created_at).where(
+        *visible, entry.created_at >= datetime.combine(start, time.min), entry.created_at < datetime.combine(end + timedelta(days=1), time.min))) if d]
+    if not stamps:
+        return None
+    span, first = (end - start).days + 1, start
+    if span == 1:
+        by, size, slot, labels = "hour", 24, (lambda d: d.hour), ("00:00", "23:00")
+    elif span <= _STRIP_DAYS:
+        by, size, slot = "day", span, (lambda d: (d.date() - start).days)
+    elif span <= _STRIP_WEEKS:
+        by, size, slot = "week", -(-span // 7), (lambda d: (d.date() - start).days // 7)
+    else:
+        month = lambda d: d.year * 12 + d.month - 1  # noqa: E731
+        base = max(month(start), month(end) - _STRIP_MOST + 1)
+        by, size, slot = "month", month(end) - base + 1, (lambda d: month(d) - base)
+        first = start if base == month(start) else date(base // 12, base % 12 + 1, 1)
+    points = [0] * size
+    for stamp in stamps:
+        if 0 <= slot(stamp) < size:
+            points[slot(stamp)] += 1
+    ends = labels if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
+    return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "from": ends[0], "to": ends[1]}
+
+
+def empty_timeline(session: Session, today: date) -> dict | None:
+    """Where the notes run, for an answer that found none in the day or span
+    asked: the strip from the first note to today."""
+    entry, visible = _notes()
+    first = session.scalar(select(func.min(entry.created_at)).where(*visible))
+    return timeline_panel(session, first.date(), today, today) if first else None
 
 
 def tag_counts(session: Session) -> Counter:

@@ -110,10 +110,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
 | 105 | S23 | med | palette lacks recent-first order and shortcut hints | fixed (already: most used first at rest, learned order as you type, the key in the preview) | S |
 | 106 | S24 | med | no in-app cheat sheet reached with the ? key | fixed (already built; reconciled 2026-10-30) | S |
-| 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | new | S |
-| 108 | S39 | med | focus ring contrast inconsistent across custom controls | new | S |
+| 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | fixed (aef5a83, S26: banner one in-flow line 111px, toast only when the question is owed; its phone size 178px to 152px, covering the Ask button 32px to 6px at 390x667; 360x640 still covers, see shellux-1030.md) | S |
+| 108 | S39 | med | focus ring contrast inconsistent across custom controls | fixed (measured, already holds: contrastui.js, 40 surfaces, 1037 focused controls per theme, 0 under 3:1 in light and dark; 11 custom controls 5.47 to 5.9:1 light and 6.24 to 7.33:1 dark; 51 of 54 outline colours are `var(--accent)`, the rest tokens) | S |
 | 109 | S40 | med | icon-only buttons rely on title for accessible names | docs/roadmap/UI_MODERNISATION_PLAN.md:1334 | S |
-| 110 | S41 | med | touch targets under 24px in dense rows | new | S |
+| 110 | S41 | med | touch targets under 24px in dense rows | fixed (measured, already holds: notes row chips min 24x24, row icon buttons 28x28 (44x32 touch), 9 surfaces at 1280 and 390: 0 failing WCAG 2.5.8 except one library title beside the status bar; the 14px suggested-tag take has a 44px band) | S |
 | 111 | S42 | med | first run has no sample notes, lists look empty | docs/roadmap/BACKLOG.md:1807 | M |
 | 112 | S43 | med | help split across popovers, Guide and Settings | new | S |
 | 113 | S45 | med | no palette deep link to each Settings pane | fixed (already built; reconciled 2026-10-30) | S |

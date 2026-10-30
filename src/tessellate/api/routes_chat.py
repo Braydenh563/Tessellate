@@ -3537,6 +3537,13 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
         #: An instruction nothing understood is not a search for its words.
         return _suggest_events(unknown)
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
+    #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
+    if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
+        from tessellate.ai import slash_more
+
+        strip = slash_more.empty_timeline(req.session, user_now(deps.get_config()).date())
+        if strip is not None:
+            events.append(strip)
     # …but the notebook is more than its notes. See `_related_elsewhere`: a
     # question answered by a document, a saved chat or a reminder used to end
     # here regardless.
@@ -5244,7 +5251,8 @@ def _slash_lines(req: _StreamRequest) -> list[str] | None:
     if req.skill:
         return None
     typed_only = req.ollama.is_running() and not _composed(req, True)
-    said = slash.answer(req.session, req.body.question or "", user_now(deps.get_config()).replace(tzinfo=None), typed_only=typed_only)
+    now = user_now(deps.get_config()).replace(tzinfo=None)
+    said = slash.answer(req.session, req.body.question or "", now, typed_only=typed_only)
     if said is None:
         return None
     events = [{"type": "answer", "delta": said}]
@@ -5252,6 +5260,9 @@ def _slash_lines(req: _StreamRequest) -> list[str] | None:
     drawn = _slash_chart(req.session, typed[0]) if typed else None
     if drawn is not None:
         events.append({"type": "chart", "chart": drawn})
+    strip = slash.timeline(req.session, typed[0], typed[1], now) if typed else None
+    if strip is not None:
+        events.append(strip)
     panel = reply_panel(typed[0], typed[1]) if typed else None
     return _composed_lines(req, events + ([panel] if panel else []))
 

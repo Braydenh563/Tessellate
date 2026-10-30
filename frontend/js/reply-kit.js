@@ -12,8 +12,11 @@
 //: the Statistics page's own call), and the way into that page.
 //: "calculator": a sum's or a conversion's way into the calculator, with the
 //: question already in it.
+//: "timeline": the strip under /today, /recent and a day with nothing in it
+//: (INBOX 1333): notes over the span, the Statistics card's spark line.
 const REPLY_PANELS = {
   statistics: () => replyStatsPanel(),
+  timeline: (event) => replyTimelinePanel(event),
   calculator: (event) => replyCalcPanel(event),
 };
 
@@ -281,6 +284,23 @@ function replyStatsPanel() {
       grid.replaceChildren(line);
       grid.removeAttribute("aria-busy");
     });
+  return panel;
+}
+
+//: The strip's points arrive counted (`slash_more.timeline_panel`); the spark
+//: line is the Statistics card's, its two ends named under it.
+function replyTimelinePanel(event) {
+  const { panel } = replyPanelShell("reply-timeline", event.title || "Notes over time", "ph:chart-line");
+  const points = (event.points || []).map((n) => Number(n) || 0);
+  panel.appendChild(replySpark(points, `${event.title}, ${event.from} to ${event.to}: ${points.join(", ")}`));
+  const ends = document.createElement("div");
+  ends.className = "muted reply-timeline-ends";
+  for (const text of [event.from, event.to]) {
+    const end = document.createElement("span");
+    end.textContent = text || "";
+    ends.appendChild(end);
+  }
+  panel.appendChild(ends);
   return panel;
 }
 
