@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6830, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7320, test files 1564, tests 13634, plan headings 986.
+Counts: frontend functions 6830, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7321, test files 1564, tests 13634, plan headings 986.
 
 ## Frontend functions (6830)
 
@@ -11538,7 +11538,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7320)
+## Backend modules (7321)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -12761,34 +12761,35 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `mention_subject` | src/tessellate/ai/composer_lists.py:311 |
 | `window_of` | src/tessellate/ai/composer_lists.py:116 |
 
-### src/tessellate/ai/composer_money.py (24)
+### src/tessellate/ai/composer_money.py (25)
 
 | Name | File:line |
 |---|---|
-| `Item` | src/tessellate/ai/composer_money.py:73 |
-| `_about` | src/tessellate/ai/composer_money.py:143 |
-| `_cite_all` | src/tessellate/ai/composer_money.py:195 |
-| `_clause_items` | src/tessellate/ai/composer_money.py:103 |
-| `_due` | src/tessellate/ai/composer_money.py:321 |
-| `_due_by` | src/tessellate/ai/composer_money.py:178 |
-| `_in_month` | src/tessellate/ai/composer_money.py:133 |
-| `_items` | src/tessellate/ai/composer_money.py:153 |
-| `_items_by` | src/tessellate/ai/composer_money.py:159 |
-| `_items_of` | src/tessellate/ai/composer_money.py:117 |
-| `_listed` | src/tessellate/ai/composer_money.py:223 |
-| `_money` | src/tessellate/ai/composer_money.py:191 |
-| `_month_asked` | src/tessellate/ai/composer_money.py:121 |
-| `_most` | src/tessellate/ai/composer_money.py:287 |
-| `_refunds_and_due` | src/tessellate/ai/composer_money.py:267 |
-| `_spent` | src/tessellate/ai/composer_money.py:227 |
-| `_still_due` | src/tessellate/ai/composer_money.py:174 |
-| `_subject` | src/tessellate/ai/composer_money.py:214 |
-| `_total_asked` | src/tessellate/ai/composer_money.py:301 |
-| `_total_rest` | src/tessellate/ai/composer_money.py:307 |
-| `_what` | src/tessellate/ai/composer_money.py:86 |
-| `answer` | src/tessellate/ai/composer_money.py:351 |
-| `asks` | src/tessellate/ai/composer_money.py:338 |
-| `records_spending` | src/tessellate/ai/composer_money.py:346 |
+| `Item` | src/tessellate/ai/composer_money.py:87 |
+| `_about` | src/tessellate/ai/composer_money.py:157 |
+| `_cite_all` | src/tessellate/ai/composer_money.py:209 |
+| `_clause_items` | src/tessellate/ai/composer_money.py:117 |
+| `_due` | src/tessellate/ai/composer_money.py:335 |
+| `_due_by` | src/tessellate/ai/composer_money.py:192 |
+| `_in_month` | src/tessellate/ai/composer_money.py:147 |
+| `_items` | src/tessellate/ai/composer_money.py:167 |
+| `_items_by` | src/tessellate/ai/composer_money.py:173 |
+| `_items_of` | src/tessellate/ai/composer_money.py:131 |
+| `_kind_spent` | src/tessellate/ai/composer_money.py:33 |
+| `_listed` | src/tessellate/ai/composer_money.py:237 |
+| `_money` | src/tessellate/ai/composer_money.py:205 |
+| `_month_asked` | src/tessellate/ai/composer_money.py:135 |
+| `_most` | src/tessellate/ai/composer_money.py:301 |
+| `_refunds_and_due` | src/tessellate/ai/composer_money.py:281 |
+| `_spent` | src/tessellate/ai/composer_money.py:241 |
+| `_still_due` | src/tessellate/ai/composer_money.py:188 |
+| `_subject` | src/tessellate/ai/composer_money.py:228 |
+| `_total_asked` | src/tessellate/ai/composer_money.py:315 |
+| `_total_rest` | src/tessellate/ai/composer_money.py:321 |
+| `_what` | src/tessellate/ai/composer_money.py:100 |
+| `answer` | src/tessellate/ai/composer_money.py:365 |
+| `asks` | src/tessellate/ai/composer_money.py:352 |
+| `records_spending` | src/tessellate/ai/composer_money.py:360 |
 
 ### src/tessellate/ai/composer_notes.py (19)
 

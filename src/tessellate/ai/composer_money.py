@@ -25,11 +25,25 @@ _SPENT = re.compile(
 )
 #: "How much grocery spending have I recorded", "what's my recorded travel
 #: spending": the subject sits before the noun (stress run 2026-10-30).
-_KIND_SPENT = re.compile(
-    r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<subject>(?:(?!(?:spending|expenses?|costs?)\b)[\w'-]+ )*(?!(?:spending|expenses?|costs?)\b)[\w'-]+) (?:spending|expenses?|costs?)"
-    r"(?: (?:have|did|do) (?:i|we) (?:recorded|logged|noted|tracked|got|have))?(?P<rest>.*)$",
-    re.I,
-)
+_KIND_SPENT = re.compile(r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<tail>\S.*)$", re.I)
+_KIND_NOUNS = frozenset({"spending", "expense", "expenses", "cost", "costs"})
+_KIND_RECORDED = re.compile(r"^(?:have|did|do) (?:i|we) (?:recorded|logged|noted|tracked|got|have)\b", re.I)
+
+
+def _kind_spent(q: str) -> tuple[str, str] | None:
+    """(subject, rest) of "how much grocery spending have I recorded", or
+    None. The noun is found word by word, not by a pattern that could split
+    the subject many ways (CodeQL)."""
+    m = _KIND_SPENT.match(q)
+    words = m.group("tail").split(" ") if m else []
+    at = next((i for i, w in enumerate(words) if w.lower().rstrip("?.!,") in _KIND_NOUNS), 0)
+    if at < 1 or not all(re.fullmatch(r"[\w'-]+", w) for w in words[:at]):
+        return None
+    rest = " ".join(words[at + 1:])
+    recorded = _KIND_RECORDED.match(rest)
+    return " ".join(words[:at]), rest[recorded.end():] if recorded else (" " + rest if rest else "")
+
+
 #: "What's my total spending", "total spent in October".
 _TOTAL = re.compile(
     r"^(?:and )?(?:what(?:'s|s| is| was)? )?(?:my |our |the )?(?:total|net|gross) (?:of )?(?:all )?(?:my |the )?(?:recorded )?(?:outgoing )?"
@@ -313,8 +327,8 @@ def _total_rest(q: str):  # noqa: ANN202
         return m.group(1)
     if (m := _ADD_UP.match(q)):
         return " ".join(x for x in (m.group("subject"), m.group("rest"), m.group("thing"), m.group("all")) if x)
-    if (m := _KIND_SPENT.match(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", m.group("subject"), re.I):
-        return f"{m.group('subject')} {m.group('rest')}"
+    if (kind := _kind_spent(q)) and not re.search(r"\b(?:did|do|does|i|we)\b", kind[0], re.I):
+        return f"{kind[0]} {kind[1]}"
     return None
 
 
