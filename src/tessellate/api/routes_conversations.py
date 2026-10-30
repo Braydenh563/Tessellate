@@ -473,59 +473,70 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
     resolves to nothing and the bubble simply shows one fewer thumbnail,
     which is what happened before this existed. Nothing here 404s.
     """
-    from tessellate.core.database import Attachment, Document, Entry, MediaUpload
-
-    media_ids = {i for m in messages for i in (m.get("image_media_ids") or [])}
-    doc_ids = {i for m in messages for i in (m.get("document_ids") or [])}
-    note_ids = {i for m in messages for i in (m.get("note_ids") or [])}
-    file_ids = {i for m in messages for i in (m.get("file_ids") or [])}
-    board_ids = {i for m in messages for i in (m.get("board_ids") or [])}
-    if not (media_ids or doc_ids or note_ids or file_ids or board_ids):
+    #: In the order a bubble shows them: pictures, documents, files, notes, maps.
+    keys = ("image_media_ids", "document_ids", "file_ids", "note_ids", "board_ids")
+    wanted = {key: {i for m in messages for i in (m.get(key) or [])} for key in keys}
+    if not any(wanted.values()):
         return
+    notes, maps = _entry_cards(session, wanted["note_ids"], wanted["board_ids"])
+    cards = {
+        "image_media_ids": _media_cards(session, wanted["image_media_ids"]),
+        "document_ids": _document_cards(session, wanted["document_ids"]),
+        "file_ids": _file_cards(session, wanted["file_ids"]),
+        "note_ids": notes,
+        "board_ids": maps,
+    }
+    for message in messages:
+        attachments = [cards[key][i] for key in keys for i in (message.get(key) or []) if i in cards[key]]
+        if attachments:
+            message["attachments"] = attachments
 
-    media = {}
-    if media_ids:
-        for upload in session.query(MediaUpload).filter(MediaUpload.id.in_(media_ids)).all():
-            media[upload.id] = {
-                "id": upload.id,
-                "kind": "image",
-                "url": f"/media/{upload.filename}",
-                "name": upload.original_name,
-                # The two readings the Library tile shows, so the same
-                # picture reads the same way wherever it appears.
-                "caption": upload.caption or "",
-                "text": (upload.vision_ocr_text or upload.ocr_text or "").strip(),
-            }
-    documents = {}
-    if doc_ids:
-        for document in session.query(Document).filter(Document.id.in_(doc_ids)).all():
-            documents[document.id] = {
-                "id": document.id,
-                "kind": "document",
-                "name": document.title,
-            }
 
-    files = {}
-    if file_ids:
-        for attachment in session.query(Attachment).filter(Attachment.id.in_(file_ids)).all():
-            files[attachment.id] = {
-                "id": attachment.id,
-                "kind": "file",
-                "name": attachment.filename,
-            }
+def _media_cards(session: Session, ids: set) -> dict:
+    from tessellate.core.database import MediaUpload
 
+    return {
+        upload.id: {
+            "id": upload.id,
+            "kind": "image",
+            "url": f"/media/{upload.filename}",
+            "name": upload.original_name,
+            # The two readings the Library tile shows, so the same
+            # picture reads the same way wherever it appears.
+            "caption": upload.caption or "",
+            "text": (upload.vision_ocr_text or upload.ocr_text or "").strip(),
+        }
+        for upload in (session.query(MediaUpload).filter(MediaUpload.id.in_(ids)).all() if ids else [])
+    }
+
+
+def _document_cards(session: Session, ids: set) -> dict:
+    from tessellate.core.database import Document
+
+    rows = session.query(Document).filter(Document.id.in_(ids)).all() if ids else []
+    return {d.id: {"id": d.id, "kind": "document", "name": d.title} for d in rows}
+
+
+def _file_cards(session: Session, ids: set) -> dict:
+    from tessellate.core.database import Attachment
+
+    rows = session.query(Attachment).filter(Attachment.id.in_(ids)).all() if ids else []
+    return {a.id: {"id": a.id, "kind": "file", "name": a.filename} for a in rows}
+
+
+def _entry_cards(session: Session, note_ids: set, board_ids: set) -> tuple[dict, dict]:
+    """Note and map cards. A binned or private one is treated exactly like a
+    deleted upload: the card disappears. Listing a private note's first line
+    in a conversation would put it back on screen in the one place the
+    private-notebook rule cannot reach. A map is held to the same."""
+    from tessellate.core.database import Entry
     from tessellate.entry import manager as entry_manager
     from tessellate.entry.properties import strip as strip_properties
 
-    notes = {}
-    maps = {}
-    for entry in (
-        session.query(Entry).filter(Entry.id.in_(note_ids | board_ids)).all() if note_ids or board_ids else []
-    ):
-        # A binned or private note is treated exactly like a deleted
-        # upload: the chip disappears. Listing a private note's first line
-        # in a conversation would put it back on screen in the one place
-        # the private-notebook rule cannot reach. A map is held to the same.
+    notes: dict = {}
+    maps: dict = {}
+    ids = note_ids | board_ids
+    for entry in session.query(Entry).filter(Entry.id.in_(ids)).all() if ids else []:
         if entry.is_deleted or entry.is_private:
             continue
         if entry.id in note_ids:
@@ -534,29 +545,11 @@ def _hydrate_attachments(session: Session, messages: list[dict]) -> None:
             # which also reads the Markdown), exactly as at send time; here is
             # only the first line after the properties block, uncut (bounded
             # for the wire), so send and reload cannot name one note twice.
-            body_lines = [ln.strip() for ln in strip_properties(entry.content or "").splitlines() if ln.strip()]
-            notes[entry.id] = {"id": entry.id, "kind": "note", "name": body_lines[0][:400] if body_lines else ""}
+            lines = [ln.strip() for ln in strip_properties(entry.content or "").splitlines() if ln.strip()]
+            notes[entry.id] = {"id": entry.id, "kind": "note", "name": lines[0][:400] if lines else ""}
         if entry.id in board_ids:
-            maps[entry.id] = {
-                "id": entry.id,
-                "kind": "map",
-                "name": entry_manager.extract_title(entry.content) or "Mind map",
-            }
-
-    for message in messages:
-        attachments = [
-            media[i] for i in (message.get("image_media_ids") or []) if i in media
-        ] + [
-            documents[i] for i in (message.get("document_ids") or []) if i in documents
-        ] + [
-            files[i] for i in (message.get("file_ids") or []) if i in files
-        ] + [
-            notes[i] for i in (message.get("note_ids") or []) if i in notes
-        ] + [
-            maps[i] for i in (message.get("board_ids") or []) if i in maps
-        ]
-        if attachments:
-            message["attachments"] = attachments
+            maps[entry.id] = {"id": entry.id, "kind": "map", "name": entry_manager.extract_title(entry.content) or "Mind map"}
+    return notes, maps
 
 
 @router.get("/{conversation_id}")
