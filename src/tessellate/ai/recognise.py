@@ -2075,6 +2075,17 @@ def looks_dated(text: str) -> bool:
     return bool(_DATED.search(text or ""))
 
 
+#: A time phrase that names a day or a month by name ("3 March", "Friday",
+#: "tomorrow", "in June"); a bare "May" is the verb as often as the month.
+_NAMES_DAY = re.compile(r"\d|january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today", re.I)
+
+
+def names_a_day(phrase: str) -> bool:
+    """Whether a phrase `find` returned names a day: what a when-slot answer
+    can say (composer_slots, audit 1029 C21), not "next week" or "lately"."""
+    return bool(_NAMES_DAY.search(phrase or ""))
+
+
 #: A time phrase that already carries its preposition, or needs none
 #: ("since 3 October", "last week", "today", "3 days ago").
 _ADVERB_LEAD = re.compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)

@@ -551,21 +551,37 @@ def holding_ask(question: str) -> tuple[str, bool, str] | None:
     t = _q(question).lower().split()
     if not 2 <= len(t) <= 12:
         return None
-    if t[0] in ("which", "what", "list", "show", "find", "give", "how") and ("notes" in t or "entries" in t):
-        tail = [w for w in t[min(t.index(x) for x in ("notes", "entries") if x in t) + 1:] if w not in _HOLD_JOIN]
-        mode = "count" if t[:2] == ["how", "many"] else "which"
-    elif _HOLD_OPEN & set(t) and "notes" not in t:
-        tail = [w for w in t if w not in _HOLD_JOIN and w not in ("what", "show", "list", "give", "find", "which", "still", "across", "me", "tick")]
-        mode = "items"
-    else:
+    shaped = _holding_tail(t)
+    if shaped is None:
         return None
+    tail, mode = shaped
     open_only = bool(_HOLD_OPEN & set(tail))
     tail = [w for w in tail if w not in _HOLD_OPEN]
-    kinds = [_HOLD_KIND[w] for w in tail if w in _HOLD_KIND]
     if mode == "items":
-        if not open_only or not tail or any(w not in ("checklist", "checklists", "item", "items") for w in tail):
-            return None
-        return "tasks", True, "items"
+        return _holding_items(tail, open_only)
+    return _holding_kind(tail, open_only, mode)
+
+
+def _holding_tail(t: list[str]) -> tuple[list[str], str] | None:
+    """The words after "notes" and the mode they are asked in, or None."""
+    if t[0] in ("which", "what", "list", "show", "find", "give", "how") and ("notes" in t or "entries" in t):
+        tail = [w for w in t[min(t.index(x) for x in ("notes", "entries") if x in t) + 1:] if w not in _HOLD_JOIN]
+        return tail, "count" if t[:2] == ["how", "many"] else "which"
+    if _HOLD_OPEN & set(t) and "notes" not in t:
+        return [w for w in t if w not in _HOLD_JOIN and w not in ("what", "show", "list", "give", "find", "which", "still", "across", "me", "tick")], "items"
+    return None
+
+
+def _holding_items(tail: list[str], open_only: bool) -> tuple[str, bool, str] | None:
+    """"open checklist items": only the open items of checklists."""
+    if not open_only or not tail or any(w not in ("checklist", "checklists", "item", "items") for w in tail):
+        return None
+    return "tasks", True, "items"
+
+
+def _holding_kind(tail: list[str], open_only: bool, mode: str) -> tuple[str, bool, str] | None:
+    """The kind of note a "which notes" or "how many notes" ask names."""
+    kinds = [_HOLD_KIND[w] for w in tail if w in _HOLD_KIND]
     if not tail or any(w not in _HOLD_KIND and w not in _HOLD_BESIDE for w in tail):
         return None
     if kinds:

@@ -15,7 +15,7 @@
  "src/tessellate/ai/composer.py::Dialogue.record": 16,
  "src/tessellate/ai/composer.py::_body": 42,
  "src/tessellate/ai/composer.py::_clarify": 20,
- "src/tessellate/ai/composer.py::_compare": 20,
+ "src/tessellate/ai/composer.py::_compare": 19,
  "src/tessellate/ai/composer.py::_fit_terms": 22,
  "src/tessellate/ai/composer.py::_lead_block": 21,
  "src/tessellate/ai/composer.py::_next_questions": 39,

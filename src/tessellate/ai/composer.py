@@ -2624,19 +2624,24 @@ def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meanin
     #: each says." before the two headings that say it.
     out.t("stop")
     for label, side, side_terms in ((sides[0], a_only, terms[0]), (sides[1], b_only, terms[1])):
-        out.t("para", "bold").asked(label).t("bold")
-        #: The lead said each side's count ("one mentions Lisbon and two
-        #: mention Porto"); the heading does not say it again (decision 52).
-        if not side:
-            out.t("line").t("side_none")
-            continue
-        for s in side:
-            out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
+        _compare_side(out, label, side, side_terms)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
             out.t("line").item(s, terms[0] + terms[1]).cite(out.views[s.note_id], again=True)
     return True
+
+
+def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # noqa: ANN001
+    """One side's heading and its lines."""
+    out.t("para", "bold").asked(label).t("bold")
+    #: The lead said each side's count ("one mentions Lisbon and two
+    #: mention Porto"); the heading does not say it again (decision 52).
+    if not side:
+        out.t("line").t("side_none")
+        return
+    for s in side:
+        out.t("line").item(s, side_terms).cite(out.views[s.note_id], again=True)
 
 
 #: A question that asks for everything on a subject rather than one fact:

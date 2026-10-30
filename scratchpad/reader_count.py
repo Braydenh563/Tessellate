@@ -57,6 +57,8 @@ VERDICT = {
     # 2026-10-26 (grammar K4b): a mask, not a reader. The browser cannot call
     # the recogniser, and nothing here becomes a date, window or quantity.
     "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",
+    # 2026-10-30 (audit 1029 C21): the slot answerer's day and unit names.
+    "src/tessellate/ai/composer_slots.py": "not a reader: _WEEKDAYS matches a question's day to a note's written weekday and _UNITS lists a unit's spellings so the note's figure is quoted as written; days are found and judged by recognise (find, names_a_day)",
     "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
 }
 

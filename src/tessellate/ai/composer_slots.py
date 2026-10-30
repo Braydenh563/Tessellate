@@ -17,7 +17,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_lists
+from tessellate.ai import composer, composer_lists, recognise
 from tessellate.ai import when as when_words
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
@@ -267,6 +267,7 @@ class Slot(NamedTuple):
 _WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 _AUX = frozenset({"do", "did", "does", "should", "shall", "must", "can", "could", "will", "would", "have", "has"})
 _SELF = frozenset({"i", "we"})
+_DONE = frozenset({"did", "have", "has"})
 #: Words that frame the question and are not the thing it is about.
 _CUES = frozenset({"temperature", "temp", "degrees", "date", "day", "many", "much", "time", "when", "what", "which", "at", "to", "of"})
 #: A superlative asks which note is first or next, the ranker's question.
@@ -311,8 +312,10 @@ def _ask_temperature(t: list[str]) -> Ask | None:
 
 
 def _ask_date(t: list[str]) -> Ask | None:
-    """"when is the race", "when do I fly", "what is the beta date": a day."""
-    if len(t) >= 3 and t[0] == "when" and (t[1] in _AUX or t[1] in ("is", "are", "am")):
+    """"when is the race", "when do I fly", "what is the beta date": a day.
+    "When did I buy the kindle" is not one: a done thing is dated by the
+    note that tells it, which the when-answer says (the gold's day lead)."""
+    if len(t) >= 3 and t[0] == "when" and t[1] not in _DONE and (t[1] in _AUX or t[1] in ("is", "are", "am")):
         subject = _flat(t[2:], _SELF)
     elif len(t) >= 3 and t[0] == "what" and ("date" in t[1:6] or "day" in t[1:6]):
         if any(w in t for w in ("today", "tomorrow", "yesterday", "week", "month", "year")):
@@ -356,7 +359,7 @@ def _read_quantity(text: str, unit: str | None) -> str | None:
 def _read_date(text: str, unit: str | None) -> str | None:
     """The first time phrase that names a day: a date, not a bare "May"."""
     for _start, _end, phrase in when_words.find(text):
-        if re.search(r"\d|january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today", phrase, re.I):
+        if recognise.names_a_day(phrase):
             return phrase
     return None
 
@@ -470,18 +473,8 @@ def _often(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN
     subject = " ".join(w for w in rest if w not in _ABOUT and w not in _FILLER)
     filed = _filed_under(views, stems)
     if not filed:
-        said = [v for v in views if all(composer._holds(s, set(v.words)) for s in stems)]  # noqa: SLF001
-        if not said:
-            return False
-        out.lines.append(f"No note is titled or tagged {subject}; {composer_lists._plural(len(said), 'note')} only mention it in passing.")  # noqa: SLF001
-        return True
-    days = sorted(v.written for v in filed if v.written)
-    line = f"You have {composer_lists._plural(len(filed), 'note')} titled or tagged {subject}"  # noqa: SLF001
-    if len(days) >= 2 and days[-1] > days[0]:
-        gap = round((days[-1] - days[0]).days / (len(days) - 1))
-        line += f", from {composer_lists._day(days[0], today)} to {composer_lists._day(days[-1], today)}"  # noqa: SLF001
-        line += f", about one every {composer_lists._plural(max(gap, 1), 'day')}"  # noqa: SLF001
-    out.lines.append(line + ":")
+        return _only_mentioned(out, views, stems, subject)
+    out.lines.append(_often_line(filed, subject, today) + ":")
     for v in filed[:6]:
         first = next((x for x in v.sentences if x.kind in ("prose", "item", "task")), None)
         entry = f"- {composer_lists._title(v)}"  # noqa: SLF001
@@ -489,6 +482,26 @@ def _often(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN
         if first is not None:
             composer_lists._cite(out, v, first, entry)  # noqa: SLF001
     return True
+
+
+def _only_mentioned(out, views: list, stems: list[str], subject: str) -> bool:  # noqa: ANN001
+    """No note is filed under the subject: say how many mention it, or False."""
+    said = [v for v in views if all(composer._holds(s, set(v.words)) for s in stems)]  # noqa: SLF001
+    if not said:
+        return False
+    out.lines.append(f"No note is titled or tagged {subject}; {composer_lists._plural(len(said), 'note')} only mention it in passing.")  # noqa: SLF001
+    return True
+
+
+def _often_line(filed: list, subject: str, today: date) -> str:
+    """How many notes are filed under the subject, from when to when and how far apart."""
+    days = sorted(v.written for v in filed if v.written)
+    line = f"You have {composer_lists._plural(len(filed), 'note')} titled or tagged {subject}"  # noqa: SLF001
+    if len(days) >= 2 and days[-1] > days[0]:
+        gap = round((days[-1] - days[0]).days / (len(days) - 1))
+        line += f", from {composer_lists._day(days[0], today)} to {composer_lists._day(days[-1], today)}"  # noqa: SLF001
+        line += f", about one every {composer_lists._plural(max(gap, 1), 'day')}"  # noqa: SLF001
+    return line
 
 
 def _start_day(view, today: date) -> tuple[date, object] | None:  # noqa: ANN001
@@ -540,6 +553,18 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if q.lower().startswith("compare ") and _pair(out, q, views, today):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
+    shaped = _by_words(out, tokens, views, today)
+    if shaped is not None:
+        return shaped
+    for pattern, say in ((_SINCE, _since), (_DID, _did), (_NEED, _left), (_LEFT, _left)):
+        if m := pattern.match(q):
+            return say(out, m.group(1), views, today)
+    return False
+
+
+def _by_words(out, tokens: list[str], views: list, today: date) -> bool | None:  # noqa: ANN001
+    """A value slot's answer (True, or False when the slot cannot say), how
+    often or how old; None when the words ask none of these."""
     if tokens and tokens[0] in ("what", "when", "how", "at"):
         for slot in SLOTS:
             if (ask := slot.ask(tokens)) is not None:
@@ -548,12 +573,4 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
         return True
     if len(tokens) > 3 and tokens[:2] == ["how", "old"] and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today):
         return True
-    if m := _SINCE.match(q):
-        return _since(out, m.group(1), views, today)
-    if m := _DID.match(q):
-        return _did(out, m.group(1), views, today)
-    if m := _NEED.match(q):
-        return _left(out, m.group(1), views, today)
-    if m := _LEFT.match(q):
-        return _left(out, m.group(1), views, today)
-    return False
+    return None

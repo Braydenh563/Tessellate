@@ -460,6 +460,11 @@ def _find(text: str) -> dict | None:
         about = _drop_article(_NOTES_SCOPE.sub("", asked["topic"].strip()))
         if about:
             return {"intent": "find", "about": about}
+    return _find_by_head(text)
+
+
+def _find_by_head(text: str) -> dict | None:
+    """"open my lisbon note", "find notes about tea": the command a head opens."""
     low = text.lower()
     for heads, intent in ((_OPEN_HEADS, "open"), (_FIND_HEADS, "find")):
         head = next((h for h in heads if low.startswith(h)), None)
