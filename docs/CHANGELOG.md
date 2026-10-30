@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- OCR: the background read after an upload no longer writes over a reading made, or text typed, while it ran ("Read with RapidOCR" could come back with the Tesseract text).
 - "Which is longer, the budget or the Lisbon trip" says which note is longer and both word counts before each side's lines (audit 1029 C36).
 - Graph: a reload of a map already on screen that takes longer than 400 ms shows a thin moving line under the note count until the map is in; it holds still with less motion (audit 1029 G30).
 - Answers from your notes (INBOX 1420, "what have I written about uni"): a note whose first sentence is a wh-clause ("What your notes leave out is ...") is quoted, never named "the note on what your notes leave out"; "I walked and was late" is told as "you walked and were late"; an answer that cites your notes no longer closes on a how-to for the app. A comparison drops "the" only with the word "notes" ("the Porto and Lisbon notes" is Porto and Lisbon, "the Lisbon flat" stays); "how are Deep Work and The Overstory different" and "compare sourdough loaf one and two" are read as comparisons of two named sides (audit 1029 C36). "What is left for the Lisbon trip" and "what do I need to do before the Lisbon trip" list the Lisbon packing list's open items when the trip note itself has none (C33). "Tell me about Lisbon" is answered as a place, not as a person who comes up in your notes.

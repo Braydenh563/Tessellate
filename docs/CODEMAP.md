@@ -1,8 +1,8 @@
 # Code map
 
-Generated 2026-10-29 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
+Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7244, test files 1555, tests 13554, plan headings 985.
+Counts: frontend functions 6827, frontend ids 2580, CSS sections 505, backend routes 632, backend modules 7244, test files 1555, tests 13555, plan headings 985.
 
 ## Frontend functions (6827)
 
@@ -19181,7 +19181,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_reading_block_kind` | src/tessellate/core/ocr.py:939 |
 | `_registry_tesseract_dir` | src/tessellate/core/ocr.py:75 |
 | `_word_box` | src/tessellate/core/ocr.py:855 |
-| `attempt_binary_install` | src/tessellate/core/ocr.py:1068 |
+| `attempt_binary_install` | src/tessellate/core/ocr.py:1073 |
 | `clear_language_cache` | src/tessellate/core/ocr.py:251 |
 | `effective_language` | src/tessellate/core/ocr.py:314 |
 | `engine` | src/tessellate/core/ocr.py:381 |
@@ -19189,7 +19189,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `engine_status` | src/tessellate/core/ocr.py:564 |
 | `extra_size` | src/tessellate/core/ocr.py:615 |
 | `extract_and_store` | src/tessellate/core/ocr.py:977 |
-| `extract_in_background` | src/tessellate/core/ocr.py:1026 |
+| `extract_in_background` | src/tessellate/core/ocr.py:1031 |
 | `extract_regions` | src/tessellate/core/ocr.py:737 |
 | `extract_text` | src/tessellate/core/ocr.py:682 |
 | `installed_languages` | src/tessellate/core/ocr.py:213 |
@@ -20533,7 +20533,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:332 |
 | `settings_from` | src/tessellate/search/websearch.py:317 |
 
-## Tests (13554)
+## Tests (13555)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21500,7 +21500,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notification_detail_period_1029.py | 3 |
 | tests/test_notifications_centre.py | 8 |
 | tests/test_object_actions.py | 6 |
-| tests/test_ocr.py | 19 |
+| tests/test_ocr.py | 20 |
 | tests/test_ocr_clean_loops.py | 7 |
 | tests/test_ocr_edit.py | 3 |
 | tests/test_ocr_engine.py | 12 |

@@ -350,3 +350,29 @@ def test_adopting_the_binary_twice_adds_one_path_entry(monkeypatch, tmp_path):
         assert entries.count(str(binary.parent)) == 1
     finally:
         ocr._probe_windows_tesseract.cache_clear()
+
+
+def test_a_reading_stored_while_the_background_pass_ran_is_kept(app_state, session, monkeypatch, tmp_path):
+    """PR 211 CI (Python 3.13): "Read with RapidOCR" answered with the
+    Tesseract text. The upload's background pass checked for stored text
+    before its read and wrote after it unconditionally, so a slow pass landed
+    on top of the reading (or a hand edit) made in between."""
+    from tessellate.core import deps
+    from tessellate.core.database import MediaUpload
+
+    upload = MediaUpload(filename="c.png", original_name="c.png")
+    session.add(upload)
+    session.commit()
+    upload_id = upload.id
+    session.close()
+
+    def slow_read(path):  # noqa: ANN001, ANN202
+        with deps.get_db().session() as meanwhile:
+            meanwhile.get(MediaUpload, upload_id).ocr_text = "read by rapid"
+            meanwhile.commit()
+        return "read by tesseract"
+
+    monkeypatch.setattr(ocr, "extract_text", slow_read)
+    ocr.extract_and_store(upload_id, tmp_path / "c.png")
+    with deps.get_db().session() as check:
+        assert check.get(MediaUpload, upload_id).ocr_text == "read by rapid"
