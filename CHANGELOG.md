@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Shell (audit 1028 S26): the search-by-meaning question toast is the small size on a phone (152px, was 178px), so at 390x667 it covers 6px of the Ask box's button, not 32px; the Ask tab's offline banner stays one in-flow line (111px at 390x844) and no toast opens over it unless the question is owed.
 - Chat (INBOX 1333 b, the open half): /today, /yesterday, /made and /recent, and the "nothing written today, your notes run from X to Y" answer, draw a small timeline strip under their words, the Statistics card's spark line by the hour, day, week or month (the `timeline` reply panel, no model needed).
 - CI fixes (PR 211): the greeting and the web page reads run on the registered background helper (`background.future`), not a bare thread or pool; a composed answer no longer imports the embedding stack for the user's clock (0.55 s first call, was 1.5 s); help and personal no longer close an import cycle through the composer; three board error toasts say their fault; the Mermaid field is named in the board round trip; CodeQL 1869, 1872 to 1874: four regexes made linear.
 - Composer (INBOX 1334, the open half): a one- to three-word message that names an app feature ("timer", "calculator") when a note does mention the word answers with the note, then one closing line offers the tool from the same Guide line the no-note answer uses; a phrase that is not the feature ("oven timer") gets no offer.
