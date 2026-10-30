@@ -514,6 +514,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "caption": None,
         # Added with a picture's or text box's own keep-proportions switch (INBOX 1313, plan row 5).
         "keep_ratio": None,
+        # And with a picture's crop to a shape (INBOX 1313, plan row 13).
+        "crop": None,
     }
 
     moved = board_client.put(
@@ -1171,3 +1173,11 @@ def test_an_objects_keep_proportions_switch_is_kept(board_client):
     assert made.json()["data"]["keep_ratio"] is True
     state = board_client.get("/whiteboard/").json()
     assert state["objects"][0]["data"]["keep_ratio"] is True
+
+
+def test_a_pictures_crop_shape_is_kept_and_only_a_known_one(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "hexagon"}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["crop"] == "hexagon"
+    refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "url(x)"}})
+    assert refused.status_code == 422

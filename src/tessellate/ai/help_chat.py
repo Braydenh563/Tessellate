@@ -1627,13 +1627,13 @@ HELP_TOPICS.extend(
                 "line shape", "line end", "line ends", "arrowhead", "arrow end", "diamond end", "label position",
                 "arrow size", "end size", "bigger arrowhead", "stealth arrow", "memorymap arrow", "signature arrow",
                 "reset style", "default style", "reset an object", "back to default", "underline", "strikethrough", "font family", "clear formatting", "rounded corners", "round corners", "dash pattern", "custom dashes", "flow animation", "marching ants", "jump size", "connector gap", "clear waypoints", "clear bends", "gradient", "hatch", "fill style", "pattern fill",
-                "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
+                "crop a picture", "crop to a circle", "picture shape", "line jumps", "line jump", "crossing lines", "lines cross", "hop over",
             ),
             "body": (
                 "The top bar's Format button, Ctrl+Shift+P or View > Format panel opens "
                 "the Format panel on the right, with three tabs. Style: line colour, width and pattern, "
                 "your own dashes (a dash and a gap in line widths, like 8 4), rounded corners, flow (dashes that move), "
-                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, and for a connector its line shape (curved, straight or elbow), "
+                "fill (gradient, hatch, dots or zigzag; how solid), opacity, shadow (offset, blur), box corner radii and padding, a picture's crop to a shape, and for a connector its line shape (curved, straight or elbow), "
                 "its line jumps (it hops over a line under it with an arc, a gap or a "
                 "sharp peak, of a size you set), a gap to stop short of the shape at each end, its two ends (twenty-one marks, from open and "
                 "filled arrows to circles, diamonds, a cross and a crow's foot, "

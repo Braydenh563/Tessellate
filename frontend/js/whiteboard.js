@@ -1740,6 +1740,29 @@ function wbShadowOf(look) {
   return { x: n(look?.shadow_x, 0), y: n(look?.shadow_y, 2), blur: n(look?.shadow_blur, 4) };
 }
 
+//: **Crop a picture to a shape** (`data.crop`; INBOX 1313 row 13). Corner
+//: points as shares of the picture's box, so one table draws the board's CSS
+//: clip and the export's path at any size. An ellipse is a circle on a square.
+const WB_CROPS = {
+  ellipse: null,
+  diamond: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]],
+  hexagon: [[0.25, 0], [0.75, 0], [1, 0.5], [0.75, 1], [0.25, 1], [0, 0.5]],
+  triangle: [[0.5, 0], [1, 1], [0, 1]],
+};
+
+function wbCropClip(crop) {
+  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
+  const points = WB_CROPS[crop];
+  return points ? `polygon(${points.map(([x, y]) => `${x * 100}% ${y * 100}%`).join(", ")})` : "ellipse(50% 50% at 50% 50%)";
+}
+
+function wbCropPath(crop, w, h) {
+  if (!Object.prototype.hasOwnProperty.call(WB_CROPS, crop)) return "";
+  const points = WB_CROPS[crop];
+  if (points) return `M ${points.map(([x, y]) => `${x * w} ${y * h}`).join(" L ")} Z`;
+  return `M 0 ${h / 2} A ${w / 2} ${h / 2} 0 1 0 ${w} ${h / 2} A ${w / 2} ${h / 2} 0 1 0 0 ${h / 2} Z`;
+}
+
 function wbShadowCss(look) {
   if (!look?.shadow) return null;
   const { x, y, blur } = wbShadowOf(look);
@@ -13315,8 +13338,10 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
       //: A picture with rounded corners (Format > Corners) is clipped to the
       //: same path the board draws, read off the drawn element as a box's is.
       const radii = wbSvgBoxRadii(document.querySelector(`#wb-html-layer .wb-object[data-id="${obj.id}"]`), obj.data, obj.width, obj.height);
-      const clip = radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
-      if (clip) parts.push(`<clipPath id="${clip}"><path d="${wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
+      //: A crop to a shape wins over rounded corners, as it does on the board.
+      const cropPath = wbCropPath(obj.data.crop, obj.width, obj.height);
+      const clip = cropPath || radii.some((r) => r > 0) ? `wb-export-clip-${obj.id}` : "";
+      if (clip) parts.push(`<clipPath id="${clip}"><path d="${cropPath || wbSvgRoundedPath(obj.width, obj.height, radii)}" /></clipPath>`);
       parts.push(
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
@@ -23421,7 +23446,8 @@ function renderWbObjects(canvas) {
       if (d.kind === "text") this.style.padding = d.data?.pad != null ? `${d.data.pad}px` : "";
     }
     if (d.kind === "image") {
-      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null);
+      el.select("img").attr("src", mediaSrc(d.data.url) || "").style("border-radius", d.data.radii ? "inherit" : null)
+        .style("clip-path", wbCropClip(d.data.crop) || null);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       wbPaintMapNode(el, d, mapIndex, mapColors, mapFills);
     } else if (d.kind === "frame") {

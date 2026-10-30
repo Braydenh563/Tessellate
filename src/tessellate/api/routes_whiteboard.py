@@ -391,6 +391,9 @@ class WhiteboardObjectData(BaseModel):
     #: This item's own keep-proportions switch (INBOX 1313): a corner drag keeps
     #: the ratio without Shift. A schema that does not name it drops it.
     keep_ratio: bool | None = None
+    #: A picture cropped to a shape (INBOX 1313): a name from this short list,
+    #: never a path, so nothing a client sends reaches a style.
+    crop: str | None = Field(default=None, pattern="^(ellipse|diamond|hexagon|triangle)$")
     color: str | None = Field(default=None, max_length=20)
     #: 0 is a topic's pin to the app's own size against a map's theme
     #: (`MAP_APP_DEFAULT_PINS`); 1 to 7 stay refused (`_size_or_pin`).

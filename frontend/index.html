@@ -8344,6 +8344,15 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
             </span>
           </div>
+          <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
+            <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
+              <option value="">Rectangle</option>
+              <option value="ellipse">Ellipse</option>
+              <option value="diamond">Diamond</option>
+              <option value="hexagon">Hexagon</option>
+              <option value="triangle">Triangle</option>
+            </select>
+          </label>
           <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
             <span class="wb-fmt-quad">
               <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
