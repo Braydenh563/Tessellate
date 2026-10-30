@@ -225,3 +225,19 @@ def test_a_did_i_with_no_record_names_the_nearest_note_not_found_nothing(questio
     ]
     said = composer_digest.answer(question, notes, today=datetime(2026, 10, 30).date())["text"]
     assert said.startswith(lead), said
+
+
+@pytest.mark.parametrize("question", ["How did I meet Mia again?", "where do I know Mia from", "when did I first meet Mia"])
+def test_how_did_i_meet_a_name_is_answered_by_who_they_are(question):
+    """Stress run 2026-10-30: "How did I meet Mia" was answered "We meet on
+    Thursdays" (the verb, not the name), or by a trip note that only names
+    her; notes tagged #mia had made the name read as a topic."""
+    from tessellate.ai import composer_digest
+
+    notes = [
+        _note(1, "# Sam at work\n\nSam is my manager. We meet on Thursdays.", datetime(2026, 10, 1, 9)),
+        _note(2, "# November trip\n\n#mia\n\nTentative Kyoto trip with Mia, 12 to 19 November.", datetime(2026, 10, 2, 9)),
+        _note(3, "# Mia food reminder\n\n#mia\n\nMia is a friend from the university ceramics club. She's vegetarian.", datetime(2026, 10, 3, 9)),
+    ]
+    said = composer_digest.answer(question, notes, today=datetime(2026, 10, 30).date())["text"]
+    assert "ceramics club" in said.split("\n\n", 2)[1] and "Thursdays" not in said, said

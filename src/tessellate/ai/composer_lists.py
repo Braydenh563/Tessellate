@@ -680,6 +680,26 @@ _COUNTED = re.compile(
 )
 
 
+_THINGS = re.compile(
+    r"^how many (?P<name>[a-z][\w&' -]{1,30}?)\s+(?:do i have|have i (?:got|saved|written|kept|filed)|are there|did i (?:save|write|keep|file))"
+    r"(?:\s+(?:saved|written down|in my notes|so far))?$",
+    re.I,
+)
+
+
+def counted_things(question: str) -> str | None:
+    """What "how many recipes have I saved" counts: a name to read as a
+    category or a tag, or None. The caller counts it only when the name is
+    one; "how many km have I run" names neither and goes on to the composer."""
+    found = _THINGS.match(_q(question))
+    if not found:
+        return None
+    name = found.group("name").strip().lower()
+    if name in _NOT_A_NAME or name.split()[-1] in ("notes", "note", "entries", "times"):
+        return None
+    return name
+
+
 def counted_filing(question: str) -> str | None:
     """What "how many notes do I have about work" counts: a name to read as a
     category or a tag, "" for the whole notebook, None when the question is

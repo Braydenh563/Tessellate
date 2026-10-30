@@ -3132,6 +3132,9 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
     return bool(computed and composer_lists.answer(out, computed, asked, views, today))
 
 
+_HOW_MET = re.compile(r"^(?:how|where|when) (?:did|do) (?:i|we) (?:first )?(?:meet|know|get to know) (?P<name>.+?)(?: (?:again|from|first))*$", re.I)
+
+
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
     """The answers that are one notebook-wide lookup (what an abbreviation
     stands for, who someone is, a comparison, what a category holds): the
@@ -3139,9 +3142,16 @@ def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: 
     names = _NAMES.get()
     if _looked_up(out, asked, question, views, today):
         return _result(out, "fact", asked)
-    if kind == "overview" and (said := _person_asked(asked, names, views)):
+    met = _HOW_MET.match(asked.strip(" ?.!"))
+    #: One meets a person: a name asked so is one even when notes are
+    #: tagged with it (#mia), which `_person_asked` reads as a topic.
+    said = met.group("name").lower() if met else ""
+    said = said if said.isalpha() and said in names else ""
+    if said or (kind == "overview" and (said := _person_asked(asked, names, views))):
         #: "tell me about Tom" is "who is Tom": a name has one answer shape
-        #: (audit 1029 C17), never an attendee list read as a count.
+        #: (audit 1029 C17), never an attendee list read as a count. "How
+        #: did I meet Mia" is too: the note that says who she is answers
+        #: it, never one that only shares the verb ("we meet on Thursdays").
         kind, asked = "who", f"who is {said}"
     if kind == "who":
         name = _ASKS["who"].search(asked).group("name").strip()

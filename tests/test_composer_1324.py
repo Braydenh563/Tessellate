@@ -184,3 +184,28 @@ def test_one_note_shown_of_many_is_not_called_the_first_ones():
     note = {"id": 1, "title": "Knife sharpening", "content": "# Knife sharpening\n\nWhetstone."}
     lead, _rows, _chips = tool_say._found_notes("I found five notes about “knives”.", [note], 5, "none")
     assert "Here is the closest one." in lead and "the first one" not in lead.replace("Here is the closest one", "")
+
+
+@pytest.mark.parametrize(
+    ("ask", "name"),
+    [("How many recipes have I saved?", "recipes"), ("how many books do I have", "books"), ("how many notes have I saved", None), ("how many km did I run", None)],
+)
+def test_a_count_of_a_filing_name_is_read_as_one(ask, name):
+    from tessellate.ai import composer_lists
+
+    assert composer_lists.counted_things(ask) == name
+
+
+def test_how_many_recipes_counts_and_names_the_filed_notes(client, session):
+    from tessellate.entry import manager as m
+
+    for title in ("Lentil soup", "Banana loaf", "Chickpea curry"):
+        m.create_entry(session, f"# {title}\n\nServes four.", category_name="Recipes")
+    m.create_entry(session, "# Recipes to try\n\nA list for later.", category_name="Ideas")
+    m.create_entry(session, "# Run log\n\nRan 5 km.", category_name="Health")
+    session.commit()
+    text = _ask(client, "How many recipes have I saved?", notes_only=True, use_tools=False)["text"]
+    assert text.startswith("You have three recipes: ") and all(t in text for t in ("Lentil soup", "Banana loaf", "Chickpea curry"))
+    assert "Recipes to try" not in text
+    #: A name that is neither a category nor a tag is the composer's.
+    assert not _ask(client, "how many km have I run", notes_only=True, use_tools=False)["text"].startswith("You have")
