@@ -266,8 +266,10 @@ def _stream(client, question: str, history: list | None = None) -> list[dict]:
         return [json.loads(line) for line in response.iter_lines() if line.strip()]
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def clock(monkeypatch):
+    #: Every test here, not only the chat ones: a snooze "until friday" read
+    #: against the real clock went past on Friday after 9 (2026-10-30).
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
 
