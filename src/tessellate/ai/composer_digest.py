@@ -2862,6 +2862,9 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
     found = [(v, s) for v in views for s in v.sentences if re.search(rf"\b{re.escape(name)}\b", s.text, re.I)]
     if not found:
         return False
+    #: The note about the person leads, whatever order the search gave
+    #: (audit 1030 Z11: "who is Sara" led with a gift list's "Sara: a jazz record").
+    found.sort(key=lambda vs: -_defines(vs[0], name.split()))
     notes = {v.id for v, _ in found}
     view, s = found[0]
     fact = _tidy(_second_person(s.text.strip()), view.written)
@@ -2876,6 +2879,9 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
             if not _TIMED.get() and body.lower() in said:
                 continue
             said.add(body.lower())
+            #: "Sara: a jazz record" means nothing without the list it sits in.
+            if v.title and re.match(rf"{re.escape(name)}\s*:", body, re.I) and not _defines(v, name.split()):
+                body = f"your {v.title} note has {body}"
             body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
             out.lines.append(f"On {_day(v.written, today)}, {body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
     out.rows.append({"sentence": fact, "note_id": view.note.get("source_id", view.id), "source": s.text, "score": 1.0, "digest": True})
@@ -3179,16 +3185,35 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
 
 
+def _defines(view, words: list[str]) -> int:
+    """How plainly `view` is the note about `words`: 2 when its title is the
+    subject ("Sara", "Uni"), 1 when an opening sentence says what it is
+    ("Sara is my sister"), else 0 (a passing mention)."""
+    if not words:
+        return 0
+    title = re.sub(r"^(?:the|my|a|an)\s+", "", (view.title or "").strip().lower()) if getattr(view, "titled", False) else ""
+    if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
+        return 2
+    said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in words) + r"\s+(?:is|are|was|were|means|refers to)\b", re.I)
+    return 1 if any(said.match(x.text) for x in view.sentences[:2]) else 0
+
+
 def _defining_first(asked: str, members: list) -> list:
-    """The note that says what the subject is ("Cloud computing is the
-    delivery of ...") leads, ahead of a passing mention the search ranked
-    higher (INBOX 1420: "it missed my main note about what cloud computing is")."""
+    """The note named for the subject, or the one that says what the subject
+    is ("Cloud computing is the delivery of ..."), leads ahead of a passing
+    mention the search ranked higher (INBOX 1420; audit 1030 Z11: "summarise
+    everything about uni" led with "Just missed the bus to uni")."""
     terms = composer.subject_terms(clean(asked))
     if not terms or len(members) < 2:
         return members
-    said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in terms) + r"\s+(?:is|are|means|refers to)\b", re.I)
-    defining = [v for v in members if any(said.match(x.text) for x in v.sentences[:2])]
-    return defining[:1] + [v for v in members if v not in defining[:1]] if defining else members
+    #: As typed: the subject may come back widened ("uni" to "university").
+    typed = [w for w in re.findall(r"[\w'-]+", asked.lower()) if any(t.startswith(w) or w.startswith(t) for t in terms)]
+    rank = {id(v): max(_defines(v, terms), _defines(v, typed)) for v in members}
+    best = max(rank.values())
+    if not best:
+        return members
+    lead = next(v for v in members if rank[id(v)] == best)
+    return [lead] + [v for v in members if v is not lead]
 
 
 def _named_checklist(kind: str, asked: str, members: list):  # noqa: ANN202

@@ -219,12 +219,39 @@ def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # 
 _TASTE = frozenset({"like", "enjoy", "love", "hate", "rate", "mind"})
 
 
-def _say_taste(out, view, s, today: date) -> None:  # noqa: ANN001
+_VERDICT = re.compile(
+    r"\b(?:lov|lik|enjoy|hat|dislik|great|good|bad|boring|amazing|favou?rite|meh|okay|brilliant|terrible|awful|excellent|disappoint)\w*"
+    r"|\b\d+(?:\.\d)?\s*/\s*(?:10|5)\b|\bstars?\b",
+    re.I,
+)
+
+
+def _titled(view, stems: list[str]) -> bool:  # noqa: ANN001
+    have = set(composer._words(getattr(view, "title", "") or ""))  # noqa: SLF001
+    return bool(stems) and getattr(view, "titled", False) and all(s in have for s in stems)
+
+
+def _taste_said(views: list, stems: list[str]):  # noqa: ANN001
+    """The (view, sentences) that give a verdict on the thing: the note named
+    for it first, whose lines are about it without naming it ("# Piranesi /
+    Loved it. 9/10"), then any line that names it and judges (audit 1030 Z11:
+    "did I like Piranesi" quoted the reading list)."""
+    for view in sorted(views, key=lambda v: (not _titled(v, stems), v.rank)):
+        own = _titled(view, stems)
+        said = [s for s in view.sentences if _VERDICT.search(s.text) and (own or _holds(s, stems))]
+        if said:
+            return view, said[:2]
+    return None
+
+
+def _say_taste(out, view, said: list, today: date) -> None:  # noqa: ANN001
     day = view.written
+    where = f"Your {view.title} note" if getattr(view, "titled", False) and view.title else "Your note"
     when = f" of {composer_lists._day(day, today)}" if day else ""  # noqa: SLF001
-    text = re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip()
-    out.lines.append(f"Your note{when} says: {text}")
-    composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+    text = " ".join(re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip() for s in said)
+    out.lines.append(f"{where}{when} says: {text}")
+    for s in said:
+        composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
 
 
 def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
@@ -235,7 +262,7 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     obj = _stems(_asked_thing(words))
     if not obj:
         return False
-    if words[0] in _TASTE and (best := _first_did(views, frozenset(), obj)):
+    if words[0] in _TASTE and (best := _taste_said(views, obj) or _one_line(_first_did(views, frozenset(), obj))):
         _say_taste(out, *best, today)
         return True
     if words[0].lower() in _WRITING and (seen := _first_did(views, frozenset(), obj)):
@@ -247,6 +274,10 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         return True
     _say_did(out, *best, words[0], today)
     return True
+
+
+def _one_line(found):  # noqa: ANN001, ANN202
+    return (found[0], [found[1]]) if found else None
 
 
 def _when_said(view, sentence, today: date) -> date | None:  # noqa: ANN001

@@ -129,3 +129,40 @@ def test_to_dos_written_as_sentences_answer_what_is_left():
     said = composer_digest.answer("what do I need to do for the trip", notes, today=_N.date())["text"]
     assert said.startswith("There is no checklist for it, but Trip plan has this to do:"), said
     assert "Book the train to Leeds" in said, said
+
+
+def _z11(i, content, day=_N):
+    return {"id": i, "content": content, "created_at": day, "updated_at": day, "category": "Personal"}
+
+
+_SARA = [
+    _z11(1, "# Gift ideas\n\nSara: a jazz record. Tom: socks. Mum: a scarf."),
+    _z11(2, "# Sara\n\nSara is my sister. Her birthday is 12 December.", dt.datetime(2026, 9, 25, 9)),
+    _z11(3, "# Movies\n\nWatched Arrival on 9 October with Sara and liked it a lot."),
+]
+
+
+def test_z11_the_note_about_a_person_leads_and_a_list_line_keeps_its_list():
+    """"who is Sara" led with the gift list's "Sara: a jazz record" because
+    the search ranked it first; the Sara note came second."""
+    said = composer_digest.answer("who is Sara", _SARA, today=_N.date())["text"]
+    lines = [x for x in said.split("\n") if x.strip()]
+    assert lines[1] == "Sara is your sister.", said
+    assert "Your Gift ideas note has Sara: a jazz record." in said, said
+
+
+def test_z11_a_review_note_named_for_the_book_answers_did_i_like_it():
+    """"did I like Piranesi" quoted the reading list: the Piranesi note's
+    "Loved it. 9/10." was dropped as too short and never names the book."""
+    books = [_z11(1, "# Books\n\nReading list: Piranesi, Dune, Circe."), _z11(2, "# Piranesi\n\nLoved it. 9/10. The house is the world.")]
+    said = composer_digest.answer("did I like Piranesi", books, today=_N.date())["text"]
+    assert said.startswith("Your Piranesi note of 29 October says: Loved it. 9/10."), said
+
+
+def test_z11_the_note_named_for_a_topic_leads_an_overview():
+    """"summarise everything about uni" led with "Just missed the bus to uni"
+    and the Uni note came under "Other notes"; "everything" was read as a
+    second subject the notes had to hold."""
+    uni = [_z11(1, "Just missed the bus to uni today, so annoyed"), _z11(2, "# Uni\n\nSecond year of a design degree at Leeds. Lectures Monday and Thursday.")]
+    said = composer_digest.answer("summarise everything about uni", uni, today=_N.date())["text"]
+    assert said.index("design degree") < said.index("bus"), said

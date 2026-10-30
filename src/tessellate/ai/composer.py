@@ -413,7 +413,7 @@ SHAPES = ("what", *(name for name, _ in _SHAPE_RULES), "recent")
 #: question wraps its subject in ("feel", "say") are here too, so the closing
 #: line never reports "feel" as a word no note mentions.
 _ASKING_WORDS = frozenset(
-    """about all any anything define defines definition meaning compare comparison difference differences
+    """about all any anything everything define defines definition meaning compare comparison difference differences
     between versus vs latest status progress update updates newest recent
     recently most current currently tell say says said know think thought
     feel felt get got go went make made want need like much many number
@@ -1073,9 +1073,20 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
 
 
+#: A rating or a verdict is the whole review in a book or film note: "9/10",
+#: "Loved it" (audit 1030 Z11: "did I like Piranesi" never saw either).
+_SHORT_VERDICT = re.compile(
+    r"^(?:\d+(?:\.\d)?\s*/\s*(?:5|10)|\d\s*stars?|(?:really\s+|not\s+)?(?:lov|lik|enjoy|hat|dislik)(?:ed|e)\s+(?:it|this|that|them)"
+    r"|(?:so\s+|really\s+|not\s+)?(?:good|great|boring|amazing|brilliant|terrible|awful|meh))[.!]?$",
+    re.I,
+)
+
+
 def _short_fact(text: str) -> bool:
     """A one- or two-word line that still says something: a word and a
-    figure, or a label and its value."""
+    figure, a label and its value, or a verdict."""
+    if _SHORT_VERDICT.match(text.strip()):
+        return True
     parts = text.rstrip(".").split()
     if len(parts) < 2:
         return False

@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (audit 1030 Z11): the note named for a person, book or topic now leads its answer ahead of a passing mention; "did I like Piranesi" reads the Piranesi note's "Loved it. 9/10." (short verdicts and ratings are no longer dropped); a list line like "Sara: a jazz record" names its list; "everything" is no longer a subject the notes must hold.
 - Docs: docs/ARCHITECTURE.md now draws the whole app, the chat turn and the composer as mermaid diagrams, replacing the old ASCII picture and the outdated "asking a question" steps.
 - Composer: "what's still on my grocery list" lists only the open items, and "what do I need to do for the trip" answers from to-dos written as sentences when there is no checklist.
 - Composer: "what does Priya do" and "what is Tom's job" lead with the sentence that says the work; "goals for Q1" gives Q1's whole list and leaves Q2 out.
