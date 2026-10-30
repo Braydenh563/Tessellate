@@ -45,7 +45,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
 | 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
-| 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (this commit) | M |
+| 42 | D27 | med | no image resize handles or alt-text prompt on paste | fixed (61089b9) | M |
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
