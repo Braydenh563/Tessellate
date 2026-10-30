@@ -2699,13 +2699,14 @@ def _said_by_shape(term: str, quoted_text: str) -> bool:
 _FRAME_SHAPES = re.compile(
     r"\bhow (?!to\b)(\w+)"
     r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
-    r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)",
+    r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)"
+    r"|\bwhat (\w+s) (?:in|into|inside|with|on)\b",
     re.I,
 )
 _FRAME_WORDS = frozenset(
     _stem_plain(w)
     for w in """total sum plus overall whole altogether notebook theme themes him her them myself yourself ourselves
-    more less sooner later further farther right now""".split()
+    more less sooner later further farther right now ingredient ingredients contents details information""".split()
 )
 
 
@@ -4139,6 +4140,14 @@ def invitation(message: str, subject: str, voice: str, seed: str) -> str:
     return _pick(f"{message}|{subject}", f"invite:{seed}", list(INVITES[said])).format(subject=subject)
 
 
+def greeting_ask(message: str, voice: str, seed: str) -> str:
+    """A plain offer to end a welcome that already names the last note (the
+    invitation would say it twice, audit 1030 Z51)."""
+    mood = composer_compose.voice_for(composer_tables.voice_of(voice))
+    pool = [x.text for x in composer_lines.SOCIAL_TAILS["*"] if not x.emotions and mood in x.voices and x.text.endswith("?")]
+    return _pick(message, f"greeting_ask:{seed}", pool) if pool else ""
+
+
 def _social_line(message: str, kind: str, previous: str, last_question: str, voice: str, recent, seed: str) -> str:  # noqa: ANN001
     """The stored opener of `kind`, and a next step after an acknowledgement."""
     recent = [r for r in recent if r] or ([previous] if previous else [])
@@ -4987,8 +4996,9 @@ def _absent(terms: list[str], views: list[NoteView]) -> list[str]:
 def window_said(phrase: str) -> str:
     """A time window as an adverbial, with the preposition it needs ("on 20
     October", "in the last 7 days"; "last week" and "today" as they are):
-    `recognise.adverbial`, the one reader of it."""
-    return rec.adverbial(phrase)
+    `recognise.adverbial`, the one reader of it; said with its capitals (audit
+    1030 Z45)."""
+    return rec.proper_days(rec.adverbial(phrase))
 
 
 def _as_typed(word: str, question: str) -> str:

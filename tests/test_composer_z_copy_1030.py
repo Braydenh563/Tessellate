@@ -82,3 +82,50 @@ def test_z28_a_day_question_says_what_the_notes_hold_not_that_they_were_made(ask
 
 def test_z28_a_made_question_still_names_what_was_made(ask):
     assert "Made the note" in ask("what did I make yesterday")[0]
+
+
+@pytest.mark.parametrize("question", ["what is on saturday", "what is due this week", "what is coming up"])
+def test_z43_a_dated_item_that_is_its_title_is_the_link_said_once(ask, question):
+    said = ask(question)[0]
+    assert "- [Coffee with Anna on Saturday at Brunetti](#/notes/30)" in said, said
+    assert "([Coffee with Anna" not in said and "([Remember to pay rent" not in said, said
+
+
+def test_z43_a_line_under_a_real_title_keeps_both(ask):
+    assert "- Dentist appointment on 4 November 2026 at 9:30. ([Dentist](#/notes/13))" in ask("what is on 4 November")[0]
+
+
+@pytest.mark.parametrize("question", ["what goes in the soup", "lentil soup ingredients", "what are the contents of the lentil soup note"])
+def test_z46_a_frame_word_is_not_a_missing_topic(ask, question):
+    said = ask(question)[0]
+    for word in ("goes", "ingredients", "contents"):
+        assert f"“{word}”" not in said, said
+
+
+@pytest.mark.parametrize("question", ["hello", "hey", "good morning"])
+def test_z51_a_greeting_states_only_what_it_counted(ask, question):
+    said = ask(question)[0]
+    assert "waiting on you" not in said and "That makes" not in said, said
+    assert said.count("Weekly review") <= 1 and "writing about weekly" not in said and "about weekly" not in said, said
+
+
+@pytest.mark.parametrize("question", ["how are you", "yes", "ok"])
+def test_z51_a_neutral_turn_is_not_met_as_if_stressed(ask, question):
+    said = ask(question)[0]
+    assert "most pressing" not in said and "one thing at a time" not in said.lower() and "take it in order" not in said.lower(), said
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("is the passport packed", "Yes, “Passport” is ticked off"),
+    ("is the charger packed", "Not yet: “Charger” is still open"),
+    ("is everything packed", "Not yet: three of five still open on Lisbon packing list: charger, sunscreen and power adapter."),
+    ("what's unpacked", "3 still to do on Lisbon packing list:"),
+    ("what is left in my todo", "3 still to do on Todo this week:"),
+    ("what do I need to buy", "4 still to do on Shopping list:"),
+    ("what have I ticked off", "You have ticked off four items across three notes:"),
+])
+def test_z56_a_checklist_state_is_one_reader_for_every_phrasing(client, session, monkeypatch, question, lead):
+    seed_1030.seed(session)
+    said = seed_1030.asker(client, monkeypatch, chat=True)(question)[0]
+    assert said.startswith(lead), said
+    assert "do not mention" not in said and "general knowledge" not in said, said

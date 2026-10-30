@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_sum, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1690,16 +1690,25 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     return merged
 
 
-def _money_pool(session: Session, question: str, found: _Found) -> None:
-    """"How much have I spent", "my biggest expense": a sum over every note
-    that records spending, which the five likest never were ("spent" does not
-    match "Spending October"; 2026-10-30 sweep). None at all keeps the
-    ordinary retrieval, so the answer can say no note holds it."""
-    if not (composer_money.asks(question) or composer_sum.asks_most(question)):
+_CHECKBOX = re.compile(r"^\s*[-*]\s*\[[ xX]\]", re.M)
+
+
+def _whole_pool(session: Session, question: str, found: _Found) -> None:
+    """"How much have I spent", "my biggest expense", "what's unpacked": the
+    answer is over every note that records the thing (spending, an amount, a
+    checklist), which the five likest never were ("spent" does not match
+    "Spending October"; 2026-10-30 sweep). None at all keeps the ordinary
+    retrieval, so the answer can say no note holds it."""
+    mode = "money"
+    if composer_money.asks(question) or composer_sum.asks_most(question):
+        holds = lambda text: composer_money.records_amounts(text) or composer_sum.holds_amount(question, text)  # noqa: E731
+    elif composer_slots.asks_state(question):
+        holds, mode = (lambda text: bool(_CHECKBOX.search(text))), "checklist"  # noqa: E731
+    else:
         return
-    if recorded := [e for e in manager.list_entries(session, limit=400) if composer_money.records_amounts(e.content or "") or composer_sum.holds_amount(question, e.content or "")]:
+    if recorded := [e for e in manager.list_entries(session, limit=400) if holds(e.content or "")]:
         found.entries = recorded
-        found.mode, found.connected_ids, found.match_info = "money", set(), {}
+        found.mode, found.connected_ids, found.match_info = mode, set(), {}
 
 
 def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -1728,7 +1737,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     if not attached and as_of is None:
         _recall_window(session, question, found)
     if not attached:
-        _money_pool(session, question, found)
+        _whole_pool(session, question, found)
 
 
 def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -2111,7 +2120,7 @@ def _prepare(
     attached_files = _attached_files(session, file_ids or [])
     attached_boards = _attached_boards(session, board_ids or [])
     detected = _detect_intent(question, force_notes_intent, attached, attached_docs, attached_files, attached_boards)
-    detected = intent.NOTES if _names_a_note_word(session, question, detected) else detected
+    detected = _notes_first(session, question, detected)
     detected, stats = _computed_answer(session, question, detected, as_of, attached)
     found = _Found(detected=detected, stats=stats)
     #: `skip_search`: the app's own reader has already answered this turn (a
@@ -2956,19 +2965,26 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
         return ""
 
 
+def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
+    """A hello answered with a welcome built from the day (CHAT_PLAN 1353), or
+    "" when the day's numbers cannot be read."""
+    welcome = _welcome(req, seed, recent)
+    if not welcome:
+        return ""
+    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
+    #: The welcome already names the last note: no second sentence about it.
+    invite = "" if "“" in welcome else _newest_word(req.session)
+    asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else composer.greeting_ask(req.question, _composer_voice(), seed)
+    return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+
+
 def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     """The app's own reply to small talk (INBOX 741), never echoing the last
     three replies (the owner: "can it have more varied responses??")."""
     recent, seed = _reply_seed(req)
     last = (req.history or [{}])[-1] if req.history else {}
-    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning"):
-        #: A hello is answered with a welcome built from the day (CHAT_PLAN 1353).
-        welcome = _welcome(req, seed, recent)
-        if welcome:
-            sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
-            invite = _newest_word(req.session)
-            asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else ""
-            return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
+    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
+        return hello
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -2997,7 +3013,10 @@ def _newest_word(session: Session) -> str:
     newest = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).first()
     if not newest:
         return ""
-    for term in query_understanding.search_terms(str(newest[0] or "")[:400]):
+    #: Not a word of its title: "Weekly review" is about weekly nothing.
+    text = str(newest[0] or "")
+    start = composer._title(text)[1]
+    for term in query_understanding.search_terms((text[start:] if start else text)[:400]):
         if len(term) >= 4 and term.isalpha() and term not in _NOT_A_SUBJECT and query_understanding.is_topic_word(term) and spelling.is_word(term):
             return term
     return ""
@@ -3081,23 +3100,24 @@ def _newest_titles(session: Session, count: int = 4) -> list[str]:
     """The names of the newest notes, newest first, for a choice to open one."""
     from tessellate.ai.tools._common import _visible
 
-    rows = session.query(Entry.content, Entry.created_at).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
+    rows = session.query(Entry.content).filter(*_visible()).order_by(Entry.created_at.desc()).limit(count * 3).all()
     titles: list[str] = []
-    for content, created in rows:
-        title = _closing_name(str(content or ""), created)
+    for (content,) in rows:
+        title = _closing_name(str(content or ""))
         if title and title not in titles:
             titles.append(title)
     return titles[:count]
 
 
-def _closing_name(content: str, created) -> str:  # noqa: ANN001
+def _closing_name(content: str) -> str:
     """What a next-step line calls a note: its heading, a whole short first
     line, or, for a title-less note whose first words would be cut mid
-    sentence, the day it was written ("Note of 25 October"; audit 1030 Z38)."""
+    sentence, its first sentence whole (audit 1030 Z38; never its date,
+    INBOX 1441)."""
     name, start = composer._title(content)
     name = name.strip()
-    if start == 0 and name.endswith("…") and created:
-        return f"Note of {created.day} {created:%B}"
+    if start == 0 and name.endswith("…"):
+        name = re.split(r"(?<=[.!?;])\s|\n", content.strip(), maxsplit=1)[0].strip(" .:;")
     return realise.cut_title(name, 60) if name else ""
 
 
@@ -3658,8 +3678,8 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
             title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
         else:
-            row = session.query(Entry.content, Entry.created_at).filter(Entry.id == nid, *_visible()).first()
-            title = _closing_name(str(row[0] or ""), row[1]) if row else ""
+            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+            title = _closing_name(str(row[0] or "")) if row else ""
         if title:
             titles.append(title)
     return titles
@@ -4890,6 +4910,13 @@ def _names_a_note_word(session: Session, question: str, detected: str) -> bool:
         return False
     found = _BARE_NAME.match(" ".join((question or "").split()))
     return bool(found and _in_notes(session)(found.group("name").lower()))
+
+
+def _notes_first(session: Session, question: str, detected: str) -> str:
+    """The intent, but NOTES for a lookup of a word a note holds and for a
+    checklist's state ("what's unpacked", "what have I ticked off"), which is
+    never general knowledge."""
+    return intent.NOTES if _names_a_note_word(session, question, detected) or composer_slots.asks_state(question) else detected
 
 
 def _address(question: str, session: Session, skill: dict | None) -> tuple:

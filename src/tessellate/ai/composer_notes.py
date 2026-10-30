@@ -30,7 +30,7 @@ _WROTE_ANY = re.compile(
     r"(?:write|wrote|written|note|noted|jot|jotted|save|saved|capture|captured|add|added|make|made|record|recorded|put down|type|typed)"
     r"(?:\s+down)?\s+(?P<t>(?:in|on|during|over|from|since|for|this|last)\b.*?)\W*$", re.I)
 _NOTES_ON = re.compile(
-    rf"^{_LEAD}(?:show|list|find|get|give)?\s*(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:the\s+)?notes?\s+(?:i\s+(?:wrote|made|saved|took|jotted)\s+)?(?:about|on|for|regarding|from|in|during)\s+(?P<t>.+?)\W*$", re.I)
+    rf"^{_LEAD}(?:show|list|find|get|give)?\s*(?:me\s+)?(?:all\s+)?(?:my\s+)?(?:the\s+)?notes?\s+(?:i\s+(?:wrote|made|saved|took|jotted)\s+)?(?:about|on|for|regarding)\s+(?P<t>.+?)\W*$", re.I)
 _OUTLINE = re.compile(
     rf"^{_LEAD}(?:(?:give|show|make|write|draw|build)\s+(?:me\s+)?(?:an?\s+|the\s+)?)?(?:outline|structure|table of contents|contents|headings|skeleton|sections|toc)"
     r"(?:\s+(?:of|for|from|in|to))?\s*(?P<t>.*?)\W*$|"

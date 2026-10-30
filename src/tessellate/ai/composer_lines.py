@@ -278,15 +278,17 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("The last page you filled was {last}.", "p"), c("You left off at {last}.", "p"),
     ),
     "w_streak": (
-        c("That makes {streak} in a row.", "w"), c("You have written {streak} running.", "w"),
+        c("That is {streak} of writing in a row.", "w"), c("You have written {streak} running.", "w"),
         c("Streak: {streak}.", "t"), c("{streak} straight.", "t"),
         c("You have kept a streak of {streak}.", "f"), c("Notes have been written for {streak} consecutively.", "f"),
         c("{streak} running, nicely done.", "p"), c("The streak stands at {streak}.", "p"),
     ),
+    #: Said of the reminders, the one thing counted: "waiting on you" claimed
+    #: open items did not exist (audit 1030 Z51).
     "w_quiet": (
-        c("Nothing is due today.", "w"), c("Nothing is waiting on you today.", "w"), c("Today is clear.", "wt"), c("No dates today.", "t"),
-        c("No items fall due today.", "f"), c("Nothing is scheduled for today.", "f"),
-        c("Today has no deadlines, which is a gift.", "p"), c("An empty day on the calendar.", "p"),
+        c("No reminders are due today.", "w"), c("Nothing is due today.", "w"), c("No reminders today.", "t"), c("No dates today.", "t"),
+        c("No items fall due today.", "f"), c("No reminder is scheduled for today.", "f"),
+        c("Nothing is due today, so the day is yours.", "p"), c("No reminders today, so the day is clear.", "p"),
     ),
     # ---- quiz feedback (graded against the note; {a} is the note's own answer) ----
     "quiz_right": (

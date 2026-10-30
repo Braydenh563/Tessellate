@@ -147,7 +147,9 @@ def _score(cand: lines.Cand, slot: str, mood: Mood) -> float:
     if cand.voices:
         score += 3.0 if mood.voice in cand.voices else -6.0
     if cand.emotions:
-        score += 2.0 if mood.emotion in cand.emotions else -3.0
+        #: A line written for a stressed or upset person is not said to a neutral
+        #: one (audit 1030 Z51: "how are you" got "Tell me what is most pressing").
+        score += 2.0 if mood.emotion in cand.emotions else -9.0
     if cand.keys:
         score += sum(1.0 for k in cand.keys if any(w.startswith(k) for w in mood.words))
     return score
