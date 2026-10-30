@@ -29,6 +29,14 @@ from tessellate.search import searxng_install, searxng_manager
 
 
 @pytest.fixture(autouse=True)
+def _fake_archives_pass_the_pin(request, monkeypatch):
+    """The install tests here unpack small made-up archives, which are not the
+    pinned commit's files; the pin itself is tested on its own below."""
+    if "pinned_commit" not in request.node.name:
+        monkeypatch.setattr(searxng_manager, "_check_tree", lambda src: None)
+
+
+@pytest.fixture(autouse=True)
 def _clean_install_state():
     fresh = {"running": False, "step": "", "error": "", "stage": 0, "progress": None,
              "log": []}
@@ -909,3 +917,26 @@ def test_run_streaming_times_out_on_a_child_that_goes_quiet_without_exiting():
             on_line=lambda line: None,
         )
     assert time.time() - start < 10  # nowhere near the 60s the child asked for
+
+
+def test_the_source_is_a_pinned_commit_not_master():
+    """Audit 1028 K6: a moving `master` ran whatever was pushed last."""
+    import re
+
+    assert re.fullmatch(r"[0-9a-f]{40}", searxng_install.SOURCE_COMMIT)
+    assert searxng_install.SOURCE_TARBALL.endswith(f"/archive/{searxng_install.SOURCE_COMMIT}.tar.gz")
+    assert "master" not in searxng_install.SOURCE_TARBALL
+    assert re.fullmatch(r"[0-9a-f]{64}", searxng_install.SOURCE_TREE_SHA256)
+
+
+def test_files_that_are_not_the_pinned_commit_are_refused_and_removed(tmp_path, monkeypatch):
+    archive = _archive(tmp_path, ["setup.py", "searx/webapp.py"])
+    src = tmp_path / "src"
+    searxng_manager._unpack(archive, src)
+    monkeypatch.setattr(searxng_install, "SOURCE_TREE_SHA256", searxng_manager._tree_digest(src))
+    searxng_manager._check_tree(src)
+    assert (src / "setup.py").exists(), "the pinned files pass"
+    (src / "searx" / "webapp.py").write_text("changed upstream")
+    with pytest.raises(searxng_manager.SearxngError, match="isn't the version"):
+        searxng_manager._check_tree(src)
+    assert not src.exists(), "a refused tree is not left for pip"

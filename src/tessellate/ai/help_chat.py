@@ -1571,7 +1571,7 @@ HELP_TOPICS.extend(
                 "drag a template", "map templates", "this map tab", "map stats",
             ),
             "body": (
-                "A board's sidebar (the Library button in its top bar, or the rail on its left edge) has "
+                "A board's sidebar (the Sidebar button in its top bar, or the rail on its left edge) has "
                 "four tabs: Library, Notes, Layers and Pages; a mind map's has Library, This map (its "
                 "facts, its look, open every fold, lay it out again) and Outline. The Library starts with "
                 "Templates (38 for boards, 27 for maps; see Board and map templates). Pages lists the "

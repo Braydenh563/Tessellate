@@ -96,6 +96,37 @@ def test_backup_restore_rolls_the_database_back(client):
     assert len(client.get("/backups").json()) == before_count + 2
 
 
+def test_a_restore_waits_for_a_running_job_and_refuses_while_one_runs(client, monkeypatch):
+    """Audit 1028 K19: the file was swapped with a background job still
+    writing. The restore holds the job pool; a job still running at the
+    wait's end refuses the restore and leaves the live notebook alone."""
+    import threading
+
+    from tessellate.api import routes_backups
+    from tessellate.core import jobs
+
+    pool = jobs.Pool({"default": 1}, kind_lanes={"tidy": "default"})
+    monkeypatch.setattr(jobs, "pool", lambda: pool)
+    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 0.2)
+    name = client.post("/backups").json()["name"]
+    _save(client, "note after the backup")
+    release, running = threading.Event(), threading.Event()
+    pool.enqueue("tidy", lambda: (running.set(), release.wait(5)))
+    try:
+        assert running.wait(5)
+        refused = client.post("/backups/restore", json={"name": name})
+        assert refused.status_code == 409, refused.text
+        assert "still running" in refused.json()["detail"]
+        assert [e["content"] for e in client.get("/entries").json()] == ["note after the backup"]
+        release.set()
+        restored = client.post("/backups/restore", json={"name": name})
+        assert restored.status_code == 200, restored.text
+        assert client.get("/entries").json() == []
+    finally:
+        release.set()
+        pool.shutdown(deadline=2.0)
+
+
 def test_restore_leaves_live_db_untouched_when_backup_is_corrupt(app_state):
     """INBOX 310, finding 1: `restore_backup` used to stream pages straight
     into memorymap.db, so a corrupt backup (or a crash mid-copy) could leave

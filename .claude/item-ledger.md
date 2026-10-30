@@ -52,3 +52,12 @@ date | item | type | rung | rework | note
 2026-10-28 | import cycles in commands.py | bugfix | opus | 0 | 
 2026-10-30 | INBOX 1452 left-drag select, right-drag pan | ui | opus | 0 | 
 2026-10-30 | INBOX 1451/1453/1455/1456 diagram, panel layer, offered open, spending lists | feature | opus | 0 | 
+2026-10-30 | K30 link suggestion cache | bug | sonnet | 0 | 
+2026-10-30 | K31 entity counts in SQL | bug | sonnet | 0 | 
+2026-10-30 | S14 documents tab label | ui | sonnet | 0 | 
+2026-10-30 | S19 toast hold on hover and focus | ui | sonnet | 0 | 
+2026-10-30 | U13 two Library buttons | ui | sonnet | 0 | 
+2026-10-30 | D17 blank title autosave | bug | sonnet | 0 | 
+2026-10-30 | D29 replace whole word and leave-out | feature | sonnet | 0 | 
+2026-10-30 | U9 find match count | ui | sonnet | 0 | 
+2026-10-30 | K6 SearXNG pinned commit and tree digest | security | opus | 0 | 

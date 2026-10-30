@@ -6,6 +6,11 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Security: SearXNG installs from a pinned commit, and its unpacked files are checked against that commit's digest before pip sees them; a mismatch is removed and refused (audit 1028 K6; its requirements are still pip-resolved). Find in a document says how many matches its query has (U9).
+- Documents: a title cleared to retype is not saved as "Untitled document N" while the field is blank; leaving the field names it (audit 1028 D17). Replace in every document has Whole word (by letters in any script), a box to leave a document out, and each document's first match in context (D29).
+- Polish: a toast stays while the pointer is over it or it has focus, and goes a few seconds after; the Documents panel names itself instead of pointing at a missing tab; the board's top-bar button that opens its sidebar is labelled Sidebar, so Library names only the sidebar's tab (audit 1028 S14, S19, U13).
+- Speed: link suggestions are kept until something in the notebook is written, so opening the Inbox again reads nothing; the names list counts its notes in SQL instead of reading every mention, and a note naming someone twice counts once (audit 1028 K30, K31).
+- Backups: a restore waits for a running background job to finish and starts none until the restored notebook is in place; one still running after 20 seconds refuses the restore, and the live notebook is untouched (audit 1028 K19).
 - Documents: undoing a Replace in every document no longer writes over an edit made since (the batch is refused whole and says so); the batch write refuses an archived document and processes pictures it adds, as a save does (audit 1028 D11, D13). "Take theirs" on a document conflict takes their title too (D10).
 - Security: a signed-in request's JSON body (or one with no type) is capped at 16 MB; only uploads and a file's text keep the 320 MB cap (audit 1028 K4).
 - Boards and maps: a left drag on empty canvas draws the selection box again, a right drag pans and a plain right click still opens the menu (INBOX 1452).

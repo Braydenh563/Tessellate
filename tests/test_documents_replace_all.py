@@ -128,3 +128,40 @@ def test_an_archived_document_is_not_written_and_media_is_processed(client, monk
     seen.clear()  # creating a document runs the hook too
     client.post("/documents/contents", json={"documents": [{"id": live["id"], "content": "![](/media/a.png)"}]})
     assert seen == ["![](/media/a.png)"]
+
+
+def test_whole_word_rows_can_be_left_out_and_show_their_match():
+    """D29 (audit 1028): whole word by letters in any script, a box per
+    document to leave it out, and the first match in context."""
+    import json
+    import shutil
+    import subprocess
+
+    import pytest
+
+    from tests._app_js import INDEX_HTML, JS_DIR
+
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    assert 'id="doc-replace-word"' in INDEX_HTML.read_text(encoding="utf-8")
+    js = (JS_DIR / "documents.js").read_text(encoding="utf-8")
+
+    def fn(name):
+        start = js.index(f"function {name}(")
+        return js[start: js.index("\n}\n", start) + 3]
+
+    run = js[js.index("async function runDocReplace("):]
+    assert "docReplace.skipped?.has(m.id)" in run[: run.index("\n}\n")]
+    script = fn("docReplacePattern") + fn("docReplaceSnippet") + """
+const boxes = { "doc-replace-find": { value: "cafe" }, "doc-replace-case": { checked: false },
+  "doc-replace-regex": { checked: false }, "doc-replace-word": { checked: true } };
+const $ = (id) => boxes[id];
+const p = docReplacePattern();
+const text = "cafes and café, then Cafe again and cafe.";
+const plain = (boxes["doc-replace-word"].checked = false, docReplacePattern());
+process.stdout.write(JSON.stringify([text.match(p).length, text.match(plain).length, docReplaceSnippet("x".repeat(50) + " the cafe here", p)]));
+"""
+    got = json.loads(subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout)
+    assert got[:2] == [2, 3], "whole word drops 'cafes' and keeps the two standalone words"
+    assert got[2] == "…" + "x" * 25 + " the cafe here", "30 characters each side of the match"

@@ -4,34 +4,34 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 
 | rank | id | severity | summary | planned at | size |
 |---|---|---|---|---|---|
-| 1 | D4 | high | unsaved draft with full text in localStorage, never expires | new | S |
-| 2 | D5 | high | single draft slot overwrites a failed save of another document | new | M |
-| 3 | E6 | high | what-is-on-date questions use creation day, not mentioned date | in progress | M |
-| 4 | E7 | high | act grammar needs the literal word note | in progress | M |
+| 1 | D4 | high | unsaved draft with full text in localStorage, never expires | fixed (23fcf45, reconciled 2026-10-30) | S |
+| 2 | D5 | high | single draft slot overwrites a failed save of another document | fixed (23fcf45, reconciled 2026-10-30) | M |
+| 3 | E6 | high | what-is-on-date questions use creation day, not mentioned date | fixed (490e3c3, reconciled 2026-10-30) | M |
+| 4 | E7 | high | act grammar needs the literal word note | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 5 | E10 | high | no task intents: add to checklist, tick item, complete reminder | built (add, complete, cancel, snooze, Undo, Guide topic) | M |
-| 6 | E11 | high | wrong or partial answers on due and reading asks | in progress | M |
-| 7 | E12 | high | no-match fallback quotes newest notes as relevant | in progress | M |
-| 8 | E30 | high | search-by-meaning loading message shown indefinitely | in progress | S |
-| 9 | U4 | high | no discovered non-drag reparent path for mind map topics | new | M |
-| 10 | U6 | high | code editor undiscoverable, not under the New menu | new | S |
-| 11 | U8 | high | new document opens in Read mode on phone | in progress | S |
-| 12 | U9 | high | find and replace panel is unstyled CodeMirror default | new | M |
-| 13 | U10 | high | image menu inserts bare stub with no picker | in progress | M |
+| 6 | E11 | high | wrong or partial answers on due and reading asks | fixed (490e3c3, reconciled 2026-10-30) | M |
+| 7 | E12 | high | no-match fallback quotes newest notes as relevant | fixed (490e3c3, reconciled 2026-10-30) | M |
+| 8 | E30 | high | search-by-meaning loading message shown indefinitely | fixed (490e3c3, reconciled 2026-10-30) | S |
+| 9 | U4 | high | no discovered non-drag reparent path for mind map topics | fixed (c288482, reconciled 2026-10-30) | M |
+| 10 | U6 | high | code editor undiscoverable, not under the New menu | fixed (c288482, reconciled 2026-10-30) | S |
+| 11 | U8 | high | new document opens in Read mode on phone | fixed (673039d, reconciled 2026-10-30) | S |
+| 12 | U9 | high | find and replace panel is unstyled CodeMirror default | fixed (styling 673039d; match count this batch) | M |
+| 13 | U10 | high | image menu inserts bare stub with no picker | fixed (673039d, reconciled 2026-10-30) | M |
 | 14 | B3 | high | every render clears caches and rebuilds all map nodes | new | L |
 | 15 | B4 | high | full board render per frame with no dirty set | new | L |
-| 16 | D7 | high | prose spell pass walks whole document every pause | in progress | M |
+| 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | new | L |
 | 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | new | M |
 | 19 | B1 | high | whiteboard.js is 25k lines; initWhiteboard is one 4,064-line closure | docs/roadmap/WORLD_CLASS_PLAN.md:3755 | L |
 | 20 | B2 | high | whiteboard-map.js is 10,810 lines and 350 functions | docs/roadmap/WORLD_CLASS_PLAN.md:3255 | L |
-| 21 | U7 | high | code text is proportional, not monospace | in progress | S |
-| 22 | B9 | med | undo during an in-flight delete can restore a deleted object | new | M |
+| 21 | U7 | high | code text is proportional, not monospace | fixed (673039d, reconciled 2026-10-30) | S |
+| 22 | B9 | med | undo during an in-flight delete can restore a deleted object | fixed (c288482, reconciled 2026-10-30) | M |
 | 23 | D11 | med | replace-in-all undo writes old text with no hash check | fixed 2026-10-30: per-item base_hash, a stale item refuses the batch | M |
-| 24 | K1 | med | POST /auth/reset needs no credential and seals private notes | docs/roadmap/INBOX.md:37 | S |
+| 24 | K1 | med | POST /auth/reset needs no credential and seals private notes | fixed (31f2a83, reconciled 2026-10-30) | S |
 | 25 | K4 | med | body cap is 320 MB on every route, JSON included | fixed 2026-10-30: JSON and untyped bodies capped at 16 MB, uploads and `/files/` keep 320 MB | M |
 | 26 | K5 | med | installer run silently with no signature or pinned hash | docs/roadmap/BACKLOG.md:398 | M |
-| 27 | K6 | med | SearXNG installed from unpinned master tarball | new | M |
-| 28 | K19 | med | restore disposes the engine with jobs in flight | new | M |
+| 27 | K6 | med | SearXNG installed from unpinned master tarball | fixed in part (commit and tree digest pinned; requirements not hash-pinned) | M |
+| 28 | K19 | med | restore disposes the engine with jobs in flight | fixed 2026-10-30: restores hold the job pool, 409 while a job still runs | M |
 | 29 | E42 | med | pasted note text reaches write tools with no confirm | new | M |
 | 30 | E66 | med | delete all notes silently reduces to one match | new | S |
 | 31 | E70 | med | regenerate and resend repeat web search and write tools | new | M |
@@ -43,11 +43,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
-| 40 | D17 | med | blank title autosaved as Untitled document N | new | S |
+| 40 | D17 | med | blank title autosaved as Untitled document N | fixed (this batch) | S |
 | 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
 | 42 | D27 | med | no image resize handles or alt-text prompt on paste | new | M |
-| 43 | D28 | med | no continuous zoom, text size in three steps | new | S |
-| 44 | D29 | med | replace dialog lacks whole-word and match preview | new | M |
+| 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
+| 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
 | 46 | E13 | med | bare undo after an answer gets help text, not undo | new | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
@@ -62,14 +62,14 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | new | S |
 | 57 | E25 | med | quoted note titles stored as body text | new | S |
 | 58 | E26 | med | reminder with no subject; impossible dates accepted | new | S |
-| 59 | E31 | med | guide answers the wrong topic for realistic questions | in progress | M |
+| 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
 | 60 | E32 | med | ChatGPT question gets local model not running answer | new | S |
 | 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | new | M |
 | 62 | E39 | med | model download has no timeout or disk check | new | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
 | 65 | S11 | med | server greeting lines can contradict dashboard state | new | S |
-| 66 | S25 | med | lock form gives little error feedback, no throttle hint | new | S |
+| 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | new | M |
 | 68 | S28 | med | no wiki-style [[ ]] autocomplete in notes | docs/roadmap/BACKLOG.md:3124 | M |
 | 69 | S29 | med | no note templates | docs/roadmap/BACKLOG.md:2928 | M |
@@ -102,10 +102,10 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 96 | E50 | med | phone no-model banner and source cards take too much room | new | M |
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | new | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | new | S |
-| 99 | S14 | med | tab-documents aria-labelledby points at wrong element | new | S |
+| 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
 | 100 | S15 | med | only one forced-colors rule in the whole CSS | new | M |
 | 101 | S18 | med | support email hard-coded in toast code | new | S |
-| 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | new | S |
+| 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | fixed (this batch) | S |
 | 103 | S21 | med | select button folded away at narrow widths | new | M |
 | 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
 | 105 | S23 | med | palette lacks recent-first order and shortcut hints | new | S |
@@ -121,9 +121,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 115 | S51 | med | dashboard has no resume where you left off | new | S |
 | 116 | S52 | med | graph has no find box on the main bar | new | S |
 | 117 | S53 | med | timeline and notes list page separately | new | M |
-| 118 | U11 | med | two menus both named Insert with different contents | in progress | S |
+| 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
 | 119 | U12 | med | insert menu hides key hints for most tools | new | S |
-| 120 | U13 | med | two buttons labelled Library on the board | new | S |
+| 120 | U13 | med | two buttons labelled Library on the board | fixed (this batch) | S |
 | 121 | U14 | med | delete tool 2px from undo and redo | new | S |
 | 122 | U15 | med | arrange menu has 23 items and clips at smaller heights | new | M |
 | 123 | U16 | med | side tabs 28px, below phone parity size | new | S |
@@ -143,7 +143,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 137 | U35 | med | small targets in document list and header | new | S |
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | new | S |
 | 139 | U37 | med | disabled Run reason link is low contrast | new | S |
-| 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | new | M |
+| 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
 | 141 | B17 | med | link-sketch lookups parse every sketch JSON | new | M |
 | 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | new | M |
 | 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
@@ -152,8 +152,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 146 | D20 | med | five whole-document renders per pause even when hidden | new | M |
 | 147 | D21 | med | four document-wide listeners run on every tab | new | S |
 | 148 | D22 | med | 1.1 MB documents.js plus CodeMirror bundle loaded eagerly | new | L |
-| 149 | K30 | med | link-suggestions loads every entry per request, no cache | new | M |
-| 150 | K31 | med | GET /entities reads every mention then slices in Python | new | S |
+| 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |
+| 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
 | 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
 | 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | docs/roadmap/WORLD_CLASS_PLAN.md:1852 | L |
 | 153 | S37 | med | list filter re-renders without debounce | new | S |
@@ -302,7 +302,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 296 | U39 | low | template dialog check mark overlaps description | new | S |
 | 297 | U40 | low | empty-board thumbnail shows mind-map placeholder | new | S |
 | 298 | U42 | low | off-scale spacing values | docs/roadmap/BACKLOG.md:3319 | S |
-| 299 | U43 | low | off-scale radius on tick and find panel | in progress | S |
+| 299 | U43 | low | off-scale radius on tick and find panel | fixed (673039d, reconciled 2026-10-30) | S |
 | 300 | U44 | low | find panel labels 11.776px, off the type scale | new | S |
 | 301 | U45 | low | board font sizes and radii mostly acceptable | docs/roadmap/UI_MODERNISATION_PLAN.md:1332 | S |
 | 302 | B35 | info | present, not a finding: themes, collapse, drag-reparent, markdown export | n/a (present) | - |

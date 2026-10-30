@@ -505,3 +505,20 @@ def test_visible_text_is_inside_the_accessible_name_wcag_2_5_3():
     feature = feature[: feature.index("return button;")]
     assert 'button.setAttribute("aria-label"' not in feature
     assert "button.title = `Open the ${kind} ${board.title}`;" in feature
+
+
+def test_every_labelledby_and_describedby_names_an_element_that_exists():
+    """Audit 1028 S14: the Documents page was labelled by `tab-btn-documents`,
+    a tab button that does not exist (Documents opens from the Library), so
+    a screen reader named the region nothing."""
+    from tests._app_js import INDEX_HTML
+
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    ids = set(re.findall(r'\bid="([^"]+)"', html))
+    missing = [
+        ref
+        for refs in re.findall(r'aria-(?:labelledby|describedby)="([^"$]+)"', html)
+        for ref in refs.split()
+        if ref not in ids
+    ]
+    assert missing == []

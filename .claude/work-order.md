@@ -14,10 +14,10 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1455 open-note chip ran a search, 1456 "what expenses have I recorded" missed the $68 mouse (hub)
 - [x] INBOX 1452 left-drag select, right-drag pan (hub)
 - [>] INBOX 1454 panelMovable polish (agent panels)
-- [ ] Quantity engine step 2: money onto recognise.measures, status words, differences
+- [>] Quantity engine step 2: money onto recognise.measures, status words, differences (agent quantity)
 - [ ] Stress classes: next appointment, PTO dates, note 44 dumps, comparisons, follow-ons, ambiguous names
 - [ ] Fable findings: fix every confirmed one
-- [ ] Audits 1028 and 1029: leftover open rows
+- [>] Audits 1028 and 1029: leftover open rows (hub: K4, K19, D10, D11, D13 fixed; 19 stale rows reconciled)
 - [ ] INBOX: all 19 items (1451 Mermaid board object)
 - [ ] OPEN.md: proposed batches
 - [ ] Plan phases (ROADMAP table order)

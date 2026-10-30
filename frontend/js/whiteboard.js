@@ -14624,7 +14624,7 @@ async function initWhiteboard() {
     });
   }
   
-  //: The top bar's Library button opens and closes the board's sidebar
+  //: The top bar's Sidebar button opens and closes the board's sidebar
   //: (decision 26, whiteboard-library.js) on the tab it was left on.
   $("wb-add-note").addEventListener("click", () => {
     const panel = $("wb-sidebar-panel");

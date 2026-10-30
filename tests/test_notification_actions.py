@@ -254,3 +254,16 @@ def test_the_stack_gap_is_a_spacing_token():
 
 def test_the_recipe_says_so():
     assert "toastMerge" in _STACK_DESIGN and "+N more" in _STACK_DESIGN
+
+
+def test_a_toast_holds_while_pointed_at_or_focused():
+    """Audit 1028 S19 (WCAG 2.2.1): toasts left on a fixed timer, even under
+    the pointer or with focus on their button. Measured in the browser with
+    scratchpad/ui-sweeps/toasthold.js."""
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    start = status.index("function toastHold(")
+    body = status[start: status.index("\n}\n", start)]
+    assert "clearTimeout(note.toastTimer)" in body
+    assert 'note.matches(":hover, :focus-within")' in body and "note.toastLife" in body
+    assert '[["pointerover", true], ["pointerout", false], ["focusin", true], ["focusout", false]]' in status
+    assert "document.addEventListener(kind, (event) => toastHold(event, on))" in status
