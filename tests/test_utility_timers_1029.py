@@ -41,6 +41,10 @@ const sandbox = {
   },
   setInterval: (fn) => { const id = nextTimer++; timers.set(id, fn); return id; },
   clearInterval: (id) => timers.delete(id),
+  //: The one-shot wake at the soonest end (audit 1030 Y6); the test drives
+  //: the clock itself, so it never fires.
+  setTimeout: () => nextTimer++,
+  clearTimeout: () => {},
   document: { addEventListener() {} },
   Date: { now: () => now },
   Math, Number, String, Object, Array, JSON,

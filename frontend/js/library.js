@@ -9426,7 +9426,7 @@ function filterLibraryImagesGallery() {
           toast(
             updated.message ||
               (image._isImage
-                ? "No description was written. Is a vision model running in Settings, Models?"
+                ? "No description was written. Check that a vision model is running in Settings, Models."
                 : "No description was written. Check a model is running in Settings, Models."),
             "info",
           );

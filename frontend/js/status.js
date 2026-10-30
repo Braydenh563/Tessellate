@@ -1299,7 +1299,7 @@ const SERVER_DOWN_RETRY_MAX_MS = 30000;
 let serverDownRetryDelay = SERVER_DOWN_RETRY_MIN_MS;
 
 function showServerDownBanner() {
-  if (serverDownNote?.isConnected) return; // already up
+  if (serverDownNote && serverDownNote.isConnected) return; // already up
   const box = $("toast-box");
   const note = document.createElement("div");
   note.className = "toast error server-down-toast";

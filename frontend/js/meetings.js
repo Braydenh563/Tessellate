@@ -1166,7 +1166,8 @@ async function meetingRecordingStopped(recorder, button) {
     meetingSay(error.message || "Couldn't save the recording.", true);
     return;
   }
-  if (meetingTake.lostMs) toast(`The last ${meetingClockText(meetingTake.lostMs)} could not be saved (${meetingFailText()}). The rest is kept.`, true);
+  //: Info, not a fault: the loss was retried, is named, and the rest is kept.
+  if (meetingTake.lostMs) toast(`The last ${meetingClockText(meetingTake.lostMs)} could not be saved (${meetingFailText()}). The rest is kept.`, "info");
   saved = await meetingEnhanceTake(saved);
   const length = meetingClockText(saved.duration_ms);
   const away = $("meeting-overlay").classList.contains("hidden");

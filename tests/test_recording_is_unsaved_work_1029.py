@@ -49,8 +49,10 @@ def test_status_shows_the_real_saved_size_never_a_fixed_claim():
     assert "Saved as it goes" not in js
     line = _fn(js, "function meetingStatusLine")
     assert "meetingTake.bytes" in line and "Nothing saved yet" in line
-    append = _fn(js, "function meetingTakeAppend")
-    assert "size_bytes" in append
+    #: The send moved from the append to its queue's flush (audit 1030 Y1);
+    #: the saved size still comes from the server's answer.
+    flush = _fn(js, "function meetingTakeFlush")
+    assert "size_bytes" in flush
 
 
 def test_the_voice_dialog_never_opens_on_record():

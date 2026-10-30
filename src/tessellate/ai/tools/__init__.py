@@ -4888,7 +4888,9 @@ def confirm_label(name: str, arguments: dict, session: Session | None = None) ->
     if session is not None and name in _CONFIRM_NAMED:
         try:
             note = _named(_require_note(session, arguments))
-        except (ToolError, KeyError, TypeError, ValueError):
+        #: AttributeError: a session that cannot look notes up (a stub) gets
+        #: the plain label; a label never stops the call.
+        except (ToolError, KeyError, TypeError, ValueError, AttributeError):
             note = None
         if note:
             return _CONFIRM_NAMED[name].format(note=note)

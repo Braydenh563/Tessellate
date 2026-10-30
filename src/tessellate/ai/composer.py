@@ -2559,8 +2559,34 @@ def _said_by_shape(term: str, quoted_text: str) -> bool:
     return bool(shape and rec.says_shape(shape, quoted_text))
 
 
+#: Words that frame a question rather than name its topic, read from its
+#: shape: the word after "how" ("how hot"), the verb after "do I" or "I've"
+#: ("do I turn", "have I seen"), and aggregate, pronoun and comparison words.
+#: Named as "not mentioned" they told the person a note was missing a word
+#: no note would hold (audit 1030 Z16: "turn", "seen", "total", "him").
+_FRAME_SHAPES = re.compile(
+    r"\bhow (?!to\b)(\w+)"
+    r"|\b(?:do|does|did|can|could|should|would|will|have|has|had|am|is|are|was|were) (?:i|we|you) (?:\w+ly )?(?!a\b|an\b|the\b)(\w+)"
+    r"|\b(?:i|we)(?:'ve|'d|'ll| have| had| will)? (?!have\b|had\b|am\b|was\b)(\w+)",
+    re.I,
+)
+_FRAME_WORDS = frozenset(
+    _stem_plain(w)
+    for w in """total sum plus overall whole altogether notebook theme themes him her them myself yourself ourselves
+    more less sooner later further farther right now""".split()
+)
+
+
+@functools.lru_cache(maxsize=256)
+def _frame_stems(question: str) -> frozenset[str]:
+    said = {w for m in _FRAME_SHAPES.finditer(question or "") for w in m.groups() if w}
+    return frozenset(_stem(w) for w in said) | _FRAME_WORDS
+
+
 def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _seen(term, found):
+        return False
+    if _stem(term) in _frame_stems(out.question or ""):
         return False
     if _alternatives(_stem(term)) & quoted or _said_by_shape(term, quoted_text):
         return False
