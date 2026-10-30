@@ -35,12 +35,12 @@ _NOT_A_TASK_BODY = ("list", "lists", "manager", "app", "view", "page", "board", 
 _LEAD_TO = ("to ", "that ", "for me to ")
 
 _DONE_WORD = r"(?:done|complete|completed|finished|ticked|checked|ticked off|checked off|crossed off|sorted|packed|bought|booked|paid|sent|handled|got)"
-_DONE_TAIL = re.compile(rf"\s+(?:as |to be )?{_DONE_WORD}$", re.IGNORECASE)
+_DONE_TAIL = re.compile(rf"(?<!\s)\s+(?:as |to be )?{_DONE_WORD}$", re.IGNORECASE)
 _OFF_TAIL = re.compile(r"\s+off(?:\s+(?:of\s+)?(?:my |the |this |that )?(?:list|checklist|to-?do list|todo list|task list|tasks))?$", re.IGNORECASE)
 _ON_LIST_TAIL = re.compile(r"\s+(?:on|from|in)\s+(?:my |the )?(?:list|checklist|to-?do list|todo list|task list)$", re.IGNORECASE)
 _ARTICLE = re.compile(r"^(?:the |my |our |this |that |a |an |your )+", re.IGNORECASE)
 _LEAD_KIND = re.compile(r"^(?:(?P<kind>reminder|task|to-?do|todo|check-?list item|list item|item)\s*(?:to |for |called |named |about |:)?\s*)", re.IGNORECASE)
-_TAIL_KIND = re.compile(r"\s+(?P<kind>reminder|task|to-?do|todo|check-?list item|check-?list|list item|item)s?$", re.IGNORECASE)
+_TAIL_KIND = re.compile(r"(?<!\s)\s+(?P<kind>reminder|task|to-?do|todo|check-?list item|check-?list|list item|item)s?$", re.IGNORECASE)
 
 _STOP = frozenset("the a an my our of and or to in on for with about this that it please".split())
 _KIND_WORDS = frozenset("task tasks reminder reminders todo item items checklist".split())
@@ -363,7 +363,7 @@ def _match(items: list[dict], about: str, kind: str | None = None) -> tuple[dict
 
 def plan_complete(session: Session, parsed: dict, card, title) -> dict:  # noqa: ANN001
     """The card that completes the task named, run at once with Undo, or the
-    question that asks which. `card` is `commands._card` and `title` `commands._title`, passed in
+    question that asks which. `card` is `commands._card` and `title` the one reader's (`composer_frame.note_title`), passed in
     because this module sits below commands."""
     item, say = pick(session, parsed, title)
     if item is None:

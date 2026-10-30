@@ -621,6 +621,7 @@ def _overview():
     return composer_overview
 
 
+@functools.lru_cache(maxsize=1 << 16)
 def _stem(word: str) -> str:
     """A light stem, so "testers" meets "tester" and "booked" meets "book".
 
@@ -751,8 +752,15 @@ def _holds(stem: str, words: set[str]) -> bool:
 SYNONYM_WEIGHT = 0.7
 
 
+@functools.lru_cache(maxsize=1 << 14)
+def _words_of(text: str) -> tuple[str, ...]:
+    return tuple(_stem(w) for w in query_understanding.search_terms(text))
+
+
 def _words(text: str) -> list[str]:
-    return [_stem(w) for w in query_understanding.search_terms(text)]
+    """The stems of a text's words. Cached by text, since every answer reads
+    the same notes again (second eye F8); a fresh list, for callers that edit it."""
+    return list(_words_of(text))
 
 
 
@@ -816,8 +824,10 @@ def subject_terms(question: str) -> list[str]:
     source = understood.subject or question
     #: "List my ..." and "Name the ..." ask; "the reading list" names. Only the
     #: first word is dropped, so the list a question is about stays in it.
-    if re.match(r"^\s*(list|name|show|tell)\b", question, re.I):
-        source = re.sub(r"^\s*(list|name|show|tell)\b", "", source, flags=re.I)
+    #: "Count my notes about Hobart" asks; it is not a word to find in a note
+    #: ("Don't count the balance"; second eye F10).
+    if re.match(r"^\s*(list|name|show|tell|count|check|tally)\b", question, re.I):
+        source = re.sub(r"^\s*(list|name|show|tell|count|check|tally)\b", "", source, flags=re.I)
     seen: list[str] = []
     #: Only a command the question itself opens with: "what did I add to the
     #: pasta" keeps its "add", which understanding may have moved to the front.
@@ -4379,12 +4389,15 @@ def plan(question: str, today: date | None = None, *, recent: bool = False, embe
 #: A message this short that names one of the app's own tools ("timer",
 #: "countdown", "pomodoro") is a request for the tool as much as a search.
 _FEATURE_WORDS = 3
+#: Words that make a request polite or pointed without naming anything: "undo
+#: the last change" asks for Undo as much as "undo" does (Z64).
+_FEATURE_FILLER = frozenset({"the", "a", "an", "my", "that", "this", "it", "last", "latest", "please"})
 
 
 def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     """The help line of the app feature a two- or three-word message names
     (the words are the line's own), or None."""
-    words = re.findall(r"[a-z]+", (question or "").lower())
+    words = [w for w in re.findall(r"[a-z]+", (question or "").lower()) if w not in _FEATURE_FILLER]
     if not words or len(words) > _FEATURE_WORDS:
         return None
     from tessellate.ai import help_chat

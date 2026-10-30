@@ -90,7 +90,10 @@ def _tasks(views: list, stems: list[str]) -> tuple[list, list]:
         for view in sorted(named, key=lambda v: (not _title_holds(v, want), v.rank)):
             tasks = [s for s in view.sentences if s.kind == "task"]
             if tasks:
-                return [(view, t) for t in tasks if not t.done], [(view, t) for t in tasks if t.done]
+                #: A box never ticked but done in a later note is done here
+                #: too: one item, one state (fable-eye F3).
+                later = [t for t in tasks if recorded_later(views, view, t)]
+                return [(view, t) for t in tasks if not t.done and t not in later], [(view, t) for t in tasks if t.done or t in later]
     return [], []
 
 
@@ -128,14 +131,24 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     view = open_[0][0] if open_ else done[0][0]
     title = composer_lists._title(view)  # noqa: SLF001
     if not open_:
-        out.lines.append(f"Nothing is left on {title}: all {len(done)} items are ticked.")
-        return True
-    out.lines.append(f"{len(open_)} still to do on {title}:")
-    for v, task in open_[:12]:
-        text = re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip()
-        out.lines.append(f"- {text}")
-        composer_lists._cite(out, v, task, text)  # noqa: SLF001
+        out.lines.append(f"Nothing is left on {title}: all {len(done)} items are done.")
+    else:
+        out.lines.append(f"{len(open_)} still to do on {title}:")
+        for v, task in open_[:12]:
+            text = re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip()
+            out.lines.append(f"- {text}")
+            composer_lists._cite(out, v, task, text)  # noqa: SLF001
+    _say_recorded(out, views, done, today)
     return True
+
+
+def _say_recorded(out, views: list, done: list, today: date) -> None:  # noqa: ANN001
+    """The items a later note records as done though their box is not ticked."""
+    for v, task in done:
+        if task.done or not (got := recorded_later(views, v, task)):
+            continue
+        out.lines.append(f"{_note_of(got[0], today).capitalize()} records “{_DOING_END.split(_task_name(task), 1)[0]}” as done, though its box is not ticked.")
+        composer_lists._cite(out, got[0], got[1], out.lines[-1])  # noqa: SLF001
 
 
 _TICKED_WORDS = frozenset({"checked", "ticked", "done", "bought", "got", "completed", "finished", "packed"})
@@ -208,16 +221,20 @@ def _all_of(out, open_: list, done: list) -> None:  # noqa: ANN001
         composer_lists._cite(out, v, task, out.lines[-1])  # noqa: SLF001
 
 
-def _item_state(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
-    """Yes or no for one item: its own checklist line."""
+def _item_state(out, stems: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+    """Yes or no for one item: its own checklist line, or the later note that
+    records it."""
     for view in sorted(views, key=lambda v: v.rank):
         for task in (s for s in view.sentences if s.kind == "task" and _holds(s, stems)):
-            _verdict(out, view, task, "")
+            if not task.done and (got := recorded_later(views, view, task)):
+                _later_line(out, got, view, today, asks_done=True)
+            else:
+                _verdict(out, view, task, "")
             return True
     return False
 
 
-def _is_state(out, found, views: list) -> bool:  # noqa: ANN001
+def _is_state(out, found, views: list, today: date) -> bool:  # noqa: ANN001
     obj, verb = " ".join(found.group("obj").lower().split()), found.group("verb").lower().split()[0]
     if obj in _EVERYTHING:
         open_, done = _tasks(views, _stems(verb))
@@ -225,7 +242,7 @@ def _is_state(out, found, views: list) -> bool:  # noqa: ANN001
             _all_of(out, open_, done)
             return True
         return False
-    return _item_state(out, _stems(obj), views)
+    return _item_state(out, _stems(obj), views, today)
 
 
 def _ticked_so_far(out, views: list) -> bool:  # noqa: ANN001
@@ -248,10 +265,31 @@ def asks_state(question: str) -> bool:
     return bool(_UN_STATE.match(q) or _TICKED_SO_FAR.match(q))
 
 
+#: "Is the library membership renewed", "is the laptop backed up", "is the
+#: invoice paid": the be-verb and a participle ask what "did I renew it" asks
+#: (second eye F9).
+_IS_PASSIVE = re.compile(
+    r"^(?:is|are|was|were|has|have)\s+(?:the\s+|my\s+|our\s+)?(?P<thing>.+?)\s+(?:been\s+)?(?P<verb>\w{3,}ed|paid|sent|bought|made|done|written|taken)(?:\s+(?:up|off|out|in|away|down))?(?:\s+(?:yet|already))?$",
+    re.I,
+)
+
+
+def _was_done(out, found, views: list, today: date) -> bool:  # noqa: ANN001
+    """The did-I answer for a passive question; False with no line that says
+    the doing, so the ordinary readers keep what is not a checklist matter."""
+    verb, thing = found.group("verb").lower(), found.group("thing")
+    obj = _stems(thing)
+    if not obj or _first_did(views, _verb_forms(verb), obj) is None:
+        return False
+    return _did(out, f"{verb} {thing}", views, today)
+
+
 def _state(out, q: str, views: list, today: date) -> bool:  # noqa: ANN001
     """A checklist's state asked by its verb; False when `q` is not one."""
     if m := _IS_STATE.match(q):
-        return _is_state(out, m, views)
+        return _is_state(out, m, views, today)
+    if m := _IS_PASSIVE.match(q):
+        return _was_done(out, m, views, today)
     if m := _UN_STATE.match(q):
         return _left(out, m.group("un") or m.group("not"), views, today)
     return bool(_TICKED_SO_FAR.match(q)) and _ticked_so_far(out, views)
@@ -315,6 +353,39 @@ def _done_later(views: list, verb: frozenset[str], obj, task_view):  # noqa: ANN
             if s.kind != "task" and _holds(s, obj) and _says_verb(s, verb) and not (_INTENT.search(s.text) or _UNDONE.search(s.text)):
                 return view, s
     return None
+
+
+#: Where an open task's own words stop being the doing ("Renew library
+#: membership - due 28 October" is renew + library membership).
+_DOING_END = re.compile(r"\s+(?:-|due|by|on|before|at)\b|[,.;:(]", re.I)
+
+
+_OPEN_BOX = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+)$", re.M)
+
+
+def open_doings(content: str) -> list[str]:
+    """What each unticked checkbox line asks ("Renew library membership"),
+    so the route can fetch the notes that may record it done."""
+    found = [_DOING_END.split(m.group(1).strip(), 1)[0].strip() for m in _OPEN_BOX.finditer(content or "")]
+    return [d for d in found if len(d.split()) >= 2]
+
+
+def asks_open(question: str) -> bool:
+    """Whether `question` asks a checklist item's state (did, still, left, done)."""
+    q = composer_lists._q(question)  # noqa: SLF001
+    return any(p.match(q) for p in (_DID, _NEED, _LEFT, _STILL_ON, _IS_STILL, _IS_DONE))
+
+
+def recorded_later(views: list, view, task):  # noqa: ANN001, ANN202
+    """(note, sentence) of a later note that records the doing of an open
+    checklist line, or None. One item has one state: the open list, the
+    yes or no and the reminder offer all ask this (fable-eye F3, F15)."""
+    if task.kind != "task" or task.done or not view.written:
+        return None
+    words = _DOING_END.split(re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", task.text).strip(), 1)[0].split()
+    if len(words) < 2 or not (obj := _stems(_asked_thing(words))):
+        return None
+    return _done_later([v for v in views if v is not view], _verb_forms(words[0]), obj, view)
 
 
 #: A line that plans the doing is not a record of it: "did I pay rent"
@@ -462,7 +533,16 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-def _is_still(out, rest: str, views: list, today: date, *, asks_done: bool = False) -> bool:  # noqa: ANN001, ARG001
+def _later_line(out, got, view, today: date, *, asks_done: bool) -> None:  # noqa: ANN001
+    """An item done in a later note, its box never ticked: that note is the
+    record, said as the note (second eye F3), never as a tick."""
+    later, said = got
+    line = f"{'Yes' if asks_done else 'No'}, {_note_of(later, today)} ({composer_lists._title(later)}) says it is done; the box in {composer_lists._title(view)} is still unticked."  # noqa: SLF001
+    out.lines.append(line)
+    composer_lists._cite(out, later, said, line)  # noqa: SLF001
+
+
+def _is_still(out, rest: str, views: list, today: date, *, asks_done: bool = False) -> bool:  # noqa: ANN001
     """Only a checklist line answers; with none, the question goes on to the
     readers that know prose ("Is the empty-title bug done?")."""
     words = rest.split()
@@ -473,13 +553,15 @@ def _is_still(out, rest: str, views: list, today: date, *, asks_done: bool = Fal
     if best is None or best[1].kind != "task":
         return False
     view, task = best
-    done = task.done or _done_later(views, verb, obj, view) is not None
     text = re.sub(r"^\s*[-*]?\s*\[[ xX]\]\s*", "", task.text).strip()
     title = composer_lists._title(view)  # noqa: SLF001
+    if not task.done and (got := recorded_later(views, view, task)):
+        _later_line(out, got, view, today, asks_done=asks_done)
+        return True
     if asks_done:
-        line = f"Yes, “{text}” is ticked off in {title}." if done else f"Not yet: “{text}” is still open in {title}."
+        line = f"Yes, “{text}” is ticked off in {title}." if task.done else f"Not yet: “{text}” is still open in {title}."
     else:
-        line = f"No, “{text}” is ticked off in {title}." if done else f"Yes, “{text}” is still open in {title}."
+        line = f"No, “{text}” is ticked off in {title}." if task.done else f"Yes, “{text}” is still open in {title}."
     out.lines.append(line)
     composer_lists._cite(out, view, task, line)  # noqa: SLF001
     return True

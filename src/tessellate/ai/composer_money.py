@@ -49,7 +49,7 @@ def _kind_spent(q: str) -> tuple[str, str] | None:
 
 #: "What's my total spending", "total spent in October".
 _TOTAL = re.compile(
-    r"^(?:and )?(?:what(?:'s|s| is| was)? )?(?:my |our |the )?(?:total|net|gross) (?:of )?(?:all )?(?:my |the )?(?:recorded )?(?:outgoing )?"
+    r"^(?:and )?(?:what(?:'s|s| is| was)? )?(?:my |our |the )?(?:total|net|gross) (?:of )?(?:all )?(?:(?:what|that) (?:i|we)(?:'ve| have)? )?(?:my |the )?(?:recorded )?(?:outgoing )?"
     r"(?:spend(?:ing)?|spent|expenses?|payments?|purchases?)\b(.*)$",
     re.I,
 )

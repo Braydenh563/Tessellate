@@ -204,7 +204,7 @@ _ARTICLE = re.compile(r"(?:the|a|an)\b", re.I)
 #: "Here are some refined, non-corny pickup ... starters that work ...": the
 #: words that present a list, and where the thing presented ends.
 _PRESENTING = re.compile(r"^(?:here(?:'s| is| are)|these are|this is|below are)\s+(?:some|a few|a list of|my|a|an)?\s*", re.I)
-_PRESENTED_END = re.compile(r"\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
+_PRESENTED_END = re.compile(r"(?<!\s)\s+(?:that|which|who|to|for|i|you|we)\b|:", re.I)
 #: Where a long first sentence can end on a whole clause: "I had work today
 #: and a friend was sad | so I stayed with her".
 _CLAUSE_BREAK = re.compile(r"\s+(?:so|but|because|then|and then|which|and)\s+", re.I)
@@ -283,6 +283,16 @@ SECTION_LABELS = frozenset("""
 idea ideas pros cons attendees decisions decision actions notes note summary todo tasks takeaways takeaway questions
 thoughts update status agenda outcome outcomes result results quote tip tips reading points
 """.split()) | {"key idea", "key ideas", "action items", "next steps", "key points", "to do"}
+
+
+def note_title(content: object, *, size: int = 80) -> str:
+    """**The one reader of a note's name from its text** (second eye F13: eight
+    readers named one note eight ways): `study.title_of`, which takes the text
+    or a note dict. "" for a note with no words; a caller that wants
+    "Untitled" says so itself."""
+    from tessellate.ai import study
+
+    return study.title_of(content.get("content") if isinstance(content, dict) else content, size=size)
 
 
 def note_label(note: dict) -> str:

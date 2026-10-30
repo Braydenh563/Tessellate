@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import note_rank, realise, recognise, study
+from tessellate.ai import composer_frame, note_rank, realise, recognise, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -112,10 +112,6 @@ def pick(seed: str, key: str, options: tuple | list) -> str:
 _TOPIC_NOISE = re.compile(r"\b(?:my|the|notes?|about|on|of|for|in|from|and|a|an|all|everything|please|stuff|material|topic|chapter notes)\b", re.I)
 
 
-def _title(note: dict) -> str:
-    return study.title_of(str(note.get("content") or ""))
-
-
 def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
     scored: list[tuple[int, int, dict]] = []
     for i, n in enumerate(ctx.notes):
@@ -131,16 +127,16 @@ def _body_matches(wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
 def _titled_as(topic: str, ctx: Ctx, open_one: bool) -> list[dict]:
     """The one note whose title is the topic, as typed or (for "open the chess
     note") with the noise words off; empty when none is."""
-    exact = [n for n in ctx.notes if _title(n).lower() == topic.lower()]
+    exact = [n for n in ctx.notes if composer_frame.note_title(n).lower() == topic.lower()]
     if exact:
         return exact[:1]
     #: "open the chess note" names the note titled "Chess": one note, not a menu.
     said = " ".join(_TOPIC_NOISE.sub(" ", topic).split()).lower()
-    return [n for n in ctx.notes if open_one and said and _title(n).lower() == said][:1]
+    return [n for n in ctx.notes if open_one and said and composer_frame.note_title(n).lower() == said][:1]
 
 
 def _ranked_by_title_then_body(topic: str, wanted: list[str], ctx: Ctx, limit: int) -> list[dict]:
-    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(_title(n)))]
+    titled = [n for n in ctx.notes if set(wanted) <= set(study.content_stems(composer_frame.note_title(n)))]
     #: The same ranker as Chat's lists (audit 1029 C19, C20): the note titled
     #: as the topic, then the one that defines it, then the rest.
     if titled:
@@ -182,7 +178,7 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
 
 
 def _link(note: dict) -> str:
-    return f"[**{_title(note) or 'Untitled'}**](#/notes/{note['id']})"
+    return f"[**{composer_frame.note_title(note) or 'Untitled'}**](#/notes/{note['id']})"
 
 
 def _newest_with_cards(ctx: Ctx, count: int = 3, need: int = 3) -> list[dict]:
@@ -197,7 +193,7 @@ def _newest_with_cards(ctx: Ctx, count: int = 3, need: int = 3) -> list[dict]:
 
 def _which_note(ctx: Ctx, what: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx) or ctx.notes[:3]
-    names = [_title(n) for n in near if _title(n)]
+    names = [composer_frame.note_title(n) for n in near if composer_frame.note_title(n)]
     if not names:
         return Reply(compose.say("study_nonotes", ctx.mood))
     text = compose.say("study_which", ctx.mood, what=what)
@@ -206,7 +202,7 @@ def _which_note(ctx: Ctx, what: str, verb: str) -> Reply:
 
 def _nothing_named(ctx: Ctx, topic: str, verb: str) -> Reply:
     near = _newest_with_cards(ctx)
-    names = [_title(n) for n in near if _title(n)]
+    names = [composer_frame.note_title(n) for n in near if composer_frame.note_title(n)]
     text = compose.frame("study_nothing_named", ctx.mood, topic=topic.strip(" .?"))
     if names:
         text += " These have material to work with: " + "; ".join(f"“{n}”" for n in names) + "."
@@ -306,7 +302,7 @@ def _summary_text(ctx: Ctx, notes: list[dict], parts: list, level: int) -> str:
     head = compose.head("study_summary", ctx.mood, link=_link(note)) if level <= 0 else f"{_link(note)} in more detail:"
     lines = [head, ""]
     for title, sents in parts:
-        title = "" if title == _title(note) else title
+        title = "" if title == composer_frame.note_title(note) else title
         lines.append("- " + (f"**{title}**: " if title else "") + _stopped(sents))
     if len(notes) > 1:
         lines += ["", "Other notes that match: " + "; ".join(_link(n) for n in notes[1:]) + "."]
@@ -321,7 +317,7 @@ def _summary(ctx: Ctx, topic: str, level: int) -> Reply | None:
     #: "Lecture notes") is all of its notes, not the one whose title has the
     #: word; a note titled exactly as asked still wins.
     named = category_notes(topic, ctx, limit=8)
-    if len(named) > 1 and not any(_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
+    if len(named) > 1 and not any(composer_frame.note_title(n).lower() == (topic or "").strip().lower() for n in ctx.notes):
         return _summaries(ctx, named)
     notes, reply = _target(ctx, topic, "Summarise", "summarise", strict=True)
     if not notes:
@@ -367,11 +363,11 @@ def _terms(ctx: Ctx, topic: str, *, more: bool = False) -> Reply | None:
     lines = [head, ""] + [f"- **{t}**" + (f": {g}" if g else "") for t, g in found]
     if not more and len(study.key_terms(str(note.get("content") or ""), limit=24)) > len(found):
         lines += ["", "Say “more” for the rest."]
-    return Reply("\n".join(lines), asks=[f"Quiz me on {_title(note)}"])
+    return Reply("\n".join(lines), asks=[f"Quiz me on {composer_frame.note_title(note)}"])
 
 
 def deck_text(note: dict, deck: list[study.Card]) -> str:
-    return deck_text_titled(_title(note), deck)
+    return deck_text_titled(composer_frame.note_title(note), deck)
 
 
 def deck_text_titled(title: str, deck: list[study.Card]) -> str:
@@ -387,7 +383,7 @@ def _pooled_deck(topic: str, group: list[dict]) -> list[study.Card]:
     decks = []
     for note in group:
         cards = [c for c in study.cards(str(note.get("content") or "")) if c.kind != "pair"] or study.cards(str(note.get("content") or ""))
-        decks.append(study.ordered(cards, _title(note), limit=6))
+        decks.append(study.ordered(cards, composer_frame.note_title(note), limit=6))
     out: list[study.Card] = []
     for row in zip_longest(*decks):
         out += [c for c in row if c is not None]
@@ -411,7 +407,7 @@ def _category_flashcards(ctx: Ctx, topic: str, group: list[dict]) -> Reply | Non
         lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     lines += [f"From: {sources}.", "", label]
     return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text_titled(name, deck), "items": []},
-                 asks=[f"Quiz me on {_title(group[0])}"])
+                 asks=[f"Quiz me on {composer_frame.note_title(group[0])}"])
 
 
 def _flashcards(ctx: Ctx, topic: str) -> Reply:
@@ -428,7 +424,7 @@ def _flashcards(ctx: Ctx, topic: str) -> Reply:
     if not deck:
         return Reply(f"{_link(note)} has no definitions, lists or bold terms I can turn into cards. "
                      "Add a few lines like “Term: what it means” and ask again.")
-    deck = study.ordered(deck, _title(note), limit=24)
+    deck = study.ordered(deck, composer_frame.note_title(note), limit=24)
     label = "Save these as a note"
     shown = deck[:CARDS_SHOWN]
     lines = [pick(ctx.seed, "flashhead", (
@@ -440,7 +436,7 @@ def _flashcards(ctx: Ctx, topic: str) -> Reply:
         lines += [f"**Q:** {card.q}", f"**A:** {card.a}", ""]
     lines += ["Save them as a note and I can quiz you from them any time.", "", label]
     return Reply("\n".join(lines), offer={"kind": "note", "label": label, "text": deck_text(note, deck), "items": []},
-                 asks=[f"Quiz me on {_title(note)}"])
+                 asks=[f"Quiz me on {composer_frame.note_title(note)}"])
 
 
 # --- the quiz ----------------------------------------------------------------------
@@ -476,7 +472,7 @@ def _start_quiz(ctx: Ctx, topic: str, count: int | None) -> Reply:
     note, reply = _quiz_note(ctx, topic)
     if note is None:
         return reply
-    name = _title(note)
+    name = composer_frame.note_title(note)
     total = max(1, min(MAX_QUIZ, count or QUIZ_LENGTH))
     rounds = 1 + sum(1 for t in ctx.history if f"**Quiz on {name}**" in str(t.get("answer") or "") and "question 1 of" in str(t.get("answer") or ""))
     deck = study.ordered(study.cards(str(note.get("content") or "")), name if rounds <= 1 else f"{name}#{rounds}", limit=total)

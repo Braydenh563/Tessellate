@@ -21,6 +21,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai import arithmetic, realise
+from tessellate.ai.composer_frame import note_title
 
 #: How many rows a command shows; the sentence says how many there are.
 SHOWN = 8
@@ -181,7 +182,7 @@ def _todo(session: Session, arg: str, now: datetime) -> str:
     found = [(e, m.group(1).strip()) for e in notes for m in _OPEN_BOX.finditer(e.content or "")]
     if not found:
         return "No note has an open checkbox."
-    lines = [f"- {text} in {tool_say.link(tool_say._title(e.content), tool_say.note_at(e.id))}" for e, text in found[: SHOWN]]
+    lines = [f"- {text} in {tool_say.link((note_title(e.content, size=60) or 'Untitled'), tool_say.note_at(e.id))}" for e, text in found[: SHOWN]]
     lead = "One open checkbox:" if len(found) == 1 else f"{realise.count_word(len(found)).capitalize()} open checkboxes:"
     return f"{lead}\n\n" + "\n".join(lines) + _more(len(found))
 

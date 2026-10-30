@@ -36,11 +36,11 @@ import sys
 import zlib
 from collections import Counter
 from collections.abc import Callable, Iterable
-from contextvars import ContextVar
+from contextvars import ContextVar, copy_context
 from dataclasses import dataclass, field
 from typing import NamedTuple
 from datetime import date, datetime, time, timedelta
-from functools import lru_cache
+from functools import lru_cache, wraps
 from pathlib import Path
 
 from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, realise, verdicts
@@ -238,6 +238,20 @@ _SEED: ContextVar[int] = ContextVar("digest_seed", default=0)
 
 #: The gap leads already said in this answer, in order (reset per answer).
 _GAPS: ContextVar[tuple[str, ...]] = ContextVar("digest_gaps", default=())
+
+
+def _isolated(fn):  # noqa: ANN001, ANN202
+    """Run a public entry in a copy of the caller's context: `_begin` sets a
+    dozen variables, and none may outlive the answer it was set for, or the
+    next answer in the same context (a test, the Today voice, `_told_sources`
+    answering three earlier questions) starts from the last one's names,
+    seed, voice and timing (second eye F7)."""
+
+    @wraps(fn)
+    def run(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        return copy_context().run(fn, *args, **kwargs)
+
+    return run
 #: **A date is said only when the question is about time** (INBOX 1441, the
 #: owner: "I dont like how it refers to dates"). Otherwise the sentence
 #: carries the fact and the record card carries the date: no "On 4
@@ -431,7 +445,7 @@ _ASKING = _stems(
 _VERBS = _stems("spend spent buy get make do go like want need try see say use pay cost")
 
 _ASKS = {
-    "compare": re.compile(r"^\s*(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
+    "compare": re.compile(r"^\s*+(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
     "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
     "when": re.compile(r"^\s*(?:when|what (?:days?|dates?)|which (?:days?|dates?))\b", re.I),
     #: "How many notes mention Lisbon" counts notes: the overview, which leads
@@ -1261,7 +1275,7 @@ def _topic(question: str, members: list[composer.NoteView]) -> str:
 def _topic_said(question: str, members: list[composer.NoteView]) -> str:
     q = clean(question)
     shared = _shared_tags(members)
-    typed = re.search(r"\b(?:about|on|for|regarding|in)\s+(.+?)\s*\??$", q, re.I)
+    typed = re.search(r"\b(?:about|on|for|regarding|in)\s+(.+?)\s*[?.!]*$", q, re.I)
     category = _named_category(q, members)
     if category and shared:
         #: "social connections", tagged social: the category as typed, not
@@ -2063,6 +2077,17 @@ def _answered(out: _Out, facts: list[Fact]) -> list[Fact]:
     return [f for f in facts if f.view.note.get("source_id", f.view.id) in cited]
 
 
+def _open_actions(facts: list[Fact]) -> list[str]:
+    """The to-dos the facts hold that are still to do: a checklist line a later
+    note records as done is not (second eye F15)."""
+    views = _VIEWS.get()
+    return [
+        _asked_about(_still_ahead(a, f.view.written), f.body)
+        for f in facts
+        if (a := _task_of(f)) and _on_subject(f.view, f.body) and not composer_slots.recorded_later(views, f.view, f.sentence)
+    ]
+
+
 def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     """One thing to do next, from the notes' own to-dos: the one with a day
     first ("ask the tutor on Thursday"), then something still to book. With
@@ -2070,7 +2095,7 @@ def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     #: A day in a to-do is the note's day ("ask the tutor on Thursday",
     #: written 4 August, was 6 August): one gone by is not offered for this
     #: Thursday (the owner, 2026-10-11: relative time resolved everywhere).
-    actions = [_asked_about(_still_ahead(a, f.view.written), f.body) for f in facts if (a := _task_of(f)) and _on_subject(f.view, f.body)]
+    actions = _open_actions(facts)
     if asked is not None:
         actions = [a for a in actions if _on_topic(a, asked)]
     actions.sort(key=lambda a: not any(s.kind in ("date", "datetime") for s in _spans(a, None)))
@@ -2946,7 +2971,9 @@ def _single_close(out: _Out, kind: str, rest: list[Fact], members, question: str
     if kind == "opinion" and score and {"Loved", "Didn't"} <= labels:
         #: The verdict the two lines add up to (INBOX 870).
         out.closing.append(_vary("mixed").format(score=score.group(1)))
-    if len(members) == 1 and kind in ("fact", "opinion"):
+    #: One note chosen from a topic many notes carry is not "the only note"
+    #: (second eye F10): the closing counts the notes that hold the topic.
+    if len(members) == 1 and kind in ("fact", "opinion") and len(_scored_members(_subject(question), _VIEWS.get())) <= 1:
         word = _reviewed_word(question, members) if kind == "opinion" else ""
         noun = f"{word} review" if word else "note"
         out.lines.append(PHRASES["only_note"] if noun == "note" else PHRASES["only_kind"].format(noun=noun))
@@ -3094,6 +3121,9 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
             body = f"your {v.title} note has {body}"
         body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
         out.lines.append(f"On {_day(v.written, today)}, {body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
+        #: Each line cites its own note (second eye F2: one row, for the lead,
+        #: stood behind sentences taken from several notes).
+        out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})
 
 
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
@@ -3110,6 +3140,7 @@ def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
         out.closing.append(PHRASES["only_names"].format(name=name[:1].upper() + name[1:]))
     else:
         _who_many(out, name, found, today)
+        return True
     out.rows.append({"sentence": fact, "note_id": view.note.get("source_id", view.id), "source": s.text, "score": 1.0, "digest": True})
     return True
 
@@ -3253,7 +3284,8 @@ def _stands_for(out: _Out, abbr: str, views: list, today: date) -> bool:
     return True
 
 
-def all_said(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
+@_isolated
+def all_said(question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural") -> dict | None:
     """"Tell me more" when the answer before said everything (B8): that it
     did, how many notes and over which days, rather than "Nothing in the
     notes found answers that" about a topic it has just answered."""
@@ -3264,6 +3296,7 @@ def all_said(question: str, notes: list[dict], *, today: date | None = None) -> 
     if not members:
         return None
     _TODAY.set(today)
+    _VOICE.set(voice if voice in VOICES else "natural")
     _set_timing(question)
     out = _Out()
     line = PHRASES["all_said"].format(topic=_topic(asked, members), count=_count(len(members)), span=_span(members, today))
@@ -3334,6 +3367,12 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
     abbr = glossary.asked(question)
     if abbr and _stands_for(out, abbr, views, today):
         return True
+    return _exact_lookup(out, asked, question, views, today)
+
+
+def _exact_lookup(out: _Out, asked: str, question: str, views: list, today: date) -> bool:
+    """The figures the notes hold, worked exactly: a slot, an amount, a sum,
+    a day or a count, said (True)."""
     #: The question's slot (a tick, an open task, a dated line) is what
     #: answers it, or the answer says no note holds it (audit 1029 rank 19).
     if composer_money.sums_a_measure(question) and composer_money.answer(out, question, views, today):
@@ -3349,6 +3388,26 @@ def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -
     #: still answer.
     computed = composer_lists.computed_kind(asked)
     return bool(computed and composer_lists.answer(out, computed, asked, views, today))
+
+
+@_isolated
+def exact(question: str, notes: list[dict], *, today: date | None = None) -> dict | None:
+    """The engine's exact answer to a question over `notes`, as an answer
+    result, when it is one a figure or a tick settles (an amount, a sum, a
+    day, a checklist's state); None otherwise. A model writing the reply is
+    handed these lines as facts, so the figure is the engine's with a model
+    on and off alike (second eye F6, CHAT_PLAN decision 75). Its lines only:
+    no closing, offer or chips."""
+    today = today or composer.user_today()
+    asked = composer.what_is(clean(question))
+    if _kind_if_mine(asked) is None or composer._lead_act_verb(question):  # noqa: SLF001
+        return None
+    views, _ = _scope(question, asked, notes, today, "natural", 0, None)
+    out = _Out()
+    if not views or not _exact_lookup(out, asked, question, views, today):
+        return None
+    out.closing, out.offer, out.next, out.insights = [], None, [], []
+    return _result(out, "fact", asked)
 
 
 _HOW_MET = re.compile(r"^(?:how|where|when) (?:did|do) (?:i|we) (?:first )?(?:meet|know|get to know) (?P<name>.+?)(?: (?:again|from|first))*$", re.I)
@@ -3560,6 +3619,7 @@ def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[li
     return (tie[0] if tie else members), tie
 
 
+@_isolated
 def answer(
     question: str, notes: list[dict], *, today: date | None = None, voice: str = "natural", turn: int = 0,
     insight: str = "one", learned=None, known=None,  # noqa: ANN001
@@ -4144,6 +4204,7 @@ def _page_span(view, row: dict | None, terms: set[str]) -> str:  # noqa: ANN001
     return ranked[0].text.strip() if ranked else ""
 
 
+@_isolated
 def web(question: str, pages: list[dict], composed: dict | None = None) -> dict | None:
     """An answer from web pages in decision 70's shape (decision 66): what
     was searched and how many pages were read, then one line a page, its
@@ -4151,6 +4212,7 @@ def web(question: str, pages: list[dict], composed: dict | None = None) -> dict 
     cited by the page's address. Never empty when a page has text (INBOX
     810: "searched the web ... and then didnt even output the results")."""
     asked = clean(_WEB_ASK.sub("", clean(question)))
+    _set_timing(question)
     terms = set(composer._words(asked))
     picked: dict[int, dict] = {}
     for row in (composed or {}).get("grounding") or []:

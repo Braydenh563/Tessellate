@@ -491,7 +491,7 @@ _WEEK_NAMED = 3
 
 #: What a reminder's words keep when the parser lifts its date out ("when I get
 #: home , probably around"): words that only lead into a date.
-_DATE_STUB = re.compile(r"(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
+_DATE_STUB = re.compile(r"(?<![\s,;:])(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
 
 
 def _reminder_words(text: str) -> str:

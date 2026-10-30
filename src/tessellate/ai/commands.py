@@ -37,6 +37,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import reminder_parser, task_acts, when
 from tessellate.ai import act_registry
+from tessellate.ai.composer_frame import note_title
 from tessellate.ai.act_registry import CONFIRM_INTENTS
 from tessellate.ai.filed_name import filed_listing
 
@@ -1047,15 +1048,6 @@ def _attached(session: Session, note_ids: list[int] | None) -> list:
     return out
 
 
-def _title(entry) -> str:  # noqa: ANN001
-    """The note's name: its heading, or its first line, cut at a word."""
-    from tessellate.ai import realise
-
-    first = next((line for line in (entry.content or "").splitlines() if line.strip()), "")
-    first = " ".join(first.lstrip("# ").split())
-    return realise.cut_title(first, 48)
-
-
 def _existing_category(session: Session, name: str) -> str | None:
     from tessellate.core.database import Category
 
@@ -1189,7 +1181,7 @@ def _reminder_note(session: Session, said: str, note_ids: list[int] | None):  # 
     #: One common word in a body is not a source ("call mum" met the Lentil
     #: soup note): the object must name the title, or two words must meet
     #: (audit 1030 A16).
-    title = _title(found[0]).lower()
+    title = note_title(found[0].content, size=48).lower()
     if len(words) < 2 and not all(re.search(rf"\b{re.escape(w)}", title) for w in words):
         return None
     return found[0]
@@ -1211,15 +1203,16 @@ def _task_into_note(session: Session, parsed: dict, note_ids: list[int] | None) 
 def _plan_task(session: Session, parsed: dict) -> dict:
     """Complete, cancel or snooze the task a sentence names (`task_acts`)."""
     intent = parsed["intent"]
+    title = lambda note: note_title(note.content, size=48)  # noqa: E731
     if intent == "cancel":
-        return task_acts.plan_cancel(session, parsed, _card, _title)
+        return task_acts.plan_cancel(session, parsed, _card, title)
     if intent == "snooze":
         from tessellate.core import deps
         from tessellate.core.config import user_now
 
         now = user_now(deps.get_config()).replace(tzinfo=None)
-        return task_acts.plan_snooze(session, parsed, _card, _title, lambda due: reminder_when(due, now), now)
-    return task_acts.plan_complete(session, parsed, _card, _title)
+        return task_acts.plan_snooze(session, parsed, _card, title, lambda due: reminder_when(due, now), now)
+    return task_acts.plan_complete(session, parsed, _card, title)
 
 
 def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
@@ -1241,7 +1234,7 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     if note is not None:
         arguments["note_id"] = note.id
     steps = [{"name": "set_reminder", "arguments": arguments}]
-    card = _card(label, steps, items=[f"#{note.id} {_title(note)}"] if note is not None else None)
+    card = _card(label, steps, items=[f"#{note.id} {note_title(note.content, size=48)}"] if note is not None else None)
     if _has_open_reminder(session, parsed["text"]):
         return _add_another(f"a reminder “{_clip(parsed['text'], 60)}”", card)
     return {"line": f"{label}.", "card": card, "run": True}
@@ -1285,7 +1278,7 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
     if not entries:
         return {"line": _no_notes_to_tag_or_move(parsed, which, intent)}
     ok, skipped = _split_allowed(entries)
-    items = [f"#{e.id} {_title(e)}" for e in ok]
+    items = [f"#{e.id} {note_title(e.content, size=48)}" for e in ok]
     count = f"{len(ok)} note{'' if len(ok) == 1 else 's'}"
     if intent == "tag":
         tags = " ".join(f"#{t}" for t in parsed["tags"])
@@ -1331,7 +1324,7 @@ def _plan_untag(session: Session, parsed: dict, note_ids: list[int] | None) -> d
     tags = " ".join(f"#{t}" for t in parsed["tags"])
     label = f"Take {tags} off {len(ok)} note{'' if len(ok) == 1 else 's'} {which}"
     steps = [{"name": "tag_note", "arguments": {"note_ids": [e.id for e in ok], "remove": parsed["tags"]}}]
-    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {note_title(e.content, size=48)}" for e in ok])}
 
 
 def plan(session: Session, parsed: dict, note_ids: list[int] | None = None) -> dict:
@@ -1426,10 +1419,10 @@ def _resolve_one(session: Session, about: str | None, note_ids: list[int] | None
     if not found:
         return None, _which_note(about or "")
     if len(found) > 1:
-        titled = [e for e in found if _title(e).lower().startswith((about or "").lower())]
+        titled = [e for e in found if note_title(e.content, size=48).lower().startswith((about or "").lower())]
         if len(titled) == 1:
             return titled[0], ""
-        names = " or ".join(f"“{_title(e)}”" for e in found[:3])
+        names = " or ".join(f"“{note_title(e.content, size=48)}”" for e in found[:3])
         return None, f"Which note about “{about}”: {names}?"
     return found[0], ""
 
@@ -1481,10 +1474,10 @@ def _plan_delete_all(session: Session, about: str) -> dict:
         return {"line": summarise_done([], skipped)}
     steps = [{"name": "delete_note", "arguments": {"note_id": e.id}} for e in ok]
     if len(ok) == 1:
-        label = f"Move the only note about “{about}”, “{_title(ok[0])}”, to the bin"
+        label = f"Move the only note about “{about}”, “{note_title(ok[0].content, size=48)}”, to the bin"
     else:
         label = f"Move the {len(ok)} notes about “{about}” to the bin"
-    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {_title(e)}" for e in ok])}
+    return {"line": _confirm(label), "card": _card(label, steps, skipped, [f"#{e.id} {note_title(e.content, size=48)}" for e in ok])}
 
 
 def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dict:
@@ -1496,7 +1489,7 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
     ok, skipped = _split_allowed([entry])
     if not ok:
         return {"line": summarise_done([], skipped)}
-    name = f"“{_title(entry)}”"
+    name = f"“{note_title(entry.content, size=48)}”"
     if intent == "delete":
         steps = [{"name": "delete_note", "arguments": {"note_id": entry.id}}]
         label = f"Move the note {name} to the bin"
@@ -1519,8 +1512,8 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
             return {"line": "That names the same note twice. Which two notes do you mean?"}
         tool = "link_notes" if intent == "link" else "unlink_notes"
         steps = [{"name": tool, "arguments": {"note_id": entry.id, "other_note_id": other.id}}]
-        label = f"{'Link' if intent == 'link' else 'Unlink'} {name} {'and' if intent == 'link' else 'from'} “{_title(other)}”"
-    card = _card(label, steps, skipped, [f"#{entry.id} {_title(entry)}"])
+        label = f"{'Link' if intent == 'link' else 'Unlink'} {name} {'and' if intent == 'link' else 'from'} “{note_title(other.content, size=48)}”"
+    card = _card(label, steps, skipped, [f"#{entry.id} {note_title(entry.content, size=48)}"])
     if intent in CONFIRM_INTENTS:
         return {"line": _confirm(label), "card": card}
     return {"line": label, "card": card, "run": True}
