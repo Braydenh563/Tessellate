@@ -135,3 +135,86 @@ def test_a_goal_in_hours_is_read_the_same_way(ask, question):
 ])
 def test_a_question_that_is_no_goal_is_not_read_as_one(question):
     assert composer_money._target_asked(question) is None
+
+
+RUN_WEEKS = [
+    ("Tuesday run", "2026-10-27", "Ran 14 km along the river."),
+    ("Wednesday run", "2026-10-21", "Ran 6 km up the hill."),
+    ("Weekend run", "2026-10-24", "Ran 4 km on the beach."),
+]
+SPEND_MONTHS = [
+    ("Spending September", "2026-09-30", "Groceries $200. Rent $1000."),
+    ("Spending October", "2026-10-20", "Groceries $300. Rent $1000. Dinner $50."),
+]
+WEIGH_INS = [
+    ("Weigh-in September", "2026-09-15", "Weighed 80 kg this morning."),
+    ("Weigh-in October", "2026-10-15", "Weighed 82 kg this morning."),
+]
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("how much further did I run than last week", "You ran 4 km further this week than last week."),
+    ("how much farther did I run this week than last week", "You ran 4 km further this week than last week."),
+    ("how many more km did I run this week than last week", "You ran 4 km more this week than last week."),
+    ("how much more did I run than last week", "You ran 4 km more this week than last week."),
+    ("how much less did I run last week than this week", "You ran 4 km less last week than this week."),
+])
+def test_a_distance_is_two_sums_and_a_difference_citing_both(ask, question, lead):
+    said = ask(question, RUN_WEEKS)
+    assert said.startswith(lead), said
+    assert "14 km this week" in said and "10 km last week" in said, said
+    assert all(name in said for name in ("Tuesday run", "Wednesday run", "Weekend run")), said
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("how much more did I spend in October than September", "You spent $150 more in October than in September."),
+    ("how much more did I spend in October than in September", "You spent $150 more in October than in September."),
+    ("how much more did I spend this month than last month", "You spent $150 more in October than in September."),
+    ("how much less did I spend in September than October", "You spent $150 less in September than in October."),
+    ("how much more did I spend over October than over September", "You spent $150 more in October than in September."),
+])
+def test_spending_in_two_months_is_a_difference(ask, question, lead):
+    said = ask(question, SPEND_MONTHS)
+    assert said.startswith(lead), said
+    assert "$1,350" in said and "$1,200" in said, said
+    assert "Spending October" in said and "Spending September" in said, said
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("how much heavier am I this month than last month", "You are 2 kg heavier in October than in September."),
+    ("how much heavier was I in October than in September", "You were 2 kg heavier in October than in September."),
+    ("how much lighter was I in September than October", "You were 2 kg lighter in September than in October."),
+])
+def test_a_weight_is_a_difference_too(ask, question, lead):
+    said = ask(question, WEIGH_INS)
+    assert said.startswith(lead), said
+    assert "82 kg" in said and "80 kg" in said, said
+
+
+def test_a_difference_with_one_side_empty_says_so(ask):
+    said = ask("how much further did I run than last week", RUN_WEEKS[1:])
+    assert said.startswith("You ran 10 km less this week than last week."), said
+    assert "nothing recorded this week" in said, said
+
+
+@pytest.mark.parametrize("question", ["how much more is a plane ticket than a train ticket", "how much longer is the flight than the drive", "how much more did I spend", "how many more days until Friday than Monday"])
+def test_a_comparison_of_things_is_no_difference_of_sums(question):
+    assert composer_money._difference_asked(question) is None
+
+
+@pytest.mark.parametrize("question", ["how much did I spend in October compared to September", "how much did I spend in October versus September"])
+def test_compared_to_and_versus_are_read_though_the_comparison_answer_takes_them_first(question):
+    #: `composer.compare_sides` takes "X compared to Y" before the digest
+    #: (`composer_digest._kind_if_mine`), so only the reader is tested here.
+    assert composer_money._difference_asked(question) is not None
+
+
+@pytest.mark.parametrize(("question", "dimension"), [
+    ("how much longer did I spend on the deck this week than last week", "time"),
+    ("how many more hours did I work this week than last week", "time"),
+    ("how much more did I spend on cups this week than last week", "money"),
+    ("how many more miles did I cycle in October than in September", "length"),
+    ("how much heavier did I lift in October than in September", "mass"),
+])
+def test_what_a_difference_is_of_comes_from_the_unit_then_the_doing(question, dimension):
+    assert composer_money._difference_asked(question).dimension == dimension

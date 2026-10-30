@@ -304,7 +304,7 @@ def _cite_all(out, items: list[Item], said: str) -> None:  # noqa: ANN001
 _WINDOW = re.compile(
     r"\b(?:so far|altogether|all up|in total|overall|"
     r"(?:before|after) refunds?|across the notebook|in (?:these|my) notes|(?:have i |i've )?recorded|actually|explicitly|"
-    r"net|gross|total|(?:that )?(?:have|has|with) amounts?|(?:in |during |for |on )?(?:" + "|".join(sorted(recognise.MONTH_NAMES - {"may"})) + r"))\b",
+    r"net|gross|total|(?:that )?(?:have|has|with) amounts?|(?:in |during |for |on |over |across |throughout )?(?:" + "|".join(sorted(recognise.MONTH_NAMES - {"may"})) + r"))\b",
     re.I,
 )
 _STOP = frozenset(composer._words("me my i in on for of the a an to have has did do is it that from all money spent spend spending paid pay amounts amount outgoing payments payment expenses expense notes note these this and with you your"))  # noqa: SLF001
@@ -768,9 +768,157 @@ def _toward(out, ask: _Target, views: list, today: date) -> bool:  # noqa: ANN00
     return True
 
 
+#: A difference between two stretches of the notes: "how much further did I
+#: run than last week", "how much more did I spend in October than
+#: September", "how much heavier am I this month than last month".
+_LINK = re.compile(r"\s(?P<link>than|compared (?:to|with)|versus|vs\.?)\s+(?P<other>\S.*)$", re.I)
+_HOW = re.compile(r"^(?:and )?how (?:much|many)\b(?P<body>.*)$", re.I)
+_DOING = re.compile(r"\b(?:did|have|had|do) (?:i|we) (?P<verb>[a-z]+)\b", re.I)
+_MORE = {"more": "less", "further": "less", "farther": "less", "longer": "less", "heavier": "lighter"}
+_LESS = {"less": "more", "fewer": "more", "lighter": "heavier", "shorter": "longer"}
+_COMPARATIVE_DIMENSION = {"further": "length", "farther": "length", "heavier": "mass", "lighter": "mass", "longer": "time"}
+#: What a doing is measured in, when the ask names no unit.
+_VERB_DIMENSION = {
+    "spend": "money", "pay": "money", "buy": "money",
+    "run": "length", "walk": "length", "swim": "length", "ride": "length", "cycle": "length", "drive": "length", "hike": "length", "row": "length",
+    "lift": "mass", "weigh": "mass", "lose": "mass", "gain": "mass",
+    "work": "time", "study": "time", "practise": "time", "practice": "time", "sleep": "time",
+}
+_SPENT_FORMS = {"spent": "spend", "paid": "pay", "bought": "buy"}
+_SIMPLE_PAST = {"spend": "spent", "pay": "paid", "buy": "bought"}
+
+
+class _Diff(NamedTuple):
+    dimension: str
+    unit: str
+    verb: str
+    comparative: str
+    being: str
+    first: str
+    second: str
+
+
+def _names_window(text: str) -> bool:
+    """Whether `text` names a month or a stretch of days, read against no clock."""
+    return _month_asked(text, date(2000, 1, 1)) is not None or bool(recognise.find(text.lower()))
+
+
+def _unit_named(body: str) -> tuple[str, str] | None:
+    """The first real unit a question says ("km", "hours"): "in", "k" and
+    "m" are units only glued to a number."""
+    for word in re.findall(r"[a-zµ]+", body.lower()):
+        dimension, named = _dimension_of(word)
+        if named and dimension and word not in _CALENDAR and word not in recognise._GLUED_ONLY:  # noqa: SLF001
+            return dimension, word
+    return None
+
+
+def _dimension_asked(body: str, comparative: str, verb: str) -> tuple[str | None, str]:
+    """The dimension a difference is of: a distance, weight or time unit
+    named; else money for spending; else another unit named, the doing
+    ("run") or the comparative ("heavier")."""
+    named = _unit_named(body)
+    if named and named[0] in ("length", "mass", "time"):
+        return named
+    if _VERB_DIMENSION.get(verb) == "money":
+        return ("time", "") if comparative == "longer" else ("money", "")
+    return named or (_VERB_DIMENSION.get(verb) or _COMPARATIVE_DIMENSION.get(comparative), "")
+
+
+def _difference_asked(q: str) -> _Diff | None:
+    """The doing, the two windows and the comparative, or None. A comparison
+    with no window after "than" ("a plane ticket than a train ticket") is
+    not a difference of two sums."""
+    link, how = _LINK.search(q), _HOW.match(q)
+    if not link or not how or _ABOUT_WORDS.search(q) or not _names_window(link.group("other")):
+        return None
+    body = _LINK.sub("", how.group("body")).strip()
+    comparative = next((w for w in re.findall(r"[a-z]+", body.lower()) if w in _MORE or w in _LESS), "")
+    if not comparative and link.group("link").lower() == "than":
+        return None
+    doing = _DOING.search(body)
+    verb = doing.group("verb").lower() if doing else ""
+    verb = _SPENT_FORMS.get(verb, _BASE.get(verb, verb))
+    dimension, unit = _dimension_asked(body, comparative, verb)
+    if not dimension:
+        return None
+    return _Diff(dimension, unit, verb, comparative, "are" if re.search(r"\bam i\b", body, re.I) else "were" if re.search(r"\bwas i\b", body, re.I) else "", body, link.group("other"))
+
+
+def _first_window(second: _Win, today: date) -> _Win | None:
+    """"Than last week" compares with this week; "than September" with this month."""
+    grain = second.span[2] if second.span else "month"
+    return _window_asked({"week": "this week", "year": "this year", "day": "today"}.get(grain, "this month"), today)
+
+
+def _past(verb: str, dimension: str) -> str:
+    if verb in _PAST:
+        return _PAST[verb][0]
+    return _SIMPLE_PAST.get(verb) or ("spent" if dimension == "money" else verb + ("d" if verb.endswith("e") else "ed") if verb else "")
+
+
+def _word_for(comparative: str, diff: float) -> str:
+    """The comparative that is true of the difference: "further" for more, "less" for less."""
+    comparative = "further" if comparative == "farther" else comparative
+    up = comparative if comparative in _MORE else _LESS.get(comparative, "more")
+    down = comparative if comparative in _LESS else _MORE.get(comparative, "less")
+    return up if diff > 0 else down
+
+
+def _side(items: list[Item], win: _Win, unit: str) -> str:
+    if not items:
+        return f"nothing recorded {win.said}"
+    by_note: dict[str, float] = {}
+    for item in items:
+        name = composer_lists._title(item.view)  # noqa: SLF001
+        by_note[name] = by_note.get(name, 0) + item.value
+    return f"{_say(unit, sum(by_note.values()))} {win.said} ({_listed([f'{name} {_say(unit, v)}' for name, v in by_note.items()])})"
+
+
+def _both_sets(d: _Diff, views: list, first: _Win, second: _Win) -> tuple[list[Item], list[Item], str]:
+    """The items of each window, in one currency when money, and the subject said."""
+    drop = {*(_forms(d.verb) if d.verb else ()), d.comparative, d.unit, "did", "have", "had", "do", "am", "was", "i", "we", "much", "many"}
+    subject, said = _subject(" ".join(w for w in d.first.split() if w.lower().strip("?.,") not in drop))
+    forms = frozenset(_forms(d.verb)) if d.verb and d.dimension != "money" else frozenset()
+    one, two = (_items(views, win, subject, dimension=d.dimension, forms=forms) for win in (first, second))
+    if d.dimension == "money" and (one or two):
+        sign = (one or two)[0].symbol
+        one, two = ([i for i in side if i.symbol == sign] for side in (one, two))
+    return one, two, said
+
+
+def _gap_line(d: _Diff, gap: float, unit: str, said: str, first: _Win, second: _Win, shown: float) -> str:
+    on = f" on {said}" if said else ""
+    if not gap:
+        return f"Your notes record {_say(unit, shown)} both {first.said} and {second.said}{on}."
+    lead = d.being or _past(d.verb, d.dimension) or "record"
+    who = "You" if d.being or d.verb or d.dimension == "money" else "Your notes"
+    return f"{who} {lead} {_say(unit, abs(gap))} {_word_for(d.comparative, gap)}{on} {first.said} than {second.said}."
+
+
+def _difference(out, d: _Diff, views: list, today: date) -> bool:  # noqa: ANN001
+    """Two sums over the same quantity in two windows, their difference, and
+    both sets cited."""
+    second = _window_asked(d.second, today)
+    first = _window_asked(d.first, today) or (_first_window(second, today) if second else None)
+    if not first or not second:
+        return False
+    one, two, said = _both_sets(d, views, first, second)
+    if not one and not two:
+        out.lines.append(f"I found no {d.unit or _DIMENSION_NOUN.get(d.dimension, 'amounts spent')} {first.said} or {second.said} in your notes.")
+        return True
+    unit = _unit_of(one + two, d.dimension, d.unit)
+    total = sum(i.value for i in one)
+    out.lines.append(_gap_line(d, total - sum(i.value for i in two), unit, said, first, second, total))
+    both = f"That is {_side(one, first, unit)} against {_side(two, second, unit)}."
+    out.lines.append(both)
+    _cite_all(out, one + two, both)
+    return True
+
+
 def asks(question: str) -> bool:
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
-    if _total_asked(q) is not None or _DUE_ASK.match(q) or _measure_asked(q) or _left_asked(q) or _target_asked(q):
+    if _total_asked(q) is not None or _DUE_ASK.match(q) or _measure_asked(q) or _left_asked(q) or _target_asked(q) or _difference_asked(q):
         return True
     m = _MOST.match(q)
     return bool(m and set(m.group(2).lower().rstrip("?. ").split()) & _MONEY_NOUNS)
@@ -780,7 +928,7 @@ def sums_a_measure(question: str) -> bool:
     """"How many km have I run" is a sum, asked before the one-value slots
     ("how many km is the walk") read a single sentence."""
     q = " ".join(composer_lists._q(question).split())  # noqa: SLF001
-    return _measure_asked(q) is not None or _left_asked(q) is not None or _target_asked(q) is not None
+    return _measure_asked(q) is not None or _left_asked(q) is not None or _target_asked(q) is not None or _difference_asked(q) is not None
 
 
 def records_amounts(text: str) -> bool:
@@ -791,6 +939,8 @@ def records_amounts(text: str) -> bool:
 def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """A sum or a maximum of the amounts spent; False when `asked` is not one."""
     q = " ".join(composer_lists._q(asked).split())  # noqa: SLF001
+    if (diff := _difference_asked(q)) and _difference(out, diff, views, today):
+        return True
     if target := _target_asked(q):
         return _toward(out, target, views, today)
     if left := _left_asked(q):
