@@ -169,3 +169,25 @@ def test_a_list_with_no_title_is_named_by_its_filing_not_its_first_item():
     said = composer_digest.answer("What's still unchecked on my grocery list?", [groceries], today=datetime(2026, 10, 30).date())["text"]
     assert said.startswith("1 still to do on your groceries list:"), said
     assert "Oats" in said and "[x]" not in said, said
+
+
+_MOVED = [
+    _note(1, "# Dentist booking\n\nDentist appointment booked for 3 November at 9 am. Routine check-up.", datetime(2026, 10, 13, 9)),
+    _note(2, "# Dentist rescheduled\n\nMoved the dentist appointment from 3 November at 9 am to 4 November at 10:30 am. Old slot cancelled.", datetime(2026, 10, 27, 9)),
+    _note(3, "# App planning\n\nLaunch target: 20 November. My export work due 6 November.", datetime(2026, 10, 6, 9)),
+    _note(4, "# Revised app dates\n\nSam moved the launch to 27 November. My export deadline is now 9 November.", datetime(2026, 10, 23, 9)),
+]
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("When's my dentist appointment now?", "You moved the dentist appointment from 3 November at 9 am to 4 November at 10:30 am"),
+    ("When is the launch?", "Sam moved the launch to 27 November"),
+    ("When is my export deadline?", "Your export deadline is now 9 November"),
+])
+def test_a_newer_note_that_corrects_the_subject_leads(question, lead):
+    """Stress run 2026-10-30: "When's my dentist appointment now?" gave the
+    first booking; the note that moved it came nowhere."""
+    from tessellate.ai import composer_digest
+
+    said = composer_digest.answer(question, _MOVED, today=datetime(2026, 10, 30).date())["text"]
+    assert said.startswith(lead), said

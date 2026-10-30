@@ -2564,12 +2564,15 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     #: A timing or kind word counts less than the subject ("when are the
     #: designs coming": the designs, not the plumber who is coming).
     weight = composer._term_weights(sorted(stems))  # noqa: SLF001
+    #: A note a newer one corrects says the old value: "when's the dentist
+    #: now" is the moved slot, not the first booking (stress run 2026-10-30).
+    old = _superseded(composer.subject_terms(clean(question)), list({id(f.view): f.view for f in facts}.values()))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: Between sources that say it equally well, the one the search ranked first.
-        return (bool(cue and cue.search(f.sentence.text)), _label_asked(f.label, question), hits, -f.view.rank, -f.sentence.order)
+        return (bool(cue and cue.search(f.sentence.text)), id(f.view) not in old, _label_asked(f.label, question), hits, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3216,6 +3219,45 @@ def _defining_first(asked: str, members: list) -> list:
     return [lead] + [v for v in members if v is not lead]
 
 
+#: Words a note uses when it changes what an older one said: "Moved the
+#: dentist appointment from 3 November to 4 November", "These replace the
+#: dates from 6 October".
+_CORRECTS = re.compile(
+    r"\b(?:moved|rescheduled|postponed|brought\s+forward|changed|revised|replaces?|replaced|instead\s+of|cancel+ed|no\s+longer|new\s+plan|dropped|is\s+now|are\s+now)\b",
+    re.I,
+)
+
+
+def _corrected_first(asked: str, members: list) -> list:
+    """A newer note that corrects the subject leads ahead of the older note
+    it corrects (stress run 2026-10-30: "when's my dentist appointment now"
+    gave the first booking, beside "Moved the dentist appointment to 4
+    November")."""
+    if len(members) < 2 or not members[0].written:
+        return members
+    lead = members[0]
+    later = [v for v in _correcting(composer.subject_terms(clean(asked)), members) if v.written > lead.written]
+    if not later:
+        return members
+    newest = max(later, key=lambda v: v.written)
+    return [newest] + [v for v in members if v is not newest]
+
+
+def _correcting(terms: list[str], views: list) -> list:
+    """The dated views with a sentence that changes something about the
+    subject ("Sam moved the launch to 27 November")."""
+    return [
+        v for v in views
+        if v.written and any(_CORRECTS.search(x.text) and any(composer._holds(t, set(composer._words(x.text))) for t in terms) for x in v.sentences)
+    ]
+
+
+def _superseded(terms: list[str], views: list) -> set[int]:
+    """The ids of the views a newer correcting view outdates."""
+    newest = max((v.written for v in _correcting(terms, views)), default=None)
+    return {id(v) for v in views if newest and v.written and v.written < newest}
+
+
 def _named_checklist(kind: str, asked: str, members: list):  # noqa: ANN202
     """The note the question names when that note is nothing but a checklist
     and the question asks for it plainly ("what is the checklist note", "tell
@@ -3282,7 +3324,7 @@ def _kind_if_mine(asked: str) -> str | None:
 def _chosen(asked: str, kind: str, views: list, wants_context: bool) -> tuple[list, tuple | None]:
     """The notes the answer is about, the defining one first, and the tie an
     overview splits on (None when there is none)."""
-    members = _defining_first(asked, _pick_members(asked, views, wants_context))
+    members = _corrected_first(asked, _defining_first(asked, _pick_members(asked, views, wants_context)))
     tie = _tie(asked, members) if members and kind == "overview" else None
     return (tie[0] if tie else members), tie
 
