@@ -122,6 +122,9 @@ def set_topic_source(source: Callable[[], list]) -> None:
     _topic_source = source
     _app_counts.cache_clear()
     _dictionary.cache_clear()
+    #: Both are read from the dictionary just dropped.
+    _index.cache_clear()
+    _candidates.cache_clear()
 
 
 def _help_text() -> str | None:
@@ -338,9 +341,11 @@ def _accept(typed: str, base: str, d: float) -> bool:
     return d <= 1.0 and typed[0] == base[0] and typed[-1] == base[-1]
 
 
+@lru_cache(maxsize=4096)
 def _candidates(stem: str, distance):  # noqa: ANN001
     """The list words near a stem, as (distance, -weight, word); cached, since
-    one question is read many times over (`composer.rephrase`)."""
+    one question is read many times over (`composer.rephrase`). It said so
+    and was not, and one typo cost 4 to 10 s (audit 1030 Z65)."""
     index = _index()
     weights = _dictionary()
     mask = _mask(stem)

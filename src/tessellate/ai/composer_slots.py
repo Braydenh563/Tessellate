@@ -17,7 +17,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_lists, recognise
+from tessellate.ai import composer, composer_lists, factgraph, recognise
 from tessellate.ai import when as when_words
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
@@ -104,7 +104,24 @@ def _verdict(out, view, task, verb_said: str) -> None:  # noqa: ANN001
     composer_lists._cite(out, view, task, line)  # noqa: SLF001
 
 
-def _first_did(views: list, verb, obj):  # noqa: ANN001
+@functools.lru_cache(maxsize=256)
+def _verb_forms(word: str) -> frozenset[str]:
+    """Every stem a verb is written as: "pay" is also "paid", "write" is
+    "wrote" and "written", so "did I pay the phone bill" meets "Paid the
+    phone bill" (audit 1030 Z18)."""
+    forms = {word.lower()}
+    for lemma, past, participle in factgraph._IRREGULAR:  # noqa: SLF001
+        every = {lemma, participle, *past.split()}
+        if word.lower() in every:
+            forms |= every
+    return frozenset(st for f in forms for st in _stems(f))
+
+
+def _says_verb(sentence, forms: frozenset[str]) -> bool:  # noqa: ANN001
+    return not forms or bool(forms & set(composer._words(sentence.text)))  # noqa: SLF001
+
+
+def _first_did(views: list, verb: frozenset[str], obj):  # noqa: ANN001
     """The (view, sentence) that says the doing: a task that holds the object
     and the verb at once, else the first task or prose that holds the object."""
     best = None
@@ -114,21 +131,58 @@ def _first_did(views: list, verb, obj):  # noqa: ANN001
                 continue
             if s.kind == "task":
                 best = best or (view, s)
-                if not verb or _holds(s, verb):
+                if _says_verb(s, verb):
                     return view, s
-            elif not verb or _holds(s, verb + obj):
+            elif _says_verb(s, verb):
                 best = best or (view, s)
     return best
+
+
+#: A line that plans the doing is not a record of it: "did I pay rent"
+#: beside "Remember to pay rent on the 1st" is "not yet" (audit 1030 Z19).
+_INTENT = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:i\s+)?(?:remember to|need to|have to|must|should|plan to|going to|want to|don't forget to|todo:?|to do:?)\b",
+    re.I,
+)
+#: "Did I write about the conference": a note that names the conference is
+#: the writing, whatever verb it uses (audit 1030 Z18).
+_WRITING = frozenset({"write", "written", "wrote", "mention", "mentioned", "note", "noted", "record", "recorded", "log", "logged", "jot", "jotted"})
+
+
+def _note_of(view, today: date) -> str:  # noqa: ANN001
+    day = view.written
+    return f"your note of {composer_lists._day(day, today)}" if day else "one note"  # noqa: SLF001
+
+
+def _say_line(out, view, s, lead: str) -> None:  # noqa: ANN001
+    text = re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip()
+    out.lines.append(f"{lead}: {text}")
+    composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
 
 
 def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
     if s.kind == "task":
         _verdict(out, view, s, verb_word)
-        return
-    day = view.written
-    when = f" (your note of {composer_lists._day(day, today)})" if day else ""  # noqa: SLF001
-    out.lines.append(f"Yes, your notes say so{when}: {s.text.strip()}")
-    composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+    elif _INTENT.search(s.text):
+        _say_line(out, view, s, f"Not yet, as far as your notes go. {_note_of(view, today).capitalize()} only plans it")
+    else:
+        _say_line(out, view, s, f"Yes, {_note_of(view, today)} says so")
+
+
+def _asked_thing(words: list[str]) -> str:
+    """"anything about meditation" is meditation."""
+    return re.sub(r"^(?:(?:anything|something|much)\s+)?(?:about|on|of|regarding|to|for)\s+", "", " ".join(words[1:]), flags=re.I)
+
+
+def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # noqa: ANN001
+    """No note says the doing: the nearest note that names the thing, or a
+    plain no, never the question echoed back ("says you written")."""
+    thing = _asked_thing(words)
+    seen = _first_did(views, frozenset(), obj)
+    if seen:
+        _say_line(out, seen[0], seen[1], f"I found nothing in your notes that says so. {_note_of(seen[0], today).capitalize()} mentions {thing}")
+    else:
+        out.lines.append(f"I found nothing in your notes about {thing}.")
 
 
 #: "Did I like the ramen place": the note rarely says "like"; it says "8/10,
@@ -149,16 +203,19 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     words = rest.split()
     if len(words) < 2:
         return False
-    verb = _stems(words[0])
-    obj = _stems(" ".join(words[1:]))
+    verb = _verb_forms(words[0])
+    obj = _stems(_asked_thing(words))
     if not obj:
         return False
-    if words[0] in _TASTE and (best := _first_did(views, None, obj)):
+    if words[0] in _TASTE and (best := _first_did(views, frozenset(), obj)):
         _say_taste(out, *best, today)
+        return True
+    if words[0].lower() in _WRITING and (seen := _first_did(views, frozenset(), obj)):
+        _say_line(out, *seen, f"Yes, {_note_of(seen[0], today)} mentions {_asked_thing(words)}")
         return True
     best = _first_did(views, verb, obj)
     if best is None:
-        out.lines.append(f"I found nothing in your notes that says you {rest}.")
+        _not_said(out, views, obj, words, today)
         return True
     _say_did(out, *best, words[0], today)
     return True

@@ -833,8 +833,10 @@ def _clean_split(span: str) -> tuple[str, str] | None:
 
 def compare_sides(question: str) -> tuple[str, str] | None:
     """The two things a comparison names, as typed: ("Lisbon", "Porto")."""
+    #: Once, not once per pattern: each reading spell-checks every unknown
+    #: word (audit 1030 Z65).
+    text = rephrase(question)
     for pattern in _COMPARE_SIDES:
-        text = rephrase(question)
         match = pattern.search(text)
         if match:
             raw_a, raw_b = match.group("a"), match.group("b")

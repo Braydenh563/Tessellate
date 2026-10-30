@@ -3893,13 +3893,20 @@ def _act_planned_events(req: _StreamRequest, parsed: dict) -> Iterator[dict]:
     if card and planned.get("run"):
         mood = composer_compose.mood_of(req.question or "", voice=_chat_voice(req), seed=_reply_seed(req)[1], intent="act")
         done = acts.run(req.session, card["steps"], card.get("skipped"), lambda what: composer_compose.frame("act_done", mood, what=f"{what[:1].lower()}{what[1:]}"))
-        if done["ok"] and parsed["intent"] in ("reminder", "complete"):
+        if done["ok"] and parsed["intent"] == "reminder":
             #: Said as the card says it (INBOX 734): "Done: remind you on
             #: Friday at 9: call the dentist."
             what = f"{card['label'][:1].lower()}{card['label'][1:]}"
             done["summary"] = composer_compose.frame("act_card", mood, what=what)
+        elif done["ok"] and parsed["intent"] == "complete":
+            #: Already ticked, so said as done, not "I will mark it done"
+            #: (audit 1030 Z60).
+            what = re.sub(r"^Mark (“.*”) done", r"ticked off \1", card["label"])
+            done["summary"] = composer_compose.frame("act_done", mood, what=what)
         yield {"type": "answer", "delta": done["summary"]}
-        yield {**card, "done": True, "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
+        #: Run already, with Undo: the card's "nothing changes until you
+        #: confirm" would contradict it.
+        yield {**card, "notice": "", "done": True, "summary": done["summary"], "undo": done["undo"], "open": done.get("open")}
         return
     #: The steps come first and fold up as the answer starts, the order a
     #: model's run shows (owner, 2026-10-12: the steps sat under the result).
