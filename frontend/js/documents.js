@@ -316,6 +316,7 @@ function foldDocMenuGroup(label, ids) {
   //: open, and so did every download row.
   const panel = group.querySelector(".action-menu.submenu");
   if (panel) panel.dataset.docDockSubmenu = "1";
+  return group;
 }
 
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
@@ -335,9 +336,13 @@ function foldDocMenuGroup(label, ids) {
 //: the list: each is a verb on this document, none is a preference, and
 //: hiding a one-off action behind a flyout costs a click every time to save a
 //: row once.
-foldDocMenuGroup("ph:download-simple Download or print", [
+//: **First in the list** (audit 1028 U32): taking a document out was the
+//: ninth row, behind the layout switches. The rows keep their markup order;
+//: the group is moved, so ids and handlers are untouched.
+const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
   "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
+docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 foldDocMenuGroup("ph:layout Editor and layout", [
   "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
@@ -1939,7 +1944,7 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   },
 ];
 
-function docTemplateFill(template) {
+function docTemplateFill(template, typedTitle = "") {
   const now = new Date();
   const date = now.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   //: **`{{isodate}}` is the local day, built by hand rather than from
@@ -1956,7 +1961,8 @@ function docTemplateFill(template) {
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
   //: document it makes is called by its day (`docTitle`, section 14).
-  const title = template.id === "blank" ? docNextName() : fill(template.docTitle || template.title);
+  //: A title the person already typed is the name they chose (audit 1028 U34).
+  const title = typedTitle || (template.id === "blank" ? docNextName() : fill(template.docTitle || template.title));
   return {
     title,
     content: fill(template.content).replaceAll("{{title}}", title),
@@ -1993,10 +1999,13 @@ const docNextName = () => docUntitledName(docs.map((d) => d.title));
 //: Leaving a document that was made and never written in (a keystroke in the
 //: title, then undone; New, then another document) bins it, so the list does
 //: not fill with "Untitled document N". Anything with a word in it stays.
-async function docDropIfUntouched(nextId = null) {
+async function docDropIfUntouched(nextId = null, { titled = false } = {}) {
   const doc = currentDoc;
+  //: `titled`: a template is about to be made from the title the person typed, so
+  //: the empty document that title started is the stray (audit 1028 U34).
+  const untouched = titled ? !docText().trim() : docIsUntouched($("doc-title").value, docText());
   // Only a document made in this session: an older empty "Untitled document N" is the owner's.
-  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !untouched) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
   //: A delete that failed leaves the row on the server, so it goes back in the list (D36).
@@ -2024,7 +2033,11 @@ async function startBlankDocument() {
 
 async function createDocument(template = null) {
   if (!template) return startBlankDocument();
-  const body = docTemplateFill(template);
+  //: A titled blank the person started and then swapped for a template is not
+  //: left behind empty: its title carries into the template's document (U34).
+  const started = currentDoc && docsMadeThisSession.has(currentDoc.id) && !docText().trim() ? $("doc-title").value.trim() : "";
+  await docDropIfUntouched(null, { titled: true });
+  const body = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
