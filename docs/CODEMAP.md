@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6892, frontend ids 2592, CSS sections 506, backend routes 632, backend modules 7547, test files 1613, tests 14004, plan headings 990.
+Counts: frontend functions 6892, frontend ids 2592, CSS sections 506, backend routes 632, backend modules 7550, test files 1614, tests 14008, plan headings 990.
 
 ## Frontend functions (6892)
 
@@ -11636,7 +11636,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7547)
+## Backend modules (7550)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20627,7 +20627,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `reset` | src/tessellate/search/chunks.py:374 |
 | `stats` | src/tessellate/search/chunks.py:381 |
 
-### src/tessellate/search/engine.py (57)
+### src/tessellate/search/engine.py (58)
 
 | Name | File:line |
 |---|---|
@@ -20639,7 +20639,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_candidate_rows` | src/tessellate/search/engine.py:1161 |
 | `_candidates` | src/tessellate/search/engine.py:820 |
 | `_compact` | src/tessellate/search/engine.py:658 |
-| `_cosine_scores` | src/tessellate/search/engine.py:1429 |
+| `_cosine_scores` | src/tessellate/search/engine.py:1446 |
 | `_explain` | src/tessellate/search/engine.py:993 |
 | `_explain_words` | src/tessellate/search/engine.py:977 |
 | `_filter_only` | src/tessellate/search/engine.py:850 |
@@ -20650,7 +20650,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_has_attachment_ids` | src/tessellate/search/engine.py:1051 |
 | `_has_ids` | src/tessellate/search/engine.py:1081 |
 | `_having` | src/tessellate/search/engine.py:1195 |
-| `_hit_for` | src/tessellate/search/engine.py:1233 |
+| `_hit_for` | src/tessellate/search/engine.py:1250 |
 | `_hops_from` | src/tessellate/search/engine.py:917 |
 | `_keep_matrix_in_step` | src/tessellate/search/engine.py:533 |
 | `_keyword_pass` | src/tessellate/search/engine.py:887 |
@@ -20663,7 +20663,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_normalised_bm25` | src/tessellate/search/engine.py:961 |
 | `_plan_terms` | src/tessellate/search/engine.py:1141 |
 | `_put` | src/tessellate/search/engine.py:574 |
-| `_rank_rows` | src/tessellate/search/engine.py:1267 |
+| `_rank_rows` | src/tessellate/search/engine.py:1284 |
 | `_reconcile` | src/tessellate/search/engine.py:429 |
 | `_remember` | src/tessellate/search/engine.py:555 |
 | `_row_has` | src/tessellate/search/engine.py:1117 |
@@ -20676,17 +20676,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_term_groups` | src/tessellate/search/engine.py:676 |
 | `_title_terms` | src/tessellate/search/engine.py:691 |
 | `_unit` | src/tessellate/search/engine.py:339 |
-| `_with_meaning` | src/tessellate/search/engine.py:1336 |
-| `cached_similar_pairs` | src/tessellate/search/engine.py:1543 |
+| `_with_meaning` | src/tessellate/search/engine.py:1353 |
+| `_without` | src/tessellate/search/engine.py:1243 |
+| `cached_similar_pairs` | src/tessellate/search/engine.py:1560 |
 | `current_matrix` | src/tessellate/search/engine.py:368 |
 | `forget_vector` | src/tessellate/search/engine.py:606 |
 | `index_counts` | src/tessellate/search/engine.py:671 |
-| `related` | src/tessellate/search/engine.py:1473 |
+| `related` | src/tessellate/search/engine.py:1490 |
 | `rows_for` | src/tessellate/search/engine.py:403 |
-| `search` | src/tessellate/search/engine.py:1284 |
-| `stats` | src/tessellate/search/engine.py:1589 |
+| `search` | src/tessellate/search/engine.py:1301 |
+| `stats` | src/tessellate/search/engine.py:1606 |
 | `vector_view` | src/tessellate/search/engine.py:475 |
-| `vectors_by_id` | src/tessellate/search/engine.py:1497 |
+| `vectors_by_id` | src/tessellate/search/engine.py:1514 |
 | `warm_vectors` | src/tessellate/search/engine.py:346 |
 
 ### src/tessellate/search/index.py (36)
@@ -20730,24 +20731,26 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `sources_for_kind` | src/tessellate/search/index.py:203 |
 | `touch` | src/tessellate/search/index.py:418 |
 
-### src/tessellate/search/query.py (14)
+### src/tessellate/search/query.py (16)
 
 | Name | File:line |
 |---|---|
 | `Understood` | src/tessellate/search/query.py:49 |
+| `_constrained` | src/tessellate/search/query.py:524 |
 | `_empty_filters` | src/tessellate/search/query.py:44 |
-| `_has_content` | src/tessellate/search/query.py:500 |
-| `_parse_date_operator` | src/tessellate/search/query.py:305 |
-| `_parse_operators` | src/tessellate/search/query.py:333 |
-| `_read_window` | src/tessellate/search/query.py:408 |
-| `_split_values` | src/tessellate/search/query.py:323 |
-| `_strip_scaffolding` | src/tessellate/search/query.py:213 |
-| `_strip_trailing_scaffold` | src/tessellate/search/query.py:199 |
-| `_tidy` | src/tessellate/search/query.py:148 |
-| `is_topic_word` | src/tessellate/search/query.py:543 |
-| `operator_notices` | src/tessellate/search/query.py:384 |
-| `search_terms` | src/tessellate/search/query.py:550 |
-| `understand` | src/tessellate/search/query.py:437 |
+| `_has_content` | src/tessellate/search/query.py:529 |
+| `_parse_date_operator` | src/tessellate/search/query.py:331 |
+| `_parse_operators` | src/tessellate/search/query.py:359 |
+| `_read_window` | src/tessellate/search/query.py:434 |
+| `_split_values` | src/tessellate/search/query.py:349 |
+| `_strip_scaffolding` | src/tessellate/search/query.py:218 |
+| `_strip_trailing_scaffold` | src/tessellate/search/query.py:204 |
+| `_take_negated` | src/tessellate/search/query.py:315 |
+| `_tidy` | src/tessellate/search/query.py:153 |
+| `is_topic_word` | src/tessellate/search/query.py:572 |
+| `operator_notices` | src/tessellate/search/query.py:410 |
+| `search_terms` | src/tessellate/search/query.py:579 |
+| `understand` | src/tessellate/search/query.py:463 |
 
 ### src/tessellate/search/search_manager.py (50)
 
@@ -20952,7 +20955,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14004)
+## Tests (14008)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22176,6 +22179,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_search_explain_meaning.py | 3 |
 | tests/test_search_hit_category.py | 3 |
 | tests/test_search_maps.py | 7 |
+| tests/test_search_negated_operators.py | 4 |
 | tests/test_search_operators_1029.py | 12 |
 | tests/test_search_prefix.py | 7 |
 | tests/test_search_provider.py | 13 |

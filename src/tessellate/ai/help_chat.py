@@ -1121,7 +1121,7 @@ HELP_TOPICS.extend(
                 "its kind, and the chips narrow it to one. Operators: tag:work, "
                 "in:work for a space, kind:chat, before:2026-01, after:2025-06-30, "
                 "has:image, is:pinned, title:budget for titles only, is:deleted to look in the bin "
-                "(otherwise left out), a \"quoted phrase\", and -word to leave something "
+                "(otherwise left out), a \"quoted phrase\", and -word or -tag:work (also -kind:, -is:, -title:) to leave something "
                 "out. A filter it does not know is named under the box. Numbers match as typed. The star saves a search as a row in the Notes sidebar. A small typo that "
                 "finds nothing is searched as the nearest word your notes use, "
                 "and the line says \"showing results for\" it. When nothing matches, "
