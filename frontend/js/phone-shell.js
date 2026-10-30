@@ -2005,7 +2005,14 @@ function foldDockActions(narrow) {
         control.replaceWith(slot);
         control.dataset.rowClass = control.className;
         control.className = "doc-dock-menu-item dock-folded-action";
-        if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
+        //: A worded control (Select) shows its own short word in the menu, not
+        //: its title as a second one: the title ran 437px wide on a phone and
+        //: pushed the menu off the window (audit 1028 S21).
+        const own = control.querySelector(".dock-word");
+        if (own) {
+          own.classList.replace("dock-word", "dock-folded-word");
+          own.dataset.folded = "1";
+        } else if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
           const word = document.createElement("span");
           word.className = "dock-folded-word";
           word.textContent = control.getAttribute("aria-label") || control.title || "";
@@ -2021,7 +2028,11 @@ function foldDockActions(narrow) {
         if (!slot) continue;
         control.className = control.dataset.rowClass || "";
         delete control.dataset.rowClass;
-        control.querySelector(":scope > .dock-folded-word")?.remove();
+        const kept = control.querySelector(":scope > .dock-folded-word[data-folded]");
+        if (kept) {
+          kept.classList.replace("dock-folded-word", "dock-word");
+          delete kept.dataset.folded;
+        } else control.querySelector(":scope > .dock-folded-word")?.remove();
         //: The space `append(" ", word)` put before the word, left behind as
         //: a trailing text node that would widen the icon button by a glyph.
         if (control.lastChild?.nodeType === Node.TEXT_NODE && !control.lastChild.data.trim()) {

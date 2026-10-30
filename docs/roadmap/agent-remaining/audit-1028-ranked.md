@@ -21,7 +21,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 15 | B4 | high | full board render per frame with no dirty set | new | L |
 | 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | fixed 2026-10-30 (graph-1030: 25 to 9-10 s, long tasks 149 to 20) | L |
-| 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | new | M |
+| 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | left (large, shell-1031.md) | M |
 | 19 | B1 | high | whiteboard.js is 25k lines; initWhiteboard is one 4,064-line closure | docs/roadmap/WORLD_CLASS_PLAN.md:3755 | L |
 | 20 | B2 | high | whiteboard-map.js is 10,810 lines and 350 functions | docs/roadmap/WORLD_CLASS_PLAN.md:3255 | L |
 | 21 | U7 | high | code text is proportional, not monospace | fixed (673039d, reconciled 2026-10-30) | S |
@@ -68,22 +68,22 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 62 | E39 | med | model download has no timeout or disk check | fixed 1031 | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
 | 64 | E57 | med | context overflow drops early turns with no inline notice | new | M |
-| 65 | S11 | med | server greeting lines can contradict dashboard state | new | S |
+| 65 | S11 | med | server greeting lines can contradict dashboard state | fixed (b8cfb46) | S |
 | 66 | S25 | med | lock form gives little error feedback, no throttle hint | fixed (already: inline error, role alert, 429 names the wait; reconciled 2026-10-30) | S |
 | 67 | S27 | med | no backlinks panel in the note editor | fixed (already built; reconciled 2026-10-30) | M |
-| 68 | S28 | med | no wiki-style [[ ]] autocomplete in notes | docs/roadmap/BACKLOG.md:3124 | M |
-| 69 | S29 | med | no note templates | docs/roadmap/BACKLOG.md:2928 | M |
+| 68 | S28 | med | no wiki-style [[ ]] autocomplete in notes | already built ([[ ]] autocomplete, measured) | M |
+| 69 | S29 | med | no note templates | already built (Templates, measured) | M |
 | 70 | S30 | med | no pin-to-top for notes in the list | fixed (already built; reconciled 2026-10-30) | M |
-| 71 | S31 | med | no bulk move or bulk tag from the selection bar | new | M |
-| 72 | S32 | med | no Trash view with restore, existing state unverified | docs/roadmap/WORLD_CLASS_PLAN.md:693 | M |
-| 73 | S33 | med | no saved searches or smart folders | docs/roadmap/WORLD_CLASS_PLAN.md:680 | M |
+| 71 | S31 | med | no bulk move or bulk tag from the selection bar | already built (selection bar Move/Tag, measured) | M |
+| 72 | S32 | med | no Trash view with restore, existing state unverified | already built (Trash view with restore, measured) | M |
+| 73 | S33 | med | no saved searches or smart folders | already built (saved searches, measured) | M |
 | 74 | S34 | med | no single-note export from the overflow menu | fixed (already built; reconciled 2026-10-30) | M |
 | 75 | S35 | med | no scheduled automatic backup or last-backup status | fixed (already built; reconciled 2026-10-30) | M |
-| 76 | S36 | med | import does not preview what it will create | new | M |
+| 76 | S36 | med | import does not preview what it will create | won't fix (design: import is one step with Undo plus a report, DESIGN.md recipe) | M |
 | 77 | S47 | med | no keyboard j/k movement in the notes list | fixed (already: arrow keys, Home, End and Enter walk the list; reconciled 2026-10-30) | S |
 | 78 | S48 | med | no tag rename or merge in the tags UI | fixed (already built; reconciled 2026-10-30) | M |
 | 79 | S49 | med | no note version history view | fixed (already built; reconciled 2026-10-30) | L |
-| 80 | S50 | med | no search operators such as tag: and before: | docs/roadmap/WORLD_CLASS_PLAN.md:677 | M |
+| 80 | S50 | med | no search operators such as tag: and before: | already built (search operators, measured; negated -tag: not supported) | M |
 | 81 | B12 | med | same keys mean different things by mode | new | M |
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
 | 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
@@ -103,24 +103,24 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 97 | S12 | med | Duplicate sits under Add in the entry overflow menu | fixed (this batch) | S |
 | 98 | S13 | med | placeholder-only inputs have no visible or aria label | fixed | S |
 | 99 | S14 | med | tab-documents aria-labelledby points at wrong element | fixed (this batch) | S |
-| 100 | S15 | med | only one forced-colors rule in the whole CSS | new | M |
+| 100 | S15 | med | only one forced-colors rule in the whole CSS | fixed (b8cfb46) | M |
 | 101 | S18 | med | support email hard-coded in toast code | fixed (one string, tests/test_support_email.py keeps it equal) | S |
 | 102 | S19 | med | toasts dismiss on a fixed timer, no pause on hover | fixed (this batch) | S |
-| 103 | S21 | med | select button folded away at narrow widths | new | M |
-| 104 | S22 | med | filter, sort and view toggle use three control styles | new | M |
+| 103 | S21 | med | select button folded away at narrow widths | fixed (b8cfb46) | M |
+| 104 | S22 | med | filter, sort and view toggle use three control styles | fixed (b8cfb46, already one dock grammar; menu overflow fixed) | M |
 | 105 | S23 | med | palette lacks recent-first order and shortcut hints | fixed (already: most used first at rest, learned order as you type, the key in the preview) | S |
 | 106 | S24 | med | no in-app cheat sheet reached with the ? key | fixed (already built; reconciled 2026-10-30) | S |
 | 107 | S26 | med | fresh-install Ask tab stacks banner and toast at phone width | fixed (aef5a83, S26: banner one in-flow line 111px, toast only when the question is owed; its phone size 178px to 152px, covering the Ask button 32px to 6px at 390x667; 360x640 still covers, see shellux-1030.md) | S |
 | 108 | S39 | med | focus ring contrast inconsistent across custom controls | fixed (measured, already holds: contrastui.js, 40 surfaces, 1037 focused controls per theme, 0 under 3:1 in light and dark; 11 custom controls 5.47 to 5.9:1 light and 6.24 to 7.33:1 dark; 51 of 54 outline colours are `var(--accent)`, the rest tokens) | S |
-| 109 | S40 | med | icon-only buttons rely on title for accessible names | docs/roadmap/UI_MODERNISATION_PLAN.md:1334 | S |
+| 109 | S40 | med | icon-only buttons rely on title for accessible names | fixed (b8cfb46, lint; all icon buttons already named) | S |
 | 110 | S41 | med | touch targets under 24px in dense rows | fixed (measured, already holds: notes row chips min 24x24, row icon buttons 28x28 (44x32 touch), 9 surfaces at 1280 and 390: 0 failing WCAG 2.5.8 except one library title beside the status bar; the 14px suggested-tag take has a 44px band) | S |
-| 111 | S42 | med | first run has no sample notes, lists look empty | docs/roadmap/BACKLOG.md:1807 | M |
-| 112 | S43 | med | help split across popovers, Guide and Settings | new | S |
+| 111 | S42 | med | first run has no sample notes, lists look empty | left (large, shell-1031.md) | M |
+| 112 | S43 | med | help split across popovers, Guide and Settings | fixed (b8cfb46) | S |
 | 113 | S45 | med | no palette deep link to each Settings pane | fixed (already built; reconciled 2026-10-30) | S |
 | 114 | S46 | med | no back stack after following a note link | fixed (already: back and forward in the status bar, nav-history.js; reconciled 2026-10-30) | M |
 | 115 | S51 | med | dashboard has no resume where you left off | fixed (already built; reconciled 2026-10-30) | S |
 | 116 | S52 | med | graph has no find box on the main bar | fixed (#graph-search on the graph bar, 1029 rank 39) | S |
-| 117 | S53 | med | timeline and notes list page separately | new | M |
+| 117 | S53 | med | timeline and notes list page separately | left (shell-1031.md) | M |
 | 118 | U11 | med | two menus both named Insert with different contents | fixed (673039d, reconciled 2026-10-30) | S |
 | 119 | U12 | med | insert menu hides key hints for most tools | new | S |
 | 120 | U13 | med | two buttons labelled Library on the board | fixed (this batch) | S |
@@ -155,9 +155,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 149 | K30 | med | link-suggestions loads every entry per request, no cache | fixed 2026-10-30: kept until a session write, 300 s backstop | M |
 | 150 | K31 | med | GET /entities reads every mention then slices in Python | fixed 2026-10-30: counted in SQL | S |
 | 151 | E34 | med | live markdown re-renders whole answer every 66 ms | new | M |
-| 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | docs/roadmap/WORLD_CLASS_PLAN.md:1852 | L |
+| 152 | S16 | med | notes list never recycles rows, DOM grows unbounded | left (large; notes list already windowed, shell-1031.md) | L |
 | 153 | S37 | med | list filter re-renders without debounce | fixed (already: the notes filter waits 150 ms, settings-wiring.js) | S |
-| 154 | S38 | med | many timers run independent intervals | docs/roadmap/WORLD_CLASS_PLAN.md:3956 | S |
+| 154 | S38 | med | many timers run independent intervals | fixed (b8cfb46) | S |
 | 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
 | 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
 | 157 | U20 | med | code file open long task of 305 ms | new | M |
@@ -172,7 +172,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 166 | E45 | med | five AI surfaces with separate stream consumers | new | L |
 | 167 | S17 | med | four copies of the relative-time helper | fixed | S |
 | 168 | S20 | med | cache prefix still carries the old product name | fixed (already built; reconciled 2026-10-30) | S |
-| 169 | S44 | med | mixed button heights and radii across toolbars | new | M |
+| 169 | S44 | med | mixed button heights and radii across toolbars | fixed (b8cfb46, lint; toolbar sizes already tokens) | M |
 | 170 | U25 | med | collapse chevrons overlap node edges | new | S |
 | 171 | U30 | med | editor toolbar heights inconsistent | new | S |
 | 172 | B40 | low | catch blocks swallow save and delete errors silently | docs/roadmap/WORLD_CLASS_PLAN.md:3877 | S |
@@ -212,12 +212,12 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 206 | E62 | low | regenerate rewords but cannot widen retrieval | new | M |
 | 207 | E64 | low | internal ids and test notes in student-facing text | new | S |
 | 208 | E71 | low | read aloud has no stop or speed control, unverified | new | S |
-| 209 | S70 | low | no note count per tag chip | new | S |
+| 209 | S70 | low | no note count per tag chip | already built (tag chip counts, measured) | S |
 | 210 | S71 | low | no drag and drop of files into the list | new | M |
-| 211 | S72 | low | no quick-capture hint on first run | new | S |
-| 212 | S73 | low | no word count or reading time in editor footer | new | S |
+| 211 | S72 | low | no quick-capture hint on first run | fixed (b8cfb46) | S |
+| 212 | S73 | low | no word count or reading time in editor footer | already built (editor footer word count, measured) | S |
 | 213 | S74 | low | no outline or table of contents for long notes | new | M |
-| 214 | S75 | low | no daily note shortcut | docs/roadmap/UI_MODERNISATION_PLAN.md:1494 | S |
+| 214 | S75 | low | no daily note shortcut | already built (daily note, measured) | S |
 | 215 | S76 | low | no hover preview for linked notes | new | M |
 | 216 | S77 | low | no manual sort order | new | L |
 | 217 | B26 | low | context menu builder is 453 lines with one-use items | new | M |

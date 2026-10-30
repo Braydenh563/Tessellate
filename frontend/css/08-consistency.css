@@ -793,7 +793,7 @@ details[open] > .about-whats-new::before,
      risks. */
   min-width: min-content;
 }
-[data-dock-name="notes"] .dock-arrange .select-shell {
+[data-dock-name="notes"] .dock-arrange:not(.dock-arrange-folded) .select-shell {
   max-width: 9rem;
 }
 /* Tidy's count (INBOX 691) on the broom's corner, the phone More's run count

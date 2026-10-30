@@ -207,6 +207,10 @@ function paletteEditorMatches(needle) {
     .map((r) => r.c);
 }
 
+//: A line that opens like a question ("how do I", "where is", "can I") is one
+//: without its mark (audit 1028 S43: help is a typed question away).
+const PALETTE_ASKS = /^(?:how (?:do|does|can|to|should)|where (?:is|are|do|can)|what (?:is|are|does)|why (?:is|does|do)|can i|is there a way)\b/i;
+
 function paletteMatches(query) {
   const lowered = query.trim().toLowerCase();
   if (lowered.startsWith(">")) return paletteEditorMatches(lowered.slice(1).trim());
@@ -239,7 +243,7 @@ function paletteMatches(query) {
   //: nothing in it and the box goes empty, which reads as "this app has no
   //: answer". A line ending in a question mark is offered to Atlas instead,
   //: first, with everything the palette did find underneath.
-  if (query.trim().endsWith("?")) {
+  if (query.trim().endsWith("?") || PALETTE_ASKS.test(query.trim())) {
     commands.unshift({
       label: `Ask Atlas: ${query.trim()}`,
       mark: "atlas",
