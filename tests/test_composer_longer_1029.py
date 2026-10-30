@@ -17,7 +17,7 @@ NOW = datetime(2026, 10, 29, 12, 0)
 NOTES = [
     "# Budget\n\nRent 1200, food 400, transport 120. Savings goal 300 a month.",
     "# Lisbon trip\n\nFlying out on 14 November, back on the 21st. Staying in Alfama, near the castle. "
-    "Day trip to Sintra on the 17th, and a fado night.",
+    + "Day trip to Sintra on the 17th, and a fado night.",
 ]
 
 
