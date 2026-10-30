@@ -76,9 +76,12 @@ def test_a_later_answer_flips_the_state_and_links_to_the_sentence(client, sessio
 
 def test_marking_answered_by_hand_writes_a_typed_link(client, session):
     asked = _note(session, TWO, days_ago=5)
-    answering = _note(session, "Sam is fixing the roof next week, booked and paid.")
     facts.run(session, budget=5000)
     session.commit()
+    # Written after the pass: since INBOX 1466 the pass answers "Who is
+    # fixing the roof" from this note by itself, and this test is about the
+    # person marking an open question answered.
+    answering = _note(session, "Sam is fixing the roof next week, booked and paid.")
     roof = next(i for i in client.get("/questions").json()["items"] if "roof" in i["text"])
     item = client.post(f"/questions/{roof['id']}", json={"state": "answered", "entry_id": answering.id}).json()
     assert item["state"] == "answered"
