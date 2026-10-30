@@ -64,7 +64,10 @@ def _sources(session: Session, note_ids: list[int]) -> list[dict]:
         entry = session.get(Entry, note_id)
         if entry is None or entry.is_deleted or entry.is_private:
             continue
-        found.append({"title": "", "content": entry.content or ""})
+        #: `written` dates a note in the write-up the composer makes with no
+        #: model (`composer_write.write_up`); the model's prompt ignores it.
+        written = entry.created_at.date().isoformat() if entry.created_at else ""
+        found.append({"title": "", "content": entry.content or "", "written": written})
     return found
 
 
@@ -82,14 +85,21 @@ def compose_draft(
     is the fallback for a client that cannot open a stream, and the shape most
     of this feature's tests speak.
     """
-    if not body.thoughts.strip() and not body.draft.strip():
+    if not body.thoughts.strip() and not body.draft.strip() and not body.source_ids:
         raise HTTPException(status_code=400, detail="Write a thought first.")
 
+    ollama = deps.get_ollama()
+    if not ollama.is_running():
+        #: With no model the composer does what it can by rule (INBOX 1466).
+        return drafter.composed(
+            body.thoughts, body.draft, instruction=body.instruction, kind=body.kind,
+            tone=body.tone, length=body.length, sources=_sources(session, body.source_ids),
+        )
     text, note = drafter.compose(
         body.thoughts,
         body.draft,
         deps.get_model_manager().for_feature("writing"),
-        deps.get_ollama(),
+        ollama,
         instruction=body.instruction,
         kind=body.kind,
         tone=body.tone,
@@ -118,7 +128,7 @@ def compose_draft_stream(
     taught all three. The sources are resolved here, before the generator
     starts: the session is closed by the time the body is streamed.
     """
-    if not body.thoughts.strip() and not body.draft.strip():
+    if not body.thoughts.strip() and not body.draft.strip() and not body.source_ids:
         raise HTTPException(status_code=400, detail="Write a thought first.")
 
     sources = _sources(session, body.source_ids)

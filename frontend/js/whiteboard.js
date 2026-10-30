@@ -14323,6 +14323,11 @@ const WB_EXPORT_FORMATS = [
     run: () => wbExportMermaid(),
   },
   {
+    value: "drawio", label: "draw.io", scopes: ["whole"], board: true, drawsCards: false,
+    note: "Shapes, text, frames and connectors as a .drawio file; pictures, tables, notes and drawn lines are left out.",
+    run: () => wbExportDrawio(),
+  },
+  {
     value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
     note: "Opens Print: choose “Save as PDF” as the destination.",
     run: (scope) => wbExportPdf(scope),

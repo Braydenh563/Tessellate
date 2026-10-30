@@ -271,6 +271,7 @@ MORE_TOPICS: list[dict] = [
             "open questions", "questions view", "unanswered", "undecided", "still undecided",
             "answered by", "mark answered", "drop a question", "ask about these",
             "find questions", "generate questions", "read notes now",
+            "questions without a model", "i wonder", "need to find out",
         ),
         "body": (
             "Notes, Questions lists the questions your notes ask in passing, "
@@ -284,7 +285,11 @@ MORE_TOPICS: list[dict] = [
             "later note answers it, the row "
             "says so with the sentence, and pressing that line opens the note. "
             "Mark answered asks which note answers it and links the two notes; "
-            "Drop puts a question aside; Reopen brings either back. Ask about "
+            "Drop puts a question aside; Reopen brings either back. With no "
+            "model the reading is by rule: a sentence ending in a question mark, "
+            "or one that says I wonder, not sure if, need to find out, should I "
+            "or how do I; a later note on the same thing that states it marks "
+            "it answered. Ask about "
             "these opens Ask answering from the notes with open questions only "
             "(Ask all notes under the box goes back). The Dashboard's While you "
             "were away card counts the open ones and names the oldest."

@@ -3246,18 +3246,22 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
     for fact in factgraph.facts(note):
         if fact.kind != "date" or not fact.when or fact.when[2] != "day":
             continue
-        day = fact.when[0]
-        #: "Mum turns 60 on 3 December", written last year: a day and
-        #: month with no year is the next (or last) one from today.
-        phrase = str(fact.attrs.get("phrase") or "")
-        if ahead and _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
-            again = when_words.span(phrase, today, tense)
-            day = again[0] if again else day
+        day = _fact_day(fact, today, tense) if ahead else fact.when[0]
         if ahead and told_as_past(str(note.get("content") or ""), fact.start):
             continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
+
+
+def _fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgraph fact
+    """A dated fact's day; "Mum turns 60 on 3 December", written last year:
+    a day and month with no year is the next (or last) one from today."""
+    phrase = str(fact.attrs.get("phrase") or "")
+    if _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
+        again = when_words.span(phrase, today, tense)
+        return again[0] if again else fact.when[0]
+    return fact.when[0]
 
 
 def told_as_past(content: str, at: int) -> bool:

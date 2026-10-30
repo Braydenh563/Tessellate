@@ -580,8 +580,11 @@ function wbDrawioStyle(style) {
 }
 
 //: A label as plain text: draw.io keeps HTML in `value` when `html=1`. Read
-//: with string rules, not a parser, so nothing in a file can run.
-function wbDrawioText(value) {
+//: with string rules, not a parser, so nothing in a file can run. A cell
+//: whose style says `html=0` holds plain text (this app's own export writes
+//: it so), kept as it stands.
+function wbDrawioText(value, html = true) {
+  if (!html) return String(value || "").trim();
   const named = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
   return String(value || "")
     .replace(/<br\s*\/?>/gi, "\n")
@@ -652,14 +655,14 @@ function wbDrawioPlan(cells) {
     const s = wbDrawioStyle(c.style);
     const parent = byId.get(c.parent);
     if (parent?.edge) {
-      edgeLabels.set(parent.id, wbDrawioText(c.value));
+      edgeLabels.set(parent.id, wbDrawioText(c.value, s.html !== "0"));
       continue;
     }
     for (const k of WB_DRAWIO_DROPPED) if (s[k] && s[k] !== "0") drop(k);
     if (s._kind === "group") continue;
     const at = origin(c.id);
     const box = { x: at.x, y: at.y, w: Math.max(1, Number(c.geo?.width) || 0), h: Math.max(1, Number(c.geo?.height) || 0) };
-    const label = wbDrawioText(c.value);
+    const label = wbDrawioText(c.value, s.html !== "0");
     if (s._kind === "swimlane" || s.swimlane === "1") items.push({ id: c.id, kind: "frame", ...box, label });
     else if (s._kind === "text") items.push({ id: c.id, kind: "text", ...box, label, look: { font_size: Math.round(Number(s.fontSize) || 16), ...(wbDrawioLook(s).label_color ? { color: wbDrawioLook(s).label_color } : {}) } });
     else {
@@ -679,7 +682,7 @@ function wbDrawioPlan(cells) {
     if (end !== "none" && end !== "") data.endCap = WB_DRAWIO_CAPS[end] || "arrow";
     if (s.startArrow && s.startArrow !== "none") data.startCap = WB_DRAWIO_CAPS[s.startArrow] || "arrow";
     if (s.dashed === "1") data.dash = "dashed";
-    const label = wbDrawioText(c.value) || edgeLabels.get(c.id) || "";
+    const label = wbDrawioText(c.value, s.html !== "0") || edgeLabels.get(c.id) || "";
     if (label) data.label = label;
     const source = byId.get(c.source)?.vertex ? c.source : null, target = byId.get(c.target)?.vertex ? c.target : null;
     if (!source && c.sourcePoint) data.sourcePoint = { x: Number(c.sourcePoint.x) || 0, y: Number(c.sourcePoint.y) || 0 };
@@ -692,6 +695,99 @@ function wbDrawioPlan(cells) {
     links.push({ id: c.id, type: s.curved === "1" ? "link-curved" : "link-straight", source, target, data });
   }
   return { items, links, dropped };
+}
+
+//: The board's end marks to draw.io's (the import's table, turned round).
+const WB_DRAWIO_CAPS_OUT = { arrow: "classic", circle: "oval", "er-one-only": "ERone", "er-one": "ERmandOne", "er-many": "ERmany", "er-one-many": "ERoneToMany", "er-zero-one": "ERzeroToOne", "er-zero-many": "ERzeroToMany", cross: "cross", "half-arrow": "openAsync", "double-arrow": "doubleBlock" };
+const WB_DRAWIO_SHAPES_OUT = { circle: "ellipse", diamond: "rhombus", triangle: "triangle", rect: "rounded=0" };
+
+//: **A board as a `.drawio` file** (OPEN 807: the import had no way back).
+//: Frames are swimlanes, text boxes and stickies are text or filled boxes,
+//: closed shapes are vertices in their own shape, and connectors are edges
+//: joined to the cells that took their ends. What a draw.io page has no
+//: counterpart for (pictures, tables, cards, drawn lines) is counted in
+//: `skipped` and named to the person, never dropped silently. One uncompressed
+//: page, so any text editor can read it. `box(kind, item)` is a shape's
+//: bounds (the board's `wbItemBBox` in the page); `hidden(kind, item)`
+//: leaves out what the layers panel hides.
+function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } = {}) {
+  const bounds = box || ((kind, item) => (typeof wbItemBBox === "function" ? wbItemBBox(kind, item) : null));
+  const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\r?\n/g, "&#xa;");
+  const hex = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v.toLowerCase() : null);
+  const skipped = {};
+  const skip = (what) => { skipped[what] = (skipped[what] || 0) + 1; };
+  const ids = new Map();
+  const cells = [];
+  let n = 1;
+  const geo = (b) => `<mxGeometry x="${Math.round(b.x)}" y="${Math.round(b.y)}" width="${Math.max(1, Math.round(b.w))}" height="${Math.max(1, Math.round(b.h))}" as="geometry"/>`;
+  const vertex = (key, style, value, b) => {
+    const id = `c${++n}`;
+    ids.set(key, id);
+    cells.push(`<mxCell id="${id}" value="${esc(value)}" style="${style}" vertex="1" parent="1">${geo(b)}</mxCell>`);
+  };
+  const font = (size, bold, italic, underline, ink) => {
+    const bits = (bold ? 1 : 0) | (italic ? 2 : 0) | (underline ? 4 : 0);
+    return `${Number(size) > 0 ? `fontSize=${Math.round(size)};` : ""}${bits ? `fontStyle=${bits};` : ""}${hex(ink) ? `fontColor=${hex(ink)};` : ""}`;
+  };
+  const objects = [...(state.objects || [])].filter((o) => !(hidden && hidden("object", o)));
+  //: Frames first, so they sit behind what is on them, then by stacking order.
+  objects.sort((a, b) => (b.kind === "frame") - (a.kind === "frame") || (a.z || 0) - (b.z || 0));
+  for (const o of objects) {
+    const d = o.data || {};
+    const b = { x: o.x || 0, y: o.y || 0, w: o.width || 160, h: o.height || 60 };
+    if (o.kind === "frame") vertex(`object:${o.id}`, "swimlane;startSize=30;html=0;whiteSpace=wrap;", d.content || "Frame", b);
+    else if (o.kind === "text") {
+      const filled = hex(d.bg) || hex(d.border_color);
+      const look = font(d.font_size, d.bold, d.italic, d.underline, d.color);
+      if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
+      else vertex(`object:${o.id}`, `text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
+    } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
+    else skip("other items");
+  }
+  if ((state.nodes || []).length) skipped.cards = state.nodes.length;
+  const links = [];
+  for (const sk of state.sketches || []) {
+    if (hidden && hidden("sketch", sk)) continue;
+    let d = null;
+    try { d = JSON.parse(sk.data); } catch { continue; }
+    if (!d) continue;
+    if (String(d.type || "").startsWith("link-")) { links.push([sk, d]); continue; }
+    const closed = typeof d.d === "string" && /[Zz]\s*$/.test(d.d.trim());
+    if (typeof d.d !== "string" || !(WB_DRAWIO_SHAPES_OUT[d.shape] || d.shape === "custom" || closed)) { skip("drawn lines"); continue; }
+    const bb = bounds("sketch", sk);
+    if (!bb) { skip("drawn lines"); continue; }
+    if (d.shape === "custom" || (!WB_DRAWIO_SHAPES_OUT[d.shape] && closed)) skip("shapes drawn as boxes");
+    const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
+    const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
+    vertex(`sketch:${sk.id}`,
+      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
+      d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
+  }
+  for (const [sk, d] of links) {
+    const ref = (side) => {
+      const id = ids.get(`${d[`${side}Kind`] || "node"}:${d[`${side}Id`]}`);
+      return id ? ` ${side}="${id}"` : "";
+    };
+    const point = (side) => {
+      const p = d[`${side}Point`];
+      return p && !ref(side) ? `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}" as="${side}Point"/>` : "";
+    };
+    const joined = (side) => ref(side) || d[`${side}Point`];
+    if (!joined("source") || !joined("target")) { skip("loose connectors"); continue; }
+    const capOf = (cap, flag) => (cap && cap !== "none" ? WB_DRAWIO_CAPS_OUT[cap] || "classic" : flag ? "classic" : "none");
+    const end = capOf(d.endCap, d.endStyle === "end" || d.endStyle === "both");
+    const start = capOf(d.startCap, d.endStyle === "both");
+    const way = Array.isArray(d.points) && d.route !== "elbow" ? `<Array as="points">${d.points.map((p) => `<mxPoint x="${Math.round(p.x)}" y="${Math.round(p.y)}"/>`).join("")}</Array>` : "";
+    const style = `${d.route === "elbow" ? "edgeStyle=orthogonalEdgeStyle;" : ""}${d.type === "link-curved" ? "curved=1;" : ""}html=0;endArrow=${end};startArrow=${start};` +
+      `${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}strokeWidth=${Math.max(1, Math.round((Number(d.width) || 2) / 2))};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}`;
+    cells.push(`<mxCell id="c${++n}" value="${esc(d.label || "")}" style="${style}" edge="1" parent="1"${ref("source")}${ref("target")}>` +
+      `<mxGeometry relative="1" as="geometry">${point("source")}${point("target")}${way}</mxGeometry></mxCell>`);
+  }
+  const shapes = cells.filter((c) => c.includes('vertex="1"')).length;
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="Tessellate">' +
+    `<diagram name="${esc(title).slice(0, 120)}" id="page1"><mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0">` +
+    `<root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>\n`;
+  return { xml, shapes, links: cells.length - shapes, skipped };
 }
 
 //: A box's outline as a path the board draws (M, L, C and Z only, so the
@@ -962,6 +1058,17 @@ async function wbExportMermaid() {
   }
   await saveFile(wbExportFileName("whole", "mmd"), new Blob([text], { type: "text/plain" }));
   toast("Board exported as a Mermaid flowchart.");
+}
+
+async function wbExportDrawio() {
+  const made = wbBoardToDrawio(wbState, { title: wbBoardTitleForExport(), hidden: wbItemHidden });
+  if (!made.shapes) {
+    toast("Nothing on this board has a draw.io counterpart yet: add shapes, text or frames first.", "info");
+    return;
+  }
+  await saveFile(wbExportFileName("whole", "drawio"), new Blob([made.xml], { type: "application/vnd.jgraph.mxfile" }));
+  const left = Object.entries(made.skipped).map(([k, c]) => `${k} ${c}`).join(", ");
+  toast(`Board exported for draw.io: ${nounCount(made.shapes, "shape")} and ${nounCount(made.links, "connector")}${left ? `; not kept: ${left}` : ""}.`);
 }
 
 async function wbExportOutline() {
