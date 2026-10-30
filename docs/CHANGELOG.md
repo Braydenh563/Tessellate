@@ -6,6 +6,8 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (stress run 2026-10-30, not found): a "did I" with no record names the nearest note ("The closest is your note of 2 January: Q1: run a 10k.") or a title-only note, and says "your" for "my", instead of "I found nothing in your notes about my Q1 running goal".
+- Composer (money): "keep food under $100" is an aim, not spending; a sentence's amounts on other things ("$84 on groceries and $35 on fuel") stay out of a sum about one of them; one amount in a note of several goes to the digest's answer (gold answer 15 had regressed).
 - Composer (stress run 2026-10-30, garbled leads): an overview whose decision is already a sentence ("you picked token-based retrieval", "we have not decided a length") no longer gets "you're" glued in front of it.
 - Composer (stress run 2026-10-30, superseded facts): a newer note that corrects the subject (moved, rescheduled, revised, "is now", "these replace") leads ahead of the note it outdates, so "When's my dentist appointment now?" gives the moved slot and "When is the launch?" the revised date.
 - Composer (stress run 2026-10-30, task status): a checkbox written with no bullet is read as a task, so an open "[ ] Renew library membership" no longer answers "did I" with "Yes"; a later note that says the doing outranks the unticked box; "is X still on my list" and "is X done" answer yes or no from the checklist line; a line that says it did not happen ("Didn't buy", "Forgot to water") answers no.

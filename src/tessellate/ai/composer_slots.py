@@ -233,12 +233,43 @@ def _asked_thing(words: list[str]) -> str:
 def _not_said(out, views: list, obj, words: list[str], today: date) -> None:  # noqa: ANN001
     """No note says the doing: the nearest note that names the thing, or a
     plain no, never the question echoed back ("says you written")."""
-    thing = _asked_thing(words)
+    thing = _yours(_asked_thing(words))
     seen = _first_did(views, frozenset(), obj)
     if seen:
         _say_line(out, seen[0], seen[1], f"I found nothing in your notes that says so. {_note_of(seen[0], today).capitalize()} mentions {thing}")
+    elif empty := next((v for v in views if not v.sentences and _titled_for(v, obj)), None):
+        line = f"Your {composer_lists._title(empty)} note has a title but nothing written under it, so it does not say."  # noqa: SLF001
+        out.lines.append(line)
+        out.rows.append({"sentence": line, "note_id": empty.note.get("source_id", empty.id), "source": empty.title,
+                         "start": 0, "end": 0, "score": 1.0, "digest": True})
+    elif near := _nearest(views, obj):
+        _say_line(out, *near, f"I found nothing in your notes that says so. The closest is {_note_of(near[0], today)}")
     else:
         out.lines.append(f"I found nothing in your notes about {thing}.")
+
+
+def _yours(thing: str) -> str:
+    """"my Q1 running goal" said back is "your Q1 running goal"."""
+    swap = {"my": "your", "mine": "yours", "me": "you", "i": "you", "myself": "yourself"}
+    return re.sub(r"\b(?:my|mine|me|i|myself)\b", lambda m: swap[m.group(0).lower()], thing, flags=re.I)
+
+
+def _titled_for(view, obj: list[str]) -> bool:  # noqa: ANN001
+    return bool(obj) and all(composer._holds(st, view.title_words) for st in obj)  # noqa: SLF001
+
+
+def _nearest(views: list, obj: list[str]):  # noqa: ANN202
+    """The sentence that holds most of the thing, its note's title counted
+    ("Q1: run a 10k" in Q1 goals for "my Q1 running goal"), when it holds
+    at least two of its words; None otherwise."""
+    best, score = None, 1
+    for view in sorted(views, key=lambda v: v.rank):
+        for s in view.sentences:
+            have = set(composer._words(s.text)) | set(view.title_words)  # noqa: SLF001
+            hits = sum(1 for st in obj if composer._holds(st, have))  # noqa: SLF001
+            if hits > score:
+                best, score = (view, s), hits
+    return best
 
 
 #: "Did I like the ramen place": the note rarely says "like"; it says "8/10,

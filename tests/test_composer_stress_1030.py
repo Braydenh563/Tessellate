@@ -206,3 +206,22 @@ def test_an_overview_landing_that_is_already_a_sentence_is_not_given_a_second_su
         said = composer_digest.answer("what do I know about the composer", notes, today=datetime(2026, 10, 30).date(), turn=turn)["text"]
         assert "you picked token-based retrieval" in said or "we have not decided" in said, said
         assert "you're you" not in said and "you're we" not in said.lower() and "We picked" not in said, said
+
+
+@pytest.mark.parametrize(("question", "lead"), [
+    ("Did I finish my Q1 running goal?", "I found nothing in your notes that says so. The closest is your note of 2 January: Q1: run a 10k."),
+    ("Have I photocopied my passport?", "Your Passport photocopies note has a title but nothing written under it, so it does not say."),
+    ("did I learn the cello", "I found nothing in your notes about the cello."),
+])
+def test_a_did_i_with_no_record_names_the_nearest_note_not_found_nothing(question, lead):
+    """Stress run 2026-10-30: "I found nothing in your notes about my Q1
+    running goal" beside a Q1 goals note, and the same for a note titled
+    "Passport photocopies" with nothing under it."""
+    from tessellate.ai import composer_digest
+
+    notes = [
+        _note(1, "# Q1 goals\n\nQ1: run a 10k.\nQ1: read 6 books.", datetime(2026, 1, 2, 9)),
+        _note(2, "# Passport photocopies", datetime(2026, 10, 7, 9)),
+    ]
+    said = composer_digest.answer(question, notes, today=datetime(2026, 10, 30).date())["text"]
+    assert said.startswith(lead), said

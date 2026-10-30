@@ -57,7 +57,9 @@ _SMALL = frozenset({"smallest", "cheapest", "lowest"})
 #: $320 each way"). A refund is read apart (`_REFUND`) and taken off.
 _NOT_SPENT = re.compile(
     r"\b(?:owes?|owed|lent|lend|borrow\w*|earn\w*|salary|income|refund\w*|saved|savings|save|goal|targets?|budget\w*"
-    r"|listing|listed|asking|quoted|due|balance|unpaid|reached)\b|\bnot\s+(?:[A-Z]{3}\s*)?[$£€]",
+    r"|listing|listed|asking|quoted|due|balance|unpaid|reached|aim\w*|limit|cap)\b|\bnot\s+(?:[A-Z]{3}\s*)?[$£€]"
+    #: "keep food under $100" is the aim, not money spent (gold answer 15).
+    r"|\bkeep\b[^$£€]*\b(?:under|below)\b",
     re.I,
 )
 _REFUND = re.compile(r"\brefund\w*\b", re.I)
@@ -160,7 +162,11 @@ def _items_by(views: list, month: int | None, subject: list[str] | None, refunds
         if _in_month(view, month):
             for sentence in view.sentences:
                 if _about(view, sentence, subject or [], test):
-                    found.extend(_clause_items(view, sentence, refunds))
+                    items = _clause_items(view, sentence, refunds)
+                    #: "$84 on groceries and $35 on fuel": the sentence is
+                    #: about groceries, its fuel is not.
+                    named = [i for i in items if subject and any(st in set(composer._words(i.label)) for st in subject)]  # noqa: SLF001
+                    found.extend(named or items)
     return found
 
 
@@ -228,6 +234,11 @@ def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
         return True
     symbol = items[0].symbol
     items = [i for i in items if i.symbol == symbol]
+    if len(items) == 1 and len(recognise.amounts(" ".join(s.text for s in items[0].view.sentences))) > 1 \
+            and not _items(views, month, subject, refunds=True) and not _still_due(views, month, subject):
+        #: One amount in a note of several is nothing to add up: the digest
+        #: says it with its week and what sits beside it (gold answer 15).
+        return False
     by_note: dict[str, float] = {}
     for item in items:
         name = composer_lists._title(item.view)  # noqa: SLF001
