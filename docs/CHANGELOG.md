@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer (stress run 2026-10-30, garbled leads): an overview whose decision is already a sentence ("you picked token-based retrieval", "we have not decided a length") no longer gets "you're" glued in front of it.
 - Composer (stress run 2026-10-30, superseded facts): a newer note that corrects the subject (moved, rescheduled, revised, "is now", "these replace") leads ahead of the note it outdates, so "When's my dentist appointment now?" gives the moved slot and "When is the launch?" the revised date.
 - Composer (stress run 2026-10-30, task status): a checkbox written with no bullet is read as a task, so an open "[ ] Renew library membership" no longer answers "did I" with "Yes"; a later note that says the doing outranks the unticked box; "is X still on my list" and "is X done" answer yes or no from the checklist line; a line that says it did not happen ("Didn't buy", "Forgot to water") answers no.
 - Composer (stress run 2026-10-30): closers and reactions ("That helped, thank you", "bye for now", "Sorry, wrong chat", "Sweet, that's all", "Can you keep things brief?") are small talk and get a reply instead of a note; an adverb or a frame word ("personally", "style", "recorded") is never reported as missing from the notes.

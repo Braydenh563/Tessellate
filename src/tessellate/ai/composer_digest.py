@@ -124,6 +124,9 @@ _BASE = {
     "meaning_loading": "The search by meaning is still loading, so this read your words only; ask again in a few seconds.",
     "meaning_off": "Search by meaning is off, so this read your words only; turn it on in Settings, Search and index.",
     "landed": ("{opening}, and you're {landed}.", "{opening}. For now you're {landed}."),
+    #: A landing that is already a sentence ("you picked token-based
+    #: retrieval", "we have not decided"): "you're" in front garbled it.
+    "landed_said": ("{opening}, and {landed}.", "{opening}; {landed}."),
     "open_count": ("{opening}, with {left} still open.", "{opening}, and {left} still to settle."),
     "stale": (
         "The newest of these is {age} old, so things may have moved on since.",
@@ -2134,6 +2137,9 @@ def _narrate(out: _Out, view, facts: list[Fact], today: date) -> set:  # noqa: A
     return {s.key for s in said}
 
 
+_HAS_SUBJECT = re.compile(r"(?:you|we|i|they|he|she|it|you're|we're|i'm|they're)\b", re.I)
+
+
 def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[str, list[Fact]]:  # noqa: ANN001
     """The opening of an overview, and the facts still to say. It answers in
     the person's terms (INBOX 870): where they have got to, or how much is
@@ -2142,7 +2148,11 @@ def _opening_line(members, facts: list[Fact], today: date, topic: str) -> tuple[
     landed = next((f for f in facts if f.label == "Where you landed"), None)
     left = [f for f in facts if f.label == "Still to do"]
     if landed:
-        opening = _vary("landed").format(opening=opening.rstrip("."), landed=_fragment(landed.body, _NAMES.get()))
+        said = _fragment(landed.body, _NAMES.get())
+        key = "landed_said" if _HAS_SUBJECT.match(said) else "landed"
+        if key == "landed_said" and not re.match(r"I\b", said):
+            said = said[:1].lower() + said[1:]
+        opening = _vary(key).format(opening=opening.rstrip("."), landed=said)
         #: Said once, up front, as the answer; not again as a line.
         return opening, [f for f in facts if f is not landed]
     if left:

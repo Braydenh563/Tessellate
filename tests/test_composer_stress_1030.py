@@ -191,3 +191,18 @@ def test_a_newer_note_that_corrects_the_subject_leads(question, lead):
 
     said = composer_digest.answer(question, _MOVED, today=datetime(2026, 10, 30).date())["text"]
     assert said.startswith(lead), said
+
+
+def test_an_overview_landing_that_is_already_a_sentence_is_not_given_a_second_subject():
+    """Stress run 2026-10-30: "You have four notes about composer, and you're
+    you picked token-based retrieval"; "For now you're We have not decided"."""
+    from tessellate.ai import composer_digest
+
+    notes = [
+        _note(1, "# Retrieval choice\n\nCompared exact title matching for the composer. Picked token-based retrieval because people remember a phrase.", datetime(2026, 10, 2, 9)),
+        _note(2, "# Composer length\n\nWe have not decided a maximum answer length for the composer.", datetime(2026, 10, 9, 9)),
+    ]
+    for turn in (0, 1):
+        said = composer_digest.answer("what do I know about the composer", notes, today=datetime(2026, 10, 30).date(), turn=turn)["text"]
+        assert "you picked token-based retrieval" in said or "we have not decided" in said, said
+        assert "you're you" not in said and "you're we" not in said.lower() and "We picked" not in said, said
