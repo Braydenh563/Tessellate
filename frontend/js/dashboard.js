@@ -2793,9 +2793,12 @@ async function startArt(holder) {
     // catches both a real window resize *and* the Edit-layout "Wide" toggle
     // (which changes the card's width with no window resize event at all), 
     // `p.windowResized` alone would have missed the second one entirely.
-    const resync = () => {
+    //: The width comes from the observer's own entry: it reports after layout,
+    //: so reading `clientWidth` here forced another one when a keystroke or a
+    //: late widget had dirtied the page (INBOX 1465: 64 to 89 ms).
+    const resync = (entries) => {
       if (!holder.isConnected) return;
-      const next = holder.clientWidth;
+      const next = Math.round(entries?.[0]?.contentRect.width ?? holder.clientWidth);
       // Guarded the same reason `holder.clientWidth || 300` is in setup: a
       // transient 0 mid-reflow must not shrink the canvas to nothing.
       if (!next || next === width) return;

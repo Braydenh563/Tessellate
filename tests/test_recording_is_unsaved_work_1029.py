@@ -64,9 +64,10 @@ def test_the_voice_dialog_never_opens_on_record():
 
 def test_single_key_chords_are_inert_under_any_modal():
     js = app_js_text()
-    block = js[js.index("const overlayOpen ="):]
-    block = block[: block.index(";")]
-    assert "activeOverlay()" in block and "dialog[open]" in block
+    # Asked inside the loop, once a bare key matches (INBOX 1465: a layout read on every key).
+    block = js[js.index("if (!burst && singleKeys && !boardOwns) {"):]
+    block = block[: block.index("e.preventDefault();")]
+    assert "activeOverlay()" in block and "dialog[open]" in block and "break;" in block
 
 
 def test_buttons_are_labelled_by_outcome():
