@@ -5537,6 +5537,7 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: from a throw): the blend's reads are two restyles of the rig.
   if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
+  nameMarkBuddyAloft();
   if (buddy.dataset.legs !== (spot.legs || "")) {
     const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
     nmb.legsTimer = setTimeout(() => {
@@ -5547,6 +5548,28 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   //: down from where it was drawn, added to the new way, not snapped to it.
   const turn = leaning === null ? 0 : leaning - (Number.parseFloat(getComputedStyle(char).rotate) || 0);
   if ((lift || Math.abs(turn) > 0.2) && char && typeof char.animate === "function") nmb.liftAnim = char.animate([{ translate: `0px ${lift}px`, rotate: `${turn}deg` }, { translate: "0px 0px", rotate: "0deg" }], { duration: 240, easing: "ease-out", composite: "add" });
+}
+
+//: **Whole in the air** (INBOX 1463, 1432: "cut in half at like 3 points as
+//: it fell"). Riding a panel, the band and its shutter clip it to that panel's
+//: box under its sticky bar, which is right at rest and wrong in flight: a
+//: move is glued to where it lands before it plays, so a drop from the
+//: Library's sub-tabs onto a card was cut at the list's top edge for 528ms
+//: (tests/test_companion_fall_split_1463.py). Lifted while a move plays, back
+//: when it lands, unless a newer move is flying by then.
+function nameMarkBuddyAloft() {
+  const band = document.getElementById("nm-buddy-band");
+  const anim = nmb.anim;
+  if (!band || anim?.playState !== "running") return;
+  const clip = (on) => {
+    for (const el of [band, band.firstElementChild]) if (el) el.style.overflow = on ? "" : "visible";
+  };
+  clip(false);
+  const land = () => {
+    if (nmb.anim === anim || nmb.anim?.playState !== "running") clip(true);
+  };
+  anim.addEventListener("finish", land, { once: true });
+  anim.addEventListener("cancel", land, { once: true });
 }
 
 //: **How it gets there: by the way its body moves, never a slide** (the
@@ -6819,6 +6842,7 @@ function nameMarkBuddyArrive(buddy) {
     nmb.away = false;
     buddy.classList.remove("nmb-away");
     nmb.enteredBy = nameMarkBuddyEnter(buddy, spot);
+    nameMarkBuddyAloft();
   });
 }
 
