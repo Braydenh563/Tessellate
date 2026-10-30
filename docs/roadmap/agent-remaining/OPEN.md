@@ -875,20 +875,20 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 803 | .dock-chip-row has no user in the page since cb8060a (only a comment in index.html names it). Its rules are in frontend/css/07-whiteboard-misc.css... | docs/roadmap/agent-remaining/OPEN.md:2181 | M | unassigned |
 | 804 | Logs More menu .dock-menu-check rows 34.9px/8px against 32px/12.8px items; the board's Start and End menus not measured for end gaps. | docs/roadmap/agent-remaining/OPEN.md:2252 | S | unassigned |
 | 805 | .wb-resize-handle title still says "double-click fits the text" on non-frame objects; a dead .wb-map-actions coarse-pointer rule pinned by... | docs/roadmap/agent-remaining/OPEN.md:2261 | S | unassigned |
-| 806 | Open: "what is there about X" with no model is the quoted answer, not the overview shape (decision 64). | docs/roadmap/agent-remaining/OPEN.md:2285 | S | unassigned |
-| 807 | Tables lack merged cells (column widths: built, wb5); Edit data lacks %name% placeholders; .drawio export is not built; a hidden named layer's item eye and... | docs/roadmap/agent-remaining/OPEN.md:2295 | S | unassigned |
-| 808 | Whiteboard gaps open: the hand-drawn look, tables, edit data, a current layer new items land in, .drawio pages after the first; an item's eye on a... | docs/roadmap/agent-remaining/OPEN.md:2379 | S | unassigned |
-| 809 | The laser sweep's 390 threshold was lowered from 10 dots to 3 and not re-run; a real draw.io file and dark theme not verified. | docs/roadmap/agent-remaining/OPEN.md:2382 | S | unassigned |
-| 810 | The AI board tools and import/export do not carry a note's fold. | docs/roadmap/agent-remaining/OPEN.md:2415 | S | unassigned |
-| 811 | At 390 the whiteboard sidebar is a full-width sheet, so the fit ignores it there. | docs/roadmap/agent-remaining/OPEN.md:2417 | S | unassigned |
-| 812 | Ids inside board object data and comments are copied, not remapped; private notes, several spaces and a browser upload of 5,000 files not verified. | docs/roadmap/agent-remaining/OPEN.md:2425 | S | unassigned |
-| 813 | Row 4 at 390: press to editable 140 to 159 ms against the 50 ms bar (1440 is 24 to 27). Each forced style pass in the add restyles about 830 elements... | docs/roadmap/agent-remaining/OPEN.md:2549 | M | unassigned |
-| 814 | mapstrip.js: 5 fails left, all failing on the base as well (shapes stored and drawn, the ring's six slots, the grip drag, Shift scaling, the first... | docs/roadmap/agent-remaining/OPEN.md:2556 | S | unassigned |
-| 815 | Watches and conditions in JavaScript are evaluated natively over the frame's values (evaluate, api/run_sandbox.py:250), not stepped: a watch that... | docs/roadmap/agent-remaining/OPEN.md:2578 | S | unassigned |
-| 816 | Python's runtime still reloads per document opened (ide1's Left row; the frame lives in the panel); the first Debug on a cold runtime waits for it... | docs/roadmap/agent-remaining/OPEN.md:2582 | S | unassigned |
-| 817 | The console on an .html, .css, .svg or .sql file is JavaScript in a fresh worker, not the page's global: the page runs in a frame whose window the... | docs/roadmap/agent-remaining/OPEN.md:2591 | S | unassigned |
-| 818 | "more access" (INBOX 758): write tools that are not acts (create_category, rename_tag, delete_tag, merge_categories, board and map tools) are named... | docs/roadmap/agent-remaining/OPEN.md:2610 | S | unassigned |
-| 819 | Row 2's New is still a menu (details#wb-boards-new-menu): a split button (DESIGN.md's recipe) would make it one press; tour.js and reveal-targets.js... | docs/roadmap/agent-remaining/OPEN.md:2652 | S | unassigned |
+| 806 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": what is there about X with no model. | docs/roadmap/agent-remaining/OPEN.md:2285 | S | wbopen-1031 (built f413351; 33 tests pass) |
+| 807 | Tables lack merged cells (column widths: built, wb5); Edit data lacks %name% placeholders; .drawio export is not built; a hidden named layer's item eye and... | docs/roadmap/agent-remaining/OPEN.md:2295 | S | wbopen-1031 (5f75052 .drawio export built; placeholders and layer order already built. Left: merged cells in tables (M)) |
+| 808 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": whiteboard gaps (rough, tables, edit data, current layer, drawio pages, hidden-layer eye). | docs/roadmap/agent-remaining/OPEN.md:2379 | S | wbopen-1031 (built; probe 2 of 2, 7 tests pass) |
+| 809 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": laser sweep at 390. | docs/roadmap/agent-remaining/OPEN.md:2382 | S | wbopen-1031 (built 5f75052; 7 of 7 at 390, 1440, dark) |
+| 810 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": a note's fold in the AI tools and exports. | docs/roadmap/agent-remaining/OPEN.md:2415 | S | wbopen-1031 (built; test_ai_board_edit) |
+| 811 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": sidebar sheet at 390 and the fit. | docs/roadmap/agent-remaining/OPEN.md:2417 | S | wbopen-1031 (by design; 525 of 713px sheet, free 120px) |
+| 812 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": ids in an imported folder. | docs/roadmap/agent-remaining/OPEN.md:2425 | S | wbopen-1031 (built; 8 round-trip tests pass) |
+| 813 | Row 4 at 390: press to editable 140 to 159 ms against the 50 ms bar (1440 is 24 to 27). Each forced style pass in the add restyles about 830 elements... | docs/roadmap/agent-remaining/OPEN.md:2549 | M | wbopen-1031 (left: 79 to 134 ms at 390, 23 to 36 ms at 1440 under load 13; cause not isolated; needs a quiet machine) |
+| 814 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": mapstrip.js fails. | docs/roadmap/agent-remaining/OPEN.md:2556 | S | wbopen-1031 (built 5f75052; 43 of 43) |
+| 815 | Watches and conditions in JavaScript are evaluated natively over the frame's values (evaluate, api/run_sandbox.py:250), not stepped: a watch that... | docs/roadmap/agent-remaining/OPEN.md:2578 | S | wbopen-1031 (left: native evaluation is the design; a stepped watch is a rebuild) |
+| 816 | Python's runtime still reloads per document opened (ide1's Left row; the frame lives in the panel); the first Debug on a cold runtime waits for it... | docs/roadmap/agent-remaining/OPEN.md:2582 | S | wbopen-1031 (left: needs the Pyodide extra, not installed here; cannot time the cold Debug) |
+| 817 | The console on an .html, .css, .svg or .sql file is JavaScript in a fresh worker, not the page's global: the page runs in a frame whose window the... | docs/roadmap/agent-remaining/OPEN.md:2591 | S | wbopen-1031 (left: the html frame's window is not exposed to the sandbox; a design change) |
+| 818 | "more access" (INBOX 758): write tools that are not acts (create_category, rename_tag, delete_tag, merge_categories, board and map tools) are named... | docs/roadmap/agent-remaining/OPEN.md:2610 | S | wbopen-1031 (left: seven act rows with inverses (INBOX 758); M) |
+| 819 | Row 2's New is still a menu (details#wb-boards-new-menu): a split button (DESIGN.md's recipe) would make it one press; tour.js and reveal-targets.js... | docs/roadmap/agent-remaining/OPEN.md:2652 | S | wbopen-1031 (left: needs a decision on the one-press default and index.html bytes are at the cap) |
 | 820 | D6 .md preview in the sandbox frame: not done; a Markdown document already has its own Live and Split views. | docs/roadmap/agent-remaining/OPEN.md:2662 | S | unassigned |
 | 821 | Python's runtime reloads on every document opened (5.9 to 7.0 s cold at 1440): the sandbox frame lives in the panel, which is rebuilt per document... | docs/roadmap/agent-remaining/OPEN.md:2663 | M | unassigned |
 | 822 | p5 in the sandbox logs "Permissions policy violation: accelerometer" to the console (p5's devicemotion listener in a frame without allow); harmless... | docs/roadmap/agent-remaining/OPEN.md:2665 | S | unassigned |
@@ -917,20 +917,20 @@ Plan and ROADMAP rows by file: WORLD_CLASS_PLAN 114, UI_MODERNISATION_PLAN 91, C
 | 845 | README docs/screenshots/palette.png (and docs/index.html's copy) still shows notes, a document and a board in the palette. Retake it with... | docs/roadmap/agent-remaining/OPEN.md:3378 | S | unassigned |
 | 846 | Other [^\]\n]-style scanners may share the ReDoS shape; the markdown link stripping in the frontend is JS and is not covered by the Python oracle... | docs/roadmap/agent-remaining/OPEN.md:3386 | S | unassigned |
 | 847 | .wb-shape-caret has pointer-events: none (per the file), so the Shapes split button's caret never gets a click and the closest(".wb-shape-caret")... | docs/roadmap/agent-remaining/OPEN.md:3397 | M | unassigned |
-| 848 | suggestions-inbox.js (a partial link run) and whiteboard.js (a clear that left items) are red by a computed flag; they are partial failures. (from... | docs/roadmap/agent-remaining/OPEN.md:3410 | S | unassigned |
-| 849 | GET /entries/count (src/memorymap/api/routes_entries.py:2293) counts every entry row including boards and the bin; its only reader is onboarding's... | docs/roadmap/agent-remaining/OPEN.md:3431 | M | unassigned |
-| 850 | The Timeline labels a map under the "Boards" kind chip (frontend/js/timeline.js:266); it draws it with a map chip and an "Open this map" action, so... | docs/roadmap/agent-remaining/OPEN.md:3432 | S | unassigned |
-| 851 | Brief 10 (Library card recipe, widget frame): HISTORY has only the plan table rows. (from briefs-1010.md) | docs/roadmap/agent-remaining/OPEN.md:3443 | S | unassigned |
-| 852 | P11 mention counts ("how many times did I mention Porto"): no count shape; notebook_stats counts notes, not mentions. | docs/roadmap/agent-remaining/OPEN.md:3488 | S | unassigned |
-| 853 | P13 every date and what is due this week: the fact layer has the dates (factgraph.of_kind), no answer shape lists them. | docs/roadmap/agent-remaining/OPEN.md:3490 | S | unassigned |
-| 854 | INBOX 735 first half: the p5.js sketch document kind (code beside a sandboxed live canvas, vendored p5.min.js only); api/run_sandbox.py would need a... | docs/roadmap/agent-remaining/OPEN.md:3532 | M | unassigned |
-| 855 | Document comments with the board's thread shape (Reply, Edit, Resolve, Attach): a decision first. Comments are ==words== %%remark%% in the text ("no... | docs/roadmap/agent-remaining/OPEN.md:3533 | L | unassigned |
-| 856 | Voice: 67 failure toasts in library.js, whiteboard.js and whiteboard-map.js moved; the other 112 JS files still hold their own strings, and only the... | docs/roadmap/agent-remaining/OPEN.md:3614 | M | unassigned |
-| 857 | frames.js has no documents or notes-list surface; add one when DOCUMENTS Phase work lands. [measure60-1010] | docs/roadmap/agent-remaining/OPEN.md:3649 | S | unassigned |
-| 858 | A hover frame at 2,000 notes is still 22 to 24 ms here (drawImage and clearRect dominate); the 16 ms target is not met at 2,000; 300 notes was not... | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:21 | S | unassigned |
-| 859 | The first-ever open (no cache) still plays the warm-up spread (INBOX 775's movement, by design); under load its frames step 80 to 100px. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:22 | S | unassigned |
-| 860 | Frame times on the owner's hardware; the desktop webview (pywebview) for the cache, @starting-style and :has. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:26 | S | unassigned |
-| 861 | There is no calendar events table: core/events.py is the change log, and the timeline's kinds are note, board, document and... | docs/roadmap/BACKLOG.md:1089 | M | unassigned |
+| 848 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": two partial-failure toasts are red. | docs/roadmap/agent-remaining/OPEN.md:3410 | S | wbopen-1031 (by design) |
+| 849 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": GET /entries/count. | docs/roadmap/agent-remaining/OPEN.md:3431 | M | wbopen-1031 (built; boards 0, note 1, binned 0) |
+| 850 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": Timeline map under Boards chip. | docs/roadmap/agent-remaining/OPEN.md:3432 | S | wbopen-1031 (built; chip reads Boards and maps) |
+| 851 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": Brief 10 in HISTORY. | docs/roadmap/agent-remaining/OPEN.md:3443 | S | wbopen-1031 (built; section present) |
+| 852 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": mention counts. | docs/roadmap/agent-remaining/OPEN.md:3488 | S | wbopen-1031 (built; 33 tests pass) |
+| 853 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": every date and due this week. | docs/roadmap/agent-remaining/OPEN.md:3490 | S | wbopen-1031 (built; 33 tests pass) |
+| 854 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": p5.js sketch kind. | docs/roadmap/agent-remaining/OPEN.md:3532 | M | wbopen-1031 (built; runP5 and vendor/p5.min.js) |
+| 855 | Document comments with the board's thread shape (Reply, Edit, Resolve, Attach): a decision first. Comments are ==words== %%remark%% in the text ("no... | docs/roadmap/agent-remaining/OPEN.md:3533 | L | wbopen-1031 (left: L, take the recommendation in the row (text model, shared row)) |
+| 856 | Voice: 67 failure toasts in library.js, whiteboard.js and whiteboard-map.js moved; the other 112 JS files still hold their own strings, and only the... | docs/roadmap/agent-remaining/OPEN.md:3614 | M | wbopen-1031 (left: surface by surface (decision 55)) |
+| 857 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": frames.js notes and documents surfaces. | docs/roadmap/agent-remaining/OPEN.md:3649 | S | wbopen-1031 (built; OPEN 857 in frames.js) |
+| 858 | A hover frame at 2,000 notes is still 22 to 24 ms here (drawImage and clearRect dominate); the 16 ms target is not met at 2,000; 300 notes was not... | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:21 | S | wbopen-1031 (left: needs an idle machine; 22 to 24 ms is drawImage and clearRect) |
+| 859 | Done, see HISTORY.md "Moved from the plans, 2026-10-31 (wbopen-1031)": first-ever Graph open warm-up spread. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:22 | S | wbopen-1031 (by design; INBOX 775) |
+| 860 | Frame times on the owner's hardware; the desktop webview (pywebview) for the cache, @starting-style and :has. | agent/graph100-1011:docs/roadmap/archive/agent-remaining/graph100-1011.md:26 | S | wbopen-1031 (left: owner hardware and the desktop webview) |
+| 861 | There is no calendar events table: core/events.py is the change log, and the timeline's kinds are note, board, document and... | docs/roadmap/BACKLOG.md:1089 | M | wbopen-1031 (left: tried and deferred as L in BACKLOG) |
 | 862 | Ink-to-text (handwriting OCR) on sketches. Decided out: scratchpad/audit1005/features.md section 4 row C5 (no on-device ML, the... | docs/roadmap/BACKLOG.md:1883 | S | unassigned |
 | 863 | "Deleting a note leaves whiteboard cards behind, no cascade", already swept: autonomous.clean_orphaned_board_cards()... | docs/roadmap/BACKLOG.md:1958 | S | unassigned |
 | 864 | A dry-run mode for the agent. Pointer: WORLD_CLASS_PLAN B5 (planner, verifier, per-run undo); ai/autonomous.py:132 holds the... | docs/roadmap/BACKLOG.md:2445 | M | unassigned |
@@ -2318,7 +2318,6 @@ File: `docs/roadmap/archive/agent-remaining/uisweep-1011.md`.
 File: `docs/roadmap/archive/agent-remaining/noagent-1011.md`.
 
 - Not verified: a real Needle engine on leftover turns; a real chat model on a one-option ask_user.
-- Open: "what is there about X" with no model is the quoted answer, not the overview shape (decision 64).
 - Open: a country with several time zones names one ("the time in Australia" says Sydney's).
 - Open: a misspelled place ("westen australia") is not read.
 - Open: the user's own bubble shows a trailing backslash as typed.
@@ -2328,7 +2327,7 @@ File: `docs/roadmap/archive/agent-remaining/noagent-1011.md`.
 Full list: [archive/agent-remaining/canvasdepth2-1011.md](../archive/agent-remaining/canvasdepth2-1011.md).
 - Not driven: dark theme for the hand-drawn look, tables, the Data tab and the current layer; a real touch double-tap into a table cell; an .xmind opened in XMind; a real multi-page draw.io file; callouts, labels and stamps in the map's PNG and SVG.
 - maplayouts.js "tree-left carries the branch bar" fails on base too (it measures the centre topic).
-- Tables lack merged cells (column widths: built, wb5); Edit data lacks `%name%` placeholders; .drawio export is not built; a hidden named layer's item eye and layer order are still open.
+- Tables lack merged cells (OPEN 807, wbopen-1031: the `.drawio` export is built; `%name%` placeholders and layer order were already).
 
 ## Left by the calendar55 agent (Brief 55, merged 2026-10-11)
 
@@ -2409,10 +2408,8 @@ Detail: [filing-1010.md](../archive/agent-remaining/filing-1010.md).
 
 Detail: [canvasdepth-1010.md](../archive/agent-remaining/canvasdepth-1010.md).
 
-- Whiteboard gaps open: the hand-drawn look, tables, edit data, a current layer new items land in, .drawio pages after the first; an item's eye on a hidden named layer changes nothing visible.
 - Mind map gaps open: a structure per branch, callouts, labels under a topic, .xmind export, stickers and votes.
 - The Guide topics at the 1,920-character reply budget now are ask-chat 1,918, chat-controls and answers-from-notes 1,913, code-files 1,905, tidy 1,899 and graph-controls 1,896; the board topics were split in two earlier (whiteboard-controls 659 and whiteboard-selection 1,504, board-library 1,496 and board-library-saving 672). [room101-1011]
-- The laser sweep's 390 threshold was lowered from 10 dots to 3 and not re-run; a real draw.io file and dark theme not verified.
 
 ## Left by the budgets53 agent (Brief 53, merged 2026-10-11)
 
@@ -2445,8 +2442,6 @@ Detail: [canvasui-1010.md](../archive/agent-remaining/canvasui-1010.md).
 
 - Link-label blur not reproduced headless; the re-raster after zoom is untested on a GPU compositor or the desktop webview.
 - Mind map library schematics (wbMapThumbSpec) are monochrome, not tinted with branch colours; a hollow diamond draws the shaft through it.
-- The AI board tools and import/export do not carry a note's fold.
-- At 390 the whiteboard sidebar is a full-width sheet, so the fit ignores it there.
 
 ## Left by the export48 agent (Brief 48, merged 2026-10-10)
 
@@ -2454,7 +2449,7 @@ Detail: [export48-1010.md](../archive/agent-remaining/export48-1010.md).
 
 - A 5,000-note import takes 45.9 s: each note commits on its own.
 - Binned notes import with their old deleted_at, so the startup purge removes expired ones at the next restart.
-- Ids inside board object data and comments are copied, not remapped; private notes, several spaces and a browser upload of 5,000 files not verified.
+- Not verified (OPEN 812, wbopen-1031): private notes, several spaces and a browser upload of 5,000 files in the folder import.
 - The Background jobs Report button waits for boot room; the Activity panel at 390 is translucent.
 
 ## Left by the docsui agent (INBOX 788 design, merged 2026-10-10)
@@ -2579,7 +2574,6 @@ The remaining file is in `archive/agent-remaining/`; the rows below are what it 
 - The tree table, timeline and fishbone are column layouts that tidy the whole map on every add (`wbMapTidyBranchScope`); not timed at 200 topics.
 - The fishbone's rib runs behind its causes' boxes (lines are under nodes); the look is not compared against XMind's.
 - `maplayouts.js` "tree-left carries the branch bar on the edge the parent is on" fails on the base too (1px against 1px).
-- `mapstrip.js`: 5 fails left, all failing on the base as well (shapes stored and drawn, the ring's six slots, the grip drag, Shift scaling, the first pan within 4px).
 
 ## Left by the stats89 agent (Brief 89, merged 2026-10-10)
 
@@ -3424,7 +3418,6 @@ Thirty-nine finished agent files moved to [`../archive/agent-remaining/`](../arc
 - Meeting cards show their section headings as raw `## Agenda` text, as every note card does. A meeting-aware card preview (when, who, open action items) needs its own pass. (from meetings-644.md)
 - The Timeline's table view (a phone's default) has no mark column, so a meeting reads as a Note there; the feed view shows the meeting mark. (from meetings-644.md)
 - Not verified: Summarise against a real small model (the fake model only; its pipe format and quoting are unknown), and transcription (no faster-whisper in the sandbox; the save is driven with a typed transcript). (from meetings-644.md)
-- `suggestions-inbox.js` (a partial link run) and `whiteboard.js` (a clear that left items) are red by a computed flag; they are partial failures. (from toasts-1006.md)
 - `ai-tools.js` says "Open Settings, Models" in words, and none is a link. A button on the toast is the next step and is a new control. (from toasts-1006.md)
 - Not verified: the other 100 `toast(..., true)` call sites were not each triggered. A lint covers them; their situations (a formatter refusing a file, Atlas off in Suggestions) were not driven. (from toasts-1006.md)
 
@@ -3444,8 +3437,6 @@ The five files are in [`../archive/agent-remaining/`](../archive/agent-remaining
 - Chat with no model: "what is 15% of 240" quotes a note; "convert 5 km to miles", "what day is it today" and "summarise my week" answer "Nothing in the notes"; "remind me to call Sam tomorrow at 9" makes no reminder (CHAT_PLAN foundation 7). (from deepen-b-1010.md)
 - The agent panel with no model: 16 of 20 controls disabled (AGENT_SKILLS_REFORM, Deepened row 1). (from deepen-b-1010.md)
 - Ask cannot show a relevant map as a map. Decision taken: retrieval is notes only (a map's entry text is its title, so it grounds nothing). Owner's words: "mindmaps still appear as notes in the ask subtab search". To surface maps, add a `maps` list to `ChatResponse` (`src/memorymap/api/routes_chat.py:673`) and draw it with `mapChip` in `frontend/js/capture-ask.js` (the `raw_results` loop near line 2296), fed by `search.engine` hits of kind `map`. (from mapnotes-1010.md)
-- `GET /entries/count` (`src/memorymap/api/routes_entries.py:2293`) counts every entry row including boards and the bin; its only reader is onboarding's "is the notebook empty" check (`frontend/js/onboarding.js:73`), so left alone. (from mapnotes-1010.md)
-- The Timeline labels a map under the "Boards" kind chip (`frontend/js/timeline.js:266`); it draws it with a map chip and an "Open this map" action, so it is not a note leak. (from mapnotes-1010.md)
 - Notes keep the old `updated_at` rule (any write moves it): `edited_at` answers "when a person changed it", but `lexical_filing` (`src/memorymap/ai/lexical_filing.py:554`) keys stamps on `updated_at`, so the board-only guard in `core/database.py` was not widened. (from mapnotes-1010.md)
 - Each VC row is unbuilt; the script and test are the only code (Brief 75 says no code beyond them). (from vendor-1010.md)
 - The p5 API list in `scratchpad/vendor_use.py` is a Chromium dump pinned to 1.9.4 (the vendored p5 is 1.11.13 since 2026-10-11, not yet regenerated); regenerate it with a p5 upgrade. (from vendor-1010.md)
@@ -3454,7 +3445,6 @@ The five files are in [`../archive/agent-remaining/`](../archive/agent-remaining
 - Brief 4 (Settings two-pane, 54 paragraphs): WORLD_CLASS_PLAN.md:1019 says the 54 paragraphs "not re-checked here, so still open". (from briefs-1010.md)
 - Brief 8 (`[[` autocomplete, connections rail): HISTORY has only the plan table rows, no Built record. (from briefs-1010.md)
 - Brief 9 (job runtime): `tests/test_jobs.py` the brief names does not exist; HISTORY has no Built record. (from briefs-1010.md)
-- Brief 10 (Library card recipe, widget frame): HISTORY has only the plan table rows. (from briefs-1010.md)
 - Brief 13 (verifier): agent-remaining/OPEN.md:189 still names Brief 13's `evals` marker and fixture set as open. (from briefs-1010.md)
 - Brief 14 (docs condensed): HANDOVER.md is 486 lines against a 300-line done-when; `NEXT_FABLE_WINDOW.md` does not exist. (from briefs-1010.md)
 - Brief 16 (documentation refined): no HISTORY record of the pass. (from briefs-1010.md)
@@ -3499,9 +3489,7 @@ The file is in [`../archive/agent-remaining/engine-1010.md`](../archive/agent-re
 
 - Blind panel (decision 40): the owner's rating against the 1 to 3B model; not runnable by an agent.
 - P10 days until a note's date ("how many days until the dentist"): `utilities.until_subject` (src/memorymap/ai/utilities.py:313) finds the subject; compose does not yet look the date up in the notes.
-- P11 mention counts ("how many times did I mention Porto"): no count shape; `notebook_stats` counts notes, not mentions.
 - P12 a list filtered by category or tag ("list my work notes"): `composer._filtered` (src/memorymap/ai/composer.py:3155) filters by tag and source kind, not by category.
-- P13 every date and what is due this week: the fact layer has the dates (`factgraph.of_kind`), no answer shape lists them.
 - P15 a lead-in chosen after the parts: the compare opener is still chosen first.
 - P16 a note's open checklist items for "what is still open on X".
 - Decision 45: the readings are listed (`composer._readings`, src/memorymap/ai/composer.py:2693); a running model does not yet pick among them (needs a real model; `pytest -m evals`).
@@ -3543,7 +3531,6 @@ The file is in [`../archive/agent-remaining/trust73-1010.md`](../archive/agent-r
 
 The files, with the measured before table and the vendoring keep-or-drop table, are in [`../archive/agent-remaining/docs42-1010.md`](../archive/agent-remaining/docs42-1010.md) and [`docs42b-1010.md`](../archive/agent-remaining/docs42b-1010.md); what docs42b built is in HISTORY "Moved from the plans, 2026-10-10 (DOCUMENTS Brief 42 remainder)".
 
-- INBOX 735 first half: the p5.js sketch document kind (code beside a sandboxed live canvas, vendored `p5.min.js` only); `api/run_sandbox.py` would need a p5 runner that loads the vendored file into the frame. Brief 69 (D6 previews). [docs42]
 - Document comments with the board's thread shape (Reply, Edit, Resolve, Attach): a decision first. Comments are `==words== %%remark%%` in the text ("no comment store and there must not be one", documents.js `renderDocComments`) while `wbCommentRow` needs ids, `reply_to`, `edited`, `resolved`. Recommendation (take it): keep the text model; a reply is the next `%%…%%` on the same line, Edit rewrites in place, Attach appends a `[[link]]`, Resolve takes it out; lift `wbCommentRow`'s DOM into a shared row taking `{list, save, refresh}` and add the recipe ratchet in `tests/test_ui_recipes.py`. [docs42b]
 - Word import of tracked changes: the .docx carries `w:ins`/`w:del`, but Mammoth reads an insertion as accepted text and drops a deletion (documents-word.js `docWordImport`); the server reader `docview.docx_to_markdown` keeps them, so a .docx with revisions could go there. [docs42b]
 - A fenced code block's language (```js) is not written to Word, so it comes back as a bare fence (`docWordBlocks`, the `pre` branch); header cells come back bold (as before). [docs42b]
