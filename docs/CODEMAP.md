@@ -2,7 +2,7 @@
 
 Generated 2026-10-30 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6862, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7527, test files 1598, tests 13898, plan headings 987.
+Counts: frontend functions 6862, frontend ids 2588, CSS sections 505, backend routes 632, backend modules 7529, test files 1599, tests 13904, plan headings 987.
 
 ## Frontend functions (6862)
 
@@ -602,35 +602,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:664 |
 | `attachedNotes` | frontend/js/chat-attach.js:811 |
 | `attachmentChip` | frontend/js/chat-attach.js:194 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2828 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3160 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2831 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3163 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1332 |
 | `chatQueueShow` | frontend/js/chat-attach.js:1531 |
 | `chatSendTurn` | frontend/js/chat-attach.js:1540 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1502 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:819 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3186 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3189 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:688 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1369 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:164 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1317 |
 | `commitStagedImages` | frontend/js/chat-attach.js:330 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2934 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3134 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3191 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2937 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3137 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3194 |
 | `extractRefLabel` | frontend/js/chat-attach.js:53 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:848 |
-| `followupChain` | frontend/js/chat-attach.js:2857 |
-| `followupMatches` | frontend/js/chat-attach.js:2855 |
-| `followupParent` | frontend/js/chat-attach.js:2848 |
-| `followupTrail` | frontend/js/chat-attach.js:2874 |
+| `followupChain` | frontend/js/chat-attach.js:2860 |
+| `followupMatches` | frontend/js/chat-attach.js:2858 |
+| `followupParent` | frontend/js/chat-attach.js:2851 |
+| `followupTrail` | frontend/js/chat-attach.js:2877 |
 | `importChatDocuments` | frontend/js/chat-attach.js:420 |
 | `isImageFile` | frontend/js/chat-attach.js:371 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:3062 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:3065 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:391 |
-| `markFollowup` | frontend/js/chat-attach.js:2898 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2988 |
-| `newChatConversation` | frontend/js/chat-attach.js:3082 |
+| `markFollowup` | frontend/js/chat-attach.js:2901 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2991 |
+| `newChatConversation` | frontend/js/chat-attach.js:3085 |
 | `noteLabel` | frontend/js/chat-attach.js:825 |
 | `noteNamePlain` | frontend/js/chat-attach.js:885 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1180 |
@@ -642,50 +642,50 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notePickerRoving` | frontend/js/chat-attach.js:1170 |
 | `notePickerShape` | frontend/js/chat-attach.js:1000 |
 | `notePickerUsedIn` | frontend/js/chat-attach.js:982 |
-| `offerFollowups` | frontend/js/chat-attach.js:2756 |
-| `offerReminder` | frontend/js/chat-attach.js:2695 |
+| `offerFollowups` | frontend/js/chat-attach.js:2759 |
+| `offerReminder` | frontend/js/chat-attach.js:2698 |
 | `openChatDockMore` | frontend/js/chat-attach.js:1345 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1282 |
-| `paintChatTimer` | frontend/js/chat-attach.js:3001 |
+| `paintChatTimer` | frontend/js/chat-attach.js:3004 |
 | `plainText` | frontend/js/chat-attach.js:863 |
-| `promptTitle` | frontend/js/chat-attach.js:3178 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:3073 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2808 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:3032 |
+| `promptTitle` | frontend/js/chat-attach.js:3181 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:3076 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2811 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:3035 |
 | `renderAttachments` | frontend/js/chat-attach.js:938 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:575 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:628 |
 | `renderExtractPreview` | frontend/js/chat-attach.js:59 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:525 |
-| `renderFollowups` | frontend/js/chat-attach.js:2794 |
+| `renderFollowups` | frontend/js/chat-attach.js:2797 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:257 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:693 |
 | `revalidateSelection` | frontend/js/chat-attach.js:740 |
-| `saveFollowups` | frontend/js/chat-attach.js:2917 |
+| `saveFollowups` | frontend/js/chat-attach.js:2920 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:791 |
 | `sendChatMessage` | frontend/js/chat-attach.js:1511 |
 | `setActiveChoice` | frontend/js/chat-attach.js:871 |
 | `setNoteLabel` | frontend/js/chat-attach.js:895 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1255 |
-| `startChatTimer` | frontend/js/chat-attach.js:3013 |
-| `stopChatTimer` | frontend/js/chat-attach.js:3022 |
+| `startChatTimer` | frontend/js/chat-attach.js:3016 |
+| `stopChatTimer` | frontend/js/chat-attach.js:3025 |
 
 ### frontend/js/sheets-selects.js (51)
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2237 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2246 |
 | `annotateSliders` | frontend/js/sheets-selects.js:1000 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:203 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:512 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2336 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2286 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2345 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2295 |
 | `clampToolbarMenu` | frontend/js/sheets-selects.js:1472 |
 | `dateFieldFace` | frontend/js/sheets-selects.js:1029 |
 | `eachSidebar` | frontend/js/sheets-selects.js:196 |
-| `editedMarker` | frontend/js/sheets-selects.js:1928 |
+| `editedMarker` | frontend/js/sheets-selects.js:1937 |
 | `enhanceAllSelects` | frontend/js/sheets-selects.js:1011 |
 | `enhanceDateField` | frontend/js/sheets-selects.js:1039 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:704 |
@@ -699,17 +699,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
 | `lightboxReadingsFor` | frontend/js/sheets-selects.js:1671 |
 | `listFilter` | frontend/js/sheets-selects.js:1236 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2164 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2173 |
 | `loadConversationList` | frontend/js/sheets-selects.js:1769 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:606 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:322 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:549 |
 | `menuRowFits` | frontend/js/sheets-selects.js:1303 |
-| `openConversation` | frontend/js/sheets-selects.js:1936 |
+| `openConversation` | frontend/js/sheets-selects.js:1945 |
 | `openKebabSheet` | frontend/js/sheets-selects.js:1150 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1709 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2243 |
-| `personaNamesNow` | frontend/js/sheets-selects.js:2353 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2252 |
+| `personaNamesNow` | frontend/js/sheets-selects.js:2362 |
 | `relativeTime` | frontend/js/sheets-selects.js:1719 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1580 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:530 |
@@ -719,9 +719,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:86 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
 | `sortConversations` | frontend/js/sheets-selects.js:1756 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2302 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2311 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:301 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2323 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2332 |
 | `watchForSelects` | frontend/js/sheets-selects.js:1114 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:496 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:506 |
@@ -1030,7 +1030,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:659 |
 | `agentActivityQuiet` | frontend/js/status.js:651 |
-| `agentModeAvailable` | frontend/js/status.js:2759 |
+| `agentModeAvailable` | frontend/js/status.js:2761 |
 | `aiIsOff` | frontend/js/status.js:2040 |
 | `aiOffGlyph` | frontend/js/status.js:2407 |
 | `aiOfflineDismissed` | frontend/js/status.js:2208 |
@@ -1040,7 +1040,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `appStackIsNewer` | frontend/js/status.js:1576 |
 | `armReminderTimer` | frontend/js/status.js:515 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2822 |
+| `backendLabel` | frontend/js/status.js:2824 |
 | `boardHistoryActive` | frontend/js/status.js:1541 |
 | `checkDueReminders` | frontend/js/status.js:532 |
 | `closeModelGate` | frontend/js/status.js:2059 |
@@ -1067,7 +1067,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `noteDamagedNotebook` | frontend/js/status.js:1264 |
 | `noteServerDown` | frontend/js/status.js:1320 |
 | `noteServerUp` | frontend/js/status.js:1329 |
-| `noticeTaskTransitions` | frontend/js/status.js:3067 |
+| `noticeTaskTransitions` | frontend/js/status.js:3069 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:694 |
 | `notificationsMuted` | frontend/js/status.js:636 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
@@ -1076,8 +1076,8 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `offerUndo` | frontend/js/status.js:1483 |
 | `openLanPanel` | frontend/js/status.js:596 |
 | `openModelGate` | frontend/js/status.js:2069 |
-| `paintPrivacyChip` | frontend/js/status.js:3165 |
-| `paintStatusItem` | frontend/js/status.js:2548 |
+| `paintPrivacyChip` | frontend/js/status.js:3167 |
+| `paintStatusItem` | frontend/js/status.js:2550 |
 | `paintTitle` | frontend/js/status.js:492 |
 | `paintUndoDoor` | frontend/js/status.js:1672 |
 | `performRedo` | frontend/js/status.js:1597 |
@@ -1091,19 +1091,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1516 |
 | `pushUndo` | frontend/js/status.js:1394 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:2986 |
+| `refreshBackgroundTasks` | frontend/js/status.js:2988 |
 | `refreshModelStatus` | frontend/js/status.js:1911 |
-| `refreshPrivacyChip` | frontend/js/status.js:3179 |
+| `refreshPrivacyChip` | frontend/js/status.js:3181 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:730 |
 | `renderAiOfflineNotice` | frontend/js/status.js:2231 |
 | `renderAiPill` | frontend/js/status.js:2437 |
-| `renderChatModeSeg` | frontend/js/status.js:2763 |
+| `renderChatModeSeg` | frontend/js/status.js:2765 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2833 |
-| `renderStatusBar` | frontend/js/status.js:2591 |
+| `renderSettings` | frontend/js/status.js:2835 |
+| `renderStatusBar` | frontend/js/status.js:2593 |
 | `renderUndoBar` | frontend/js/status.js:1657 |
 | `reopenAnswerPanel` | frontend/js/status.js:709 |
 | `resetStatusCadence` | frontend/js/status.js:1834 |
@@ -1111,7 +1111,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sayChatModelChosen` | frontend/js/status.js:1797 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1344 |
 | `scheduleUndoBar` | frontend/js/status.js:1649 |
-| `setChatMode` | frontend/js/status.js:2806 |
+| `setChatMode` | frontend/js/status.js:2808 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:497 |
@@ -1119,9 +1119,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1850 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1504 |
-| `showAgentNoModelHint` | frontend/js/status.js:2801 |
+| `showAgentNoModelHint` | frontend/js/status.js:2803 |
 | `showServerDownBanner` | frontend/js/status.js:1303 |
-| `startPrivacyChip` | frontend/js/status.js:3189 |
+| `startPrivacyChip` | frontend/js/status.js:3191 |
 | `startReminderWatch` | frontend/js/status.js:603 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1558 |
@@ -1129,7 +1129,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncModelGatedControls` | frontend/js/status.js:2090 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3047 |
+| `taskKey` | frontend/js/status.js:3049 |
 | `toast` | frontend/js/status.js:1094 |
 | `toastAction` | frontend/js/status.js:1236 |
 | `toastActionButton` | frontend/js/status.js:1216 |
@@ -1147,7 +1147,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:849 |
 | `toastStack` | frontend/js/status.js:854 |
 | `toastYield` | frontend/js/status.js:967 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2733 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2735 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1088 |
@@ -11579,7 +11579,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7527)
+## Backend modules (7529)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -14061,37 +14061,39 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `ram_needed_gb` | src/tessellate/ai/model_cards.py:65 |
 | `size_gb` | src/tessellate/ai/model_cards.py:56 |
 
-### src/tessellate/ai/model_manager.py (27)
+### src/tessellate/ai/model_manager.py (29)
 
 | Name | File:line |
 |---|---|
-| `Embedder` | src/tessellate/ai/model_manager.py:29 |
-| `Feature` | src/tessellate/ai/model_manager.py:313 |
-| `Job` | src/tessellate/ai/model_manager.py:836 |
-| `ModelManager` | src/tessellate/ai/model_manager.py:423 |
-| `_is_app_client` | src/tessellate/ai/model_manager.py:1097 |
-| `_is_app_pair` | src/tessellate/ai/model_manager.py:939 |
-| `_reindex_pass` | src/tessellate/ai/model_manager.py:968 |
-| `_run_pull` | src/tessellate/ai/model_manager.py:1114 |
-| `_run_reindex` | src/tessellate/ai/model_manager.py:960 |
-| `cancel_pull` | src/tessellate/ai/model_manager.py:889 |
-| `cancel_reindex` | src/tessellate/ai/model_manager.py:879 |
-| `choose_chat_model_if_missing` | src/tessellate/ai/model_manager.py:1188 |
-| `choose_installed_chat_model` | src/tessellate/ai/model_manager.py:1164 |
-| `feature_pref_key` | src/tessellate/ai/model_manager.py:405 |
-| `is_installed_name` | src/tessellate/ai/model_manager.py:1179 |
-| `is_ocr_model` | src/tessellate/ai/model_manager.py:218 |
-| `is_small_model` | src/tessellate/ai/model_manager.py:272 |
-| `known_feature` | src/tessellate/ai/model_manager.py:409 |
-| `parameter_count` | src/tessellate/ai/model_manager.py:247 |
-| `pull_model` | src/tessellate/ai/model_manager.py:1104 |
-| `pull_statuses` | src/tessellate/ai/model_manager.py:874 |
-| `reindex_notebook` | src/tessellate/ai/model_manager.py:948 |
-| `reindex_status` | src/tessellate/ai/model_manager.py:869 |
-| `reset_jobs` | src/tessellate/ai/model_manager.py:861 |
-| `served_name` | src/tessellate/ai/model_manager.py:1210 |
-| `start_pull` | src/tessellate/ai/model_manager.py:1070 |
-| `start_reindex` | src/tessellate/ai/model_manager.py:899 |
+| `Embedder` | src/tessellate/ai/model_manager.py:32 |
+| `Feature` | src/tessellate/ai/model_manager.py:316 |
+| `Job` | src/tessellate/ai/model_manager.py:839 |
+| `ModelManager` | src/tessellate/ai/model_manager.py:426 |
+| `_check_room` | src/tessellate/ai/model_manager.py:1121 |
+| `_is_app_client` | src/tessellate/ai/model_manager.py:1100 |
+| `_is_app_pair` | src/tessellate/ai/model_manager.py:942 |
+| `_ollama_models_dir` | src/tessellate/ai/model_manager.py:1117 |
+| `_reindex_pass` | src/tessellate/ai/model_manager.py:971 |
+| `_run_pull` | src/tessellate/ai/model_manager.py:1131 |
+| `_run_reindex` | src/tessellate/ai/model_manager.py:963 |
+| `cancel_pull` | src/tessellate/ai/model_manager.py:892 |
+| `cancel_reindex` | src/tessellate/ai/model_manager.py:882 |
+| `choose_chat_model_if_missing` | src/tessellate/ai/model_manager.py:1207 |
+| `choose_installed_chat_model` | src/tessellate/ai/model_manager.py:1183 |
+| `feature_pref_key` | src/tessellate/ai/model_manager.py:408 |
+| `is_installed_name` | src/tessellate/ai/model_manager.py:1198 |
+| `is_ocr_model` | src/tessellate/ai/model_manager.py:221 |
+| `is_small_model` | src/tessellate/ai/model_manager.py:275 |
+| `known_feature` | src/tessellate/ai/model_manager.py:412 |
+| `parameter_count` | src/tessellate/ai/model_manager.py:250 |
+| `pull_model` | src/tessellate/ai/model_manager.py:1107 |
+| `pull_statuses` | src/tessellate/ai/model_manager.py:877 |
+| `reindex_notebook` | src/tessellate/ai/model_manager.py:951 |
+| `reindex_status` | src/tessellate/ai/model_manager.py:872 |
+| `reset_jobs` | src/tessellate/ai/model_manager.py:864 |
+| `served_name` | src/tessellate/ai/model_manager.py:1229 |
+| `start_pull` | src/tessellate/ai/model_manager.py:1073 |
+| `start_reindex` | src/tessellate/ai/model_manager.py:902 |
 
 ### src/tessellate/ai/needle_control.py (10)
 
@@ -20870,7 +20872,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (13898)
+## Tests (13904)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -20954,6 +20956,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_attachment_rename_route.py | 4 |
 | tests/test_audio_section.py | 4 |
 | tests/test_audit_1028_e_rows.py | 5 |
+| tests/test_audit_1028_e_rows_b.py | 6 |
 | tests/test_audit_1028_small.py | 5 |
 | tests/test_audit_1030_ai_acts.py | 5 |
 | tests/test_audit_1030_ai_routes.py | 5 |

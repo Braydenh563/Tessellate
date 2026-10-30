@@ -1821,6 +1821,15 @@ async function loadConversationList() {
     const title = document.createElement("span");
     title.className = "conv-title";
     title.title = "Open this chat";
+    //: The row opened on a click only (audit 1028 E36): the title is the
+    //: keyboard's way in, Enter or Space, beside the row's own ⋯ button.
+    title.tabIndex = 0;
+    title.setAttribute("role", "button");
+    title.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openConversation(conversation.id);
+    });
 
     const name = document.createElement("span");
     name.className = "conv-name";

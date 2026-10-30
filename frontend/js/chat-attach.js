@@ -1535,7 +1535,7 @@ function chatQueueShow() {
 //: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
 //: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
 //: change the person meant to take back stayed.
-const CHAT_UNDO_WORDS = /^(undo|redo)(?: (?:that|it|the last (?:change|thing)))?[.!]?$/i;
+const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
 
 async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
@@ -2329,6 +2329,9 @@ async function chatSendTurn(preset, opts = {}) {
             : "stalled"
           : "done";
     endAgentRun(activityRun, { state: endState });
+    //: The transcript is not a live region (deltas every 66 ms would be read
+    //: word by word), so a finished answer is said once (audit 1028 E35).
+    if (endState === "done" && viewing()) announce(timeline.text());
     //: …and Atlas's face says how it went, for a moment.
     if (typeof setAtlasMood === "function") {
       setAtlasMood(endState === "done" ? "happy" : endState === "failed" ? "surprised" : "calm", 5000);

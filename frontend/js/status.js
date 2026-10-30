@@ -2507,7 +2507,9 @@ function nudgeEmbeddingProblem() {
     key: `embedding:${error}`,
     action: { settings: "models" },
   });
-  if (!installing && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
+  //: While the download question is up it already says keywords work
+  //: meanwhile: a second toast said it again, stacked over Settings (audit 1028 E40).
+  if (!installing && !modelStatus.semantic_offer && embeddingToastDue()) toastAction(`${title}. Search is using keywords for now.`, "Fix it", () => openSettingsModal("searchindex", "embedding-model-select"), { record: false });
 }
 
 // --- the status bar (§36D) ---------------------------------------------------
