@@ -35,7 +35,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] Companion: Fable pass after companion-1031 hands over (owner named Fable)
 - [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
 - [ ] UI review of the 1031 merges (ux-auditor)
-- [ ] OPEN.md: proposed batches
+- [>] OPEN.md: proposed batches (B45, B48 whiteboard: agent wbopen-1031)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
