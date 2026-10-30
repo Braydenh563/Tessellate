@@ -89,6 +89,10 @@ _ABOUT_APP_PATTERNS = (
     r"what (?:kinds?|sorts?|types?) of (?:stuff|things|questions|tasks|jobs) (?:can|could|do|will) you (?:help(?: me)? with|do|answer|handle)",
     r"help",
     r"what(?:'s| is) new(?: in (?:the app|tessellate|memorymap|this version))?",
+    #: A hosted model asked about by name (audit 1028 E32): the Models help,
+    #: not a search of the notes for "use ChatGPT".
+    r"(?:can|could|do|does|will) (?:i|you|it|this|tessellate|the app) (?:use|connect(?: to)?|work with|run|support|talk to|plug into) "
+    r"(?:a |an |my |the )?(?:chatgpt|openai|gpt[\w.-]*|claude|gemini|copilot|(?:hosted|cloud|online|different|other|another|bigger) (?:ai|model|llm))\b.{0,30}",
 )
 
 # Words that mean the message really is about the notebook, even when it is

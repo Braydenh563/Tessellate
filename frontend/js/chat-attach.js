@@ -1532,6 +1532,11 @@ function chatQueueShow() {
   if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
 }
 
+//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
+//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
+//: change the person meant to take back stayed.
+const CHAT_UNDO_WORDS = /^(undo|redo)(?: (?:that|it|the last (?:change|thing)))?[.!]?$/i;
+
 async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
@@ -1543,6 +1548,10 @@ async function chatSendTurn(preset, opts = {}) {
       input.focus();
     }
     return;
+  }
+  if (preset == null && CHAT_UNDO_WORDS.test(typed)) {
+    input.value = "";
+    return chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed));
   }
 
   // Plan mode is applied here, on the way out, rather than by whatever control

@@ -76,3 +76,9 @@ date | item | type | rung | rework | note
 2026-10-30 | D32 find chords in palette | ui | opus | 0 | 
 2026-10-30 | U33 prompt headings | ui | opus | 0 | 
 2026-10-30 | S13 placeholder fields labelled | ui | opus | 0 | 
+2026-10-30 | PR 211 CI: 13 failures (threads, import cycle, embedding import, toasts) and 5 CodeQL alerts | bug | opus | 0 | 
+2026-10-30 | composer merge regressions: composed more, follow-on tool offer, cut choice open | bug | opus | 1 | 
+2026-10-30 | INBOX 1333b /categories and /tags bar chart | feature | opus | 0 | 
+2026-10-30 | scratchpad cap: 8 one-off sweeps folded into measure-static.py | mechanical | opus | 0 | 
+2026-10-30 | docs audit 1028 rows D19 D20 D9 D27 U32 U34 U35 (agent) | refactor | sonnet | 0 | 
+2026-10-30 | graph 2,000-note layout G3/S2 (agent) | refactor | sonnet | 0 | 

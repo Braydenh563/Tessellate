@@ -514,11 +514,14 @@ HELP_TOPICS: list[dict] = [
     },
     {
         "id": "models",
-        "keywords": ("model", "ollama", "lm studio", "vllm", "llama.cpp", "utility model", "chat model", "sampling", "temperature", "no model connected", "no model notice", "hide notice", "banner", "popup"),
+        "keywords": ("model", "ollama", "lm studio", "vllm", "llama.cpp", "utility model", "chat model", "sampling", "temperature", "no model connected", "no model notice", "hide notice", "banner", "popup", "chatgpt", "openai", "gpt", "api key", "hosted model", "cloud model", "gemini"),
         "body": (
             "Connect a model in Settings, Models, which picks the chat model and an optional smaller "
             "utility model for background jobs. Any OpenAI-compatible server "
             "works, not just Ollama, LM Studio, llama-server, Jan, vLLM. "
+            "A hosted model, such as ChatGPT through the OpenAI API with its API "
+            "key, works once Keep Atlas on this machine is turned off, since your "
+            "notes then leave this computer. "
             "Sampling parameters (temperature, top-p, top-k, min-p, repeat "
             "penalty) are exposed there too, starting at what the model itself "
             "recommends. The No model connected banner above Ask, Chat and "

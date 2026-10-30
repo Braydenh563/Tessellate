@@ -284,6 +284,9 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
     if parsed is not None:
         parsed = {**parsed, "text": reminder_parser.without_conditions(parsed["text"]) or parsed["text"]}
+    gap = _reminder_gap(rest, parsed, now)
+    if gap is not None:
+        return gap
     if parsed is None:
         if about:
             # "Remind me about my trip" with no time is a question as often
@@ -299,6 +302,36 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     if not words or due is None:
         return None
     return {"intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now)}
+
+
+_MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
+_MONTH_DAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+_DAY_MONTH = re.compile(
+    r"\b(?:(?P<d1>\d{1,2})(?:st|nd|rd|th)?(?: of)? (?P<m1>%s)|(?P<m2>%s) (?P<d2>\d{1,2})(?:st|nd|rd|th)?)\b"
+    % ("|".join(_MONTH_NAMES), "|".join(_MONTH_NAMES)),
+    re.I,
+)
+
+
+def _impossible_day(text: str) -> str:
+    """"31 February" when `text` names a day its month does not have, else ""."""
+    for m in _DAY_MONTH.finditer(text):
+        day, month = int(m["d1"] or m["d2"]), (m["m1"] or m["m2"]).lower()
+        if not 1 <= day <= _MONTH_DAYS[_MONTH_NAMES.index(month)]:
+            return f"{day} {month.capitalize()}"
+    return ""
+
+
+def _reminder_gap(rest: str, parsed: dict | None, now: datetime) -> dict | None:
+    """A reminder that cannot be set as said, asked rather than guessed
+    (audit 1028 E26): only a time ("set a reminder for 5pm" stored "5pm" as
+    its words), or a day its month does not have ("31 February")."""
+    if parsed is not None and parsed["text"].strip(" .,").lower() == rest.strip(" .,").lower():
+        return {"intent": "reminder", "text": "", "said": "", "due_at": parsed["due_at"], "time_given": True, "no_subject": rest.strip(" .,")}
+    impossible = _impossible_day(rest) if parsed is None else ""
+    if impossible:
+        return {"intent": "reminder", "text": rest[:500], "said": rest[:500], "due_at": when.resolve("tomorrow", now), "time_given": False, "impossible": impossible}
+    return None
 
 
 def _tag(text: str) -> dict | None:
@@ -1231,7 +1264,11 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     from tessellate.core.config import user_now
 
     due = parsed["due_at"]
-    when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None)) + (
+    when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None))
+    if parsed.get("no_subject"):
+        #: Only a time was said: the words are asked, not stored as "5pm".
+        return {"line": f"What should I remind you about {when_said}?"}
+    when_said += (
         "" if parsed.get("time_given") else " (no time was said)"
     )
     said = parsed.get("said") or parsed["text"]
@@ -1389,6 +1426,14 @@ def _ahead(due: datetime, now: datetime) -> bool:
         return due > now
     except TypeError:  # a naive time against an aware clock: not judged here
         return True
+
+
+def ask_when_for(parsed: dict) -> str:
+    """The one question a reminder with no time asks: when, or which day
+    for a day that does not exist (audit 1028 E26)."""
+    if parsed.get("impossible"):
+        return f"There is no {parsed['impossible']}. Which day should I remind you on?"
+    return ask_when(parsed.get("said") or parsed["text"])
 
 
 def ask_when(said: str) -> str:

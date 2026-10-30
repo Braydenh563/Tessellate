@@ -49,9 +49,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 43 | D28 | med | no continuous zoom, text size in three steps | won't fix (browser zoom gives continuous zoom; three prose sizes kept, 2026-10-30) | S |
 | 44 | D29 | med | replace dialog lacks whole-word and match preview | fixed (this batch) | M |
 | 45 | D30 | med | spellcheck is English only, no per-document language | new | L |
-| 46 | E13 | med | bare undo after an answer gets help text, not undo | new | S |
+| 46 | E13 | med | bare undo after an answer gets help text, not undo | fixed 1030 | S |
 | 47 | E14 | med | follow-ups like pin that note lose their referent | new | M |
-| 48 | E15 | med | stats route steals questions that name a note subject | new | S |
+| 48 | E15 | med | stats route steals questions that name a note subject | fixed 1030 | S |
 | 49 | E16 | med | compare gives identical lists for both sides | new | M |
 | 50 | E17 | med | digest says newest a day ago when written today | new | S |
 | 51 | E18 | med | composer invents speech acts the notes do not contain | new | S |
@@ -61,9 +61,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 55 | E22 | med | instruction words reported as missing evidence | new | S |
 | 56 | E24 | med | generative requests answered with quotes, no needs-a-model reply | new | S |
 | 57 | E25 | med | quoted note titles stored as body text | new | S |
-| 58 | E26 | med | reminder with no subject; impossible dates accepted | new | S |
+| 58 | E26 | med | reminder with no subject; impossible dates accepted | fixed 1030 | S |
 | 59 | E31 | med | guide answers the wrong topic for realistic questions | fixed (490e3c3, reconciled 2026-10-30) | M |
-| 60 | E32 | med | ChatGPT question gets local model not running answer | new | S |
+| 60 | E32 | med | ChatGPT question gets local model not running answer | fixed 1030 | S |
 | 61 | E33 | med | guide answers are verbatim topic chunks, no lead path | new | M |
 | 62 | E39 | med | model download has no timeout or disk check | new | S |
 | 63 | E48 | med | edit and resend destroys later replies, no branches | new | L |
@@ -93,7 +93,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 87 | D34 | med | autosave failure is tiny status text, no banner or retry | fixed (this batch) | S |
 | 88 | E23 | med | quiz cloze questions cut the subject off | new | M |
 | 89 | E27 | med | act summaries have lowercase verbs, ids and stale notice | new | S |
-| 90 | E28 | med | show my reminders not handled in the chat path | new | S |
+| 90 | E28 | med | show my reminders not handled in the chat path | fixed 1030 | S |
 | 91 | E29 | med | identical reminders printed twice, no duplicate check | new | S |
 | 92 | E35 | med | chat transcript is not a live region for screen readers | new | S |
 | 93 | E36 | med | saved-chat rows are li with click and no keyboard path | new | S |

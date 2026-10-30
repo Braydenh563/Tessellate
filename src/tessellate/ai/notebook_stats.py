@@ -1215,6 +1215,17 @@ _COUNT_RULES = (
     (lambda t: _asks(t, _COUNT, _TAG_WORDS), _tag_count),
     (lambda t: _asks(t, _COUNT, _CATEGORY_WORDS), _category_count),
 )
+#: "When is the history essay due and how many words" is about one essay,
+#: not the notebook (audit 1028 E15): the notebook's word count answered it.
+#: A "the" or "my" before anything but the notebook or a span of time names a
+#: thing, and the question goes on to the notes.
+_A_THING = re.compile(r"\b(?:the|my|this|that) (?!notes?\b|notebook\b|words?\b|whole\b|entire\b|(?:past |last |previous )?(?:day|week|month|year)s?\b)[a-z]")
+
+
+def _names_a_thing(text: str) -> bool:
+    return bool(_A_THING.search(text))
+
+
 #: Added with the spelling pass, because "improve" was the other half of the
 #: same request: each is a question about the collection, not about any note
 #: in it, which retrieval answers badly.
@@ -1224,7 +1235,7 @@ _LATER_RULES = (
     (lambda t: _asks(t, r"orphan|unlinked|not linked|no links"), _orphans),
     (lambda t: _asks(t, r"when do i|busiest|most active|what time|which day"), _busiest),
     (lambda t: _asks(t, r"\b(?:write|wrote|written|writing)\b", r"\bmost\b", r"\babout\b"), _top_subjects),
-    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount"), _word_count),
+    (lambda t: _asks(t, r"\bwords?\b|word count|wordcount", r"\bhow many|\btotal|\bwritten|\bcount") and not _names_a_thing(t), _word_count),
     (lambda t: _asks(t, r"longest|biggest|largest", r"\bnotes?\b"), _longest_notes),
     (lambda t: _asks(t, r"stale|forgotten|untouched|abandoned|haven.?t (?:looked|touched|opened|read)"), _stale_notes),
     (lambda t: _asks(t, _TAG_WORDS, r"together|alongside|\bpairs?\b|combination|co-?occur"), _tag_pairs),

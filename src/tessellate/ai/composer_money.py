@@ -331,9 +331,11 @@ def _due_by(views: list, win: _Win | None, subject: list[str], test, dimension: 
             continue
         for sentence in view.sentences:
             if _about(view, sentence, subject, test) and said.search(sentence.text):
-                for clause in re.split(r"[;,.](?!\d)", sentence.text):
-                    if (found := _read(clause, dimension)) and clause_words.search(clause):
-                        due.append(Item(composer_lists._title(view), found[0][2], found[0][1], view, sentence))  # noqa: SLF001
+                due.extend(
+                    Item(composer_lists._title(view), found[0][2], found[0][1], view, sentence)  # noqa: SLF001
+                    for clause in re.split(r"[;,.](?!\d)", sentence.text)
+                    if (found := _read(clause, dimension)) and clause_words.search(clause)
+                )
     return due
 
 

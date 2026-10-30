@@ -119,3 +119,10 @@ function chatEditUndo(id, turnIndex, cut, newId) {
     }
   );
 }
+
+//: A bare "undo" or "redo" typed in chat (audit 1028 E13), or the line that
+//: says there is nothing to take back.
+function chatHistoryTyped(undo) {
+  if (!surfaceHistory(undo ? "undo" : "redo") && !(undo ? undoStack : redoStack).length) toast(undo ? "Nothing to undo." : "Nothing to redo.");
+  else (undo ? performUndo : performRedo)();
+}

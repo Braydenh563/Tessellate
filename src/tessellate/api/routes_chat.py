@@ -2783,7 +2783,9 @@ MODEL_STOPPED_NOTE = "The model stopped before it could answer, so this is Atlas
 #: A how-to about the app, answered from its Help when no model writes the
 #: answer (CHAT_PLAN decision 36, the help register).
 #: "why is the chat so slow" is a how-to too: the Guide answers it (Performance mode).
-_HOW_TO = re.compile(r"^\s*(?:how (?:do|can|would|should) i|how to|where (?:is|are|do i find|can i find)|why (?:is|does))\b", re.I)
+#: "Can I use ChatGPT with this" is a how-to as much as "how do I" (audit
+#: 1028 E32): the Models help answers it, not the "what I do" line.
+_HOW_TO = re.compile(r"^\s*(?:how (?:do|can|would|should) i|how to|where (?:is|are|do i find|can i find)|why (?:is|does)|(?:can|could|does|will) (?:i|it|this|you) (?:use|connect|work with|run|support))\b", re.I)
 
 
 #: A counted answer's facts drawn as a bar of counts (decision 59, step 2):
@@ -4064,7 +4066,7 @@ def _act_events(req: _StreamRequest, prepared: dict) -> Iterator[dict]:
         #: reply's time fills it (`reading._follow_slot`).
         from tessellate.ai import commands
 
-        yield {"type": "answer", "delta": commands.ask_when(parsed.get("said") or parsed["text"])}
+        yield {"type": "answer", "delta": commands.ask_when_for(parsed)}
         return
     yield from _act_planned_events(req, parsed)
 

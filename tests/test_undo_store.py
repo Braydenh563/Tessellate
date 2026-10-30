@@ -42,7 +42,9 @@ def test_a_board_writes_only_after_its_stored_history_was_read():
 def test_a_document_history_comes_back_only_over_its_own_text():
     restore = DOCS[DOCS.index("function docHistoryRestore("):][:900]
     assert "stored.doc !== text" in restore
-    assert "docCmView.state.doc.toString() !== text" in restore
+    #: The editor's text is read through `docStr` since audit 1028 D19 (7add0bf,
+    #: joined once per version); the check itself is unchanged.
+    assert "docStr(docCmView.state.doc) !== text" in restore
 
 
 def test_the_lock_empties_the_store():
