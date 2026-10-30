@@ -287,7 +287,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 281 | D46 | low | comment-to-code ratio of 32% with historical narration | new | M |
 | 282 | D47 | low | textarea fallback surface duplicated through aliases | new | L |
 | 283 | K26 | low | two schema systems, ad hoc DDL and alembic | docs/roadmap/WORLD_CLASS_PLAN.md:3878 | M |
-| 284 | K27 | low | dead routes with no frontend caller | new | S |
+| 284 | K27 | low | dead routes with no frontend caller | decided 1031: kept, INBOX 261 (routes for HTTP clients other than the bundled page; scratchpad/probe_dead_routes.py lists them, on-this-day documents it) | S |
 | 285 | K28 | low | duplicated containment helpers and LOOPBACK_HOSTS | fixed 1031: one LOOPBACK_HOSTS in core/security; `_within_exports`/`_within_dir` kept apart on purpose (CodeQL guard shape); the two RestoreBody models take different fields | S |
 | 286 | K29 | low | async routes mixed with sync, blocking calls stall SSE | new | S |
 | 287 | K37 | low | no ANALYZE or PRAGMA optimize | fixed (this batch) | S |
