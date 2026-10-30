@@ -809,17 +809,8 @@ def fetch_readable_cached(url: str) -> dict:
 
 
 @egress.labelled(lambda url, *a, **k: f"Reading a web page: {egress.short(url, 80)}")
-def fetch_readable(url: str) -> dict:
-    """Fetch a page and return its readable text.
-
-    This is what makes "open a result" useful without embedding a browser:
-    scripts, styles and chrome are stripped and only text comes back, so
-    nothing from the page can execute in the app.
-    """
-    # The link may have come from somewhere other than our own results
-    # (an agent, a pasted URL), so clean it here as well rather than trusting
-    # that it was cleaned upstream.
-    url = strip_tracking(url)
+def _fetch_page(url: str):  # noqa: ANN202
+    """(the response, its bytes) for a page, or a `WebSearchError` that says why not."""
     try:
         response = _get_external(url)
         content_type = response.headers.get("content-type", "")
@@ -851,6 +842,21 @@ def fetch_readable(url: str) -> dict:
         raise WebSearchError(
             "Couldn't open that page. Check the address and your internet connection."
         ) from exc
+    return response, raw
+
+
+def fetch_readable(url: str) -> dict:
+    """Fetch a page and return its readable text.
+
+    This is what makes "open a result" useful without embedding a browser:
+    scripts, styles and chrome are stripped and only text comes back, so
+    nothing from the page can execute in the app.
+    """
+    # The link may have come from somewhere other than our own results
+    # (an agent, a pasted URL), so clean it here as well rather than trusting
+    # that it was cleaned upstream.
+    url = strip_tracking(url)
+    response, raw = _fetch_page(url)
 
     # Relative links resolve against where the page actually came from
     # (redirects included): never against response.url, which is the

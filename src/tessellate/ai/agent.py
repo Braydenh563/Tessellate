@@ -683,33 +683,47 @@ _RECOVERY_HINTS = {
 }
 
 
+#: Failure phrases and the advice each earns, first match wins; the tables
+#: sit either side of the checks in `_recovery_hint`.
+_HINTS_FIRST = ((("not part of this skill",), "not_in_skill"),)
+_HINTS_MID = (
+    (("turned off in settings",), "disabled"),
+    (("web search is disabled",), "web_off"),
+    (("rate limit", "too many requests", "429"), "rate_limited"),
+)
+_HINTS_AFTER = (
+    (("timeout", "timed out"), "timeout"),
+    #: "nothing found" and "returned nothing" are about the *search*; "empty" on
+    #: its own is not, and matching it here sent "the note body is empty", an
+    #: argument mistake the model can fix, down the "it isn't there, stop
+    #: looking" path. Match the phrases that mean an empty result, not the word.
+    (("nothing found", "returned nothing", "no results"), "empty_result"),
+    (("not found", "no note", "no such"), "not_found"),
+)
+
+
+def _hint_in(table: tuple, lowered: str) -> str | None:
+    return next((_RECOVERY_HINTS[key] for phrases, key in table if any(p in lowered for p in phrases)), None)
+
+
 def _recovery_hint(name: str, message: str) -> str:
     """Pick the advice that fits this failure."""
     lowered = message.lower()
-    if "not part of this skill" in lowered:
-        return _RECOVERY_HINTS["not_in_skill"]
+    found = _hint_in(_HINTS_FIRST, lowered)
+    if found:
+        return found
     if lowered.startswith("unknown tool"):
         return _RECOVERY_HINTS["unknown_tool"]
-    if "turned off in settings" in lowered:
-        return _RECOVERY_HINTS["disabled"]
-    if "web search is disabled" in lowered:
-        return _RECOVERY_HINTS["web_off"]
-    if "rate limit" in lowered or "too many requests" in lowered or "429" in lowered:
-        return _RECOVERY_HINTS["rate_limited"]
+    found = _hint_in(_HINTS_MID, lowered)
+    if found:
+        return found
     #: A search or page service that failed is not an argument fault: the
     #: tool's own "no URL was given" is (audit 1030 A5).
     if name in ("web_search", "read_url") and not any(m in lowered for m in ("was given", "is required", "required", "must be")):
         return _RECOVERY_HINTS["web_down"]
-    if "timeout" in lowered or "timed out" in lowered:
-        return _RECOVERY_HINTS["timeout"]
-    # "nothing found" and "returned nothing" are about the *search*; "empty" on
-    # its own is not, and matching it here sent "the note body is empty", an
-    # argument mistake the model can fix, down the "it isn't there, stop
-    # looking" path. Match the phrases that mean an empty result, not the word.
-    if "nothing found" in lowered or "returned nothing" in lowered or "no results" in lowered:
-        return _RECOVERY_HINTS["empty_result"]
-    if "not found" in lowered or "no note" in lowered or "no such" in lowered:
-        return _RECOVERY_HINTS["not_found"]
+    found = _hint_in(_HINTS_AFTER, lowered)
+    if found:
+        return found
     # ValueError/KeyError/TypeError from a handler are argument problems, and
     # execute_tool prefixes those with the tool's own name.
     if lowered.startswith(f"{name}:"):
@@ -2390,6 +2404,12 @@ def _count_call() -> None:
         spend.count_call()
 
 
+def _query_said(name: str, arguments: dict) -> list[dict]:
+    """A web search's words, said before they leave this computer (audit 1030 A2)."""
+    query = str(arguments.get("query") or "")[:200] if name == "web_search" and isinstance(arguments, dict) else ""
+    return [{"type": "status", "stage": "web", "query": query, "said": f"searching the web for “{query}”"}] if query else []
+
+
 def _run_and_record(
     session: Session, plan: _TurnPlan, state: _TurnState, name: str, arguments: dict
 ) -> Iterator[dict]:
@@ -2408,10 +2428,7 @@ def _run_and_record(
         #: instead of running before the next yield notices (Brief 101b).
         result = {"error": "Stopped before this ran: you pressed Stop."}
     else:
-        if name == "web_search" and isinstance(arguments, dict) and arguments.get("query"):
-            #: Said before it goes (audit 1030 A2): the words that leave this computer.
-            query = str(arguments["query"])[:200]
-            yield {"type": "status", "stage": "web", "query": query, "said": f"searching the web for “{query}”"}
+        yield from _query_said(name, arguments)
         result = tools.execute_tool(
             session, name, arguments, context_tokens=plan.window, model=plan.agent_model
         )

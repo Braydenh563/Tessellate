@@ -4,7 +4,6 @@
  "src/tessellate/ai/agent.py::_first_round_tools": 16,
  "src/tessellate/ai/agent.py::_fit_result": 16,
  "src/tessellate/ai/agent.py::_prepare_turn": 40,
- "src/tessellate/ai/agent.py::_recovery_hint": 17,
  "src/tessellate/ai/agent.py::_run_and_record": 23,
  "src/tessellate/ai/agent.py::_tool_sources": 30,
  "src/tessellate/ai/agent.py::build_agent_messages": 16,
@@ -199,6 +198,5 @@
  "src/tessellate/search/index.py::_index_on_flush": 16,
  "src/tessellate/search/search_manager.py::graph_expansion": 19,
  "src/tessellate/search/searxng_process.py::_start_from_source": 20,
- "src/tessellate/search/websearch.py::_searxng_target": 18,
- "src/tessellate/search/websearch.py::fetch_readable": 17
+ "src/tessellate/search/websearch.py::_searxng_target": 18
 }
