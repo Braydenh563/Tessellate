@@ -2945,8 +2945,8 @@ body.printing-doc #doc-preview p,
   cursor: text;
 }
 
-/* The hover lock (decision 28): a quiet lock at a locked item's top right
-   while the pointer is on it, one size at any zoom like the comment mark
+/* The lock badge (decision 28, audit 1028 B20): a quiet lock at a locked
+   item's top right, always shown, one size at any zoom like the comment mark
    beside it. It takes no pointer: the item lets the pointer through, and so
    does its mark. */
 .wb-lock-pin {
@@ -2956,6 +2956,10 @@ body.printing-doc #doc-preview p,
   transform-origin: 0 0;
   transform: scale(var(--wb-inv-zoom));
   pointer-events: none;
+}
+
+#library-view-whiteboard.wb-presenting #wb-lock-marks {
+  display: none;
 }
 
 .wb-lock-mark {

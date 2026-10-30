@@ -36,7 +36,7 @@ def test_every_failed_delete_goes_through_one_toasting_restore():
         at = WB.index(f"/whiteboard/{kind}/${{d.id}}`, {{ method: \"DELETE\" }}")
         tail = WB[at : at + 2200]
         catch = tail[tail.index("} catch (e) {") : tail.index("} finally {")]
-        assert "wbDeleteFailed(entry, redoBefore, e, () => delete" in catch
+        assert "wbDeleteFailed(entry, redoBefore, e, () => wbDelete" in catch  # renamed by B7 (top-level)
         assert "console.error" not in catch
         assert "const redoBefore = wbRedoStack;" in WB[at - 400 : at]
 

@@ -1373,7 +1373,7 @@ async function wbDiagramToShapes() {
   document.getElementById("wb-diagram-dialog")?.close();
   await wbRecordGesture(async () => {
     const made = await wbImportMermaid(source, [d.x + d.width / 2, d.y + d.height / 2]);
-    if (made) await wbDeleteObjectRef?.(d);
+    if (made) await wbDeleteObject(d);
   });
 }
 

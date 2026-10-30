@@ -35,11 +35,11 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 29 | E42 | med | pasted note text reaches write tools with no confirm | fixed (1029 H2: edit_note parks via CHANGE_TOOLS) | M |
 | 30 | E66 | med | delete all notes silently reduces to one match | fixed | S |
 | 31 | E70 | med | regenerate and resend repeat web search and write tools | fixed (E2: Run again confirm on a writing answer) | M |
-| 32 | B7 | med | delete handlers recreated each render and stashed in module refs | new | M |
+| 32 | B7 | med | delete handlers recreated each render and stashed in module refs | fixed | M |
 | 33 | B10 | med | no native PDF export, relies on browser print | new | M |
 | 34 | B11 | med | no focus mode for mind map branches | docs/roadmap/MINDMAP_PLAN.md:229 | M |
-| 35 | B14 | med | map branch export and board export use two dialogs | new | M |
-| 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | new | L |
+| 35 | B14 | med | map branch export and board export use two dialogs | fixed | M |
+| 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | fixed | L |
 | 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
 | 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
 | 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
@@ -86,7 +86,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 80 | S50 | med | no search operators such as tag: and before: | docs/roadmap/WORLD_CLASS_PLAN.md:677 | M |
 | 81 | B12 | med | same keys mean different things by mode | new | M |
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
-| 83 | B20 | med | lock state shown only on hover, no persistent badge | new | S |
+| 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | fixed | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |
@@ -144,8 +144,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 138 | U36 | med | low contrast on doc AI label and submenu arrow | fixed (measured 14.01:1 dark on doc-ai-label; the arrow is a glyph, 3:1 applies) | S |
 | 139 | U37 | med | disabled Run reason link is low contrast | new | S |
 | 140 | B5 | med | 14+ separate pointermove listeners, several unthrottled | fixed (9e83452, reconciled 2026-10-30) | M |
-| 141 | B17 | med | link-sketch lookups parse every sketch JSON | new | M |
-| 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | new | M |
+| 141 | B17 | med | link-sketch lookups parse every sketch JSON | fixed | M |
+| 142 | B18 | med | item and map size caches cleared per render, forcing layout reads | fixed | M |
 | 143 | D12 | med | replace-in-all re-downloads every document on each keystroke | docs/roadmap/DOCUMENTS_PLAN.md:1324 | M |
 | 144 | D18 | med | live view rebuilds decorations per change, table copies text | new | L |
 | 145 | D19 | med | docText toString called 35 times, each O(n) | new | M |
@@ -161,7 +161,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 155 | U18 | med | long tasks up to 225 ms on board interactions | new | M |
 | 156 | U19 | med | mind map sibling add long tasks up to 509 ms | new | M |
 | 157 | U20 | med | code file open long task of 305 ms | new | M |
-| 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | new | M |
+| 158 | B6 | med | 319 addEventListener vs 7 remove; re-init double-fires handlers | fixed | M |
 | 159 | B15 | med | four overlapping drag mechanisms plus synthetic MouseEvent bridge | new | L |
 | 160 | D23 | med | hot-spot functions and 255 shared lets in one file | new | L |
 | 161 | D24 | med | document paste upload lives in settings-wiring.js | new | S |
@@ -266,7 +266,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 260 | U48 | low | export defaults to On screen, not whole board | new | S |
 | 261 | U49 | low | board toolbar has 33 tab stops | new | M |
 | 262 | B23 | low | export SVG built from live DOM, blocks main thread | new | M |
-| 263 | B31 | low | timers and frames not cancelled on board switch | new | M |
+| 263 | B31 | low | timers and frames not cancelled on board switch | fixed | M |
 | 264 | B32 | low | whiteboard-map.js rAF and timers never cancelled | new | S |
 | 265 | B38 | low | single-object PUTs may still serve multi-select nudge | new | S |
 | 266 | D45 | low | 871 KB wordlist fetched and dictionary built on main thread | new | M |
