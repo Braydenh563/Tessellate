@@ -86,7 +86,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 80 | S50 | med | no search operators such as tag: and before: | docs/roadmap/WORLD_CLASS_PLAN.md:677 | M |
 | 81 | B12 | med | same keys mean different things by mode | new | M |
 | 82 | B13 | med | shortcuts hidden in menu subtitles, no cheat sheet | fixed (already built; reconciled 2026-10-30) | S |
-| 83 | B20 | med | lock state shown only on hover, no persistent badge | new | S |
+| 83 | B20 | med | lock state shown only on hover, no persistent badge | fixed | S |
 | 84 | D31 | med | Mod-h unreachable on macOS, Ctrl+1-3 collide with browser | fixed in part (Mac Replace chord; Ctrl+1 to 3 headings kept, 2026-10-30) | S |
 | 85 | D32 | med | Mod-g means go to line in code and find-next in prose | new | S |
 | 86 | D33 | med | replace-in-all and find-in-all separate from CM find panel | new | M |

@@ -74,7 +74,7 @@ let wbMapKeysArmed = false;
 let wbMidPanHeld = false;
 
 //: Paste and hover-lock bookkeeping, one name in the shared scope.
-const wbBoardState = { pasteArrived: false, lockHoverKey: null, lockHoverFrame: 0, lockHintSaid: false, wheel: { at: -1e9, pad: false } };
+const wbBoardState = { pasteArrived: false, lockHintSaid: false, wheel: { at: -1e9, pad: false } };
 
 //: A two-finger trackpad scroll pans (both axes); a pinch (ctrlKey, which
 //: browsers synthesise for it) and a mouse wheel zoom. The decision is made
@@ -11601,18 +11601,42 @@ function wbPaintLocks() {
     if (!wanted.has(el)) el.classList.remove("wb-locked");
   });
   for (const el of wanted) if (!el.classList.contains("wb-locked")) el.classList.add("wb-locked");
-  //: A render may have moved, unlocked or removed what the lock was shown
-  //: on: it goes, and the next pointer move puts it back if it still holds.
-  if (wbBoardState.lockHoverKey) wbPaintLockHover(null);
+  wbPaintLockBadges();
+}
+
+//: A locked item carries its lock all the time (audit 1028 B20), not only
+//: under the pointer: one pin per locked, visible item at its top right, in
+//: one layer rebuilt with the render that may have moved or unlocked it.
+function wbPaintLockBadges() {
+  const layer = document.getElementById("wb-html-layer");
+  document.getElementById("wb-lock-marks")?.remove();
+  if (!layer || wbIsMap()) return;
+  const host = document.createElement("div");
+  host.id = "wb-lock-marks";
+  host.className = "wb-comment-marks";
+  const z = String(wbStackOrder().length + 3);
+  for (const [kind, item] of wbLockedItems()) {
+    const box = wbItemHidden(kind, item) ? null : wbItemBBox(kind, item);
+    if (!box) continue;
+    const pin = document.createElement("div");
+    pin.className = "wb-lock-pin";
+    pin.setAttribute("aria-hidden", "true");
+    pin.style.left = `${box.maxX}px`;
+    pin.style.top = `${box.minY}px`;
+    pin.style.zIndex = z;
+    pin.innerHTML = '<span class="wb-lock-mark"><i class="ph ph-lock-simple"></i></span>';
+    host.append(pin);
+  }
+  if (host.firstChild) layer.append(host);
 }
 
 //: --- A locked item answers the pointer (decision 28, INBOX 557a) ----------
 //:
 //: A locked item lets the pointer through (decision 15), so nothing on it
 //: changed under the pointer and a press did nothing visible: the owner, "I
-//: couldn't tell it was locked". A board-level hit test finds the locked item
-//: under the pointer; a faded lock shows at its top right while the pointer
-//: is on it, and the first press on one in a session says how to unlock it.
+//: couldn't tell it was locked". A lock shows at its top right all the time
+//: (`wbPaintLockBadges`), and the first press on one in a session, found by a
+//: board-level hit test, says how to unlock it.
 
 
 //: The front-most locked item whose box holds the board point, or null.
@@ -11632,42 +11656,9 @@ function wbBoardPointOf(e) {
   return wbClientToBoard(e.clientX, e.clientY);
 }
 
-function wbPaintLockHover(hit) {
-  const layer = document.getElementById("wb-html-layer");
-  let pin = document.getElementById("wb-lock-hover");
-  const key = hit ? wbMultiKey(hit.kind, hit.item.id) : null;
-  if (!hit) {
-    pin?.classList.add("hidden");
-    wbBoardState.lockHoverKey = null;
-    return;
-  }
-  if (!pin && layer) {
-    pin = document.createElement("div");
-    pin.id = "wb-lock-hover";
-    pin.className = "wb-lock-pin";
-    pin.setAttribute("aria-hidden", "true");
-    const mark = document.createElement("span");
-    mark.className = "wb-lock-mark";
-    const icon = document.createElement("i");
-    icon.className = "ph ph-lock-simple";
-    mark.append(icon);
-    pin.append(mark);
-    layer.append(pin);
-  }
-  if (!pin) return;
-  pin.classList.remove("hidden");
-  if (wbBoardState.lockHoverKey === key) return;
-  wbBoardState.lockHoverKey = key;
-  pin.style.left = `${hit.box.maxX}px`;
-  pin.style.top = `${hit.box.minY}px`;
-  //: Over every item: the card layer paints by stack rank (`wbStackRanks`).
-  const top = wbStackOrder().length + 1;
-  pin.style.zIndex = String(top + 2);
-}
-
 //: Only where nothing else answers: over the canvas itself, or over the
 //: locked item that the pointer passes through to it.
-function wbLockHoverWanted(e) {
+function wbLockPressWanted(e) {
   if (wbIsMap() || window.currentTool !== "select" || e.buttons) return false;
   const target = e.target;
   if (!target?.closest) return false;
@@ -11675,22 +11666,9 @@ function wbLockHoverWanted(e) {
     && (wbIsBareCanvas(target) || Boolean(target.closest(".wb-locked")));
 }
 
-function wbOnLockHoverMove(e) {
-  if (wbBoardState.lockHoverFrame) return;
-  const { clientX, clientY, target, buttons } = e;
-  wbBoardState.lockHoverFrame = requestAnimationFrame(() => {
-    wbBoardState.lockHoverFrame = 0;
-    if (!wbLockedItems().length) return wbPaintLockHover(null);
-    const ev = { clientX, clientY, target, buttons };
-    if (!wbLockHoverWanted(ev)) return wbPaintLockHover(null);
-    const [x, y] = wbBoardPointOf(ev);
-    wbPaintLockHover(wbLockedItemAt(x, y));
-  });
-}
-
 //: The first press on a locked item in a session says how to unlock it.
 function wbOnLockPress(e) {
-  if (wbBoardState.lockHintSaid || e.button !== 0 || !wbLockHoverWanted({ target: e.target, buttons: 0 })) return;
+  if (wbBoardState.lockHintSaid || e.button !== 0 || !wbLockPressWanted({ target: e.target, buttons: 0 })) return;
   const [x, y] = wbBoardPointOf(e);
   const hit = wbLockedItemAt(x, y);
   if (!hit) return;
@@ -17663,10 +17641,7 @@ async function initWhiteboard() {
     openMenuAtPoint(items, "This board", clientX, clientY);
   };
 
-  //: The hover lock (decision 28): the pointer over a locked item, which it
-  //: passes through, shows a lock; the first press says how to unlock it.
-  containerEl.addEventListener("pointermove", wbOnLockHoverMove, { passive: true });
-  containerEl.addEventListener("pointerleave", () => wbPaintLockHover(null));
+  //: The first press on a locked item, which lets the pointer through, says how to unlock it.
   containerEl.addEventListener("pointerdown", wbOnLockPress, true);
 
   const wbCanvasMenuWanted = (target) =>
