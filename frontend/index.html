@@ -1121,6 +1121,24 @@
     </div>
   </dialog>
 
+  <!-- A live Mermaid diagram on the board (INBOX 1451; whiteboard-interchange.js). -->
+  <dialog id="wb-diagram-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-diagram-title">
+    <div class="dialog-head">
+      <h2 id="wb-diagram-title" class="dialog-head-title">Mermaid diagram</h2>
+      <span class="dialog-head-actions">
+        <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-diagram-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </span>
+    </div>
+    <p class="muted wb-import-about" id="wb-diagram-about">Write any Mermaid diagram. It stays live: double-click it on the board to change it.</p>
+    <textarea id="wb-diagram-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid source" aria-describedby="wb-diagram-about"></textarea>
+    <div id="wb-diagram-preview" class="wb-diagram-preview" aria-live="polite"></div>
+    <div class="row right space-dialog-actions">
+      <button type="button" class="ghost small" id="wb-diagram-shapes" title="Replace it with shapes and connectors you can move one by one (flowchart, state, class and sequence diagrams)">Turn into shapes</button>
+      <button type="button" class="ghost small" data-close-dialog="wb-diagram-dialog">Cancel</button>
+      <button type="button" class="accent small" id="wb-diagram-save">Add to board</button>
+    </div>
+  </dialog>
+
   <dialog id="wb-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="wb-template-title">
     <div class="dialog-head">
@@ -6859,6 +6877,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram" data-wb-surface="board"><i class="ph ph-graph ph-lead" aria-hidden="true"></i><span>Mermaid diagram…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>

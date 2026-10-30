@@ -4448,10 +4448,25 @@ def _will_answer(req: _StreamRequest, prepared: dict, t: _Turn) -> bool:
     return bool(prepared["notes"]) or bool(req.images_raw) or req.use_tools or t.conversational
 
 
+def _offered_open(req: _StreamRequest) -> bool:
+    """"Open the note about <title>", one of the choices the app itself
+    offered (`composer_suggest.reply`), is done by the app with a model up
+    too: the note is named exactly, and a small model sent it to a search for
+    another note's words (INBOX 1455)."""
+    parsed = acts.parse(req.question or "", user_now(deps.get_config()))
+    if not parsed or parsed.get("intent") != "open" or not parsed.get("about"):
+        return False
+    return _uncut(parsed["about"]) in {_uncut(t) for t in _newest_titles(req.session)}
+
+
+def _uncut(title: str) -> str:
+    return title.rstrip("…. ").lower()
+
+
 def _plan_turn(req: _StreamRequest, prepared: dict) -> _Turn:
     t = _Turn()
     t.ollama_running = req.ollama.is_running()
-    if prepared["intent"] == intent.ACT and t.ollama_running and req.use_tools and not req.body.notes_only:
+    if prepared["intent"] == intent.ACT and t.ollama_running and req.use_tools and not req.body.notes_only and not _offered_open(req):
         #: With a model in Agent mode, an act is the agent's: its tools are the
         #: same, and it can ask and plan (decision 38 is for no model).
         prepared["intent"] = intent.NOTES

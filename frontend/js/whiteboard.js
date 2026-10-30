@@ -59,9 +59,9 @@
 // Every drawing app people already know (Figma, Excalidraw, tldraw) solves
 // this the same way, and it is a filter rather than a mode: the zoom
 // behaviour stays attached at all times, and decides per-event whether a
-// gesture is a pan. Held space or the middle mouse button pans from *any*
-// tool; a plain left-drag pans with Pan, or with Select over bare canvas
-// (Shift-drag is the marquee there), so drawing and the lasso are untouched.
+// gesture is a pan. Held space, the middle or the right mouse button pans
+// from *any* tool; a plain left-drag pans only with Pan, so the Select drag
+// on bare canvas stays the marquee and drawing and the lasso are untouched.
 let wbSpaceHeld = false;
 //: **Tab on a map adds a topic only after the person has engaged the map**
 //: (MINDMAP_PLAN, decisions: "Tab adds only when armed"). Set by a pointer
@@ -169,26 +169,16 @@ function wbZoomFilter(event) {
   }
   // Left button: Pan tool, or space held down.
   if (event.button === 0 || event.buttons === 1 || event.buttons === 0) {
-    //: **A left drag on empty canvas pans, on a map and a board alike** (the
-    //: owner, 2026-10-29: INBOX 1445 "I cant left click drag to pan on the
-    //: mind map", then INBOX 1450 "cant left click drag to pan now on
-    //: whiteboard" and "if i right click pan then that doesnt allow drag
-    //: select"). The 2026-10-19 reversal kept the box select on the plain
-    //: drag; Shift-drag draws the box now, and a press on a card or shape
-    //: still moves it (`wbPansOnLeftDrag`, one test for the filter and the
-    //: box select).
-    return window.currentTool === "pan" || wbSpaceHeld || wbPansOnLeftDrag(event);
+    //: **A left drag on empty canvas draws the selection box, on a map and a
+    //: board alike** (the owner, 2026-10-30, INBOX 1452: "left click drag
+    //: select instead of pan on the whiteboard and mindmap is the way to go,
+    //: that way right click hold can be pan and trackpad users two finger
+    //: pan"). This reverses INBOX 1445 and 1450, where the plain drag panned
+    //: and Shift drew the box; the right button, two trackpad fingers, Space
+    //: and the middle button pan.
+    return window.currentTool === "pan" || wbSpaceHeld;
   }
   return false;
-}
-
-//: A left press on bare canvas with Select, no Shift: the drag is a pan,
-//: not a box. Used by the zoom filter and by the box select, which must
-//: agree about who owns the gesture. Only the press is judged
-//: (`mousedown`); the moves of a drag the filter let in carry on.
-function wbPansOnLeftDrag(event) {
-  return window.currentTool === "select" && !event.shiftKey
-    && event.type !== "wheel" && wbIsBareCanvas(event.target);
 }
 
 //: Nothing on the board under this point: not a card, a drawn shape (a link
@@ -6421,7 +6411,7 @@ function wbSelectSimilar() {
 //: picture on the board (INBOX 445).
 function wbSelectableItems() {
   const out = wbLinkCandidates();
-  for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame") out.push(["object", o]);
+  for (const o of wbState.objects || []) if (o.kind === "image" || o.kind === "frame" || o.kind === "diagram") out.push(["object", o]);
   //: A locked item is out of reach until it is unlocked (decision 15): not
   //: in Select all, not in the Tab walk.
   return out.filter(([kind, item]) => !wbIsLocked(kind, item) && !wbHiddenOnBoard(kind, item));
@@ -6453,6 +6443,7 @@ function wbItemSpokenName(kind, item) {
     return title ? `Note card: ${title}` : "Note card";
   }
   if (item.kind === "image") return "Picture";
+  if (item.kind === "diagram") return "Mermaid diagram";
   if (item.kind === "frame") return `Frame: ${wbFrameTitle(item)}`;
   const isTopic = WB_MAP_KINDS.has(item.kind);
   const raw = isTopic ? wbMapLabel(item) : item.data?.content;
@@ -13359,6 +13350,12 @@ function wbBuildExportSvg(scope, { transparent = false } = {}) {
         `<image href="${wbSvgEscape(mediaSrc(obj.data.url))}" width="${obj.width}" height="${obj.height}" ` +
           `preserveAspectRatio="xMidYMid slice"${clip ? ` clip-path="url(#${clip})"` : ""} />`
       );
+    } else if (obj.kind === "diagram") {
+      //: What the board shows, already drawn (`wbDiagramDataUrl`); an edge
+      //: while it has not been drawn yet, never an empty gap.
+      const url = wbDiagramDataUrl(obj);
+      parts.push(url ? `<image href="${wbSvgEscape(url)}" width="${obj.width}" height="${obj.height}" preserveAspectRatio="xMidYMid meet" />`
+        : `<rect width="${obj.width}" height="${obj.height}" fill="none" stroke="#9aa3b5" stroke-dasharray="6 4" />`);
     } else if (WB_MAP_KINDS.has(obj.kind)) {
       // A map node exports as what it looks like: a rounded box with the
       // branch's colour down its leading edge and its label inside. Without
@@ -17278,8 +17275,6 @@ async function initWhiteboard() {
     //: A finger on bare canvas with Select pans (`wbZoomFilter`), so it is
     //: not also the start of an area select.
     if (!place && e.pointerType === "touch") return;
-    //: The same press pans (`wbPansOnLeftDrag`); Shift boxes.
-    if (!place && wbPansOnLeftDrag(e)) return;
     // Primary button only. A right-click opens the context menu and a middle
     // click pans; neither ends with the pointerup this drag is waiting for,
     // so both used to start a rectangle that nothing would ever remove.
@@ -23217,6 +23212,8 @@ function renderWbObjects(canvas) {
       wbBuildFrame(el, d);
     } else if (d.kind === "table") {
       wbBuildTable(el, d);
+    } else if (d.kind === "diagram") {
+      wbBuildDiagram(el, d);
     } else if (WB_MAP_KINDS.has(d.kind)) {
       // A map node, not a text box. Checked before the `else` below because
       // that branch is "everything that isn't an image", which is what drew a
@@ -23445,6 +23442,8 @@ function renderWbObjects(canvas) {
       wbPaintFrame(this, d);
     } else if (d.kind === "table") {
       wbPaintTable(this, d);
+    } else if (d.kind === "diagram") {
+      wbPaintDiagram(this, d);
     } else {
       const sticky = wbIsSticky(d);
       el.classed("wb-sticky", sticky);

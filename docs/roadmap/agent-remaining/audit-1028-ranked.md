@@ -26,9 +26,9 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 20 | B2 | high | whiteboard-map.js is 10,810 lines and 350 functions | docs/roadmap/WORLD_CLASS_PLAN.md:3255 | L |
 | 21 | U7 | high | code text is proportional, not monospace | in progress | S |
 | 22 | B9 | med | undo during an in-flight delete can restore a deleted object | new | M |
-| 23 | D11 | med | replace-in-all undo writes old text with no hash check | new | M |
+| 23 | D11 | med | replace-in-all undo writes old text with no hash check | fixed 2026-10-30: per-item base_hash, a stale item refuses the batch | M |
 | 24 | K1 | med | POST /auth/reset needs no credential and seals private notes | docs/roadmap/INBOX.md:37 | S |
-| 25 | K4 | med | body cap is 320 MB on every route, JSON included | new | M |
+| 25 | K4 | med | body cap is 320 MB on every route, JSON included | fixed 2026-10-30: JSON and untyped bodies capped at 16 MB, uploads and `/files/` keep 320 MB | M |
 | 26 | K5 | med | installer run silently with no signature or pinned hash | docs/roadmap/BACKLOG.md:398 | M |
 | 27 | K6 | med | SearXNG installed from unpinned master tarball | new | M |
 | 28 | K19 | med | restore disposes the engine with jobs in flight | new | M |
@@ -41,8 +41,8 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 35 | B14 | med | map branch export and board export use two dialogs | new | M |
 | 36 | B19 | med | arrows bind only at draw time, no reroute on shape change | new | L |
 | 37 | D9 | med | edit-conflict modal steals focus during autosave | new | M |
-| 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | new | S |
-| 39 | D13 | med | POST documents/contents skips media hook and payload cap | new | S |
+| 38 | D10 | med | take-theirs leaves title box stale, next save resends old title | fixed 2026-10-30 | S |
+| 39 | D13 | med | POST documents/contents skips media hook and payload cap | fixed 2026-10-30: media hook, archived refused, JSON cap 16 MB (K4) | S |
 | 40 | D17 | med | blank title autosaved as Untitled document N | new | S |
 | 41 | D26 | med | comments have no author, time, replies or resolved view | new | L |
 | 42 | D27 | med | no image resize handles or alt-text prompt on paste | new | M |

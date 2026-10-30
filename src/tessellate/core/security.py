@@ -185,6 +185,15 @@ class HostCheckMiddleware:
 #: the routes' own limits stay the ones a person meets.
 SMALL_BODY_BYTES = 1024 * 1024
 LARGE_BODY_BYTES = 320 * 1024 * 1024
+#: **A body a route parses whole gets the JSON cap** (audit 1028 K4: any
+#: signed-in device could POST 300 MB of JSON and the server held all of it).
+#: FastAPI reads a JSON body, or one with no type or a wrong one, into memory
+#: before validation, so only an upload's types keep the large cap, and a
+#: file's text sent to `/files/` as base64 (`bounds.FILE_BASE64_MAX`). The
+#: largest other JSON is a chat turn's history, 40 turns of 50,000 characters.
+JSON_BODY_BYTES = 16 * 1024 * 1024
+_UPLOAD_TYPES = ("multipart/form-data", "application/octet-stream", "image/", "audio/", "video/")
+_FILE_TEXT_PATHS = "/files/"
 #: Open to everyone, so always the small cap, whatever token is sent.
 _ALWAYS_SMALL = ("/auth/", "/logs/client")
 
@@ -273,11 +282,18 @@ def _body_limit(path: str, headers: Headers) -> int:
         return SMALL_BODY_BYTES
     token = headers.get("x-auth-token")
     if token and _session_is_live(token):
-        return LARGE_BODY_BYTES
+        return _signed_in_limit(path, headers)
     # No session shown. Before a password exists there is nothing to sign in
     # with and every route is open on this computer (`require_unlock`), so the
-    # large cap; after, the small one.
-    return SMALL_BODY_BYTES if _notebook_has_password() else LARGE_BODY_BYTES
+    # signed-in caps; after, the small one.
+    return SMALL_BODY_BYTES if _notebook_has_password() else _signed_in_limit(path, headers)
+
+
+def _signed_in_limit(path: str, headers: Headers) -> int:
+    kind = (headers.get("content-type") or "").lower()
+    if kind.startswith(_UPLOAD_TYPES) or path.startswith(_FILE_TEXT_PATHS):
+        return LARGE_BODY_BYTES
+    return JSON_BODY_BYTES
 
 
 #: The unlock gate's two answers, registered by `api/routes_auth.py` when it

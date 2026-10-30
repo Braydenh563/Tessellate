@@ -2464,7 +2464,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     ("Boards and maps", (
         "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-paste", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
-        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-edit-data", "board-colours",
+        "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
@@ -2762,6 +2762,25 @@ MORE_TOPICS.extend([
         "badge": {"label": "Library", "tab": "library"},
     },
     {
+        "id": "board-mermaid",
+        "keywords": (
+            "mermaid on a board", "live diagram", "mermaid diagram on the board", "edit a mermaid diagram",
+            "flowchart on a board", "diagram object", "pie chart on a board", "gantt on a board",
+        ),
+        "body": (
+            "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
+            "source with a preview; Add to board places it at its drawing's shape. "
+            "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
+            "and the rest), drawn as a note draws it and redrawn with the theme. "
+            "Double-click it to change the source; a mistake shows the reason in the "
+            "box instead of a picture. Turn into shapes, in the same window, replaces "
+            "a flowchart, state, class or sequence diagram with shapes and connectors "
+            "you can move one by one (Ctrl+Z puts the diagram back). Insert, Mermaid, "
+            "draw.io or board SVG brings a diagram in as shapes straight away."
+        ),
+        "badge": {"label": "Library", "tab": "library"},
+    },
+    {
         "id": "board-edit-data",
         "keywords": (
             "edit data", "custom properties", "properties on a shape", "data on a shape",
@@ -2809,6 +2828,7 @@ TOPIC_META.update({
     "board-edit-data": {"title": "Edit data on a board item", "path": "A board's Format panel, Data"},
     "board-colours": {"title": "Fill, border and recent colours on a board", "path": "A shape's bar, Fill or Border"},
     "board-tables": {"title": "Tables on a board", "path": "A board's Insert menu, Table"},
+    "board-mermaid": {"title": "Live Mermaid diagrams on a board", "path": "A board's Insert menu, Mermaid diagram..."},
     "board-hand-drawn": {"title": "The hand-drawn look", "path": "A board's View menu, Hand-drawn look"},
     "board-current-layer": {"title": "The current layer", "path": "A board's sidebar, Layers"},
     "board-keyboard-create": {"title": "Making and writing without a mouse", "path": "A board, Keys and controls"},

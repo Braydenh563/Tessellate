@@ -16,8 +16,9 @@ import time
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.datastructures import Headers
 
-from tessellate.api import routes_auth
+from tessellate.api import bounds, routes_auth
 from tessellate.core import security, vault
 from tests._app_js import FRONTEND_DIR, frontend_text
 
@@ -801,6 +802,27 @@ def test_a_signed_in_upload_keeps_its_room(client):
         headers=headers,
     )
     assert upload.status_code in (200, 201), upload.text
+
+
+@pytest.mark.usefixtures("_auth_hardening_clean")
+def test_a_signed_in_json_body_has_the_json_cap(client):
+    """Audit 1028 K4: a signed-in device could POST a 300 MB JSON body to any
+    pydantic route and the server held it in memory. A body FastAPI would
+    parse whole (JSON, or no type at all) is held to the JSON cap; an upload
+    keeps the large one, and so does a file's text sent to `/files/`."""
+    local = _local(client)
+    token = local.post("/auth/setup", json={"password": PASSWORD}).json()["token"].encode()
+    over = security.JSON_BODY_BYTES + 1
+    for kind in (b"application/json", b"text/plain", None):
+        typed = [(b"content-type", kind)] if kind else []
+        status, pulled = _asgi_post(
+            client.app, "/entries", [b"{}"],
+            [(b"x-auth-token", token), *typed, (b"content-length", str(over).encode())],
+        )
+        assert (status, pulled) == (413, 0), kind
+    for path, kind in (("/entries/1/files", b"multipart/form-data; boundary=x"), ("/files/1/text", b"application/json")):
+        assert security._body_limit(path, Headers(raw=[(b"x-auth-token", token), (b"content-type", kind)])) == security.LARGE_BODY_BYTES, path
+    assert security.JSON_BODY_BYTES >= 4 * bounds.TURN_TEXT_MAX * bounds.HISTORY_MAX_TURNS
 
 
 @pytest.mark.usefixtures("_auth_hardening_clean")
