@@ -4373,6 +4373,14 @@ def _follow_up(req: _StreamRequest):
     """The follow-up the turn before gives this one: a spoken act stands in
     for the question itself; a composed turn's "tell me more" is
     `composer.follow_on`'s; None otherwise."""
+    composed = bool(req.history) and ((req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running())
+    more = composer.follow_on(req.question, req.history) if composed else None
+    if more is not None and more.kind == "more":
+        #: A composed "tell me more" is the turn before again at more length,
+        #: not a search for the note it cited: since every answer's links
+        #: name its objects (audit 1030 Z53), "more" after a summary was
+        #: rewritten to "tell me more about the Lecture 5 note" and searched.
+        return more
     cited = _cited_question(req) if req.history else None
     if cited is not None:
         req.question = cited
@@ -4380,9 +4388,7 @@ def _follow_up(req: _StreamRequest):
     if spoken is not None:
         req.question = spoken
         return None
-    if req.history and ((req.body.notes_only and req.body.answer_from == "notes") or not req.ollama.is_running()):
-        return composer.follow_on(req.question, req.history)
-    return None
+    return composer.follow_on(req.question, req.history) if composed else None
 
 
 def _turn_label(content: str) -> str:
@@ -4567,7 +4573,12 @@ def _offered_open(req: _StreamRequest) -> bool:
     parsed = acts.parse(req.question or "", user_now(deps.get_config()))
     if not parsed or parsed.get("intent") != "open" or not parsed.get("about"):
         return False
-    return _uncut(parsed["about"]) in {_uncut(t) for t in _newest_titles(req.session)}
+    asked = _uncut(parsed["about"])
+    #: A cut choice ("I had work today…") is a prefix: one offered under an
+    #: older cut still names the note now called by its whole first sentence
+    #: (audit 1030 Z38). Without the cut mark the title must be whole.
+    cut = (req.question or "").rstrip(" ?.").endswith("…")
+    return any(name == asked or (cut and name.startswith(asked)) for name in map(_uncut, _newest_titles(req.session)))
 
 
 def _uncut(title: str) -> str:

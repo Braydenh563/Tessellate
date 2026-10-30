@@ -4388,6 +4388,11 @@ def _feature_help(question: str, absent: list[str]) -> tuple[str, str] | None:
     words = re.findall(r"[a-z]+", (question or "").lower())
     if not words or len(words) > _FEATURE_WORDS:
         return None
+    #: A follow-on or a length control ("tell me more", "shorter") is about
+    #: the answer before, never a tool: the Follow-up trail's help line says
+    #: "tell me more" in its own words.
+    if _MORE.match(question or "") or length_wish(question or ""):
+        return None
     from tessellate.ai import help_chat
 
     best = help_line(question, help_chat.topics_for(question or ""))
