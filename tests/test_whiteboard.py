@@ -512,6 +512,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "fold": None,
         # Added with the reference node caption (INBOX 904 B38); None until set.
         "caption": None,
+        # Added with a picture's or text box's own keep-proportions switch (INBOX 1313, plan row 5).
+        "keep_ratio": None,
     }
 
     moved = board_client.put(
@@ -1156,3 +1158,16 @@ def test_a_comment_keeps_its_edit_its_resolve_and_its_reply(board_client, sessio
     assert next(o for o in state["objects"] if o["id"] == made["id"])["data"]["comments"] == thread
     bad = [{"id": "c1", "text": "x", "at": "", "reply_to": "y" * 41}]
     assert board_client.put(url, json={"entry_id": note.id, "comments": bad}).status_code == 422
+
+
+def test_an_objects_keep_proportions_switch_is_kept(board_client):
+    """It was dropped silently by the schema for every object kind (INBOX 1313):
+    the switch flipped, the save succeeded, and it came back missing."""
+    made = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "image", "data": {"url": "/media/abc123.png", "keep_ratio": True}},
+    )
+    assert made.status_code == 201, made.text
+    assert made.json()["data"]["keep_ratio"] is True
+    state = board_client.get("/whiteboard/").json()
+    assert state["objects"][0]["data"]["keep_ratio"] is True

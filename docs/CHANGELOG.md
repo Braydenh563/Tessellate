@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board (INBOX 1313, row 5): a picture's or text box's own keep-proportions switch is saved; the schema dropped it silently, so it came back off after a reload (the shape half already worked).
 - CI fixes (PR 211): the greeting and the web page reads run on the registered background helper (`background.future`), not a bare thread or pool; a composed answer no longer imports the embedding stack for the user's clock (0.55 s first call, was 1.5 s); help and personal no longer close an import cycle through the composer; three board error toasts say their fault; the Mermaid field is named in the board round trip; CodeQL 1869, 1872 to 1874: four regexes made linear.
 - Composer (INBOX 1334, the open half): a one- to three-word message that names an app feature ("timer", "calculator") when a note does mention the word answers with the note, then one closing line offers the tool from the same Guide line the no-note answer uses; a phrase that is not the feature ("oven timer") gets no offer.
 - Composer (audit 1030 Z52): the last chat topic is carried to the next answer only when that question has no subject of its own ("what does she like"), and a name keeps the capital it was typed with ("We were on Sara").
