@@ -26,7 +26,7 @@ _SPENT = re.compile(
 #: "How much grocery spending have I recorded", "what's my recorded travel
 #: spending": the subject sits before the noun (stress run 2026-10-30).
 _KIND_SPENT = re.compile(
-    r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<subject>[\w' -]+?) (?:spending|expenses?|costs?)"
+    r"^(?:how much|what(?:'s|s| is)?) (?:my |our )?(?:recorded |paid )?(?P<subject>[\w'-]+(?: [\w'-]+)*?) (?:spending|expenses?|costs?)"
     r"(?: (?:have|did|do) (?:i|we) (?:recorded|logged|noted|tracked|got|have))?(?P<rest>.*)$",
     re.I,
 )
@@ -38,13 +38,13 @@ _TOTAL = re.compile(
 )
 #: "What do my October payments add up to", "how much was the hotel altogether".
 _ADD_UP = re.compile(
-    r"^what do (?:my|the|our) (?P<subject>[\w' -]*?)\s*(?:payments|expenses|purchases|spending|costs) (?:add up to|come to|total)\b(?P<rest>.*)$"
-    r"|^how much (?:was|were|did) (?:the|my|our) (?P<thing>[\w' -]+?) (?:cost )?(?P<all>altogether|in total|all up|overall)\??$",
+    r"^what do (?:my|the|our) (?:(?P<subject>[\w'-]+(?: [\w'-]+)*?) )?(?:payments|expenses|purchases|spending|costs) (?:add up to|come to|total)\b(?P<rest>.*)$"
+    r"|^how much (?:was|were|did) (?:the|my|our) (?P<thing>[\w'-]+(?: [\w'-]+)*?) (?:cost )?(?P<all>altogether|in total|all up|overall)\??$",
     re.I,
 )
 #: "How much is left on my hotel bill", "how much travel money is still unpaid".
 _DUE_ASK = re.compile(
-    r"^how much (?P<subject>[\w' -]*?)\s*(?:money )?(?:is|do i have) (?:still )?(?:explicitly )?(?:left (?:to pay )?(?:on|for)|owing|unpaid|outstanding|due)\b(?P<rest>.*)$",
+    r"^how much (?:(?P<subject>[\w'-]+(?: [\w'-]+)*?) )?(?:money )?(?:is|do i have) (?:still )?(?:explicitly )?(?:left (?:to pay )?(?:on|for)|owing|unpaid|outstanding|due)\b(?P<rest>.*)$",
     re.I,
 )
 #: A question about a word, not an amount: "what did I mean by recorded spending".
@@ -353,7 +353,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if (rest := _total_asked(q)) is not None:
         return _spent(out, rest, views, today)
     if m := _DUE_ASK.match(q):
-        return _due(out, f"{m.group('subject')} {m.group('rest')}", views, today)
+        return _due(out, f"{m.group('subject') or ''} {m.group('rest')}", views, today)
     if m := _MOST.match(q):
         return _most(out, m.group(1), m.group(2), views)
     return False
