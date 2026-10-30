@@ -3665,7 +3665,7 @@ Static counts, from the code (`python scratchpad/ui-sweeps/measure-*.py`):
   separate list of 125 rows. With all on, in a notebook of plain notes,
   stats, streak, heatmap and pace hold no button, link or row; the other 25
   hold at least one. Not run with reminders or bookmarks present.
-- **Settings** (`measure-settings-help.py`): `PreferencesBody` has 72 fields
+- **Settings** (`measure-static.py settings_help`): `PreferencesBody` has 72 fields
   (86 distinct keys are read or written through `get_preference` and
   `set_preference` in `src/tessellate/`; the plan's 179 is not a count of
   either). `index.html` holds 105 `data-help-for` popovers, 69 of them
@@ -3676,14 +3676,14 @@ Static counts, from the code (`python scratchpad/ui-sweeps/measure-*.py`):
   `search_relative_z_margin`, `communication_style`, `display_name`,
   `web_search_enabled`, `searxng_autostart`, `session_idle_ttl_minutes`,
   `searxng_url`), and 31 have no Settings control the script could find.
-- **Keyboard** (`measure-keys.py`): `DEFAULT_SHORTCUTS` has 31 entries (the
+- **Keyboard** (`measure-static.py keys`): `DEFAULT_SHORTCUTS` has 31 entries (the
   plan said 36). 574 `.key ===`-style checks in 62 files: 513 test a
   convention key the table leaves unrebindable, 14 a letter that ends a table
   chord, 47 any other literal (`whiteboard.js` 8, `settings-panes.js` 5,
   `documents.js`, `whiteboard-library.js`, `settings-wiring.js`, `library.js`
   and `timeline.js` 4 each, the rest 3 or fewer). `toLowerCase()` and
   `switch (e.key)` forms are not counted.
-- **Undo** (`measure-undo.py`): 50 functions with "undo" in the name in 21
+- **Undo** (`measure-static.py undo`): 50 functions with "undo" in the name in 21
   files, 13 of which call `pushUndo` (called from 27 files). The rest: the
   `wb*Undo*` set in `whiteboard.js`, `docUndo*` in `documents.js`, `undoDraft`
   in `chat-agent.js`, `inlineAiUndo`, `undoSkillRun`, `undoImport`, the
@@ -4047,7 +4047,7 @@ is done only when the rules below hold for the surfaces it touched (decision
 
 | # | Rule | Measure (the sweep or lint, and its bar) |
 | --- | --- | --- |
-| 1 | **Undo and redo everywhere.** Every change on every surface is one undo step; Ctrl+Z and Ctrl+Shift+Z act on the surface that has focus; a destructive act shows the undo bar. | `scratchpad/ui-sweeps/undo.js`: the mutating actions per surface (from the act registry, CHAT_PLAN decision 51) against those that undo; bar 100%. `measure-undo.py` counts `pushUndo` today. today: 25 data-changing controls pressed in light, 5 undone by Ctrl+Z (3 of 16 in dark); in the code 80 of 274 server-writing functions name an undo path; settings 0 of 13 (28.4). |
+| 1 | **Undo and redo everywhere.** Every change on every surface is one undo step; Ctrl+Z and Ctrl+Shift+Z act on the surface that has focus; a destructive act shows the undo bar. | `scratchpad/ui-sweeps/undo.js`: the mutating actions per surface (from the act registry, CHAT_PLAN decision 51) against those that undo; bar 100%. `measure-static.py undo` counts `pushUndo` today. today: 25 data-changing controls pressed in light, 5 undone by Ctrl+Z (3 of 16 in dark); in the code 80 of 274 server-writing functions name an undo path; settings 0 of 13 (28.4). |
 | 2 | **Three clicks to anything.** Every surface, setting and object is three clicks from the dashboard and one from the palette or Find anything. | `reach.js`: the click graph from the nav, menus and palette registry; bar: no node deeper than 3, none missing from the palette. today: 55 destinations found from the dashboard (1, 14, 36, 3 and 1 at depths 0 to 4, crawl complete to depth 4), 1 deeper than 3, 16 with no palette command (of 80 commands); dark: 55 destinations, 1 deeper than 3, 14 without a command (28.4). |
 | 3 | **Nothing is lost.** A change is saved within a second; a draft survives a crash and a reload; a deletion goes to the bin for 30 days; a backup runs daily by default and restores (section 25e, Brief 51). | `test_never_lose.py` and the backup round trip; bar: every path in the table of 25e green. |
 | 4 | **An error explains and offers.** Every error-level toast says what happened, why, and one action (retry, an alternative, open the setting); network-level failures retry themselves first. | `test_error_toasts.py` extended: an error toast without an action fails; the retry count in `api()` measured. |
