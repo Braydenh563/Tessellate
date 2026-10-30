@@ -566,7 +566,6 @@ EXEMPT: dict[str, str] = {
     "chat-attach.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:saveFollowups": "telemetry: stores suggested follow-up chips",
-    "chat-attach.js:chatSendTurn": "send: a chat message, kept by the chat's own turn history (was sendChatMessage, INBOX 1321)",
     "chat-attach.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "chat.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
