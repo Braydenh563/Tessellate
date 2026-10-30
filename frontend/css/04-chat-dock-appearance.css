@@ -3351,6 +3351,35 @@ span > .chip {
 .att-chip-bar::-moz-progress-bar {
   background: var(--accent);
 }
+/* A notebook card (`notebookCard`): tile and words are one left-aligned button
+   (a centred one overflowed both ways, the black bar's cut), the x its sibling. */
+.att-chip-open {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* Covers the card's left side at the card's height (a button minimum would grow it). */
+  min-height: 0;
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  padding: var(--space-2) 0 var(--space-2) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.att-chip-facts.att-chip-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+.att-chip:has(> .att-chip-open:is(:hover, :focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
 .att-chip-x {
   flex: 0 0 auto;
   display: inline-flex;

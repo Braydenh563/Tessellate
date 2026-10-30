@@ -1487,6 +1487,7 @@ function openCitationPeek(link, source, { pinned }) {
   panel.setAttribute("aria-label", `Source ${source.number}`);
   const go = () => {
     closeCitationPeek();
+    if (source.open) return source.open();
     openNoteAtPassage(source.noteId, citationPeekText(source.entry?.content, source.start, source.end).passage);
   };
   //: The whole preview is the way in (INBOX 80: "clicking the preview panel
@@ -1502,7 +1503,7 @@ function openCitationPeek(link, source, { pinned }) {
   number.textContent = String(source.number);
   const title = document.createElement("span");
   title.className = "citation-peek-title";
-  title.textContent = noteLabel({ content }, 80);
+  title.textContent = source.title || noteLabel({ content }, 80);
   head.append(number, title);
   const body = document.createElement("span");
   body.className = "citation-peek-body";
@@ -1529,7 +1530,7 @@ function openCitationPeek(link, source, { pinned }) {
   meta.className = "library-file-meta citation-peek-meta";
   const facts = [entry?.category, entry?.created_at ? relativeTime(entry.created_at) : ""].filter(Boolean);
   meta.textContent = facts.join(" · ");
-  foot.append(meta, smallButton("ph:arrow-square-out Open note", "Open this note in Notes", go));
+  foot.append(meta, smallButton(`ph:arrow-square-out Open ${source.what || "note"}`, source.what ? `Open this ${source.what}` : "Open this note in Notes", go));
   panel.append(preview, foot);
   ensureModule("askCompose").then(() => {
     const verdictRow = citationVerdictRow(source, content);

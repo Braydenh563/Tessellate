@@ -4921,23 +4921,6 @@ body .chip.item-label,
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.msg.user :is(.msg-attachment-image, .msg-attachment-note, .msg-attachment-doc) {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-image figcaption,
-.msg.user .msg-attachment-missing p {
-  color: var(--muted);
-}
-.msg.user .msg-attachment-actions button {
-  border-color: var(--border);
-  background: var(--card);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-actions button:is(:hover, :focus-visible) {
-  background: var(--surface-2);
-}
 /* --- Two floating buttons that sit over content: opaque, readable hover --- */
 /* The owner: "the back to top hover state is too transparent" and "when I
    hover over the jump to latest button in the chat, it flickers for a

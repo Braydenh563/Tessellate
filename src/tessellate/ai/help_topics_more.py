@@ -1330,6 +1330,25 @@ MORE_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            "id": "chat-attach-cards",
+            "keywords": (
+                "attached note", "attached a note", "attach a note to chat", "note card in chat",
+                "notebook card", "attachment card in chat", "preview an attachment", "chat attachment",
+            ),
+            "body": (
+                "What you attach to a chat message from the notebook (a note, a "
+                "document, a mind map or a library file) is one card: a glyph for "
+                "what it is, its name in words, and one line under it (a note's "
+                "age, or its next words once sent). In the box it has an x to take "
+                "it off. Once sent, the cards sit above your message, on its side, "
+                "and a reopened chat draws the same. Press a card, or Tab to it and "
+                "press Enter, for a preview with an Open button (Open note, Open "
+                "document, Open mind map, Open file); Escape closes the preview and "
+                "returns to the card."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "filing",
             "keywords": (
                 "percentage", "percent", "how sure", "confidence", "filed", "filed without ai",
@@ -2412,6 +2431,7 @@ TOPIC_META: dict[str, dict] = {
     "quick-add": {"title": "Dates and tags read as you type", "path": "Reminders, Quick note, New meeting, Timeline search, the command palette"},
     "note-outbox": {"title": "Saving while the server is away", "path": "Notes tab, above Capture"},
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
+    "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2458,7 +2478,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

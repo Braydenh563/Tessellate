@@ -6073,7 +6073,9 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
         "formatFileSize(",
     ):
         assert needle in builder, needle
-    for fn in ("renderImageAttachments", "renderFileAttachments", "renderDocumentAttachments"):
+    # A notebook document is `notebookCard`, which is this chip (INBOX 1460:
+    # `test_a_notebook_item_on_a_message_is_the_one_file_card`).
+    for fn in ("renderImageAttachments", "renderFileAttachments"):
         body = attach[attach.index(f"function {fn}(") :][:1800]
         assert "attachmentChip(" in body, fn
     assert "attachmentChip(" in frontend_text("palette.js")
@@ -6090,6 +6092,20 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     commit = palette[palette.index("async function agentCommitFiles(") :][:1800]
     assert 'method: "DELETE"' in commit
     assert "agentStageFiles(" in frontend_text("settings-wiring.js")
+
+
+def test_a_notebook_item_on_a_message_is_the_one_file_card() -> None:
+    """DESIGN.md, "A note, document, mind map or library file on a chat
+    message" (INBOX 1460): staged and sent cards are built by `notebookCard`
+    from `attachmentChip`; no surface hand-builds a second note chip."""
+    agent = frontend_text("chat-agent.js")
+    attach = frontend_text("chat-attach.js")
+    assert agent.count("function notebookCard(") == 1
+    assert "attachmentChip(" in agent[agent.index("function notebookCard(") :][:1600]
+    for fn in ("renderAttachments", "renderBoardAttachments", "renderDocumentAttachments"):
+        assert "notebookCard(" in attach[attach.index(f"function {fn}(") :][:1200], fn
+    assert 'setLabel(label, `ph:paperclip ${noteLabel(entry)}`)' not in attach
+    assert "msg-attachment-note" not in agent
 
 
 # --- A growing field is capped, and its foot stays in view (INBOX 1357) ---------
