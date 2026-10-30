@@ -180,3 +180,14 @@ def test_a_reminder_is_said_back_with_the_note_it_comes_from(client, session, mo
 )
 def test_reminder_when_says_the_time_against_today(due, said):
     assert commands.reminder_when(due, NOW) == said
+
+
+@pytest.mark.parametrize(
+    ("due", "said"),
+    [(datetime(2026, 10, 10, 14, 0), "in 2 hours, at 2pm"), (datetime(2026, 10, 10, 12, 45), "in 45 minutes, at 12:45pm"),
+     (datetime(2026, 10, 10, 13, 0), "in an hour, at 1pm"), (datetime(2026, 10, 10, 14, 20), "in about 2 hours, at 2:20pm")],
+)
+def test_a_reminder_within_three_hours_says_how_soon(due, said):
+    """Audit 1029 C47: "remind me in 2 hours" was said back as "today at
+    2:32am", which reads as a mistake; within three hours it says how soon."""
+    assert commands.reminder_when(due, NOW) == said

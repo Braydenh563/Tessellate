@@ -2366,14 +2366,15 @@ function aiStatusState() {
   }
   if (!searchReady && modelStatus.embedding_error) {
     // "Broken" and "still loading" looked identical before: the old pill said
-    // "warming up…" forever when the model had actually failed.
+    // "warming up…" forever when the model had actually failed. Never
+    // allowed to download (yet) is a choice, not a fault (audit 1030 Y2).
+    const off = modelStatus.semantic_off;
     return {
-      level: "error",
-      title: "Search AI didn't load",
+      level: off ? "off" : "error",
+      title: off ? "Search by meaning off" : "Search AI didn't load",
       detail:
         `${modelStatus.embedding_error}\n\nSearching by word still works, and ` +
-        "notes, tags, reminders and the graph are unaffected. Settings → Logs " +
-        "has the details.",
+        "notes, tags, reminders and the graph are unaffected." + (off ? "" : " Settings → Logs has the details."),
     };
   }
   if (chatReady && searchReady) {
@@ -2523,7 +2524,7 @@ function embeddingToastDue() {
 
 function nudgeEmbeddingProblem() {
   const error = modelStatus?.embedding_error;
-  if (!error || error === embeddingNudgeSaid) return;
+  if (!error || modelStatus.semantic_off || error === embeddingNudgeSaid) return;
   embeddingNudgeSaid = error;
   const installing = /being installed/.test(error);
   const title = installing ? "Search by meaning is being installed" : "Search by meaning is not working";

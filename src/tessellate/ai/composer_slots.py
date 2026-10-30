@@ -116,7 +116,7 @@ def _first_did(views: list, verb, obj):  # noqa: ANN001
                 best = best or (view, s)
                 if not verb or _holds(s, verb):
                     return view, s
-            elif verb and _holds(s, verb + obj):
+            elif not verb or _holds(s, verb + obj):
                 best = best or (view, s)
     return best
 
@@ -131,6 +131,20 @@ def _say_did(out, view, s, verb_word: str, today: date) -> None:  # noqa: ANN001
     composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
 
 
+#: "Did I like the ramen place": the note rarely says "like"; it says "8/10,
+#: the broth was great". A taste verb is answered by what the note says of
+#: the thing, verdict left to the person (2026-10-30 sweep).
+_TASTE = frozenset({"like", "enjoy", "love", "hate", "rate", "mind"})
+
+
+def _say_taste(out, view, s, today: date) -> None:  # noqa: ANN001
+    day = view.written
+    when = f" of {composer_lists._day(day, today)}" if day else ""  # noqa: SLF001
+    text = re.sub(r"^\s*[-*]\s*(?:\[[ xX]\]\s*)?", "", s.text).strip()
+    out.lines.append(f"Your note{when} says: {text}")
+    composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+
+
 def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     words = rest.split()
     if len(words) < 2:
@@ -139,6 +153,9 @@ def _did(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     obj = _stems(" ".join(words[1:]))
     if not obj:
         return False
+    if words[0] in _TASTE and (best := _first_did(views, None, obj)):
+        _say_taste(out, *best, today)
+        return True
     best = _first_did(views, verb, obj)
     if best is None:
         out.lines.append(f"I found nothing in your notes that says you {rest}.")
@@ -182,15 +199,19 @@ def _since(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
+#: "compare the two X notes", "what changed between the two X notes",
+#: "the difference between my two X notes" (2026-10-30 sweep).
+_PAIR_LEAD = re.compile(
+    r"^(?:compare|what(?:'s| is| are)? (?:changed|different|the differences?) between|(?:the )?differences? between) (?:the |my )?two "
+)
+
+
 def _pair_subject(q: str) -> str | None:
     """What the two notes are about in "compare the two X notes", else None."""
-    low = " ".join(q.lower().split())
-    for lead in ("compare the two ", "compare my two ", "compare two "):
-        if low.startswith(lead):
-            low = low[len(lead):]
-            break
-    else:
+    lead = _PAIR_LEAD.match(" ".join(q.lower().split()))
+    if not lead:
         return None
+    low = lead.string[lead.end():]
     for tail in (" notes", " note", " ones"):
         if low.endswith(tail):
             return low[: -len(tail)]
@@ -303,9 +324,12 @@ def _flat(words: list[str], drop=()) -> list[str]:  # noqa: ANN001
 
 
 def _ask_temperature(t: list[str]) -> Ask | None:
-    """"what temperature do I bake at": a temperature asked of something I do."""
+    """"what temperature do I bake at", "how hot do I bake the bread": a
+    temperature asked of something I do."""
     if t[:2] == ["at", "what"]:
         t = t[1:]
+    if t[:2] == ["how", "hot"]:
+        t = ["what", "temperature", *t[2:]]
     if len(t) < 5 or t[0] != "what" or t[1] not in ("temperature", "temp") or t[2] not in _AUX or t[3] not in _SELF:
         return None
     return Ask(_flat(t[4:], ("at",)))
@@ -473,6 +497,11 @@ def _often(out, rest: list[str], views: list, today: date) -> bool:  # noqa: ANN
     subject = " ".join(w for w in rest if w not in _ABOUT and w not in _FILLER)
     filed = _filed_under(views, stems)
     if not filed:
+        if rest[0] not in _ABOUT:
+            #: "how often do I water the garden" with no log filed under it:
+            #: a sentence says how often ("Water every second day"), the
+            #: ordinary answer's to find (2026-10-30 sweep).
+            return False
         return _only_mentioned(out, views, stems, subject)
     out.lines.append(_often_line(filed, subject, today) + ":")
     for v in filed[:6]:
@@ -489,7 +518,7 @@ def _only_mentioned(out, views: list, stems: list[str], subject: str) -> bool:  
     said = [v for v in views if all(composer._holds(s, set(v.words)) for s in stems)]  # noqa: SLF001
     if not said:
         return False
-    out.lines.append(f"No note is titled or tagged {subject}; {composer_lists._plural(len(said), 'note')} only mention it in passing.")  # noqa: SLF001
+    out.lines.append(f"No note is titled or tagged {subject}; {composer_lists._plural(len(said), 'note')} only {'mentions' if len(said) == 1 else 'mention'} it in passing.")  # noqa: SLF001
     return True
 
 
@@ -550,7 +579,7 @@ def answer(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """Say the slot's answer, or that no note holds it; False when `asked` is
     not a slot question this module reads."""
     q = composer_lists._q(asked)  # noqa: SLF001
-    if q.lower().startswith("compare ") and _pair(out, q, views, today):
+    if _PAIR_LEAD.match(" ".join(q.lower().split())) and _pair(out, q, views, today):
         return True
     tokens = q.lower().replace("'s ", " is ").split()
     shaped = _by_words(out, tokens, views, today)

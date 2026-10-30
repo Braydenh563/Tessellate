@@ -911,6 +911,8 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("restaurant", "cafe", "diner", "bistro", "eatery"),
     ("pub", "tavern"),
     ("shop", "store"),
+    #: "What do I need from the shops" is the grocery list (2026-10-30 sweep).
+    ("shops", "groceries", "grocery", "supermarket"),
     ("museum", "gallery"),
     ("cinema", "theater", "theatre"),
     ("address", "location", "street"),
@@ -934,13 +936,16 @@ _MORE = (
     "nicer|quicker|lighter|heavier|(?:more|less) [a-z]+")
 )
 
+#: "which note", "which one", "which of the two": the same ask as "which".
+_WHICH = r"which(?: (?:one|note|entry|of (?:the|these|those|my) (?:two|notes)|of them))?"
+
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(rf"^which (?:is|are|was|were) (?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
@@ -954,7 +959,7 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
-    rf"^which (?:is|are|was|were) (?:{_MORE})\b.+? or |\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
+    rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})\b.+? or |\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
     r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
     r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$"
 )
@@ -1580,3 +1585,13 @@ INSIGHT_SLOTS: dict[str, str] = {
 #: `composer.SOCIAL`): the unnamed lines added for these two kinds are retired.
 for _retired in ("who", "about_app"):
     SOCIAL_NATURAL_EXTRA.pop(_retired, None)
+
+
+#: Words a note says by its shape rather than by name: "does Jake owe me
+#: money" is answered by "$40", "what did I rate the ramen" by "8/10". A
+#: quoted sentence of that shape (`recognise.says_shape`) means the word is
+#: not missing (2026-10-30 sweep).
+SHAPE_WORDS: dict[str, str] = {
+    **dict.fromkeys(("money", "cost", "costs", "price", "paid", "pay", "spend", "spent", "amount", "cash"), "money"),
+    **dict.fromkeys(("rate", "rated", "rating", "score", "scored", "stars", "mark"), "score"),
+}

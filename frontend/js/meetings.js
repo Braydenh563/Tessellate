@@ -614,7 +614,7 @@ let meetingStartedAt = 0;
 //: never refuses: with no Whisper add-on the audio is kept and the sheet says
 //: how long it is; transcription is offered only when `/voice/status` says
 //: the add-on is there. One object, not more top-level lets.
-const meetingTake = { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0, bytes: 0 };
+const meetingTake = { id: null, queue: [], sending: null, failed: null, tries: 0, peaks: [], markers: [], ms: 0, bytes: 0, lostMs: 0 };
 
 //: How long the audio is, in ms: the clock stops while paused.
 function meetingElapsedMs() {
@@ -635,8 +635,11 @@ function meetingClockText(ms) {
 function meetingStatusLine() {
   const b = meetingTake.bytes;
   const saved = b ? `${b < 1048576 ? Math.max(1, Math.round(b / 1024)) + " KB" : (b / 1048576).toFixed(1) + " MB"} saved so far.` : "Nothing saved yet.";
+  if (meetingTake.failed) return `Not saving: ${meetingFailText()}. Retrying. ${saved}`;
   return meetingRecorder?.state === "paused" ? `Paused. ${saved} Resume to keep recording, or stop to transcribe.` : `Recording. ${saved}`;
 }
+
+const meetingFailText = () => meetingTake.failed?.message || "the notebook did not answer";
 
 function meetingElapsedText() {
   return meetingClockText(Date.now() - meetingStartedAt);
@@ -648,7 +651,7 @@ function meetingContainerName(mime) {
 }
 
 async function meetingTakeBegin(recorder) {
-  Object.assign(meetingTake, { id: null, chain: Promise.resolve(), failed: null, peaks: [], markers: [], ms: 0, bytes: 0 });
+  Object.assign(meetingTake, { id: null, queue: [], sending: null, failed: null, tries: 0, peaks: [], markers: [], ms: 0, bytes: 0, lostMs: 0 });
   const made = await apiJson("/recordings", {
     method: "POST",
     body: JSON.stringify({
@@ -663,23 +666,39 @@ async function meetingTakeBegin(recorder) {
 //: A slice every 2 s: a crash loses at most that, not ten seconds (audit 1029 X3).
 const MEETING_CHUNK_MS = 2000;
 
-//: One slice of audio onto the object, in order: each waits for the last.
+const MEETING_RETRY_MAX_MS = 15000;
+const MEETING_FINISH_TRIES = 3;
+
+//: One slice of audio onto the object, queued in order.
 function meetingTakeAppend(blob) {
-  const id = meetingTake.id;
-  if (!id || !blob?.size) return;
-  const form = new FormData();
-  form.append("file", blob, "chunk");
-  form.append("duration_ms", String(Math.round(meetingElapsedMs())));
-  meetingTake.chain = meetingTake.chain
-    .then(() => api.upload(`/recordings/${id}/chunk`, form))
-    .then((r) => r.json())
-    .then((saved) => {
-      meetingTake.bytes = saved.size_bytes || 0;
-      if (meetingRecorder) meetingSay(meetingStatusLine());
-    })
-    .catch((error) => {
-      meetingTake.failed = error;
-    });
+  if (!meetingTake.id || !blob?.size) return;
+  meetingTake.queue.push({ blob, ms: Math.round(meetingElapsedMs()) });
+  meetingTakeFlush();
+}
+
+//: Sends the queued slices in order; a failed one stays at the head and is
+//: retried, said at once (audit 1030 Y1). `at` stops a landed retry doubling.
+function meetingTakeFlush(limit = Infinity) {
+  return (meetingTake.sending ||= (async () => {
+    const id = meetingTake.id;
+    for (let tries = 0; meetingTake.queue.length && tries < limit; ) {
+      const { blob, ms } = meetingTake.queue[0];
+      const form = new FormData();
+      form.append("file", blob, "chunk");
+      form.append("duration_ms", String(ms));
+      form.append("at", String(meetingTake.bytes));
+      try {
+        const saved = await (await api.upload(`/recordings/${id}/chunk`, form)).json();
+        meetingTake.queue.shift();
+        Object.assign(meetingTake, { bytes: saved.size_bytes || 0, failed: null, tries: 0 });
+      } catch (error) {
+        tries += 1;
+        Object.assign(meetingTake, { failed: error, tries: meetingTake.tries + 1 });
+        if (tries < limit) await new Promise((done) => setTimeout(done, Math.min(MEETING_RETRY_MAX_MS, 2000 * meetingTake.tries)));
+      }
+      if (meetingRecorder) meetingSay(meetingStatusLine(), Boolean(meetingTake.failed));
+    }
+  })().finally(() => (meetingTake.sending = null)));
 }
 
 //: The waveform kept with the object: the recorder's levels, the loudest of
@@ -695,9 +714,15 @@ function meetingPeaksSummary(levels, size = 400) {
   return out;
 }
 
+//: Stop: a few more tries, then the take is kept as far as it got.
 async function meetingTakeFinish() {
-  await meetingTake.chain;
-  if (meetingTake.failed) throw meetingTake.failed;
+  while (meetingTake.sending) await meetingTake.sending;
+  if (meetingTake.queue.length) await meetingTakeFlush(MEETING_FINISH_TRIES);
+  if (meetingTake.queue.length) {
+    meetingTake.lostMs = Math.max(0, meetingTake.ms - Math.max(0, meetingTake.queue[0].ms - MEETING_CHUNK_MS));
+    meetingTake.queue = [];
+    if (!meetingTake.bytes) throw meetingTake.failed || new Error("Couldn't save the recording.");
+  }
   return apiJson(`/recordings/${meetingTake.id}/finish`, {
     method: "POST",
     body: JSON.stringify({ duration_ms: meetingTake.ms, peaks: meetingPeaksSummary(meetingTake.peaks), markers: meetingTake.markers }),
@@ -1141,6 +1166,7 @@ async function meetingRecordingStopped(recorder, button) {
     meetingSay(error.message || "Couldn't save the recording.", true);
     return;
   }
+  if (meetingTake.lostMs) toast(`The last ${meetingClockText(meetingTake.lostMs)} could not be saved (${meetingFailText()}). The rest is kept.`, true);
   saved = await meetingEnhanceTake(saved);
   const length = meetingClockText(saved.duration_ms);
   const away = $("meeting-overlay").classList.contains("hidden");

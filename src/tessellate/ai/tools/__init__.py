@@ -29,7 +29,7 @@ from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, Reminder, like_escape
 from tessellate.core.logbuffer import safe_value
-from tessellate.entry import manager, paths
+from tessellate.entry import link_wording, manager, paths
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import search_manager
 
@@ -66,7 +66,13 @@ from ._common import (  # noqa: F401
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
-# inline in the chat ("Created note #12 in Shopping").
+# inline in the chat ("Created “Milk and eggs” in Shopping").
+
+
+def _named(entry: Entry) -> str:
+    """A note as a tool label says it: its title in quotes, never its id
+    (audit 1029 C47: "Done: added to Favourites: note #29")."""
+    return f"“{link_wording.title(entry.content or '', limit=48) or 'Untitled note'}”"
 
 
 def _search_notes(session: Session, args: dict) -> dict:
@@ -126,7 +132,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     result["links"] = [
         other.id for _link, other in manager.links_for_entry(session, entry)
     ]
-    result["label"] = f"ph:file-text Read note #{entry.id} in full"
+    result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
 
 
@@ -1420,7 +1426,7 @@ def _create_note(session: Session, args: dict) -> dict:
         )
     deps.store_quietly(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:pencil-simple Created note #{entry.id} in {result['category']}"
+    result["label"] = f"ph:pencil-simple Created {_named(entry)} in {result['category']}"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -1466,7 +1472,7 @@ def _edit_note(session: Session, args: dict) -> dict:
         parts.append("text rewritten")
     if "category" not in changed:
         parts.append(f"still in {after_category}")
-    result["label"] = f"ph:note-pencil Updated note #{entry.id}: {'; '.join(parts)}"
+    result["label"] = f"ph:note-pencil Updated {_named(entry)}: {'; '.join(parts)}"
     result["undo"] = undo
     return result
 
@@ -1569,7 +1575,7 @@ def _pin_note(session: Session, args: dict) -> dict:
         session.commit()
     result = _note_summary(session, entry)
     verb = "Added to Favourites" if pinned else "Removed from Favourites"
-    result["label"] = f"ph:star {verb}: note #{entry.id}"
+    result["label"] = f"ph:star {verb}: {_named(entry)}"
     result["undo"] = {
         "tool": "pin_note",
         "arguments": {"note_id": entry.id, "pinned": not pinned},
@@ -1664,7 +1670,7 @@ def _link_notes(session: Session, args: dict) -> dict:
     return {
         "linked": [source.id] + linked,
         "label": (
-            f"ph:link Linked note #{source.id} to {len(linked)} other note(s): "
+            f"ph:link Linked {_named(source)} to {len(linked)} other note(s): "
             f"{', '.join(map(str, linked))}"
         ),
     }
@@ -1710,7 +1716,7 @@ def _unlink_notes(session: Session, args: dict) -> dict:
             "tool": "link_notes",
             "arguments": {"note_id": source.id, "other_note_id": target.id},
         },
-        "label": f"ph:scissors Unlinked note #{source.id} from note #{target.id}",
+        "label": f"ph:scissors Unlinked {_named(source)} from {_named(target)}",
     }
 
 
@@ -1721,7 +1727,7 @@ def _delete_note(session: Session, args: dict) -> dict:
         "deleted": entry.id,
         "recoverable": True,
         "undo": {"tool": "restore_note", "arguments": {"note_id": entry.id}},
-        "label": f"ph:trash Moved note #{entry.id} to the recycle bin",
+        "label": f"ph:trash Moved {_named(entry)} to the recycle bin",
     }
 
 
@@ -1744,7 +1750,7 @@ def _restore_note(session: Session, args: dict) -> dict:
     if entry.is_deleted:
         manager.restore_entry(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:recycle Restored note #{entry.id} from the recycle bin"
+    result["label"] = f"ph:recycle Restored {_named(entry)} from the recycle bin"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -4869,8 +4875,23 @@ _CONFIRM_LABELS = {
 }
 
 
-def confirm_label(name: str, arguments: dict) -> str:
+#: The confirm sentences that name one note, said with its title when the
+#: note can be read (audit 1029 C47: "Move note #12 to the recycle bin").
+_CONFIRM_NAMED = {
+    "delete_note": "Move {note} to the recycle bin",
+    "edit_note": "Change {note}",
+}
+
+
+def confirm_label(name: str, arguments: dict, session: Session | None = None) -> str:
     """Human sentence for the UI's confirm button (destructive tools)."""
+    if session is not None and name in _CONFIRM_NAMED:
+        try:
+            note = _named(_require_note(session, arguments))
+        except (ToolError, KeyError, TypeError, ValueError):
+            note = None
+        if note:
+            return _CONFIRM_NAMED[name].format(note=note)
     label = _CONFIRM_LABELS.get(name)
     if label:
         return label(arguments)

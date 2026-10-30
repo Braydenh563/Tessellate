@@ -3638,3 +3638,21 @@ def as_of_then(text: str) -> str:
     for pattern, repl in _DAY_SHIFT:
         text = pattern.sub(repl, text)
     return text
+
+
+#: Money and scores, for an answer that sums amounts or finds a word a note
+#: says by its shape ("money" by "$40", "rate" by "8/10"; 2026-10-30 sweep).
+_AMOUNT = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)")
+_MONEY = re.compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|quid|bucks|usd|gbp|eur)\b", re.I)
+_SCORE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
+
+
+def amounts(text: str) -> list[tuple[str, float, int]]:
+    """Each amount of money with a currency sign: (sign, value, offset)."""
+    return [(m.group(1), float(m.group(2).replace(",", "")), m.start()) for m in _AMOUNT.finditer(text or "")]
+
+
+def says_shape(shape: str, text: str) -> bool:
+    """Whether `text` holds a "money" amount or a "score" ("8/10", "4 stars")."""
+    pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
+    return bool(pattern and pattern.search(text or ""))

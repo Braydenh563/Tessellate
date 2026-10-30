@@ -54,12 +54,19 @@ def _validate_icon(icon: str) -> str:
     return icon
 
 
-def _validate_name(name: str) -> str:
+_RESERVED_NAMES = frozenset({"all", "all spaces", "everything"})
+
+
+def _validate_name(name: str, *, restoring: bool = False) -> str:
     name = clean_name(name)
     if is_blank(name):
         raise HTTPException(400, "A space needs a name.")
     if len(name) > _MAX_NAME_LEN:
         raise HTTPException(400, f"A space name can be at most {_MAX_NAME_LEN} characters.")
+    #: "All" and "All spaces" are the switcher's everything-view: a space of
+    #: that name sat beside it, reading the same (audit 1030 Y8).
+    if not restoring and " ".join(name.casefold().split()) in _RESERVED_NAMES:
+        raise HTTPException(400, f"\u201c{name}\u201d is the name of the view of every space. Pick another name.")
     return name
 
 
@@ -217,7 +224,7 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
     if session.get(Space, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
     #: Checked, but stored as it was: an undo never renames the space.
-    _validate_name(body.space.name)
+    _validate_name(body.space.name, restoring=True)
     name = body.space.name
     icon = _validate_icon(body.space.icon)
     session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))

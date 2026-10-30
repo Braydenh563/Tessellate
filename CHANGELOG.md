@@ -6,6 +6,28 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Meetings: when saving a recording's audio fails, the status line says so at once ("Not saving: ... Retrying") and the unsaved slices are retried in order, so the file has no gap; at Stop, what could not be written is named and the rest is kept. The server no longer writes a retried slice twice, and cuts back a write a full disk stopped part way.
+- Search by meaning that was never allowed to download (or was declined) shows as off, not as an error: no red chip, no "not working" toast, no bell row. A download that was allowed and failed is still an error.
+- Spaces: each space's menu actions name it ("Delete Work"), and "All", "All spaces" and "Everything" are refused as space names.
+- Lock screen: no file manager for the logs folder answers 503, not a server fault.
+- Chat: "how much have I spent this month" adds up the amounts in your spending notes, item by item; "what's my biggest expense" names the largest. Money owed or lent is left out.
+- Chat: "did I like the ramen place" quotes what the note says of it ("8/10, the broth was great") instead of saying no note says so.
+- Chat: "does Jake owe me money" and "what did I rate the ramen" no longer say "money" or "rate" is missing when the note says "$40" or "8/10".
+- Chat: "what do I need from the shops" finds the Groceries list.
+- Chat: an app phrase inside a notes question ("what should I ask Sara about the beta") answers from the notes; only a message that ends on the phrase is about the app.
+- Chat: "when did I plant the tomatoes" gives this year's day, not next year's.
+- Chat: "how often do I water the garden" answers from the Garden note instead of saying it is never mentioned.
+- Chat: "where is book club" leads with the sentence that names the place ("Meeting at Ana's"), not the first one about the subject.
+- Chat: a when-question is answered by its subject, not its timing word: "when are the designs coming" gives Sara's Monday, not the plumber who is coming Thursday; "when is the beta due" gives 15 November, not the car's service.
+- Chat: "how many notes mention Lisbon" leads with the count ("You have three notes about Lisbon"), with the name in the capitals the notes use.
+- Chat: "how hot do I bake the sourdough" says the temperature from the note.
+- Chat: "what am I doing on the 17th" and "what do I have on the 17th" read the 17th still to come; "what was I doing" keeps the one gone.
+- Chat: a reminder or snooze within three hours says how soon ("in 2 hours, at 2pm", "Snooze “stretch” for an hour, at 1pm"), never "today at 2:32am" or "to in 2 hours" (audit 1029 C47).
+- Chat: "when did I buy the kindle" says the day again ("On 16 July you bought a Kindle") instead of "your notes do not say a date".
+- Chat: "which note is longer", "which one is longer" and "which of the two is longer" are the same comparison, and a side named in full ("running log") is that note alone, not every note sharing a word.
+- Chat: "what changed between the two running notes" and "the difference between my two X notes" set the two notes side by side.
+- Chat: "what is the plan for December" is about the plan for December, not December; two notes close together are "Both came within a day", never "All two".
+- Chat: the AI's action labels and its confirm button name a note by its title ("Move “Gym plan” to the recycle bin"), not its number (audit 1029 C47).
 - OCR: the background read after an upload no longer writes over a reading made, or text typed, while it ran ("Read with RapidOCR" could come back with the Tesseract text).
 - "Which is longer, the budget or the Lisbon trip" says which note is longer and both word counts before each side's lines (audit 1029 C36).
 - Graph: a reload of a map already on screen that takes longer than 400 ms shows a thin moving line under the note count until the map is in; it holds still with less motion (audit 1029 G30).

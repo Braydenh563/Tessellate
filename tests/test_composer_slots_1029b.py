@@ -318,3 +318,30 @@ def test_kind_questions_are_read_in_code_and_others_are_left_alone():
     assert composer_lists.holding_ask("open checklist items") == ("tasks", True, "items")
     for q in ["which notes have dates about Lisbon", "which notes mention Porto", "what is open", "which notes have the tag work", "open the checklist note"]:
         assert composer_lists.holding_ask(q) is None, q
+
+
+@pytest.mark.parametrize("question", [
+    "compare the two running notes",
+    "what changed between the two running notes",
+    "what's the difference between my two running notes",
+])
+def test_the_two_notes_are_compared_however_it_is_asked(question):
+    """2026-10-30 sweep: "what changed between the two running notes" was
+    answered as a search for "what changed between the two running"."""
+    assert composer_slots._pair_subject(question) == "running"
+
+
+def test_how_hot_is_the_temperature_slot():
+    """2026-10-30 sweep: "how hot do I bake the sourdough" said no note
+    mentions "hot"; it asks the temperature."""
+    ask = composer_slots._ask_temperature("how hot do i bake the sourdough".split())
+    assert ask is not None and "sourdough" in ask.subject
+
+
+@MODES
+def test_how_often_i_do_a_thing_no_log_holds_is_the_notes_own_words(notebook, chat):
+    """2026-10-30 sweep: "how often do I water the garden" said no note was
+    about it; the Garden note says "Water every second day"."""
+    notes = [("# Garden\n\nPlanted tomatoes and basil on 5 October. Water every second day.", D(2026, 10, 20, 9)), NOISE]
+    said = notebook(notes)("how often do I water the garden", chat)
+    assert "every second day" in said and "no note is titled" not in said.lower(), said

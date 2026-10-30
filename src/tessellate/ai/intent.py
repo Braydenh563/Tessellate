@@ -63,7 +63,7 @@ _ABOUT_APP_PATTERNS = (
     r"what are you able to do|how can you help(?: me)?",
     r"how (?:do|does) (?:this|the app|tessellate|memorymap|you) work",
     r"(?:show|list|tell) me (?:your|the|what) (?:tools|features|commands|skills|capabilities)",
-    r"what (?:should|can) i (?:ask|tell you|say)",
+    r"what (?:should|can) i (?:ask|tell you|say)(?: you)?",
     r"(?:help me|how to) get started|how do i (?:start|use this|navigate)",
     r"what are you(?: for)?|why do you exist|what is your purpose",
     r"who made you|who created you",
@@ -75,7 +75,8 @@ _ABOUT_APP_PATTERNS = (
     r"recovery key|notifications?|phone|another computer|data)\b",
     r"where (?:is|are|do i find|can i find) (?:the |my )?.{0,40}\b(?:button|setting|settings|menu|tab|panel|option|toggle|switch)\b",
     r"what(?:'s| is) (?:tessellate|memorymap|memory map|this app|atlas)",
-    r"(?:can|could) you help(?: me)?",
+    r"(?:can|could) you help(?: me)?(?: with)?",
+    r"what (?:kinds?|sorts?|types?) of (?:stuff|things|questions|tasks|jobs) (?:can|could|do|will) you (?:help(?: me)? with|do|answer|handle)",
     r"help",
     r"what(?:'s| is) new(?: in (?:the app|tessellate|memorymap|this version))?",
 )
@@ -170,8 +171,19 @@ def _is_act(message: str) -> bool:
     return bool((act and act["intent"] != "summarise") or act_registry.app_verb(message))
 
 
+#: Words that may follow a question about the app without making it about
+#: something else ("how does this work exactly").
+_APP_TAIL = r"(?:\s+(?:there|mate|buddy|friend|again|assistant|tessellate|memorymap|bot|exactly|then|please|now|here|for me|today))*"
+
+
 def _reads_as_app_question(text: str) -> bool:
-    return _matches_any(text, _ABOUT_APP_PATTERNS) or any(re.search(pattern, text) for pattern in _ABOUT_APP_PATTERNS)
+    """The whole message, or its end after a greeting ("hey, what can you
+    do"). Never a phrase inside a notes question: "how can I help Jake move"
+    and "did Sam help with the garden" are about Jake and Sam (2026-10-30
+    sweep), and "what should I ask the dentist" about the dentist."""
+    return _matches_any(text, _ABOUT_APP_PATTERNS) or any(
+        re.search(rf"\b(?:{pattern}){_APP_TAIL}$", text) for pattern in _ABOUT_APP_PATTERNS
+    )
 
 
 def _classify(message: str) -> str:

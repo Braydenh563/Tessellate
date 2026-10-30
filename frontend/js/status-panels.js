@@ -106,6 +106,8 @@ function renderSearchEngineHealth(status) {
     state = "… warming up";
   } else if (status.embedding_backend !== "ollama" && status.builtin_embedding_installing) {
     state = "installing, search uses keywords until it is done";
+  } else if (status.semantic_off) {
+    state = "off until you allow the download (Settings, Search and index)";
   } else if (status.embedding_backend !== "ollama" && status.builtin_embedding_installed === false) {
     //: "not ready" read as "wait", when nothing was coming (INBOX 431 (3)).
     state = "not installed, search uses keywords (install it under Packages)";

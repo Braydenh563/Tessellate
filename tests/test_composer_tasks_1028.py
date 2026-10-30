@@ -501,3 +501,11 @@ def test_through_the_route_a_task_is_cancelled_and_snoozed(client, session, cloc
     assert card["done"] and card["undo"]
     session.expire_all()
     assert session.get(Reminder, milk.id).deleted_at is not None
+
+
+
+def test_a_snooze_within_hours_says_for_how_long(client, session, clock):
+    """Audit 1029 C47: never "Snooze “x” to in 2 hours"."""
+    _reminder(session, "Call the dentist")
+    card = next(e for e in _stream(client, "snooze the dentist task for 2 hours") if e["type"] == "act")
+    assert card["label"].startswith("Snooze “Call the dentist” for 2 hours, at "), card["label"]

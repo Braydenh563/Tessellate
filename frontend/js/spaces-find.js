@@ -273,15 +273,16 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
     actions.className = "space-option-actions";
     actions.setAttribute("role", "none");
     //: Hide from All spaces (the glyph carries the state, the title says what
-    //: pressing does), rename, delete. They close the menu before they run.
+    //: pressing does), rename, delete, each naming its space (audit 1030 Y4).
+    //: They close the menu before they run.
     for (const [glyphName, title, run] of [
       [
         hiddenFromAll ? "ph-eye-slash" : "ph-eye",
-        hiddenFromAll ? "Hidden from All spaces, show it there again" : "Hide this space's contents from All spaces",
+        hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", "Rename this space", () => openSpaceEdit(id, name, icon)],
-      ["ph-trash", "Delete this space", () => rmSpace(id)],
+      ["ph-pencil-simple", `Rename ${name}`, () => openSpaceEdit(id, name, icon)],
+      ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
       const action = document.createElement("button");
       action.type = "button";

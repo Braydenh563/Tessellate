@@ -427,7 +427,7 @@ _ASKING_WORDS = frozenset(
     something stuff info information details please thanks thank check
     find look show help kind sort bit quick quickly briefly short detail
     detailed full whole remind possible maybe okay ok hey hi
-    whereabouts address place put decide decided conclude concluded""".split()
+    whereabouts address place put decide decided conclude concluded doing""".split()
 ) | composer_tables.EXTRA_ASKING_WORDS | frozenset(
     #: Time words say when, never what (engine probe P6: "what did I write
     #: last week" was told "No note found brings up last"). The window they
@@ -1338,11 +1338,27 @@ KIND_WORDS = frozenset({"list", "checklist"})
 KIND_WORD_WEIGHT = 0.25
 
 
+#: Words that say when a thing happens, not what it is: beside a subject they
+#: count as little as a kind word, so "when are the designs coming" is
+#: answered by the designs, not by the plumber who is coming Thursday, and
+#: "when is the beta due" by the beta, not the car's service that is due
+#: (2026-10-30 sweep).
+TIMING_WORDS = frozenset(
+    "due come coming comes arrive arrives arriving arrival start starts starting begin begins beginning".split()
+)
+
+
+@functools.cache
+def _timing_stems() -> frozenset[str]:
+    return frozenset(_stem(w) for w in TIMING_WORDS)
+
+
 def _term_weights(stems: list[str]) -> dict[str, float]:
-    """What each term of the question counts for: a kind word beside others
-    counts `KIND_WORD_WEIGHT`, any other word, or a kind word alone, 1."""
-    named = [t for t in stems if t not in KIND_WORDS]
-    return {t: KIND_WORD_WEIGHT if named and t in KIND_WORDS else 1.0 for t in stems}
+    """What each term of the question counts for: a kind or timing word beside
+    others counts `KIND_WORD_WEIGHT`, any other word, or one alone, 1."""
+    light = KIND_WORDS | _timing_stems()
+    named = [t for t in stems if t not in light]
+    return {t: KIND_WORD_WEIGHT if named and t in light else 1.0 for t in stems}
 
 
 def _heading_hits(view: NoteView, stems: list[str], term_weight: dict[str, float]) -> tuple[float, float]:
@@ -2221,7 +2237,7 @@ def _opening(out: _Answer, s: Sentence, shape: str, question: str) -> None:
         #: in the note's own words: "Going by your notes, the deposit is
         #: paid." Never a yes or a no of the app's own (INBOX 688's rule).
         stems = out.subject
-        if stems and all(_holds(t, set(s.words) | view.title_words) for t in stems):
+        if stems and _says_every(stems, s, view):
             options = ["going_by", "notes_have"]
         else:
             options = ["closest_a", "closest_b"]
@@ -2513,7 +2529,7 @@ _INSTRUCTION_STEMS = frozenset(
     _stem_plain(w)
     for w in """main two three four five six seven eight nine ten both sentence paragraph line point bullet tag category categories
     improve improvement related similar recur recurring older newer oldest newest favourite favorite best worst everything
-    summary list top first second third""".split()
+    summary list top first second third biggest largest smallest cheapest priciest""".split()
 )
 
 
@@ -2524,10 +2540,27 @@ def _quoted_words(out: _Answer, views: list[NoteView]) -> set[str]:
     return quoted
 
 
-def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str]) -> bool:
+@functools.lru_cache(maxsize=1)
+def _shape_stems() -> dict[str, str]:
+    return {_stem(word): shape for word, shape in composer_tables.SHAPE_WORDS.items()}
+
+
+def _says_every(stems, sentence, view) -> bool:  # noqa: ANN001
+    """Every question word is in the sentence, its note's name, or its shape."""
+    words = set(sentence.words) | view.title_words
+    return all(_holds(t, words) or _said_by_shape(t, sentence.text) for t in stems)
+
+
+def _said_by_shape(term: str, quoted_text: str) -> bool:
+    """A question word the sentence says by its shape ("money" by "$40")."""
+    shape = composer_tables.SHAPE_WORDS.get(term.lower()) or _shape_stems().get(_stem(term))
+    return bool(shape and rec.says_shape(shape, quoted_text))
+
+
+def _is_unfound(out: _Answer, term: str, found: set[str], quoted: set[str], quoted_text: str = "") -> bool:
     if len(term) < _MISSING_MIN or _stem(term) in _INSTRUCTION_STEMS or _seen(term, found):
         return False
-    if _alternatives(_stem(term)) & quoted:
+    if _alternatives(_stem(term)) & quoted or _said_by_shape(term, quoted_text):
         return False
     return not out.question or term.lower() in out.question.lower()
 
@@ -2541,7 +2574,8 @@ def _unfound_terms(out: _Answer, terms: list[str], views: list[NoteView]) -> lis
     #: "hotel" no quote (or quoted note's name) stands in for is still said
     #: to be missing.
     quoted = _quoted_words(out, views)
-    return [t for t in terms if _is_unfound(out, t, found, quoted)]
+    quoted_text = " ".join(s.text for v in views for s in v.sentences if s.key in out.cited)
+    return [t for t in terms if _is_unfound(out, t, found, quoted, quoted_text)]
 
 
 def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
@@ -2563,7 +2597,13 @@ def _missing(out: _Answer, terms: list[str], views: list[NoteView]) -> None:
 
 
 def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]) -> list[NoteView]:
-    return [v for v in views if (own_stems - other_stems) & {_stem(w) for w in v.title_words}]
+    """The notes a side names by title. A title that holds every word of the
+    side is the note named: "running log" is the Running log, not also the
+    Running plan that shares "running" (2026-10-30 sweep)."""
+    mine = own_stems - other_stems
+    titled = [(v, {_stem(w) for w in v.title_words}) for v in views]
+    whole = [v for v, words in titled if len(own_stems) > 1 and own_stems <= words]
+    return whole or [v for v, words in titled if mine & words]
 
 
 def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202

@@ -103,7 +103,7 @@ def _frames() -> list[str]:
 def test_no_gap_frame_doubles_about_or_every(days):
     gap, bare = composer_digest._gap(days), composer_digest._bare_gap(composer_digest._gap(days))
     for frame in _frames():
-        said = frame.format(age=gap, span=gap, every=bare, count="three")
+        said = frame.format(age=gap, span=gap, every=bare, count="three", all_of="All three")
         assert not re.search(r"\babout\b[^.,;]*\babout\b", said, re.I), said
         assert not re.search(r"\bevery (?:a|an|about|nearly|over)\b", said, re.I), said
         assert "about it about" not in said
@@ -230,3 +230,4 @@ def test_good_morning_at_night_is_still_morning(hour):
     mood = composer_compose.mood_of("good morning", voice="natural", seed="s", said=[], intent="welcome")
     said = composer_compose.welcome(mood, hour=hour, notes=3, question="good morning")
     assert "good night" not in said.lower(), said
+

@@ -566,6 +566,10 @@ def status(session: Session = Depends(get_session)) -> dict:
         #: The one-time offer to download search by meaning: a save wanted it,
         #: nothing is on this computer, and the question is still unanswered.
         "semantic_offer": semantic_offer,
+        #: Not downloaded because no one has said yes (the question is open,
+        #: or was answered no): off by choice, never shown as an error
+        #: (audit 1030 Y2).
+        "semantic_off": bool(getattr(embeddings, "awaiting_consent", False)),
         #: Set when the old engine's copy of the model is on this computer:
         #: the one-time question then says the engine moved (semantic-notice.js).
         #: Read only while the question is open: it is a folder listing.

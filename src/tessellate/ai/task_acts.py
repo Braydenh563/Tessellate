@@ -384,7 +384,9 @@ def plan_snooze(session: Session, parsed: dict, card, title, said_when, now=None
     #: The run stores with `restore=True`, which skips the route's past check.
     if now is not None and due <= now:
         return {"line": f"That time has passed. Say a later one, like: snooze {parsed['about']} until tomorrow."}
-    label = f"Snooze “{item['text']}” to {said_when(due)}"
+    when = said_when(due)
+    #: "for 2 hours, at 2pm", never "to in 2 hours" (audit 1029 C47).
+    label = f"Snooze “{item['text']}” " + (f"for {when[3:]}" if when.startswith("in ") else f"to {when}")
     arguments = {"reminder_id": item["id"], "due_at": due.isoformat(), "was": item["due"].isoformat()}
     return {"line": f"{label}.", "card": card(label, [{"name": "snooze_reminder", "arguments": arguments}]), "run": True}
 

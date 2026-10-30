@@ -2148,8 +2148,10 @@ def open_reset_code_logs(request: Request) -> dict:
     except HTTPException:
         # reveal_folder's detail names the path; a locked page gets a fixed line.
         logging.getLogger("tessellate.auth").warning("couldn't open the launcher logs at %s", folder)
+        #: 503, not 500: no file manager here is the environment, not a fault
+        #: of the server (audit 1030 Y13).
         raise HTTPException(
-            status_code=500, detail="Couldn't open the logs folder. Look in the logs folder inside your data folder."
+            status_code=503, detail="Couldn't open the logs folder. Look in the logs folder inside your data folder."
         ) from None
     return {"ok": True}
 

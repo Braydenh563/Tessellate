@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_slots, composer_tables, glossary, realise, verdicts
+from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_tables, glossary, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -131,7 +131,7 @@ _BASE = {
         "Nothing new on it for {age}, so this is where it stood then rather than now.",
     ),
     "burst": (
-        "All {count} came within {span} of each other, the newest {age} ago.",
+        "{all_of} came within {span} of each other, the newest {age} ago.",
         "They were written close together, within {span}, the newest {age} ago.",
     ),
     "cadence": (
@@ -417,14 +417,16 @@ _ASKS = {
     "compare": re.compile(r"^\s*(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
     "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
     "when": re.compile(r"^\s*(?:when|what days?|which days?)\b", re.I),
-    "count": re.compile(r"^\s*how (?:much|many)\b", re.I),
+    #: "How many notes mention Lisbon" counts notes: the overview, which leads
+    #: with that count (2026-10-30 sweep: it answered with a dated line).
+    "count": re.compile(r"^\s*how (?:much|many)\b(?! (?:of my )?(?:notes|entries)\b)", re.I),
     "likes": re.compile(r"^\s*(?:do|did) i (?:like|enjoy|love|play|do)\b|^\s*am i (?:into|a fan of)\b", re.I),
     "opinion": re.compile(r"\bwhat did i (?:think|make) of\b|\bhow did i (?:find|like)\b|\bmy (?:review|opinion|thoughts) (?:of|on)\b", re.I),
     "left": re.compile(r"\bwhat do i (?:still )?(?:need|have) to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
     "overview": re.compile(
         r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
         r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat do my notes say\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
-        r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|"
+        r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|^\s*how many (?:of my )?(?:notes|entries)\b|"
         #: "what about social connections" asks for the lot (INBOX 1420).
         r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b",
         re.I,
@@ -825,15 +827,15 @@ _DEICTIC = frozenset(("today", "tonight", "yesterday"))
 
 
 @lru_cache(maxsize=4096)
-def _spans_at(text: str, written: date) -> tuple:
+def _spans_at(text: str, written: date, tense: str | None = None) -> tuple:
     """The recogniser's first reading of each span in `text`, anchored at
     noon on the day the note was written (the one reader of date words and
     units, CHAT_PLAN decision 46)."""
-    return tuple(s for s in recogniser.recognise(text, now=datetime.combine(written, time(12))) if not s.rank)
+    return tuple(s for s in recogniser.recognise(text, now=datetime.combine(written, time(12)), tense=tense) if not s.rank)
 
 
-def _spans(text: str, written: date | None) -> tuple:
-    return _spans_at(text, written or _UNDATED) if text else ()
+def _spans(text: str, written: date | None, tense: str | None = None) -> tuple:
+    return _spans_at(text, written or _UNDATED, tense) if text else ()
 
 
 #: The anchor for text with no day of its own: units and figures do not
@@ -1140,6 +1142,24 @@ def _named_category(q: str, members: list[composer.NoteView]) -> str:
     return next((str(v.note.get("category")) for v in members if str(v.note.get("category") or "").lower() in q.lower() and v.note.get("category")), "")
 
 
+#: "the plan for December", "my gifts for Mum": a thing for something, both
+#: halves the topic (composer-subject-1029.md item 2: "about December" lost
+#: the plan). The determiner is needed: "what did I buy for Mum" is about Mum.
+_OWNED_FOR = re.compile(r"\b(the|my|our)\s+([a-z][\w'-]*)\s+for\s+(.+?)\s*\??$", re.I)
+
+
+def _topic_owned(q: str) -> str:
+    found = _OWNED_FOR.search(q)
+    if not found or found[2].lower() in composer._ASKING_WORDS:  # noqa: SLF001
+        return ""
+    rest = recogniser.without_windows(found[3]).strip(" ,")
+    if not rest:
+        return ""
+    owner = "your" if found[1].lower() == "my" else found[1].lower()
+    rest = re.sub(r"^(?:my|the)\s+", "", rest)
+    return f"{owner} {found[2]} for {rest}"
+
+
 def _topic_typed(typed: "re.Match[str] | None") -> str:
     """The subject after "about/on/for", as typed, without a time window."""
     if not typed:
@@ -1155,6 +1175,12 @@ def _topic_sides(q: str) -> str:
     return " and ".join(re.sub(r"^(?:my|the|our)\s+", "", side, flags=re.I) for side in sides) if sides else ""
 
 
+def _always_capital(word: str, text: str) -> bool:
+    """Every time the notes write `word` it has a capital, and more than once."""
+    found = re.findall(rf"\b{re.escape(word)}\b", text, re.I)
+    return len(found) > 1 and all(w[:1].isupper() for w in found)
+
+
 def _as_written(topic: str, members: list[composer.NoteView]) -> str:
     """The topic with each name in the capitals the notes write it in:
     "lisbon" typed small is "Lisbon" (C1: "two notes about lisbon")."""
@@ -1165,7 +1191,10 @@ def _as_written(topic: str, members: list[composer.NoteView]) -> str:
     #: "what about lisbon" is answered as a topic, so it no longer takes the
     #: who shape's capital (audit 1029 C15 residue).
     placed = {w.lower() for w in re.findall(r"\b(?:to|in|from|at|near|visit|visiting|visited)\s+([A-Z][a-z'-]+)", text)}
-    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed} | _title_capitals()
+    #: A dictionary word capitalised inside a sentence ("Learn Portuguese
+    #: before Lisbon") is a name too when the notes never write it small;
+    #: `cased` checks that last part (2026-10-30: "three notes about lisbon").
+    names = {w for w in _NAMES.get() if w not in _dictionary() or w in placed or _always_capital(w, text)} | _title_capitals()
     whole = re.search(rf"\b{re.escape(topic)}\b", text, re.I) if " " in topic.strip() else None
     if whole and topic.islower() and re.search(r"\s[A-Z]", whole.group(0)) and any(w in names for w in topic.split()):
         #: "project atlas" is "Project Atlas", as the notes write it.
@@ -1197,7 +1226,7 @@ def _topic_said(question: str, members: list[composer.NoteView]) -> str:
         #: "social connections", tagged social: the category as typed, not
         #: its first word (INBOX 1301 D5); "Courses & Study" tagged uni: uni.
         return category.lower() if shared[0] in category.lower().split() else shared[0]
-    said = (not typed and _topic_sides(q)) or _topic_typed(typed)
+    said = (not typed and _topic_sides(q)) or _topic_owned(q) or _topic_typed(typed)
     if said:
         return said
     terms = composer.subject_terms(q)
@@ -1841,7 +1870,9 @@ def _pattern(members: list[composer.NoteView], today: date) -> str:
     if not _TIMED.get():
         return ""
     if span <= 9:
-        return _vary("burst").format(count=realise.count_word(len(days)), span=_gap(max(span, 1)), age=_gap(max(age, 1)))
+        #: "Both came within a day", never "All two came" (2026-10-30).
+        all_of = "Both" if len(days) == 2 else f"All {realise.count_word(len(days))}"
+        return _vary("burst").format(all_of=all_of, span=_gap(max(span, 1)), age=_gap(max(age, 1)))
     if len(days) >= 3:
         every = _bare_gap(_gap(max(1, round(span / (len(days) - 1)))))
         return _vary("cadence").format(every=every, age=_gap(max(age, 1)))
@@ -2523,10 +2554,13 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
 
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     stems = {composer._stem(t) for t in composer.subject_terms(clean(question))}
+    #: A timing or kind word counts less than the subject ("when are the
+    #: designs coming": the designs, not the plumber who is coming).
+    weight = composer._term_weights(sorted(stems))  # noqa: SLF001
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
-        hits = sum(1 for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
+        hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: Between sources that say it equally well, the one the search ranked first.
         return (bool(cue and cue.search(f.sentence.text)), hits, -f.view.rank, -f.sentence.order)
 
@@ -2581,7 +2615,10 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
         text = "I " + text[0].lower() + text[1:]
     body = _second_person(text)
     day = lead.view.written
-    for found in _spans(body, lead.view.written):
+    #: A thing done is in the past of the note that tells it: "Planted
+    #: tomatoes on 5 October" in a note of 30 October is this year's 5 October,
+    #: never next year's (2026-10-30 sweep).
+    for found in _spans(body, lead.view.written, "past"):
         if found.kind in ("date", "datetime"):
             value = found.value.date() if isinstance(found.value, datetime) else found.value
             if isinstance(value, date):
@@ -2737,8 +2774,18 @@ def _drop_tasks(kind: str, lead: Fact, rest: list[Fact], question: str) -> list[
     return [f for f in rest if f.sentence.kind != "task"]
 
 
+#: "Where is book club", "where do I keep the spare key": the sentence that
+#: names a place leads ("Meeting at Ana's"), not the first one that names
+#: the subject ("Next book is Piranesi"; 2026-10-30 sweep).
+_WHERE_ASK = re.compile(r"^\s*where(?:'s| is| are| was| were| do| does| did| can| should)?\b", re.I)
+_WHERE_CUE = re.compile(
+    r"\b(?:at|in|on|near|under|behind|beside|inside|above|below|next to|outside|by)\s+(?:the\s+|my\s+|a\s+|an\s+|our\s+)?[\w'-]+", re.I
+)
+
+
 def _single(out: _Out, kind: str, question: str, members, facts, today: date) -> None:
-    lead = _best(facts, question, _SINGLE_CUES.get(kind))
+    cue = _SINGLE_CUES.get(kind) or (_WHERE_CUE if _WHERE_ASK.match(clean(question)) else None)
+    lead = _best(facts, question, cue)
     if lead is None:
         return
     rest = [f for f in facts if f is not lead]
@@ -3012,23 +3059,28 @@ def _person_asked(asked: str, names: set[str], views: list) -> str:
     return said
 
 
+def _looked_up(out: _Out, asked: str, question: str, views: list, today: date) -> bool:
+    """An abbreviation, a slot, an amount or a computed day said (True)."""
+    abbr = glossary.asked(question)
+    if abbr and _stands_for(out, abbr, views, today):
+        return True
+    #: The question's slot (a tick, an open task, a dated line) is what
+    #: answers it, or the answer says no note holds it (audit 1029 rank 19).
+    if composer_slots.answer(out, asked, views, today) or composer_money.answer(out, question, views, today):
+        return True
+    #: A day, a count or a filing worked out from the notes (probes P10 to
+    #: P13); when the notes do not hold what it needs the ordinary shapes
+    #: still answer.
+    computed = composer_lists.computed_kind(asked)
+    return bool(computed and composer_lists.answer(out, computed, asked, views, today))
+
+
 def _early(out: _Out, kind: str, asked: str, question: str, views: list, today: date):  # noqa: ANN202
     """The answers that are one notebook-wide lookup (what an abbreviation
     stands for, who someone is, a comparison, what a category holds): the
     result, None when the ask fits but nothing answers it, or `_ORDINARY`."""
     names = _NAMES.get()
-    abbr = glossary.asked(question)
-    if abbr and _stands_for(out, abbr, views, today):
-        return _result(out, "fact", asked)
-    if composer_slots.answer(out, asked, views, today):
-        #: The question's slot (a tick, an open task, a dated line) is what
-        #: answers it, or the answer says no note holds it (audit 1029 rank 19).
-        return _result(out, "fact", asked)
-    computed = composer_lists.computed_kind(asked)
-    if computed and composer_lists.answer(out, computed, asked, views, today):
-        #: A day, a count or a filing worked out from the notes (probes P10
-        #: to P13); when the notes do not hold what it needs the ordinary
-        #: shapes below still answer.
+    if _looked_up(out, asked, question, views, today):
         return _result(out, "fact", asked)
     if kind == "overview" and (said := _person_asked(asked, names, views)):
         #: "tell me about Tom" is "who is Tom": a name has one answer shape

@@ -36,7 +36,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1683,6 +1683,12 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     found.mentioned = set(hit.mentioned)
     if not attached and as_of is None:
         _recall_window(session, question, found)
+    if not attached and composer_money.asks(question):
+        #: "How much have I spent", "my biggest expense": a sum over every
+        #: note that records spending, which the five likest never were
+        #: ("spent" does not match "Spending October"; 2026-10-30 sweep).
+        found.entries = [e for e in manager.list_entries(session, limit=400) if composer_money.records_spending(e.content or "")]
+        found.mode, found.connected_ids, found.match_info = "money", set(), {}
 
 
 def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001

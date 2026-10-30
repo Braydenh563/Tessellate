@@ -43,7 +43,8 @@ def test_client_supplied_id_is_ignored(client):
 
 
 def test_name_that_slugifies_to_a_reserved_word_is_deduped(client):
-    resp = client.post("/spaces", json={"name": "All"}).json()
+    # "All" itself is refused since audit 1030 Y8; "All!" still slugifies to "all".
+    resp = client.post("/spaces", json={"name": "All!"}).json()
     assert resp["id"] != "all"
     assert resp["id"] not in ("all", "default")
 

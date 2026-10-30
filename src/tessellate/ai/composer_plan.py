@@ -34,7 +34,7 @@ _DUE = re.compile(
     rf"^{_LEAD}(?:what(?:'s|’s| is| are| do i have| have i got| have i)?|which|any|anything|show me|show|list|tell me|give me|do i have|have i got|i need to know|check)?\W*"
     r"(?:\w+\W+){0,6}?(?:due|deadlines?|coming up|upcoming|on my plate|happening|scheduled|ahead|on the calendar|on the horizon|to hand in|to submit|to do)\b", re.I)
 #: "what's on", "am I busy": only a question when a time window is also named (`window`).
-_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does)\b", re.I)
+_BUSY = re.compile(rf"^{_LEAD}(?:what(?:'s|’s| is)|what do i have|what have i got|anything|am i busy|how busy am i|how busy is|what does|what am i (?:doing|up to)|what are we (?:doing|up to))\b", re.I)
 #: "what is overdue", "anything overdue", "show me overdue reminders": the
 #: overdue reminders alone, never every reminder. Each optional part opens with
 #: its own word, so the match is linear.
@@ -80,11 +80,14 @@ _SPAN_WORDS = re.compile(
 #: "before December", "by 15 November", "until Friday": the word and what follows.
 _BOUND = re.compile(r"\b(before|by|until|till)\b", re.I)
 _PAST_SAID = re.compile(r"\b(?:was|were|did|had|happened|wrote|made|went|saw|doing|done|been)\b", re.I)
-_AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|deadlines?|remind(?:er|ers|me)?)\b", re.I)
+#: "What do I have on the 17th", "what am I doing on the 17th" ask of days to
+#: come, the present tense of a plan (2026-10-30 sweep: read as 17 October).
+_AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|deadlines?|remind(?:er|ers|me)?)\b|"
+                         r"\b(?:am i|are we) (?:doing|up to)\b|\b(?:do i|do we) have\b|\bhave (?:i|we) got\b", re.I)
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
-    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to".split()))
+    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing".split()))
 
 
 @dataclass

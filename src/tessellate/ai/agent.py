@@ -2699,7 +2699,7 @@ def _dispatch_call(
             "type": "confirm",
             "name": name,
             "arguments": arguments,
-            "label": tools.confirm_label(name, arguments),
+            "label": tools.confirm_label(name, arguments, session),
         }
         result = AWAITING_CONFIRMATION
     elif state.tool_failures.get(name, 0) >= MAX_TOOL_FAILURES:

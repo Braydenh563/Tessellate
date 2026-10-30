@@ -936,9 +936,26 @@ def _clock(due: datetime) -> str:
     return said + ("pm" if hour >= 12 else "am" if hour < 7 else "")
 
 
+def _how_soon(due: datetime, now: datetime) -> str:
+    """"in 45 minutes", "in an hour", "in about 2 hours": a time within three
+    hours said by how soon it is (audit 1029 C47), else ""."""
+    #: Both read as wall-clock time, as the day test below them is.
+    minutes = round((due.replace(tzinfo=None) - now.replace(tzinfo=None)).total_seconds() / 60)
+    if not 0 < minutes <= 180:
+        return ""
+    if minutes < 60:
+        return f"in {minutes} minute{'' if minutes == 1 else 's'}"
+    hours = round(minutes / 60)
+    about = "" if minutes % 60 == 0 else "about "
+    return f"in {about}{'an hour' if hours == 1 else f'{hours} hours'}"
+
+
 def reminder_when(due: datetime, now: datetime) -> str:
     """When, said against today (INBOX 734): "today at 5pm", "tomorrow at
     9", "on Friday at 9", "on 21 October at 9"."""
+    soon = _how_soon(due, now)
+    if soon:
+        return f"{soon}, at {_clock(due)}"
     days = (due.date() - now.date()).days
     if days == 0:
         day = "today"

@@ -224,5 +224,6 @@ def test_open_logs_failure_never_names_the_path(client, monkeypatch):
 
     monkeypatch.setattr(routes_files, "reveal_folder", refuse)
     bad = _local(client).post("/auth/reset-code/open-logs")
-    assert bad.status_code == 500
+    # 503 since audit 1030 Y13: no file manager is the environment, not a server fault.
+    assert bad.status_code == 503
     assert "/" not in bad.json()["detail"] and "\\" not in bad.json()["detail"]

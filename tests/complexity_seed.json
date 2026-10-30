@@ -19,7 +19,7 @@
  "src/tessellate/ai/composer.py::_fit_terms": 22,
  "src/tessellate/ai/composer.py::_lead_block": 21,
  "src/tessellate/ai/composer.py::_next_questions": 39,
- "src/tessellate/ai/composer.py::_opening": 29,
+ "src/tessellate/ai/composer.py::_opening": 28,
  "src/tessellate/ai/composer.py::_others": 30,
  "src/tessellate/ai/composer.py::_readings": 17,
  "src/tessellate/ai/composer.py::_score": 29,
