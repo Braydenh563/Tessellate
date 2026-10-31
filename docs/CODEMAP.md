@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7936, test files 1690, tests 14673, plan headings 990.
+Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7936, test files 1690, tests 14674, plan headings 990.
 
 ## Frontend functions (7191)
 
@@ -15194,14 +15194,14 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_row` | src/tessellate/ai/personal.py:215 |
 | `_written` | src/tessellate/ai/personal.py:197 |
 | `about_me` | src/tessellate/ai/personal.py:367 |
-| `about_own_notes` | src/tessellate/ai/personal.py:413 |
-| `about_own_record` | src/tessellate/ai/personal.py:431 |
+| `about_own_notes` | src/tessellate/ai/personal.py:416 |
+| `about_own_record` | src/tessellate/ai/personal.py:434 |
 | `answer` | src/tessellate/ai/personal.py:171 |
 | `asked` | src/tessellate/ai/personal.py:161 |
 | `birthday` | src/tessellate/ai/personal.py:87 |
 | `facts` | src/tessellate/ai/personal.py:101 |
-| `general` | src/tessellate/ai/personal.py:386 |
-| `general_reply` | src/tessellate/ai/personal.py:438 |
+| `general` | src/tessellate/ai/personal.py:389 |
+| `general_reply` | src/tessellate/ai/personal.py:441 |
 | `notes_of` | src/tessellate/ai/personal.py:76 |
 
 ### src/tessellate/ai/phrasing.py (8)
@@ -21812,7 +21812,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14673)
+## Tests (14674)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22140,7 +22140,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_register_1031.py | 12 |
 | tests/test_composer_relevance_1310.py | 10 |
 | tests/test_composer_review_1031.py | 7 |
-| tests/test_composer_route_688.py | 20 |
+| tests/test_composer_route_688.py | 21 |
 | tests/test_composer_seven_1026.py | 15 |
 | tests/test_composer_short_facts.py | 2 |
 | tests/test_composer_slots_1029.py | 13 |

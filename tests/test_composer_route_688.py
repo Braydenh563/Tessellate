@@ -335,3 +335,11 @@ def test_a_question_about_someone_else_is_not_personal():
     assert not personal.general("what did I write about france")
     assert personal.general("whats the capital of france")
     assert not personal.general("who is Sam") and personal.general("who is the president of france")
+
+
+def test_what_about_a_topic_is_a_nudge_to_the_notes_not_a_world_question():
+    #: "hmm what about knitting" (INBOX 1357 class H): a topic put forward, so the
+    #: notes are looked in and the thing is named, never "that's general knowledge".
+    for question in ("what about knitting", "hmm what about knitting", "how about sourdough", "what about tax returns", "and what about the dentist", "what about it"):
+        assert not personal.general(question), question
+    assert personal.general("what is knitting") and personal.general("how many people knit")
