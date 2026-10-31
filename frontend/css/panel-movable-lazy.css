@@ -110,6 +110,9 @@ dialog[data-panel-moved]::backdrop {
 @media (min-width: 600px) and (pointer: fine) {
   #app-main > * {
     margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px);
+    /* A page's edge really is a box changing size with its content in it:
+       a transform would slide the page under the docked panel instead of
+       making room, and it moves only on a dock, never during a drag. */
     transition: margin-inline var(--ui-base) var(--ease-out);
   }
 }
@@ -145,7 +148,7 @@ dialog[data-panel-moved]::backdrop {
 #panel-min-tray:popover-open {
   display: flex;
 }
-.panel-chip {
+.minimised-pill {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
@@ -158,7 +161,7 @@ dialog[data-panel-moved]::backdrop {
   box-shadow: var(--shadow-md);
   pointer-events: auto;
 }
-.panel-chip button {
+.minimised-pill button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -170,24 +173,24 @@ dialog[data-panel-moved]::backdrop {
   font: inherit;
   cursor: pointer;
 }
-.panel-chip-open span {
+.minimised-pill-open span {
   max-width: 14rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.panel-chip-x {
+.minimised-pill-x {
   justify-content: center;
   width: var(--target-min);
   border-radius: var(--radius-pill);
   color: var(--muted);
 }
-.panel-chip-x:hover,
-.panel-chip-x:focus-visible {
+.minimised-pill-x:hover,
+.minimised-pill-x:focus-visible {
   background: var(--accent-soft);
   color: var(--ink);
 }
-.panel-chip button:focus-visible {
+.minimised-pill button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

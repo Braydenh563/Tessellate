@@ -287,7 +287,7 @@ def test_a_pinned_panel_minimises_to_a_pill_above_the_composer() -> None:
     assert "close.parentElement.insertBefore(min, close)" in js
     assert 'st.min.setAttribute("aria-label", `Minimise ${label}`)' in js
     # the pill: glyph, name, a small x that closes; the button restores
-    assert 'chip.className = "panel-chip"' in js and "panel-chip-open" in js and "panel-chip-x" in js
+    assert 'chip.className = "minimised-pill"' in js and "minimised-pill-open" in js and "minimised-pill-x" in js
     assert 'x.setAttribute("aria-label", `Close ${title}`)' in js
     # state is kept: the host is hidden, never emptied; a dialog is re-opened quietly
     assert 'host.setAttribute("data-panel-min", "")' in js and "innerHTML" not in js

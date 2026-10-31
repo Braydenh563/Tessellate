@@ -785,10 +785,10 @@ function panelMinPlace() {
 function panelChip(panel, host) {
   const title = panelTitle(panel);
   const chip = document.createElement("span");
-  chip.className = "panel-chip";
+  chip.className = "minimised-pill";
   const open = document.createElement("button");
   open.type = "button";
-  open.className = "panel-chip-open";
+  open.className = "minimised-pill-open";
   open.setAttribute("aria-label", `Restore ${title}`);
   const glyph = panel.querySelector(".dialog-head-title .ph");
   const icon = document.createElement("i");
@@ -800,7 +800,7 @@ function panelChip(panel, host) {
   open.addEventListener("click", () => panelRestore(host));
   const x = document.createElement("button");
   x.type = "button";
-  x.className = "panel-chip-x";
+  x.className = "minimised-pill-x";
   x.setAttribute("aria-label", `Close ${title}`);
   x.title = `Close ${title}`;
   const xi = document.createElement("i");
@@ -825,7 +825,7 @@ function panelMinimise(panel) {
   if (!tray.matches(":popover-open")) tray.showPopover();
   panelMinPlace();
   panelPushSync();
-  chip.querySelector(".panel-chip-open").focus({ preventScroll: true });
+  chip.querySelector(".minimised-pill-open").focus({ preventScroll: true });
 }
 function panelRestore(host, close = false) {
   const m = PANEL_MIN.get(host);

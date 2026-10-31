@@ -11182,7 +11182,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/objmove-lazy.css | 120 |
 | frontend/css/offline-split-lazy.css | 71 |
-| frontend/css/panel-movable-lazy.css | 193 |
+| frontend/css/panel-movable-lazy.css | 196 |
 | frontend/css/plain-head-lazy.css | 17 |
 | frontend/css/questions-lazy.css | 102 |
 | frontend/css/quick-access-lazy.css | 105 |
@@ -23775,7 +23775,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:283 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:281 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4187 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
