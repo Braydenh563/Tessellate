@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Board coordinates: x, y and z on cards, sketches, objects and map nodes are bounded (a million board units, NaN refused) with a 422 naming the field, and a row stored before the bound is clamped when the board loads, so one far object can no longer blank the board or break the PNG export (audit 1031 BD1)
 - Concurrency: 24 parallel note creations no longer answer 500; one `core/concurrency.py` sizes the worker threads and the database pool together, with a 5 second pool timeout that answers 503 with `Retry-After` (audit 1031 BK1, AR11)
 - Workspace header: `X-Workspace-ID` must name an existing space or `all`, otherwise a 422 `unknown_space`, and the app drops back to All spaces when its space was deleted in another window (audit 1031 BK3)
 - Bin guard: a binned note or an archived document refuses a PUT with a 409 that says to restore it first, from one `entry/repo.py` guard that all 17 note write routes and the document update share; `file_type` is checked against the known types (audit 1031 BK2, DC8, AR7)

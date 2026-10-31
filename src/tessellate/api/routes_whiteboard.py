@@ -31,7 +31,7 @@ from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_serializer
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_serializer
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
@@ -299,12 +299,40 @@ class WhiteboardComment(BaseModel):
 CommentThread = Annotated[list[WhiteboardComment], Field(max_length=MAX_COMMENTS_PER_ITEM)]
 
 
+#: Where an item may sit (audit 1031 BD1). `y: 1e308` was accepted and, with two
+#: such items, put everything at y = -33 million: zoom to fit showed nothing and
+#: the PNG export failed. A million board units is some 3,000 screens each way.
+#: `allow_inf_nan=False` also refuses `"NaN"`, which SQLite stores as NULL and
+#: which answered 500. `LAYER_LIMIT` is the same bound for the stacking number.
+COORD_LIMIT = 1_000_000.0
+LAYER_LIMIT = 10**12
+Coord = Annotated[float, Field(ge=-COORD_LIMIT, le=COORD_LIMIT, allow_inf_nan=False)]
+Layer = Annotated[int, Field(ge=-LAYER_LIMIT, le=LAYER_LIMIT)]
+
+
+def _clamp(limit: float):
+    def clamp(value):
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+        return 0.0 if number != number else max(-limit, min(limit, number))
+
+    return clamp
+
+
+#: What a row stored before the bound reads back as: pulled to the edge, so one
+#: old row cannot blank the board and the response still validates.
+StoredCoord = Annotated[float, BeforeValidator(_clamp(COORD_LIMIT))]
+StoredLayer = Annotated[int, BeforeValidator(lambda v: int(_clamp(LAYER_LIMIT)(v)))]
+
+
 class WhiteboardNodeBase(BaseModel):
     entry_id: int
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     #: Asked for directly ("resizing... cards"). `None` means auto-sized: 
     #: the same ~250×150 CSS default every card used before this existed.
     width: float | None = Field(default=None, ge=20, le=4000)
@@ -324,6 +352,9 @@ class WhiteboardNodeBase(BaseModel):
 
 class WhiteboardNodeOut(WhiteboardNodeBase):
     id: int
+    x: StoredCoord = 0.0
+    y: StoredCoord = 0.0
+    z: StoredLayer = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -331,14 +362,17 @@ class WhiteboardNodeOut(WhiteboardNodeBase):
 class WhiteboardSketchBase(BaseModel):
     data: str = Field(max_length=MAX_SKETCH_CHARS)
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     group_id: str | None = Field(default=None, max_length=GROUP_ID_MAX_LEN)
 
 
 class WhiteboardSketchOut(WhiteboardSketchBase):
     id: int
+    x: StoredCoord = 0.0
+    y: StoredCoord = 0.0
+    z: StoredLayer = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -777,9 +811,9 @@ class WhiteboardObjectBase(BaseModel):
     kind: str
     data: WhiteboardObjectData
     board_id: int | None = None
-    x: float = 0.0
-    y: float = 0.0
-    z: int = 0
+    x: Coord = 0.0
+    y: Coord = 0.0
+    z: Layer = 0
     width: float = Field(default=200.0, ge=20, le=4000)
     height: float = Field(default=120.0, ge=20, le=4000)
     rotation: float | None = Field(default=None, ge=-360, le=360)
@@ -801,9 +835,9 @@ class WhiteboardObjectOut(BaseModel):
     kind: str
     data: WhiteboardObjectData
     board_id: int | None
-    x: float
-    y: float
-    z: int
+    x: StoredCoord
+    y: StoredCoord
+    z: StoredLayer
     width: float
     height: float
     rotation: float | None
@@ -3920,8 +3954,8 @@ class MapNodeCreate(BaseModel):
     #: Omitted means "put it somewhere sensible", see `_next_position`. A
     #: caller that has to invent coordinates gets them wrong, which is the
     #: whole reason `generate_diagram` computes them server-side too.
-    x: float | None = None
-    y: float | None = None
+    x: Coord | None = None
+    y: Coord | None = None
     color: str | None = Field(default=None, max_length=20)
 
 
@@ -4188,8 +4222,8 @@ class MapNodeMoveOne(BaseModel):
     #: rather than a bare `int | None`.
     reparent: bool = False
     parent_id: int | None = None
-    x: float | None = None
-    y: float | None = None
+    x: Coord | None = None
+    y: Coord | None = None
 
 
 class MapNodesMove(BaseModel):
