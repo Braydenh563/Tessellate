@@ -711,7 +711,7 @@ const WB_DRAWIO_SHAPES_OUT = { circle: "ellipse", diamond: "rhombus", triangle: 
 //: bounds (the board's `wbItemBBox` in the page); `hidden(kind, item)`
 //: leaves out what the layers panel hides.
 function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } = {}) {
-  const bounds = box || ((kind, item) => (typeof wbItemBBox === "function" ? wbItemBBox(kind, item) : null));
+  const bounds = box || (() => null);
   const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\r?\n/g, "&#xa;");
   const hex = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v.toLowerCase() : null);
   const skipped = {};
@@ -1061,7 +1061,7 @@ async function wbExportMermaid() {
 }
 
 async function wbExportDrawio() {
-  const made = wbBoardToDrawio(wbState, { title: wbBoardTitleForExport(), hidden: wbItemHidden });
+  const made = wbBoardToDrawio(wbState, { title: wbBoardTitleForExport(), box: wbItemBBox, hidden: wbItemHidden });
   if (!made.shapes) {
     toast("Nothing on this board has a draw.io counterpart yet: add shapes, text or frames first.", "info");
     return;
