@@ -639,7 +639,14 @@ def compose(
             #: Drawn by `composer_mermaid.drafted`, which reads this module.
             return Pass("", "", "diagram")
         return Pass(_by_kind(asked, text), _SAID[asked], asked)
-    return _by_mode(kind, thoughts, draft, tone, length, sources, today or date.today())
+    return _by_mode(kind, thoughts, draft, tone, length, sources, today or _user_today())
+
+
+def _user_today() -> date:
+    """The person's day, not the server's (audit 1028 K22)."""
+    from tessellate.ai import composer
+
+    return composer.user_today()
 
 
 def _by_mode(kind: str, thoughts: str, draft: str, tone: str, length: str, sources, today: date) -> Pass:  # noqa: ANN001

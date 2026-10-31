@@ -267,8 +267,9 @@ def test_a_short_answer_has_no_more():
 def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
-    #: Undated since INBOX 1441: "What have I saved about" is not about time.
-    assert "today" not in text and "You trimmed your first bowl." in text
+    #: A note's own "today" is said against the day it was written, as the
+    #: date and how far back (INBOX 1461, newer than 1441's undated line).
+    assert "today" not in text and "2 September (a month ago), you trimmed your first bowl." in text
 
 
 @pytest.mark.parametrize(("question", "subject"), [

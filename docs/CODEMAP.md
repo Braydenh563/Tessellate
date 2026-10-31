@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7007, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7721, test files 1648, tests 14263, plan headings 990.
+Counts: frontend functions 7007, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7722, test files 1648, tests 14263, plan headings 990.
 
 ## Frontend functions (7007)
 
@@ -11797,7 +11797,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7721)
+## Backend modules (7722)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13618,7 +13618,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `url_in` | src/tessellate/ai/composer_web.py:34 |
 | `web_off` | src/tessellate/ai/composer_web.py:63 |
 
-### src/tessellate/ai/composer_write.py (47)
+### src/tessellate/ai/composer_write.py (48)
 
 | Name | File:line |
 |---|---|
@@ -13628,7 +13628,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_blocks` | src/tessellate/ai/composer_write.py:179 |
 | `_bullet_items` | src/tessellate/ai/composer_write.py:273 |
 | `_by_kind` | src/tessellate/ai/composer_write.py:612 |
-| `_by_mode` | src/tessellate/ai/composer_write.py:645 |
+| `_by_mode` | src/tessellate/ai/composer_write.py:652 |
 | `_cap` | src/tessellate/ai/composer_write.py:206 |
 | `_centrality` | src/tessellate/ai/composer_write.py:365 |
 | `_cleaned` | src/tessellate/ai/composer_write.py:387 |
@@ -13651,7 +13651,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_split_long` | src/tessellate/ai/composer_write.py:247 |
 | `_then_steps` | src/tessellate/ai/composer_write.py:333 |
 | `_tidy` | src/tessellate/ai/composer_write.py:476 |
-| `_toned` | src/tessellate/ai/composer_write.py:664 |
+| `_toned` | src/tessellate/ai/composer_write.py:671 |
+| `_user_today` | src/tessellate/ai/composer_write.py:645 |
 | `_when` | src/tessellate/ai/composer_write.py:542 |
 | `_words` | src/tessellate/ai/composer_write.py:193 |
 | `_write_up_title` | src/tessellate/ai/composer_write.py:525 |

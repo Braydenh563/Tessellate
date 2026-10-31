@@ -129,7 +129,8 @@ def test_link_reasons_names_generic_links_and_undoes(client, session):
     done = _apply(client, "link-reasons", [rows[0]["id"]])
     assert done["applied"] == 1
     link = session.query(EntryLink).filter_by(target_entry_id=b["id"]).one()
-    assert link.reason == "Both tagged #portugal; both mention Lisbon and Porto"
+    #: A stored reason reads as plain words (audit 1030 Z42, `database.plain_reason`).
+    assert link.reason == "Both tagged portugal; both mention Lisbon and Porto"
     assert link.reason_confidence == 0.7
     assert _review(client, "link-reasons")["rows"] == []
 
@@ -378,7 +379,7 @@ def test_the_link_reason_pass_runs_as_a_job_and_can_be_undone(client, session):
     result = tidy.respecify_all("default")
     assert result["named"] == 1
     session.expire_all()
-    assert session.query(EntryLink).one().reason.startswith("Both tagged #portugal")
+    assert session.query(EntryLink).one().reason.startswith("Both tagged portugal")
     _undo(client, result["undo_id"])
     session.expire_all()
     assert session.query(EntryLink).one().reason == "similar in meaning"
