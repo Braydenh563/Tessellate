@@ -2016,6 +2016,7 @@ MORE_TOPICS.extend(
                 "drag an image", "sort my own way", "copy a note", "paste a note", "copy a card",
                 "paste into chat", "paste on a board", "tray", "drag a card to chat", "drag a note onto a board",
                 "carry a card", "hold a card", "own order", "my own order", "own way", "my own way",
+                "submenu", "side menu", "menu with an arrow", "text and description",
                 "order my notes", "arrange my notes", "arrange notes", "put my notes in order", "rearrange",
             ),
             "body": (
@@ -2041,7 +2042,11 @@ MORE_TOPICS.extend(
                 "letting go. Escape, or letting go over nothing, changes nothing. "
                 "The tray in the status bar holds a few cards while you change pages: "
                 "drop cards on it or choose Add to tray, then drag them out or click "
-                "one to paste it where you were typing."
+                "one to paste it where you were typing. In a long card menu a row "
+                "with an arrow (Text and description on a picture, Copy and arrange "
+                "on a board) opens a list beside it: rest the pointer on it, click it, "
+                "or press Right arrow or Enter; Left arrow or Escape goes back. On a "
+                "phone it opens as its own page of the menu with a back row."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

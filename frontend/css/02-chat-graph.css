@@ -2781,11 +2781,7 @@ kbd {
 .menu-item.menu-item-unavailable:focus-visible {
   background: none;
 }
-/* Grouped submenus in the note card's ⋯ menu, asked for directly: a side
-   flyout for related actions instead of one long flat list. */
-.menu-group {
-  position: relative;
-}
+/* Grouped submenus: a side flyout for related actions. */
 .menu-item.has-submenu {
   display: flex;
   align-items: center;
@@ -2796,10 +2792,7 @@ kbd {
 .menu-submenu-arrow {
   opacity: 0.6;
 }
-/* menus.js's openActionMenu() adds this when the menu would spill past the
-   nearest scrolling ancestor if opened downward (00-tokens-shell.css and
-   04-chat-dock-appearance.css's `.menu-wrap` variants are exactly that
-   case) - opens upward from the button instead. */
+/* Opens upward when the menu would spill past its scrolling ancestor. */
 .action-menu.action-menu-flip {
   top: auto;
   bottom: calc(100% + 4px);
@@ -2810,28 +2803,22 @@ kbd {
   right: auto;
   margin-left: var(--space-2);
 }
-/* Flipped when the default side would run off the right edge of the
-   viewport: the same "which side has room" check the graph/timeline
-   popups already do, applied here instead of guessing a fixed side. */
-.action-menu.submenu.submenu-left {
-  left: auto;
-  right: 100%;
-  margin-left: 0;
-  margin-right: var(--space-2);
-}
-/* Below phone width there is nowhere for a side flyout to go without
-   running off-screen: asked for directly ("compatible for small screen
-   sizes like iPhones"). Drops the flyout positioning entirely and expands
-   the group in place instead, indented to still read as nested. */
-@media (max-width: 819.98px) {
+/* Where a side flyout has nowhere to go (a narrow window, or a touch screen
+   with no hover: `SUBMENU_STACK` in menus.js) the group is a nested level of
+   the same menu: its rows replace the menu's, under a back row. */
+@media (max-width: 819.98px), (hover: none) {
   .action-menu.submenu {
     position: static;
-    min-width: 0;
+    min-width: 100%;
     margin: 0;
-    padding: 0 0 0 var(--space-6);
-    border: none;
+    padding: 0;
+    border: 0;
     box-shadow: none;
     background: none;
+  }
+  .action-menu.menu-nested > :not(.menu-group-open),
+  .menu-group-open > .menu-item:first-child {
+    display: none;
   }
 }
 /* Type polish: a touch more base size + calmer headings. */
