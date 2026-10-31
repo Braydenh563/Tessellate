@@ -739,7 +739,7 @@ document.addEventListener("keydown", (e) => {
   //: correction (measured by `scratchpad/ui-sweeps/typingguard.js`). Fixing
   //: the shared guard means the one after that is born working.
   const el = document.activeElement;
-  const typing = el?.tagName === "SELECT" || inEditable(el);
+  const typing = el?.tagName === "SELECT" || inEditable(el) || mapEditorShown();
   // Unchorded shortcuts ("/", "?") only fire when you're not typing and no
   // overlay is open, so they never steal a literal slash mid-sentence.
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
@@ -893,6 +893,12 @@ document.addEventListener("pointerdown", (e) => {
 // Topmost is the last match in document order, so a confirm opened from
 // Settings traps Tab, not Settings. Visibility is `.hidden` plus
 // `getClientRects()`, because a fixed overlay's `offsetParent` is null.
+//: A map topic whose editor is open counts as typing whether or not it holds
+//: the focus: an editor shown without it must not hand its keys to the
+//: chords (blind test 1031). The DOM is read here, not through the board's
+//: bundle, which may not have loaded.
+const mapEditorShown = () =>
+  Boolean(document.querySelector("#wb-html-layer .wb-map-text[contenteditable]:not([contenteditable=false])"));
 //: A text field, or a contenteditable host or its child, read from the markup: `isContentEditable` flushes style.
 const inEditable = (el) => el?.closest("input,textarea,[contenteditable]:not([contenteditable=false])");
 

@@ -9241,7 +9241,9 @@ function wbMapSetLinkStyle(value) {
   return wbMapSetTheme({ edge_style: value === fallback ? null : value });
 }
 
-async function wbMapSetLayoutNow(layout) {
+//: `quiet`: the caller has just said which layout it wants (a template), so
+//: "Laid out 7 nodes" would only cover the map it drew (blind test 1031, 390px).
+async function wbMapSetLayoutNow(layout, { quiet = false } = {}) {
   const boardId = window.currentBoardId;
   if (!boardId || !wbIsMap()) return;
   try {
@@ -9253,6 +9255,7 @@ async function wbMapSetLayoutNow(layout) {
     wbSyncMapChrome();
     const moved = await wbMapTidy({ quiet: true });
     renderWhiteboardNow();
+    if (quiet) return;
     toast(layout === "free"
       ? "Layout set to Free, nodes stay where you put them."
       : `Laid out ${nounCount(moved, "node")}.`);
