@@ -417,8 +417,9 @@ class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=20000)
     #: What was typed, when `question` (the copy every reader scans) had a run
     #: of blanks squeezed out of it: the model and the saved turn read this, so
-    #: pasted code keeps its indent. Never taken from the client.
-    raw_question: str | None = Field(default=None, exclude=True)
+    #: pasted code keeps its indent. Never taken from the client. Capped like
+    #: `question`: squeezing blanks out must not be a way past the cap.
+    raw_question: str | None = Field(default=None, exclude=True, max_length=20000)
 
     @model_validator(mode="before")
     @classmethod
