@@ -572,7 +572,7 @@ function panelAdopt(panel) {
       btn.type = "button";
       btn.className = "icon-only ghost small dialog-head-btn panel-reset";
       btn.setAttribute("aria-label", "Put back in the middle");
-      btn.title = "Put back in the middle. Double-clicking the title bar does the same.";
+      btn.title = "Put back in the middle. Double-clicking the title bar does the same. Settings, Appearance, Panels open where you left them, turns remembering off.";
       const icon = document.createElement("i");
       icon.className = "ph ph-arrow-counter-clockwise";
       icon.setAttribute("aria-hidden", "true");

@@ -9,6 +9,7 @@ Playwright, numbers in the commit).
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -447,3 +448,24 @@ def test_the_free_area_asks_what_the_panel_draws_above() -> None:
     assert "panelClipBox(except" in body and "panelAbove(except, el)" in body
     # decided from the real stacking and clipping, never a list of panel ids
     assert "note-template" not in body and "note-picker" not in body
+
+
+def test_the_switch_for_remembering_panels_is_findable_from_the_panel_and_the_palette() -> None:
+    """INBOX 1505, the owner asked for a switch that already existed: the reset
+    button in a panel's head names it, the row carries the words people use for
+    it (`data-synonyms`, so "remember panel" and "panel position" find it in
+    Find anything), and the Guide topic names it."""
+    js = SRC.read_text(encoding="utf-8")
+    assert "Settings, Appearance, Panels open where you left them, turns remembering off." in js
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row = html[html.index('id="panel-restore-row"') : html.index('id="panel-restore-row"') + 400]
+    synonyms = re.search(r'data-synonyms="([^"]*)"', row)
+    assert synonyms and {"remember", "position", "size"} <= set(synonyms.group(1).split())
+    from tessellate.ai import help_topics_more
+
+    topic = next(
+        e for v in vars(help_topics_more).values() if isinstance(v, (list, tuple)) for e in v
+        if isinstance(e, dict) and e.get("id") == "movable-panels"
+    )
+    assert "Panels open where you left them" in topic["body"] and "names it" in topic["body"]
+    assert {"remember panel position", "panel position"} <= set(topic["keywords"])

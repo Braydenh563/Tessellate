@@ -2121,6 +2121,8 @@ MORE_TOPICS.extend(
                 "panel in the way", "popup in the way", "reset a panel",
                 "movable", "resizable", "panel size", "dock a panel", "snap a panel",
                 "panel back in the middle", "panels open where you left them",
+                "remember panel position", "remember panel size", "panel position",
+                "forget panel position",
             ),
             "body": (
                 "Moving and resizing panels. On a computer with a mouse, any panel "
@@ -2130,8 +2132,10 @@ MORE_TOPICS.extend(
                 "The head always stays on screen, and the content scrolls inside "
                 "when the panel is small. A moved panel drops the dark backdrop so "
                 "you can see what is beside it. Each panel remembers its place and size "
-                "on this computer; the small arrow button in its head (Put back in "
-                "the middle), a double-click on the head or Home puts it back. A "
+                "on this computer; Settings, Appearance, Panels open where you left "
+                "them, is the switch (off, every panel opens in the middle), and "
+                "the arrow button in a head names it. That button (Put back in "
+                "the middle), a double-click on the head or Home puts a panel back. A "
                 "double-click on the corner mark puts only the size back. A saved "
                 "place that no longer fits opens in the middle. "
                 "Drag the head to a screen edge to dock it: a faint outline shows "
@@ -2147,9 +2151,7 @@ MORE_TOPICS.extend(
                 "button beside Close (or Shift and Escape) minimises a panel: it "
                 "keeps what you typed and waits as a small pill above the chat box "
                 "(or the status bar), bottom left; the pill brings it back and its "
-                "x closes it. Settings, "
-                "Appearance, Panels open where you left them, turns the "
-                "remembering off so every panel opens in the middle. From the "
+                "x closes it. From the "
                 "keyboard, Tab to the corner mark (Move or resize this panel): the "
                 "arrow keys move the panel 16 pixels, Shift and an arrow key "
                 "resize it, and Home resets it. On a phone or any touch screen "
