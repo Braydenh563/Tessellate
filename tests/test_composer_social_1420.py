@@ -133,9 +133,9 @@ def test_the_link_reasons_carry_no_markdown_and_no_doubled_article():
 def test_a_bare_title_is_named_without_its_colon_or_a_second_article():
     from tessellate.ai import composer_frame
 
-    assert composer_frame.short_name({"content": social.ICE}) == "the Ice Breakers"
+    assert composer_frame.short_name({"content": social.ICE}) == "Ice Breakers"
     assert composer_frame.short_name({"content": social.GUIDE}) == "The Complete Social Skills Guide"
-    assert composer_frame.short_name({"content": social.FOLLOW}) == "the Follow-Up Questions"
+    assert composer_frame.short_name({"content": social.FOLLOW}) == "Follow-Up Questions"
 
 
 def test_an_untitled_note_is_named_by_a_whole_description_not_a_cut_phrase():

@@ -49,8 +49,16 @@ def test_z64_an_app_tool_answer_carries_no_search_footer(client, session, clock,
 @pytest.mark.parametrize("ask", [False, True])
 @pytest.mark.parametrize("question", ["hello", "thanks", "ok", "hi there"])
 def test_z71_a_model_that_says_nothing_to_a_greeting_still_gets_an_answer(ai_client, fake_ollama, session, clock, question, ask):
+    """Never a blank reply. The Ask box's reply to a greeting is its hint
+    (§35A, `test_ask_focus`), which is not an `answer` event: the hint alone
+    counts there, and a welcome is never added after it (composer-1031)."""
     fake_ollama.librarian_reply = ""
-    assert _post(ai_client, question, notes_only=ask).strip(), (question, ask)
+    with ai_client.stream("POST", "/chat/stream", json={"question": question, "use_tools": False, "notes_only": ask}) as r:
+        events = [json.loads(line) for line in r.iter_lines() if line.strip()]
+    said = "".join(e["delta"] for e in events if e["type"] == "answer")
+    hints = [e["text"] for e in events if e["type"] == "hint"]
+    assert said.strip() or hints, (question, ask)
+    assert not (said.strip() and hints), (question, said)
 
 
 @pytest.mark.parametrize("reply, question", [

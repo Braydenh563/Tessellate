@@ -25,3 +25,9 @@ Next: Z27 (one due window: `composer_lists._due_window` and `composer_plan` "Com
 Done: Z26, Z46 recast (a list note asked "what's in", "what goes in", "what do I need for" is answered by its whole list, `composer_digest._named_list`; "what is in my notes about" stays a search), Z70, F15 guard (does not reproduce on head; 20 cases kept as a guard).
 Left for the hub (not started): Z27 one due window, Z57, Z58, Z23, Z59, F13 and F14 partials.
 Pre-existing, not mine: `tests/test_ask_focus.py::test_a_greeting_gets_a_hint_not_an_answer` reads the real clock ("Good night") and fails at base 301e03c too.
+
+## composer2-1031 (agent composer2-1031, branch agent/composer2-1031)
+
+Done: 5c0892e (item 5: the Ask greeting test failed at every hour, not by the clock: the Z71 stand-in added a welcome after the hint; fixed, test on a fixed clock with five greetings).
+Done: items 1 to 4 (register table with echo, "ago" and "distant" rows; no article before a title; overview summary line and fold; weekday pinned to the note's week) in `composer_digest._SAY_WHEN`, `_echoed`, `_summary_names`, `_pin_weekdays`, `composer_frame._titled`, `_DIARY_VERB`.
+Next: Z27 one due window (`composer_plan._due_reply` default 7 days vs `composer_lists.window_of` 14; "soon" leftover sends "what's due soon" to lists), then Z57, Z58, Z23, Z59, F13/F14.

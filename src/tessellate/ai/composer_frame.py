@@ -239,8 +239,10 @@ def _title_of(content: str) -> str:
 
 
 def _titled(title: str) -> str:
-    """"the Trains"; "The Complete Social Skills Guide" keeps its own article."""
-    return title if _ARTICLE.match(title) else f"the {title}"
+    """A note's own name as it is: "Cloud computing", never "the Cloud
+    computing" (composer-1031); "The Complete Social Skills Guide" keeps its
+    own article; a lower-case one is "your trains note"."""
+    return title if _ARTICLE.match(title) or title[:1].isupper() or title[:1].isdigit() else f"your {title} note"
 
 
 def _whole_clause(clause: str) -> str:
@@ -349,6 +351,12 @@ _DIARY_VERB = re.compile(
     r"^(?:had|went|met|got|made|did|saw|took|ate|bought|came|felt|found|gave|heard|kept|left|lost|paid|ran|sent|"
     r"slept|spent|told|wore|won|wrote|began|brought|caught|drove|flew|forgot|knew|rode|sat|sold|spoke|swam|"
     r"taught|woke|built|held|"
+    #: Regular pasts that tell what the person did before a bare noun
+    #: ("Booked flights to Lisbon", "Cooked dinner for Sam"): verbs, never a
+    #: dish's or a subject's adjective ("grilled", "advanced", "mixed").
+    r"(?:book|cook|visit|watch|play|clean|fix|order|paint|plant|walk|pack|email|text|submitt|join|cancel|"
+    r"cancell|renew|return|sign|post|print|upload|install|attend|complet|hand|pass|miss|help|call|finish|"
+    r"start|plann|organis|organiz|schedul|rebook|repair|replac|wash|vacuum|feed)ed(?=\s+[A-Za-z])|"
     #: A regular past only before a thing's article or a place's word:
     #: "advanced calculus" and "grilled cheese recipe" stay names.
     r"[a-z]{2,}ed(?<!need)(?<!feed)(?<!seed)(?<!speed)(?=\s+(?:a|an|the|my|our|some|to|at|for|with|on|in|into|up|out|over|back)\b))"

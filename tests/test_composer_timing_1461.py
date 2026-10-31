@@ -102,7 +102,9 @@ def test_casual_is_relative_and_distant_by_month(question):
 
 @pytest.mark.parametrize("question", EXACT)
 def test_when_did_i_gets_the_exact_date_first(question):
-    assert _pinned(question, "I missed the bus today", date(2026, 10, 29)) == "I missed the bus on 29 October (yesterday)"
+    #: Yesterday goes without its date even here: the owner's rule of
+    #: 2026-10-31 (composer-1031), "today and yesterday said relatively only".
+    assert _pinned(question, "I missed the bus today", date(2026, 10, 29)) == "I missed the bus yesterday"
     assert _pinned(question, "I missed the bus today", date(2026, 10, 8)) == "I missed the bus on 8 October (three weeks ago)"
     assert _pinned(question, "had design class today", date(2026, 7, 20)) == "had design class on 20 July (three months ago)"
 
@@ -160,7 +162,8 @@ def test_a_diary_line_is_named_by_what_it_is_about(content, name):
 
 @pytest.mark.parametrize("content", ["Advanced calculus", "Grilled cheese recipe", "Weekend plans", "Reading list"])
 def test_a_name_that_looks_like_a_past_stays_a_name(content):
-    assert composer_frame.short_name({"id": 1, "content": content}) == f"the {content}"
+    #: Said as it is, with no article (composer-1031: "the Cloud computing").
+    assert composer_frame.short_name({"id": 1, "content": content}) == content
 
 
 @pytest.mark.parametrize(("content", "name"), [
@@ -187,11 +190,11 @@ def _notes(n: int) -> list[dict]:
 
 
 @pytest.mark.parametrize(("n", "said"), [
-    (2, "the Topic 1 and the Topic 2"),
-    (3, "the Topic 1, the Topic 2 and the Topic 3"),
-    (4, "the Topic 1, the Topic 2 and two more"),
-    (6, "the Topic 1, the Topic 2 and four more"),
-    (10, "the Topic 1, the Topic 2 and eight more"),
+    (2, "Topic 1 and Topic 2"),
+    (3, "Topic 1, Topic 2 and Topic 3"),
+    (4, "Topic 1, Topic 2 and two more"),
+    (6, "Topic 1, Topic 2 and four more"),
+    (10, "Topic 1, Topic 2 and eight more"),
 ])
 def test_a_group_names_two_or_three_then_counts(n, said):
     notes = _notes(n)

@@ -61,6 +61,7 @@ _BASE = {
     "pick": "The {side}, by your notes: {why}.",
     "more_right": "{count} more on the right.",
     "more_show": "Show {count} more",
+    "overview_names": "They include {names}.",
     "stands_for": "{abbr} is short for {phrase}, from {name}‹, written on {day}›.",
     "stands_for_seen": "{abbr} looks like {phrase}: {name}‹, written on {day},› names it in full.",
     "uses": "You use {abbr} in {count}‹, the last on {day}›.",
@@ -269,17 +270,22 @@ _ASKS_CURRENT = re.compile(
 
 #: **How a day a note named is said back** (the owner, 2026-10-31, INBOX
 #: 1461: "both", the date and how far back, and "changed in how they are
-#: referred based on context or perceived user speech patterns"). The
-#: register is the question's; the distance is the day's from today.
-#: "close" is today or yesterday, "near" within five weeks, "far" beyond.
+#: referred based on context or perceived user speech patterns or emotion").
+#: The register is the question's; the distance is the day's from today:
+#: "close" is today or yesterday (said relatively only, in every register),
+#: "near" within five weeks, "far" within six months, "distant" beyond (by
+#: its month). One table, never a branch per case (composer-1031).
 _REGISTER: ContextVar[str] = ContextVar("digest_register", default="plain")
 _SAY_WHEN: dict[str, dict[str, str]] = {
-    "plain": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})"},
-    "casual": {"close": "{rel}", "near": "{rel}", "far": "back in {month}"},
-    "exact": {"close": "{on} ({rel})", "near": "{on} ({rel})", "far": "{on} ({rel})"},
+    "plain": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})", "distant": "back in {month}"},
+    "casual": {"close": "{rel}", "near": "{rel}", "far": "back in {month}", "distant": "back in {month}"},
+    "exact": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})", "distant": "{on} ({rel})"},
+    #: "How long ago did I ...": the distance first, then the date.
+    "ago": {"close": "{rel}", "near": "{rel}, {on}", "far": "{rel}, {on}", "distant": "{rel}, {on}"},
 }
 #: "When did I ...", "what date ...": the exact date first, every time.
 _EXACT = re.compile(r"^\W*(?:when (?:did|was|were|have|had|is|are)|what (?:date|day)|which (?:date|day))\b", re.I)
+_AGO = re.compile(r"\bhow long (?:ago|since|has it been)\b", re.I)
 #: A question said casually, or with a relative time of its own, is
 #: answered in kind ("what did I do last week", "yooo what's been going on").
 _CASUAL = re.compile(
@@ -287,6 +293,10 @@ _CASUAL = re.compile(
     r"last (?:week|month|weekend|night)|yesterday|this (?:week|month)|on (?:mon|tues|wednes|thurs|fri|satur|sun)day)\b",
     re.I,
 )
+#: The person's own time words, said back when the day falls in them: they
+#: said "last week", the answer says "last week" (the owner, 2026-10-31).
+_ECHO_WORDS = re.compile(r"\b(today|yesterday|this week|last week|this month|last month)\b", re.I)
+_ECHO: ContextVar[tuple] = ContextVar("digest_echo", default=())
 
 
 def _set_timing(question: str) -> None:
@@ -295,7 +305,21 @@ def _set_timing(question: str) -> None:
     _TIMED.set(composer.asks_time(question))
     _CURRENT.set(bool(_ASKS_CURRENT.search(question or "")))
     asked = question or ""
-    _REGISTER.set("exact" if _EXACT.search(asked) else "casual" if _CASUAL.search(asked) else "plain")
+    register = "ago" if _AGO.search(asked) else "exact" if _EXACT.search(asked) else "casual" if _CASUAL.search(asked) else "plain"
+    _REGISTER.set(register)
+    _ECHO.set(tuple(dict.fromkeys(m.lower() for m in _ECHO_WORDS.findall(asked))))
+
+
+def _echoed(start: date, today: date) -> str:
+    """The question's own time word that holds `start`, or ""."""
+    monday = today - timedelta(days=(today.weekday() - _week_first()) % 7)
+    first = today.replace(day=1)
+    spans = {
+        "today": (today, today), "yesterday": (today - timedelta(days=1),) * 2,
+        "this week": (monday, today), "last week": (monday - timedelta(days=7), monday - timedelta(days=1)),
+        "this month": (first, today), "last month": ((first - timedelta(days=1)).replace(day=1), first - timedelta(days=1)),
+    }
+    return next((w for w in _ECHO.get() if spans[w][0] <= start <= spans[w][1]), "")
 
 
 def _ago(day: date, today: date) -> str:
@@ -333,14 +357,17 @@ def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
     rule table: `on` is its exact form ("on 20 July", "in the week of 13 July")."""
     gap = (today - start).days
     this_monday = today - timedelta(days=(today.weekday() - _week_first()) % 7)
-    if week:
-        rel = "last week" if this_monday - timedelta(days=7) <= start < this_monday else _ago(start, today)
-        distance = "close" if rel == "last week" else ("near" if gap < 35 else "far")
-    else:
-        rel = _ago(start, today)
-        distance = "close" if gap <= 1 else ("near" if gap < 35 else "far")
+    last_week = week and this_monday - timedelta(days=7) <= start < this_monday
+    rel = "last week" if last_week else _ago(start, today)
+    exact = _REGISTER.get() == "exact"
+    #: Last week is close, said as "last week", except to "when did I":
+    #: only today and yesterday go without their date there.
+    distance = "close" if gap <= 1 or (last_week and not exact) else "near" if gap < 35 else "far" if gap < 183 else "distant"
+    echoed = _echoed(start, today)
+    if echoed and not exact:
+        return echoed
     month = composer._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
-    return _SAY_WHEN[_REGISTER.get()][distance].format(on=on, rel=rel, month=month)
+    return _SAY_WHEN[_REGISTER.get()][distance].format(on=on, rel=echoed or rel, month=month)
 
 
 #: A phrase's date clause, marked ‹...› whole: kept when the question is
@@ -654,7 +681,8 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         return f"{fact}, from your {noun} **{view.title}**."
     if view.written is None or not _TIMED.get() and not getattr(view, "titled", False):
         return f"{fact}, from one of your notes."
-    when = f", written on {_day(view.written, today)}" if _TIMED.get() else ""
+    #: Not again when the fact already says the day it was written.
+    when = f", written on {_day(view.written, today)}" if _TIMED.get() and f"on {_day(view.written, today)}" not in fact else ""
     if not getattr(view, "titled", False):
         return f"{fact}{when}."
     return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
@@ -952,7 +980,37 @@ def _pin(text: str, written: date) -> str:
                 gone.append(_when_gone(on, day, today))
                 on = gone[-1]
             text = f"{text[:found.start].rstrip()} {on}{text[found.end:]}"
-    return _said_gone(text, gone)
+    return _said_gone(_pin_weekdays(text, written, today, gone), gone)
+
+
+#: A weekday said alone ("moved to Friday", "on Monday", "next Tuesday"):
+#: the note's week tells which, so it is said with its date once read.
+_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
+_WEEKDAY_ALONE = re.compile(r"^(?P<pre>on )?(?:(?:this|next|last) )?(?P<day>(?:mon|tues|wednes|thurs|fri|satur|sun)day)$", re.I)
+
+
+def _pin_weekdays(text: str, written: date, today: date, gone: list[str]) -> str:
+    """"Group project meeting moved to Friday", written Thursday 10
+    September, is "moved to Friday 11 September": pinned to the note's own
+    week, read back from its day when the sentence tells what happened
+    ("handed in on Monday" is the Monday before), past tense once gone
+    (composer-1031, item 4). A note of today keeps its weekday as said."""
+    #: "My uni days are Tuesday and Thursday": two weekdays are a schedule,
+    #: every week's, never one week's days.
+    if written == today or len(re.findall(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)days?\b", text, re.I)) > 1:
+        return text
+    tense = "past" if recogniser.told_as_past(text) else None
+    for found in reversed(_spans(text, written, tense)):
+        alone = _WEEKDAY_ALONE.match(found.text) if found.kind == "date" else None
+        #: "Thursday next week", "Friday 11 September": its week or date is said already.
+        if not alone or _WEEK_SAID.match(text[found.end:]):
+            continue
+        day = found.value.date() if isinstance(found.value, datetime) else found.value
+        said = f"{alone.group('pre') or ''}{alone.group('day').capitalize()} {_day(day, today)}"
+        if day < today:
+            gone.append(said)
+        text = f"{text[:found.start]}{said}{text[found.end:]}"
+    return text
 
 
 _COPULA_PAST = {"is": "was", "are": "were", "am": "was", "'s": " was", "'re": " were"}
@@ -967,7 +1025,7 @@ def _said_gone(text: str, gone: list[str]) -> str:
         return text
     text = re.sub(r"\b(is|are|am)\b", lambda m: _COPULA_PAST[m.group(1).lower()], text)
     phrase = gone[0]
-    if len(gone) == 1 and phrase.startswith(("on ", "in ")) and re.match(r"(?:you|your)\b", text, re.I) and phrase in text:
+    if len(gone) == 1 and phrase.startswith(("on ", "in ", "back in ")) and re.match(r"(?:you|your)\b", text, re.I) and phrase in text:
         rest = re.sub(r"\s{2,}", " ", text.replace(f" {phrase}", "", 1)).strip(" ,")
         return f"{phrase}, {rest[:1].lower()}{rest[1:]}"
     return text
@@ -2764,14 +2822,53 @@ def _overview_tail(out: _Out, kind: str, members, today: date, moved, shown: int
         out.lines.append(PHRASES["more_right"].format(count=_count(hidden).capitalize()))
 
 
+#: A name a summary line can carry: a title or a short noun phrase, never a
+#: quoted sentence or "the note that starts ..." (composer-1031).
+_CLEAN_NAME = re.compile(r"^(?!the note that starts|[“\"])")
+
+
+def _summary_names(members) -> str:  # noqa: ANN001
+    """"Cloud computing, Essay plan and eight more": two or three notes by a
+    clean name, their own titles first, then how many more (composer-1031,
+    item 3)."""
+    named = [composer_frame.short_name(v.note, _heading_said) for v in members]
+    order = sorted(range(len(named)), key=lambda i: (not _CLEAN_NAME.match(named[i]), named[i].startswith(("the note", "your ")), i))
+    picked = list(dict.fromkeys(named[i] for i in order))[: 3 if len(members) == 3 else 2]
+    rest = len(members) - len(picked)
+    return realise.join_items([*picked, f"{realise.count_word(rest)} more"] if rest > 0 else picked)
+
+
+def _summarised(out: _Out, members, kind: str, framed: bool, moved: str) -> bool:  # noqa: ANN001
+    """An overview of more notes than it has lines for names a few of them
+    and counts the rest, under the count (INBOX 1461: "it just lists every
+    entry"); a framed one names its notes by group instead."""
+    if kind != "overview" or framed or moved or len(members) <= LINES["overview"]:
+        return False
+    out.lines.append(_vary("overview_names").format(names=_summary_names(members)))
+    return True
+
+
+def _fold_past_budget(out: _Out, kind: str) -> None:
+    """At most LINES[kind] lines under the opening; the rest go behind Show
+    more, in the order told, ahead of what is already folded."""
+    keep = 1 + LINES[kind]
+    if len(out.lines) > keep:
+        out.more[:0] = out.lines[keep:]
+        del out.lines[keep:]
+
+
 def _overview(out: _Out, question: str, members, facts, today: date, kind: str) -> None:  # noqa: ANN001
     groups, counted = _counted_groups(question, members, kind)
     moved, facts = _overview_opening(out, question, members, facts, today, kind, counted)
     shown_notes = {f.view.id for f in facts}
-    if groups and not moved:
+    framed = bool(groups and not moved)
+    summed = _summarised(out, counted or members, kind, framed, moved)
+    if framed:
         _framed(out, question, members, facts, today, groups)
     else:
         _told_lines(out, members, facts, today, kind, moved)
+        if summed:
+            _fold_past_budget(out, kind)
     _overview_tail(out, kind, members, today, moved, len(shown_notes))
 
 
@@ -2997,7 +3094,11 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
     if _WHEN_DID.match(clean(question)) and _event_lead(out, lead, today):
         return []
     days = _DAYS_PLURAL.search(lead.body)
-    if not (days and len(days.group(0).strip()) > 3):
+    #: A habit is weekdays in the plural or more than one ("Tuesdays",
+    #: "Monday and Thursday"); "moved to Friday" is one day, said with its
+    #: date (composer-1031, item 4).
+    habit = days and len(re.findall(r"day", days.group(0), re.I)) + bool(re.search(r"days\b", days.group(0), re.I)) > 1
+    if not habit:
         _say_fact(out, lead, today, question)
         return [f for f in rest if f.view.id == lead.view.id]
     said = days.group(0).strip(" ,")
@@ -3588,7 +3689,9 @@ def _compose_body(out: _Out, kind: str, asked: str, members: list, facts: list[F
         return False
     missing = _missing(members) if many and not out.framed else ""
     if missing:
-        out.lines.append(missing)
+        #: Under a fold it closes the answer, never sits between the lines
+        #: shown and the lines folded (composer-1031).
+        (out.closing.insert(0, missing) if out.more else out.lines.append(missing))
     return True
 
 
