@@ -174,8 +174,8 @@ function objTrayPaste(ref) {
 
 OBJ_RENDERERS.tray = (ref) => {
   if (objTray.some((row) => objKey(row) === objKey(ref))) return toast(`“${ref.title}” is already in the tray`, "info") || true;
-  const held = objTrayAdd(ref);
-  toast(held ? `Added “${ref.title}” to the tray` : "The tray is full. Take something out first.", held ? undefined : "info");
+  if (objTrayAdd(ref)) toast(`Added “${ref.title}” to the tray`);
+  else toast("The tray is full. Take something out first.", "info");
   return true;
 };
 
