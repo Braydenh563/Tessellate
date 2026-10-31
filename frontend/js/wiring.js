@@ -1461,6 +1461,12 @@ async function toggleWebSearch({ openFirst = false } = {}) {
     return;
   }
   const next = !(prefsCache && prefsCache.web_search_enabled);
+  //: The Web button is the one online switch in the dock, so its first turn-on asks once (AI5).
+  if (next && openFirst && prefs.get("web-search-asked", null) !== "1") {
+    const asked = await confirmDialog("Turn on web search?\n\nOnly your search words leave this computer, never your notes. You can turn it off in Settings, Web search.", { confirmLabel: "Turn on", danger: false, checkbox: { label: "Don't ask again" } });
+    if (!asked.ok) return;
+    if (asked.checked) prefs.set("web-search-asked", "1");
+  }
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
     body: JSON.stringify({ web_search_enabled: next }),

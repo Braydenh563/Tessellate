@@ -2600,7 +2600,7 @@ function pickJsonFile(inputId, apply) {
     try {
       await apply(data);
     } catch (error) {
-      toast(error?.message || "Couldn't import that file.", true);
+      toast(error?.message || "Couldn't import that file.", "info");
     }
   };
   input.click();
@@ -3100,6 +3100,9 @@ async function openTaskLog(item) {
   settingsLook.logFilterFromRun = !!item.run_id;
   filter.value = item.run_id ? `[${item.run_id}]` : /\(([^)]+)\)/.exec(item.label || "")?.[1] || item.name || item.label || "";
   filter.dispatchEvent(new Event("input"));
+  //: The button that sent us here is in the pane just left: the keyboard goes
+  //: to the filter, which is what the pane now shows (audit 1031 HR21).
+  filter.focus({ preventScroll: true });
 }
 
 $("logs-empty-clear").addEventListener("click", () => {

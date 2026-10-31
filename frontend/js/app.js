@@ -1420,6 +1420,8 @@ function confirmVerb(message) {
     : "OK";
 }
 
+// One confirm at a time (HR20): a second ask waits for the first to close, so
+// each takes focus and Esc answers the one the person can see.
 function confirmDialog(message, options = {}) {
   const {
     confirmLabel = confirmVerb(message),
@@ -1427,7 +1429,7 @@ function confirmDialog(message, options = {}) {
     danger = true,
     checkbox = null,
   } = options;
-  return new Promise((resolve) => {
+  const show = () => new Promise((resolve) => {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay confirm-overlay";
     overlay.setAttribute("role", "dialog");
@@ -1508,6 +1510,7 @@ function confirmDialog(message, options = {}) {
     // arriving with the dialog must not be the thing that deletes the notes.
     cancel.focus();
   });
+  return (confirmDialog.q = (confirmDialog.q || Promise.resolve()).then(show, show));
 }
 
 // `confirmDialog`'s missing sibling: ask for a line of text.
@@ -2131,7 +2134,7 @@ const LAZY_ENTRY_POINTS = {
   tour: ["openTour", "renderTourReplay"],
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],
   appPalette: ["openPalette"],
-  notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderRelatedWhileEditing", "renderEditForm", "richPickerNote"],
+  notePanels: ["beginOrCompleteLink", "toggleRelated", "toggleReferences", "toggleFaded", "toggleNoteReminders", "renderEditForm", "richPickerNote"],
   vault: ["unlockPrivateNotes", "ensureVaultOpen"],
   accountRecovery: ["openForgotPassword", "offerRecoveryKey", "showRecoveryKey", "makeRecoveryKey", "recoveryAccountRow"],
   attachTo: ["renderAttachToBoard", "renderAttachToDocument", "renderNotePickerList"],
@@ -2171,7 +2174,7 @@ const LAZY_ENTRY_POINTS = {
     "setTracePanelOpen",
     "syncGraphPopupSave",
   ],
-  library: ["applyDocGutter", "applyMarkdown", "archiveDocumentWithUndo", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbShowCanvasView", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "deleteDocumentWithUndo", "offerCreateUndo", "offerCreatedDocsUndo", "renameDocumentWithUndo", "jumpToDocLine", "renderLibraryBoardsGallery"],
+  library: ["applyDocGutter", "applyMarkdown", "closeDocAiPanel", "createConceptMap", "createDocument", "createNewBoard", "expandNoteIntoDocument", "initDocSidebarTabs", "loadDocuments", "markDocDirty", "mountDocToolbarControlsFor", "mountGutterFor", "openDocDictionary", "openDocTemplateDialog", "openDocument", "renderDocStorage", "saveDocument", "showDocSidebarSection", "toggleDocFindBar", "wbOpenBoardSearch", "wbShowBoardsLanding", "wbToggleNavigator", "wireMarkdownToolbar", "wireMdFormatShortcuts", "openWhiteboardBoard", "offerCreateUndo", "offerCreatedDocsUndo", "jumpToDocLine", "renderLibraryBoardsGallery"],
   //: The Library's own list (audit FE-03(c)): library.js alone. A call from
   //: it into a document or a board is one of `library`'s stand-ins above,
   //: which fetches the editors on first use.

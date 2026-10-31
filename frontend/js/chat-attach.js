@@ -2844,7 +2844,7 @@ async function deleteChatTurn(assistantBubble) {
       if (result.conversation_deleted) {
         newChatConversation();
         loadConversationList();
-        return;
+        return restoreFocusTo($("chat-input"));
       }
     } catch {
       toast("Couldn't delete that message.", true);
@@ -2861,6 +2861,7 @@ async function deleteChatTurn(assistantBubble) {
   refreshFollowupVisibility();
   if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
   loadConversationList();
+  restoreFocusTo($("chat-input")); //: the opener went with the message (AI14)
 }
 
 // --- leaving a conversation while it is still answering ------------------------

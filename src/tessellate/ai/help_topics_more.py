@@ -558,7 +558,7 @@ MORE_TOPICS: list[dict] = [
             "part way; every model call is listed, on its own or inside the job "
             "that made it. Under it, what finished in the last half hour says how "
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
-            "many and names the newest. Open Activity from it, its agent runs count, or the "
+            "many and names the newest. Open Activity from it, its agent runs count, the chat's ⋯ menu (Activity and past runs), or the "
             "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
             "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "

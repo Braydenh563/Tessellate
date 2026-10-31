@@ -589,6 +589,8 @@ function renderSuggested(status) {
       section.dataset.group = group.kind;
       section.open = modelGroupOpen(group.kind, group.shown, status);
       section.addEventListener("toggle", () => {
+        //: A shut group has no cards yet (HR18); opening it builds them.
+        if (section.open && modelLastStatus) renderSuggested(modelLastStatus);
         try {
           prefs.set(`modelGroup:${group.kind}`, section.open ? "1" : "0");
         } catch (error) {
@@ -618,7 +620,7 @@ function renderSuggested(status) {
   }
   for (const group of groups) {
     const grid = host.querySelector(`.model-grid[data-group="${group.kind}"]`);
-    if (!grid) continue;
+    if (!grid || !grid.parentNode.open) continue;
     group.shown.forEach((model, i) => {
       const el = modelCardFor(model, status);
       if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);

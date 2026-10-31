@@ -196,3 +196,58 @@ def test_ai6_the_non_streaming_chat_composes_when_no_model_runs(ai_client, fake_
     assert "isn't available right now" not in body["ai_response"]
     assert "7" in body["ai_response"]
     assert len(body["raw_results"]) == 1 and body["answered_by"] is None and body["ollama_running"] is False
+
+
+def test_ai20_the_reader_connects_to_the_address_it_checked(monkeypatch):
+    """A name that answers a public address once and a loopback one after (DNS
+    rebinding) is looked up once, and the connection goes to the checked
+    address with the real name as the Host header."""
+    import socket
+
+    from tessellate.core import security
+    from tessellate.search import websearch
+
+    answers = iter(["93.184.216.34", "127.0.0.1", "127.0.0.1"])
+    lookups: list[str] = []
+
+    def lookup(host, port, *args, **kwargs):
+        lookups.append(host)
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (next(answers), 0))]
+
+    class _Reply:
+        is_redirect = is_permanent_redirect = False
+        headers: dict = {}
+
+        def raise_for_status(self):
+            return None
+
+        def close(self):
+            return None
+
+    seen: dict = {}
+
+    class _Session:
+        def mount(self, *args):
+            return None
+
+        def get(self, url, headers=None, **kwargs):
+            seen["url"], seen["host"] = url, (headers or {}).get("Host")
+            return _Reply()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(socket, "getaddrinfo", lookup)
+    monkeypatch.setattr(security.socket, "getaddrinfo", lookup)
+    monkeypatch.setattr(websearch, "_private_session", lambda: _Session())
+    websearch._get_external("http://rebind.example.test/page")
+    assert lookups == ["rebind.example.test"]
+    assert seen["url"].startswith("http://93.184.216.34:80/") and seen["host"] == "rebind.example.test"
+
+
+def test_ai13_a_loss_question_reaches_the_recovery_topics():
+    from tessellate.ai import guide_aliases
+
+    for asked in ("my notes are gone", "all my notes disappeared", "where did my notes go", "my files went missing"):
+        ids = guide_aliases.topic_ids(asked, hard=False)
+        assert ids[:1] == ["undo-bin"] and "archive" in ids, (asked, ids)

@@ -13,9 +13,11 @@
 
 - AI6 (`_composed_chat` in routes_chat.py; test_chat_api's two apology assertions follow, intent moved). Web panel code to web-results.js (boot ratchet: chat.js gz 17,025 to 14,819).
 
+- AI5 (confirm before web search on), AI13 (guide_aliases restore row), AI14 (Esc and cancelEdit focus), AI15 (target-min on action buttons, fold summaries, history rows, Ask-AI switch label; the 32x18 switch input is by design, DESIGN.md Hit targets), AI20 and AI21 (not reproduced; regression tests added), HR4 (folded task runs), HR6 (Activity row in the chat menu), HR21 (log filter focus), HR20 (confirm queue in app.js), HR18 (cards built when a group opens: 31 to 8 cards, pane nodes 1,180 to 655), HR15 (resolved by design, DESIGN.md Hit targets), HR23 (log list draws the newest 200: 500 records 90 to 126 ms down to 38 ms; the companion poof off-screen while Settings is open is left), HR22 (hovered engine detail takes the body colour: axe clean in both themes).
+- test_the_keyboard_lands_somewhere_after_every_note_step: the test read the pre-N11 shape; it now pins `restoreFocusTo` (the intent holds).
+
 ## Next
-- AI5, AI13, AI14, AI15, AI20 to AI23, HR4, HR6, HR14, HR15, HR18, HR20 to HR23.
+- HR14, AI22 (not reproduced), AI23 (L effort).
 
 ## Left
 - wake_sources_seed.json atlas-life.js::raf 3 to 4: the frame budget's one rAF site times 3 s of frames beside animations that already force frames; it cannot be the tail's rAF (the tail rests on a timer).
-- tests/test_a11y_wcag22.py::test_the_keyboard_lands_somewhere_after_every_note_step fails on the main checkout too (notes audit N11 moved the focus into `restoreFocusTo`; the test still reads the old shape). Not this branch's; left.

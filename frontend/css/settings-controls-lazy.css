@@ -144,3 +144,45 @@
   overflow: visible;
   text-overflow: clip;
 }
+
+/* The web search engine picker (Settings, Web search): moved out of the boot
+   styles, which it only cost bytes in. */
+.provider-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+  /* Tier 3: a tone inside its group, with a transparent border reserved for
+     high-contrast mode -- the same budget every other settings row keeps. */
+  background: var(--surface-3);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius) * 0.6);
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  /* Contains the radio-hiding rule's own `position: absolute` below. */
+  position: relative;
+}
+
+.provider-option:hover,
+.provider-option:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.provider-option:has(input:checked) {
+  background: var(--accent-soft);
+}
+
+.provider-option:has(input:checked):hover,
+.provider-option:has(input:checked):is(:focus-visible, :has(:focus-visible)) {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.provider-option .muted {
+  font-size: var(--text-md);
+}
+
+/* The hover tone is darker than the muted text can read on (3.8:1 light,
+   3.2:1 dark, audit 1031 HR22): under it the detail takes the body colour. */
+.provider-option:is(:hover, :has(:focus-visible)) .muted {
+  color: var(--text);
+}

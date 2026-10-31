@@ -1796,6 +1796,11 @@ holds. A future two-column reading surface takes the same band.
 --target-min: 1.75rem   /* 28px, the floor under every interactive thing */
 ```
 
+**A switch is a 32 by 18 picture with its whole label row as the target**
+(audit 1031 HR15): a settings row is 358 by 88 at 390, so the press lands
+anywhere on it and the picture stays small on purpose. A switch with no row
+around it takes `min-height: var(--target-min)` on its label.
+
 **Icon-only buttons are measured, not listed** (0.3.3): a button with an
 icon and no words is only recognisable in a browser, so
 `scratchpad/ui-sweeps/iconfloor.js` (in `gate.sh --sweeps`) walks every tab,

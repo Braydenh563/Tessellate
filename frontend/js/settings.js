@@ -683,6 +683,7 @@ function closeSettingsModal() {
 // and reading them apart is what made this screen hard to use.
 
 const LOG_LEVEL_RANK = { DEBUG: 0, LOG: 0, INFO: 1, WARN: 2, WARNING: 2, ERROR: 3, CRITICAL: 4 };
+const LOG_WINDOW = 200; // rows drawn at once; "Show earlier" draws the next window
 const MAX_LOG_ROWS = 1000; // what the list holds; the buffers themselves are smaller
 
 let logRecords = [];
@@ -900,7 +901,23 @@ function renderLogList() {
   const shouldStick = $("log-follow").checked && logFollowPinned;
   const visible = logRecords.filter(logMatchesFilters);
 
+  //: Only the newest `LOG_WINDOW` rows are built (500 rows were 90 to 126 ms
+  //: on open, HR23); a row at the top draws the next window. The newest stays
+  //: last, so follow mode is unchanged.
+  const cap = Number(list.dataset.window) || LOG_WINDOW;
   list.replaceChildren();
+  if (visible.length > cap) {
+    const more = Math.min(LOG_WINDOW, visible.length - cap);
+    const li = document.createElement("li");
+    li.appendChild(smallButton(`Show ${more} earlier records`, "Draw older records above these", () => {
+      list.dataset.window = cap + more;
+      logFollowPinned = false;
+      const top = list.scrollHeight;
+      renderLogList();
+      list.scrollTop += list.scrollHeight - top;
+    }));
+    list.appendChild(li);
+  }
   // **Deliberately not `renderIncrementally`, unlike every other list here.**
   // Two reasons, and the second is the disqualifying one. This list is already
   // bounded, `MAX_LOG_ROWS` (1000) is a real cap, not an unbounded notebook , 
@@ -911,7 +928,7 @@ function renderLogList() {
   // bottom of whatever happened to be painted, not to the newest line. Making
   // this incremental would mean inverting the window, which is a different
   // mechanism built to fix a cost that is already capped.
-  for (const record of visible) list.appendChild(logRow(record));
+  for (const record of visible.slice(-cap)) list.appendChild(logRow(record));
 
   renderLogSharedUI(visible.length);
   if (shouldStick) scrollLogToBottom();

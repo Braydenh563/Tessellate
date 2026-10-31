@@ -143,4 +143,74 @@ def test_hr12_an_import_the_server_refuses_says_why():
     body = src[src.index("function pickJsonFile"):src.index("function textToSteps")]
     assert "await apply(data);" in body
     assert "apply(JSON.parse(" not in body
-    assert 'toast(error?.message || "Couldn\'t import that file.", true);' in body
+    assert 'toast(error?.message || "Couldn\'t import that file.", "info");' in body
+
+
+def test_ai21_archiving_a_chat_from_its_row_repaints_the_list():
+    """Measured gone from the sidebar 100 ms after Archive, open chat or not
+    (audit 1031 saw the row stay): the handler repaints, and the server list
+    leaves archived chats out."""
+    js = _text("sheets-selects.js")
+    handler = js[js.index('makeMenuItem("ph:archive Archive"'):]
+    handler = handler[: handler.index("items.push(")]
+    assert "chatArchiveUndo" in handler and "loadConversationList()" in handler
+
+
+def test_ai5_the_dock_web_button_asks_before_its_first_turn_on():
+    js = _text("wiring.js")
+    toggle = js[js.index("async function toggleWebSearch("):]
+    toggle = toggle[: toggle.index('$("web-search-toggle")')]
+    asked = toggle.index("confirmDialog(")
+    assert asked < toggle.index('"/preferences"'), "the question comes before the save"
+    assert "never your notes" in toggle and "Don't ask again" in toggle
+    assert "next && openFirst" in toggle, "only the dock's own button asks; the palette and the slash row do not"
+    from tessellate.ai import help_chat
+
+    body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == "websearch")
+    assert "it asks first" in body
+
+
+def test_ai14_escape_gives_the_keyboard_back():
+    edit = _text("chat-edit.js")
+    assert "cancel.addEventListener(\"click\", cancelEdit)" in edit and 'button[title="Edit this question"]' in edit
+    wiring = _text("settings-wiring.js")
+    assert '["ask-history-toggle", "ask-history-panel"]' in wiring and 'event.key !== "Escape"' in wiring
+    attach = _text("chat-attach.js")
+    assert attach.count('restoreFocusTo($("chat-input"))') >= 2
+
+
+def test_hr20_confirms_queue_so_each_one_takes_focus():
+    """Two confirms asked together show one at a time (HR20)."""
+    from _app_js import app_js_text
+
+    js = app_js_text()
+    body = js[js.index("// One confirm at a time") : js.index("// `confirmDialog`'s missing sibling")]
+    assert "confirmDialog.q = (confirmDialog.q || Promise.resolve()).then(show, show)" in body, (
+        "each confirm waits for the one before, answered or not"
+    )
+
+
+def test_hr22_the_engine_detail_reads_on_the_hover_tone():
+    """The muted detail on a hovered engine row was 3.8:1 light and 3.2:1 dark (HR22)."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index(".provider-option:is(:hover, :has(:focus-visible)) .muted") :][:120]
+    assert "color: var(--text);" in rule, rule
+
+
+def test_hr18_a_shut_model_group_builds_no_cards_until_it_opens():
+    """Settings > Models built all 31 cards on open; a shut fold builds none (HR18)."""
+    js = (ROOT / "frontend" / "js" / "settings-models.js").read_text(encoding="utf-8")
+    fill = js[js.index("for (const group of groups) {\n    const grid") :][:300]
+    assert "!grid.parentNode.open" in fill, fill
+    toggle = js[js.index('section.addEventListener("toggle"') :][:260]
+    assert "if (section.open && modelLastStatus) renderSuggested(modelLastStatus);" in toggle, toggle
+
+
+def test_hr23_the_log_list_draws_the_newest_window_and_offers_the_rest():
+    """500 records were 500 rows built on open (90 to 126 ms); the list draws the
+    newest 200 and a row offers earlier ones, so follow mode still ends on the newest (HR23)."""
+    js = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    body = js[js.index("function renderLogList()") :][:1800]
+    assert "LOG_WINDOW" in js and "visible.slice(-cap)" in body, body
+    assert "earlier record" in body, "the rest is one press away"
+    assert "list.dataset.window" in body, "no new top-level state (global-scope ratchet)"
