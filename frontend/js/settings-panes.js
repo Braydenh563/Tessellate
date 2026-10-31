@@ -411,6 +411,12 @@ function initComposerResize() {
   // fights the drag; the final height is recorded once on release. The
   // deferred frame stays: a synchronous autoGrow inside the callback is
   // the "ResizeObserver loop" console error.
+  //: `pressed` is a pointer down on the box. Only a pointer resizes a textarea
+  //: by hand, so a size change without one (the app's Ctrl +/- zoom, the
+  //: window, autoGrow) is never a height the person chose: it was recorded as
+  //: one, and its measure was a forced layout of 75 to 118 ms a zoom step at
+  //: 4x CPU (INBOX 1508).
+  const held = { pressed: false };
   let dragging = false;
   const record = () => {
     const height = Math.round(box.getBoundingClientRect().height);
@@ -421,18 +427,20 @@ function initComposerResize() {
     requestAnimationFrame(() => autoGrow(box));
   };
   box.addEventListener("pointerdown", (event) => {
+    held.pressed = true;
     const rect = box.getBoundingClientRect();
     dragging = event.clientX >= rect.right - GRABBER && event.clientY >= rect.bottom - GRABBER;
     if (dragging) box.dataset.resizing = "1";
   });
   window.addEventListener("pointerup", () => {
+    held.pressed = false;
     if (!dragging) return;
     dragging = false;
     delete box.dataset.resizing;
     record();
   });
   const observer = new ResizeObserver(() => {
-    if (dragging) return;
+    if (dragging || !held.pressed) return;
     record();
   });
   observer.observe(box);

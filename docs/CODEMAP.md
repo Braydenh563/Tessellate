@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8155, test files 1752, tests 15199, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8155, test files 1753, tests 15200, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7466)
 
@@ -1006,38 +1006,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:1107 |
+| `catalogueRun` | frontend/js/settings-panes.js:1115 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
-| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:765 |
-| `currentZoom` | frontend/js/settings-panes.js:1009 |
-| `downloadExport` | frontend/js/settings-panes.js:983 |
+| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:773 |
+| `currentZoom` | frontend/js/settings-panes.js:1017 |
+| `downloadExport` | frontend/js/settings-panes.js:991 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:1054 |
-| `initAutoGrow` | frontend/js/settings-panes.js:441 |
+| `hud` | frontend/js/settings-panes.js:1062 |
+| `initAutoGrow` | frontend/js/settings-panes.js:449 |
 | `initComposerResize` | frontend/js/settings-panes.js:363 |
-| `loadPreferences` | frontend/js/settings-panes.js:594 |
-| `markPrefsDirty` | frontend/js/settings-panes.js:912 |
-| `markPrefsSaved` | frontend/js/settings-panes.js:928 |
-| `nudgeZoom` | frontend/js/settings-panes.js:1075 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1445 |
-| `paletteCaughtNow` | frontend/js/settings-panes.js:1160 |
-| `paletteCommands` | frontend/js/settings-panes.js:1164 |
-| `paletteKeys` | frontend/js/settings-panes.js:1431 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1456 |
+| `loadPreferences` | frontend/js/settings-panes.js:602 |
+| `markPrefsDirty` | frontend/js/settings-panes.js:920 |
+| `markPrefsSaved` | frontend/js/settings-panes.js:936 |
+| `nudgeZoom` | frontend/js/settings-panes.js:1083 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1453 |
+| `paletteCaughtNow` | frontend/js/settings-panes.js:1168 |
+| `paletteCommands` | frontend/js/settings-panes.js:1172 |
+| `paletteKeys` | frontend/js/settings-panes.js:1439 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1464 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
-| `renderAutonomousSettings` | frontend/js/settings-panes.js:682 |
-| `renderPrefs` | frontend/js/settings-panes.js:612 |
-| `renderWebSearch` | frontend/js/settings-panes.js:704 |
-| `reportTimezone` | frontend/js/settings-panes.js:538 |
-| `savePrefs` | frontend/js/settings-panes.js:805 |
-| `saveSearchProvider` | frontend/js/settings-panes.js:743 |
-| `setPreference` | frontend/js/settings-panes.js:787 |
-| `setZoom` | frontend/js/settings-panes.js:1013 |
-| `updateProfileCount` | frontend/js/settings-panes.js:971 |
-| `watchOverlays` | frontend/js/settings-panes.js:453 |
-| `wirePrefsDirtyMarks` | frontend/js/settings-panes.js:947 |
+| `renderAutonomousSettings` | frontend/js/settings-panes.js:690 |
+| `renderPrefs` | frontend/js/settings-panes.js:620 |
+| `renderWebSearch` | frontend/js/settings-panes.js:712 |
+| `reportTimezone` | frontend/js/settings-panes.js:546 |
+| `savePrefs` | frontend/js/settings-panes.js:813 |
+| `saveSearchProvider` | frontend/js/settings-panes.js:751 |
+| `setPreference` | frontend/js/settings-panes.js:795 |
+| `setZoom` | frontend/js/settings-panes.js:1021 |
+| `updateProfileCount` | frontend/js/settings-panes.js:979 |
+| `watchOverlays` | frontend/js/settings-panes.js:461 |
+| `wirePrefsDirtyMarks` | frontend/js/settings-panes.js:955 |
 
 ### frontend/js/media.js (10)
 
@@ -22408,7 +22408,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15199)
+## Tests (15200)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22752,6 +22752,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_composer_regex_linear_1029.py | 3 |
 | tests/test_composer_register_1031.py | 12 |
 | tests/test_composer_relevance_1310.py | 10 |
+| tests/test_composer_resize_zoom_1508.py | 1 |
 | tests/test_composer_review_1031.py | 7 |
 | tests/test_composer_route_688.py | 21 |
 | tests/test_composer_seven_1026.py | 15 |
@@ -24872,7 +24873,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:290 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:292 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

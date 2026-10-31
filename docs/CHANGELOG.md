@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Chat composer (INBOX 1508): the app's Ctrl +/- zoom no longer measures the composer (75 to 118 ms of forced layout a step at 4x CPU) or saves the zoomed height as one you dragged; only a pointer down on the box records a height
 - Chat acts said casually (INBOX 1507): "i wanna make a note", "can i add a reminder", "lemme jot something down" are the act, not a search of the notes; a note or reminder with nothing said asks for its words ("What should the note say?")
 - Complexity (ranked row 24): the no-model check for `/chat` lives in `_composes_offline`, so the handler is back under its seed (19 to 17) and the ratchet is green
 - Validation (BK8 and DC8 together): a validator's refusal written for the person (`Said`) reaches the screen, so an unknown document type lists the valid ones again; a plain ValueError, which may quote what was sent, keeps the generic sentence
