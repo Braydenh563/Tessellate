@@ -250,6 +250,23 @@ def _plan_headings(root: Path) -> list[tuple[str, str, int]]:
     return sorted(rows)
 
 
+def script_counts(root: Path) -> dict[str, int]:
+    """The three script numbers the documents quote: the app's code (index.html's
+    `app.js` through `agent-activity.js`), every script the page loads at boot, and
+    every file in `frontend/js/` (lazy ones too). `tests/test_script_counts_1031.py`
+    holds the prose to these (audit 1031 AR10)."""
+    names: list[str] = []
+    for name in SCRIPT_SRC.findall(_read(root / "frontend" / "index.html")):
+        if name not in names and (root / "frontend" / "js" / name).is_file():
+            names.append(name)
+    first, last = names.index("app.js"), names.index("agent-activity.js")
+    return {
+        "app scripts": last - first + 1,
+        "boot scripts": len(names),
+        "script files": len(list((root / "frontend" / "js").glob("*.js"))),
+    }
+
+
 def build(root: Path, date: str) -> str:
     """The whole map as one string. `date` is the only input that is not the
     repository, so the lint can pass the committed date and compare exactly."""
@@ -274,6 +291,7 @@ def build(root: Path, date: str) -> str:
         "test files": len(tests),
         "tests": test_total,
         "plan headings": len(plans),
+        **script_counts(root),
     }
 
     out = [

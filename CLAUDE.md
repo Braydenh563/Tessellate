@@ -122,7 +122,7 @@ Run targeted tests against the base branch first.
   minutes with `-n auto`.
 - `scripts/gate.sh` (`--changed`, `--staged`, `--full`, `--sweeps`) is the
   merge gate; `node --check` after JS edits.
-- The app's code is 27 classic scripts sharing one global scope (index.html
+- The app's code is 28 classic scripts sharing one global scope (index.html
   order); a file calls only upwards at load. Tests read `app_js_text()` from
   `tests/_app_js.py`, never `frontend/js/app.js`. Only `frontend/sw.js` stays
   at the root. `python scripts/codemap.py` regenerates CODEMAP
