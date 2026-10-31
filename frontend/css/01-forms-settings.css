@@ -3561,10 +3561,15 @@ mark.global-find-hit.global-find-current {
   white-space: nowrap;
 }
 .theme-swatch {
+  display: flex;
+  align-items: center;
+  /* The eye is the tile's corner (settings-controls-lazy.css), so the dots stay left of it. */
+  justify-content: flex-start;
+  padding-inline-start: var(--space-2);
   height: 38px;
   /* Concentric: a surface inside its theme card (DESIGN.md rule 3, op4-1005). */
   border-radius: var(--radius-inner);
-  border: 1px solid var(--border);
+  background: var(--field-inset);
   box-sizing: border-box;
 }
 /* Scroll lock: while any overlay is open the page behind must not move.

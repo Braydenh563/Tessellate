@@ -119,7 +119,8 @@ function paintActivity(body) {
     return li;
   });
   $("activity-finished").replaceChildren(...finished);
-  $("activity-finished-head").classList.toggle("hidden", !finished.length);
+  $("activity-finished-card").classList.toggle("hidden", !finished.length);
+  $("activity-count-running").textContent = String(jobs.length);
 }
 
 //: The report sheet lives with the importers (app-import.js, lazy).

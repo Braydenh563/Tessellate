@@ -3964,7 +3964,8 @@ class _SettingsFilledButtons(HTMLParser):
     segmented well, hidden, or a card/tile/swatch that only looks like one."""
 
     QUIET = {"ghost", "linklike", "icon-only", "icon-button", "hidden", "doc-dock-menu-item"}
-    WELLS = {"seg", "segmented-control", "accent-swatches", "theme-presets", "theme-grid"}
+    #: `tabs-line` (INBOX 1478): a pane's tab row is navigation, not an action.
+    WELLS = {"seg", "segmented-control", "accent-swatches", "theme-presets", "theme-grid", "tabs-line"}
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 
     def __init__(self) -> None:
@@ -6484,3 +6485,88 @@ def test_an_equation_field_has_one_door() -> None:
     assert "mathFieldPane" in design and "openMathInPlace" in design
     field = (ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8")
     assert 'setAttribute("style"' not in field and ".style.cssText" in field
+
+
+def test_every_popup_has_one_anatomy() -> None:
+    """INBOX 1478, the owner's reference screenshots (a Skills popup with tabs
+    and counts, a Theme popup of dot tiles, three minimised pills): an accent
+    glyph in every head, a glyph tab row with counts where a popup has tabs,
+    content in bordered cards headed by a glyph and a title, and the theme
+    tiles as four overlapping dots over the name (DESIGN.md, "A popup's
+    anatomy"). The styles are one lazy sheet, never the boot sheets."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    phosphor = (ROOT / "frontend" / "vendor" / "phosphor" / "style.css").read_text(encoding="utf-8")
+    bare = []
+    for match in re.finditer(r'<(?:h[1-6]|strong|span)[^>]*dialog-head-title[^>]*>', html):
+        # The glyph is in the title or beside it, inside the same head.
+        head_at = max(html.rfind("dialog-head", 0, match.start() + 1), 0)
+        window = html[html.rfind("<div", 0, head_at) : match.end() + 400]
+        if "pop-glyph" not in window:
+            bare.append(html[match.start() : match.end() + 60].replace("\n", " "))
+    assert not bare, f"a popup head without its glyph (class pop-glyph): {bare}"
+    for name in set(re.findall(r'class="ph ph-([a-z0-9-]+) pop-(?:glyph|tab-glyph)"', html)):
+        assert f".ph-{name}:before" in phosphor, f"ph-{name} is not in the icon font"
+    sheet = (ROOT / "frontend" / "css" / "popup-anatomy-lazy.css").read_text(encoding="utf-8")
+    for selector in (".dialog-head .pop-glyph", ".pop-card", ".pop-card-head", ".pop-card .pop-card-title", ".pop-count", ".popup-kinds > button > .pop-tab-glyph"):
+        assert selector in sheet, f"{selector} is not in popup-anatomy-lazy.css"
+    assert "backdrop-filter" not in sheet, "a blur belongs on the glass-off list, never in the anatomy sheet"
+    boot = "".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "frontend" / "css").glob("[0-9]*.css")))
+    assert ".pop-card" not in boot and ".pop-glyph" not in boot, "the anatomy is lazy (the boot CSS is at its cap)"
+    entries = (ROOT / "frontend" / "js" / "lazy-entries.js").read_text(encoding="utf-8")
+    assert 'popupAnatomy: ["/css/popup-anatomy-lazy.css", "/js/popup-glyph.js"]' in entries
+    assert 'ensureModule("popupAnatomy")' in (ROOT / "frontend" / "js" / "drag-edge.js").read_text(encoding="utf-8")
+    assert "popup-anatomy-lazy.css" in (ROOT / "tests" / "_css_paths.py").read_text(encoding="utf-8")
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A popup's anatomy" in design and "pop-glyph" in design and "`.pop-card`" in design
+
+
+def test_a_pane_tab_row_names_sections_that_exist() -> None:
+    """The glyph tab row on a Settings pane (`.pane-tabs`, `ensurePaneTabs`):
+    each tab names its section by `data-target`, a glyph and a word, and a
+    count is a `.pop-count` with an id the script fills."""
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    navs = re.findall(r'<nav class="tabs-line popup-kinds pane-tabs" id="([a-z-]+)"[^>]*>(.*?)</nav>', html, flags=re.S)
+    assert {name for name, _ in navs} == {"skills-tabs", "tasks-tabs"}
+    for name, inner in navs:
+        buttons = re.findall(r"<button[^>]*data-target=(['\"])(.*?)\1[^>]*>(.*?)</button>", inner, flags=re.S)
+        assert len(buttons) == 3, name
+        for _quote, target, body in buttons:
+            assert 'class="ph ph-' in body and "pop-tab-glyph" in body, f"{name}: a tab without a glyph"
+            if target.startswith("#"):
+                assert f'id="{target[1:]}"' in html, f"{name}: {target} is not in the page"
+            else:
+                assert target in html.replace("'", '"') or target.replace('"', "'") in html, f"{name}: {target}"
+        for ident in re.findall(r'class="pop-count" id="([a-z-]+)"', inner):
+            assert any(f'$("{ident}")' in p.read_text(encoding="utf-8") for p in JS), f"nothing fills #{ident}"
+    controls = (ROOT / "frontend" / "js" / "settings-controls.js").read_text(encoding="utf-8")
+    assert "function ensurePaneTabs(box)" in controls and "  ensurePaneTabs(box);" in controls
+    activity = html[html.index('id="activity-tabs"') : html.index('id="activity-running"')]
+    assert activity.count("pop-tab-glyph") == 2 and activity.count("pop-count") == 2
+
+
+def test_the_theme_tile_is_four_overlapping_dots_over_the_name() -> None:
+    settings = (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    swatch = settings[settings.index("function themeSwatch(preset)") : settings.index("//: A theme under the pointer")]
+    assert swatch.count(",") >= 3 and "set.page, set.card, set.accent" in swatch
+    tiles = settings[settings.index("function renderThemePresets()") : settings.index("// Say plainly which manual settings")]
+    assert 'dot.className = "theme-dot"' in tiles and "for (const colour of themeSwatch(preset))" in tiles
+    assert "borderBottom" not in tiles, "the two-band swatch is gone"
+    lazy = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    assert ".theme-dot + .theme-dot" in lazy and "margin-inline-start: -" in lazy
+
+
+def test_a_popup_title_names_its_glyph_in_node() -> None:
+    import json
+    import shutil
+    import subprocess
+
+    if shutil.which("node") is None:
+        return
+    script = (
+        'const vm=require("node:vm"),fs=require("node:fs");'
+        'const ctx={document:{addEventListener(){}},Element:class{}};vm.createContext(ctx);'
+        'vm.runInContext(fs.readFileSync(process.argv[1],"utf8")+"\\n;globalThis.f=popupGlyphFor;",ctx);'
+        "console.log(JSON.stringify([\"Colour for 3 categories\",\"Manage tags\",\"Kind of link\",\"Add to 31 October\",\"Review the map before it is made\",\"Find notes worth combining\",\"Unlabelled thing\"].map(ctx.f)));"
+    )
+    out = subprocess.run(["node", "-e", script, str(ROOT / "frontend" / "js" / "popup-glyph.js")], capture_output=True, text=True, check=True)
+    assert json.loads(out.stdout) == ["palette", "tag", "link", "calendar-plus", "eye", "app-window", "app-window"]

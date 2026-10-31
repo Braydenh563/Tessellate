@@ -89,4 +89,5 @@ function initDragSelectEdgeScroll() {
 lazyScript("/js/lag-watch.js");
 //: Movable panels (INBOX 1427) ride along with this late bundle (row in lazy-entries.js).
 ensureModule("panelMovable");
+ensureModule("popupAnatomy");
 initDragSelectEdgeScroll();

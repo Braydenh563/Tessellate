@@ -3158,6 +3158,7 @@ settingsReadouts.smallModel = renderSmallModelAuto;
 //: capture phase and the label follows folds opened by hand too.
 function ensureSettingsFoldAll(box) {
   if (!box) return;
+  ensurePaneTabs(box);
   const folds = () => [...box.querySelectorAll("details")].filter((d) => !d.parentElement.closest("details"));
   const bar = box.querySelector(":scope > .settings-pane-title");
   if (!bar || folds().length < 2) return;
@@ -3190,6 +3191,39 @@ function ensureSettingsFoldAll(box) {
   }
   if (box.id === "settings-appearance") ensureAppearancePopOut(box);
   paint();
+}
+
+//: **A pane's glyph tab row** (INBOX 1478, DESIGN.md "A popup's anatomy"): a
+//: `.pane-tabs` nav in the markup whose buttons name a section by
+//: `data-target`. A press opens the section's fold and goes to it (the pane is
+//: one scroll, so nothing is hidden and Find, "On this page" and Expand all
+//: still reach everything); a fold opened by anything else marks its tab.
+function ensurePaneTabs(box) {
+  const nav = box?.querySelector(":scope > .pane-tabs");
+  if (!nav || nav.dataset.wired) return;
+  nav.dataset.wired = "1";
+  ensureModule("popupAnatomy");
+  const tabs = [...nav.querySelectorAll("button[data-target]")];
+  const aim = (tab) => box.querySelector(tab.dataset.target);
+  const mark = (on) => tabs.forEach((tab) => {
+    tab.classList.toggle("active", tab === on);
+    tab.setAttribute("aria-current", String(tab === on));
+  });
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      const el = aim(tab);
+      if (!el) return;
+      if (el.matches("details")) el.open = true;
+      mark(tab);
+      el.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+      if (tab.dataset.focus) $(tab.dataset.focus)?.focus({ preventScroll: true });
+    });
+  }
+  box.addEventListener("toggle", (event) => {
+    const hit = tabs.find((tab) => aim(tab) === event.target);
+    if (hit && event.target.open) mark(hit);
+  }, true);
+  mark(tabs[0]);
 }
 
 //: The Pop out button at the top of Settings, Appearance: the same controls in

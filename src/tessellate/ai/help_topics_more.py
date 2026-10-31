@@ -546,7 +546,8 @@ MORE_TOPICS: list[dict] = [
             "that made it. Under it, what finished in the last half hour says how "
             "it ended, how long it took and when, with its lines. While anything runs, the status bar's job slot says how "
             "many and names the newest. Open Activity from it, its agent runs count, or the "
-            "palette (Activity). Its Agent runs tab lists each run this session "
+            "palette (Activity). Its two tabs carry a glyph and a count, and each part is a card "
+            "headed by a glyph and a title. Its Agent runs tab lists each run this session "
             "with its steps, and the log is in its menu. Stop the model, in the "
             "menu and in Settings, Models beside Use this model, stops any answer "
             "and unloads the model from memory (Ollama drops it at once; the chat's Stop reaches the model too); a server "
@@ -723,7 +724,7 @@ MORE_TOPICS: list[dict] = [
             "build a scheme", "border style", "shadow", "interface animations",
         ),
         "body": (
-            "Settings, Appearance. Themes: press the eye in a theme's corner to see it on the whole app, then Apply or Cancel, "
+            "Settings, Appearance. Themes: each theme is a tile of four overlapping dots (the page, its card, the accent and the ink) over its name; press the eye in a theme's corner to see it on the whole app, then Apply or Cancel, "
             "press Surprise me for a random one, save and switch your own. Theme & "
             "colour: Palette, Mode (light, dark or system), Accent colour or a "
             "custom one (a colour a button's words cannot be read on is "
@@ -2016,9 +2017,11 @@ MORE_TOPICS.extend(
                 "app, so you see each change as you make it. Open it from the command "
                 "palette (Ctrl+K, Appearance), by right-clicking the light and dark "
                 "button in the top bar, or with Pop out at the top of Settings, "
-                "Appearance (which closes Settings and leaves the panel). The strip "
-                "under its head jumps to Theme, Colour, Text, Layout, Background art "
-                "or Motion, and the panel opens on the last one you used. Peek fades "
+                "Appearance (which closes Settings and leaves the panel). The tab row "
+                "under its head (a glyph on each tab, and a count on Theme) jumps to "
+                "Theme, Colour, Text, Layout, Background art "
+                "or Motion, and the panel opens on the last one you used. Peek, in "
+                "the head, fades "
                 "the panel so you can judge a colour on the app behind it. A changed "
                 "setting shows a small arrow that puts it back to its default. Drag "
                 "its head to move it, to a screen edge to dock it, the corner to "

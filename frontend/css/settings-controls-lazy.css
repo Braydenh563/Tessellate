@@ -15,6 +15,17 @@
 .theme-card-cell > .theme-card {
   flex: 1 1 auto;
 }
+/* Four dots that overlap (INBOX 1478): each ringed in the tile's own ground so
+   the one beside it reads as a separate colour. */
+.theme-dot {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 2px var(--inner), inset 0 0 0 1px var(--border);
+}
+.theme-dot + .theme-dot {
+  margin-inline-start: -0.5rem;
+}
 .theme-eye {
   position: absolute;
   top: var(--space-2);

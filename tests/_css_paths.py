@@ -142,6 +142,8 @@ CSS_FILES = [
     #: The meaning-search notice (app.js `LAZY_MODULES.semanticNotice`).
     CSS_DIR / "semantic-notice-lazy.css",
     CSS_DIR / "plain-head-lazy.css",
+    #: One anatomy for every popup: glyph head, glyph tabs, bordered cards (INBOX 1478).
+    CSS_DIR / "popup-anatomy-lazy.css",
 ]
 
 

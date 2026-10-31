@@ -1648,14 +1648,15 @@ const THEME_PRESETS = {
   },
 };
 
-// The two colours a theme card shows: the page it sits on and the accent it
-// picks out. Read from the palette itself so a palette tweak can never leave
-// the theme cards advertising a colour the app no longer uses.
+// The four colours a theme tile shows as overlapping dots (INBOX 1478): the
+// page, its card, the accent and the ink. Read from the palette itself so a
+// palette tweak can never leave the tiles advertising a colour the app no
+// longer uses; the ink is the one neutral a palette does not carry.
 function themeSwatch(preset) {
   const palette = PALETTES.find((p) => p.id === preset.values.palette) || PALETTES[0];
   const isDark = document.documentElement.dataset.mode === "dark";
   const set = isDark ? palette.dark : palette.light;
-  return [set.page, set.accent];
+  return [set.page, set.card, set.accent, isDark ? "#ecebe8" : "#1c1c1a"];
 }
 
 //: A theme under the pointer in Settings (settings-controls.js previewTheme):
@@ -2507,10 +2508,13 @@ function renderThemePresets() {
     button.setAttribute("aria-pressed", String(name === active));
     const swatch = document.createElement("span");
     swatch.className = "theme-swatch";
-    // Two bands: the page it sits on and the accent it picks out.
-    const [page, accent] = themeSwatch(preset);
-    swatch.style.background = page;
-    swatch.style.borderBottom = `6px solid ${accent}`;
+    // Four overlapping dots: page, card, accent, ink.
+    for (const colour of themeSwatch(preset)) {
+      const dot = document.createElement("i");
+      dot.className = "theme-dot";
+      dot.style.background = colour;
+      swatch.appendChild(dot);
+    }
     const caption = document.createElement("span");
     caption.className = "theme-card-name";
     caption.textContent = preset.label;
