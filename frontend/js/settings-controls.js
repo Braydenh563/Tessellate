@@ -3413,3 +3413,64 @@ function renderPinSettings(pin) {
       : "Unlock on this computer with a few digits instead of your password.";
   }
 }
+
+// The review panel for the background librarian (ROADMAP §40 item 2).
+//
+// A true dry-run is not available here, the agent picks each call from the
+// result of the last one, so a pass with the writes stubbed out stops
+// resembling the pass that would really run, and a preview that lies is worse
+// than no preview. What is available is honest and nearly as useful: every
+// write already captured the call that reverses it, so the pass can be read
+// back and undone one item at a time. `changeRow` is the same renderer the
+// chat uses for a skill's result, so Undo here goes through exactly the path
+// the chat's own Undo buttons do.
+async function renderAutonomousReview() {
+  const box = $("autonomous-review");
+  const list = $("autonomous-review-list");
+  if (!box || !list) return;
+
+  const pass = await apiJson("/tasks/autonomous/last").catch(() => null);
+  const changes = pass?.changes || [];
+  box.classList.toggle("hidden", changes.length === 0);
+  if (!changes.length) return;
+
+  const when = pass.finished_at ? whenText(pass.finished_at) : "";
+  $("autonomous-review-title").textContent =
+    `What the last run changed, ${changes.length} thing(s)` + (when ? `, ${when}` : "");
+  list.replaceChildren(...changes.map((change) => changeRow(change)));
+}
+
+async function renderToolSettings() {
+  renderMcpSnippet();
+  const list = $("tool-list");
+  showSkeletons(list, 4, "li");
+  const [catalog, prefs] = await Promise.all([
+    apiJson("/chat/tools").catch(() => []),
+    apiJson("/preferences").catch(() => ({ disabled_tools: [] })),
+  ]);
+  clearSkeletons(list);
+  prefsCache = prefs;
+  renderToolFocus(prefs.tool_focus || "auto");
+  renderSmallModelMode(prefs.small_model_mode || "auto");
+  renderRunBudget(prefs);
+  const disabled = new Set(prefs.disabled_tools || []);
+  list.replaceChildren();
+  //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
+  //: grouped table (read, write, destructive)"), each group under an
+  //: `h4.setting-subhead` (DESIGN.md: a subdivision inside a group) that
+  //: spans both columns. Within a group, the catalog's own order.
+  for (const [key, title] of TOOL_GROUPS) {
+    const members = catalog.filter((t) => (t.group || "read") === key);
+    if (!members.length) continue;
+    const head = document.createElement("li");
+    head.className = "tool-group-head";
+    head.dataset.group = key;
+    const h4 = document.createElement("h4");
+    h4.className = "setting-subhead";
+    h4.textContent = title;
+    head.append(h4);
+    list.append(head);
+    for (const tool of members) appendToolRow(list, tool, disabled, key);
+  }
+  applyToolFilter();
+}

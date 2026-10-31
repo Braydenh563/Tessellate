@@ -446,6 +446,9 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
+    "capture-card-more.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",
+    "quick-note.js:createNoteSafely": "inverse: the one door for saving a new note; each caller offers the saved note's Undo (announceSavedNote, pushEntryCreateUndo, the paste toast's Bin); a held note is not on the server yet",
     "chat-attach.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
     "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",

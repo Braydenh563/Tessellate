@@ -2224,31 +2224,6 @@ $("semantic-search-toggle")?.addEventListener("change", () => {
   // "Search the notebook" selection action.
   if (noteSearch) loadEntries();
 });
-// The review panel for the background librarian (ROADMAP §40 item 2).
-//
-// A true dry-run is not available here, the agent picks each call from the
-// result of the last one, so a pass with the writes stubbed out stops
-// resembling the pass that would really run, and a preview that lies is worse
-// than no preview. What is available is honest and nearly as useful: every
-// write already captured the call that reverses it, so the pass can be read
-// back and undone one item at a time. `changeRow` is the same renderer the
-// chat uses for a skill's result, so Undo here goes through exactly the path
-// the chat's own Undo buttons do.
-async function renderAutonomousReview() {
-  const box = $("autonomous-review");
-  const list = $("autonomous-review-list");
-  if (!box || !list) return;
-
-  const pass = await apiJson("/tasks/autonomous/last").catch(() => null);
-  const changes = pass?.changes || [];
-  box.classList.toggle("hidden", changes.length === 0);
-  if (!changes.length) return;
-
-  const when = pass.finished_at ? whenText(pass.finished_at) : "";
-  $("autonomous-review-title").textContent =
-    `What the last run changed, ${changes.length} thing(s)` + (when ? `, ${when}` : "");
-  list.replaceChildren(...changes.map((change) => changeRow(change)));
-}
 
 // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
 // `openLibraryOn` went with them. The buttons were dropped once with their

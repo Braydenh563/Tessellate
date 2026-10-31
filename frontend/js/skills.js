@@ -914,41 +914,6 @@ async function saveToolSwitch(check, name) {
   applyToolFilter();
 }
 
-async function renderToolSettings() {
-  renderMcpSnippet();
-  const list = $("tool-list");
-  showSkeletons(list, 4, "li");
-  const [catalog, prefs] = await Promise.all([
-    apiJson("/chat/tools").catch(() => []),
-    apiJson("/preferences").catch(() => ({ disabled_tools: [] })),
-  ]);
-  clearSkeletons(list);
-  prefsCache = prefs;
-  renderToolFocus(prefs.tool_focus || "auto");
-  renderSmallModelMode(prefs.small_model_mode || "auto");
-  renderRunBudget(prefs);
-  const disabled = new Set(prefs.disabled_tools || []);
-  list.replaceChildren();
-  //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
-  //: grouped table (read, write, destructive)"), each group under an
-  //: `h4.setting-subhead` (DESIGN.md: a subdivision inside a group) that
-  //: spans both columns. Within a group, the catalog's own order.
-  for (const [key, title] of TOOL_GROUPS) {
-    const members = catalog.filter((t) => (t.group || "read") === key);
-    if (!members.length) continue;
-    const head = document.createElement("li");
-    head.className = "tool-group-head";
-    head.dataset.group = key;
-    const h4 = document.createElement("h4");
-    h4.className = "setting-subhead";
-    h4.textContent = title;
-    head.append(h4);
-    list.append(head);
-    for (const tool of members) appendToolRow(list, tool, disabled, key);
-  }
-  applyToolFilter();
-}
-
 //: The four groups, in the order a person scanning for risk reads them.
 const TOOL_GROUPS = [
   ["read", "Reads your notebook"],
