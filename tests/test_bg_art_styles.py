@@ -409,3 +409,28 @@ def test_constellation_stars_are_copied_unscaled():
     assert "g.rect((sx[i] - 1) | 0, (sy[i] - 1) | 0, 2, 2)" in frame
     # No scaled copies of a star left in the frame.
     assert ", ds, ds)" not in frame and ", hs, hs)" not in frame
+
+
+def test_the_art_drops_to_12_frames_after_30_seconds_without_a_pointer():
+    """audit 1031 Z18: nobody is watching it, so it costs less (a style's own
+    per-frame step already scales with the rate it asks for)."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    text = BG_ART.read_text(encoding="utf-8")
+    pick = lambda name: text[text.index(name) :].split("\n}\n")[0] + "\n}\n"  # noqa: E731
+    source = (
+        "let bgArtOnBattery = false, bgArtLastPointer = 0, NOW = 0;\n"
+        "const performance = { now: () => NOW };\n"
+        "const BG_ART_SMALL_MACHINE = false;\n"
+        + re.search(r"const BG_ART_CALM_MS = \d+;", text).group(0) + "\n"
+        + re.search(r"const BG_ART_CALM_FPS = \d+;", text).group(0) + "\n"
+        + pick("function bgArtCalm(")
+        + pick("function bgArtFrameRate(")
+        + "const at = (t) => { NOW = t; return bgArtFrameRate(); };\n"
+        "bgArtLastPointer = 1000;\n"
+        "console.log(JSON.stringify([at(1000), at(30999), at(31001), (bgArtLastPointer = 40000, at(40001))]));\n"
+    )
+    result = subprocess.run([node, "-e", source], capture_output=True, text=True, check=True)
+    assert json.loads(result.stdout) == [30, 30, 12, 30]
+    assert 'type !== "keydown"' in text and "bgArtLastPointer = performance.now()" in text

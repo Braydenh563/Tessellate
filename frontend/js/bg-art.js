@@ -2268,6 +2268,7 @@ let bgArtBlurTimer = 0;
 let bgArtResizeTimer = 0;
 let bgArtRestart = null; // settings.js's startBgArt, for a resize to call
 let bgArtLastInput = 0;
+let bgArtLastPointer = performance.now(); // the last pointer move, press or touch, for the calm rate
 // Pictures on their way out: [element, object URL] pairs kept on screen
 // until whatever replaces them is ready, so a theme or accent change swaps
 // one picture for the next instead of flashing the bare page between. A
@@ -2305,8 +2306,19 @@ const BG_ART_SMALL_MACHINE =
   (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
 let bgArtOnBattery = false;
 
+//: No pointer for 30 s: nobody is watching it move, so it draws 12 frames a
+//: second (a style's own per-frame step scales with the rate it asks for).
+//: Keys do not count: typing is not looking.
+const BG_ART_CALM_MS = 30000;
+const BG_ART_CALM_FPS = 12;
+
+function bgArtCalm() {
+  return performance.now() - bgArtLastPointer > BG_ART_CALM_MS;
+}
+
 function bgArtFrameRate() {
-  return BG_ART_SMALL_MACHINE || bgArtOnBattery ? 20 : 30;
+  const base = BG_ART_SMALL_MACHINE || bgArtOnBattery ? 20 : 30;
+  return bgArtCalm() ? Math.min(base, BG_ART_CALM_FPS) : base;
 }
 
 if (typeof navigator.getBattery === "function") {
@@ -2783,6 +2795,7 @@ window.addEventListener("focus", () => {
 for (const type of ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"]) {
   window.addEventListener(type, () => {
     bgArtLastInput = performance.now();
+    if (type !== "keydown") bgArtLastPointer = performance.now();
     if (bgArtPaused.idle) {
       bgArtPaused.idle = false;
       bgArtApplyPause();
