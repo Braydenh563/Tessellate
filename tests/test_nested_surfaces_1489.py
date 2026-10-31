@@ -41,6 +41,7 @@ BARE_STICKY = {
     ".timeline-bucket-head",
     ".note-edit-foot",
     "#capture .capture-commit-row",
+    ".agent-monitor > .monitor-header",
 }
 
 

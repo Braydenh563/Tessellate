@@ -5900,6 +5900,44 @@ def test_a_panel_head_is_a_title_and_not_the_eyebrow() -> None:
     assert heads and set(heads) == {"h3"}, f"a panel head left the h3 recipe: {sorted(set(heads))}"
 
 
+#: Heads that may paint a ground. `.modal-card > .dialog-head` paints the card's
+#: own opaque ground (the same token, no sheen on a modal card, so no block);
+#: the two `peeking` heads are the translucent state of a panel while the app
+#: behind it is being previewed. A bare sticky head takes its ground only when
+#: stuck, from the recipe in 08-consistency.css, and its `@supports not`
+#: fallback is the card's own wash (`test_nested_surfaces_1489.BARE_STICKY`).
+HEAD_GROUND_ALLOWED = {
+    ".modal-card > .dialog-head",
+    ".modal-overlay.peeking .modal-card > .dialog-head",
+    ".appearance-panel.peeking > .dialog-head",
+    ".agent-monitor > .monitor-header",
+}
+
+
+def test_no_popup_head_paints_a_block_of_its_own() -> None:
+    """INBOX 1503, the owner: "the dark rectangle behind the agent runs popup
+    panel header doesnt look professional". The Activity head was sticky on
+    `--modal-bg-opaque` inside a glass panel whose surface is a sheen over
+    `--card`: measured at one y, the head was (22, 22, 21) against the panel's
+    (27, 27, 26) in dark and (247, 247, 245) against (240, 240, 239) in light.
+    A head, a panel head or a monitor head names no ground at rest; a sticky
+    one takes it from the stuck-ground recipe."""
+    found = set()
+    for css in CSS:
+        for selector, body in _rules(css.read_text(encoding="utf-8")):
+            grounds = re.findall(r"(?<![\w-])background(?:-color|-image)?:\s*([^;]*);", body)
+            if not any(v.strip() not in {"none", "transparent"} for v in grounds):
+                continue
+            for part in selector.split(","):
+                part = " ".join(part.split())
+                last = re.split(r"[\s>+~]+", part)[-1]
+                if re.search(r"(\.dialog-head|\.panel-head|\.monitor-header)(:[\w-]+(\([^)]*\))?)*$", last):
+                    found.add(part)
+    assert found <= HEAD_GROUND_ALLOWED, f"a head paints a ground of its own: {sorted(found - HEAD_GROUND_ALLOWED)}"
+    # The allowance only shrinks: a name that no longer paints is deleted from it.
+    assert found >= HEAD_GROUND_ALLOWED, sorted(HEAD_GROUND_ALLOWED - found)
+
+
 #: Filters built by hand before `listFilter` existed (row 1643): each keeps
 #: its own field because its list does more than hide rows (a sort, a scope,
 #: a count). May only shrink; a new long list calls `listFilter`.

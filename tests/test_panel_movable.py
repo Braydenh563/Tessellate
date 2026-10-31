@@ -9,6 +9,7 @@ Playwright, numbers in the commit).
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -300,3 +301,171 @@ def test_a_pinned_panel_minimises_to_a_pill_above_the_composer() -> None:
     for token in ("--radius-pill", "--card", "--border", "--shadow-md"):
         assert f"var({token})" in css
     assert "min-height: calc(var(--control-h-lg) + var(--space-4))" in css
+
+
+#: INBOX 1504: a fake tree stands in for the DOM, so the stacking and clipping
+#: decisions of `panelSafe` run in node. A node is `{ name, parent, style, rect,
+#: order, modal, shown }`; `style` overrides the defaults below.
+STACK_HARNESS = r"""
+const vm = require("node:vm");
+const fs = require("node:fs");
+const ctx = { JSON, Math, Number, Array, Object, Element: class {}, WeakMap, Node: { DOCUMENT_POSITION_FOLLOWING: 4 } };
+ctx.localStorage = { getItem: () => null, setItem: () => {} };
+ctx.prefs = { get: (k, f = "") => f, setJSON: () => true };
+vm.createContext(ctx);
+vm.runInContext(fs.readFileSync(process.argv[1], "utf8") + "\n;globalThis.PANEL_STATE = PANEL_STATE;", ctx);
+const DEFAULTS = { position: "static", zIndex: "auto", opacity: "1", isolation: "auto", overflowX: "visible", overflowY: "visible", display: "block" };
+let order = 0;
+const all = [];
+function node(name, parent, style = {}, rect = [0, 0, 1440, 900], opts = {}) {
+  const n = { name, parentElement: parent || null, style: { ...DEFAULTS, ...style }, rect, order: order++, modal: !!opts.modal, tagName: opts.tag || "DIV", dataset: {} };
+  n.contains = (o) => { for (let x = o; x; x = x.parentElement) if (x === n) return true; return false; };
+  n.compareDocumentPosition = (o) => (o.order > n.order ? 4 : 2);
+  n.matches = (q) => q === ":modal" && n.modal;
+  n.getBoundingClientRect = () => ({ left: rect[0], top: rect[1], right: rect[2], bottom: rect[3], width: rect[2] - rect[0], height: rect[3] - rect[1] });
+  n.getClientRects = () => (opts.hidden ? [] : [1]);
+  n.closest = () => null;
+  all.push(n);
+  return n;
+}
+ctx.getComputedStyle = (n) => n.style;
+function world(build) {
+  all.length = 0;
+  const root = node("html", null);
+  const doc = { documentElement: root, body: node("body", root), getElementById: () => null, querySelectorAll: (q) => (q === "aside.sidebar-panel" ? all.filter((n) => n.tagName === "ASIDE") : []) };
+  ctx.document = doc;
+  return build(doc.body);
+}
+ctx.world = world; ctx.node = node;
+const out = {};
+// a modal dialog in the top layer, a sidebar at the left: the window is the limit
+out.modal = world((body) => {
+  const side = node("sidebar", body, { position: "sticky" }, [16, 60, 276, 850], { tag: "ASIDE" });
+  const dlg = node("dialog", body, { position: "fixed" }, [352, 160, 1088, 730], { modal: true });
+  return { safe: ctx.panelSafe(1440, 900, dlg), above: ctx.panelAbove(dlg, side) };
+});
+// a fixed panel with a higher z-index than the sticky sidebar draws above it
+out.higher = world((body) => {
+  const side = node("sidebar", body, { position: "sticky" }, [16, 60, 276, 850], { tag: "ASIDE" });
+  const panel = node("panel", body, { position: "fixed", zIndex: "50" }, [352, 160, 1088, 730]);
+  return { safe: ctx.panelSafe(1440, 900, panel), above: ctx.panelAbove(panel, side) };
+});
+// a panel under the sidebar's own z-index keeps the free area
+out.lower = world((body) => {
+  const side = node("sidebar", body, { position: "sticky", zIndex: "60" }, [16, 60, 276, 850], { tag: "ASIDE" });
+  const panel = node("panel", body, { position: "fixed", zIndex: "50" }, [352, 160, 1088, 730]);
+  return { safe: ctx.panelSafe(1440, 900, panel), above: ctx.panelAbove(panel, side) };
+});
+// the same z-index: the later in the document is above
+out.tie = world((body) => {
+  const early = node("early", body, { position: "fixed", zIndex: "5" }, [0, 0, 10, 10]);
+  const side = node("sidebar", body, { position: "fixed", zIndex: "5" }, [16, 60, 276, 850], { tag: "ASIDE" });
+  const panel = node("panel", body, { position: "fixed", zIndex: "5" }, [352, 160, 1088, 730]);
+  return { later: ctx.panelAbove(panel, side), earlier: ctx.panelAbove(early, side) };
+});
+// the attach panel: absolute, in a z-index 46 dock, under a page that clips on x
+// from 332; the sidebar is z-auto beside it. The clip box is the limit, not the sidebar.
+out.clipped = world((body) => {
+  const side = node("sidebar", body, { position: "sticky" }, [16, 60, 316, 850], { tag: "ASIDE" });
+  const main = node("tab-main", body, { overflowX: "clip" }, [332, 60, 1424, 850]);
+  const dock = node("dock", main, { position: "relative", zIndex: "46" }, [353, 780, 1403, 840]);
+  const picker = node("picker", dock, { position: "relative" }, [362, 780, 398, 840]);
+  const panel = node("panel", picker, { position: "absolute", zIndex: "45" }, [362, 300, 906, 780]);
+  return { safe: ctx.panelSafe(1440, 900, panel), box: ctx.panelClipBox(panel, 1440, 900) };
+});
+// a box between an absolute panel and its containing block does not clip it
+out.between = world((body) => {
+  const cb = node("cb", body, { position: "relative" }, [100, 100, 900, 700]);
+  const mid = node("mid", cb, { overflowX: "hidden", overflowY: "hidden" }, [300, 300, 400, 400]);
+  const panel = node("panel", mid, { position: "absolute" }, [350, 350, 380, 380]);
+  return ctx.panelClipBox(panel, 1440, 900);
+});
+// an in-flow panel is clipped by every ancestor that clips
+out.inflow = world((body) => {
+  const mid = node("mid", body, { overflowX: "hidden", overflowY: "auto" }, [300, 100, 800, 500]);
+  const panel = node("panel", mid, { position: "relative" }, [350, 350, 380, 380]);
+  return ctx.panelClipBox(panel, 1440, 900);
+});
+// a docked panel stays an obstacle to a panel under it and not to one above it
+out.docked = world((body) => {
+  const dock = node("dock", body, { position: "fixed", zIndex: "10" }, [0, 0, 600, 900]);
+  ctx.PANEL_STATE.set(dock, { dock: "left" });
+  dock.classList = { contains: () => true };
+  ctx.document.querySelectorAll = (q) => (q === ".panel-movable-on" ? [dock] : []);
+  const low = node("low", body, { position: "fixed", zIndex: "5" }, [700, 100, 1100, 500]);
+  const high = node("high", body, { position: "fixed", zIndex: "20" }, [700, 100, 1100, 500]);
+  return { low: ctx.panelSafe(1440, 900, low).left, high: ctx.panelSafe(1440, 900, high).left };
+});
+console.log(JSON.stringify(out));
+"""
+
+
+@pytest.fixture(scope="module")
+def stacking() -> dict:
+    out = subprocess.run(["node", "-e", STACK_HARNESS, str(SRC)], capture_output=True, text=True, timeout=60, check=False)
+    assert out.returncode == 0, out.stderr
+    return json.loads(out.stdout)
+
+
+@node
+def test_a_panel_drawn_above_the_sidebar_is_bounded_by_the_window(stacking) -> None:
+    """INBOX 1504, "I cant drag the templates popup window to the left past the
+    sidebar": a modal dialog (the top layer) and a panel with a higher z-index
+    than the sidebar take the whole window; the sidebar is no obstacle."""
+    full = {"left": 0, "top": 0, "right": 1440, "bottom": 900}
+    assert stacking["modal"] == {"safe": full, "above": True}
+    assert stacking["higher"] == {"safe": full, "above": True}
+
+
+@node
+def test_a_panel_that_would_go_under_the_sidebar_keeps_the_free_area(stacking) -> None:
+    """INBOX 1474 stays: a panel under the sidebar's own z-index stops at its edge."""
+    assert stacking["lower"]["above"] is False
+    assert stacking["lower"]["safe"] == {"left": 276, "top": 0, "right": 1440, "bottom": 900}
+    # the same z-index is settled by the document order
+    assert stacking["tie"] == {"later": True, "earlier": False}
+
+
+@node
+def test_a_panel_is_bounded_by_the_box_that_clips_it(stacking) -> None:
+    """Measured on the attach panel: it vanished at its page's clip edge (332),
+    16px past the sidebar's (316), whatever the z-index."""
+    assert stacking["clipped"]["box"] == {"left": 332, "top": 0, "right": 1424, "bottom": 900}
+    assert stacking["clipped"]["safe"]["left"] == 332
+    # a box between an absolute panel and its containing block never clips it
+    assert stacking["between"] == {"left": 0, "top": 0, "right": 1440, "bottom": 900}
+    assert stacking["inflow"] == {"left": 300, "top": 100, "right": 800, "bottom": 500}
+
+
+@node
+def test_a_docked_panel_is_an_obstacle_only_to_a_panel_under_it(stacking) -> None:
+    assert stacking["docked"] == {"low": 600, "high": 0}
+
+
+def test_the_free_area_asks_what_the_panel_draws_above() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    body = js[js.index("function panelSafe(") : js.index("//: **Split screen**")]
+    assert "panelClipBox(except" in body and "panelAbove(except, el)" in body
+    # decided from the real stacking and clipping, never a list of panel ids
+    assert "note-template" not in body and "note-picker" not in body
+
+
+def test_the_switch_for_remembering_panels_is_findable_from_the_panel_and_the_palette() -> None:
+    """INBOX 1505, the owner asked for a switch that already existed: the reset
+    button in a panel's head names it, the row carries the words people use for
+    it (`data-synonyms`, so "remember panel" and "panel position" find it in
+    Find anything), and the Guide topic names it."""
+    js = SRC.read_text(encoding="utf-8")
+    assert "Settings, Appearance, Panels open where you left them, turns remembering off." in js
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    row = html[html.index('id="panel-restore-row"') : html.index('id="panel-restore-row"') + 400]
+    synonyms = re.search(r'data-synonyms="([^"]*)"', row)
+    assert synonyms and {"remember", "position", "size"} <= set(synonyms.group(1).split())
+    from tessellate.ai import help_topics_more
+
+    topic = next(
+        e for v in vars(help_topics_more).values() if isinstance(v, (list, tuple)) for e in v
+        if isinstance(e, dict) and e.get("id") == "movable-panels"
+    )
+    assert "Panels open where you left them" in topic["body"] and "names it" in topic["body"]
+    assert {"remember panel position", "panel position"} <= set(topic["keywords"])

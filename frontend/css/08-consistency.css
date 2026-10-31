@@ -10857,7 +10857,8 @@ header#top-bar button.space-switcher-btn:focus-visible {
   .contents-heading,
   .timeline-bucket-head,
   .note-edit-foot,
-  #capture .capture-commit-row {
+  #capture .capture-commit-row,
+  .agent-monitor > .monitor-header {
     container-type: scroll-state;
   }
   @container scroll-state(stuck: top) or scroll-state(stuck: bottom) {
@@ -10865,7 +10866,8 @@ header#top-bar button.space-switcher-btn:focus-visible {
     .contents-heading::before,
     .timeline-bucket-head::before,
     .note-edit-foot::before,
-    #capture .capture-commit-row::before {
+    #capture .capture-commit-row::before,
+    .agent-monitor > .monitor-header::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -10883,7 +10885,8 @@ header#top-bar button.space-switcher-btn:focus-visible {
   .contents-heading,
   .timeline-bucket-head,
   .note-edit-foot,
-  #capture .capture-commit-row {
+  #capture .capture-commit-row,
+  .agent-monitor > .monitor-header {
     background: var(--card);
   }
 }
