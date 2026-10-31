@@ -1773,7 +1773,6 @@ def _fit_toolboxes(
     unoffered: set[str] | frozenset[str],
 ) -> tuple[list[dict], list[dict]]:
     """The tools this turn offers, and the wider set a miss widens to, each fitted to the window."""
-    every_tool = offered
     # What the turn widens to if the model reaches for something it was not
     # shown (the correction below). For a small model that is the ordinary
     # question-focused set, **not** the whole registry: the narrowing above

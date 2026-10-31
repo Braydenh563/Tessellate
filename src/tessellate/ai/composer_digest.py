@@ -2237,7 +2237,16 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
 _STILL_VERB = re.compile(r"^still (need|have|want|haven't|hasn't|don't|to)\b", re.I)
 
 
-_FRAGMENT = re.compile(r"^(?:(?-i:[a-z]+ing)\b|(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$)", re.I)
+#: A body with no subject of its own: a lower-case "-ing" word first (typed
+#: case matters, so no `re.I`), or one to three words that do not open on a
+#: pronoun. Two patterns, not one with an inline flag group: CodeQL read
+#: the inline `(?-i:` form as an unmatchable `$`.
+_GERUND_OPEN = re.compile(r"[a-z]+ing\b")
+_SHORT_FRAGMENT = re.compile(r"(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$", re.I)
+
+
+def _fragment(body: str) -> bool:
+    return bool(_GERUND_OPEN.match(body) or _SHORT_FRAGMENT.match(body))
 
 
 def _join(bodies: list[str], sentences: bool = False) -> str:
@@ -2245,7 +2254,7 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
     two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
     out = bodies[0] if bodies else ""
     for body in bodies[1:]:
-        if sentences and _FRAGMENT.match(body):
+        if sentences and _fragment(body):
             #: "slicing everything but it was fun", "straighter this time":
             #: no subject of its own, so it rides on the sentence before.
             out += ", " + body

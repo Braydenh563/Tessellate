@@ -120,8 +120,6 @@ def test_the_word_counter_still_counts_tokens_with_a_letter_or_digit():
 
 
 def _seed(session, texts):
-    import json
-
     from tessellate.core.database import Entry
 
     made = []
