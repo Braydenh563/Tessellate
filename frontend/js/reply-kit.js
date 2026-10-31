@@ -73,7 +73,7 @@ function renderRelatedElsewhere(target, items) {
   label.className = "muted answer-grounding-label";
   label.textContent = "Elsewhere in your notebook:";
   row.appendChild(label);
-  const icons = { document: "ph:file-text", chat: "ph:chat-circle", reminder: "ph:bell" };
+  const icons = { document: "ph:file-text", chat: "ph:chat-circle", reminder: "ph:bell", note: "ph:note" };
   for (const item of items) {
     const button = document.createElement("button");
     button.type = "button";
@@ -89,7 +89,7 @@ function renderRelatedElsewhere(target, items) {
         openConversation?.(item.id);
       } else if (item.kind === "reminder") {
         switchTab("reminders");
-      }
+      } else if (item.kind === "note") flashEntry(item.id);
     });
     row.appendChild(button);
   }

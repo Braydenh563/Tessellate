@@ -2124,7 +2124,10 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
       open: board ? () => openWhiteboardBoard(entry.id) : (event) => openNoteAtPassage(entry.id, event?.currentTarget),
     });
   }
-  for (const item of touched || []) {
+  //: A document the composed answer quoted is a source too (INBOX 1466): the
+  //: notes are the column's, a document is in no list but this panel.
+  const quoted = (sentences || []).filter((g) => g.kind === "document").map((g) => ({ kind: "document", id: g.note_id, label: g.title }));
+  for (const item of [...(touched || []), ...quoted]) {
     const opener = TOUCHED_KINDS[item.kind] || TOUCHED_KINDS.note;
     //: A touched row carries an id and a label and nothing else, but the note
     //: behind it is already loaded, so the card need not be the poorer for it.
