@@ -1,7 +1,7 @@
 # dates-1031 (agent dates, branch agent/dates-1031)
 
-Done: (pending first commit) INBOX 1483: the say-when table leads with the relative time, "when did I" says the date then "about N ago", weekday names for this and last week, no ", from one of your notes" tail, typed faces (":D") dropped like emoji, the confirmed-fact line "..., as you told me on 11 October.", chips in the person's words ("my uni friend", "the bus").
-Next: targeted composer tests, gate --changed, codemap, CHANGELOG, INBOX 1483 resolve.
+Done: 0cb4e72 INBOX 1483: the say-when table leads with the relative time, "when did I" says the date then "about N ago", weekday names for this and last week, no ", from one of your notes" tail, typed faces (":D") dropped like emoji, the confirmed-fact line "..., as you told me on 11 October.", chips in the person's words ("my uni friend", "the bus").
+Next: wider composer sweep (35 files), gate --changed; INBOX 1483 resolved to HISTORY.
 
 Found, not fixed:
 - "what's the latest on uni" answers with the July note, not the newest (8 October); composer_digest latest-shape pick, not dates.
