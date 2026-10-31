@@ -774,7 +774,7 @@ function askPasswordPrompt({ title, message, submitLabel, submit }) {
     $("lock-cancel").classList.remove("hidden");
     $("lock-error").textContent = "";
     $("lock-password").value = "";
-    $("lock-password").type = "password";
+    $("lock-password").setAttribute("type", "password");
     $("lock-password").setAttribute("aria-label", "Password");
     $("lock-password").placeholder = "Password"; // a prompt never takes the PIN
     $("lock-password").autocomplete = "current-password";
