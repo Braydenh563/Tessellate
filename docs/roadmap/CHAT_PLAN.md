@@ -575,16 +575,6 @@ session that builds the phase should confirm it in the product first.
 
 ## Placed from INBOX, 2026-09-09
 
-~~1441. Dates in answers.~~ **Built 2026-10-29.** Moved to HISTORY.md, "Moved from the plans, 2026-10-29 (dates 1441)".
-
-172 (part). **Web links the AI writes, "better and more modern cool".**
-Decided and built in Phase 3: decision 12 below. Both forms, chosen by where
-the link sits.
-
-The owner's reports this plan owns, moved whole from INBOX.md with their numbers (never reused). Each becomes a phase row when its phase is written; until then this list is the phase.
-
-~~45. The Ask sub-tab.~~ **Folded into 63 and closed with it, 2026-10-05.**
-
 ### Found by an agent while measuring something else (2026-09-08, graph)
 
 ~~71. Web search panel, extraction UI, agent tools.~~ **Built; checked and
