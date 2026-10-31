@@ -712,7 +712,7 @@ def _written_from(text: str, today: date) -> bool:
 #: named relative to now, never a holiday or a month (those are topics, C3).
 _KNOW_AHEAD = re.compile(
     rf"^{_LEAD}(?:what do i know|what can you tell me|tell me|anything|what have i got|what is there|what(?:'s|’s) there|what do my notes have)\s+"
-    r"(?:about|on|for|regarding)\s+(?:the )?(?:tomorrow|tonight|day after tomorrow|(?:next|this coming|this) (?:week|month|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day))\W*$", re.I)
+    r"(?:about|on|for|regarding)\s+(?:the )?" + recognise.AHEAD_DAY_WORDS + r"\W*$", re.I)
 
 
 def _asks_due(text: str, today: date) -> bool:

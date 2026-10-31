@@ -32,9 +32,12 @@ def test_access_counts_and_most_accessed(ai_client):
     joke = _save(ai_client, "a funny scarecrow joke")
     _save(ai_client, "buy milk and eggs")
 
-    # Matching a question and opening the entry both count as "used".
+    # Matching a question and opening the entry both count as "used". A plain
+    # read does not (audit 1031 N22): the app opens a note with `?open=1`.
     _ask(ai_client, "any funny jokes?")
     ai_client.get(f"/entries/{joke['id']}")
+    assert ai_client.get("/entries/most-accessed").json()[0]["access_count"] == 1
+    ai_client.get(f"/entries/{joke['id']}?open=1")
 
     top = ai_client.get("/entries/most-accessed").json()
     assert [e["id"] for e in top] == [joke["id"]]

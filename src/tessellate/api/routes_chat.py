@@ -3986,6 +3986,7 @@ def _answerable_chips(chips: list, current: list, today) -> list:  # noqa: ANN00
         try:
             trial = composer.compose(chip, current, today=today, voice=_composer_voice())
         except Exception:  # noqa: BLE001 - a chip that cannot be tried is not offered
+            logging.getLogger("tessellate.chat").warning("a follow-up chip could not be tried, so it is not offered: %r", chip, exc_info=True)
             continue
         if trial.get("grounding") and not _CANNOT.search(str(trial.get("text") or "")):
             kept.append(chip)

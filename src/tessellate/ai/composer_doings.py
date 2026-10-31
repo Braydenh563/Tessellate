@@ -143,7 +143,7 @@ def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> l
             if day is None or day > today:
                 continue
             times = _times_in(s.text, forms) if says else 1
-            own = day != view.written or bool(logs) or bool(re.search(r"\b(?:today|yesterday|tonight|this morning)\b", s.text, re.I))
+            own = day != view.written or bool(logs) or recognise.says_a_recent_day(s.text)
             key = (day, 0 if times == 1 else s.start)
             if times == 1 and any(k[0] == day for k in found):
                 continue

@@ -2086,6 +2086,22 @@ def names_a_day(phrase: str) -> bool:
     return bool(_NAMES_DAY.search(phrase or ""))
 
 
+#: A day or span named relative to now that has not come ("tomorrow", "next
+#: week", "this coming friday"), as a pattern for a question's own shape
+#: (`composer_plan._KNOW_AHEAD`): the reader stays here, the shape stays there.
+AHEAD_DAY_WORDS = (
+    r"(?:tomorrow|tonight|day after tomorrow|"
+    r"(?:next|this coming|this) (?:week|month|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day))"
+)
+_SAID_RECENT_DAY = re.compile(r"\b(?:today|yesterday|tonight|this morning)\b", re.I)
+
+
+def says_a_recent_day(text: str) -> bool:
+    """Whether a sentence says the day it was written about itself ("ran 5 km
+    today"): a flag for the composer, no word becomes a date here."""
+    return bool(_SAID_RECENT_DAY.search(text or ""))
+
+
 #: A time phrase that already carries its preposition, or needs none
 #: ("since 3 October", "last week", "today", "3 days ago").
 _ADVERB_LEAD = re.compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)
@@ -2121,7 +2137,7 @@ def _dated_said(text: str, low: str) -> str:
 #: when notes were written. Any other ("Christmas", "October", "the weekend")
 #: is a thing the notes may talk about.
 _DEICTIC_PHRASE = re.compile(
-    r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|\d+ (?:days?|weeks?|months?|years?) ago)$",
+    r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|(?:\d+|a|an|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|a couple of|a few) (?:days?|weeks?|fortnights?|months?|years?) ago)$",
     re.I,
 )
 _ABOUT_PHRASE = r"\b(?:about|regarding|concerning)\s+(?:the |my |our )?{}\s*[?.!]*$"

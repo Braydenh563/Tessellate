@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Tests: the grammar harness loads autocorrect.js, a spoken amount ("two weeks ago") is a window not a topic after "about", the composer keeps a plan's and a weighed purchase's gap line, a failed follow-up chip is logged, and the date words composer_doings and composer_plan read now live in the recogniser
 - Words: one word count in Python (`core/cjk.word_count`) and one in the browser (`wordCount`); the two parallel counts are gone, and full-width punctuation (the colon, comma, brackets) is not a word in either (INBOX 1495, notes audit N29)
 - Composer: a compare opens with "Of these notes," or "Going by these notes," instead of claiming a search ("the notes I looked at", "this batch"), and its side headings start with a capital (audit 1031 C24)
 - Composer: "summarise my social notes" summarises every note filed under "Social connections" (a category that opens on the words asked), and a summary no longer shows the note's own emphasis as asterisks (audit 1031 C23)

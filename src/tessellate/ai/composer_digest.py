@@ -2519,14 +2519,24 @@ def _row(said: str, fact: Fact) -> dict:
     }
 
 
+#: A note that is weighing a purchase, not one with a price in it (audit 1031 C20).
+_PLAN_ASK = re.compile(r"\b(?:plan|plans|planning|itinerary)\b", re.I)
+_WEIGHING = re.compile(r"\blooking at an? new\b|\bleaning towards\b|\bdeciding between\b", re.I)
+
+
 def _missing(members: list[composer.NoteView], asked: str | None = None) -> str:
     """What a topic the person asked about lacks. Only a topic the question
     itself names has gaps worth saying: rent in a budget note is no
     "purchase" and a dentist note holding "essay" no "study" (audit 1031
     C20). `asked` None is the open category, where the notes are the topic."""
     text = " ".join(s.text for v in members for s in v.sentences)
-    for _, topic, facets in FACETS:
-        if asked is not None and not topic.search(asked):
+    for name, topic, facets in FACETS:
+        #: The question names the topic, asks for a plan ("what's the plan
+        #: for Lisbon": a plan has the gaps its topic lists), or (a purchase
+        #: only) the notes say they are weighing one: "what is there about a
+        #: gaming mouse" holds a note that is looking at a new one, and its
+        #: gap is where to buy it.
+        if asked is not None and not topic.search(asked) and not _PLAN_ASK.search(asked) and not (name == "purchase" and _WEIGHING.search(text)):
             continue
         if len(topic.findall(text)) >= 2 or (len(members) == 1 and topic.search(text)):
             absent = [name for name, cue in facets if not cue.search(text)]
