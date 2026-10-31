@@ -6538,12 +6538,14 @@ function docTableGripsPlugin(CM) {
         view.requestMeasure(this.measure);
       }
       update(update) {
-        if (update.docChanged || update.selectionSet || update.viewportChanged || update.geometryChanged
-            || update.focusChanged || update.heightChanged) {
-          update.view.requestMeasure(this.measure);
+        //: The loop's own flags go through one request per frame, outside the loop.
+        if (update.docChanged || update.selectionSet || update.focusChanged) update.view.requestMeasure(this.measure);
+        else if (update.viewportChanged || update.geometryChanged || update.heightChanged) {
+          docMeasureNextFrame(this, update.view, this.measure);
         }
       }
       destroy() {
+        this.measureDead = true;
         this.layer.remove();
       }
 

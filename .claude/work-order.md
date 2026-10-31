@@ -1,5 +1,5 @@
 mode: continue
-status: active
+status: stopped (owner stopped the cfix, nfix and tabspeed2 agents; their committed branches wait on the owner; the Fable suite runs and merges as files land)
 max-continues: 400
 max-idle-minutes: 60
 finish-up: 98%
@@ -99,8 +99,10 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Fix audit-1031-extras Z1 to Z20 (xfix merged: 15 rows)
 - [x] Extras leftovers Z4, Z7, Z10, Z13, Z18 (xleft merged)
 - [x] Base red round 2: docs_site CONTRIBUTING mirror, emblem_turns, get_started_1301, hover_focus_pairs wb-map-edge, icon_only status-tray, lazy_css capture-card and math-field, wb_format alpha presets, wb_line_ends (agent basered2-1031)
-- [ ] INBOX 1491 meeting popup minimise, 1492 lag log (unlock, models/status, tab-label, openDocument), 1493 stamp vote toggle (agent owner3-1031)
+- [x] INBOX 1491 meeting popup minimise, 1492 lag log (unlock, models/status, tab-label, openDocument), 1493 stamp vote toggle (agent owner3-1031)
 - [x] PR 211 Tests and CodeQL alerts (agent ci-1031)
 - [x] Fable composer audit merged (50 rows, audit-1031-composer.md)
-- [ ] Fable notes audit (running)
-- [ ] Composer fixes: audit-1031-composer C rows (S1 first) + INBOX 1495, 1496, 1497 (agent cfix-1031, after owner3)
+- [x] Fable notes audit merged (50 rows, audit-1031-notes.md)
+- [!] Notes fixes: audit-1031-notes N rows (agent nfix-1031): agent stopped by the owner; branch agent/nfix-1031 (6 commits) held unmerged for the owner
+- [ ] Fable full audit suite: ai, harness, shell, board, docs, code, graph, backend, ux, perf, architecture, ranked (one Fable agent, wt-a-suite)
+- [!] Composer fixes: audit-1031-composer C rows (S1 first) + INBOX 1495, 1496, 1497 (agent cfix-1031, after owner3): agent stopped by the owner; branch agent/cfix-1031 (8 commits) held unmerged for the owner
