@@ -146,6 +146,10 @@ CSS_FILES = [
     CSS_DIR / "plain-head-lazy.css",
     #: One anatomy for every popup: glyph head, glyph tabs, bordered cards (INBOX 1478).
     CSS_DIR / "popup-anatomy-lazy.css",
+    #: The Notes capture bar's card (notes-list.js loads it with capture-card.js, INBOX 1479).
+    CSS_DIR / "capture-card-lazy.css",
+    #: The in-place equation field (lazy-entries.js `mathField` and `mathEditor`, a9a01e5).
+    CSS_DIR / "math-field-lazy.css",
 ]
 
 

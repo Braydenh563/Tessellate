@@ -39,8 +39,10 @@ def _lazy() -> set[str]:
         text = path.read_text(encoding="utf-8")
         loaded |= set(re.findall(r'lazyScript\("/css/([A-Za-z0-9_.-]+\.css)"\)', text))
         #: Or a list of files handed to it: `["/css/x.css", "/js/x.js"].forEach(lazyScript)`
-        #: (settings-wiring.js's file-drop stub).
-        for files in re.findall(r"\[([^\]]*)\]\.forEach\(lazyScript\)", text):
+        #: (settings-wiring.js's file-drop stub), or `.map(lazyScript)` inside a
+        #: `Promise.all` when the caller waits for them (notes-list.js's capture card,
+        #: 54c94d1: the same loader, so the stylesheet is loaded, not orphaned).
+        for files in re.findall(r"\[([^\]]*)\]\.(?:forEach|map)\(lazyScript\)", text):
             loaded |= set(re.findall(r'"/css/([A-Za-z0-9_.-]+\.css)"', files))
     return listed | loaded
 
