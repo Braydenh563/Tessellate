@@ -42,9 +42,24 @@ function settingRowText(el) {
 //: panes are filled by JS after their first paint, so an index built at start
 //: would be searching empty panes) and skipping what a person cannot see:
 //: a pane's own hidden state does not count, a hidden group inside it does.
+//: **Scanned once per open of the palette, not once per key** (audit 1031 PF3:
+//: it cloned every label in the Settings panes on each letter, 49 ms of a key at
+//: 4x). While the palette is open nothing edits the panes, so its rows are kept
+//: under the open's own stamp (`data-opened`, set by `openPalette`); every other
+//: asker (the Settings search, Help) still reads the live panes.
 function settingRows() {
   //: Asked before the first query, so the first word typed is read by meaning.
   meaningAsk();
+  const palette = $("palette-overlay");
+  if (!palette || palette.classList.contains("hidden") || !palette.dataset.opened) return settingRowsScan();
+  if (settingRows.stamp !== palette.dataset.opened) {
+    settingRows.stamp = palette.dataset.opened;
+    settingRows.rows = settingRowsScan();
+  }
+  return settingRows.rows;
+}
+
+function settingRowsScan() {
   const rows = [];
   for (const pane of document.querySelectorAll("#settings-modal .settings-section")) {
     const name = pane.id.slice("settings-".length);

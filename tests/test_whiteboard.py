@@ -1195,3 +1195,49 @@ def test_a_board_items_votes_are_kept_and_bounded(board_client):
     for bad in (0, 100, -1):
         refused = board_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "idea", "votes": bad}})
         assert refused.status_code == 422, bad
+
+
+def test_a_selection_saves_every_kind_in_one_request(board_client, session):
+    """Audit 1031 BD2: two arrow presses over 362 items sent 167 PUTs. A card, a
+    sketch and a text box now save together, each as its own PUT body plus id."""
+    note = _note(session, "card text")
+    board = _note(session, "a board")
+    node = board_client.post(
+        "/whiteboard/nodes", json={"entry_id": note.id, "board_id": board.id, "x": 1, "y": 2}
+    ).json()
+    sketch = board_client.post(
+        "/whiteboard/sketches", json={"data": "M0 0 L10 10", "board_id": board.id, "x": 3, "y": 4}
+    ).json()
+    text = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "text", "data": {"content": "box"}, "board_id": board.id, "x": 5, "y": 6, "width": 100, "height": 40},
+    ).json()
+
+    saved = board_client.put(
+        "/whiteboard/items/save-many",
+        json={
+            "nodes": [{**node, "x": 11, "y": 12}],
+            "sketches": [{**sketch, "x": 13, "y": 14, "data": "M10 10 L20 20"}],
+            "objects": [{**text, "x": 15, "y": 16}],
+        },
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json() == {"saved": 3}
+    state = board_client.get(f"/whiteboard/?board_id={board.id}").json()
+    assert [(n["x"], n["y"]) for n in state["nodes"]] == [(11, 12)]
+    assert [(s["x"], s["y"], s["data"]) for s in state["sketches"]] == [(13, 14, "M10 10 L20 20")]
+    assert [(o["x"], o["y"]) for o in state["objects"]] == [(15, 16)]
+
+
+def test_a_batch_with_one_missing_item_saves_nothing(board_client, session):
+    board = _note(session, "a board")
+    text = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "text", "data": {"content": "box"}, "board_id": board.id, "x": 5, "y": 6, "width": 100, "height": 40},
+    ).json()
+    refused = board_client.put(
+        "/whiteboard/items/save-many",
+        json={"objects": [{**text, "x": 99}, {**text, "id": text["id"] + 1000, "x": 1}]},
+    )
+    assert refused.status_code == 404
+    assert board_client.get(f"/whiteboard/?board_id={board.id}").json()["objects"][0]["x"] == 5

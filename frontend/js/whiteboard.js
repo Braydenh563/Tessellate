@@ -5528,11 +5528,7 @@ async function wbFlushNudge() {
   if (!burst) return;
   wbNudgeBurst = null;
   clearTimeout(burst.timer);
-  for (const { kind, item } of burst.items) {
-    if (kind === "sketch") await wbSaveSketchProps(item, {});
-    else if (kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
-  }
+  await wbSaveMany(burst.items);
 }
 
 function wbNudgeSelection(dx, dy) {
@@ -8551,20 +8547,17 @@ async function wbSaveBulkMove(origin) {
   //: over, so replacing the handle elements can no longer cut a gesture short.
   wbApplySelectionHighlight();
   const done = await wbSaveMapBulkMove(origin);
+  const rows = [];
   for (const entry of origin.values()) {
     if (done && done.has(entry)) continue;
     if (entry.kind === "sketch") {
-      if (entry.item._liveD) {
-        const d = entry.item._liveD;
-        delete entry.item._liveD;
-        await wbSaveSketchD(entry.item, d);
-      }
-    } else if (entry.kind === "node") {
-      await wbSaveNode(entry.item);
-    } else {
-      await wbSaveObject(entry.item);
+      if (!entry.item._liveD) continue;
+      wbSketchSetD(entry.item, entry.item._liveD);
+      delete entry.item._liveD;
     }
+    rows.push({ kind: entry.kind, item: entry.item });
   }
+  await wbSaveMany(rows);
 }
 
 
@@ -11196,6 +11189,11 @@ async function wbApplyHistoryEntry(from, to) {
     wbHistoryInFlight.push(pending, reverse);
     try {
       while (pending.length) {
+        const run = wbTakeMoveRun(pending);
+        if (run.length) {
+          reverse.push(...(await wbApplyMoveRun(run)));
+          continue;
+        }
         const subTo = [];
         await wbApplyHistoryEntry([pending.shift()], subTo);
         if (subTo.length) reverse.push(subTo[0]);
@@ -12750,16 +12748,20 @@ async function wbFrameTurnEnd(d, primary) {
   delete d._turnOrigin;
   const delta = (d.rotation || 0) - d._turnFrom;
   const entries = [];
+  const rows = [];
   for (const entry of origin?.values() || []) {
     if (entry.kind === "sketch") {
       const live = entry.item._liveD;
       delete entry.item._liveD;
       const parsed = wbSketchParsedData(entry.item);
-      if (live) await wbSaveSketchProps(entry.item, { d: live, turned: ((Number(parsed?.turned) || 0) + delta) % 360 });
-    } else if (entry.kind === "node") await wbSaveNode(entry.item);
-    else await wbSaveObject(entry.item);
+      if (live && parsed) {
+        entry.item.data = JSON.stringify({ ...parsed, d: live, turned: ((Number(parsed.turned) || 0) + delta) % 360 });
+        rows.push({ kind: "sketch", item: entry.item });
+      }
+    } else rows.push({ kind: entry.kind, item: entry.item });
     entries.push({ action: "move", kind: entry.kind, id: entry.id, before: entry.before });
   }
+  await wbSaveMany(rows);
   wbPushDragUndo([primary, ...entries]);
   if (entries.length) wbScheduleRender();
 }
@@ -20958,17 +20960,13 @@ async function wbSaveMultiSnapshot(rows) {
     action: "move", kind: row.entry.kind, id: row.entry.item.id, before: row.before,
   })));
   for (const row of rows) {
-    if (row.entry.kind === "sketch") {
-      const live = row.entry.item._liveD;
-      delete row.entry.item._liveD;
-      delete row.entry.item._dragLiveD;
-      if (live) await wbSaveSketchD(row.entry.item, live);
-    } else if (row.entry.kind === "node") {
-      await wbSaveNode(row.entry.item);
-    } else {
-      await wbSaveObject(row.entry.item);
-    }
+    if (row.entry.kind !== "sketch") continue;
+    const live = row.entry.item._liveD;
+    delete row.entry.item._liveD;
+    delete row.entry.item._dragLiveD;
+    if (live) wbSketchSetD(row.entry.item, live);
   }
+  await wbSaveMany(rows.map((row) => ({ kind: row.entry.kind, item: row.entry.item })));
   wbScheduleRender();
 }
 
@@ -22902,6 +22900,65 @@ async function wbSaveObject(d) {
     await fetchWhiteboardState();
     wbScheduleRender();
   }
+}
+
+//: **A selection is saved in one request** (audit 1031 BD2: Ctrl+A on 362
+//: items and two arrow presses sent 167 `PUT`s and three long tasks of 189 to
+//: 274 ms). `rows` is `{ kind, item }`; the server takes each item's own `PUT`
+//: body plus its id (`PUT /whiteboard/items/save-many`, one transaction, all
+//: or nothing). One item, or a topic still being created, goes the old way.
+async function wbSaveMany(rows) {
+  const ready = rows.filter((r) => r.item && !r.item._creating);
+  const waiting = rows.filter((r) => r.item?._creating);
+  for (const { kind, item } of waiting) await wbSaveRow(kind, item);
+  if (ready.length < 2) {
+    for (const { kind, item } of ready) await wbSaveRow(kind, item);
+    return;
+  }
+  const body = { nodes: [], sketches: [], objects: [] };
+  for (const { kind, item } of ready) body[WB_KIND_INFO[kind].list].push({ id: item.id, ...WB_KIND_INFO[kind].payload(item) });
+  try {
+    await apiJson("/whiteboard/items/save-many", { method: "PUT", body: JSON.stringify(body) });
+  } catch {
+    recordBrowserLog("WARN", ["[Whiteboard] a selection is stale: reloading the board"]);
+    await fetchWhiteboardState();
+    wbScheduleRender();
+  }
+}
+
+function wbSaveRow(kind, item) {
+  if (kind === "sketch") return wbSaveSketchProps(item, {});
+  return kind === "node" ? wbSaveNode(item) : wbSaveObject(item);
+}
+
+//: A sketch's `d` written into its data without saving it (a group drag's end).
+function wbSketchSetD(sketch, d) {
+  const parsed = wbSketchParsedData(sketch);
+  if (!parsed) return;
+  parsed.d = d;
+  sketch.data = JSON.stringify(parsed);
+}
+
+//: The leading run of plain moves in a batch of undo steps, taken off it, so the
+//: run is put back with one request (`wbApplyMoveRun`); one move goes its own way.
+function wbTakeMoveRun(pending) {
+  let n = 0;
+  while (n < pending.length && pending[n].action === "move" && WB_KIND_INFO[pending[n].kind]) n++;
+  return n > 1 ? pending.splice(0, n) : [];
+}
+
+async function wbApplyMoveRun(run) {
+  const rows = [];
+  const reverse = [];
+  for (const entry of run) {
+    const item = wbState[WB_KIND_INFO[entry.kind].list].find((i) => i.id === entry.id);
+    if (!item) continue; // stale: nothing to restore, but the stack still advances
+    reverse.push({ action: "move", kind: entry.kind, id: entry.id, before: WB_KIND_INFO[entry.kind].payload(item) });
+    Object.assign(item, entry.before);
+    rows.push({ kind: entry.kind, item });
+  }
+  await wbSaveMany(rows);
+  return reverse;
 }
 
 //: **A folded topic's element is kept for the expand that brings it back**

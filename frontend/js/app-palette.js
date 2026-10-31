@@ -129,6 +129,8 @@ async function openPalette() {
     range: early ? early.range : held?.rangeCount ? held.getRangeAt(0).cloneRange() : null,
   });
   const typed = early ? $("palette-input").value : "";
+  //: The Settings index is read once for this open (`settingRows`, settings-find.js).
+  $("palette-overlay").dataset.opened = String(performance.now());
   $("palette-overlay").classList.remove("hidden");
   $("palette-input").value = typed;
   paletteIndex = 0;
@@ -158,6 +160,7 @@ function closePalette() {
   //: the catalogue is drawn into an empty list, instead of laying out the
   //: old 108 rows inside the opening keystroke (about 40 ms measured).
   $("palette-list").replaceChildren();
+  Object.assign(paletteView, { query: null, matches: [], rows: [], lastGroup: null });
   clearTimeout(paletteNoteHits.timer);
   Object.assign(paletteNoteHits, { query: "", hits: [], run: paletteNoteHits.run + 1 });
   overlayReturnFocus?.focus?.();
@@ -692,20 +695,24 @@ function paletteNearestCommand(query) {
 //: menu are one object. The keyboard is unchanged: `paletteKeydown` moves
 //: `paletteIndex` and redraws; the pointer lights the row it is over, so
 //: Enter and a click always mean the same row.
-function renderPalette(query) {
+//: **What is drawn is a window, and the rows are one listener's.** A fresh open
+//: drew 117 rows (+1,086 nodes, +458 listeners) and every key and arrow drew them
+//: all again with two listeners each (audit 1031 PF3, 4x: 10 arrows were 12 long
+//: tasks). Now the first `PALETTE_WINDOW` rows are drawn, more come as the lit
+//: row nears the end, and the list's own click and mousemove find the match by
+//: the row's `data-index` in `paletteView`.
+const PALETTE_WINDOW = 24;
+const paletteView = { query: null, matches: [], abouts: null, rows: [], lastGroup: null, needle: "" };
+
+function paletteDrawRows(upTo) {
   const list = $("palette-list");
-  const matches = paletteMatches(query);
-  const needle = query.trim().toLowerCase();
-  const abouts = paletteAbouts();
-  paletteIndex = Math.min(paletteIndex, Math.max(0, matches.length - 1));
-  list.replaceChildren();
-  let lastGroup = null;
-  const rows = [];
-  matches.forEach((match, index) => {
+  const { matches, abouts, rows, needle } = paletteView;
+  for (let index = rows.length; index < Math.min(upTo, matches.length); index++) {
+    const match = matches[index];
     // A heading whenever the group changes; not an option, so the keys skip it.
-    if (match.group && match.group !== lastGroup) {
+    if (match.group && match.group !== paletteView.lastGroup) {
       list.appendChild(richPickerGroup(match.group, { className: "palette-group-header" }));
-      lastGroup = match.group;
+      paletteView.lastGroup = match.group;
     }
     const parts = paletteRowParts(match, abouts);
     const row = richPickerRow({
@@ -717,15 +724,19 @@ function renderPalette(query) {
       id: `palette-row-${index}`,
     });
     if (match.why) row.title = match.why;
-    row.addEventListener("click", () => paletteRun(match));
-    row.addEventListener("mousemove", () => {
-      if (paletteIndex === index) return;
-      paletteIndex = index;
-      paletteLight(rows, matches, abouts);
-    });
+    row.dataset.index = String(index);
     list.appendChild(row);
     rows.push(row);
-  });
+  }
+}
+
+function renderPalette(query) {
+  const list = $("palette-list");
+  const matches = paletteMatches(query);
+  paletteIndex = Math.min(paletteIndex, Math.max(0, matches.length - 1));
+  list.replaceChildren();
+  Object.assign(paletteView, { query, matches, abouts: paletteAbouts(), rows: [], lastGroup: null, needle: query.trim().toLowerCase() });
+  paletteDrawRows(Math.max(PALETTE_WINDOW, paletteIndex + PALETTE_WINDOW / 2));
   if (!matches.length) {
     const li = document.createElement("li");
     li.className = "muted palette-empty";
@@ -736,14 +747,26 @@ function renderPalette(query) {
   const count = $("palette-count");
   const said = matches.length === 1 ? "1 result" : `${matches.length} results`;
   if (count.textContent !== said) count.textContent = said;
-  paletteLight(rows, matches, abouts);
+  paletteLight();
 }
+
+$("palette-list").addEventListener("click", (event) => {
+  const match = paletteView.matches[event.target.closest?.("li[data-index]")?.dataset.index];
+  if (match) paletteRun(match);
+});
+$("palette-list").addEventListener("mousemove", (event) => {
+  const index = Number(event.target.closest?.("li[data-index]")?.dataset.index);
+  if (!Number.isInteger(index) || paletteIndex === index) return;
+  paletteIndex = index;
+  paletteLight();
+});
 
 //: Light the chosen row, tell the input which it is (the input keeps the
 //: focus, so it carries `aria-activedescendant`), and show the row in the
 //: pane beside the list: what it does and its key.
 //: The pane hides itself below 44rem (the stylesheet).
-function paletteLight(rows, matches, abouts) {
+function paletteLight() {
+  const { rows, matches, abouts } = paletteView;
   const lit = richPickerSetActive($("palette-list"), rows, paletteIndex);
   const input = $("palette-input");
   if (lit) input.setAttribute("aria-activedescendant", lit.id);
@@ -761,24 +784,34 @@ function paletteLight(rows, matches, abouts) {
   });
 }
 
+//: What the list shows, when it shows what is typed; matched afresh only when a
+//: key beat the render (a key is not a match: three matches per letter typed).
+function paletteShown() {
+  const typed = $("palette-input").value;
+  return paletteView.query === typed ? paletteView.matches : paletteMatches(typed);
+}
+
+function paletteArrow(step) {
+  const last = paletteShown().length - 1;
+  paletteIndex = Math.min(Math.max(paletteIndex + step, 0), Math.max(last, 0));
+  //: Rows beyond the window are drawn as the lit one nears the end of it.
+  paletteDrawRows(paletteIndex + PALETTE_WINDOW / 2);
+  paletteLight();
+  scrollPaletteToActive();
+}
+
 function paletteKeydown(event) {
-  const matches = paletteMatches($("palette-input").value);
   if (event.key === "Escape") closePalette();
-  else if (event.key === "ArrowDown") {
+  else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
-    paletteIndex = Math.min(paletteIndex + 1, matches.length - 1);
-    renderPalette($("palette-input").value);
-    scrollPaletteToActive();
-  } else if (event.key === "ArrowUp") {
-    event.preventDefault();
-    paletteIndex = Math.max(paletteIndex - 1, 0);
-    renderPalette($("palette-input").value);
-    scrollPaletteToActive();
-  } else if (event.key === "Enter" && matches[paletteIndex]) {
+    paletteArrow(event.key === "ArrowDown" ? 1 : -1);
+  } else if (event.key === "Enter") {
+    const match = paletteShown()[paletteIndex];
+    if (!match) return;
     //: The row may focus an editor (New note), and the Enter went on into
     //: it: measured, every note started from here began with a blank line.
     event.preventDefault();
-    paletteRun(matches[paletteIndex]);
+    paletteRun(match);
   }
 }
 

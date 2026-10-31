@@ -3360,7 +3360,7 @@ RICH_PICKER_PARTS = ("row", "tile", "keys", "group", "label", "about", "text", "
 #: The pickers that draw through the recipe: (file, function).
 RICH_PICKERS = [
     ("editor.js", "editorRenderMenu"),
-    ("app-palette.js", "renderPalette"),
+    ("app-palette.js", "paletteDrawRows"),
     ("library.js", "openLibraryCreatePicker"),
     ("chord-guide.js", "chordGuideGroup"),
     ("selection.js", "pickerListbox"),
