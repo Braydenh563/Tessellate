@@ -57,7 +57,7 @@ def test_filler_goes_and_words_stay():
 
 
 def test_a_fragment_rides_on_the_sentence_before():
-    assert composer_digest._fragment("slicing everything but it was fun")
-    assert composer_digest._fragment("straighter this time")
-    assert not composer_digest._fragment("you did it again")
-    assert not composer_digest._fragment("one two three four")
+    assert composer_digest._is_fragment("slicing everything but it was fun")
+    assert composer_digest._is_fragment("straighter this time")
+    assert not composer_digest._is_fragment("you did it again")
+    assert not composer_digest._is_fragment("one two three four")

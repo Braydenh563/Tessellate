@@ -2245,7 +2245,7 @@ _GERUND_OPEN = re.compile(r"[a-z]+ing\b")
 _SHORT_FRAGMENT = re.compile(r"(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$", re.I)
 
 
-def _fragment(body: str) -> bool:
+def _is_fragment(body: str) -> bool:
     return bool(_GERUND_OPEN.match(body) or _SHORT_FRAGMENT.match(body))
 
 
@@ -2254,7 +2254,7 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
     two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
     out = bodies[0] if bodies else ""
     for body in bodies[1:]:
-        if sentences and _fragment(body):
+        if sentences and _is_fragment(body):
             #: "slicing everything but it was fun", "straighter this time":
             #: no subject of its own, so it rides on the sentence before.
             out += ", " + body

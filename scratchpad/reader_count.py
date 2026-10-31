@@ -53,7 +53,10 @@ VERDICT = {
     "src/tessellate/core/config.py": "not a reader: _WEEK_CHOICES, the week_start setting's first-day names to weekday numbers",
     # 2026-10-18 (C06): the answer panel's calculator.
     "frontend/js/reply-kit.js": "not a reader: REPLY_CALC_PAIRS, the unit pair each converter kind opens on; the sum is read by the server",
-    "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); windows and units read by recognise",
+    "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); its cue patterns (_AGO, _CASUAL, _ECHO_WORDS, _WEEK_SAID, _SHORTHAND) are masks that pick a phrasing or say the person's own words back, they turn no word into a date, window or quantity; windows and units read by recognise",
+    "src/tessellate/ai/composer_frame.py": "not a reader: `_WHEN_WORDS` is a mask that keeps a time word out of a name; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/composer_unplaced.py": "not a reader: `_NOTEBOOK_THINGS` is a mask that tells a question about the notebook's own lists and due items from a lookup; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/composer_write.py": "not a reader: weekday names for writing a day heading (`_day_heading`); no word becomes a date",
     # 2026-10-26 (grammar K4b): a mask, not a reader. The browser cannot call
     # the recogniser, and nothing here becomes a date, window or quantity.
     "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",

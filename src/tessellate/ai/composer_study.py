@@ -24,7 +24,7 @@ from datetime import datetime
 from itertools import zip_longest
 
 from tessellate.ai import composer_compose as compose
-from tessellate.ai import composer_frame, note_rank, realise, recognise, study
+from tessellate.ai import composer_frame, filed_name, note_rank, realise, recognise, study
 
 QUIZ_LENGTH = 6
 MAX_QUIZ = 12
@@ -607,11 +607,6 @@ def _lists_a_time(topic: str) -> bool:
     return bool(_LISTING.match(topic)) and recognise.without_windows(topic) != topic
 
 
-def _shows_the_lot(question: str) -> bool:
-    from tessellate.ai import composer_digest  # on first use: the digest loads this module
-
-    return composer_digest.shows_the_lot(question)
-
 
 def _not_an_open(ctx: Ctx, found: re.Match) -> bool:
     """Whether the words are something other than "open these notes"."""
@@ -621,7 +616,7 @@ def _not_an_open(ctx: Ctx, found: re.Match) -> bool:
         return True
     #: "pull up my uni notes", "show me all of my university notes": the notes
     #: on a subject, said whole (the overview), not links to pick from.
-    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and _shows_the_lot(ctx.asked or ctx.question or ""):
+    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and filed_name.shows_the_lot(ctx.asked or ctx.question or ""):
         return True
     topic = found.group("t")
     return bool(_OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I))
