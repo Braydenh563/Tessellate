@@ -19,6 +19,44 @@ from __future__ import annotations
 
 import re
 
+#: Fillers: dropped wherever they stand as words of their own.
+_FILLERS = re.compile(
+    r"\b(?:basically|actually|literally|really|very|just|kind of|sort of|you know|i mean|"
+    r"at the end of the day|needless to say|it goes without saying that|to be honest|honestly|obviously|"
+    r"quite|pretty much|simply|totally|definitely)\b,?\s*",
+    re.I,
+)
+
+#: Long word or phrase -> plain one. Verbs carry their forms, so "utilised"
+#: becomes "used" and "purchasing" "buying".
+_PHRASES = {
+    "in order to": "to", "prior to": "before", "subsequent to": "after", "in the event that": "if",
+    "at this point in time": "now", "at the present time": "now", "due to the fact that": "because",
+    "owing to the fact that": "because", "in spite of the fact that": "although", "with regard to": "about",
+    "with respect to": "about", "in relation to": "about", "in regard to": "about", "a large number of": "many",
+    "a great deal of": "much", "the majority of": "most", "in addition to": "as well as", "in addition": "also",
+    "with the exception of": "except", "for the purpose of": "for", "on a daily basis": "daily",
+    "on a regular basis": "regularly", "in the near future": "soon", "is able to": "can", "are able to": "can",
+    "was able to": "could", "has the ability to": "can", "make a decision": "decide", "take into account": "consider",
+}
+_PHRASE_RE = re.compile(r"\b(" + "|".join(re.escape(p) for p in sorted(_PHRASES, key=len, reverse=True)) + r")\b", re.I)
+
+
+def _cap(text: str) -> str:
+    return text[:1].upper() + text[1:] if text else text
+
+
+def _matched_case(word: str, plain: str) -> str:
+    if word.isupper() and len(word) > 1:
+        return plain.upper()
+    return _cap(plain) if word[:1].isupper() else plain
+
+
+def concise(text: str) -> str:
+    """`text` with its wordy phrases shortened ("in order to" to "to")."""
+    return _PHRASE_RE.sub(lambda m: _matched_case(m.group(0), _PHRASES[m.group(0).lower()]), text)
+
+
 #: Raised wherever they stand as a word of their own. "polish" and "turkey"
 #: are left out: they are as often a verb and a bird.
 _NAMES = (
@@ -153,8 +191,6 @@ def tidy(text: str) -> str:
 def formally(text: str) -> str:
     """`tidy`, with contractions spelled out and slang swapped for the word a
     formal reader expects, fillers and wordy phrases out."""
-    from tessellate.ai import composer_write as cw
-
     out: list[str] = []
     for code, lines in _segments(tidy(text)):
         for line in lines:
@@ -163,13 +199,13 @@ def formally(text: str) -> str:
                 continue
             line = _CONTRACTION_RE.sub(lambda m: _like(m.group(1), _CONTRACTIONS[m.group(1).lower()]), line)
             line = _SLANG_RE.sub(lambda m: _like(m.group(1), _SLANG[m.group(1).lower()]), line)
-            out.append(_formal_line(line, cw))
+            out.append(_formal_line(line))
     return "\n".join(out)
 
 
-def _formal_line(line: str, cw) -> str:  # noqa: ANN001
+def _formal_line(line: str) -> str:
     """Fillers and wordy phrases out of one line, its first letter raised."""
-    said = " ".join(cw.concise(cw._FILLERS.sub("", line)).split())
+    said = " ".join(concise(_FILLERS.sub("", line)).split())
     said = re.sub(r" ([,.;:!?])", r"\1", said)
     lead = re.match(r"\s*", line).group(0)
     marker = _BULLET.match(said)

@@ -34,6 +34,9 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai import composer_tidy
+from tessellate.ai.composer_tidy import _FILLERS, _cap, _matched_case, concise
+
 #: A sentence longer than this many words is split at its middle joint.
 LONG_WORDS = 24
 #: Shorter keeps about this share of a text's sentences, and never fewer than
@@ -69,28 +72,9 @@ NOTHING_TO_DO = {
     "formal": "Already formal: no contractions or slang to change.",
 }
 
-#: Fillers: dropped wherever they stand as words of their own.
-_FILLERS = re.compile(
-    r"\b(?:basically|actually|literally|really|very|just|kind of|sort of|you know|i mean|"
-    r"at the end of the day|needless to say|it goes without saying that|to be honest|honestly|obviously|"
-    r"quite|pretty much|simply|totally|definitely)\b,?\s*",
-    re.I,
-)
 #: Openers that join a sentence to the one before; a bullet stands alone.
 _LEADS = re.compile(r"^(?:so|well|also|and|plus|anyway|ok|okay|right|now)\b,?\s+", re.I)
 
-#: Long word or phrase -> plain one. Verbs carry their forms, so "utilised"
-#: becomes "used" and "purchasing" "buying".
-_PHRASES = {
-    "in order to": "to", "prior to": "before", "subsequent to": "after", "in the event that": "if",
-    "at this point in time": "now", "at the present time": "now", "due to the fact that": "because",
-    "owing to the fact that": "because", "in spite of the fact that": "although", "with regard to": "about",
-    "with respect to": "about", "in relation to": "about", "in regard to": "about", "a large number of": "many",
-    "a great deal of": "much", "the majority of": "most", "in addition to": "as well as", "in addition": "also",
-    "with the exception of": "except", "for the purpose of": "for", "on a daily basis": "daily",
-    "on a regular basis": "regularly", "in the near future": "soon", "is able to": "can", "are able to": "can",
-    "was able to": "could", "has the ability to": "can", "make a decision": "decide", "take into account": "consider",
-}
 _WORDS = {
     "approximately": "about", "assistance": "help", "sufficient": "enough", "numerous": "many",
     "regarding": "about", "additional": "extra", "individuals": "people", "individual": "person",
@@ -130,7 +114,6 @@ _VERBS = (
     (("establish", "established", "establishing", "establishes"), ("set up", "set up", "setting up", "sets up")),
 )
 _PLAIN = {**_WORDS, **{long: plain for longs, plains in _VERBS for long, plain in zip(longs, plains)}}
-_PHRASE_RE = re.compile(r"\b(" + "|".join(re.escape(p) for p in sorted(_PHRASES, key=len, reverse=True)) + r")\b", re.I)
 _WORD_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in sorted(_PLAIN, key=len, reverse=True)) + r")\b", re.I)
 
 #: The joints a long sentence is split at, best first.
@@ -219,10 +202,6 @@ def _same(a: str, b: str) -> bool:
 # --- sentences, tidied ------------------------------------------------------------
 
 
-def _cap(text: str) -> str:
-    return text[:1].upper() + text[1:] if text else text
-
-
 def _decap(text: str) -> str:
     """Lower the first letter unless the first word is a name, "I" or an acronym."""
     first = text.split(" ", 1)[0]
@@ -242,17 +221,6 @@ def trim(text: str) -> str:
 def _ended(text: str) -> str:
     text = text.rstrip()
     return text if text[-1:] in ".!?:" else f"{text.rstrip(',;')}."
-
-
-def _matched_case(word: str, plain: str) -> str:
-    if word.isupper() and len(word) > 1:
-        return plain.upper()
-    return _cap(plain) if word[:1].isupper() else plain
-
-
-def concise(text: str) -> str:
-    """`text` with its wordy phrases shortened ("in order to" to "to")."""
-    return _PHRASE_RE.sub(lambda m: _matched_case(m.group(0), _PHRASES[m.group(0).lower()]), text)
 
 
 def plain(text: str) -> str:
@@ -493,8 +461,6 @@ def with_summary(text: str) -> str:
 def _tidy(thoughts: str) -> str:
     """Loose thoughts as a note: each line's sentences capitalised and ended,
     fillers trimmed, list lines kept as a list."""
-    from tessellate.ai import composer_tidy
-
     out = []
     for kind, lines in _blocks(thoughts):
         if kind == "prose":
@@ -649,8 +615,6 @@ def refine_kind(instruction: str) -> str:
 
 
 def _by_kind(kind: str, text: str) -> str:
-    from tessellate.ai import composer_tidy
-
     return {
         "bullets": to_bullets, "expand": to_prose, "plain": plainly, "shorter": shorter, "summary": with_summary,
         "tidy": composer_tidy.tidy, "formal": composer_tidy.formally,
@@ -672,8 +636,6 @@ _SAID = {
 def _done(shape: str, source: str, made: str) -> Pass:
     """`made` as a pass of `shape`, or the line saying there was nothing to do
     when it is the source over again (INBOX 1488: no control echoes its input)."""
-    from tessellate.ai import composer_tidy
-
     if not made.strip() or composer_tidy.same(made, source):
         return Pass("", NOTHING_TO_DO[shape])
     return Pass(made, _SAID[shape], shape)
@@ -707,8 +669,6 @@ def _user_today() -> date:
 
 
 def _unchanged(a: str, b: str) -> bool:
-    from tessellate.ai import composer_tidy
-
     return composer_tidy.same(a, b)
 
 
@@ -733,19 +693,22 @@ def _by_mode(kind: str, thoughts: str, draft: str, tone: str, length: str, sourc
         made = _toned(_by_kind(kind, source), tone, length)
         return _done(kind, source, made)
     if kind == "note":
-        written = write_up(thoughts, sources, today)
-        if written.strip() and not sources and _unchanged(written, thoughts):
-            return Pass("", NOTHING_TO_DO["note"])
-        if (draft or "").strip() and written:
-            written = f"{draft.rstrip()}\n\n{written}"
-        return Pass(_toned(written, tone, length), _SAID["note"], "note") if written.strip() else Pass("", NOTHING_TO_DO["note"])
+        return _write_up_pass(thoughts, draft, tone, length, sources, today)
     return Pass("", NEEDS_MODEL.get(kind, NEEDS_MODEL["revise"]))
+
+
+def _write_up_pass(thoughts: str, draft: str, tone: str, length: str, sources, today: date) -> Pass:  # noqa: ANN001
+    """Write up my notes: after the draft, never an echo of the thoughts."""
+    written = write_up(thoughts, sources, today)
+    if written.strip() and not sources and _unchanged(written, thoughts):
+        return Pass("", NOTHING_TO_DO["note"])
+    if (draft or "").strip() and written:
+        written = f"{draft.rstrip()}\n\n{written}"
+    return Pass(_toned(written, tone, length), _SAID["note"], "note") if written.strip() else Pass("", NOTHING_TO_DO["note"])
 
 
 def _toned(text: str, tone: str, length: str) -> str:
     """The two selects, where a rule can honour them: Plain or Formal, and Short."""
-    from tessellate.ai import composer_tidy
-
     if tone == "plain":
         text = plainly(text)
     elif tone == "formal":
