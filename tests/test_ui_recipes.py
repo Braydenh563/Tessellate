@@ -6412,4 +6412,5 @@ def test_a_live_view_mark_reveals_per_span() -> None:
         "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"
     )
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
-    assert "shows its markdown only while the caret is in it or next to it" in topics
+    assert '"id": "live-view-marks"' in topics
+    assert "shows its markdown only while the caret" in topics

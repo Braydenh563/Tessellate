@@ -314,10 +314,6 @@ HELP_TOPICS: list[dict] = [
             "the same align button (and the corner, apart from a card's small "
             "thumbnails), and a picture set in one place looks the same in all of "
             "them. "
-            "In Live, a formatted phrase (bold, italic, code, a highlight, a link) "
-            "shows its markdown only while the caret is in it or next to it, and the "
-            "rest of the line stays rendered; a heading, list or quote shows its mark "
-            "while the caret is on its line. "
             "The status bar counts characters, words, lines and reading time the way "
             "the note composer does (an emoji is one character); in a code file it "
             "shows lines, characters and the language instead. New, Code file makes one. Search "
@@ -1919,6 +1915,24 @@ HELP_TOPICS.extend(
                 "lists and links; Ctrl+Shift+V pastes plain text. With nothing "
                 "selected, Ctrl+C and Ctrl+X copy and cut the whole line, and "
                 "pasting that line puts it above the one you are on."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
+            "id": "live-view-marks",
+            "keywords": (
+                "markdown marks", "formatting marks", "asterisks showing",
+                "markdown shows when i click", "live preview", "show the markdown",
+                "hide the markdown", "like obsidian",
+            ),
+            "body": (
+                "In a document's Live view (and a note's edit box), a formatted "
+                "phrase (bold, italic, code, strike through, a highlight, a link, "
+                "a wiki link, an equation) shows its markdown only while the caret "
+                "is in it or next to it, and the rest of the line stays rendered. "
+                "Every caret and selection counts. A heading, list or quote shows "
+                "its mark while the caret is on its line, and a code block while "
+                "the caret is in it. Source view shows all of it."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
