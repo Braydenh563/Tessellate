@@ -1,5 +1,5 @@
 mode: continue
-status: stopped (owner stopped the cfix, nfix and tabspeed2 agents; their committed branches wait on the owner; the Fable suite runs and merges as files land)
+status: active (fix agents resumed at the owner's word; the Fable suite runs and merges as files land)
 max-continues: 400
 max-idle-minutes: 60
 finish-up: 98%
