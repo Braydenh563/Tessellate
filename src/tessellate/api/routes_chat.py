@@ -3271,15 +3271,8 @@ def _search_service() -> tuple[str, str]:
 
 
 def _can_start_searxng() -> bool:
-    """Whether the app can launch the search service itself: the provider may
-    be SearXNG and the address is empty or this computer's own."""
-    from urllib.parse import urlparse
-
-    from tessellate.search import searxng_manager
-
-    url, provider = _search_service()
-    host = (urlparse(url if "//" in url else f"//{url}").hostname or "") if url else ""
-    return provider != "duckduckgo" and host in ("", "127.0.0.1", "localhost", "::1") and searxng_manager.source_available()
+    """Whether the app can launch the search service itself (`composer_web.can_start`)."""
+    return composer_web.can_start(*_search_service())
 
 
 def _link_events(req: _StreamRequest, url: str) -> list[dict]:

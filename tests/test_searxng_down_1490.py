@@ -85,3 +85,25 @@ def test_the_button_starts_searxng_through_the_settings_door_and_the_web_panel_o
     js = app_js_text()
     assert 'offer.kind === "searxng-start"' in js and "/websearch/searxng/start" in js
     assert 'offer.surface === "web-panel"' in js and "toggleWebPanel(true)" in js
+
+
+def test_start_it_after_a_down_search_gives_the_buttons_never_a_command(monkeypatch):
+
+    for can in (True, False):
+        said = composer_web.start_reply(can_start=can)
+        text, offer = said["text"], said["offer"]
+        assert "docker" not in text.lower() and "can not start" not in text and chr(0x2014) not in text and "!" not in text
+        labels = [offer["label"], *(o["label"] for o in offer["also"])]
+        assert all(label in text.split("\n\n") for label in labels), (labels, text)
+        assert (offer["kind"] == "searxng-start") is can
+        assert composer_web.SETUP_LABEL in labels and composer_web.PANEL_LABEL in labels and composer_web.PROVIDER_LABEL in labels
+
+
+def test_the_app_can_start_only_its_own_searxng(monkeypatch):
+    from tessellate.search import searxng_manager
+
+    monkeypatch.setattr(searxng_manager, "source_available", lambda: True)
+    assert composer_web.can_start("", "auto") and composer_web.can_start("http://127.0.0.1:8888", "searxng") and composer_web.can_start("localhost:8888", "searxng")
+    assert not composer_web.can_start("https://search.example.com", "searxng") and not composer_web.can_start("", "duckduckgo")
+    monkeypatch.setattr(searxng_manager, "source_available", lambda: False)
+    assert not composer_web.can_start("", "auto")
