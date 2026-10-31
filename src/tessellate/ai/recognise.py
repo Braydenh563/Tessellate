@@ -2599,8 +2599,9 @@ _ARRANGED = re.compile(
 def set_for_later(sentence: str) -> bool:
     """Whether a sentence sets a thing up for its day ("Booked for 14
     November", "moved to Friday", "due Friday"): the day it names is ahead of
-    the note, and it is not a thing that happened."""
-    return bool(_ARRANGED.search(sentence or ""))
+    the note, and it is not a thing that happened. A day must be named:
+    "I've just booked flights" is the booking itself, done that day."""
+    return bool(_ARRANGED.search(sentence or "")) and dated_sentence(sentence)
 
 
 def told_as_past(sentence: str) -> bool:
