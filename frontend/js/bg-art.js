@@ -2268,13 +2268,13 @@ let bgArtBlurTimer = 0;
 let bgArtResizeTimer = 0;
 let bgArtRestart = null; // settings.js's startBgArt, for a resize to call
 let bgArtLastInput = 0;
-let bgArtLastPointer = performance.now(); // the last pointer move, press or touch, for the calm rate
 // Pictures on their way out: [element, object URL] pairs kept on screen
 // until whatever replaces them is ready, so a theme or accent change swaps
 // one picture for the next instead of flashing the bare page between. A
 // run that is itself replaced before it is ready hands them on.
 let bgArtRetiring = [];
-const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false };
+//: `pointerAt`: the last pointer move, press or touch, for the calm rate.
+const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false, pointerAt: performance.now() };
 
 // **A long pause becomes a picture** (INBOX 1436). A pause already stops the
 // loop, but the live canvas stays mounted, holding its bitmap. After
@@ -2313,7 +2313,7 @@ const BG_ART_CALM_MS = 30000;
 const BG_ART_CALM_FPS = 12;
 
 function bgArtCalm() {
-  return performance.now() - bgArtLastPointer > BG_ART_CALM_MS;
+  return performance.now() - bgArtPaused.pointerAt > BG_ART_CALM_MS;
 }
 
 function bgArtFrameRate() {
@@ -2795,7 +2795,7 @@ window.addEventListener("focus", () => {
 for (const type of ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"]) {
   window.addEventListener(type, () => {
     bgArtLastInput = performance.now();
-    if (type !== "keydown") bgArtLastPointer = performance.now();
+    if (type !== "keydown") bgArtPaused.pointerAt = performance.now();
     if (bgArtPaused.idle) {
       bgArtPaused.idle = false;
       bgArtApplyPause();

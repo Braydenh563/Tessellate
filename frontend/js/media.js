@@ -63,7 +63,6 @@ function highlighterWidth(penWidth) {
 // stored preferences, the menu and help recipes and the highlighter's table.
 
 let sketchHostObject = null;
-let sketchOpener = null; // what opened the pad, for focus after a save
 
 function sketchHost() {
   sketchHostObject ||= {
@@ -91,7 +90,6 @@ function sketchHost() {
 //: picture for the note it is writing (capture-card-more.js).
 async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
-  sketchOpener = overlayReturnFocus;
   const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
   if (!loaded.every(Boolean) || !window.SketchPad) {
     toast("Couldn't open the sketch pad.", true);
@@ -149,8 +147,8 @@ async function saveSketch(blob, caption) {
     }),
   });
   if (!entry?.id) throw new Error("Couldn't save the sketch note.");
-  // The pad closes right after this returns: `focusOpener` waits for that.
-  announceSavedNote(entry, "", { message: "Sketch saved to your notebook.", undoLabel: "Saved a sketch", opener: sketchOpener });
+  // The pad closes right after this returns (`overlayReturnFocus` is still its opener); `focusOpener` waits for that.
+  announceSavedNote(entry, "", { message: "Sketch saved to your notebook.", undoLabel: "Saved a sketch", opener: overlayReturnFocus });
   loadEntries().catch(() => {});
 }
 

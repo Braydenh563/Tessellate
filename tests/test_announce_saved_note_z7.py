@@ -44,7 +44,11 @@ def test_the_save_as_note_paths_use_it_instead_of_a_bare_toast():
     assert "announceSavedNote(created" in _src("library.js")
 
 
-def test_the_opener_is_kept_from_the_moment_the_sketch_opened():
+def test_the_sketch_opener_is_the_one_the_overlay_already_keeps():
     media = _src("media.js")
-    assert "sketchOpener" in _body(media, "openSketch")
-    assert "sketchOpener" in _body(media, "saveSketch")
+    assert "overlayReturnFocus = document.activeElement" in _body(media, "openSketch")
+    assert "opener: overlayReturnFocus" in _body(media, "saveSketch")
+
+
+def test_the_announcement_is_a_lazy_entry_point_for_boot_callers():
+    assert '"announceSavedNote"' in _src("app.js")

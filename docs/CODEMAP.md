@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7391, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7952, test files 1698, tests 14725, plan headings 989.
+Counts: frontend functions 7391, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7952, test files 1698, tests 14726, plan headings 989.
 
 ## Frontend functions (7391)
 
@@ -1040,16 +1040,16 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeSketch` | frontend/js/media.js:105 |
-| `hideSketchOverlay` | frontend/js/media.js:113 |
+| `closeSketch` | frontend/js/media.js:103 |
+| `hideSketchOverlay` | frontend/js/media.js:111 |
 | `highlighterWidth` | frontend/js/media.js:48 |
-| `micAudioConstraints` | frontend/js/media.js:198 |
-| `openSketch` | frontend/js/media.js:92 |
-| `saveSketch` | frontend/js/media.js:121 |
-| `sketchHost` | frontend/js/media.js:68 |
-| `speakText` | frontend/js/media.js:361 |
-| `startMicLevelMeter` | frontend/js/media.js:208 |
-| `toggleDictation` | frontend/js/media.js:289 |
+| `micAudioConstraints` | frontend/js/media.js:196 |
+| `openSketch` | frontend/js/media.js:91 |
+| `saveSketch` | frontend/js/media.js:119 |
+| `sketchHost` | frontend/js/media.js:67 |
+| `speakText` | frontend/js/media.js:359 |
+| `startMicLevelMeter` | frontend/js/media.js:206 |
+| `toggleDictation` | frontend/js/media.js:287 |
 
 ### frontend/js/status.js (126)
 
@@ -22066,7 +22066,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14725)
+## Tests (14726)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22103,7 +22103,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_alembic_baseline.py | 7 |
 | tests/test_alembic_full_chain.py | 3 |
 | tests/test_all_spaces_indexes.py | 2 |
-| tests/test_announce_saved_note_z7.py | 3 |
+| tests/test_announce_saved_note_z7.py | 4 |
 | tests/test_answer_pictures_502.py | 11 |
 | tests/test_answer_support.py | 10 |
 | tests/test_answer_support_cleared.py | 1 |

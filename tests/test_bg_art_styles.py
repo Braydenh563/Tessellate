@@ -420,7 +420,7 @@ def test_the_art_drops_to_12_frames_after_30_seconds_without_a_pointer():
     text = BG_ART.read_text(encoding="utf-8")
     pick = lambda name: text[text.index(name) :].split("\n}\n")[0] + "\n}\n"  # noqa: E731
     source = (
-        "let bgArtOnBattery = false, bgArtLastPointer = 0, NOW = 0;\n"
+        "let bgArtOnBattery = false, NOW = 0;\nconst bgArtPaused = { pointerAt: 0 };\n"
         "const performance = { now: () => NOW };\n"
         "const BG_ART_SMALL_MACHINE = false;\n"
         + re.search(r"const BG_ART_CALM_MS = \d+;", text).group(0) + "\n"
@@ -428,9 +428,9 @@ def test_the_art_drops_to_12_frames_after_30_seconds_without_a_pointer():
         + pick("function bgArtCalm(")
         + pick("function bgArtFrameRate(")
         + "const at = (t) => { NOW = t; return bgArtFrameRate(); };\n"
-        "bgArtLastPointer = 1000;\n"
-        "console.log(JSON.stringify([at(1000), at(30999), at(31001), (bgArtLastPointer = 40000, at(40001))]));\n"
+        "bgArtPaused.pointerAt = 1000;\n"
+        "console.log(JSON.stringify([at(1000), at(30999), at(31001), (bgArtPaused.pointerAt = 40000, at(40001))]));\n"
     )
     result = subprocess.run([node, "-e", source], capture_output=True, text=True, check=True)
     assert json.loads(result.stdout) == [30, 30, 12, 30]
-    assert 'type !== "keydown"' in text and "bgArtLastPointer = performance.now()" in text
+    assert 'type !== "keydown"' in text and "bgArtPaused.pointerAt = performance.now()" in text
