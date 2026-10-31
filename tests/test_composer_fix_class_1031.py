@@ -61,9 +61,10 @@ def test_a_bare_total_time_asks_what_it_is_for(ask, question):
 
 
 @pytest.mark.parametrize("question", ["what is my total distance", "total distance", "what's my total weight"])
-def test_a_bare_total_of_another_measure_asks_too(ask, question):
-    said = ask(question)
-    assert re.match(r"Total (?:distance|weight) of what\?", said), said
+def test_a_bare_total_of_another_measure_is_not_asked_about(ask, question):
+    # Only a time is asked about: unlike durations are the ones that mislead
+    # (tests/test_composer_measures_1030.py keeps a distance summing every note).
+    assert not re.match(r"Total (?:distance|weight) of what\?", ask(question))
 
 
 @pytest.mark.parametrize("question", [

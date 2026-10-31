@@ -725,8 +725,10 @@ def _measures_line(items: list[Item], unit: str, tail: str) -> str:
 
 
 def _which_measure(items: list[Item], noun: str) -> str:
-    """A total of every {noun} in the notebook adds unlike things together
-    ("85 days: Spanish, Passport, Sourdough"): the subject is asked for."""
+    """A total of every duration in the notebook adds unlike things together
+    ("85 days: Spanish, Passport, Sourdough"): the subject is asked for. Only
+    time is asked about: a distance or weight with no verb still totals every
+    note (tests/test_composer_measures_1030.py)."""
     names = list(dict.fromkeys(_note_name(i.view) for i in items))
     shown = ", ".join(names[:3]) + (f" and {len(names) - 3} more" if len(names) > 3 else "")
     return f"Total {noun} of what? Your notes give {noun}s for {shown}. Say which, for example “my total {noun} on {names[0]}”."
@@ -741,7 +743,7 @@ def _measure(out, asked: _Measure, views: list, today: date) -> bool:  # noqa: A
     if not items:
         out.lines.append(f"I found no {asked.unit or _DIMENSION_NOUN[asked.dimension]}{tail} in your notes.")
         return True
-    if not (asked.verb or asked.unit or subject or win):
+    if asked.dimension == "time" and not (asked.verb or asked.unit or subject or win):
         said = _which_measure(items, _DIMENSION_NOUN[asked.dimension])
         out.lines.append(said)
         _cite_all(out, items[:3], said)
