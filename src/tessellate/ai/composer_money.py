@@ -667,7 +667,7 @@ _DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we)
 _ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have", "go", "went", "gone"})
 #: "how far in total", "how many km altogether": the sum asked with no doing
 #: word; what follows ("for running") names the subject.
-_TOTAL_TAIL = re.compile(r"\s*(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
+_TOTAL_TAIL = re.compile(r"(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
 _PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
 _BASE = {forms[0]: verb for verb, forms in _PAST.items()} | {forms[1]: verb for verb, forms in _PAST.items()}
 
@@ -721,7 +721,7 @@ def _measure_asked(q: str) -> _Measure | None:
     if not dimension:
         return None
     doer = _DOER.match(m.group("rest"))
-    total = None if doer or m.group("noun") else _TOTAL_TAIL.fullmatch(m.group("rest"))
+    total = None if doer or m.group("noun") else _TOTAL_TAIL.fullmatch(m.group("rest").lstrip())
     #: "How many days until..." and "how far is the station" are a day and a
     #: fact, not a sum: a sum is asked of something done, or asked as a total.
     if not (doer or m.group("noun") or total) or word in _CALENDAR or _one_day(m.group("rest")):
