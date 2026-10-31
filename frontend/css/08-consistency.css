@@ -3619,7 +3619,7 @@ body .chip.item-label,
    together: 4px between them, the card's inset one step in, and the
    actions laid over the inset instead of growing the line they sit on.
    Personas share the row, so they get the same. */
-.entry-list > li:has(> :is(.skill-row, .persona-row)) {
+.entry-list > li:where(:not(.row-shell)):has(> :is(.skill-row, .persona-row)) {
   padding-block: var(--space-3);
   margin-bottom: var(--space-2);
 }
@@ -3640,7 +3640,7 @@ body .chip.item-label,
    and they are always shown: Edit is this list's main verb, not a hover
    extra. The label is one line of 11px type in a hairline box (19px), not
    a 24px box beside a 24px title. */
-.entry-list > li:has(> :is(.skill-row, .persona-row)) {
+.entry-list > li:where(:not(.row-shell)):has(> :is(.skill-row, .persona-row)) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
