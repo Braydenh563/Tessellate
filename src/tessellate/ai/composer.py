@@ -2883,16 +2883,22 @@ def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     return versus is not None
 
 
-def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
-    """A line that counts each side, each side its own short list, then what
-    speaks of two or more of them."""
-    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
-    n = len(sides)
+def _compare_shares(stems, own, picks) -> tuple[list, list]:  # noqa: ANN001
+    """What is said of each side only, then what speaks of two or more."""
+    n = len(picks)
     others = [set().union(*(stems[j] for j in range(n) if j != i)) for i in range(n)]
     only = [[s for s in picks[i] if own[i] or not (others[i] & set(s.words))][:3] for i in range(n)]
     #: What speaks of two sides is not a line already said under a side.
     said = {id(s) for side in only for s in side}
     both = [s for s in picks[0] if others[0] & set(s.words) and id(s) not in said][:2] if n == 2 else _shared(picks, others, said)
+    return only, both
+
+
+def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
+    """A line that counts each side, each side its own short list, then what
+    speaks of two or more of them."""
+    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
+    only, both = _compare_shares(stems, own, picks)
     if not any(only):
         return False
     if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
@@ -3294,9 +3300,6 @@ def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> No
         out.item(s, list(wanted))
 
 
-_DAY_AND_MONTH = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", re.I)
-
-
 def _until_note(out: _Answer, question: str, views: list[NoteView], today: date) -> bool:
     """"How many days until the dentist": the day is in a note, so the
     count is from today to the nearest day the note on the subject names
@@ -3351,22 +3354,12 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
     for fact in factgraph.facts(note):
         if fact.kind != "date" or not fact.when or fact.when[2] != "day":
             continue
-        day = _fact_day(fact, today, tense) if ahead else fact.when[0]
+        day = composer_versus.fact_day(fact, today, tense) if ahead else fact.when[0]
         if ahead and told_as_past(str(note.get("content") or ""), fact.start):
             continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
-
-
-def _fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgraph fact
-    """A dated fact's day; "Mum turns 60 on 3 December", written last year:
-    a day and month with no year is the next (or last) one from today."""
-    phrase = str(fact.attrs.get("phrase") or "")
-    if _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
-        again = when_words.span(phrase, today, tense)
-        return again[0] if again else fact.when[0]
-    return fact.when[0]
 
 
 def told_as_past(content: str, at: int) -> bool:

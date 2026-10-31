@@ -434,7 +434,9 @@ def test_format_is_one_undo_step_and_refuses_what_does_not_parse():
     assert "docFormatTreeRefusal(CM, state, type.ext)" in body
     assert "docFormatRemoteRefusal(type.ext, text)" in body
     #: The round trip to the server can outlast a keystroke.
-    assert "view.state.doc.toString() !== text" in body
+    #: Spelled `docStr(...)` since 7add0bf (the text is joined once per
+    #: version); the guard is the same, the test named the old spelling.
+    assert "docStr(view.state.doc) !== text" in body
 
 
 def test_quick_fixes_are_recomputed_when_chosen_and_opened_by_the_recipe():

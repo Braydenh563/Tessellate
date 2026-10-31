@@ -3275,6 +3275,17 @@ def _exhausted_events(ollama, plan: "_TurnPlan", state: _TurnState, loop: _Loop,
     }
 
 
+def _from_outside(notes: list[dict]) -> bool:
+    """SEC-02: a note retrieved for the question that was clipped from the web
+    or imported is already in the prompt, so the turn starts tainted."""
+    return any(isinstance(n, dict) and n.get("from_outside") for n in notes or ())
+
+
+def _blocked_for_turn(blocked_tools: frozenset[str] | set[str] | None) -> frozenset[str] | set[str] | None:
+    """The tools a turn may not call: the caller's, plus the private set while a private turn runs."""
+    return (frozenset(blocked_tools or ()) | PRIVATE_BLOCKED) if private_turn.active() else blocked_tools
+
+
 def run_agent(
     session: Session,
     question: str,
@@ -3328,7 +3339,7 @@ def run_agent(
         history=history,
         persona_prompt=persona_prompt,
         allowed_tools=allowed_tools,
-        blocked_tools=(frozenset(blocked_tools or ()) | PRIVATE_BLOCKED) if private_turn.active() else blocked_tools,
+        blocked_tools=_blocked_for_turn(blocked_tools),
         max_rounds=max_rounds,
         earned_rounds=earned_rounds,
         mode=mode,
@@ -3338,10 +3349,7 @@ def run_agent(
         image_context=image_context,
     )
     state = _TurnState(messages=plan.messages, offered=plan.offered, named_hosts=_hosts_named(question), approved=approved)
-    # SEC-02: a note retrieved for the question that was clipped from the web
-    # or imported is already in the prompt, so the turn starts tainted.
-    if any(isinstance(n, dict) and n.get("from_outside") for n in notes or ()):
-        state.outside = True
+    state.outside = _from_outside(notes)
     loop = _Loop(allowance=plan.granted, ceiling=plan.ceiling)
     #: **The run this turn belongs to, if it belongs to one** (Brief 13).
     #: None for an ordinary chat turn: that is bounded per turn already, by

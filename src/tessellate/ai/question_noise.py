@@ -2021,6 +2021,17 @@ def asks_identity(message: str) -> bool:
     return len(text) <= 80 and bool(_IDENTITY.search(text))
 
 
+def _social_phrases(text: str) -> tuple[list[str], str]:
+    """The kinds of the social phrases in `text`, longest first, and the text without them."""
+    kinds: list[str] = []
+    for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True):
+        pattern = rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"
+        if re.search(pattern, text):
+            kinds.append(SOCIAL_PHRASES[phrase])
+            text = re.sub(pattern, " ", text)
+    return kinds, text
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
@@ -2035,12 +2046,7 @@ def social_kind(message: str) -> str | None:
     if re.fullmatch(r"[?\s]+", text):
         return "confused"
     text = " ".join(re.split(r"[^\w']+", text)).strip()
-    kinds: list[str] = []
-    for phrase in sorted(SOCIAL_PHRASES, key=len, reverse=True):
-        pattern = rf"(?:^|\s){re.escape(phrase)}(?=\s|$)"
-        if re.search(pattern, text):
-            kinds.append(SOCIAL_PHRASES[phrase])
-            text = re.sub(pattern, " ", text)
+    kinds, text = _social_phrases(text)
     words = [w for w in text.split() if w and w not in _SOCIAL_FILLER]
     if not words and not kinds:
         return None

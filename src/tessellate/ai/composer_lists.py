@@ -374,13 +374,18 @@ def _order(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
+def _naming(views: list, subject: str, oldest: bool) -> list:
+    """The notes that carry every word of `subject`, the end asked for first."""
+    wanted = {composer._stem(w) for w in subject.split()}  # noqa: SLF001
+    named = [v for v in views if v.sentences and wanted <= {composer._stem(w) for w in (*v.words, *v.title_words, *v.filed_words)}]  # noqa: SLF001
+    return sorted(named, key=lambda v: (v.written or date.min, v.rank), reverse=not oldest)
+
+
 def _counted(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     """The notes at one end of the order, as many as were asked for: "Your two
     newest notes about baking:", each by its title and day."""
     oldest, count, subject = counted_order(asked) or (False, 0, "")
-    wanted = {composer._stem(w) for w in subject.split()}  # noqa: SLF001
-    named = [v for v in views if v.sentences and wanted <= {composer._stem(w) for w in (*v.words, *v.title_words, *v.filed_words)}]  # noqa: SLF001
-    members = sorted(named, key=lambda v: (v.written or date.min, v.rank), reverse=not oldest)[:min(count, SHOWN)]
+    members = _naming(views, subject, oldest)[:min(count, SHOWN)]
     if not members:
         return False
     lines = [(f"{_title(view)}, {_day(view.written, today)}" if view.written else _title(view), view, view.sentences[0]) for view in members]

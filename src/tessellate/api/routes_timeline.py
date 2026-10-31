@@ -652,7 +652,7 @@ def _placed_rows(session: Session, entries: list, documents_found: list, reminde
     # batching `resolved` above uses: a timeline over a year of writing is
     # hundreds of rows and this endpoint is drawn on every visit to the tab.
     spaces = {space.id: space.name for space in session.scalars(select(Space))}
-    links = manager.link_counts_bulk(session, [entry.id for entry in entries])
+    links = manager.links_count_bulk(session, [entry.id for entry in entries])
 
     placed: list[dict] = []
     _place_notes(entries, placed, scale, resolved, categories, spaces, links, meetings, every)

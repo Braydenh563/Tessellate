@@ -613,26 +613,29 @@ def _shows_the_lot(question: str) -> bool:
     return composer_digest.shows_the_lot(question)
 
 
+def _not_an_open(ctx: Ctx, found: re.Match) -> bool:
+    """Whether the words are something other than "open these notes"."""
+    #: "show me notes about X" is a listing Chat draws with previews (the
+    #: tool's rows); only a verb that opens is answered the same in both.
+    if not ctx.ask and found.group("verb").lower().startswith("show"):
+        return True
+    #: "pull up my uni notes", "show me all of my university notes": the notes
+    #: on a subject, said whole (the overview), not links to pick from.
+    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and _shows_the_lot(ctx.asked or ctx.question or ""):
+        return True
+    topic = found.group("t")
+    return bool(_OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I))
+
+
 def open_named(ctx: Ctx) -> Reply | None:
     """Ask cannot open things itself, but it can point: "open my lecture
     notes" is the links to the notes that name it. Chat answers the same
     (audit 1029 C20): "open the sourdough starter" was a digest of three loaf
     notes there, and the same words in Ask pointed at the starter."""
     found = _OPEN.match(" ".join((ctx.asked or ctx.question or "").split()))
-    if not found:
+    if not found or _not_an_open(ctx, found):
         return None
-    #: "show me notes about X" is a listing Chat draws with previews (the
-    #: tool's rows); only a verb that opens is answered the same in both.
-    if not ctx.ask and found.group("verb").lower().startswith("show"):
-        return None
-    #: "pull up my uni notes", "show me all of my university notes": the notes
-    #: on a subject, said whole (the overview), not links to pick from.
-    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and _shows_the_lot(ctx.asked or ctx.question or ""):
-        return None
-    topic = found.group("t")
-    if _OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):
-        return None
-    notes = topic_notes(topic, ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
+    notes = topic_notes(found.group("t"), ctx, limit=5, open_one=not found.group("verb").lower().startswith("show"))
     if not notes:
         return None
     #: Several in Chat: its open tool picks or asks, as the starter expects.
