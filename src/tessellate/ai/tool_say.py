@@ -225,6 +225,20 @@ def _list_notes(result: dict, args: dict) -> Said:
     return _found_notes(lead, notes, total, "You have no notes that fit yet.")
 
 
+def matched(result: dict) -> int:
+    """The notes a `search_notes` result matched: not the ones only connected
+    to a match (`why`), and none when the search fell back to the newest."""
+    if result.get("search_mode") == "recent":
+        return 0
+    rows = [n for n in result.get("notes") or [] if isinstance(n, dict)]
+    return max(len([n for n in rows if not n.get("why")]), int(result.get("found") or 0) - len([n for n in rows if n.get("why")]))
+
+
+def _total(result: dict, notes: list[dict]) -> int:
+    """The count a search says: the notes that matched, or the newest it fell back to."""
+    return int(result.get("found") or len(notes)) if result.get("search_mode") == "recent" else matched(result)
+
+
 def _search_notes(result: dict, args: dict) -> Said:
     notes = [n for n in result.get("notes") or [] if isinstance(n, dict) and not n.get("why")]
     #: The words searched for: the call's own, else its label's quote
@@ -232,7 +246,7 @@ def _search_notes(result: dict, args: dict) -> Said:
     said = re.search(r"“([^”]+)”", str(result.get("label") or ""))
     query = str(args.get("query") or (said.group(1) if said else "")).strip()
     about = f" about “{query}”" if query else ""
-    total = int(result.get("found") or len(notes))
+    total = _total(result, notes)
     if result.get("search_mode") == "recent":
         #: The count said is the count shown: "ten newest, here are the first
         #: eight" was two sentences for one fact (audit 1030 Z35).

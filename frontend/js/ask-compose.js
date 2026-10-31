@@ -528,8 +528,26 @@ function digestOffer(answerEl, offer) {
         else if (offer.surface === "statistics") openStatistics();
         else if (offer.surface === "ask-history") { if (!askHistoryOpen) toggleAskHistoryPanel(); }
         else if (offer.surface.startsWith("settings:")) openSettingsModal(offer.surface.slice("settings:".length));
+        else if (offer.surface === "web-panel") toggleWebPanel(true);
         else actNavigate(offer.surface);
         button.disabled = false;
+        return;
+      }
+      if (offer.kind === "searxng-start") {
+        //: The search service a web search needed (INBOX 1490): started
+        //: through the door Settings uses, which also points web search at it.
+        //: The line says what happened; the buttons beside it stay.
+        line.textContent = "Starting SearXNG… the first run downloads it, so give it a minute.";
+        try {
+          const body = await apiJson("/websearch/searxng/start", { method: "POST" });
+          if (typeof prefsCache !== "undefined") prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+          line.textContent = `SearXNG is running at ${body.url}. Ask again and web search will use it.`;
+          line.classList.add("muted");
+        } catch (error) {
+          line.replaceChildren(button);
+          button.disabled = false;
+          toast(error.message, true);
+        }
         return;
       }
       if (offer.kind === "reminder") {

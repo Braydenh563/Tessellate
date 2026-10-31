@@ -556,6 +556,33 @@ _ASKED_FIND = re.compile(
 )
 
 
+#: "what do my notes mentioning test say", "notes with test in them", "notes
+#: that contain the word test" (INBOX 1487): the notes that hold a word, all
+#: of them, listed by the notes search, never one note's best sentence. A bare
+#: "with" counts only as "with X in them" ("notes with images" is a kind).
+_HOLDERS = r"(?:(?:all|any|some) (?:of )?)?(?:my |the |our )?(?:notes|entries)"
+_HOLDING = (
+    r"(?:(?:that |which |where i )?(?:mentioning|mentions?|mentioned|containing|contains?|including|includes?|have|has|say|says|use|name|talk about)"
+    r"|with(?= (?:the )?(?:words?|phrase|term) | [\w' -]{1,40} in (?:them|it)\W*(?:say\W*)?$))"
+)
+_WORD_NOTES = re.compile(
+    r"(?:(?:please )?(?:(?:what|which) (?:do|does|did) |tell me what |show me what |what(?:'s| is) in |what are |which of |"
+    r"(?:show(?: me)?|list|find|give me|get me|search for|look for|pull up|bring up) )(?:all )?)?"
+    rf"{_HOLDERS} (?:do )?{_HOLDING} (?:the )?(?:(?:words?|phrase|term) )?(?P<topic>.+?)(?: in (?:them|it|there))?"
+    r"(?: (?:say|says|tell me|have in them|have|hold|contain|mention))?[?.!\s]*",
+    re.I,
+)
+
+
+def _word_notes(text: str) -> dict | None:
+    """The find for a word the notes hold, or None."""
+    found = _WORD_NOTES.fullmatch(text.strip())
+    topic = _drop_article(found["topic"].strip()) if found else ""
+    if not topic or re.match(r"(?:about|on|for|regarding)\b", topic, re.I) or not _note_topic(topic) or _asks_a_kind(text):
+        return None
+    return {"intent": "find", "about": topic}
+
+
 _WHATS_IN = re.compile(
     r"(?:what(?:'s|s| is) in (?:my |the )?(?P<a>[\w&-]+(?: [\w&-]+)?) (?:category|folder|tag)"
     r"|(?:pull up|bring up) (?:my |the )?(?:notes|entries) (?:tagged(?: with)?|in|under) #?(?P<b>[\w&-]+(?: [\w&-]+)?))[?.!\s]*",
@@ -581,6 +608,9 @@ def _find(text: str) -> dict | None:
     if whats:
         filed = (whats["a"] or whats["b"]).strip()
         return {"intent": "find", "about": filed, "filed": filed}
+    holding = _word_notes(text)
+    if holding:
+        return holding
     asked = _ASKED_FIND.fullmatch(text.strip()) or _MENTIONING.fullmatch(text.strip())
     if asked and _asks_a_kind(text):
         return None  # "what notes contain a checklist" asks for a kind of note, not a word (audit 1029 C34)

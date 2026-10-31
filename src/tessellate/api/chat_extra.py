@@ -92,17 +92,36 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href)
 
 
+def language_events(session: Session, language: str, *, web_on: bool) -> list[dict]:
+    """The notes in a language the person named ("japanese note", INBOX 1490):
+    found by script or everyday words (`ai/note_language.py`), listed with
+    their links, never a web search. None found says so and, with web search
+    on, offers the web as a chip."""
+    from tessellate.ai import note_language, tool_say
+
+    found = [n for n in _notes(session) if not n["archived"] and not n["draft"] and note_language.is_in(n["content"], language)]
+    label = note_language.label(language)
+    if not found:
+        events: list[dict] = [{"type": "answer", "delta": f"None of your notes look {label} to me."}]
+        if web_on:
+            events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {language}"]}})
+        return events
+    lead, body, chips = tool_say._found_notes(f"I found {realise.count_noun(len(found), 'note')} in {label}.", [{"id": n["id"], "content": n["content"]} for n in found], len(found), "")  # noqa: SLF001
+    return [{"type": "answer", "delta": "\n\n".join(part for part in (lead, body, chips) if part)}]
+
+
 def mentioning(session: Session, word: str) -> int:
-    """How many visible notes hold `word` (the full-text index, stemmed: "test"
-    finds "testing"), for a ping's one line (INBOX 1485); 0 when unreadable."""
-    from sqlalchemy import func
-    from sqlalchemy import text as sql_text
+    """How many notes the notes search finds for `word` ("test" finds
+    "testing"), for a ping's one line (INBOX 1485). The search the listing
+    runs (`search_notes`), so the count offered, the list shown and the answer
+    given are one number (INBOX 1487); 0 when unreadable."""
+    from tessellate.ai import tool_say
+    from tessellate.ai import tools as agent_tools
 
     if not word.isalpha():
         return 0
     try:
-        ids = select(sql_text("rowid")).select_from(sql_text("entries_fts")).where(sql_text("entries_fts MATCH :w"))
-        return int(session.scalar(select(func.count(Entry.id)).where(*_visible(), Entry.id.in_(ids)), {"w": f'"{word}"'}) or 0)
+        return tool_say.matched(agent_tools.execute_tool(session, "search_notes", {"query": word}))
     except Exception:  # noqa: BLE001  # no index yet: nothing is counted
         log.exception("chat: counting the notes a ping names failed")
         return 0
