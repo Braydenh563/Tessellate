@@ -61,6 +61,14 @@ def names_notes(message: str) -> bool:
     return bool(_NOTES.search(message or ""))
 
 
+_NOTE_WORD = re.compile(r"\b(?:notes?|notebook|entr(?:y|ies)|journal|diary)\b", re.I)
+
+
+def says_notes(message: str) -> bool:
+    """The message says "note", "notes" or the notebook, not only "my"."""
+    return bool(_NOTE_WORD.search(message or ""))
+
+
 def lookup(message: str) -> bool:
     """A question about the world, with the shape of one."""
     q = clean(message)

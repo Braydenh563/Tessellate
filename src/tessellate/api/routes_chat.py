@@ -37,7 +37,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -3269,6 +3269,18 @@ def _search_service() -> tuple[str, str]:
         return "", ""
 
 
+def _can_start_searxng() -> bool:
+    """Whether the app can launch the search service itself: the provider may
+    be SearXNG and the address is empty or this computer's own."""
+    from urllib.parse import urlparse
+
+    from tessellate.search import searxng_manager
+
+    url, provider = _search_service()
+    host = (urlparse(url if "//" in url else f"//{url}").hostname or "") if url else ""
+    return provider != "duckduckgo" and host in ("", "127.0.0.1", "localhost", "::1") and searxng_manager.source_available()
+
+
 def _link_events(req: _StreamRequest, url: str) -> list[dict]:
     """A pasted link to be read (`composer_web`): fetched and told back when
     web access is on, else the setting that allows it. Never a notes search."""
@@ -3664,6 +3676,18 @@ def _personal_unsearched(req: _StreamRequest, ollama_running: bool) -> str:
     return str(own["text"]) if own else ""
 
 
+def _web_chip(req: _StreamRequest) -> list[dict]:
+    """A miss on an ask that names the person's notes: the web is a chip to
+    press, never the first stop (INBOX 1490), and only with web search on."""
+    asked = req.question or ""
+    if not (_web_pref_on() and composer_unplaced.says_notes(asked)) or toolwords.asks_web(asked):
+        return []
+    terms = composer.plan(asked).terms
+    if not terms:
+        return []
+    return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [f"Search the web for {' '.join(terms[:3])}"]}}]
+
+
 def _unplaced_events(req: _StreamRequest) -> list[dict]:
     """A message nothing placed, with no note to answer it (INBOX 1490): a
     short question back, with the notes and the web as its two chips, never a
@@ -3688,6 +3712,11 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
         return [{"type": "answer", "delta": own}]
     if not ollama_running and not req.images_raw and composer_unplaced.unplaced(req.question or ""):
         return _unplaced_events(req)
+    return _no_notes_answer(req, ollama_running) + _web_chip(req)
+
+
+def _no_notes_answer(req: _StreamRequest, ollama_running: bool) -> list:
+    """The line for a question no note answers, and what else the notebook holds on it."""
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
@@ -4056,7 +4085,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_older(text, older, result)
     text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
-    events: list = [{"type": "answer", "delta": text}]
+    events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else [])]
     if result["grounding"]:
         _name_documents(req.session, result["grounding"])
         events.append(_composed_grounding_event(req, result, asks))
@@ -4096,21 +4125,36 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
 
 
 def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | None:  # noqa: ANN001
-    """The composer found nothing: ask what was meant (an unknown action), or
-    turn to the web when it is on; None leaves the composer's own words."""
+    """The composer found nothing: ask what was meant (an unknown action, or a
+    message nothing placed), or turn to the web when it is on and was asked
+    for or the question is about the world; None leaves the composer's own words."""
     if not follow and not ollama_running and not req.images_raw:
-        unknown = composer_suggest.unknown_action(
-            req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
-        if unknown is not None:
-            return _suggest_events(unknown)
-    if not follow and not ollama_running and not req.images_raw and composer_unplaced.unplaced(req.question or ""):
-        return _unplaced_events(req)
-    if not ollama_running and _web_allowed(req) and (follow or composer_unplaced.worthy(req.question or "")):
-        web = _web_answer(req, follow.question if follow else req.question)
-        if web:
-            return list(_web_events(*web))
-        if req.web_down:
-            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
+        asked = _asked_back_events(req)
+        if asked is not None:
+            return asked
+    if ollama_running or not _web_allowed(req):
+        return None
+    return _web_events_or_down(req, follow.question if follow else req.question) if follow or composer_unplaced.worthy(req.question or "") else None
+
+
+def _asked_back_events(req: _StreamRequest) -> list | None:
+    """What an instruction nothing understood asks back (`composer_suggest`),
+    or the question for banter and bare words (`_unplaced_events`)."""
+    unknown = composer_suggest.unknown_action(
+        req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
+    if unknown is not None:
+        return _suggest_events(unknown)
+    return _unplaced_events(req) if composer_unplaced.unplaced(req.question or "") else None
+
+
+def _web_events_or_down(req: _StreamRequest, question: str) -> list | None:
+    """The web's answer to `question`, or the buttons that fix a search that
+    could not run; None when it ran and found nothing."""
+    web = _web_answer(req, question)
+    if web:
+        return list(_web_events(*web))
+    if req.web_down:
+        return _offer_events(composer_web.search_down(req.web_down, *_search_service(), can_start=_can_start_searxng()))
     return None
 
 
@@ -4139,11 +4183,9 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).
-        web = _web_answer(req, req.question)
-        if web:
-            return list(_web_events(*web))
-        if req.web_down:
-            return _offer_events(composer_web.search_down(req.web_down, *_search_service()))
+        down = _web_events_or_down(req, req.question)
+        if down:
+            return down
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:
@@ -4471,6 +4513,10 @@ def _app_first_events(req: _StreamRequest, follow, ollama_running: bool) -> list
     link = composer_web.url_in(question)
     if link and composer_web.reads_link(question):
         return _link_events(req, link)
+    #: "japanese note", "notes written in French" (INBOX 1490): notes found by
+    #: their language, never a web search for the word.
+    if spoken := note_language.asked(question):
+        return chat_extra.language_events(req.session, spoken, web_on=_web_pref_on())
     if composer_suggest.open_ended(question):
         #: "do smth cool", "open a note": ask what was meant, with choices.
         return _suggest_events(composer_suggest.reply(req.question, _newest_titles(req.session), seed=_reply_seed(req)[1]))

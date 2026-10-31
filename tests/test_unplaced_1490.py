@@ -149,7 +149,7 @@ def test_a_question_about_the_world_still_goes_to_the_web(client, notebook, web,
     said = ("what is the capital of France", "weather in Brisbane", "how do I descale a kettle", "search the web for japanese", "who won the 2022 world cup")
     for text in said:
         out = _ask(client, text, use_tools=tools)
-        assert "docker" in out["text"].lower() if tools else "search service" not in out["text"], (text, out["text"])
+        assert ("Start SearXNG" in out["text"]) if tools else ("search service" not in out["text"]), (text, out["text"])
     #: Only Agent mode runs the search (Chat without it says so).
     assert len(web) == (len(said) if tools else 0)
 
