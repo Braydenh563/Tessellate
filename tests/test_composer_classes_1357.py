@@ -249,8 +249,8 @@ J_FOLLOW = [
     ("when is my exam?", "what's it on", r"operating systems|process", None),
     #: The first answer already told both gym notes whole, so "tell me more" has
     #: nothing left to tell and says so; re-telling them was the wrong check.
-    ("what have I saved about the gym?", "tell me more", r"That's all your notes say on gym", r"squats|deadlifts|rest day"),
-    ("what did I write about the essay?", "tell me more", r"That's all your notes say on essay", r"Hamlet"),
+    ("what have I saved about the gym?", "tell me more", r"That's all your notes say on (the )?gym", r"squats|deadlifts|rest day"),
+    ("what did I write about the essay?", "tell me more", r"That's all your notes say on (the )?essay", r"Hamlet"),
 ]
 
 
