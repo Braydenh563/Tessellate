@@ -1507,6 +1507,19 @@ def _typed_first(members: list[composer.NoteView], question: str) -> list[compos
     return typed or members
 
 
+def _acting(members: list[composer.NoteView], question: str) -> list[composer.NoteView]:
+    """"When did I bake banana bread" is the note with a sentence that says the
+    whole doing, not the recipe that shares its words across sentences (audit
+    1031 C16); the members stay when no sentence says it all."""
+    if len(members) < 2 or not _WHEN_DID.match(clean(question)):
+        return members
+    stems = [st for st in _subject(question) if st not in _VERBS()] + [st for st in _subject(question) if st in _VERBS()]
+    if len(stems) < 2:
+        return members
+    said = [v for v in members if any(all(composer._holds(st, set(s.words)) for st in stems) for s in v.sentences)]
+    return said or members
+
+
 def _members(question: str, views: list[composer.NoteView]) -> list[composer.NoteView]:
     """The notes the question is about: a category it names, else the notes
     that hold most of its words (in the text, the title or the tags)."""
@@ -1526,7 +1539,7 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
         return []
     best = max(h for h, _ in scored)
     need = best if best >= 2 else 1
-    return _typed_first([v for h, v in scored if h >= need], question)
+    return _acting(_typed_first([v for h, v in scored if h >= need], question), question)
 
 
 def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
@@ -3117,7 +3130,8 @@ def _overview(out: _Out, question: str, members, facts, today: date, kind: str) 
         if summed:
             _fold_past_budget(out, kind)
             out.lines.insert(1, summary)
-    _overview_tail(out, kind, members, today, moved, len(shown_notes))
+    #: The pattern line counts the notes the opening counts (audit 1031 C6).
+    _overview_tail(out, kind, counted or members, today, moved, len(shown_notes))
 
 
 _GOING = re.compile(r"\bhow(?:'s| is| are) .+ going\b|\bprogress\b|\bhow am i (?:going|doing)\b", re.I)
@@ -3219,6 +3233,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     figures = composer.figures_of(question)
     asks_feeling = bool(_FEELING_ASK.search(question))
     latest = bool(_LATEST_ASK.search(question))
+    did_ask = bool(_WHEN_DID.match(clean(question)))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3233,7 +3248,10 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: Between sources that say it equally well, the one the search ranked first.
         #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
         newest = (f.view.written or date.min) if latest else date.min
-        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: "when did I bake banana bread": the sentence that says the whole
+        #: doing leads, whatever else the note holds (audit 1031 C16).
+        acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
+        return (acts, _cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3292,6 +3310,10 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
         #: "Finally finished the 5k": the writer did it.
         text = "I " + text[0].lower() + text[1:]
     body = _second_person(text)
+    #: "It rained all day, and you baked banana bread": the clause that is the writer's.
+    mine = re.match(r"it \w+[^,]*, and (you .+)$", body, re.I)
+    if mine:
+        body = mine.group(1)
     day = lead.view.written
     #: A thing done is in the past of the note that tells it: "Planted
     #: tomatoes on 5 October" in a note of 30 October is this year's 5 October,
@@ -3367,11 +3389,25 @@ _SINGLE_CUES = {
 }
 
 
+_IN_A_ROW = re.compile(r"\b(\d{1,4})\s+days?\s+(?:in a row|running|straight)\b", re.I)
+_STARTED = re.compile(r"\b(?:start|started|begin|began|begun)\b", re.I)
+
+
 def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact]:
     """A "when" ask: the day of one thing that happened, or a habit said as
     its days. Returns the facts still to say."""
     if _WHEN_DID.match(clean(question)) and _event_lead(out, lead, today):
         return []
+    #: "when did I start learning Spanish" with "42 days in a row" in a note of
+    #: 25 October: the day it began is worked out, and said as worked out.
+    streak = next((m for sentence in [lead.sentence, *lead.view.sentences] for m in [_IN_A_ROW.search(sentence.text)] if m), None)
+    if streak and lead.view.written and _STARTED.search(clean(question)):
+        n = int(streak.group(1))
+        began = lead.view.written - timedelta(days=n)
+        line = f"About {_day(began, today)}: your note of {_day(lead.view.written, today)} says {n} days in a row."
+        out.lines.append(line)
+        out.rows.append(_row(line, lead))
+        return [f for f in rest if f.view.id == lead.view.id]
     days = _DAYS_PLURAL.search(lead.body)
     #: A habit is weekdays in the plural or more than one ("Tuesdays",
     #: "Monday and Thursday"); "moved to Friday" is one day, said with its
@@ -3535,11 +3571,18 @@ class _MoneyCue:
 _MONEY_ASK = re.compile(r"\bhow much\b|\b(?:costs?|price[sd]?|pay|paid|charge[sd]?)\b", re.I)
 
 
+#: "how long do I bake it": the lead is the sentence that holds a length of time (audit 1031 C16).
+_HOW_LONG = re.compile(r"^\s*how long\s+(?:do|does|did|will|would|should|can|could|is|are|was|were)\b", re.I)
+_DURATION = re.compile(r"\b\d+(?:[.,]\d+)?\s*(?:-\s*\d+\s*)?(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|days?|weeks?|months?|years?)\b", re.I)
+
+
 def _single_cue(kind: str, asked: str) -> re.Pattern | None:
     """What the leading sentence should say: the kind's own cue, the work for
     "what does Priya do", the place for a where."""
     if kind != "when" and _MONEY_ASK.search(asked):
         return _MoneyCue()
+    if _HOW_LONG.match(asked):
+        return _DURATION
     if kind in _SINGLE_CUES:
         return _SINGLE_CUES[kind]
     if _ROLE_ASK.match(asked):
@@ -4018,10 +4061,11 @@ def _scope(question: str, asked: str, notes: list[dict], today: date, voice: str
     return (views if wants_context else [v for v in views if not _context_note(v)]), wants_context
 
 
-def _defines(view, words: list[str]) -> int:
+def _defines(view, words: list[str]) -> float:
     """How plainly `view` is the note about `words`: 2 when its title is the
     subject ("Sara", "Uni"), 1 when an opening sentence says what it is
-    ("Sara is my sister"), else 0 (a passing mention)."""
+    ("Sara is my sister") or it is filed under the subject, else 0 (a passing
+    mention). Saying what it is (1.5) outranks being filed under it (1)."""
     if not words:
         return 0
     title = re.sub(r"^(?:the|my|a|an)\s+", "", (view.title or "").strip().lower()) if getattr(view, "titled", False) else ""
@@ -4031,7 +4075,11 @@ def _defines(view, words: list[str]) -> int:
     #: Filed under the subject (its category, its tag) is a definition too
     #: (audit 1031 C4: the Books note leads "what do I know about reading").
     filed = bool(getattr(view, "filed_words", None)) and all(composer._stem(t) in view.filed_words for t in words)  # noqa: SLF001
-    return 1 if filed or any(said.match(x.text) for x in view.sentences[:2]) else 0
+    #: Saying what it is outranks being filed under it: the note that defines
+    #: "cloud computing" leads the lectures tagged with it.
+    if any(said.match(x.text) for x in view.sentences[:2]):
+        return 1.5
+    return 1 if filed else 0
 
 
 def _defining_first(asked: str, members: list) -> list:
@@ -4239,11 +4287,27 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
         counts = {realise.count_word(len(members)), realise.count_word(int(item.slots.get("count") or 0))}
         if item.rule in ("recurrence", "streak") and not hobby and any(re.search(rf"\b{c}\b", said, re.I) for c in counts):
             continue
+        #: One count (C6): a "N times" that is not the opening's "N notes
+        #: about" would be a second, disagreeing count of the same subject.
+        if item.rule == "recurrence" and not hobby and _opening_count(said) not in (None, int(item.slots.get("count") or 0)):
+            continue
         relevance = len(set(item.note_ids) & ids) / len(item.note_ids)
         if relevance >= insight_bar(learned):
             scored.append((relevance, item))
     scored.sort(key=lambda pair: -pair[0])
     return scored
+
+
+def _opening_count(said: str) -> int | None:
+    """The count the answer's opening gave ("You have three notes about
+    uni"), or None when it gave none."""
+    found = re.search(r"\b(\d+|[a-z]+) notes? (?:about|on)\b", said, re.I)
+    if not found:
+        return None
+    word = found.group(1).lower()
+    if word.isdigit():
+        return int(word)
+    return next((n for n in range(21) if realise.count_word(n) == word), None)
 
 
 def _say_insight(out: _Out, item, row: dict, members, said: str) -> None:  # noqa: ANN001
@@ -4713,7 +4777,11 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
         said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
     seen = {_ask_key(question)}
     out = []
+    names = _NAMES.get()
     for q in said:
+        #: A name is a name in a chip: "about Tom", never "about tom" (the who
+        #: path lower-cases the name it asked about).
+        q = re.sub(r"\b[a-z]+\b", lambda m: m.group(0).capitalize() if m.group(0) in names else m.group(0), q)
         if _ask_key(q) not in seen:
             seen.add(_ask_key(q))
             out.append(q)

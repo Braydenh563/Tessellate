@@ -131,7 +131,7 @@ def test_the_search_does_not_read_a_topic_holiday_as_a_range():
 
 @pytest.mark.parametrize("question, previous, said", [
     ("how much does it cost", "tell me about the Lisbon trip", "how much does the Lisbon trip cost"),
-    ("when is it", "tell me about the Lisbon trip", "when is the Lisbon trip"),
+    ("when is it", "tell me about the Lisbon trip", "when is Lisbon trip"),
     ("what should I get her", "who is Sara", "what should I get Sara"),
     ("when is her birthday", "who is Sara", "when is Sara's birthday"),
     ("what else do I know about her", "who is Sara", "what else do I know about Sara"),
@@ -330,3 +330,95 @@ def test_a_count_in_one_line_is_that_many_doings():
     _lemma, _past, forms = composer_doings._forms("run")
     done = composer_doings.doings([view], forms, [], date(2026, 10, 31))
     assert [(d.day, d.times) for d in done] == [(date(2026, 10, 30), 2)]
+
+
+# C16. The lead is the sentence that holds the asked slot: the doing for "when did I", the length for "how long".
+
+@pytest.mark.parametrize("question", [
+    "when did I bake banana bread", "when did I last bake banana bread", "when was it I baked banana bread",
+])
+def test_when_did_i_leads_with_the_sentence_that_says_the_doing(notebook, question):
+    said, _ = notebook(question)
+    assert "24 October" in said and "you baked banana bread" in said and "3 ripe bananas" not in said, said
+
+
+@pytest.mark.parametrize("question", ["how long do I bake banana bread", "how long should I bake banana bread", "how long does banana bread bake"])
+def test_how_long_leads_with_the_length(notebook, question):
+    said, _ = notebook(question)
+    assert said.lstrip().startswith("Bake at 175C for 55 minutes"), said
+
+
+@pytest.mark.parametrize("word, stem", [("baked", "bake"), ("liked", "like"), ("named", "name"), ("hoped", "hope"), ("hated", "hate")])
+def test_a_short_past_form_folds_to_its_verb(word, stem):
+    from tessellate.ai import composer
+
+    assert composer._stem(word) == composer._stem(stem)
+
+
+@pytest.mark.parametrize("word", ["ahead", "bread", "need", "shed", "used", "tied"])
+def test_a_word_that_only_ends_in_ed_is_left_whole(word):
+    from tessellate.ai import composer
+
+    assert composer._stem(word) == word
+
+
+# C17 and C47. "Short version", "gist" and "tl;dr" are summarise asks; the chips under an answer are questions it answers.
+
+@pytest.mark.parametrize("question", [
+    "give me the short version of Project Atlas", "the gist of Project Atlas", "tl;dr Project Atlas", "Project Atlas in a sentence",
+    "summarise Project Atlas", "the short version of Project Atlas",
+])
+def test_a_summary_ask_does_not_make_its_own_word_a_term(notebook, question):
+    said, _ = notebook(question)
+    assert "Beta on 10 November" in said, said
+    for refusal in ("reference to", "do not mention", "do not talk about", "None of these"):
+        assert refusal not in said, said
+
+
+def _chips(events):
+    return next(e for e in events if e["type"] == "grounding").get("next", [])
+
+
+@pytest.mark.parametrize("question", [
+    "what do I know about sourdough", "what do I know about Lisbon", "what do I know about running", "tell me about Tom",
+    "what do I know about books", "what do I know about the dentist",
+])
+def test_every_chip_offered_is_answered(notebook, question):
+    _said, events = notebook(question)
+    chips = _chips(events)
+    assert chips, question
+    for chip in chips:
+        if chip.startswith("Open "):
+            continue
+        said, _ = notebook(chip)
+        for refusal in ("reference to", "None of these", "do not mention", "I looked, but nothing", "has anything left to tick", "“else”"):
+            assert refusal not in said, (question, chip, said)
+
+
+@pytest.mark.parametrize("question", ["what do I know about sourdough", "what do I know about Lisbon", "tell me about Tom"])
+def test_what_is_left_is_offered_only_for_a_note_with_a_list(notebook, question):
+    _said, events = notebook(question)
+    left = [c for c in _chips(events) if c.startswith("What is left in")]
+    assert not left or "packing" in left[0].lower(), left
+
+
+def test_a_name_in_a_chip_keeps_its_capital(notebook):
+    _said, events = notebook("tell me about Tom")
+    assert not [c for c in _chips(events) if " tom" in c], _chips(events)
+
+
+# C6. One count: the pattern line counts the notes the opening counts.
+
+@pytest.mark.parametrize("question", [
+    "what have I written about uni", "what do I know about uni", "tell me about uni", "what do I know about cloud",
+    "what have I written about university", "anything about uni",
+])
+def test_the_opening_count_and_the_times_line_agree(notebook, question):
+    import re
+
+    said, _ = notebook(question)
+    words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+    opening = re.search(r"\b(?:have|are|is|there are)?\s*(one|two|three|four|five|six|seven|eight|nine|ten) notes? about", said, re.I)
+    times = re.search(r"written about \w+ (\d+) times", said)
+    if opening and times:
+        assert words[opening.group(1).lower()] == int(times.group(1)), said

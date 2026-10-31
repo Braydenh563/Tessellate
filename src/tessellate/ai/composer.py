@@ -669,7 +669,10 @@ def _stem_plain(word: str) -> str:
 
 def _strip_suffix(w: str) -> str:
     for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
-        if w.endswith(suffix) and len(w) - len(suffix) >= least:
+        #: "baked", "liked", "named": a three-letter stem that lost a silent "e"
+        #: (it ends in a consonant; "ahead" and "bread" do not qualify).
+        short_ed = suffix == "ed" and len(w) == 5 and w[2] not in "aeiou" + "y" and w[-3] not in _VOWELS and _one_syllable_cvc(w[:-2])
+        if w.endswith(suffix) and (len(w) - len(suffix) >= least or short_ed):
             if suffix == "s" and w.endswith(("ss", "us", "is")):
                 break
             if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
@@ -3806,7 +3809,9 @@ def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> 
     if not subject:
         return None
     article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
-    named = (article.group(0).strip() + " " if article else "") + subject
+    #: A bare "that" keeps the old bare subject; the newer slot and person
+    #: follow-ons read with the article ("how much does the Lisbon trip cost").
+    named = (article.group(0).strip() + " " if article and not bare else "") + subject
     if subjectless:
         return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
     pattern = _PRONOUN if bare else (_SLOT_PRONOUN if leans else _PERSON_PRONOUN)
@@ -5750,8 +5755,8 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = re.compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|started|start|"
-    r"added|add|saved|save|put together|jotted|typed|began|begun)\b",
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+\w+ing\b)|"
+    r"added|add|saved|save|put together|jotted|typed)\b",
     re.I,
 )
 

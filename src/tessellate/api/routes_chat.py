@@ -3952,7 +3952,38 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
     if follow is None and result.get("grounding"):
         _remember_rows(req.question, current, today, result)
+    if follow is None and result.get("next"):
+        result["next"] = _answerable_chips(list(result["next"]), current, today)
     return result, follow, current, older
+
+
+#: What an answer says when it could not answer: its own "missing" lines and the
+#: plain no-result and no-checklist lines.
+_CANNOT = re.compile(
+    r"None of (?:these|your) (?:notes|records)|do(?:es)? not (?:talk about|mention|address)|couldn't find|I don't see any mention|nothing in these notes|"
+    r"No note found brings up|omit(?:s)? |lacks any reference|no recorded information|absence of documentation|No checklist|nothing comes up|"
+    r"doesn't seem to be in the notes|I looked, but nothing|Nothing is dated|has anything left to tick",
+    re.I,
+)
+
+
+def _answerable_chips(chips: list, current: list, today) -> list:  # noqa: ANN001
+    """The chips the composer can answer on the notes it just read (audit 1031
+    C47): each question is composed against the same pool, and one that is
+    answered with a "none of these notes mention" or with nothing is not offered.
+    An action chip ("Open ...") is kept."""
+    kept = []
+    for chip in chips:
+        if not isinstance(chip, str) or chip.startswith("Open ") or not current:
+            kept.append(chip)
+            continue
+        try:
+            trial = composer.compose(chip, current, today=today, voice=_composer_voice())
+        except Exception:  # noqa: BLE001 - a chip that cannot be tried is not offered
+            continue
+        if trial.get("grounding") and not _CANNOT.search(str(trial.get("text") or "")):
+            kept.append(chip)
+    return kept
 
 
 def _composed_grounding_event(req: _StreamRequest, result: dict, asks: list[str] | tuple = ()) -> dict:
@@ -4092,7 +4123,22 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     return items
 
 
-def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> tuple[str, list[str]]:
+_CHECKLIST = re.compile(r"^\s*[-*+] \[[ xX]\]", re.M)
+
+
+def _first_cited_has_list(session: Session, result: dict) -> bool:
+    """Whether the first note an answer cited keeps a checklist: "What is left
+    in it" is a question only such a note answers (audit 1031 C47)."""
+    from tessellate.ai.tools._common import _visible
+
+    for kind, nid in _cited_ids(result)[:1]:
+        if kind != "document":
+            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+            return bool(row and _CHECKLIST.search(str(row[0] or "")))
+    return False
+
+
+def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None, listed: bool = True) -> tuple[str, list[str]]:
     """The answer's next step: the screen-aware closing line when the screen
     is known, else the chips for the cited note (INBOX 1466: the prose offer
     "Next, I can open ..." is the follow-up strip's now, not both). Left off
@@ -4115,7 +4161,7 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
         return text, []
     #: Its heading, not a whole first line ("Project Atlas budget: Sam says ..."): a chip is short.
     name = named[0] if len(named[0]) <= 40 else named[0].split(": ", 1)[0].strip()
-    return text, [f"Open \u201c{name}\u201d", f"What is left in \u201c{name}\u201d?"]
+    return text, [f"Open \u201c{name}\u201d", *([f"What is left in \u201c{name}\u201d?"] if listed else [])]
 
 
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
@@ -4180,7 +4226,7 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         text += _search_footer(prepared, result)
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
-        text, asks = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
+        text, asks = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result), _first_cited_has_list(req.session, result))
     return text, asks
 
 
