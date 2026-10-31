@@ -2358,6 +2358,53 @@ def _prepare(
     return _chat_payload(session, found, notes, config, as_of)
 
 
+def _chat_reply(  # noqa: ANN001
+    body: ChatRequest, prepared: dict, model_manager, ollama, mode, images, image_context, shared: dict,
+    conversational: bool,
+) -> tuple[str, str | None]:
+    """The text for `chat`: a counted answer, the Ask box's refusal to chat,
+    a conversational reply, or a grounded answer, by state."""
+    if prepared["stats"] is not None:
+        #: **Counted, not generated.** The answer to "what are my most common
+        #: tags" is a fact about rows, and `notebook_stats` has already written
+        #: it as a sentence. Handing it to the model to rephrase would put a
+        #: generator between the user and a number that is already exact, for
+        #: nothing but style: and would make the one feature here that works
+        #: with the model stopped depend on the model. So it is returned as it
+        #: stands, instantly, whether or not anything is running.
+        ai_response, ai_thinking = prepared["stats"]["text"], None
+    elif conversational and body.notes_only:
+        # Same rule as the streaming route: this box interrogates the
+        # notebook and does not chat (§35A).
+        ai_response, ai_thinking = librarian.ASK_IS_FOR_NOTES, None
+    elif conversational:
+        ai_response, ai_thinking = librarian.converse(
+            body.question,
+            prepared["intent"],
+            model_manager,
+            ollama,
+            mode=mode,
+            images=images,
+            image_context=image_context,
+            **shared,
+        )
+    else:
+        ai_response, ai_thinking = librarian.answer(
+            body.question,
+            prepared["notes"],
+            model_manager,
+            ollama,
+            mode=mode,
+            images=images,
+            image_context=image_context,
+            # The Ask box (`notes_only`) gets the overview brief instead of
+            # the chat one: see `librarian.ASK_OVERVIEW`.
+            ask_overview=body.notes_only,
+            **shared,
+        )
+    return ai_response, ai_thinking
+
+
 @router.post("", response_model=ChatResponse)
 @private_turn.route
 def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResponse:
@@ -2409,44 +2456,9 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         "history": [turn.model_dump(exclude_none=True) for turn in body.history],
         "persona_prompt": _resolve_persona(body.persona, session),
     }
-    if prepared["stats"] is not None:
-        #: **Counted, not generated.** The answer to "what are my most common
-        #: tags" is a fact about rows, and `notebook_stats` has already written
-        #: it as a sentence. Handing it to the model to rephrase would put a
-        #: generator between the user and a number that is already exact, for
-        #: nothing but style: and would make the one feature here that works
-        #: with the model stopped depend on the model. So it is returned as it
-        #: stands, instantly, whether or not anything is running.
-        ai_response, ai_thinking = prepared["stats"]["text"], None
-    elif conversational and body.notes_only:
-        # Same rule as the streaming route: this box interrogates the
-        # notebook and does not chat (§35A).
-        ai_response, ai_thinking = librarian.ASK_IS_FOR_NOTES, None
-    elif conversational:
-        ai_response, ai_thinking = librarian.converse(
-            body.question,
-            prepared["intent"],
-            model_manager,
-            ollama,
-            mode=mode,
-            images=images,
-            image_context=image_context,
-            **shared,
-        )
-    else:
-        ai_response, ai_thinking = librarian.answer(
-            body.question,
-            prepared["notes"],
-            model_manager,
-            ollama,
-            mode=mode,
-            images=images,
-            image_context=image_context,
-            # The Ask box (`notes_only`) gets the overview brief instead of
-            # the chat one: see `librarian.ASK_OVERVIEW`.
-            ask_overview=body.notes_only,
-            **shared,
-        )
+    ai_response, ai_thinking = _chat_reply(
+        body, prepared, model_manager, ollama, mode, images, image_context, shared, conversational
+    )
     # Direct Q&A only: conversational replies aren't grounded in retrieved
     # notes at all (there may be none), and grounding one would attach a
     # note to a sentence that has nothing to do with it.
