@@ -73,7 +73,10 @@ BOOT_JS_CAP = 448_400
 #: time off it cost 54 gzipped bytes (head 178,997, now 179,051) and the head
 #: had 3 to spare; there is no lazy file for a row that draws at boot, so the
 #: cap rises by 100.
-BOOT_CSS_CAP = 179_100
+#: 2026-10-31 INBOX 1479: the Notes tab's capture bar (one line of markup that
+#: draws with the tab) and a coloured note's tint cost 151 gzipped bytes; the
+#: card is a lazy file, the bar is not, so the cap rises by 200.
+BOOT_CSS_CAP = 179_300
 
 
 def _served_gzip(url: str) -> int:

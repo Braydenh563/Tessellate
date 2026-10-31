@@ -1428,6 +1428,10 @@ function entryItem(entry, options = {}) {
   // The phone's swipe underlays read their words from the row (`initRowSwipe`,
   // 10-responsive.css): what a swipe right and a swipe left will do to it.
   if (entry.pinned) li.classList.add("is-favourite-row");
+  if (CATEGORY_PALETTE[entry.colour]) {
+    li.dataset.colour = entry.colour;
+    li.style.setProperty("--swatch", CATEGORY_PALETTE[entry.colour]);
+  }
   if (!entry.is_board && !entry.is_draft && options.actions) {
     li.dataset.swipeRight = entry.pinned ? "Unfavourite" : "Favourite";
     li.dataset.swipeLeft = "Bin";

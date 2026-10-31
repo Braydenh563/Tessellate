@@ -2622,8 +2622,15 @@ Link to another note with [[its first few words]]."></textarea>
                capture-card.js, fetched on the first focus of the field below
                (notes-list.js), so the boot scripts do not carry it. -->
           <div id="capture-bar" class="capture-bar" role="group" aria-label="Add a note">
-            <input id="capture-bar-input" class="capture-bar-input" type="text" autocomplete="off"
-              placeholder="Add a note…" aria-label="Add a note: opens the note card">
+            <div id="capture-bar-row" class="capture-bar-row">
+              <div class="seg capture-bar-modes" role="group" aria-label="Kind of note">
+                <button type="button" data-mode="note" aria-pressed="true" title="Write a note">Note</button>
+                <button type="button" data-mode="todo" aria-pressed="false" title="Write a to-do list">To-do</button>
+              </div>
+              <input id="capture-bar-input" class="capture-bar-input" type="text" autocomplete="off"
+                placeholder="Add a note…" aria-label="Add a note: opens the note card">
+      <button type="button" id="capture-bar-picture" class="ghost icon-only capture-bar-picture" title="Add pictures" aria-label="Add pictures to a new note"><i class="ph ph-image" aria-hidden="true"></i></button>
+            </div>
           </div>
           <ul id="entry-list" class="entry-list"></ul>
           <div id="notes-pagination" class="row notes-pagination hidden" role="navigation" aria-label="Notes pages">

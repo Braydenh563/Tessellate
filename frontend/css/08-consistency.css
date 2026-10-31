@@ -10816,18 +10816,44 @@ header#top-bar button.space-switcher-btn:focus-visible {
 }
 
 /* **The Notes tab's capture bar** (INBOX 1479): one line above the list that
-   opens in place into the card (capture-card-lazy.css). The line is a field
-   of the page's own recipe; the card shows while `.is-open`. */
+   opens in place into the card (capture-card-lazy.css) while `.is-open`. */
 .capture-bar {
   margin-bottom: var(--space-4);
 }
-.capture-bar-input {
-  width: 100%;
-  height: var(--control-h-lg);
-  margin: 0;
-  border-radius: var(--radius-lg);
-  padding-inline: var(--space-4);
+.capture-bar-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
 }
-.capture-bar.is-open .capture-bar-input {
+.capture-bar-modes {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-bottom: 0;
+}
+.capture-bar-row .capture-bar-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  min-height: var(--control-h-lg);
+  margin: 0;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-lg);
+}
+.capture-bar-picture {
+  flex: 0 0 auto;
+  align-self: center;
+}
+.capture-bar.is-open .capture-bar-row {
   display: none;
+}
+
+/* A note's own colour (INBOX 1479): a tenth of the swatch over the card and a
+   coloured top edge (a left edge in rows). `entryItem` sets `--swatch`, the swatch the pickers draw. */
+#entry-list li[data-colour] {
+  background: color-mix(in srgb, var(--swatch) 10%, var(--surface-2));
+  box-shadow: inset 0 3px 0 var(--swatch);
+}
+#entry-list.is-rows li[data-colour] {
+  box-shadow: inset 3px 0 0 var(--swatch);
 }

@@ -86,6 +86,8 @@ function sketchHost() {
 
 //: `options.image` (a Blob) goes under the ink and `options.caption` into
 //: the caption: the Annotate action on a picture (attachment-actions.js).
+//: `options.host` stands in for the app's host: the capture card draws a
+//: picture for the note it is writing (capture-card-more.js).
 async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
   const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
@@ -94,7 +96,7 @@ async function openSketch(options = {}) {
     return;
   }
   $("sketch-overlay").classList.remove("hidden");
-  window.SketchPad.open($("sketch-card"), sketchHost(), options);
+  window.SketchPad.open($("sketch-card"), options.host || sketchHost(), options);
 }
 
 //: Asks the pad first: a drawing not yet saved is confirmed before it goes.

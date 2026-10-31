@@ -26,6 +26,12 @@
     title: "Quick sketch",
     //: async (blob, caption) => void. Null hides Save as note.
     save: null,
+    //: What the save button and the caption say, when the host files the
+    //: picture somewhere other than a new note (the capture card adds it to
+    //: the note being written).
+    saveLabel: "Save as note",
+    saveTitle: "Save as a new note",
+    captionHint: "Caption (becomes the note text)",
     //: (message, isError) => void. Null leaves the status line to say it.
     toast: null,
     //: (message, label, run) => void: a notice with one button. Null leaves
@@ -483,9 +489,9 @@
   function buildFoot() {
     const saving = typeof S.host.save === "function";
     return h("div", { class: "sp-foot", "data-sp": "foot" },
-      saving ? h("input", { type: "text", maxlength: "200", class: "sp-caption", "data-sp": "caption", placeholder: "Caption (becomes the note text)", "aria-label": "Caption for this sketch" }) : null,
+      saving ? h("input", { type: "text", maxlength: "200", class: "sp-caption", "data-sp": "caption", placeholder: S.host.captionHint, "aria-label": "Caption for this sketch" }) : null,
       h("button", { type: "button", class: `${saving ? "ghost" : ""} sp-download`.trim(), "data-sp": "download", title: "Download PNG", "aria-label": "Download PNG", onclick: downloadPng }, icon("download-simple"), h("span", { class: "sp-download-label" }, "Download PNG")),
-      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", "aria-disabled": "true", title: "Draw something first", onclick: saveNote }, "Save as note") : null);
+      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", "aria-disabled": "true", title: "Draw something first", onclick: saveNote }, S.host.saveLabel) : null);
   }
 
   function build(root) {
@@ -1632,7 +1638,7 @@
     S.dirty = on;
     if (!S.el.save) return;
     S.el.save.setAttribute("aria-disabled", String(!on));
-    S.el.save.title = on ? "Save as a new note" : "Draw something first";
+    S.el.save.title = on ? S.host.saveTitle : "Draw something first";
   }
 
   // --- Output ------------------------------------------------------------------------------------------------------

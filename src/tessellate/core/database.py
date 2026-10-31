@@ -400,6 +400,10 @@ class Entry(Base, WorkspaceMixin):
     )
     # Pinned entries float to the top of lists and the dashboard.
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: The colour a person gave this note (INBOX 1479): a swatch key such as
+    #: "teal" (`schemas.NOTE_COLOURS`), never a hex, so the theme picks the
+    #: shade. Null is no colour. Additive scalar: old rows read as null.
+    colour: Mapped[str | None] = mapped_column(String(16), default=None)
     # True when the USER chose the category (guided mode or a manual
     # move): the janitor then keeps its hands off during re-filing.
     user_filed: Mapped[bool] = mapped_column(Boolean, default=False)
