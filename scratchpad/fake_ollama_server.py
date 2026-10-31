@@ -78,8 +78,16 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length") or 0)
         return json.loads(self.rfile.read(length) or b"{}") if length else {}
 
+    def _slow(self, which: str = "FAKE_OLLAMA_DELAY"):
+        """`FAKE_OLLAMA_DELAY=<seconds>`: a runner busy loading a model answers
+        its list, show and chat calls that late (INBOX 1492's /models/status);
+        `FAKE_OLLAMA_SHOW_DELAY` slows `/api/show` alone, `FAKE_OLLAMA_TAGS_DELAY`
+        the list alone."""
+        time.sleep(float(os.environ.get(which) or os.environ.get("FAKE_OLLAMA_DELAY") or 0))
+
     def do_GET(self):
         if self.path.startswith("/api/tags"):
+            self._slow("FAKE_OLLAMA_TAGS_DELAY")
             return self._json({"models": INSTALLED})
         if self.path.startswith("/__requests"):
             return self._json({"requests": REQUESTS})
@@ -94,6 +102,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = self._body()
+        if self.path.startswith("/api/show"):
+            self._slow("FAKE_OLLAMA_SHOW_DELAY")
+        elif self.path.startswith("/api/chat"):
+            self._slow()
         if self.path.startswith("/api/show"):
             return self._json({"capabilities": ["completion"], "model_info": {"llama.context_length": 8192}, "details": {"parameter_size": "3B", "quantization_level": "Q4_K_M"}})
         if self.path.startswith("/api/pull"):

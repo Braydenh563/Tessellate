@@ -118,13 +118,21 @@ def _installed_models(running: bool) -> list[dict]:
 #: every launch). It was 2.5s, and a runner that stays slow cost every poll the
 #: whole of it (INBOX 1426 L1: `/models/status` 2.5s in a row, measured
 #: against a runner that answers in 5s); a runner that answers is heard within
-#: this, one that does not is served from the last answer.
-INSTALLED_REFRESH_BUDGET = 0.25
+#: this, one that does not is served from the last answer. 0.05, not 0.25
+#: (INBOX 1492, the owner's lag log: `/models/status` 3743 ms): a local runner
+#: answers its list in a few milliseconds, so the wait buys nothing it needs,
+#: and the 0.25 was paid by every one of the boot's polls, in a thread pool the
+#: unlock burst already fills.
+INSTALLED_REFRESH_BUDGET = 0.05
 #: The first poll after a start has no answer to fall back on. It waits this
 #: long for the launch warm-up, then says `ollama_checking` and lets the page
 #: ask again in a moment, rather than holding the page for the runner's own
 #: timeout (INBOX 1426 L1: 3.2 to 5.0s at boot, four polls in six seconds).
-INSTALLED_COLD_BUDGET = 1.0
+#: 0.2, not 1.0 (INBOX 1492): against a runner that takes 5s the first poll
+#: held a pool thread for the whole of the second, measured 1,012 ms on every
+#: one of four polls, 0.2 now; the list is asked for at launch (`prewarm_installed`),
+#: so by the time anyone has unlocked it is almost always known.
+INSTALLED_COLD_BUDGET = 0.2
 
 
 class _ListFlight:
@@ -139,6 +147,11 @@ class _ListFlight:
 _installed_lock = threading.Lock()
 _installed_known: dict[tuple[str, str], list[dict] | None] = {}
 _installed_flights: dict[tuple[str, str], _ListFlight] = {}
+#: Runners whose first, cold poll already waited `INSTALLED_COLD_BUDGET` and
+#: heard nothing: the polls after it do not wait again (INBOX 1492: a runner
+#: that takes 5s cost four polls 0.2s each, measured 212 and 226 ms where a
+#: poll that waits for nothing is 10 ms). Cleared when the list arrives.
+_installed_cold_paid: set[tuple[str, str]] = set()
 
 
 def prewarm_installed() -> None:
@@ -198,8 +211,15 @@ def _installed_state(client, *, patient: bool = True) -> tuple[list[dict] | None
         last_known = _installed_known.get(key)
     #: `patient=False` (the shortlist) never waits past the short budget: sizes
     #: fall back to the shipped figures, which is better than a blank card list.
-    flight.done.wait(INSTALLED_REFRESH_BUDGET if has_known or not patient else INSTALLED_COLD_BUDGET)
+    cold = not (has_known or not patient)
+    if not cold:
+        wait = INSTALLED_REFRESH_BUDGET
+    else:
+        wait = 0 if key in _installed_cold_paid else INSTALLED_COLD_BUDGET
+    flight.done.wait(wait)
     if not flight.done.is_set():
+        if cold:
+            _installed_cold_paid.add(key)
         return last_known, not has_known
     if flight.error is not None:
         raise flight.error
@@ -220,6 +240,7 @@ def _run_list_flight(client, key: tuple[str, str], flight: _ListFlight) -> None:
         with _installed_lock:
             if flight.error is None:
                 _installed_known[key] = flight.result
+                _installed_cold_paid.discard(key)
             _installed_flights.pop(key, None)
         flight.done.set()
 

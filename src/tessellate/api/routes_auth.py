@@ -35,6 +35,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tessellate.core import (
+    afterunlock,
     crypto,
     desktop_dialog,
     diskspace,
@@ -731,6 +732,9 @@ def _issue_token() -> str:
     token = secrets.token_hex(32)
     now = time.time()
     _active_tokens[token] = [now, now]
+    #: The launch's heavy work was held for this (INBOX 1492): released a
+    #: moment after the answer, never beside it.
+    afterunlock.fire()
     return token
 
 
