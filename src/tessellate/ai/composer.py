@@ -4904,14 +4904,21 @@ _HELP_ACTS: dict[str, tuple[str, ...]] = {
     "attach": ("attach", "upload"),
     "pin": ("pin", "unpin", "star", "favourite", "favorite"),
 }
-_HELP_ACT_STEMS = {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
+
+
+@functools.lru_cache(maxsize=1)
+def _help_act_stems() -> dict[str, frozenset[str]]:
+    """The acts' stems, built on first use: `_stem` reads the spelling pairs
+    (about 0.4 s to build), which the cold import is budgeted not to pay
+    (tests/test_engine_budgets.py)."""
+    return {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
 
 
 def _help_act(question: str) -> str:
     """The act a how-to names (the first one typed), or ""."""
     for word in re.findall(r"[a-z]+", (question or "").lower()):
         stem = _stem(word)
-        for act, stems in _HELP_ACT_STEMS.items():
+        for act, stems in _help_act_stems().items():
             if stem in stems:
                 return act
     return ""
@@ -4943,7 +4950,7 @@ def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str
     topic's id; None when no matched topic names the act."""
     from tessellate.ai import help_chat
 
-    stems = _HELP_ACT_STEMS[act]
+    stems = _help_act_stems()[act]
     best: tuple[float, str, str] | None = None
     for order, topic in enumerate(topics):
         ask = _help_ask(question, topic)

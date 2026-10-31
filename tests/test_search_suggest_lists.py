@@ -178,7 +178,7 @@ def test_every_search_box_names_its_scope_and_the_web_panel_shares_the_store() -
         "library-docs-search", "library-boards-search", "library-images-search", "bookmark-search",
         "recordings-search", "skills-search", "web-query",
     }, f"a search box lost its scope: {sorted(ids)}"
-    chat = (JS / "chat.js").read_text(encoding="utf-8")
+    chat = (JS / "web-results.js").read_text(encoding="utf-8")
     assert "prefs.remove(WEB_SEARCH_HISTORY_KEY)" not in chat
     assert "web-recent-remove" in chat and "clearWebSearchHistory" in chat, "the web recents carry a remove per row and a Clear"
     assert 'const SEARCH_RECENT_PREFIX = "searchRecent:"' in SUGGEST.read_text(encoding="utf-8")

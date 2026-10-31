@@ -501,14 +501,20 @@ def test_an_autosave_of_content_alone_does_not_reset_the_type(client):
     assert updated["file_type"] == "py"
 
 
-def test_an_unknown_type_falls_back_rather_than_refusing_the_save(client):
-    """A 422 here would refuse to save someone's writing because of a field
-    that only describes how to display it."""
-    created = client.post(
-        "/documents", json={"title": "Odd", "content": "hi", "file_type": "wat"}
-    ).json()
-    assert created["file_type"] == "md"
-    assert created["content"] == "hi"
+def test_an_unknown_type_is_refused_naming_the_valid_ones_not_stored_as_markdown(client):
+    """Moved by audit 1031 DC8: a type the request names must not be coerced to
+    markdown unseen (`exe` and `../../etc` were both stored as `md`). The save
+    is refused with a 422 that lists the types, and nothing is written; a
+    missing type, a dotted extension and a filename still resolve (below)."""
+    before = len(client.get("/documents").json())
+    for odd in ("wat", "exe", "../../etc"):
+        response = client.post("/documents", json={"title": "Odd", "content": "hi", "file_type": odd})
+        assert response.status_code == 422
+        assert "Use one of" in response.text and "md" in response.text
+    after = len(client.get("/documents").json())
+    assert after == before
+    plain = client.post("/documents", json={"title": "Plain", "content": "hi"}).json()
+    assert plain["file_type"] == "md"
 
 
 def test_a_dotted_extension_and_a_filename_both_work(client):

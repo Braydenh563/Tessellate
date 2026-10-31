@@ -1573,7 +1573,7 @@ function mountChatActionsMenu() {
         },
         { ...featureModelMenuItem("chat"), group: "chat" },
         //: The way into Activity when nothing runs: its status slot appears only while something does (HR6).
-        { label: "ph:strategy Activity and past runs", group: "chat", run: () => openActivity("runs") },
+        { label: "ph:activity Activity and past runs", group: "chat", run: () => openActivity("runs") },
         { label: "ph:download-simple Export as Markdown", group: "keep", run: () => exportChatMarkdown() },
         {
           //: Odysseus's "Save to Documents", which lands better here than it

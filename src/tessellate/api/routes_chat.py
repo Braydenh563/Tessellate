@@ -2411,7 +2411,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     _check_refs(session, body)
     _apply_scope(session, body)
     _apply_open(session, body)
-    if not body.image_media_ids and not deps.get_ollama().is_running():
+    if not body.image_media_ids and not deps.get_ollama().is_running() and _composes_offline(body):
         return _composed_chat(body, session)
     prepared = _prepare(
         session,
@@ -2497,6 +2497,15 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     )
 
 
+def _composes_offline(body: ChatRequest) -> bool:
+    """A turn about the notes is composed from them when no model runs; a hello
+    or a question about the app is not, it keeps the plain offline greeting
+    ("No model is no reason to answer a hello with an error": a hello was
+    getting "this comes from your notes alone" over a welcome)."""
+    kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.board_ids)
+    return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
+
+
 def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
     """The non-streaming answer when no model runs: the stream's own turn (the
     composer, the counted answers, the slash commands), read to its end, under
@@ -2504,6 +2513,9 @@ def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
     while the same question in the Chat tab got a composed answer (audit 1031
     AI6)."""
     req = _stream_request(body, session)
+    #: This route has no tool loop, so every turn through it is an ask: logged
+    #: on the Ask surface, which is what "Ask again" reads back.
+    req.use_tools = False
     lead = librarian.offline_message(req.ollama)
     cause = (
         "The AI did not answer in time, so this comes from your notes alone."
@@ -3758,6 +3770,10 @@ def _with_words_only(text: str, prepared: dict, result: dict) -> str:
     #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
     said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
     swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
+    #: The line is a footer, but an offer ("Start a list of films?") stays the last word:
+    #: an answer ends on its question (the gold shape rule), so the footer goes above it.
+    if swapped and said and swapped[-1].rstrip().endswith("?"):
+        return "\n\n".join([*swapped[:-1], *said, swapped[-1]])
     return "\n\n".join([*swapped, *said])
 
 
