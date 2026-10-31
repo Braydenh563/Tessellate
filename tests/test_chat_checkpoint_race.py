@@ -19,7 +19,7 @@ def test_the_checkpoint_keeps_its_promise() -> None:
     assert "let checkpointRun = null;" in JS
     assert "checkpointRun = writeCheckpoint();" in JS
     # A second call while one is in flight hands back the same write.
-    assert "if (checkpointInFlight) return checkpointRun;" in JS
+    assert "if (checkpointInFlight || convRef.private) return checkpointRun;" in JS
 
 
 def test_the_end_save_waits_for_a_checkpoint_in_flight() -> None:
