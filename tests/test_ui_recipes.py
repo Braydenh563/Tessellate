@@ -6585,3 +6585,32 @@ def test_a_popup_title_names_its_glyph_in_node() -> None:
     )
     out = subprocess.run(["node", "-e", script, str(ROOT / "frontend" / "js" / "popup-glyph.js")], capture_output=True, text=True, check=True)
     assert json.loads(out.stdout) == ["palette", "tag", "link", "calendar-plus", "eye", "app-window", "app-window"]
+
+
+def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
+    """INBOX 1491, the owner: "minimise button is in the middle of the meeting
+    popup?". The shared sheet head was `justify-content: space-between`, so
+    with a title, a minimise and a close the free space was split in two and
+    the minimise sat mid-head (268px from Close at 1440; People and things
+    250px). The class: a head whose end group is not wrapped in
+    `.dialog-head-actions` must put the title's slack on the title, not
+    between the buttons, and the buttons panel-movable.js adds (reset, push,
+    minimise) go beside Close, never after it."""
+    css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
+    head = re.search(r"\.sheet-head \{([^}]*)\}", css)
+    assert head and "space-between" not in head.group(1), "a sheet head spreads its buttons; the title takes the slack"
+    title = re.search(r"\.sheet-head > \.sheet-title,\s*\.sheet-title \{([^}]*)\}", css)
+    assert title and re.search(r"flex:\s*1 1 auto", title.group(1)), "the sheet title must grow so the end group sits together"
+    # No shared head recipe may spread its children: the end group would split.
+    for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
+        for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", path.read_text(encoding="utf-8")):
+            names = [s.strip() for s in sel.split(",")]
+            if any(re.fullmatch(r"(?:\.[\w-]+ )*\.(?:sheet-head|dialog-head)(?: > \.(?:sheet-head|dialog-head))?", n.split("}")[-1].strip()) for n in names):
+                assert "space-between" not in body, f"{path.name}: {sel.strip()[:60]} spreads a shared popup head"
+    js = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    adopt = js[js.index("function panelAdopt") : js.index("function panelGripRoom")]
+    assert "const closeBtn = panelCloseBtn(panel)" in adopt and "insertBefore(btn, slot)" in adopt and "insertBefore(push, btn)" in adopt, (
+        "reset and push go before Close when the head has no actions wrapper (they were appended after it)"
+    )
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A popup head's end group" in design and "`tests/test_ui_recipes.py` (`test_a_popup_head_keeps_its_tools_with_close_at_the_end`" in design

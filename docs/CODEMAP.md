@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7941, test files 1691, tests 14686, plan headings 990.
+Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7941, test files 1691, tests 14687, plan headings 990.
 
 ## Frontend functions (7191)
 
@@ -5665,28 +5665,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 |---|---|
 | `panelAdopt` | frontend/js/panel-movable.js:455 |
 | `panelApply` | frontend/js/panel-movable.js:264 |
-| `panelChip` | frontend/js/panel-movable.js:785 |
+| `panelChip` | frontend/js/panel-movable.js:790 |
 | `panelClamp` | frontend/js/panel-movable.js:300 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:743 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:748 |
 | `panelDock` | frontend/js/panel-movable.js:382 |
 | `panelFit` | frontend/js/panel-movable.js:367 |
 | `panelFull` | frontend/js/panel-movable.js:418 |
-| `panelGripDown` | frontend/js/panel-movable.js:639 |
-| `panelGripKey` | frontend/js/panel-movable.js:690 |
-| `panelGripRoom` | frontend/js/panel-movable.js:547 |
-| `panelHeadDown` | frontend/js/panel-movable.js:556 |
+| `panelGripDown` | frontend/js/panel-movable.js:644 |
+| `panelGripKey` | frontend/js/panel-movable.js:695 |
+| `panelGripRoom` | frontend/js/panel-movable.js:552 |
+| `panelHeadDown` | frontend/js/panel-movable.js:561 |
 | `panelHeadOf` | frontend/js/panel-movable.js:296 |
 | `panelId` | frontend/js/panel-movable.js:249 |
 | `panelInset` | frontend/js/panel-movable.js:346 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:174 |
 | `panelLayout` | frontend/js/panel-movable.js:223 |
-| `panelMinHost` | frontend/js/panel-movable.js:736 |
-| `panelMinKey` | frontend/js/panel-movable.js:846 |
-| `panelMinPlace` | frontend/js/panel-movable.js:772 |
-| `panelMinTray` | frontend/js/panel-movable.js:758 |
-| `panelMinimise` | frontend/js/panel-movable.js:814 |
+| `panelMinHost` | frontend/js/panel-movable.js:741 |
+| `panelMinKey` | frontend/js/panel-movable.js:851 |
+| `panelMinPlace` | frontend/js/panel-movable.js:777 |
+| `panelMinTray` | frontend/js/panel-movable.js:763 |
+| `panelMinimise` | frontend/js/panel-movable.js:819 |
 | `panelMovableOn` | frontend/js/panel-movable.js:228 |
 | `panelOf` | frontend/js/panel-movable.js:238 |
 | `panelPinned` | frontend/js/panel-movable.js:134 |
@@ -5694,11 +5694,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:131 |
 | `panelPushSide` | frontend/js/panel-movable.js:143 |
 | `panelPushSync` | frontend/js/panel-movable.js:146 |
-| `panelPushToggle` | frontend/js/panel-movable.js:856 |
-| `panelReopen` | frontend/js/panel-movable.js:747 |
+| `panelPushToggle` | frontend/js/panel-movable.js:861 |
+| `panelReopen` | frontend/js/panel-movable.js:752 |
 | `panelReset` | frontend/js/panel-movable.js:422 |
 | `panelResetSize` | frontend/js/panel-movable.js:435 |
-| `panelRestore` | frontend/js/panel-movable.js:830 |
+| `panelRestore` | frontend/js/panel-movable.js:835 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:171 |
 | `panelSafe` | frontend/js/panel-movable.js:97 |
 | `panelSave` | frontend/js/panel-movable.js:447 |
@@ -5713,10 +5713,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:191 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:199 |
 | `panelSync` | frontend/js/panel-movable.js:394 |
-| `panelTitle` | frontend/js/panel-movable.js:739 |
+| `panelTitle` | frontend/js/panel-movable.js:744 |
 | `panelUnsnap` | frontend/js/panel-movable.js:387 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:401 |
-| `panelWindowResized` | frontend/js/panel-movable.js:868 |
+| `panelWindowResized` | frontend/js/panel-movable.js:873 |
 | `panelZoneFor` | frontend/js/panel-movable.js:167 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -10891,20 +10891,20 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Parchment: paper, ink and a little gold. Made for long writing. | frontend/css/05-sidebars-themes.css:3257 |
 | Phase 10, INBOX 100: the scroll edge effect | frontend/css/10-responsive.css:159 |
 | Phase 10, INBOX 101: concentric corners | frontend/css/10-responsive.css:185 |
-| Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:1598 |
-| Phase 11 item 12: a note row designed for a thumb | frontend/css/10-responsive.css:1533 |
-| Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/10-responsive.css:1234 |
-| Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/10-responsive.css:1162 |
-| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:1115 |
-| Phase 11 item 2: a row swiped, star right and bin left | frontend/css/10-responsive.css:1455 |
-| Phase 11 item 2: the note page, the sheet recipe's `page` variant | frontend/css/10-responsive.css:1924 |
-| Phase 11 item 3: the chat composer on a phone | frontend/css/10-responsive.css:1961 |
-| Phase 11 item 4: the graph's controls are one sheet on a phone | frontend/css/10-responsive.css:2017 |
-| Phase 11 item 5: the Library reader as the page | frontend/css/10-responsive.css:2145 |
-| Phase 11 item 7: the whiteboard and the mind map on a phone | frontend/css/10-responsive.css:2077 |
-| Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:984 |
-| Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2007 |
-| Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1340 |
+| Phase 11 item 12: a dock's head is one row on a phone | frontend/css/10-responsive.css:1600 |
+| Phase 11 item 12: a note row designed for a thumb | frontend/css/10-responsive.css:1535 |
+| Phase 11 item 12: one bar at the foot of a phone, not two | frontend/css/10-responsive.css:1236 |
+| Phase 11 item 12: the status bar on a tablet is a touch bar | frontend/css/10-responsive.css:1164 |
+| Phase 11 item 1: the phone top bar is three controls, not six | frontend/css/10-responsive.css:1117 |
+| Phase 11 item 2: a row swiped, star right and bin left | frontend/css/10-responsive.css:1457 |
+| Phase 11 item 2: the note page, the sheet recipe's `page` variant | frontend/css/10-responsive.css:1926 |
+| Phase 11 item 3: the chat composer on a phone | frontend/css/10-responsive.css:1963 |
+| Phase 11 item 4: the graph's controls are one sheet on a phone | frontend/css/10-responsive.css:2019 |
+| Phase 11 item 5: the Library reader as the page | frontend/css/10-responsive.css:2147 |
+| Phase 11 item 7: the whiteboard and the mind map on a phone | frontend/css/10-responsive.css:2079 |
+| Phase 11 item 9: 44px targets, the ones the docks sweep cannot see | frontend/css/10-responsive.css:986 |
+| Phase 11 item 9: no hover-only affordance | frontend/css/10-responsive.css:2009 |
+| Phase 11 items 2 and 3: no rail on a phone, an opener in the head | frontend/css/10-responsive.css:1342 |
 | Phase 5: quick access + toasts | frontend/css/01-forms-settings.css:2823 |
 | Phase 5: the three things a map says about itself | frontend/css/07-whiteboard-misc.css:4460 |
 | Phones (roadmap §8: the layout had breakpoints but had never been driven at | frontend/css/05-sidebars-themes.css:3974 |
@@ -10955,7 +10955,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The glyph tab row | frontend/css/popup-anatomy-lazy.css:19 |
 | The guide panel as one surface (INBOX 270 part 4, the redesign) | frontend/css/08-consistency.css:1947 |
 | The head's glyph | frontend/css/popup-anatomy-lazy.css:11 |
-| The iPhone (phone-1011) | frontend/css/10-responsive.css:2657 |
+| The iPhone (phone-1011) | frontend/css/10-responsive.css:2659 |
 | The last icon-to-label gap family | frontend/css/08-consistency.css:1608 |
 | The last two head rows that were not on the bar recipe | frontend/css/08-consistency.css:1411 |
 | The m guide: one panel of key rows | frontend/css/08-consistency.css:4630 |
@@ -10963,7 +10963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | The properties panel (DOCUMENTS_PLAN Phase 3 item 4) | frontend/css/09-editor.css:113 |
 | The reference's glass, the parts that keep the words readable | frontend/css/popup-anatomy-lazy.css:123 |
 | The second level: `.tabs-line` (INBOX 522) | frontend/css/05-sidebars-themes.css:4131 |
-| The surface model pickers on a phone | frontend/css/10-responsive.css:2210 |
+| The surface model pickers on a phone | frontend/css/10-responsive.css:2212 |
 | The thumb bar (DESIGN.md's recipe index: a bar of actions above the | frontend/css/09-editor.css:696 |
 | The two dialogs reported as off the modal recipe | frontend/css/08-consistency.css:1476 |
 | The two rows that still wrapped at 1024 | frontend/css/08-consistency.css:1346 |
@@ -11032,7 +11032,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | a stored file that is no longer stored | frontend/css/02-chat-graph.css:4169 |
 | a traced path (§9) | frontend/css/graph-lazy.css:287 |
 | a turn that is still working says so, for as long as it is | frontend/css/03-dashboard-widgets.css:4112 |
-| a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1065 |
+| a zone that cannot shrink says so, instead of spilling | frontend/css/10-responsive.css:1067 |
 | account & security | frontend/css/01-forms-settings.css:3444 |
 | activity heatmap + tag cloud widgets | frontend/css/03-dashboard-widgets.css:1843 |
 | activity log | frontend/css/01-forms-settings.css:2798 |
@@ -11052,7 +11052,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: an icon-only chip is still a target (Phase 11) | frontend/css/10-responsive.css:526 |
 | band 4: below 600, the phone | frontend/css/07-whiteboard-misc.css:10032 |
 | band 4: five columns, and the fifth is a sheet | frontend/css/10-responsive.css:612 |
-| band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:924 |
+| band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:926 |
 | boot splash | frontend/css/00-tokens-shell.css:4104 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
 | category rename / delete | frontend/css/04-chat-dock-appearance.css:2710 |
@@ -11179,9 +11179,9 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the Ask box explaining itself (§35A) | frontend/css/06-timeline-dialogs.css:1216 |
 | the Ask box reads as one composer | frontend/css/07-whiteboard-misc.css:3070 |
 | the Connections dialog (REDESIGN.md §R7.3) | frontend/css/07-whiteboard-misc.css:5189 |
-| the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2457 |
-| the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2264 |
-| the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2383 |
+| the Dashboard's dock on a phone (INBOX 436) | frontend/css/10-responsive.css:2459 |
+| the Documents editor on a phone (INBOX 430) | frontend/css/10-responsive.css:2266 |
+| the Documents editor on a small laptop (INBOX 430's re-scope) | frontend/css/10-responsive.css:2385 |
 | the Graph dock's second row, and the nine pixels that cause it | frontend/css/08-consistency.css:2367 |
 | the HUD: a momentary readout, not a notification | frontend/css/07-whiteboard-misc.css:7664 |
 | the Library (§4, §36F) | frontend/css/00-tokens-shell.css:1802 |
@@ -11208,11 +11208,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the block bar (INBOX 421 b) | frontend/css/09-editor.css:947 |
 | the board panel, sorted into the questions it answers | frontend/css/07-whiteboard-misc.css:4978 |
 | the board picker's face on a phone (polish5-1031) | frontend/css/library-lazy.css:7639 |
-| the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2125 |
+| the board's bar takes the floor of the whole touch band, not just 600 | frontend/css/10-responsive.css:2127 |
 | the board's context bar, wrapped (`wbUpdateSelectionBar`) | frontend/css/library-lazy.css:6866 |
 | the boot splash: one progress indicator, not two | frontend/css/08-consistency.css:4317 |
 | the bottom docks | frontend/css/07-whiteboard-misc.css:9727 |
-| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2549 |
+| the chat dock follows its own width (INBOX 694) | frontend/css/10-responsive.css:2551 |
 | the chat page fills its height (§36A) | frontend/css/06-timeline-dialogs.css:1326 |
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4881 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1445 |
@@ -11250,14 +11250,14 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the formatting strip says what the caret is already in | frontend/css/09-editor.css:926 |
 | the glass card | frontend/css/00-tokens-shell.css:3775 |
 | the graph node panel becomes a sheet (GRAPH_PLAN Phase 6) | frontend/css/07-whiteboard-misc.css:10052 |
-| the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2250 |
+| the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2252 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3110 |
 | the graph's options panel | frontend/css/08-consistency.css:3328 |
 | the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5705 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:994 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2538 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1105 |
-| the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2235 |
+| the lightbox on a phone (INBOX 430) | frontend/css/10-responsive.css:2237 |
 | the live action line | frontend/css/02-chat-graph.css:4200 |
 | the lock screen | frontend/css/08-consistency.css:3761 |
 | the log console (§1) | frontend/css/06-timeline-dialogs.css:700 |
@@ -11276,7 +11276,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the pad | frontend/css/sketch-pad.css:42 |
 | the page scrollers scroll on the compositor | frontend/css/08-consistency.css:4348 |
 | the page shell (§35L) | frontend/css/00-tokens-shell.css:3592 |
-| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2535 |
+| the palette on a touch screen (INBOX 464) | frontend/css/10-responsive.css:2537 |
 | the phone header fits inside the phone | frontend/css/05-sidebars-themes.css:5879 |
 | the picker itself | frontend/css/05-sidebars-themes.css:3776 |
 | the primary action floats, where a dock has one | frontend/css/07-whiteboard-misc.css:10288 |
@@ -11293,7 +11293,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the spine | frontend/css/00-tokens-shell.css:2232 |
 | the spine on the other edge (MINDMAP_PLAN.md §13e) | frontend/css/07-whiteboard-misc.css:8392 |
 | the status bar (§36D) | frontend/css/00-tokens-shell.css:3166 |
-| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1192 |
+| the status bar from 820 to 959: one item fewer | frontend/css/10-responsive.css:1194 |
 | the status bar on a small phone | frontend/css/00-tokens-shell.css:3475 |
 | the status bar's Other devices icon and panel (INBOX 896) | frontend/css/lan-lazy.css:77 |
 | the status line and the recent searches | frontend/css/03-dashboard-widgets.css:1123 |
@@ -11348,7 +11348,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/07-whiteboard-misc.css | 11941 |
 | frontend/css/08-consistency.css | 10897 |
 | frontend/css/09-editor.css | 1030 |
-| frontend/css/10-responsive.css | 2720 |
+| frontend/css/10-responsive.css | 2722 |
 | frontend/css/appearance-panel-lazy.css | 305 |
 | frontend/css/appearance-panel-own-lazy.css | 86 |
 | frontend/css/ask-compose-lazy.css | 258 |
@@ -21817,7 +21817,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14686)
+## Tests (14687)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23325,7 +23325,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 240 |
+| tests/test_ui_recipes.py | 241 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
@@ -24093,7 +24093,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | E3 · Model calls are scattered across request handlers, background threads and module singletons, High (read) | docs/roadmap/MODERNISATION_AUDIT.md:666 |
 | E4 · The honest positives, so the section is not one-sided (read) | docs/roadmap/MODERNISATION_AUDIT.md:676 |
 | Earlier morning summary (away run 2026-10-18b, branch claude/magical-feynman-7bgj7j, PR 192, 0.6.0) | docs/roadmap/HANDOVER.md:38 |
-| Earlier sessions | docs/roadmap/HANDOVER.md:596 |
+| Earlier sessions | docs/roadmap/HANDOVER.md:598 |
 | Expert audit, 2026-10-10 | docs/roadmap/BACKLOG.md:4280 |
 | F. Agent harness: what "ultimate" needs that is not there | docs/roadmap/AUDIT.md:113 |
 | F. Performance and perceived speed | docs/roadmap/MODERNISATION_AUDIT.md:685 |
@@ -24128,7 +24128,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Harper (Automattic) | docs/roadmap/ANALYSIS.md:1783 |
 | Headroom: evaluated, not adopted | docs/roadmap/BACKLOG.md:729 |
 | How far each plan actually is (honest, as of 2026-10-03) | docs/roadmap/HANDOVER.md:365 |
-| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:550 |
+| How to proceed after PR 149 (the owner asked, 2026-09-14) | docs/roadmap/HANDOVER.md:552 |
 | How to proceed after PR 149 (written 2026-09-14; the live order is CLAUDE.md standing order 1 and HANDOVER's Now line) | docs/ROADMAP.md:295 |
 | How to read the evidence in here | docs/roadmap/MODERNISATION_AUDIT.md:23 |
 | How to work on this repo | docs/ROADMAP.md:364 |
@@ -24221,7 +24221,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:270 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:276 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4186 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

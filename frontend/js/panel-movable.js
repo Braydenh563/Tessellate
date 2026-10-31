@@ -492,7 +492,12 @@ function panelAdopt(panel) {
       icon.className = "ph ph-arrow-counter-clockwise";
       icon.setAttribute("aria-hidden", "true");
       btn.appendChild(icon);
-      (actions || head).insertBefore(btn, actions ? actions.firstChild : null);
+      //: Beside Close, never after it (INBOX 1491): a head with no actions
+      //: wrapper took these at its end, past the X.
+      const closeBtn = panelCloseBtn(panel);
+      const tools = actions || closeBtn?.parentElement || head;
+      const slot = actions ? actions.firstChild : closeBtn?.parentElement === tools ? closeBtn : null;
+      tools.insertBefore(btn, slot);
       st.reset = btn;
       const push = document.createElement("button");
       push.type = "button";
@@ -504,7 +509,7 @@ function panelAdopt(panel) {
       pushIcon.className = "ph ph-columns";
       pushIcon.setAttribute("aria-hidden", "true");
       push.appendChild(pushIcon);
-      (actions || head).insertBefore(push, btn);
+      tools.insertBefore(push, btn);
       st.push = push;
       if (panelPinned(panel)) {
         const min = document.createElement("button");

@@ -840,6 +840,7 @@ header#top-bar[data-scrolled="1"],
    sat 4.8px above its X (sheetheads.js: New reminder, a category split). */
 .sheet-head > .sheet-title,
 .sheet-title {
+  flex: 1 1 auto;
   margin: 0;
 }
 /* One line under the title that says the current state (the model picker's
@@ -867,12 +868,13 @@ header#top-bar[data-scrolled="1"],
   }
 }
 /* The title row: the name on the left, the one visible way out on the right
-   (INBOX 204). The X is the app's own icon-only ghost button at the shared
+   (INBOX 204). The title takes the slack, never `space-between`: with
+   minimise and close the free space was split and minimise sat mid-head
+   (INBOX 1491). The X is the app's own icon-only ghost button at the shared
    control height, so it reads as the same close every dialog head has. */
 .sheet-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
 }
 .sheet-close {
