@@ -2078,7 +2078,7 @@ def asks_identity(message: str) -> bool:
 #: names a subject and is a question about the notes.
 _OPINION_ASK = re.compile(
     r"^(?:(?:do|did|would|will|can|could|does) (?:you|u|ya) (?:even |actually |really |still |ever )?"
-    r"(?:like|love|hate|know|trust|miss|want|remember|care about|care|believe|think|feel|reckon|enjoy|mind|get|understand|see|hear|have feelings)"
+    r"(?:like|love|hate|know|trust|miss|want|care about|care|believe|think|feel|reckon|enjoy|mind|get|understand|see|hear|have feelings)"
     r"(?: (?:me|us|so|i am|im|i'm|that|this|it|anything|a thing))?"
     r"|what (?:do|did|would|are) (?:you|u|ya) (?:think|feel|reckon|believe|say)(?: (?:of|about) (?:me|us|yourself|that|this|it))?"
     r"|how (?:do|did|would) (?:you|u|ya) (?:feel|like it|find it|see it)(?: (?:about|towards?) (?:me|us|it|this|that))?"

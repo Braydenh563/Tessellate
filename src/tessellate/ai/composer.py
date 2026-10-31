@@ -2944,7 +2944,9 @@ def heading_name(label: str) -> str:
 
 def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # noqa: ANN001
     """One side's heading and its lines."""
-    out.t("para", "bold").asked(heading_name(label)).t("bold")
+    name = heading_name(label)
+    #: Starts the line it heads, so it takes a capital as the note's title does (audit 1031 C24).
+    out.t("para", "bold").asked(name[:1].upper() + name[1:]).t("bold")
     #: The lead said each side's count ("one mentions Lisbon and two
     #: mention Porto"); the heading does not say it again (decision 52).
     if not side:

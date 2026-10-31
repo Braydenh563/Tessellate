@@ -664,7 +664,10 @@ _CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights"
 _DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
 _DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
 #: Verbs that say a measure was recorded, not what was done: no filter.
-_ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have"})
+_ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have", "go", "went", "gone"})
+#: "how far in total", "how many km altogether": the sum asked with no doing
+#: word; what follows ("for running") names the subject.
+_TOTAL_TAIL = re.compile(r"\s*(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
 _PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
 _BASE = {forms[0]: verb for verb, forms in _PAST.items()} | {forms[1]: verb for verb, forms in _PAST.items()}
 
@@ -718,10 +721,13 @@ def _measure_asked(q: str) -> _Measure | None:
     if not dimension:
         return None
     doer = _DOER.match(m.group("rest"))
+    total = None if doer or m.group("noun") else _TOTAL_TAIL.fullmatch(m.group("rest"))
     #: "How many days until..." and "how far is the station" are a day and a
-    #: fact, not a sum: a sum is asked of something done.
-    if not doer and not m.group("noun") or word in _CALENDAR or _one_day(m.group("rest")):
+    #: fact, not a sum: a sum is asked of something done, or asked as a total.
+    if not (doer or m.group("noun") or total) or word in _CALENDAR or _one_day(m.group("rest")):
         return None
+    if total:
+        return _Measure(dimension, word if named else "", "", total.group("after"))
     verb = doer.group("verb").lower() if doer and doer.group("verb").lower() not in _ANY_VERB else ""
     #: "total time spent on sourdough": "spent" is the sum's own word, not a doing to match.
     rest = re.sub(r"^\s*(?:spent|taken|logged|recorded)\b", "", m.group("rest"))

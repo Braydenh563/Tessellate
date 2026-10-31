@@ -6,6 +6,14 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a compare opens with "Of these notes," or "Going by these notes," instead of claiming a search ("the notes I looked at", "this batch"), and its side headings start with a capital (audit 1031 C24)
+- Composer: "summarise my social notes" summarises every note filed under "Social connections" (a category that opens on the words asked), and a summary no longer shows the note's own emphasis as asterisks (audit 1031 C23)
+- Composer: an open note's "what is left" lists only sentences that are owed ("need to", "book the tram"), never "Flights cost $420 return", and a checklist summary says how many items are ticked and marks them (audit 1031 C29)
+- Composer: "how far in total", "how many km altogether" and "how far did I go in total" add the distances up instead of listing the records; "what do I know about tomorrow" says what is on that day
+- Composer: "when did I start learning Spanish" works the start out from "42 days in a row" (about 14 September), whatever word asks for the start (begin, first start), instead of giving the day the note was written
+- Composer: "what did I do last weekend" over several days says what each note holds (as it already did for one day), while "what did I make" stays the creation log (audit 1031 C27)
+- Composer: a retry of an overview keeps the same count on every attempt: the opening count is read in every wording, so no attempt adds a second, disagreeing "N times" (audit 1031 C25)
+- Composer: a note that only mentions the subject says the sentence that mentions it, not its opening sentence, so an overview no longer ends on an unrelated fact (audit 1031 C22)
 - Composer: a question put to the assistant ("do you like me", "what do you think", "how do you feel") is answered by it, and a jibe ("ur mum") is asked back, never answered from the nearest note (audit 1031 C21)
 - Composer: a "nothing yet" gap is said only of a topic the question names, a price question no longer offers to track spending, and "try" and "a note of its own" offers go only to lists of things to try (audit 1031 C20)
 - Composer: a quoted line keeps the note's own words (a weekday the app pinned to its date leaves the quotation and is said after it), and a day the fact already names is not said again (audit 1031 C28)

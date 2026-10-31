@@ -392,10 +392,14 @@ def _summary(rows: list[tuple[datetime, str, str, str]]) -> str:
     return parts[0] if parts else ""
 
 
-def _by_day(rows: list[_Event]) -> dict[date, list[str]]:
+def _by_day(rows: list[_Event], glosses: dict[str, str] | None = None) -> dict[date, list[str]]:
+    """Each day's clauses. A made note with a gloss is said as what it holds,
+    its sentence ending off so clauses join (audit 1031 C27: "what did I do
+    last weekend" is not a creation log)."""
     by_day: dict[date, list[str]] = {}
     for when_at, doing, kind, said in rows[:_LIMIT]:
-        by_day.setdefault(when_at.date(), []).append(_clause(doing, kind, said))
+        gloss = glosses.get(said) if glosses and doing == "made" and kind == "note" else None
+        by_day.setdefault(when_at.date(), []).append(gloss.rstrip(".!? ") if gloss else _clause(doing, kind, said))
     return by_day
 
 
@@ -453,7 +457,7 @@ def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
 
 
 def _recap_lines(rows: list[_Event], asked: Asked, today: date, glosses: dict[str, str] | None = None) -> list[str]:
-    by_day = _by_day(rows)
+    by_day = _by_day(rows, glosses if asked.start != asked.end else None)
     if asked.start == asked.end:
         #: One day: the head already says which, so no day label per line.
         said = [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]

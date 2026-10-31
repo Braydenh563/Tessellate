@@ -749,7 +749,7 @@ def test_the_gaps_of_a_topic_are_said_when_the_question_names_the_topic(notebook
 # C21. A question put to the assistant is answered by it, never from the nearest note.
 
 ADDRESSED = [
-    "do you like me", "do you love me", "Do you know me?", "do u like me", "do you trust me", "do you remember me",
+    "do you like me", "do you love me", "Do you know me?", "do u like me", "do you trust me",
     "do you even like me", "what do you think", "what do you think?", "what do u reckon", "how do you feel",
     "how do you feel about me", "are you smart", "are u happy", "are you really clever lol",
 ]
@@ -786,3 +786,215 @@ def test_a_jibe_is_asked_back_even_when_a_note_holds_the_word(notebook, question
     said, events = notebook(question)
     assert "?" in said, said
     assert "three notes" not in said and "Gift ideas" not in said, said
+
+
+# C22. A note that only mentions the subject gives the sentence that mentions it.
+
+@pytest.mark.parametrize("question", [
+    "what do I know about sourdough", "tell me about sourdough", "what have I written about sourdough", "what do my notes say about sourdough",
+    "sourdough", "anything on sourdough",
+])
+def test_a_passing_mention_says_its_matching_sentence_not_its_opening_one(notebook, question):
+    said, _ = notebook(question)
+    assert "birthday" not in said and "your sister" not in said, said
+    assert "jazz and the sourdough" in said, said
+
+
+def test_a_note_about_the_subject_keeps_all_its_sentences(notebook):
+    said, _ = notebook("what do I know about running")
+    assert "5 km in 28 minutes" in said and "knee a bit sore" in said, said
+
+
+# C25. A retry rewords the frames only: the same counts, names and dates on every attempt.
+
+def _attempts(client, question, n=6):
+    import json
+
+    said = []
+    for attempt in range(n):
+        body = {"question": question, "answer_from": "notes", "notes_only": True, "use_tools": False, "attempt": attempt}
+        text = ""
+        with client.stream("POST", "/chat/stream", json=body) as response:
+            for line in response.iter_lines():
+                if line.strip() and (event := json.loads(line)).get("type") == "answer":
+                    text += event["delta"]
+        said.append(text)
+    return said
+
+
+@pytest.mark.parametrize("question", [
+    "what have I written about uni", "what about uni", "what do I know about Lisbon", "what about social connections", "what do I know about running",
+])
+def test_a_retry_says_the_same_numbers_and_the_same_notes(notebook, client, question):
+    import re
+
+    said = _attempts(client, question)
+    figures = [sorted(set(re.findall(r"\b\d[\d,.]*\b", t))) for t in said]
+    #: The count's own word ("three") is in the frame; the digits are the facts.
+    assert all(f == figures[0] for f in figures), (figures, said)
+    counts = {m.group(1).lower() for t in said for m in re.finditer(r"\b(one|two|three|four|five|six|seven|eight|nine|ten) notes?\b", t, re.I)}
+    assert len(counts) <= 1, (counts, said)
+
+
+@pytest.mark.parametrize("opening, count", [
+    ("you have three notes about uni.", 3), ("your notes on uni: three notes.", 3), ("on uni you've written four notes.", 4),
+    ("there are 12 notes about uni.", 12), ("nothing here.", None), ("your notes on uni: none.", None),
+])
+def test_the_opening_count_is_read_in_every_wording(opening, count):
+    from tessellate.ai import composer_digest
+
+    assert composer_digest._opening_count(opening) == count
+
+
+# C27. "What did I do" over several days says what the notes hold, not that they were made.
+
+@pytest.mark.parametrize("question", [
+    "what did I do last weekend", "what did I get up to last weekend", "what have I been up to last weekend", "what was I doing last weekend",
+])
+def test_a_what_did_i_do_over_days_says_what_the_notes_say(notebook, question):
+    said, _ = notebook(question)
+    assert "baked banana bread" in said and "6 km without stopping" in said, said
+    assert "made the note" not in said, said
+
+
+@pytest.mark.parametrize("question", ["what did I make last weekend", "what did I create last weekend", "what notes did I add last weekend"])
+def test_a_what_did_i_make_stays_the_creation_log(notebook, question):
+    said, _ = notebook(question)
+    assert "made the note" in said, said
+
+
+# A streak's start is worked out, whatever word asks for it.
+
+@pytest.mark.parametrize("question", [
+    "when did I start learning Spanish", "when did I begin learning Spanish", "when did I first start Spanish", "when did I start learning spanish?",
+])
+def test_a_streak_note_gives_the_day_it_began_not_the_day_it_was_counted(notebook, question):
+    said, _ = notebook(question)
+    assert "About 14 September" in said, said
+    assert "25 October" in said, said
+
+
+def test_a_start_word_is_not_a_subject_of_a_when_ask():
+    from tessellate.ai import composer_digest as d
+
+    assert "start" not in d._subject("when did I start learning Spanish")
+    assert "start" in d._subject("what do I know about the start")
+
+
+# "How far in total" sums, in every wording of a total.
+
+@pytest.mark.parametrize("question", [
+    "how far in total", "how many km in total", "how far did I go in total", "how many kilometres altogether", "how far overall",
+    "how far in total for running", "how far in all",
+])
+def test_a_total_asked_without_a_verb_is_summed_not_listed(notebook, question):
+    said, _ = notebook(question)
+    assert "19 k" in said and "Your notes record" in said, said
+
+
+@pytest.mark.parametrize("question", ["how far is the station", "how many days in total"])
+def test_a_total_of_something_else_is_not_a_measure_sum(notebook, question):
+    said, _ = notebook(question)
+    assert "Your notes record" not in said, said
+
+
+# A day that has not come is answered with what is on it.
+
+@pytest.mark.parametrize("question", [
+    "what do I know about tomorrow", "tell me about tomorrow", "anything on tomorrow",
+    "what have I got on tomorrow", "what can you tell me about tomorrow",
+])
+def test_what_do_i_know_about_tomorrow_says_what_is_on_it(notebook, question):
+    said, _ = notebook(question)
+    assert "Remember to pay rent on the 1st" in said and "can't find" not in said, said
+
+
+@pytest.mark.parametrize("question, kept", [
+    ("what do I know about Christmas", "coming for Christmas"), ("what do I know about last week", "eleven notes"),
+    ("what do I know about running", "Running log"),
+])
+def test_a_topic_or_a_past_window_is_not_read_as_a_day_to_come(notebook, question, kept):
+    said, _ = notebook(question)
+    assert kept in said, said
+
+
+# C29. A checklist's state is said, and a fact is not a thing left to do.
+
+@pytest.mark.parametrize("question", ["what is left on it", "what do I still need to do", "what is left", "what do I need to do"])
+def test_a_price_is_not_a_thing_left_to_do_on_an_open_note(notebook, question):
+    said, _ = notebook(question, open_id=21)
+    assert "Need to book the tram to Sintra" in said, said
+    assert "Flights cost" not in said, said
+
+
+@pytest.mark.parametrize("question", ["summarise this", "give me the gist of this", "what is in this note", "what's in this"])
+def test_a_checklist_summary_says_how_many_are_ticked_and_which(notebook, question):
+    said, _ = notebook(question, open_id=22)
+    assert "five items, one ticked" in said and "Passport (ticked)" in said, said
+    assert "Charger (ticked)" not in said, said
+
+
+@pytest.mark.parametrize("text, owed", [
+    ("Need to book the tram to Sintra.", True), ("Book the tram", True), ("Don't forget the charger", True), ("Please pay the invoice", True),
+    ("Flights cost $420 return.", False), ("Staying at Hotel Alfama", False), ("The return flight is on Friday", False),
+])
+def test_only_an_owed_sentence_is_a_to_do(text, owed):
+    from tessellate.ai import composer_open
+
+    assert composer_open._to_do(text) is owed
+
+
+# C23. "My X notes" is the set, and a summary shows no raw emphasis marks.
+
+@pytest.mark.parametrize("question", [
+    "summarise my social notes", "give me a summary of my social notes", "summarize my social notes", "summarise social notes",
+])
+def test_my_social_notes_summarises_every_note_filed_under_social_connections(notebook, question):
+    said, _ = notebook(question)
+    assert "6 matching notes" in said and "Ice Breakers" in said and "Complete Social Skills Guide" in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "summarise the social skills guide", "summarise my social notes", "give me the short version of the social skills guide",
+])
+def test_a_summary_does_not_show_emphasis_asterisks_in_the_note_s_words(notebook, question):
+    import re
+
+    said, _ = notebook(question)
+    body = re.sub(r"\[\*\*[^\]]*\*\*\]", "", said)
+    body = re.sub(r"^- \*\*[^*]+\*\*:", "-", body, flags=re.M)
+    assert "**" not in body, said
+
+
+# C24. A compare opens without claiming a process, and its side headings start with a capital.
+
+_PROCESS = ("looked at", "could find", "this batch", "relevant notes", "recovered", "compiled", "documentation", "taking these", "i found")
+
+
+@pytest.mark.parametrize("question", [
+    "compare the Lisbon trip and the Tokyo trip", "compare Lisbon and Tokyo", "compare the sourdough starter and the sourdough loaf",
+    "compare my running plan with my running log", "Lisbon vs Tokyo",
+])
+def test_a_compare_opens_without_claiming_a_process(notebook, question):
+    said, _ = notebook(question)
+    lead = said.split("\n")[0].lower()
+    assert not any(p in lead for p in _PROCESS), said
+
+
+@pytest.mark.parametrize("question", [
+    "compare the sourdough starter and the sourdough loaf", "compare my running plan with my running log", "which is the soonest the dentist or the Lisbon trip",
+])
+def test_a_compare_s_side_headings_start_with_a_capital(notebook, question):
+    import re
+
+    said, _ = notebook(question)
+    heads = re.findall(r"^\*\*([^*\n]+)\*\*$", said, flags=re.M)
+    assert heads and all(h[:1].isupper() for h in heads), (heads, said)
+
+
+def test_no_voice_of_the_compare_openers_claims_a_process():
+    from tessellate.ai import composer
+
+    for key in ("of_found", "across_found"):
+        for lead in composer.phrase_options(key):
+            assert not any(p in lead.lower() for p in _PROCESS), lead

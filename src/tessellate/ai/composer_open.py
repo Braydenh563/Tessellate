@@ -83,12 +83,22 @@ _GENERIC = frozenset(
     "complete completed not yet un total many much dates days deadlines mention mentions mentioning include includes included contain contains contained given".split()
 )
 
-_DO = re.compile(
-    r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step|"
-    r"book|buy|call|email|send|ask|check|finish|write|pay|order|renew|schedule|plan|prepare|fix|bring|take|pack|get|pick up|"
+#: A to-do says it is owed ("need to", "must", "don't forget") wherever it
+#: sits in the sentence, or opens on the verb ("Book the tram"). A sentence
+#: that merely holds one of the verbs ("Flights cost $420 return") is a fact,
+#: not a thing left to do (audit 1031 C29).
+_OWED = re.compile(r"\b(?:need to|needs to|have to|has to|must|should|remember to|don't forget|do not forget|todo|to do|next step)\b", re.I)
+_COMMAND = re.compile(
+    r"^(?:then |also |and |please )?(?:book|buy|call|email|send|ask|check|finish|write|pay|order|renew|schedule|plan|prepare|fix|bring|take|pack|get|pick up|"
     r"collect|print|submit|sign|confirm|cancel|return|reply|clean|wash|charge)\b",
     re.I,
 )
+
+
+def _to_do(text: str) -> bool:
+    return bool(_OWED.search(text) or _COMMAND.match(text.strip()))
+
+
 _NAME = re.compile(r"[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?")
 _NOT_NAMES = frozenset(
     "The This That These Those There Then They Their Here What When Where Which While With Without Will Would Should Could "
@@ -172,7 +182,7 @@ def _left(out, view, question: str, salt: str) -> None:  # noqa: ANN001
     if any(s.kind == "task" for s in view.sentences):
         _say(out, "open_left_none")
         return
-    said = [s for s in view.sentences if s.kind in ("prose", "item") and _DO.search(s.text)][:2]
+    said = [s for s in view.sentences if s.kind in ("prose", "item") and _to_do(s.text)][:2]
     if not said:
         _say(out, "open_left_none")
         return

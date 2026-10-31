@@ -1476,8 +1476,32 @@ def _facts(view: composer.NoteView, names: set[str], subject: set[str] | None = 
     return out
 
 
+def _subject_facts(members: list[composer.NoteView], names: set[str], subject: set[str], kind: str = "overview") -> list[Fact]:
+    """The members' facts. A note the subject is only mentioned in (not its
+    title, its category or its tags) gives the sentences that mention it, not
+    its opening ones: "what do I know about sourdough" does not end on a
+    sister's birthday (audit 1031 C22). Only an overview of several notes: a
+    question for one fact ("where am I flying") reads the whole note."""
+    out: list[Fact] = []
+    narrow = kind == "overview" and len(members) > 1
+    for v in members:
+        held = _facts(v, names, subject)
+        about = v.title_words | v.filed_words | {composer._stem(str(t).lower()) for t in v.note.get("tags") or []}
+        if narrow and subject and held and not any(composer._holds(st, about) for st in subject):
+            said = [f for f in held if any(composer._holds(st, set(f.sentence.words)) for st in subject)]
+            held = said or held
+        out += held
+    return out
+
+
+#: "when did I start learning Spanish": the start asks for a day, it is not a
+#: word the note must hold (a streak note says "42 days in a row").
+_BEGINNING = _stems("start begin first")
+
+
 def _subject(question: str) -> list[str]:
-    return [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING()]
+    stems = [st for st in (composer._stem(t) for t in composer.subject_terms(clean(question))) if st not in _ASKING()]
+    return [st for st in stems if st not in _BEGINNING()] if _WHEN_DID.match(clean(question)) else stems
 
 
 def _pool(v: composer.NoteView) -> set[str]:
@@ -3442,21 +3466,30 @@ _IN_A_ROW = re.compile(r"\b(\d{1,4})\s+days?\s+(?:in a row|running|straight)\b",
 _STARTED = re.compile(r"\b(?:start|started|begin|began|begun)\b", re.I)
 
 
+def _streak_start(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact] | None:
+    """"when did I start learning Spanish" with "42 days in a row" in a note of
+    25 October: the day it began is worked out (day one is 41 days before the
+    note), said as worked out, and ahead of any day a sentence names (audit
+    1031: the note's own day is the day it was last counted, not the start)."""
+    streak = next((m for sentence in [lead.sentence, *lead.view.sentences] for m in [_IN_A_ROW.search(sentence.text)] if m), None)
+    if not (streak and lead.view.written and _STARTED.search(clean(question))):
+        return None
+    n = int(streak.group(1))
+    began = lead.view.written - timedelta(days=max(n - 1, 0))
+    line = f"About {_day(began, today)}: your note of {_day(lead.view.written, today)} says {n} days in a row."
+    out.lines.append(line)
+    out.rows.append(_row(line, lead))
+    return [f for f in rest if f.view.id == lead.view.id]
+
+
 def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: date) -> list[Fact]:
     """A "when" ask: the day of one thing that happened, or a habit said as
     its days. Returns the facts still to say."""
+    started = _streak_start(out, lead, rest, question, today)
+    if started is not None:
+        return started
     if _WHEN_DID.match(clean(question)) and _event_lead(out, lead, today):
         return []
-    #: "when did I start learning Spanish" with "42 days in a row" in a note of
-    #: 25 October: the day it began is worked out, and said as worked out.
-    streak = next((m for sentence in [lead.sentence, *lead.view.sentences] for m in [_IN_A_ROW.search(sentence.text)] if m), None)
-    if streak and lead.view.written and _STARTED.search(clean(question)):
-        n = int(streak.group(1))
-        began = lead.view.written - timedelta(days=n)
-        line = f"About {_day(began, today)}: your note of {_day(lead.view.written, today)} says {n} days in a row."
-        out.lines.append(line)
-        out.rows.append(_row(line, lead))
-        return [f for f in rest if f.view.id == lead.view.id]
     days = _DAYS_PLURAL.search(lead.body)
     #: A habit is weekdays in the plural or more than one ("Tuesdays",
     #: "Monday and Thursday"); "moved to Friday" is one day, said with its
@@ -4287,7 +4320,7 @@ def answer(
     if checklist := _named_checklist(kind, asked, members):
         _show_checklist(out, checklist)
         return _result(out, "fact", asked)
-    facts = [f for v in members for f in _facts(v, names, set(_subject(asked)))]
+    facts = _subject_facts(members, names, set(_subject(asked)), kind)
     if not facts:
         return None
     if kind == "left":
@@ -4348,15 +4381,16 @@ def _scored_insights(found: list, ids: set, members, said: str, learned) -> list
 
 
 def _opening_count(said: str) -> int | None:
-    """The count the answer's opening gave ("You have three notes about
-    uni"), or None when it gave none."""
-    found = re.search(r"\b(\d+|[a-z]+) notes? (?:about|on)\b", said, re.I)
+    """The count the answer's opening gave, in any of its wordings ("You have
+    three notes about uni", "Your notes on uni: three notes", "you've
+    written three notes"), or None when it gave none (audit 1031 C25: a
+    retry's frame must not let a second, different count in)."""
+    words = "|".join(realise.count_word(n) for n in range(21))
+    found = re.search(rf"\b(\d+|{words}) notes?\b", said, re.I)
     if not found:
         return None
     word = found.group(1).lower()
-    if word.isdigit():
-        return int(word)
-    return next((n for n in range(21) if realise.count_word(n) == word), None)
+    return int(word) if word.isdigit() else next((n for n in range(21) if realise.count_word(n) == word), None)
 
 
 def _say_insight(out: _Out, item, row: dict, members, said: str) -> None:  # noqa: ANN001
@@ -4459,8 +4493,17 @@ def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) ->
         out.rows.append(_row(said[0][0], said[0][1]))
         return
     out.lines.append(PHRASES["this_note"].format(
-        name=name, day=_day(v.written, today), where=where, points=f"{realise.count_word(len(said))} points"))
+        name=name, day=_day(v.written, today), where=where, points=_points_word(said)))
     out.lines.append(_points_block(out, said[:MORE_LINES], title or composer_frame.note_label(v.note)))
+
+
+def _points_word(said: list) -> str:
+    """"five points", or for a checklist "five items, one ticked": its state
+    is part of the summary (audit 1031 C29)."""
+    ticked = sum(1 for _, f in said if f.sentence.kind == "task" and f.sentence.done)
+    if said and all(f.sentence.kind == "task" for _, f in said):
+        return f"{realise.count_word(len(said))} items, {realise.count_word(ticked) if ticked else 'none'} ticked"
+    return f"{realise.count_word(len(said))} points"
 
 
 def _points_block(out: _Out, said: list, title: str) -> str:
@@ -4470,7 +4513,8 @@ def _points_block(out: _Out, said: list, title: str) -> str:
     points = []
     for text, fact in said:
         label = f"**{fact.label}:** " if fact.label and fact.label.lower() != title.lower() else ""
-        points.append(f"- {label}{text[:1].upper() + text[1:]}{'' if text.endswith(('.', '。', '！', '？')) else '.'}")
+        tick = " (ticked)" if fact.sentence.kind == "task" and fact.sentence.done else ""
+        points.append(f"- {label}{text[:1].upper() + text[1:]}{tick}{'' if text.endswith(('.', '。', '！', '？')) else '.'}")
         out.rows.append(_row(text, fact))
     return "\n".join(points)
 
