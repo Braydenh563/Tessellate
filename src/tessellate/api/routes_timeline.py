@@ -29,7 +29,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, String, and_, func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Reminder, Space, utcnow
 from tessellate.core.deps import get_session
@@ -258,7 +258,7 @@ def _place_notes(
                 # A word count, not a character count: it is the number people
                 # think in, and `_clip` has already thrown the characters away.
                 "words": len(text.split()),
-                "links": len(links.get(entry.id, [])),
+                "links": links.get(entry.id, 0),
                 "preview": _clip(text),
             }
         )
@@ -482,14 +482,20 @@ def timeline(
             )
         return statement
 
-    query = _ranged_entries(query, in_range, (start, end, on), since, until, tz, also)
+    #: Where each note sits is read once per note, by a join, and not by a
+    #: correlated subquery that the window clauses and the density each ran
+    #: again for every one of the notebook's notes (`_with_placement`).
+    query, mention_at, own_date = _with_placement(query)
+    query = _ranged_entries(
+        query, in_range, (start, end, on), since, until, tz, also, func.coalesce(own_date, mention_at)
+    )
 
     # The density strip is the whole range, however little of it this page
     # holds: it is the overview a reader drags to get somewhere, so a strip
     # drawn from one page would be a map of the part you can already see. Two
     # columns and no content, so it stays cheap as the notebook grows.
     density = (
-        _density(session, query) if ("note" in kinds or "board" in kinds) else {}
+        _density(session, query, mention_at) if ("note" in kinds or "board" in kinds) else {}
     )
 
     #: **Where the last page stopped**, one mark per source rather than an
@@ -592,7 +598,7 @@ def timeline(
     # batching `resolved` above uses: a timeline over a year of writing is
     # hundreds of rows and this endpoint is drawn on every visit to the tab.
     spaces = {space.id: space.name for space in session.scalars(select(Space))}
-    links = manager.links_for_entries_bulk(session, [entry.id for entry in entries])
+    links = manager.link_counts_bulk(session, [entry.id for entry in entries])
 
     placed = []
     _place_notes(entries, placed, scale, resolved, categories, spaces, links, meetings, every)
@@ -663,41 +669,43 @@ def _naive(at: datetime) -> datetime:
     return at.astimezone(timezone.utc).replace(tzinfo=None) if at.tzinfo else at
 
 
-def _first_mentioned():
-    """A note's first mentioned date (lowest id), the one its row sits on."""
-    return (
-        select(EntryDate.at)
-        .where(EntryDate.entry_id == Entry.id)
-        .order_by(EntryDate.id)
-        .limit(1)
-        .correlate(Entry)
-        .scalar_subquery()
+def _with_placement(query: Select) -> tuple[Select, object, object]:
+    """`query` with each note's placement columns joined on.
+
+    Returns the query, a note's first mentioned date (lowest id, the one its row
+    sits on) and a meeting's own `date:`, which beats any mention
+    (`_meeting_dates`). Both are the lowest-id row of their table for the note,
+    found once for the whole notebook as a grouped subquery and joined, so the
+    window, the density and the page read a plain column. As correlated
+    subqueries they ran per note for every use: the window repeats the
+    placement four times, so a 5,000-note range read 40 ms of SQL on this
+    alone and the cost grew with the notebook, not the page.
+    """
+    first_pick = (
+        select(EntryDate.entry_id.label("entry_id"), func.min(EntryDate.id).label("pick"))
+        .group_by(EntryDate.entry_id)
+        .subquery("first_mention")
     )
-
-
-def _meeting_date():
-    """A meeting's own `date:`, which beats any mention (`_meeting_dates`)."""
-    typed = (
-        select(EntryProperty.id)
-        .where(
-            EntryProperty.entry_id == Entry.id,
-            EntryProperty.key == "type",
-            func.lower(EntryProperty.value) == "meeting",
-        )
-        .correlate(Entry)
-        .exists()
+    meetings = select(EntryProperty.entry_id).where(
+        EntryProperty.key == "type", func.lower(EntryProperty.value) == "meeting"
     )
-    return (
-        select(EntryProperty.date)
-        .where(EntryProperty.entry_id == Entry.id, EntryProperty.key == "date", EntryProperty.date.is_not(None), typed)
-        .order_by(EntryProperty.id)
-        .limit(1)
-        .correlate(Entry)
-        .scalar_subquery()
+    own_pick = (
+        select(EntryProperty.entry_id.label("entry_id"), func.min(EntryProperty.id).label("pick"))
+        .where(EntryProperty.key == "date", EntryProperty.date.is_not(None), EntryProperty.entry_id.in_(meetings))
+        .group_by(EntryProperty.entry_id)
+        .subquery("own_date")
     )
+    mention, own = aliased(EntryDate), aliased(EntryProperty)
+    joined = (
+        query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id)
+        .outerjoin(mention, mention.id == first_pick.c.pick)
+        .outerjoin(own_pick, own_pick.c.entry_id == Entry.id)
+        .outerjoin(own, own.id == own_pick.c.pick)
+    )
+    return joined, mention.at, own.date
 
 
-def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int, also: bool = False) -> Select:
+def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int, also: bool, first) -> Select:
     """The notes in range, by where they *sit*: a meeting's own date, else the
     date the note mentions, else when it was written. An explicit window
     (`start` and `end`) and the feed's "last N days" are the same rule, so a
@@ -707,10 +715,10 @@ def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int
     start, end, on = asked
     if on or (since is None and until is None):
         return in_range(query, Entry.created_at)
-    return _entries_in_window(query, since, until, tz, also)
+    return _entries_in_window(query, since, until, tz, also, first)
 
 
-def _entries_in_window(query: Select, since: datetime | None, until: datetime | None, tz: int, also: bool = False) -> Select:
+def _entries_in_window(query: Select, since: datetime | None, until: datetime | None, tz: int, also: bool, first) -> Select:
     """Notes that *sit* in a window (TIMELINE_PLAN section 9).
 
     A note is in it by the day its row is placed on: a meeting's own date, else
@@ -724,7 +732,6 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     `also`: a note that names a date in the window as a later date counts too
     (its row still sits on the first, so the feed never asks for this).
     """
-    first = func.coalesce(_meeting_date(), _first_mentioned())
     wall = timedelta(minutes=tz)
     written = [Entry.created_at >= since] if since is not None else []
     written += [Entry.created_at <= until] if until is not None else []
@@ -739,7 +746,7 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     return query.where(or_(*clauses))
 
 
-def _density(session: Session, ranged: Select) -> dict[str, int]:
+def _density(session: Session, ranged: Select, mention_at) -> dict[str, int]:
     """How much was written on each day of the range, whatever page is loaded.
 
     It resolves placement the same way the rows do, a note sits on the date it
@@ -754,10 +761,9 @@ def _density(session: Session, ranged: Select) -> dict[str, int]:
     #: date (lowest id, as before) is a correlated read served by the
     #: `entry_id` index; dates are stored as naive UTC text, so the day is its
     #: first ten characters, which is what `.date()` gave on the row.
-    first_mentioned = _first_mentioned()
-    day = func.substr(func.coalesce(first_mentioned, Entry.created_at), 1, 10, type_=String)
+    day = func.substr(func.coalesce(mention_at, Entry.created_at), 1, 10, type_=String)
     rows = session.execute(
-        ranged.with_only_columns(day.label("day"), func.count()).order_by(None).group_by("day")
+        ranged.with_only_columns(day.label("day"), func.count()).select_from(Entry).order_by(None).group_by("day")
     ).all()
     return {str(when): int(count) for when, count in rows if when}
 
