@@ -88,3 +88,4 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1478 popup anatomy (agent popups-1031)
 - [ ] Perf leftovers: notes list append, statistics aggregate, graph cooling draws (agent perf3-1031)
 - [ ] Private chat leaks found by review: skill/plan runs, tool audit rows, narrator log lines, row cache (agent privfix-1031)
+- [ ] Composer leftovers round five: three-side comparisons, format tails, list vs overview, latest pick, day leads (agent composer5-1031)
