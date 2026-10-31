@@ -707,3 +707,40 @@ def test_a_fact_that_names_the_day_is_not_given_it_again(text, said):
     from tessellate.ai import composer_digest
 
     assert composer_digest._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said
+
+
+# C20. A derived line is said only of what the question asked about.
+
+@pytest.mark.parametrize("question", ["what do I know about money", "what have I written about money", "tell me about money", "what do my notes say about rent"])
+def test_a_budget_note_is_not_a_purchase_with_nothing_yet(notebook, question):
+    said, _ = notebook(question)
+    assert "Nothing yet" not in said and "where or when" not in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "how much do the flights to Lisbon cost", "what do the flights cost", "how much is the Lisbon trip", "what does the hotel cost",
+])
+def test_a_price_question_does_not_offer_to_track_spending(notebook, question):
+    said, _ = notebook(question)
+    assert "log your spending" not in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "what words have I learned in Spanish", "which Spanish words do I know", "list the Spanish words I have learned", "what Spanish have I learned",
+])
+def test_words_learned_are_not_things_to_try_or_to_give_a_note(notebook, question):
+    said, events = notebook(question)
+    assert "Remind you to try" not in said and "of its own" not in said, said
+
+
+def test_a_list_of_things_to_try_still_offers_the_reminder():
+    from tessellate.ai import composer_digest
+
+    assert composer_digest._TO_TRY.search("what hobbies do I want to try?")
+    assert composer_digest._TO_TRY.search("what should I try next")
+    assert not composer_digest._TO_TRY.search("what words have I learned in Spanish")
+
+
+def test_the_gaps_of_a_topic_are_said_when_the_question_names_the_topic(notebook):
+    said, _ = notebook("what do I know about the dentist")
+    assert "Nothing yet on assessments" not in said, said

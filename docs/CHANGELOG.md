@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a "nothing yet" gap is said only of a topic the question names, a price question no longer offers to track spending, and "try" and "a note of its own" offers go only to lists of things to try (audit 1031 C20)
 - Composer: a quoted line keeps the note's own words (a weekday the app pinned to its date leaves the quotation and is said after it), and a day the fact already names is not said again (audit 1031 C28)
 - Composer: "what do I spend on groceries" and the total spend read a standing amount ("rent is $1,200 a month") as the rate it is (audit 1031 C30)
 - Composer: "what am I reading" is the Books note, not a question another note asks (audit 1031 C18); "which is the main note" is the subject's defining note (C26)

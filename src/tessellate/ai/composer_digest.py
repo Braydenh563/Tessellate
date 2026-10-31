@@ -2495,9 +2495,15 @@ def _row(said: str, fact: Fact) -> dict:
     }
 
 
-def _missing(members: list[composer.NoteView]) -> str:
+def _missing(members: list[composer.NoteView], asked: str | None = None) -> str:
+    """What a topic the person asked about lacks. Only a topic the question
+    itself names has gaps worth saying: rent in a budget note is no
+    "purchase" and a dentist note holding "essay" no "study" (audit 1031
+    C20). `asked` None is the open category, where the notes are the topic."""
     text = " ".join(s.text for v in members for s in v.sentences)
     for _, topic, facets in FACETS:
+        if asked is not None and not topic.search(asked):
+            continue
         if len(topic.findall(text)) >= 2 or (len(members) == 1 and topic.search(text)):
             absent = [name for name, cue in facets if not cue.search(text)]
             if absent:
@@ -3298,14 +3304,15 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
     return max(facts, key=rank) if facts else None
 
 
-def _say_list(out: _Out, lead: Fact, items: list[str], today: date) -> None:
+def _say_list(out: _Out, lead: Fact, items: list[str], today: date, question: str = "") -> None:
     """"Hobbies I want to try: bouldering, film photography, ukulele": asked
     what the hobbies are, the answer is the count and the list."""
     day = f", written {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
     name = f"your note “{lead.label}”" if _label_names(lead.label, lead.view) else _your_note(lead.view)
     out.lines.append(f"{realise.count_word(len(items)).capitalize()}, from {name}{day}: {realise.join_items(items)}.")
     others = [v for v in _VIEWS.get() if v.id != lead.view.id]
-    if not any(composer._holds(composer._stem(w), v.words) for v in others for i in items for w in composer.subject_terms(i)[-1:]):
+    #: Said of things still to try, never of words learned or items had (C20).
+    if _TO_TRY.search(question) and not any(composer._holds(composer._stem(w), v.words) for v in others for i in items for w in composer.subject_terms(i)[-1:]):
         out.closing.append(PHRASES["none_own"])
 
 
@@ -3313,7 +3320,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
     body = lead.body
     items = [i.strip() for i in re.split(r",\s*", body) if i.strip()]
     if lead.label and len(items) >= 3 and all(len(i.split()) <= 4 for i in items):
-        _say_list(out, lead, items, today)
+        _say_list(out, lead, items, today, question)
     elif lead.label and lead.label not in {name for name, _ in _CUES} and not _TIME_LABEL.match(lead.label + " x"):
         #: A heading the note gives itself ("Psych lecture") names the note;
         #: a label the answer gave the fact ("How it went") does not.
@@ -4073,7 +4080,7 @@ def _compose_body(out: _Out, kind: str, asked: str, members: list, facts: list[F
         _single(out, kind, asked, members, facts, today)
     if not out.lines:
         return False
-    missing = _missing(members) if many and not out.framed else ""
+    missing = _missing(members, asked) if many and not out.framed else ""
     if missing:
         #: Under a fold it closes the answer, never sits between the lines
         #: shown and the lines folded (composer-1031).
@@ -4572,12 +4579,21 @@ def _opinion_offer(question: str, members, text: str) -> dict | None:  # noqa: A
 
 
 def _count_offer(question: str, text: str) -> dict | None:
-    if re.search(r"\$\s?\d", text) and re.search(r"\b(spen[dt]|budget|cost)", question + " " + text, re.I):
+    #: Asked about spending, not about a price: "how much do the flights cost"
+    #: is no cue to track spending (audit 1031 C20).
+    if re.search(r"\$\s?\d", text) and re.search(r"\b(spen[dt]|spending|budget)", question, re.I):
         return {"kind": "reminder", "label": PHRASES["log_weekly"], "text": "Log your spending every Sunday"}
     return None
 
 
-def _fact_offer(out: _Out) -> dict | None:
+#: A question that asks for things still to try, want or do: only there is
+#: the first listed item a thing to be reminded of ("words I have learned" is not).
+_TO_TRY = re.compile(r"\b(?:want|wanna|should|plan(?:ning)?|hope|hoping|wish|meaning|going) to\b|\b(?:to try|to do|to see|to visit|to watch|to read|ideas?|bucket|wish ?list|next)\b", re.I)
+
+
+def _fact_offer(out: _Out, question: str = "") -> dict | None:
+    if not _TO_TRY.search(question):
+        return None
     listed = re.search(r"^\w+, from [^:]+: (.+)\.$", out.lines[0]) if out.lines else None
     if not listed:
         return None
@@ -4611,7 +4627,7 @@ def _kind_offer(kind: str, question: str, members, facts: list[Fact], today: dat
     text = " ".join(s.text for v in members for s in v.sentences)
     if kind == "opinion":
         return _opinion_offer(question, members, text)
-    offer = {"likes": lambda: _likes_offer(text), "count": lambda: _count_offer(question, text), "fact": lambda: _fact_offer(out)}.get(kind)
+    offer = {"likes": lambda: _likes_offer(text), "count": lambda: _count_offer(question, text), "fact": lambda: _fact_offer(out, question)}.get(kind)
     return (offer() if offer else None) or _overview_offer(kind, question, members, facts, today)
 
 
