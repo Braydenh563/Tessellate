@@ -114,6 +114,8 @@ OBJ_RENDERERS.board = (ref, dest) => {
 };
 
 //: --- The card's menu --------------------------------------------------------
+//: A menu longer than this many rows folds the card's own rows into one.
+const OBJ_MENU_FOLD = 10;
 //: `kebabMenu` calls this as a menu opens (sheets-selects.js): a menu inside a
 //: card gets Copy beneath its own rows, once.
 function objKebabRows(menu) {
@@ -129,7 +131,12 @@ function objKebabRows(menu) {
   //: (blind test 2026-10-31: they were last of fourteen, with no icon).
   const arranging = objArranging(hit.card);
   const moves = arranging ? shown.filter((row) => row.moves) : [];
-  const rows = shown.filter((row) => !moves.includes(row)).map((row) => objMenuRow(row, hit.card));
+  let rows = shown.filter((row) => !moves.includes(row)).map((row) => objMenuRow(row, hit.card));
+  //: Past ten rows the card's own rows go behind one (INBOX 1469): a board's menu was eleven.
+  const own = menu.querySelectorAll(":scope > .menu-item, :scope > .menu-group").length + moves.length;
+  if (own + rows.length > OBJ_MENU_FOLD && rows.length > 1) {
+    rows = [buildMenuGroupButton("ph:dots-six-vertical Copy and arrange", rows)];
+  }
   if (moves.length) menu.prepend(...moves.map((row) => objMenuRow(row, hit.card)), rule.cloneNode());
   //: Above a menu's own delete, not after it.
   const danger = menu.querySelector(":scope > .menu-danger");

@@ -860,7 +860,9 @@ function withLibraryCopyActions(items, kind, title, id) {
   //: together at the end rather than the copies splitting them.
   const put = /\b(Delete|Move to bin|Remove|Archive|Unarchive)\b/;
   const at = items.findIndex((it) => put.test(it.label || ""));
-  const all = at === -1 ? [...items, ...copies] : [...items.slice(0, at), ...copies, ...items.slice(at)];
+  //: A long menu keeps its copies behind one row (INBOX 1469).
+  const kept = items.length + copies.length > 8 ? [{ label: "ph:copy Copy", items: copies }] : copies;
+  const all = at === -1 ? [...items, ...kept] : [...items.slice(0, at), ...kept, ...items.slice(at)];
   //: **Grouped past five rows** (DESIGN.md, the recipe index): a note's card
   //: menu is seven rows, and it read as one list (menus.js). Three groups,
   //: named by what the rows do rather than listed per kind, so every kind's
@@ -870,7 +872,7 @@ function withLibraryCopyActions(items, kind, title, id) {
   if (all.length <= 5) return all;
   return all.map((it) => ({
     ...it,
-    group: copies.includes(it) ? "copy" : put.test(it.label || "") ? "end" : "act",
+    group: kept.includes(it) ? "copy" : put.test(it.label || "") ? "end" : "act",
   }));
 }
 
@@ -9930,14 +9932,14 @@ function filterLibraryImagesGallery() {
       ...(image._isAttachment
         ? []
         : [{ button: copyRef, label: "ph:code Copy markdown reference" }]),
-      { button: writeCaption, label: "ph:pencil-line Write a description" },
-      ...(image._isImage
-        ? [{ button: writeReading, label: "ph:keyboard Type the text in this picture" }]
-        : []),
       { button: rename, label: "ph:pencil-simple Rename" },
       { button: save, label: "ph:download-simple Save a copy" },
-      { button: captionBtn, label: "ph:sparkle Describe with AI" },
-      { button: visionOcrBtn, label: "ph:sparkle Read text with AI" },
+      { button: writeCaption, label: "ph:pencil-line Write a description", text: true },
+      ...(image._isImage
+        ? [{ button: writeReading, label: "ph:keyboard Type the text in this picture", text: true }]
+        : []),
+      { button: captionBtn, label: "ph:sparkle Describe with AI", text: true },
+      { button: visionOcrBtn, label: "ph:sparkle Read text with AI", text: true },
       //: Left out entirely, not greyed, when the binary is missing, the
       //: lightbox menu (app.js) does the same, for the same report: "make
       //: sure all the fila and document ocr worfs with ai ocr models, I dont
@@ -9945,13 +9947,13 @@ function filterLibraryImagesGallery() {
       //: instruction), so a disabled row here can never become enabled.
       ...(modelStatus && modelStatus.tesseract_available === false
         ? []
-        : [{ button: ocrBtn, label: `ph:scan Read text (${modelStatus?.ocr_engine || "Tesseract"} OCR)` }]),
+        : [{ button: ocrBtn, label: `ph:scan Read text (${modelStatus?.ocr_engine || "Tesseract"} OCR)`, text: true }]),
       //: Images and PDFs. Tesseract cannot open a PDF, but the workspace no
       //: longer needs it to: `_pdf_regions_for` (routes_files.py) rasterises
       //: the page first and the workspace reads it with the vision model,
       //: which is what *"is the document ocr even working??"* was about.
       ...(image._isImage || ocrIsPdf(image)
-        ? [{ button: ocrOpenBtn, label: "ph:selection-all See text on the page" }]
+        ? [{ button: ocrOpenBtn, label: "ph:selection-all See text on the page", text: true }]
         : []),
       //: **Every place this picture is used, by name.** Reported as the gap
       //: in INBOX 115 ("no way to see which notes use it beyond one chip")
@@ -9978,9 +9980,11 @@ function filterLibraryImagesGallery() {
     //: and taking that block out took the declaration with it.
     const actions = document.createElement("div");
     actions.className = "library-image-actions";
-    const menu = kebabMenu(
-      menuActions.map(({ button, label, danger }) => ({
+    //: **Fifteen rows became ten** (INBOX 1469): the six that write or read a
+    //: picture's words sit behind one row, at the place the first of them was.
+    const menuRows = menuActions.map(({ button, label, danger, text }) => ({
         label,
+        text,
         title: button.title,
         //: The button's own disabled state carries through as the menu row's
         //: muted state: `ocrBtn` is disabled when Tesseract is missing, and a
@@ -9991,9 +9995,10 @@ function filterLibraryImagesGallery() {
         //: field, the two readers' spinners, delete's confirm: is still the
         //: one thing that decides what happens.
         run: () => button.click(),
-      })),
-      `More actions for “${image.original_name}”`,
-    );
+      }));
+    const rows = menuRows.filter((row) => !row.text);
+    rows.splice(menuRows.findIndex((row) => row.text), 0, { label: "ph:text-aa Text and description", items: menuRows.filter((row) => row.text) });
+    const menu = kebabMenu(rows, `More actions for “${image.original_name}”`);
     actions.append(menu);
 
     // **Labelled, and separated.** Reported directly: "I feel the image
