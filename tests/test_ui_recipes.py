@@ -6440,3 +6440,21 @@ def test_a_live_view_mark_reveals_per_span() -> None:
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
     assert '"id": "live-view-marks"' in topics
     assert "shows its markdown only while the caret" in topics
+
+
+def test_an_equation_field_has_one_door() -> None:
+    """INBOX 1473 a: a drawn or typed equation is edited in one MathLive field,
+    built in math-field.js and nowhere else (DESIGN.md's equation-field row).
+    A second hand-built `<math-field>` would bring back the policy refusals the
+    shim there exists for, and a second LaTeX box that drifts from the field.
+    """
+    for path in JS:
+        text = path.read_text(encoding="utf-8")
+        if path.name == "math-field.js":
+            continue
+        assert "new MathfieldElement" not in text, f"{path.name} builds a math field of its own"
+        assert 'createElement("math-field")' not in text, f"{path.name} builds a math field of its own"
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "mathFieldPane" in design and "openMathInPlace" in design
+    field = (ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8")
+    assert 'setAttribute("style"' not in field and ".style.cssText" in field
