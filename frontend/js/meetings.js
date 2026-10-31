@@ -1354,13 +1354,27 @@ async function stopMeetingTranscription() {
 async function meetingTakeDiscard() {
   const id = meetingTake.id;
   if (!id) return;
+  //: An empty take is removed by its finish; nothing is left to bin.
   try {
     await meetingTakeFinish();
-    await apiJson(`/recordings/${id}`, { method: "DELETE" });
-    pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
   } catch {
-    // An empty take is removed by its finish; nothing is left to bin.
+    return;
   }
+  await meetingTakeBin(id);
+}
+
+//: The bin's half, apart so a failure is said and can be tried again (audit
+//: 1031 Z12: a failed delete closed the dialog and left the recording in the
+//: Library with no word). The dialog is gone by now, so the way back is the
+//: toast's own action.
+async function meetingTakeBin(id) {
+  try {
+    await apiJson(`/recordings/${id}`, { method: "DELETE" });
+  } catch (error) {
+    toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+    return;
+  }
+  pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
 }
 
 // Pause and resume, which a MediaRecorder supports directly, the chunks

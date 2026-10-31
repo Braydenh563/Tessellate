@@ -83,4 +83,23 @@ def test_z14_live_captions_doors_are_hidden_when_no_engine_is_installed() -> Non
     assert "syncCaptionsDoors()" in js[js.index("async function openMeetingRecorder"):js.index("function openVoiceNote")]
     assert "syncCaptionsDoors()" in js[js.index("async function renderRecordings"):][:400]
     css = open("frontend/css/meetings-lazy.css", encoding="utf-8").read()
-    assert ".captions-off {\n  display: none !important;" in css
+    assert "button.captions-off {\n  display: none;" in css
+
+
+def test_z15_the_focus_trap_counts_a_shown_svg_and_the_welcome_face_is_no_tab_stop() -> None:
+    trap = frontend_text("settings-wiring.js")
+    trap = trap[trap.index('document.addEventListener("keydown", (e) => {\n  if (e.key !== "Tab") return;'):]
+    trap = trap[: trap.index("\n});\n")]
+    assert "el.getClientRects().length > 0" in trap and "offsetParent" not in trap.replace("`offsetParent`", "")
+    face = frontend_text("avatars.js")
+    face = face[face.index("function nameMarkKeyboard"):]
+    assert "#onboarding-overlay" in face[: face.index("\n}\n")]
+
+
+def test_z12_a_failed_discard_is_said_and_can_be_tried_again() -> None:
+    js = frontend_text("meetings.js")
+    body = js[js.index("async function meetingTakeBin"):]
+    body = body[: body.index("\n}\n")]
+    assert "toastAction(" in body and '"Try again"' in body and "meetingTakeBin(id)" in body
+    discard = js[js.index("async function meetingTakeDiscard"):js.index("async function meetingTakeBin")]
+    assert "await meetingTakeBin(id)" in discard and "DELETE" not in discard

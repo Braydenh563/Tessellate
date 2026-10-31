@@ -132,3 +132,25 @@ def test_the_tray_control_and_panel_are_in_the_page_and_the_settings_list() -> N
     assert 'key: "tray"' in controls
     ref = (JS / "obj-ref.js").read_text(encoding="utf-8")
     assert '"/js/obj-carry.js", "/js/obj-tray.js"' in ref
+
+
+@needs_node
+def test_a_tray_press_with_no_box_to_paste_into_offers_the_chat_and_opening_it() -> None:
+    # Audit 1031 Z13: the phone's sheet is modal, so no field has the focus.
+    out = run(FILES, STUBS + """
+    const offers = [];
+    globalThis.toastAction = (message, label, run, opts = {}) => offers.push({ message, label, also: opts.also && opts.also.label, run });
+    globalThis.routeHashFor = (kind, id) => `#/${kind}/${id}`;
+    globalThis.closeHelpPopovers = () => {};
+    const tabs = []; globalThis.switchTab = async (tab) => tabs.push(tab);
+    globalThis.location = { hash: "" }; globalThis.announce = () => {};
+    const staged = []; OBJ_STAGE.note = (r) => staged.push(r.id) > 0;
+    objTrayAdd(ref(4));
+    globalThis.$ = (id) => (id === "chat-input" ? {} : null);
+    objTrayPaste(objTray[0]);
+    const first = offers[0];
+    first.run().then(() => __out({ toasts, label: first.label, also: first.also, message: first.message, tabs, staged }));
+    """)
+    assert out["toasts"] == [] and out["label"] == "Attach to the chat" and out["also"] == "Open"
+    assert out["message"] == "Choose where “Note 4” goes."
+    assert out["tabs"] == ["chat"] and out["staged"] == [4]

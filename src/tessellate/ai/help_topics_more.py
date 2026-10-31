@@ -2098,16 +2098,16 @@ MORE_TOPICS.extend(
                 "title in a reminder. You can also carry a card: press and hold, then drag it "
                 "onto the chat box, an open note or document, a whiteboard, the "
                 "reminder box or the tray, which outline when they would take it; "
-                "rest on a page tab for half a second to open that page without "
+                "rest on a page tab for half a second to open it without "
                 "letting go. Drop a note on a category or, once the space switcher opens, on a "
                 "space, to file it (with Undo). Escape changes nothing. "
-                "The tray in the status bar holds a few cards while you change pages: "
-                "drop cards on it or choose Add to tray, then drag them out or click "
-                "one to paste it where you were typing. In a long card menu a row "
+                "The tray in the status bar holds cards across pages: "
+                "drop them on it or choose Add to tray, then drag them out or click "
+                "one to paste it where you were typing, or attach it to the chat. In a long card menu a row "
                 "with an arrow (Text and description on a picture, Copy and arrange "
                 "on a board) opens a list beside it: rest the pointer on it, click it, "
                 "or press Right arrow or Enter; Left arrow or Escape goes back. On a "
-                "phone it opens as its own page of the menu with a back row."
+                "phone it opens as a page of the menu with a back row."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

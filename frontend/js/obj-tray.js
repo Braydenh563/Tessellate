@@ -180,9 +180,26 @@ function objTrayPaste(ref) {
     return toast(`“${ref.title}” is in another space. Switch to All spaces to use it here.`, "info");
   }
   const dest = objTrayDestination();
-  if (!dest) return toast("Click into a chat box, a note or a board first, then choose it.", "info");
+  if (!dest) return objTrayOffer(ref);
   closeHelpPopovers();
   objPasteAt(ref, dest);
+}
+
+//: **No box to paste into is a choice, not a dead end** (audit 1031 Z13): on a
+//: phone the sheet is modal and nothing was ever focused, so the press used to
+//: say "click into a box first", which the sheet itself stops. It offers what
+//: needs no box: the chat's attachments, and opening the object.
+function objTrayOffer(ref) {
+  const hash = routeHashFor(ref.kind, ref.id);
+  const open = { label: "Open", run: () => (location.hash = hash) };
+  const message = `Choose where “${ref.title}” goes.`;
+  if (!OBJ_STAGE[ref.kind]) return hash ? toastAction(message, open.label, open.run) : toast(`“${ref.title}” can be dragged into a chat, a note or a board.`, "info");
+  const attach = async () => {
+    closeHelpPopovers();
+    await switchTab("chat");
+    objPasteAt(ref, { type: "chat", el: $("chat-input") });
+  };
+  toastAction(message, "Attach to the chat", attach, hash ? { also: open } : {});
 }
 
 OBJ_RENDERERS.tray = (ref) => {

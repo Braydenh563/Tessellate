@@ -1453,12 +1453,17 @@ document.addEventListener("keydown", (e) => {
   // that shape. `tabindex="-1"` is excluded on purpose: it means
   // programmatically focusable but *not* in the tab order, so including it
   // would invent stops the user never asked for.
+  //: Shown is `getClientRects().length`, not `offsetParent`: an SVG has no
+  //: `offsetParent`, so a hidden one passed the old test, and when it was
+  //: the first stop the wrap's `focus()` landed nowhere and Tab from the last
+  //: button stayed on it (audit 1031 Z15, the welcome's hidden emblem). A
+  //: fixed-position control had the opposite fault: it was always dropped.
   const focusables = [
     ...overlay.querySelectorAll(
       'button, [href], input, select, textarea, [contenteditable=""], ' +
         '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     ),
-  ].filter((el) => !el.disabled && el.offsetParent !== null);
+  ].filter((el) => !el.disabled && el.getClientRects().length > 0);
   if (!focusables.length) return;
   const first = focusables[0];
   const last = focusables[focusables.length - 1];

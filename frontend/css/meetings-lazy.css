@@ -563,6 +563,6 @@
 
 /* No caption engine installed: the doors to Live captions are not drawn
    (its own class, because the dialog toggles `hidden` by state). */
-.captions-off {
-  display: none !important;
+button.captions-off {
+  display: none;
 }
