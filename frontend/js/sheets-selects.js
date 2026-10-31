@@ -200,6 +200,22 @@ function eachSidebar(fn) {
   }
 }
 
+//: **A parked sidebar cannot be reached** (AI16, SH19: the off-canvas chat and
+//: category sheets stayed in the Tab order and the accessibility tree, their
+//: rows and a button 84 px past the viewport). Below 600 a sidebar that is not
+//: open is `inert`; above it the sidebar is a rail. Every open and close goes
+//: through `setSidebarSheet`, so no observer has to watch the class.
+const SIDEBAR_PHONE = "(max-width: 599.98px)";
+function syncSidebarInert() {
+  const phone = window.matchMedia(SIDEBAR_PHONE).matches;
+  eachSidebar((aside) => { aside.inert = phone && !aside.classList.contains("sidebar-sheet-open"); });
+}
+function setSidebarSheet(aside, open) {
+  aside.classList.toggle("sidebar-sheet-open", open);
+  syncSidebarInert();
+  return open;
+}
+
 function applySidebarSheetMode(stacked) {
   eachSidebar((aside) => {
     if (stacked) {
@@ -212,9 +228,9 @@ function applySidebarSheetMode(stacked) {
       aside.parentElement?.classList.remove("layout-sidebar-collapsed");
       // A sheet opens closed. Arriving with the content already covered is
       // the failure a sheet exists to avoid.
-      aside.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(aside, false);
     } else {
-      aside.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(aside, false);
       if (aside.dataset.deskCollapsed) {
         aside.classList.add("sidebar-collapsed");
         aside.parentElement?.classList.add("layout-sidebar-collapsed");
@@ -267,7 +283,7 @@ function initSidebarSheetDismissal() {
   wireInPlaceSheetDismissal({
     find: () => document.querySelector(".sidebar-sheet-open"),
     close: (open) => {
-      open.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(open, false);
       //: The rail's own button is the opener, so focus goes back to it: the
       //: same contract `openSheet`'s `returnFocus` keeps.
       const opener = open.querySelector(".sidebar-collapse-toggle");
@@ -360,7 +376,7 @@ function makeSidebarResizable(aside) {
     // toggling them here would put back exactly the rules the sheet was built
     // to avoid fighting.
     if (layoutIsStacked()) {
-      const open = aside.classList.toggle("sidebar-sheet-open");
+      const open = setSidebarSheet(aside, !aside.classList.contains("sidebar-sheet-open"));
       collapseBtn.setAttribute("aria-expanded", String(open));
       return;
     }
@@ -465,6 +481,7 @@ function initResizableSidebars() {
   }
   makeWebPanelResizable($("web-panel"));
   applySidebarSheetMode(layoutIsStacked());
+  window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
 }
 
@@ -2387,3 +2404,30 @@ let personaEditing = null; // name currently in inline-edit mode
 document.addEventListener("change", (event) => {
   if (event.target?.id === "persona-select") paintDashboardPersonaMark();
 });
+
+// --- where focus goes when a dialog closes (SH5, SH2, BD13, DC11, GR6) -------------
+//: One pair for every dialog and panel that is not a sheet: `focusBackTo`
+//: on close and `focusFirstIn` on open. An opener that is gone, hidden or
+//: just `<body>` (a dialog opened by a key, the palette or the API) falls
+//: to `fallback`, a selector or element, so a close never leaves the page
+//: with nothing focused. Returns whether anything took focus.
+function focusBackTo(opener, fallback = null) {
+  const candidates = [opener, typeof fallback === "string" ? document.querySelector(fallback) : fallback];
+  for (const el of candidates) {
+    if (!(el instanceof HTMLElement) || el === document.body || !el.isConnected) continue;
+    if (!el.getClientRects().length || el.closest("[inert]")) continue;
+    el.focus();
+    if (document.activeElement === el) return true;
+  }
+  return false;
+}
+//: The first thing worth typing into or pressing in a dialog: `preferred`
+//: (selector) when it is there, else the first field, else the first button.
+function focusFirstIn(root, preferred = null) {
+  const pick = (selector) => [...root.querySelectorAll(selector)].find((el) => !el.disabled && el.getClientRects().length);
+  const el = (preferred && pick(preferred))
+    || pick("input:not([type=hidden]), textarea, select, [contenteditable=true]")
+    || pick("button, [href], [tabindex]:not([tabindex='-1'])");
+  el?.focus();
+  return !!el;
+}

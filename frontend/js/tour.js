@@ -1821,7 +1821,7 @@ function tourClose(finished) {
   }
   //: And the folds it opened to reach a control are folded again.
   for (const fold of run.openedFolds || []) fold.open = false;
-  run.returnFocus?.focus?.();
+  focusBackTo(run.returnFocus, "#tab-bar [aria-selected='true']");
   if (finished) {
     toast("That is the tour. Settings, help and guide has it again whenever you want it.");
   }

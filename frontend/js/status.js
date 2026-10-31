@@ -358,7 +358,10 @@ function keepToastAction(message, label, run, { go = null, record = true, kind =
 function closeNotifications() {
   const panel = $("notif-panel");
   if (panel.classList.contains("hidden")) return;
+  const hadFocus = panel.contains(document.activeElement);
   panel.classList.add("hidden");
+  //: Focus goes back to the bell when it was inside the panel (SH2).
+  if (hadFocus || !document.activeElement || document.activeElement === document.body) focusBackTo($("notif-btn"));
   // Closing the panel is reading it: everything shown is now old news,
   // except rows deliberately kept unread (the override set survives).
   prefs.set(NOTIFICATIONS_READ_KEY, String(Date.now()));

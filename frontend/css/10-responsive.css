@@ -1327,12 +1327,6 @@ header#top-bar[data-scrolled="1"],
   .help-atlas > .atlas-suggest {
     min-height: var(--target-min);
   }
-  /* "Show more" under a clamped note is a text button 80x22 at 390
-     (`phone.js`, the first long note the sweep ever met); a row's own
-     control takes the row's floor. */
-  .entry-more {
-    min-height: var(--target-min);
-  }
   /* The timeline table's column sorts (30.8px) meet a finger now that the
      table is the phone's default view. */
   .timeline-sort {

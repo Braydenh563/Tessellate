@@ -148,7 +148,9 @@ def _clean_greeting(raw: str) -> tuple[str, str] | None:
         text = text[:-1].rstrip()
     # A little headroom over the prompt's word limit, since a woven-in name
     # costs a word or two.
-    if not text or len(text) > 56 or len(text.split()) > 9:
+    #: One word is a reply, not a greeting ("Ok." from a model that answered
+    #: "ok", audit 1031 SH9); the banner needs a phrase.
+    if not text or len(text) > 56 or not 2 <= len(text.split()) <= 9:
         return None
     # Small local models often answer in lowercase; the banner is a sentence,
     # so open it with a capital. Only the first character is touched, leaving

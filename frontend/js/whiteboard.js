@@ -676,7 +676,11 @@ function wbShowZoomLevel(k) {
   if (pct === wbZoomLevel.pct) return;
   wbZoomLevel.pct = pct;
   wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
-  if (wbZoomLevel.el) wbZoomLevel.el.textContent = `${pct}%`;
+  if (wbZoomLevel.el) {
+    wbZoomLevel.el.textContent = `${pct}%`;
+    //: The name starts with the visible words (BD4, label-content-name-mismatch).
+    wbZoomLevel.el.setAttribute("aria-label", `${pct}%, zoom level, press for 100%`);
+  }
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -6687,7 +6691,16 @@ function wbWalkItems(dir) {
       wbCenterOn(box, { animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
     }
   }
-  wbAnnounce(`${wbItemSpokenName(kind, item)}, ${next + 1} of ${items.length}, selected`);
+  //: Name and place only (1031 BD9: "Text box: Card 3, 4 of 362, selected" said
+  //: the selection twice), and the board's active descendant is the item, so a
+  //: screen reader has an object rather than only a region.
+  const lock = wbIsLocked(kind, item) ? ", locked" : "";
+  wbAnnounce(`${wbItemSpokenName(kind, item)}${lock}, ${next + 1} of ${items.length}`);
+  const el = document.querySelector(WB_SELECTOR_BY_KIND[kind]?.(item.id) || "#none");
+  if (el && container) {
+    el.id ||= `wb-item-${kind}-${item.id}`;
+    container.setAttribute("aria-activedescendant", el.id);
+  }
   return true;
 }
 
@@ -6699,6 +6712,7 @@ function clearWbSelection() {
   if (!wbSelectedItem && wbMultiSelection.size === 0) return;
   wbSelectedItem = null;
   wbMultiSelection.clear();
+  document.getElementById("whiteboard-container")?.removeAttribute("aria-activedescendant");
   wbApplySelectionHighlight();
   wbSyncMapToolState();
   wbUpdateSelectionBar();
@@ -9185,12 +9199,12 @@ function wbBuildContextMenu(kind) {
     });
     menu.appendChild(button);
   };
-  //: **A long menu is grouped, not nested** (DESIGN.md, the recipe index:
-  //: "past five rows it is grouped"). The node menu had grown to sixteen
-  //: rows; hover flyouts were tried and cannot be reached by touch or
-  //: keyboard, so each group is a run of ordinary rows with a hairline
-  //: (`.menu-sep`) before it. `label` is kept for the reader of this code;
-  //: a printed heading over every three rows would make the menu taller.
+  //: **A long menu is grouped** (DESIGN.md, the recipe index: "past five rows
+  //: it is grouped"). A group of two or more rows is one flyout row, on a
+  //: board as on a map (1031 BD10: seventeen flat rows, 629 px): it opens
+  //: beside the menu on click, hover or the arrow keys and expands in place on
+  //: a phone, so touch and keyboard reach it. `label` is kept for the reader
+  //: of this code.
   //: **On a map node the groups fold into flyouts** (owner, with a
   //: screenshot of the 18-row menu: "consolidate and group this more menu a
   //: bit?? it takes up majority of the screen in the mind map"). The same
@@ -9207,12 +9221,17 @@ function wbBuildContextMenu(kind) {
     Order: "ph:stack Order",
     Structure: "ph:tree-view Structure",
     Stamps: "ph:thumbs-up Stamps",
+    //: The board's own long menu is grouped the same way (1031 BD10: seventeen
+    //: flat rows, 629 px): export, save to the library, arrange and order.
+    Library: "ph:books Save to the library",
+    Arrange: "ph:align-left Arrange",
+    Export: "ph:export Export",
   };
   const subItem = (label, buildSubItems) => {
     const rows = [];
     buildSubItems((subLabel, title, fn) => rows.push([subLabel, title, fn]));
     if (!rows.length) return;
-    if (mapNodeForMenu && rows.length > 1 && typeof buildMenuGroupButton === "function") {
+    if (rows.length > 1 && typeof buildMenuGroupButton === "function") {
       menu.appendChild(buildMenuGroupButton(
         WB_MAP_GROUP_LABELS[label] || label,
         rows.map(([subLabel, title, fn]) => ({
@@ -9561,9 +9580,11 @@ function wbBuildContextMenu(kind) {
   //: A selection leaves the board as a picture (K33): the dialog on its
   //: Selection scope, or straight to the clipboard as a PNG or as SVG text.
   if (wbMultiSelection.size > 0 || wbSelectedItem) {
-    item("Export selection…", "The selection as a PNG or SVG, with its links", () => wbExportBoard());
-    item("Copy as image", "A PNG of the selection on the clipboard", () => wbCopyAsImage());
-    item("Copy as SVG", "The selection as SVG text on the clipboard", () => wbCopyAsSvg());
+    subItem("Export", (sub) => {
+      sub("Export selection…", "The selection as a PNG or SVG, with its links", () => wbExportBoard());
+      sub("Copy as image", "A PNG of the selection on the clipboard", () => wbCopyAsImage());
+      sub("Copy as SVG", "The selection as SVG text on the clipboard", () => wbCopyAsSvg());
+    });
   }
   //: Into the library's "Yours" (decision 25): the rows the table says apply.
   subItem("Library", (sub) => {
@@ -11801,9 +11822,16 @@ function wbPaintLocks() {
     }
   }
   document.querySelectorAll("#whiteboard-container .wb-locked").forEach((el) => {
-    if (!wanted.has(el)) el.classList.remove("wb-locked");
+    if (!wanted.has(el)) {
+      el.classList.remove("wb-locked");
+      el.removeAttribute("aria-disabled");
+    }
   });
-  for (const el of wanted) if (!el.classList.contains("wb-locked")) el.classList.add("wb-locked");
+  //: A locked item says so to a screen reader too (1031 BD5), not by the pin alone.
+  for (const el of wanted) {
+    el.classList.add("wb-locked");
+    el.setAttribute("aria-disabled", "true");
+  }
   wbPaintLockBadges();
 }
 
@@ -14126,6 +14154,10 @@ function wbExportPngPrefs() {
   return {
     scale: WB_EXPORT_SCALES.includes(saved.scale) ? saved.scale : 2,
     transparent: saved.transparent === true,
+    //: Off until asked (1031 BD12: every PNG export also added a copy to the
+    //: image library, two exports, two copies); "Save to the library" is its
+    //: own row for a copy on purpose.
+    library: saved.library === true,
   };
 }
 
@@ -14196,11 +14228,15 @@ async function uploadToLibrary(filename, blob, description = "") {
 }
 
 async function wbExportPng(scope) {
-  const { scale, transparent } = wbExportPngPrefs();
+  const { scale, transparent, library } = wbExportPngPrefs();
   const { svg, width, height } = wbBuildExportSvg(scope, { transparent });
   const blob = await wbRasterizeSvg(svg, width * scale, height * scale, "image/png");
   const filename = wbExportFileName(scope, "png");
   await saveFile(filename, blob);
+  if (!library) {
+    toast("Board exported as PNG.");
+    return;
+  }
   // Asked for directly: an exported board should show up in the Library's
   // Images gallery, not only as a file on disk that the app has no record
   // of. Best-effort: a failed upload must not make the export itself look
@@ -14549,6 +14585,19 @@ function wbExportBoard() {
   const clearText = document.createElement("span");
   clearText.textContent = "Transparent background";
   clearRow.append(clearBox, clearText);
+  const libraryRow = document.createElement("label");
+  libraryRow.className = "setting-check wb-export-clear";
+  const libraryBox = document.createElement("input");
+  libraryBox.type = "checkbox";
+  libraryBox.id = "wb-export-library";
+  libraryBox.checked = pngPrefs.library;
+  libraryBox.addEventListener("change", () => {
+    pngPrefs.library = libraryBox.checked;
+    wbSetExportPngPrefs(pngPrefs);
+  });
+  const libraryText = document.createElement("span");
+  libraryText.textContent = "Also add to the image library";
+  libraryRow.append(libraryBox, libraryText);
   const note = document.createElement("p");
   note.className = "confirm-text wb-export-note";
   const warning = document.createElement("p");
@@ -14577,6 +14626,7 @@ function wbExportBoard() {
     sizeSeg.hidden = !picture;
     //: A JPEG has no alpha, so the ground choice is not offered for it.
     clearRow.hidden = !picture || Boolean(format.noAlpha);
+    libraryRow.hidden = format.value !== "png";
     if (picture) wbSyncExportSeg(sizeSeg, String(pngPrefs.scale), null);
     const chosenScope = WB_EXPORT_SCOPES.find((s) => s.value === scope);
     // Two sentences, the format's and the scope's, so the line reads the same
@@ -14630,7 +14680,7 @@ function wbExportBoard() {
   const exportBtn = smallButton("Export", "Export", go, false);
   exportBtn.id = "wb-export-go";
   row.append(smallButton("Cancel", "Cancel", close), exportBtn);
-  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, note, warning, row);
+  card.append(dialogHead("Export this board", close), formatLabel, formatSeg, scopeLabel, scopeSeg, sizeLabel, sizeSeg, clearRow, libraryRow, note, warning, row);
   overlay.appendChild(card);
   wireBackdropClose(overlay, close);
   document.addEventListener("keydown", onKey, true);
@@ -15291,6 +15341,13 @@ async function initWhiteboard() {
   //: The board's help is its own sheet now (INBOX 566): the Board menu's row
   //: and the empty board's card open it, as "?" does.
   $("wb-help-btn")?.addEventListener("click", () => wbOpenHelpSheet());
+  //: The card dismissed with "Don't show on new boards" has a way back (1031
+  //: BD11: only the Help sheet did); it also turns the preference off.
+  $("wb-show-hints")?.addEventListener("click", () => {
+    prefs.remove("wbEmptyHintDismissed");
+    wbHintForcedOpen = true;
+    $("wb-empty-hint")?.classList.remove("hidden");
+  });
   $("wb-empty-hint-keys")?.addEventListener("click", () => wbOpenHelpSheet());
 
   // Board background colour, asked for directly, the ambient generative-art
@@ -24737,7 +24794,7 @@ function drawLibraryBoardsGallery(listed) {
     const title = document.createElement("strong");
     title.className = "library-card-title";
     title.textContent = board.title;
-    cardOpener(title, open, `${isMapCard ? "Map" : "Board"}: ${board.title}`);
+    cardOpener(title, open, `${board.title}, ${isMapCard ? "map" : "board"}`);
 
     const meta = document.createElement("span");
     meta.className = "muted library-card-meta";

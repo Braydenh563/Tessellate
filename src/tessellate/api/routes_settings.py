@@ -2754,6 +2754,10 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # note. It went missing when this block was rewritten as a loop.
             "is_deleted": e.is_deleted,
             "deleted_at": e.deleted_at.isoformat() if e.deleted_at else None,
+            #: A board or map keeps a companion entry the list hides; it is in
+            #: the file as a note, so the file says which ones are those (1031
+            #: SH8: the file held 210 where the list held 207).
+            "is_board": bool(e.is_board),
         })
 
     payload["links"] = [

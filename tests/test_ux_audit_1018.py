@@ -21,9 +21,13 @@ def test_phone_settings_drops_the_heading_the_jump_list_already_shows():
 
 
 def test_suggested_tag_take_has_a_target_min_hit_area():
+    # Was an invisible `::before` band lifting a span to --target-min; 1031 N37
+    # made it a real button that stretches to the chip's own 28px, so the box
+    # itself is the target and the band is gone.
     css = css_text()
-    rule = re.search(r"\.suggested-tag-take::before\s*\{([^}]*)\}", css)
-    assert rule and "var(--target-min)" in rule.group(1)
+    assert ".suggested-tag-take::before" not in css
+    rule = re.search(r"\.suggested-tag > button \{([^}]*)\}", css)
+    assert rule and "align-self: stretch" in rule.group(1)
 
 
 def test_offline_note_action_is_ink_on_the_phone():

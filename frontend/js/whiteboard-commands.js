@@ -286,6 +286,7 @@ const WB_COMMANDS = [
   { id: "copy-link", group: "Board", icon: "ph:link", label: "Copy this board's or mind map's address to open it in the app", menu: "Copy app link", keys: "", surface: "both", run: wbClickId("wb-copy-link") },
   { id: "delete-board", group: "Board", icon: "ph:trash", label: "Delete this board and everything on it", keys: "", surface: "both", run: wbClickId("wb-delete-board") },
   { id: "keys", group: "Board", icon: "ph:keyboard", label: "Every key and gesture on a board", menu: "Keys and controls", keys: "?", surface: "both", run: wbClickId("wb-help-btn") },
+  { id: "show-hints", group: "Board", icon: "ph:lightbulb", label: "Show the card of first steps on this board again", menu: "Show hints", keys: "", surface: "board", run: wbClickId("wb-show-hints") },
   { id: "export", group: "Board", icon: "ph:download-simple", label: "Export this board", keys: "", surface: "both", run: wbClickId("wb-export") },
   { id: "copy-image", group: "Board", icon: "ph:copy", label: "Copy as an image", keys: "", surface: "both", run: () => wbCopyAsImage() },
   { id: "copy-svg", group: "Board", icon: "ph:code", label: "Copy as SVG", keys: "", surface: "both", run: () => wbCopyAsSvg() },
@@ -759,12 +760,15 @@ function wbRenderHelpSheet(query = "") {
   document.getElementById("wb-help-none")?.classList.toggle("hidden", shown > 0);
 }
 
-const wbHelpReturn = { focus: null };
+const wbHelpReturn = { focus: null, fallback: null };
 
 function wbOpenHelpSheet() {
   const overlay = document.getElementById("wb-help-overlay");
   if (!overlay) return;
   wbHelpReturn.focus = document.activeElement;
+  //: A row of the Board menu is hidden once it ran, so the way back is that menu's
+  //: own button (BD13), not whatever the browser lands on.
+  wbHelpReturn.fallback = wbHelpReturn.focus?.closest?.(".wb-board-menu-wrap")?.querySelector("[data-wb-menu-toggle]") || document.getElementById("wb-help-open");
   const search = document.getElementById("wb-help-search");
   if (search) search.value = "";
   wbRenderHelpSheet("");
@@ -778,8 +782,10 @@ function wbCloseHelpSheet() {
   if (!overlay || overlay.classList.contains("hidden")) return;
   overlay.classList.add("hidden");
   const back = wbHelpReturn.focus;
+  const fallback = wbHelpReturn.fallback;
   wbHelpReturn.focus = null;
-  if (back && back.isConnected && typeof back.focus === "function") back.focus();
+  wbHelpReturn.fallback = null;
+  focusBackTo(back, fallback);
 }
 
 //: Wired once, when this file arrives with the Library bundle.

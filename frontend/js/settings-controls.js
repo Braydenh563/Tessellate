@@ -3481,6 +3481,12 @@ async function renderToolSettings() {
     h4.className = "setting-subhead";
     h4.textContent = title;
     head.append(h4);
+    //: One switch for the group (audit 1031 HR14: seventy-two switches in ten groups).
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "linklike tool-group-all";
+    all.addEventListener("click", () => saveToolGroup(head));
+    head.append(all);
     list.append(head);
     for (const tool of members) appendToolRow(list, tool, disabled, key);
   }
@@ -3559,6 +3565,51 @@ async function saveToolSwitch(check, name) {
     return;
   }
   // The "N of 51 on" count is only true until someone flips one.
+  applyToolFilter();
+}
+
+//: The boxes a group's switch acts on: its rows on screen, so a filter is never
+//: overstepped, and not the one the web opt-in holds off.
+function toolGroupBoxes(key) {
+  const rows = $("tool-list")?.querySelectorAll(`:scope > li[data-tool][data-group="${key}"]`) || [];
+  return [...rows]
+    .filter((row) => !row.classList.contains("hidden"))
+    .map((row) => row.querySelector("input[type=checkbox]"))
+    .filter((check) => check && !check.disabled);
+}
+
+//: The group switch says what a press does now: off while any is on, else on.
+function toolGroupAllPaint(head) {
+  const button = head.querySelector(".tool-group-all");
+  if (!button) return;
+  const boxes = toolGroupBoxes(head.dataset.group);
+  const words = boxes.some((check) => check.checked) ? "Turn all off" : "Turn all on";
+  button.hidden = !boxes.length;
+  button.textContent = words;
+  button.setAttribute("aria-label", `${words} in ${head.querySelector("h4").textContent}`);
+}
+
+//: A group in one save; the boxes follow the answer and a failure leaves them as they were.
+async function saveToolGroup(head) {
+  const boxes = toolGroupBoxes(head.dataset.group);
+  if (!boxes.length) return;
+  const turnOn = !boxes.some((check) => check.checked);
+  const next = new Set(prefsCache.disabled_tools || []);
+  for (const check of boxes) {
+    const name = check.closest("li").dataset.tool;
+    if (turnOn) next.delete(name);
+    else next.add(name);
+  }
+  try {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ disabled_tools: [...next] }),
+    });
+  } catch (error) {
+    toast(error.message || "Couldn't save that. Try again.", true);
+    return;
+  }
+  for (const check of boxes) check.checked = turnOn;
   applyToolFilter();
 }
 
@@ -3655,6 +3706,7 @@ function applyToolFilter() {
   //: A group's head goes with its last matching row.
   for (const head of list.querySelectorAll(":scope > li.tool-group-head")) {
     head.classList.toggle("hidden", !groupsShown.has(head.dataset.group));
+    toolGroupAllPaint(head);
   }
   empty?.classList.toggle("hidden", shown > 0 || !rows.length);
   if (count) {

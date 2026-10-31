@@ -325,6 +325,14 @@ async function renderBackups() {
   list.replaceChildren();
   if (!backups) return;
   renderBackupSchedule(backups).catch(() => {});
+  //: The line beside Back up now reads the newest backup (1031 SH16: it was
+  //: empty while the daily one sat listed); a "Saved ..." the button just
+  //: wrote is left to say its own thing.
+  const status = $("backup-status");
+  const newest = backups.find((b) => b.latest) || backups[0];
+  if (status && newest && (!status.textContent || status.textContent.startsWith("Last backup"))) {
+    status.textContent = `Last backup ${relativeTime(newest.created_at)}.${newest.origin_words ? ` ${newest.origin_words}.` : ""}`;
+  }
   for (const item of backups) {
     const li = document.createElement("li");
     const row = document.createElement("div");

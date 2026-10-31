@@ -272,6 +272,10 @@ function gcRadius(node, degree, maxDegree = 0) {
 //: is unreadable anyway and 2,000 of them are a grey wash; above it there is
 //: room for them. A hovered or spotlit node always shows its own.
 const GC_LABEL_ZOOM = 1.4;
+//: **A dot is never smaller than a fingertip can see** (1031 GR4: the median
+//: dot on a phone was 1.9 px across the radius). The floor is on screen
+//: pixels, only for a coarse pointer, drawn only: the hit slop is its own.
+const GC_MIN_DOT_PX = window.matchMedia?.("(pointer: coarse)")?.matches ? 2.5 : 0;
 
 //: Below this radius on screen, in device pixels, a node is drawn as a plain
 //: dot in a batched path rather than as its sprite (see the node pass in
@@ -3057,7 +3061,7 @@ function gcDraw(s = gcTab) {
       let alpha = gcLitAlpha(node._lit) * born;
       if (over) alpha = gcSmooth(node._lit) * born;
       if (node.type === "unresolved") alpha *= 0.4;
-      const rWorld = node.r + node._grow;
+      const rWorld = Math.max(node.r + node._grow, GC_MIN_DOT_PX / k);
       if (rWorld * pixelScale < GC_LOD_PX && !node._grow) {
         const key = `${halo.colour}|${Math.round(alpha * 8)}`;
         let batch = lodPaths.get(key);
@@ -5691,6 +5695,12 @@ function gcShowEmpty(show, filtered = null) {
   }
 }
 
+//: "Hide 141 unlinked notes", or the plain words when there are none.
+function gcOrphansLabel(box, count) {
+  const word = box?.closest("label")?.querySelector("span");
+  if (word) word.textContent = count ? `Hide ${nounCount(count, "unlinked note")}` : "Hide unlinked";
+}
+
 //: Undo every filter that can take a note off the map, and nothing else: the
 //: layout, the colour rule, the physics and the Show switches are how the map
 //: looks, not which notes are on it, and Reset to defaults already exists for
@@ -5880,13 +5890,17 @@ async function renderGraphCanvas(s = gcTab) {
     s.simRange = scores.length ? [Math.min(...scores), Math.max(...scores)] : null;
   }
   const hideOrphans = document.getElementById("graph-hide-orphans");
-  if (hideOrphans && hideOrphans.checked) {
+  //: The switch says how many it takes off (1031 GR8: 141 of 506 went with
+  //: nothing on the control to say so).
+  {
     const connected = new Set();
     for (const edge of visibleEdges) {
       connected.add(edge.source);
       connected.add(edge.target);
     }
-    visibleNodes = visibleNodes.filter((n) => connected.has(n.id));
+    const loose = visibleNodes.filter((n) => !connected.has(n.id));
+    gcOrphansLabel(hideOrphans, loose.filter((n) => !n.isGroup).length);
+    if (hideOrphans && hideOrphans.checked) visibleNodes = visibleNodes.filter((n) => connected.has(n.id));
   }
   if (!visibleNodes.length) {
     //: Filtered only when the data had notes: an empty notebook reaches this

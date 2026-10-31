@@ -279,6 +279,7 @@ function drawAskChart(host, chart) {
   host.replaceChildren(head, svg, ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
   host.classList.remove("hidden");
   if (chart.interactive) askChartWire(host, chart);
+  else askChartFollow(host, chart);
 }
 
 //: The Statistics page's charts (`chart.interactive`): a tooltip with the
@@ -335,6 +336,14 @@ function askChartWire(host, chart) {
     marks.forEach((mark, i) => mark.setAttribute("tabindex", i === to ? "0" : "-1"));
     marks[to].focus();
   });
+  askChartFollow(host, chart, hide);
+}
+
+//: **Every chart is drawn at its card's width** (UX4: a 640-unit picture in a
+//: 306 px card scaled the axis text to 4.9 px). The picture is redrawn when
+//: the card's width moves by 8 px or more; `onRedraw` is the tooltip's reset.
+function askChartFollow(host, chart, onRedraw = () => {}) {
+  host._chartObserver?.disconnect();
   let drawn = ASK_CHART_W;
   const observer = new ResizeObserver(() => {
     //: Fires once while the host is still detached (it is built before it is
@@ -349,8 +358,9 @@ function askChartWire(host, chart) {
     const keep = old.contains(document.activeElement) ? document.activeElement.dataset.i : null;
     const next = askChartSvg(chart, width);
     old.replaceWith(next);
-    hide();
+    onRedraw();
     if (keep != null) next.querySelector(`.ask-chart-pt[data-i="${keep}"]`)?.focus();
   });
+  host._chartObserver = observer;
   observer.observe(host);
 }

@@ -1569,7 +1569,9 @@ function libraryCard(item) {
   card.title = `${kindWord} · ${item.title}`;
   //: Named on the control now, not the box: the title is what a screen
   //: reader lands on, and it says the kind and the category as the card did.
-  cardOpener(title, () => openLibraryItem(item), `${kindWord}: ${item.title}. ${item.detail}.`);
+  //: The visible words first, then the kind and the category (SH4): the name
+  //: has to contain what is on the card, or voice control cannot say it.
+  cardOpener(title, () => openLibraryItem(item), `${title.textContent}, ${kindWord.toLowerCase()}${item.detail ? `, ${item.detail}` : ""}`);
 
   const actions = withLibraryCopyActions(libraryActions(item), item.kind, item.title, item.id);
   if (actions.length) {
@@ -3309,6 +3311,9 @@ async function renderLibraryDocuments() {
 
   let docs = [];
   showSkeletons(list, 4, "li");
+  //: The type table names a code card's kind; the library can open before
+  //: the Documents tab has asked for it.
+  await loadDocFileTypes();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
     // client-side filtering alone could only ever match a title, since a
@@ -3450,7 +3455,9 @@ async function renderLibraryDocuments() {
     meta.className = "muted doc-list-meta";
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
-    const words = typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+    //: A code file is its lines and its type ("6 lines · JavaScript"), not
+    //: its words (1031 CE8; `docSizeText` is the one rule).
+    const words = docSizeText(doc, true);
     const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
     meta.textContent = [words, when].filter(Boolean).join(" · ");
     body.append(title, meta);
@@ -12368,8 +12375,9 @@ function contentsBuildSection(outline, { key, label, total, fill }) {
   const count = document.createElement("span");
   count.className = "contents-count";
   count.textContent = total;
-  heading.append(caret, contentsGroupMark(key), name, count);
-  heading.setAttribute("aria-label", `${label}, ${total}`);
+  //: The words and the count name the button as drawn (a space between them,
+  //: invisible in a flex row), so the name starts with the visible text.
+  heading.append(caret, contentsGroupMark(key), name, " ", count);
 
   const list = document.createElement("ul");
   list.className = "contents-list";

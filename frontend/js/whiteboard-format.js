@@ -1839,6 +1839,12 @@ function wbColourPairOf(input) {
   return fill && border ? { ...pair, fillEl: fill, borderEl: border } : null;
 }
 
+//: `aria-expanded` belongs to a button; a colour field (`input[type=color]`) is not
+//: allowed it or `aria-haspopup` (axe aria-allowed-attr, BD4), so only a button gets it.
+function wbWellExpanded(el, open) {
+  if (el.type !== "color") el.setAttribute("aria-expanded", String(open));
+}
+
 //: Writes a colour into a field as a pick would: its own handlers save it.
 function wbSetColourField(input, colour) {
   const hex = wbHexOf(colour);
@@ -1910,7 +1916,7 @@ function wbColourMenu() {
       wbStopEyedrop();
       for (const el of document.querySelectorAll(".wb-colour-target")) {
         el.classList.remove("wb-colour-target");
-        el.setAttribute("aria-expanded", "false");
+        wbWellExpanded(el, false);
       }
     }
   }).observe(menu, { attributes: true, attributeFilter: ["class"] });
@@ -2086,7 +2092,7 @@ async function wbOpenColourMenu(input) {
   menu._escapedOpener = input;
   menu.classList.add("action-menu-escaped");
   menu.classList.remove("hidden");
-  input.setAttribute("aria-expanded", "true");
+  wbWellExpanded(input, true);
   input.classList.add("wb-colour-target");
   if (keepAt) {
     //: The same corner, pulled back inside the window if the other field's
@@ -2245,8 +2251,6 @@ onDomReady(() => {
   for (const input of document.querySelectorAll('input[type="color"].wb-color-picker')) {
     if (input.dataset.wbColourWell) continue;
     input.dataset.wbColourWell = "1";
-    input.setAttribute("aria-haspopup", "dialog");
-    input.setAttribute("aria-expanded", "false");
     input.addEventListener("click", (e) => {
       if (wbColourState.eyedrop) return;
       e.preventDefault();

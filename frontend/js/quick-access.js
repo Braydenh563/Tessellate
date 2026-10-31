@@ -134,7 +134,7 @@ async function quickAccessEdit() {
   head.append(heading, count, done);
 
   const row = document.createElement("div");
-  row.className = "launch-row launch-row-start quick-edit-row";
+  row.className = "launch-row launch-row-start quick-edit-row edge-fade";
   items.forEach((link, index) => row.appendChild(quickAccessTile(link, index, ids, row)));
   //: Always offered, even with the row full: the manager is also where one
   //: tile is swapped for another.
@@ -145,6 +145,7 @@ async function quickAccessEdit() {
   group.className = "launch-group";
   group.append(head, row);
   box.replaceChildren(group);
+  window.edgeFadeWire?.(row);
 }
 
 //: **The manager** (INBOX 524: "it is hard to tell which ones are already added

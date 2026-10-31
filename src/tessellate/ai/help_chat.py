@@ -493,6 +493,8 @@ HELP_TOPICS: list[dict] = [
         #: said "g then a letter" until INBOX 410: the chord had been "m" for
         #: months, and the guide was the one place still teaching the old key.
         "body": (
+            "The first Tab offers Skip to the list. The category list is one Tab stop: "
+            "arrows, Home and End walk it, the right arrow reaches a row's menu. "
             "Press ? for the full list; Settings, Keyboard shortcuts rebinds any of "
             "them (press a shortcut's keys, marked with a pencil, then the keys you want; type in the "
             "field above the list to find one), and on a Mac "
@@ -1110,6 +1112,8 @@ HELP_TOPICS.extend(
                 "Settings, Account & security: set a password and the notebook "
                 "asks for it when it opens. The lock button in the top bar locks it "
                 "now, and it locks itself after the idle time you choose there. "
+                "After a few wrong passwords the lock screen says how long to wait and "
+                "Unlock counts it down. "
                 "While it is locked, an open dialog or popover is put away, and "
                 "it comes back as it was after you unlock, and the lock screen takes focus. "
                 "Private notes are encrypted with that password and are never sent "
@@ -1407,7 +1411,9 @@ HELP_TOPICS.extend(
                 "expand short words such as for, if, try, class, main or sout, and "
                 "Tab walks their stops. In Python, a standard library module the "
                 "file imports offers its names after the dot (math., os.path.), "
-                "each with its signature, and pointing at one shows it. In a p5.js "
+                "each with its signature, and pointing at one shows it. In "
+                "JavaScript, a dot after console, Math, JSON or an object the file "
+                "declares offers its members. In a p5.js "
                 "sketch (a file with setup or draw), p5's own names are offered "
                 "with their arguments."
             ),
@@ -1630,13 +1636,15 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "
-                "Ctrl+Shift+S, or right-click, Library, for a selection, a drawn shape, a style, a sticky "
+                "Ctrl+Shift+S, or right-click, Save to the library, for a selection, a drawn shape, a style, a sticky "
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
                 "exports one. A placed item is an ordinary copy: changing the library later never changes "
                 "a board. In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
+                "A PNG export joins the image library only when Also add to the image library is ticked in the "
+                "export dialog; Board, Show hints brings the first-steps card back. "
                 "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
                 "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
                 "a window, button, input, checkbox, dropdown, image, navigation bar and card."

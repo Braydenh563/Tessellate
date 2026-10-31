@@ -497,6 +497,7 @@ def _refuse_if_throttled(client: str = "unknown") -> None:
                 f"Too many wrong passwords. Try again in {int(remaining) + 1} "
                 f"second{'' if int(remaining) == 0 else 's'}."
             ),
+            headers={"Retry-After": str(int(remaining) + 1)},
         )
 
 

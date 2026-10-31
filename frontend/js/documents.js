@@ -89,6 +89,14 @@ async function loadDocFileTypes() {
   syncDocFileType();
 }
 
+//: How big a list row says a document is: a code file's lines, a prose
+//: document's words (1031 CE8: "19 words" for a script). Both lists use it.
+function docSizeText(doc, withKind = false) {
+  const kind = docFileTypes.find((t) => t.ext === doc.file_type);
+  if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
+  return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+}
+
 //: The open document's type, never null. Falls back to markdown for a
 //: document saved before file types existed, for an unknown extension, and
 //: for the window between load and the fetch above landing.
@@ -243,6 +251,8 @@ function docTypeSync(type) {
   opener.dataset.ext = type.ext;
   setLabel(opener, `ph:${type.icon || "file-code"} ${type.label}`);
   opener.title = `File type: ${type.label} (.${type.ext}). Press to change it`;
+  //: The name starts with the words drawn on the button (DC5, label-content-name-mismatch).
+  opener.setAttribute("aria-label", `${type.label}, file type`);
   //: The menu itself, not `nextElementSibling`: an open menu is moved to `<body>`.
   const menu = docTypeState.menu;
   menu?.querySelector('[aria-current="true"]')?.removeAttribute("aria-current");
@@ -1097,7 +1107,7 @@ function renderDocList() {
     type.textContent = `.${doc.file_type || "md"}`;
     meta.append(
       type,
-      ` · ${nounCount(doc.words, "word")} · ${relativeTime(doc.updated_at)}`
+      ` · ${docSizeText(doc)} · ${relativeTime(doc.updated_at)}`
     );
     button.append(title, meta);
     button.addEventListener("click", () => openDocument(doc.id));
@@ -12858,7 +12868,10 @@ async function docBookmarkWithUndo(bookmarkId, attached) {
 //: The restored text goes in outside the editor's own history: the restore is
 //: one step on the app's stack, and the same change in both would have Ctrl+Z
 //: undo it twice.
-function docWriteOutsideHistory(text) {
+//: `keep` puts the change on the undo stack as one step: a replace across
+//: documents is the person's act, so Ctrl+Z in the editor takes it back (1031
+//: DC4: it did nothing, because the text came in outside the history).
+function docWriteOutsideHistory(text, keep = false) {
   const CM = window.CM6;
   if (!docCmView || !CM) {
     docSurface().text = text;
@@ -12867,17 +12880,17 @@ function docWriteOutsideHistory(text) {
   const current = docStr(docCmView.state.doc);
   if (current === text) return;
   const [from, to, insert] = docUndoDiffRange(current, text);
-  docCmView.dispatch({ changes: { from, to, insert }, annotations: CM.state.Transaction.addToHistory.of(false) });
+  docCmView.dispatch({ changes: { from, to, insert }, annotations: CM.state.Transaction.addToHistory.of(keep) });
 }
 
-function docShowSaved(saved) {
+function docShowSaved(saved, keep = false) {
   docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
   if (currentDoc?.id !== saved.id) {
     renderDocList();
     return;
   }
   currentDoc = saved;
-  docWriteOutsideHistory(saved.content || "");
+  docWriteOutsideHistory(saved.content || "", keep);
   $("doc-title").value = saved.title || "";
   renderDocPreview();
   docDirty = false;
@@ -13236,13 +13249,28 @@ async function recordDocAiEditLog(docId, verb, instruction, selection, beforeCon
   }
 }
 
-function acceptDocAiEdit() {
+//: **An answer far shorter than what it replaces is asked about first** (1031
+//: DC6: two characters replaced 1,272 in one click, the diff the only sign).
+//: Only a rewrite or a removal over a target of 200 characters or more, and
+//: only under a fifth of its length; a removal's own gap is not a short answer.
+const DOC_AI_SHORT_SHARE = 0.2;
+const DOC_AI_SHORT_FROM = 200;
+function docAiAnswerIsShort(verb, target, revised) {
+  if (verb === "write" || target.length < DOC_AI_SHORT_FROM) return false;
+  return revised.trim().length < target.length * DOC_AI_SHORT_SHARE;
+}
+
+async function acceptDocAiEdit() {
   const revised = $("doc-ai-result").value;
   if (!revised.trim() && docAiVerb() !== "remove") return;
   const verb = docAiVerb();
   const instruction = $("doc-ai-instruction").value.trim();
   const selection = $("doc-ai-panel").dataset.selection || "";
   const box = docSurface();
+  if (docAiAnswerIsShort(verb, selection || box.text, revised)) {
+    const ask = `The model sent much less than the text (${nounCount(revised.trim().length, "character")} for ${nounCount((selection || box.text).length, "character")}). Replace anyway?`;
+    if (!(await confirmDialog(ask, { confirmLabel: "Replace anyway" }))) return;
+  }
   const beforeContent = box.text;
   const docId = currentDoc.id;
 
@@ -14112,10 +14140,19 @@ async function docReplaceScan(pattern) {
   return out;
 }
 
+function docReplaceDisarm() {
+  const run = $("doc-replace-run");
+  if (run?.dataset.armed !== "1") return;
+  run.dataset.armed = "";
+  run.textContent = "Replace all";
+  $("doc-replace-summary").textContent = run.dataset.was || "";
+}
+
 async function renderDocReplace() {
   const summary = $("doc-replace-summary");
   const list = $("doc-replace-list");
   const run = $("doc-replace-run");
+  docReplaceDisarm();
   const pattern = docReplacePattern();
   list.replaceChildren();
   run.disabled = true;
@@ -14150,6 +14187,7 @@ function docReplaceRow(match, pattern) {
   box.addEventListener("change", () => {
     docReplace.skipped[box.checked ? "delete" : "add"](match.id);
     $("doc-replace-run").disabled = docReplace.matches.every((m) => docReplace.skipped.has(m.id));
+    docReplaceDisarm();
   });
   const name = document.createElement("span");
   name.textContent = `${match.title || "Untitled"} · ${match.count}`;
@@ -14175,12 +14213,12 @@ function docReplaceSnippet(text, pattern) {
 //: the hashes it gets back in `hashes`, so an undo or redo after one of these
 //: documents was edited is refused whole instead of writing over the edit
 //: (audit 1028 D11).
-async function docWriteContents(items, hashes) {
+async function docWriteContents(items, hashes, keep = false) {
   const sent = items.map((item) => ({ ...item, base_hash: hashes[item.id] || null }));
   const res = await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: sent }) });
   Object.assign(hashes, res.hashes || {});
   const open = items.find((item) => item.id === currentDoc?.id);
-  if (open) docShowSaved(await apiJson(`/documents/${open.id}`));
+  if (open) docShowSaved(await apiJson(`/documents/${open.id}`), keep);
   loadDocuments(currentDoc?.id);
 }
 
@@ -14195,11 +14233,25 @@ async function runDocReplace() {
   const after = chosen.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
   const total = chosen.reduce((sum, m) => sum + m.count, 0);
   const hashes = Object.fromEntries(chosen.map((m) => [m.id, m.content_hash]));
+  //: More than one document changing is said before it happens (1031 DC4:
+  //: 357 matches in 3 documents ran at once, the toast's Undo the only guard).
+  //: In the dialog, on the button, because a confirm dialog opens behind a
+  //: modal one: the first press asks, the second replaces, and any change to
+  //: the find, the options or the ticks puts the label back.
+  const run = $("doc-replace-run");
+  if (after.length > 1 && run.dataset.armed !== "1") {
+    run.dataset.armed = "1";
+    run.dataset.was = $("doc-replace-summary").textContent;
+    run.textContent = `Replace in ${nounCount(after.length, "document")}`;
+    $("doc-replace-summary").textContent = `${nounCount(total, "match", "matches")} in ${nounCount(after.length, "document")} change. Press again to replace; Undo takes it all back.`;
+    return;
+  }
   try {
-    await docWriteContents(after, hashes);
+    await docWriteContents(after, hashes, true);
   } catch (error) {
     return toast(error.message || "Couldn't replace. Nothing was changed.", true);
   }
+  docReplaceDisarm();
   $("doc-replace-dialog").close();
   offerUndo(
     `Replaced ${total} in ${nounCount(after.length, "document")}`,
@@ -15408,6 +15460,9 @@ $("doc-counts")?.addEventListener("keydown", (event) => {
 });
 $("doc-word-goal-submit").addEventListener("click", () => {
   if (!currentDoc) return;
+  //: The field's own limits say what is wrong (1031 DC9: a negative goal
+  //: closed the dialog with no goal and no word), the way the form does.
+  if (!$("doc-word-goal-input").reportValidity()) return;
   const goal = Math.max(0, Math.round(Number($("doc-word-goal-input").value)) || 0);
   setDocWordGoal(currentDoc.id, goal);
   renderDocStats();
@@ -18249,9 +18304,9 @@ function renderDocProse() {
   count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
-      ? `${nounCount(docProseFound.length, "suggestion")}${win ? " nearby" : ""}`
+      ? `${docProseFound.length.toLocaleString("en")} ${docProseFound.length === 1 ? "suggestion" : "suggestions"}${win ? " in view" : ""}`
       : win
-        ? "No suggestions nearby"
+        ? "No suggestions in view"
         : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
@@ -18372,7 +18427,7 @@ function docProseHeader() {
   //: offer to link a note (`DOC_FIX_ALL_NEVER`).
   const fixable = docProseFound.filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule));
   if (fixable.length) {
-    const all = tool(`ph:magic-wand Fix ${fixable.length}`, `Fix ${fixable.length}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
+    const all = tool(`ph:magic-wand Fix all ${fixable.length.toLocaleString("en")}`, `Fix all ${fixable.length.toLocaleString("en")}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
     tools.appendChild(all);
   }
   //: **Meaning needs a model** (ROADMAP: its/it's, agreement, tense), and
@@ -22330,6 +22385,9 @@ function docCmTheme(CM) {
       ".cm-run-body": { flex: "1", minHeight: "0", display: "flex", flexDirection: "column" },
       ".cm-run-frame": { display: "none", border: "0", width: "100%", flex: "3", minHeight: "0" },
       ".cm-run-panel.is-page .cm-run-frame": { display: "block", borderBottom: "1px solid var(--border)" },
+      //: A page with nothing printed gives the frame the whole body, not 60
+      //: percent of it and a line saying nothing ran (1031 CE7: 166 px).
+      ".cm-run-panel.is-page .cm-run-log:empty": { display: "none" },
       ".cm-run-log": {
         flex: "2",
         minHeight: "0",
@@ -23221,7 +23279,10 @@ function docCmKeymap(CM) {
       key: "Shift-Tab",
       run: () => {
         if (docTakeTabEscape()) return false;
-        if (!docCanOutdent(surface())) return false;
+        //: A code file keeps Shift+Tab with nothing to outdent, as Tab keeps
+        //: its press (1031 CE5: it left for the dock mid-edit); Escape, then
+        //: Tab or Shift+Tab, is the way out. Prose still falls through.
+        if (!docCanOutdent(surface())) return !docFileType().previewable;
         indentDocSelection(surface(), true);
         return true;
       },

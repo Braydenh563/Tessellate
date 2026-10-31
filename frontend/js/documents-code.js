@@ -650,6 +650,7 @@ function docNativeSnippets(CM, ext) {
       js: [
         CM.javascript.javascriptLanguage.data.of({ autocomplete: source("js") }),
         CM.javascript.javascriptLanguage.data.of({ autocomplete: CM.autocomplete.ifNotIn(quiet, docP5Source()) }),
+        CM.javascript.javascriptLanguage.data.of({ autocomplete: CM.autocomplete.ifNotIn(quiet, docJsMemberSource()) }),
       ],
     };
   }
@@ -720,13 +721,76 @@ function docPyStdlibSource(CM) {
       validFor: /^\w*$/,
       options: rows.map(([label, kind, signature, doc]) => ({
         label,
-        boost: 2,
+        //: Constants after the names a person types (1031 CE1: `os.pa` listed
+        //: P_ALL and O_PATH above `path`, every row alike at a boost of 2).
+        boost: kind === "constant" ? -1 : 2,
         type: type[kind] || "variable",
         detail: signature ? signature.slice(label.length) : "",
         info: doc || undefined,
       })),
     };
   };
+}
+
+//: **Members after a dot, in JavaScript and TypeScript** (1031 CE1: `console.l`
+//: offered nothing). The browser's own globals by name, an object literal the
+//: file declares by its keys, and for any other receiver the methods an array,
+//: a string or a promise share, below the rest.
+const DOC_JS_MEMBERS = {
+  console: "log warn error info debug table dir time timeEnd assert count group groupEnd trace clear",
+  Math: "abs ceil floor round trunc sign sqrt cbrt pow exp log log2 log10 min max random sin cos tan atan atan2 hypot PI E",
+  JSON: "parse stringify",
+  Object: "keys values entries assign freeze fromEntries create defineProperty getPrototypeOf",
+  Array: "isArray from of",
+  Number: "isInteger isFinite isNaN parseFloat parseInt MAX_SAFE_INTEGER EPSILON",
+  String: "fromCharCode raw",
+  Promise: "all allSettled race resolve reject any",
+  Date: "now parse UTC",
+  document: "querySelector querySelectorAll getElementById createElement addEventListener body title",
+  window: "addEventListener setTimeout setInterval fetch localStorage location innerWidth innerHeight requestAnimationFrame",
+  localStorage: "getItem setItem removeItem clear",
+};
+const DOC_JS_COMMON_MEMBERS = "map filter reduce forEach find findIndex some every includes join slice splice push pop shift unshift sort reverse indexOf length concat flat flatMap split trim toUpperCase toLowerCase replace replaceAll startsWith endsWith padStart padEnd then catch finally";
+
+//: The keys of `const name = { a: 1, b() {} }` in the file, or an empty list.
+function docJsObjectKeys(text, name) {
+  const body = new RegExp(`\\b(?:const|let|var)\\s+${name}\\s*=\\s*\\{([^}]*)\\}`).exec(text)?.[1] || "";
+  return [...body.matchAll(/(?:^|,)\s*(\w+)\s*[:(]/g)].map((m) => m[1]);
+}
+
+function docJsMemberSource() {
+  return (context) => {
+    const ext = docFileType().ext;
+    if (ext !== "js" && ext !== "ts") return null;
+    const before = context.matchBefore(/(?:[A-Za-z_$][\w$]*|[)\]])\??\.[\w$]*$/);
+    if (!before) return null;
+    const dot = before.text.lastIndexOf(".");
+    const receiver = before.text.slice(0, dot).replace(/\?$/, "");
+    const own = /^[\w$]+$/.test(receiver) ? docJsObjectKeys(docStr(context.state.doc), receiver) : [];
+    const listed = (DOC_JS_MEMBERS[receiver] || "").split(" ").filter(Boolean);
+    const rows = (names, boost, detail) => names.map((label) => ({ label, boost, detail, type: /^[A-Z_0-9]+$/.test(label) ? "constant" : "method" }));
+    const options = own.length || listed.length
+      ? [...rows(own, 3, "this file"), ...rows(listed, 2, receiver)]
+      : rows(DOC_JS_COMMON_MEMBERS.split(" "), -2, "array, string or promise");
+    return { from: before.from + dot + 1, validFor: /^[\w$]*$/, options };
+  };
+}
+
+//: The names a file uses, scanned once per document version (the editor's text
+//: object is the same until it changes), with how many times each shows.
+const docNameScans = new WeakMap();
+
+function docNamesIn(doc) {
+  let scan = docNameScans.get(doc);
+  if (!scan) {
+    const counts = new Map();
+    for (const match of doc.toString().matchAll(/[A-Za-z_$][\w$]{2,}/g)) {
+      counts.set(match[0], (counts.get(match[0]) || 0) + 1);
+      if (counts.size >= 2000) break;
+    }
+    docNameScans.set(doc, (scan = counts));
+  }
+  return scan;
 }
 
 let docCodeCompletionCache = null;
@@ -743,14 +807,13 @@ function docCodeCompletionSource(CM) {
     const snipped = new Set(snippets.map((o) => o.label));
     for (const label of snipped) seen.add(label);
     const options = [...snippets, ...keywords.filter((k) => !snipped.has(k)).map((label) => ({ label, type: "keyword" }))];
-    const text = docStr(context.state.doc);
-    const names = /[A-Za-z_$][\w$]{2,}/g;
-    let match;
-    while ((match = names.exec(text)) !== null && options.length < 2000) {
-      if (match.index === word.from) continue;
-      if (seen.has(match[0])) continue;
-      seen.add(match[0]);
-      options.push({ label: match[0], type: "variable" });
+    //: The word being typed is not a suggestion for itself unless it is
+    //: already written elsewhere.
+    const typing = context.state.sliceDoc(word.from, word.to);
+    for (const [name, times] of docNamesIn(context.state.doc)) {
+      if (seen.has(name) || (name === typing && times < 2)) continue;
+      seen.add(name);
+      options.push({ label: name, type: "variable" });
     }
     return CM.autocomplete.completeFromList(options)(context);
   };
@@ -790,7 +853,8 @@ function docCodeTools(CM) {
     //: the old timer into a state with no completion field, which throws
     //: "Field is not present in this state" (found by the code editor pass).
     //: No sources and no typing trigger, so prose behaves exactly as before.
-    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false })];
+    //: A CSV keeps the output panel, which is where its table is shown.
+    return [CM.autocomplete.autocompletion({ override: [], activateOnTyping: false }), type.ext === "csv" ? docRunExtension(CM) : []];
   }
   const native = ["js", "ts", "py", "css", "html"].includes(type.ext);
   return [
@@ -2678,7 +2742,7 @@ function docFindInDocuments() {
 //: themselves (what a run sends) are `RUN_LANGS` in run-core.js, the lazy
 //: bundle loaded on the first Run; this table is only what the toolbar and
 //: the panel need before it is in.
-const DOC_RUN_KINDS = { js: "main", ts: "main", sql: "main", html: "main", css: "main", svg: "main", py: "python" };
+const DOC_RUN_KINDS = { js: "main", ts: "main", sql: "main", html: "main", css: "main", svg: "main", csv: "main", py: "python" };
 //: Preview live (D6): how long after the last keystroke a preview refreshes.
 const DOC_RUN_LIVE_MS = 400;
 //: The types whose tests run (D7): the panel's Run tests button.
@@ -2786,7 +2850,7 @@ async function docRunSyncAvailability(type) {
   if (docFileType().ext !== type.ext) return;
   if (python && ready) docPyWarm();
   run.disabled = !ready;
-  run.title = ready ? "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)" : "Running Python needs the Python package: install it in Settings, Packages";
+  run.title = ready ? (type.ext === "csv" ? "Show this file as a table (Ctrl+Shift+Enter)" : "Run this file in a sandbox and show its output (Ctrl+Shift+Enter)") : "Running Python needs the Python package: install it in Settings, Packages";
   why.classList.toggle("hidden", ready || !docRunnable(type));
 }
 
@@ -3355,7 +3419,7 @@ const DOC_RUN_EMPTY = {
 //: three lines, the Guide's "Running code" topic at length.
 const DOC_RUN_HELP = [
   "Run sends this file to a sandbox with no network and none of your notes. What it prints and its errors come back in Output; Line N goes to the line.",
-  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page; Live refreshes it as you type.",
+  "JavaScript, TypeScript (types removed, not checked), SQL (a SQLite per run, with any CSV document the query names as a table) and Python (once installed; Input feeds input()) run. HTML, CSS, SVG and p5.js sketches show as a page, a CSV or TSV as a table; Live refreshes it as you type.",
   "Problems lists every finding the checks underline. Tests lists each test with its time, a failure underlined on its line. Console evaluates a line in what the last run left: Python for a .py file, JavaScript for the rest.",
   "Debug (F5, or the Debug tab's first button) runs JavaScript, TypeScript or Python to the first breakpoint (F9, or click beside a line number; right-click for a condition), then steps: F10 over, F11 in, Shift+F11 out, Shift+F5 stop. The tab shows variables, watches, the call stack and the breakpoints.",
   "The head's buttons are icons; point at one for its name. Ctrl+J shows or hides the panel, Ctrl+Shift+M opens Problems, Ctrl+Shift+Y the Console, Ctrl+Shift+D Debug; drag the top edge for its height, kept for each tab. A run still going after two seconds is in Activity, where Stop ends it too.",
@@ -3974,7 +4038,24 @@ function docRunRow(level, text, line, into = null, follow = true) {
   //: `into` is another tab's list (Problems, Tests, Console); only Output's
   //: rows count toward its cap.
   const list = into || docRun.log;
+  //: **The same line again is a count, not another row** (1031 CE6: a loop
+  //: printing "tick" made a column of identical rows, each with its own "Line
+  //: N" button): "tick x 11", one link, and the row cap counts it once.
+  const last = list.lastElementChild;
+  if (last && level !== "input" && level !== "result" && last.dataset.said === `${level}\u0000${line || 0}\u0000${text}`) {
+    const times = (Number(last.dataset.times) || 1) + 1;
+    last.dataset.times = String(times);
+    let badge = last.querySelector(".cm-run-times");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "muted cm-run-times";
+      last.querySelector(".cm-run-text")?.after(badge);
+    }
+    badge.textContent = ` x ${times}`;
+    return;
+  }
   const row = document.createElement("li");
+  row.dataset.said = `${level}\u0000${line || 0}\u0000${text}`;
   row.className = `cm-run-row is-${["error", "warn", "info", "debug"].includes(level) ? level : "log"}`;
   //: A console's typed line and the value it gave back.
   if (level === "input" || level === "result") row.classList.add(`is-${level}`);
@@ -4240,7 +4321,7 @@ function docSqlTableName(title) {
 
 //: RFC 4180: quoted fields may hold commas, quotes ("") and line breaks.
 //: One row past the cap is read, so a cut table can say it was cut.
-function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
+function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2, delimiter = ",") {
   const rows = [];
   let row = [];
   let cell = "";
@@ -4253,7 +4334,7 @@ function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
       else if (ch === '"') quoted = false;
       else cell += ch;
     } else if (ch === '"' && cell === "") quoted = true;
-    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === delimiter) { row.push(cell); cell = ""; }
     else if (ch === "\n" || ch === "\r") {
       if (ch === "\r" && src[i + 1] === "\n") i += 1;
       row.push(cell); cell = "";
@@ -4263,6 +4344,22 @@ function docSqlCsvRows(text, cap = DOC_SQL_CSV_ROWS + 2) {
   }
   if (rows.length < cap && (cell !== "" || row.length)) { row.push(cell); rows.push(row); }
   return rows;
+}
+
+//: **A CSV or TSV as a table** (1031 CE7: it opened as raw text with no grid).
+//: Run shows it read-only in the preview frame, the first 500 rows, the first
+//: row as the head; Live keeps it current as the file is edited.
+function docCsvTableHtml(text, title) {
+  const tabs = /\.tsv$/i.test(String(title || "")) || (!/,/.test(String(text).split("\n", 1)[0]) && /\t/.test(String(text).split("\n", 1)[0]));
+  const rows = docSqlCsvRows(text, DOC_RUN_MAX_ROWS + 2, tabs ? "\t" : ",");
+  const cut = rows.length > DOC_RUN_MAX_ROWS + 1;
+  const shown = rows.slice(0, DOC_RUN_MAX_ROWS + 1);
+  const esc = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const cells = (row, tag) => `<tr>${row.map((cell) => `<${tag}>${esc(cell)}</${tag}>`).join("")}</tr>`;
+  const head = shown.length ? `<thead>${cells(shown[0], "th")}</thead>` : "";
+  const body = shown.slice(1).map((row) => cells(row, "td")).join("");
+  const note = cut ? `<p>Only the first ${DOC_RUN_MAX_ROWS} rows are shown.</p>` : "";
+  return `<!doctype html><meta charset="utf-8"><style>:root{color-scheme:light dark}body{margin:0;font:13px system-ui,sans-serif}table{border-collapse:collapse;width:max-content;min-width:100%}th,td{border:1px solid #8884;padding:4px 10px;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:Canvas}tbody tr:nth-child(even){background:#8881}p{margin:8px 10px}</style>${shown.length ? `<table>${head}<tbody>${body}</tbody></table>` : "<p>This file has no rows yet.</p>"}${note}`;
 }
 
 function docSqlCsvTable(name, text) {
@@ -4361,6 +4458,10 @@ async function docRunCode(options = {}) {
     path: currentDoc?.title || "",
     stdin: docRun.stdin?.value || "",
   };
+  if (type.ext === "csv") {
+    request.ext = "html";
+    request.source = docCsvTableHtml(source, currentDoc?.title);
+  }
   if (type.ext === "sql") {
     try {
       request.tables = await docSqlCsvTables(source);

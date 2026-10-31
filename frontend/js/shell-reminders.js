@@ -402,9 +402,25 @@ function syncEdgeFade(bar) {
   bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
 }
 
-for (const bar of document.querySelectorAll(".edge-fade")) {
+//: **One recipe for a strip that scrolls** (1031 UX6: the launch row held 760
+//: px in 338, the Library filters 1,234, with no sign of it). Wired once: the
+//: fade follows the scroll, and the tab you choose is brought into view
+//: (read from the fade classes the last sync left, so a strip that fits costs
+//: no layout, as `revealActiveTab` does). A strip a script builds calls this
+//: itself; the markup's own are wired by the loop below.
+function edgeFadeWire(bar) {
+  if (!bar || bar.dataset.fadeWired) return;
+  bar.dataset.fadeWired = "1";
   syncEdgeFade(bar);
   bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
+  bar.addEventListener("click", (event) => {
+    const pick = event.target.closest?.("button, [role=tab]");
+    if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+}
+
+for (const bar of document.querySelectorAll(".edge-fade")) {
+  edgeFadeWire(bar);
   if (typeof ResizeObserver !== "undefined") {
     // Fires when a hidden (0-width) strip becomes visible on tab switch,
     // same as content changing width, no extra wiring needed per tab.
@@ -1005,6 +1021,8 @@ function updateReminderBadge(reminders) {
   syncPhoneMoreRuns();
 
   let badge = button.querySelector(".tab-badge");
+  //: The name is the words on the tab, badge and all (UX7, label-content-name-mismatch).
+  button.setAttribute("aria-label", due ? `Reminders ${due}` : "Reminders");
   if (!due) {
     badge?.remove();
     return;
@@ -1502,6 +1520,13 @@ async function addReminder(text, dueValue, entryId = null, opts = {}) {
     //: Names the one that is missing (not an error: an expected condition).
     toast(!text && !dueValue ? "A reminder needs text and a due time." : !text ? "Write what to be reminded of." : "Pick a due time for this reminder.");
     return false;
+  }
+  //: **The time is checked before the request** (1031 SH13: a past time went
+  //: to the server and came back a 422 in the console). The server's own
+  //: minute of slack and its sentence; the callers already say what a thrown
+  //: error says.
+  if (new Date(dueValue).getTime() < Date.now() - 60000) {
+    throw new Error("That reminder's due time is in the past. Pick a time that hasn't happened yet.");
   }
   const made = await apiJson("/reminders", {
     method: "POST",

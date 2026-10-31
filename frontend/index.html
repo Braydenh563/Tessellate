@@ -122,6 +122,7 @@
 
   <!-- Keyboard users can jump straight past the chrome. -->
   <a href="#" id="skip-link" class="skip-link">Skip to content</a>
+  <a href="#" id="skip-to-list" class="skip-link">Skip to the list</a>
 
   <!-- One compact, sticky top bar: brand · tabs · controls. -->
   <header id="top-bar">
@@ -1345,7 +1346,7 @@
       your progress toward it as you write.
     </p>
     <label for="doc-word-goal-input">Goal (0 to clear)</label>
-    <input type="number" id="doc-word-goal-input" min="0" step="1" inputmode="numeric" autocomplete="off">
+    <input type="number" id="doc-word-goal-input" min="0" max="1000000" step="1" inputmode="numeric" autocomplete="off">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="doc-word-goal-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-word-goal-submit">Set goal</button>
@@ -4676,7 +4677,7 @@ Link to another note with [[its first few words]]."></textarea>
         <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
-          aria-label="Edit note">
+          aria-label="Note">
           <!-- The header carries the note's identity and nothing else: the
                title, the category as the one chip, and the AI's filing
                confidence as a small muted mark beside the title rather than a
@@ -5692,7 +5693,7 @@ Link to another note with [[its first few words]]."></textarea>
               </section>
             </aside>
           </div>
-          <div id="doc-preview" data-holds-notebook class="doc-preview markdown-body hidden" aria-live="off"></div>
+          <div id="doc-preview" data-holds-notebook class="doc-preview markdown-body hidden" aria-live="off" tabindex="0" aria-label="Preview"></div>
         </div>
         <p id="doc-status" class="status doc-status" role="status"></p>
         <!-- **The strip VS Code and Word both have and this editor did not.**
@@ -6257,7 +6258,7 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
           <div id="library-overview" class="library-overview" role="group"
             aria-label="Your notebook at a glance"></div>
-          <div id="library-filters" class="library-filters" role="group"
+          <div id="library-filters" class="library-filters edge-fade" role="group"
             aria-label="Filter by kind"></div>
           <!-- Two strips that appear only when they have something to say: the
                bin's own controls when you are looking at the bin, and the bulk
@@ -7223,6 +7224,8 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Help</span>
               <!-- The board's help and shortcut sheet (INBOX 566), also "?". -->
               <button id="wb-help-btn" type="button" class="wb-menu-item" title="Every key and gesture on a board"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i><span>Keys and controls</span><kbd>?</kbd></button>
+              <!-- The empty board's hints card, back after it was dismissed (1031 BD11). -->
+              <button id="wb-show-hints" data-wb-closes data-wb-surface="board" type="button" class="wb-menu-item" title="Show the card of first steps on this board again"><i class="ph ph-lightbulb ph-lead" aria-hidden="true"></i><span>Show hints</span></button>
             </div>
             <!-- Clear empties the board and keeps it; Delete takes the board
                  with it (the eraser and the trash are two glyphs on purpose).
@@ -7659,7 +7662,7 @@ Link to another note with [[its first few words]]."></textarea>
 
     <div class="whiteboard-floating-panel bottom-right card glass" data-panel-id="zoom">
       <button id="wb-zoom-out" class="ghost small icon-only" title="Zoom out (Ctrl+-)" aria-label="Zoom out"><i class="ph ph-minus" aria-hidden="true"></i></button>
-      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+0)" aria-label="Zoom level, press for 100%">100%</button>
+      <button id="wb-zoom-level" type="button" class="ghost small wb-zoom-level" title="Zoom level; press for 100% (Ctrl+0)" aria-label="100%, zoom level, press for 100%">100%</button>
       <button id="wb-zoom-in" class="ghost small icon-only" title="Zoom in (Ctrl+=)" aria-label="Zoom in"><i class="ph ph-plus" aria-hidden="true"></i></button>
       <button id="wb-zoom-fit" class="ghost small icon-only" title="Fit to screen (Shift+1)" aria-label="Fit to screen"><i class="ph ph-frame-corners" aria-hidden="true"></i></button>
     </div>
@@ -15555,7 +15558,10 @@ Link to another note with [[its first few words]]."></textarea>
     <div id="tour-block-left" class="tour-block-panel"></div>
   </div>
   <div id="tour-spot" class="tour-spot hidden" aria-hidden="true"></div>
-  <div id="tour-card" class="card tour-card hidden" role="dialog" aria-modal="true"
+  <!-- `data-panel-fixed`: the card is placed by the tour beside the control it
+       names, so the panel chrome (move, dock, minimise) is not added to it: it
+       made eight buttons for a four-step tour (1031 SH17). -->
+  <div id="tour-card" class="card tour-card hidden" role="dialog" aria-modal="true" data-panel-fixed
     aria-labelledby="tour-title" aria-describedby="tour-text" tabindex="-1">
     <div class="tour-head dialog-head">
       <span id="tour-section" class="chip tour-section-chip"></span>

@@ -2810,7 +2810,30 @@ function renderSidebar() {
   for (const [category, count] of [...counts.entries()].sort((a, b) => compareCategoryNames(a[0], b[0]))) {
     addRow(category, count, category);
   }
+  sidebarRovingRows(ul);
   foldSide();
+}
+
+//: **One tab stop for the whole category list** (UX1: 62 stops for 31
+//: categories, every name and then its ⋯, before the first note). The row that
+//: is current (else the first) is the stop; the arrows, Home and End walk the
+//: rows (`wireSidebarRowKeys`), and the right arrow reaches a row's ⋯, which
+//: is also on Shift+F10 and the context key like every row menu. The stop
+//: follows focus, so Tab back into the list lands where it left.
+function sidebarRovingRows(ul) {
+  const rows = [...ul.children];
+  const stop = rows.find((li) => li.getAttribute("aria-current") === "true") || rows[0];
+  for (const li of rows) {
+    li.tabIndex = li === stop ? 0 : -1;
+    for (const button of li.querySelectorAll(".category-actions button")) button.tabIndex = -1;
+  }
+  if (ul.dataset.roving) return;
+  ul.dataset.roving = "1";
+  ul.addEventListener("focusin", (event) => {
+    const row = event.target.closest?.("#category-list > li");
+    if (!row) return;
+    for (const li of ul.children) li.tabIndex = li === row ? 0 : -1;
+  });
 }
 
 function compareCategoryNames(a, b) {
@@ -2838,6 +2861,24 @@ function wireSidebarRowKeys(li) {
       event.preventDefault();
       const next = event.key === "ArrowDown" ? li.nextElementSibling : li.previousElementSibling;
       next?.focus();
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      const rows = li.parentElement.children;
+      rows[event.key === "Home" ? 0 : rows.length - 1]?.focus();
+    } else if (event.key === "ArrowRight") {
+      const menu = li.querySelector(".category-actions button");
+      if (menu) {
+        event.preventDefault();
+        menu.focus();
+      }
+    }
+  });
+  //: And back: Left or Escape on the row's ⋯ returns to its row.
+  li.addEventListener("keydown", (event) => {
+    if (event.target === li || !event.target.closest?.(".category-actions")) return;
+    if (event.key === "ArrowLeft" || (event.key === "Escape" && event.target.getAttribute("aria-expanded") !== "true")) {
+      event.preventDefault();
+      li.focus();
     }
   });
 }
