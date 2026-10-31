@@ -1779,34 +1779,47 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     return detected, stats
 
 
+def _in_window(found: _Found, session: Session, asked, question: str) -> None:  # noqa: ANN001
+    """The window's own notes are the pool: a time recall, or a question whose
+    only words are its window and the question's verb."""
+    archived = question_noise.asks_archived(question)
+    if asked.kind == "recall":
+        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=archived)
+    else:
+        #: "How much did I save in October": the question's own verb is no
+        #: term, so nothing was searched; the window's notes are the pool the
+        #: readers ask (audit 1031 C3).
+        stems = composer.window_verb_stems(question, asked.window_phrase)
+        window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=archived)
+        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
+    found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+
+
+def _keep_window(found: _Found, asked) -> None:  # noqa: ANN001
+    """**A subject inside a window keeps the window** (1324): "what did I
+    write about sourdough last week" was answered with sourdough notes from
+    six weeks, under a header that said "last week". The notes inside the
+    window are the answer when there are any."""
+    inside = [
+        e for e in found.entries
+        if e.id in found.mentioned or (e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1])
+    ]
+    if inside:
+        found.entries = inside
+        found.when_phrase = found.when_phrase or asked.window_phrase
+
+
 def _recall_window(session: Session, question: str, found: _Found) -> None:
     #: **A recall by time reads the window, not a ranking** (CHAT_PLAN decision
     #: 31): "what did I do last week" is every note of that week, newest first,
     #: which five notes ranked by likeness never were.
     asked = composer.plan(question, user_now(deps.get_config()).date())
-    if asked.kind == "recall" and asked.window:
-        found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=question_noise.asks_archived(question))
-        found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
-    elif asked.window and not found.entries and not asked.terms and asked.window_phrase:
-        #: "How much did I save in October": the question's own verb is no
-        #: term, so nothing was searched; the window's notes are the pool the
-        #: readers ask (audit 1031 C3).
-        stems = composer.window_verb_stems(question, asked.window_phrase)
-        window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=question_noise.asks_archived(question))
-        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
-        found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
-    elif asked.window and found.entries:
-        #: **A subject inside a window keeps the window** (1324): "what did I
-        #: write about sourdough last week" was answered with sourdough notes
-        #: from six weeks, under a header that said "last week". The notes
-        #: inside the window are the answer when there are any.
-        inside = [
-            e for e in found.entries
-            if e.id in found.mentioned or (e.created_at and asked.window[0] <= e.created_at.date() <= asked.window[1])
-        ]
-        if inside:
-            found.entries = inside
-            found.when_phrase = found.when_phrase or asked.window_phrase
+    if not asked.window:
+        return
+    if asked.kind == "recall" or (not found.entries and not asked.terms and asked.window_phrase):
+        _in_window(found, session, asked, question)
+    elif found.entries:
+        _keep_window(found, asked)
 
 
 def _with_each_side(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
@@ -1819,11 +1832,30 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     merged = list(entries)
     seen = {e.id for e in merged}
     for side in sides:
+        #: A side named by a title is that note, first (audit 1031 C50): at 207
+        #: notes the five likest "dentist" were filler that said the word.
+        titled = _titled_entry(session, side)
+        if titled is not None:
+            merged = [titled, *(e for e in merged if e.id != titled.id)]
+            seen.add(titled.id)
         for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
             if entry.id not in seen:
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _titled_entry(session: Session, side: str):  # noqa: ANN202
+    """The note whose title is `side` ("the dentist", "Lisbon trip"), or None."""
+    core = re.sub(r"^(?:the|my|our)\s+|\s+notes?$", "", " ".join(side.lower().split()), flags=re.I).strip()
+    if len(core) < 3:
+        return None
+    rows = session.scalars(
+        select(Entry).where(
+            Entry.content.ilike(f"#%{core}%"), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False),
+        ).limit(20)
+    ).all()
+    return next((e for e in rows if re.sub(r"^(?:the|a|an)\s+", "", composer_frame.note_title(e.content).lower().strip()) == core), None)
 
 
 def _with_records(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
@@ -2143,17 +2175,23 @@ def _frame_matches(session: Session, question: str, notes: list[dict], match_inf
     if not ids:
         return
     linked: dict[int, list[int]] = {i: [] for i in ids}
-    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id).filter(
+    rows = session.query(EntryLink.source_entry_id, EntryLink.target_entry_id, EntryLink.reason).filter(
         EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids)
     )
-    for a, b in rows:
+    reasons: dict[int, dict[int, str]] = {i: {} for i in ids}
+    for a, b, reason in rows:
         #: Once each: two notes linked both ways are one link to the reader.
         if b not in linked[a]:
             linked[a].append(b)
         if a not in linked[b]:
             linked[b].append(a)
+        if reason:
+            reasons[a].setdefault(b, reason)
+            reasons[b].setdefault(a, reason)
     for note in notes:
         note["linked_to"] = linked[note["id"]]
+        #: What the person wrote of each link, for "why did I link these" (audit 1031 C49).
+        note["link_reasons"] = reasons[note["id"]]
     for key, reason in composer_frame.reasons(question, notes, mode).items():
         match_info.setdefault(int(key), {})["why"] = reason
     for note in notes:
@@ -3278,6 +3316,8 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         return hello
     if kind == "repair":
         return _repair_reply(req, last, seed)
+    if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
+        return joke
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3292,9 +3332,22 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
     if kind == "test" and (subject := composer_social.ping_subject(req.question)):
         said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
-    hello = kind in ("greeting", "morning", "how")
-    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen and hello else ""
+    sees = _sees(req, kind, seed)
     return f"{said}\n\n{sees}" if sees else said
+
+
+def _sees(req: _StreamRequest, kind: str | None, seed: str) -> str:
+    """What the app can see, said only after a hello."""
+    if req.body.screen and kind in ("greeting", "morning", "how"):
+        return composer_aware.opening(_awareness(req), seed)
+    return ""
+
+
+def _saved_joke_reply(req: _StreamRequest, seed: str) -> str:
+    """One you saved, said as it is written, before owning up to having none
+    (audit 1031 C46); empty when no note is a joke."""
+    joke = chat_extra.saved_joke(req.session, req.question + seed)
+    return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})" if joke else ""
 
 
 def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
@@ -3479,10 +3532,22 @@ def _late_panel(prepared: dict, question: str | None, answer_text: str, sent_kin
     return [panel] if panel is not None else []
 
 
+def _listed_below(stats: dict) -> str:
+    """The rows an answer says are "listed below", written under it (audit
+    1031 C44): "Your longest note is ... The top 10 are listed below." with
+    nothing below was a promise the stream never kept."""
+    rows = [f for f in stats.get("facts") or [] if isinstance(f, dict) and f.get("label") and f.get("id")]
+    if not rows or "listed below" not in str(stats.get("text") or ""):
+        return ""
+    def line(f: dict) -> str:
+        return f"- [{f['label']}](#/notes/{f['id']}), {realise.count_noun(int(f.get('count') or 0), 'word')}"
+    return "\n\n" + "\n".join(line(f) for f in rows)
+
+
 def _stats_events(stats: dict, question: str = "") -> list[dict]:
     """A counted answer, its chart, its panel, and its one acting offer
     (decision 70), drawn as a link on its line."""
-    out = [{"type": "answer", "delta": stats["text"]}]
+    out = [{"type": "answer", "delta": stats["text"] + _listed_below(stats)}]
     drawn = _stats_chart(stats)
     if drawn is not None:
         out.append({"type": "chart", "chart": drawn})
@@ -3678,8 +3743,10 @@ def _with_words_only(text: str, prepared: dict, result: dict) -> str:
     parts = text.split("\n\n")
     if not any(composer_digest.is_only_claim(part) for part in parts):
         return text
-    swapped = [composer_digest.only_words_line(part) if composer_digest.is_only_claim(part) else part for part in parts]
-    return "\n\n".join(swapped)
+    #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
+    said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
+    swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
+    return "\n\n".join([*swapped, *said])
 
 
 def _with_lapsed(text: str, current: list, result: dict, req: _StreamRequest) -> str:
@@ -3778,7 +3845,7 @@ def _related_sentence(related: list) -> str:
     kinds = sorted({item["kind"] for item in related})
     return (
         f" There {'are' if plural else 'is'} {len(related)} other {'items' if plural else 'item'}"
-        f" that mention it, in your {' and '.join(f'{k}s' for k in kinds)}."
+        f" that {'mention' if plural else 'mentions'} it, in your {' and '.join(f'{k}s' for k in kinds)}."
     )
 
 
@@ -4367,13 +4434,12 @@ def _diagram_events(req: _StreamRequest, prepared: dict) -> list | None:
     return [{"type": "answer", "delta": result["text"]}] if result else None
 
 
-def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
-    """The events for a notes question the app answers itself (web, nothing
-    found, or composed), or None when a model streams the answer."""
-    if not ollama_running and not req.images_raw:
-        drawn = _diagram_events(req, prepared)
-        if drawn is not None:
-            return drawn
+def _early_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
+    """The events for what is answered before any note is read: a diagram, the
+    web when no note answers, banter."""
+    bare = not ollama_running and not req.images_raw
+    if bare and (drawn := _diagram_events(req, prepared)) is not None:
+        return drawn
     #: A question the chart route draws ("chart my notes by category") is not
     #: a search for the word "chart": the line says what the chart shows, so
     #: the two halves agree (audit 1031 AI7). Only when a chart is asked for
@@ -4382,15 +4448,23 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     charted = _chart_line(req) if _app_answers(req, ollama_running) and not req.images_raw else ""
     if charted:
         return [{"type": "answer", "delta": charted}]
-    if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
+    if _web_first(req, prepared) and bare and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).
         down = _web_events_or_down(req, req.question)
         if down:
             return down
-    if not ollama_running and not req.images_raw and composer_unplaced.jibe(req.question or ""):
+    if bare and composer_unplaced.jibe(req.question or ""):
         #: A jibe is banter even when a note holds the word "mum" (audit 1031 C21).
         return _unplaced_events(req)
+    return None
+
+
+def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
+    """The events for a notes question the app answers itself (web, nothing
+    found, or composed), or None when a model streams the answer."""
+    if (early := _early_events(req, prepared, ollama_running)) is not None:
+        return early
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:

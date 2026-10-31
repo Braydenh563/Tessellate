@@ -302,7 +302,10 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     words = _cap(words)
     if not words or due is None:
         return None
-    return {"intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now)}
+    return {
+        "intent": "reminder", "text": words[:500], "said": said_words[:500], "due_at": due, "time_given": said and _ahead(due, now),
+        "clock_unsaid": bool(parsed and parsed.get("clock_unsaid")),
+    }
 
 
 _MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
@@ -1214,12 +1217,17 @@ def _how_soon(due: datetime, now: datetime) -> str:
     return f"in {about}{'an hour' if hours == 1 else f'{hours} hours'}"
 
 
-def reminder_when(due: datetime, now: datetime) -> str:
+def reminder_when(due: datetime, now: datetime, default_clock: bool = False) -> str:
     """When, said against today (INBOX 734): "today at 5pm", "tomorrow at
-    9", "on Friday at 9", "on 21 October at 9"."""
+    9", "on Friday at 9", "on 21 October at 9". A clock the person did not
+    say is named as the default: "on Tuesday at 9am (the default)" (audit
+    1031 C41)."""
     soon = _how_soon(due, now)
     if soon:
         return f"{soon}, at {_clock(due)}"
+    clock = _clock(due)
+    if default_clock:
+        clock = f"{clock}{'am' if clock.isdigit() or ':' in clock else ''} (the default)"
     days = (due.date() - now.date()).days
     if days == 0:
         day = "today"
@@ -1229,7 +1237,7 @@ def reminder_when(due: datetime, now: datetime) -> str:
         day = f"on {due.strftime('%A')}"
     else:
         day = f"on {due.day} {due.strftime('%B')}" + (f" {due.year}" if due.year != now.year else "")
-    return f"{day} at {_clock(due)}"
+    return f"{day} at {clock}"
 
 
 #: Verbs a reminder opens with, left out when finding the note it is about.
@@ -1294,7 +1302,7 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     from tessellate.core.config import user_now
 
     due = parsed["due_at"]
-    when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None))
+    when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None), bool(parsed.get("clock_unsaid")))
     if parsed.get("no_subject"):
         #: Only a time was said: the words are asked, not stored as "5pm".
         return {"line": f"What should I remind you about {when_said}?"}
@@ -1587,7 +1595,8 @@ def _plan_one(session: Session, parsed: dict, note_ids: list[int] | None) -> dic
         label = f"Move the note {name} to the bin"
     elif intent in ("pin", "unpin"):
         steps = [{"name": "pin_note", "arguments": {"note_id": entry.id, "pinned": intent == "pin"}}]
-        label = f"{'Pin' if intent == 'pin' else 'Unpin'} the note {name}"
+        #: The noun the app shows: its menu says "Add to Favourites" (audit 1031 C41).
+        label = f"Add the note {name} to Favourites" if intent == "pin" else f"Take the note {name} out of Favourites"
     elif intent == "rename":
         new_content = retitled(entry.content or "", parsed["title"])
         steps = [{"name": "edit_note", "arguments": {"note_id": entry.id, "content": new_content}}]

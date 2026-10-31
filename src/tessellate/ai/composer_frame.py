@@ -297,6 +297,12 @@ def _clipped(note: dict) -> str:
     return f"the note that starts “{said}{'…' if len(words) > _CLIP_WORDS else ''}”"
 
 
+def clipped_name(note: dict) -> str:
+    """A title-less note by its first words, for a link's text: "the note that
+    starts “Idea: a podcast about local history”"."""
+    return _clipped(note)
+
+
 #: A verb that makes a short line a sentence, after its first word (the
 #: first is the imperative's or the dropped "I"'s, read by own_title's guards).
 _FINITE = re.compile(r"\s(?:is|are|was|were|has|had|starts|started|begins|began|ends|ended|opens|closes|"
@@ -523,13 +529,51 @@ def _names(ids: list[int], by_id: dict[int, dict], lower) -> str:  # noqa: ANN00
     return ", ".join(said[:-1]) + " and " + said[-1]
 
 
+_SMALL = frozenset({"the", "a", "an", "both", "it", "this", "these", "they", "we", "i", "each", "one"})
+
+
+def reason_said(reason: str) -> str:
+    """A link's reason as one clause: its first word lowered when it is a plain word."""
+    text = " ".join(str(reason or "").split()).strip(" .")
+    first, _, rest = text.partition(" ")
+    return f"{first.lower()} {rest}".strip() if first.lower() in _SMALL else text
+
+
 def _link_said(group: Group, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
     """"You linked the Trains to the Lisbon note.", its own sentence, so the
     group's line does not run on through a third "and" (INBOX 1420)."""
     if not group.links:
         return ""
     a, b = group.links[0]
-    return f"You linked {short_name(by_id[a], lower)} to {short_name(by_id[b], lower)}."
+    reason = (by_id[a].get("link_reasons") or {}).get(b) or (by_id[b].get("link_reasons") or {}).get(a)
+    tail = f": {reason_said(reason)}" if reason else ""
+    return f"You linked {short_name(by_id[a], lower)} to {short_name(by_id[b], lower)}{tail}."
+
+
+def _shared_line(group: Group, theme: str, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
+    """"your gym notes share the tag #gym: A and B": only the notes that carry
+    the tag share it; the others are in the group through a link (audit 1031 C14)."""
+    holders = [i for i in group.ids if group.name in _tag_list(by_id[i])]
+    others = [i for i in group.ids if i not in holders]
+    line = f"{theme} {group.joined_by}: {_names(holders or group.ids, by_id, lower)}"
+    if holders and others:
+        line += f"; {_names(others, by_id, lower)} {'is' if len(others) == 1 else 'are'} linked to {'it' if len(holders) == 1 else 'them'}"
+    return line
+
+
+def _group_clause(group: Group, topic: str, theme: str, by_id: dict[int, dict], lower) -> str:  # noqa: ANN001
+    """The group's line before its capital and stop."""
+    names = _names(group.ids, by_id, lower)
+    joined = "" if group.joined_by == "linked" else group.joined_by
+    tail = f", {joined}" if joined else ""
+    if group.band == "closest" and topic == group.name:
+        #: "Closest to conversation, your conversation notes" said it twice.
+        return f"closest of all are {theme}: {names}{tail}"
+    if group.joined_by.startswith("share "):
+        line = _shared_line(group, theme, by_id, lower)
+    else:
+        line = f"{theme} go together: {names}{tail}"
+    return f"Closest to {topic}, {line}" if group.band == "closest" else line
 
 
 def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str:  # noqa: ANN001
@@ -537,27 +581,11 @@ def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str
     together: "Your gym notes go together: the Gym Routine Overview and
     “go to the gym at 9pm on Tuesday”, both tagged #gym."."""
     by_id = {n["id"]: n for n in notes}
-    names = _names(group.ids, by_id, lower)
     if group.band == "loose":
-        return f"More loosely related to {topic}: {names}."
+        return f"More loosely related to {topic}: {_names(group.ids, by_id, lower)}."
     linked = _link_said(group, by_id, lower)
     theme = f"your {group.name} notes" if group.name else "two of your notes" if len(group.ids) == 2 else "some of your notes"
-    joined = "" if group.joined_by == "linked" else group.joined_by
-    if group.band == "closest" and topic == group.name:
-        #: "Closest to conversation, your conversation notes" said it twice.
-        line = f"closest of all are {theme}: {names}" + (f", {joined}" if joined else "")
-    elif group.joined_by.startswith("share "):
-        #: Only the notes that carry the tag share it; the others are in the
-        #: group through a link (audit 1031 C14).
-        holders = [i for i in group.ids if group.name in _tag_list(by_id[i])]
-        others = [i for i in group.ids if i not in holders]
-        line = f"{theme} {group.joined_by}: {_names(holders or group.ids, by_id, lower)}"
-        if holders and others:
-            line += f"; {_names(others, by_id, lower)} {'is' if len(others) == 1 else 'are'} linked to {'it' if len(holders) == 1 else 'them'}"
-    else:
-        line = f"{theme} go together: {names}" + (f", {joined}" if joined else "")
-    if group.band == "closest" and topic != group.name:
-        line = f"Closest to {topic}, {line}"
+    line = _group_clause(group, topic, theme, by_id, lower)
     line = line[:1].upper() + line[1:] + "."
     return f"{line} {linked}" if linked else line
 

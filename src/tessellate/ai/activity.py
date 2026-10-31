@@ -45,6 +45,8 @@ _OWN = re.compile(r"\b(?:i|i've|i'd|me|my|we|our)\b", re.I)
 #: Said of the past: "what do I have on this week" asks what is coming, not
 #: what was done, so a bare present "do" is not a recap.
 _PAST = re.compile(r"\b(?:did|was|were|been)\b|\b\w+ed\b|\b(?:made|done|built|threw|thrown|got|activity|history)\b", re.I)
+#: "what happened last week" has no "I" and asks the same: what the notebook saw happen (audit 1031 C27).
+_HAPPENED = re.compile(r"^(?:so |ok |okay )?(?:what|whatever) (?:has |had )?(?:happened|went on|got done)\b", re.I)
 _LISTED = re.compile(r"\b(?:notes?|entries|entry)\b", re.I)
 
 #: Words that are neither a subject nor a doing: the question's frame.
@@ -153,7 +155,7 @@ def read(question: str, today: date) -> Asked | None:
     #: "What is on 14 August" with the day gone asks what that day held, in the
     #: present tense and with no "I": the plan's one date reader says so.
     back = composer_plan.lookback(text, today)
-    if not (back or _OWN.search(text)) or _is_dated_listing(text, back):
+    if not (back or _OWN.search(text) or _HAPPENED.match(text)) or _is_dated_listing(text, back):
         return None
     window = _window(text, today)
     if window is None or not (back or _PAST.search(text)):

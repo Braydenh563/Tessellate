@@ -305,8 +305,9 @@ def say(ability: str, mood: Mood, **facts: object) -> str:
 def span_phrase(span: str) -> str:
     """A time span as an adverbial phrase, carrying its preposition: "the last
     7 days" takes "in", "20 October" takes "on", "this week", "yesterday" and
-    "in october" stand as they are (`recognise.adverbial`)."""
-    return recognise.adverbial(span)
+    "in october" stand as they are (`recognise.adverbial`), with a month or a
+    weekday typed small given its capital (audit 1031 C35)."""
+    return recognise.proper_days(recognise.adverbial(span))
 
 
 def sentence_case(text: str) -> str:

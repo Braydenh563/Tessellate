@@ -37,9 +37,9 @@ def test_two_sides_are_answered_side_by_side(notebook, chat, frame, side):  # no
     a, b, note_a, note_b = side
     go = notebook(NOTES)
     text = go(frame.format(a=a, b=b), chat=chat)
-    # Each side under its own heading, each with its own note.
-    assert f"**{a}**" in text.replace(f"**{a.lower()}**", f"**{a}**"), text
-    assert f"**{b}**" in text.replace(f"**{b.lower()}**", f"**{b}**"), text
+    # Each side under its own heading (it starts its line, so it has a capital: audit 1031 C24), each with its own note.
+    assert f"**{a}**".lower() in text.lower(), text
+    assert f"**{b}**".lower() in text.lower(), text
     assert text.index(note_a) < text.index(note_b), text
     # Never an overview whose topic is the question's own words.
     assert "notes about compare" not in text and "about compare" not in text, text

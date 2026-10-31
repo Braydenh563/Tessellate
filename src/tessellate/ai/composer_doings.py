@@ -123,6 +123,23 @@ def _kept_under(view, forms: frozenset[str]) -> bool:  # noqa: ANN001
     return bool(forms & head)
 
 
+def _reads_done(s, forms: frozenset[str], logged: bool) -> tuple[bool, bool]:  # noqa: ANN001
+    """(says, logs): the line tells the doing in the past, or is a dated log line of it."""
+    words = set(re.findall(r"[a-z]+", s.text.lower()))
+    #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
+    says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
+    #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
+    logs = bool(logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None)
+    return says, logs
+
+
+def _done_of(view, s, forms: frozenset[str], says: bool, logs: bool, day: date) -> Done:  # noqa: ANN001
+    """The doing a line says, on `day`."""
+    times = _times_in(s.text, forms) if says else 1
+    own = day != view.written or logs or recognise.says_a_recent_day(s.text)
+    return Done(day, view, s, _km(s.text), times, own)
+
+
 def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> list[Done]:
     """Every line that says the doing was done, oldest first: a line told in
     the past that names the verb, and a dated line of a note kept as a log of
@@ -132,22 +149,16 @@ def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> l
     for view in views:
         logged = _kept_under(view, forms)
         for s in view.sentences:
-            words = set(re.findall(r"[a-z]+", s.text.lower()))
-            #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
-            says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
-            #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
-            logs = logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None
+            says, logs = _reads_done(s, forms, logged)
             if not (says or logs) or not _names(s.text, obj):
                 continue
             day = _day_of(view, s, today)
             if day is None or day > today:
                 continue
-            times = _times_in(s.text, forms) if says else 1
-            own = day != view.written or bool(logs) or recognise.says_a_recent_day(s.text)
-            key = (day, 0 if times == 1 else s.start)
-            if times == 1 and any(k[0] == day for k in found):
+            done = _done_of(view, s, forms, says, logs, day)
+            if done.times == 1 and any(k[0] == day for k in found):
                 continue
-            found[key] = Done(day, view, s, _km(s.text), times, own)
+            found[(day, 0 if done.times == 1 else s.start)] = done
     return sorted(found.values(), key=lambda d: d.day)
 
 
@@ -208,6 +219,40 @@ def asked(text: str) -> tuple[str, str, str] | None:
         if (m := pattern.match(q)) and not _ABOUT.match(m.group("v")):
             return shape, m.group("v"), m.group("r")
     return None
+
+
+#: "when did I start running", "when did I first run": the earliest line that says it was done.
+_FIRST = re.compile(r"^when did i (?:first )?(?:(?:start|begin|began|started)(?: to)? (?:first )?)?(?P<v>[a-z]+)(?P<r>.*)$")
+_STARTING = re.compile(r"^when did i (?:first )?(?:start|begin|began|started)\b")
+
+
+def _bare(verb: str, started: bool) -> str:
+    """"running" is "run" after "start"; a bare verb stays as it is."""
+    if not (started and verb.endswith("ing") and len(verb) > 5):
+        return verb
+    stem = verb[:-3]
+    return stem[:-1] if len(stem) > 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou" else stem
+
+
+def first(text: str, views: list, today: date) -> tuple[str, Done] | None:
+    """(the line, the doing) for "when did I start running": the oldest day a
+    line says it was done, said as that day. None for a question of another
+    shape or a doing no line says."""
+    q = " ".join(text.lower().replace("?", " ").split())
+    found = _FIRST.match(q)
+    if not found or not (_STARTING.match(q) or " first " in f" {q} ") or _ABOUT.match(found.group("v")):
+        return None
+    began = bool(_STARTING.match(q))
+    verb = _bare(found.group("v"), began)
+    forms = _forms(verb)[2] | _forms(verb + "e")[2]
+    done = doings(views, forms, _object(found.group("r")), today)
+    if not done:
+        return None
+    oldest = done[0]
+    said = f"{found.group('v')}{found.group('r')}".rstrip()
+    did = f"started {'to ' if ' to ' in q[:28] else ''}{said}" if began else f"first {_forms(verb)[1]}{found.group('r')}".rstrip()
+    km = f" ({oldest.km:g} km)" if oldest.km else ""
+    return f"You {did} on {oldest.day.day} {oldest.day:%B}{km}.", oldest
 
 
 def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001

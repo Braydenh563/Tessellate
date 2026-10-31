@@ -931,6 +931,9 @@ def parse_reminder_text(
         "source": "rule",
     }
     _repeat_and_alert(parsed, repeat, spans)
+    if repeat is None and spans and not any(s.kind in ("time", "datetime") for s in spans):
+        #: A day with no clock: the time is the default, and said as that.
+        parsed["clock_unsaid"] = True
     return parsed
 
 

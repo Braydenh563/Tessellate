@@ -297,6 +297,8 @@ _OVERVIEW_PAIRS: dict[str, dict[str, list[str]]] = {
 }
 _FAMILIES.update({
     "ov_also": {"natural": ["Other notes", "The rest"], "professional": ["Other entries", "Remaining entries"]},
+    #: The one left over, said as one (never "There are one more besides": audit 1031 C36).
+    "ov_one_more": {"natural": ["There is one more besides.", "And one more not shown here."], "professional": ["One further entry is not shown.", "One entry is not shown here."]},
     "ov_reads": {"natural": [", which reads ", ", with the words "], "professional": [", reading ", ", which reads "]},
 })
 _PAIRS.update(_OVERVIEW_PAIRS)
@@ -314,6 +316,7 @@ OVERVIEW_PHRASES = {
     "ov_shared_end": " of these notes.",
     "ov_more_a": "Plus ",
     "ov_more_b": " more.",
+    "ov_one_more": "Plus one more.",
     "ov_filed": " are filed under it",
     "ov_filed_one": " is filed under it",
     "ov_also": "Also",
@@ -493,7 +496,7 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                             'Elsewhere',
                             'In another place',
                             'In a different note',
-'Meanwhile',
+'On a different matter',
 ],
                 'professional': ['In a separate context',
                                  'Independently',
@@ -519,7 +522,7 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
  'another_note': {'natural': ['On another note',
                               'In another entry',
                               'From a different note',
-'Switching to another note',
+'In a different entry',
 'According to another record',
 'As captured in another note'],
                   'professional': ['Addressing a distinct topic',
@@ -944,6 +947,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(r"\b(?:similarities|contrast) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
     #: "how are Deep Work and The Overstory different" (audit 1029 C36).
     re.compile(r"^(?:how|in what ways?) (?:are|were|do|did) (?P<a>.+?) and (?P<b>.+?) (?:different|differ|alike|similar|the same)[?.!]*$", re.I),
+    #: "what changed between the old plan and the new one", "what is different between A and B" (audit 1031 C24).
+    re.compile(r"^what(?:'s| is| has| have)? (?:changed|different|the change|the changes) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
 )
 
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
@@ -953,7 +958,8 @@ COMPARE_SHAPE_EXTRA = (
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
     rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
     r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
-    r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$"
+    r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$|"
+    r"^what(?:'s| is| has| have)? (?:changed|different|the change|the changes) between .+? and "
 )
 
 #: Comparison words are asking words: dropped from the subject, so "is Lisbon

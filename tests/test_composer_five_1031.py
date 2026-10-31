@@ -142,7 +142,8 @@ def test_format_tails_and_lists_meet(question, sides):
 def test_the_answer_never_says_the_format_as_part_of_a_side(ask, question):
     said = ask(question)
     assert re.search(r"(?i)table|as a list|side by side|for me", said) is None, said
-    assert "**Lisbon trip**" in said and "**dentist**" in said, said
+    #: A heading starts its line, so it takes a capital (audit 1031 C24); the test is about the format word, not the case.
+    assert "**lisbon trip**" in said.lower() and "**dentist**" in said.lower(), said
 
 
 @pytest.mark.parametrize("name", ["Table tennis", "List of lists", "The summary page", "Chart of accounts"])

@@ -424,29 +424,35 @@ def _quote_list(words: list[str]) -> str:
     return ", ".join(quoted[:-1]) + " and " + quoted[-1]
 
 
+def _lexicon_line(candidate: Candidate) -> str:
+    """The reason when a lexicon topic decided it."""
+    topic = candidate.lexicon[0]
+    said = candidate.topics.get(topic) or []
+    mentions = f"It mentions {_quote_list(said[:2])} ({topic})" if said else f"It reads as {topic}"
+    return f"{mentions}, which you file under {candidate.name}."
+
+
+def _phrases_line(candidate: Candidate, phrases: list[str], topics: list[str], joins: str) -> str:
+    """"It mentions “squat” (Fitness), like the 9 notes in Gym." """
+    about = _quote_list(phrases[:3])
+    #: A topic named by the very word quoted ("cooking (Cooking)") adds nothing, and
+    #: read beside a category of another name it looked like a contradiction (audit 1031 N7).
+    if {t.casefold() for t in topics[:2]} != {p.casefold() for p in phrases[:3]}:
+        about += f" ({', '.join(topics[:2])})"
+    return f"It mentions {about}, like {joins}."
+
+
 def _why_line(candidate: Candidate) -> str:
     """"It mentions “squat” and “deadlift” (Fitness), like the 9 notes in
     Gym." The words shared, the notes it joins, the measure that decided."""
     joins = f"the {candidate.notes} note{'s' if candidate.notes != 1 else ''} in {candidate.name}"
     if candidate.lexicon:
-        topic = candidate.lexicon[0]
-        said = candidate.topics.get(topic) or []
-        mentions = f"It mentions {_quote_list(said[:2])} ({topic})" if said else f"It reads as {topic}"
-        return f"{mentions}, which you file under {candidate.name}."
+        return _lexicon_line(candidate)
     phrases: list[str] = []
-    topics: list[str] = []
-    for topic, said in candidate.topics.items():
-        topics.append(topic)
+    for said in candidate.topics.values():
         phrases.extend(p for p in said if p not in phrases)
-    if candidate.named and not phrases and not candidate.words:
-        return f"It says {candidate.name}."
     if phrases:
-        about = _quote_list(phrases[:3])
-        #: A topic named by the very word quoted ("cooking (Cooking)") adds nothing, and
-        #: read beside a category of another name it looked like a contradiction (audit 1031 N7).
-        if {t.casefold() for t in topics[:2]} != {p.casefold() for p in phrases[:3]}:
-            about += f" ({', '.join(topics[:2])})"
-        return f"It mentions {about}, like {joins}."
+        return _phrases_line(candidate, phrases, list(candidate.topics), joins)
     if candidate.words:
         return f"It shares {_quote_list(candidate.words[:3])} with {joins}."
     return f"It says {candidate.name}." if candidate.named else f"It reads like {joins}."

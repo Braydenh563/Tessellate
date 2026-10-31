@@ -312,9 +312,21 @@ def which_one(question: str, views: list, today: date, stem) -> Versus | None:  
     return _versus(key, _ranked(kind, named, today, low))
 
 
+#: The most notes a newest-or-oldest lead names.
+_LEAD_SIDES = 3
+
+
+def _lead_rows(versus: Versus) -> list[Row]:
+    """The rows the lead sentence names: all of them, except that the newest or
+    the oldest of a topic's notes is said against the next two at most (a
+    fourth day is a run-on "and ... and ..."; the others are the bullets
+    under it; audit 1031 C37)."""
+    return versus.rows[:_LEAD_SIDES] if versus.key in ("is_newest", "is_oldest") else versus.rows
+
+
 def said(versus: Versus, name) -> str:  # noqa: ANN001
     """The lead as one sentence, each note named by `name(view)`."""
-    first, *rest = versus.rows
+    first, *rest = _lead_rows(versus)
     text = f"{name(first.view)}{SAID[versus.key]}{first.shown}"
     for i, row in enumerate(rest):
         text += (SAID["figure_against"] if not i else " and ") + f"{row.shown}{SAID['figure_for']}{name(row.view)}"
@@ -324,7 +336,7 @@ def said(versus: Versus, name) -> str:  # noqa: ANN001
 def write(out, versus: Versus) -> None:  # noqa: ANN001
     """The lead in a composer answer: the winner, what it is, then each other
     with its figure or day."""
-    first, *rest = versus.rows
+    first, *rest = _lead_rows(versus)
     out.name(first.view, cap=True).t(versus.key).m(first.shown)
     for i, row in enumerate(rest):
         out.t("and" if i else "figure_against").m(row.shown).t("figure_for").name(row.view)

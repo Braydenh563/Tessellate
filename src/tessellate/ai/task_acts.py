@@ -322,20 +322,55 @@ _ON_NOTE = re.compile(r"^(?P<item>\S+(?: \S+)*?) (?:on|in|from|off) (?:my|the) (
 def pick(session: Session, parsed: dict, title) -> tuple[dict | None, str]:  # noqa: ANN001
     """(the one task named, ""), or (None, what to say instead). A name with a
     note after it ("charger on the Lisbon packing list") is the item on that
-    note, split before the lookup (audit 1029 C43)."""
+    note, split before the lookup (audit 1029 C43). A name only a ticked line
+    carries is said to be ticked, not missing (audit 1031 C41)."""
     about = str(parsed.get("about") or "")
     items = _candidates(session, parsed.get("kind"), title)
     split = _ON_NOTE.match(" ".join(about.split()))
-    if split and not _match(items, about)[0]:
-        note = _stems(split.group("note"))
-        if note:
-            on_note = [i for i in items if i["kind"] == "checklist" and note <= _stems(i["where"])]
-            if on_note:
-                found, say = _match(on_note, split.group("item"))
-                if found or say:
-                    return found, say
-    found, say = _match(items, about, parsed.get("kind"))
+    item, note = (split.group("item"), split.group("note")) if split else (about, "")
+    found, say = _on_note(items, about, item, note) if split else (None, "")
+    if not (found or say):
+        found, say = _match(items, about, parsed.get("kind"))
+    if found is None and say.startswith("I found no") and parsed.get("kind") != "reminder":
+        say = _already_ticked(session, item, note, title) or say
     return found, say
+
+
+def _on_note(items: list[dict], about: str, item: str, note: str) -> tuple[dict | None, str]:
+    """The item on the note named, when the whole phrase is no task's name."""
+    wanted = _stems(note)
+    if not wanted or _match(items, about)[0]:
+        return None, ""
+    on_note = [i for i in items if i["kind"] == "checklist" and wanted <= _stems(i["where"])]
+    return _match(on_note, item) if on_note else (None, "")
+
+
+_TICKED = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[[xX]\][ \t]+(?P<item>\S.*?)[ \t]*$", re.MULTILINE)
+
+
+def _already_ticked(session: Session, about: str, on_note: str, title) -> str:  # noqa: ANN001
+    """"“Charger” is already ticked off (in Lisbon packing list).", or "" when
+    no ticked line carries the name: a ticked item is not "not found"
+    (audit 1031 C41)."""
+    from tessellate.core.database import Entry
+
+    wanted, note = _stems(about), _stems(on_note)
+    if not wanted:
+        return ""
+    notes = session.scalars(
+        select(Entry).where(
+            Entry.content.like("%[x]%") | Entry.content.like("%[X]%"), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None),
+            Entry.is_private.is_(False),
+        ).limit(500)
+    ).all()
+    for entry in notes:
+        where = title(entry)
+        if note and not note <= _stems(where):
+            continue
+        for line in _TICKED.finditer(entry.content or ""):
+            if wanted <= _stems(line.group("item")):
+                return f"“{line.group('item')}” is already ticked off (in {where})."
+    return ""
 
 
 def _match(items: list[dict], about: str, kind: str | None = None) -> tuple[dict | None, str]:

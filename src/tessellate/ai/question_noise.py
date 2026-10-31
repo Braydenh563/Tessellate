@@ -2105,6 +2105,20 @@ def _social_phrases(text: str) -> tuple[list[str], str]:
     return kinds, text
 
 
+_SOCIAL_RANK = ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad")
+
+
+def _word_kinds(words: list[str]) -> list[str] | None:
+    """The kind each word says; None when one is not a social word."""
+    kinds = []
+    for word in words:
+        kind = "laugh" if _LAUGH.match(word) else SOCIAL.get(word)
+        if kind is None:
+            return None
+        kinds.append(kind)
+    return kinds
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
@@ -2125,18 +2139,11 @@ def social_kind(message: str) -> str | None:
     words = [w for w in text.split() if w and w not in _SOCIAL_FILLER]
     if not words and not kinds:
         return None
-    for word in words:
-        if _LAUGH.match(word):
-            kinds.append("laugh")
-        elif word in SOCIAL:
-            kinds.append(SOCIAL[word])
-        else:
-            return None
+    spoken = _word_kinds(words)
+    if spoken is None:
+        return None
     #: "ok thanks" is thanks; "lol ok" is laughter: the most telling part.
-    for kind in ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad"):
-        if kind in kinds:
-            return kind
-    return "ack"
+    return next((k for k in _SOCIAL_RANK if k in kinds + spoken), "ack")
 
 
 # --- 2. typo repair ------------------------------------------------------------
