@@ -35,6 +35,15 @@ with its owner named in the entry.
 ## Open items
 
 
+1505. **Owner, 2026-11-01 (panel geometry memory):** "can you make the fact that panel positions and sizing is remembered across sessions or even after opening and closing that panel is togglable or not??" Recommendation taken: one Settings switch, "Remember where panels sit", on by default; off forgets on close and on restart and clears what is stored. Agent ui-1101.
+
+
+1504. **Owner, 2026-11-01 (screenshot, templates popup):** "I cant drag the templates popup window to the left past the sidebar". "Start from a template" stops at the notes sidebar's right edge; every dragged panel should be bounded by the window, not the content column. Agent ui-1101.
+
+
+1503. **Owner, 2026-11-01 (screenshot, Activity panel):** "the dark rectangle behind the agent runs popup panel header doesnt look professional and needs fixing". The Activity header ("Activity", help, more, sweep, terminal, close) sits on a darker inset block inside the panel. Class fix: no popup header draws its own block. Agent ui-1101.
+
+
 1502. **Agent rank3-1031, 2026-10-31 (audit 1031 AR6, row 35, not built):** jobs still have six homes (`core/jobs.py`, `jobstore.py`, `jobruns.py`, `bgtasks.py`, `background.py`, `filejobs.py`: 2,744 lines), and one `Job` type with lane, owner, cancel token and run record would replace them. Left because it is not safe in one pass: `jobruns.Run` is a process ledger, `jobstore` is the durable table that survives a restart, the pool's `_Job` is the in-memory queue with its dedupe keys, and 33 test files read all three through their own names. Recommendation taken: do it in three steps, each green on its own. (1) `jobruns.lane_of` (built, row 34) becomes the lane field on `_Job` and the `jobs` table. (2) `bgtasks` and `filejobs` become callers of `jobs.enqueue` with a `kind`, then are deleted. (3) `jobruns.Run` is the run record of a `_Job` and `background.py` goes. Opus designs the `Job` fields, Sonnet builds one step at a time.
 
 
