@@ -494,8 +494,14 @@ def timeline(
     # holds: it is the overview a reader drags to get somewhere, so a strip
     # drawn from one page would be a map of the part you can already see. Two
     # columns and no content, so it stays cheap as the notebook grows.
+    #: **Only on the first page.** The strip is drawn once, from the answer with no
+    #: cursor; a later page's `density` was read by nobody (timeline.js `timelineLoadMore`
+    #: and the calendar's fetch both drop it), yet cost the whole range's grouped count
+    #: and the document and reminder scans again on every page.
     density = (
-        _density(session, query, mention_at) if ("note" in kinds or "board" in kinds) else {}
+        _density(session, query, mention_at)
+        if not cursor and ("note" in kinds or "board" in kinds)
+        else {}
     )
 
     #: **Where the last page stopped**, one mark per source rather than an
@@ -556,7 +562,7 @@ def timeline(
     #: kind the feed is showing rather than only the notes: a week spent
     #: writing one long document would otherwise read as an empty week.
     #: Date-only queries, no content, the same shape `_density` itself uses.
-    if "document" in kinds:
+    if "document" in kinds and not cursor:
         for (created,) in session.execute(
             in_range(
                 select(Document.created_at).where(Document.archived_at.is_(None)),
@@ -565,7 +571,7 @@ def timeline(
         ).all():
             day = created.date().isoformat()
             density[day] = density.get(day, 0) + 1
-    if "reminder" in kinds:
+    if "reminder" in kinds and not cursor:
         for (due,) in session.execute(
             in_range(select(Reminder.due_at), Reminder.due_at)
         ).all():

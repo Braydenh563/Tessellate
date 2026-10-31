@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7024, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7726, test files 1652, tests 14298, plan headings 990.
+Counts: frontend functions 7024, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7726, test files 1652, tests 14299, plan headings 990.
 
 ## Frontend functions (7024)
 
@@ -18444,25 +18444,25 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 |---|---|
 | `_MeetingAt` | src/tessellate/api/routes_timeline.py:277 |
 | `_also_on` | src/tessellate/api/routes_timeline.py:267 |
-| `_bands` | src/tessellate/api/routes_timeline.py:771 |
+| `_bands` | src/tessellate/api/routes_timeline.py:777 |
 | `_bucket_start` | src/tessellate/api/routes_timeline.py:166 |
 | `_clip` | src/tessellate/api/routes_timeline.py:71 |
 | `_decode_cursor` | src/tessellate/api/routes_timeline.py:80 |
 | `_decode_marks` | src/tessellate/api/routes_timeline.py:136 |
-| `_density` | src/tessellate/api/routes_timeline.py:749 |
+| `_density` | src/tessellate/api/routes_timeline.py:755 |
 | `_encode_marks` | src/tessellate/api/routes_timeline.py:119 |
-| `_entries_in_window` | src/tessellate/api/routes_timeline.py:721 |
-| `_first_line` | src/tessellate/api/routes_timeline.py:653 |
+| `_entries_in_window` | src/tessellate/api/routes_timeline.py:727 |
+| `_first_line` | src/tessellate/api/routes_timeline.py:659 |
 | `_meeting_dates` | src/tessellate/api/routes_timeline.py:288 |
-| `_naive` | src/tessellate/api/routes_timeline.py:664 |
+| `_naive` | src/tessellate/api/routes_timeline.py:670 |
 | `_older_than` | src/tessellate/api/routes_timeline.py:158 |
 | `_place_documents` | src/tessellate/api/routes_timeline.py:317 |
 | `_place_notes` | src/tessellate/api/routes_timeline.py:177 |
 | `_place_reminders` | src/tessellate/api/routes_timeline.py:353 |
-| `_ranged_entries` | src/tessellate/api/routes_timeline.py:708 |
+| `_ranged_entries` | src/tessellate/api/routes_timeline.py:714 |
 | `_requested_kinds` | src/tessellate/api/routes_timeline.py:98 |
-| `_thread_bands` | src/tessellate/api/routes_timeline.py:800 |
-| `_with_placement` | src/tessellate/api/routes_timeline.py:672 |
+| `_thread_bands` | src/tessellate/api/routes_timeline.py:806 |
+| `_with_placement` | src/tessellate/api/routes_timeline.py:678 |
 | `timeline` | src/tessellate/api/routes_timeline.py:390 |
 
 ### src/tessellate/api/routes_translate.py (2)
@@ -21334,7 +21334,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14298)
+## Tests (14299)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22755,7 +22755,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_tidy_ui.py | 13 |
 | tests/test_tie_chip_b9.py | 5 |
 | tests/test_time_travel_spec.py | 9 |
-| tests/test_timeline.py | 32 |
+| tests/test_timeline.py | 33 |
 | tests/test_timeline_auto_scale.py | 3 |
 | tests/test_timeline_cal_add.py | 4 |
 | tests/test_timeline_cal_span_glide.py | 1 |
