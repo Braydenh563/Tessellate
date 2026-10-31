@@ -406,7 +406,7 @@ def test_the_filing_prompt_carries_the_corrections_for_that_category(app_state, 
     prompt = librarian.filing_prompt(session, "call the plumber", ["House", "Work"])
     assert "ring the landlord back" in prompt
     assert "moved from Work to House" in prompt
-    assert prompt.index("corrected") < prompt.index("Note: call the plumber"), (
+    assert prompt.index("corrected") < prompt.index("Note: <<<data note>>>\ncall the plumber"), (
         "the corrections come before the note, the same placement the contract "
         "nudge uses and for the same reason"
     )

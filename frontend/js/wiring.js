@@ -1461,6 +1461,12 @@ async function toggleWebSearch({ openFirst = false } = {}) {
     return;
   }
   const next = !(prefsCache && prefsCache.web_search_enabled);
+  //: The Web button is the one online switch in the dock, so its first turn-on asks once (AI5).
+  if (next && openFirst && prefs.get("web-search-asked", null) !== "1") {
+    const asked = await confirmDialog("Turn on web search?\n\nOnly your search words leave this computer, never your notes. You can turn it off in Settings, Web search.", { confirmLabel: "Turn on", danger: false, checkbox: { label: "Don't ask again" } });
+    if (!asked.ok) return;
+    if (asked.checked) prefs.set("web-search-asked", "1");
+  }
   prefsCache = await apiJson("/preferences", {
     method: "PUT",
     body: JSON.stringify({ web_search_enabled: next }),
@@ -1554,10 +1560,13 @@ $("web-reader-ask").addEventListener("click", () => {
 $("web-reader-cite").addEventListener("click", () => {
   if (webReaderPage) citeWebPage(webReaderPage);
 });
-$("web-reader-copy").addEventListener("click", (e) => {
-  if (webReaderPage) copyWebLink(webReaderPage.url, e.currentTarget);
+$("web-reader-copy").addEventListener("click", async (e) => {
+  const button = e.currentTarget;
+  await ensureModule("webClip");
+  if (webReaderPage) copyWebLink(webReaderPage.url, button);
 });
-$("web-reader-open").addEventListener("click", () => {
+$("web-reader-open").addEventListener("click", async () => {
+  await ensureModule("webClip");
   if (webReaderPage) openWebPageExternally(webReaderPage.url);
 });
 $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));

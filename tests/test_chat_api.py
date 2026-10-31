@@ -84,7 +84,9 @@ def test_chat_with_ollama_down_still_returns_raw_results(ai_client, fake_ollama)
     response = ai_client.post("/chat", json={"question": "any jokes?"})
     body = response.json()
 
-    assert body["ai_response"] == librarian.OFFLINE_MESSAGE
+    #: The answer is composed from the notes under a line that says why (audit
+    #: 1031 AI6); it used to be an apology over the same results.
+    assert body["ai_response"].startswith("The AI is not running")
     assert len(body["raw_results"]) == 1  # raw results survive an AI outage
 
 
@@ -97,7 +99,7 @@ def test_capture_works_with_zero_ai(client):
     body = response.json()
     assert body["search_mode"] == "keyword"  # no embeddings → keyword fallback
     assert len(body["raw_results"]) == 1
-    assert body["ai_response"] == librarian.OFFLINE_MESSAGE
+    assert body["ai_response"].startswith("The AI is not running")
 
 
 # --- chat suggestions ----------------------------------------------------------

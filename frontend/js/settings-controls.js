@@ -2588,10 +2588,19 @@ function pickJsonFile(inputId, apply) {
     const file = input.files[0];
     input.value = "";
     if (!file) return;
+    let data;
     try {
-      apply(JSON.parse(await file.text()));
+      data = JSON.parse(await file.text());
     } catch {
-      toast("That file isn't valid JSON.", "info");
+      return toast("That file isn't valid JSON.", "info");
+    }
+    //: The apply step is awaited: a refused save (a prompt over its limit)
+    //: used to be an unhandled rejection, so an import said nothing at all
+    //: (audit 1031 HR12).
+    try {
+      await apply(data);
+    } catch (error) {
+      toast(error?.message || "Couldn't import that file.", "info");
     }
   };
   input.click();
@@ -3091,6 +3100,9 @@ async function openTaskLog(item) {
   settingsLook.logFilterFromRun = !!item.run_id;
   filter.value = item.run_id ? `[${item.run_id}]` : /\(([^)]+)\)/.exec(item.label || "")?.[1] || item.name || item.label || "";
   filter.dispatchEvent(new Event("input"));
+  //: The button that sent us here is in the pane just left: the keyboard goes
+  //: to the filter, which is what the pane now shows (audit 1031 HR21).
+  filter.focus({ preventScroll: true });
 }
 
 $("logs-empty-clear").addEventListener("click", () => {

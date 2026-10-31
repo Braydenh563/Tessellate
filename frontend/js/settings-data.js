@@ -884,9 +884,30 @@ function settingName(key) {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
+//: A list setting says what was added or taken out, not how long it was
+//: ("Personas: 0 items to 1 item", HR17). "" when it is not one clear act.
+function settingListWords(change) {
+  const old = Array.isArray(change.old) ? change.old : change.old == null ? [] : null;
+  const next = Array.isArray(change.new) ? change.new : change.new == null ? [] : null;
+  if (!old || !next) return "";
+  const nameOf = (item) => String(item?.name ?? item?.title ?? item).replace(/[_-]+/g, " ");
+  const keyOf = (item) => (item && typeof item === "object" ? String(item.name ?? JSON.stringify(item)) : String(item));
+  const had = new Set(old.map(keyOf));
+  const has = new Set(next.map(keyOf));
+  const added = next.filter((item) => !had.has(keyOf(item)));
+  const removed = old.filter((item) => !has.has(keyOf(item)));
+  if (added.length + removed.length !== 1) return "";
+  const [item] = added.length ? added : removed;
+  const where = settingName(change.key).toLowerCase();
+  if (change.key === "disabled_tools") return `${added.length ? "Turned off" : "Turned on"} ${nameOf(item)}`;
+  return `${added.length ? "Added" : "Removed"} ${nameOf(item)} ${added.length ? "to" : "from"} ${where}`;
+}
+
 function settingChangeWords(change) {
   if (change.words) return change.words;
   const [first] = change.changes;
+  const said = change.changes.length === 1 ? settingListWords(first) : "";
+  if (said) return said;
   const more = change.changes.length > 1 ? ` and ${change.changes.length - 1} more` : "";
   return `${settingName(first.key)}: ${settingShown(first.old)} to ${settingShown(first.new)}${more}`;
 }

@@ -871,7 +871,7 @@ header#top-bar select,
   margin-top: var(--space-2);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
-  opacity: 0.75;
+  color: var(--muted);
 }
 
 .msg-meta:empty {
@@ -2206,8 +2206,10 @@ header#top-bar select,
   flex-basis: 100%;
 }
 
-/* A grounding chip is a control: the band's floor, not the chip's 21px. */
-.answer-grounding .result-reason-chip {
+/* A grounding chip is a control: the band's floor, not the chip's 21px. The
+   history rows share it (audit 1031 AI15). */
+.answer-grounding .result-reason-chip,
+#conversation-list li {
   min-height: var(--target-min);
 }
 

@@ -800,6 +800,7 @@ function nameMarkBuddyVisit(host) {
   const watch = new MutationObserver(mirror);
   nmb.visit = { home: buddy.parentNode, next: buddy.nextSibling, watch, sway, pose: nmb.pose, legs: nmb.legs, at: Date.now() };
   buddy.classList.remove("nmb-dodge");
+  buddy.removeAttribute("inert");
   //: **Free of its perch in there** (INBOX 619, the owner: "in the enlarged
   //: preview atlas is still hanging, it should be slightly separate from the
   //: companion but still have the same life"). It came in holding the pose

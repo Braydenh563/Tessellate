@@ -3870,6 +3870,9 @@ function nameMarkBuddyDodge() {
   const me = face.getBoundingClientRect();
   const over = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
   buddy.classList.toggle("nmb-dodge", over);
+  //: Faded to a ghost, it is not a place the keyboard may stop either: a
+  //: face nobody can see took Tab and left focus on nothing (AI3).
+  buddy.toggleAttribute("inert", over);
   if (!over) return;
   if (!nmb.pinned) queueNameMarkBuddyCheck();
   //: Looked at again while it is faded, so it fades back as soon as it has
@@ -8647,7 +8650,9 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     //: animates inside a drawing and steps it by hand).
     if (!(typeof CSSAnimation === "function" && anim instanceof CSSAnimation) || anim.playState === "finished" || anim.playState === "idle") continue;
     const el = anim.effect && anim.effect.target;
-    if (!el) continue;
+    //: Not the rings' planets (audit HR1: a third of the animations read
+    //: here): their loops run through every mood and act, never handed back.
+    if (!el || el.closest(".atl-orbits")) continue;
     const props = new Set();
     for (const frame of anim.effect.getKeyframes()) for (const key of Object.keys(frame)) if (NMB_BLEND_PROPS.includes(key)) props.add(key);
     if (!props.size) continue;
@@ -9928,6 +9933,14 @@ function nameMarkBuddyBuild() {
       event.preventDefault();
       nameMarkBuddyMenu(buddy);
     }
+    //: The drag has a keyboard twin (WCAG 2.5.7): an arrow moves it 16px,
+    //: with Shift 64, and the place is kept like a drop's (AI17).
+    const step = NMB_NUDGE[event.key];
+    if (step && !nmb.visit && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      const far = event.shiftKey ? 64 : 16;
+      nameMarkBuddyNudge(buddy, step[0] * far, step[1] * far);
+    }
   });
   let hold = 0;
   face.addEventListener("pointerdown", (event) => {
@@ -9954,6 +9967,19 @@ function nameMarkBuddyBuild() {
     // Nothing to tidy.
   }
   return buddy;
+}
+
+const NMB_NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+function nameMarkBuddyNudge(buddy, dx, dy) {
+  if (!Number.isFinite(nmb.x)) return;
+  const spot = { x: nmb.x + dx, y: nmb.y + dy, pose: nmb.pose, legs: nmb.legs };
+  nmb.placedAt = Date.now();
+  nameMarkBuddyMoveTo(buddy, spot);
+  const spots = nameMarkBuddySpots();
+  delete spots["*"];
+  spots[nameMarkBuddyTab()] = nameMarkBuddySpotFor(spot);
+  nameMarkBuddyKeepSpots(spots);
 }
 
 function syncNameMarkBuddy() {

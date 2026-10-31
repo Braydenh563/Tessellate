@@ -51,11 +51,16 @@ function editAndResend(bubble, text) {
     body.classList.remove("hidden");
     actions?.classList.remove("hidden");
   };
-  cancel.addEventListener("click", close);
+  //: Cancel and Esc give the keyboard back to the button that opened the editor (AI14).
+  const cancelEdit = () => {
+    close();
+    actions?.querySelector('button[title="Edit this question"]')?.focus();
+  };
+  cancel.addEventListener("click", cancelEdit);
   box.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
-      close();
+      cancelEdit();
     } else if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
       save.click();

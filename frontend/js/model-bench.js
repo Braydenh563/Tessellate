@@ -94,7 +94,8 @@ function benchStatusLine(state) {
   if (!report) return "";
   if (report.stopped === "budget") return `Stopped at the time limit after ${report.seconds} s, so no recommendation.`;
   if (report.stopped) return "Stopped, so no recommendation.";
-  return `Tested on ${report.items} of your notes in ${Math.round(report.seconds)} s.`;
+  const tested = `Tested on ${report.items} of your notes in ${Math.round(report.seconds)} s.`;
+  return report.recommended || !report.models?.length ? tested : `${tested} None of these passed.`;
 }
 
 async function renderModelBench() {

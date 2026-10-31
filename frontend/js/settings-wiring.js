@@ -203,6 +203,15 @@ $("retry-btn").addEventListener("click", retryAnswer);
 $("copy-btn").addEventListener("click", copyAnswer);
 $("new-chat-btn").addEventListener("click", newChat);
 $("ask-history-toggle").addEventListener("click", toggleAskHistoryPanel);
+//: Esc shuts the open history panel from the button or from inside it, and the keyboard goes back to the button (AI14).
+for (const id of ["ask-history-toggle", "ask-history-panel"]) {
+  $(id).addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || $("ask-history-toggle").getAttribute("aria-expanded") !== "true") return;
+    event.stopPropagation();
+    toggleAskHistoryPanel();
+    $("ask-history-toggle").focus();
+  });
+}
 // Asked for directly: an X to close the history panel, not only the History
 // toggle button that opened it (easy to lose track of once scrolled past).
 $("ask-history-close")?.addEventListener("click", () => {

@@ -2655,9 +2655,10 @@ function renderStatusBar() {
       icon: "ph:spin",
       value: count,
       label: `running: ${task.label}`,
-      title:
-        backgroundTasks.map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`).join("\n") +
-        "\n\nClick to open Activity, where each run shows its lines and can stop.",
+      //: The first task's name is already the label, and the label is part
+      //: of the accessible name, so the title carries only what it adds
+      //: (HR10: "running: X: X"): its detail, then the ones behind it.
+      title: [[task.detail, ...backgroundTasks.slice(1).map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`)].filter(Boolean).join("\n"), "Click to open Activity, where each run shows its lines and can stop."].filter(Boolean).join("\n\n"),
     });
   }
 
@@ -2883,7 +2884,7 @@ function renderSettings() {
   ollamaLine.textContent = status.ollama_running
     ? `${backend} is running`
     : status.unreachable_hint || `${backend} isn't running`;
-  ollamaLine.className = `status ${status.ollama_running ? "ok" : "off"}`;
+  ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
   //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
   //: the line says so instead of presenting a stale answer as fresh.
   if (modelStatusProblem === "slow") {

@@ -198,6 +198,8 @@ async function modelCancel(model, button) {
   if (button) button.disabled = true;
   try {
     await api(`/models/jobs/cancel?kind=pull&name=${encodeURIComponent(model.name)}`, { method: "POST" });
+    //: The row used to vanish with nothing said (HR19).
+    toast(`Stopped downloading ${model.name}.`);
   } catch (error) {
     toast(error.message, true);
   }
@@ -587,6 +589,8 @@ function renderSuggested(status) {
       section.dataset.group = group.kind;
       section.open = modelGroupOpen(group.kind, group.shown, status);
       section.addEventListener("toggle", () => {
+        //: A shut group has no cards yet (HR18); opening it builds them.
+        if (section.open && modelLastStatus) renderSuggested(modelLastStatus);
         try {
           prefs.set(`modelGroup:${group.kind}`, section.open ? "1" : "0");
         } catch (error) {
@@ -616,7 +620,7 @@ function renderSuggested(status) {
   }
   for (const group of groups) {
     const grid = host.querySelector(`.model-grid[data-group="${group.kind}"]`);
-    if (!grid) continue;
+    if (!grid || !grid.parentNode.open) continue;
     group.shown.forEach((model, i) => {
       const el = modelCardFor(model, status);
       if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);

@@ -99,6 +99,8 @@ def _declared_anywhere(path: Path) -> set[str]:
 #: been loaded, with the reason each one is safe. A name here is a promise that
 #: somebody checked the path, not a way to quiet the test.
 REACHED_AFTER_LOAD = {
+    "copyWebLink": "the web reader's Copy link listener (wiring.js), which awaits ensureModule('webClip') first",
+    "openWebPageExternally": "the web reader's Open listener (wiring.js), which awaits ensureModule('webClip') first",
     #: INBOX 1301 D6: the release calls it only when `typeof nameMarkBuddyThrow
     #: === "function"`; the carry's first move fetched the bundle, and a let-go
     #: before it arrives is a drop.

@@ -22,6 +22,8 @@ NAME_MAX = 120
 HISTORY_MAX_TURNS = 40
 #: One side of one turn. An answer can be long; 600 MB of them cannot be a chat.
 TURN_TEXT_MAX = 50_000
+#: A meeting transcript handed to the summariser: ten hours of speech.
+TRANSCRIPT_MAX = 600_000
 
 #: Steps in one batch undo (a change to several notes or board items).
 BATCH_STEPS_MAX = 200

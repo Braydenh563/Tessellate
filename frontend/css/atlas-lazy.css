@@ -59,4 +59,16 @@
    at 1x was 10,169 style invalidations in 1.3 s, 3,000 of them the rings'
    and the planets' loops (atlasinval.js). The legs' flick while held
    (`atl-lower-flick`) is the carry's own and keeps running. */
+/* **Three reasons to hold the loops, one rule** (the `!important` ratchet).
+   A slow machine (atlas-life.js, `atlasFrameBudget`): once frames run past
+   20 ms the companion keeps its sway, breath and blink and drops the
+   planets' own light and swirl and every drift on the nebula, hair, hem and
+   rings (about half of its 65 animations at rest; 4.9 s of main thread per
+   5 s at 4x CPU became 2.2 s). Away (`nmb-away`: faded out and hidden, as on
+   every tab but its own, see `atlasMotionOK`): not drawn, so nothing of it
+   runs. Carried or thrown, as above. */
+:root[data-atlas-lite] .atl-figure-box :is(.atl-orbit-arm, .atl-orbiter, .atl-lw-neb, .atl-lw-neb-front, .atl-lw-tail, .atl-lw-hair, .atl-lw-lower, .atl-layer-neb, .atl-layer-neb-front, .atl-layer-lower, .atl-layer-front, .atl-ring-spin),
+#nm-buddy.nmb-away :is(.nm-atlas *, .atl-lw, .atl-lw-breathe, .atl-figure-box, .atl-orbits *),
 #nm-buddy.nm-buddy-dragging :is(.atl-lw, .atl-lw-breathe, .atl-orbit-arm, .atl-orbiter) { animation-play-state: paused !important; }
+:root[data-atlas-lite] .atl-orbiter :is(.atl-orbiter-glow, .atl-orbiter-swirl) { display: none; }
+

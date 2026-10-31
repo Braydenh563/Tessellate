@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, model_validator
@@ -456,7 +457,7 @@ class ChatRequest(BaseModel):
     # Notes the user attached by hand. These are always given to the model,
     # ahead of anything retrieval finds, "this note, specifically" is a
     # stronger signal than any similarity score.
-    note_ids: list[int] = Field(default_factory=list, max_length=20)
+    note_ids: list[Annotated[int, Field(ge=1, le=9_223_372_036_854_775_807)]] = Field(default_factory=list, max_length=20)
     # Documents attached by hand (§89.2): same idea as note_ids, a separate
     # field because Document is a separate table from Entry (see its own
     # docstring in core/database.py for why). The frontend has sent this
@@ -601,6 +602,26 @@ class ChatRequest(BaseModel):
     private: bool = False
     #: The screen and the last few actions (composer awareness, 2026-10-25).
     screen: ScreenBody | None = None
+
+
+def _check_refs(session: Session, body: ChatRequest) -> None:
+    """Refuse a turn that names a mode or a note that does not exist.
+
+    These were accepted in silence (audit AI18): an unknown mode ran as
+    `normal` and `note_ids: [999999, -1]` answered from unrelated notes as if
+    they had been attached. The shared error shape names the field. An unknown
+    persona still falls back to the default, by design (a persona deleted
+    while it was selected must not break the chat: test_chat_uses_selected_persona).
+    """
+    wrong: list[tuple[str, str]] = []
+    if body.mode and body.mode not in presets.MODES:
+        wrong.append(("mode", f"That mode is not one of {', '.join(presets.MODES)}."))
+    if body.note_ids:
+        have = set(session.scalars(select(Entry.id).where(Entry.id.in_(body.note_ids))))
+        if not have.issuperset(body.note_ids):
+            wrong.append(("note_ids", "One of the attached notes does not exist."))
+    if wrong:
+        raise RequestValidationError([{"loc": ("body", field), "msg": msg, "type": "value_error"} for field, msg in wrong])
 
 
 def _apply_scope(session: Session, body: ChatRequest) -> None:
@@ -2302,8 +2323,11 @@ def _prepare(
 @router.post("", response_model=ChatResponse)
 @private_turn.route
 def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResponse:
+    _check_refs(session, body)
     _apply_scope(session, body)
     _apply_open(session, body)
+    if not body.image_media_ids and not deps.get_ollama().is_running():
+        return _composed_chat(body, session)
     prepared = _prepare(
         session,
         body.question,
@@ -2420,6 +2444,39 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         ),
         ollama_running=ollama_running,
         sentence_grounding=sentence_grounding,
+    )
+
+
+def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
+    """The non-streaming answer when no model runs: the stream's own turn (the
+    composer, the counted answers, the slash commands), read to its end, under
+    a line that says why. It used to be an apology over the matching notes
+    while the same question in the Chat tab got a composed answer (audit 1031
+    AI6)."""
+    req = _stream_request(body, session)
+    lead = librarian.offline_message(req.ollama)
+    cause = (
+        "The AI did not answer in time, so this comes from your notes alone."
+        if lead == librarian.BUSY_MESSAGE
+        else "The AI is not running, so this comes from your notes alone."
+    )
+    meta: dict = {}
+    text: list[str] = []
+    commanded = _guarded_slash_lines(req)
+    for line in commanded if commanded is not None else _stream_lines(req):
+        event = json.loads(line)
+        if event.get("type") == "meta":
+            meta = event
+        elif event.get("type") == "answer":
+            text.append(event.get("delta") or "")
+    skip = ("ai_response", "answered_by", "ollama_running", "raw_results", "search_mode")
+    fields = {k: meta[k] for k in ChatResponse.model_fields if k in meta and k not in skip}
+    return ChatResponse(
+        ai_response=f"{cause}\n\n{''.join(text)}".strip(),
+        raw_results=meta.get("raw_results") or [],
+        search_mode=meta.get("search_mode") or "keyword",
+        ollama_running=False,
+        **fields,
     )
 
 
@@ -3775,6 +3832,22 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     return _no_notes_answer(req, ollama_running) + _web_chip(req)
 
 
+_CHART_ASKED = re.compile(r"\b(?:chart|graph|plot|visuali[sz]e|trend)\b", re.I)
+
+
+def _chart_line(req: _StreamRequest) -> str:
+    """What the chart beside a counting question shows, or ""."""
+    from tessellate.api import routes_vision
+
+    if not _CHART_ASKED.search(req.question or ""):
+        return ""
+    drawn = routes_vision.question_chart(req.session, req.question or "")
+    if not drawn or not any(row["value"] for row in drawn["rows"]):
+        return ""
+    total = f", {drawn['total']:,} in all" if drawn["total"] is not None else ""
+    return f"{drawn['title']}{total}."
+
+
 def _no_notes_answer(req: _StreamRequest, ollama_running: bool) -> list:
     """The line for a question no note answers, and what else the notebook holds on it."""
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
@@ -4301,6 +4374,14 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         drawn = _diagram_events(req, prepared)
         if drawn is not None:
             return drawn
+    #: A question the chart route draws ("chart my notes by category") is not
+    #: a search for the word "chart": the line says what the chart shows, so
+    #: the two halves agree (audit 1031 AI7). Only when a chart is asked for
+    #: by name: a plain count ("how many notes about soup") is the counted
+    #: answer's.
+    charted = _chart_line(req) if _app_answers(req, ollama_running) and not req.images_raw else ""
+    if charted:
+        return [{"type": "answer", "delta": charted}]
     if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).
@@ -5578,23 +5659,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     return address.question, address
 
 
-@router.post("/stream")
-@private_turn.route
-def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
-    """NDJSON stream. Line types, in order:
-    {"type":"status", "stage": "searching"}   (sent immediately, so the
-        browser gets a first byte at once instead of waiting on the, often
-        cold-start: semantic search; this is what keeps the UI's typing
-        indicator alive instead of appearing frozen)
-    {"type":"meta", raw_results, search_mode, answered_by}
-    {"type":"thinking", "delta": "..."}   (zero or more)
-    {"type":"answer", "delta": "..."}     (one or more)
-    {"type":"done"}
-    """
-    if body.peek:
-        body.answer_from = "notes"
-    _apply_scope(session, body)
-    _apply_open(session, body)
+def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
+    """What one chat turn settles before it answers: the same for the stream and
+    for the non-streaming route when no model runs."""
     ollama = deps.get_ollama()
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
@@ -5637,7 +5704,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
         # `use_tools: false` with an action skill still means the skill.
         use_tools = True
 
-    req = _StreamRequest(
+    return _StreamRequest(
         body=body,
         session=session,
         ollama=ollama,
@@ -5655,6 +5722,27 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
         address=address,
         full_question=full_question,
     )
+
+
+@router.post("/stream")
+@private_turn.route
+def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
+    """NDJSON stream. Line types, in order:
+    {"type":"status", "stage": "searching"}   (sent immediately, so the
+        browser gets a first byte at once instead of waiting on the, often
+        cold-start: semantic search; this is what keeps the UI's typing
+        indicator alive instead of appearing frozen)
+    {"type":"meta", raw_results, search_mode, answered_by}
+    {"type":"thinking", "delta": "..."}   (zero or more)
+    {"type":"answer", "delta": "..."}     (one or more)
+    {"type":"done"}
+    """
+    _check_refs(session, body)
+    if body.peek:
+        body.answer_from = "notes"
+    _apply_scope(session, body)
+    _apply_open(session, body)
+    req = _stream_request(body, session)
 
     # X-Accel-Buffering: no tells reverse proxies (nginx) not to buffer the
     # stream, so tokens reach the browser as they're produced.

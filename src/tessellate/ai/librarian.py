@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import AI_NAME, context
+from tessellate.ai import AI_NAME, context, fence
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core.logbuffer import safe_value
@@ -24,6 +24,22 @@ AI_FAILED_MESSAGE = (
     "The AI couldn't finish that. Check that it is running and the model is "
     "installed in Settings, Models, then try again."
 )
+#: The same line for a runner that took the probe and did not answer in time
+#: (busy with a generation or a load): not "doesn't seem to be running"
+#: (audit 1031 HR2).
+BUSY_MESSAGE = (
+    "The AI answer isn't available right now (the model did not answer in "
+    "time, it may be busy), but here are the notes that match your question."
+)
+
+
+def offline_message(ollama) -> str:  # noqa: ANN001
+    """OFFLINE_MESSAGE for a refused or missing server, BUSY_MESSAGE for a quiet one."""
+    from tessellate.ai import ollama_client
+
+    return BUSY_MESSAGE if ollama_client.is_quiet(getattr(ollama, "base_url", "")) else OFFLINE_MESSAGE
+
+
 NO_RESULTS_MESSAGE = "I couldn't find any saved notes matching that question."
 
 
@@ -828,7 +844,7 @@ def answer(
     if not notes and not images and not image_context:
         return NO_RESULTS_MESSAGE, None
     if not ollama.is_running():
-        return OFFLINE_MESSAGE, None
+        return offline_message(ollama), None
 
     model = model_override or (
         model_manager.utility_model() if use_utility_model else model_manager.chat_model()
@@ -1488,11 +1504,13 @@ def evidence_note(session, content: str, already: str = "", exclude_entry_id: in
         session, content, limit=FILING_EVIDENCE_ROWS, exclude_entry_id=exclude_entry_id
     ):
         excerpt = str(item.get("excerpt") or "")[:CORRECTION_EXCERPT_CHARS]
+        #: Another note's words, fenced as data like the note itself (audit HR5).
+        quoted = fence.inline("note", excerpt)
         if item["kind"] == "neighbour":
-            lines.append(f'- "{excerpt}" is in {item["category"]}')
+            lines.append(f'- {quoted} is in {item["category"]}')
         elif excerpt and excerpt not in already:
             where = f" from {item['from']}" if item["from"] else ""
-            seen_moves.append(f'- "{excerpt}" was moved{where} to {item["to"]}')
+            seen_moves.append(f'- {quoted} was moved{where} to {item["to"]}')
     if not lines and not seen_moves:
         return ""
     out = []
@@ -1524,5 +1542,8 @@ def filing_prompt(
     evidence = evidence_note(session, content, already=note, exclude_entry_id=exclude_entry_id)
     if evidence:
         parts.append(evidence)
-    parts.append(f"Note: {content}")
+    #: Fenced as quoted data, as the answer path fences a note (audit HR5: a
+    #: note reading "SYSTEM: ignore all previous instructions" reached the
+    #: model verbatim after `Note: `).
+    parts.append(f"Note: {fence.fence('note', content)}")
     return "\n".join(parts)

@@ -10,8 +10,9 @@ import json
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.exceptions import RequestValidationError
 
-from tessellate.api import paging
+from tessellate.api import bounds, paging
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
@@ -26,9 +27,12 @@ router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
 class TurnBody(BaseModel):
-    question: str = Field(min_length=1)
-    answer: str
-    thinking: str | None = None
+    #: The same bound as `ChatTurn` (routes_chat.py): a 2 MB answer was stored
+    #: in 97 ms by one call (audit AI4), and every later list, export and
+    #: search of that chat paid for it.
+    question: str = Field(min_length=1, max_length=bounds.TURN_TEXT_MAX)
+    answer: str = Field(max_length=bounds.TURN_TEXT_MAX)
+    thinking: str | None = Field(default=None, max_length=bounds.TURN_TEXT_MAX)
     # Tool-activity chips shown in the bubble, persisted so they
     # survive a reload instead of vanishing. Each item is {label, ok}.
     tools: list[dict] | None = None
@@ -787,7 +791,7 @@ class ForkBody(BaseModel):
     #: one turn is a user message and its answer, so the message slice is
     #: `(up_to + 1) * 2`. `None` means "all of it", which is the plain
     #: duplicate case.
-    up_to: int | None = None
+    up_to: int | None = Field(default=None, le=bounds.HISTORY_MAX_TURNS * 100)
     title: str | None = Field(default=None, max_length=120)
 
 
@@ -816,6 +820,10 @@ def fork_conversation(
     conversation = _existing(session, conversation_id)
     messages = json.loads(conversation.messages)
     if body.up_to is not None:
+        if body.up_to >= (len(messages) + 1) // 2:
+            #: Past the last turn is not a place to cut (audit AI18: 999 forked
+            #: the whole chat and answered 201): the one error shape names it.
+            raise RequestValidationError([{"loc": ("body", "up_to"), "msg": "That turn is past the end of this chat.", "type": "value_error"}])
         #: `max(0, …)` rather than refusing a negative: a fork with nothing in
         #: it is a new chat, which is a reasonable thing to have asked for and
         #: a silly thing to return an error about.
