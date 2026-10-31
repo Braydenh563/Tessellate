@@ -91,25 +91,110 @@ function panelZoneRect(zone, vw, vh, inset, safe) {
   const south = zone === "bottom" || zone === "bl" || zone === "br";
   return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
 }
+//: **A panel is bounded by what it would go under** (INBOX 1504, the owner: "I
+//: cant drag the templates popup window to the left past the sidebar"). The
+//: free area of INBOX 1474 kept every panel off the sidebar because the attach
+//: panel drew under it; a modal dialog draws above it, so for that panel the
+//: sidebar is no obstacle. Decided from the real stacking, never a list of ids:
+//: the top layer (a modal dialog, an open popover) is above everything outside
+//: it; otherwise the two are compared inside their nearest common stacking
+//: context, by the z-index of the branch each sits in, then by document order.
+function panelAboveBy(za, zb, aLater) {
+  return za > zb || (za === zb && aLater);
+}
+function panelTopLayer(el) {
+  return [":modal", ":popover-open"].some((q) => {
+    try {
+      return el.matches(q);
+    } catch (_) {
+      return false;
+    }
+  });
+}
+const PANEL_CONTEXT_PROPS = ["transform", "translate", "scale", "rotate", "filter", "backdropFilter", "perspective", "clipPath", "mask"];
+function panelMakesContext(el) {
+  const cs = getComputedStyle(el);
+  if (cs.position === "fixed" || cs.position === "sticky") return true;
+  if (cs.zIndex !== "auto" && (cs.position !== "static" || /flex|grid/.test(el.parentElement ? getComputedStyle(el.parentElement).display : ""))) return true;
+  if (Number(cs.opacity) < 1 || cs.isolation === "isolate") return true;
+  return PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
+}
+//: The outermost node from `el` up to (not including) `stop` that opens a
+//: stacking context: the thing that takes part in `stop`'s context as one.
+function panelStackBranch(el, stop) {
+  let hit = null;
+  for (let n = el; n && n !== stop; n = n.parentElement) if (panelMakesContext(n)) hit = n;
+  return hit || el;
+}
+function panelStackZ(el) {
+  const z = getComputedStyle(el).zIndex;
+  return z === "auto" ? 0 : Number(z);
+}
+//: Does `panel` draw above `other`? An ancestor or descendant is never asked.
+function panelAbove(panel, other) {
+  const pt = panelTopLayer(panel);
+  const ot = panelTopLayer(other);
+  if (pt || ot) return pt && !ot;
+  let common = panel;
+  while (common && !common.contains(other)) common = common.parentElement;
+  if (!common || common === panel || common === other) return false;
+  const a = panelStackBranch(panel, common);
+  const b = panelStackBranch(other, common);
+  return panelAboveBy(panelStackZ(a), panelStackZ(b), !(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
+}
+//: **A panel is drawn only inside the boxes that clip it** (INBOX 1504, found
+//: measuring the attach panel of 1474: it went "behind the sidebar" because its
+//: page's `.tab-main` is `overflow-x: clip`, not because the sidebar is above
+//: it). An in-flow panel is clipped by every ancestor that clips; an absolutely
+//: positioned one by its containing block and the ancestors above it, not the
+//: boxes between; a fixed panel and a top-layer one by none. The free area
+//: starts from the window cut down to what the panel can show.
+function panelContains(cs) {
+  return cs.position !== "static" || PANEL_CONTEXT_PROPS.some((p) => cs[p] && cs[p] !== "none");
+}
+function panelClipBox(panel, vw, vh) {
+  const box = { left: 0, top: 0, right: vw, bottom: vh };
+  const pos = getComputedStyle(panel).position;
+  if (pos === "fixed" || panelTopLayer(panel)) return box;
+  let reached = pos !== "absolute";
+  for (let n = panel.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+    const cs = getComputedStyle(n);
+    reached = reached || panelContains(cs);
+    if (!reached) continue;
+    const r = n.getBoundingClientRect();
+    if (cs.overflowX !== "visible") {
+      box.left = Math.max(box.left, Math.round(r.left));
+      box.right = Math.min(box.right, Math.round(r.right));
+    }
+    if (cs.overflowY !== "visible") {
+      box.top = Math.max(box.top, Math.round(r.top));
+      box.bottom = Math.min(box.bottom, Math.round(r.bottom));
+    }
+    if (cs.position === "fixed") break;
+  }
+  return box;
+}
 //: The window minus the top bar, the status bar, a side tab rail, a sidebar
 //: and the panels docked to a side, read when a drag starts or a dock is
-//: fitted, never per move. `except` is the panel being placed.
+//: fitted, never per move. `except` is the panel being placed; what it draws
+//: above (`panelAbove`) is not taken off the free area.
 function panelSafe(vw, vh, except, ignore = "") {
-  const safe = { left: 0, top: 0, right: vw, bottom: vh };
+  const safe = except ? panelClipBox(except, vw, vh) : { left: 0, top: 0, right: vw, bottom: vh };
+  const blocks = (el) => !except || !panelAbove(except, el);
   const seen = (id) => {
     const el = document.getElementById(id);
-    return el && el.getClientRects().length ? el.getBoundingClientRect() : null;
+    return el && el.getClientRects().length && blocks(el) ? el.getBoundingClientRect() : null;
   };
   const bar = seen("top-bar");
   const foot = seen("status-bar");
   const tabs = seen("tab-bar");
-  if (bar) safe.top = Math.max(0, Math.round(bar.bottom));
-  if (foot) safe.bottom = Math.min(vh, Math.round(foot.top));
-  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.round(tabs.right);
+  if (bar) safe.top = Math.max(safe.top, Math.round(bar.bottom));
+  if (foot) safe.bottom = Math.min(safe.bottom, Math.round(foot.top));
+  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.max(safe.left, Math.round(tabs.right));
   const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
   const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
   for (const el of [...sides, ...docked]) {
-    if (!panelShown(el)) continue;
+    if (!panelShown(el) || !blocks(el)) continue;
     const r = el.getBoundingClientRect();
     const zone = PANEL_STATE.get(el)?.dock || "";
     if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
