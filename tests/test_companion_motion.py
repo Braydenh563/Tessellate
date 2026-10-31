@@ -1133,7 +1133,7 @@ def test_companions_can_be_saved_applied_renamed_and_deleted() -> None:
     for key in ('"avatar-buddy"', '"atlas-look"', '"avatar-buddy-custom"', '"avatar-buddy-size"', '"avatar-buddy-acts-off"', '"avatar-buddy-motion"'):
         assert key in AV[AV.index("const NMB_PRESET_KEYS = [") :][:400], key
     assert "p.name !== nmbPresetRenaming" in _fn("nameMarkBuddySavePreset")
-    assert "mountBuddyPresets()" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    assert "afterCharacters(mountBuddyPresets)" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")

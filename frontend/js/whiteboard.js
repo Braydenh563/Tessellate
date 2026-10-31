@@ -111,7 +111,8 @@ function wbTrackpadPan(event) {
 //: the log with its source, once a press: Chromium here never panned, so the
 //: owner's next log names the path.
 function wbCompanionHeld(event, why) {
-  if (!nmb.grabbed) return false;
+  //: No companion before the faces are in (`charactersLoaded`, lazy-entries.js).
+  if (!charactersLoaded || !nmb.grabbed) return false;
   if (nmb.grabbed !== "logged") {
     nmb.grabbed = "logged";
     const line = `board pan refused while the companion was held: ${why} ${event?.type || "code"} ${event?.pointerType || ""} buttons=${event?.buttons ?? ""} on ${event?.target?.tagName || ""}`;

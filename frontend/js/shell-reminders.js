@@ -1623,6 +1623,8 @@ function curtainShell(ready) {
       root.classList.remove("shell-curtain");
       hideBootSplash();
       liftLockScreen();
+      //: The faces and the companion come once the page is up and still (lazy-entries.js).
+      loadCharactersIdle();
     }));
   };
   //: And the dashboard's widgets, when it is the first tab (`dashSettled`).

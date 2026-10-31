@@ -1738,11 +1738,10 @@ async function setResponseMode(chosen) {
 //: cannot draw one persona two ways.
 function fillPersonaMark(holder, name, size = 20) {
   if (!holder) return;
-  //: Nothing to draw a face from (no name yet, or the faces script not
-  //: loaded): the app's own animated mark, never an empty box (the owner:
-  //: "the default for no avatar selected should be the animated app logo
-  //: everywhere").
-  if (!name || typeof nameMark !== "function") {
+  //: Nothing to draw a face from (no name yet): the app's own animated mark,
+  //: never an empty box (the owner: "the default for no avatar selected
+  //: should be the animated app logo everywhere").
+  if (!name) {
     renderEmblem(holder, size, { animate: true });
     return;
   }
@@ -1750,7 +1749,8 @@ function fillPersonaMark(holder, name, size = 20) {
   //: ring of linked notes orbiting a globe in the accent colour. `nameMark`
   //: draws it for the assistant's name. The chat's reply label keeps the
   //: live logo, so the app's mark and Atlas's face both stay in the app.
-  holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size));
+  //: The faces arrive after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size)));
 }
 
 function personaOptions() {

@@ -57,7 +57,11 @@ STYLE = re.compile(r'<link[^>]*rel="stylesheet"[^>]*href="(/[^"?]+)(?:\?[^"]*)?"
 #: palette bundle), after Brief 80 took the boot to 588,728; measured 582,849.
 #: 2026-10-25, composer2: bg-art.js (20 KB) became the lazy `bgArt` bundle,
 #: boot measured 568,431, so about 20 KB of room; the cap is unchanged.
-BOOT_JS_CAP = 588_400
+#: 2026-10-31, audit 1028 S3: avatars.js (97,652 gzipped) and atlas.js (35,619),
+#: the faces, the companion and Atlas, are the lazy `characters` bundle, fetched
+#: once the app is open and idle. 38 boot scripts 572,083 became 36 scripts
+#: 439,613, so the cap comes down to that plus 2%.
+BOOT_JS_CAP = 448_400
 #: 2026-10-10 INBOX 767: the no-model notice's row and phone grid cost 58
 #: gzipped bytes, paid for by the blank lines of 08-consistency.css (61), so
 #: the cap holds; the next CSS goes in a lazy file.

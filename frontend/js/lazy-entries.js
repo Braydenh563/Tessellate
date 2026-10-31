@@ -42,6 +42,8 @@ Object.assign(LAZY_MODULES, {
   packages: ["/js/task-steps.js", "/js/settings-packages.js"],
   //: The failed-load state (load-failed.js's header).
   loadFailed: ["/js/load-failed.js"],
+  //: The generated faces, the companion and Atlas (see "The characters" below).
+  characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
 });
 setTimeout(() => ensureModule("loadFailed"), 3000);
 installStandIns({
@@ -75,3 +77,91 @@ document.addEventListener("keydown", (event) => {
   event.preventDefault();
   openMathEditor({ target: box });
 });
+
+//: **The characters** (audit 1028 S3). avatars.js and atlas.js, the faces, the
+//: companion and Atlas, were 248 KB of the 574 KB gzipped the lock screen waited
+//: for; they are the `characters` bundle now and arrive once the app is open and
+//: idle (`loadCharactersIdle`, called when the opening curtain lifts). Until then
+//: a call into them goes one of three ways, and each is chosen by what the caller
+//: does with the answer:
+//:
+//: 1. **A stand-in** (below) when nobody reads the return value. It never fetches
+//:    anything: the bundle is on its way. A cue (Atlas proud of a saved note, the
+//:    companion hearing a bell) is stale a second later and is dropped; a sync
+//:    (apply this setting, redraw that mark) is idempotent and is replayed once,
+//:    with its last arguments, when the bundle arrives.
+//: 2. **`afterCharacters(fn)`** when the caller draws a face: runs now once they are
+//:    in, else when they arrive, in call order and once per function.
+//: 3. **`charactersLoaded`** where the answer is "is there a companion to ask", which
+//:    is no before they arrive (whiteboard.js).
+//:
+//: A bundle that reaches into them at once, not from a call of theirs, lists
+//: the files first (`CHARACTER_DEPENDENTS`: the welcome card's Atlas);
+//: `characters-ready.js`, last in the list, reports the arrival whichever
+//: bundle asked for the files. The companion's own bundles (menu, throws)
+//: are asked for by avatars.js, so they find it in.
+let charactersLoaded = false;
+const characterWaiters = new Set();
+const characterBacklog = new Map();
+const CHARACTER_DEPENDENTS = ["onboarding"];
+for (const name of CHARACTER_DEPENDENTS) LAZY_MODULES[name] = [...LAZY_MODULES.characters, ...LAZY_MODULES[name]];
+
+function afterCharacters(fn) {
+  if (charactersLoaded) fn();
+  else characterWaiters.add(fn);
+}
+
+function runCharacterJob(fn, args = []) {
+  try {
+    fn(...args);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+//: A task of its own, so the files' parse and this are two long tasks, not one.
+function charactersArrived() {
+  setTimeout(() => {
+    charactersLoaded = true;
+    const waiting = [...characterWaiters];
+    characterWaiters.clear();
+    for (const fn of waiting) runCharacterJob(fn);
+    for (const [name, args] of characterBacklog) runCharacterJob(window[name], args);
+    characterBacklog.clear();
+  }, 0);
+}
+
+function loadCharactersIdle() {
+  if (window.requestIdleCallback) requestIdleCallback(() => ensureModule("characters"), { timeout: 3000 });
+  else setTimeout(() => ensureModule("characters"), 400);
+}
+
+function installCharacterStandIns(names, replay) {
+  for (const name of names) {
+    window[name] = (...args) => {
+      if (replay) characterBacklog.set(name, args);
+    };
+  }
+}
+//: Cues: the moment has passed by the time the bundle is in.
+installCharacterStandIns(["nameMarkBuddyNoteOpened", "atlasOn"], false);
+//: Syncs and one-offs: the companion's settings, Atlas's look, a streak, the
+//: Show or Hide row.
+installCharacterStandIns([
+  "syncNameMarkBuddy", "mountBuddyCustom", "mountBuddyActivities", "nameMarkBuddyMotionApply", "nameMarkBuddySizeSelect",
+  "nameMarkBuddySetSize", "nameMarkBuddyCallBack", "nameMarkBuddyToggle", "nameMarkBuddyHint", "nameMarkRepaintAll",
+  "atlasRepaint", "atlasStreak", "nameMarkBuddyStreak",
+], true);
+
+//: Whether a companion is on or about to be (the palette's Show or Hide row,
+//: and its toggle). Reads a setting and the page, so it lives here, not in the
+//: bundle the row has to be built before.
+function nameMarkBuddyShowing() {
+  let choice = "off";
+  try {
+    choice = prefs.get("avatar-buddy", null) || "off";
+  } catch (e) {
+    choice = "off";
+  }
+  return choice !== "off" || !!document.getElementById("nm-buddy");
+}

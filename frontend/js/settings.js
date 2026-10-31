@@ -2603,7 +2603,8 @@ function renderAppearance() {
   $("avatar-buddy").value = appearancePref("avatar-buddy");
   mountBuddyCustom();
   mountBuddyActivities();
-  mountBuddyPresets();
+  //: The menu's file reaches into the faces at load, so it waits for them.
+  afterCharacters(mountBuddyPresets);
   try {
     $("avatar-buddy-motion").value = prefs.get("avatar-buddy-motion", null) || "follow";
   } catch (e) {

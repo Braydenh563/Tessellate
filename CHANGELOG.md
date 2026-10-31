@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Boot (shell audit S3, second half): `avatars.js` and `atlas.js` (770 KB raw) leave the boot and load as the lazy `characters` bundle once the app is unlocked and idle (`loadCharactersIdle` in `curtainShell`'s lift); boot callers wait through stand-ins and `afterCharacters`, and the companion arrives by the path Settings already uses. Medians of 5 in the running app: boot-time bytes 574,619 to 441,991 (0.77), lock-screen first contentful paint 454 to 324 ms (0.71), unlock to a notes list 1461 to 1215 ms (0.83), long tasks before unlock 4 (431 ms) to 1 (99 ms); boot JS cap 588,400 to 448,400 and the guard cap 276 to 270.
 - Design (UX review 1031): the shared picture control (grip, align button, their keys, hit area and ground) has its row in DESIGN.md's recipe index and a lint in tests/test_ui_recipes.py; the Guide says to Tab to the corner.
 - Chat attachment cards (UX review 1031): the facts line holds 4.65:1 in light and 5.11:1 in dark when the card is hovered or focused (it was 4.12 and 3.85), and the open button is named by its verb ("Preview note, Weekly review"), not only by a tooltip on its span.
 - Settings (UX review 1031): the desktop companion switch and its help button share a row at 390px (the row was 524.7px wide in a 263.6px one and the label was cut), the label wrapping instead.

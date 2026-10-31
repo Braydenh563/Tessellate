@@ -15536,14 +15536,10 @@ Link to another note with [[its first few words]]."></textarea>
   <script src="/js/settings-wiring.js?v=0.6.2"></script>
   <script src="/js/spaces-find.js?v=0.6.2"></script>
   <script src="/js/agent-activity.js?v=0.6.2"></script>
-  <!-- Generated faces (`nameMood`, `nameMark`): split out of app.js on
-       2026-09-24 when they took the gzipped app.js over its size bound. Only
-       declarations at top level, and it must load before any boot file that
-       paints a face, so it sits straight after app.js. -->
-  <script src="/js/avatars.js?v=0.6.2"></script>
-  <!-- Atlas, the assistant's own character (`atlasDraw`, its moods): after
-       avatars.js, whose `registerCharacter` it answers through. -->
-  <script src="/js/atlas.js?v=0.6.2"></script>
+  <!-- avatars.js (the generated faces, `nameMood`, `nameMark`, and the
+       companion) and atlas.js (Atlas, `atlasDraw`) are not boot scripts: they
+       are the lazy `characters` bundle, fetched once the app is open and idle
+       (audit 1028 S3; lazy-entries.js says how the boot files wait for them). -->
   <!-- The editor layer: the "/" command menu, the block frames it inserts, and
        the caret-anchored popup the document editor's [[ autocomplete uses.
        Loaded after app.js, and it stays at boot: every cross-file call it

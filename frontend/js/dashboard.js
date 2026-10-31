@@ -1128,6 +1128,36 @@ const DASH_EMBLEM_SIZE = { full: 46, compact: 30, focused: 0 };
 //: shouldnt dissappear permanently").
 let dashEmblemDrawn = false;
 
+//: The dashboard's mark, when Appearance swaps the logo for a face: yours,
+//: or the persona the greeting speaks as (the chat's own when it matches
+//: Chat). Null keeps the logo. Here, not in avatars.js: the dashboard asks at
+//: boot, before that file is in.
+function dashboardMarkSeed() {
+  const choice = appearancePref("dash-mark", "logo");
+  if (choice === "me") return userMarkSeed();
+  //: Atlas by name, whoever the greeting speaks as (the owner: "the
+  //: dashboard mark should have atlas as an option as well"). "Greeting
+  //: persona" only shows Atlas while Atlas is that persona.
+  if (choice === "atlas") return "Atlas";
+  if (choice === "persona") {
+    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || "Atlas";
+  }
+  return null;
+}
+
+function paintDashFace(holder, face, size) {
+  //: The logo's sketch stops first: a p5 loop on a canvas that is no
+  //: longer in the page still draws every frame.
+  const sketch = typeof emblemInstances !== "undefined" ? emblemInstances.get(holder) : null;
+  if (sketch) {
+    sketch.remove();
+    emblemInstances.delete(holder);
+    emblemObservers?.get(holder)?.disconnect();
+    emblemObservers?.delete(holder);
+  }
+  holder.replaceChildren(nameMarkLive(face, size));
+}
+
 function paintDashEmblem() {
   const holder = $("dash-hero-emblem");
   if (!holder) return;
@@ -1141,19 +1171,11 @@ function paintDashEmblem() {
     holder.replaceChildren();
     return;
   }
-  //: A face instead of the logo when Appearance asks (avatars.js).
+  //: A face instead of the logo when Appearance asks (avatars.js, which may
+  //: not be in yet: the face is drawn when it is).
   const face = dashboardMarkSeed();
   if (face) {
-    //: The logo's sketch stops first: a p5 loop on a canvas that is no
-    //: longer in the page still draws every frame.
-    const sketch = typeof emblemInstances !== "undefined" ? emblemInstances.get(holder) : null;
-    if (sketch) {
-      sketch.remove();
-      emblemInstances.delete(holder);
-      emblemObservers?.get(holder)?.disconnect();
-      emblemObservers?.delete(holder);
-    }
-    holder.replaceChildren(nameMarkLive(face, size));
+    afterCharacters(() => paintDashFace(holder, face, size));
     return;
   }
   holder.querySelector(".nm-live")?.remove();

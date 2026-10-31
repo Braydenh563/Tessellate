@@ -65,7 +65,7 @@ def test_the_zoom_filter_never_zooms_mid_pan(event: dict, want: bool) -> None:
     import json
 
     script = (
-        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
         + _function("wbCompanionHeld")
@@ -109,7 +109,7 @@ def _gesture(events: list[dict]) -> list[bool]:
     if not node:
         pytest.skip("node is not installed")
     script = (
-        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         + _function("wbTrackpadPan")
         + _function("wbCompanionHeld")
@@ -184,7 +184,7 @@ def test_a_left_drag_with_select_never_pans(shift: bool) -> None:
         pytest.skip("node is not installed")
     event = {"type": "mousedown", "button": 0, "buttons": 1, "shiftKey": shift, "target": None}
     script = (
-        "const nmb = { grabbed: false }; let wbSpaceHeld = false; let wbMidPanHeld = false;"
+        "const nmb = { grabbed: false }; let charactersLoaded = true; let wbSpaceHeld = false; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } }; globalThis.window = { currentTool: 'select' };\n"
         "function wbIsBareCanvas() { return true; }\nfunction wbIsMap() { return false; }\n"
         + _function("wbTrackpadPan")

@@ -3123,9 +3123,11 @@ function renderAutoChoices() {
   const still = reducedMotionWanted();
   word("progress-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
   word("bg-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
-  const { look, reason } = atlasLookReason();
-  const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
-  word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  afterCharacters(() => {
+    const { look, reason } = atlasLookReason();
+    const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
+    word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  });
 }
 
 //: B56: Auto names what it resolved to for the model in use. The server's
