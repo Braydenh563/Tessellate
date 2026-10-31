@@ -55,7 +55,7 @@ to 14,290 (cap 14,300).
 ## Done and next
 
 - done: backend 790e8e4 (tidy, formal, no echo, write-up by day).
-- done: page (chips moved to writing-desk.js, data-gate options, rule line, help, Guide topic).
+- done: page 17ad43b (chips moved to writing-desk.js, data-gate options, rule line, help, Guide topic).
 - next: nothing open for 1488.
 
 ## Found, not fixed
@@ -64,3 +64,4 @@ to 14,290 (cap 14,300).
 - A diagram from a plain list roots its mind map on the list's middle item and repeats it as a branch (`composer_mermaid`); a neutral root would read better.
 - Say it plainly turns "must approximately purchase" into "must about buy": an adverb between a modal and its verb needs the swap table to know position.
 - Writing room: a refused pass leaves the previous pass's "From your words" chip showing (the draft is unchanged, so it is still true, but it reads as if this pass wrote it).
+- done: INBOX 1488 marked fixed and moved to HISTORY, CODEMAP regenerated (last commit).
