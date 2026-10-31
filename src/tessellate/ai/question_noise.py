@@ -2072,6 +2072,28 @@ def asks_identity(message: str) -> bool:
     return len(text) <= 80 and bool(_IDENTITY.search(text))
 
 
+#: Said to the assistant about itself or about the person, with no note to
+#: look in (audit 1031 C21): "do you like me", "what do you think", "how do
+#: you feel". Whole message only: "what do you think about Lisbon"
+#: names a subject and is a question about the notes.
+_OPINION_ASK = re.compile(
+    r"^(?:(?:do|did|would|will|can|could|does) (?:you|u|ya) (?:even |actually |really |still |ever )?"
+    r"(?:like|love|hate|know|trust|miss|want|remember|care about|care|believe|think|feel|reckon|enjoy|mind|get|understand|see|hear|have feelings)"
+    r"(?: (?:me|us|so|i am|im|i'm|that|this|it|anything|a thing))?"
+    r"|what (?:do|did|would|are) (?:you|u|ya) (?:think|feel|reckon|believe|say)(?: (?:of|about) (?:me|us|yourself|that|this|it))?"
+    r"|how (?:do|did|would) (?:you|u|ya) (?:feel|like it|find it|see it)(?: (?:about|towards?) (?:me|us|it|this|that))?"
+    r"|(?:are|r) (?:you|u|ya) (?:(?:even |actually |really |just |so )*(?:smart|clever|dumb|stupid|happy|sad|alive|conscious|sentient|lonely|bored|tired|mad|angry|funny|nice|friendly)))"
+    r"(?: (?:lol|haha|though|tho|then|too|right|now|or not|at all|honestly|really|even))*$"
+)
+def addressed_kind(message: str) -> str | None:
+    """"who" for a question put to the assistant about itself or the person
+    ("do you like me"), else None."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(drop_filler(message or "")).lower())).strip()
+    if len(text) > 80:
+        return None
+    return "who" if _OPINION_ASK.search(text) else None
+
+
 def _social_phrases(text: str) -> tuple[list[str], str]:
     """The kinds of the social phrases in `text`, longest first, and the text without them."""
     kinds: list[str] = []
@@ -2090,6 +2112,8 @@ def social_kind(message: str) -> str | None:
     about what it is talking to is "who", whatever leads into it."""
     if asks_identity(message):
         return "who"
+    if kind := addressed_kind(message):
+        return kind
     raw = destretch(drop_filler((message or "").strip()))
     if raw and not strip_symbols(raw):
         return "reaction" if re.search(r"[\U0001F600-\U0001F64F]", raw) else "ack"

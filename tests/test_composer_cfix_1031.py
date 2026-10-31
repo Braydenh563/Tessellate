@@ -744,3 +744,45 @@ def test_a_list_of_things_to_try_still_offers_the_reminder():
 def test_the_gaps_of_a_topic_are_said_when_the_question_names_the_topic(notebook):
     said, _ = notebook("what do I know about the dentist")
     assert "Nothing yet on assessments" not in said, said
+
+
+# C21. A question put to the assistant is answered by it, never from the nearest note.
+
+ADDRESSED = [
+    "do you like me", "do you love me", "Do you know me?", "do u like me", "do you trust me", "do you remember me",
+    "do you even like me", "what do you think", "what do you think?", "what do u reckon", "how do you feel",
+    "how do you feel about me", "are you smart", "are u happy", "are you really clever lol",
+]
+JIBES = ["ur mum", "your mum", "ur mom is fat", "ya dad", "Ur mum lol", "youre mum"]
+
+
+@pytest.mark.parametrize("question", ADDRESSED)
+def test_a_question_to_the_assistant_is_social_not_a_search(question):
+    from tessellate.ai import intent, question_noise
+
+    assert question_noise.social_kind(question) == "who", question
+    assert intent.classify(question) == intent.SMALLTALK, question
+
+
+@pytest.mark.parametrize("question", ADDRESSED + JIBES)
+def test_a_question_to_the_assistant_quotes_no_note(notebook, question):
+    said, _ = notebook(question)
+    for word in ("pickup", "Vireo", "Tokyo", "jazz", "Gift ideas", "lentils", "Christmas"):
+        assert word not in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "what do you think about Lisbon", "do you know when the dentist is", "do you remember what mum said", "what do you want me to buy for Sara",
+    "what did mum say", "what is my mum's birthday", "how do you spell ventana", "are you free on Saturday",
+])
+def test_a_question_with_a_subject_stays_a_question_about_the_notes(question):
+    from tessellate.ai import question_noise
+
+    assert question_noise.social_kind(question) is None, question
+
+
+@pytest.mark.parametrize("question", JIBES)
+def test_a_jibe_is_asked_back_even_when_a_note_holds_the_word(notebook, question):
+    said, events = notebook(question)
+    assert "?" in said, said
+    assert "three notes" not in said and "Gift ideas" not in said, said

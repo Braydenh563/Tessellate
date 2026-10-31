@@ -4306,6 +4306,9 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         down = _web_events_or_down(req, req.question)
         if down:
             return down
+    if not ollama_running and not req.images_raw and composer_unplaced.jibe(req.question or ""):
+        #: A jibe is banter even when a note holds the word "mum" (audit 1031 C21).
+        return _unplaced_events(req)
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:
