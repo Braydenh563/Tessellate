@@ -2386,3 +2386,30 @@ let personaEditing = null; // name currently in inline-edit mode
 document.addEventListener("change", (event) => {
   if (event.target?.id === "persona-select") paintDashboardPersonaMark();
 });
+
+// --- where focus goes when a dialog closes (SH5, SH2, BD13, DC11, GR6) -------------
+//: One pair for every dialog and panel that is not a sheet: `focusBackTo`
+//: on close and `focusFirstIn` on open. An opener that is gone, hidden or
+//: just `<body>` (a dialog opened by a key, the palette or the API) falls
+//: to `fallback`, a selector or element, so a close never leaves the page
+//: with nothing focused. Returns whether anything took focus.
+function focusBackTo(opener, fallback = null) {
+  const candidates = [opener, typeof fallback === "string" ? document.querySelector(fallback) : fallback];
+  for (const el of candidates) {
+    if (!(el instanceof HTMLElement) || el === document.body || !el.isConnected) continue;
+    if (!el.getClientRects().length || el.closest("[inert]")) continue;
+    el.focus();
+    if (document.activeElement === el) return true;
+  }
+  return false;
+}
+//: The first thing worth typing into or pressing in a dialog: `preferred`
+//: (selector) when it is there, else the first field, else the first button.
+function focusFirstIn(root, preferred = null) {
+  const pick = (selector) => [...root.querySelectorAll(selector)].find((el) => !el.disabled && el.getClientRects().length);
+  const el = (preferred && pick(preferred))
+    || pick("input:not([type=hidden]), textarea, select, [contenteditable=true]")
+    || pick("button, [href], [tabindex]:not([tabindex='-1'])");
+  el?.focus();
+  return !!el;
+}

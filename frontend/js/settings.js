@@ -659,7 +659,7 @@ function closeSettingsModal() {
   //: floating over the page (measured, scratchpad/ui-sweeps/menus.js).
   closeActionMenus();
   $("settings-modal").classList.add("hidden");
-  overlayReturnFocus?.focus?.();
+  focusBackTo(overlayReturnFocus, "#settings-btn");
   overlayReturnFocus = null;
 }
 

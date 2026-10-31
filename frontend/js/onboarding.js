@@ -446,7 +446,7 @@ function closeOnboarding(withTour = false) {
   // when the tour itself ends, and Settings, help and guide is the way back to
   // either of them.
   prefs.set("tourDone", "1");
-  overlayReturnFocus?.focus?.();
+  focusBackTo(overlayReturnFocus, "#tab-bar [aria-selected='true']");
   //: Whatever waited for the welcome (the first start's update question).
   //: `tour` says the tour is opening next, so the first-run queue
   //: (`firstRunTurn`, above) waits for it as well.

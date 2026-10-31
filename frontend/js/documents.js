@@ -18249,9 +18249,9 @@ function renderDocProse() {
   count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
-      ? `${nounCount(docProseFound.length, "suggestion")}${win ? " nearby" : ""}`
+      ? `${docProseFound.length.toLocaleString("en")} ${docProseFound.length === 1 ? "suggestion" : "suggestions"}${win ? " in view" : ""}`
       : win
-        ? "No suggestions nearby"
+        ? "No suggestions in view"
         : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
@@ -18351,7 +18351,7 @@ function docProseHeader() {
   //: offer to link a note (`DOC_FIX_ALL_NEVER`).
   const fixable = docProseFound.filter((f) => f.replacement !== null && !DOC_FIX_ALL_NEVER.has(f.rule));
   if (fixable.length) {
-    const all = tool(`ph:magic-wand Fix ${fixable.length}`, `Fix ${fixable.length}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
+    const all = tool(`ph:magic-wand Fix all ${fixable.length.toLocaleString("en")}`, `Fix all ${fixable.length.toLocaleString("en")}: apply every suggestion that has one clear answer`, () => docProseFixAll(), "doc-prose-fix-all");
     tools.appendChild(all);
   }
   //: **Meaning needs a model** (ROADMAP: its/it's, agreement, tense), and

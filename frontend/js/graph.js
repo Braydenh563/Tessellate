@@ -3663,6 +3663,7 @@ function openGraphNewNote(event, linkFrom = null) {
   closeGraphPopup();
   graphNewLinkFrom = linkFrom;
   const popup = $("graph-new");
+  if (popup.classList.contains("hidden")) graphLate.newOpener = document.activeElement;
   $("graph-new-content").value = "";
   $("graph-new-note-title").value = "";
   $("graph-new-tags").value = "";
@@ -3702,7 +3703,11 @@ function placeGraphNewNote() {
 
 function closeGraphNewNote() {
   graphNewLinkFrom = null;
-  $("graph-new").classList.add("hidden");
+  const popup = $("graph-new");
+  const inside = popup.contains(document.activeElement);
+  popup.classList.add("hidden");
+  if (inside) focusBackTo(graphLate.newOpener, "#graph-add-node");
+  graphLate.newOpener = null;
 }
 
 async function saveGraphNewNote() {

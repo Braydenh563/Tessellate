@@ -160,7 +160,7 @@ function closePalette() {
   $("palette-list").replaceChildren();
   clearTimeout(paletteNoteHits.timer);
   Object.assign(paletteNoteHits, { query: "", hits: [], run: paletteNoteHits.run + 1 });
-  overlayReturnFocus?.focus?.();
+  focusBackTo(overlayReturnFocus, "#tab-bar [aria-selected='true']");
   overlayReturnFocus = null;
 }
 
