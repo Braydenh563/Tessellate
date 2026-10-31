@@ -75,10 +75,10 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Paste null file item (owner log)
 - [x] Perf audit (perf-1031.md); fixes: agent perf2-1031
 - [x] Perf audit top five fixes (agent perf2-1031) (perf-1031.md)
-- [ ] Plan phases (ROADMAP table order)
-- [ ] BACKLOG
+- [>] Plan phases (ROADMAP table order): fed to agents as they free up; seven agents run on the owner's 1031 items first
+- [>] BACKLOG: after the plan phases
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
-- [ ] Scan rotation: bugs, security, architecture, UI, learnability (after every three items)
+- [>] Scan rotation: bugs, security, architecture, UI, learnability (after every three items). Round 1031: reviewer on private chat and cplx merges (running)
 - [x] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
 - [!] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only. Fable start refused by the lean-workflow guard (owner must name it again in a message); the owner's second choice, Opus, runs it (agent fablecomp-1031).
 - [ ] Companion NPC upgrade, INBOX 1463 open items 1 to 5 (agent fablecomp-1031, Opus)
@@ -86,3 +86,4 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1482 grouped file type picker (agent typepick-1031)
 - [ ] INBOX 1479 capture card (agent capture-1031)
 - [ ] INBOX 1478 popup anatomy (agent popups-1031)
+- [ ] Perf leftovers: notes list append, statistics aggregate, graph cooling draws (agent perf3-1031)
