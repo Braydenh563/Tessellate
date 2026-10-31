@@ -8218,7 +8218,8 @@ const DOC_MATH_OPERATORS = {
   star: "⋆", perp: "⊥", parallel: "∥", angle: "∠", degree: "°",
   ldots: "…", dots: "…", cdots: "⋯", vdots: "⋮",
   sum: "∑", prod: "∏", int: "∫", iint: "∬", oint: "∮",
-  bigcup: "⋃", bigcap: "⋂", sqrt: "√",
+  bigcup: "⋃", bigcap: "⋂", sqrt: "√", iiint: "∭", coprod: "∐",
+  lfloor: "⌊", rfloor: "⌋", lceil: "⌈", rceil: "⌉", langle: "⟨", rangle: "⟩",
 };
 
 //: A named function is set upright, not italic: `sin x` is a function applied
@@ -8443,7 +8444,7 @@ function docMathCommand(name, tokens, state) {
     if (!next) return { tag: "mrow", kids: [] };
     state.at += 1;
     if (next.kind === "cmd" && next.value === ".") return { tag: "mrow", kids: [] };
-    return { tag: "mo", text: next.value || "" };
+    return { tag: "mo", text: DOC_MATH_OPERATORS[next.value] || next.value || "" };
   }
   if (DOC_MATH_LETTERS[name]) return { tag: "mi", text: DOC_MATH_LETTERS[name] };
   if (DOC_MATH_OPERATORS[name]) return { tag: "mo", text: DOC_MATH_OPERATORS[name] };
