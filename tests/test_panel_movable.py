@@ -277,3 +277,26 @@ def test_a_side_dock_pushes_the_app_aside_with_one_pref_and_two_controls() -> No
     assert '["panel-push-toggle", "panel-push"]' in rows
     # a side the app is pushed away from is not an obstacle to the dock itself
     assert 'ignore === (west ? "left" : "right")' in js
+
+
+def test_a_pinned_panel_minimises_to_a_pill_above_the_composer() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
+    # the button sits before Close, named for the panel
+    assert 'min.className = "icon-only ghost small dialog-head-btn panel-min"' in js
+    assert "close.parentElement.insertBefore(min, close)" in js
+    assert 'st.min.setAttribute("aria-label", `Minimise ${label}`)' in js
+    # the pill: glyph, name, a small x that closes; the button restores
+    assert 'chip.className = "panel-chip"' in js and "panel-chip-open" in js and "panel-chip-x" in js
+    assert 'x.setAttribute("aria-label", `Close ${title}`)' in js
+    # state is kept: the host is hidden, never emptied; a dialog is re-opened quietly
+    assert 'host.setAttribute("data-panel-min", "")' in js and "innerHTML" not in js
+    assert 'window.addEventListener("close", quiet, true)' in js
+    assert 'e.key !== "Escape" || !e.shiftKey' in js
+    # above the composer, else the status bar
+    assert '".chat-dock"' in js and 'getElementById("status-bar")' in js
+    # the recipe's look, from tokens
+    assert "[data-panel-min] {\n  visibility: hidden;" in css and 'tray.setAttribute("popover", "manual")' in js
+    for token in ("--radius-pill", "--card", "--border", "--shadow-md"):
+        assert f"var({token})" in css
+    assert "min-height: calc(var(--control-h-lg) + var(--space-4))" in css

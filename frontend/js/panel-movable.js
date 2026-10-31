@@ -109,7 +109,7 @@ function panelSafe(vw, vh, except, ignore = "") {
   const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
   const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
   for (const el of [...sides, ...docked]) {
-    if (!el.getClientRects().length) continue;
+    if (!panelShown(el)) continue;
     const r = el.getBoundingClientRect();
     const zone = PANEL_STATE.get(el)?.dock || "";
     if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
@@ -137,6 +137,9 @@ function panelPinned(panel) {
   }
   return false;
 }
+function panelShown(el) {
+  return el.getClientRects().length > 0 && !el.closest("[data-panel-min]");
+}
 function panelPushSide(panel, zone) {
   return (zone === "left" || zone === "right") && panelMovableOn() && panelPinned(panel) ? zone : "";
 }
@@ -146,7 +149,7 @@ function panelPushSync() {
   let r = 0;
   for (const el of document.querySelectorAll(".panel-movable-on")) {
     const st = PANEL_STATE.get(el);
-    const side = st && el.getClientRects().length ? panelPushSide(el, st.dock) : "";
+    const side = st && panelShown(el) ? panelPushSide(el, st.dock) : "";
     if (st && st.push) st.push.hidden = !side;
     if (st && st.push) st.push.setAttribute("aria-pressed", String(panelPushOn()));
     if (!side || !panelPushOn()) continue;
@@ -253,7 +256,7 @@ function panelId(panel) {
 function panelSt(panel) {
   let st = PANEL_STATE.get(panel);
   if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, skip: false };
+    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, min: null, skip: false };
     PANEL_STATE.set(panel, st);
   }
   return st;
@@ -399,7 +402,7 @@ function panelWatchOpen(panel) {
   if (typeof IntersectionObserver === "undefined") return;
   PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
     for (const en of list) {
-      if (en.isIntersecting || panelRestoreOn()) continue;
+      if (en.isIntersecting || panelRestoreOn() || en.target.closest("[data-panel-min]")) continue;
       const st = panelSt(en.target);
       st.x = st.y = 0;
       st.w = st.h = null;
@@ -503,7 +506,26 @@ function panelAdopt(panel) {
       push.appendChild(pushIcon);
       (actions || head).insertBefore(push, btn);
       st.push = push;
+      if (panelPinned(panel)) {
+        const min = document.createElement("button");
+        min.type = "button";
+        min.className = "icon-only ghost small dialog-head-btn panel-min";
+        const minIcon = document.createElement("i");
+        minIcon.className = "ph ph-minus";
+        minIcon.setAttribute("aria-hidden", "true");
+        min.appendChild(minIcon);
+        min.addEventListener("click", () => panelMinimise(panel));
+        const close = panelCloseBtn(panel);
+        if (close) close.parentElement.insertBefore(min, close);
+        else (actions || head).appendChild(min);
+        st.min = min;
+      }
     }
+  }
+  if (st.min) {
+    const label = panelTitle(panel);
+    st.min.setAttribute("aria-label", `Minimise ${label}`);
+    st.min.title = `Minimise ${label} (Shift+Escape)`;
   }
   panelSync(panel);
   if (!st.grip || !st.grip.isConnected || st.grip.parentElement !== panel) {
@@ -702,6 +724,135 @@ function panelGripKey(e) {
   panelApply(panel, st);
   panelSave(panel);
 }
+//: **Minimise** (INBOX 1475, the owner: "popups should have a minimise button
+//: with a popup or indicator somewhere so the user can open it up or close the
+//: popup"). A pinned panel (a dialog or overlay) hides with its state kept and
+//: shows as a pill in `#panel-min-tray`, floating above the composer at the
+//: content's bottom left; the pill restores it, its x closes it. A dialog is
+//: re-opened non-modal while hidden (a modal one would keep the app inert) and
+//: modal again on restore; the `close` it fires is swallowed so the panel's own
+//: close handling does not run. Shift+Escape minimises from the keyboard.
+const PANEL_MIN = new Map();
+function panelMinHost(panel) {
+  return panel.closest("dialog") || panelScrimOf(panel) || panel;
+}
+function panelTitle(panel) {
+  const el = panel.querySelector(".dialog-head-title");
+  return el ? el.textContent.trim().replace(/\s+/g, " ") || "Panel" : "Panel";
+}
+function panelCloseBtn(panel) {
+  const head = panelHeadOf(panel);
+  return head && head.querySelector('button[aria-label^="Close"], button[title^="Close"], button[data-close]');
+}
+function panelReopen(host, modal) {
+  const quiet = (e) => {
+    if (e.target !== host) return;
+    e.stopPropagation();
+    window.removeEventListener("close", quiet, true);
+  };
+  window.addEventListener("close", quiet, true);
+  host.close();
+  if (modal) host.showModal();
+  else host.show();
+}
+function panelMinTray() {
+  let tray = document.getElementById("panel-min-tray");
+  if (!tray) {
+    tray = document.createElement("div");
+    tray.id = "panel-min-tray";
+    tray.setAttribute("role", "group");
+    tray.setAttribute("aria-label", "Minimised panels");
+    tray.setAttribute("popover", "manual");
+    document.body.appendChild(tray);
+  }
+  return tray;
+}
+//: Above the chat composer when it is on screen, else above the status bar, at
+//: the left of the page the reader is on.
+function panelMinPlace() {
+  const tray = document.getElementById("panel-min-tray");
+  if (!tray) return;
+  const shown = (el) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
+  const page = shown(document.querySelector("#app-main > .tab-page:not(.hidden)"));
+  const dock = shown(document.querySelector(".chat-dock"));
+  const foot = shown(document.getElementById("status-bar"));
+  const gap = parseFloat(getComputedStyle(tray).paddingLeft) || 8;
+  const left = (dock || page || { left: 0 }).left + gap;
+  const floor = dock ? dock.top : foot ? foot.top : window.innerHeight;
+  tray.style.left = `${Math.round(left)}px`;
+  tray.style.bottom = `${Math.round(window.innerHeight - floor + gap)}px`;
+}
+function panelChip(panel, host) {
+  const title = panelTitle(panel);
+  const chip = document.createElement("span");
+  chip.className = "panel-chip";
+  const open = document.createElement("button");
+  open.type = "button";
+  open.className = "panel-chip-open";
+  open.setAttribute("aria-label", `Restore ${title}`);
+  const glyph = panel.querySelector(".dialog-head-title .ph");
+  const icon = document.createElement("i");
+  icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead").join(" ") : "ph ph-app-window";
+  icon.setAttribute("aria-hidden", "true");
+  const name = document.createElement("span");
+  name.textContent = title;
+  open.append(icon, name);
+  open.addEventListener("click", () => panelRestore(host));
+  const x = document.createElement("button");
+  x.type = "button";
+  x.className = "panel-chip-x";
+  x.setAttribute("aria-label", `Close ${title}`);
+  x.title = `Close ${title}`;
+  const xi = document.createElement("i");
+  xi.className = "ph ph-x";
+  xi.setAttribute("aria-hidden", "true");
+  x.appendChild(xi);
+  x.addEventListener("click", () => panelRestore(host, true));
+  chip.append(open, x);
+  return chip;
+}
+function panelMinimise(panel) {
+  const host = panelMinHost(panel);
+  if (PANEL_MIN.has(host)) return;
+  const modal = host.tagName === "DIALOG" && host.matches(":modal");
+  const chip = panelChip(panel, host);
+  PANEL_MIN.set(host, { panel, chip, modal });
+  host.setAttribute("data-panel-min", "");
+  host.inert = true;
+  if (host.tagName === "DIALOG" && host.open) panelReopen(host, false);
+  const tray = panelMinTray();
+  tray.appendChild(chip);
+  if (!tray.matches(":popover-open")) tray.showPopover();
+  panelMinPlace();
+  panelPushSync();
+  chip.querySelector(".panel-chip-open").focus({ preventScroll: true });
+}
+function panelRestore(host, close = false) {
+  const m = PANEL_MIN.get(host);
+  if (!m) return;
+  PANEL_MIN.delete(host);
+  m.chip.remove();
+  host.removeAttribute("data-panel-min");
+  host.inert = false;
+  if (!PANEL_MIN.size) panelMinTray().hidePopover();
+  if (host.tagName === "DIALOG" && host.open && m.modal) panelReopen(host, true);
+  const gone = host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden");
+  if (gone) return;
+  panelPushSync();
+  const btn = close ? panelCloseBtn(m.panel) : panelSt(m.panel).min;
+  if (btn) btn.focus({ preventScroll: true });
+  if (close) (btn ? btn.click() : host.tagName === "DIALOG" && host.close());
+}
+function panelMinKey(e) {
+  if (e.key !== "Escape" || !e.shiftKey || !(e.target instanceof Element)) return;
+  const host = e.target.closest('dialog, [role="dialog"]');
+  const head = host && host.querySelector(".dialog-head");
+  const panel = head && panelOf(head);
+  if (!panel || !panelSt(panel).min) return;
+  e.preventDefault();
+  e.stopPropagation();
+  panelMinimise(panel);
+}
 function panelPushToggle() {
   const on = !panelPushOn();
   prefs.set("panel-push", on ? "on" : "off");
@@ -717,6 +868,7 @@ let panelResizeTimer = 0;
 function panelWindowResized() {
   clearTimeout(panelResizeTimer);
   panelResizeTimer = setTimeout(() => {
+    if (PANEL_MIN.size) panelMinPlace();
     const on = panelMovableOn();
     document.querySelectorAll(".panel-movable-on").forEach((panel) => {
       const st = panelSt(panel);
@@ -733,6 +885,9 @@ function panelWindowResized() {
 }
 if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener("focusin", (e) => { const p = panelOf(e.target); if (p) panelAdopt(p); }, true);
+  document.addEventListener("keydown", panelMinKey, true);
+  //: A pill rides above the page the reader is on: put it back after a tab change.
+  document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
   document.addEventListener("pointerover", (e) => {
     const t = e.target;
     if (t instanceof Element && t.closest(".dialog-head")) { const p = panelOf(t); if (p) panelAdopt(p); }

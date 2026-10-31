@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7039, frontend ids 2598, CSS sections 507, backend routes 632, backend modules 7761, test files 1658, tests 14348, plan headings 990.
+Counts: frontend functions 7050, frontend ids 2598, CSS sections 507, backend routes 632, backend modules 7761, test files 1658, tests 14349, plan headings 990.
 
-## Frontend functions (7039)
+## Frontend functions (7050)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5514,54 +5514,65 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:410 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
-### frontend/js/panel-movable.js (45)
+### frontend/js/panel-movable.js (56)
 
 | Name | File:line |
 |---|---|
-| `panelAdopt` | frontend/js/panel-movable.js:452 |
-| `panelApply` | frontend/js/panel-movable.js:261 |
-| `panelClamp` | frontend/js/panel-movable.js:297 |
+| `panelAdopt` | frontend/js/panel-movable.js:455 |
+| `panelApply` | frontend/js/panel-movable.js:264 |
+| `panelChip` | frontend/js/panel-movable.js:785 |
+| `panelClamp` | frontend/js/panel-movable.js:300 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
-| `panelDock` | frontend/js/panel-movable.js:379 |
-| `panelFit` | frontend/js/panel-movable.js:364 |
-| `panelFull` | frontend/js/panel-movable.js:415 |
-| `panelGripDown` | frontend/js/panel-movable.js:617 |
-| `panelGripKey` | frontend/js/panel-movable.js:668 |
-| `panelGripRoom` | frontend/js/panel-movable.js:525 |
-| `panelHeadDown` | frontend/js/panel-movable.js:534 |
-| `panelHeadOf` | frontend/js/panel-movable.js:293 |
-| `panelId` | frontend/js/panel-movable.js:246 |
-| `panelInset` | frontend/js/panel-movable.js:343 |
-| `panelKeyDelta` | frontend/js/panel-movable.js:171 |
-| `panelLayout` | frontend/js/panel-movable.js:220 |
-| `panelMovableOn` | frontend/js/panel-movable.js:225 |
-| `panelOf` | frontend/js/panel-movable.js:235 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:743 |
+| `panelDock` | frontend/js/panel-movable.js:382 |
+| `panelFit` | frontend/js/panel-movable.js:367 |
+| `panelFull` | frontend/js/panel-movable.js:418 |
+| `panelGripDown` | frontend/js/panel-movable.js:639 |
+| `panelGripKey` | frontend/js/panel-movable.js:690 |
+| `panelGripRoom` | frontend/js/panel-movable.js:547 |
+| `panelHeadDown` | frontend/js/panel-movable.js:556 |
+| `panelHeadOf` | frontend/js/panel-movable.js:296 |
+| `panelId` | frontend/js/panel-movable.js:249 |
+| `panelInset` | frontend/js/panel-movable.js:346 |
+| `panelKeyDelta` | frontend/js/panel-movable.js:174 |
+| `panelLayout` | frontend/js/panel-movable.js:223 |
+| `panelMinHost` | frontend/js/panel-movable.js:736 |
+| `panelMinKey` | frontend/js/panel-movable.js:846 |
+| `panelMinPlace` | frontend/js/panel-movable.js:772 |
+| `panelMinTray` | frontend/js/panel-movable.js:758 |
+| `panelMinimise` | frontend/js/panel-movable.js:814 |
+| `panelMovableOn` | frontend/js/panel-movable.js:228 |
+| `panelOf` | frontend/js/panel-movable.js:238 |
 | `panelPinned` | frontend/js/panel-movable.js:134 |
-| `panelPreviewEl` | frontend/js/panel-movable.js:333 |
+| `panelPreviewEl` | frontend/js/panel-movable.js:336 |
 | `panelPushOn` | frontend/js/panel-movable.js:131 |
-| `panelPushSide` | frontend/js/panel-movable.js:140 |
-| `panelPushSync` | frontend/js/panel-movable.js:143 |
-| `panelPushToggle` | frontend/js/panel-movable.js:705 |
-| `panelReset` | frontend/js/panel-movable.js:419 |
-| `panelResetSize` | frontend/js/panel-movable.js:432 |
-| `panelRestoreOn` | frontend/js/panel-movable.js:168 |
+| `panelPushSide` | frontend/js/panel-movable.js:143 |
+| `panelPushSync` | frontend/js/panel-movable.js:146 |
+| `panelPushToggle` | frontend/js/panel-movable.js:856 |
+| `panelReopen` | frontend/js/panel-movable.js:747 |
+| `panelReset` | frontend/js/panel-movable.js:422 |
+| `panelResetSize` | frontend/js/panel-movable.js:435 |
+| `panelRestore` | frontend/js/panel-movable.js:830 |
+| `panelRestoreOn` | frontend/js/panel-movable.js:171 |
 | `panelSafe` | frontend/js/panel-movable.js:97 |
-| `panelSave` | frontend/js/panel-movable.js:444 |
-| `panelScrimLift` | frontend/js/panel-movable.js:287 |
-| `panelScrimOf` | frontend/js/panel-movable.js:284 |
-| `panelShowZone` | frontend/js/panel-movable.js:346 |
+| `panelSave` | frontend/js/panel-movable.js:447 |
+| `panelScrimLift` | frontend/js/panel-movable.js:290 |
+| `panelScrimOf` | frontend/js/panel-movable.js:287 |
+| `panelShowZone` | frontend/js/panel-movable.js:349 |
+| `panelShown` | frontend/js/panel-movable.js:140 |
 | `panelSnapZone` | frontend/js/panel-movable.js:68 |
-| `panelSt` | frontend/js/panel-movable.js:253 |
-| `panelStoreFits` | frontend/js/panel-movable.js:213 |
-| `panelStoreParse` | frontend/js/panel-movable.js:177 |
-| `panelStoreRead` | frontend/js/panel-movable.js:188 |
-| `panelStoreWrite` | frontend/js/panel-movable.js:196 |
-| `panelSync` | frontend/js/panel-movable.js:391 |
-| `panelUnsnap` | frontend/js/panel-movable.js:384 |
-| `panelWatchOpen` | frontend/js/panel-movable.js:398 |
-| `panelWindowResized` | frontend/js/panel-movable.js:717 |
-| `panelZoneFor` | frontend/js/panel-movable.js:164 |
+| `panelSt` | frontend/js/panel-movable.js:256 |
+| `panelStoreFits` | frontend/js/panel-movable.js:216 |
+| `panelStoreParse` | frontend/js/panel-movable.js:180 |
+| `panelStoreRead` | frontend/js/panel-movable.js:191 |
+| `panelStoreWrite` | frontend/js/panel-movable.js:199 |
+| `panelSync` | frontend/js/panel-movable.js:394 |
+| `panelTitle` | frontend/js/panel-movable.js:739 |
+| `panelUnsnap` | frontend/js/panel-movable.js:387 |
+| `panelWatchOpen` | frontend/js/panel-movable.js:401 |
+| `panelWindowResized` | frontend/js/panel-movable.js:868 |
+| `panelZoneFor` | frontend/js/panel-movable.js:167 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
 ### frontend/js/personas-pane.js (4)
@@ -11171,7 +11182,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/objmove-lazy.css | 120 |
 | frontend/css/offline-split-lazy.css | 71 |
-| frontend/css/panel-movable-lazy.css | 118 |
+| frontend/css/panel-movable-lazy.css | 193 |
 | frontend/css/plain-head-lazy.css | 17 |
 | frontend/css/questions-lazy.css | 102 |
 | frontend/css/quick-access-lazy.css | 105 |
@@ -14206,8 +14217,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2960 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3086 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2964 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3090 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -21393,7 +21404,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14348)
+## Tests (14349)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22489,7 +22500,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_palette_guide_after_action_1449.py | 4 |
 | tests/test_palette_head_gap.py | 2 |
 | tests/test_palette_synonyms.py | 5 |
-| tests/test_panel_movable.py | 17 |
+| tests/test_panel_movable.py | 18 |
 | tests/test_panel_movable_whole_1448.py | 1 |
 | tests/test_panel_scrim_lift_1029.py | 3 |
 | tests/test_passes.py | 7 |
@@ -23764,7 +23775,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1276 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:287 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:283 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4187 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |
