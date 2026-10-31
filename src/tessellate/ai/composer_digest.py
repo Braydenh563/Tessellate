@@ -4235,7 +4235,11 @@ def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) ->
     #: first clause (C8), never by a section's label or "untitled".
     name = _note_called(title) if title else _your_note(v)
     said = [(_fragment(_second_person(f.body), names), f) for f in facts]
-    if len(said) == 1 and not title:
+    #: A note named by a label ("Your gym note") says one thing as any titled one
+    #: does, and only a "The note that starts ..." name (which would repeat its
+    #: own first clause) is dated instead (audit 1030 Z55; INBOX 1441 keeps the
+    #: day out of an untimed question).
+    if len(said) == 1 and not title and not name.lower().startswith("your "):
         out.lines.append(PHRASES["this_line"].format(day=_day(v.written, today), where=where, pause="," if where else "", fact=said[0][0][:1].upper() + said[0][0][1:].rstrip(".")))
         out.rows.append(_row(said[0][0], said[0][1]))
         return
