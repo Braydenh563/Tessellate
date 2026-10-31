@@ -96,3 +96,4 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1489 nested faint surfaces (agent faint-1031, running)
 - [!] Fable deep analysis (extras done, 9b59975; the plugin guard refuses the next Fable spawn until the owner names Fable again in a new message), one Fable at a time (owner named it): extras, notes, composer, ai, harness, shell, board, docs, code, graph, backend, ux, perf, then architecture and the ranked file (agent/audit-1031)
 - [ ] Base red and 1490 regression: no_open_items, route_688 clock, mermaid flowchart, knitting, Departure year, SearXNG how-to (composer6-1031 resumed)
+- [ ] Fix audit-1031-extras Z1 to Z20, Z20 first (agent xfix-1031)
