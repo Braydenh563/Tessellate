@@ -195,7 +195,7 @@ function renderTaskHistory(history) {
     //: A turn the person watched in its own surface (a chat answer) is in
     //: the list below, not announced: one notification per question asked
     //: would bury the ones that matter.
-    if (item.origin === "you" && WATCHED_RUN_KINDS.has(item.kind)) continue;
+    if (item.origin === "you" && item.lane === "user") continue;
     if (taskEndingIsUpkeep(item)) continue;
     const key = `task:${item.kind || item.label}:${item.at}`;
     //: Its "Started:" row becomes the ending (INBOX 811 item 4): one row
@@ -220,15 +220,15 @@ function renderTaskHistory(history) {
   //: Background work is the list; the turns a person started, and the app's
   //: own AI calls, sit in one closed fold under it with their count.
   const folded = taskRepeatsFolded(history);
-  const turns = folded.filter((item) => TASK_TURN_KINDS.has(item.kind));
-  for (const item of folded) if (!TASK_TURN_KINDS.has(item.kind)) list.appendChild(taskHistoryRow(item));
+  const turns = folded.filter((item) => item.lane === "user");
+  for (const item of folded) if (item.lane !== "user") list.appendChild(taskHistoryRow(item));
   if (!turns.length) return;
   const fold = document.createElement("details");
   fold.className = "task-turns";
   fold.open = Boolean(foldOpen);
   const summary = document.createElement("summary");
   summary.className = "fold-summary";
-  summary.textContent = `Chat turns and AI requests (${turns.length})`;
+  summary.textContent = `Requests and answers (${turns.length})`;
   const inner = document.createElement("ul");
   inner.className = "entry-list";
   for (const item of turns) inner.appendChild(taskHistoryRow(item));
@@ -256,8 +256,6 @@ function taskRepeatsFolded(history) {
   return out;
 }
 
-//: What a finished job is: the person's own turns and the AI calls the app makes for them (HR4).
-const TASK_TURN_KINDS = new Set(["generation", "ai-call", "model-info"]);
 
 function taskHistoryRow(item) {
   const style = TASK_OUTCOMES[item.outcome] || TASK_OUTCOMES.completed;

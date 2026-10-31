@@ -1045,6 +1045,53 @@ FULL_REFRESH_SECONDS = 30.0
 _STAMP_COLUMNS = "id, updated_at, tags, category_id, user_filed, is_board, workspace_id"
 
 
+def _read_stamps(connection, corpus: _Corpus, now: float) -> dict[int, tuple]:  # noqa: ANN001
+    """The stamps to compare: every kept note on a full refresh, else only what moved."""
+    current: dict[int, tuple] = {}
+    if corpus.mark is None or now - corpus.full_at > FULL_REFRESH_SECONDS:
+        rows = connection.exec_driver_sql(
+            f"SELECT {_STAMP_COLUMNS} FROM entries "  # noqa: S608  # constant columns
+            "WHERE is_deleted = 0 AND is_private = 0 ORDER BY id DESC LIMIT ?",
+            (MAX_EXAMPLES,),
+        ).fetchall()
+        current = {int(row[0]): tuple(row[1:]) for row in rows}
+        for gone in [entry_id for entry_id in corpus.docs if entry_id not in current]:
+            corpus.remove(gone)
+        corpus.full_at = now
+        return current
+    # What moved since the last read, binned and made private included:
+    # those leave the corpus. `>=`, so a write in the same instant as the
+    # mark is read again rather than missed; its stamp then matches.
+    for row in connection.exec_driver_sql(
+        f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
+        "WHERE updated_at >= ?",
+        (corpus.mark,),
+    ).fetchall():
+        entry_id = int(row[0])
+        if row[7] or row[8]:
+            corpus.remove(entry_id)
+        else:
+            current[entry_id] = tuple(row[1:7])
+    return current
+
+
+def _read_stale(connection, corpus: _Corpus, current: dict[int, tuple]) -> None:  # noqa: ANN001
+    """Fetch the text of every note whose stamp differs from the kept one, in batches."""
+    stale = [entry_id for entry_id, stamp in current.items() if (doc := corpus.docs.get(entry_id)) is None or doc.stamp != stamp]
+    for start in range(0, len(stale), 500):
+        batch = stale[start : start + 500]
+        placeholders = ",".join("?" for _ in batch)
+        for entry_id, content in connection.exec_driver_sql(
+            f"SELECT id, content FROM entries WHERE id IN ({placeholders})", tuple(batch)  # noqa: S608  # placeholders only
+        ).fetchall():
+            stamp = current[int(entry_id)]
+            _updated, raw_tags, category_id, by_hand, board, workspace = stamp
+            corpus.add(
+                int(entry_id),
+                _make_doc(stamp, content or "", _tags(raw_tags), workspace, category_id, by_hand, board),
+            )
+
+
 def _corpus_for(session: Session) -> _Corpus:
     """The kept corpus for this notebook, brought up to date. Call under
     `_corpus_lock`.
@@ -1060,50 +1107,13 @@ def _corpus_for(session: Session) -> _Corpus:
         _corpus = _Corpus(key)
     corpus = _corpus
     connection = session.connection()
-    now = time.monotonic()
-    current: dict[int, tuple] = {}
-    if corpus.mark is None or now - corpus.full_at > FULL_REFRESH_SECONDS:
-        rows = connection.exec_driver_sql(
-            f"SELECT {_STAMP_COLUMNS} FROM entries "  # noqa: S608  # constant columns
-            "WHERE is_deleted = 0 AND is_private = 0 ORDER BY id DESC LIMIT ?",
-            (MAX_EXAMPLES,),
-        ).fetchall()
-        current = {int(row[0]): tuple(row[1:]) for row in rows}
-        for gone in [entry_id for entry_id in corpus.docs if entry_id not in current]:
-            corpus.remove(gone)
-        corpus.full_at = now
-    else:
-        # What moved since the last read, binned and made private included:
-        # those leave the corpus. `>=`, so a write in the same instant as the
-        # mark is read again rather than missed; its stamp then matches.
-        for row in connection.exec_driver_sql(
-            f"SELECT {_STAMP_COLUMNS}, is_deleted, is_private FROM entries "  # noqa: S608  # constant columns
-            "WHERE updated_at >= ?",
-            (corpus.mark,),
-        ).fetchall():
-            entry_id = int(row[0])
-            if row[7] or row[8]:
-                corpus.remove(entry_id)
-            else:
-                current[entry_id] = tuple(row[1:7])
+    current = _read_stamps(connection, corpus, time.monotonic())
     marks = [stamp[0] for stamp in current.values() if stamp[0] is not None]
     if marks:
         corpus.mark = max([*marks, corpus.mark] if corpus.mark is not None else marks)
     elif corpus.mark is None:
         corpus.mark = ""
-    stale = [entry_id for entry_id, stamp in current.items() if (doc := corpus.docs.get(entry_id)) is None or doc.stamp != stamp]
-    for start in range(0, len(stale), 500):
-        batch = stale[start : start + 500]
-        placeholders = ",".join("?" for _ in batch)
-        for entry_id, content in connection.exec_driver_sql(
-            f"SELECT id, content FROM entries WHERE id IN ({placeholders})", tuple(batch)  # noqa: S608  # placeholders only
-        ).fetchall():
-            stamp = current[int(entry_id)]
-            _updated, raw_tags, category_id, by_hand, board, workspace = stamp
-            corpus.add(
-                int(entry_id),
-                _make_doc(stamp, content or "", _tags(raw_tags), workspace, category_id, by_hand, board),
-            )
+    _read_stale(connection, corpus, current)
     # The newest `MAX_EXAMPLES`, as the full read takes them.
     if len(corpus.docs) > MAX_EXAMPLES:
         for entry_id in sorted(corpus.docs)[: len(corpus.docs) - MAX_EXAMPLES]:

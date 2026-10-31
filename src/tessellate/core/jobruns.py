@@ -93,6 +93,21 @@ WATCH_ONLY_KINDS: dict[str, str] = {
     "filing-late": "Late filing answer",
 }
 
+#: **The lane a kind of work is in** (audit 1031 HR4, SH3, AR6). "user" is work a
+#: person asked for and watches where they started it: an answer or a draft
+#: streaming, a transcription, and the model calls the app makes for those
+#: (`ai-call`, `model-info`). Everything else is "background". The server says
+#: it on every running and finished row so the panel, the Tasks history fold and
+#: the bell read one field and keep no list of their own.
+USER_KINDS = frozenset({"generation", "ai-call", "model-info", "transcription", "ocr", "run"})
+
+
+def lane_of(kind: str) -> str:
+    """`user` or `background`, for a run or history kind (a pool job's running
+    row is `job-<kind>`, which is background, as its bare kind is)."""
+    return "user" if kind in USER_KINDS else "background"
+
+
 #: Longest result or error kept: the column is 400 and a line is a line.
 _MAX_TEXT = 300
 
@@ -531,6 +546,8 @@ def merged_history(entries: list[dict], limit: int = FINISHED_KEEP) -> list[dict
         out.append(row)
     out.extend(ledger)
     out.sort(key=lambda row: row.get("ended") or 0.0, reverse=True)
+    for row in out:
+        row["lane"] = lane_of(str(row.get("kind") or ""))
     return out[:limit]
 
 

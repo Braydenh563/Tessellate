@@ -129,47 +129,83 @@ def _prop_ids(session: Session, term: Term) -> set[int]:
     return out
 
 
-def _ids_for(session: Session, term: Term, everyone: dict[int, Entry]) -> set[int]:
+def _links_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
     from tessellate.entry import manager
 
-    if term.kind == "type":
-        return _prop_ids(session, Term("prop", term.value, "type", "="))
-    if term.kind == "prop":
-        return _prop_ids(session, term)
-    if term.kind == "links":
-        target = manager.find_by_wiki_name(session, term.value.lower())
-        if target is None:
-            return set()
-        rows = session.execute(
-            select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
-                or_(EntryLink.source_entry_id == target.id, EntryLink.target_entry_id == target.id)
-            )
-        ).all()
-        return {a if b == target.id else b for a, b in rows}
-    if term.kind == "rel":
-        want = term.value.casefold()
-        keys = {
-            key for key, kind in manager.relation_types(session).items()
-            if want in (key.casefold(), kind["name"].casefold(), (kind["inverse"] or "").casefold())
-        }
-        rows = session.execute(
-            select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(EntryLink.link_type.in_(keys))
-        ).all() if keys else []
-        return {i for pair in rows for i in pair}
-    if term.kind == "entity":
-        want = term.value.casefold()
-        ids = [
-            e.id for e in session.scalars(select(Entity).where(Entity.merged_into.is_(None)))
-            if e.name.casefold() == want or want in {str(a).casefold() for a in (e.aliases or [])}
-        ]
-        return set(session.scalars(select(EntityMention.entry_id).where(EntityMention.entity_id.in_(ids)))) if ids else set()
-    if term.kind == "tag":
-        return {
-            i for i, e in everyone.items()
-            if any(t.lower() == term.value.lower() or t.lower().startswith(f"{term.value.lower()}/") for t in manager.entry_tags(e))
-        }
-    # A word or a phrase, in a readable note's text.
+    target = manager.find_by_wiki_name(session, term.value.lower())
+    if target is None:
+        return set()
+    rows = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
+            or_(EntryLink.source_entry_id == target.id, EntryLink.target_entry_id == target.id)
+        )
+    ).all()
+    return {a if b == target.id else b for a, b in rows}
+
+
+def _rel_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
+    from tessellate.entry import manager
+
+    want = term.value.casefold()
+    keys = {
+        key for key, kind in manager.relation_types(session).items()
+        if want in (key.casefold(), kind["name"].casefold(), (kind["inverse"] or "").casefold())
+    }
+    if not keys:
+        return set()
+    rows = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(EntryLink.link_type.in_(keys))
+    ).all()
+    return {i for pair in rows for i in pair}
+
+
+def _entity_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
+    want = term.value.casefold()
+    ids = [
+        e.id for e in session.scalars(select(Entity).where(Entity.merged_into.is_(None)))
+        if e.name.casefold() == want or want in {str(a).casefold() for a in (e.aliases or [])}
+    ]
+    if not ids:
+        return set()
+    return set(session.scalars(select(EntityMention.entry_id).where(EntityMention.entity_id.in_(ids))))
+
+
+def _tag_ids(_session: Session, term: Term, everyone: dict[int, Entry]) -> set[int]:
+    from tessellate.entry import manager
+
+    want = term.value.lower()
+    return {
+        i for i, e in everyone.items()
+        if any(t.lower() == want or t.lower().startswith(f"{want}/") for t in manager.entry_tags(e))
+    }
+
+
+def _text_ids(_session: Session, term: Term, everyone: dict[int, Entry]) -> set[int]:
+    """A word or a phrase, in a readable note's text."""
     return {i for i, e in everyone.items() if not e.is_private and term.value in (e.content or "").casefold()}
+
+
+def _type_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
+    return _prop_ids(session, Term("prop", term.value, "type", "="))
+
+
+def _prop_term_ids(session: Session, term: Term, _everyone: dict[int, Entry]) -> set[int]:
+    return _prop_ids(session, term)
+
+
+#: One reader per term kind; a kind not listed is a word or phrase.
+_READERS = {
+    "type": _type_ids,
+    "prop": _prop_term_ids,
+    "links": _links_ids,
+    "rel": _rel_ids,
+    "entity": _entity_ids,
+    "tag": _tag_ids,
+}
+
+
+def _ids_for(session: Session, term: Term, everyone: dict[int, Entry]) -> set[int]:
+    return _READERS.get(term.kind, _text_ids)(session, term, everyone)
 
 
 def run(session: Session, raw: str) -> list[int]:

@@ -41,6 +41,12 @@ from tessellate.core import private_turn
 #: likelier to be current than one stated at setup.
 MEMORY_STREAM_BUDGET_CHARS = 600
 
+#: The longest single preference, by hand or by the model. One number for the
+#: Settings field's `maxlength`, the route's body, the tool and the copy
+#: (audit 1031 HR13: the field said 200 while a hand-written route took 2,000);
+#: `tests/test_validation_copy.py` holds the field to it.
+MAX_PREFERENCE_CHARS = 200
+
 
 def persona_with_memory(session: Session, persona_prompt: str | None) -> str:
     """The persona, plus the standing preferences the user has taught the AI.

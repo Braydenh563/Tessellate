@@ -907,10 +907,10 @@ function libraryActions(item) {
         const archived = await apiJson(`/conversations/${item.id}/archive`, { method: "PUT" }).catch((e) =>
           toast(e.message, true)
         );
-        if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
         if (chatConv && chatConv.id === item.id) newChatConversation();
         reload();
-        loadConversationList();
+        await loadConversationList();
+        if (archived) chatWriteRecord("chatArchiveUndo", item.id, item.title);
       }),
       makeMenuItem("ph:trash Delete", "Delete this chat", async () => {
         if (!(await confirmDialog("Delete this saved chat?"))) return;

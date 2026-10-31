@@ -1446,15 +1446,9 @@ def _with_meaning(
     """
     if kinds and not set(kinds) & set(search_index.ENTRY_KINDS):
         return rows
-    matrix = _live_matrix(session)
+    matrix = _warm_matrix(session)
     if matrix is None:
-        backend = _backend_id()
-        if backend is None:
-            return rows
-        warm_vectors(session, backend)
-        matrix = _live_matrix(session)
-        if matrix is None:
-            return rows
+        return rows
     try:
         deps = importlib.import_module("tessellate.core.deps")
         vector = deps.get_embeddings().embed_text(subject)
@@ -1463,15 +1457,44 @@ def _with_meaning(
         return rows
     if vector is None:
         return rows
+    have = {row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS}
+    nearest = _nearest_by_meaning(matrix, vector, floor, have)
+    if not nearest:
+        return rows
+    extra = _meaning_rows(session, nearest, kinds, space, asked)
+    if asked.excluded:
+        extra = [row for row in extra if not _mentions(row, asked.excluded)]
+    return rows + extra
+
+
+def _warm_matrix(session: Session):  # noqa: ANN202
+    """The live vector matrix, built once when cold, or None with no embedding backend.
+
+    Cold, but this is the search path rather than the "see also" panel, and a person who
+    just typed a query is waiting for the best answer this notebook can give. One build,
+    once per process; `related()` deliberately does not do this (see its own docstring).
+    """
+    matrix = _live_matrix(session)
+    if matrix is not None:
+        return matrix
+    backend = _backend_id()
+    if backend is None:
+        return None
+    warm_vectors(session, backend)
+    return _live_matrix(session)
+
+
+def _nearest_by_meaning(matrix, vector, floor: float, have: set) -> list[int]:  # noqa: ANN001
+    """Entry ids nearest the query vector that a keyword pass did not already bring."""
     import numpy as np
 
     query = np.asarray(vector, dtype="float32")
     norm = float(np.linalg.norm(query))
     if norm == 0:
-        return rows
+        return []
     with _matrix_lock:
         if not matrix.ids:
-            return rows
+            return []
         scores = matrix.rows @ (query / norm)
         ids = np.asarray(matrix.ids)
         live = matrix.live() & (ids >= 0)
@@ -1489,19 +1512,18 @@ def _with_meaning(
     else:
         relative = MEANING_SMALL_NOTEBOOK
     floor = max(floor, relative)
-    have = {row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS}
     order = np.argsort(-np.where(live, scores, -np.inf))[: MEANING_EXTRA + len(have)]
-    nearest = [
-        int(ids[i]) for i in order if live[i] and float(scores[i]) >= floor and int(ids[i]) not in have
-    ][:MEANING_EXTRA]
-    if not nearest:
-        return rows
+    return [int(ids[i]) for i in order if live[i] and float(scores[i]) >= floor and int(ids[i]) not in have][
+        :MEANING_EXTRA
+    ]
+
+
+def _meaning_rows(session: Session, nearest: list[int], kinds: list[str], space, asked) -> list[dict]:  # noqa: ANN001
+    """Index rows for the nearest entry ids, under the same space and date filters."""
     wanted = [kind for kind in (kinds or search_index.ENTRY_KINDS) if kind in search_index.ENTRY_KINDS]
-    params: dict = {}
     names = {f"id{i}": entry_id for i, entry_id in enumerate(nearest)}
-    params.update(names)
     kind_names = {f"kind{i}": kind for i, kind in enumerate(wanted)}
-    params.update(kind_names)
+    params: dict = {**names, **kind_names}
     sql = [
         "SELECT rowid, kind, ref_id, source, title, body, tags, space, flags, written, "
         "0.0 AS score FROM search_index WHERE kind IN ("
@@ -1517,10 +1539,7 @@ def _with_meaning(
     if asked.until is not None:
         sql.append("AND (written = '' OR written <= :until)")
         params["until"] = asked.until.isoformat()
-    extra = [dict(row) | {"by_meaning": True} for row in session.execute(text(" ".join(sql)), params).mappings().all()]
-    if asked.excluded:
-        extra = [row for row in extra if not _mentions(row, asked.excluded)]
-    return rows + extra
+    return [dict(row) | {"by_meaning": True} for row in session.execute(text(" ".join(sql)), params).mappings().all()]
 
 
 def _cosine_scores(session: Session, subject: str, rows: list[dict]) -> dict[int, float]:
@@ -1530,19 +1549,9 @@ def _cosine_scores(session: Session, subject: str, rows: list[dict]) -> dict[int
     which leaves the cosine column at zero and the other two signals ranking:
     the app has to be excellent with the model off (WORLD_CLASS_PLAN §5).
     """
-    matrix = _live_matrix(session)
+    matrix = _warm_matrix(session)
     if matrix is None:
-        # Cold, but this is the search path rather than the "see also" panel,
-        # and a person who just typed a query is waiting for the best answer
-        # this notebook can give. One build, once per process; `related()`
-        # deliberately does not do this (see its own docstring).
-        backend = _backend_id()
-        if backend is None:
-            return {}
-        warm_vectors(session, backend)
-        matrix = _live_matrix(session)
-        if matrix is None:
-            return {}
+        return {}
     try:
         # The same wrong-direction edge as `_backend_id`, broken the same way.
         deps = importlib.import_module("tessellate.core.deps")

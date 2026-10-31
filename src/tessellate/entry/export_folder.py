@@ -40,6 +40,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
+from tessellate.core import paths
+
 FORMAT = "memorymap-folder"
 VERSION = 1
 MANIFEST = "index.json"
@@ -100,12 +102,6 @@ def _restore(obj: object, record: dict, skip: set[str] | dict) -> None:
             # sweep would purge a row just imported before it could be seen.
             value = datetime.now(timezone.utc)
         setattr(obj, column.name, value)
-
-
-def _slug(text: str, length: int = 40) -> str:
-    first = (text or "").strip().split("\n", 1)[0].lstrip("#").strip()
-    cleaned = re.sub(r"[^\w\s-]", "", first)[:length].strip()
-    return re.sub(r"\s+", "-", cleaned) or "note"
 
 
 def _safe_name(name: str) -> str:
@@ -345,9 +341,9 @@ def note_markdown(record: dict, folder_name: str) -> str:
 
 
 def _note_base(record: dict) -> str:
-    folder = BIN_FOLDER if record.get("is_deleted") else _slug(record["category"])
+    folder = BIN_FOLDER if record.get("is_deleted") else paths.slug(record["category"])
     title = "private" if record["sealed"] else _front_matter(record)[1]  # the words, not a properties block
-    return f"notes/{folder}/{record['id']}-{_slug(title)}"
+    return f"notes/{folder}/{record['id']}-{paths.slug(title)}"
 
 
 def _write_note(archive: zipfile.ZipFile, record: dict, uploads_dir: Path, stored: dict) -> tuple[dict, list[str]]:
@@ -402,7 +398,7 @@ def _write_documents(archive: zipfile.ZipFile, session, related: _Related) -> li
     rows = []
     for document in session.scalars(select(Document).order_by(Document.id)):
         record = document_record(document, related)
-        base = f"documents/{document.id}-{_slug(document.title)}"
+        base = f"documents/{document.id}-{paths.slug(document.title)}"
         archive.writestr(f"{base}.md", document.content or "")
         archive.writestr(f"{base}.json", json.dumps(record, ensure_ascii=False, indent=1))
         rows.append({"id": document.id, "md": f"{base}.md", "sidecar": f"{base}.json"})
@@ -426,7 +422,7 @@ def export(session, uploads_dir: Path, archive: zipfile.ZipFile, progress=None) 
         record = note_record(entry, related, uploads_dir)
         if entry.is_board:
             record["canvas"] = board_canvas(session, entry.id)
-            path = f"boards/{entry.id}-{_slug(record['content'])}.json"
+            path = f"boards/{entry.id}-{paths.slug(record['content'])}.json"
             archive.writestr(path, json.dumps(record, ensure_ascii=False, indent=1))
             boards.append({"id": entry.id, "file": path})
         else:

@@ -463,6 +463,8 @@ def collect() -> list[dict]:
     _ledger_rows(tasks)
     _stamp_started(tasks)
     _mark_cancellable(tasks)
+    for task in tasks:
+        task["lane"] = jobruns.lane_of(task["kind"])
     return tasks
 
 
@@ -509,15 +511,9 @@ def _ledger_rows(tasks: list[dict]) -> None:
                 "started": live["started"],
                 #: A turn the person is watching in its own surface: listed,
                 #: never announced (`noticeTaskTransitions`).
-                "watched": live["kind"] in WATCHED_KINDS,
+                "watched": jobruns.lane_of(live["kind"]) == "user",
             }
         )
-
-
-#: Run kinds a person starts and watches where they started it (an answer
-#: streaming in the chat, a transcription under its recorder): the running
-#: list shows them, the notifications centre does not announce them.
-WATCHED_KINDS = frozenset({"generation", "transcription", "ocr", "run"})
 
 
 #: (kind, name) -> when `collect` first saw that row, for a job that keeps no

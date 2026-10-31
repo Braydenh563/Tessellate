@@ -2034,7 +2034,7 @@ def _run_desktop(hidden_relaunch: bool = False) -> None:
                     try:
                         tray_icon.notify(
                             "Still running here. Click the icon to bring the "
-                            "window back, or right-click → Quit to close it "
+                            "window back, or right-click it and choose Quit to close it "
                             "properly.",
                             "Tessellate",
                         )

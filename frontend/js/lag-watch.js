@@ -37,7 +37,7 @@
 //: The report's two files, as one lazy module (lazy-entries.js is a boot script and at its budget).
 LAZY_MODULES.diagnostics = ["/js/lag-watch.js", "/js/diag-report.js"];
 
-const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, bare: {}, recent: [], errors: new Map() };
+const LAG = { queue: [], timer: 0, lastInput: "", lastInputAt: 0, lastAt: {}, bare: {}, byCause: new Map(), recent: [], errors: new Map() };
 //: The frame sampler: a loop that spends more than `LAG_RAF_BUDGET_MS` of
 //: every second for `LAG_RAF_SECONDS` seconds running is reported once.
 const LAG_RAF_BUDGET_MS = 120;
@@ -52,11 +52,15 @@ function lagView() {
   return prefs.get("activeTab", null) || "notes";
 }
 
-//: `button#ask-btn.primary`: enough to find the control, no text content.
+//: `button#ask-btn.primary`: enough to find the control, no text content. With no id of its
+//: own it is named by the nearest one above it (`button.small in #dash-grid`), and a text node
+//: by its parent: 15 dashboard rows read "pointerover on " (audit 1031 PF9).
 function lagTarget(el) {
-  if (!el || !el.tagName) return "";
+  if (el && el.nodeType !== 1) el = el.parentElement;
+  if (!el || !el.tagName) return "an element that has gone";
   const cls = typeof el.className === "string" ? el.className.trim().split(/\s+/).slice(0, 2).join(".") : "";
-  return `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${cls ? "." + cls : ""}`.slice(0, 80);
+  const home = el.id ? null : el.parentElement?.closest("[id]");
+  return `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${cls ? "." + cls : ""}${home ? " in #" + home.id : ""}`.slice(0, 80);
 }
 
 function lagFile(url) {
@@ -109,6 +113,13 @@ function lagNote(kind, ms, cause, extra = {}) {
   if (now - (LAG.lastAt[kind] || 0) < 500) return;
   LAG.lastAt[kind] = now;
   LAG.recent.push({ at: now, kind, ms: Math.round(ms), cause: cause || "" });
+  //: The same cause inside a minute is one row with a count and the worst time.
+  const same = cause && LAG.byCause.get(`${kind}|${cause}`);
+  if (same && LAG.queue.includes(same) && now - same.t < 60000) {
+    same.n += 1;
+    same.ms = Math.max(same.ms, Math.round(ms));
+    return;
+  }
   while (LAG.recent.length > 100 || (LAG.recent[0] && now - LAG.recent[0].at > LAG_RECENT_MS)) LAG.recent.shift();
   //: A stall no script owns names nothing, so a run of them is one report
   //: with a count and the worst time, not a line each.
@@ -132,13 +143,19 @@ function lagNote(kind, ms, cause, extra = {}) {
     dpr: window.devicePixelRatio || 1,
     cores: navigator.hardwareConcurrency || null,
     mem_gb: navigator.deviceMemory || null,
+    //: A sweep that throttles the CPU sets `window.lagThrottled` to the rate, so its rows do not read
+    //: as a real lag day.
+    visibility: document.visibilityState,
+    throttled: window.lagThrottled || 0,
     n: 1,
     ...extra,
   };
+  event.t = now;
   if (cause) {
     recordBrowserLog("WARN", [`Lag: ${kind} ${event.ms}ms on ${event.view}: ${event.cause}`]);
+    LAG.byCause.set(`${kind}|${cause}`, event);
+    if (LAG.byCause.size > 40) LAG.byCause.delete(LAG.byCause.keys().next().value);
   } else {
-    event.t = now;
     LAG.bare[kind] = event;
   }
   LAG.queue.push(event);
@@ -156,13 +173,25 @@ function lagFlush() {
 function lagFrame(e) {
   if (e.duration < LAG_FRAME_MS) return;
   const layout = e.styleAndLayoutStart ? e.startTime + e.duration - e.styleAndLayoutStart : 0;
-  const cause = lagScriptCause(e.scripts, e) || (layout >= 50 ? "style and layout" : "");
+  const cause = lagScriptCause(e.scripts, e) || (layout >= 50 ? "style and layout" : "") || lagFrameWhy(e);
   lagNote("frame", e.duration, cause, { blocking_ms: Math.round(e.blockingDuration || 0), layout_ms: Math.round(layout) });
+}
+
+//: What a frame no script owns can still say. `longtask` names its container (an iframe, the
+//: page); a long animation frame says how long rendering ran after its scripts. 53 of 304 frame
+//: rows said "no script attributed", every one over 4 s among them (audit 1031 PF9).
+function lagFrameWhy(e) {
+  const who = [...(e.attribution || [])].map((a) => [a.containerType, a.containerName || a.containerSrc || a.containerId].filter(Boolean).join(" ")).filter(Boolean);
+  if (who.length) return `page task in ${who.slice(0, 2).join(", ")}`;
+  if (!e.renderStart) return "";
+  const paint = Math.round(e.startTime + e.duration - e.renderStart);
+  const before = Math.round(e.duration) - paint;
+  return before > paint ? `${before}ms of script with no source file, then ${paint}ms rendering` : `rendering and painting ${paint}ms after the scripts`;
 }
 
 function lagInput(e) {
   if (e.duration < LAG_INPUT_MS) return;
-  lagNote("input", e.duration, `${e.name} on ${lagTarget(e.target)}`, {
+  lagNote("input", e.duration, `${e.name || "input"} on ${lagTarget(e.target)}`, {
     wait_ms: Math.round(e.processingStart - e.startTime),
     run_ms: Math.round(e.processingEnd - e.processingStart),
     paint_ms: Math.round(e.startTime + e.duration - e.processingEnd),

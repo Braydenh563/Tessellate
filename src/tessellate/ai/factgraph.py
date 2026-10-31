@@ -30,6 +30,7 @@ from datetime import date, datetime, time
 
 from tessellate.ai import recognise
 from tessellate.ai import when as when_words
+from tessellate.core import clock
 
 KINDS = (
     "event", "quantity", "money", "date", "duration", "entity", "list_item", "check_item",
@@ -540,7 +541,7 @@ class _SentenceReader:
     def read(self, index: int, units: list, joke: bool) -> list[Fact]:
         self.structure(index)
         self.dates()
-        spans = recognise.recognise(self.sentence, now=datetime.combine(self.written or date.today(), time(12)))
+        spans = recognise.recognise(self.sentence, now=datetime.combine(self.written or clock.today(), time(12)))
         self.money(spans)
         self.durations(spans)
         self.quantities()

@@ -42,6 +42,7 @@ from tessellate.core import (
     media_gc,
     media_process,
     ocr,
+    paths,
     pdfpages,
     reading_bin,
     undo_bin,
@@ -173,7 +174,7 @@ def _existing_attachment(session: Session, attachment_id: int) -> Attachment:
 @media_router.get("/files/{attachment_id}")
 def download_file(attachment_id: int, session: Session = Depends(get_session)) -> FileResponse:
     attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     #: **Never the type the uploader declared, unless it is a picture or a
@@ -416,7 +417,7 @@ def _attachment_size(session: Session, attachment: Attachment) -> int:
     if attachment.size:
         return attachment.size
     try:
-        size = _within_dir(deps.get_config().uploads_dir, attachment.stored_name).stat().st_size
+        size = _within(deps.get_config().uploads_dir, attachment.stored_name).stat().st_size
     except (OSError, HTTPException):
         return 0
     if size:
@@ -636,7 +637,7 @@ def analyse_attachment(
     still has something a model can look at.
     """
     attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     suffix = Path(attachment.filename).suffix.lower()
     is_image = suffix in captioning.CAPTION_SUFFIXES
 
@@ -714,7 +715,7 @@ def attached_file_text(
     file's text would mean writing text back into a format it was never in.
     """
     attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     # The scanned-PDF fallback, passed rather than omitted. `docview` has
     # always taken a `vision_reader` and this, its only caller, passed
     # nothing, so the whole path was wired and never once ran: exactly the
@@ -761,7 +762,7 @@ def save_attached_file_text(
     have been replaced between the two calls.
     """
     attachment = _existing_attachment(session, attachment_id)
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     viewed = docview.extract(path)
     editable, edit_message = docview.editability(path, viewed)
     if not editable:
@@ -811,7 +812,7 @@ def attached_file_pdf_info(attachment_id: int, session: Session = Depends(get_se
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=422, detail="Not a PDF.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     if not pdfpages.available():
@@ -848,7 +849,7 @@ def attached_file_pdf_page(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=404, detail="Not a PDF.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     png = pdfpages.render_page(path, index, thumb=thumb)
@@ -920,7 +921,7 @@ def attached_file_html_preview(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() not in {".html", ".htm"}:
         raise HTTPException(status_code=404, detail="Not an HTML file.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     viewed = docview.extract(path)
@@ -962,7 +963,7 @@ def delete_file(
         config.data_dir,
         "attachment",
         {"row": undo_bin.row_dict(attachment), "notes": changed},
-        {"bytes": _within_dir(config.uploads_dir, attachment.stored_name)},
+        {"bytes": _within(config.uploads_dir, attachment.stored_name)},
     )
     manager.delete_attachment(session, attachment, config.uploads_dir)
     out = _to_out(session, entry)
@@ -984,7 +985,7 @@ def restore_file(body: RestoreBody, session: Session = Depends(get_session)) -> 
         raise HTTPException(status_code=409, detail="That file is already back.")
     config.uploads_dir.mkdir(parents=True, exist_ok=True)
     if "bytes" in kept and kept["bytes"].is_file():
-        shutil.move(str(kept["bytes"]), str(_within_dir(config.uploads_dir, row["stored_name"])))
+        shutil.move(str(kept["bytes"]), str(_within(config.uploads_dir, row["stored_name"])))
     session.add(undo_bin.row_from(Attachment, row))
     _put_notes_back(session, payload.get("notes") or {})
     session.commit()
@@ -1097,72 +1098,18 @@ def safe_filename(name: str) -> str:
     return cleaned[:120]
 
 
-def _within_exports(exports: Path, name: str) -> Path:
-    """`exports / name`, refusing anything whose resolved path lands outside
-    `exports`. `safe_filename` already whitelists to a flat, traversal-free
-    name, but CodeQL's `py/path-injection` still flagged the join as tainted
-    (alerts #289/#290): the same shape HANDOVER.md already documents for
-    the update-apply SSRF fix: a query's sanitiser recognition is narrower
-    than "the code is provably safe," so the fix is a real containment
-    check at the point of use, not a stronger filter upstream of it.
-
-    **Third attempt at the exact recognised shape, not just an equivalent
-    check.** `os.path.realpath`/`os.path.normpath`/`os.path.abspath` are all
-    modelled by CodeQL's Python library as `Path::PathNormalization`, they
-    mark the result "normalised" but do not by themselves clear the taint.
-    The actual barrier is `Path::SafeAccessCheck`, whose only recognised
-    Python implementation is a bare `<path>.startswith(<base>)` call used as
-    a guard's sole condition (`if not fullpath.startswith(base_path): raise`
-    - GitHub's own CWE-022 remediation example, and the shape
-    `StartswithCall` in the standard library actually matches). The first
-    attempt here used `Path.resolve()`/`Path.relative_to()`, which CodeQL's
-    Python model does not extend `PathNormalization`/`SafeAccessCheck` to at
-    all. The second attempt switched to `os.path` but combined the guard
-    with `candidate != base and` and appended `+ os.sep` to the `startswith`
-    argument: still flagged, most likely because a compound condition and a
-    computed (rather than bare) argument stop the guard-node matcher from
-    recognising it as the same `SafeAccessCheck` shape; a query's pattern
-    matcher can be exactly this literal about it.
-
-    So: the single-condition, bare-argument form below, and nothing else.
-    The dropped nuance (a candidate exactly equal to `base`, and a
-    sibling-directory collision like `base-evil` slipping past a
-    separator-less prefix check) is not a real gap here specifically, 
-    `safe_filename` already strips every path separator out of `name`
-    before either caller passes it in, so `os.path.join(base, name)` can
-    only ever produce `base + os.sep + <flat name>`, never a sibling path or
-    `base` itself unless `name` were empty (already rejected upstream).
-    """
-    base = os.path.realpath(str(exports))
-    candidate = os.path.realpath(os.path.join(base, name))
-    if not candidate.startswith(base):
-        raise HTTPException(status_code=422, detail="That filename can't be used.") from None
-    return Path(candidate)
+#: What an export name that reaches outside the exports folder is told.
+NAME_REFUSED = "That filename can't be used."
 
 
-def _within_dir(base_dir: Path, name: str) -> Path:
-    """`_within_exports`'s own containment check, generalised to any base
-    directory: the PDF-page endpoints' `_media_upload_path` and the two
-    attachment `pdf-page`/`pdf-info` routes each build a path from a name
-    that traces back to a request parameter (via a DB round trip, but
-    CodeQL's `py/path-injection` tracks the taint through the query filter
-    regardless), the same shape `_within_exports` already exists to close.
-    Kept as its own function rather than reusing `_within_exports` directly:
-    that one is precision-tuned to the exact guard shape CodeQL's
-    `Path::SafeAccessCheck` recognises (see its own long comment on how many
-    equivalent-looking forms it rejected) and duplicating the same five
-    lines here is safer than risking that tuning by generalising its name
-    or signature for a second, differently-named caller.
-    """
-    #: The separator is part of `base` (a plain variable, the guard shape
-    #: CodeQL recognises), so a sibling such as `uploads2` does not pass for
-    #: `uploads`, and a stored name from a restored database (audit 1028 K7,
-    #: K8) cannot reach outside the folder.
-    base = os.path.join(os.path.realpath(str(base_dir)), "")
-    candidate = os.path.realpath(os.path.join(base, name))
-    if not candidate.startswith(base):
-        raise HTTPException(status_code=422, detail="That file can't be used.") from None
-    return Path(candidate)
+def _within(base_dir: Path, name: str, detail: str = "That file can't be used.") -> Path:
+    """`base_dir / name` through `paths.contained`, a 422 when it reaches
+    outside. The one containment check for exports, uploads and media; the
+    CodeQL history of its shape is in `core/paths.py`."""
+    try:
+        return paths.contained(base_dir, name)
+    except paths.OutsideFolder:
+        raise HTTPException(status_code=422, detail=detail) from None
 
 
 @router.post("/files/save", dependencies=[Depends(this_computer_only)])
@@ -1178,13 +1125,13 @@ def save_generated_file(body: SaveFileBody) -> dict:
     exports = _exports_dir()
     exports.mkdir(parents=True, exist_ok=True)
     name = safe_filename(body.filename)
-    target = _within_exports(exports, name)
+    target = _within(exports, name, NAME_REFUSED)
     # Never silently overwrite: two exports of the same chat on the same day
     # are two files someone may want to compare.
     if target.exists():
         stem, suffix = target.stem, target.suffix
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        target = _within_exports(exports, f"{stem}-{stamp}{suffix}")
+        target = _within(exports, f"{stem}-{stamp}{suffix}", NAME_REFUSED)
     #: A half-written export is worse than no export: it lands in the folder
     #: Settings lists, under the name the person chose, and opens as a
     #: truncated file rather than as an obvious failure. `write_bytes`
@@ -1204,7 +1151,7 @@ def save_generated_file(body: SaveFileBody) -> dict:
 #: but only on the desktop, and only if you remembered a toast. This is the
 #: list Settings draws and the download link each row carries, so a browser
 #: tab can get its exports back too: a file the app wrote is served from the
-#: folder it wrote it to, contained by `_within_exports` exactly as the write
+#: folder it wrote it to, contained by `_within` exactly as the write
 #: was.
 #:
 #: Newest first and capped, because the folder grows one file per export for
@@ -1253,10 +1200,10 @@ def list_exports(
 
 @router.get("/files/exports/{filename}")
 def download_export(filename: str) -> FileResponse:
-    """One exported file, as a download. `safe_filename` and `_within_exports`
+    """One exported file, as a download. `safe_filename` and `_within`
     are the same two locks the write went through, in the same order."""
     exports = _exports_dir()
-    target = _within_exports(exports, safe_filename(filename))
+    target = _within(exports, safe_filename(filename), NAME_REFUSED)
     if not target.is_file():
         raise HTTPException(status_code=404, detail="That export is no longer there.")
     return FileResponse(str(target), filename=target.name)
@@ -1687,7 +1634,7 @@ def media_meta(filename: str, session: Session = Depends(get_session)) -> MediaU
 def _media_size(filename: str) -> int:
     """Bytes on disk for one upload, or 0 when it is gone or unreadable."""
     try:
-        return _within_dir(deps.get_config().data_dir / "media", filename).stat().st_size
+        return _within(deps.get_config().data_dir / "media", filename).stat().st_size
     except (OSError, HTTPException):
         return 0
 
@@ -1754,7 +1701,7 @@ def _media_upload_path(session: Session, filename: str) -> tuple[MediaUpload, Pa
     upload = session.query(MediaUpload).filter(MediaUpload.filename == filename).first()
     if not upload:
         raise HTTPException(status_code=404, detail="No upload by that name.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.exists():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return upload, path
@@ -2055,7 +2002,7 @@ def caption_media(
             if not deps.get_ollama().is_running():
                 raise HTTPException(status_code=409, detail="The AI model isn't running.")
             media_dir = deps.get_config().data_dir / "media"
-            path = _within_dir(media_dir, upload.filename)
+            path = _within(media_dir, upload.filename)
             readable = (upload.ocr_text or "").strip() or (docview.extract(path).text or "").strip()
             if not readable:
                 raise HTTPException(
@@ -2660,7 +2607,7 @@ def media_ocr_regions(
     suffix = Path(upload.filename).suffix.lower()
     if suffix not in ocr.OCR_SUFFIXES and suffix != ".pdf":
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     stored = (upload.vision_ocr_text or upload.ocr_text or "")
@@ -2692,7 +2639,7 @@ def attachment_ocr_regions(
     suffix = Path(attachment.filename).suffix.lower()
     if suffix not in ocr.OCR_SUFFIXES and suffix != ".pdf":
         raise HTTPException(status_code=415, detail="Only images and PDFs can be read this way.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     stored = (attachment.vision_ocr_text or attachment.ocr_text or "")
@@ -3558,7 +3505,7 @@ def attachment_ocr_range_read(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDFs are read by page range.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_range(path, pages, reader, _page_read_key(attachment_id, None))
@@ -3576,7 +3523,7 @@ def media_ocr_range_read(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDFs are read by page range.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_range(path, pages, reader, _page_read_key(None, upload_id))
@@ -3593,7 +3540,7 @@ def attachment_ocr_page_read(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are read one at a time.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_page(path, page, reader, _page_read_key(attachment_id, None))
@@ -3610,7 +3557,7 @@ def media_ocr_page_read(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are read one at a time.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _read_page(path, page, reader, _page_read_key(None, upload_id))
@@ -3817,7 +3764,7 @@ def attachment_page_caption(
     attachment = _existing_attachment(session, attachment_id)
     if Path(attachment.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are described one at a time.")
-    path = _within_dir(deps.get_config().uploads_dir, attachment.stored_name)
+    path = _within(deps.get_config().uploads_dir, attachment.stored_name)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _describe_page(path, page, _page_read_key(attachment_id, None))
@@ -3834,7 +3781,7 @@ def media_page_caption(
     upload = deps.get_or_404(session, MediaUpload, upload_id, "That upload could not be found.")
     if Path(upload.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=415, detail="Only PDF pages are described one at a time.")
-    path = _within_dir(deps.get_config().data_dir / "media", upload.filename)
+    path = _within(deps.get_config().data_dir / "media", upload.filename)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
     return _describe_page(path, page, _page_read_key(None, upload_id))

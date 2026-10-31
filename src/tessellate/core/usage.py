@@ -22,8 +22,10 @@ import json
 import re
 import threading
 from datetime import date, timedelta
+
 from pathlib import Path
 
+from tessellate.core import clock
 from tessellate.core.atomic_io import atomic_write_text
 
 #: A feature name: what the page sends. Short and plain so nothing typed can
@@ -49,7 +51,7 @@ def read(data_dir: Path) -> dict[str, dict]:
 
 def record(data_dir: Path, names: list[str], today: date | None = None) -> int:
     """Count one use of each valid name. Returns how many were counted."""
-    day = (today or date.today()).isoformat()
+    day = (today or clock.today()).isoformat()
     valid = [n for n in names if isinstance(n, str) and NAME.match(n)]
     if not valid:
         return 0
@@ -71,7 +73,7 @@ def summary(data_dir: Path, known: list[str] | None = None, today: date | None =
     """The ledger, most used first, and the known features not used in
     `UNUSED_DAYS` days (never used counts as unused)."""
     ledger = read(data_dir)
-    cutoff = ((today or date.today()) - timedelta(days=UNUSED_DAYS)).isoformat()
+    cutoff = ((today or clock.today()) - timedelta(days=UNUSED_DAYS)).isoformat()
     rows = sorted(
         ({"name": k, "count": int(v.get("count", 0)), "last": v.get("last"), "first": v.get("first")} for k, v in ledger.items()),
         key=lambda r: (-r["count"], r["name"]),

@@ -1933,9 +1933,10 @@ async function loadConversationList() {
       // again from the Library's Shelved filter.
       makeMenuItem("ph:archive Archive", "Keep it, but out of the way, not deleted", async () => {
         await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
-        chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
         if (chatConv.id === conversation.id) newChatConversation();
-        loadConversationList();
+        //: Awaited, so the row is gone by the time the toast says where it went (AI21).
+        await loadConversationList();
+        chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
       })
     );
     items.push(

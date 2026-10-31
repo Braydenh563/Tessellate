@@ -295,7 +295,7 @@ HELP_TOPICS: list[dict] = [
         "id": "documents",
         "keywords": ("document", "editor", "markdown", "code file", "live view", "source view", "word count", "character count", "search documents"),
         "body": (
-            "The document editor (opened from Library -> Documents) has four "
+            "The document editor (opened from Library, Documents) has four "
             "views: Live (renders as you write), Source, Split and Read. Enter "
             "in the title moves to the body. Code "
             "files get line numbers, Tab/Shift+Tab indenting and Ctrl+/ "
@@ -908,7 +908,7 @@ HELP_TOPICS: list[dict] = [
             "compare versions", "side by side",
         ),
         "body": (
-            "Documents keep a history. The ... menu -> History lists every "
+            "Documents keep a history. The ... menu, History, lists every "
             "version the document has had, newest first, with who changed it "
             "(you, an AI edit, or a restore), how many words it gained or lost, "
             "and the opening of that version. Name this version keeps the text as "

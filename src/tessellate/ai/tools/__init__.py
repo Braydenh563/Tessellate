@@ -23,7 +23,7 @@ from datetime import timedelta
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, note_rank, personal, skills, toolrank, toolwords
+from tessellate.ai import librarian, memory, note_rank, personal, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
 from tessellate.core import activity, deps, events, private_turn
@@ -2510,7 +2510,7 @@ def handoff_event(name: str, arguments: dict, history: list[dict] | None = None)
 #: `agent._persona_with_memory`), so an unbounded list is a slow squeeze on the
 #: window that ends with the user's actual question falling off the front.
 #: `content` is a String(500) column and SQLite will not enforce that for us.
-MAX_PREFERENCE_CHARS = 200
+MAX_PREFERENCE_CHARS = memory.MAX_PREFERENCE_CHARS
 MAX_ACTIVE_PREFERENCES = 40
 
 

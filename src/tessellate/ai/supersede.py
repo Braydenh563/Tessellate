@@ -35,6 +35,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from tessellate.ai import recognise
+from tessellate.core import clock
 from tessellate.search import query as query_understanding
 
 #: Words that say when a value holds, not what it is about.
@@ -191,7 +192,7 @@ def older_line(replaced: list[Replaced], *, voice: str = "natural", today: date 
     if not replaced:
         return ""
     first = replaced[0]
-    today = today or date.today()
+    today = today or clock.today()
     when = ""
     if first.written:
         when = f"{first.written.day} {first.written:%B}" + ("" if first.written.year == today.year else f" {first.written.year}")

@@ -771,15 +771,8 @@ def _apply_flags(session: Session, entry, body) -> None:  # noqa: ANN001
         session.commit()
 
 
-@router.post("", response_model=EntryOut, status_code=201)
-def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
-    earlier = _already_delivered(session, body.client_key)
-    if earlier is not None:
-        return _to_out(session, earlier, filed_by=None, similar=None)
-    parent = None
-    if body.parent_id is not None:
-        parent = _existing_entry(session, body.parent_id)
-
+def _decide_filing(session: Session, body: EntryCreate, parent) -> tuple[str, int, str, bool]:  # noqa: ANN001
+    """`(category, confidence, filed_by, defer)` for a new note."""
     # Deferred only when nothing else already decides the category: with an
     # explicit `category` or a `parent_id` there is no model call to wait
     # for, so deferring would add a round trip and buy nothing.
@@ -806,7 +799,11 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         category, confidence, filed_by = _file_entry_now(
             session, body.content, model_deadline=janitor.filing_deadline()
         )
+    return category, confidence, filed_by, defer
 
+
+def _new_note_text(session: Session, body: EntryCreate) -> tuple[str, list[str]]:
+    """The content (a type's fields first) and tags (inline, meeting) a new note is saved with."""
     tags = normalise_tags([*body.tags, *inline_tags(body.content)]) if body.inline_tags else body.tags
     content = body.content
     if body.note_type:
@@ -818,31 +815,11 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     #: count the tag, which the type alone never carried.
     if meeting_shape.is_meeting(content) and meeting_shape.MEETING_TAG not in {t.lower() for t in tags}:
         tags = normalise_tags([*tags, meeting_shape.MEETING_TAG])
-    try:
-        entry = manager.create_entry(
-            session,
-            content=content,
-            category_name=category,
-            tags=tags,
-            ai_confidence=confidence,
-            client_key=body.client_key,
-        )
-    except IntegrityError:
-        # Two resends of one save at once: the other one won the unique
-        # index on `client_key`, so its note is this save's answer.
-        session.rollback()
-        earlier = _already_delivered(session, body.client_key) if body.client_key else None
-        if earlier is None:
-            raise
-        return _to_out(session, earlier, filed_by=None, similar=None)
-    if parent is not None:
-        entry.parent_id = parent.id
-    _mark_new_entry(entry, body, filed_by)
-    if defer:
-        entry.filing_state = "pending"
-    elif janitor.settled_state(filed_by) != "done":
-        entry.filing_state = janitor.settled_state(filed_by)
-    session.commit()
+    return content, tags
+
+
+def _finish_new_entry(session: Session, entry, body: EntryCreate, defer: bool) -> None:  # noqa: ANN001
+    """Everything after the commit that must never cost someone their note."""
     if not defer:
         #: Filed already: keep its tag suggestions now, from the notebook's
         #: own tags (no second model call on the request; a deferred note
@@ -889,6 +866,41 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
     # that was actually just submitted, before that happens.
     _process_committed_media(session, body.content)
 
+
+@router.post("", response_model=EntryOut, status_code=201)
+def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
+    earlier = _already_delivered(session, body.client_key)
+    if earlier is not None:
+        return _to_out(session, earlier, filed_by=None, similar=None)
+    parent = _existing_entry(session, body.parent_id) if body.parent_id is not None else None
+    category, confidence, filed_by, defer = _decide_filing(session, body, parent)
+    content, tags = _new_note_text(session, body)
+    try:
+        entry = manager.create_entry(
+            session,
+            content=content,
+            category_name=category,
+            tags=tags,
+            ai_confidence=confidence,
+            client_key=body.client_key,
+        )
+    except IntegrityError:
+        # Two resends of one save at once: the other one won the unique
+        # index on `client_key`, so its note is this save's answer.
+        session.rollback()
+        earlier = _already_delivered(session, body.client_key) if body.client_key else None
+        if earlier is None:
+            raise
+        return _to_out(session, earlier, filed_by=None, similar=None)
+    if parent is not None:
+        entry.parent_id = parent.id
+    _mark_new_entry(entry, body, filed_by)
+    if defer:
+        entry.filing_state = "pending"
+    elif janitor.settled_state(filed_by) != "done":
+        entry.filing_state = janitor.settled_state(filed_by)
+    session.commit()
+    _finish_new_entry(session, entry, body, defer)
     out = _to_out(
         session,
         entry,
@@ -1198,6 +1210,60 @@ def stop_all_filing(action: str = "fallback") -> int:
     return stopped
 
 
+def _filing_similar(session: Session, entry) -> dict | None:  # noqa: ANN001
+    """The near-duplicate the filing pass found, as `{id, preview}`, or None."""
+    duplicate_id = getattr(entry, "filing_similar_id", None)
+    other = session.get(Entry, duplicate_id) if duplicate_id is not None else None
+    if other is None:
+        return None
+    return {"id": other.id, "preview": _connection_label(other, 60)}
+
+
+def _offered_categories(session: Session, entry, category: str) -> tuple[list[str], dict[str, str], dict | None, dict | None]:  # noqa: ANN001
+    """`(suggestions, reasons, proposal, held)`: up to three categories to offer as
+    one-tap choices (INBOX 434), each one's line, a new category the pack proposes
+    (WORLD_CLASS 23, decisions 2, 3 and 6), and a sensitive topic that held it back."""
+    from tessellate.ai import lexical_filing
+
+    suggestions: list[str] = []
+    reasons: dict[str, str] = {}
+    proposal = None
+    held = None
+    try:
+        content = manager.readable_content(entry) or ""
+        explained = [
+            (name, reason)
+            for name, reason in lexical_filing.suggest_categories_explained(
+                session, content, exclude_entry_id=entry.id, limit=4,
+            )
+            if name != category
+        ][:3]
+        suggestions = [name for name, _ in explained]
+        reasons = {name: reason for name, reason in explained if reason}
+        decision = lexical_filing.decide(session, content, exclude_entry_id=entry.id)
+        if decision.proposal is not None:
+            proposal = {"name": decision.proposal.name, "why": decision.proposal.why}
+        if decision.held and decision.ranked:
+            held = {"category": decision.ranked[0].name, "topic": decision.sensitive}
+    except Exception:  # noqa: BLE001 - a hint never fails the status
+        logger.debug("no category suggestions for entry %s", entry.id, exc_info=True)
+    return suggestions, reasons, proposal, held
+
+
+def _filing_why(session: Session, entry, category: str) -> str:  # noqa: ANN001
+    """The one line behind a filing by words, or an empty string."""
+    from tessellate.ai import lexical_filing
+
+    try:
+        decision = lexical_filing.decide(
+            session, manager.readable_content(entry) or "", exclude_entry_id=entry.id
+        )
+        return next((c.why for c in decision.ranked if c.name == category), "")
+    except Exception:  # noqa: BLE001 - a hint never fails the status
+        logger.debug("no filing reason for entry %s", entry.id, exc_info=True)
+        return ""
+
+
 @router.get("/{entry_id}/filing")
 def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dict:
     """Where a deferred note ended up, the one thing the composer polls.
@@ -1217,64 +1283,25 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
     # key makes that a no-op while a job for it is already queued or running.
     if (getattr(entry, "filing_state", "") or "") == "pending":
         _queue_filing(entry)
-    similar = None
-    duplicate_id = getattr(entry, "filing_similar_id", None)
-    if duplicate_id is not None:
-        other = session.get(Entry, duplicate_id)
-        if other is not None:
-            similar = {
-                "id": other.id,
-                "preview": _connection_label(other, 60),
-            }
+    similar = _filing_similar(session, entry)
     state = getattr(entry, "filing_state", "done") or "done"
     category = manager.category_name_for(session, entry)
     filed_by = _filed_by(entry, state)
-    #: Nothing was sure enough to file it: up to three categories to offer as
-    #: one-tap choices (INBOX 434), the ones its words lean to first.
-    suggestions: list[str] = []
-    #: Each choice's one line, the filed category's, and a new category the
-    #: pack proposes (WORLD_CLASS 23, decisions 2, 3 and 6).
-    reasons: dict[str, str] = {}
-    why = ""
-    proposal = None
-    held = None
     shown = filing_certainty.shown(
         entry.ai_confidence, user_filed=bool(getattr(entry, "user_filed", False))
     )
     #: A pick the calibration put under the review line (`filing_certainty`)
     #: is offered the same way: the alternatives beside the one it chose.
     unsure_pick = filed_by == "ai" and 0 < shown < manager.REVIEW_CONFIDENCE
+    suggestions: list[str] = []
+    reasons: dict[str, str] = {}
+    why = ""
+    proposal = None
+    held = None
     if (filed_by == "none" and category == manager.UNCATEGORISED) or unsure_pick:
-        from tessellate.ai import lexical_filing
-
-        try:
-            content = manager.readable_content(entry) or ""
-            explained = [
-                (name, reason)
-                for name, reason in lexical_filing.suggest_categories_explained(
-                    session, content, exclude_entry_id=entry.id, limit=4,
-                )
-                if name != category
-            ][:3]
-            suggestions = [name for name, _ in explained]
-            reasons = {name: reason for name, reason in explained if reason}
-            decision = lexical_filing.decide(session, content, exclude_entry_id=entry.id)
-            if decision.proposal is not None:
-                proposal = {"name": decision.proposal.name, "why": decision.proposal.why}
-            if decision.held and decision.ranked:
-                held = {"category": decision.ranked[0].name, "topic": decision.sensitive}
-        except Exception:  # noqa: BLE001 - a hint never fails the status
-            logger.debug("no category suggestions for entry %s", entry.id, exc_info=True)
+        suggestions, reasons, proposal, held = _offered_categories(session, entry, category)
     elif filed_by == "words" and category != manager.UNCATEGORISED:
-        from tessellate.ai import lexical_filing
-
-        try:
-            decision = lexical_filing.decide(
-                session, manager.readable_content(entry) or "", exclude_entry_id=entry.id
-            )
-            why = next((c.why for c in decision.ranked if c.name == category), "")
-        except Exception:  # noqa: BLE001 - a hint never fails the status
-            logger.debug("no filing reason for entry %s", entry.id, exc_info=True)
+        why = _filing_why(session, entry, category)
     return {
         "id": entry.id,
         "filing_state": state,
@@ -1844,6 +1871,84 @@ def link_suggestions(session: Session = Depends(get_session)) -> list[dict]:
     return value
 
 
+def _already_linked(session: Session, entries: list) -> set[frozenset[int]]:
+    """Pairs with nothing left to suggest: linked, parent and child, or dismissed."""
+    already_linked: set[frozenset[int]] = set()
+    for link in session.scalars(select(EntryLink)):
+        already_linked.add(frozenset((link.source_entry_id, link.target_entry_id)))
+    # Threads are already a connection, don't re-suggest parent/child.
+    for entry in entries:
+        if entry.parent_id is not None:
+            already_linked.add(frozenset((entry.parent_id, entry.id)))
+    # A pair the person has already said no to (WORLD_CLASS_PLAN I7). The same
+    # set as the two above, because "you dismissed this" and "these are
+    # already linked" are the same answer to this endpoint's only question:
+    # is there anything left to suggest about these two. A suggestion that
+    # comes back after being dismissed is the single most annoying thing a
+    # suggester can do, and it is what this feature did until now: the
+    # dismissal lived in the browser and died with the tab.
+    for pair in learning.boosts(session, kind="links"):
+        already_linked.add(frozenset(pair))
+    return already_linked
+
+
+def _recognised_pairs(session: Session, entries: list, candidates: dict, already_linked: set) -> list:
+    """`relations.recognise` over the notebook's meaning, links, entities, tags and time."""
+    # **Structure as well as wording** (GRAPH_PLAN KG2): shared entities,
+    # shared link neighbours, shared rare tags and time join the cosine pairs
+    # in `ai/relations.recognise`, each with its own reason and confidence, so
+    # the list explains itself and is not empty with the embedding backend
+    # off. The cosine pairs come from the engine's matrix (Brief 11), cached
+    # per version of it (WORLD_CLASS_PLAN row 9); the filters below are per
+    # request because what is linked or dismissed moves without any vector
+    # changing.
+    similar: list[tuple[int, int, float]] = []
+    if deps.get_embeddings().is_ready():
+        similar = search_engine.cached_similar_pairs(
+            session, LINK_SUGGESTION_THRESHOLD, only=set(candidates)
+        )
+    edges = [(a, b) for a, b in session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id))]
+    edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
+    mentions = [
+        (name, entry_id)
+        for name, entry_id in session.execute(
+            select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
+        )
+    ]
+    notes = {
+        i: _LazyNoteFacts(e.content, frozenset(t.lower() for t in manager.entry_tags(e)), e.created_at)
+        for i, e in candidates.items()
+    }
+    return relations.recognise(
+        notes, edges, mentions, similar, already_linked, weights=learning.signal_weights(session)
+    )
+
+
+def _suggestion_row(session: Session, candidate, candidates: dict) -> dict:  # noqa: ANN001
+    a, b = candidate.a, candidate.b
+    signals = candidate.signals()
+    reason = "; ".join(s["reason"] for s in signals if s["signal"] != "time")
+    #: Meaning alone previews what linking would write, and linking now
+    #: names what the two notes share when they share something (INBOX
+    #: 691, `entry/link_wording.py`), so the preview does too.
+    if [s["signal"] for s in signals if s["signal"] != "time"] == ["similarity"]:
+        reason = link_facts.reason_for(session, a, b) or reason
+    return {
+        "source_id": a,
+        "target_id": b,
+        "source_preview": _preview(candidates[a].content),
+        "target_preview": _preview(candidates[b].content),
+        "similarity": round(candidate.similarity, 2) if candidate.similarity is not None else None,
+        "confidence": round(candidate.confidence, 2),
+        "signals": signals,
+        # Similarity alone previews what `create_link` deduces at the same
+        # bar (`manager.AUTO_REASON_THRESHOLD`): the specific reason, else
+        # "similar in meaning". Otherwise every signal, strongest first,
+        # less the time, which supports a pair but is no reason to link.
+        "reason": reason,
+    }
+
+
 def _link_suggestions(session: Session) -> list[dict]:
     """Pairs of notes that mean similar things but aren't linked yet: 
     the auto-linker. Suggestion-only: it never links anything on
@@ -1862,53 +1967,9 @@ def _link_suggestions(session: Session) -> list[dict]:
     pairs in memory: which turns O(n) queries plus O(n) re-embeddings into
     one query and zero re-embedding calls."""
     entries = manager.list_entries(session)
-    entries_by_id = {e.id: e for e in entries if not e.is_private}
-    already_linked: set[frozenset[int]] = set()
-    for link in session.scalars(select(EntryLink)):
-        already_linked.add(frozenset((link.source_entry_id, link.target_entry_id)))
-    # Threads are already a connection, don't re-suggest parent/child.
-    for entry in entries:
-        if entry.parent_id is not None:
-            already_linked.add(frozenset((entry.parent_id, entry.id)))
-    # A pair the person has already said no to (WORLD_CLASS_PLAN I7). The same
-    # set as the two above, because "you dismissed this" and "these are
-    # already linked" are the same answer to this endpoint's only question:
-    # is there anything left to suggest about these two. A suggestion that
-    # comes back after being dismissed is the single most annoying thing a
-    # suggester can do, and it is what this feature did until now: the
-    # dismissal lived in the browser and died with the tab.
-    for pair in learning.boosts(session, kind="links"):
-        already_linked.add(frozenset(pair))
-
-    # **Structure as well as wording** (GRAPH_PLAN KG2): shared entities,
-    # shared link neighbours, shared rare tags and time join the cosine pairs
-    # in `ai/relations.recognise`, each with its own reason and confidence, so
-    # the list explains itself and is not empty with the embedding backend
-    # off. The cosine pairs come from the engine's matrix (Brief 11), cached
-    # per version of it (WORLD_CLASS_PLAN row 9); the filters below are per
-    # request because what is linked or dismissed moves without any vector
-    # changing.
-    candidates = {i: e for i, e in entries_by_id.items() if not e.is_board}
-    similar: list[tuple[int, int, float]] = []
-    if deps.get_embeddings().is_ready():
-        similar = search_engine.cached_similar_pairs(
-            session, LINK_SUGGESTION_THRESHOLD, only=set(candidates)
-        )
-    edges = [(a, b) for a, b in session.execute(select(EntryLink.source_entry_id, EntryLink.target_entry_id))]
-    edges += [(e.parent_id, e.id) for e in entries if e.parent_id is not None]
-    mentions = [
-        (name, entry_id)
-        for name, entry_id in session.execute(
-            select(Entity.name, EntityMention.entry_id).join(Entity, Entity.id == EntityMention.entity_id)
-        )
-    ]
-    notes = {
-        i: _LazyNoteFacts(e.content, frozenset(t.lower() for t in manager.entry_tags(e)), e.created_at)
-        for i, e in candidates.items()
-    }
-    found = relations.recognise(
-        notes, edges, mentions, similar, already_linked, weights=learning.signal_weights(session)
-    )
+    candidates = {e.id: e for e in entries if not e.is_private and not e.is_board}
+    already_linked = _already_linked(session, entries)
+    found = _recognised_pairs(session, entries, candidates, already_linked)
 
     # **Two filters stand between "best-first" and "useful"**, both added
     # after measuring a real 116-note notebook whose twelve suggestions were
@@ -1933,27 +1994,7 @@ def _link_suggestions(session: Session) -> list[dict]:
             continue
         appearances[a] = appearances.get(a, 0) + 1
         appearances[b] = appearances.get(b, 0) + 1
-        signals = candidate.signals()
-        reason = "; ".join(s["reason"] for s in signals if s["signal"] != "time")
-        #: Meaning alone previews what linking would write, and linking now
-        #: names what the two notes share when they share something (INBOX
-        #: 691, `entry/link_wording.py`), so the preview does too.
-        if [s["signal"] for s in signals if s["signal"] != "time"] == ["similarity"]:
-            reason = link_facts.reason_for(session, a, b) or reason
-        suggestions.append({
-            "source_id": a,
-            "target_id": b,
-            "source_preview": _preview(candidates[a].content),
-            "target_preview": _preview(candidates[b].content),
-            "similarity": round(candidate.similarity, 2) if candidate.similarity is not None else None,
-            "confidence": round(candidate.confidence, 2),
-            "signals": signals,
-            # Similarity alone previews what `create_link` deduces at the same
-            # bar (`manager.AUTO_REASON_THRESHOLD`): the specific reason, else
-            # "similar in meaning". Otherwise every signal, strongest first,
-            # less the time, which supports a pair but is no reason to link.
-            "reason": reason,
-        })
+        suggestions.append(_suggestion_row(session, candidate, candidates))
         if len(suggestions) == 12:
             break
     return suggestions
@@ -2847,6 +2888,71 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     )
 
 
+def _content_change(entry, body: EntryUpdate) -> tuple[bool, str | None]:  # noqa: ANN001
+    """`(changed, text to store)`; the text is None when nothing is written."""
+    new_content = body.content
+    if entry.is_private and body.content is not None:
+        #: A private note's column holds ciphertext, so "changed" is judged on
+        #: the text the editor saw, and the new text is stored encrypted: it
+        #: was written plain, with the note still flagged private, and sat in
+        #: `entries.content` and the full-text index in the clear (found
+        #: 2026-10-04 by scanning a data dir for a private note's words).
+        content_changed = body.content != manager.readable_content(entry)
+        new_content = _stored_form(entry, body.content) if content_changed else None
+    else:
+        content_changed = body.content is not None and body.content != entry.content
+    return content_changed, new_content
+
+
+def _after_content_edit(session: Session, entry, body: EntryUpdate) -> None:  # noqa: ANN001
+    """What an edited text sets going: the stale vector goes, links resolve, media settles."""
+    # The old vector describes the old text, refresh it, best effort.
+    try:
+        session.execute(
+            sa_delete(EmbeddingRecord).where(EmbeddingRecord.entry_id == entry.id)
+        )
+        session.commit()
+    except Exception:  # noqa: BLE001  # never fail the edit over the index
+        logging.getLogger("tessellate.embeddings").warning(
+            "couldn't clear the stale vector for entry %s", entry.id, exc_info=True
+        )
+        session.rollback()
+    else:
+        #: Off the request (audit 2026-10-05, ARCH-02 step 5): an edit
+        #: used to embed here, a model call of 200 to 400 ms on a real
+        #: embedder before the editor's save returned. The stale vector
+        #: is already gone, so until the job runs the note is found by
+        #: its words, as a note saved with the embedder off is.
+        _queue_embedding(entry)
+    # Editing a note can introduce new [[links]]; resolve those too.
+    try:
+        manager.sync_wiki_links(session, entry)
+        manager.resolve_links_to(session, entry)
+        session.commit()
+    except Exception:
+        session.rollback()
+        logger.warning("couldn't sync wiki links for entry %s", entry.id, exc_info=True)
+    # Same "committed" trigger point as create_entry, an edit can be
+    # the first time an image the note already referenced actually
+    # gets saved (a staged upload attached, then the note edited to
+    # include it, rather than created with it already there).
+    _process_committed_media(session, body.content)
+
+
+def _wiki_rename(session: Session, entry, old_name: str) -> dict | None:  # noqa: ANN001
+    """Set when the opening line changed and other notes link to the old name."""
+    if not old_name or manager.wiki_opening(entry.content) == old_name:
+        return None
+    # Spelt as the holders wrote it, the opening line as the note does.
+    first = (entry.content or "").strip().split("\n", 1)[0]
+    new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
+    holders = manager.wiki_holders(session, entry, old_name)
+    if not holders or not new_name:
+        return None
+    spelt = re.search(r"\[\[\s*(" + re.escape(old_name) + r")", holders[0].content, re.IGNORECASE)
+    return {"old": spelt.group(1) if spelt else old_name, "new": new_name, "notes": len(holders)}
+
+
 @router.put("/{entry_id}", response_model=EntryOut)
 def update_entry(
     entry_id: int,
@@ -2881,17 +2987,7 @@ def update_entry(
             current=lambda: _to_out(session, entry),
             noun="note",
         )
-    new_content = body.content
-    if entry.is_private and body.content is not None:
-        #: A private note's column holds ciphertext, so "changed" is judged on
-        #: the text the editor saw, and the new text is stored encrypted: it
-        #: was written plain, with the note still flagged private, and sat in
-        #: `entries.content` and the full-text index in the clear (found
-        #: 2026-10-04 by scanning a data dir for a private note's words).
-        content_changed = body.content != manager.readable_content(entry)
-        new_content = _stored_form(entry, body.content) if content_changed else None
-    else:
-        content_changed = body.content is not None and body.content != entry.content
+    content_changed, new_content = _content_change(entry, body)
     tags_changed = body.tags is not None and body.tags != manager.entry_tags(entry)
     #: The note's [[name]] before the edit (a private note is never a target).
     old_name = (
@@ -2918,46 +3014,9 @@ def update_entry(
         session.commit()
     _apply_flags(session, entry, body)
     if content_changed:
-        # The old vector describes the old text, refresh it, best effort.
-        try:
-            session.execute(
-                sa_delete(EmbeddingRecord).where(EmbeddingRecord.entry_id == entry.id)
-            )
-            session.commit()
-        except Exception:  # noqa: BLE001  # never fail the edit over the index
-            logging.getLogger("tessellate.embeddings").warning(
-                "couldn't clear the stale vector for entry %s", entry.id, exc_info=True
-            )
-            session.rollback()
-        else:
-            #: Off the request (audit 2026-10-05, ARCH-02 step 5): an edit
-            #: used to embed here, a model call of 200 to 400 ms on a real
-            #: embedder before the editor's save returned. The stale vector
-            #: is already gone, so until the job runs the note is found by
-            #: its words, as a note saved with the embedder off is.
-            _queue_embedding(entry)
-        # Editing a note can introduce new [[links]]; resolve those too.
-        try:
-            manager.sync_wiki_links(session, entry)
-            manager.resolve_links_to(session, entry)
-            session.commit()
-        except Exception:
-            session.rollback()
-            logger.warning("couldn't sync wiki links for entry %s", entry.id, exc_info=True)
-        # Same "committed" trigger point as create_entry, an edit can be
-        # the first time an image the note already referenced actually
-        # gets saved (a staged upload attached, then the note edited to
-        # include it, rather than created with it already there).
-        _process_committed_media(session, body.content)
+        _after_content_edit(session, entry, body)
     out = _to_out(session, entry)
-    if old_name and manager.wiki_opening(entry.content) != old_name:
-        # Spelt as the holders wrote it, the opening line as the note does.
-        first = (entry.content or "").strip().split("\n", 1)[0]
-        new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
-        holders = manager.wiki_holders(session, entry, old_name)
-        if holders and new_name:
-            spelt = re.search(r"\[\[\s*(" + re.escape(old_name) + r")", holders[0].content, re.IGNORECASE)
-            out.wiki_rename = {"old": spelt.group(1) if spelt else old_name, "new": new_name, "notes": len(holders)}
+    out.wiki_rename = _wiki_rename(session, entry, old_name)
     response.headers["ETag"] = entity_tag(out.content_hash)
     return out
 
@@ -3808,24 +3867,8 @@ def _connection_cue(session: Session, other: Entry) -> dict:
     }
 
 
-@router.get("/{entry_id}/connections")
-def entry_connections(entry_id: int, session: Session = Depends(get_session)) -> dict:
-    """Everything this note is joined to, in one place and grouped by kind.
-
-    Asked for by way of Kortex's Connections block: *"I should be able to
-    seamlessly utilise, flick, link, manage, create and search between
-    multiple features"*. Every one of these joins already existed in the
-    database: `EntryLink` both ways, `DocumentLink`, `WhiteboardNode`,
-    `/media/<name>` references in the body, but each was surfaced (if at
-    all) somewhere different: links as chips on the card, documents as a
-    separate list, boards nowhere at all. A note could be on three boards
-    and referenced by two documents and show none of it.
-
-    Direction is kept, not merged. "This note points at that one" and "that
-    one points at this" are different facts, and a merged list can state
-    neither.
-    """
-    entry = _existing_entry(session, entry_id)
+def _stored_connections(session: Session, entry: Entry) -> tuple[list[dict], list[dict]]:
+    """`(outgoing, incoming)` from the stored links, direction kept."""
     outgoing: list[dict] = []
     incoming: list[dict] = []
     for link, other in manager.links_for_entry(session, entry):
@@ -3852,8 +3895,12 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             "props": link.props,
         }
         (outgoing if link.source_entry_id == entry.id else incoming).append(row)
+    return outgoing, incoming
 
-    documents = [
+
+def _attached_documents(session: Session, entry: Entry) -> list[dict]:
+    """The documents this note is attached to, by title."""
+    return [
         {"id": doc.id, "title": doc.title, "file_type": doc.file_type}
         for doc in session.scalars(
             select(Document)
@@ -3863,6 +3910,9 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
         )
     ]
 
+
+def _add_referenced(session: Session, references: list[dict], documents: list[dict], incoming: list[dict]) -> None:
+    """Fold the text-only references into the documents and incoming rows."""
     #: **The same reader as the Referenced-by row and the card's chip**, so the
     #: three agree (INBOX 246). The chip says "in 1 document · linked by 1
     #: note" from `_reference_rows`, and this dialog is what it opens: a
@@ -3871,7 +3921,6 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
     #: stored `EntryLink`, both used to be counted on the chip and missing
     #: here. They are added to the group they belong in, after the rows the
     #: database holds exactly, skipping any the exact rows already carry.
-    references = _reference_rows(session, entry)
     known_docs = {doc["id"] for doc in documents}
     for row in references:
         if row["kind"] == "document" and row["id"] not in known_docs:
@@ -3894,6 +3943,9 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
                 "reason_confidence": None,
             })
 
+
+def _add_wiki_outgoing(session: Session, entry: Entry, outgoing: list[dict]) -> None:
+    """Fold this note's own `[[wiki links]]` into the outgoing rows."""
     #: **And this note's own `[[wiki links]]`, outgoing.** The block above
     #: gives the *target* of a link its incoming row by reading the text of
     #: the note that wrote it; nothing gave the writer the matching outgoing
@@ -3922,6 +3974,9 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             "reason_confidence": None,
         })
 
+
+def _boards_of(session: Session, entry: Entry, references: list[dict]) -> list[dict]:
+    """The boards and maps this note sits on, and the scratch whiteboard when it does."""
     #: Boards and maps: `kind` is "board" or "map" so the dialog can say
     #: which (a map's own note node counts too). The unnamed scratch board
     #: (`board_id IS NULL`) is not an entry and so has no row there; it is a
@@ -3939,7 +3994,33 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
     ).first()
     if on_scratch is not None:
         boards.append({"id": None, "title": "Whiteboard", "kind": "board"})
+    return boards
 
+
+@router.get("/{entry_id}/connections")
+def entry_connections(entry_id: int, session: Session = Depends(get_session)) -> dict:
+    """Everything this note is joined to, in one place and grouped by kind.
+
+    Asked for by way of Kortex's Connections block: *"I should be able to
+    seamlessly utilise, flick, link, manage, create and search between
+    multiple features"*. Every one of these joins already existed in the
+    database: `EntryLink` both ways, `DocumentLink`, `WhiteboardNode`,
+    `/media/<name>` references in the body, but each was surfaced (if at
+    all) somewhere different: links as chips on the card, documents as a
+    separate list, boards nowhere at all. A note could be on three boards
+    and referenced by two documents and show none of it.
+
+    Direction is kept, not merged. "This note points at that one" and "that
+    one points at this" are different facts, and a merged list can state
+    neither.
+    """
+    entry = _existing_entry(session, entry_id)
+    outgoing, incoming = _stored_connections(session, entry)
+    documents = _attached_documents(session, entry)
+    references = _reference_rows(session, entry)
+    _add_referenced(session, references, documents, incoming)
+    _add_wiki_outgoing(session, entry, outgoing)
+    boards = _boards_of(session, entry, references)
     files = _connected_files(session, manager.readable_content(entry))
 
     return {

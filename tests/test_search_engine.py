@@ -469,11 +469,12 @@ def test_the_search_endpoint_answers_with_scores(client):
 
 def test_the_search_endpoint_is_behind_the_lock():
     """The one gate this app has: a route that reads the notebook is
-    registered with `locked`, and this one reads every kind at once."""
-    from pathlib import Path
+    registered with `locked`, and this one reads every kind at once. The
+    gate is the router's row in `api.app.ROUTERS` since audit 1031 AR9."""
+    from tessellate.api import app as app_module
+    from tessellate.api import routes_search
 
-    source = Path("src/tessellate/api/app.py").read_text(encoding="utf-8")
-    assert "app.include_router(routes_search.router, dependencies=locked)" in source
+    assert (routes_search.router, app_module.LOCKED) in app_module.ROUTERS
 
 
 def test_making_a_note_private_takes_its_vector_out_of_the_matrix(
