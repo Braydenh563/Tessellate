@@ -391,10 +391,14 @@ function renderCaptureDocumentAdder() {
 //: clipboard as a placeholder rather than reading it before anything is chosen.
 const NOTE_TEMPLATE_CURSOR = "{{cursor}}";
 
+//: The date a template or the "/" menu writes (audit 1031 N24): the words the
+//: app uses everywhere else ("Oct 31, 2026"), not the numeric "10/31/2026".
+const stampDate = (when) => when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+
 function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
-    .replace(/\{\{?date\}\}?/g, now.toLocaleDateString())
+    .replace(/\{\{?date\}\}?/g, stampDate(now))
     .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
     .replaceAll("{{clipboard}}", clipboard);
 }
@@ -928,7 +932,12 @@ function flashEntry(id) {
   noteEngine.jumpId = null;
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
-    if (!card) return toast("No such note.");
+    if (!card) {
+      //: Not a note after all (audit 1031 N48): the address goes back to the list rather than naming a dead id, and the last "Showing note" line leaves the live region.
+      recordTabVisit("notes", "browse", "", { refine: true });
+      announce("");
+      return toast("No such note.");
+    }
     //: A long way is a jump, not a glide: the Notes list is windowed
     //: (notes-list.js), and every row built on the way draws at its own
     //: height, so a smooth scroll aimed at the card's first place ended

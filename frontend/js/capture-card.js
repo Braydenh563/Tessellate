@@ -58,7 +58,7 @@ function buildCaptureCard() {
   const composer = captureCardEl("div", "note-composer");
   composer.append(
     captureCardHead(),
-    captureCardEl("textarea", "capture-card-body", { rows: "3", placeholder: "Take a note…", "aria-label": "Note", "data-cc": "body" }),
+    captureCardEl("textarea", "capture-card-body", { id: "capture-card-body", rows: "3", placeholder: "Take a note…", "aria-label": "Note", "data-cc": "body", "data-autocorrect": "" }),
     captureItemsBox(),
     captureCardEl("input", "capture-card-tags", { type: "text", placeholder: "#tag1 #tag2", "aria-label": "Tags", autocomplete: "off", "data-cc": "tags" }),
   );

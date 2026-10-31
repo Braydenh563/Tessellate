@@ -66,3 +66,90 @@ def test_the_phone_note_page_drops_the_title_its_head_already_says():
 
 def test_a_link_menu_is_never_nameless():
     assert re.search(r"Actions for the link to \$\{label \|\| ", (JS / "note-cards.js").read_text())
+
+
+def test_the_capture_card_and_quick_note_are_editor_surfaces():
+    """N9, N50: the placeholder's promise (`[[`, `/`) is kept in both boxes."""
+    editor = (JS / "editor.js").read_text()
+    table = editor[editor.index("const EDITOR_SURFACES = {") :][:3000]
+    for box in ("capture-card-body", "quick-note-text"):
+        assert f'"{box}": "note"' in table
+    card = (JS / "capture-card.js").read_text()
+    assert 'id: "capture-card-body"' in card and '"data-autocorrect": ""' in card
+    assert 'id="quick-note-text"' in (ROOT / "frontend" / "index.html").read_text()
+
+
+def test_the_menu_moves_into_the_dialog_that_holds_the_box():
+    """A modal dialog is in the top layer: a menu left in body is under it."""
+    helper = _function("editor.js", "editorHomeMenu")
+    assert 'closest?.("dialog[open]")' in helper and "appendChild($(\"editor-menu\"))" in helper
+    close = _function("editor.js", "editorCloseMenu")
+    assert "editorHomeMenu(null)" in close
+
+
+def test_one_focus_contract_after_an_act():
+    """N11: a hidden or removed control hands the keyboard to a named target."""
+    notes = (JS / "notes-list.js").read_text()
+    helper = _function("notes-list.js", "restoreFocusTo")
+    assert "checkVisibility" in helper, "a node just hidden still looks focused for one frame"
+    assert notes.count("restoreNoteControl(held)") >= 2, "the patch read and the full read both restore"
+    assert "restoreFocusTo(() =>" in (JS / "skills.js").read_text(), "leaving Select goes to a control"
+    assert (JS / "note-panels.js").read_text().count("focusPanel(row);") == 4
+    assert "focusNoteRow(entry.id); // the Save button" in (JS / "note-edit-panels.js").read_text()
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not available")
+def test_a_held_edit_keeps_the_first_base_hash_and_the_newest_words():
+    """N47: one held edit per note; a change made elsewhere meanwhile is still refused."""
+    script = "\n".join(
+        [
+            "const store = {};",
+            "const prefs = { json: (k, d) => (k in store ? JSON.parse(store[k]) : d), set: (k, v) => ((store[k] = v), true), remove: (k) => delete store[k] };",
+            "const renderNoteOutbox = () => {}, renderPendingNoteRows = () => {}, scheduleNoteOutboxFlush = () => {};",
+            "const NOTE_OUTBOX_KEY = 'noteOutbox';",
+            "let n = 0; const newNoteClientKey = () => 'k' + ++n;",
+            _function("quick-note.js", "noteOutbox"),
+            _function("quick-note.js", "writeNoteOutbox"),
+            _function("quick-note.js", "noteEditOutboxAdd"),
+            "noteEditOutboxAdd(7, { content: 'one', base_hash: 'AAA' });",
+            "noteEditOutboxAdd(7, { content: 'two', base_hash: 'BBB' });",
+            "noteEditOutboxAdd(8, { content: 'other', base_hash: 'CCC' });",
+            "console.log(JSON.stringify(noteOutbox().map((i) => [i.edit_id, i.content, i.base_hash])));",
+        ]
+    )
+    out = subprocess.run([NODE, "-e", script], capture_output=True, text=True, timeout=30)
+    assert json.loads(out.stdout) == [[7, "two", "AAA"], [8, "other", "CCC"]], out.stderr
+
+
+def test_the_flush_sends_edits_as_puts_and_the_form_holds_on_a_dead_server():
+    quick = (JS / "quick-note.js").read_text()
+    assert '`/entries/${editId}`, { method: "PUT"' in quick
+    assert "!item.edit_id" in quick, "a held edit must not draw as a new note"
+    assert "holdNoteEdit(entry.id" in (JS / "note-edit-panels.js").read_text()
+    assert '"noteEditOutboxAdd"' in (JS / "app.js").read_text(), "the stand-in for the lazy module"
+
+
+def test_a_missing_note_puts_the_address_back_and_clears_the_live_line():
+    """N48."""
+    body = (JS / "capture-ask.js").read_text()
+    branch = body[body.index('if (!card) {') :][:500]
+    assert 'recordTabVisit("notes", "browse", "", { refine: true })' in branch
+    assert 'announce("")' in branch and 'toast("No such note.")' in branch
+
+
+def test_the_bin_has_an_address_and_the_palette_opens_the_bin_itself():
+    """N49: `#/library/bin`, the Bin kind chosen, and an Unlock command."""
+    assert 'bin: "library-bin"' in (JS / "router.js").read_text()
+    reveal = (JS / "reveal-targets.js").read_text()
+    block = reveal[reveal.index('"library-bin": {') :][:700]
+    assert 'libraryKind = "archived"' in block and 'recordTabVisit("library", "library-bin")' in block
+    assert 'revealFeature("library-bin")' in (JS / "navigation.js").read_text() or 'await revealFeature("library-bin")' in (JS / "navigation.js").read_text()
+    assert "Unlock private notes" in (JS / "settings-panes.js").read_text()
+
+
+def test_a_template_date_is_written_in_words():
+    """N24: "Oct 31, 2026", not the numeric locale date, in a template and the "/" menu."""
+    ask = (JS / "capture-ask.js").read_text()
+    assert "stampDate(now)" in ask and 'month: "short", day: "numeric", year: "numeric"' in ask
+    assert "stampDate(now)" in (JS / "editor.js").read_text()
+    assert "now.toLocaleDateString()" not in ask

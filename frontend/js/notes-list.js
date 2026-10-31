@@ -60,14 +60,45 @@ async function noteFormMayClose() {
 
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
-  requestAnimationFrame(() => {
-    const active = document.activeElement;
-    if (active && active !== document.body && active.isConnected) return;
+  restoreFocusTo(() => {
     const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
-    if (!row) return;
+    if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
-    row.focus({ preventScroll: true });
+    return row;
+  });
+}
+
+//: **One focus contract after an act** (audit 1031 N11): when an act leaves
+//: the keyboard on the page (the control it was on went away or was hidden),
+//: it goes to `target`, a node or a function that finds one after the redraw.
+//: Nothing moves if the person has already gone somewhere else, so a tab
+//: change does not pull focus into a hidden tab. Hidden counts as lost: the
+//: browser only moves focus off a node just hidden after this frame.
+function restoreFocusTo(target) {
+  requestAnimationFrame(() => {
+    const here = document.activeElement;
+    if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
+    const el = target instanceof Node ? target : target();
+    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
+  });
+}
+
+//: The control of a note's row that holds the keyboard, as classes (without
+//: the state ones: "is-favourite" flips with the act) to find it in the redrawn row.
+function heldNoteControl() {
+  const el = document.activeElement;
+  const li = el?.closest?.("#entry-list > li[data-id]");
+  return li && { id: li.dataset.id, cls: [...el.classList].filter((t) => !t.startsWith("is-")).join(".") };
+}
+
+function restoreNoteControl(held) {
+  if (!held) return;
+  restoreFocusTo(() => {
+    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    //: Else the row itself (Save changes closed its form), which a script may focus.
+    if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
+    return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
   });
 }
 
@@ -2978,7 +3009,10 @@ async function loadEntries() {
   //: throws, and a throw used to leave the skeletons and then the empty state
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
-  return loadSurface($("empty-message"), "your notes", _loadEntries);
+  const held = heldNoteControl();
+  const result = await loadSurface($("empty-message"), "your notes", _loadEntries);
+  restoreNoteControl(held);
+  return result;
 }
 
 async function _loadEntries() {
@@ -3149,7 +3183,9 @@ async function refreshEntries(ids) {
   ensureMapChipsFor(rows, generation);
   renderStatusBar();
   renderSidebar();
+  const held = heldNoteControl();
   renderEntries();
+  restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
   fillCategoryOptions($("entry-category"), null);

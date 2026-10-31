@@ -48,6 +48,14 @@ function notePanelStillOpen(entry, kind) {
 }
 
 
+//: A panel that opens takes the keyboard (audit 1031 N11): the menu that
+//: opened it has closed, and focus fell to the page. The panel is a region
+//: with no role of its own, so it is focusable by script only.
+function focusPanel(row) {
+  row.tabIndex = -1;
+  restoreFocusTo(row);
+}
+
 async function toggleRelated(entry) {
   if (!toggleNotePanel(entry, "related")) return;
   const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
@@ -69,6 +77,7 @@ async function toggleRelated(entry) {
     }));
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 //: **What points at this note** (INBOX 246, the owner: "I want it to show in
@@ -146,6 +155,7 @@ async function toggleFaded(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 //: **This note's reminders, under the card** (INBOX 309). The other half of
@@ -200,6 +210,7 @@ async function toggleNoteReminders(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 async function toggleReferences(entry) {
@@ -260,6 +271,7 @@ async function toggleReferences(entry) {
     row.appendChild(wrap);
   }
   card.appendChild(row);
+  focusPanel(row);
 }
 
 // One similar note, with the button that turns it into a real link.
