@@ -236,7 +236,7 @@ new MutationObserver(() => {
   } else {
     lockReturn ||= document.activeElement;
     const kept = $("lock-overlay").dataset.mode === "prompt";
-    for (const el of document.querySelectorAll("dialog:modal, :popover-open, .modal-overlay:not(.hidden), [role=dialog]:not(.hidden):not(dialog)")) {
+    for (const el of document.querySelectorAll("dialog:modal, :popover-open, .modal-overlay:not(.hidden), [role=dialog]:not(.hidden)")) {
       if (el.closest("#lock-overlay")) continue;
       if (kept || el.popover || el.close) lockStash.push(el);
       el.popover ? el.hidePopover() : el.close ? el.close() : el.classList.add("hidden");

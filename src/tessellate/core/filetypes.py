@@ -141,13 +141,29 @@ def normalise(value: str | None) -> str:
     default rather than raising, because the alternative is a document that
     cannot be opened because of a field describing how to open it.
     """
+    return _resolve(value) or DEFAULT_FILE_TYPE
+
+
+def _resolve(value: str | None) -> str | None:
+    """The known extension a spelling names, or None for an unknown one."""
     text = (value or "").strip().lower()
     if not text:
-        return DEFAULT_FILE_TYPE
+        return None
     if "." in text:
         text = text.rsplit(".", 1)[-1]
     text = ALIASES.get(text, text)
-    return text if text in _BY_EXT else DEFAULT_FILE_TYPE
+    return text if text in _BY_EXT else None
+
+
+def require(value: str) -> str:
+    """`normalise`, but an unknown type raises ValueError naming the valid ones.
+
+    A request that sets a type must not have it coerced to markdown unseen
+    (audit 1031 DC8: `exe` and `../../etc` both became `md`)."""
+    known = _resolve(value)
+    if known is None:
+        raise ValueError(f"Unknown file type. Use one of: {', '.join(sorted(_BY_EXT))}.")
+    return known
 
 
 def get(value: str | None) -> FileType:

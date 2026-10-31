@@ -3236,7 +3236,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- A textarea, not an input: a three-sentence question used to
                  scroll sideways inside one line. Enter still sends; Shift+Enter
                  is a newline, which an <input> could not offer at all. -->
-            <textarea id="chat-input" data-autocorrect rows="1" class="autogrow chat-input"
+            <textarea id="chat-input" data-holds-notebook data-autocorrect rows="1" class="autogrow chat-input"
               aria-label="Message" placeholder="Ask your notebook anything…"></textarea>
             <button type="button" id="chat-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
             <button id="mic-chat" class="ghost icon-only" title="Dictate your question (local Whisper)" aria-label="Dictate your question"><i class="ph ph-microphone" aria-hidden="true"></i></button>
@@ -5692,7 +5692,7 @@ Link to another note with [[its first few words]]."></textarea>
               </section>
             </aside>
           </div>
-          <div id="doc-preview" class="doc-preview markdown-body hidden" aria-live="off"></div>
+          <div id="doc-preview" data-holds-notebook class="doc-preview markdown-body hidden" aria-live="off"></div>
         </div>
         <p id="doc-status" class="status doc-status" role="status"></p>
         <!-- **The strip VS Code and Word both have and this editor did not.**

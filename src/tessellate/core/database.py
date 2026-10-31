@@ -48,6 +48,8 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.orm.attributes import flag_modified
 
+from tessellate.core import concurrency
+
 
 def utcnow() -> datetime:
     """Timezone-aware UTC now (datetime.utcnow is deprecated: plan §4)."""
@@ -2317,7 +2319,11 @@ class DatabaseManager:
         # check_same_thread=False because FastAPI serves requests from a
         # threadpool; SQLAlchemy still gives each request its own session.
         self.engine = create_engine(
-            f"sqlite:///{db_path}", connect_args={"check_same_thread": False}
+            f"sqlite:///{db_path}",
+            connect_args={"check_same_thread": False},
+            pool_size=concurrency.POOL_SIZE,
+            max_overflow=concurrency.POOL_OVERFLOW,
+            pool_timeout=concurrency.POOL_TIMEOUT,
         )
 
         # Per-connection SQLite settings. All of these are per-connection

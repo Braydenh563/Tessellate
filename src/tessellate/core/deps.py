@@ -11,6 +11,7 @@ import logging
 import os
 import sys
 import threading
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -375,12 +376,74 @@ def _embedding_model_in_use(repo: str) -> bool:
 embedmodels.set_in_use_check(_embedding_model_in_use)
 
 
+#: The ids of the spaces that exist, so a request header is checked without a
+#: query per request. Refreshed on a miss (a space made a moment ago is found),
+#: after 5 s (a space deleted elsewhere stops being accepted), and whenever a
+#: `Space` row is inserted or deleted through this process.
+_SPACE_IDS_TTL = 5.0
+_space_ids: tuple[float, frozenset[str]] | None = None
+
+
+def forget_space_ids() -> None:
+    global _space_ids
+    _space_ids = None
+
+
+def _on_space_row_change(*_args: object) -> None:
+    forget_space_ids()
+
+
+def _watch_spaces() -> None:
+    from sqlalchemy import event
+
+    from tessellate.core.database import Space
+
+    for name in ("after_insert", "after_delete"):
+        event.listen(Space, name, _on_space_row_change)
+
+
+_watch_spaces()
+register_cache_reset(forget_space_ids)
+
+
+def _space_known(session: Session, workspace_id: str) -> bool:
+    global _space_ids
+    from tessellate.core.database import Space
+
+    now = time.monotonic()
+    cached = _space_ids
+    if cached and now - cached[0] < _SPACE_IDS_TTL and workspace_id in cached[1]:
+        return True
+    ids = frozenset(row[0] for row in session.query(Space.id).all())
+    _space_ids = (now, ids)
+    return workspace_id in ids
+
+
+def _refuse_unknown_space(workspace_id: str) -> HTTPException:
+    return HTTPException(
+        status_code=422,
+        detail={
+            "detail": "That space does not exist. Pick one from the space menu.",
+            "code": "unknown_space",
+            "hint": None,
+        },
+    )
+
+
 def get_session(request: Request = None) -> Iterator[Session]:
-    """FastAPI dependency: one session per request, always closed."""
+    """FastAPI dependency: one session per request, always closed.
+
+    The `X-Workspace-ID` header scopes every query, so it must name a space
+    (or be `all`): an id that is none of those is 422, not a filter that
+    matches nothing (audit 1031 BK3). The auth routes run before a space means
+    anything and ignore it, so a stale id can never lock the person out."""
     session = get_db().session()
     if request is not None:
         workspace_id = request.headers.get("X-Workspace-ID")
-        if workspace_id:
+        if workspace_id and not request.url.path.startswith("/auth/"):
+            if workspace_id != "all" and not _space_known(session, workspace_id):
+                session.close()
+                raise _refuse_unknown_space(workspace_id)
             session.info["workspace_id"] = workspace_id
             # Resolved here, once, because the statement-level filter in
             # database.py runs for every query and must not issue one of its

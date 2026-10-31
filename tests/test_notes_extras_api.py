@@ -237,11 +237,13 @@ def test_rename_file_on_private_note_is_refused(client, session):
 def test_rename_file_in_another_workspace_404s(client):
     entry = _save(client, "note in the default workspace")
     attachment = _upload(client, entry["id"])
+    #: A real space: an id that names none is refused with 422 (audit 1031 BK3).
+    other = client.post("/spaces", json={"name": "Someone else's", "icon": "ph-circles-four"}).json()["id"]
 
     response = client.put(
         f"/files/{attachment['id']}",
         json={"filename": "renamed.txt"},
-        headers={"X-Workspace-ID": "someone-elses-workspace"},
+        headers={"X-Workspace-ID": other},
     )
     assert response.status_code == 404
     # Untouched from the workspace that actually owns it.

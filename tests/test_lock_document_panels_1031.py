@@ -31,6 +31,8 @@ MARKED = [
     "doc-outline-filter",
     "doc-list",
     "doc-prose-panel",
+    "doc-preview",
+    "chat-input",
     "dash-grid",
 ]
 

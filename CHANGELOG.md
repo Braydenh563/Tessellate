@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Concurrency: 24 parallel note creations no longer answer 500; one `core/concurrency.py` sizes the worker threads and the database pool together, with a 5 second pool timeout that answers 503 with `Retry-After` (audit 1031 BK1, AR11)
+- Workspace header: `X-Workspace-ID` must name an existing space or `all`, otherwise a 422 `unknown_space`, and the app drops back to All spaces when its space was deleted in another window (audit 1031 BK3)
+- Bin guard: a binned note or an archived document refuses a PUT with a 409 that says to restore it first, from one `entry/repo.py` guard that all 17 note write routes and the document update share; `file_type` is checked against the known types (audit 1031 BK2, DC8, AR7)
 - Lock: locking empties every panel that shows the notebook's words (the document AI diff, replace list, outline, crumbs, lists, writing suggestions and the dashboard's cards; a `data-holds-notebook` marker covers new ones), and open panels such as the AI assistant are closed under the lock screen, so the Unlock button can be clicked (audit 1031 DC1, DC2)
 - Words: one word count in Python (`core/cjk.word_count`) and one in the browser (`wordCount`); the two parallel counts are gone, and full-width punctuation (the colon, comma, brackets) is not a word in either (INBOX 1495, notes audit N29)
 - Composer: a compare opens with "Of these notes," or "Going by these notes," instead of claiming a search ("the notes I looked at", "this batch"), and its side headings start with a capital (audit 1031 C24)

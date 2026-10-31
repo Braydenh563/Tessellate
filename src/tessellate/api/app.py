@@ -112,6 +112,7 @@ from tessellate.core import (
     afterunlock,
     backup,
     bgtasks,
+    concurrency,
     deadline,
     deps,
     diagring,
@@ -933,11 +934,16 @@ def _register_error_handlers(app: FastAPI) -> None:
 
     def _is_locked(exc: BaseException) -> bool:
         """SQLite's "database is locked" (or "busy"), through SQLAlchemy or
-        the driver: the message is all `sqlite3` gives to tell it apart."""
+        the driver: the message is all `sqlite3` gives to tell it apart. A
+        connection pool still exhausted after `POOL_TIMEOUT` is the same wait
+        (audit 1031 BK1): busy, not a bare 500."""
         import sqlite3
 
         from sqlalchemy.exc import OperationalError as SAOperationalError
+        from sqlalchemy.exc import TimeoutError as SAPoolTimeout
 
+        if isinstance(exc, SAPoolTimeout):
+            return True
         if not isinstance(exc, (SAOperationalError, sqlite3.OperationalError)):
             return False
         text = str(exc).lower()
@@ -1002,7 +1008,7 @@ def _register_error_handlers(app: FastAPI) -> None:
                     "code": "busy",
                     "hint": None,
                 },
-                headers={"Retry-After": "2"},
+                headers={"Retry-After": str(concurrency.RETRY_AFTER_SECONDS)},
             )
         if getattr(_request.state, "deadline_expired", False) and isinstance(exc, ProviderError):
             # The route's deadline (core/deadline.py) cut the model call and
@@ -1638,6 +1644,7 @@ def create_app() -> FastAPI:
         # On the pool, not a thread of its own (the THREAD_SITES ratchet in
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
+        concurrency.apply_worker_limit()
         routes_models.prewarm_installed()
         afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield

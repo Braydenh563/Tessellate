@@ -20,7 +20,7 @@ from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
 from tessellate.api.downloads import attachment_headers, safe_filename
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -40,7 +40,7 @@ from tessellate.core.database import (
     like_escape,
 )
 from tessellate.core.deps import get_session
-from tessellate.entry import link_offers
+from tessellate.entry import link_offers, repo
 from tessellate.entry.mentions import (
     BACKLINK_ROWS_MAX,
     BACKLINK_SOURCES_MAX,
@@ -80,13 +80,15 @@ SELECTION_EXCERPT_CHARS = 160
 class DocumentBody(BaseModel):
     title: str = Field(default="Untitled", min_length=1, max_length=200)
     content: str = Field(default="", max_length=MAX_CONTENT)
-    #: A bare extension ("md", "py"). Not validated as an enum here on
-    #: purpose: `filetypes.normalise` accepts a filename, a dotted
-    #: extension or a bare one and falls back to markdown for anything it
-    #: does not know, which is the right answer for a field that only
-    #: describes how to *display* the content. A 422 over it would refuse
-    #: to save someone's writing because of its label.
+    #: A bare extension ("md", "py"), a dotted one or a filename. An unknown
+    #: type is refused, 422 naming the valid ones: it used to become markdown
+    #: unseen, so `exe` and `../../etc` were stored as `md` (audit 1031 DC8).
     file_type: str = Field(default=filetypes.DEFAULT_FILE_TYPE, max_length=40)
+
+    @field_validator("file_type")
+    @classmethod
+    def _known_type(cls, value: str) -> str:
+        return filetypes.require(value)
 
 
 class DocumentPatch(BaseModel):
@@ -96,6 +98,9 @@ class DocumentPatch(BaseModel):
     #: above, so an autosave sending only `content` cannot reset a
     #: document's type back to markdown.
     file_type: str | None = Field(default=None, max_length=40)
+    #: Take an archived document off the shelf with this edit; without it an
+    #: archived document refuses the PUT (409), as a binned note does.
+    unarchive: bool = False
     #: Who is making this change, for the history: "edit" (a person typing),
     #: "ai" (an accepted suggestion), "restore" (rolling back). The frontend
     #: says so because only it knows, by the time a PATCH arrives the text
@@ -105,6 +110,11 @@ class DocumentPatch(BaseModel):
     #: text another window has since changed is refused with 409 rather than
     #: silently overwriting it (api/edit_conflicts.py). None is unchecked.
     base_hash: str | None = Field(default=None, max_length=64)
+
+    @field_validator("file_type")
+    @classmethod
+    def _known_type(cls, value: str | None) -> str | None:
+        return None if value is None else filetypes.require(value)
 
 
 class AiEditBody(BaseModel):
@@ -729,7 +739,7 @@ def get_document(document_id: int, session: Session = Depends(get_session)) -> d
 def update_document(
     document_id: int, body: DocumentPatch, session: Session = Depends(get_session)
 ) -> dict:
-    document = _existing(session, document_id)
+    document = repo.writable_document(session, document_id, unarchive=body.unarchive)
     #: Two windows, one document (WORLD_CLASS_PLAN 22.1 item 5), checked
     #: before anything is written, the title included.
     refuse_if_stale(

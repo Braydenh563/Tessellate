@@ -524,6 +524,8 @@ async function api(path, options = {}) {
     //: caller that has something to do with a particular refusal (an edit
     //: conflict's 409 carries the text another window saved,
     //: `editConflictPrompt`) can read it rather than parse a message.
+    //: A space deleted in another window falls back to "All spaces" (1031 BK3).
+    if (detail.code === "unknown_space") setActiveSpace(SPACE_ALL);
     const error = new Error(errMsg);
     error.status = response.status;
     if (response.status < 500) toast.refused.add(errMsg);
@@ -845,8 +847,6 @@ const LOCK_PURGE_IDS = [
   "graph-svg", // node labels are note titles
   "palette-list", // whatever was last searched for
   "palette-preview", // and the note it was showing
-  "doc-live",
-  "doc-preview",
 ];
 
 //: Empty everything the lock screen is covering.
@@ -871,18 +871,12 @@ function purgeLockedContent() {
     const el = $(id);
     if (el) el.replaceChildren();
   }
-  //: `data-holds-notebook` marks a panel that shows the notebook's words (1031 DC1).
+  //: `data-holds-notebook` marks a panel of the notebook's words (1031 DC1).
   for (const el of document.querySelectorAll("[data-holds-notebook]")) {
-    if (el.matches("input, textarea")) el.value = "";
-    else el.replaceChildren();
+    el.matches("input, textarea") ? (el.value = "") : el.replaceChildren();
   }
-  // A textarea's text lives in `.value`, which `replaceChildren` never
-  // touches: the document editor would otherwise keep the whole document
-  // readable behind the lock screen.
-  for (const id of ["doc-content", "doc-title", "entry-input", "chat-input"]) {
-    const field = $(id);
-    if (field && "value" in field) field.value = "";
-  }
+  // `.value` survives `replaceChildren`, so the editor's text needs its own clear.
+  for (const id of ["doc-content", "doc-title"]) if ($(id)) $(id).value = "";
 }
 
 async function lockNow() {
