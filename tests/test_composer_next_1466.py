@@ -34,7 +34,9 @@ def asks(client, session):
     def build(question: str) -> list[str]:
         out = _ask(client, question, use_tools=False, notes_only=True, answer_from="notes")
         grounding = out.get("grounding") or [{}]
-        return list(grounding[0].get("next") or [])
+        #: Without the cited note's own offers ("Open \u201cDentist\u201d"), which are
+        #: the prose closing line turned into chips (tests/test_composer_foot_1466.py).
+        return [q for q in grounding[0].get("next") or [] if "\u201c" not in q]
 
     return build
 
