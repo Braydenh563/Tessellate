@@ -1393,7 +1393,10 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     bare = len(query.split()) <= 3
     rec = note_recency.recency(query, bare=bare)
     if rec is None:
-        return None
+        #: "What's the latest on uni": every note on the subject, so the answer
+        #: can lead with the newest one (it is not the search's first).
+        about = note_recency.status_subject(query)
+        return _retrieve(session, about, embeddings, max(limit, 20), False, found, locale) if about else None
     if not rec.subject:
         return (_without_private(recent_entries(session, limit=rec.count)), "recent") if (rec.said_count or bare) and not rec.oldest else None
     entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)

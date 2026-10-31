@@ -27,7 +27,8 @@ def test_who_says_days_as_clauses_and_keeps_names_capitalised():
     assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
     text = "\n".join(out.lines)
     assert not LABEL_OPENER.search(text), text
-    assert "On 2 September, Priya moved to Leeds in spring." in text, text
+    #: Composer5-1031 (INBOX 1483: "when did" says the date, then how far back): was "On 2 September, Priya moved ...".
+    assert "On 2 September, about a month ago, Priya moved to Leeds in spring." in text, text
     composer_digest._set_timing("who is Priya?")
     out = composer_digest._Out()
     assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
