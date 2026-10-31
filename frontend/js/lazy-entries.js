@@ -144,7 +144,7 @@ function charactersLost() {
 //: The app's own mark, already in the page (phone-shell.js), as the app's head.
 function emblemHead(holder, size) {
   holder.replaceChildren();
-  renderEmblem(holder, size);
+  renderEmblem(holder, size, { animate: true });
 }
 
 //: The name's initial in a quiet disc, for a head whose face did not arrive.
