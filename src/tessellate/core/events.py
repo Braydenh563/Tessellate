@@ -43,6 +43,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import private_turn
 from tessellate.core.database import (
     AuditLog,
     Entry,
@@ -194,6 +195,18 @@ def _fold(scope: _Write, item: dict) -> None:
     scope.owner.payload = payload
 
 
+def _turn_bookkeeping(action: str, entity_type: str) -> bool:
+    """An event about a turn rather than a change to the notebook: a tool
+    call's row (`ai_tool`, `chat`), a skill or plan run's (`ran`, `skill`),
+    and the question log (`queried`). A private chat writes none of them; a
+    note it creates or edits is still recorded, because history and Undo need
+    the change whoever asked for it."""
+    return entity_type in _TURN_ENTITIES or action == "queried"
+
+
+_TURN_ENTITIES = frozenset({"chat", "skill"})
+
+
 def record(
     session: Session,
     action: str,
@@ -208,7 +221,7 @@ def record(
     Returns the row, or None when the event was folded into the write that
     contains it (see the module docstring) or suppressed entirely.
     """
-    if _suppress.get():
+    if _suppress.get() or (private_turn.active() and _turn_bookkeeping(action, entity_type)):
         return None
     stack = _writes.get()
     scope = stack[-1] if stack else None

@@ -34,6 +34,8 @@ import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager, nullcontext
 
+from tessellate.core import private_turn
+
 _lock = threading.Lock()
 _ids = itertools.count(1)
 _jobs: dict[str, Job] = {}
@@ -430,7 +432,8 @@ class StreamNarrator:
         return "Searching your notes." if stage == "searching" else stage.replace("_", " ").capitalize()
 
     def _text_line(self, event: dict) -> str:
-        return str(event.get("text") or "")
+        #: A plan's steps are written from the person's own words.
+        return "" if private_turn.active() else str(event.get("text") or "")
 
     def _web_line(self, event: dict) -> str:
         pages = len(event.get("sources") or [])
@@ -452,10 +455,12 @@ class StreamNarrator:
     def _tool_line(self, event: dict) -> str:
         self.tools += 1
         name = event.get("tool") or _no_icon(event.get("label")) or "a tool"
+        #: A private chat's log names the tool and never what it was asked or
+        #: why it failed: both quote the question's words.
         if event.get("ok") is False:
             self.failed += 1
-            return f"{name} did not run: {event.get('error') or 'no reason given'}."
-        return f"Called {name}: {tool_arguments_in_words(event.get('arguments'))}."
+            return f"{name} did not run." if private_turn.active() else f"{name} did not run: {event.get('error') or 'no reason given'}."
+        return f"Called {name}." if private_turn.active() else f"Called {name}: {tool_arguments_in_words(event.get('arguments'))}."
 
     def _thinking_line(self, event: dict) -> str:
         first = not self.thought
@@ -463,7 +468,7 @@ class StreamNarrator:
         return "Thinking." if first else ""
 
     def _item_line(self, event: dict) -> str:
-        reason = " ".join(str(event.get("reason") or "").split())[:_ARG_CHARS].rstrip(".")
+        reason = "" if private_turn.active() else " ".join(str(event.get("reason") or "").split())[:_ARG_CHARS].rstrip(".")
         return f"Suggested a change: {reason}." if reason else "Suggested a change."
 
     def _answer_line(self, event: dict) -> str:

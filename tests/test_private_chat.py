@@ -164,6 +164,8 @@ def test_the_ledger_names_the_run_without_the_question(ai_client, fake_ollama, b
         skill = None
         use_tools = True
 
-    assert routes_chat._run_title(_Req) == "Private chat"
-    _Req.body.private = False
+    from tessellate.core import private_turn
+
+    with private_turn.scope(True):
+        assert routes_chat._run_title(_Req) == "Private chat"
     assert "my secret question" in routes_chat._run_title(_Req)
