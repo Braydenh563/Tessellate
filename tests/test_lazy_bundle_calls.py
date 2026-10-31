@@ -173,6 +173,7 @@ REACHED_AFTER_LOAD = {
     #: reader (Tools and features, Quick access, startApp's recovered recordings)
     #: awaits `lazyScript` / `ensureModule` before it reads or calls.
     "featureCatalog": "appPalette, the palette's bundle names it; openFeatures and renderQuickLinks await lazyScript('/js/app-features.js') first",
+    "featureCommandRows": "renderFeatures, which runs after openFeatures awaits lazyScript('/js/app-features.js'); the search box only types once the dialog is open",
     "noteRecoveredRecordings": "meetings, called in the .then of ensureModule('meetings') in dashboard.js's startApp hook",
     #: INBOX 784: the Notes column's rows are drawn by connections.js;
     #: renderNotesRail awaits lazyScript('/js/connections.js') before any of them.

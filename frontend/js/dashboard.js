@@ -1592,11 +1592,70 @@ function closeFeatures() {
   overlayReturnFocus = null;
 }
 
+//: **The first rows, then the rest as the list is scrolled to its end** (audit
+//: 1031 Z11): drawing every row (212, 647 nodes) cost 76 ms of layout at 4x CPU
+//: on each open and each keystroke; forty rows cost a fifth of that. The count
+//: in the heading and the search still read the whole catalogue.
+const FEATURES_FIRST_ROWS = 40;
+
+function featureRow(item) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "feature-row";
+  const name = document.createElement("span");
+  name.className = "feature-name";
+  setLabel(name, item.name);
+  const desc = document.createElement("span");
+  desc.className = "feature-desc muted";
+  setLabel(desc, item.desc);
+  row.append(name, desc);
+  row.addEventListener("click", () => {
+    closeFeatures();
+    item.run();
+  });
+  return row;
+}
+
+function featuresPaint(list, steps) {
+  list.moreObserver?.disconnect();
+  let at = 0;
+  const sentinel = document.createElement("div");
+  sentinel.setAttribute("aria-hidden", "true");
+  list.appendChild(sentinel);
+  const observer = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && draw(FEATURES_FIRST_ROWS), { root: list, rootMargin: "400px 0px" });
+  list.moreObserver = observer;
+  const draw = (count) => {
+    const part = document.createDocumentFragment();
+    for (let rows = 0; at < steps.length && rows < count; at++) {
+      const { heading, item } = steps[at];
+      if (item) rows += 1;
+      if (item) part.appendChild(featureRow(item));
+      else {
+        const h3 = document.createElement("h3");
+        h3.className = "features-group";
+        h3.textContent = heading;
+        part.appendChild(h3);
+      }
+    }
+    list.insertBefore(part, sentinel);
+    if (at >= steps.length) {
+      observer.disconnect();
+      sentinel.remove();
+    } else {
+      //: Observed again, so a list still short of the sentinel asks for more.
+      observer.unobserve(sentinel);
+      observer.observe(sentinel);
+    }
+  };
+  draw(FEATURES_FIRST_ROWS);
+}
+
 function renderFeatures(query) {
   const list = $("features-list");
   list.replaceChildren();
   const q = (query || "").trim().toLowerCase();
   const groups = featureCatalog();
+  groups.push(featureCommandRows(groups));
   // The AI's own tools, straight from the backend registry.
   if (featureAiTools && featureAiTools.length) {
     groups.push({
@@ -1612,40 +1671,23 @@ function renderFeatures(query) {
   }
 
   let shown = 0;
+  const steps = [];
   for (const group of groups) {
     const matches = group.items.filter(
       (item) =>
         !q ||
         item.name.toLowerCase().includes(q) ||
         item.desc.toLowerCase().includes(q) ||
+        (item.also || "").toLowerCase().includes(q) ||
         group.group.toLowerCase().includes(q)
     );
     if (!matches.length) continue;
     shown += matches.length;
 
-    const heading = document.createElement("h3");
-    heading.className = "features-group";
-    heading.textContent = group.group;
-    list.appendChild(heading);
-
-    for (const item of matches) {
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "feature-row";
-      const name = document.createElement("span");
-      name.className = "feature-name";
-      setLabel(name, item.name);
-      const desc = document.createElement("span");
-      desc.className = "feature-desc muted";
-      setLabel(desc, item.desc);
-      row.append(name, desc);
-      row.addEventListener("click", () => {
-        closeFeatures();
-        item.run();
-      });
-      list.appendChild(row);
-    }
+    steps.push({ heading: group.group });
+    for (const item of matches) steps.push({ item });
   }
+  featuresPaint(list, steps);
 
   $("features-count").textContent = q
     ? `${shown} match${shown === 1 ? "" : "es"}`

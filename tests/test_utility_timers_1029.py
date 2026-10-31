@@ -23,6 +23,7 @@ const store = new Map(Object.entries(__STORED__));
 let now = __NOW__;
 const toasts = [];
 const notes = [];
+const undos = [];
 const chip = { classList: { _s: new Set(), add(c) { this._s.add(c); }, remove(c) { this._s.delete(c); } },
   title: "", attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, addEventListener() {} };
 const timers = new Map();
@@ -31,6 +32,8 @@ const sandbox = {
   $: () => chip,
   setLabel: (el, text) => { chip.label = text; },
   toast: (t) => toasts.push(t),
+  //: A stop is offered back (audit 1031 Z2); the stub keeps the closures.
+  offerUndo: (label, message, undo, redo) => { toasts.push(message); undos.push({ label, undo, redo }); },
   notify: (a, b) => notes.push(b),
   askNotificationPermission() {},
   prefs: {
@@ -127,3 +130,27 @@ def test_stopping_stops_the_shown_one_only():
 def test_boot_asks_for_the_module_only_when_something_is_stored():
     boot = (ROOT / "frontend/js/spaces-find.js").read_text(encoding="utf-8")
     assert 'prefs.has("utility-clocks")' in boot and 'ensureModule("utilities")' in boot
+
+
+def test_a_stopped_timer_is_offered_back_with_the_time_it_had_left():
+    """Audit 1031 Z2: the chip stops a clock on one press, so the stop has an Undo."""
+    got = _run(
+        "run('startUtilityTimer(25)'); now += 60_000; run('stopUtilityClock()');"
+        "const stopped = run('utilityClocks.length'); const offer = undos[0].label;"
+        "now += 120_000; undos[0].undo();"
+        "const back = run('utilityClocks.length'); const end = run('utilityClocks[0].end');"
+        "undos[0].redo(); out({stopped, offer, back, end, after: run('utilityClocks.length')});"
+    )
+    assert got["stopped"] == 0 and got["back"] == 1 and got["after"] == 0
+    assert got["offer"] == "Stop timer"
+    assert got["end"] == 1_000_000 + 60_000 + 120_000 + 24 * 60_000, "restored with 24:00 left, not 22:00"
+    assert "Timer stopped with 24:00 left." in got["toasts"]
+
+
+def test_a_stopped_stopwatch_resumes_from_what_it_had_counted():
+    got = _run(
+        "run('startStopwatch()'); now += 30_000; run('stopUtilityClock()');"
+        "now += 90_000; undos[0].undo(); now += 5_000;"
+        "out({shown: run('utilityClockSeconds(utilityClocks[0])')});"
+    )
+    assert got["shown"] == 35

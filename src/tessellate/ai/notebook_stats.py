@@ -657,9 +657,12 @@ def _recent_count(session: Session, window: tuple[datetime, datetime, str]) -> S
         )
         or 0
     )
+    #: A window that ended before today is over, so it is "You wrote", not "You
+    #: have written" (audit 1031 Z8: "You have written no notes last week").
+    over = end.date() < utcnow().date()
     return StatAnswer(
         "recent-count",
-        f"You have written {_plural(total, 'note')} {words}.",
+        f"You {'wrote' if over else 'have written'} {_plural(total, 'note')} {words}.",
         [{"label": words, "count": total}],
     )
 

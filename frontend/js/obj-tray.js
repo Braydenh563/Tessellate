@@ -4,9 +4,10 @@
 // in a card's menu; opened, it lists what it holds. An item is dragged out (it
 // is a card like any other, so the carry mode takes it), or clicked to paste
 // where you were typing, or removed. The tray holds references only, in memory
-// and in `sessionStorage` per space (try/catch: it can come back empty), so it
-// survives a page change and a reload of the tab but not the browser or a
-// switch of space.
+// and in `sessionStorage` (try/catch: it can come back empty), so it survives
+// a page change, a reload of the tab and a switch of space (which reloads the
+// page) but not the browser. One tray for the notebook (audit 1031 Z1): a
+// space is a filter, and "somewhere else" is most often another space.
 
 const OBJ_TRAY_KEY = "obj-tray";
 const OBJ_TRAY_MAX = 30;
@@ -16,16 +17,24 @@ let objTray = objTrayRead();
 //: click on an item pastes (opening the tray takes the focus away).
 let objTrayFrom = null;
 
-//: One tray per space: switching space reloads the page, and a card from the
-//: space left would not open in the one entered (it answers 404).
-function objTrayStoreKey() {
-  return `${OBJ_TRAY_KEY}:${window.activeSpaceId?.() ?? "all"}`;
+//: A reference remembers the space it was held in, because a card from one
+//: space answers 404 in another: using it there is refused with a sentence
+//: (objTrayPaste) instead of attaching a note that cannot be read.
+function objTraySpace() {
+  const id = window.activeSpaceId?.() ?? "all";
+  return id === "all" ? "" : id;
 }
 
 function objTrayRead() {
   try {
-    const rows = JSON.parse(sessionStorage.getItem(objTrayStoreKey()) || "[]");
-    return rows.map((row) => objRef(row.kind, row.id, row.title, row.url)).filter(Boolean).slice(0, OBJ_TRAY_MAX);
+    const rows = JSON.parse(sessionStorage.getItem(OBJ_TRAY_KEY) || "[]");
+    return rows
+      .map((row) => {
+        const ref = objRef(row.kind, row.id, row.title, row.url);
+        return ref && { ...ref, space: String(row.space || "") };
+      })
+      .filter(Boolean)
+      .slice(0, OBJ_TRAY_MAX);
   } catch {
     return [];
   }
@@ -33,7 +42,7 @@ function objTrayRead() {
 
 function objTrayWrite() {
   try {
-    sessionStorage.setItem(objTrayStoreKey(), JSON.stringify(objTray));
+    sessionStorage.setItem(OBJ_TRAY_KEY, JSON.stringify(objTray));
   } catch {
     // The tray still works from memory.
   }
@@ -43,7 +52,7 @@ function objTrayWrite() {
 function objTrayAdd(ref) {
   if (objTray.some((row) => objKey(row) === objKey(ref))) return true;
   if (objTray.length >= OBJ_TRAY_MAX) return false;
-  objTray = [...objTray, ref];
+  objTray = [...objTray, { ...ref, space: ref.space ?? objTraySpace() }];
   objTrayChanged();
   return true;
 }
@@ -168,10 +177,31 @@ function objTrayDestination() {
 }
 
 function objTrayPaste(ref) {
+  const here = objTraySpace();
+  if (ref.space && here && ref.space !== here) {
+    return toast(`“${ref.title}” is in another space. Switch to All spaces to use it here.`, "info");
+  }
   const dest = objTrayDestination();
-  if (!dest) return toast("Click into a chat box, a note or a board first, then choose it.", "info");
+  if (!dest) return objTrayOffer(ref);
   closeHelpPopovers();
   objPasteAt(ref, dest);
+}
+
+//: **No box to paste into is a choice, not a dead end** (audit 1031 Z13): on a
+//: phone the sheet is modal and nothing was ever focused, so the press used to
+//: say "click into a box first", which the sheet itself stops. It offers what
+//: needs no box: the chat's attachments, and opening the object.
+function objTrayOffer(ref) {
+  const hash = routeHashFor(ref.kind, ref.id);
+  const open = { label: "Open", run: () => (location.hash = hash) };
+  const message = `Choose where “${ref.title}” goes.`;
+  if (!OBJ_STAGE[ref.kind]) return hash ? toastAction(message, open.label, open.run) : toast(`“${ref.title}” can be dragged into a chat, a note or a board.`, "info");
+  const attach = async () => {
+    closeHelpPopovers();
+    await switchTab("chat");
+    objPasteAt(ref, { type: "chat", el: $("chat-input") });
+  };
+  toastAction(message, "Attach to the chat", attach, hash ? { also: open } : {});
 }
 
 OBJ_RENDERERS.tray = (ref) => {

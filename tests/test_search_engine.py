@@ -208,7 +208,7 @@ def test_deleting_a_space_takes_its_rows_out_of_the_index(client, session):
     assert all(_indexed(session, kind, ref) for kind, ref in ids.items())
     # The request is made before the assert, not inside it: an assert that
     # performs the deletion would skip it under `python -O` (CodeQL 424).
-    deleted = client.delete(f"/spaces/{space_id}")
+    deleted = client.delete(f"/spaces/{space_id}?purge=1")
     assert deleted.status_code == 200
     session.expire_all()
     for kind, ref in ids.items():

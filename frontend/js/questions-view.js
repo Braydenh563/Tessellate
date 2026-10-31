@@ -23,6 +23,14 @@ function questionButton(icon, label, onClick) {
   return button;
 }
 
+//: Focus after a row left the list: the row that took its place, else the one
+//: before it, else the filter that says which questions are shown.
+function questionsFocusAfter(at) {
+  const rows = [...$("questions-list").querySelectorAll(".question-row")];
+  const next = rows[Math.min(Math.max(at, 0), rows.length - 1)];
+  (next?.querySelector("button") || $("questions-state").closest(".select-shell")?.querySelector(".select-opener") || $("questions-state")).focus();
+}
+
 function questionRow(item) {
   const li = evidenceSpan("night-fact question-row", "", "li");
   const text = evidenceSpan("dash-list-text");
@@ -46,12 +54,16 @@ function questionRow(item) {
   const actions = evidenceSpan("night-fact-actions");
   const send = (state, entry_id = null) =>
     apiJson(`/questions/${item.id}`, { method: "POST", body: JSON.stringify({ state, entry_id }) });
+  //: What each move says in its toast, which carries the Undo (audit 1031 Z6:
+  //: a dropped question vanished with no word and no way back but a filter).
+  const SAID = { answered: "Marked the question answered.", dropped: "Dropped the question.", open: "Reopened the question." };
   const move = (state, entry_id = null) => {
     const was = item.state;
+    const at = [...$("questions-list").querySelectorAll(".question-row")].indexOf(li);
     return send(state, entry_id)
       .then(() => {
-        pushUndo(`Marked a question ${state}`, () => send(was).then(() => loadQuestions()), () => send(state, entry_id).then(() => loadQuestions()));
-        return loadQuestions();
+        offerUndo(`Marked a question ${state}`, SAID[state], () => send(was).then(() => loadQuestions()), () => send(state, entry_id).then(() => loadQuestions()));
+        return loadQuestions().then(() => questionsFocusAfter(at));
       })
       .catch((error) => toast(error.message || "Couldn't change that question.", true));
   };

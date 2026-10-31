@@ -216,6 +216,26 @@ async function askChartPng(svg, title) {
   }
 }
 
+//: **A row of full-size buttons under a chart whose marks open something**
+//: (audit 1031 Z5): on a phone the twelve marks of the growth chart were 21 px
+//: wide each, under the 24 px of WCAG 2.5.8. Below 600 px the chips take the
+//: press (`--target-min` tall) and the marks only draw; wider, the chips are
+//: not shown. Both name the period and the value the same way.
+function askChartChips(chart) {
+  const row = document.createElement("div");
+  row.className = "ask-chart-chips";
+  chart.rows.forEach((item, i) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "ghost small ask-chart-chip";
+    chip.textContent = `${askChartLabel(chart, item.label)}: ${item.value.toLocaleString()}`;
+    chip.setAttribute("aria-label", askChartTipText(chart, item));
+    chip.addEventListener("click", () => chart.onPick(item, i));
+    row.appendChild(chip);
+  });
+  return row;
+}
+
 //: Draws the chart for `question` into `host`, or leaves it hidden when the
 //: question is not a count. `isCurrent` says whether this question is still
 //: the one on screen, so a slow answer never draws over a newer one.
@@ -256,7 +276,7 @@ function drawAskChart(host, chart) {
     askChartPng(host.querySelector(".ask-chart-svg"), chart.title).catch((error) => toast(error.message, true))
   );
   head.append(title, total, save);
-  host.replaceChildren(head, svg, askChartTable(chart));
+  host.replaceChildren(head, svg, ...(chart.interactive && chart.onPick ? [askChartChips(chart)] : []), askChartTable(chart));
   host.classList.remove("hidden");
   if (chart.interactive) askChartWire(host, chart);
 }

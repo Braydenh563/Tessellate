@@ -46,16 +46,25 @@ async function batchMoveToSpace() {
   if (!spacesCache.length) await loadSpaces().catch(() => {});
   const space = await pickSpaceDialog(`Move ${batchNoun(ids)} to which space?`);
   if (!space) return;
+  if (await moveNotesToSpace(ids, space)) exitSelectMode();
+}
+
+//: The move itself, for the picker above and for a card carried onto a space in
+//: the switcher's menu (obj-carry.js): one request, one toast, one Undo. Null
+//: when it failed; the answer when it did (`moved` 0: all there already).
+async function moveNotesToSpace(ids, space) {
   let moved;
   try {
     moved = await batchSpaceRequest(space.id, ids, activeSpaceId());
   } catch (error) {
     toast(error.message, true);
-    return;
+    return null;
   }
-  exitSelectMode();
   await refreshEntries(ids);
-  if (!moved.moved) return toast(`They are all in ${space.name} already.`);
+  if (!moved.moved) {
+    toast(`They are all in ${space.name} already.`);
+    return moved;
+  }
   const back = async () => {
     const groups = new Map();
     for (const [id, from] of Object.entries(moved.from)) groups.set(from, [...(groups.get(from) || []), Number(id)]);
@@ -71,9 +80,17 @@ async function batchMoveToSpace() {
     settleUndoFromToast(action);
     await back();
   });
+  return moved;
 }
 
 // --- delete a space (audit 1029 X5; out of spaces-find.js to keep the boot small) ---
+
+//: Typing the name is asked unless the count came back as zero (a failed
+//: count asks too: the safe side).
+const spaceDeleteCount = { loaded: false, empty: false };
+function spaceDeleteNeedsName() {
+  return !$("space-delete-fate").value && !(spaceDeleteCount.loaded && spaceDeleteCount.empty);
+}
 
 function rmSpace(id) {
   $("space-delete-id").value = id;
@@ -98,8 +115,18 @@ function rmSpace(id) {
   if (safe) fate.value = safe.value;
   const count = $("space-delete-count");
   count.textContent = "Counting what is in it.";
+  const purge = $("space-delete-purge");
+  const confirmBox = $("space-delete-confirm");
+  confirmBox.value = "";
+  spaceDeleteCount.loaded = false;
+  const spaceName = spacesCache.find((s) => s.id === id)?.name || "";
+  $("space-delete-confirm-label").textContent = `Type “${spaceName}” to confirm`;
   const sync = () => {
     $("space-delete-submit").textContent = fate.value ? "Move and delete space" : "Delete space and contents";
+    //: The destructive option says so, and asks for the name (Z20, 1031).
+    purge.hidden = !!fate.value;
+    $("space-delete-confirm-label").hidden = !spaceDeleteNeedsName();
+    confirmBox.hidden = !spaceDeleteNeedsName();
   };
   fate.onchange = sync;
   sync();
@@ -108,6 +135,9 @@ function rmSpace(id) {
   //: The select is rebuilt by enhanceSelect: its opener takes focus.
   (fate.closest(".select-shell")?.querySelector(".select-opener") || fate).focus();
   apiJson(`/spaces/${encodeURIComponent(id)}/counts`).then((c) => {
+    spaceDeleteCount.loaded = true;
+    spaceDeleteCount.empty = !c.notes && !c.documents;
+    sync();
     const part = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
     const text = `${part(c.notes, "note")}, ${part(c.documents, "document")}`;
     count.textContent = `In this space: ${text}.`;
@@ -121,7 +151,15 @@ async function spaceDeleteSubmit() {
   error.textContent = "";
   try {
     const moveTo = $("space-delete-fate").value;
-    const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "";
+    if (spaceDeleteNeedsName()) {
+      const name = spacesCache.find((s) => s.id === id)?.name || "";
+      if ($("space-delete-confirm").value.trim() !== name) {
+        error.textContent = "Type the space's name to delete everything in it.";
+        $("space-delete-confirm").focus();
+        return;
+      }
+    }
+    const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "?purge=1";
     const wasOpen = activeSpaceId() === id;
     const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
     //: The moved notes by id (`refreshEntries` reads the notebook whole

@@ -122,14 +122,34 @@ function startStopwatch() {
   toast("Stopwatch started. Press it on the status bar to stop.");
 }
 
-//: Stops the one the bar shows.
+//: Stops the one the bar shows, and offers it back with the time it had: a
+//: stray press on the chip no longer costs a 25-minute focus timer (audit 1031
+//: Z2). The stopped clock is restored from what it had left (a timer) or had
+//: counted (a stopwatch), so the minutes spent deciding are not counted.
 function stopUtilityClock() {
   const clock = utilityShown();
   if (!clock) return;
-  const time = utilityTimeText(utilityClockSeconds(clock));
+  const seconds = utilityClockSeconds(clock);
+  const time = utilityTimeText(seconds);
   utilityDrop(clock);
   paintUtilityChip();
-  toast(clock.kind === "timer" ? `Timer stopped with ${time} left.` : `Stopwatch stopped at ${time}.`);
+  const message = clock.kind === "timer" ? `Timer stopped with ${time} left.` : `Stopwatch stopped at ${time}.`;
+  offerUndo(clock.kind === "timer" ? "Stop timer" : "Stop stopwatch", message, () => utilityResume(clock, seconds), () => {
+    const live = utilityClocks.find((c) => c.id === clock.id);
+    if (live) utilityDrop(live);
+    paintUtilityChip();
+  });
+}
+
+//: A stopped clock back on the bar, from the seconds it showed.
+function utilityResume(clock, seconds) {
+  const now = Date.now();
+  const back = clock.kind === "timer" ? { ...clock, end: now + seconds * 1000 } : { ...clock, start: now - seconds * 1000 };
+  if (utilityClocks.some((c) => c.id === clock.id)) return;
+  utilityClocks.push(back);
+  utilitySave();
+  utilityEnsureTick();
+  paintUtilityChip();
 }
 
 function utilityTimerDone(clock) {

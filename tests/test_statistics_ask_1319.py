@@ -148,3 +148,37 @@ def test_first_note_with_no_notes_says_so(client):
     with deps.get_db().session() as session:
         answer = _ask(session, "when did I write my first note")
     assert answer.kind == "first-note" and "no notes yet" in answer.text.lower()
+
+
+def test_overdue_and_done_reminders_are_counted_as_asked_not_as_the_open_total(seeded, monkeypatch):
+    # Audit 1031 Z8: "how many reminders are overdue" was answered "You have 14 open reminders."
+    from datetime import timedelta
+
+    from tessellate.ai import notebook_stats
+
+    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    for text, due in (("late one", NOW - timedelta(days=2)), ("today", NOW + timedelta(hours=3)), ("later", NOW + timedelta(days=30))):
+        seeded.add(Reminder(text=text, due_at=due, done=False))
+    seeded.commit()
+    overdue = _ask(seeded, "how many reminders are overdue")
+    assert overdue.kind == "reminder-count" and overdue.text == "You have 1 overdue reminder."
+    assert overdue.facts == [{"label": "overdue reminders", "count": 1}]
+    assert _ask(seeded, "how many reminders have I completed").text == "You have 1 reminder marked done."
+    assert _ask(seeded, "how many reminders do I have").text.startswith("You have 3 open reminders")
+    assert _ask(seeded, "how many reminders are due today").text == "You have 1 reminder due today."
+
+
+def test_no_overdue_reminders_is_said_so(seeded, monkeypatch):
+    from tessellate.ai import notebook_stats
+
+    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    assert _ask(seeded, "how many reminders are overdue").text == "You have no overdue reminders."
+
+
+def test_a_count_over_a_past_window_is_in_the_past_tense(seeded, monkeypatch):
+    # Audit 1031 Z8: "You have written no notes last week." A window still running keeps "have written".
+    from tessellate.ai import notebook_stats
+
+    monkeypatch.setattr(notebook_stats, "utcnow", lambda: NOW)
+    assert notebook_stats.answer("how many notes did I write last week", seeded).text.startswith("You wrote ")
+    assert notebook_stats.answer("how many notes did I write today", seeded).text.startswith("You have written ")

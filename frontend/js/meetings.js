@@ -962,6 +962,7 @@ async function openMeetingRecorder() {
   //: A recording folded into the dock is brought back, not reset.
   if (meetingRecorder) return showMeetingRecorder();
   nameMeetingMic();
+  syncCaptionsDoors();
   overlayReturnFocus = document.activeElement;
   delete $("meeting-overlay").dataset.target;
   $("meeting-overlay").classList.remove("meeting-into", "voice-note");
@@ -1353,13 +1354,27 @@ async function stopMeetingTranscription() {
 async function meetingTakeDiscard() {
   const id = meetingTake.id;
   if (!id) return;
+  //: An empty take is removed by its finish; nothing is left to bin.
   try {
     await meetingTakeFinish();
-    await apiJson(`/recordings/${id}`, { method: "DELETE" });
-    pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
   } catch {
-    // An empty take is removed by its finish; nothing is left to bin.
+    return;
   }
+  await meetingTakeBin(id);
+}
+
+//: The bin's half, apart so a failure is said and can be tried again (audit
+//: 1031 Z12: a failed delete closed the dialog and left the recording in the
+//: Library with no word). The dialog is gone by now, so the way back is the
+//: toast's own action.
+async function meetingTakeBin(id) {
+  try {
+    await apiJson(`/recordings/${id}`, { method: "DELETE" });
+  } catch (error) {
+    toastAction(`Couldn't discard the recording (${error.message || "the request failed"}). It is still in Library, Recordings.`, "Try again", () => meetingTakeBin(id), { sticky: true });
+    return;
+  }
+  pushBinPairUndo("Discarded a recording", `/recordings/${id}`, `/recordings/${id}/restore`, false, () => (typeof loadLibrary === "function" ? loadLibrary() : null));
 }
 
 // Pause and resume, which a MediaRecorder supports directly, the chunks
@@ -1506,6 +1521,7 @@ let recordingsAsk = 0;
 async function renderRecordings() {
   const list = $("recordings-list");
   if (!list) return;
+  syncCaptionsDoors();
   let body = null;
   const q = ($("recordings-search")?.value || "").trim();
   try {
@@ -2426,6 +2442,17 @@ $("recordings-record")?.addEventListener("click", () => openVoiceNote());
 //: **Live captions from where a person looks for them** (V6): the voice
 //: note's Live captions and the Recordings bar's Captions. The dialog makes
 //: way for the floating bar; a recording in hand already writes its words.
+//: **A door that can only explain itself is not drawn** (audit 1031 Z14): with
+//: no caption engine installed, Live captions and Captions would open a toast.
+//: Asked fresh at each opening (installing the helper in Settings, Packages
+//: needs no reload); an unknown answer keeps the doors, as before. The reason
+//: is in the Guide's Live captions topic and each help popover.
+async function syncCaptionsDoors() {
+  const status = await apiJson("/voice/status", { silent: true }).catch(() => null);
+  const off = status?.captions?.available === false;
+  for (const id of ["meeting-captions", "recordings-captions"]) $(id)?.classList.toggle("captions-off", off);
+}
+
 function openLiveCaptionsFrom() {
   if (meetingRecorder) return toast("This recording already writes its words in the dialog as you speak.", "info");
   if (!$("meeting-overlay").classList.contains("hidden")) closeMeetingRecorder();

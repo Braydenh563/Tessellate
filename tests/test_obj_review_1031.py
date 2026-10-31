@@ -172,18 +172,27 @@ def test_a_paste_of_our_text_on_a_mind_map_is_left_to_the_maps_own_paste() -> No
 
 
 @needs_node
-def test_the_tray_is_kept_per_space() -> None:
+def test_the_tray_is_one_for_the_notebook_and_a_card_of_another_space_is_refused() -> None:
+    # Audit 1031 Z1 moved the intent of the old "kept per space" test: a space
+    # switch reloads the page, and the tray used to be emptied by it. Now the
+    # tray survives the switch and each reference remembers its space.
     out = run(FILES, STUBS + """
     let space = "default";
     globalThis.activeSpaceId = () => space;
     objTray = []; objTrayAdd(objRef("note", 1, "In default"));
     space = "work";
-    const other = objTrayRead().map(objKey);
+    const kept = objTrayRead().map((r) => [objKey(r), r.space]);
     objTrayAdd(objRef("note", 2, "In work"));
-    space = "default";
-    __out({ other, back: objTrayRead().map(objKey), keys: Object.keys(store).filter((k) => k.startsWith("obj-tray")).sort() });
+    toasts.length = 0;
+    objTrayPaste(objTray[0]);
+    const refused = toasts.slice();
+    space = "all";
+    objTrayRead();
+    __out({ kept, refused: refused.length, keys: Object.keys(store).filter((k) => k.startsWith("obj-tray")), n: objTrayRead().length });
     """)
-    assert out == {"other": [], "back": ["note:1"], "keys": ["obj-tray:default", "obj-tray:work"]}
+    assert out["kept"] == [["note:1", "default"]]
+    assert out["refused"] == 1
+    assert out["keys"] == ["obj-tray"] and out["n"] == 2
 
 
 def test_the_picture_stage_gives_every_picture_a_key() -> None:

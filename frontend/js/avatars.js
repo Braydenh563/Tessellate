@@ -1152,7 +1152,9 @@ function watchNameMark(svg) {
 function nameMarkKeyboard(face) {
   if (face.dataset.nmKb) return;
   face.dataset.nmKb = "1";
-  if (!face.isConnected || face.closest("button, a, [role='button'], label, select, summary, #nm-buddy, .nm-viewer")) return;
+  //: The welcome is a modal card whose face is its greeting: a tab stop
+  //: there would open the large view over it (audit 1031 Z15).
+  if (!face.isConnected || face.closest("button, a, [role='button'], label, select, summary, #nm-buddy, .nm-viewer, #onboarding-overlay")) return;
   face.tabIndex = 0;
   face.setAttribute("role", "button");
   face.removeAttribute("aria-hidden");

@@ -1028,6 +1028,11 @@
       <option value="">Delete everything in it</option>
     </select>
     <input type="hidden" id="space-delete-id">
+    <div id="space-delete-purge" hidden>
+      <p class="status error">This skips the bin and cannot be undone.</p>
+      <label for="space-delete-confirm" class="form-label" id="space-delete-confirm-label">Type the space's name to confirm</label>
+      <input type="text" id="space-delete-confirm" class="wide" autocomplete="off" spellcheck="false">
+    </div>
     <p id="space-delete-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-delete-dialog">Cancel</button>
@@ -8858,7 +8863,7 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="recordings-help" aria-controls="recordings-help" aria-expanded="false"
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="recordings-help" role="dialog" aria-label="About recordings">
-            <p>Everything recorded in the app: meetings, lectures and voice notes. Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
+            <p>Everything recorded in the app: meetings, lectures and voice notes. Captions, beside this, writes what the microphone hears as it is said; it is shown once a captions helper is set up (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
             <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
           <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
@@ -15025,7 +15030,7 @@ Link to another note with [[its first few words]]."></textarea>
     <div class="help-body hidden" id="palette-help" role="dialog" aria-label="About these commands">
       <p>Type to find a command, a setting or a note. A few rows are small tools that run right here.</p>
       <ul>
-        <li><strong>Timer.</strong> Type timer 10 minutes (or 90s timer, countdown 2h) and press Enter. The time runs on the status bar; press that chip to stop it.</li>
+        <li><strong>Timer.</strong> Type timer 10 minutes (or 90s timer, countdown 2h) and press Enter. The time runs on the status bar; press that chip to stop it, and Undo brings it back.</li>
         <li><strong>Stopwatch.</strong> Start a stopwatch counts up on the status bar; press it to stop.</li>
         <li><strong>Count words.</strong> Words, characters and reading time of the selected text, or of the editor.</li>
         <li><strong>A question.</strong> A line that ends in a question mark, or starts like one (how do I, where is, can I), is offered to Atlas first, with the commands that matched underneath.</li>
@@ -15346,7 +15351,8 @@ Link to another note with [[its first few words]]."></textarea>
           transcript is saved. With the captions helper the words appear under
           the level line as you speak; the full transcript replaces them after.
           Live captions, before you record, writes what is said without
-          recording it. Close this while recording and it keeps recording in a small bar at
+          recording it; the button is not shown until a captions helper is set up
+          (Settings, Packages). Close this while recording and it keeps recording in a small bar at
           the bottom with the clock, Pause, Stop and Open; Discard throws the
           take away. Transcribing runs in the background: close this and a
           notification says when it is done, with Open; Stop transcribing ends
