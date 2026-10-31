@@ -147,8 +147,8 @@ async function saveSketch(blob, caption) {
     }),
   });
   if (!entry?.id) throw new Error("Couldn't save the sketch note.");
-  pushEntryCreateUndo(entry, "Saved a sketch");
-  toast("Sketch saved to your notebook.");
+  // The pad closes right after this returns (`overlayReturnFocus` is still its opener); `focusOpener` waits for that.
+  announceSavedNote(entry, "", { message: "Sketch saved to your notebook.", undoLabel: "Saved a sketch", opener: overlayReturnFocus });
   loadEntries().catch(() => {});
 }
 

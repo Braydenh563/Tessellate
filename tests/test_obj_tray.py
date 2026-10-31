@@ -154,3 +154,19 @@ def test_a_tray_press_with_no_box_to_paste_into_offers_the_chat_and_opening_it()
     assert out["toasts"] == [] and out["label"] == "Attach to the chat" and out["also"] == "Open"
     assert out["message"] == "Choose where “Note 4” goes."
     assert out["tabs"] == ["chat"] and out["staged"] == [4]
+
+
+@needs_node
+def test_a_remembered_box_that_is_no_longer_on_screen_is_not_pasted_into() -> None:
+    # Audit 1031 Z13: the phone's sheet remembers the last box the hand was in
+    # (the `focusin` the desktop keeps); a box on a tab since left is not a place.
+    out = run(FILES, STUBS + """
+    const box = (shown) => ({ isConnected: true, getClientRects: () => (shown ? [{}] : []), closest: (sel) => (sel === "#chat-input" ? box : null), parentElement: null });
+    globalThis.window = globalThis; globalThis.wbCommandsLive = () => false;
+    OBJ_DESTS.splice(0, OBJ_DESTS.length, { sel: "#chat-input", type: "chat" });
+    objTrayFrom = box(true);
+    const shown = objTrayDestination() && objTrayDestination().type;
+    objTrayFrom = box(false);
+    __out({ shown, hidden: objTrayDestination() });
+    """)
+    assert out == {"shown": "chat", "hidden": None}

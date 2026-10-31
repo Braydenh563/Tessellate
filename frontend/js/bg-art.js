@@ -2273,7 +2273,8 @@ let bgArtLastInput = 0;
 // one picture for the next instead of flashing the bare page between. A
 // run that is itself replaced before it is ready hands them on.
 let bgArtRetiring = [];
-const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false };
+//: `pointerAt`: the last pointer move, press or touch, for the calm rate.
+const bgArtPaused = { hidden: false, blurred: false, covered: false, idle: false, pointerAt: performance.now() };
 
 // **A long pause becomes a picture** (INBOX 1436). A pause already stops the
 // loop, but the live canvas stays mounted, holding its bitmap. After
@@ -2305,8 +2306,19 @@ const BG_ART_SMALL_MACHINE =
   (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
 let bgArtOnBattery = false;
 
+//: No pointer for 30 s: nobody is watching it move, so it draws 12 frames a
+//: second (a style's own per-frame step scales with the rate it asks for).
+//: Keys do not count: typing is not looking.
+const BG_ART_CALM_MS = 30000;
+const BG_ART_CALM_FPS = 12;
+
+function bgArtCalm() {
+  return performance.now() - bgArtPaused.pointerAt > BG_ART_CALM_MS;
+}
+
 function bgArtFrameRate() {
-  return BG_ART_SMALL_MACHINE || bgArtOnBattery ? 20 : 30;
+  const base = BG_ART_SMALL_MACHINE || bgArtOnBattery ? 20 : 30;
+  return bgArtCalm() ? Math.min(base, BG_ART_CALM_FPS) : base;
 }
 
 if (typeof navigator.getBattery === "function") {
@@ -2783,6 +2795,7 @@ window.addEventListener("focus", () => {
 for (const type of ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"]) {
   window.addEventListener(type, () => {
     bgArtLastInput = performance.now();
+    if (type !== "keydown") bgArtPaused.pointerAt = performance.now();
     if (bgArtPaused.idle) {
       bgArtPaused.idle = false;
       bgArtApplyPause();

@@ -169,9 +169,11 @@ function objTrayRow(ref) {
 const OBJ_ICON_LABEL = Object.fromEntries(Object.entries(OBJ_ICON).map(([kind, icon]) => [kind, `ph:${icon.slice(3)}`]));
 
 //: Where a click on an item lands: the field that had the focus, else the open
-//: board. Unlike a paste it also takes text fields, which it writes into.
+//: board. Unlike a paste it also takes text fields, which it writes into. The
+//: remembered field must still be on screen: on a phone the hand leaves a tab
+//: with a box in it, and a paste into a hidden box is a paste nobody sees.
 function objTrayDestination() {
-  const dest = objTrayFrom?.isConnected ? objDestinationAt(objTrayFrom) : null;
+  const dest = objTrayFrom?.isConnected && objTrayFrom.getClientRects().length ? objDestinationAt(objTrayFrom) : null;
   if (dest && dest.type !== "tray") return dest;
   return window.wbCommandsLive?.() ? { type: "board", el: $("whiteboard-container") } : null;
 }

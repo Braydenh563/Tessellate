@@ -249,31 +249,34 @@ function clearQuickNote() {
   keepQuickNoteDraft();
 }
 
-//: What follows a note that reached the server, for the quick note and the Notes
-//: tab's capture card alike: the toast with its way to the note, the list
-//: refreshed, filing watched and the undo entry.
-function announceSavedNote(saved, reminded = "") {
-  toastAction(
-    (saved.filing_state === "pending" ? "Saved. Filing it now." : `Filed under “${saved.category}”.`) + reminded,
-    "Go to it",
-    () => flashEntry(saved.id),
-    { go: { open: "entry", id: saved.id } },
-  );
+//: What follows a note that reached the server, for every "saved to your
+//: notebook" path (the quick note, the Notes tab's capture card, a sketch, a
+//: web page, a picture's text): the toast with its way to the note (Open), the
+//: list refreshed, filing watched, the undo entry, and focus back where the
+//: person was. `opts`: `message` (the sentence, when the filing line does not
+//: fit), `undoLabel`, `opener` (the element to hand focus back to).
+function announceSavedNote(saved, reminded = "", opts = {}) {
+  const pending = saved.filing_state === "pending";
+  const said = opts.message || (pending ? "Saved. Filing it now." : `Filed under “${saved.category}”.`);
+  toastAction(said + reminded, "Open", () => flashEntry(saved.id), { go: { open: "entry", id: saved.id } });
   //: In the list now, not when filing settles: measured, 2 to 4 s later
   //: on every tab but the dashboard when this waited on the watch.
   refreshEntries([saved.id]).catch(() => {});
-  if (saved.filing_state === "pending") watchFiling(saved);
-  pushUndo(
-    "Created a note",
-    async () => {
-      await api(`/entries/${saved.id}`, { method: "DELETE" });
-      await refreshEntries([saved.id]);
-    },
-    async () => {
-      await api(`/entries/${saved.id}/restore`, { method: "POST" });
-      await refreshEntries([saved.id]);
-    },
-  );
+  if (pending) watchFiling(saved);
+  pushEntryCreateUndo(saved, opts.undoLabel || "Created a note");
+  //: After this tick: a pad or dialog closes on the save's return.
+  setTimeout(() => focusOpener(opts.opener), 0);
+}
+
+//: A pad or dialog that closed on a save hands focus back to what opened it;
+//: when that is gone or hidden (a menu row, the palette) focus goes to the
+//: current tab's button rather than `body`, where the next Tab starts from
+//: the top of the page.
+function focusOpener(opener) {
+  if (document.activeElement && document.activeElement !== document.body) return;
+  const shown = (el) => el?.isConnected && el !== document.body && el.getClientRects().length > 0;
+  const target = shown(opener) ? opener : document.querySelector('[role="tab"][aria-selected="true"]');
+  target?.focus({ preventScroll: true });
 }
 
 let quickNoteSaving = false;

@@ -2124,7 +2124,7 @@ const LAZY_ENTRY_POINTS = {
   //: The icon and emoji picker: reached through `pickIconOrEmoji` (editor.js).
   iconPicker: ["openIconPicker"],
   //: Async, and reached from a Settings pane drawn before the window's own await.
-  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderMcpSnippet", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
+  settingsControls: ["refreshSearxngHost", "renderStatusBarSettings", "renderLanAccess", "renderMemorySettings", "renderAccount", "renderAutonomousReview", "renderToolSettings"],
   settingsData: ["renderPrivacyRange", "renderPrivacyReceipt", "renderBackups", "renderBackupRetention", "backupNow", "importDirectory", "importMarkdown", "importDocument"],
   tagSuggest: ["openTagSuggest", "renderReevaluateResult"],
   writingDesk: ["composeDraft", "suggestDraftTitle", "saveDraftAsNote", "draftSaveMenuInit"],
@@ -2165,7 +2165,7 @@ const LAZY_ENTRY_POINTS = {
   quickAccess: ["quickAccessEdit"],
   inbox: ["openSuggestionsInbox", "openEntityPage", "openEntitiesSheet", "openLinkTypeSheet", "openRelationTypesSheet", "openNotePropertiesSheet", "openNoteTypesSheet", "openQueryTable", "showQueryOnGraph"],
   assistantAvatar: ["assistantEmblemInto"],
-  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "chatKeep", "reminderFromChatAnswer", "createNoteSafely", "noteOutboxAdd", "flushNoteOutbox", "renderPendingNoteRows"],
+  quickNote: ["openQuickNote", "pasteClipboardAsNote", "saveChatAnswerAsNote", "chatKeep", "reminderFromChatAnswer", "createNoteSafely", "announceSavedNote", "noteOutboxAdd", "flushNoteOutbox", "renderPendingNoteRows"],
   graph: [
     "clearTrace",
     "closeGraphNewNote",
