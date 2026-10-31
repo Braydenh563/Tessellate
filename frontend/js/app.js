@@ -1788,7 +1788,7 @@ const LAZY_MODULES = {
   tagSuggest: ["/js/tag-suggest.js"],
   searchSuggest: ["/js/search-suggest.js"],
   //: The writing desk's model passes (compose, title, save as note); see writing-desk.js.
-  writingDesk: ["/js/writing-desk.js"],
+  writingDesk: ["/css/writing-desk-lazy.css", "/js/writing-desk.js"],
   //: An attachment card's click (INBOX 440 (2)): attachment-actions.js.
   attachments: ["/js/attachment-actions.js"],
   //: Tesseract's status line (INBOX 443 (3)): see ocr-engine.js.

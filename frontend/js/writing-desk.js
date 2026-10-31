@@ -127,9 +127,29 @@ async function composeDraft() {
           ? "Folded your thoughts into the draft, your notes above are untouched."
           : "Draft updated: edit it, or add more thoughts."
     );
-    announce("The draft has been updated.");
+    //: Only when it moved: a pass that left the draft alone says why in
+    //: the status line (a live region), and "updated" would contradict it.
+    if ($("draft-text").value !== draft) announce("The draft has been updated.");
   }
+  drawDraftDiagram();
   saveDraftLocally();
+}
+
+//: **A diagram pass shows its picture** (UX review 1031, L11): the box holds
+//: the ```mermaid source, which a saved note draws, so the preview is drawn
+//: here the way a document draws it (`mermaidDrawIn`, DESIGN.md's recipe).
+function drawDraftDiagram() {
+  const host = $("draft-diagram");
+  const source = /```mermaid\n([\s\S]*?)\n```/.exec($("draft-text").value)?.[1];
+  host.replaceChildren();
+  host.classList.toggle("hidden", !source);
+  if (!source) return;
+  const block = host.appendChild(document.createElement("div"));
+  block.className = "code-block";
+  const code = block.appendChild(document.createElement("pre")).appendChild(document.createElement("code"));
+  code.dataset.lang = "mermaid";
+  code.textContent = source;
+  ensureModule("mermaid").then((ok) => (ok ? mermaidDrawIn(host) : null)).catch(() => {});
 }
 
 //: The chip on a pass the composer wrote with no model (INBOX 1466).

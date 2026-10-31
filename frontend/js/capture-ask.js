@@ -2188,6 +2188,19 @@ function clearAskAnswerFoot() {
   }
 }
 
+//: **The answer and its foot are said aloud** (UX review 1031, M11): the box
+//: has no live region, so nothing told a screen reader an answer, its related
+//: notes, sources or follow-ups had arrived. Counts are of what is showing.
+function announceAskFoot() {
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((el) => !el.closest(".hidden")).length;
+  const parts = [
+    ["related note", shown("#ask-answer-related .answer-related-chip")],
+    ["source", shown("#ask-answer-sources .chat-source-card")],
+    ["follow-up question", shown("#ask-followups .chip-interactive")],
+  ].filter(([, count]) => count);
+  announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
+}
+
 function renderAskAnswerFoot(object, meta) {
   const foot = $("ask-answer-foot");
   if (!foot) return;
@@ -3292,7 +3305,7 @@ async function askQuestion(preset) {
       //: answer composed from the notes brings its own (INBOX 725), built
       //: from what it found and did not say, and asks no model for them.
       const followups = () => renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);
-      ensureModule("askCompose").then(followups).catch(() => {});
+      ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot);
     }
     askStatusText("");
     // Asking changes both quick-access lists, and, for a real (non-hint)

@@ -1,0 +1,19 @@
+/* The Writing room's additions, fetched with its model passes (lazy
+   `writingDesk`; the boot sheets are at their gzip cap). */
+
+/* "What to write" is the first control and its labels are the longest here
+   ("Make a diagram", "Chinese (Simplified)"): it asks for more of the row
+   than tone and length do, so the value is not cut. On a phone it already
+   takes its own line (04-chat-dock-appearance.css). */
+@media (min-width: 600px) {
+  .draft-desk-controls > .select-shell:first-child {
+    flex: 2 1 9rem;
+  }
+}
+
+/* A diagram pass drawn as a picture under the box that holds its source. */
+.draft-diagram {
+  margin-top: var(--space-3);
+  overflow: auto;
+  max-width: 100%;
+}
