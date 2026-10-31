@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Speed (INBOX 1465): while a large notebook pages in, the list repaints less often the bigger it is (the gap grows with the list, at least 250 ms): 8 repaints of 27 to 46 ms became 5 on 2,000 notes (about 225 to 140 ms of main thread at load).
 - Speed (INBOX 1465): three layout flushes at boot and tab switch are gone: the browser's focus reset after the splash waits a frame (38 to 58 ms down to 0 to 4 ms; the first Tab still lands on Skip to content), the tab strip's glide reads its motion tokens before it writes, and an editor that is not on screen is no longer measured when Documents loads (27 ms). The AI status popup's fade now follows the Interface animations switch (0.12s with it off, now 0s).
 - Speed (INBOX 1465): opening the graph pays fewer style and layout flushes: the map's size comes from its resize observer, the colour tokens and the size are read together before the first write, d3's zoom is given its extent instead of reading `clientWidth`, and the dock and rail tokens wait for the observer's first entry; flushes over 3 ms went from 15 to 8 across three runs on a 2,000-note notebook (220 to 91 ms in all, loaded machine).
 - Security: the media ticket and device token tables are read as snapshots, so a sign-in on one device during a sweep on another no longer fails (audit 1028 K23).
