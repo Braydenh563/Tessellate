@@ -2883,8 +2883,11 @@ MORE_TOPICS.extend([
             "drawn as a row under the topic's words; double-click the row to "
             "change them. Stamps, in the topic's menu, adds a vote, a heart, a "
             "star, an agree, a question or a hot, each with its count after the "
-            "labels; press a stamp on the topic to add one more, and Clear the "
-            "stamps takes them off. The map makes room for all three when it is "
+            "labels; press a stamp on the topic to add yours, and press it "
+            "again takes yours back. Each stamp has a menu (the three dots "
+            "beside it): Remove one takes one off the count, Clear all takes "
+            "the stamp off, and Undo brings either back. Clear the stamps, in "
+            "the topic's menu, takes them all off. The map makes room for all three when it is "
             "laid out, and the exports keep them."
         ),
         "badge": {"label": "Library", "tab": "library"},
