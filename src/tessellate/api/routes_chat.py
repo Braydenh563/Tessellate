@@ -1852,7 +1852,7 @@ def _titled_entry(session: Session, side: str):  # noqa: ANN202
         return None
     rows = session.scalars(
         select(Entry).where(
-            Entry.content.ilike(f"#%{core}%"), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False),
+            Entry.content.ilike(f"#%{like_escape(core)}%", escape=LIKE_ESCAPE), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False),
         ).limit(20)
     ).all()
     return next((e for e in rows if re.sub(r"^(?:the|a|an)\s+", "", composer_frame.note_title(e.content).lower().strip()) == core), None)
