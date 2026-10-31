@@ -45,7 +45,6 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
 - [x] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
 - [x] OPEN B45, B48 whiteboard rows (agent wbopen-1031): 13 built, .drawio export; 11 left in its remaining list
-- [ ] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only.
 - [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
 - [x] UI review of the 1031 merges (ux-auditor: 6 high, 6 medium, 6 low)
 - [x] Fix the UI review findings (agent uxfix-1031)
@@ -64,14 +63,14 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Composer round four: total time, uni overview phrasings, superlatives, count plus latest, article in leads (agent composer4-1031)
 - [x] Leftover-list polish: back-to-top under fab, Library hints, objmove L2 and L3, wbopen rows (agent polish5-1031)
 - [x] INBOX 1468 reminder save and edit (agent remfix-1031)
-- [ ] INBOX 1469 and 1470 submenus, picture-card drag (agent submenu-1031)
+- [x] INBOX 1469 and 1470 submenus, picture-card drag (agent submenu-1031) (merged)
 - [ ] INBOX 1471, 1472, 1474, 1475 graph popup toggle, snap zones, dock push, minimise pills (agent snapgraph-1031)
 - [ ] INBOX 1473 per-span live preview (agent livepreview-1031) and equation field (agent mathfield-1031)
 - [ ] INBOX 1476 to 1478 chips, model picker, popup anatomy and glass (agent chips-1031)
 - [ ] INBOX 1483 natural dates (agent dates-1031)
-- [ ] INBOX 1484 image read once (agent imgread-1031)
+- [x] INBOX 1484 image read once (agent imgread-1031) (merged)
 - [ ] BACKLOG 1481 private chat (agent private-1031)
-- [ ] INBOX 1463 companion clip and status bar (agent compclip-1031)
+- [x] INBOX 1463 companion clip and status bar (agent compclip-1031) (merged)
 - [ ] Owner lag log hotspots (agent lagfix-1031)
 - [x] Paste null file item (owner log)
 - [x] Perf audit (perf-1031.md); fixes: agent perf2-1031
@@ -80,3 +79,5 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
 - [ ] Scan rotation: bugs, security, architecture, UI, learnability (after every three items)
+- [ ] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
+- [>] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only.
