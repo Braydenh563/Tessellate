@@ -565,7 +565,10 @@ function settingsIndexWatchSection(name) {
   const build = () => {
     if (currentSettingsSection === name) settingsIndexBuild(name);
   };
-  requestAnimationFrame(build);
+  //: A timer past the frame, not the frame callback: the section has only
+  //: just been shown, and its first read of the heads settled the whole
+  //: pane's layout inside the press (the lag log: 47 to 66ms a section).
+  requestAnimationFrame(() => setTimeout(build));
   setTimeout(build, 700);
   if (pane.querySelectorAll("h3").length < 3) return;
   let timer = null;

@@ -2688,13 +2688,20 @@ function initScrollTopButton() {
   //: and each ran this in full, layout reads included: traced at the desktop
   //: window, 77ms on the dashboard, 194ms on Notes and 267ms on the Library
   //: over a 30-step scroll.
+  //: **After the frame's own layout, not before it** (the owner's lag log:
+  //: 8 to 10 runs a second at 35 to 65ms on Notes). Run inside the frame
+  //: callback, its first read of the scroller settled the layout the list's
+  //: own scroll work had just dirtied, and the frame laid it out again; one
+  //: timer later the layout is clean and the same reads cost nothing.
   let updateFrame = 0;
   const scheduleUpdate = () => {
     if (updateFrame) return;
-    updateFrame = requestAnimationFrame(() => {
-      updateFrame = 0;
-      update();
-    });
+    updateFrame = requestAnimationFrame(() =>
+      setTimeout(() => {
+        updateFrame = 0;
+        update();
+      })
+    );
   };
   //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
   //: capture listener hears every scroller in the page, and a list, a rail or

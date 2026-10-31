@@ -272,10 +272,12 @@ function syncTabOverflowFade() {
 // are not using. Its `scrollIntoView` shows in profiles as the tab switch's
 // own layout flushed here; guarding or deferring it measured no faster.
 function revealActiveTab() {
-  const active = document.querySelector("#tab-bar button.active");
-  if (active && active.scrollIntoView) {
-    active.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }
+  //: A strip that fits (no fade at either end, as the last sync left it) has
+  //: no tab out of view: asking left the whole new page's layout to be
+  //: settled here, mid-click (the lag log: 80 to 218ms on every switch).
+  const bar = $("tab-bar");
+  if (!bar || !/(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) return;
+  document.querySelector("#tab-bar button.active")?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
   syncTabOverflowFade();
 }
 
@@ -314,6 +316,7 @@ const GLIDE_CHOSEN = ':scope > .active, :scope > [aria-selected="true"], :scope 
 function glideStrip(strip) {
   if (!strip || strip.glide) return;
   let at = null;
+  let glided = null;
   const place = (move) => {
     const tab = strip.querySelector(GLIDE_CHOSEN);
     if (!tab || !tab.offsetWidth || strip.closest("#phone-tab-dock")) {
@@ -346,10 +349,10 @@ function glideStrip(strip) {
     if (!strip.classList.contains("has-glide")) strip.classList.add("has-glide");
     at = next;
     if (!from || !ms || !window.KeyframeEffect || !("pseudoElement" in KeyframeEffect.prototype)) return;
-    for (const running of strip.getAnimations({ subtree: true })) {
-      if (running.effect?.pseudoElement === "::before") running.cancel();
-    }
-    strip.animate(
+    //: The one it started itself, not `getAnimations`: that settled the style
+    //: the custom properties above had just dirtied (8 to 73ms a switch).
+    glided?.cancel();
+    glided = strip.animate(
       [
         { transform: `translate(${from.x - next.x}px, ${from.y - next.y}px) scale(${from.w / next.w}, ${from.h / next.h})` },
         { transform: "none" },
@@ -574,7 +577,9 @@ function onScrollEdge(event) {
   if (scrollEdgeFrame) return;
   // Coalesced to one measurement per frame: a scroll event fires far more
   // often than the screen repaints, and this one reads layout.
-  scrollEdgeFrame = requestAnimationFrame(() => {
+  //: After the frame's layout, a timer past it (see `scheduleUpdate`,
+  //: navigation.js): in the frame, its scrollTop read was the forced layout.
+  scrollEdgeFrame = requestAnimationFrame(() => setTimeout(() => {
     scrollEdgeFrame = 0;
     markScrollEdge(region);
     //: The same guard the edge effect uses: a menu, a dialog or a sheet
@@ -586,7 +591,7 @@ function onScrollEdge(event) {
     ) {
       markTabBarRecede(region);
     }
-  });
+  }));
 }
 
 // Capture, because scroll does not bubble: without it this would only ever
