@@ -467,9 +467,9 @@ def only_note_lines() -> frozenset[str]:
 #: six points to a twelve-word one).
 ONLY_WORDS = (
     "Only one note uses those words; search by meaning finds others.",
-    "Only one note has those words; search by meaning finds more.",
+    "Only one note has those words; search by meaning finds the rest.",
     "That is the only one with those words; search by meaning finds others.",
-    "Only one note matches those words; search by meaning finds more.",
+    "Only one note matches those words; search by meaning finds the rest.",
 )
 
 
