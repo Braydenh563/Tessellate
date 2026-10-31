@@ -326,7 +326,7 @@ DECORATIVE = re.compile(
     r"#nm-buddy|\.nm-|\.nmb|\.nms|\.atl-|\.name-mark|\.graph-node|\.graph-edge|\.graph-label|"
     r"\.graph-minimap|\.graph-halo|\.graph-core|graph-orb|\.emblem|\.typing|\.progress-|\.ai-writing|"
     r"\.boot-splash|\.mic-bar|recording|\.wb-|\.sketch-color|\.onboarding-dot|theme-switching|"
-    r"\.is-generating|\.ai-status-popup"
+    r"\.is-generating"
 )
 
 

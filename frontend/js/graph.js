@@ -4229,8 +4229,9 @@ function initGraphDockHeightToken() {
     if (h > 0) card.style.setProperty("--graph-dock-h", `${h}px`);
   };
   card._chromeWatch = new ResizeObserver(write);
+  //: No direct `write()` here: observing delivers the first entry before the first paint, and a
+  //: read at parse time forced a layout (11ms on 2,000 notes) for a number the entry carries.
   card._chromeWatch.observe(dock);
-  write();
 }
 
 //: **The rail the map's furniture hangs from** (audit 1029 G24, 1306 residue).
@@ -4261,7 +4262,6 @@ function initGraphRailToken() {
   };
   card._railWrite = write;
   for (const el of strips) card._chromeWatch.observe(el);
-  write();
 }
 
 //: **A toast over the map stands above the legend** (INBOX 1400: it met the
