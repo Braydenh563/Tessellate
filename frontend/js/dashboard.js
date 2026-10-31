@@ -801,7 +801,11 @@ function sizeDashWidgetSpan(card, height, rowUnit, gap) {
 
 function sizeDashWidgets() {
   const grid = $("dash-grid");
-  if (!grid) return;
+  //: **Never while the tab is hidden** (dashcls-1031): the observer also fires
+  //: as the grid goes `display: none`, every card measured 0px and was given
+  //: `span 1`, and the next visit painted them stacked until it re-measured
+  //: (layout shift 0.34). The grid's own fire on showing it measures it right.
+  if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 8;
   const gap = Number.parseFloat(styles.rowGap) || 16;
@@ -3286,7 +3290,10 @@ async function renderDigestWidget(outer) {
   const dayBox = document.createElement("div");
   const body = document.createElement("div");
   outer.replaceChildren(dayBox, body);
-  renderDayDigest(dayBox);
+  //: Awaited at the end, not dropped (dashcls-1031): the widget counted as
+  //: drawn while the day's lines were still in flight, so a revisit swapped in
+  //: a 119px body that grew to 259px a fetch later and pushed every card below.
+  const dayDrawn = renderDayDigest(dayBox);
   const showDigest = (text) => {
     const out = document.createElement("div");
     renderMarkdown(out, text);
@@ -3349,6 +3356,7 @@ async function renderDigestWidget(outer) {
     const generate = smallButton("Generate this week's digest", "", runGeneration, false);
     body.append(generate);
   }
+  await dayDrawn;
 }
 
 async function renderQuickCaptureWidget(body) {
