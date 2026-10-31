@@ -35,6 +35,9 @@ with its owner named in the entry.
 ## Open items
 
 
+1500. **Agent rank1-1031, 2026-10-31 (audit 1031 BK6, owner step):** the in-app installer now refuses a download that does not match the SHA-256 GitHub lists for it, and refuses any release that lists none. A detached signature is built in but off: `core/update_verify.py` `PUBLIC_KEYS` is empty. Recommendation taken: the owner generates one Ed25519 key pair (private key in a repository secret, never in the repo), the release workflow signs the raw 32-byte SHA-256 of `Tessellate-Setup-<v>.exe` and attaches it as `Tessellate-Setup-<v>.exe.sig`, and the public key (64 hex characters) goes into `PUBLIC_KEYS`; from the next release the app then refuses an unsigned update. Not done here: it needs the private key and an edit to `release.yml`, which unattended runs do not touch.
+
+
 1499. **Agent rank1-1031, 2026-10-31 (audit 1031 AR1, left from row 3):** 359 ORM queries still live in the routers, so no one place decides what a request may read or write. Recommendation taken: a repository per resource (`entry/repo.py` already owns the bin guard, `writable_entry` and `writable_document`; add `visible_entry`, `visible_document`, `visible_reminder` for reads) that owns the workspace, private and bin filters, moved one router at a time, with a lint that ratchets ORM calls under `api/` down from 359 and never up. The bin guard and the workspace header check landed first because each closes a live hole on its own.
 
 

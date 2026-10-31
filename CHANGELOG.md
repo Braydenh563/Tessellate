@@ -6,6 +6,9 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Sessions: the session token, media ticket, device and network token tables share one lock, and a sweep, a grant and a sign-out each run as one step, so two grants for one session leave one ticket (audit 1031 BK7)
+- Update installer: the download must match the SHA-256 GitHub lists for it, a release that lists none is refused, and an Ed25519 detached signature is checked as soon as a public key is pinned; nothing is started that did not verify (audit 1031 BK6)
+- Restore: a backup restore pauses new requests and waits for the ones in flight (up to 20 seconds, then says another request is still running and touches nothing) before it replaces the database file, so no request is cut off on a disposed connection (audit 1031 BK5)
 - Board coordinates: x, y and z on cards, sketches, objects and map nodes are bounded (a million board units, NaN refused) with a 422 naming the field, and a row stored before the bound is clamped when the board loads, so one far object can no longer blank the board or break the PNG export (audit 1031 BD1)
 - Concurrency: 24 parallel note creations no longer answer 500; one `core/concurrency.py` sizes the worker threads and the database pool together, with a 5 second pool timeout that answers 503 with `Retry-After` (audit 1031 BK1, AR11)
 - Workspace header: `X-Workspace-ID` must name an existing space or `all`, otherwise a 422 `unknown_space`, and the app drops back to All spaces when its space was deleted in another window (audit 1031 BK3)

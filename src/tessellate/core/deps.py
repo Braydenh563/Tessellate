@@ -430,8 +430,79 @@ def _refuse_unknown_space(workspace_id: str) -> HTTPException:
     )
 
 
+class _RequestGate:
+    """Counts the requests holding a session, so a restore can wait for them.
+
+    Restore replaces the database file and disposes the engine; a request still
+    mid-transaction on it failed on the disposed pool or wrote to the old file
+    (audit 1031 BK5; the job runner is held separately, 1028 K19). A restore
+    pauses the gate (`drained`): new requests wait at `request`, and it waits
+    for the ones in flight, not counting its own (the unlock gate gives every
+    request a session). Keyed by the request's scope, which all of one
+    request's dependencies share, so a request already inside is never held
+    back by a restore that is waiting for it.
+    """
+
+    def __init__(self) -> None:
+        self.cond = threading.Condition()
+        self.active: dict[int, int] = {}
+        self.pausers = 0
+
+    @staticmethod
+    def key(request: Request | None) -> int:
+        return id(request.scope) if request is not None else 0
+
+    @contextmanager
+    def request(self, request: Request | None, wait: float = 60.0) -> Iterator[None]:
+        key = self.key(request)
+        with self.cond:
+            if key not in self.active and not self.cond.wait_for(lambda: not self.pausers, timeout=wait):
+                raise HTTPException(
+                    status_code=503,
+                    detail={"detail": "Tessellate is restoring a backup. Try again in a moment.", "code": "restoring", "hint": None},
+                    headers={"Retry-After": "2"},
+                )
+            self.active[key] = self.active.get(key, 0) + 1
+        try:
+            yield
+        finally:
+            with self.cond:
+                self.active[key] -= 1
+                if not self.active[key]:
+                    del self.active[key]
+                self.cond.notify_all()
+
+    @contextmanager
+    def drained(self, deadline: float, own: Request | None = None) -> Iterator[bool]:
+        mine = self.key(own) if own is not None else None
+        with self.cond:
+            self.pausers += 1
+            idle = self.cond.wait_for(lambda: all(k == mine for k in self.active), timeout=deadline)
+        try:
+            yield idle
+        finally:
+            with self.cond:
+                self.pausers -= 1
+                self.cond.notify_all()
+
+
+_gate = _RequestGate()
+drained = _gate.drained
+
+
+def requests_in_flight() -> int:
+    return sum(_gate.active.values())
+
+
 def get_session(request: Request = None) -> Iterator[Session]:
-    """FastAPI dependency: one session per request, always closed.
+    """FastAPI dependency: one session per request, always closed, counted
+    while it is held (`_RequestGate`)."""
+    with _gate.request(request):
+        yield from _open_session(request)
+
+
+def _open_session(request: Request | None) -> Iterator[Session]:
+    """One session per request, always closed.
 
     The `X-Workspace-ID` header scopes every query, so it must name a space
     (or be `all`): an id that is none of those is 422, not a filter that
