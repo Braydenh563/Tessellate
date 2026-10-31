@@ -130,6 +130,7 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
     open.type = "button";
     open.className = "att-chip-open";
     open.setAttribute("aria-haspopup", "dialog");
+    if (title) open.setAttribute("aria-label", `${title}, ${facts.textContent}`);
     open.append(tile, body);
     open.addEventListener("click", onOpen);
     chipEl.append(open);
@@ -742,7 +743,7 @@ function flattenNoteMarkdown(md) {
   //: Front matter is the note's settings, not its words (INBOX 1323).
   return stripFrontmatter(md)
     .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+)/gm, "")
-    .replace(/!?\[([^\]]{0,300})\]\([^)]{0,500}\)?/g, "$1")
+    .replace(/!?\[([^\]|]{0,300})[^\]]{0,300}\]\([^)]{0,500}\)?/g, "$1")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
     .replace(/\s+/g, " ")
     .trim();

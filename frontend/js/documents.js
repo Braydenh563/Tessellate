@@ -10782,7 +10782,7 @@ function docEmbedNode(target, name) {
 //: sits (`posAtDOM`), its alt rewritten in one change, one Undo step.
 function docImageLive(view, frame, options) {
   const root = () => frame.closest(".cm-md-figure") || frame;
-  const write = (change) => {
+  const write = (change, kind) => {
     let at;
     try {
       at = view.posAtDOM(root());
@@ -10794,26 +10794,27 @@ function docImageLive(view, frame, options) {
     if (!m) return false;
     const alt = imageAltWith(m[1], change);
     if (alt === m[1]) return false;
-    docPhase2State.imageRefocus = change.align !== undefined ? null : at;
+    docPhase2State.imageRefocus = kind && frame.contains(document.activeElement) ? { at, kind } : null;
     view.dispatch({ changes: { from: at + 2, to: at + 2 + m[1].length, insert: alt } });
     return true;
   };
   const widest = () => Math.max(IMAGE_MIN, Math.floor(view.contentDOM.getBoundingClientRect().width - 48));
-  const grip = imageWireEdit(frame, options, { write, widest });
-  //: The grip that was being pressed keeps the keys after its write redraws
-  //: the picture.
-  if (docPhase2State.imageRefocus == null || !grip) return;
+  const controls = imageWireEdit(frame, options, { write, widest });
+  //: The control that had the keys (the grip, or the align button after its
+  //: menu) keeps them after its write redraws the picture.
+  const held = docPhase2State.imageRefocus;
+  if (held == null) return;
   requestAnimationFrame(() => {
-    if (docPhase2State.imageRefocus == null || !frame.isConnected) return;
+    if (docPhase2State.imageRefocus !== held || !frame.isConnected) return;
     let at = -1;
     try {
       at = view.posAtDOM(root());
     } catch {
       at = -1;
     }
-    if (at === docPhase2State.imageRefocus) {
+    if (at === held.at) {
       docPhase2State.imageRefocus = null;
-      grip.focus({ preventScroll: true });
+      (held.kind === "grip" && controls.grip ? controls.grip : controls.align).focus({ preventScroll: true });
     }
   });
 }

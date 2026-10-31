@@ -90,12 +90,16 @@ async function timelineRowDetail(detail, row) {
   //: A picture here takes the same grip and align menu as in the note form
   //: (image-layout.js), and the view draws itself again with the saved text.
   body.dataset.imageEdit = String(row.id);
+  imageWireAll(body);
   //: The save repaints the feed, which closes an open row: it is opened
   //: again (it reads the saved note), or drawn again when it stayed open.
   body.imageEditAfter = (content) => {
     const el = document.querySelector(`[data-key="${row.key}"][aria-expanded]`);
     if (el && el.getAttribute("aria-expanded") !== "true") toggleTimelineRow(el, row);
-    else renderMarkdown(body, content);
+    else {
+      renderMarkdown(body, content);
+      imageWireAll(body);
+    }
   };
   renderTimelineRowMedia(entry, media);
 }

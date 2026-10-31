@@ -307,7 +307,7 @@ HELP_TOPICS: list[dict] = [
             "page numbers, and a plain Ctrl+P uses the last choice; a code file prints "
             "as monospaced code with line numbers. In Live, in a note's edit box "
             "and in the graph popup, drag the corner of a picture to resize it (or "
-            "focus the corner and use the arrow keys), and its align button puts it "
+            "Tab to the corner and use the arrow keys), and its align button puts it "
             "left, centre or right. A note card and the timeline's note view have "
             "the same align button (and the corner, apart from a card's small "
             "thumbnails), and a picture set in one place looks the same in all of "

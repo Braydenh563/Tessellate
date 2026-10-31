@@ -6350,3 +6350,18 @@ def test_the_notes_rail_resize_recipe_is_in_the_index() -> None:
     assert "`notesRailResize`" in design and "`grid-auto-columns`" in design
     js = (ROOT / "frontend" / "js" / "notes-rail-spy.js").read_text(encoding="utf-8")
     assert "NOTES_RAIL_STEP = 16" in js and '"Home"' in js and "(pointer: fine) and (min-width: 600px)" in js
+
+
+def test_the_shared_picture_control_is_in_the_index_and_the_guide() -> None:
+    """UX review 1031 item 12: one grip and align button for every surface that
+    shows a note's picture, with its keys, its hit area and its ground held."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`imageWireEdit`" in design and "image-layout.js" in design
+    assert "`.cm-md-image-grip`" in design and "`.cm-md-image-align`" in design
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    grip = css[css.index(".cm-md-image-grip {") : css.index("}", css.index(".cm-md-image-grip {"))]
+    assert "width: 24px" in grip and "height: 24px" in grip, "a 24px hit area on every pointer"
+    layout = (ROOT / "frontend" / "js" / "image-layout.js").read_text(encoding="utf-8")
+    assert 'addEventListener("focusin"' in layout, "the control exists before the pointer does"
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    assert "Tab to the corner and use the arrow keys" in topics
