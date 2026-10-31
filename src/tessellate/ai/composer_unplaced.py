@@ -23,6 +23,15 @@ from tessellate.ai import realise, toolwords
 #: A note, a notebook, "my ...": the person is asking about their own record,
 #: whose home is the notes (the web is a chip, never the first stop).
 _NOTES = re.compile(r"\b(?:notes?|notebook|entr(?:y|ies)|journal|diary)\b|\bmy\b", re.I)
+#: A thing the notebook holds, said without "note" or "my": "open checklist
+#: items", "overdue tasks", "what's due", "any reminders". The app's own
+#: readers answer these (an empty answer included), so they are never asked
+#: back. Kept out of `lookup`, so "list of countries in europe" stays a lookup.
+_NOTEBOOK_THINGS = re.compile(
+    r"\b(?:check-?lists?|to-?dos?|todos?|reminders?|tasks?|overdue|deadlines?|appointments?|items?|lists?|"
+    r"due (?:today|tomorrow|soon|this|next|on|by|date)|(?:what's|whats|whos|what is) due)\b",
+    re.I,
+)
 #: The question words and auxiliaries a question opens with.
 _ASK_OPEN = re.compile(
     r"^(?:what|whats|what's|who|whos|who's|where|wheres|where's|when|why|how|which|whose|"
@@ -69,6 +78,12 @@ def says_notes(message: str) -> bool:
     return bool(_NOTE_WORD.search(message or ""))
 
 
+def names_notebook_things(message: str) -> bool:
+    """The person asks about a thing the notebook holds (checklists, to-dos,
+    reminders, tasks, what is due, lists)."""
+    return bool(_NOTEBOOK_THINGS.search((message or "").replace("’", "'")))
+
+
 def lookup(message: str) -> bool:
     """A question about the world, with the shape of one."""
     q = clean(message)
@@ -94,7 +109,7 @@ def worthy(message: str) -> bool:
 def unplaced(message: str) -> bool:
     """A message no reader placed and that asks nothing of the web: banter,
     slang, a bare word, an emoji. With no note to answer it, it is asked about."""
-    return bool((message or "").strip()) and not worthy(message) and not names_notes(message)
+    return bool((message or "").strip()) and not worthy(message) and not names_notes(message) and not names_notebook_things(message)
 
 
 def bare_word(message: str) -> str:

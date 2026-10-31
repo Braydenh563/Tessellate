@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7935, test files 1690, tests 14670, plan headings 990.
+Counts: frontend functions 7191, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7936, test files 1690, tests 14673, plan headings 990.
 
 ## Frontend functions (7191)
 
@@ -12047,7 +12047,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7935)
+## Backend modules (7936)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13930,19 +13930,20 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `nested` | src/tessellate/ai/composer_tree.py:27 |
 | `write` | src/tessellate/ai/composer_tree.py:87 |
 
-### src/tessellate/ai/composer_unplaced.py (9)
+### src/tessellate/ai/composer_unplaced.py (10)
 
 | Name | File:line |
 |---|---|
-| `bare_word` | src/tessellate/ai/composer_unplaced.py:100 |
-| `chips` | src/tessellate/ai/composer_unplaced.py:135 |
-| `clarify` | src/tessellate/ai/composer_unplaced.py:127 |
-| `clean` | src/tessellate/ai/composer_unplaced.py:54 |
-| `lookup` | src/tessellate/ai/composer_unplaced.py:72 |
-| `names_notes` | src/tessellate/ai/composer_unplaced.py:59 |
-| `says_notes` | src/tessellate/ai/composer_unplaced.py:67 |
-| `unplaced` | src/tessellate/ai/composer_unplaced.py:94 |
-| `worthy` | src/tessellate/ai/composer_unplaced.py:88 |
+| `bare_word` | src/tessellate/ai/composer_unplaced.py:115 |
+| `chips` | src/tessellate/ai/composer_unplaced.py:150 |
+| `clarify` | src/tessellate/ai/composer_unplaced.py:142 |
+| `clean` | src/tessellate/ai/composer_unplaced.py:63 |
+| `lookup` | src/tessellate/ai/composer_unplaced.py:87 |
+| `names_notebook_things` | src/tessellate/ai/composer_unplaced.py:81 |
+| `names_notes` | src/tessellate/ai/composer_unplaced.py:68 |
+| `says_notes` | src/tessellate/ai/composer_unplaced.py:76 |
+| `unplaced` | src/tessellate/ai/composer_unplaced.py:109 |
+| `worthy` | src/tessellate/ai/composer_unplaced.py:103 |
 
 ### src/tessellate/ai/composer_versus.py (21)
 
@@ -21811,7 +21812,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14670)
+## Tests (14673)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23331,7 +23332,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_unlock_idempotent.py | 1 |
 | tests/test_unlock_throttle_parallel.py | 3 |
 | tests/test_unlock_throttle_per_client.py | 6 |
-| tests/test_unplaced_1490.py | 11 |
+| tests/test_unplaced_1490.py | 14 |
 | tests/test_unsaved_work_guard.py | 7 |
 | tests/test_untagged_filter.py | 5 |
 | tests/test_unwatched_answer.py | 4 |
