@@ -1529,12 +1529,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   opacity: 0.34;
 }
 
-.graph-node text.graph-pin-badge {
-  font-size: var(--text-xs);
-  stroke: none;
-  pointer-events: none;
-}
-
 .graph-node text.graph-label {
   font-weight: 500;
   fill: var(--ink);
@@ -3251,19 +3245,6 @@ span > .chip {
   flex: 0 0 auto;
 }
 
-.attachment-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: 22rem;
-}
-
-.attachment-chip>span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* **The one attachment chip** (DESIGN.md "An attachment chip"). The owner:
    "better modern and proffessional this app styled attachment chips". A tile
    (the picture, or the kind's glyph), the name with its extension kept when
@@ -3271,6 +3252,8 @@ span > .chip {
    what went wrong), a thin bar while it uploads and a round x. Chat, the
    popup agent and any later composer build it with `attachmentChip()`. */
 .att-chip {
+  display: inline-flex;
+  align-items: center;
   max-width: 16rem;
   min-width: 0;
   gap: var(--space-3);
@@ -3330,27 +3313,6 @@ span > .chip {
 .att-chip[data-state="error"] .att-chip-facts {
   color: var(--error);
 }
-.att-chip-bar {
-  position: absolute;
-  inset: auto var(--space-2) 0;
-  width: auto;
-  height: 3px;
-  appearance: none;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  accent-color: var(--accent);
-}
-.att-chip-bar::-webkit-progress-bar {
-  background: transparent;
-}
-.att-chip-bar::-webkit-progress-value {
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-}
-.att-chip-bar::-moz-progress-bar {
-  background: var(--accent);
-}
 /* A notebook card (`notebookCard`): tile and words are one left-aligned button
    (a centred one overflowed both ways, the black bar's cut), the x its sibling. */
 .att-chip-open {
@@ -3397,20 +3359,36 @@ span > .chip {
 .att-chip-x:is(:hover, :focus-visible) {
   color: var(--error);
 }
-
-.attachment-remove {
+/* **Staged, the pill** (INBOX 1476, the owner: "very clean and dynamic"): a
+   chip with a remove x is one control-height line on the accent wash, no
+   border; the glyph, the name cut at 14 characters, the kind in brackets, the
+   x. Under 820px the buttons keep their 44px target and overhang it. */
+.att-chip-pill {
+  min-height: var(--control-h-lg);
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
   border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  font-weight: 700;
-  line-height: 1;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
 }
-
-.attachment-remove:is(:hover, :focus-visible),
-.attachment-remove:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--error);
+.att-chip-pill .att-chip-tile {
+  width: 1.25rem;
+  background: none;
+  border-radius: inherit;
+}
+.att-chip-pill :is(.att-chip-open, .att-chip-x) {
+  gap: var(--space-2);
+  margin: calc((var(--control-h-lg) - var(--target-min)) / 2) 0;
+  padding: 0;
+  border-radius: inherit;
+}
+.att-chip-pill .att-chip-body {
+  flex-flow: row;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.att-chip-pill .att-chip-stem {
+  max-width: 14ch;
 }
 
 /* --- the writing room -------------------------------------------------------- */

@@ -925,6 +925,9 @@ const MIRRORED_UI_EXTRAS = [
   "graph-fold-graph-toggle-group",
   "graph-fold-graph-temporal",
   "wb-bg-color",
+  //: The model picker's pins and recent picks (model-menu.js, INBOX 1477).
+  "model-pins",
+  "model-recent",
 ];
 
 // A function rather than a `const` array, because `LOOK_KEYS` is declared

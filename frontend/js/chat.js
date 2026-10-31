@@ -1492,26 +1492,20 @@ function renderWebPageAttachment() {
   box.replaceChildren();
   box.classList.toggle("hidden", !attachedWebPage);
   if (!attachedWebPage) return;
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip";
-  chipEl.title = attachedWebPage.url;
-  const label = document.createElement("span");
-  const title = attachedWebPage.title;
-  const shown = title.length > 48 ? `${title.slice(0, 47)}…` : title;
-  setLabel(label, `ph:globe ${shown}${attachedWebPage.domain ? ` · ${attachedWebPage.domain}` : ""}`);
-  const remove = document.createElement("button");
-  remove.className = "attachment-remove";
-  remove.type = "button";
-  setLabel(remove, "ph:x");
-  remove.title = "Don't send this page with your message";
-  remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => {
-    attachedWebPage = null;
-    renderWebPageAttachment();
-    announce("Page removed.");
-  });
-  chipEl.append(label, remove);
-  box.appendChild(chipEl);
+  box.appendChild(
+    attachmentChip({
+      name: attachedWebPage.title,
+      icon: "ph-globe",
+      facts: attachedWebPage.domain || "Page",
+      title: `${attachedWebPage.title} (${attachedWebPage.url})`,
+      removeTitle: "Don't send this page with your message",
+      onRemove: () => {
+        attachedWebPage = null;
+        renderWebPageAttachment();
+        announce("Page removed.");
+      },
+    }),
+  );
 }
 
 //: What the model is told: where the page is from, and its text, fenced so a
