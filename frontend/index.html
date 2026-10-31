@@ -11890,6 +11890,16 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="fades">Minimal: fades only</option>
                 </select>
               </div>
+              <!-- How it comes in on a new page (INBOX 1463): a short fade or
+                   a few steps by default; the glide, walk on, tumble, fall
+                   and starlight only when chosen (`mountBuddyShowy`). -->
+              <label class="setting-check" id="avatar-buddy-showy-row">
+                <input type="checkbox" id="avatar-buddy-showy">
+                <span>
+                  Showy entrances
+                  <small class="muted">Off: on a new page it fades in where it rests. On: it may glide, walk on, tumble or drop in.</small>
+                </span>
+              </label>
               <!-- Each thing it does on its own, one switch a row (the owner,
                    2026-09-27: "Every companion feature must be togglable in
                    Settings"): built by `mountBuddyActivities`, avatars.js,

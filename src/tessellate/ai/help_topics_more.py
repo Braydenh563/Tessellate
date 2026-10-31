@@ -68,14 +68,19 @@ MORE_TOPICS: list[dict] = [
             "companion walks off the screen", "companion ducks under the bar",
             "companion moves too much", "companion distracting", "companion travels",
             "companion sneezes", "companion grooms", "companion sighs",
+            "companion tumbles across the screen", "companion falls from the top",
+            "showy entrances", "companion entrance",
         ),
         "body": (
             "The corner companion travels rarely and never while you type or "
             "carry it. When it has somewhere far to go it takes a calm way: it "
             "opens a portal and walks through, vanishes in a puff of smoke, walks "
-            "off one side of the window and comes in at the other, or ducks "
-            "behind a bar and climbs down from the other. Never the same way "
-            "twice in a row. The rest of the time it sits, looks around, "
+            "off one side of the window and comes in at the other. Never the "
+            "same way twice in a row. On a new page it fades in where it rests "
+            "or takes a few steps in its corner, and a new view in the same tab "
+            "crossfades it to its new spot; to have it glide, walk on, tumble "
+            "or drop in instead, turn on Showy entrances in Settings, "
+            "Appearance, Atlas and faces. The rest of the time it sits, looks around, "
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
             "Reduce motion on, or Interface animations off, it only fades or "
             "stays put. To keep it still, set Corner companion to Off in "

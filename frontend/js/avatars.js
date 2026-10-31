@@ -3381,6 +3381,7 @@ function nameMarkBuddyEmote(kind) {
 }
 
 function mountBuddyActivities() {
+  mountBuddyShowy();
   const host = document.getElementById("avatar-buddy-activities");
   if (!host || host.childElementCount) return;
   const off = nameMarkBuddyActivitiesOff();
@@ -3411,6 +3412,22 @@ function mountBuddyActivities() {
     if (nmb.act && nameMarkBuddyActOff(nmb.act, now)) nameMarkBuddyAct("");
     const buddy = document.getElementById("nm-buddy");
     if (buddy) nameMarkBuddyToggles(buddy);
+  });
+}
+
+//: Companion > Showy entrances (INBOX 1463): off unless chosen.
+function mountBuddyShowy() {
+  const box = document.getElementById("avatar-buddy-showy");
+  if (!box) return;
+  box.checked = nameMarkBuddyShowy();
+  if (box.dataset.wired) return;
+  box.dataset.wired = "1";
+  box.addEventListener("change", () => {
+    try {
+      prefs.set("avatar-buddy-entrances", box.checked ? "showy" : "quiet");
+    } catch (e) {
+      // Kept for this visit only.
+    }
   });
 }
 
@@ -5776,8 +5793,11 @@ function nameMarkBuddyGo(buddy, dx, dy, spot = {}, poseChanged = false, was = { 
   nameMarkBuddyAct("");
   const char = buddy.querySelector(".nm-buddy-char");
   //: **Always the way there, never a vanish** (INBOX 426 n). Reduce motion
-  //: alone gets a short crossfade in place of the travel.
-  if (nameMarkBuddyNoTravel()) {
+  //: alone gets a short crossfade in place of the travel. **And a new view
+  //: is no reason to cross the page** (INBOX 1463, the owner: it "comes
+  //: tumbling from side screen across the screen ... when I am on a new
+  //: page"): a far move a sub-view asked for (`nmb.quiet`) crossfades too.
+  if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {
     nameMarkBuddyCrossfade(buddy, dx, dy, 420);
     return;
   }
@@ -6709,7 +6729,12 @@ function nameMarkBuddyBeat() {
     nmb.tab = tab;
     return;
   }
-  placeNameMarkBuddy(buddy, false, fresh ? null : [nmb.x, nmb.y]);
+  nmb.quiet = fresh;
+  try {
+    placeNameMarkBuddy(buddy, false, fresh ? null : [nmb.x, nmb.y]);
+  } finally {
+    nmb.quiet = false;
+  }
 }
 
 //: **Another view in the same tab** (INBOX 521, the owner: "the companion
@@ -6987,6 +7012,9 @@ function nameMarkBuddyEnter(buddy, spot) {
   nmb.cameFrom = 0;
   const fromLeft = side ? side < 0 : x < innerWidth / 2;
   const reach = fromLeft ? x : innerWidth - x - NMB_W;
+  //: Quiet unless chosen (INBOX 1463); the first way in after an unlock
+  //: out of a bar is its own, and short (a climb out of the bar it holds).
+  if (!nameMarkBuddyShowy() && !(unlockFirst && hangs)) return nameMarkBuddyQuietEnter(buddy, spot.pose, fromLeft, reach);
   //: **Not the same way twice** (INBOX 501, the owner: "it just kinda
   //: appears and there is no smooth or creative animation for it to
   //: happen, or even differences on how it gets there"). The same perch
@@ -7031,24 +7059,9 @@ function nameMarkBuddyEnter(buddy, spot) {
   }
   if (how === "walk") {
     const dx = fromLeft ? -(x + NMB_W + 12) : innerWidth - x + 12;
-    const duration = Math.round(Math.min(1500, 520 + Math.abs(dx) * 1.1));
-    nameMarkBuddyWay(buddy, dx > 0 ? "-1" : "1");
-    buddy.dataset.turn = dx > 0 ? "l" : "r";
-    nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
-    nmbTempo.seen = 0;
-    clearTimeout(nmbTempo.timer);
-    nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
     //: Faded up over its first third as it comes past the edge: shown by
     //: the class alone, it went from 0 to 0.95 in two frames.
-    nmb.anim = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: 0.35 }, { translate: "0px 0px", opacity: 1 }], { duration, easing: "cubic-bezier(0.3, 0, 0.25, 1)" });
-    const walk = nmb.anim;
-    const done = () => {
-      if (nmb.anim !== walk) return;
-      nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));
-      delete buddy.dataset.turn;
-    };
-    walk.onfinish = done;
-    walk.oncancel = done;
+    nameMarkBuddyWalkIn(buddy, dx, Math.round(Math.min(1500, 520 + Math.abs(dx) * 1.1)), 0.35);
     return how;
   }
   if (how === "fall") {
@@ -7135,6 +7148,61 @@ function nameMarkBuddyEnter(buddy, spot) {
   nmb.hopAnim = null;
   nameMarkBuddyLimbs(buddy, "float", 820);
   return how;
+}
+
+//: **In quietly** (INBOX 1463, the owner: "when atlas or the companion
+//: comes tumbling from side screen across the screen or falls from the
+//: ceiling across my screen when I am on a new page it is really
+//: distracting ... a non intrusive companion"). The way in on a new page,
+//: unless Settings > Companion > Showy entrances is on: a fade under 200ms
+//: where it rests, or, standing within a short reach of the side of the
+//: window, a few steps in from that side, inside its own corner, faded up
+//: over the first 180ms. Never twice a walk running.
+const NMB_QUIET_FADE_MS = 180;
+const NMB_QUIET_STEP_PX = 28;
+function nameMarkBuddyShowy() {
+  try {
+    return prefs.get("avatar-buddy-entrances", null) === "showy";
+  } catch (e) {
+    return false;
+  }
+}
+function nameMarkBuddyQuietWay(pose, reach, last, roll) {
+  if (pose !== "stand" || reach > 220 || last === "step") return "fade";
+  return roll < 0.5 ? "step" : "fade";
+}
+function nameMarkBuddyQuietEnter(buddy, pose, fromLeft, reach) {
+  const how = nameMarkBuddyQuietWay(pose, reach, nmb.lastEnter, Math.random());
+  nmb.lastEnter = how;
+  buddy.dataset.route = `enter-${how}`;
+  nmb.hopAnim = null;
+  if (how === "fade") {
+    nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: NMB_QUIET_FADE_MS, easing: "ease-out" });
+    return how;
+  }
+  //: Faded up within the same 180ms as the fade, over 600ms of steps.
+  nameMarkBuddyWalkIn(buddy, fromLeft ? -NMB_QUIET_STEP_PX : NMB_QUIET_STEP_PX, NMB_QUIET_FADE_MS / 0.3, 0.3);
+  return how;
+}
+
+//: A walk in from `dx` to where it stands, faded up by `shown` of the way,
+//: its stride's tempo started now and its legs at rest when it arrives.
+function nameMarkBuddyWalkIn(buddy, dx, duration, shown) {
+  nameMarkBuddyWay(buddy, dx > 0 ? "-1" : "1");
+  buddy.dataset.turn = dx > 0 ? "l" : "r";
+  nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);
+  nmbTempo.seen = 0;
+  clearTimeout(nmbTempo.timer);
+  nmbTempo.timer = setTimeout(nameMarkBuddyTempo, 0);
+  const walk = buddy.animate([{ translate: `${dx}px 0px`, opacity: 0 }, { opacity: 1, offset: shown }, { translate: "0px 0px", opacity: 1 }], { duration, easing: "cubic-bezier(0.3, 0, 0.25, 1)" });
+  nmb.anim = walk;
+  const done = () => {
+    if (nmb.anim !== walk) return;
+    nameMarkBuddyBlend(buddy, () => buddy.classList.remove("nmb-walking"));
+    delete buddy.dataset.turn;
+  };
+  walk.onfinish = done;
+  walk.oncancel = done;
 }
 
 //: **Out the same way, or dissolving** (INBOX 430): hidden from its menu or

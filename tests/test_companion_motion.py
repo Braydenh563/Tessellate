@@ -73,8 +73,10 @@ def test_no_move_is_a_fade_to_somewhere_else() -> None:
     assert "distance > 700" not in move
     # The two fades left: Reduce motion's, in place of the travel, and
     # being carried asleep (a sleeper is not woken to walk). Each is a
-    # crossfade now (INBOX 443), never a fade to nothing and back.
-    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel()) {" in move
+    # crossfade now (INBOX 443), never a fade to nothing and back. The
+    # first also takes a far move a new view asked for (INBOX 1463, the
+    # owner: no more coming "across the screen ... on a new page").
+    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {" in move
     assert "if (nameMarkBuddyAsleep(buddy)) {" in move
 
 
@@ -693,7 +695,9 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
     # frame, speed changing at most 5.5px a frame, every move ending on its
     # place.
     go = _fn("nameMarkBuddyGo") + _fn("nameMarkBuddyRoute")
-    for way in ("if (nameMarkBuddyNoTravel()) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
+    # Reduce motion's crossfade also takes a far move a new view asked for
+    # (INBOX 1463: never "across the screen ... on a new page").
+    for way in ("if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
                 "if (route === \"float\") {", "if (d < size * NMB_HOP_SIZES && !poseChanged)",
                 'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);'):
         assert way in go, way
