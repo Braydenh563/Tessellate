@@ -27,7 +27,9 @@ def test_every_identity_line_names_atlas(kind, voice):
     [
         ("how do I add a reminder to a note", "reminders"),
         ("how do I change the theme", "appearance"),
-        ("where is the export button", "storage"),
+        #: The topic named for the act leads (INBOX 1495-1497, `_act_sentence`):
+        #: "export" is `import-export`'s own word, so it answers, not `storage`.
+        ("where is the export button", "import-export"),
     ],
 )
 def test_a_how_to_is_answered_by_its_help_topics_own_sentence(question, topic):
@@ -37,7 +39,9 @@ def test_a_how_to_is_answered_by_its_help_topics_own_sentence(question, topic):
     help_part = result["parts"][0]
     assert result["shape"] == "help" and help_part[0] == "help" and help_part[2] == topic
     body = next(t["body"] for t in help_chat.HELP_TOPICS if t["id"] == topic)
-    assert help_part[1] in body
+    #: A sentence over the lead budget comes as its best clause with a full stop
+    #: added (INBOX 1406), so the words are the topic's and the stop is not.
+    assert help_part[1].rstrip(".") in body
 
 
 def test_a_question_no_help_topic_names_falls_back_to_the_notes():

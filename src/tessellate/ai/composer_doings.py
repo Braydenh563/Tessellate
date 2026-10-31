@@ -136,7 +136,7 @@ def _reads_done(s, forms: frozenset[str], logged: bool) -> tuple[bool, bool]:  #
 def _done_of(view, s, forms: frozenset[str], says: bool, logs: bool, day: date) -> Done:  # noqa: ANN001
     """The doing a line says, on `day`."""
     times = _times_in(s.text, forms) if says else 1
-    own = day != view.written or logs or bool(re.search(r"\b(?:today|yesterday|tonight|this morning)\b", s.text, re.I))
+    own = day != view.written or logs or recognise.says_a_recent_day(s.text)
     return Done(day, view, s, _km(s.text), times, own)
 
 

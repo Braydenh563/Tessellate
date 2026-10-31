@@ -37,8 +37,9 @@ def test_the_client_previews_drop_them_too():
     source = app_js_text()
     strip = re.search(r"^function stripMarkdownPreview\(text\) \{.*?^\}", source, re.S | re.M).group(0)
     flat = re.search(r"^function flattenNoteMarkdown\(md\) \{.*?^\}", source, re.S | re.M).group(0)
+    blocks = re.search(r"^function previewBlocks\(text\) \{.*?^\}", source, re.S | re.M).group(0)
     script = (
-        "function stripFrontmatter(t){return t}\n" + strip + "\n" + flat
+        "function stripFrontmatter(t){return t}\n" + blocks + "\n" + strip + "\n" + flat
         + "\nprocess.stdout.write(JSON.stringify(["
         + "stripMarkdownPreview('![A river|center](/media/x.png) after'),"
         + "flattenNoteMarkdown('![A river|300|right](/media/x.png) after')]))"

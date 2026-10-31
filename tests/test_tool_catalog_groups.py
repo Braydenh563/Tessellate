@@ -28,9 +28,9 @@ def test_a_write_is_never_filed_as_a_read(app_state):
 
 def test_the_list_draws_the_heads_and_the_filter_reads_only_tool_rows():
     """The heads are drawn in settings-controls.js (`renderTools`, moved out of
-    skills.js with the pane); the filter that skips them stays in skills.js."""
+    skills.js with the pane), and the filter that skips them moved with it
+    (audit 1031 N9: it read `skills.js` after the pane left)."""
     js_dir = Path(__file__).resolve().parents[1] / "frontend" / "js"
     drawn = (js_dir / "settings-controls.js").read_text(encoding="utf-8")
     assert "tool-group-head" in drawn and "setting-subhead" in drawn
-    filtered = (js_dir / "skills.js").read_text(encoding="utf-8")
-    assert "li[data-tool]" in filtered
+    assert "li[data-tool]" in drawn
