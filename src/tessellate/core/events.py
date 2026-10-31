@@ -786,6 +786,109 @@ def _readable_now(content: Any) -> bool:
     return True
 
 
+def _refused_early(entity_type: str, live: list[AuditLog]) -> str | None:
+    """The status of an entity the plan refuses before reading anything else."""
+    if not live:
+        return "already undone"
+    if entity_type != "entry":
+        return "not undoable"
+    if any(is_compacted(row) for row in live):
+        return "too old"
+    return None
+
+
+def _plan_undo(
+    session: Session,
+    item: dict[str, Any],
+    entity_type: str,
+    entity_id: int,
+    live: list[AuditLog],
+    actors: list[str],
+    force: bool,
+) -> tuple[Entry, dict[str, Any]] | None:
+    """One entity's part of the plan: its status set on `item`, and the note
+    with the fields to put back, or None when the plan refuses it."""
+    refused = _refused_early(entity_type, live)
+    if refused:
+        item["status"] = refused
+        return None
+    created = any(row.action == "created" for row in live)
+    changes = [
+        row for row in live
+        if isinstance((row.payload or {}).get("before"), dict)
+    ]
+    if not created and not changes:
+        item["status"] = "no values recorded"
+        return None
+    later_by_others = session.scalar(
+        select(func.count())
+        .select_from(AuditLog)
+        .where(
+            AuditLog.entity_type == entity_type,
+            AuditLog.entity_id == entity_id,
+            AuditLog.id > live[0].id,
+            AuditLog.actor.notin_(actors),
+            AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
+        )
+    )
+    if later_by_others and not force:
+        item["status"] = "changed since"
+        return None
+    entry = session.get(Entry, entity_id)
+    if entry is None:
+        item["status"] = "gone"
+        return None
+    target = _fields_to_restore(created, changes)
+    if "content" in target and not _readable_now(target["content"]):
+        # A payload keeps a private note's column as it was, ciphertext
+        # under that day's key. After `rotate-vault-key` it reads under
+        # nothing, and writing it back would leave a note nobody can
+        # open, so the text stays as it is and the plan says so.
+        del target["content"]
+        item["kept"] = ["content"]
+        if not target:
+            item["status"] = "private text under an older key"
+            return None
+    item["status"] = "undo"
+    item["fields"] = sorted(target)
+    return entry, target
+
+
+def _fields_to_restore(created: bool, changes: list[AuditLog]) -> dict[str, Any]:
+    if created:
+        return {"is_deleted": True, "deleted_at": utcnow().isoformat()}
+    target: dict[str, Any] = {}
+    for row in reversed(changes):
+        target.update({k: v for k, v in row.payload["before"].items() if k in _UNDOABLE_ENTRY_FIELDS})
+    return target
+
+
+def _restore_entry(session: Session, entry: Entry, target: dict[str, Any], live: list[AuditLog], actors: list[str]) -> None:
+    was = entry_state(entry)
+    if "content" in target and target["content"] != entry.content:
+        # The text about to be replaced is kept, as every restore keeps
+        # it: undoing an undo has to be possible.
+        session.add(EntryRevision(entry_id=entry.id, content=entry.content, tags=entry.tags or "[]"))
+    for key, value in target.items():
+        if key == "tags":
+            entry.tags = json.dumps(value if isinstance(value, list) else [])
+        elif key in ("deleted_at", "archived_at"):
+            setattr(entry, key, datetime.fromisoformat(value) if value else None)
+        elif key == "is_deleted":
+            entry.is_deleted = bool(value)
+        else:
+            setattr(entry, key, value)
+    with acting_as(ACTOR_USER):
+        record(
+            session,
+            "restored",
+            "entry",
+            entry.id,
+            detail=f"undid {len(live)} change(s) by {', '.join(actors)}"[:200],
+            payload={**changed(was, entry_state(entry)), "undid": [row.id for row in live]},
+        )
+
+
 def undo(
     session: Session,
     actor: str | list[str],
@@ -841,84 +944,11 @@ def undo(
         }
         items.append(item)
         live = [row for row in mine if row.id not in already]
-        if not live:
-            item["status"] = "already undone"
+        planned = _plan_undo(session, item, entity_type, entity_id, live, actors, force)
+        if planned is None or not apply:
             continue
-        if entity_type != "entry":
-            item["status"] = "not undoable"
-            continue
-        if any(is_compacted(row) for row in live):
-            item["status"] = "too old"
-            continue
-        created = any(row.action == "created" for row in live)
-        changes = [
-            row for row in live
-            if isinstance((row.payload or {}).get("before"), dict)
-        ]
-        if not created and not changes:
-            item["status"] = "no values recorded"
-            continue
-        first = live[0].id
-        later_by_others = session.scalar(
-            select(func.count())
-            .select_from(AuditLog)
-            .where(
-                AuditLog.entity_type == entity_type,
-                AuditLog.entity_id == entity_id,
-                AuditLog.id > first,
-                AuditLog.actor.notin_(actors),
-                AuditLog.action.notin_(sorted(QUIET_ACTIONS)),
-            )
-        )
-        if later_by_others and not force:
-            item["status"] = "changed since"
-            continue
-        entry = session.get(Entry, entity_id)
-        if entry is None:
-            item["status"] = "gone"
-            continue
-        target: dict[str, Any] = {}
-        for row in reversed(changes):
-            target.update({k: v for k, v in row.payload["before"].items() if k in _UNDOABLE_ENTRY_FIELDS})
-        if created:
-            target = {"is_deleted": True, "deleted_at": utcnow().isoformat()}
-        if "content" in target and not _readable_now(target["content"]):
-            # A payload keeps a private note's column as it was, ciphertext
-            # under that day's key. After `rotate-vault-key` it reads under
-            # nothing, and writing it back would leave a note nobody can
-            # open, so the text stays as it is and the plan says so.
-            del target["content"]
-            item["kept"] = ["content"]
-            if not target:
-                item["status"] = "private text under an older key"
-                continue
-        item["status"] = "undo"
-        item["fields"] = sorted(target)
-        if not apply:
-            continue
-        was = entry_state(entry)
-        if "content" in target and target["content"] != entry.content:
-            # The text about to be replaced is kept, as every restore keeps
-            # it: undoing an undo has to be possible.
-            session.add(EntryRevision(entry_id=entry.id, content=entry.content, tags=entry.tags or "[]"))
-        for key, value in target.items():
-            if key == "tags":
-                entry.tags = json.dumps(value if isinstance(value, list) else [])
-            elif key in ("deleted_at", "archived_at"):
-                setattr(entry, key, datetime.fromisoformat(value) if value else None)
-            elif key == "is_deleted":
-                entry.is_deleted = bool(value)
-            else:
-                setattr(entry, key, value)
-        with acting_as(ACTOR_USER):
-            record(
-                session,
-                "restored",
-                "entry",
-                entry.id,
-                detail=f"undid {len(live)} change(s) by {', '.join(actors)}"[:200],
-                payload={**changed(was, entry_state(entry)), "undid": [row.id for row in live]},
-            )
+        entry, target = planned
+        _restore_entry(session, entry, target, live, actors)
         undone += 1
     if apply:
         session.flush()

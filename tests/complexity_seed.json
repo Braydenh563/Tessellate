@@ -155,7 +155,6 @@
  "src/tessellate/core/docview.py::docx_to_markdown.paragraph": 25,
  "src/tessellate/core/egress.py::_hook": 18,
  "src/tessellate/core/embedswitch.py::_swap": 19,
- "src/tessellate/core/events.py::undo": 43,
  "src/tessellate/core/extras.py::_read_footprint": 20,
  "src/tessellate/core/extras.py::_remove_from_frozen_target": 23,
  "src/tessellate/core/extras.py::_run_bulk_item": 17,
