@@ -1456,7 +1456,16 @@ def _in_named(named: list[composer.NoteView], stems: list[str]) -> list[composer
 
 def _named_in(q: str, views: list[composer.NoteView]) -> list[composer.NoteView]:
     """The notes whose category the (lower-cased) question names."""
-    return [v for v in views if str(v.note.get("category") or "").strip() and str(v.note.get("category")).lower() in q]
+    return [v for v in views if str(v.note.get("category") or "").strip() and str(v.note.get("category")).lower() in q and not _used_as_verb(q, str(v.note.get("category")).lower())]
+
+
+#: "where does Tom work", "do I run": the category's word after an auxiliary,
+#: at most two words on, is the verb of the question, not the category (audit 1031 C1).
+_AUX_BEFORE = r"(?:does|do|did|doesn't|didn't|don't|can|could|will|would|should|to|might|must)\s+(?:\w+\s+){0,2}"
+
+
+def _used_as_verb(q: str, category: str) -> bool:
+    return " " not in category and bool(re.search(rf"\b{_AUX_BEFORE}{re.escape(category)}(?:\s+\w+){{0,2}}\s*[?.!]*$", q.strip()))
 
 
 def _unanswerable(stems: list[str], views: list[composer.NoteView]) -> bool:
@@ -3143,6 +3152,9 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
 _LATEST_ASK = re.compile(r"\b(?:latest|newest|most recent|recently|lately)\b|\bwhen did i last\b", re.I)
 
 
+_PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes", "shes"})
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3162,13 +3174,18 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
+        #: "He works on the data team" in the note titled "Tom" is Tom's line
+        #: (audit 1031 C1); a sentence's own words beat the note's.
+        if f.sentence.words and f.sentence.words[0] in _PRONOUN_OPENERS:
+            words |= f.view.title_words
+        own = sum(weight[st] for st in stems if composer._holds(st, words))
         hits = sum(weight[st] for st in stems if composer._holds(st, words | f.view.filed_words | f.view.title_words))
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
         same_figure = bool(figures & composer.figures_of(f.sentence.text)) if figures else False
         #: Between sources that say it equally well, the one the search ranked first.
         #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
         newest = (f.view.written or date.min) if latest else date.min
-        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3526,12 +3543,22 @@ def _named_in_fragment(name: str, views) -> list:  # noqa: ANN001
     return [(v, v.sentences[0]) for v in views if v.sentences and seen.search(str(v.note.get("content") or ""))]
 
 
+def _titled_body(view, name: str, sentence) -> str:  # noqa: ANN001
+    """What a note titled with the person says, in its own words: its first
+    two sentences under "Your Tom note:" (its "he" and "she" stay quoted,
+    never turned into "you"), or "" when the sentence names the person."""
+    if re.search(rf"\b{re.escape(name)}\b", sentence.text, re.I) or not view.title:
+        return ""
+    own = [x.text.strip() for x in view.sentences[:2]]
+    return f"your {view.title} note: " + " ".join(t if t.endswith((".", "!", "?")) else t + "." for t in own).rstrip(".")
+
+
 def _who_many(out: _Out, name: str, found: list, today: date) -> None:
     """Every note that names the person: how many, then a line from each."""
     out.lines.append(PHRASES["who_many"].format(name=name[:1].upper() + name[1:], count=_count(len({v.id for v, _ in found})), span=_span([v for v, _ in found], today)))
     said: set[str] = set()
     for v, s2 in found[:LINES["overview"]]:
-        body = _tidy(_second_person(s2.text.strip()), v.written)
+        body = _titled_body(v, name, s2) or _tidy(_second_person(s2.text.strip()), v.written)
         if not _TIMED.get() and body.lower() in said:
             continue
         said.add(body.lower())
@@ -3545,15 +3572,27 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
         out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})
 
 
+def _who_found(name: str, views) -> list:  # noqa: ANN001
+    """Every note that names the person, each with the sentence that does; a
+    note TITLED with the name is one too even when its body says "he" and
+    "she" (audit 1031 C1), with its opening sentence."""
+    seen = re.compile(rf"\b{re.escape(name)}\b", re.I)
+    found = [(v, s) for v in views for s in v.sentences if seen.search(s.text)]
+    named = {v.id for v, _ in found}
+    words = name.split()
+    found += [(v, v.sentences[0]) for v in views if v.id not in named and v.sentences and _defines(v, words) == 2]
+    return found or _named_in_fragment(name, views)
+
+
 def _who(out: _Out, name: str, views, names: set[str], today: date) -> bool:
-    found = [(v, s) for v in views for s in v.sentences if re.search(rf"\b{re.escape(name)}\b", s.text, re.I)] or _named_in_fragment(name, views)
+    found = _who_found(name, views)
     if not found:
         return False
     #: The note about the person leads, whatever order the search gave
     #: (audit 1030 Z11: "who is Sara" led with a gift list's "Sara: a jazz record").
     found.sort(key=lambda vs: -_defines(vs[0], name.split()))
     view, s = found[0]
-    fact = _tidy(_second_person(s.text.strip()), view.written)
+    fact = _titled_body(view, name, s) or _tidy(_second_person(s.text.strip()), view.written)
     if len({v.id for v, _ in found}) == 1:
         out.lines.append(PHRASES["who_once"].format(name=name[:1].upper() + name[1:], day=_day(view.written, today), fact=fact))
         out.closing.append(PHRASES["only_names"].format(name=name[:1].upper() + name[1:]))
