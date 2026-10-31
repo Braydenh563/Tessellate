@@ -457,7 +457,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And labels under a topic (canvasdepth2).
         "labels": None,
         # And reaction stamps and votes on a topic (canvasdepth2).
-        "stamps": None,
+        "stamps": None, "stamped": None,
         "spine": None,
         # And with a topic's fill (one topic, or its whole branch).
         "fill": None,

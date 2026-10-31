@@ -509,7 +509,7 @@ def delete_space(
         raise HTTPException(400, "The default spaces cannot be deleted.")
     space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
     if purge and move_to:
-        raise HTTPException(400, "Choose either move_to or purge, not both.")
+        raise HTTPException(400, "Choose either moving the contents or deleting them, not both.")
     if purge:
         return _purge_space(session, space)
     return _delete_space_moving(session, space, move_to or "default")
