@@ -517,7 +517,7 @@ function nameMarkViewerBlinks(figure) {
 //: every setting that makes it who it is, kept under a name in this
 //: browser, applied in one press, renamed (its name back in the field, then
 //: saved) and deleted. At most twelve.
-const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion"];
+const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion", "avatar-buddy-entrances"];
 const NMB_PRESET_MAX = 12;
 let nmbPresetRenaming = "";
 function nameMarkBuddyPresets() {

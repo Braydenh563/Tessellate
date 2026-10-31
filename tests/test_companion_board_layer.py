@@ -61,8 +61,10 @@ def test_over_the_canvas_it_takes_the_boards_layer_and_zoom():
 
 
 def test_out_of_the_way_of_the_boards_panels_and_calmer_there():
-    popups = re.search(r'^const NMB_POPUPS = "(.*)";$', AV, re.M).group(1)
-    assert "#wb-format:not(.hidden)" in popups and "#wb-sidebar-panel:not(.hidden)" in popups
+    # Found by id since INBOX 1465 (a selector over the whole document cost 15 to 50ms a look).
+    popups = re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
+    assert '"wb-format"' in popups and '"wb-sidebar-panel"' in popups
+    assert 'el.classList.contains("hidden")' in _fn(AV, "nameMarkBuddyPopups")
     board = float(re.search(r"^const NMB_BOARD_WANDER = ([\d.]+);$", AV, re.M).group(1))
     # INBOX 1429: it wanders less often everywhere (0.35 to 0.12); a board is still the calmer.
     assert board < float(re.search(r"^const NMB_WANDER_ODDS = ([\d.]+);$", AV, re.M).group(1))

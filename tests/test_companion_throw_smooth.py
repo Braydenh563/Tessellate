@@ -120,6 +120,11 @@ def test_one_landing_measures_the_obstacles_once() -> None:
             "const document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };",
             "function nameMarkBuddyPopups() { reads += 1; return [{ left: 1, right: 2, top: 1, bottom: 2 }]; }",
             "function nameMarkBuddyShown() { return null; }",
+            # The tab's kept boxes and the floating roots (INBOX 1465): an empty page.
+            "function nameMarkBuddyControlBoxes() { return []; }",
+            "function nameMarkBuddyFloaters() { return []; }",
+            "function nameMarkBuddyControlsIn() {}",
+            "function nameMarkBuddyAttention() { return []; }",
             _fn(AV, "nameMarkBuddyObstacles"),
             _fn(AV, "nameMarkBuddyMeasureOnce"),
             "const once = nameMarkBuddyMeasureOnce(() => { const a = nameMarkBuddyObstacles('notes'); a.push('x');"
