@@ -5,18 +5,22 @@
 // (`OBJ_GRIP`). A move before the hold is over is a text selection or a swipe
 // and lets the press go, and a press that starts inside selected text is
 // never a drag, so a click, a double click, a scroll flick and a slow text
-// selection on a card are untouched. While live a small ghost card follows the pointer and the
+// selection on a card are untouched. A press on a picture needs no hold (it has
+// no words to select, and a quick drag would be the browser's own image drag),
+// and a finger takes the hold itself: still for `OBJ_TOUCH_MS` lifts the card,
+// and the page stops scrolling under it. While live a small ghost card follows the pointer and the
 // current mode (`OBJ_MODES`: obj-reorder.js's `reorder`, obj-carry.js's
 // `carry`) decides what the pointer is over, and may hand the gesture to another
 // mode (`route`). Escape or a press of another
-// button ends it with no change. Mouse and pen only: a finger on a card is
-// a scroll, and a long-press drag for touch is left for a device that can
-// check it.
+// button ends it with no change.
 
 //: Travel that ends a still hold (and, after the hold, starts the drag).
 const OBJ_DRAG_PX = 4;
 //: How long a press must stay still before a move is a drag.
 const OBJ_DRAG_MS = 250;
+//: A finger's hold: still this long lifts the card (before it, a move is a scroll).
+//: Under the 500 ms of `wireLongPress`: a card lifted and not moved by then is that menu's press.
+const OBJ_TOUCH_MS = 350;
 //: A visible handle on a card: a press on it is a drag from the first move.
 const OBJ_GRIP = "[data-obj-grip]";
 //: Where a press never starts a drag: the card's own controls.
@@ -58,7 +62,7 @@ function objPressInSelection(event) {
 //: Whether a press may arm a drag, and from which card: `{ card, ref }`.
 //: The modes' `grab(hit)` may add to it (the reorder mode's surface).
 function objDragSeed(event) {
-  if (event.button !== 0 || event.pointerType === "touch" || event.defaultPrevented) return null;
+  if (event.button !== 0 || event.defaultPrevented) return null;
   const grip = objPressOnGrip(event.target);
   const control = event.target.closest?.(OBJ_NO_GRAB);
   //: A tray item is a button you click to paste and also drag out.
@@ -67,7 +71,9 @@ function objDragSeed(event) {
   const hit = objCardAt(event.target);
   if (!hit) return null;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
-  return mode ? { ...hit, mode, grip, ...OBJ_MODES[mode].grab(hit) } : null;
+  //: A picture has no text to select, so a press on one is a grip.
+  const quick = grip || (event.pointerType !== "touch" && event.target.tagName === "IMG");
+  return mode ? { ...hit, mode, grip: quick, ...OBJ_MODES[mode].grab(hit) } : null;
 }
 
 function objDragArm(event) {
@@ -77,7 +83,19 @@ function objDragArm(event) {
   objDragListen(true);
   //: The hold is over: the cursor says the card can be taken now.
   const g = objDragNow;
-  g.cue = setTimeout(() => g.card.classList.add("obj-armed"), g.grip ? 0 : OBJ_DRAG_MS);
+  g.touch = event.pointerType === "touch";
+  g.cue = setTimeout(() => objDragCue(g), g.touch ? OBJ_TOUCH_MS : g.grip ? 0 : OBJ_DRAG_MS);
+}
+
+//: The hold is over. A mouse is told with the cursor; a finger lifts the card at
+//: once and feels it (a move is already the drag, and the page must not scroll).
+function objDragCue(g) {
+  if (objDragNow !== g) return;
+  g.card.classList.add("obj-armed");
+  if (!g.touch) return;
+  navigator.vibrate?.(8);
+  objDragBegin(g);
+  objDragFrame(g);
 }
 
 function objDragListen(on) {
@@ -89,6 +107,20 @@ function objDragListen(on) {
   //: A picture inside a card would start the browser's own drag a few
   //: pixels in and end this one; a text selection is only stopped once live.
   document[act]("dragstart", objDragNoNative, true);
+  //: Non-passive and only while a gesture is armed, so scrolling elsewhere stays off the main thread.
+  window[act]("touchmove", objDragNoScroll, { capture: true, passive: false });
+  window[act]("contextmenu", objDragNoMenu, true);
+}
+
+function objDragNoScroll(event) {
+  if (objDragNow?.live && event.cancelable) event.preventDefault();
+}
+
+//: A held finger asks for the system menu too; a lifted card is not that request.
+function objDragNoMenu(event) {
+  if (!objDragNow?.touch || !objDragNow.moved) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
 }
 
 function objDragNoNative(event) {
@@ -99,8 +131,10 @@ function objDragNoNative(event) {
 //: the press is let go of. Held still long enough and then moved is the drag,
 //: and a grip needs no hold.
 function objDragVerdict(g, event) {
-  const far = Math.hypot(event.clientX - g.x0, event.clientY - g.y0) >= OBJ_DRAG_PX;
+  //: A finger drifts more than a hand on a mouse; before its hold a move is a scroll.
+  const far = Math.hypot(event.clientX - g.x0, event.clientY - g.y0) >= (g.touch ? OBJ_DRAG_PX * 3 : OBJ_DRAG_PX);
   if (!far) return "wait";
+  if (g.touch) return "swipe";
   return g.grip || event.timeStamp - g.t0 >= OBJ_DRAG_MS ? "start" : "swipe";
 }
 
@@ -109,6 +143,8 @@ function objDragMove(event) {
   if (!g || event.pointerId !== g.id) return;
   g.x = event.clientX;
   g.y = event.clientY;
+  //: A lifted card the finger has not moved is still a long press, and gives way to its menu.
+  g.moved ||= Math.hypot(g.x - g.x0, g.y - g.y0) >= OBJ_DRAG_PX * 3;
   if (!g.live) {
     const verdict = objDragVerdict(g, event);
     if (verdict === "swipe") return objDragFinish(true, event);

@@ -46,3 +46,26 @@ def test_a_grip_arms_at_once_and_a_press_in_selected_text_never_arms() -> None:
     __out({ early, gripOn: objPressOnGrip(grip), gripOff: objPressOnGrip(plain), inText, beside, collapsed });
     """)
     assert out == {"early": "start", "gripOn": True, "gripOff": False, "inText": True, "beside": False, "collapsed": False}
+
+
+@needs_node
+def test_a_picture_is_grabbed_at_once_and_a_finger_lifts_after_its_hold() -> None:
+    """INBOX 1470: a quick press-and-drag on a picture was the browser's own
+    image drag; a finger on a card could not drag at all."""
+    out = run(FILES, STUBS + """
+    const card = { card: {}, ref: {} };
+    OBJ_MODES.reorder = { grab: () => ({}) };
+    window.getSelection = () => ({ isCollapsed: true, rangeCount: 0 });
+    objCardAt = () => card;
+    const down = (tagName, pointerType) => objDragSeed({ button: 0, pointerType, target: { tagName, closest: () => null }, clientX: 1, clientY: 1 });
+    const g = { x0: 100, y0: 100, t0: 1000, grip: true, touch: true };
+    __out({
+      picture: down("IMG", "mouse").grip,
+      words: down("SPAN", "mouse").grip,
+      fingerOnPicture: down("IMG", "touch").grip,
+      fingerSeeded: Boolean(down("SPAN", "touch")),
+      fingerEarlyMove: objDragVerdict(g, { clientX: 130, clientY: 100, timeStamp: 1100 }),
+      fingerJitter: objDragVerdict(g, { clientX: 108, clientY: 100, timeStamp: 1100 }),
+    });
+    """)
+    assert out == {"picture": True, "words": False, "fingerOnPicture": False, "fingerSeeded": True, "fingerEarlyMove": "swipe", "fingerJitter": "wait"}

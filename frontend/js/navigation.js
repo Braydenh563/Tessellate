@@ -40,6 +40,11 @@ function wireLongPress(target, handler, { selector = null } = {}) {
       };
       const timer = setTimeout(() => {
         cancel();
+        //: A card the hold has lifted (obj-drag.js) and moved is a drag; one held still is this menu.
+        if (typeof objDragNow !== "undefined" && objDragNow?.live) {
+          if (objDragNow.moved) return;
+          objDragFinish(true);
+        }
         //: **The lift-off is swallowed.** A hold ends like every other touch,
         //: with a click, and the element under it is the element the hold was
         //: about: measured on the graph at 390, holding a node opened its menu
