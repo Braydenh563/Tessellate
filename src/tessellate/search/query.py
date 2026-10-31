@@ -478,7 +478,12 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     text, without = _take_negated(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
     operator_dates = since is not None or until is not None
+    kept = remainder
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
+    if phrase and recognise.a_topic_phrase(text, phrase):
+        #: "what do I know about Christmas": the holiday is what the notes
+        #: talk about, so it is searched for, not read as a day of writing.
+        remainder, since, until, phrase, soft = kept, None, None, "", False
 
     subject = _strip_scaffolding(remainder)
     #: **A window that has not happened yet filters nothing**: no note was

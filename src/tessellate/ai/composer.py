@@ -454,7 +454,8 @@ _ASKING_WORDS = frozenset(
     #: last week" was told "No note found brings up last"). The window they
     #: name is read by `when.window`; the subject is what is left.
     """last ago today yesterday tonight lately earlier summarise summarize
-    summary done pattern patterns habit habits trend trends""".split()
+    summary done pattern patterns habit habits trend trends
+    else another rest total version gist tldr""".split()
 )
 #: A time phrase names a window, not a subject: "last week", "3 days ago",
 #: "this month" come off whole before the subject is read, so "week 4"
@@ -3505,6 +3506,14 @@ _PRONOUN = re.compile(r"\b(it|that|this|them|those|they)\b", re.I)
 #: with an asking word and either says "it" or has no subject of its own.
 _ASKS_SLOT = re.compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
 _SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
+#: A question about a total or an instance with no subject of its own:
+#: "how far in total", "what's the total", "when was the last one".
+_TOTAL_WORDS = frozenset({"far", "much", "many", "long", "total", "last", "latest", "first", "next", "previous", "one", "altogether"})
+_TOTAL_ASK = re.compile(
+    r"^(?:and |so |ok |okay )*(?:what|when|where|how)\b(?!.*(?-i:[A-Z]\w|\d))"
+    r"(?=.*\b(?:in total|in all|altogether|the total|(?:the )?(?:last|latest|first|next|previous) one)\b)[^.]*$",
+    re.I,
+)
 #: A pronoun that is the point of the phrase, not a reference to a note.
 _NOT_REFERRING = re.compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
 
@@ -3661,7 +3670,8 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
     if names and (index == -1 or index < len(names)):
         resolved = text[: ordinal.start()] + f"“{names[index]}”" + text[ordinal.end():]
         return FollowOn(resolved, previous, "", "ordinal")
-    return None
+    #: No list to count in: "when was the last one" may still lean on the subject.
+    return _NOT_THIS
 
 
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -3779,13 +3789,37 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return None
 
 
+#: "what should I get her", "what else do I know about him": a person the turn
+#: before named (audit 1031 C12).
+_PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
+
+
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
-    if not (_PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]):
+    bare = _PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]
+    #: "how much does it cost", "when is it due": the slot word is not a subject.
+    leans = refers_back(text) and _SLOT_PRONOUN.search(text)
+    person = _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:])
+    #: "what's the total", "how far in total": no subject of its own at all.
+    subjectless = bool(_TOTAL_ASK.search(text)) and not (bare or leans or person or _PRONOUN.search(text)) and not (
+        set(subject_terms(text)) - _TOTAL_WORDS
+    )
+    if not (bare or leans or person or subjectless):
         return None
     subject = _asked_span(previous, subject_terms(previous))
     if not subject:
         return None
-    return FollowOn(_PRONOUN.sub(lambda _match: subject, text, count=1), previous, "", "pronoun")
+    article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
+    named = (article.group(0).strip() + " " if article else "") + subject
+    if subjectless:
+        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
+    pattern = _PRONOUN if bare else (_SLOT_PRONOUN if leans else _PERSON_PRONOUN)
+
+    def said(match: re.Match) -> str:
+        #: "her birthday" is "Sara's birthday"; "get her" is "get Sara".
+        possessive = match.group(0).lower() in ("his", "hers") or (match.group(0).lower() == "her" and bool(text[match.end():].strip(" ?.!")))
+        return named + ("'s" if possessive and pattern is _PERSON_PRONOUN else "")
+
+    return FollowOn(pattern.sub(said, text, count=1), previous, "", "pronoun")
 
 
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
@@ -4494,10 +4528,29 @@ def _subject_left(question: str, terms: list[str], phrase: str) -> bool:
     return bool([t for t in left if t.lower() not in _RECALL_VERBS] if _RECALL.search(question or "") else left)
 
 
+def window_verb_stems(question: str, phrase: str) -> list[str]:
+    """The words of a question that is not a recall but names a window and no
+    subject ("how much did I save in October": save): what a note in the
+    window must hold to be read, the phrase's own words and the asking words
+    left out."""
+    said = {_stem(w) for w in re.findall(r"[\w']+", (phrase or "").lower())}
+    return [st for st in _words(question) if st not in said and st not in _ASKING_WORDS and len(st) > 2]
+
+
+def holds_any(stems: list[str], text: str) -> bool:
+    """Whether `text` holds any of the stems, or a word that starts with one
+    ("save" in "saved")."""
+    words = set(_words(text))
+    return any(_holds(st, words) or any(w.startswith(st) for w in words) for st in stems)
+
+
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
     """The window the phrase names (None for none, or for one still ahead
     that sits beside a subject) and the subject terms left once the phrase's
     own words are taken out."""
+    if phrase and rec.a_topic_phrase(question, phrase):
+        said = [w for w in re.findall(r"[\w']+", phrase.lower()) if w not in rec.PHRASE_FILLER]
+        return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today and _subject_left(question, terms, phrase):
         return None, terms

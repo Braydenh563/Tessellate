@@ -1469,7 +1469,11 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
     extra = _picture_notes(session, composer.subject_terms(question))
     subject = composer_overview.topic(question)
     if subject:
-        said = search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT) + _filed_under(session, composer.subject_terms(subject))
+        #: The notes filed under the subject (its category, its tag) come first:
+        #: a keyword rank by how often a word repeats put a note that says
+        #: "reading" nine times above the Books note (audit 1031 C4).
+        filed = _filed_under(session, composer.subject_terms(subject))
+        said = filed + search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
         extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
     seen = {entry.id for entry in entries}
     out = list(entries)
@@ -1709,6 +1713,14 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
     asked = composer.plan(question, user_now(deps.get_config()).date())
     if asked.kind == "recall" and asked.window:
         found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=question_noise.asks_archived(question))
+        found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    elif asked.window and not found.entries and not asked.terms and asked.window_phrase:
+        #: "How much did I save in October": the question's own verb is no
+        #: term, so nothing was searched; the window's notes are the pool the
+        #: readers ask (audit 1031 C3).
+        stems = composer.window_verb_stems(question, asked.window_phrase)
+        window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=question_noise.asks_archived(question))
+        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
         found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
     elif asked.window and found.entries:
         #: **A subject inside a window keeps the window** (1324): "what did I
@@ -3505,7 +3517,9 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     if ollama_running and not _composed(req, ollama_running):
         return librarian.NO_RESULTS_MESSAGE
     planned = composer.plan(req.question or "")
-    if not planned.window or planned.terms or not planned.window_phrase:
+    #: Only a recall ("what did I write in May") says nothing was written; "how
+    #: much did I save in May" asks about what the notes hold (audit 1031 C3).
+    if not planned.window or planned.terms or not planned.window_phrase or planned.kind != "recall":
         return librarian.NO_RESULTS_MESSAGE
     from sqlalchemy import func
 

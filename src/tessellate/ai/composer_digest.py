@@ -658,7 +658,8 @@ shows_the_lot = filed_name.shows_the_lot
 
 _ASKS = {
     "compare": re.compile(r"^\s*+(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
-    "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
+    #: "who is coming for Christmas" asks who does something: its first word is a verb in -ing, not a name.
+    "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?!\w+ing\s)(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
     "when": re.compile(r"^\s*(?:when|what (?:days?|dates?)|which (?:days?|dates?))\b", re.I),
     #: "How many notes mention Lisbon" counts notes: the overview, which leads
     #: with that count (2026-10-30 sweep: it answered with a dated line).
@@ -1884,6 +1885,22 @@ def _also_held(held: list[Fact]) -> list[Fact]:
     return [held[i] for i in sorted(ranked[:ALSO_ITEMS])]
 
 
+def _one_note_lines(groups: dict[str, list[Fact]]) -> list[tuple[str, list[Fact]]]:
+    """The groups as lines, the unlabelled ones a line a note: a sentence
+    never holds more than one note's words (audit 1031 C5: the words of three
+    notes were glued into one sentence with commas)."""
+    items: list[tuple[str, list[Fact]]] = []
+    for label, held in groups.items():
+        if label == PHRASES["also"] and len({f.view.id for f in held}) > 1:
+            by_note: dict[int, list[Fact]] = {}
+            for f in held:
+                by_note.setdefault(f.view.id, []).append(f)
+            items += [(label, h) for h in by_note.values()]
+        else:
+            items.append((label, held))
+    return items
+
+
 def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = None, by_day: date | None = None, more: bool = False, weave: bool = False) -> int:
     """Facts grouped under their labels, oldest note first, one line a label;
     the line carries its first note for its one citation mark."""
@@ -1891,7 +1908,7 @@ def _lines(out: _Out, facts: list[Fact], limit: int, skip: set[tuple] | None = N
     shown = 0
     seen_days: list[date] = []
     last = None
-    for i, (label, held) in enumerate(list(groups.items())[: limit + (MORE_LINES if more else 0)]):
+    for i, (label, held) in enumerate(_one_note_lines(groups)[: limit + (MORE_LINES if more else 0)]):
         held = _also_held(held) if label == PHRASES["also"] else held
         written = held[0].view.written
         #: The time since the latest note told above that came before this
@@ -3225,6 +3242,9 @@ _PERFECT = re.compile(r"(?:'ve|(?<!\s)\s+have|(?<!\s)\s+has)\s+(?=(?:\w+ed|bough
 _PARTICIPLE = {"gone": "went", "taken": "took", "seen": "saw", "done": "did", "written": "wrote"}
 
 
+_AIMED_AT = re.compile(r"\b(?:for|until|till|by|before|ahead of|in time for)\s*$", re.I)
+
+
 def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     """"On 17 July you bought a gaming mouse, discounted from $150 to $68.":
     the day first, then what happened, in the past and without the note's
@@ -3246,6 +3266,11 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     #: tomatoes on 5 October" in a note of 30 October is this year's 5 October,
     #: never next year's (2026-10-30 sweep).
     for found in _spans(body, lead.view.written, "past"):
+        #: "Called mum, she is coming for Christmas": a day a preposition of
+        #: aim leads is where something is headed, not the day it happened
+        #: (audit 1031 C9); the note's own day stands.
+        if _AIMED_AT.search(body[:found.start]):
+            continue
         if found.kind in ("date", "datetime"):
             value = found.value.date() if isinstance(found.value, datetime) else found.value
             if isinstance(value, date):
@@ -3972,7 +3997,10 @@ def _defines(view, words: list[str]) -> int:
     if title and (title == " ".join(words).lower() or composer._words(title) == composer._words(" ".join(words))):
         return 2
     said = re.compile(r"^(?:the\s+)?" + r"\s+".join(re.escape(t) for t in words) + r"\s+(?:is|are|was|were|means|refers to)\b", re.I)
-    return 1 if any(said.match(x.text) for x in view.sentences[:2]) else 0
+    #: Filed under the subject (its category, its tag) is a definition too
+    #: (audit 1031 C4: the Books note leads "what do I know about reading").
+    filed = bool(getattr(view, "filed_words", None)) and all(composer._stem(t) in view.filed_words for t in words)  # noqa: SLF001
+    return 1 if filed or any(said.match(x.text) for x in view.sentences[:2]) else 0
 
 
 def _defining_first(asked: str, members: list) -> list:

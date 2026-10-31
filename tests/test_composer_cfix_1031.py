@@ -73,3 +73,95 @@ def test_a_relation_is_never_a_stale_value(old, new):
     notes = [{"content": old, "created_at": "2026-01-01"}, {"content": new, "created_at": "2026-06-01"}]
     kept, replaced = supersede.current("who is " + old.split()[0], notes)
     assert len(kept) == 2 and not replaced
+
+
+# C3. A holiday or month word in a topic question is searched for, not read as a day of writing.
+
+@pytest.mark.parametrize("question", [
+    "what do I know about Christmas", "tell me about Christmas", "anything about Christmas", "what have I written about Christmas",
+    "what do I know about christmas", "who is coming for Christmas", "who's coming for Christmas", "what do my notes say about Christmas",
+])
+def test_a_holiday_in_a_topic_question_finds_the_notes_that_hold_it(notebook, question):
+    said, _ = notebook(question)
+    assert "coming for Christmas" in said, said
+    assert "Nothing went" not in said and "can't find" not in said and "couldn't find" not in said, said
+
+
+@pytest.mark.parametrize("question", ["how much did I save in October", "how much have I saved in October", "how much did I save in October?"])
+def test_a_verb_and_a_month_read_the_months_notes_that_hold_the_verb(big_notebook, question):
+    said, _ = big_notebook(question)
+    assert "$500" in said and "can't find" not in said, said
+
+
+@pytest.mark.parametrize("phrase, said", [
+    ("Christmas", "at Christmas"), ("christmas", "at Christmas"), ("Easter", "at Easter"), ("the weekend", "over the weekend"),
+    ("in October", "in October"), ("last week", "last week"), ("20 October", "on 20 October"), ("Halloween", "on Halloween"),
+])
+def test_a_time_phrase_carries_its_preposition(phrase, said):
+    from tessellate.ai import composer
+
+    assert composer.window_said(phrase) == said
+
+
+@pytest.mark.parametrize("question, kept", [
+    ("what did I write in October", True), ("what did I write last week", True), ("what did I do at Christmas", True),
+    ("what do I know about last week", True), ("what do I know about Christmas", False), ("who is coming for Christmas", False),
+    ("what do I know about the weekend", False), ("what do I know about October", False),
+])
+def test_only_a_writing_question_keeps_the_window(question, kept):
+    from datetime import date
+
+    from tessellate.ai import composer
+
+    assert bool(composer.plan(question, date(2026, 10, 31)).window) is kept
+
+
+def test_the_search_does_not_read_a_topic_holiday_as_a_range():
+    from datetime import date
+
+    from tessellate.search import query
+
+    for question in ("who is coming for Christmas", "what do I know about Christmas", "tell me about Easter"):
+        understood = query.understand(question, date(2026, 10, 31))
+        assert not understood.has_range and understood.subject, question
+    assert query.understand("what did I do at Christmas", date(2026, 10, 31)).has_range
+
+
+# C12. A follow-on keeps its subject: a pronoun, a person, a total, "the last one".
+
+@pytest.mark.parametrize("question, previous, said", [
+    ("how much does it cost", "tell me about the Lisbon trip", "how much does the Lisbon trip cost"),
+    ("when is it", "tell me about the Lisbon trip", "when is the Lisbon trip"),
+    ("what should I get her", "who is Sara", "what should I get Sara"),
+    ("when is her birthday", "who is Sara", "when is Sara's birthday"),
+    ("what else do I know about her", "who is Sara", "what else do I know about Sara"),
+    ("where does she live", "who is Sara", "where does Sara live"),
+    ("what does he do", "who is Tom", "what does Tom do"),
+    ("how far in total", "what do I know about running", "how far in total for running?"),
+    ("what's the total", "what do I know about running", "what's the total for running?"),
+    ("when was the last one", "what do I know about running", "when was the last one for running?"),
+])
+def test_a_follow_on_names_what_it_leans_on(question, previous, said):
+    from tessellate.ai import composer
+
+    got = composer.follow_on(question, [{"question": previous, "answer": "x"}])
+    assert got is not None and got.question == said, got
+
+
+@pytest.mark.parametrize("question", [
+    "how far did I run in total", "when was the last one with Tom", "what time", "what is the weather", "who is Sara",
+])
+def test_a_question_with_its_own_subject_stands_alone(question):
+    from tessellate.ai import composer
+
+    got = composer.follow_on(question, [{"question": "what do I know about running", "answer": "x"}])
+    assert got is None or got.kind != "pronoun", got
+
+
+# C9. A day a preposition of aim leads is where something is headed, not the day it happened.
+
+@pytest.mark.parametrize("question", ["when did I call mum", "when did I last call mum", "when did I phone mum"])
+def test_a_day_the_sentence_aims_at_is_not_the_day_of_the_event(notebook, question):
+    said, _ = notebook(question)
+    assert "26 October" in said and "2025" not in said and "25 December" not in said, said
+    assert "coming for Christmas" in said, said

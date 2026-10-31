@@ -205,7 +205,8 @@ def window(question: str, today: date) -> tuple[date, date, str] | None:
     if span:
         return span
     for _s, _e, phrase in when_words.find(low):
-        found = _dated_phrase(phrase, low, today)
+        #: "anything about Christmas" is a topic to search, not a day to list.
+        found = None if recognise.a_topic_phrase(low, phrase, holiday=False) else _dated_phrase(phrase, low, today)
         if not found:
             continue
         if found[1] < today:
