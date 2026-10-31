@@ -128,3 +128,23 @@ def test_render_functions_do_not_add_page_level_listeners():
                 if re.search(r"\b(document|window)\.addEventListener\(", line) and "once" not in line:
                     found.append(f"{path.name}:{fn.group(1)}")
     assert found == ["documents.js:mountDocToolbarControls"], found
+
+
+def test_link_offers_wait_two_seconds_in_the_middle_of_a_sentence():
+    # One typed line sent three POSTs, one per 700 ms pause (DC12).
+    js = frontend_text("documents-prose.js")
+    quiet = _between(js, "function docLinkOfferQuiet(text) {", "//: The server's own cap")
+    assert "text.slice(-40)" in quiet  # the tail only: the text can be 400,000 characters
+    assert "DOC_LINK_OFFER_MIDWAY_MS" in quiet and "DOC_LINK_OFFER_QUIET_MS" in quiet
+    assert "docLinkOfferQuiet(text));" in js
+
+
+def test_the_open_suggestions_panel_is_redrawn_at_most_every_400ms_while_typing():
+    # 36 keys in a 58,000-character document with the panel open: 26 redraws of the
+    # rows and 15 s of long tasks at 4x (DC3).
+    js = frontend_text("documents.js")
+    soon = _between(js, "function docProsePanelSoon() {", "function renderDocProsePanel() {")
+    assert "docCmView?.hasFocus" in soon  # a click in the panel is not typing: at once
+    assert "DOC_PROSE_PANEL_GAP_MS" in soon and "clearTimeout(soon.timer)" in soon
+    render = _between(js, "function renderDocProse() {", "function docProsePanelSoon() {")
+    assert "docProsePanelSoon();" in render and "renderDocProsePanel();" not in render

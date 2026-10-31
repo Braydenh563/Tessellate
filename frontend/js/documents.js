@@ -18261,7 +18261,28 @@ function renderDocProse() {
   //: screenful whatever the document's length.
   docCmRepaintFindings();
   renderDocSuggestState();
-  if (!panel.classList.contains("hidden")) renderDocProsePanel();
+  if (!panel.classList.contains("hidden")) docProsePanelSoon();
+}
+
+//: **While the writer types, the open panel is redrawn at most every 400 ms**
+//: (perf 1031 row 23, DC3: a 58,000-character document with the panel open,
+//: 36 keys at 4x: 26 redraws of the rows, 95 long tasks, 15 s of them). The
+//: first redraw is at once and the last one always lands; a click in the panel
+//: (Fix, Dismiss) is not typing and redraws at once.
+const DOC_PROSE_PANEL_GAP_MS = 400;
+function docProsePanelSoon() {
+  const soon = docProsePanelSoon;
+  clearTimeout(soon.timer);
+  const wait = docCmView?.hasFocus ? (soon.at || 0) + DOC_PROSE_PANEL_GAP_MS - performance.now() : 0;
+  if (!(wait > 0)) {
+    soon.at = performance.now();
+    renderDocProsePanel();
+    return;
+  }
+  soon.timer = setTimeout(() => {
+    soon.at = performance.now();
+    renderDocProsePanel();
+  }, wait);
 }
 
 // The prose tools (grammar, suggestion mode, the accessibility check, read

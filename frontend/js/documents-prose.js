@@ -324,8 +324,17 @@ function docGrammarRequest(text) {
 // the vendored FlashText) answers the first mention of each; the offer is a
 // finding like any other, with the `[[link]]` as its one answer. It is never
 // applied by "Fix all": a link is the writer's choice, not a correction.
-//: The quiet before the text is sent: one ask per pause, not one per key.
+//: The quiet before the text is sent: one ask per pause, not one per key. A
+//: sentence or a line just ended is the natural place to ask (700 ms); in the
+//: middle of one the writer is still going, so it waits 2 s (perf 1031 row 23,
+//: DC12: one typed line sent three POSTs, one per 700 ms pause).
 const DOC_LINK_OFFER_QUIET_MS = 700;
+const DOC_LINK_OFFER_MIDWAY_MS = 2000;
+//: Only the tail is read: the text can be 400,000 characters.
+function docLinkOfferQuiet(text) {
+  const tail = text.slice(-40);
+  return /[.!?]\s*$/.test(tail) || /\n\s*$/.test(tail) ? DOC_LINK_OFFER_QUIET_MS : DOC_LINK_OFFER_MIDWAY_MS;
+}
 //: The server's own cap on the text it will scan.
 const DOC_LINK_OFFER_MAX_CHARS = 400000;
 //: The last answer, for the document and text it was for. `timer` is the
@@ -415,7 +424,7 @@ function docLinkOfferRequest(text) {
   if (!text || !text.trim() || text.length > DOC_LINK_OFFER_MAX_CHARS) return;
   if (state.asking === text || (state.text === text && state.doc === docId)) return;
   clearTimeout(state.timer);
-  state.timer = setTimeout(() => docLinkOfferAsk(text, docId), DOC_LINK_OFFER_QUIET_MS);
+  state.timer = setTimeout(() => docLinkOfferAsk(text, docId), docLinkOfferQuiet(text));
 }
 
 //: The last answer moved with the edits since, and only for the document it
