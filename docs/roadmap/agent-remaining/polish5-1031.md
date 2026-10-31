@@ -18,3 +18,7 @@ Left, from labels-1031 and blindux-1031 (not built, one line each):
 - Notes sub-tab reopens on Your notes (navigation.js `showNotesSection`), Notes tab drops you on the list, `#notes-tidy` icon-only (a width decision), 'travel' chip, 'Mentions Jun 14', 'Open' for two states: design calls.
 - Drag reorder on Boards and Media: obj-*.js, the new agent's. Library list hints measured here, fine.
 - Not verified: a model-filed note's 'Go to it' beside Write another (needs a model); the notifications list with a real model.
+
+Left, from wbopen-1031 (none cheap; all L, a decision, or not verifiable here): 807 merged cells (whiteboard-format.js:1491), 819 New split button (decide the one-press default; index.html at its byte cap), 855 document comments in the board's thread shape (documents.js `renderDocComments`), 856 voice strings (112 files), 858 hover frame at 2,000 notes (needs an idle machine), 860 owner hardware.
+Found: the two base failures wbopen and blindux noted (test_guide_social_1414 closing, test_scratchpad_size) pass on this head.
+Server on 8825 (pid via `pgrep -f '[u]vicorn.*--port 8825'`) is still up; kill it by PID.
