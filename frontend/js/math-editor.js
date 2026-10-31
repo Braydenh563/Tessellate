@@ -326,13 +326,20 @@ function mathEditorSearch(onInput) {
   return field;
 }
 
-//: Ctrl+Enter inserts, from the field or the LaTeX box.
-function mathEditorKeys(insert) {
+//: Ctrl+Enter inserts, from the field or the LaTeX box; Escape, taken before
+//: the field sees it (MathLive's own Escape is its LaTeX-entry switch, left
+//: alone while the field is in that mode), closes the panel.
+function mathEditorKeys(paneOf, insert, escape) {
   return (event) => {
-    if (event.key !== "Enter" || !(event.ctrlKey || event.metaKey)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    insert();
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      event.stopPropagation();
+      insert();
+    } else if (event.key === "Escape" && paneOf().field.mode !== "latex") {
+      event.preventDefault();
+      event.stopPropagation();
+      escape();
+    }
   };
 }
 
@@ -433,7 +440,8 @@ function openMathEditor({ target = null, anchor = null } = {}) {
       else pane.focus();
     },
   };
-  const pane = mathFieldPane({ tex: start.tex, label: "Equation", onKey: mathEditorKeys(() => view.insert()) });
+  const escape = () => (helpBody.classList.contains("hidden") ? close() : help.click());
+  const pane = mathFieldPane({ tex: start.tex, label: "Equation", onKey: mathEditorKeys(() => pane, () => view.insert(), escape) });
   pane.field.setAttribute("aria-describedby", "math-editor-help");
   const mode = mathEditorModes(display, (on, refocus = true) => {
     display = on;
@@ -456,10 +464,10 @@ function openMathEditor({ target = null, anchor = null } = {}) {
   //: letter here must not reach the canvas or the editor behind it.
   panel.addEventListener("keydown", (event) => {
     event.stopPropagation();
-    if (event.key !== "Escape" || pane.field.mode === "latex") return;
+    //: Escape from the field itself was taken (or left to MathLive) above.
+    if (event.key !== "Escape" || event.target === pane.field) return;
     event.preventDefault();
-    if (!helpBody.classList.contains("hidden")) help.click();
-    else close();
+    escape();
   });
   //: An outside press closes it only while nothing has been typed: a
   //: half-written equation is not thrown away by a stray click.

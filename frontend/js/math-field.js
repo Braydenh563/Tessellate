@@ -206,8 +206,12 @@ function mathFieldPane({ tex = "", label = "Equation", onChange = () => {}, onKe
       box.value = next;
     },
     focus: () => field.focus({ preventScroll: true }),
+    //: A structure's first box takes the selection; with none it is a box
+    //: like the rest (MathLive's `#@` would otherwise reach back and wrap the
+    //: last thing typed, which Word's gallery never does).
     insert: (template) => {
-      field.insert(template, { format: "latex", selectionMode: "placeholder", focus: true, feedback: false });
+      const text = field.selectionIsCollapsed ? template.replace(/#@/g, "#?") : template;
+      field.insert(text, { format: "latex", selectionMode: "placeholder", focus: true, feedback: false });
     },
   };
 }
