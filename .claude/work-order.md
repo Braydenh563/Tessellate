@@ -33,7 +33,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Notes list and Timeline windowing, S16 and S53 (agent listwin-1031)
 - [x] Timeline route at 5,000 notes (19.5 s first page), entries and library paging (agent tlspeed-1031)
 - [x] Dashboard revisit shift 0.21, Escape in Settings help popovers (agent dashcls-1031)
-- [ ] OPEN 813 mind map add-child latency at 390 (agent wbpress-1031)
+- [x] OPEN 813 mind map add-child latency at 390 (agent wbpress-1031)
 - [x] Learnability: blind test of six core goals (blind-tester)
 - [x] Ask answer foot sections with no model, INBOX 1466 rest (agent askfoot-1031)
 - [x] Review of the 1031 merges (reviewer: 2 high, 5 med, 4 low) and UX audit of drag, tray, Ask foot (ux-auditor)
@@ -53,8 +53,11 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Red tests after bootlazy and tlspeed merges, boot gzip under cap (agent redfix-1031)
 - [x] Tidy link reasons apply and undo again (agent tidyfix-1031)
 - [x] CodeQL 1876 to 1884 fixed and threads resolved
-- [ ] Blind test 1, 2, 11: mind map template focus, Dashboard blank after unlock (agent blindfix-1031)
-- [ ] Blind test 3 to 10: Ask "only note", custom order hint, Guide topics, questions feedback, notifications (agent blindux-1031)
+- [x] Blind test 1, 2, 11: mind map template focus, Dashboard blank after unlock (agent blindfix-1031)
+- [x] Blind test 3 to 10: Ask "only note", custom order hint, Guide topics, questions feedback, notifications (agent blindux-1031)
+- [ ] Mind map press at 390/200 under 80 ms: text-edit flush, incremental render, edge cache (agent wbpress-1031 round 2)
+- [ ] Composer leftovers: Z58 rest, run distance naming, closing quotes, casing, overview routing, F13, F14 (agent composer3-1031)
+- [ ] Blind-test leftovers: double first-steps fetch, bell Get started, unclear labels, back to writing, real drag (agent labels-1031)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
