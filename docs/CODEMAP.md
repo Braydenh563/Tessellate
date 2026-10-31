@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6898, frontend ids 2593, CSS sections 506, backend routes 632, backend modules 7685, test files 1626, tests 14127, plan headings 990.
+Counts: frontend functions 6898, frontend ids 2593, CSS sections 506, backend routes 632, backend modules 7686, test files 1627, tests 14131, plan headings 990.
 
 ## Frontend functions (6898)
 
@@ -10963,7 +10963,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/companion-travel-lazy.css | 106 |
 | frontend/css/dash-night-lazy.css | 29 |
 | frontend/css/dash-orphans-lazy.css | 57 |
-| frontend/css/desk-companion-lazy.css | 135 |
+| frontend/css/desk-companion-lazy.css | 150 |
 | frontend/css/file-drop-lazy.css | 51 |
 | frontend/css/first-run-lazy.css | 123 |
 | frontend/css/forced-colors-lazy.css | 28 |
@@ -11643,7 +11643,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7685)
+## Backend modules (7686)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -20356,32 +20356,33 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `title` | src/tessellate/entry/link_wording.py:203 |
 | `tokens` | src/tessellate/entry/link_wording.py:118 |
 
-### src/tessellate/entry/manager.py (140)
+### src/tessellate/entry/manager.py (141)
 
 | Name | File:line |
 |---|---|
 | `_TagCache` | src/tessellate/entry/manager.py:1584 |
 | `_board_type_of` | src/tessellate/entry/manager.py:1097 |
 | `_deduce_reason` | src/tessellate/entry/manager.py:1867 |
-| `_encrypt_history` | src/tessellate/entry/manager.py:2923 |
+| `_encrypt_history` | src/tessellate/entry/manager.py:2942 |
 | `_ensure_tag_cache_reset_registered` | src/tessellate/entry/manager.py:1624 |
 | `_first_content_line` | src/tessellate/entry/manager.py:2781 |
 | `_forget_board_thumbs` | src/tessellate/entry/manager.py:1131 |
 | `_hard_delete` | src/tessellate/entry/manager.py:1145 |
 | `_heading_text` | src/tessellate/entry/manager.py:2660 |
-| `_ids_in` | src/tessellate/entry/manager.py:3084 |
-| `_json_list` | src/tessellate/entry/manager.py:3098 |
-| `_links_of` | src/tessellate/entry/manager.py:2954 |
+| `_ids_in` | src/tessellate/entry/manager.py:3103 |
+| `_json_list` | src/tessellate/entry/manager.py:3117 |
+| `_links_of` | src/tessellate/entry/manager.py:2973 |
 | `_list_entries_filter` | src/tessellate/entry/manager.py:326 |
 | `_md_links` | src/tessellate/entry/manager.py:2684 |
-| `_quotes` | src/tessellate/entry/manager.py:3080 |
+| `_picture_words` | src/tessellate/entry/manager.py:2903 |
+| `_quotes` | src/tessellate/entry/manager.py:3099 |
 | `_reassign` | src/tessellate/entry/manager.py:2589 |
-| `_redact_answers_quoting` | src/tessellate/entry/manager.py:3106 |
+| `_redact_answers_quoting` | src/tessellate/entry/manager.py:3125 |
 | `_redact_link_audit` | src/tessellate/entry/manager.py:1979 |
 | `_restale_category_vectors` | src/tessellate/entry/manager.py:2502 |
 | `_retag` | src/tessellate/entry/manager.py:1717 |
 | `_retag_entry` | src/tessellate/entry/manager.py:1696 |
-| `_seal_link_reasons` | src/tessellate/entry/manager.py:2964 |
+| `_seal_link_reasons` | src/tessellate/entry/manager.py:2983 |
 | `_seal_props` | src/tessellate/entry/manager.py:1950 |
 | `_seal_reason` | src/tessellate/entry/manager.py:1923 |
 | `_set_stored_props` | src/tessellate/entry/manager.py:1962 |
@@ -20390,11 +20391,11 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_split_block` | src/tessellate/entry/manager.py:2790 |
 | `_tag_fingerprint` | src/tessellate/entry/manager.py:1602 |
 | `_touches_private` | src/tessellate/entry/manager.py:1970 |
-| `_unseal_link_reasons` | src/tessellate/entry/manager.py:2983 |
+| `_unseal_link_reasons` | src/tessellate/entry/manager.py:3002 |
 | `_update_entry_fields` | src/tessellate/entry/manager.py:656 |
 | `_upload_path` | src/tessellate/entry/manager.py:1467 |
-| `_wiki_name_pattern` | src/tessellate/entry/manager.py:3464 |
-| `_word_runs` | src/tessellate/entry/manager.py:3075 |
+| `_wiki_name_pattern` | src/tessellate/entry/manager.py:3483 |
+| `_word_runs` | src/tessellate/entry/manager.py:3094 |
 | `add_attachment` | src/tessellate/entry/manager.py:1410 |
 | `all_categories` | src/tessellate/entry/manager.py:2457 |
 | `all_tags` | src/tessellate/entry/manager.py:1649 |
@@ -20409,7 +20410,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `came_from_outside` | src/tessellate/entry/manager.py:2600 |
 | `category_name_for` | src/tessellate/entry/manager.py:2402 |
 | `category_space` | src/tessellate/entry/manager.py:125 |
-| `content_for_entry` | src/tessellate/entry/manager.py:2907 |
+| `content_for_entry` | src/tessellate/entry/manager.py:2926 |
 | `count_archived_entries` | src/tessellate/entry/manager.py:537 |
 | `count_deleted_entries` | src/tessellate/entry/manager.py:514 |
 | `count_notes` | src/tessellate/entry/manager.py:417 |
@@ -20431,7 +20432,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `entry_space` | src/tessellate/entry/manager.py:144 |
 | `entry_tags` | src/tessellate/entry/manager.py:2432 |
 | `extract_title` | src/tessellate/entry/manager.py:2762 |
-| `find_by_wiki_name` | src/tessellate/entry/manager.py:3322 |
+| `find_by_wiki_name` | src/tessellate/entry/manager.py:3341 |
 | `forget_relation_types` | src/tessellate/entry/manager.py:2266 |
 | `get_entry` | src/tessellate/entry/manager.py:545 |
 | `get_or_create_category` | src/tessellate/entry/manager.py:149 |
@@ -20456,9 +20457,9 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `readable_content` | src/tessellate/entry/manager.py:2639 |
 | `record_dates` | src/tessellate/entry/manager.py:786 |
 | `record_filing` | src/tessellate/entry/manager.py:574 |
-| `record_revision` | src/tessellate/entry/manager.py:3601 |
+| `record_revision` | src/tessellate/entry/manager.py:3620 |
 | `reindex_properties` | src/tessellate/entry/manager.py:746 |
-| `rekey_private_extras` | src/tessellate/entry/manager.py:2996 |
+| `rekey_private_extras` | src/tessellate/entry/manager.py:3015 |
 | `relation_label` | src/tessellate/entry/manager.py:2277 |
 | `relation_types` | src/tessellate/entry/manager.py:2231 |
 | `remove_link` | src/tessellate/entry/manager.py:2182 |
@@ -20469,37 +20470,37 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `rename_tag` | src/tessellate/entry/manager.py:1768 |
 | `rename_tags` | src/tessellate/entry/manager.py:1738 |
 | `reset_tag_cache` | src/tessellate/entry/manager.py:1618 |
-| `resolve_links_to` | src/tessellate/entry/manager.py:3406 |
+| `resolve_links_to` | src/tessellate/entry/manager.py:3425 |
 | `restore_entry` | src/tessellate/entry/manager.py:1022 |
 | `review_queue_count` | src/tessellate/entry/manager.py:67 |
-| `revisions_for` | src/tessellate/entry/manager.py:3639 |
-| `rewrite_wiki_name` | src/tessellate/entry/manager.py:3485 |
-| `scrub_private_leftovers` | src/tessellate/entry/manager.py:3238 |
+| `revisions_for` | src/tessellate/entry/manager.py:3658 |
+| `rewrite_wiki_name` | src/tessellate/entry/manager.py:3504 |
+| `scrub_private_leftovers` | src/tessellate/entry/manager.py:3257 |
 | `seal_private_events` | src/tessellate/entry/manager.py:1108 |
-| `seed_example_notes` | src/tessellate/entry/manager.py:3565 |
+| `seed_example_notes` | src/tessellate/entry/manager.py:3584 |
 | `set_category` | src/tessellate/entry/manager.py:227 |
 | `set_link_props` | src/tessellate/entry/manager.py:2289 |
 | `set_link_reason` | src/tessellate/entry/manager.py:2209 |
 | `set_link_two_way` | src/tessellate/entry/manager.py:2300 |
 | `set_link_type` | src/tessellate/entry/manager.py:2325 |
-| `set_private` | src/tessellate/entry/manager.py:3164 |
+| `set_private` | src/tessellate/entry/manager.py:3183 |
 | `shown_tags` | src/tessellate/entry/manager.py:2447 |
 | `soft_delete_entry` | src/tessellate/entry/manager.py:1004 |
-| `strip_bidi` | src/tessellate/entry/manager.py:3297 |
-| `strip_inline_markdown` | src/tessellate/entry/manager.py:2897 |
-| `sync_wiki_links` | src/tessellate/entry/manager.py:3430 |
+| `strip_bidi` | src/tessellate/entry/manager.py:3316 |
+| `strip_inline_markdown` | src/tessellate/entry/manager.py:2912 |
+| `sync_wiki_links` | src/tessellate/entry/manager.py:3449 |
 | `tags_from_json` | src/tessellate/entry/manager.py:2421 |
 | `unarchive_entry` | src/tessellate/entry/manager.py:1057 |
 | `undo_tag_edit` | src/tessellate/entry/manager.py:1811 |
 | `unlink_document` | src/tessellate/entry/manager.py:893 |
 | `update_entry` | src/tessellate/entry/manager.py:605 |
 | `validate_attachment_filename` | src/tessellate/entry/manager.py:1507 |
-| `wiki_holders` | src/tessellate/entry/manager.py:3469 |
-| `wiki_link_targets` | src/tessellate/entry/manager.py:3308 |
-| `wiki_opening` | src/tessellate/entry/manager.py:3397 |
-| `wiki_plain` | src/tessellate/entry/manager.py:3302 |
-| `wiki_shown` | src/tessellate/entry/manager.py:3286 |
-| `wiki_target` | src/tessellate/entry/manager.py:3275 |
+| `wiki_holders` | src/tessellate/entry/manager.py:3488 |
+| `wiki_link_targets` | src/tessellate/entry/manager.py:3327 |
+| `wiki_opening` | src/tessellate/entry/manager.py:3416 |
+| `wiki_plain` | src/tessellate/entry/manager.py:3321 |
+| `wiki_shown` | src/tessellate/entry/manager.py:3305 |
+| `wiki_target` | src/tessellate/entry/manager.py:3294 |
 
 ### src/tessellate/entry/meetings.py (22)
 
@@ -21117,7 +21118,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14127)
+## Tests (14131)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21509,7 +21510,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_density_height.py | 4 |
 | tests/test_dependency_audit.py | 3 |
 | tests/test_derived_facts.py | 14 |
-| tests/test_desk_companion.py | 33 |
+| tests/test_desk_companion.py | 34 |
 | tests/test_desk_counts_63.py | 5 |
 | tests/test_desktop_fullscreen.py | 5 |
 | tests/test_desktop_launcher.py | 17 |
@@ -22211,6 +22212,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_phone_select_mode_tap.py | 2 |
 | tests/test_phone_touch.py | 8 |
 | tests/test_phrase_filters.py | 5 |
+| tests/test_picture_options_in_previews.py | 3 |
 | tests/test_pin_unlock.py | 22 |
 | tests/test_placed_0909_row31.py | 6 |
 | tests/test_plain_errors.py | 3 |

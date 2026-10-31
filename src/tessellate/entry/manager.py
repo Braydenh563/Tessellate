@@ -2894,13 +2894,32 @@ def join_blocks(text: str, strip=lambda line: line, limit: int | None = None) ->
     return "".join(out)
 
 
+#: A picture's `|` options in its alt (`![A river|300|right](url)`): a width in
+#: pixels (or `300x200`) and left, centre or right. Not words.
+_IMAGE_OPTION = re.compile(r"\d{1,4}(?:x\d{1,4})?|left|centre|center|right", re.IGNORECASE)
+_IMAGE_ALT_GROUP = 7  # the `!\[(...)\]` group of _INLINE_MD
+
+
+def _picture_words(alt: str) -> str:
+    """A picture's alt as the words it says: the caption written after its
+    options when there is one, else its name (image-layout.js
+    `imageOptionsFromAlt`, so the preview and the picture agree)."""
+    name, *rest = alt.split("|")
+    caption = [p.strip() for p in rest if p.strip() and not _IMAGE_OPTION.fullmatch(p.strip())]
+    return " ".join(caption) or name.strip()
+
+
 def strip_inline_markdown(text: str) -> str:
     """A note's text as plain words: bold/italic/strike/code markers gone,
-    an image or link reduced to its alt/link text. Markers only: block
-    structure (headings, blockquotes, wiki-links) is each caller's own
-    concern, since callers disagree on what to do with those."""
+    an image or link reduced to its alt/link text (a picture's width and
+    alignment dropped). Markers only: block structure (headings,
+    blockquotes, wiki-links) is each caller's own concern, since callers
+    disagree on what to do with those."""
     return _INLINE_MD.sub(
-        lambda m: next(g for g in m.groups() if g is not None), text
+        lambda m: _picture_words(m.group(m.lastindex))
+        if m.lastindex == _IMAGE_ALT_GROUP
+        else next(g for g in m.groups() if g is not None),
+        text,
     )
 
 
