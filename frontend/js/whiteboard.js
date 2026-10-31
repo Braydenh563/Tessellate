@@ -9469,15 +9469,17 @@ function wbBuildContextMenu(kind) {
           wbMapSummarise([mapNode]));
       }
     });
-    //: Reaction stamps and votes (Miro; MINDMAP_PLAN 14.4), each one more.
+    //: Reaction stamps and votes (Miro; MINDMAP_PLAN 14.4): each a toggle for
+    //: you (INBOX 1493), the chip's own menu takes a count down.
     subItem("Stamps", sub => {
       for (const [name, , said] of WB_MAP_STAMPS) {
         const count = mapNode.data?.stamps?.[name] || 0;
-        sub(count ? `${said} (${count})` : said, "One more of this stamp; or press it on the topic", () => wbMapAddStamp(mapNode, name));
+        const yours = Array.isArray(mapNode.data?.stamped) && mapNode.data.stamped.includes(name);
+        sub(count ? `${said} (${count}${yours ? ", yours" : ""})` : said, yours ? "Takes yours back; or press it on the topic" : "Adds yours; or press it on the topic", () => wbMapStampSet(mapNode, name, "toggle"));
       }
       if (Object.keys(mapNode.data?.stamps || {}).length) {
         sub("Clear the stamps", "Every count on this topic; Ctrl+Z brings them back", () =>
-          wbMapSetExtra(mapNode, { stamps: null }, "Stamps cleared."));
+          wbMapSetExtra(mapNode, { stamps: null, stamped: null }, "Stamps cleared."));
       }
     });
     //: A structure for this branch alone (XMind; canvasdepth2).

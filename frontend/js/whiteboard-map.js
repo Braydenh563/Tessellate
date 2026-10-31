@@ -1733,21 +1733,21 @@ function wbBuildMapNode(el, d) {
       wbMapEditCallout(wbMapLiveDatum(d));
     });
   //: And labels under them (XMind), the next row of the same flow.
-  //: Its stamps ride the same row; a press on one adds one more (a vote),
-  //: without starting a drag or the labels' double-click.
+  //: Its stamps ride the same row; a press on one toggles yours (a vote, taken
+  //: back by a second press), and its menu takes a count down, none of it
+  //: starting a drag or the labels' double-click.
   el.append("div").attr("class", "wb-map-tags").property("hidden", true)
     .on("pointerdown", (event) => {
-      if (event.target.closest(".wb-map-stamp")) event.stopPropagation();
+      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
     })
     .on("click", (event) => {
       const stamp = event.target.closest(".wb-map-stamp");
-      if (!stamp) return;
-      event.stopPropagation();
-      wbMapAddStamp(wbMapLiveDatum(d), stamp.dataset.stamp);
+      if (event.target.closest(".wb-map-stamp-wrap")) event.stopPropagation();
+      if (stamp) wbMapStampSet(wbMapLiveDatum(d), stamp.dataset.stamp, "toggle");
     })
     .on("dblclick", (event) => {
       event.stopPropagation();
-      if (!event.target.closest(".wb-map-stamp")) wbMapEditLabels(wbMapLiveDatum(d));
+      if (!event.target.closest(".wb-map-stamp-wrap")) wbMapEditLabels(wbMapLiveDatum(d));
     });
   //: **Built for every node, hidden when it has nothing to say**, the same
   //: rule the chevron and the count badge already follow here and for the
@@ -8247,7 +8247,7 @@ const WB_MAP_STYLE_KEYS = [
 //: And a boundary and a summary (decisions 19, 20): what the map says.
 const WB_MAP_CONTENT_KEYS = [
   "image", "task", "note", "boundary", "boundary_label", "summary", "summary_span",
-  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps",
+  "priority", "progress", "flag", "markers", "due", "branch_layout", "callout", "labels", "stamps", "stamped",
 ];
 
 //: **Reaction stamps and votes** (Miro; MINDMAP_PLAN 14.4): six Phosphor
@@ -8258,13 +8258,46 @@ const WB_MAP_STAMPS = Object.freeze([
   ["check", "check-circle", "Agree"], ["question", "question", "Question"], ["fire", "fire", "Hot"],
 ]);
 
-//: One more of a stamp on a topic, one Undo step.
-async function wbMapAddStamp(node, name) {
+//: **A stamp is a toggle per person** (INBOX 1493, "no wqay tp remove a stamp
+//: vote"): a press adds yours, a second press takes yours back; `stamped` names
+//: the stamps that are yours, each one counted in `stamps` too. A count from
+//: before the toggle has no owner, so it comes down with the chip's menu:
+//: Remove one ("one") or Clear all ("all"). Pure: returns the patch and the
+//: words for the live region, or null when there is nothing to do.
+function wbMapStampPatch(data, name, how) {
   const known = WB_MAP_STAMPS.find(([n]) => n === name);
-  if (!node || !known) return;
-  const stamps = { ...(node.data?.stamps || {}) };
-  stamps[name] = Math.min(999, (stamps[name] || 0) + 1);
-  await wbMapSetExtra(node, { stamps }, `${known[2]}: ${stamps[name]}.`);
+  if (!known) return null;
+  const stamps = { ...(data?.stamps || {}) };
+  let mine = (Array.isArray(data?.stamped) ? data.stamped : []).filter((n) => stamps[n] > 0 && n !== name);
+  const owned = Array.isArray(data?.stamped) && data.stamped.includes(name);
+  const count = stamps[name] || 0;
+  let said;
+  if (how === "toggle" && owned) {
+    stamps[name] = count - 1;
+    said = `${known[2]}: yours taken back.`;
+  } else if (how === "toggle") {
+    if (count >= 999) return null;
+    stamps[name] = count + 1;
+    mine.push(name);
+    said = `${known[2]}: yours added.`;
+  } else if (!count) {
+    return null;
+  } else if (how === "one") {
+    stamps[name] = count - 1;
+    if (owned && stamps[name] > 0) mine.push(name);
+    said = `${known[2]}: one removed.`;
+  } else {
+    delete stamps[name];
+    said = `${known[2]}: cleared.`;
+  }
+  if (!(stamps[name] > 0)) delete stamps[name];
+  return { stamps: Object.keys(stamps).length ? stamps : null, stamped: mine.length ? mine : null, said };
+}
+
+//: One press, one Undo step.
+async function wbMapStampSet(node, name, how) {
+  const patch = node ? wbMapStampPatch(node.data, name, how) : null;
+  if (patch) await wbMapSetExtra(node, { stamps: patch.stamps, stamped: patch.stamped }, patch.said);
 }
 
 //: A topic's callout (canvasdepth2), read off its own data: content. The
@@ -8283,7 +8316,8 @@ function wbMapPaintExtras(node, data) {
   const stamps = WB_MAP_STAMPS.filter(([name]) => data.stamps?.[name] > 0);
   if (tags) {
     tags.hidden = !labels.length && !stamps.length;
-    const key = `${labels.join("\u0000")}|${stamps.map(([name]) => `${name}${data.stamps[name]}`).join(",")}`;
+    const mine = Array.isArray(data.stamped) ? data.stamped : [];
+    const key = `${labels.join("\u0000")}|${stamps.map(([name]) => `${name}${data.stamps[name]}${mine.includes(name) ? "m" : ""}`).join(",")}`;
     if (tags.dataset.key !== key) {
       tags.dataset.key = key;
       tags.replaceChildren(...labels.map((label) => {
@@ -8292,17 +8326,26 @@ function wbMapPaintExtras(node, data) {
         chip.textContent = label;
         return chip;
       }), ...stamps.map(([name, glyph, said]) => {
+        const yours = mine.includes(name);
+        const wrap = document.createElement("span");
+        wrap.className = "wb-map-stamp-wrap";
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "wb-map-stamp";
         chip.dataset.stamp = name;
-        chip.title = `${said}: press to add one`;
-        chip.setAttribute("aria-label", `${said}, ${data.stamps[name]}. Press to add one.`);
+        chip.setAttribute("aria-pressed", String(yours));
+        chip.title = `${said}: ${yours ? "press to take yours back" : "press to add yours"}`;
+        chip.setAttribute("aria-label", `${said}, ${data.stamps[name]}${yours ? ", yours included" : ""}. ${yours ? "Press to take yours back." : "Press to add yours."}`);
         const icon = document.createElement("i");
         icon.className = `ph ph-${glyph}`;
         icon.setAttribute("aria-hidden", "true");
         chip.append(icon, String(data.stamps[name]));
-        return chip;
+        const live = () => wbMapLiveDatum({ id: Number(node.dataset.id) });
+        wrap.append(chip, kebabMenu([
+          { label: "Remove one", title: "Takes one off the count", run: () => wbMapStampSet(live(), name, "one") },
+          { label: "Clear all", title: "Every count of this stamp; Ctrl+Z brings them back", danger: true, run: () => wbMapStampSet(live(), name, "all") },
+        ], `${said} stamp options`));
+        return wrap;
       }));
     }
     tags.title = labels.length ? "Labels: double-click to change them" : "";

@@ -6193,12 +6193,38 @@ button.ghost.doc-template-choice.wb-template-choice {
   background: color-mix(in srgb, var(--wb-branch) 18%, var(--card));
 }
 
+/* A stamp is a toggle per person and has a menu (INBOX 1493): the chip, then
+   the shared ⋯ (`kebabMenu`), squared to the chip's own height. Yours is the
+   filled chip. */
+.wb-map-stamp-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.wb-map-stamp[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--wb-branch) 24%, var(--card));
+}
+
+.wb-map-stamp-wrap .menu-wrap {
+  display: inline-flex;
+}
+
+.wb-map-stamp-wrap .kebab-opener {
+  width: 1.6em;
+  min-width: 0;
+  height: 1.6em;
+  min-height: 0;
+  padding: 0;
+  font-size: 0.75em;
+}
+
 .wb-map-stamp .ph {
   color: var(--wb-branch-edge);
 }
 
 @media (pointer: coarse) {
-  .wb-map-stamp {
+  .wb-map-stamp,
+  .wb-map-stamp-wrap .kebab-opener {
     min-height: var(--target-min);
     min-width: var(--target-min);
   }
