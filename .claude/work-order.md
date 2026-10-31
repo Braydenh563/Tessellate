@@ -32,6 +32,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Speed pass 2: graph open, Library and Timeline opens, notes-list compile (agent speed2-1031)
 - [x] Notes list and Timeline windowing, S16 and S53 (agent listwin-1031)
 - [ ] Timeline route at 5,000 notes (19.5 s first page), entries and library paging (agent tlspeed-1031)
+- [ ] Dashboard revisit shift 0.21, Escape in Settings help popovers (agent dashcls-1031)
 - [x] Ask answer foot sections with no model, INBOX 1466 rest (agent askfoot-1031)
 - [x] Review of the 1031 merges (reviewer: 2 high, 5 med, 4 low) and UX audit of drag, tray, Ask foot (ux-auditor)
 - [x] Review fixes: obj order seeding, keyless image chips, Alt+arrows in inputs, drag hold, map paste, tray per space (agent objfix-1031)
