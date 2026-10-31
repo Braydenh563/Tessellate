@@ -58,8 +58,12 @@ def test_resetting_shortcuts_waits_for_the_lazy_list():
     src = _src("settings-wiring.js")
     body = src[src.index("function resetShortcuts()") :]
     body = body[: body.index("\n}\n")]
-    assert 'ensureModule("reveal").then(() => renderShortcutList())' in body
-    assert "\n  renderShortcutList();" not in body
+    #: The wait is now the lazy entry point's stand-in (app.js
+    #: LAZY_ENTRY_POINTS), which loads the bundle before the call; a bare call
+    #: is safe only while the name is listed there.
+    entry = _src("app.js").split("const LAZY_ENTRY_POINTS", 1)[1].split("};", 1)[0]
+    waits = 'ensureModule("reveal").then(() => renderShortcutList())' in body
+    assert waits or ("renderShortcutList();" in body and '"renderShortcutList"' in entry.split("reveal:", 1)[1].split("]", 1)[0])
 
 
 def test_a_search_already_on_still_seeds_the_documents_for_the_first_reorder():

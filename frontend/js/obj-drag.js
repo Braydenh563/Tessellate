@@ -88,12 +88,11 @@ function objDragArm(event) {
 }
 
 //: The hold is over. A mouse is told with the cursor; a finger lifts the card at
-//: once and feels it (a move is already the drag, and the page must not scroll).
+//: once (a move is already the drag, and the page must not scroll).
 function objDragCue(g) {
   if (objDragNow !== g) return;
   g.card.classList.add("obj-armed");
   if (!g.touch) return;
-  navigator.vibrate?.(8);
   objDragBegin(g);
   objDragFrame(g);
 }

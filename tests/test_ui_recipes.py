@@ -166,6 +166,32 @@ def test_a_long_kebab_menu_is_grouped() -> None:
     )
 
 
+def test_a_submenu_is_a_menu_in_a_menu_with_a_nested_level_where_a_flyout_cannot_go() -> None:
+    """INBOX 1469, DESIGN.md "A menu behind a button": a kebabMenu item with
+    `items` is a submenu row (hover 150 ms, click, Right or Enter; Left or
+    Escape back), a menu in a menu for the tree, and a nested level with a back
+    row under `SUBMENU_STACK`; a menu past ten rows is grouped."""
+    app = app_js_text()
+    body = app.split("function buildMenuGroupButton(", 1)[1].split("\nfunction entryOverflowMenu(", 1)[0]
+    for needle in ('"aria-haspopup", "menu"', '"aria-expanded"', 'role", "menu"', "}, 150)", '"ArrowRight"', '"ArrowLeft"', '"Escape"',
+                   "menu-back", "menu-group-open", "menu-nested", "submenu-left", "window.matchMedia(SUBMENU_STACK)"):
+        assert needle in body, f"a submenu row lost {needle}"
+    query = re.search(r'const SUBMENU_STACK = "([^"]+)"', app).group(1)
+    css = (ROOT / "frontend" / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
+    assert f"@media {query}" in css and ".action-menu.menu-nested > :not(.menu-group-open)" in css, (
+        "the nested level's CSS and SUBMENU_STACK name different screens"
+    )
+    assert "menu-back" in app.split("function openKebabSheet(", 1)[1][:900], "the back row would close the sheet"
+    close = app.split("function closeActionMenus(", 1)[1][:1500]
+    assert "menu-nested" in close and "menu-group-open" in close, "a closed menu would reopen inside its nested level"
+    lib = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
+    #: The group's rows are filtered in place now (submenu-1031 compacted it
+    #: for the boot budget); the intent, one group holding the text rows, holds.
+    assert re.search(r'Text and description", items: (?:words|menuRows\.filter)', lib), "the picture card's text rows are a flat list again"
+    clip = (ROOT / "frontend" / "js" / "obj-clip.js").read_text(encoding="utf-8")
+    assert "OBJ_MENU_FOLD = 10" in clip and "buildMenuGroupButton(" in clip, "a card's own rows no longer fold past ten"
+
+
 def test_a_pointer_anchored_menu_is_the_recipe() -> None:
     """A right-click or long-press menu is `openMenuAtPoint`, not a new shape.
 

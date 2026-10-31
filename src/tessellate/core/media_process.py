@@ -57,11 +57,21 @@ _ASKED: set[tuple[int, str]] = set()
 
 
 def _due(upload: MediaUpload, reader: str, stored: str | None) -> bool:
+    """`stored` is the reader's own column. A reading that found nothing is the
+    empty string, which still means "read" (INBOX 1484: a drawing with no text
+    was read again by every save after a restart, the memory below forgot);
+    only NULL means never read."""
     key = (upload.id, reader)
     if stored or key in _ASKED:
         return False
     _ASKED.add(key)
     return True
+
+
+def _read_marker(text: str | None) -> str | None:
+    """A truthy stand-in for "a model already read this", even when it found
+    no text ("" is stored; NULL is a read never made or one that failed)."""
+    return None if text is None else "read"
 
 
 def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
@@ -94,14 +104,14 @@ def process_committed_upload(upload: MediaUpload, media_dir: Path) -> None:
         ocr.extract_in_background(upload.id, path)
     if describe and suffix in captioning.CAPTION_SUFFIXES and _due(upload, "caption", upload.caption):
         captioning.caption_in_background(upload.id, path)
-    if read_text and suffix in vision_ocr.VISION_OCR_SUFFIXES and _due(upload, "vision", upload.vision_ocr_text):
+    if read_text and suffix in vision_ocr.VISION_OCR_SUFFIXES and _due(upload, "vision", _read_marker(upload.vision_ocr_text)):
         vision_ocr.vision_ocr_in_background(upload.id, path)
     # A PDF is neither of the above: `OCR_SUFFIXES` and `VISION_OCR_SUFFIXES`
     # are both raster-only, so filing a scanned PDF used to start no reader at
     # all and the file stayed unsearchable until somebody opened it and pressed
     # a button. `pdf_vision_ocr_and_store` skips PDFs that already have a text
     # layer, so this costs a model round trip only for the scans that need one.
-    if read_text and suffix == ".pdf" and _due(upload, "pdf", upload.vision_ocr_text):
+    if read_text and suffix == ".pdf" and _due(upload, "pdf", _read_marker(upload.vision_ocr_text)):
         vision_ocr.pdf_vision_ocr_in_background(upload.id, path)
 
 

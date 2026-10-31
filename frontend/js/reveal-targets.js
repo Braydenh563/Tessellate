@@ -563,13 +563,13 @@ async function revealFeature(key, arg = "") {
   }
   const find = () => (target.el ? $(target.el) : revealQuery(fill(target.sel), target.text));
   const land = (el) => {
-    if (target.flash !== false) flashRevealedNow(el);
+    if (target.flash !== false) flashRevealed(el);
     if (target.focus) el.focus({ preventScroll: true });
   };
   const found = await revealWait(find);
   if (!found) {
     const fallback = target.fallback ? await revealWait(() => $(target.fallback), 800) : null;
-    if (fallback) flashRevealedNow(fallback);
+    if (fallback) flashRevealed(fallback);
     return false;
   }
   land(found);
@@ -798,7 +798,7 @@ const revealTimers = new WeakMap();
 //: own comment on the deep link that ringed nothing because of it), and a
 //: checkbox is a square whose meaning is in the label beside it, so both ring
 //: their visible representative.
-function flashRevealedNow(target) {
+function flashRevealed(target) {
   if (!target) return null;
   const shown =
     target.closest(".select-shell") ||

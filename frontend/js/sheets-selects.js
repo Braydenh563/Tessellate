@@ -1171,11 +1171,10 @@ function openKebabSheet(menu, opener, label) {
   const home = menu.parentElement;
   let closeSheet = null;
   let sheetCard = null;
-  // A group's row opens its group in place (below 720 a submenu is an
-  // accordion, `buildMenuGroupButton`), so it leaves the sheet open.
+  // A group's row and a level's back row move inside the sheet (`buildMenuGroupButton`), so they leave it open.
   const onRow = (event) => {
     const row = event.target.closest(".menu-item");
-    if (row && !row.classList.contains("has-submenu") && closeSheet) closeSheet();
+    if (row && !row.matches(".has-submenu, .menu-back") && closeSheet) closeSheet();
   };
   closeSheet = openSheet({
     label,

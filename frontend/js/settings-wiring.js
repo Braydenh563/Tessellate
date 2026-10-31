@@ -1372,7 +1372,7 @@ function resetShortcuts() {
   shortcuts = loadShortcuts();
   restampShortcutHints();
   //: The list is built by reveal-targets.js, a lazy file the Settings button can beat.
-  ensureModule("reveal").then(() => renderShortcutList());
+  renderShortcutList();
   toast("Shortcuts reset to their defaults.");
 }
 

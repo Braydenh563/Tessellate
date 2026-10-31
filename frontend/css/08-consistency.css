@@ -227,7 +227,6 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
-.action-menu .menu-item.has-submenu,
 .doc-dock-menu-list .menu-item.has-submenu {
   justify-content: space-between;
 }
