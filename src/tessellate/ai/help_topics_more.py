@@ -1094,7 +1094,7 @@ MORE_TOPICS: list[dict] = [
             "minutes) and Start a stopwatch, or type a length, such as timer 10 "
             "minutes, 90s timer or countdown 2h, and press Enter. The time runs "
             "on the status bar (on a phone the bar comes back while it runs); "
-            "press that timer chip in the status bar to stop the one it shows. Several "
+            "press that timer chip in the status bar to stop the one it shows (Undo brings it back). Several "
             "timers can run at once (the chip shows the one ending first), and they "
             "come back after a reload. When a timer "
             "runs out it says so in a message and a notification. The "

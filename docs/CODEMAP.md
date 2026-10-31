@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7199, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7942, test files 1692, tests 14678, plan headings 990.
+Counts: frontend functions 7202, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 7942, test files 1692, tests 14683, plan headings 990.
 
-## Frontend functions (7199)
+## Frontend functions (7202)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -2064,10 +2064,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `closeAppearancePanel` | frontend/js/appearance-panel.js:280 |
 | `openAppearancePanel` | frontend/js/appearance-panel.js:253 |
 
-### frontend/js/ask-chart.js (13)
+### frontend/js/ask-chart.js (14)
 
 | Name | File:line |
 |---|---|
+| `askChartChips` | frontend/js/ask-chart.js:224 |
 | `askChartLabel` | frontend/js/ask-chart.js:49 |
 | `askChartPng` | frontend/js/ask-chart.js:178 |
 | `askChartStep` | frontend/js/ask-chart.js:76 |
@@ -2078,9 +2079,9 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `askChartTicks` | frontend/js/ask-chart.js:33 |
 | `askChartTipText` | frontend/js/ask-chart.js:63 |
 | `askChartWidth` | frontend/js/ask-chart.js:86 |
-| `askChartWire` | frontend/js/ask-chart.js:268 |
-| `drawAskChart` | frontend/js/ask-chart.js:238 |
-| `renderAskChart` | frontend/js/ask-chart.js:222 |
+| `askChartWire` | frontend/js/ask-chart.js:288 |
+| `drawAskChart` | frontend/js/ask-chart.js:258 |
+| `renderAskChart` | frontend/js/ask-chart.js:242 |
 
 ### frontend/js/ask-compose.js (24)
 
@@ -5758,19 +5759,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `popupGlyphFor` | frontend/js/popup-glyph.js:44 |
 | `popupGlyphHead` | frontend/js/popup-glyph.js:49 |
 
-### frontend/js/questions-view.js (9)
+### frontend/js/questions-view.js (10)
 
 | Name | File:line |
 |---|---|
-| `initQuestionsView` | frontend/js/questions-view.js:197 |
-| `loadQuestions` | frontend/js/questions-view.js:119 |
+| `initQuestionsView` | frontend/js/questions-view.js:209 |
+| `loadQuestions` | frontend/js/questions-view.js:131 |
 | `questionButton` | frontend/js/questions-view.js:20 |
-| `questionRow` | frontend/js/questions-view.js:26 |
+| `questionRow` | frontend/js/questions-view.js:34 |
 | `questionWhen` | frontend/js/questions-view.js:15 |
-| `questionsEmpty` | frontend/js/questions-view.js:82 |
-| `questionsForNote` | frontend/js/questions-view.js:189 |
-| `questionsReadSummary` | frontend/js/questions-view.js:113 |
-| `setAskScope` | frontend/js/questions-view.js:234 |
+| `questionsEmpty` | frontend/js/questions-view.js:94 |
+| `questionsFocusAfter` | frontend/js/questions-view.js:28 |
+| `questionsForNote` | frontend/js/questions-view.js:201 |
+| `questionsReadSummary` | frontend/js/questions-view.js:125 |
+| `setAskScope` | frontend/js/questions-view.js:246 |
 
 ### frontend/js/quick-access.js (9)
 
@@ -6725,27 +6727,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderUsage` | frontend/js/usage-ledger.js:31 |
 | `usageLabels` | frontend/js/usage-ledger.js:18 |
 
-### frontend/js/utility-tools.js (17)
+### frontend/js/utility-tools.js (18)
 
 | Name | File:line |
 |---|---|
-| `countSelection` | frontend/js/utility-tools.js:156 |
-| `insertTemplate` | frontend/js/utility-tools.js:173 |
+| `countSelection` | frontend/js/utility-tools.js:176 |
+| `insertTemplate` | frontend/js/utility-tools.js:193 |
 | `paintUtilityChip` | frontend/js/utility-tools.js:47 |
 | `startStopwatch` | frontend/js/utility-tools.js:120 |
 | `startUtilityTimer` | frontend/js/utility-tools.js:112 |
-| `stopUtilityClock` | frontend/js/utility-tools.js:126 |
+| `stopUtilityClock` | frontend/js/utility-tools.js:129 |
 | `utilityClockRun` | frontend/js/utility-tools.js:64 |
 | `utilityClockSeconds` | frontend/js/utility-tools.js:30 |
 | `utilityDrop` | frontend/js/utility-tools.js:89 |
 | `utilityEnsureTick` | frontend/js/utility-tools.js:75 |
 | `utilityMinutesName` | frontend/js/utility-tools.js:106 |
 | `utilityRestore` | frontend/js/utility-tools.js:97 |
+| `utilityResume` | frontend/js/utility-tools.js:145 |
 | `utilitySave` | frontend/js/utility-tools.js:36 |
-| `utilitySelectedText` | frontend/js/utility-tools.js:148 |
+| `utilitySelectedText` | frontend/js/utility-tools.js:168 |
 | `utilityShown` | frontend/js/utility-tools.js:42 |
 | `utilityTimeText` | frontend/js/utility-tools.js:20 |
-| `utilityTimerDone` | frontend/js/utility-tools.js:135 |
+| `utilityTimerDone` | frontend/js/utility-tools.js:155 |
 
 ### frontend/js/vault-unlock.js (2)
 
@@ -11415,7 +11418,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/timeline-ticks-lazy.css | 42 |
 | frontend/css/update-bar-lazy.css | 15 |
 | frontend/css/usage-lazy.css | 34 |
-| frontend/css/utilities-lazy.css | 304 |
+| frontend/css/utilities-lazy.css | 328 |
 | frontend/css/web-lazy.css | 88 |
 | frontend/css/writing-desk-lazy.css | 27 |
 
@@ -21829,7 +21832,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14678)
+## Tests (14683)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23364,7 +23367,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_usage_ledger.py | 8 |
 | tests/test_user_profile_context.py | 8 |
 | tests/test_utilities_zones.py | 4 |
-| tests/test_utility_timers_1029.py | 8 |
+| tests/test_utility_timers_1029.py | 10 |
 | tests/test_ux1005_copy.py | 6 |
 | tests/test_ux_1031b_writing_ask.py | 7 |
 | tests/test_ux_audit_1018.py | 3 |
@@ -23524,7 +23527,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_writing_dictionary_persists.py | 4 |
 | tests/test_writing_nomodel_1488.py | 19 |
 | tests/test_writing_offline_view_1488.py | 7 |
-| tests/test_xfix_1031.py | 4 |
+| tests/test_xfix_1031.py | 7 |
 | tests/test_xmind_import.py | 3 |
 | tests/test_zoom_wheel_delta.py | 3 |
 

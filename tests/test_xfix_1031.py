@@ -47,3 +47,27 @@ def test_z19_a_carried_note_is_filed_by_a_drop_on_a_category_or_a_space() -> Non
     assert "closeSpaceMenu()" in js, "the menu the hover opened is closed at the end"
     assert "dataset.category = category" in frontend_text("notes-list.js")
     assert "async function moveNotesToSpace" in frontend_text("batch-space.js")
+
+
+def test_z6_a_question_move_says_so_offers_undo_and_keeps_the_focus_in_the_list() -> None:
+    js = frontend_text("questions-view.js")
+    body = js[js.index("const move = (state"):]
+    body = body[: body.index("actions.append")]
+    assert "offerUndo(" in body and "SAID[state]" in body
+    assert "questionsFocusAfter(at)" in body
+    assert "function questionsFocusAfter" in js
+
+
+def test_z2_stopping_a_clock_is_offered_back() -> None:
+    js = frontend_text("utility-tools.js")
+    body = js[js.index("function stopUtilityClock"):]
+    body = body[: body.index("\n}\n")]
+    assert "offerUndo(" in body and "utilityResume(clock, seconds)" in body
+
+
+def test_z5_a_pickable_chart_has_full_size_chips_on_a_phone() -> None:
+    js = frontend_text("ask-chart.js")
+    assert "function askChartChips" in js and "chart.interactive && chart.onPick" in js
+    css = (frontend_text("ask-chart.js") and open("frontend/css/utilities-lazy.css", encoding="utf-8").read())
+    assert ".ask-chart-chips {\n  display: none;" in css
+    assert "min-height: var(--target-min);" in css
