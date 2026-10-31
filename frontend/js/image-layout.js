@@ -287,7 +287,7 @@ async function imageSaveNote(img, id, change) {
   try {
     const entry = await apiJson(`/entries/${id}`);
     if (!entry.content.includes(raw)) {
-      toast("That picture has changed in the note. Open the note to change it.", true);
+      toast("That picture has changed in the note. Open the note to change it.", "info");
       return false;
     }
     const content = entry.content.replace(raw, () => next);
