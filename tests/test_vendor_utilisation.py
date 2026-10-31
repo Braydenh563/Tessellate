@@ -62,6 +62,9 @@ CALLED_FLOOR = {
     "mammoth": 2,
     #: initialize, render and parse, in the diagram frame (mermaid-frame.js).
     "mermaid": 3,
+    #: The Word-style equation field (math-field.js): the field, its font and sound
+    #: paths, getValue, setValue, insert, executeCommand, the keyboard policy, menuItems.
+    "mathlive": 10,
     "docx": 12,
     #: Brief 83: the Translate worker, a download extra (its WASM engine is not vendored).
     "translate": 11,

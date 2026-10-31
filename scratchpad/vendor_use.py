@@ -53,6 +53,7 @@ LIBRARY_KEYS = {
     "Atkinson Hyperlegible": "atkinson",
     "Mammoth": "mammoth",
     "Mermaid": "mermaid",
+    "MathLive": "mathlive",
     "docx": "docx",
     "draw.io stencils": "stencils",
     #: A download extra (Settings, Packages), not vendored JS: the engine, its
@@ -883,6 +884,33 @@ def mermaid_report(scripts: dict[str, str]) -> Report:
     return Report("mermaid", "Mermaid", list(MERMAID_API), called, {}, ["read in mermaid-frame.js, the diagram frame"])
 
 
+#: MathLive's public surface the equation field (math-field.js) can reach, each with
+#: where the app calls it. The unused rows are the ranked leftovers: reading an
+#: equation aloud, MathML out, and typeset-in-place for a whole element.
+MATHLIVE_CAPABILITIES = (
+    ("MathfieldElement, the editable field", ("frontend/js/math-field.js",), r"new MathfieldElement\("),
+    ("fontsDirectory", ("frontend/js/math-field.js",), r"MathfieldElement\.fontsDirectory"),
+    ("soundsDirectory", ("frontend/js/math-field.js",), r"MathfieldElement\.soundsDirectory"),
+    ("keypressVibration", ("frontend/js/math-field.js",), r"MathfieldElement\.keypressVibration"),
+    ("getValue (LaTeX out)", ("frontend/js/math-field.js",), r"\.getValue\("),
+    ("setValue (LaTeX in)", ("frontend/js/math-field.js",), r"\.setValue\("),
+    ("insert at the caret", ("frontend/js/math-field.js",), r"\.insert\("),
+    ("executeCommand", ("frontend/js/math-field.js",), r"\.executeCommand\("),
+    ("mathVirtualKeyboardPolicy", ("frontend/js/math-field.js",), r"mathVirtualKeyboardPolicy"),
+    ("menuItems", ("frontend/js/math-field.js",), r"\.menuItems"),
+    ("convertLatexToMathMl", ("frontend/js/math-field.js",), r"convertLatexToMathMl"),
+    ("convertLatexToSpeakableText", ("frontend/js/math-field.js",), r"convertLatexToSpeakableText"),
+    ("renderMathInElement", ("frontend/js/math-field.js",), r"renderMathInElement"),
+    ("inlineShortcuts", ("frontend/js/math-field.js",), r"inlineShortcuts"),
+)
+
+
+def mathlive_report() -> Report:
+    return _capability_report(
+        "mathlive", "MathLive", MATHLIVE_CAPABILITIES, ["read in math-field.js, the equation field"]
+    )
+
+
 def docx_report(scripts: dict[str, str]) -> Report:
     text = scripts.get("documents-word.js", "")
     called = [name for name in DOCX_API if re.search(rf"\bD\.{name}\b", text)]
@@ -1059,6 +1087,7 @@ def collect() -> dict[str, Report]:
         stencils_report(scripts),
         mammoth_report(scripts),
         mermaid_report(scripts),
+        mathlive_report(),
         docx_report(scripts),
         translate_report(scripts),
     ]
