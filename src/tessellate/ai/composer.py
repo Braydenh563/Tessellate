@@ -5094,13 +5094,18 @@ def _overview_answer(
     _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
-    if len(found) - shown == 1:
-        out.t("para", "ov_one_more")
-    elif len(found) > shown:
-        out.t("para", "ov_more_a").m(out.count(len(found) - shown)).t("ov_more_b")
+    _overview_rest(out, len(found) - shown)
     result = _result(out.parts, "overview", out.rows, _overview_next(question, subject, found, themes))
     result["broad"] = True
     return result
+
+
+def _overview_rest(out: _Answer, left: int) -> None:
+    """What the groups did not show: one more, or a count of more."""
+    if left == 1:
+        out.t("para", "ov_one_more")
+    elif left > 1:
+        out.t("para", "ov_more_a").m(out.count(left)).t("ov_more_b")
 
 
 def _month(out: _Answer, when: date) -> str:

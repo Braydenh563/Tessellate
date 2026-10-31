@@ -3221,9 +3221,8 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         return hello
     if kind == "repair":
         return _repair_reply(req, last, seed)
-    if kind == "joke" and (joke := chat_extra.saved_joke(req.session, req.question + seed)):
-        #: One you saved, said as it is written, before owning up to having none (audit 1031 C46).
-        return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})"
+    if kind == "joke" and (joke := _saved_joke_reply(req, seed)):
+        return joke
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3238,9 +3237,22 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
     if kind == "test" and (subject := composer_social.ping_subject(req.question)):
         said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
-    hello = kind in ("greeting", "morning", "how")
-    sees = composer_aware.opening(_awareness(req), seed) if req.body.screen and hello else ""
+    sees = _sees(req, kind, seed)
     return f"{said}\n\n{sees}" if sees else said
+
+
+def _sees(req: _StreamRequest, kind: str | None, seed: str) -> str:
+    """What the app can see, said only after a hello."""
+    if req.body.screen and kind in ("greeting", "morning", "how"):
+        return composer_aware.opening(_awareness(req), seed)
+    return ""
+
+
+def _saved_joke_reply(req: _StreamRequest, seed: str) -> str:
+    """One you saved, said as it is written, before owning up to having none
+    (audit 1031 C46); empty when no note is a joke."""
+    joke = chat_extra.saved_joke(req.session, req.question + seed)
+    return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})" if joke else ""
 
 
 def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
