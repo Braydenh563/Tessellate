@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Timeline server read (speed 1031): a note's first mention and a meeting's own date are joined once for the notebook and not read by a correlated subquery per note for every use, and the page counts links without loading the linked notes' text. At 5,000 notes a windowed read is 29 ms of CPU, not 39, and its SQL 6 ms, not 40; the response is byte-identical on four pages, a kind filter and a range. The 19.5 s first page reported at 4,602 notes did not reproduce (20 ms at 5,000 over HTTP); `tests/test_timeline_query_count.py` pins the statements per page.
 - Design (UX review 1031): the shared picture control (grip, align button, their keys, hit area and ground) has its row in DESIGN.md's recipe index and a lint in tests/test_ui_recipes.py; the Guide says to Tab to the corner.
 - Chat attachment cards (UX review 1031): the facts line holds 4.65:1 in light and 5.11:1 in dark when the card is hovered or focused (it was 4.12 and 3.85), and the open button is named by its verb ("Preview note, Weekly review"), not only by a tooltip on its span.
 - Settings (UX review 1031): the desktop companion switch and its help button share a row at 390px (the row was 524.7px wide in a 263.6px one and the label was cut), the label wrapping instead.
