@@ -60,3 +60,18 @@ def test_resetting_shortcuts_waits_for_the_lazy_list():
     body = body[: body.index("\n}\n")]
     assert 'ensureModule("reveal").then(() => renderShortcutList())' in body
     assert "\n  renderShortcutList();" not in body
+
+
+def test_a_search_already_on_still_seeds_the_documents_for_the_first_reorder():
+    # Measured at 1440 with "a" in the search box before the Library list first
+    # drew: `libraryDocsAll` held 0 documents while 4 were shown, so a first
+    # reorder stored the visible rows only. After: 4 and 4.
+    src = _src("library.js")
+    render = src[src.index("async function renderLibraryDocuments()") :]
+    render = render[: render.index("\n}\n")]
+    assert "if (!needle) libraryDocsAll = docs;" in render
+    assert "else if (!libraryDocsAll.length) seedLibraryDocsAll();" in render
+    seed = src[src.index("function seedLibraryDocsAll()") :]
+    seed = seed[: seed.index("\n}\n")]
+    assert 'apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)' in seed
+    assert "if (!libraryDocsAll.length) libraryDocsAll = all;" in seed

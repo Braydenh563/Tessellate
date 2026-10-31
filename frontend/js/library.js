@@ -3287,6 +3287,15 @@ async function importLibraryDocuments(files) {
   }, { go: { open: "doc", id: made[0].id } });
 }
 
+//: A search that is already on when the list first draws (no unfiltered draw came before) has
+//: nothing for the first reorder to store, so it read the visible rows only (polish5 1031: 0 held, 4 shown).
+//: Read the whole list once, behind the draw, and keep a newer unfiltered draw's if one lands first.
+function seedLibraryDocsAll() {
+  apiPagedList("/documents", DOCUMENTS_PAGE_SIZE)
+    .then((all) => { if (!libraryDocsAll.length) libraryDocsAll = all; })
+    .catch(() => {});
+}
+
 async function renderLibraryDocuments() {
   const list = document.getElementById("library-docs-list");
   const empty = document.getElementById("library-docs-empty");
@@ -3323,6 +3332,7 @@ async function renderLibraryDocuments() {
   surfaceRecovered(empty);
   //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
   if (!needle) libraryDocsAll = docs;
+  else if (!libraryDocsAll.length) seedLibraryDocsAll();
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of
