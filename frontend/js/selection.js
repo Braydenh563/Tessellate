@@ -421,30 +421,6 @@ function bookmarkKind(url) {
   }
 }
 
-//: One row's label per source, in one table (`notePickerShape`'s reason).
-//: Long enough that the row's own width clips it (an ellipsis in CSS):
-//: clipped at 70 characters, a title stopped short with half the row empty.
-function libraryPickLabel(kind, row) {
-  if (kind === "note") return noteLabel(row, 200);
-  if (kind === "board") return row.title || (row.type === "board" ? "Untitled board" : "Untitled map");
-  if (kind === "document") return row.title || "Untitled document";
-  if (kind === "file") return row.original_name || row.filename || "File";
-  return row.title || row.url || "Link";
-}
-
-//: The source the person last chose, so the map's picker opens where they
-//: were (INBOX 572). A per-viewer convenience: storage that is blocked or
-//: empty just opens on the first source.
-const PICK_SOURCE_KEY = "libraryPickSource";
-function pickerRememberedSource(available) {
-  try {
-    const kind = prefs.get(PICK_SOURCE_KEY, null);
-    return available.find((source) => source.kind === kind) || null;
-  } catch {
-    return null;
-  }
-}
-
 
 // Turn the selection into a reminder, through the same parser the Reminders
 // tab's "magic add" box uses: not a second one.

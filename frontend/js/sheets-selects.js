@@ -2355,14 +2355,6 @@ function builtinPersonas() {
 
 let personaEditing = null; // name currently in inline-edit mode
 
-
-//: The names the pickers offer, from what is already in memory.
-function personaNamesNow() {
-  const custom = ((prefsCache && prefsCache.personas) || []).map((p) => p.name);
-  return [...new Set([...Object.keys(builtinPersonas()), ...custom])];
-}
-
-
 //: "Same as Chat" follows Chat's picker, so its face does too.
 document.addEventListener("change", (event) => {
   if (event.target?.id === "persona-select") paintDashboardPersonaMark();

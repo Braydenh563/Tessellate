@@ -1647,20 +1647,3 @@ function liftLockScreen() {
   };
   setTimeout(gone, reducedMotionWanted() ? 0 : 220);
 }
-
-// ---- from app.js (search-boot-1005): buildSelect ----
-// Moved whole. Every use is in this file, so it is not needed before this file loads.
-
-// A <select> from [value, label] pairs, with one option preselected.
-function buildSelect(options, selected) {
-  const select = document.createElement("select");
-  select.className = "small-select";
-  for (const [value, label] of options) {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    if (value === selected) option.selected = true;
-    select.appendChild(option);
-  }
-  return select;
-}

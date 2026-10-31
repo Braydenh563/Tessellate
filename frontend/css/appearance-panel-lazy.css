@@ -295,3 +295,11 @@
 #appearance-panel :is(.select-shell > .setting-reset, .select-shell + .setting-reset) {
   margin-inline-start: var(--space-2);
 }
+#appearance-panel .help-head > .check-row {
+  flex: 1 1 0;
+  min-width: 0;
+}
+#appearance-panel .help-head > .check-row > span {
+  overflow: visible;
+  text-overflow: clip;
+}

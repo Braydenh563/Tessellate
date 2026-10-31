@@ -1,6 +1,5 @@
 {
  "account-recovery.js::mutation-observer": 1,
- "ai-tools.js::raf": 1,
  "app.js::mutation-observer": 1,
  "appearance-panel.js::raf": 1,
  "ask-chart.js::resize-observer": 1,
@@ -101,6 +100,7 @@
  "status.js::raf": 2,
  "suggestions-inbox.js::raf": 1,
  "tag-manager.js::raf": 1,
+ "task-steps.js::raf": 1,
  "tidy.js::mutation-observer": 1,
  "timeline-ticks.js::resize-observer": 1,
  "timeline.js::raf": 2,

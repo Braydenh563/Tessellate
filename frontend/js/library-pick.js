@@ -1,5 +1,29 @@
 // library-pick.js: the Library item picker dialog (bookmark, board, note or document) and the uploaded-picture picker (`pickMediaDialog`, 2026-10-29, audit 1029 rows 44 to 56 paid for in the same gzip budget), moved out of selection.js on 2026-10-12 for the boot gzip budget. Every caller awaits it: `lazy-entries.js` stands in until this loads. Its source table and remembered-tab helper stay in selection.js.
 
+//: One row's label per source, in one table (`notePickerShape`'s reason).
+//: Long enough that the row's own width clips it (an ellipsis in CSS):
+//: clipped at 70 characters, a title stopped short with half the row empty.
+function libraryPickLabel(kind, row) {
+  if (kind === "note") return noteLabel(row, 200);
+  if (kind === "board") return row.title || (row.type === "board" ? "Untitled board" : "Untitled map");
+  if (kind === "document") return row.title || "Untitled document";
+  if (kind === "file") return row.original_name || row.filename || "File";
+  return row.title || row.url || "Link";
+}
+
+//: The source the person last chose, so the map's picker opens where they
+//: were (INBOX 572). A per-viewer convenience: storage that is blocked or
+//: empty just opens on the first source.
+const PICK_SOURCE_KEY = "libraryPickSource";
+function pickerRememberedSource(available) {
+  try {
+    const kind = prefs.get(PICK_SOURCE_KEY, null);
+    return available.find((source) => source.kind === kind) || null;
+  } catch {
+    return null;
+  }
+}
+
 //: And its second line: what tells two rows with one name apart.
 function libraryPickAbout(kind, row) {
   const when = relativeTime(row.updated_at || row.created_at);

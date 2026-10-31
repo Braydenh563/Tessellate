@@ -160,9 +160,6 @@ EXPECTED = {
     'gesture-kit.js': [
         '"An empty answer isn\'t a correction: delete the message instead."',
     ],
-    'shell-reminders.js': [
-        '"A reminder needs text and a time."',
-    ],
     'skills.js': [
         '`“${skill.name}” needs ${item.label || item.name}.`',
         '"Tick some notes first."',
