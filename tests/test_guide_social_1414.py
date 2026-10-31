@@ -166,6 +166,7 @@ def test_chat_closes_with_the_same_closing_so_a_finished_act_is_not_resumed_ther
     from pathlib import Path
 
     routes = (Path(__file__).resolve().parents[1] / "src/tessellate/api/routes_chat.py").read_text(encoding="utf-8")
-    assert "composer_aware.closing(_awareness(req), seed, recent," in routes
+    #: The seed now carries the question (composer-1031), so a repeat varies.
+    assert "composer_aware.closing(_awareness(req), f\"{seed}:{req.question}\", recent," in routes
     pinned = composer_aware.build(tab="chat", actions=PINNED)
     assert not RESUME.search(composer_aware.closing(pinned, "chat-seed"))
