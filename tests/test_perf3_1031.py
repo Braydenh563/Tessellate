@@ -109,3 +109,79 @@ def test_a_page_in_a_long_list_appends_or_waits_for_the_last_page():
     assert 'renderEntriesWhenShown(list === "append")' in paint
     gate = _body(notes, "function renderEntriesWhenShown(", "const ENTRIES_PROGRESS_LIST_MAX")
     assert "renderEntries(appendOnly)" in gate
+
+
+def test_the_word_counter_still_counts_tokens_with_a_letter_or_digit():
+    from tessellate.ai import composer_frame
+
+    assert composer_frame.note_words("# Title\n- one two\n\u2014 3 _ \u00bd x_y\n***") == 5
+    assert composer_frame.note_words("") == 0 and composer_frame.note_words(None) == 0
+    assert composer_frame.note_words("a b c\td") == 4
+
+
+def _seed(session, texts):
+    import json
+
+    from tessellate.core.database import Entry
+
+    made = []
+    for text in texts:
+        entry = Entry(content=text, tags=json.dumps(["t1"]))
+        session.add(entry)
+        session.flush()
+        made.append(entry)
+    session.commit()
+    return made
+
+
+def test_the_statistics_pass_over_the_notes_is_kept_until_a_note_moves(client):
+    # The words, tags and growth read and counted every note on every open
+    # (100 to 150 ms per 2,000 notes). They are held against a fingerprint of
+    # the live notes: the figures must not move, and a note made, edited,
+    # binned, made private or archived must be counted again.
+    from datetime import datetime, timezone
+    from unittest import mock
+
+    from tessellate.ai import composer_frame, notebook_stats
+    from tessellate.core import deps
+
+    now = datetime(2026, 10, 14, 15, tzinfo=timezone.utc)
+    counted = mock.Mock(wraps=composer_frame.note_words)
+    with deps.get_db().session() as session:
+        a, b, c = _seed(session, ["one two three", "four five", "six"])
+        with mock.patch.object(composer_frame, "note_words", counted):
+            first = notebook_stats._notebook_block(session, now)
+            asked = counted.call_count
+            again = notebook_stats._notebook_block(session, now)
+            assert counted.call_count == asked > 0  # held: nothing counted again
+            assert again == first and first["words"] == 6 and first["notes"] == 3
+            a.content = "one two three four"  # edited
+            session.commit()
+            assert notebook_stats._notebook_block(session, now)["words"] == 7
+            b.is_private = True  # made private: out of the figures
+            session.commit()
+            assert notebook_stats._notebook_block(session, now)["words"] == 5
+            c.archived_at = now  # archived
+            session.commit()
+            assert notebook_stats._notebook_block(session, now)["words"] == 4
+            a.deleted_at = now  # binned
+            session.commit()
+            block = notebook_stats._notebook_block(session, now)
+    assert block["words"] == 0
+
+
+def test_a_kept_pass_is_per_zone_and_per_space(client):
+    from datetime import timedelta, timezone
+
+    from tessellate.ai import notebook_stats
+    from tessellate.core import deps
+
+    with deps.get_db().session() as session:
+        _seed(session, ["alpha beta"])
+        utc = notebook_stats._note_pass(session, timezone.utc)
+        east = notebook_stats._note_pass(session, timezone(timedelta(hours=14)))
+        assert sum(utc[2].values()) == sum(east[2].values()) == 1
+        session.info["workspace_id"] = "other"
+        assert notebook_stats._note_pass(session, timezone.utc)[0] == 0  # nothing in that space
+        assert any(key[1] == "other" for key in notebook_stats._PASS_CACHE)
+

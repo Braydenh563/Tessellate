@@ -992,7 +992,7 @@ GROWTH_RANGES = ("3", "12", "all")
 GROWTH_ALL_MAX = 240
 
 
-def _growth_keys(now: datetime, growth: str, made: list[str]) -> list[str]:
+def _growth_keys(now: datetime, growth: str, made: Counter) -> list[str]:
     if growth != "all":
         return _month_keys(now, int(growth))
     first = min(made, default=None)
@@ -1014,24 +1014,61 @@ def _left_out(session: Session) -> dict:
     return {"private": private, "archived": archived}
 
 
-def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
-    """Notes, words, tags and growth from one pass over the live notes; the
-    other counts are one aggregate query each."""
-    zone = now.tzinfo
-    rows = session.execute(_visible(select(Entry.content, Entry.tags, Entry.created_at))).all()
+#: **One pass over the live notes, kept until a note moves** (perf3 1031). The
+#: words, the distinct tags and the month each note was made in cost 100 to
+#: 150 ms per 2,000 notes (every note read and counted), and the Statistics
+#: page asked again on every open. Held per (database, space, zone) against a
+#: fingerprint of the live notes read by one aggregate query: how many, the
+#: sum of their ids, the newest `updated_at` (which any write to a note moves)
+#: and the total length of the text and tags. A note made, edited, binned,
+#: archived or made private changes at least one of them.
+_PASS_CACHE: dict[tuple, tuple[tuple, int, int, Counter]] = {}
+_PASS_CACHE_MAX = 8
+
+
+def _notes_fingerprint(session: Session) -> tuple:
+    return tuple(
+        session.execute(
+            _visible(
+                select(
+                    func.count(Entry.id),
+                    func.coalesce(func.sum(Entry.id), 0),
+                    func.max(Entry.updated_at),
+                    func.coalesce(func.sum(func.length(Entry.content)), 0),
+                    func.coalesce(func.sum(func.length(Entry.tags)), 0),
+                )
+            )
+        ).one()
+    )
+
+
+def _note_pass(session: Session, zone) -> tuple[int, int, Counter]:  # noqa: ANN001
+    """(words, distinct tags, notes made per "YYYY-MM") over the live notes."""
+    key = (str(session.get_bind().url), session.info.get("workspace_id"), str(zone))
+    seen = _notes_fingerprint(session)
+    held = _PASS_CACHE.get(key)
+    if held and held[0] == seen:
+        return held[1], held[2], held[3]
     tags: set[str] = set()
     words = 0
-    made: list[str] = []
-    for content, raw, created in rows:
+    made: Counter = Counter()
+    for content, raw, created in session.execute(_visible(select(Entry.content, Entry.tags, Entry.created_at))):
         words += _words(content)
         tags.update(_tags_of(raw))
         if created is not None:
-            made.append((created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m"))
+            made[(created.astimezone(zone) if created.tzinfo else created).strftime("%Y-%m")] += 1
+    if len(_PASS_CACHE) >= _PASS_CACHE_MAX and key not in _PASS_CACHE:
+        _PASS_CACHE.pop(next(iter(_PASS_CACHE)))
+    _PASS_CACHE[key] = (seen, words, len(tags), made)
+    return words, len(tags), made
+
+
+def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -> dict:
+    """Notes, words, tags and growth from one pass over the live notes; the
+    other counts are one aggregate query each."""
+    words, tag_count, made = _note_pass(session, now.tzinfo)
     keys = _growth_keys(now, growth_range, made)
-    growth = dict.fromkeys(keys, 0)
-    for key in made:
-        if key in growth:
-            growth[key] += 1
+    growth = {key: made.get(key, 0) for key in keys}
     #: A link counts only between two counted notes: a link to a binned or
     #: private one would say that hidden note is joined to something.
     near, far = aliased(Entry), aliased(Entry)
@@ -1054,7 +1091,7 @@ def _notebook_block(session: Session, now: datetime, growth_range: str = "12") -
         "notes": manager.count_notes(session),
         "left_out": _left_out(session),
         "words": words,
-        "tags": len(tags),
+        "tags": tag_count,
         "categories": session.scalar(select(func.count(Category.id))) or 0,
         "documents": session.scalar(select(func.count(Document.id))) or 0,
         "links": session.scalar(select(func.count()).select_from(ends)) or 0,

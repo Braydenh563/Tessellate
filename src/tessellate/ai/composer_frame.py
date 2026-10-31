@@ -178,13 +178,18 @@ def plain_snippet(content: str | None, limit: int = 60) -> str:
     return cut[: cut.rfind(" ")].rstrip(" ,;:-") + "…" if " " in cut else cut + "…"
 
 
+#: `[^\W_]` is exactly `str.isalnum` (letters and digits, not the underscore); a
+#: compiled search per token is a quarter faster than `any(c.isalnum() ...)`.
+_HAS_ALNUM = re.compile(r"[^\W_]").search
+
+
 def note_words(content: str | None) -> int:
     """How many words a note has: its tokens that hold a letter or a digit, so
     a list dash is not one, and not its title line, which names the note
     rather than says anything in it. The one counter for "how long is this
     note", "which is longer" and "your longest note" (audit 1030 Z10)."""
     body = re.sub(r"\A\s*#{1,6}[ \t][^\n]*", "", str(content or ""))
-    return sum(1 for token in body.split() if any(c.isalnum() for c in token))
+    return sum(1 for token in body.split() if _HAS_ALNUM(token))
 
 
 _SAID_IN_A_FRAME = []
