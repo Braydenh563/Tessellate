@@ -478,11 +478,14 @@ def test_no_surface_counts_words_by_its_own_split():
 
 
 def test_the_head_dot_is_drawn_between_shown_chips_only():
+    import re
     from pathlib import Path
 
-    css = Path("frontend/css/04-chat-dock-appearance.css").read_text(encoding="utf-8")
-    assert ".chat-subline > :not([hidden]) ~ :not([hidden])::before" in css
-    assert ".chat-subline > *+*::before" not in css
+    # Spaces around combinators are dropped: the boot CSS budget keeps some
+    # selectors compact, and the rule is the same either way.
+    css = re.sub(r"\s*([>~+])\s*", r"\1", Path("frontend/css/04-chat-dock-appearance.css").read_text(encoding="utf-8"))
+    assert ".chat-subline>:not([hidden])~:not([hidden])::before" in css
+    assert ".chat-subline>*+*::before" not in css
 
 
 # INBOX 1496. A vague pick is a pick; a caption is said once; no filler as a subject.
