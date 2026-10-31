@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Complexity (cplx 1031): the CI scan's worst functions split into named steps with no change in behaviour (radon rank F to C or better: analyse_attachment 47, maxims 46, _build_graph 45, timeline 44, composer `_body` 44, events `undo` 43, `_optimization_pass` 41; E to C: margin `read` 39, utilities `answer` 39, agent `_prepare_turn` 40, composer `_next_questions` 40), their seed rows deleted and the ruff ratchet lowered. Same targeted tests before and after.
 - Paste (the owner's log): a clipboard file item the browser will not hand over no longer throws ("null.type" in the paste handler); it is skipped.
 - Library documents (polish5 1031): a search already on when the list first draws no longer leaves the first reorder with nothing to store (it held 0 of 4 documents; now 4 of 4, read once behind the draw). Measured with no fix needed: the Custom order hint and Move up and Move down (first two rows) on documents, boards and media at 1440 and 390 (hint 18px and 54px tall, 6px above the list, no overflow).
 - Phone polish (polish5 1031): the back-to-top button sits one step above the floating New button instead of half under it (Notes at 390: the arrow at y 710 to 754 under the fab at 730 to 774, now 678 to 722), and a long map name in the board picker runs to two lines (100px by two lines, up from 90px by one; the bar stays 54px).
