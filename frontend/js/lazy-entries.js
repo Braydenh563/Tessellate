@@ -108,9 +108,39 @@ const characterBacklog = new Map();
 const CHARACTER_DEPENDENTS = ["onboarding"];
 for (const name of CHARACTER_DEPENDENTS) LAZY_MODULES[name] = [...LAZY_MODULES.characters, ...LAZY_MODULES[name]];
 
-function afterCharacters(fn) {
+//: `fallback` is a face that needs no bundle (`plainHead`, or the app's emblem): it
+//: runs instead of `fn` when the bundle could not be fetched (offline, a 500), so
+//: a head is never left empty for good.
+const characterFallbacks = new Map();
+
+function afterCharacters(fn, fallback) {
   if (charactersLoaded) fn();
-  else characterWaiters.add(fn);
+  else if (characterWaiters.failed) fallback?.();
+  else {
+    characterWaiters.add(fn);
+    if (fallback) characterFallbacks.set(fn, fallback);
+  }
+}
+
+function charactersLost() {
+  characterWaiters.failed = true;
+  characterWaiters.clear();
+  for (const fallback of characterFallbacks.values()) runCharacterJob(fallback);
+  characterFallbacks.clear();
+}
+
+//: The app's own mark, already in the page (phone-shell.js), as the app's head.
+function emblemHead(holder, size) {
+  holder.replaceChildren();
+  renderEmblem(holder, size);
+}
+
+//: The name's initial in a quiet disc, for a head whose face did not arrive.
+function plainHead(holder, name) {
+  const initial = document.createElement("span");
+  initial.className = "plain-head";
+  initial.textContent = String(name || "?").trim().charAt(0).toUpperCase() || "?";
+  holder.replaceChildren(initial);
 }
 
 function runCharacterJob(fn, args = []) {
@@ -134,8 +164,9 @@ function charactersArrived() {
 }
 
 function loadCharactersIdle() {
-  if (window.requestIdleCallback) requestIdleCallback(() => ensureModule("characters"), { timeout: 3000 });
-  else setTimeout(() => ensureModule("characters"), 400);
+  const load = () => ensureModule("characters").then((ok) => ok || charactersLost());
+  if (window.requestIdleCallback) requestIdleCallback(load, { timeout: 3000 });
+  else setTimeout(load, 400);
 }
 
 function installCharacterStandIns(names, replay) {

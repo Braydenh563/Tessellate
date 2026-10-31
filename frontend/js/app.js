@@ -603,27 +603,6 @@ async function apiPagedList(path, pageSize, options = {}) {
 const JOB_STARTING_PATH =
   /^\/(entries|documents|media\/upload|media\/\d+\/|files\/\d+\/|conversations\/\d+\/messages|extras\/|models\/pull|search\/reindex|tasks\/trigger-autonomous)/;
 
-//: Debounced, because committing a note with four images is four writes and
-//: one job list. 600ms rather than immediately: the thread is started after
-//: the response is written, so a poll racing it by a millisecond sees the
-//: state from just before the job existed, the exact miss this fixes.
-let jobPollKick = null;
-function kickBackgroundTaskPoll() {
-  //: A write that starts a job is the clearest "something just changed"
-  //: there is, so the status poll's idle backoff (see `resetStatusCadence`)
-  //: starts again from 30s rather than the job's progress being reported on
-  //: a two-minute delay. Reached only from `api()` on a non-GET, which
-  //: cannot happen before this file has finished evaluating, so the `const`
-  //: that function reads is always past its temporal dead zone by then.
-  resetStatusCadence();
-  clearTimeout(jobPollKick);
-  jobPollKick = setTimeout(() => {
-    refreshBackgroundTasks().catch(() => {
-      // A poll is best-effort, it runs again on the status loop regardless.
-    });
-  }, 600);
-}
-
 // A short-lived cache for GET responses, opt-in per call.
 //
 // Every dashboard widget fetches its own data, and switching away from the
@@ -844,7 +823,7 @@ function showLockScreen(setupMode) {
   //: A PIN set or forgotten since the last look (Settings, or five wrong
   //: tries) changes what the field asks for, so the lock asks again.
   if (!setupMode) {
-    apiJson("/auth/status", { silent: true })
+    apiJson("/auth/status", { silent: true, cacheMs: 3e3 })
       .then((status) => {
         pinHere = !!status?.pin_here;
         if ($("lock-overlay").dataset.mode === "unlock") lockFieldForPin(pinHere);
@@ -967,7 +946,7 @@ function hideBootSplash() {
 async function initAuth() {
   // Bounded probe: if the server is unreachable or hangs, fail fast with a
   // clear message instead of an indefinite blank/"connecting" screen.
-  const status = await apiJson("/auth/status", { timeoutMs: 8000 }).catch(() => null);
+  const status = await apiJson("/auth/status", { timeoutMs: 8000, cacheMs: 3e3 }).catch(() => null);
   //: The splash goes now only where the app is not about to start under it:
   //: a start lifts it with the shell (`curtainShell`).
   if (!status || status.setup_required || (!status.auto_session && !authToken())) hideBootSplash();

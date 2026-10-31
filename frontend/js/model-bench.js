@@ -103,7 +103,7 @@ async function renderModelBench() {
   let status;
   let state;
   try {
-    [status, state] = await Promise.all([apiJson("/models/status"), apiJson("/models/bench")]);
+    [status, state] = await Promise.all([apiJson("/models/status", { cacheMs: 600 }), apiJson("/models/bench")]);
   } catch {
     box.classList.add("hidden");
     return;

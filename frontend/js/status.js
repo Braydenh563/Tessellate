@@ -1938,6 +1938,7 @@ async function refreshModelStatus() {
     // so 8s leaves real headroom instead of racing it at the wire.
     const next = await apiJson("/models/status", {
       silent: true,
+      cacheMs: 600,
       //: A timeout of a silent request (this poll is the only one that sets
       //: its own `AbortSignal.timeout`) is the "slow" state below, asked
       //: again on the next tick, so `api()` does not log it.
@@ -2995,6 +2996,27 @@ function renderSettings() {
 // screen. So a re-index that finished while you were anywhere else, which is
 // most of them, since these jobs run for minutes, was recorded nowhere. It is
 // polled from here now, so the record does not depend on being watched.
+//: Debounced, because committing a note with four images is four writes and
+//: one job list. 600ms rather than immediately: the thread is started after
+//: the response is written, so a poll racing it by a millisecond sees the
+//: state from just before the job existed, the exact miss this fixes.
+let jobPollKick = null;
+function kickBackgroundTaskPoll() {
+  //: A write that starts a job is the clearest "something just changed"
+  //: there is, so the status poll's idle backoff (see `resetStatusCadence`)
+  //: starts again from 30s rather than the job's progress being reported on
+  //: a two-minute delay. Reached only from `api()` on a non-GET, which
+  //: cannot happen before this file has finished evaluating, so the `const`
+  //: that function reads is always past its temporal dead zone by then.
+  resetStatusCadence();
+  clearTimeout(jobPollKick);
+  jobPollKick = setTimeout(() => {
+    refreshBackgroundTasks().catch(() => {
+      // A poll is best-effort, it runs again on the status loop regardless.
+    });
+  }, 600);
+}
+
 const TASKS_RUNNING_MS = 1500;
 const tasksState = { beat: null };
 
