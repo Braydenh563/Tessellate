@@ -2615,7 +2615,6 @@ async function streamChatEvents({
   const body = { question, history: history || [], locale: navigator.language };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
-  //: A private chat (chat-private.js): the server keeps no trace of the turn.
   if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
   // Per-turn, not a setting: one quick answer shouldn't change the default

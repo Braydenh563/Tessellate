@@ -1889,12 +1889,7 @@ function mountChatActionsMenu() {
         //: it kept somewhere, and the one that ends it. Eight rows read as one
         //: list before (menus.js).
         { label: "ph:pencil-simple Rename this chat", group: "chat", run: () => renameCurrentConversation() },
-        {
-          label: "ph:ghost Private chat",
-          group: "chat",
-          title: "Start a chat that is not saved or remembered, or end this one",
-          run: () => chatPrivateToggle(),
-        },
+        { label: "ph:ghost Private chat", group: "chat", run: () => chatPrivateToggle() },
         { label: "ph:git-branch Fork this chat", group: "chat", title: $("chat-fork")?.title, run: click("chat-fork") },
         {
           label: "ph:arrows-in Compress the earlier messages",

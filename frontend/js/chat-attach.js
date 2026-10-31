@@ -2524,7 +2524,6 @@ async function chatSendTurn(preset, opts = {}) {
       picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
     };
     if (convRef.private) {
-      //: Nothing is written (chat-private.js): the turn stays in this page.
     } else if (convRef.id === null) {
       const created = await apiJson("/conversations", {
         method: "POST",
@@ -2973,18 +2972,16 @@ function reattachStreamingTurn() {
   return true;
 }
 
-//: A private chat with messages asks before it is left (chat-private.js);
-//: `retry` runs once it is discarded.
+//: A private chat with messages asks before it is left (chat-private.js).
 function chatLeaveHeld(retry) {
   if (!chatConv.private || !(chatConv.turns.length || chatStreaming?.conv === chatConv)) return false;
   chatPrivateLeave(retry);
   return true;
 }
 
-//: The head's mark and the composer menu's switch follow the open chat.
 function syncChatPrivate() {
   $("chat-private-mark").hidden = !chatConv.private;
-  $("chat-private-toggle").setAttribute("aria-pressed", String(Boolean(chatConv.private)));
+  $("chat-private-toggle").ariaPressed = String(!!chatConv.private);
 }
 
 function newChatConversation() {

@@ -3,7 +3,6 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
-  //: A chat that is not kept (chat-private.js, INBOX 1481).
   chatPrivate: ["/css/chat-private-lazy.css", "/js/chat-private.js"],
   //: The plain head's disc, fetched only when the faces failed (`plainHead`).
   plainHead: ["/css/plain-head-lazy.css"],

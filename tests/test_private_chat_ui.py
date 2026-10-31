@@ -27,10 +27,10 @@ def test_there_are_three_ways_in():
     # The composer's settings panel
     panel = html[html.index('id="chat-dock-more-panel"') :]
     assert 'id="chat-private-toggle"' in panel[: panel.index('id="persona-peek-panel"')]
-    assert '$("chat-private-toggle").addEventListener("click", () => chatPrivateToggle())' in js
+    assert '$("chat-private-toggle").addEventListener("click", chatPrivateToggle)' in js
     # The chat head's menu
     menu = js[js.index("function mountChatActionsMenu") :]
-    assert re.search(r'label: "ph:ghost Private chat",\s+group: "chat",.*?run: \(\) => chatPrivateToggle\(\)', menu[:2500], re.S)
+    assert '{ label: "ph:ghost Private chat", group: "chat", run: () => chatPrivateToggle() }' in menu[:2500]
     # The palette
     assert '{ label: "ph:ghost Private chat", reveal: "chat-private"' in js
     assert '"chat-private": { tab: "chat", open: () => chatPrivateStart()' in js
@@ -47,7 +47,7 @@ def test_the_head_carries_a_quiet_mark_with_a_title():
 def test_the_empty_state_is_one_line():
     assert 'const PRIVATE_EMPTY_LINE = "Private chat. Nothing here is saved or remembered.";' in PRIVATE_JS
     assert "if (chatConv.private) return chatPrivateEmpty(box);" in app_js_text()
-    assert "—" not in PRIVATE_JS and "!" not in PRIVATE_EMPTY_COPY()
+    assert chr(0x2014) not in PRIVATE_JS and "!" not in PRIVATE_EMPTY_COPY()
 
 
 def PRIVATE_EMPTY_COPY() -> str:

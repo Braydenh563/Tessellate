@@ -6,11 +6,11 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  min-height: 12rem;
+  padding: var(--space-6) 0;
   color: var(--muted);
 }
 .chat-empty-private .ph {
-  font-size: 2rem;
+  font-size: var(--text-display);
 }
 #chat-private-toggle[aria-pressed="true"] {
   background: var(--accent-soft);
