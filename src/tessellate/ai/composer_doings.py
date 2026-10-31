@@ -179,6 +179,8 @@ def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001
     month = _month(rest, today)
     if month:
         done = [d for d in done if (d.day.year, d.day.month) == month]
+    if shape == "total" and not any(d.km for d in done):
+        return False  # "how much did I spend": a sum of money, `composer_money`'s
     if not done:
         return _say_habit(out, views, obj or [verb], shape)
     span = f" in {date(*month, 1):%B}" if month else ""
