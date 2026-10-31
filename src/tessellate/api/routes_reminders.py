@@ -720,6 +720,14 @@ def _naive_utc(moment: datetime) -> datetime:
     return moment
 
 
+def _is_its_own_time(new: datetime, current: datetime) -> bool:
+    """The time a reminder already has, as the edit form hands it back: its
+    datetime field is cut to the minute, so "unchanged" is the same minute.
+    An overdue reminder saved with its own past time is not a new past date
+    (INBOX 1468: it was refused, so no overdue reminder could be edited)."""
+    return abs(_naive_utc(new) - _naive_utc(current)) < timedelta(minutes=1)
+
+
 @router.put("/{reminder_id}")
 def update_reminder(
     reminder_id: int, body: ReminderUpdate, session: Session = Depends(get_session)
@@ -727,7 +735,9 @@ def update_reminder(
     reminder = _existing(session, reminder_id)
     if body.text is not None:
         reminder.text = body.text
-    if body.due_at is not None:
+    #: Its own time handed back (the edit form's minute) changes nothing, so a
+    #: rule's chosen day (`repeat_day`) and its seconds stay.
+    if body.due_at is not None and (body.restore or not _is_its_own_time(body.due_at, reminder.due_at)):
         if not body.restore:
             _reject_if_in_the_past(body.due_at)
         if _naive_utc(body.due_at) != _naive_utc(reminder.due_at):
