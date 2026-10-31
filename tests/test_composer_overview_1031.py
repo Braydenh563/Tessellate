@@ -19,7 +19,10 @@ import pytest
 
 from tessellate.ai import composer_digest, realise
 from tests.test_composer_route_688 import _ask
-from tests.test_composer_timing_1461 import MORE, NOTES, ask  # noqa: F401
+import tests.test_composer_timing_1461 as timing
+
+ask = timing.ask  #: the 1461 fixture, used here by name
+NOTES, MORE = timing.NOTES, timing.MORE
 
 QUESTIONS = ["What have I saved about courses & study?", "tell me about uni", "tell me about courses & study",
              "what have I got on courses & study", "what have I written about uni"]
@@ -28,8 +31,6 @@ QUESTIONS = ["What have I saved about courses & study?", "tell me about uni", "t
 @pytest.fixture
 def answer(ask, monkeypatch):  # noqa: F811
     """The whole event set for a question, through the 1461 fixture."""
-    import tests.test_composer_timing_1461 as timing
-
     got: dict = {}
 
     def spy(*a, **k):  # noqa: ANN002, ANN003, ANN202
