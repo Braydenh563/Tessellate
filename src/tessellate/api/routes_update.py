@@ -325,7 +325,7 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         _state.step = (
             "Couldn't download the update, this can happen if a firewall, "
             "proxy, or antivirus is blocking the download, or if you're "
-            "offline. Check your connection and try again from Settings → "
+            "offline. Check your connection and try again from Settings, "
             "About."
         )
         _state.running = False
@@ -722,7 +722,7 @@ def apply_update(tag: str | None = None) -> dict:
     if not config.get_preference("update_check_enabled", False):
         raise HTTPException(
             status_code=403,
-            detail="Turn on 'Check GitHub for a newer version' in Settings → "
+            detail="Turn on 'Check GitHub for a newer version' in Settings, "
             "About first: this needs to know a release actually exists.",
         )
     # No `auto_update_enabled` guard (INBOX 1440): this request is the press on

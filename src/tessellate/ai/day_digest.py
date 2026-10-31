@@ -33,10 +33,22 @@ def _naive(moment: datetime) -> datetime:
     return moment.astimezone(timezone.utc).replace(tzinfo=None) if moment.tzinfo else moment
 
 
+def _after_frontmatter(lines: list[str]) -> list[str]:
+    """The lines after a leading `---` block, or all of them when it never closes."""
+    if not lines or lines[0].strip() != "---":
+        return lines
+    for index, line in enumerate(lines[1:], 1):
+        if line.strip() in ("---", "..."):
+            return lines[index + 1 :]
+    return lines[1:]
+
+
 def _first_line(text: str) -> str:
-    for line in (text or "").splitlines():
+    """The first line with words in it, after any frontmatter: a rule (`---`, `***`)
+    or a bare mark is not something to quote (audit 1031 Z16)."""
+    for line in _after_frontmatter((text or "").splitlines()):
         line = line.strip().lstrip("#").strip()
-        if line:
+        if any(ch.isalnum() for ch in line):
             return line
     return ""
 
