@@ -36,7 +36,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Ask answer foot sections with no model, INBOX 1466 rest (agent askfoot-1031)
 - [x] Review of the 1031 merges (reviewer: 2 high, 5 med, 4 low) and UX audit of drag, tray, Ask foot (ux-auditor)
 - [x] Review fixes: obj order seeding, keyless image chips, Alt+arrows in inputs, drag hold, map paste, tray per space (agent objfix-1031)
-- [ ] Review fixes: diagram asks, pasted questions, citation keys, drawio title (agent revfix-1031)
+- [x] Review fixes: diagram asks, pasted questions, citation keys, drawio title (agent revfix-1031)
 - [ ] S3 rest: avatars.js and atlas.js off the boot path (agent bootlazy-1031)
 - [x] Chat attachment leftovers: reloaded chat keeps its map (agent fixes-1031, merged)
 - [x] Search negated operators -tag: -kind: -is: -title: (hub, S50 leftover)
