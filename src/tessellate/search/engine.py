@@ -1190,9 +1190,52 @@ def _plan_terms(q: str, asked) -> tuple:  # noqa: ANN001
     return subject, terms
 
 
+def _in_scope(session: Session, asked) -> tuple[str | None, list[str]]:  # noqa: ANN001
+    """What `in:`, `space:` and `cat:` name: (a space id or None, category names).
+
+    `in:Work` is a space when one has that id or name and a category when none
+    does, which is how the Notes filter box has always read it (audit 1031 N1);
+    `cat:` and `category:` are always a category.
+    """
+    names = list(asked.categories)
+    space = None
+    if asked.filters["space"]:
+        from tessellate.core.database import Space
+
+        known = {}
+        for space_id, name in session.execute(select(Space.id, Space.name)):
+            known[space_id.lower()] = space_id
+            known.setdefault(name.lower(), space_id)
+        for value in asked.filters["space"]:
+            found = known.get(value.lower())
+            if found is None:
+                names.append(value)
+            elif space is None:
+                space = found
+    return space, names
+
+
 def _search_space(session: Session, context: dict, asked) -> str | None:  # noqa: ANN001
-    space = context.get("space") or (asked.filters["space"][0] if asked.filters["space"] else None)
-    return space or _session_space(session)
+    return context.get("space") or _in_scope(session, asked)[0] or _session_space(session)
+
+
+def _by_category(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """Only the notes filed under a category `in:` or `cat:` named."""
+    wanted = {name.casefold() for name in _in_scope(session, asked)[1]}
+    if not wanted:
+        return rows
+    from tessellate.core.database import Category, Entry
+
+    ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
+    filed = {}
+    if ids:
+        filed = {
+            entry_id: str(name).casefold()
+            for entry_id, name in session.execute(
+                select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
+            )
+        }
+    return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"]) in wanted]
 
 
 def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
@@ -1265,7 +1308,7 @@ def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    return _without(_by_tags(rows, asked), asked)
+    return _without(_by_tags(_by_category(session, rows, asked), asked), asked)
 
 
 #: How a negated operator rules a row out, matched as the positive ones match.
@@ -1367,7 +1410,7 @@ def search(
     # be the search box answering a question nobody put. The Notes list is
     # already showing every note when the box is empty; a search that also
     # returns every note is not an answer, it is noise with a scrollbar.
-    if not (terms or asked.phrases or any(asked.filters.values()) or asked.has_range):
+    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.has_range):
         return []
     rows, terms = _candidate_rows(session, q, subject, terms, asked, wanted_kinds, space, hybrid, limit, depth)
     rows = _filter_rows(session, rows, asked) if rows else rows

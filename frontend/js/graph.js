@@ -3349,7 +3349,7 @@ function graphPopupActionList(entry) {
       run: async () => {
         const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
         if (!related.length) {
-          toast("No similar notes found.");
+          toast(meaningEngineMissing() ? "No similar notes found: the meaning engine is not ready. Set it up in Settings, Models." : "No similar notes found.");
           return;
         }
         // Reuse the existing highlight pass by searching for these ids.

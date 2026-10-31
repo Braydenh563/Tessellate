@@ -432,7 +432,7 @@
           turned off. Either way it can only be done on this computer.
         </p>
       </div>
-      <p id="lock-forgot-remote" class="notice hidden" role="status">
+      <p id="lock-forgot-remote" class="notice hidden">
         <i class="ph ph-desktop" aria-hidden="true"></i>
         <span>Reset your password on the computer this notebook lives on. Another device can't do it.</span>
       </p>
@@ -1473,7 +1473,7 @@
          carries, then the two things the mode needs: adding a widget and the
          way out. Shown only while editing; the menu's Edit layout opens it. -->
     <div class="dash-editbar hidden" id="dash-editbar">
-      <span class="dash-hint" id="dash-hint" role="status">
+      <span class="dash-hint" id="dash-hint">
         <span class="dash-hint-badge">Editing layout</span>
         <span class="dash-hint-item"><i class="ph ph-dots-six-vertical ph-lead" aria-hidden="true"></i>Drag a card to move it</span>
         <span class="dash-hint-item"><i class="ph ph-arrows-out-line-horizontal ph-lead" aria-hidden="true"></i>Wide or narrow</span>
@@ -1648,11 +1648,11 @@
                 opens the blocks menu</strong> (also <code>Ctrl</code>+<code>/</code>);
                 pressing <code>/</code> anywhere you are <em>not</em> typing
                 jumps to the search box.</li>
-              <li>Headings beyond the first line, lists, tables, fenced
-                code and <code>&gt; [!tip]</code> callouts are stored
-                faithfully but are <em>not</em> rendered on a note card, 
-                a note list rendered that way gets very tall very fast.
-                They do render in the document editor.</li>
+              <li>A note card draws tables, fenced code, quotes
+                (<code>&gt;</code>), <code>&gt; [!tip]</code> callouts and
+                tasks. Headings beyond the first line show as plain text
+                and lists as bullets there, because a list drawn in full
+                gets very tall very fast; the document editor draws all of it.</li>
             </ul>
           </div>
           <!-- **One writing surface, not four stacked boxes.** The title

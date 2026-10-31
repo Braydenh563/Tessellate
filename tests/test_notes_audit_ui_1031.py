@@ -188,4 +188,5 @@ console.log(JSON.stringify([found, bad || null]));
 def test_the_empty_list_names_an_unknown_filter():
     text = (JS / "notes-list.js").read_text()
     assert "noMatchHint(noMatch);" in text
-    assert "No filter named is:${bad}." in text
+    #: The hint's own text moved to notes-lazy.js (a stand-in loads it; gzip budget), the call did not.
+    assert "No filter named is:${bad}." in (JS / "notes-lazy.js").read_text()

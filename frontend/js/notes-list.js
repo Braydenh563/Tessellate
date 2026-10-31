@@ -223,8 +223,7 @@ const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: 
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
-//: Every page of the engine's answer, up to 500 notes (audit 1031 N16: a filter stopped at the first 50
-//: while the list it narrows holds them all); `more` is true only if a tenth page still had more.
+//: Every page of the engine's answer, up to 500 notes (audit 1031 N16); `more` is true only if page ten had more.
 async function enginePages(q, kind) {
   const ids = new Set();
   let more = false;
@@ -285,16 +284,17 @@ function showNotesFilter(query) {
   search.focus();
 }
 
+//: A feature that needs the meaning engine says so when it is not ready (audit 1031 N25);
+//: a still-warming engine is not a missing one.
+function meaningEngineMissing() {
+  return Boolean(modelStatus) && modelStatus.embedding_ready === false && !modelStatus.embedding_warming;
+}
+
+const MEANING_ENGINE_WORDS = "The meaning engine is not ready, so only the words are compared. Set it up in Settings, Models.";
+
 //: The `is:` words the filter knows (`matchesSearch` below). Any other is a typo or a
 //: filter that does not exist, and an empty list says so (audit 1031 N18).
 const NOTE_FLAGS = "pinned favourite favourites favorite starred private linked draft drafts untagged untitled review".split(" ");
-
-function noMatchHint(box) {
-  const line = box.querySelector(".muted");
-  const bad = noteSearch && parseNoteQuery(noteSearch).flags.find((flag) => !NOTE_FLAGS.includes(flag));
-  line.dataset.was ??= line.textContent;
-  line.textContent = bad ? `No filter named is:${bad}. Try is:favourite, is:private, is:linked, is:draft, is:untagged, is:untitled or is:review.` : line.dataset.was;
-}
 
 function parseNoteQuery(raw) {
   const query = {
@@ -359,37 +359,6 @@ function parseNoteQuery(raw) {
     else query.words.push(lower);
   }
   return query;
-}
-
-//: KG7: a structural query's bar over the list: how many, and the same notes
-//: as a table and on the graph.
-function liveQueryBar(visible) {
-  const list = $("entry-list");
-  let bar = list.parentElement?.querySelector(":scope > .note-query-bar");
-  const parsed = noteSearch ? parseNoteQuery(noteSearch) : null;
-  const live = Boolean(parsed) && (parsed.structural.length > 0 || parsed.engine.length > 0);
-  if (!live) {
-    bar?.remove();
-    return;
-  }
-  if (!bar) {
-    bar = document.createElement("div");
-    bar.className = "row note-query-bar";
-    list.before(bar);
-  }
-  const ids = visible.map((e) => e.id);
-  const count = document.createElement("span");
-  count.className = "muted";
-  //: Up to ten pages of 50 are read; past that it says so rather than
-  //: letting the count pass for the whole of a larger answer.
-  count.textContent = parsed.engine.length > 0 && noteEngine.capped
-    ? `The first ${ids.length} notes that match this query, add words to narrow it`
-    : `${nounCount(ids.length, "note")} match this query`;
-  bar.replaceChildren(
-    count,
-    smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
-    smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
-  );
 }
 
 function noteQueryIsEmpty(query) {
@@ -1617,8 +1586,12 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
         i = j;
         continue;
       }
-      // An ordinary blockquote, not a callout: leave it to the inline pass
-      // exactly as it was written, rather than eating the "> " markers.
+      //: A plain quote draws as one (audit 1031 N26); its body goes back through this
+      //: function, so nested quotes nest and search words stay marked.
+      flush();
+      element.appendChild(mdQuoteElement(quoted, (host, body) => renderNoteText(host, body.join("\n"), terms, prose)));
+      i = j;
+      continue;
     }
 
     //: **A task reads as a task** (qa-1005): "- [x] Beta invite list" was the
@@ -2381,9 +2354,33 @@ function resetNoteList(list) {
   return keep;
 }
 
+//: The filter words outlive a reload in this tab (audit 1031 N44), read here at load
+//: because the first render runs before the later wiring files and would forget them.
+try {
+  noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
+  if (noteEngine.remembered) {
+    $("note-search").value = noteEngine.remembered;
+    noteSearch = noteEngine.remembered;
+    $("save-search").classList.remove("hidden");
+  }
+} catch {
+  /* storage blocked: an empty box, as before */
+}
+function rememberNoteFilter(words) {
+  if (words === noteEngine.remembered) return;
+  noteEngine.remembered = words;
+  try {
+    if (words) sessionStorage.setItem("note-filter", words);
+    else sessionStorage.removeItem("note-filter");
+  } catch {
+    /* storage blocked: this page only */
+  }
+}
+
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
   const list = $("entry-list");
+  rememberNoteFilter(noteSearch);
   // Drafts stay out of All/category views entirely, user-reported: they
   // should only show up in the Drafts filter until saved as a real note.
   const visible = libraryVisibleRows();

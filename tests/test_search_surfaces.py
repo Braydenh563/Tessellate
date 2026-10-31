@@ -188,3 +188,42 @@ def test_no_surface_still_reads_the_second_ranking_path():
         if "semantic=true" in path.read_text(encoding="utf-8")
     ]
     assert not offenders, offenders
+
+
+def test_every_operator_the_notes_filter_names_is_one_the_finder_knows():
+    """Audit 1031 N1: two grammars shared operator words and read some differently.
+    The filter box's bare-operator list (`tag:`, `cat:`, `in:`, ...) is the list of words
+    it knows; the server's parser must take each as an operator, never as a word it
+    warns about, so a query typed in one box means the same in the other."""
+    from tessellate.search.query import understand
+
+    text = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    bare = re.search(r"if \(/\^\(([^)]*)\)\$/\.test\(lower\)\) continue;", text)
+    assert bare, "the filter box's bare-operator line moved"
+    names = {alt.rstrip(":#?").rstrip(":") for alt in bare.group(1).split("|") if alt.endswith(":") or alt.endswith(":#?")}
+    assert {"tag", "category", "cat", "in", "title", "is", "kind", "has", "space"} <= names
+    for name in sorted(names):
+        notices = understand(f"{name}:something").notices
+        assert not [n for n in notices if f"{name}:," in n], (name, notices)
+
+
+def test_a_missing_meaning_engine_is_named_where_its_absence_shows():
+    """Audit 1031 N25: "No similar notes found." and a Semantic toggle that changed
+    nothing said nothing about the engine that was not there. One predicate
+    (`meaningEngineMissing`, from `/models/status`: not ready and not still warming)
+    feeds the Similar panel, the graph's Similar notes and the toggle."""
+    lists = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    assert "embedding_ready === false" in lists and "!modelStatus.embedding_warming" in lists
+    for name, marker in (("note-panels.js", "meaningEngineMissing()"), ("graph.js", "meaningEngineMissing()"), ("phone-shell.js", "MEANING_ENGINE_WORDS")):
+        assert marker in (JS_DIR / name).read_text(encoding="utf-8"), name
+
+
+def test_the_filter_words_survive_a_reload_in_the_tab():
+    """Audit 1031 N44: the hash kept the open note and the sort was remembered, but the
+    filter box came back empty. sessionStorage holds the words (a new window starts
+    clean), written from `renderEntries` so every path that changes the box is covered
+    and read at load by notes-list.js, before the first render could forget them."""
+    text = (JS_DIR / "notes-list.js").read_text(encoding="utf-8")
+    assert 'sessionStorage.getItem("note-filter")' in text
+    assert "rememberNoteFilter(noteSearch);" in _function(text, "renderEntries")
+    assert text.index('sessionStorage.getItem("note-filter")') < text.index("function renderEntries(")

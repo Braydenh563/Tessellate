@@ -4218,6 +4218,10 @@ $("dash-edit").addEventListener("click", async () => {
   //: has rebuilt that menu (it replaces the opener).
   await renderDashboard();
   if (leaving) $("dash-more")?.querySelector("button")?.focus();
+  //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
+  //: out when it later shows, and 25 such regions exist at once); the one
+  //: status region says what began.
+  else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
 });
 
 // Widget picker modal (roadmap §26): a dedicated surface alongside "Edit

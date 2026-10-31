@@ -67,6 +67,16 @@ async function toggleRelated(entry) {
   label.className = "muted";
   label.textContent = related.length ? "Similar:" : "No similar notes found.";
   row.appendChild(label);
+  //: With no meaning engine the list is empty for a reason the person can fix.
+  if (!related.length && meaningEngineMissing()) {
+    label.textContent = "No similar notes found: the meaning engine is not ready.";
+    const setup = document.createElement("button");
+    setup.type = "button";
+    setup.className = "ghost small";
+    setup.textContent = "Set it up";
+    setup.addEventListener("click", () => openSettingsModal("models"));
+    row.appendChild(setup);
+  }
   for (const other of related) {
     row.appendChild(similarNoteRow(entry, other, () => {
       // Nothing else on this card changes, so re-rendering the whole list

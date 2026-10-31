@@ -2248,6 +2248,8 @@ $("semantic-search-toggle")?.addEventListener("change", () => {
   // the term, then reload if semantic is on", is written out at the
   // "Search the notebook" selection action.
   if (noteSearch) loadEntries();
+  //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
+  if ($("semantic-search-toggle").checked && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
 });
 
 // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
