@@ -35,10 +35,10 @@ with its owner named in the entry.
 ## Open items
 
 
-1505. **Owner, 2026-11-01 (panel geometry memory):** "can you make the fact that panel positions and sizing is remembered across sessions or even after opening and closing that panel is togglable or not??" Recommendation taken: one Settings switch, "Remember where panels sit", on by default; off forgets on close and on restart and clears what is stored. Agent ui-1101.
+1505. **Owner, 2026-11-01 (panel geometry memory):** "can you make the fact that panel positions and sizing is remembered across sessions or even after opening and closing that panel is togglable or not??" It exists: Settings, Appearance, Effects & accessibility, "Panels open where you left them" (`panel-pos`, settings-rows.js:99). Recommendation taken: make it findable from the panel itself (the reset button in a panel head names the switch, and the palette finds it by "remember panel"), and check that off means the middle both after close and after a restart. Agent ui-1101.
 
 
-1504. **Owner, 2026-11-01 (screenshot, templates popup):** "I cant drag the templates popup window to the left past the sidebar". "Start from a template" stops at the notes sidebar's right edge; every dragged panel should be bounded by the window, not the content column. Agent ui-1101.
+1504. **Owner, 2026-11-01 (screenshot, templates popup):** "I cant drag the templates popup window to the left past the sidebar". "Start from a template" stops at the notes sidebar's right edge; INBOX 1474 bounded panels by the free area because the attach panel went behind the sidebar. Recommendation taken: a panel that draws above the sidebar (a modal, the top layer, or a higher z-index) is bounded by the window; only one that would go under it keeps the free area. Agent ui-1101.
 
 
 1503. **Owner, 2026-11-01 (screenshot, Activity panel):** "the dark rectangle behind the agent runs popup panel header doesnt look professional and needs fixing". The Activity header ("Activity", help, more, sweep, terminal, close) sits on a darker inset block inside the panel. Class fix: no popup header draws its own block. Agent ui-1101.
