@@ -33,7 +33,8 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Chat attachment leftovers: reloaded chat keeps its map (agent fixes-1031, merged)
 - [x] Search negated operators -tag: -kind: -is: -title: (hub, S50 leftover)
 - [ ] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
-- [ ] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
+- [x] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
+- [x] OPEN B45, B48 whiteboard rows (agent wbopen-1031): 13 built, .drawio export; 11 left in its remaining list
 - [ ] Companion: Fable pass after companion-1031 hands over (owner named Fable)
 - [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
 - [x] UI review of the 1031 merges (ux-auditor: 6 high, 6 medium, 6 low)
