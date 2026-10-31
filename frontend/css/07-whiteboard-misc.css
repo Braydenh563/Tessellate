@@ -2150,8 +2150,19 @@ body.scroll-top-visible .skills-split > .tab-main {
    to the container rather than naming a second cursor here: `inherit` cannot
    drift out of step with `wbCursorForTool` the way a copied list would. */
 #whiteboard-container:not([data-current-tool="select"]):not([data-current-tool="pan"])
-  :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content) {
+  :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content, .sketch-group, .sketch-path, .sketch-hitbox) {
   cursor: inherit;
+}
+/* **A drawn shape was the one item that kept its own cursor** (INBOX 1486, the
+   owner: "when using the paint bucket tool ... the cursor changes to a pointer
+   or touch hand when hovering over shapes"). Its group wrote an inline
+   `cursor` once, when it was created, so the tool in force then was the tool
+   it showed for good, and the rule above did not reach an inline style. The
+   pointer is the select tool's alone; under every other tool the shape
+   hands the cursor back to the container (measured with `getComputedStyle`
+   over a shape under six tools: 12 of 12 answered `pointer`, 0 after). */
+#whiteboard-container[data-current-tool="select"] .sketch-group:not(.wb-link-sketch) {
+  cursor: pointer;
 }
 .wb-panel-grip.is-dragging {
   cursor: grabbing;
