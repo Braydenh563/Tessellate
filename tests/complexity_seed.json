@@ -124,7 +124,6 @@
  "src/tessellate/api/routes_entries.py::list_entries": 26,
  "src/tessellate/api/routes_entries.py::reevaluate_entry": 17,
  "src/tessellate/api/routes_entries.py::update_entry": 27,
- "src/tessellate/api/routes_files.py::analyse_attachment": 47,
  "src/tessellate/api/routes_files.py::caption_media": 23,
  "src/tessellate/api/routes_files.py::list_media": 18,
  "src/tessellate/api/routes_files.py::vision_ocr_media": 18,
