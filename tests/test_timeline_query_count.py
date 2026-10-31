@@ -123,6 +123,6 @@ def test_link_counts_are_what_the_full_links_would_have_counted(session):
     session.commit()
     ids = [a, b, c, d, e]
     full = manager.links_for_entries_bulk(session, ids)
-    assert manager.link_counts_bulk(session, ids) == {i: len(rows) for i, rows in full.items()}
-    assert manager.link_counts_bulk(session, [a, b]) == {i: len(rows) for i, rows in manager.links_for_entries_bulk(session, [a, b]).items()}
-    assert manager.link_counts_bulk(session, []) == {}
+    assert manager.links_count_bulk(session, ids) == {i: len(rows) for i, rows in full.items()}
+    assert manager.links_count_bulk(session, [a, b]) == {i: len(rows) for i, rows in manager.links_for_entries_bulk(session, [a, b]).items()}
+    assert manager.links_count_bulk(session, []) == {}

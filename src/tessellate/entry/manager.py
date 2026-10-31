@@ -987,7 +987,7 @@ def links_for_entries_bulk(
     return out
 
 
-def link_counts_bulk(session: Session, entry_ids: list[int]) -> dict[int, int]:
+def links_count_bulk(session: Session, entry_ids: list[int]) -> dict[int, int]:
     """How many notes each of `entry_ids` is linked to: `len` of what
     `links_for_entries_bulk` returns for it, without building the other side.
 
