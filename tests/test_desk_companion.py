@@ -407,3 +407,24 @@ def test_the_sweep_and_the_page_agree_on_the_window_sizes():
     assert sizes(js) == sizes(sweep)
     mx = re.search(r"MAX_SIZE = \((\d+), (\d+)\)", (ROOT / "src/tessellate/core/desk_companion.py").read_text())
     assert all(int(w) <= int(mx[1]) and int(h) <= int(mx[2]) for _, w, h in sizes(js))
+
+
+def test_the_window_is_see_through_to_the_root_element_and_a_hit_is_two_lines():
+    """UX review 1031 items 2, 11 and 17: the app's page background is on `html`,
+    so clearing the body left a pale rectangle; a snippet is clamped to two
+    lines; the menu's rows take the arrow keys."""
+    css = (ROOT / "frontend" / "css" / "desk-companion-lazy.css").read_text(encoding="utf-8")
+    assert re.search(r"html:has\(> \.desk-page\) \{\s*background: none;", css)
+    snippet = css[css.rindex(".desk-hit-title,") :][:300]
+    assert "-webkit-line-clamp: 2" in snippet
+    script = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
+    assert '$("desk-menu").addEventListener("keydown"' in script and "ArrowDown" in script
+    assert "said.startsWith(title.textContent)" in script
+
+
+def test_the_settings_switch_with_a_question_mark_gives_way_to_it():
+    """UX review 1031 item 1: at 390 the label did not shrink and the row was
+    524.7px wide in a 263.6px one; the "?" fell to its own line."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index("#settings-modal .help-head > .check-row {") :][:120]
+    assert "flex: 1 1 0" in rule and "min-width: 0" in rule

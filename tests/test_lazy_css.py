@@ -21,9 +21,12 @@ ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 
 
-def _linked() -> set[str]:
-    html = re.sub(r"<!--.*?-->", "", (FRONTEND / "index.html").read_text(encoding="utf-8"), flags=re.S)
-    return set(re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="/css/([^"?]+)', html))
+def _linked(pages: tuple[str, ...] = ("index.html",)) -> set[str]:
+    found = set()
+    for page in pages:
+        html = re.sub(r"<!--.*?-->", "", (FRONTEND / page).read_text(encoding="utf-8"), flags=re.S)
+        found |= set(re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="/css/([^"?]+)', html))
+    return found
 
 
 def _lazy() -> set[str]:
@@ -44,7 +47,8 @@ def _lazy() -> set[str]:
 
 def test_every_stylesheet_is_linked_or_loaded_by_a_bundle():
     on_disk = {p.name for p in (FRONTEND / "css").glob("*.css")}
-    orphans = on_disk - _linked() - _lazy()
+    #: The desktop companion (INBOX 1464) is a page of its own with its own sheet.
+    orphans = on_disk - _linked(("index.html", "desktop-companion.html")) - _lazy()
     assert not orphans, f"stylesheets nothing loads: {sorted(orphans)}"
 
 

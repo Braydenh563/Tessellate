@@ -429,7 +429,7 @@ $("entry-content").addEventListener("input", () => {
 //: truth about being locked, and a second source of truth is how a boundary
 //: like this drifts back open.
 function notebookLocked() {
-  const overlay = document.getElementById("lock-overlay");
+  const overlay = $("lock-overlay");
   return Boolean(overlay) && !overlay.classList.contains("hidden");
 }
 
@@ -1195,9 +1195,9 @@ let tabJumpArmedAt = 0;
 //: because the tab switch that follows does not depend on the save landing.
 function closeOverlaysForChord() {
   if (settingsModalOpen()) closeSettingsModal();
-  const palette = document.getElementById("palette-overlay");
+  const palette = $("palette-overlay");
   if (palette && !palette.classList.contains("hidden")) closePalette();
-  const sketch = document.getElementById("sketch-overlay");
+  const sketch = $("sketch-overlay");
   if (sketch && !sketch.classList.contains("hidden")) closeSketch();
   //: Atlas's sheet, when it is open (settings.js owns the closer).
   if (typeof helpChatSheetClose === "function") helpChatSheetClose();
@@ -1265,7 +1265,7 @@ function runShortcut(id) {
       else closePalette();
     },
     findAnything: () => {
-      const overlay = document.getElementById("finder-overlay");
+      const overlay = $("finder-overlay");
       if (overlay && overlay.classList.contains("hidden")) openFinder();
       else closeFinder();
     },
@@ -1379,20 +1379,20 @@ const SHORTCUT_STATUS_IDS = ["shortcut-status", "shortcut-status-settings"];
 
 function setShortcutStatus(text) {
   for (const id of SHORTCUT_STATUS_IDS) {
-    const el = document.getElementById(id);
+    const el = $(id);
     if (el) el.textContent = text;
   }
 }
 
 function setShortcutStatusError(isError) {
   for (const id of SHORTCUT_STATUS_IDS) {
-    document.getElementById(id)?.classList.toggle("error", isError);
+    $(id)?.classList.toggle("error", isError);
   }
 }
 
 function renderShortcutList() {
   for (const listId of SHORTCUT_LIST_IDS) {
-    const list = document.getElementById(listId);
+    const list = $(listId);
     if (list) buildShortcutList(list);
   }
 }

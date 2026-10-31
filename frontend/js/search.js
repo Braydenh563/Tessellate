@@ -526,6 +526,8 @@ function finderRender() {
     row.setAttribute("role", "option");
     row.setAttribute("aria-selected", "false");
     row.dataset.index = String(index);
+    //: What a drag or a copy reads the row as (obj-ref.js); a kind that is not an object is skipped there.
+    if (hit.id != null) Object.assign(row.dataset, { obj: `${hit.kind}:${hit.id}`, objTitle: hit.title || "" });
     const head = document.createElement("span");
     head.className = "finder-row-head";
     const title = document.createElement("span");

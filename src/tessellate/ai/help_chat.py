@@ -307,7 +307,7 @@ HELP_TOPICS: list[dict] = [
             "page numbers, and a plain Ctrl+P uses the last choice; a code file prints "
             "as monospaced code with line numbers. In Live, in a note's edit box "
             "and in the graph popup, drag the corner of a picture to resize it (or "
-            "focus the corner and use the arrow keys), and its align button puts it "
+            "Tab to the corner and use the arrow keys), and its align button puts it "
             "left, centre or right. A note card and the timeline's note view have "
             "the same align button (and the corner, apart from a card's small "
             "thumbnails), and a picture set in one place looks the same in all of "
@@ -1075,15 +1075,19 @@ HELP_TOPICS.extend(
             "keywords": (
                 "write for me", "write with atlas", "writing room", "draft a note",
                 "rewrite", "continue the draft", "bullets to prose", "prose to bullets",
-                "write an essay", "write an email", "draft",
+                "write an essay", "write an email", "draft", "make a diagram", "make a flowchart",
+                "mind map from text", "writing without a model",
             ),
             "body": (
                 "Notes tab, Writing room: pick what to write (draft a note, "
                 "continue or rewrite the draft, bullets to prose, prose to bullets, "
-                "or translate), add notes as sources if you want it grounded in "
-                "them, and press Write. The draft stays in the box to edit; save it "
+                "a diagram, or translate), add notes as sources if you want it grounded in "
+                "them, and press Draft. The draft stays in the box to edit; save it "
                 "as a note when it reads right. Which model writes is set on the "
-                "same row, or in Settings, Models."
+                "same row, or in Settings, Models. With no model Atlas does it by "
+                "rule, marked From your words: write up your notes by date, plain words, "
+                "bullets either way, and Refine's shorter, a summary or a flowchart, "
+                "timeline or mind map; Carry on and Translate need a model."
             ),
             "badge": {"label": "Writing room", "tab": "notes"},
         },
@@ -1680,7 +1684,7 @@ HELP_TOPICS.extend(
                 "a note card's arrows make a new note there instead, joined and ready to type. With two or more selected, Arrange, Connect the selected joins them in a line or all to the first picked. Measure with a dimension line shows its length. Select a connector and drag a square at either end onto another shape to re-point it. "
                 "Insert, Mermaid, draw.io or board SVG brings in a Mermaid flowchart, state, class or "
                 "sequence diagram, a .drawio file (pages and swimlanes as frames) or an SVG a board "
-                "here exported, as shapes and connectors; Export writes an Outline and a Mermaid flowchart."
+                "here exported, as shapes and connectors; Export writes an Outline, a Mermaid flowchart or a .drawio file."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },

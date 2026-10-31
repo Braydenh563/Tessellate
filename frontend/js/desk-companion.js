@@ -168,7 +168,7 @@
     if (!content || saving) return;
     saving = true;
     $("desk-note-save").disabled = true;
-    noteStatus("Saving...");
+    noteStatus("Saving…");
     try {
       const response = await call("/entries", "POST", { content });
       if (response.status === 401) {
@@ -195,7 +195,12 @@
   // --- Quick search ------------------------------------------------------------
   let searchTimer = 0;
   let searchSeq = 0;
-  const plain = (text) => String(text || "").replace(/<[^>]*>/g, "").trim();
+  const plain = (text) =>
+    String(text || "")
+      .replace(/<[^>]*>/g, "")
+      .replace(/!?\[([^\]|]*)[^\]]*\]\([^)]*\)?/g, "$1")
+      .replace(/^#{1,6}\s+/, "")
+      .trim();
 
   function hitRow(hit) {
     const row = document.createElement("li");
@@ -209,10 +214,14 @@
     kind.className = "muted desk-hit-kind";
     kind.textContent = hit.kind;
     button.append(title, kind);
-    if (hit.snippet) {
+    //: A snippet opens with the title as often as not: only what it says
+    //: beyond the title is shown, and nothing when there is none.
+    const said = plain(hit.snippet).slice(0, 140);
+    const words = said.startsWith(title.textContent) ? said.slice(title.textContent.length).replace(/^[\s:.,;·-]+/, "") : said;
+    if (words) {
       const snippet = document.createElement("span");
       snippet.className = "muted desk-hit-snippet";
-      snippet.textContent = plain(hit.snippet).slice(0, 140);
+      snippet.textContent = words;
       button.append(snippet);
     }
     button.addEventListener("click", () => leave(() => ask("open_hit", hit.kind, hit.id)));
@@ -291,6 +300,15 @@
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state !== "rest") rest();
+  });
+  //: A menu's rows are walked with the arrows, as every menu in the app is.
+  $("desk-menu").addEventListener("keydown", (event) => {
+    const rows = [...$("desk-menu").querySelectorAll("[role=menuitem]")];
+    const at = rows.indexOf(document.activeElement);
+    const to = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: rows.length - 1 }[event.key];
+    if (to === undefined || !rows.length) return;
+    event.preventDefault();
+    rows[(to + rows.length) % rows.length].focus();
   });
   for (const button of document.querySelectorAll("[data-desk-close]")) button.addEventListener("click", rest);
 

@@ -3378,7 +3378,7 @@ span > .chip {
   white-space: normal;
 }
 .att-chip:has(> .att-chip-open:is(:hover, :focus-visible)) {
-  background: var(--ghost-btn-bg-hover);
+  background: var(--ghost-btn-bg);
 }
 .att-chip-x {
   flex: 0 0 auto;

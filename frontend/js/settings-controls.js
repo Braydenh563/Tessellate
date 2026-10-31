@@ -2130,6 +2130,12 @@ const STATUS_SLOTS = [
     label: "Find anything",
     hint: "Search your notes, documents, files and the app itself",
   },
+  //: INBOX 1467. A few cards held while you go to another page.
+  {
+    key: "tray",
+    label: "Tray",
+    hint: "Hold cards to paste or drag somewhere else",
+  },
   //: INBOX 896. Shown on this computer only; another device never sees it.
   {
     key: "lan",

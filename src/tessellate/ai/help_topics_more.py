@@ -271,6 +271,7 @@ MORE_TOPICS: list[dict] = [
             "open questions", "questions view", "unanswered", "undecided", "still undecided",
             "answered by", "mark answered", "drop a question", "ask about these",
             "find questions", "generate questions", "read notes now",
+            "questions without a model", "i wonder", "need to find out",
         ),
         "body": (
             "Notes, Questions lists the questions your notes ask in passing, "
@@ -284,7 +285,11 @@ MORE_TOPICS: list[dict] = [
             "later note answers it, the row "
             "says so with the sentence, and pressing that line opens the note. "
             "Mark answered asks which note answers it and links the two notes; "
-            "Drop puts a question aside; Reopen brings either back. Ask about "
+            "Drop puts a question aside; Reopen brings either back. With no "
+            "model the reading is by rule: a sentence ending in a question mark, "
+            "or one that says I wonder, not sure if, need to find out, should I "
+            "or how do I; a later note on the same thing that states it marks "
+            "it answered. Ask about "
             "these opens Ask answering from the notes with open questions only "
             "(Ask all notes under the box goes back). The Dashboard's While you "
             "were away card counts the open ones and names the oldest."
@@ -1981,6 +1986,36 @@ MORE_TOPICS.extend(
             "badge": {"label": "Appearance", "section": "appearance"},
         },
         {
+            "id": "object-move",
+            "keywords": (
+                "reorder", "drag to reorder", "custom order", "move a card", "change the order",
+                "put in order", "alt arrow", "drag a note", "drag a document", "drag a board",
+                "drag an image", "sort my own way", "copy a note", "paste a note", "copy a card",
+                "paste into chat", "paste on a board", "tray", "drag a card to chat", "drag a note onto a board",
+                "carry a card", "hold a card",
+            ),
+            "body": (
+                "Drag a card to put a list in your own order: Notes, and Library's "
+                "Documents, Boards and maps, Images and Files. Press and hold a card, "
+                "then move; a dashed gap shows where it will land. The sort then reads "
+                "Custom order. Drop it where it started, or press Escape, and nothing "
+                "changes. The toast has Undo. From the keyboard, focus a card and press "
+                "Alt+Up or Alt+Down to move it one place. To copy a card, focus it and "
+                "press Ctrl+C (Cmd+C on a Mac), or choose Copy in its menu: a toast "
+                "names it. Ctrl+V then attaches it in the chat box, puts a card on an "
+                "open whiteboard, or writes its link in a note, a document or a "
+                "reminder. You can also carry a card: press and hold, then drag it "
+                "onto the chat box, an open note or document, a whiteboard, the "
+                "reminder box or the tray, which outline when they would take it; "
+                "rest on a page tab for half a second to open that page without "
+                "letting go. Escape, or letting go over nothing, changes nothing. "
+                "The tray in the status bar holds a few cards while you change pages: "
+                "drop cards on it or choose Add to tray, then drag them out or click "
+                "one to paste it where you were typing."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "movable-panels",
             "keywords": (
                 "move a panel", "move a popup", "drag a panel", "drag a popup",
@@ -2473,6 +2508,7 @@ TOPIC_META: dict[str, dict] = {
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
+    "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},
     "model-downloads": {"title": "Downloading a model", "path": "Settings, Models, Suggested downloads"},
@@ -2515,7 +2551,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
     )),
     ("Library and files", (
         "library", "library-controls", "bookmarks", "web-clipper-bookmark", "contents", "library-skills",
-        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "archive", "undo-bin",
+        "files-images", "image-viewer", "ocr-workspace", "ocr-engine", "object-move", "archive", "undo-bin",
     )),
     ("Graph, Timeline, Reminders and Dashboard", (
         "graph", "graph-controls", "graph-display", "graph-options-help", "entities", "properties", "timeline", "timeline-controls", "reminders",

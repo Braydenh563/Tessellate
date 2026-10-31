@@ -3321,26 +3321,53 @@ body.printing-doc #doc-preview p,
   width: 100%;
 }
 
+/* The hit area is the touch floor (24px, WCAG 2.5.8) on every pointer; the
+   box the eye sees is the ::before, 12px with a pointer and 24px on a finger. */
 .cm-md-image-grip {
   position: absolute;
-  right: -5px;
-  bottom: -5px;
-  width: 12px;
-  height: 12px;
-  box-sizing: border-box;
-  border: 2px solid var(--card);
-  border-radius: var(--radius-sm);
-  background: var(--accent);
+  right: -11px;
+  bottom: -11px;
+  width: 24px;
+  height: 24px;
   cursor: nwse-resize;
   touch-action: none;
   opacity: 0;
 }
 
+.cm-md-image-grip::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  box-sizing: border-box;
+  border: 2px solid var(--card);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+}
+
+.cm-md-image-grip:focus-visible {
+  outline: none;
+}
+
+.cm-md-image-grip:focus-visible::before {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Over a picture the button has to carry its own ground: a transparent glyph
+   in the muted ink was 1.3:1 on a blue picture (WCAG 1.4.11). The remove
+   button on a thumbnail has its disc; this is the same disc. */
 .cm-md-image-align {
   position: absolute;
   top: var(--space-1);
   right: var(--space-1);
   opacity: 0;
+}
+
+:is(.cm-md-image-frame, .thumb-wrap) > button.cm-md-image-align.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
 }
 
 .cm-md-image-frame:hover > .cm-md-image-grip,
@@ -3375,7 +3402,7 @@ body.printing-doc #doc-preview p,
 
 /* A thumbnail has its remove button at the top right; the align button waits
    at the top left. */
-.thumb-wrap > .cm-md-image-align {
+.thumb-wrap > .cm-md-image-align.ghost.icon-only {
   right: auto;
   left: var(--space-1);
 }
@@ -3387,11 +3414,13 @@ body.printing-doc #doc-preview p,
 
 @media (pointer: coarse) {
   .cm-md-image-grip {
-    width: 24px;
-    height: 24px;
     right: -12px;
     bottom: -12px;
     opacity: 1;
+  }
+
+  .cm-md-image-grip::before {
+    inset: 0;
   }
 
   .cm-md-image-align {

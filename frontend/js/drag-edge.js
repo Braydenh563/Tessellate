@@ -25,6 +25,12 @@
 //: Opt-in by zone, not for every scroller: a code editor, a canvas and a
 //: textarea each scroll themselves. Mouse only: a touch selection scrolls by
 //: its own handles.
+//: **It also brings the object-move scripts** (obj-ref.js, INBOX 1467: drag to
+//: reorder, copy and paste an object, the drag ghost, the tray). They are the
+//: same kind of late pointer code, and a row of their own in `LAZY_MODULES`
+//: would not fit the boot script's gzip cap; this file is already preloaded.
+["/css/objmove-lazy.css", "/js/obj-ref.js"].forEach(lazyScript);
+
 const DRAG_EDGE = { x: 0, y: 0, el: null, frame: 0 };
 function dragEdgeTick() {
   const d = DRAG_EDGE;

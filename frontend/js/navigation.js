@@ -318,7 +318,7 @@ function openSelectionScope() {
       clear: () => bar.querySelector('[id$="-clear-selection"]')?.click(),
       selectAll: () => {
         const listId = bar.querySelector("[data-select-all-for]")?.dataset.selectAllFor;
-        const list = listId ? document.getElementById(listId) : bar.parentElement;
+        const list = listId ? $(listId) : bar.parentElement;
         const ticks = list ? [...list.querySelectorAll(RANGE_TICKS)] : [];
         if (ticks.some((t) => !t.checked)) bar.querySelector("[data-select-all-for]")?.click();
       },
@@ -1564,7 +1564,7 @@ function menuOfOpener(opener) {
   }
   if (opener.getAttribute("aria-expanded") !== "true") return null;
   const id = opener.getAttribute("aria-controls");
-  return id ? document.getElementById(id) : null;
+  return id ? $(id) : null;
 }
 
 document.addEventListener("keydown", (event) => {
@@ -1965,13 +1965,13 @@ async function switchTab(name) {
     // Same for what the colours mean: a saved setting the control does not
     // show is a control that lies about the map beside it.
     const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = document.getElementById("graph-colour");
+    const colourSelect = $("graph-colour");
     if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
       colourSelect.value = savedColour;
     }
     //: And what the sizes mean (INBOX 430), the same way.
     const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = document.getElementById("graph-size");
+    const sizeSelect = $("graph-size");
     if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
       sizeSelect.value = savedSize;
     }
@@ -2166,7 +2166,7 @@ function stripMarkdownPreview(text) {
     .replace(/__/g, "")
     .replace(/~~/g, "")
     .replace(/[*_](?=\S)|(?<=\S)[*_]/g, "")
-    .replace(/!?\[([^[\]\n]*)\]\([^()\n]*\)?/g, "$1");
+    .replace(/!?\[([^[\]\n|]*)[^[\]\n]*\]\([^()\n]*\)?/g, "$1");
 }
 
 // Layout picker (§9). Stored, because which shape suits a notebook is a
@@ -2261,7 +2261,7 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  if (document.getElementById("notes-subtabs")?.dataset.ready) {
+  if ($("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
 }
@@ -2302,7 +2302,7 @@ function showNotesSection(name, { focus = false } = {}) {
     recordTabVisit("notes", wanted);
   }
   for (const id of NOTES_SECTIONS) {
-    const card = document.getElementById(id);
+    const card = $(id);
     if (card) card.classList.toggle("hidden", id !== wanted);
   }
   for (const button of document.querySelectorAll("#notes-subtabs button")) {
@@ -2327,7 +2327,7 @@ function showNotesSection(name, { focus = false } = {}) {
 }
 
 function initNotesSubtabs() {
-  const strip = document.getElementById("notes-subtabs");
+  const strip = $("notes-subtabs");
   if (!strip || strip.dataset.ready) return;
   strip.dataset.ready = "1";
   strip.addEventListener("click", (event) => {
@@ -2413,7 +2413,7 @@ const NESTED_SCROLL_TABS = {
 let scrollTopUpdate = null;
 
 function chatMessagesEl() {
-  return document.getElementById("chat-messages");
+  return $("chat-messages");
 }
 
 function scrollTopTargetEl() {
@@ -2524,7 +2524,7 @@ function formPrimaryButtons() {
   const take = (scope) => {
     if (scope && scope.getClientRects().length) out.push(...scope.querySelectorAll(FORM_PRIMARY_BUTTON));
   };
-  for (const id of FORM_PRIMARY_SCOPE_IDS) take(document.getElementById(id));
+  for (const id of FORM_PRIMARY_SCOPE_IDS) take($(id));
   for (const list of FORM_PRIMARY_SCOPE_CLASSES) for (const scope of list) take(scope);
   return out;
 }
@@ -2685,7 +2685,7 @@ function initScrollTopButton() {
   return update;
 }
 
-const chatTabNode = document.getElementById("tab-chat");
+const chatTabNode = $("tab-chat");
 if (chatTabNode) {
   new MutationObserver(() => {
     const btn = document.querySelector(".scroll-top");

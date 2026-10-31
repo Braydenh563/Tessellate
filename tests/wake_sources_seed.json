@@ -69,6 +69,7 @@
  "notes-list.js::raf": 3,
  "notes-list.js::resize-observer": 1,
  "notes-rail-spy.js::mutation-observer": 1,
+ "obj-drag.js::raf": 1,
  "phone-shell.js::mutation-observer": 3,
  "phone-shell.js::resize-observer": 2,
  "quick-access.js::raf": 1,

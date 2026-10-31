@@ -3742,14 +3742,15 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     return result, follow, current, older
 
 
-def _composed_grounding_event(req: _StreamRequest, result: dict) -> dict:
+def _composed_grounding_event(req: _StreamRequest, result: dict, asks: list[str] | tuple = ()) -> dict:
     return {
         "type": "grounding",
         "sentences": result["grounding"],
         #: What to ask next, built from what the answer found and did
         #: not say (INBOX 725): the chips under a composed answer,
         #: which asks no model for them.
-        "next": result["next"],
+        #: Four at most, the closing asks (the note's own) kept whole.
+        "next": [*result["next"][: 4 - len(asks)], *asks],
         #: `by_model: False`: no model wrote a word of it, so a low count
         #: is the app's own joining words and picture readings, and the
         #: notice says that rather than "the model's own writing".
@@ -3810,12 +3811,10 @@ def _awareness(req: _StreamRequest) -> composer_aware.Awareness:
     )
 
 
-def _cited_titles(session: Session, result: dict) -> list[str]:
-    """The titles of the notes an answer drew on, in the order it cited them."""
-    from tessellate.ai.tools._common import _visible
-
-    #: (kind, id): a document's id is another table's, and reading it as a
-    #: note's named an unrelated note in the closing line (INBOX 1357).
+def _cited_ids(result: dict) -> list[tuple[str, int]]:
+    """(kind, id) of what an answer drew on, in the order it cited them: a
+    document's id is another table's, and reading it as a note's named an
+    unrelated note in the closing line (INBOX 1357)."""
     ids: list[tuple[str, int]] = []
     for row in result.get("grounding") or []:
         try:
@@ -3824,8 +3823,15 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
             continue
         if key not in ids:
             ids.append(key)
+    return ids
+
+
+def _cited_titles(session: Session, result: dict) -> list[str]:
+    """The titles of the notes an answer drew on, in the order it cited them."""
+    from tessellate.ai.tools._common import _visible
+
     titles: list[str] = []
-    for kind, nid in ids[:3]:
+    for kind, nid in _cited_ids(result)[:3]:
         if kind == "document":
             doc = session.query(Document.title).filter(Document.id == nid, Document.deleted_at.is_(None)).first()
             title = realise.cut_title(str(doc[0] or "").strip(), 60) if doc else ""
@@ -3837,31 +3843,66 @@ def _cited_titles(session: Session, result: dict) -> list[str]:
     return titles
 
 
-def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> str:
-    """The closing line (`composer_aware.closing` when the screen is known,
-    else `composer_tone.closing`), left off by Quick and by an answer that
-    already ends in a question or an offer to press."""
+def _name_documents(session: Session, rows: list[dict]) -> None:
+    """A document row a digest quoted names its document, as the composer's own
+    rows do, so the page can draw it as a source card (INBOX 1466)."""
+    for row in rows:
+        if row.get("kind") == "document" and not row.get("title"):
+            doc = session.query(Document.title).filter(Document.id == row.get("note_id"), Document.deleted_at.is_(None)).first()
+            row["title"] = str(doc[0] or "Untitled") if doc else ""
+
+
+def _linked_notes(session: Session, result: dict) -> list[dict]:
+    """The notes linked to the ones an answer cited, not cited themselves
+    (INBOX 1466): the related row under a composed answer, which a model's
+    answer has no use for (it reads the notes it is given and says the rest)."""
+    from tessellate.ai.tools._common import _visible
+
+    cited = {nid for kind, nid in _cited_ids(result) if kind == "entry"}
+    if not cited:
+        return []
+    links = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id)
+        .where(or_(EntryLink.source_entry_id.in_(cited), EntryLink.target_entry_id.in_(cited)))
+        .order_by(EntryLink.id.desc())
+    ).all()
+    found: list[int] = []
+    for pair in links:
+        for other in pair:
+            if other not in cited and other not in found:
+                found.append(other)
+    items: list[dict] = []
+    for nid in found:
+        row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+        if row and len(items) < _RELATED_LIMIT:
+            items.append({"kind": "note", "id": nid, "label": _closing_name(str(row[0] or "")) or "Untitled note"})
+    return items
+
+
+def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> tuple[str, list[str]]:
+    """The answer's next step: the screen-aware closing line when the screen
+    is known, else the chips for the cited note (INBOX 1466: the prose offer
+    "Next, I can open ..." is the follow-up strip's now, not both). Left off
+    by Quick and by an answer that already ends in a question."""
     if size == "short" or text.rstrip().endswith("?"):
-        return text
+        return text, []
     recent, seed = _reply_seed(req)
-    #: Seeded by the question too, so two questions in one chat do not end in
-    #: the same line, and a line the last replies already hold is passed over.
-    seed = f"{seed}:{req.question}"
     #: An answer scoped to the open note or category does not close on the
     #: notebook's newest note, which may be about something else entirely.
     #: Nor on a note the answer never used ("what caused ww1" ended with an
     #: offer to open the Biology note): a closer names a note the answer cited.
-    newest = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
-    #: A cited note is called the newest only when it is (INBOX 1357, class
-    #: K: "Your latest note is Hello" named the oldest note).
-    is_newest = cited is None or bool(newest and newest == _newest_titles(req.session, 1)[:1])
+    named = [] if req.body.note_ids else (cited if cited is not None else _newest_titles(req.session, 1))[:1]
     #: An answer from the notes ends on the notes, never on a how-to for the
     #: app ("what have I written about uni" closed on "A good next question
     #: here: how do I ask about one note", INBOX 1420).
-    line = (composer_aware.closing(_awareness(req), seed, recent, related=not cited, asked=req.question or "", cited=cited or ()) if req.body.screen else "") or composer_tone.closing(
-        recent=newest, seed=seed, avoid=recent, voice=_chat_voice(req), question=req.question or "", newest=is_newest
-    )
-    return f"{text}\n\n{line}" if line else text
+    aware = composer_aware.closing(_awareness(req), f"{seed}:{req.question}", recent, related=not cited, asked=req.question or "", cited=cited or ()) if req.body.screen else ""
+    if aware:
+        return f"{text}\n\n{aware}", []
+    if not named:
+        return text, []
+    #: Its heading, not a whole first line ("Project Atlas budget: Sam says ..."): a chip is short.
+    name = named[0] if len(named[0]) <= 40 else named[0].split(": ", 1)[0].strip()
+    return text, [f"Open \u201c{name}\u201d", f"What is left in \u201c{name}\u201d?"]
 
 
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
@@ -3886,12 +3927,17 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         redirected = _missed_events(req, follow, ollama_running)
         if redirected is not None:
             return redirected
-    text = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
+    text, asks = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, older, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
     if result["grounding"]:
-        events.append(_composed_grounding_event(req, result))
+        _name_documents(req.session, result["grounding"])
+        events.append(_composed_grounding_event(req, result, asks))
+        #: The notes linked to the ones it cited: the related row (INBOX 1466).
+        related = _linked_notes(req.session, result)
+        if related:
+            events.append({"type": "related", "items": related})
     return events
 
 
@@ -3906,8 +3952,10 @@ def _search_footer(prepared: dict, result: dict) -> str:
     return ""
 
 
-def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> str:  # noqa: ANN001
+def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *, missed: bool, said_none: bool) -> tuple[str, list[str]]:  # noqa: ANN001
+    """The composed text and the asks that close it (`_with_next_step`)."""
     text = result["text"]
+    asks: list[str] = []
     if missed and not follow and personal.general(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
@@ -3917,8 +3965,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         text += _search_footer(prepared, result)
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
-        text = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
-    return text
+        text, asks = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
+    return text, asks
 
 
 def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | None:  # noqa: ANN001
@@ -3938,9 +3986,28 @@ def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | 
     return None
 
 
+def _diagram_events(req: _StreamRequest, prepared: dict) -> list | None:
+    """"Make a diagram of my notes on X", "turn this into a flowchart" with no
+    model (INBOX 1466): a ```mermaid fence the page draws, written by rule
+    (`ai/composer_mermaid.py`) from the notes found, the open note, the text
+    after a colon, or the answer before."""
+    from tessellate.ai import composer_mermaid
+
+    if not composer_mermaid.asks(req.question or ""):
+        return None
+    opened = next((str(n.get("content") or "") for n in prepared["notes"] if req.body.open_note_id and n.get("id") == req.body.open_note_id), "")
+    previous = str(req.history[-1].get("answer") or "") if req.history else ""
+    result = composer_mermaid.answer(req.question or "", prepared["notes"], previous=previous, opened=opened)
+    return [{"type": "answer", "delta": result["text"]}] if result else None
+
+
 def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list | None:
     """The events for a notes question the app answers itself (web, nothing
     found, or composed), or None when a model streams the answer."""
+    if not ollama_running and not req.images_raw:
+        drawn = _diagram_events(req, prepared)
+        if drawn is not None:
+            return drawn
     if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).

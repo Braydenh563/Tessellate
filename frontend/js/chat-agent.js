@@ -2124,7 +2124,10 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
       open: board ? () => openWhiteboardBoard(entry.id) : (event) => openNoteAtPassage(entry.id, event?.currentTarget),
     });
   }
-  for (const item of touched || []) {
+  //: A document the composed answer quoted is a source too (INBOX 1466): the
+  //: notes are the column's, a document is in no list but this panel.
+  const quoted = (sentences || []).filter((g) => g.kind === "document").map((g) => ({ kind: "document", id: g.note_id, label: g.title }));
+  for (const item of [...(touched || []), ...quoted]) {
     const opener = TOUCHED_KINDS[item.kind] || TOUCHED_KINDS.note;
     //: A touched row carries an id and a label and nothing else, but the note
     //: behind it is already loaded, so the card need not be the poorer for it.
@@ -2534,14 +2537,14 @@ function restoreDraftLocally() {
 //: model's time on a guess.
 const DRAFT_QUICKSTARTS = [
   { label: "Write up my notes", icon: "ph:note-pencil", kind: "note", title: "Turn what is in the box into one organised note" },
-  { label: "Carry on writing", icon: "ph:pencil-line", kind: "continue", title: "Keep writing from where the draft stops, in the same voice" },
+  { label: "Carry on writing", icon: "ph:pencil-line", kind: "continue", model: 1, title: "Keep writing from where the draft stops, in the same voice" },
   { label: "Say it plainly", icon: "ph:chat-text", kind: "rewrite", tone: "plain", title: "The same draft in plain words" },
   { label: "Bullets to prose", icon: "ph:text-align-left", kind: "expand", title: "Open the bullet points out into paragraphs" },
   { label: "Prose to bullets", icon: "ph:list-bullets", kind: "bullets", title: "Close the writing back up into bullet points" },
   //: The language is the last one chosen in the kind menu's "Translate into"
   //: group, Spanish until one has been; the menu shows which, and changing
   //: it there is how another language is picked.
-  { label: "Translate", icon: "ph:translate", kind: "translate", title: "Translate what is in the box, into the language chosen in the menu" },
+  { label: "Translate", icon: "ph:translate", kind: "translate", model: 1, title: "Translate what is in the box, into the language chosen in the menu" },
 ];
 
 //: **Translate a note from where it is read** (INBOX 405). Writing room
@@ -2574,12 +2577,6 @@ function draftTranslateKind() {
   return `translate-${code}`;
 }
 
-//: A chip only sets what the next pass does, so with no model it used to look
-//: dead: the status line says why, in the sentence Refine carries as its title (X20).
-function draftChipOfflineNote() {
-  if (aiIsOff()) setDraftStatus(`${$("draft-refine").dataset.needsModel}. ${AI_OFFLINE_HINT}.`);
-}
-
 function renderDraftQuickstarts() {
   const host = $("draft-quickstarts");
   if (!host) return;
@@ -2594,7 +2591,8 @@ function renderDraftQuickstarts() {
       $("draft-kind").value = start.kind === "translate" ? draftTranslateKind() : start.kind;
       if (start.tone) $("draft-tone").value = start.tone;
       markDraftQuickstart(start.kind);
-      draftChipOfflineNote();
+      //: With no model the chips that need one say so (X20, INBOX 1466).
+      if (aiIsOff() && start.model) setDraftStatus(`${start.label} needs a model. ${AI_OFFLINE_HINT}.`);
       saveDraftLocally();
       $("draft-thoughts").focus();
     });

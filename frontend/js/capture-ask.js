@@ -1067,7 +1067,7 @@ function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
   if (orderedSources && orderedSources.length) {
     orderedSources.forEach((source, index) => {
-      if (source && source.kind === "note") numberFor.set(source.id, index + 1);
+      if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(source.id, index + 1);
     });
     let next = orderedSources.length + 1;
     for (const g of sentences || []) {

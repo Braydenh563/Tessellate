@@ -5,6 +5,12 @@
    resize about that corner never moves the companion on the screen. Clear
    where the window can be see-through; a rounded card where it cannot
    (`?card=1`, set by the launcher on Windows). */
+/* The app's page background is on the root element, so clearing the body
+   alone left a pale rectangle round the companion (alpha 224 of 255 at the
+   corners). */
+html:has(> .desk-page) {
+  background: none;
+}
 .desk-page {
   margin: 0;
   overflow: hidden;
@@ -89,6 +95,15 @@
 .desk-hit-snippet {
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
+}
+/* Two lines of a title and of a snippet, so a single hit is not a screen of its own
+   (a window of this size holds two or three). */
+.desk-hit-title,
+.desk-hit-snippet {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 /* The companion: the resting window's box, its figure at 1.5 times, on its feet. */
 .desk-pet {

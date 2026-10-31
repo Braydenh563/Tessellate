@@ -14323,6 +14323,11 @@ const WB_EXPORT_FORMATS = [
     run: () => wbExportMermaid(),
   },
   {
+    value: "drawio", label: "draw.io", scopes: ["whole"], board: true, drawsCards: false,
+    note: "Shapes, text, frames and connectors as a .drawio file; pictures, tables, notes and drawn lines are left out.",
+    run: () => wbExportDrawio(),
+  },
+  {
     value: "pdf", label: "PDF", scopes: ["selection", "visible", "whole"],
     note: "Opens Print: choose “Save as PDF” as the destination.",
     run: (scope) => wbExportPdf(scope),
@@ -18640,57 +18645,64 @@ async function initWhiteboard() {
     // shares (`wbClientToBoard`).
     const at = wbClientToBoard(e.clientX, e.clientY);
 
-    // Reported directly: a dropped note lands "quite offset from where I
-    // dropped it". `d.x`/`d.y` are the card's own top-left corner, so the
-    // card is centred on the drop point. It was centred on an assumed
-    // 250x150, and a card is as tall as its text: a short note's card is
-    // 100 high, so it sat 25px high at 100% and 50px at 200% (INBOX 664).
-    // The default size is the first guess; the drawn card is then measured
-    // and moved (`wbAnchorPlaced`) before the frame is painted.
-    const nodeData = {
-      entry_id: entryId,
-      x: at[0] - WB_CARD_DEFAULT_SIZE.w / 2,
-      y: at[1] - WB_CARD_DEFAULT_SIZE.h / 2,
-      z: wbStackNewZ("node"),
-      board_id: window.currentBoardId
-    };
-
-    try {
-      //: One undo step, which a note dropped here never had: Ctrl+Z after a
-      //: drop took back whatever was done before it.
-      await wbRecordGesture(async () => {
-        const res = await apiJson("/whiteboard/nodes", { method: "POST", body: JSON.stringify(nodeData) });
-        // If it exists in state already, replace it. Otherwise push.
-        const idx = wbState.nodes.findIndex(n => n.id === res.id);
-        if (idx !== -1) {
-          wbState.nodes[idx] = res;
-          //: The one in-place replacement in this file, and the one case
-          //: `wbLinkItem`'s index cannot see: same array, same length, a
-          //: different object at that slot. Dropped by hand here so a link
-          //: anchored to this card resolves to the row that is actually in
-          //: state rather than to the one it replaced.
-          wbForgetLinkItems(wbState.nodes);
-        } else {
-          wbState.nodes.push(res);
-        }
-        renderWhiteboardNow();
-        await wbAnchorPlaced([{ kind: "node", item: res }], at);
-      });
-    } catch (err) {
-      //: A console line printed "{}": an Error's `message` is not
-      //: an enumerable own property, so the console's object view showed
-      //: nothing at all and the reader was told a card failed without being
-      //: told why. The message is what the server sent, and it belongs on
-      //: screen rather than in a console nobody has open.
-      const why = (err && err.message) || "the server refused it";
-      toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
-    }
+    wbPlaceNote(entryId, at);
   });
 
 
   
   await fetchWhiteboardState();
   wbScheduleRender();
+}
+
+//: A note put on the open board as a card centred on the board point `at`,
+//: as one undo step. The board's own drop and the object paste and drop
+//: (`wbPlaceObject`, obj-clip.js) both come here.
+async function wbPlaceNote(entryId, at) {
+  // Reported directly: a dropped note lands "quite offset from where I
+  // dropped it". `d.x`/`d.y` are the card's own top-left corner, so the
+  // card is centred on the drop point. It was centred on an assumed
+  // 250x150, and a card is as tall as its text: a short note's card is
+  // 100 high, so it sat 25px high at 100% and 50px at 200% (INBOX 664).
+  // The default size is the first guess; the drawn card is then measured
+  // and moved (`wbAnchorPlaced`) before the frame is painted.
+  const nodeData = {
+    entry_id: entryId,
+    x: at[0] - WB_CARD_DEFAULT_SIZE.w / 2,
+    y: at[1] - WB_CARD_DEFAULT_SIZE.h / 2,
+    z: wbStackNewZ("node"),
+    board_id: window.currentBoardId
+  };
+
+  try {
+    //: One undo step, which a note dropped here never had: Ctrl+Z after a
+    //: drop took back whatever was done before it.
+    await wbRecordGesture(async () => {
+      const res = await apiJson("/whiteboard/nodes", { method: "POST", body: JSON.stringify(nodeData) });
+      // If it exists in state already, replace it. Otherwise push.
+      const idx = wbState.nodes.findIndex(n => n.id === res.id);
+      if (idx !== -1) {
+        wbState.nodes[idx] = res;
+        //: The one in-place replacement in this file, and the one case
+        //: `wbLinkItem`'s index cannot see: same array, same length, a
+        //: different object at that slot. Dropped by hand here so a link
+        //: anchored to this card resolves to the row that is actually in
+        //: state rather than to the one it replaced.
+        wbForgetLinkItems(wbState.nodes);
+      } else {
+        wbState.nodes.push(res);
+      }
+      renderWhiteboardNow();
+      await wbAnchorPlaced([{ kind: "node", item: res }], at);
+    });
+  } catch (err) {
+    //: A console line printed "{}": an Error's `message` is not
+    //: an enumerable own property, so the console's object view showed
+    //: nothing at all and the reader was told a card failed without being
+    //: told why. The message is what the server sent, and it belongs on
+    //: screen rather than in a console nobody has open.
+    const why = (err && err.message) || "the server refused it";
+    toast(voiceLine("failed", { what: "add that note to the board", why: why }), true);
+  }
 }
 
 function renderWbLibrary() {
@@ -24323,6 +24335,8 @@ const BOARD_SORTS = {
   az: (a, b) => String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" }),
   za: (a, b) => String(b.title || "").localeCompare(String(a.title || ""), undefined, { sensitivity: "base" }),
   fullest: (a, b) => boardItemCount(b) - boardItemCount(a),
+  //: Looked up when it runs: library.js, which defines `libraryCustomCmp`, is the last file of the bundle.
+  custom: (a, b) => libraryCustomCmp("boards", (board) => `${board.type === "map" ? "map" : "board"}:${board.id}`)(a, b),
 };
 
 const BOARD_SORT_KEY = "library-boards-sort";
@@ -24521,6 +24535,8 @@ function drawLibraryBoardsGallery(listed) {
     const card = document.createElement("article");
     card.className = "library-card library-board-card";
     card.wbBoard = board; // the tick's board (`syncLibraryBoardsTicks`)
+    //: What a drag, a copy and the tray read the card as (obj-ref.js).
+    Object.assign(card.dataset, { obj: `${board.type === "map" ? "map" : "board"}:${board.id}`, objTitle: board.title });
     const open = () => openWhiteboardBoard(board.id);
     card.addEventListener("click", open);
 

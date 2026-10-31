@@ -254,7 +254,7 @@ function renderBrandLogo() {
     return;
   }
   for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = document.getElementById(id);
+    const holder = $(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);
   }
   //: The assistant heads that wear the emblem take the new colour or motion.
@@ -405,7 +405,7 @@ function focusTabPage(button) {
 //: The region that scrolls a tab's page: the page itself, or the biggest
 //: scrolling region inside it (Notes and the Library scroll a list).
 function tabPageScroller(tab) {
-  const page = document.getElementById(`tab-${tab}`);
+  const page = $(`tab-${tab}`);
   if (!page || !page.getClientRects().length) return null;
   //: The size test first: a hidden or short box fails it without a style lookup.
   const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
@@ -490,13 +490,16 @@ document.addEventListener("keydown", (e) => {
 //: Tab's starting point stays where a removed splash or lock screen sat, so
 //: the first Tab skipped "Skip to content" (INBOX 1326): focusing the body
 //: puts it back at the top, unless something real already has focus.
+//: After the frame, checked then (a field focused meanwhile keeps it): focus() here forced the layout, 38 to 47ms.
 function tabFromTop() {
-  const b = document.body, a = document.activeElement;
-  //: Focus inside a lock screen that is still open stays (sweep 1028b W9: the splash going away took it off the password field).
-  if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
-  b.tabIndex = -1;
-  b.focus({ preventScroll: true });
-  b.removeAttribute("tabindex");
+  afterFrames(() => setTimeout(() => {
+    const b = document.body, a = document.activeElement;
+    //: A focus inside an open lock screen stays (sweep 1028b W9).
+    if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
+    b.tabIndex = -1;
+    b.focus({ preventScroll: true });
+    b.removeAttribute("tabindex");
+  }), 1);
 }
 
 new MutationObserver((_, seen) => {
@@ -546,7 +549,7 @@ initResizableSidebars();
 // own CSP refuses. No feedback loop: the bar's height comes from its content,
 // and nothing in it is sized from this token.
 function initHeaderHeightToken() {
-  const bar = document.getElementById("top-bar");
+  const bar = $("top-bar");
   if (!bar || typeof ResizeObserver === "undefined") return;
   const write = () => {
     const h = Math.round(bar.getBoundingClientRect().height);
@@ -569,8 +572,8 @@ initHeaderHeightToken();
 //: with Large text and density, so it is measured into a token on `#tab-notes`
 //: (only this tab has the strip), the shape of `initHeaderHeightToken`.
 function initNotesSubtabHeightToken() {
-  const strip = document.getElementById("notes-subtabs");
-  const page = document.getElementById("tab-notes");
+  const strip = $("notes-subtabs");
+  const page = $("tab-notes");
   if (!strip || !page || typeof ResizeObserver === "undefined") return;
   const write = () => {
     const box = strip.getBoundingClientRect().height;
@@ -614,15 +617,15 @@ initNotesSubtabHeightToken();
 const PHONE_TABS = "(max-width: 599.98px)";
 
 function dockTabBar(toBottom) {
-  const bar = document.getElementById("tab-bar");
-  const header = document.getElementById("top-bar");
+  const bar = $("tab-bar");
+  const header = $("top-bar");
   if (!bar || !header) return;
   // The strip's host on a phone is `#phone-tab-dock`, not the body itself:
   // the bar has a fifth column that is not a tab (More), and `#tab-bar` is a
   // `role="tablist"` that may not hold one. The box is the bar; the strip is
   // its first child. Falling back to the body keeps this working against a
   // page that predates the box rather than leaving the strip in the header.
-  const dock = document.getElementById("phone-tab-dock") || document.body;
+  const dock = $("phone-tab-dock") || document.body;
   if (toBottom) {
     if (bar.parentElement === dock) return;
     // Where to put it back. The header's children are fixed markup, so the
@@ -682,6 +685,7 @@ const PHONE_STATUS_ROWS = [
   { id: "status-find", label: "ph:magnifying-glass Find" },
   //: INBOX 896: the bar's button opens a sheet itself when it has no box.
   { id: "status-lan", label: "ph:wifi-high Other devices" },
+  { id: "status-tray", label: "ph:tray Tray" },
   //: `live`: the row's words are the control's own as the menu opens (the
   //: Local chip's verdict, row 1641).
   { id: "privacy-chip", label: "ph:shield-check Privacy record", live: true },
@@ -831,7 +835,7 @@ const PHONE_SIDEBAR_OPENERS = [
 
 function mountPhoneSidebarOpeners() {
   for (const { aside: asideId, dock: dockSel, label } of PHONE_SIDEBAR_OPENERS) {
-    const aside = document.getElementById(asideId);
+    const aside = $(asideId);
     const dock = document.querySelector(dockSel);
     if (!aside || !dock || dock.querySelector(":scope > .dock-nav")) continue;
     const nav = document.createElement("span");
@@ -853,7 +857,7 @@ mountPhoneSidebarOpeners();
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
-document.getElementById("category-list")?.addEventListener("click", () => {
+$("category-list")?.addEventListener("click", () => {
   const aside = $("sidebar");
   if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
   aside.classList.remove("sidebar-sheet-open");
@@ -955,7 +959,7 @@ function initRowSwipe(list, actions) {
   list.addEventListener("pointercancel", end);
 }
 
-initRowSwipe(document.getElementById("entry-list"), {
+initRowSwipe($("entry-list"), {
   right: (li) => li.querySelector(".favourite-btn")?.click(),
   // The menu builds its rows on open, so the bin is reached as the one
   // function the menu's own row calls, not by pressing a row that does
@@ -969,7 +973,7 @@ initRowSwipe(document.getElementById("entry-list"), {
 //: Reminders (Phase 11 item 8, "reminders as rows with swipe done"): right
 //: presses the row's own Done checkbox, which toggles and saves as a tap on
 //: it would; there is no left.
-initRowSwipe(document.getElementById("reminder-groups"), {
+initRowSwipe($("reminder-groups"), {
   right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
 });
 
@@ -1050,7 +1054,7 @@ function closeNotePageIfGone() {
 }
 
 function initNotePage() {
-  const list = document.getElementById("entry-list");
+  const list = $("entry-list");
   if (!list) return;
   list.addEventListener("click", (event) => {
     if (!window.matchMedia(PHONE_TABS).matches) return;
@@ -1109,7 +1113,7 @@ function ocrPhonePage(phone) {
   overlay.classList.toggle("sheet-overlay", phone);
   card.classList.toggle("sheet-card", phone);
   card.classList.toggle("sheet-card-page", phone);
-  let bar = document.getElementById(OCR_PHONE_BAR_ID);
+  let bar = $(OCR_PHONE_BAR_ID);
   if (phone) {
     if (!bar) {
       bar = document.createElement("div");
@@ -1141,7 +1145,7 @@ function initOcrPhonePage() {
   // move, and stamping a variant on a hidden dialog leaves state behind that
   // the next open would have to undo.
   window.matchMedia(PHONE_TABS).addEventListener("change", (event) => {
-    const overlay = document.getElementById("ocr-workspace");
+    const overlay = $("ocr-workspace");
     if (overlay && !overlay.classList.contains("hidden")) ocrPhonePage(event.matches);
   });
 }
@@ -1157,7 +1161,7 @@ const PHONE_SHEET_DIALOGS = ["extract-panel", "history-overlay", "connections-ov
 
 function phoneSheetDialogs(phone) {
   for (const id of PHONE_SHEET_DIALOGS) {
-    const overlay = document.getElementById(id);
+    const overlay = $(id);
     overlay?.classList.toggle("sheet-overlay", phone);
     overlay?.querySelector(":scope > .modal-card")?.classList.toggle("sheet-card", phone);
   }
@@ -1545,7 +1549,7 @@ function phoneMoreRunCount() {
 //: count rides on More as the badge a tab's count already is, and the runs
 //: are a row in More's sheet. Called whenever the status item repaints.
 function syncPhoneMoreRuns() {
-  const more = document.getElementById("phone-more-btn");
+  const more = $("phone-more-btn");
   if (!more) return;
   const runs = phoneMoreRunCount();
   //: Reminders due ride on More too (audit 1018, item 8): at 390 the
@@ -1580,7 +1584,7 @@ function phoneMoreDueCount() {
 // you are on three of the seven, which is the defect the caption work fixed for
 // the other four.
 function syncPhoneMoreButton(activeTabName) {
-  const more = document.getElementById("phone-more-btn");
+  const more = $("phone-more-btn");
   if (!more) return;
   const behindMore = PHONE_MORE_TABS.includes(activeTabName);
   more.classList.toggle("active", behindMore);
@@ -1698,7 +1702,7 @@ function echoSettingsPaneTitle(select) {
 }
 
 function buildSettingsJumpList() {
-  const nav = document.getElementById("settings-nav");
+  const nav = $("settings-nav");
   if (!nav || document.getElementById("settings-jump")) return;
 
   const select = document.createElement("select");
@@ -1713,7 +1717,7 @@ function buildSettingsJumpList() {
   select.setAttribute("data-no-select-enhance", "");
 
   for (const group of nav.querySelectorAll(":scope > div[role='group']")) {
-    const heading = document.getElementById(group.getAttribute("aria-labelledby"));
+    const heading = $(group.getAttribute("aria-labelledby"));
     const optgroup = document.createElement("optgroup");
     optgroup.label = heading ? heading.textContent.trim() : "Sections";
     for (const button of group.querySelectorAll("button[data-section]")) {
@@ -1748,8 +1752,8 @@ function buildSettingsJumpList() {
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own
   // comment makes that case).
-  const search = document.getElementById("settings-search");
-  const count = document.getElementById("settings-search-count");
+  const search = $("settings-search");
+  const count = $("settings-search-count");
   (count || search || nav.firstElementChild)?.after(select);
 }
 
@@ -1789,7 +1793,7 @@ const FAB_IDS = [
 
 function floatPrimaryActions(floating) {
   for (const id of FAB_IDS) {
-    const button = document.getElementById(id);
+    const button = $(id);
     if (!button) continue;
     const page = button.closest(".tab-page");
     if (!page) continue;

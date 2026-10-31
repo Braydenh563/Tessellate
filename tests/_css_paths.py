@@ -90,6 +90,7 @@ CSS_FILES = [
     CSS_DIR / "timeline-calendar-lazy.css",
     #: Where another device opens the notebook (settings-controls.js, INBOX 867).
     CSS_DIR / "lan-lazy.css",
+    CSS_DIR / "objmove-lazy.css",
     #: The storage bar in Settings, About (settings-data.js, data-1011).
     CSS_DIR / "settings-data-lazy.css",
     #: Moved out of the boot sheets for the gzip budget (2026-10-12), each
@@ -130,6 +131,10 @@ CSS_FILES = [
     CSS_DIR / "appearance-panel-own-lazy.css",
     #: The update bar (INBOX 1440), loaded by update-dialogs.js when a version is found.
     CSS_DIR / "update-bar-lazy.css",
+    #: Windows high contrast only (status.js loads it under forced-colors, audit 1028 S38).
+    CSS_DIR / "forced-colors-lazy.css",
+    #: The meaning-search notice (app.js `LAZY_MODULES.semanticNotice`).
+    CSS_DIR / "semantic-notice-lazy.css",
 ]
 
 
