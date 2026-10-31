@@ -59,3 +59,17 @@
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }
+/* The vocabulary's extras stand still with the resolved Motion value (INBOX
+   1506 B): a menu keeps its fade and settles on `--ease-out` with no
+   overshoot, its rows arrive together, and a plus is a minus with no turn. */
+:root[data-motion="reduced"] .action-menu > * {
+  animation: none !important;
+}
+:root[data-motion="reduced"] :is(.action-menu, .dock-menu-list, .help-popover) {
+  animation-timing-function: var(--ease-out) !important;
+}
+:root[data-motion="reduced"] .ui-pm,
+:root[data-motion="reduced"] .ui-pm::before,
+:root[data-motion="reduced"] .ui-pm::after {
+  transition: none !important;
+}

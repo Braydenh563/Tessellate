@@ -58,7 +58,7 @@
   margin-top: var(--space-2);
 }
 .lan-address-more > .ph {
-  transition: rotate var(--ui-fast) var(--ease-out);
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 .lan-address-more[aria-expanded="true"] > .ph {
   rotate: 90deg;

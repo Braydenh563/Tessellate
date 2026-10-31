@@ -412,7 +412,7 @@
   line-height: 1;
   color: inherit;
   transform: rotate(-90deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 /* Open: each selector is its closed twin plus `[open]`, so it always
    outranks it. The first version dropped the closed rule's `:not()` chain,
@@ -1107,7 +1107,7 @@ summary > .ph-lead,
 /* The caret says which way it will go, by turning, never by colour alone. */
 .skill-card .skill-fact-toggle > .ph-trail {
   margin-inline-start: 0;
-  transition: rotate var(--ui-fast) var(--ease-out);
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 .skill-card .skill-card-facts > button.skill-fact-toggle:is(:hover, :focus-visible, [aria-expanded="true"]) {
   background: var(--ghost-btn-bg);
@@ -9933,6 +9933,27 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
     scale: 0.985;
     transition: translate var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out);
   }
+}
+/* --- motion: one vocabulary for what opens and folds (INBOX 1506 B) ---------
+   Three durations (`--ui-fast` 120, `--ui-base` 180, `--ui-slow` 240 ms), one
+   curve that settles (`--ease-out`) and one gentle overshoot
+   (`--ease-spring`), on `transform` and `opacity` only. **A chevron turns
+   on `--ui-base` and `--ease-out`**: every caret that a state turns (a fold's,
+   a menu opener's, a row's) shares the zero-weight rule below, so a family
+   that names its own transition keeps it and one that named none no longer
+   snaps. **A plus becomes a minus** (`.ui-pm`, library-lazy.css, out of the
+   boot budget, drawn from two bars so the turn is a transform): the glyph
+   makes a half turn on the overshoot while the upright bar folds away on
+   `--ease-out`; the toggle that holds it says which state it is in
+   (`aria-expanded`, or `[open]` on a `<summary>`). A menu's
+   own arrival and its rows are in 10-responsive.css (`ui-grow` on the
+   overshoot, `ui-row` eight deep). The reduced-motion sheet switches the
+   overshoot, the stagger and the plus's turn off (motion-still.css). */
+:where(.ph-caret-down, .contents-caret) {
+  transition: transform var(--ui-base) var(--ease-out);
+}
+[aria-expanded="true"] > .select-caret {
+  transform: rotate(180deg);
 }
 /* --- motion: the opening curtain lifts (INBOX 577) --------------------------
    After the password, the lock screen stays up while the first tab draws

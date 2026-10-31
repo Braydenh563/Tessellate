@@ -249,7 +249,7 @@ button.ghost.disclosure-row.tidy-history-head {
 
 /* The one disclosure caret (DESIGN.md): a quarter turn while closed. */
 .tidy-history .contents-caret {
-  transition: rotate var(--ui-fast) var(--ease-out);
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 
 .tidy-history-head[aria-expanded="false"] .contents-caret {

@@ -184,7 +184,7 @@
 }
 
 .recording-transcript-toggle .ph-caret-down {
-  transition: transform var(--ui-base);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .recording-transcript-toggle[aria-expanded="true"] .ph-caret-down {

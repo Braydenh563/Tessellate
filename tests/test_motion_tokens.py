@@ -222,6 +222,13 @@ POLISH = (
 #: is happening (the recording pulse, the skeleton's shimmer) keeps its own
 #: reduced-motion branch, which DESIGN.md asks of every indefinite animation.
 INDICATORS = (".recording", ".skeleton")
+#: INBOX 1506 B moved this lint's intent by one step, and only this step: the
+#: motion vocabulary's *extras* (a menu's overshoot and the rows arriving one
+#: after another, 10-responsive.css) are decoration on top of the polish, not
+#: the polish itself, so they stand still with the resolved Motion value
+#: (motion-still.css). The menu's fade, its grow and every transition stay
+#: with the Interface animations switch, as the owner decided on 2026-10-05.
+VOCABULARY_EXTRAS = (".action-menu > *", ":is(.action-menu, .dock-menu-list, .help-popover)")
 
 
 def _reduced_motion_blocks():
@@ -277,6 +284,7 @@ def test_the_polish_is_never_gated_by_the_media_query_alone():
         and not all(any(i in part for i in INDICATORS) for part in selector.split(","))
         # A blanket that names the polish only to exempt it while the switch is on.
         and 'data-ui-motion="on"' not in selector
+        and not any(extra in selector for extra in VOCABULARY_EXTRAS)
     ]
     assert not offenders, (
         "A reduced-motion block stops part of the polish set, which the "

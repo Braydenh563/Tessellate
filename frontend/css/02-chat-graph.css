@@ -1926,15 +1926,12 @@ kbd {
     opacity: 1;
   }
 }
-/* Less motion asked for, by the system or the app: the sky is cut in, as
-   the sketch itself holds still (`startArt`). */
-:where(:root[data-motion="reduced"]) .art-holder > canvas:not(.art-veil) {
-  transition: none;
-}
 /* The wait keeps its ground, without the sheen. */
 :where(:root[data-motion="reduced"]) .art-holder:empty {
   animation: none;
 }
+/* Less motion asked for, by the system or the app: the sky is cut in, as
+   the sketch itself holds still (`startArt`). */
 :root[data-motion="reduced"] .art-holder > canvas:not(.art-veil) {
   transition: none;
 }

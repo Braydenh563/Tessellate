@@ -401,7 +401,7 @@ button.reply-by {
   font-style: normal;
   line-height: 1;
   transform: rotate(-90deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .grounding-fold[open] > .fold-summary::before {

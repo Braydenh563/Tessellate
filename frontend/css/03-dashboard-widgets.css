@@ -4561,7 +4561,7 @@ button.answer-figure-open {
 }
 
 .night-kind-toggle > .ph {
-  transition: rotate var(--ui-fast) var(--ease-out);
+  transition: rotate var(--ui-base) var(--ease-out);
 }
 
 .night-kind-toggle[aria-expanded="true"] > .ph {

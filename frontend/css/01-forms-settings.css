@@ -2519,7 +2519,7 @@ button:not(.ghost) > .spinner {
 .contents-caret {
   flex: 0 0 auto;
   color: var(--muted);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 .contents-section.is-folded .contents-caret,
 .contents-doc:not(.is-open) .contents-doc-caret {
