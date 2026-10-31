@@ -28,7 +28,6 @@ _ASKS = (
 )
 #: The rest of the question is about writing, not doing: `composer_slots._often` counts notes.
 _ABOUT = re.compile(r"^(?:write|wrote|written|note|post|journal|mention|talk|think)\b")
-_DISTANCE = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\s?(km|kilometres?|kilometers?|miles?|mi)\b", re.I)
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
 _IN_MONTH = re.compile(r"\b(?:in|during|for|this)\s+(" + "|".join(_MONTHS) + r")\b")
 _WEEKDAY = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)days?\b", re.I)
@@ -82,11 +81,11 @@ def _day_of(view, s, today: date) -> date | None:  # noqa: ANN001
 
 
 def _km(text: str) -> float | None:
-    m = _DISTANCE.search(text)
-    if not m:
-        return None
-    n = float(m.group(1))
-    return n * 1.609 if m.group(2).lower().startswith("mi") else n
+    """The first length in the line, in kilometres: the recogniser reads the figure and its unit."""
+    for dimension, metres, _unit, _at in recognise.measures(text):
+        if dimension == "length":
+            return metres / 1000
+    return None
 
 
 def _names(text: str, obj: list[str]) -> bool:

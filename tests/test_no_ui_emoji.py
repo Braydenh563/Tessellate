@@ -79,10 +79,6 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
             "the equation editor's symbol tiles: each glyph is the TeX symbol it inserts "
             "(\\cdots draws as the midline ellipsis), document content rather than an icon",
         ),
-        (
-            'replace(/\\{\\}/g, "{□}")',
-            "the preview's empty-slot box inside a TeX string, drawn by the math renderer, not the UI",
-        ),
     ],
     "frontend/js/documents-prose.js": [
         (
@@ -140,6 +136,10 @@ ALLOWED: dict[str, list[tuple[str, str]]] = {
     "frontend/js/documents.js": [
         ("block:const DOC_MATH_LETTERS", "character data: what the math macros mean"),
         ("block:const DOC_MATH_OPERATORS", "character data: what the math macros mean"),
+        (
+            r'replace(/\{\s*\}/g, "{\u25a1}")',
+            "an empty slot inside a TeX string, drawn by the math renderer (the equation field's dotted box), not the UI",
+        ),
     ],
     "frontend/index.html": [
         ("⋯ menu", "help prose naming the kebab control, which is a word here, not an icon"),

@@ -1987,7 +1987,16 @@ def destretch(text: str) -> str:
 #: Sounds typed while thinking ("errrmmm", "umm", "uhh", "hmm"): read past,
 #: never searched for (INBOX 1485). Not "er", "um" inside a word, or "hum".
 _FILLER = re.compile(r"^(?:u+m+|u+h+m*|e+r+m+|e+r{2,}|h+m+|m{2,}|e+h+m+|a+h+m+)$", re.I)
-_FILLER_TOKEN = re.compile(r"(?:(?<=\s)|^)([A-Za-z]+)[.,;:!…]*(?=\s|$)")
+#: A whitespace-bounded run is one word; the shape check is on that run alone
+#: (letters, then the punctuation typed after them), so no pattern scans a long
+#: run twice (CodeQL 1890, 1894).
+_WORD_RUN = re.compile(r"\S+")
+_FILLER_SHAPE = re.compile(r"([A-Za-z]+)[.,;:!…]*")
+
+
+def _without_filler(run: re.Match[str]) -> str:
+    word = _FILLER_SHAPE.fullmatch(run.group(0))
+    return "" if word and _FILLER.match(word.group(1)) else run.group(0)
 
 
 def drop_filler(text: str) -> str:
@@ -1996,7 +2005,7 @@ def drop_filler(text: str) -> str:
     is left ("hmm" alone is a turn of its own)."""
     if not text or not re.search(r"(?i)\b(?:u|e|h|m|a)", text):
         return text
-    kept = _FILLER_TOKEN.sub(lambda m: "" if _FILLER.match(m.group(1)) else m.group(0), text)
+    kept = _WORD_RUN.sub(_without_filler, text)
     if kept == text:
         return text
     #: Spaces fold within a line; the line breaks stay (a numbered list after a

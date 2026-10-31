@@ -31,7 +31,7 @@ def _filter(*, is_map: bool, tool: str = "select", shift: bool = False, bare: bo
         pytest.skip("node is not installed")
     event = {"type": "mousedown", "button": button, "buttons": 1 << [0, 2, 1][button], "shiftKey": shift, "target": None}
     script = (
-        f"const nmb = {{ grabbed: false }}; let wbSpaceHeld = {json.dumps(space)}; let wbMidPanHeld = false;"
+        f"const nmb = {{ grabbed: false }}; let charactersLoaded = true; let wbSpaceHeld = {json.dumps(space)}; let wbMidPanHeld = false;"
         " const wbBoardState = { wheel: { at: -1e9, pad: false } };"
         f" globalThis.window = {{ currentTool: {json.dumps(tool)} }};\n"
         f"function wbIsBareCanvas() {{ return {json.dumps(bare)}; }}\n"

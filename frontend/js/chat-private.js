@@ -64,7 +64,5 @@ async function chatPrivateLeave(retry) {
   retry();
 }
 
-//: A closed tab is a closed chat: the browser asks before it goes.
-window.addEventListener("beforeunload", (event) => {
-  if (chatConv.private && chatConv.turns.length) event.preventDefault();
-});
+//: A closed tab is a closed chat: the browser asks before it goes (the one
+//: `beforeunload` guard, navigation.js, reads `chatConv.private`).

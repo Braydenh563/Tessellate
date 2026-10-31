@@ -29,8 +29,14 @@ def _fn(source: str, name: str, is_async: bool = True) -> str:
 
 def _run(turns: int, regen_index: int, ran_write: bool, confirm: bool = True) -> dict:
     edit = (JS_DIR / "chat-edit.js").read_text(encoding="utf-8")
+    agent_js = (JS_DIR / "chat-agent.js").read_text(encoding="utf-8")
     code = "\n".join(
-        [_fn(edit, "questionForBubble", False), _fn(edit, "regenerateFrom"), _fn(edit, "confirmRerun")]
+        [
+            _fn(agent_js, "dropChatBubble", False),
+            _fn(edit, "questionForBubble", False),
+            _fn(edit, "regenerateFrom"),
+            _fn(edit, "confirmRerun"),
+        ]
     )
     script = f"""
 const calls = []; let sent = null, confirms = 0;

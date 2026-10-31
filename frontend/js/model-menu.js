@@ -25,20 +25,12 @@ const MODEL_RECENT_SHOWN = 3;
 const modelMenuOpenState = new Map();
 
 function modelMenuList(key) {
-  try {
-    const list = JSON.parse(localStorage.getItem(key) || "[]");
-    return Array.isArray(list) ? list.filter((name) => typeof name === "string") : [];
-  } catch {
-    return [];
-  }
+  return prefs.json(key, []).filter((name) => typeof name === "string");
 }
 
+//: Storage blocked: `prefs.set` swallows it, the menu still works, it just forgets.
 function modelMenuSave(key, list) {
-  try {
-    localStorage.setItem(key, JSON.stringify(list));
-  } catch {
-    // Storage blocked: the menu still works, it just forgets.
-  }
+  prefs.set(key, JSON.stringify(list));
 }
 
 //: Where a model lives, from its name and the status (see the header).

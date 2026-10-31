@@ -2237,7 +2237,16 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
 _STILL_VERB = re.compile(r"^still (need|have|want|haven't|hasn't|don't|to)\b", re.I)
 
 
-_FRAGMENT = re.compile(r"^(?:(?-i:[a-z]+ing)\b|(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$)", re.I)
+#: A body with no subject of its own: a lower-case "-ing" word first (typed
+#: case matters, so no `re.I`), or one to three words that do not open on a
+#: pronoun. Two patterns, not one with an inline flag group: CodeQL read
+#: the inline `(?-i:` form as an unmatchable `$`.
+_GERUND_OPEN = re.compile(r"[a-z]+ing\b")
+_SHORT_FRAGMENT = re.compile(r"(?!(?:you|i|we|he|she|they|it)\b)\w+(?:\s+\w+){0,2}$", re.I)
+
+
+def _is_fragment(body: str) -> bool:
+    return bool(_GERUND_OPEN.match(body) or _SHORT_FRAGMENT.match(body))
 
 
 def _join(bodies: list[str], sentences: bool = False) -> str:
@@ -2245,7 +2254,7 @@ def _join(bodies: list[str], sentences: bool = False) -> str:
     two facts are two sentences, never a ";" run (INBOX 1301 D5)."""
     out = bodies[0] if bodies else ""
     for body in bodies[1:]:
-        if sentences and _FRAGMENT.match(body):
+        if sentences and _is_fragment(body):
             #: "slicing everything but it was fun", "straighter this time":
             #: no subject of its own, so it rides on the sentence before.
             out += ", " + body
@@ -2286,6 +2295,10 @@ _FOR_MONTH = re.compile(r"\b(?<![Bb]ack )(?:for|in|by|until) (" + "|".join(m.cap
 _PER = re.compile(r"(?:\ba|\bper|\beach|\bevery|/)\s*(day|week|month|year|hour|night)\b", re.I)
 #: A gap is the budget against what was spent, the ask against the offer:
 #: it needs one word of each side.
+#: Two things weighed against each other in one line ("The Logitech is about
+#: $230 and the Razer is $200"): each is named and priced, so the gap between
+#: them is true, which a budget and an unrelated amount are not.
+_RIVAL_PRICES = re.compile(r"\b[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d{1,9}[\d.,]{0,9} and (?:the )?[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d")
 _PLANNED_PRICE = re.compile(r"\b(?:budget|limit|target|goal|estimate|quote|quoted|asking|listing|listed|planned)\b", re.I)
 _ACTUAL_PRICE = re.compile(r"\b(?:spent|spend|paid|cost|actual|offer|negotiated|saved|came to)\b", re.I)
 
@@ -2298,7 +2311,7 @@ def _price_gap(body: str) -> str:
     if len(prices) != 2 or prices[0] == prices[1]:
         return ""
     periods = {m.group(1).lower() for m in _PER.finditer(body)}
-    if len(periods) > 1 or (periods and len(_PER.findall(body)) == 1) or not (_PLANNED_PRICE.search(body) and _ACTUAL_PRICE.search(body)):
+    if len(periods) > 1 or (periods and len(_PER.findall(body)) == 1) or not ((_PLANNED_PRICE.search(body) and _ACTUAL_PRICE.search(body)) or _RIVAL_PRICES.search(body)):
         return ""
     gap = abs(float(prices[0]) - float(prices[1]))
     return PHRASES["price_gap"].format(gap=("about " if "about $" in body else "") + f"${gap:g}")
@@ -2321,11 +2334,17 @@ def _relate(body: str, today: date | None) -> str:
 
 
 _BE_PAST = frozenset({"was", "were", "had", "did"})
+#: Participles that look ahead ("a trip planned for May", "booked for June"):
+#: past in form, not in what they tell, so a month after them is still to come.
+_AHEAD_PARTICIPLES = frozenset({"planned", "scheduled", "booked", "arranged", "expected"})
 
 
 def _told_in_past(body: str) -> bool:
     """Whether `body` says something that happened ("you met", "finished")."""
-    return any((_did(w) or _past_verb(w)) and w.lower() not in _BE_PAST for w in re.findall(r"[A-Za-z']+", body))
+    return any(
+        (_did(w) or _past_verb(w)) and w.lower() not in _BE_PAST and w.lower() not in _AHEAD_PARTICIPLES
+        for w in re.findall(r"[A-Za-z']+", body)
+    )
 
 
 def _pattern(members: list[composer.NoteView], today: date) -> str:
@@ -4216,7 +4235,11 @@ def _this_note(out: _Out, v, facts: list[Fact], names: set[str], today: date) ->
     #: first clause (C8), never by a section's label or "untitled".
     name = _note_called(title) if title else _your_note(v)
     said = [(_fragment(_second_person(f.body), names), f) for f in facts]
-    if len(said) == 1 and not title:
+    #: A note named by a label ("Your gym note") says one thing as any titled one
+    #: does, and only a "The note that starts ..." name (which would repeat its
+    #: own first clause) is dated instead (audit 1030 Z55; INBOX 1441 keeps the
+    #: day out of an untimed question).
+    if len(said) == 1 and not title and not name.lower().startswith("your "):
         out.lines.append(PHRASES["this_line"].format(day=_day(v.written, today), where=where, pause="," if where else "", fact=said[0][0][:1].upper() + said[0][0][1:].rstrip(".")))
         out.rows.append(_row(said[0][0], said[0][1]))
         return

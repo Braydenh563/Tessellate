@@ -175,7 +175,7 @@ def test_the_guide_tells_the_choice():
 
 def test_the_notice_is_lazy_and_reached_from_the_status_poll():
     js = ROOT / "frontend" / "js"
-    assert 'semanticNotice: ["/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
+    assert 'semanticNotice: ["/css/semantic-notice-lazy.css", "/js/semantic-notice.js"]' in (js / "app.js").read_text(encoding="utf-8")
     status = (js / "status.js").read_text(encoding="utf-8")
     assert "status.semantic_offer" in status
     assert "semanticOffer(Boolean(status.semantic_offer), status.semantic_engine_moved)" in status

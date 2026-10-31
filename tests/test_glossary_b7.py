@@ -95,7 +95,8 @@ def test_the_answer_says_what_it_stands_for_and_how_it_knows():
     said = composer_digest.answer("what does HCI stand for?", _notes("Human Computer Interaction (HCI) lecture 2.", "HCI quiz Friday."), today=date(2026, 10, 11))
     #: The note is named, never by its day, and the day is said only when
     #: the question asks about time (INBOX 1441, the owner, 2026-10-29).
-    assert said["text"].startswith("HCI is short for Human Computer Interaction, from the Human Computer Interaction (HCI) lecture 2."), said["text"]
+    #: A note's own title is named as it is, never "the Cloud computing" (composer-1031, `composer_frame._titled`).
+    assert said["text"].startswith("HCI is short for Human Computer Interaction, from Human Computer Interaction (HCI) lecture 2."), said["text"]
     assert "You use HCI in two notes." in said["text"]
     seen = composer_digest.answer("what does CC stand for?", _notes("Intro to Cloud Computing starts Monday.", "CC lab on Friday."), today=date(2026, 10, 11))
     #: INBOX 1441 moved this line's intent: a note is never named by its day,

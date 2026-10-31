@@ -654,11 +654,21 @@ def _dimension_of(word: str) -> tuple[str | None, bool]:
 
 #: "Total time", "how much time in total", "how long altogether": the same
 #: bare total as "what is my total time".
-_BARE_TOTAL = re.compile(r"^(?:(?:my|our|the) )?total (?P<noun>distance|weight|time)(?P<rest>(?: [^?!.]*)?)\W*$|^how (?:much time|long) (?:in total|altogether|overall|all up)\W*$", re.I)
+_BARE_TOTAL = re.compile(r"^(?:(?:my|our|the) )?total (?P<noun>distance|weight|time)(?P<rest>(?: [^?!.]*)?)$|^how (?:much time|long) (?:in total|altogether|overall|all up)$", re.I)
+
+
+def _without_trailing_punctuation(text: str) -> str:
+    """`text` less the run of non-word characters at its end. A loop, not
+    `\\W*$` after an open-ended group (CodeQL 1889: that backtracked
+    polynomially on a long run of spaces)."""
+    end = len(text)
+    while end and not (text[end - 1].isalnum() or text[end - 1] == "_"):
+        end -= 1
+    return text[:end]
 
 
 def _totalled(q: str) -> str:
-    found = _BARE_TOTAL.match(q.strip())
+    found = _BARE_TOTAL.match(_without_trailing_punctuation(q.strip()))
     return f"what is my total {found.group('noun') or 'time'}{found.group('rest') or ''}" if found else q
 
 

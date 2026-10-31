@@ -352,6 +352,7 @@ PHRASES: dict[str, str] = {
     "picture_text_lead": "a picture with the words ",
     "next_tag_b": "?",
     "next_latest_a": "What is the latest on ",
+    "feature_offer": "\n\nThe app has a tool by that name too. ",
     "next_when_a": "When did I write about ",
 }
 #: The voices' variants of the joining phrases and openers (`composer_tables`):
@@ -4608,7 +4609,7 @@ def offered(result: dict | None, question: str) -> dict | None:
     best = _feature_help(question, [])
     if best is None:
         return result
-    more = [("template", "\n\nThe app has a tool by that name too. "), ("help", best[0], best[1])]
+    more = [("template", PHRASES["feature_offer"]), ("help", best[0], best[1])]
     return {**result, "parts": [*result["parts"], *more], "text": result["text"] + "".join(part[1] for part in more)}
 
 

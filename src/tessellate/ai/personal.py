@@ -152,7 +152,7 @@ def _clean(question: str) -> str:
 
     #: "wat do u know abt me" read as typed would be no question at all.
     q = question_noise.repair(question_noise.tidy(question or ""))
-    q = re.sub(r"[?!.]+$", "", q.strip().lower())
+    q = q.strip().lower().rstrip("?!.")
     q = re.sub(r"\b(?:ur|youre)\b", "your", q)
     q = re.sub(r"\bfav\b", "favourite", re.sub(r"\bfavorite\b", "favourite", q))
     return re.sub(r"\s+", " ", re.sub(r"^(?:so|ok|okay|hey|um|and|but)[, ]+", "", q)).replace("whats", "what's")
