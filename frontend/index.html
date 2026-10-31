@@ -228,7 +228,7 @@
                icon-only toggles every panel in this app ends with. -->
           <div class="notif-head dialog-head">
             <span class="notif-heading dialog-head-title">
-              <strong>Notifications</strong>
+              <i class="ph ph-bell pop-glyph" aria-hidden="true"></i><strong>Notifications</strong>
               <span id="notif-unread" class="notif-unread-chip hidden"></span>
             </span>
             <span class="notif-head-actions dialog-head-actions">
@@ -402,7 +402,7 @@
          (`reset_here` from /auth/status). Wired in account-recovery.js. -->
     <div id="lock-forgot-card" class="card lock-forgot-card hidden" role="region" aria-labelledby="lock-forgot-title">
       <div class="dialog-head">
-        <h2 class="dialog-head-title" id="lock-forgot-title">Forgot your password?</h2>
+        <h2 class="dialog-head-title" id="lock-forgot-title"><i class="ph ph-key pop-glyph" aria-hidden="true"></i>Forgot your password?</h2>
         <button type="button" class="icon-only ghost small graph-help-toggle"
           data-help-for="lock-forgot-help" aria-controls="lock-forgot-help" aria-expanded="false"
           title="About resetting your password" aria-label="About resetting your password">
@@ -491,7 +491,7 @@
        Wired in account-recovery.js. -->
   <dialog id="recovery-key-dialog" class="card space-dialog recovery-key-dialog" aria-labelledby="recovery-key-title">
     <div class="dialog-head">
-      <h2 class="dialog-head-title" id="recovery-key-title">Your recovery key</h2>
+      <h2 class="dialog-head-title" id="recovery-key-title"><i class="ph ph-shield-check pop-glyph" aria-hidden="true"></i>Your recovery key</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle"
         data-help-for="recovery-key-dialog-help" aria-controls="recovery-key-dialog-help" aria-expanded="false"
         title="What a recovery key does" aria-label="What a recovery key does">
@@ -651,7 +651,7 @@
           <!-- The head wears Atlas's own face (atlas.js, `atlasDressMarks`);
                the icon is what shows until it is drawn. -->
           <span class="atlas-mark atlas-mark-agent" data-atlas-avatar="28" aria-hidden="true"><i class="ph ph-strategy" aria-hidden="true"></i></span>
-          <h3 class="dialog-head-title">Agent</h3>
+          <h3 class="dialog-head-title"><i class="ph ph-robot pop-glyph" aria-hidden="true"></i>Agent</h3>
           <!-- The one line of description this panel is allowed (standing
                order 6) is the paragraph below; everything longer lives behind
                this '?', which is the app's `data-help-for` recipe. Added with
@@ -802,7 +802,7 @@
     <div class="card glass finder-card">
       <div class="row space-between finder-head dialog-head">
         <div class="row help-head">
-          <h3 class="dialog-head-title">Find anything</h3>
+          <h3 class="dialog-head-title"><i class="ph ph-magnifying-glass pop-glyph" aria-hidden="true"></i>Find anything</h3>
           <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
             data-help-for="finder-help" aria-controls="finder-help"
             aria-expanded="false" title="How this searches"
@@ -899,7 +899,7 @@
          widths and two baselines in one row, which is what the owner called
          "not aligned and unprofessional" (2026-09-23). -->
     <h3 class="panel-head monitor-header dialog-head">
-      <span class="monitor-title dialog-head-title"><i class="ph ph-activity ph-lead" aria-hidden="true"></i> Activity</span>
+      <span class="monitor-title dialog-head-title"><i class="ph ph-activity pop-glyph" aria-hidden="true"></i> Activity</span>
       <span class="row monitor-header-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn graph-help-toggle"
           data-help-for="activity-help" aria-controls="activity-help" aria-expanded="false"
@@ -923,28 +923,43 @@
         them. Under it, what finished in the last half hour says how it ended,
         how long it took and when, with its lines. Stop the model, in the menu,
         ends any answer and lets the model leave memory. Agent runs lists each
-        run this session with its steps; the log is in the menu.
+        run this session with its steps; the log is in the menu. The two tabs
+        show how many each holds, and each part is a card.
       </p>
     </div>
     <!-- Two tabs, one panel (WORLD_CLASS_PLAN decision 70): the jobs list
          and the agent's run list. The popup kind strip recipe. -->
     <div class="tabs-line popup-kinds activity-tabs" id="activity-tabs" role="tablist" aria-label="Activity">
-      <button type="button" role="tab" id="activity-tab-running" data-value="running" aria-selected="true" aria-controls="activity-running">Running</button>
-      <button type="button" role="tab" id="activity-tab-runs" data-value="runs" aria-selected="false" aria-controls="activity-runs" tabindex="-1">Agent runs</button>
+      <button type="button" role="tab" id="activity-tab-running" data-value="running" aria-selected="true" aria-controls="activity-running"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="activity-count-running">0</span></button>
+      <button type="button" role="tab" id="activity-tab-runs" data-value="runs" aria-selected="false" aria-controls="activity-runs" tabindex="-1"><i class="ph ph-robot pop-tab-glyph ph-lead" aria-hidden="true"></i>Agent runs<span class="pop-count" id="activity-count-runs">0</span></button>
     </div>
     <div id="activity-running" role="tabpanel" aria-labelledby="activity-tab-running" class="activity-running">
-      <p id="activity-model" class="status activity-model"></p>
-      <ul id="activity-list" class="entry-list"></ul>
-      <p id="activity-empty" class="muted empty-line">Nothing running right now.</p>
+      <section class="pop-card">
+        <div class="pop-card-head"><i class="ph ph-activity pop-glyph" aria-hidden="true"></i><h3 class="pop-card-title">Running now</h3></div>
+        <div class="pop-card-body">
+          <p id="activity-model" class="status activity-model"></p>
+          <ul id="activity-list" class="entry-list"></ul>
+          <p id="activity-empty" class="muted empty-line">Nothing running right now.</p>
+        </div>
+      </section>
       <!-- What ended in the last half hour, each with its outcome, length
            and lines (INBOX 805), and an import's report: activity-panel.js. -->
-      <p id="activity-finished-head" class="eyebrow hidden">Finished in the last half hour</p>
-      <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
+      <section class="pop-card hidden" id="activity-finished-card">
+        <div class="pop-card-head"><i class="ph ph-check-circle pop-glyph" aria-hidden="true"></i><h3 id="activity-finished-head" class="pop-card-title">Finished in the last half hour</h3></div>
+        <div class="pop-card-body">
+          <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
+        </div>
+      </section>
     </div>
     <div id="activity-runs" role="tabpanel" aria-labelledby="activity-tab-runs" class="hidden">
-      <div id="agent-monitor-runs" class="monitor-runs"></div>
-      <p id="agent-monitor-empty" class="muted empty-line">Nothing has run yet this session.</p>
-      <div id="agent-monitor-logs" class="monitor-logs hidden"></div>
+      <section class="pop-card">
+        <div class="pop-card-head"><i class="ph ph-robot pop-glyph" aria-hidden="true"></i><h3 class="pop-card-title">This session</h3></div>
+        <div class="pop-card-body">
+          <div id="agent-monitor-runs" class="monitor-runs"></div>
+          <p id="agent-monitor-empty" class="muted empty-line">Nothing has run yet this session.</p>
+          <div id="agent-monitor-logs" class="monitor-logs hidden"></div>
+        </div>
+      </section>
     </div>
   </aside>
 
@@ -958,7 +973,7 @@
        markup. Every handler is bound in app.js now. -->
   <dialog id="space-create-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">New space</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>New space</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-create-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -980,7 +995,7 @@
 
   <dialog id="space-edit-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Rename space</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-pencil-simple pop-glyph" aria-hidden="true"></i>Rename space</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-edit-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1001,7 +1016,7 @@
 
   <dialog id="space-delete-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Delete this space?</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-trash pop-glyph" aria-hidden="true"></i>Delete this space?</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-delete-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1026,7 +1041,7 @@
        so the sidebar height goes back to the list. -->
   <dialog id="doc-storage-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Where are my documents kept?</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-folder-open pop-glyph" aria-hidden="true"></i>Where are my documents kept?</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-storage-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1052,7 +1067,7 @@
        dialogs above. -->
   <dialog id="doc-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">New from a template</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-file-plus pop-glyph" aria-hidden="true"></i>New from a template</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1083,7 +1098,7 @@
   <dialog id="note-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="note-template-title">
     <div class="dialog-head">
-      <h2 id="note-template-title" class="dialog-head-title">Start from a template</h2>
+      <h2 id="note-template-title" class="dialog-head-title"><i class="ph ph-note-pencil pop-glyph" aria-hidden="true"></i>Start from a template</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="note-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1106,7 +1121,7 @@
   <!-- Insert, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
   <dialog id="wb-import-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-import-title">
     <div class="dialog-head">
-      <h2 id="wb-import-title" class="dialog-head-title">Bring in a diagram</h2>
+      <h2 id="wb-import-title" class="dialog-head-title"><i class="ph ph-tree-structure pop-glyph" aria-hidden="true"></i>Bring in a diagram</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1124,7 +1139,7 @@
   <!-- A live Mermaid diagram on the board (INBOX 1451; whiteboard-interchange.js). -->
   <dialog id="wb-diagram-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-diagram-title">
     <div class="dialog-head">
-      <h2 id="wb-diagram-title" class="dialog-head-title">Mermaid diagram</h2>
+      <h2 id="wb-diagram-title" class="dialog-head-title"><i class="ph ph-flow-arrow pop-glyph" aria-hidden="true"></i>Mermaid diagram</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-diagram-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1142,7 +1157,7 @@
   <dialog id="wb-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="wb-template-title">
     <div class="dialog-head">
-      <h2 id="wb-template-title" class="dialog-head-title">New board</h2>
+      <h2 id="wb-template-title" class="dialog-head-title"><i class="ph ph-chalkboard-teacher pop-glyph" aria-hidden="true"></i>New board</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1172,7 +1187,7 @@
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
     <div class="dialog-head">
-      <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning ph-lead" aria-hidden="true"></i> Quick note</h2>
+      <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
         data-help-for="quick-note-help" aria-controls="quick-note-help"
         aria-expanded="false" title="About quick notes" aria-label="About quick notes">
@@ -1229,7 +1244,7 @@
          should not be two different-looking things. -->
     <dialog id="doc-history-dialog" class="card space-dialog doc-ai-history-dialog">
       <div class="dialog-head">
-      <h2 class="dialog-head-title">Document history</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-clock-counter-clockwise pop-glyph" aria-hidden="true"></i>Document history</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-history-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1262,7 +1277,7 @@
     </dialog>
     <dialog id="doc-ai-history-dialog" class="card space-dialog doc-ai-history-dialog">
       <div class="dialog-head">
-      <h2 class="dialog-head-title">AI edit history</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-magic-wand pop-glyph" aria-hidden="true"></i>AI edit history</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-ai-history-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1278,7 +1293,7 @@
        replace across files, as one undo step. Rows by `renderDocReplace`. -->
   <dialog id="doc-replace-dialog" class="card space-dialog doc-ai-history-dialog doc-replace-dialog" aria-labelledby="doc-replace-title">
     <div class="dialog-head">
-      <h2 class="dialog-head-title" id="doc-replace-title">Replace in every document</h2>
+      <h2 class="dialog-head-title" id="doc-replace-title"><i class="ph ph-swap pop-glyph" aria-hidden="true"></i>Replace in every document</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-replace-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1303,7 +1318,7 @@
 
   <dialog id="doc-stats-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Document statistics</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-chart-bar pop-glyph" aria-hidden="true"></i>Document statistics</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-stats-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1314,7 +1329,7 @@
 
   <dialog id="doc-word-goal-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Word-count goal</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-target pop-glyph" aria-hidden="true"></i>Word-count goal</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-word-goal-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1336,7 +1351,7 @@
        Rows are built by renderDashWidgetsList() in app.js. -->
   <dialog id="dash-widgets-dialog" class="card space-dialog dash-widgets-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Widgets</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>Widgets</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="dash-widgets-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -3092,7 +3107,7 @@ Link to another note with [[its first few words]]."></textarea>
                      neither a name nor a way out of its own, only Escape,
                      click-away, or Done three controls later. -->
                 <div class="dialog-head">
-                  <h2 class="dialog-head-title"><i class="ph ph-note ph-lead" aria-hidden="true"></i> Attach</h2>
+                  <h2 class="dialog-head-title"><i class="ph ph-note pop-glyph" aria-hidden="true"></i> Attach</h2>
                   <button type="button" class="icon-only ghost small dialog-head-btn"
                     data-help-for="note-picker-help" aria-controls="note-picker-help"
                     aria-expanded="false" title="About attaching" aria-label="About attaching">
@@ -4633,7 +4648,7 @@ Link to another note with [[its first few words]]."></textarea>
                (GRAPH_PLAN Phase 6, INBOX 59). -->
           <div class="row space-between graph-popup-head dialog-head">
             <span class="graph-popup-ident">
-              <strong id="graph-popup-title" class="dialog-head-title">Note</strong>
+              <i class="ph ph-note pop-glyph" aria-hidden="true"></i><strong id="graph-popup-title" class="dialog-head-title">Note</strong>
               <span id="graph-popup-confidence" class="graph-popup-confidence hidden"></span>
               <span id="graph-popup-category" class="chip tag hidden"></span>
             </span>
@@ -4675,7 +4690,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div id="graph-new" class="graph-popup hidden" role="dialog"
           aria-label="Add a note to the map">
           <div class="row space-between dialog-head">
-            <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New note</strong>
+            <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus pop-glyph" aria-hidden="true"></i> New note</strong>
             <button id="graph-new-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
           </div>
           <p class="muted" id="graph-new-hint"></p>
@@ -5743,7 +5758,7 @@ Link to another note with [[its first few words]]."></textarea>
              left; History and Close are the same 28px quiet icon button on
              the right, History's words in its tooltip and its label. -->
         <div class="dialog-head">
-          <h2 id="doc-ai-title" class="dialog-head-title">AI assistant</h2>
+          <h2 id="doc-ai-title" class="dialog-head-title"><i class="ph ph-sparkle pop-glyph" aria-hidden="true"></i>AI assistant</h2>
           <!-- One line of description under the verbs, the rest behind the
                '?' (DESIGN.md's help recipe): what each of the three does to
                the document is three sentences, and three sentences above a
@@ -9248,7 +9263,7 @@ Link to another note with [[its first few words]]."></textarea>
                  not just reading text on the page but truly make it an all
                  encompassing text and image ocr workspace, dont limit the
                  feature."* -->
-            <h2 class="dialog-head-title">OCR workspace</h2>
+            <h2 class="dialog-head-title"><i class="ph ph-scan pop-glyph" aria-hidden="true"></i>OCR workspace</h2>
             <!-- Which file. The workspace can be reached from four places and
                  opened on a document you last touched an hour ago. -->
             <span id="ocr-file" class="ocr-file" hidden></span>
@@ -9618,7 +9633,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-labelledby="doc-dictionary-title">
     <div class="row space-between doc-dictionary-head dialog-head">
       <div class="row help-head">
-        <h2 id="doc-dictionary-title" class="dialog-head-title">Dictionary</h2>
+        <h2 id="doc-dictionary-title" class="dialog-head-title"><i class="ph ph-book-open-text pop-glyph" aria-hidden="true"></i>Dictionary</h2>
         <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
           data-help-for="doc-dictionary-help" aria-controls="doc-dictionary-help"
           aria-expanded="false" title="About the writing suggestions"
@@ -9726,7 +9741,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Extract notes">
     <div class="card modal-card extract-card">
       <div class="row space-between dialog-head">
-        <h2 class="dialog-head-title">Extract notes</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-list-checks pop-glyph" aria-hidden="true"></i>Extract notes</h2>
         <span class="dialog-head-actions">
           <button id="extract-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -9751,7 +9766,7 @@ Link to another note with [[its first few words]]."></textarea>
       <!-- The dialog head every popup wears (DESIGN.md, "A dialog's head";
            INBOX 479): its utilities were 28px beside a 32px Close. -->
       <div class="row space-between dialog-head">
-        <h2 class="dialog-head-title">Settings</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-gear pop-glyph" aria-hidden="true"></i>Settings</h2>
         <div class="row">
           <!-- The status bar's own back/forward pair (footer, `#status-back`/
                `#status-forward`) sit at a lower z-index than every modal on
@@ -10764,6 +10779,13 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <p class="muted">A skill is a job you can run with one click from the Chat tab.</p>
+            <!-- The pane's glyph tab row (INBOX 1478): a press opens the section and
+                 goes to it (`ensurePaneTabs`, settings-controls.js). -->
+            <nav class="tabs-line popup-kinds pane-tabs" id="skills-tabs" aria-label="Skills sections">
+              <button type="button" data-target='[data-fold-key="skills-list"]'><i class="ph ph-lightning pop-tab-glyph ph-lead" aria-hidden="true"></i>Your skills<span class="pop-count" id="skills-count">0</span></button>
+              <button type="button" data-target="#skill-add-fold" data-focus="skill-name"><i class="ph ph-plus-circle pop-tab-glyph ph-lead" aria-hidden="true"></i>Add</button>
+              <button type="button" data-target="#skill-share"><i class="ph ph-export pop-tab-glyph ph-lead" aria-hidden="true"></i>Share</button>
+            </nav>
             <div class="help-body hidden" id="settings-skills-help" role="dialog" aria-label="About skills">
               <p>
                 A skill is a job you can run with one click from the Chat
@@ -10896,7 +10918,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span id="skill-status" class="status"></span>
             </div>
             </details>
-            <div class="settings-group">
+            <div class="settings-group" id="skill-share">
             <h3>Share</h3>
             <div class="row">
               <button id="skill-export" class="ghost small">Export JSON</button>
@@ -12825,6 +12847,11 @@ Link to another note with [[its first few words]]."></textarea>
 
           <!-- Tasks: see and quit background jobs -->
           <section class="settings-section hidden" id="settings-tasks">
+            <nav class="tabs-line popup-kinds pane-tabs" id="tasks-tabs" aria-label="Tasks sections">
+              <button type="button" data-target="#tasks-live-group"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="tasks-count">0</span></button>
+              <button type="button" data-target="#job-runs-group"><i class="ph ph-clock-counter-clockwise pop-tab-glyph ph-lead" aria-hidden="true"></i>Last runs</button>
+              <button type="button" data-target="#tasks-ai-group"><i class="ph ph-sliders-horizontal pop-tab-glyph ph-lead" aria-hidden="true"></i>Background AI</button>
+            </nav>
             <!-- Boxed like the settings-groups below it (§ reported: a live
                  task card visually blended into "Autonomous Background AI"
                  underneath, with nothing to show where one ended and the
@@ -12901,7 +12928,7 @@ Link to another note with [[its first few words]]."></textarea>
               <ul id="job-runs-list" class="entry-list"></ul>
             </div>
 
-            <div class="settings-group">
+            <div class="settings-group" id="tasks-ai-group">
               <div class="row help-head">
                 <h3>Autonomous background AI</h3>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
@@ -14973,7 +15000,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Note history">
     <div class="card modal-card" id="history-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-clock ph-lead" aria-hidden="true"></i> Earlier versions</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-clock pop-glyph" aria-hidden="true"></i> Earlier versions</h2>
         <span class="dialog-head-actions">
           <button id="history-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15001,7 +15028,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-labelledby="connections-title">
     <div class="card modal-card" id="connections-card">
       <div class="dialog-head">
-        <h2 id="connections-title" class="dialog-head-title"><i class="ph ph-graph ph-lead" aria-hidden="true"></i> Connections</h2>
+        <h2 id="connections-title" class="dialog-head-title"><i class="ph ph-graph pop-glyph" aria-hidden="true"></i> Connections</h2>
         <span class="dialog-head-actions">
           <button id="connections-dock" class="icon-only ghost small dialog-head-btn hidden" type="button"
             title="Open in the sidebar" aria-label="Open in the sidebar"><i class="ph ph-sidebar-simple" aria-hidden="true"></i></button>
@@ -15031,7 +15058,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="A note in the bin">
     <div class="card modal-card" id="binned-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> In the bin</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-trash pop-glyph" aria-hidden="true"></i> In the bin</h2>
         <span class="dialog-head-actions">
           <button id="binned-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15053,7 +15080,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Run a skill">
     <div class="card modal-card" id="skill-run-card">
       <div class="row space-between dialog-head">
-        <h2 id="skill-run-title" class="dialog-head-title">Run a skill</h2>
+        <h2 id="skill-run-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i>Run a skill</h2>
         <span class="dialog-head-actions">
           <button id="skill-run-cancel" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15071,7 +15098,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Keyboard shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Keyboard shortcuts</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
         <span class="dialog-head-actions">
           <button id="shortcuts-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15154,7 +15181,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-labelledby="wb-help-title">
     <div class="card modal-card wb-help-card" id="wb-help-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title" id="wb-help-title"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Keys and controls</h2>
+        <h2 class="dialog-head-title" id="wb-help-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keys and controls</h2>
         <span class="dialog-head-actions">
           <button type="button" class="icon-only ghost small dialog-head-btn graph-help-toggle"
             data-help-for="wb-help-about" aria-controls="wb-help-about" aria-expanded="false"
@@ -15184,7 +15211,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="improve-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Improve writing">
     <div class="card" id="improve-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title">Improve writing</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-pencil-line pop-glyph" aria-hidden="true"></i>Improve writing</h2>
         <span class="dialog-head-actions">
           <button id="improve-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15250,7 +15277,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="dialog-head">
         <!-- Two heads, one shown: `.voice-note` (Voice note, `openVoiceNote`;
              WORLD_CLASS_PLAN 28.5 row 3) shows the second. -->
-        <h2 class="dialog-head-title"><i class="ph ph-microphone ph-lead" aria-hidden="true"></i> <span class="meeting-kind-meeting">Meeting notes</span><span class="meeting-kind-voice">Voice note</span></h2>
+        <h2 class="dialog-head-title"><i class="ph ph-microphone pop-glyph" aria-hidden="true"></i> <span class="meeting-kind-meeting">Meeting notes</span><span class="meeting-kind-voice">Voice note</span></h2>
         <button type="button" class="icon-only ghost small dialog-head-btn"
           data-help-for="meeting-help" aria-controls="meeting-help" aria-expanded="false"
           title="About meeting notes" aria-label="About meeting notes">
@@ -15397,7 +15424,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Tools and features">
     <div class="card modal-card" id="features-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-toolbox ph-lead" aria-hidden="true"></i> Tools &amp; features</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-toolbox pop-glyph" aria-hidden="true"></i> Tools &amp; features</h2>
         <span class="dialog-head-actions">
           <button id="features-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>

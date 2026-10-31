@@ -35,24 +35,26 @@
   flex: none;
   padding: var(--space-3) var(--space-4);
 }
-/* The sticky section strip: outside the scroller, so it is always in view. */
+/* The sticky section strip: outside the scroller, so it is always in view. It is the popup
+   glyph tab row (`.tabs-line.popup-kinds`, popup-anatomy-lazy.css); the chosen tab is the one the
+   scroll is in. */
 .appearance-strip {
-  display: flex;
   flex: none;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-4);
+  gap: 0;
+  padding-inline: 0;
   overflow-x: auto;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
   scrollbar-width: none;
 }
 .appearance-strip > button {
-  flex: none;
-  white-space: nowrap;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  font-size: var(--text-sm);
 }
-.appearance-strip > button[aria-current="true"] {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+.appearance-strip > button > .pop-tab-glyph {
+  margin-inline-end: var(--space-1);
+}
+.appearance-strip > button > .pop-count {
+  margin-inline-start: var(--space-1);
 }
 .appearance-panel-body {
   flex: 1 1 auto;

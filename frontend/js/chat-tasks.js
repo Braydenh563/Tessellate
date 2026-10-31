@@ -22,6 +22,7 @@ async function renderTasks(payload) {
   const jobs = (body && body.tasks) || [];
   list.replaceChildren();
   $("tasks-empty").classList.toggle("hidden", jobs.length > 0);
+  $("tasks-count").textContent = String(jobs.length);
   for (const job of jobs) {
     const li = document.createElement("li");
     // The heading row is the job and its Quit button; everything else stacks

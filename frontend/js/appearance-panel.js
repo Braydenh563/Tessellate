@@ -26,12 +26,12 @@
 //: **Per-control reset** is the page's own `.setting-reset`, painted here with
 //: the same functions Settings uses (`paintSettingRow`).
 const APPEARANCE_STRIP = [
-  ["theme", "Theme", '[data-fold-key="appearance-themes"]'],
-  ["colour", "Colour", '[data-fold-key="appearance-colour"]'],
-  ["text", "Text", "#fontsize-seg"],
-  ["layout", "Layout", "#density-seg"],
-  ["art", "Background art", '[data-fold-key="appearance-background"]'],
-  ["motion", "Motion", "#progress-motion-row"],
+  ["theme", "Theme", '[data-fold-key="appearance-themes"]', "palette"],
+  ["colour", "Colour", '[data-fold-key="appearance-colour"]', "drop"],
+  ["text", "Text", "#fontsize-seg", "text-aa"],
+  ["layout", "Layout", "#density-seg", "layout"],
+  ["art", "Background art", '[data-fold-key="appearance-background"]', "image"],
+  ["motion", "Motion", "#progress-motion-row", "wind"],
 ];
 const APPEARANCE_KEY = "appearance-panel-section";
 const APPEARANCE_PANEL = { el: null, body: null, strip: null, peek: null, open: false, raf: 0, hold: 0, timers: [], opener: null };
@@ -61,6 +61,7 @@ function appearanceTop(el) {
 
 function appearanceMark(index) {
   APPEARANCE_PANEL.strip.querySelectorAll("button").forEach((button, i) => {
+    button.classList.toggle("active", i === index);
     if (i === index) button.setAttribute("aria-current", "true");
     else button.removeAttribute("aria-current");
   });
@@ -138,7 +139,9 @@ function appearanceBuild() {
   head.className = "row space-between dialog-head";
   const title = document.createElement("h2");
   title.className = "dialog-head-title";
-  title.textContent = "Appearance";
+  const glyph = appearanceIcon("palette");
+  glyph.classList.add("pop-glyph");
+  title.append(glyph, "Appearance");
   const tools = document.createElement("div");
   tools.className = "row";
   const help = appearanceHeadButton("About the Appearance panel", "question", () => {});
@@ -166,13 +169,21 @@ function appearanceBuild() {
   head.append(title, tools);
 
   const strip = document.createElement("nav");
-  strip.className = "appearance-strip";
+  strip.className = "appearance-strip tabs-line popup-kinds";
   strip.setAttribute("aria-label", "Appearance sections");
-  APPEARANCE_STRIP.forEach(([, label], i) => {
+  APPEARANCE_STRIP.forEach(([key, label, , glyph], i) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "ghost small";
-    button.textContent = label;
+    const icon = appearanceIcon(glyph);
+    icon.classList.add("pop-tab-glyph", "ph-lead");
+    button.append(icon, label);
+    //: The first tab says how many themes it holds.
+    if (key === "theme") {
+      const count = document.createElement("span");
+      count.className = "pop-count";
+      count.textContent = String(Object.keys(THEME_PRESETS).length);
+      button.appendChild(count);
+    }
     button.addEventListener("click", () => appearanceJump(i));
     strip.appendChild(button);
   });
@@ -197,8 +208,8 @@ function appearanceBuild() {
   words.textContent =
     "These are the Appearance settings from Settings, set beside the app so you see each change as you make it. " +
     "Drag the head to move the panel, a screen edge to dock it, the corner to resize it. " +
-    "The strip jumps to a section and the panel opens on the last one you used. " +
-    "Peek fades the panel so you can judge a colour on the app behind it. " +
+    "The tab row jumps to a section and the panel opens on the last one you used. " +
+    "Peek, in the head, fades the panel so you can judge a colour on the app behind it. " +
     "An arrow beside a changed setting puts that setting back to its default. Esc closes the panel.";
   helpBody.appendChild(words);
 
@@ -249,7 +260,7 @@ async function openAppearancePanel(section) {
   //: The page's listeners live in settings-controls.js, which Settings fetches
   //: before it opens, and the rows' resets are settings-rows.js; the panel needs
   //: them just as much.
-  await Promise.all([ensureModule("settingsControls"), ensureModule("panelMovable"), ensureModule("settingsUi")]).then(() => lazyScript("/js/settings-rows.js"));
+  await Promise.all([ensureModule("settingsControls"), ensureModule("panelMovable"), ensureModule("popupAnatomy"), ensureModule("settingsUi")]).then(() => lazyScript("/js/settings-rows.js"));
   if (APPEARANCE_PANEL.open) return;
   if (!APPEARANCE_PANEL.el) appearanceBuild();
   APPEARANCE_PANEL.open = true;

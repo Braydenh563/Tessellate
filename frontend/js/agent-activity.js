@@ -250,6 +250,7 @@ function addAgentRun({ kind, name, icon = "", steps = [], detail = "" }) {
   renderAgentRunSummary(run);
   renderActivityStatusItem();
   agentMonitorEmpty?.classList.add("hidden");
+  $("activity-count-runs").textContent = String(agentRuns.length);
   //: The list is chronological and it scrolls, so without this a run that
   //: starts while eight are already listed is appended out of sight, the
   //: same tail-following the log it replaced has always done.
@@ -556,6 +557,7 @@ if (agentMonitorClear) {
     agentRuns.length = 0;
     agentRuns.push(...kept);
     agentMonitorLogs.textContent = "";
+    $("activity-count-runs").textContent = String(agentRuns.length);
     agentMonitorEmpty?.classList.toggle(
       "hidden",
       agentRuns.length > 0 || !agentMonitorLogs.classList.contains("hidden"),

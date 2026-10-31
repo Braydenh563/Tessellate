@@ -818,6 +818,7 @@ async function renderSkillSettings() {
   }
   list.replaceChildren();
   for (const skill of allSkills()) list.appendChild(skillRow(skill));
+  $("skills-count").textContent = String(allSkills().length);
   renderSkillFolderLine();
   if (!$("skill-tool-list").children.length) renderSkillToolPicker([]);
   if (!$("skill-verify-tool").children.length) renderSkillVerifyPicker(null);

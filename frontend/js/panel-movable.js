@@ -790,9 +790,9 @@ function panelChip(panel, host) {
   open.type = "button";
   open.className = "minimised-pill-open";
   open.setAttribute("aria-label", `Restore ${title}`);
-  const glyph = panel.querySelector(".dialog-head-title .ph");
+  const glyph = panel.querySelector(".dialog-head .pop-glyph, .dialog-head-title .ph");
   const icon = document.createElement("i");
-  icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead").join(" ") : "ph ph-app-window";
+  icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead" && c !== "pop-glyph").join(" ") : "ph ph-app-window";
   icon.setAttribute("aria-hidden", "true");
   const name = document.createElement("span");
   name.textContent = title;

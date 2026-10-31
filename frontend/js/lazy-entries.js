@@ -6,6 +6,8 @@ Object.assign(LAZY_MODULES, {
   chatPrivate: ["/css/chat-private-lazy.css", "/js/chat-private.js"],
   //: The plain head's disc, fetched only when the faces failed (`plainHead`).
   plainHead: ["/css/plain-head-lazy.css"],
+  //: One anatomy for every popup: the head's glyph, the glyph tab row, the bordered card (INBOX 1478).
+  popupAnatomy: ["/css/popup-anatomy-lazy.css", "/js/popup-glyph.js"],
   //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
   panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: The activity panel and the run folds it shares with Settings, Tasks (task-steps.js).
