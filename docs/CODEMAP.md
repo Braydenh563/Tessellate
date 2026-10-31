@@ -2006,10 +2006,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `importFromApp` | frontend/js/app-import.js:24 |
-| `importReportButton` | frontend/js/app-import.js:73 |
-| `importReportCounts` | frontend/js/app-import.js:105 |
-| `importReportSection` | frontend/js/app-import.js:79 |
-| `openImportReport` | frontend/js/app-import.js:113 |
+| `importReportButton` | frontend/js/app-import.js:77 |
+| `importReportCounts` | frontend/js/app-import.js:109 |
+| `importReportSection` | frontend/js/app-import.js:83 |
+| `openImportReport` | frontend/js/app-import.js:117 |
 
 ### frontend/js/app-palette.js (42)
 
