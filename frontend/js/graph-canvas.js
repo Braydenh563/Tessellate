@@ -954,9 +954,14 @@ function gcEdgeStyle(edge) {
 //: renderer ships blurry. The buffer is the box times the device pixel ratio,
 //: and every draw starts by scaling the context by the same number so the
 //: drawing code can go on thinking in CSS pixels.
-function gcResize(s = gcTab) {
+function gcResize(s = gcTab, rect = null) {
   if (!s.canvas) return false;
   const box = document.getElementById(s.boxId);
+  //: `rect` is the observer entry's content box: the observer fires after
+  //: other observers' writes, where `clientWidth` paid a style pass (9 to 31ms
+  //: measured on 2,000 notes); the entry carries the size already.
+  const cw = rect ? Math.round(rect.width) : box ? box.clientWidth : 0;
+  const ch = rect ? Math.round(rect.height) : box ? box.clientHeight : 0;
   //: **A box with no size is folded, not small** (the owner, 2026-10-10: "I
   //: collapsed and opened the local map and the stuff disappeared??"). The
   //: local map's body collapses to nothing; this read that as the 800x540
@@ -965,16 +970,16 @@ function gcResize(s = gcTab) {
   //: on the way open, so every note was off the canvas. A drawn map keeps
   //: the size it last had while its box is folded or hidden; the fallback is
   //: for a box never measured.
-  if (box && s.dims.w && (!box.clientWidth || !box.clientHeight)) return false;
-  const width = (box && box.clientWidth) || 800;
-  const height = (box && box.clientHeight) || 540;
+  if (box && s.dims.w && (!cw || !ch)) return false;
+  const width = cw || 800;
+  const height = ch || 540;
   const dpr = window.devicePixelRatio || 1;
   if (width === s.dims.w && height === s.dims.h && dpr === s.dpr) return false;
   s.dims = { w: width, h: height };
   //: Whether this size was read off a laid-out box, not the fallback for one
   //: never measured (a map drawn while its tab is hidden): the resize
   //: observer reframes a fallback-sized map at once instead of gliding.
-  s.dimsReal = Boolean(box && box.clientWidth && box.clientHeight);
+  s.dimsReal = Boolean(cw && ch);
   s.dpr = dpr;
   s.canvas.width = Math.max(1, Math.round(width * dpr));
   s.canvas.height = Math.max(1, Math.round(height * dpr));
@@ -1014,7 +1019,7 @@ function gcEnsureCanvas(s = gcTab) {
       if (own && !own.contentRect.width && s.dims.w) return;
       const before = { ...s.dims };
       const wasReal = s.dimsReal !== false;
-      if (!gcResize(s)) {
+      if (!gcResize(s, own?.contentRect)) {
         if (entries.some((entry) => entry.target.id !== s.boxId && !entry.target.matches(GC_FIT_MENUS))) gcRefitForPanels(s);
         return;
       }
@@ -3880,6 +3885,8 @@ function gcWireInteraction(s = gcTab) {
   const zoom = d3
     .zoom()
     .scaleExtent([0.05, 5])
+    //: The default extent reads `clientWidth` on every gesture's first use: a forced layout (30ms on 2,000 notes).
+    .extent(() => [[0, 0], [s.dims.w, s.dims.h]])
     .wheelDelta(zoomWheelDelta)
     // A drag that starts on a node moves the node; anywhere else pans. Without
     // this filter d3-zoom claims the gesture first and a node can never be
@@ -5717,7 +5724,9 @@ async function renderGraphCanvas(s = gcTab) {
     s.userZoomed = false;
   }
 
+  //: Both reads before the first write below: apart, each paid its own style pass.
   gcReadTokens(s);
+  gcResize(s);
   gcShowEmpty(data.nodes.length === 0);
   if (!data.nodes.length) gcArriving(s, false);
   //: The minimap goes with the map: an overview of nothing is a grey
@@ -5808,7 +5817,6 @@ async function renderGraphCanvas(s = gcTab) {
     return;
   }
 
-  gcResize(s);
   const width = s.dims.w;
   const height = s.dims.h;
   s.layoutKind = graphLayout();

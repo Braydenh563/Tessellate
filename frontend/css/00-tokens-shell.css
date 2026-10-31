@@ -1632,7 +1632,7 @@ header#top-bar.tabs-wrapped #tab-bar {
      the header on a phone it hangs over the tab's own head, so the next
      control Tab reached sat under an invisible popup that took its clicks. */
   pointer-events: none;
-  transition: opacity var(--motion-fast) var(--ease-out), visibility var(--motion-fast) var(--ease-out);
+  transition: opacity var(--ui-fast) var(--ease-out), visibility var(--ui-fast) var(--ease-out);
 }
 .ai-status-wrap:hover .ai-status-popup,
 .ai-status:focus-visible+.ai-status-popup,
