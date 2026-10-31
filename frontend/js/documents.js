@@ -17453,25 +17453,9 @@ const DOC_PROSE_RULES = [
   },
 ];
 
-//: **Unambiguous typos only.** Every entry here is a string that is not a word
-//: in any English text, which is the bar an automatic replacement has to
-//: clear, because the cost of being wrong is that the app silently changed
-//: something the writer meant. `alot` is in; `dont` is not (an apostrophe is a
-//: style choice, and in a code block it is a quote).
-const DOC_AUTOCORRECT = {
-  teh: "the", adn: "and", taht: "that", tehn: "then", thsi: "this",
-  thier: "their", recieve: "receive", recieved: "received", seperate: "separate",
-  seperated: "separated", occured: "occurred", occuring: "occurring",
-  definately: "definitely", wich: "which", becuase: "because", becasue: "because",
-  alot: "a lot", accomodate: "accommodate", acheive: "achieve", acheived: "achieved",
-  arguement: "argument", beleive: "believe", calender: "calendar",
-  concious: "conscious", embarass: "embarrass", enviroment: "environment",
-  existance: "existence", goverment: "government", independant: "independent",
-  neccessary: "necessary", occassion: "occasion", persistant: "persistent",
-  publically: "publicly", recomend: "recommend", refered: "referred",
-  succesful: "successful", tommorow: "tomorrow", untill: "until",
-  wierd: "weird", writting: "writing", youre: "you're", ot: "to",
-};
+//: One table for the notes and the documents (audit 1031 N42): `AUTOCORRECT_TYPOS`, autocorrect.js,
+//: which this bundle loads first. Two copies had drifted, 42 rows against 89.
+const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;
 
 const DOC_LONG_SENTENCE_WORDS = 45;
 

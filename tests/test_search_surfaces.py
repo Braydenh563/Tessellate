@@ -120,8 +120,12 @@ def test_the_notes_list_asks_the_engine_for_its_operators():
     assert "engine" in parse
     matches = _function(text, "matchesSearch")
     assert "engineQueryIds(" in matches
+    #: Audit 1031 N16: the request moved into the pager (`enginePages`), which reads
+    #: every page of the answer rather than the first 50; the intent, asking the engine, is the same.
     ids = _function(text, "engineQueryIds")
-    assert "/search?q=" in ids
+    assert "enginePages(" in ids
+    pages = _function(text, "enginePages")
+    assert "/search?q=" in pages and "page=${page}" in pages
 
 
 def test_the_library_semantic_toggle_asks_the_engine():

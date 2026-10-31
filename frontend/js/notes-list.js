@@ -223,19 +223,28 @@ const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: 
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
+//: Every page of the engine's answer, up to 500 notes (audit 1031 N16: a filter stopped at the first 50
+//: while the list it narrows holds them all); `more` is true only if a tenth page still had more.
+async function enginePages(q, kind) {
+  const ids = new Set();
+  let more = false;
+  for (let page = 1; page <= 10; page++) {
+    const body = await apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50&page=${page}`, { silent: true });
+    for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
+    if (!(more = Boolean(body.more))) break;
+  }
+  return { ids, more };
+}
+
 function engineQueryIds(q) {
   if (noteEngine.q === q && noteEngine.ids) return noteEngine.ids;
   if (noteEngine.pending !== q) {
     noteEngine.pending = q;
     const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
-    apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50`, { silent: true })
-      .then((body) => {
+    enginePages(q, kind)
+      .then(({ ids, more }) => {
         if (noteEngine.pending !== q) return;
-        const hits = (body.hits || []).filter((hit) => hit.kind === "note");
-        noteEngine.q = q;
-        noteEngine.ids = new Set(hits.map((hit) => hit.id));
-        noteEngine.capped = (body.hits || []).length >= 50;
-        noteEngine.pending = "";
+        Object.assign(noteEngine, { q, ids, capped: more, pending: "" });
         renderEntries();
       })
       .catch(() => {
@@ -371,10 +380,10 @@ function liveQueryBar(visible) {
   const ids = visible.map((e) => e.id);
   const count = document.createElement("span");
   count.className = "muted";
-  //: The engine answers one page (50); a full page says so rather than
+  //: Up to ten pages of 50 are read; past that it says so rather than
   //: letting the count pass for the whole of a larger answer.
   count.textContent = parsed.engine.length > 0 && noteEngine.capped
-    ? `The first ${ids.length} notes that match this query`
+    ? `The first ${ids.length} notes that match this query, add words to narrow it`
     : `${nounCount(ids.length, "note")} match this query`;
   bar.replaceChildren(
     count,

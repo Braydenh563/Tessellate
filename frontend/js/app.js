@@ -1886,6 +1886,7 @@ const LAZY_MODULES = {
     "/js/image-layout.js",
     "/js/documents-code.js",
     "/js/documents-prose.js",
+    "/js/autocorrect.js",
     "/js/documents.js",
     "/js/margin-reader.js",
     "/js/whiteboard-map.js",
@@ -1971,7 +1972,7 @@ function ensureModule(name) {
   const files = LAZY_MODULES[name];
   if (!files) return Promise.resolve(false);
   if (!lazyModuleLoads.has(name)) {
-    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || (lazyModuleLoads.delete(name), false)));
+    lazyModuleLoads.set(name, Promise.all(files.map(lazyScript)).then((results) => results.every(Boolean) || !lazyModuleLoads.delete(name)));
   }
   return lazyModuleLoads.get(name);
 }
@@ -2186,7 +2187,7 @@ function installStandIns(table) {
           const real = window[name];
           //: The module failed to load (offline, or the file is gone). Calling
           //: the stand-in again here would recurse forever, so this is where it stops.
-          if (typeof real !== "function" || real === standIn) return void lazyLoadFailed();
+          if (typeof real !== "function" || real === standIn) return lazyLoadFailed();
           return real(...args);
         });
       window[name] = standIn;
