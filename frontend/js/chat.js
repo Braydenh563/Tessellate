@@ -156,7 +156,8 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Rewrite this shorter",
       onClick: () =>
         rewriteAnswerWith(
-          "Rewrite your last answer to be shorter, keep every fact, cut the padding."
+          "Rewrite your last answer to be shorter, keep every fact, cut the padding.",
+          "Make that shorter."
         ),
     },
     off ? null : {
@@ -164,7 +165,8 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Explain it more simply",
       onClick: () =>
         rewriteAnswerWith(
-          "Explain your last answer again in plain language, short sentences, no jargon."
+          "Explain your last answer again in plain language, short sentences, no jargon.",
+          "Explain that more simply."
         ),
     },
     {
@@ -579,9 +581,11 @@ const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() 
 //: the one design choice worth stating: this app's whole premise is that you
 //: can read what the model was asked. A hidden instruction that changes an
 //: answer is exactly the thing a local-first notebook should not do.
-function rewriteAnswerWith(instruction) {
+//: `said` is what the bubble reads (AI22): the person's own act ("Make it shorter"),
+//: not the long instruction and not a repeat of the first question.
+function rewriteAnswerWith(instruction, said) {
   if (chatController) return toast("Wait for the current answer to finish.");
-  sendChatMessage(instruction);
+  sendChatMessage(instruction, { displayText: said });
 }
 
 //: **Fork from this point in the conversation.** The server already copies a
