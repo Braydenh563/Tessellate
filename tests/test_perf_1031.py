@@ -160,3 +160,19 @@ def test_the_library_bundle_is_not_fetched_at_boot_or_by_the_password():
     assert 'ensureModule("library")' in warm
     boot = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
     assert "library" not in boot
+
+
+def test_a_format_turn_scale_and_fit_over_a_selection_save_once():
+    # Turning 360 selected items sent 361 PUTs, fitting 98 (audit 1031 BD2).
+    fmt = frontend_text("whiteboard-format.js")
+    for start, end in (
+        ("async function wbFmtApply(field, patch, said) {", "//: The selection's box"),
+        ("async function wbFmtScaleSelection(", "//: A card, text box or picture turns"),
+        ("function wbTurnSelection(degrees = 90) {", "//: One shape grown until"),
+        ("function wbAutoSizeSelection() {", ".then(() => wbScheduleRender())"),
+    ):
+        body = _between(fmt, start, end)
+        assert "await wbSaveMany(saves);" in body, start
+        for single in ("await wbSaveNode(", "await wbSaveObject(", "await wbSaveSketchD(", "await wbSaveSketchProps("):
+            assert single not in body, (start, single)
+    assert "function wbSketchSetProps(sketch, partial) {" in frontend_text("whiteboard.js")

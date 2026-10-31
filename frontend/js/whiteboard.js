@@ -22939,6 +22939,22 @@ function wbSketchSetD(sketch, d) {
   sketch.data = JSON.stringify(parsed);
 }
 
+//: `wbSaveSketchProps`' merge without its save, for a selection saved together
+//: (`wbSaveMany`). False when the sketch holds nothing to merge into.
+function wbSketchSetProps(sketch, partial) {
+  let parsed = null;
+  try {
+    const candidate = JSON.parse(sketch.data);
+    if (candidate && (typeof candidate.d === "string" || (candidate.type || "").startsWith("link-"))) parsed = candidate;
+  } catch {
+    parsed = null;
+  }
+  if (!parsed) return false;
+  Object.assign(parsed, partial);
+  sketch.data = JSON.stringify(parsed);
+  return true;
+}
+
 //: The leading run of plain moves in a batch of undo steps, taken off it, so the
 //: run is put back with one request (`wbApplyMoveRun`); one move goes its own way.
 function wbTakeMoveRun(pending) {

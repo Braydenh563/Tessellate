@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Perf 1031 row 20 (whiteboard formats): turning, scaling, flipping, fill and border swaps and grow-to-fit over a selection save through one `PUT /whiteboard/items/save-many` each (turning 360 items went from 361 PUTs to 1, grow-to-fit over a 98-item selection from 98 to 1, undo of either is 1); lock, hide, comment, align, distribute and z-order loops are still one request per item.
 - Perf 1031 row 42 (diagnostics): the Logs report keeps a GET that took over 250 ms (was 1 s), so the 150 to 210 ms list routes show; writes that wait on a model stay at 1 s.
 - Perf 1031 row 53 (timeline): the recall row (two reads) and the second page of rows are asked 1.5 s after the rows, not with them (requests in the first second of opening the tab 7 to 4; the long tasks at 4x are unchanged, 351 to 629 ms either way).
 - Perf 1031 row 21 (boot): the library bundle (boards, documents, d3) is no longer fetched three seconds after every boot; it is warmed at the first idle moment after the first touch of the page (not the password), with four cores or more and no data saving, and a surface that needs it fetches it on the spot. Nine seconds idle after boot: 103 scripts, 6.5 MB decoded, 5.3 MB on the wire to 85, 3.6 MB, 2.4 MB. p5 still loads for the Dashboard art; boot CSS is untouched.
