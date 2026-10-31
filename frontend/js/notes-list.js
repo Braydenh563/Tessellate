@@ -1969,7 +1969,7 @@ function windowRows(root, o) {
   return { add, fill, stop };
 }
 
-const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "" };
+const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
 
 function notesScroller(list) {
   for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
@@ -1982,11 +1982,20 @@ const NOTE_WINDOW_FIRST = 12;
 const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
   || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
 
-function renderWindowed(list, items, buildItem, { keep, afterChunk, settled } = {}) {
+function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
+  if (grown) {
+    //: The window stays; the new rows join its end and the rows built say how many there are now.
+    noteWindow.items = items;
+    noteWindow.win.add(list, grown);
+    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", String(items.length));
+    afterChunk?.();
+    return;
+  }
   noteWindow.win?.stop();
   if (noteWindow.mode !== notesViewMode) noteWindow.heights.clear();
   noteWindow.mode = notesViewMode;
-  const size = String(items.length);
+  noteWindow.items = items;
+  noteWindow.list = list;
   const win = windowRows(notesScroller(list), {
     heights: noteWindow.heights,
     guess: notesViewMode === "rows" ? 50 : 132,
@@ -1997,7 +2006,7 @@ function renderWindowed(list, items, buildItem, { keep, afterChunk, settled } = 
     build: (item, i) => {
       const li = buildItem(item, i);
       li.setAttribute("aria-posinset", String(i + 1));
-      li.setAttribute("aria-setsize", size);
+      li.setAttribute("aria-setsize", String(noteWindow.items.length));
       return li;
     },
     stays: noteRowStays,
@@ -2267,17 +2276,24 @@ function libraryVisibleRows() {
 let rowEnterIds = null;
 let rowEnterTimer = 0;
 
-function renderEntries() {
-  delete $("entry-list").dataset.stale;
-  closeNotePageIfGone();
-  notesRailSync();
-  // A cleared box clears its reasons here rather than at each of the five
-  // places that can clear the box: a reason for a query nobody typed is
-  // worse than no reason at all.
-  if (!noteSearch && noteSearchWhy.size) noteSearchWhy.clear();
-  const list = $("entry-list");
-  const empty = $("empty-message");
-  const noMatch = $("no-match-message");
+//: **A page that arrives adds its rows; it does not redraw the list** (perf3
+//: item 1). The rows now drawn, in order and as the same note objects, are a
+//: prefix of what the list should show: the rest is what is appended. Null
+//: when anything else is true (a note changed, the order moved, a thread
+//: joined, the view mode turned, a held note or a skeleton is in the list),
+//: and the list is rebuilt as before. Nothing is appended for no new rows: a
+//: redraw asked for with nothing new is a note that changed in place.
+function noteListGrownBy(list, ordered) {
+  const was = noteWindow.items;
+  if (!was?.length || !noteWindow.win || noteWindow.list !== list || noteWindow.mode !== notesViewMode) return null;
+  if (ordered.length <= was.length || list.childElementCount !== was.length) return null;
+  if (list.lastElementChild.dataset.id !== String(was[was.length - 1][0].id)) return null;
+  for (let i = 0; i < was.length; i++) if (was[i][0] !== ordered[i][0] || was[i][1] !== ordered[i][1]) return null;
+  return ordered.slice(was.length);
+}
+
+//: What the list was holding, which its rebuild builds again, and an empty list.
+function resetNoteList(list) {
   //: **A row that arrives after the first render fades in** (ledger 1538). The
   //: list redraws whole, so what was on screen is remembered by id and a card
   //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
@@ -2290,17 +2306,38 @@ function renderEntries() {
   clearTimeout(rowEnterTimer);
   rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
   list.replaceChildren();
+  return keep;
+}
+
+//: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
+function renderEntries(appendOnly = false) {
+  const list = $("entry-list");
+  // Drafts stay out of All/category views entirely, user-reported: they
+  // should only show up in the Drafts filter until saved as a real note.
+  const visible = libraryVisibleRows();
+  // Flat for a search or non-default sort, threaded for newest: one ordering
+  // with `resolveNotePage`, so a jump's page is the page that renders.
+  const ordered = paginateNotesForDisplay(orderedNotesForCurrentView(visible));
+  const grown = noteListGrownBy(list, ordered);
+  if (appendOnly && !grown) return;
+  delete list.dataset.stale;
+  closeNotePageIfGone();
+  notesRailSync();
+  // A cleared box clears its reasons here rather than at each of the five
+  // places that can clear the box: a reason for a query nobody typed is
+  // worse than no reason at all.
+  if (!noteSearch && noteSearchWhy.size) noteSearchWhy.clear();
+  const empty = $("empty-message");
+  const noMatch = $("no-match-message");
+  const keep = grown ? null : resetNoteList(list);
   // Re-applied on every render, not just on a click: `replaceChildren`
   // above leaves the class alone, but a later render that rebuilt the <ul>
   // itself would not: and this failing silently would look like the
   // toggle not working rather than a class being dropped.
   applyNotesViewMode();
   //: Held notes first (quick-note.js); loads it only when one is held.
-  if (prefs.get("noteOutbox", null)) renderPendingNoteRows();
+  if (!grown && prefs.get("noteOutbox", null)) renderPendingNoteRows();
 
-  // Drafts stay out of All/category views entirely, user-reported: they
-  // should only show up in the Drafts filter until saved as a real note.
-  const visible = libraryVisibleRows();
   //: **A selection is of what is on screen** (INBOX 432). Ticking five notes
   //: and then choosing a category left "5 selected" over two visible rows,
   //: and Tag or Delete then acted on all five, three of them out of sight.
@@ -2348,9 +2385,6 @@ function renderEntries() {
   empty.classList.toggle("hidden", !notebookEmpty);
   noMatch.classList.toggle("hidden", notebookEmpty || visible.length > 0);
 
-  // Flat for a search or non-default sort, threaded for newest: one ordering
-  // with `resolveNotePage`, so a jump's page is the page that renders.
-  const ordered = paginateNotesForDisplay(orderedNotesForCurrentView(visible));
   renderWindowed(
     list,
     ordered,
@@ -2364,6 +2398,7 @@ function renderEntries() {
     },
     {
       keep,
+      grown,
       afterChunk: () => {
         applyEntryListTabOrder(list);
         ensureCardCounts(list, _entriesLoadGeneration);
@@ -2893,15 +2928,15 @@ function paintEntriesProgress(list = true) {
   //: A list nobody can see is not painted (perf-1031 item 1: six repaints,
   //: 1.4 s at 4x, behind the Dashboard on a reload). `revealTab`
   //: (navigation.js) draws it once, when the Notes tab is shown.
-  if (list) renderEntriesWhenShown();
+  if (list) renderEntriesWhenShown(list === "append");
 }
 
 //: The repaint a background change asks for (a page arriving, the spaces or
 //: the map index answering): drawn now if the tab is up, once on reveal if not.
 //: The debt is `data-stale` on the list itself, so it is no module state.
-function renderEntriesWhenShown() {
+function renderEntriesWhenShown(appendOnly = false) {
   if ($("tab-notes").classList.contains("hidden")) $("entry-list").dataset.stale = "1";
-  else renderEntries();
+  else renderEntries(appendOnly);
 }
 
 //: **Past this many rows a page that is not the last repaints the count, not
@@ -2915,7 +2950,7 @@ function scheduleEntriesProgress() {
   if (_entriesProgressTimer !== null) return;
   //: A repaint costs more as the list grows (27 to 46ms over eight at 2,000 notes), so the gap grows with it.
   const gap = ENTRIES_PROGRESS_MS * Math.max(1, allEntries.length / 800);
-  _entriesProgressTimer = setTimeout(paintEntriesProgress, gap, allEntries.length <= ENTRIES_PROGRESS_LIST_MAX);
+  _entriesProgressTimer = setTimeout(paintEntriesProgress, gap, allEntries.length <= ENTRIES_PROGRESS_LIST_MAX ? true : "append");
 }
 
 async function loadEntries() {

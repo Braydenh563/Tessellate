@@ -14,8 +14,8 @@ def test_a_list_nobody_can_see_is_not_repainted_as_pages_arrive():
     # (1.4 s of main thread at 4x). The progress paint, the spaces answer and the
     # map index answer ask `renderEntriesWhenShown`; the reveal draws it once.
     notes = frontend_text("notes-list.js")
-    assert "renderEntriesWhenShown();" in _body(notes, "function paintEntriesProgress(", "function renderEntriesWhenShown")
-    gate = _body(notes, "function renderEntriesWhenShown()", "const ENTRIES_PROGRESS_LIST_MAX")
+    assert 'renderEntriesWhenShown(list === "append");' in _body(notes, "function paintEntriesProgress(", "function renderEntriesWhenShown")
+    gate = _body(notes, "function renderEntriesWhenShown(", "const ENTRIES_PROGRESS_LIST_MAX")
     assert 'classList.contains("hidden")' in gate and 'dataset.stale = "1"' in gate
     assert "renderEntriesWhenShown();" in _body(notes, "function ensureMapChipsFor", "\n}\n")
     assert "renderEntriesWhenShown()" in frontend_text("spaces-find.js")
@@ -25,7 +25,7 @@ def test_a_list_nobody_can_see_is_not_repainted_as_pages_arrive():
 
 def test_a_real_render_clears_the_owed_paint():
     notes = frontend_text("notes-list.js")
-    assert "delete $(\"entry-list\").dataset.stale;" in _body(notes, "function renderEntries() {", "closeNotePageIfGone();")
+    assert "delete list.dataset.stale;" in _body(notes, "function renderEntries(", "closeNotePageIfGone();")
 
 
 def test_a_hidden_gutter_costs_a_key_nothing():
@@ -46,9 +46,11 @@ def test_a_long_list_repaints_only_on_its_first_and_last_page():
     notes = frontend_text("notes-list.js")
     assert "const ENTRIES_PROGRESS_LIST_MAX = 600;" in notes
     schedule = _body(notes, "function scheduleEntriesProgress()", "async function loadEntries")
+    # perf3-1031: past the max a middle page appends its rows or waits (the
+    # window takes new rows, `noteListGrownBy`); it still never rebuilds.
     assert "allEntries.length <= ENTRIES_PROGRESS_LIST_MAX" in schedule
     paint = _body(notes, "function paintEntriesProgress(", "function renderEntriesWhenShown")
-    assert "renderStatusBar();" in paint and "if (list) renderEntriesWhenShown();" in paint
+    assert "renderStatusBar();" in paint and 'if (list) renderEntriesWhenShown(list === "append");' in paint
     loop = _body(notes, "const lastPage = offset >= total", "renderSidebar();")
     assert "if (first || lastPage) paintEntriesProgress();" in loop
 
