@@ -1966,6 +1966,7 @@ function editedMarker() {
 }
 
 async function openConversation(id) {
+  if (chatLeaveHeld(() => openConversation(id))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
   // Before the pane is rebuilt, not after: this reads the composer state that
@@ -1976,6 +1977,7 @@ async function openConversation(id) {
   // call sites (the sidebar, the Library) so neither has to remember to.
   recordTabVisit("chat", `conv:${full.id}`, full.title || "");
   chatConv = { id: full.id, turns: [] };
+  syncChatPrivate();
   chatAwaitingAgentAnswer = false; // a saved thread's own pending ask, if any, isn't answerable live
   // Not carried across conversations, and not persisted: re-deriving it is one
   // click, and a summary restored against the wrong thread would be worse than

@@ -1227,6 +1227,7 @@ function paletteCommands() {
     { label: "ph:code New code file", act: () => LIBRARY_CREATE_BY_KIND.code.run() },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
+    { label: "ph:ghost Private chat", reveal: "chat-private", about: "A chat that is not saved or remembered." },
     // The popup agent (Ctrl+Shift+A) has real capability, it's the same
     // tool-calling agent as Chat's agent mode, just reachable from anywhere
     //, but was reachable only by already knowing that chord. This palette

@@ -589,6 +589,14 @@ class ChatRequest(BaseModel):
     #: th retry, so an answer composed from the notes is worded anew rather
     #: than repeated word for word. 0 for a first ask.
     attempt: int = Field(default=0, ge=0, le=10_000)
+    #: **A private chat** (INBOX 1481): the turn answers from the notes and
+    #: leaves nothing behind. No `queried` row (so no Ask again chip), no
+    #: note's use count, no Ask history row, no learned thing read (what the
+    #: AI remembers, the person's word on insights and sentences) and none
+    #: written (the AI cannot save a preference), and the process ledger
+    #: names the run without the question. The page sends it for every turn
+    #: of a chat that is private and keeps the turns in memory only.
+    private: bool = False
     #: The screen and the last few actions (composer awareness, 2026-10-25).
     screen: ScreenBody | None = None
 
@@ -691,7 +699,7 @@ def _resolve_mode(requested: str | None) -> str:
     )
 
 
-def _resolve_persona(name: str | None, session: Session | None = None) -> str | None:
+def _resolve_persona(name: str | None, session: Session | None = None, private: bool = False) -> str | None:
     """Persona name → its system prompt (shared with greetings and titles).
 
     With a session, the user's standing preferences ride along, see
@@ -705,7 +713,7 @@ def _resolve_persona(name: str | None, session: Session | None = None) -> str | 
     prompt = librarian.resolve_persona_prompt(name, deps.get_config())
     if session is None:
         return prompt
-    return memory.persona_with_memory(session, prompt)
+    return memory.persona_with_memory(session, prompt, private=private)
 
 
 # Base64 inflates size by ~33%; a generous per-image cap keeps one photo
@@ -2158,7 +2166,12 @@ def _retrieve_ranked(session: Session, question: str, found: "_Found", attached:
         found.entries = note_rank.lead(found.entries, question)
 
 
-def _log_question(session: Session, found: "_Found", question: str, surface: str) -> None:
+def _log_question(session: Session, found: "_Found", question: str, surface: str, private: bool = False) -> None:
+    if private:
+        #: A private chat is not a use of the notes and not an ask to offer
+        #: again; the log line carries no words of it either.
+        logging.getLogger("tessellate.chat").info("chat: %d note(s) via %s search (private)", len(found.entries), found.mode)
+        return
     # Every entry this question surfaced counts as "used".
     for entry in found.entries:
         entry.access_count += 1
@@ -2188,6 +2201,7 @@ def _prepare(
     locale: str | None = None,
     skip_search: bool = False,
     composed: bool = False,
+    private: bool = False,
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -2217,7 +2231,7 @@ def _prepare(
         notes = _with_sources(session, question, notes, found.mode)
     config = deps.get_config()
 
-    _log_question(session, found, question, surface)
+    _log_question(session, found, question, surface, private)
     return _chat_payload(session, found, notes, config, as_of)
 
 
@@ -2239,6 +2253,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         # Row 23: the same time travel the stream takes.
         as_of=body.as_of,
         locale=body.locale,
+        private=body.private,
     )
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
@@ -2266,7 +2281,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         "style": prepared["style"],
         "profile": prepared["profile"],
         "history": [turn.model_dump(exclude_none=True) for turn in body.history],
-        "persona_prompt": _resolve_persona(body.persona, session),
+        "persona_prompt": _resolve_persona(body.persona, session, body.private),
     }
     if prepared["stats"] is not None:
         #: **Counted, not generated.** The answer to "what are my most common
@@ -3697,7 +3712,7 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
             #: A retry rewords the answer itself: since the closing offer became the
             #: chips (INBOX 1466) the body is the only thing "Try again" can change.
             voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
-            insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
+            insight=_insight_level(), learned=_insight_memory(req.session, req.body.private), known=_verdicts(req.session, req.body.private),
         ), req.question)
     except Exception:  # noqa: BLE001  # the composer's answer stands
         logging.getLogger("tessellate.chat").exception("chat: the digest failed")
@@ -3799,7 +3814,7 @@ def _compose_for(req: _StreamRequest, prepared: dict, follow, current: list, tod
         resolved=True,
         #: Insights the person confirmed are said as their word; the
         #: ones they dismissed are not said (decision 60).
-        learned=_insight_memory(req.session),
+        learned=_insight_memory(req.session, req.body.private),
     )
 
 
@@ -3831,7 +3846,7 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
     if follow is not None and follow.kind == "more" and not result.get("grounding"):
         #: Nothing left unsaid: say so, with how much there is (B8).
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
-    if follow is None and result.get("grounding"):
+    if follow is None and result.get("grounding") and not req.body.private:
         _remember_rows(req.question, current, today, result)
     return result, follow, current, older
 
@@ -4259,9 +4274,11 @@ def _pre_answer_events(req: _StreamRequest, prepared: dict) -> list[dict]:
 
 
 #: An act asked in the Ask box, which looks things up: said where to do it.
-def _verdicts(session: Session):  # noqa: ANN202
+def _verdicts(session: Session, private: bool = False):  # noqa: ANN202
     """The person's word on sentences (`ai/verdicts.py`), or None when it
-    cannot be read: an answer is never lost to it."""
+    cannot be read: an answer is never lost to it. None in a private chat."""
+    if private:
+        return None
     try:
         return verdicts.known(session)
     except Exception:  # noqa: BLE001
@@ -4269,11 +4286,13 @@ def _verdicts(session: Session):  # noqa: ANN202
         return None
 
 
-def _insight_memory(session: Session):  # noqa: ANN202
+def _insight_memory(session: Session, private: bool = False):  # noqa: ANN202
     """What the person said of insights, or None when it cannot be read: an
-    answer is never lost to the learned store."""
+    answer is never lost to the learned store. None in a private chat."""
     from tessellate.ai import insights
 
+    if private:
+        return None
     try:
         return insights.memory(session)
     except Exception:  # noqa: BLE001
@@ -4560,6 +4579,7 @@ def _agent_events(req: _StreamRequest, prepared: dict, tools_provider) -> Iterat
             allowed_tools=req.allowed_tools,
             images=req.images,
             image_context=req.image_context,
+            private=req.body.private,
             **shared,
         )
     return agent_events
@@ -4828,6 +4848,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         locale=req.body.locale,
         skip_search=early is not None,
         composed=_app_answers(req, req.ollama.is_running()),
+        private=req.body.private,
     )
     prepared["follow_on"] = follow
     prepared["early_events"] = early
@@ -4996,7 +5017,7 @@ def _prime_model_notes(req: _StreamRequest, prepared: dict, t: _Turn) -> None:
     if t.will_answer:
         #: B31, B32: the model reads the notes with the person's verdicts
         #: written in, as context; grounding reads them as they are.
-        known = _verdicts(req.session)
+        known = _verdicts(req.session, req.body.private)
         if known:
             prepared["model_notes"] = verdicts.for_model(prepared.get("model_notes", prepared["notes"]), known)
 
@@ -5255,7 +5276,7 @@ def _settle_turn(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]
     grounding, grounding_event = _ground_final(req, prepared, t)
     if grounding_event is not None:
         yield _event(grounding_event)
-    if req.body.notes_only and t.answer_text and not req.body.peek:
+    if req.body.notes_only and t.answer_text and not req.body.peek and not req.body.private:
         _save_ask_turn(req.session, _in_full(req), t.answer_text, prepared, grounding)
     #: A model that wrote a counted answer's words still gets its panel
     #: (INBOX 1300 C06; decision 75: the panel assists, the model leads).
@@ -5394,7 +5415,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     #: surface's answer without knowing features exist.
     model_manager = deps.get_model_manager().for_feature(_feature_for(body))
     history = [turn.model_dump(exclude_none=True) for turn in body.history]
-    persona_prompt = _resolve_persona(body.persona, session)
+    persona_prompt = _resolve_persona(body.persona, session, body.private)
     mode = _resolve_mode(body.mode)
     images_raw = _resolve_chat_images(session, body.image_media_ids)
     chat_sees_images = bool(images_raw) and _chat_model_sees_images(model_manager, ollama)
@@ -5525,6 +5546,8 @@ def _run_title(req) -> str:  # noqa: ANN001
     """The process ledger's words for this turn (INBOX 805): what was asked,
     in the asker's words, cut to a line. A trailing backslash or quote a
     paste left on the question is not part of it."""
+    if getattr(req.body, "private", False):
+        return "Private chat"
     asked = " ".join(str(getattr(req.body, "question", "") or "").split()).strip("\\'\" ")
     if len(asked) > 60:
         asked = asked[:59] + "…"

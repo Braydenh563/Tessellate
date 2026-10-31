@@ -1043,6 +1043,32 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "Chat", "tab": "chat"},
     },
     {
+        #: INBOX 1481: a chat that is not kept (chat-private.js, `ChatRequest.private`).
+        "id": "chat-private",
+        "keywords": (
+            "private chat", "incognito", "temporary chat", "not saved", "off the record",
+            "chat without history", "no memory", "private session", "discard a chat",
+        ),
+        "body": (
+            "A private chat is a chat that is not kept. Start one from the gear "
+            "under the message box (Private chat), from the chat's ⋯ menu "
+            "(Private chat), or from the command palette (Ctrl+K, Private chat). "
+            "A Private mark in the chat's head says it is on, and the empty chat "
+            "says: Private chat. Nothing here is saved or remembered. While it "
+            "is on, the chat is not saved in the chat list and does not come "
+            "back after a reload, the question is not offered again under Ask "
+            "again, the notes it read are not counted as used, and the AI "
+            "neither reads what it was taught (Settings, What it remembers, and "
+            "what you said of insights and sentences) nor can save anything "
+            "new about you. It still answers from your notes, and Agent mode "
+            "still works on them. New chat, opening another chat, Delete this "
+            "chat or closing the page asks once to discard a private chat that "
+            "has messages; the same switch ends an empty one. Save this chat as "
+            "a document, in the chat's ⋯ menu, keeps a copy if you want one."
+        ),
+        "badge": {"label": "Chat", "tab": "chat"},
+    },
+    {
         "id": "timer",
         "keywords": (
             "timer", "countdown", "stopwatch", "pomodoro", "set a timer", "start a timer",
@@ -2416,6 +2442,7 @@ TOPIC_META: dict[str, dict] = {
     "simple-mode": {"title": "Simple mode", "path": "Settings, General, Simple mode", "target": "simple-mode-box"},
     "usage-ledger": {"title": "What you use", "path": "Settings, General, What you use", "target": "usage-box"},
     "statistics": {"title": "Statistics", "path": "Dashboard, Activity heatmap, Statistics"},
+    "chat-private": {"title": "Private chat", "path": "Chat, the gear under the message box, Private chat"},
     "timer": {"title": "Timer and stopwatch", "path": "Command palette, timer"},
     "calculator": {"title": "The calculator", "path": "Command palette, Calculator"},
     "manual": {"title": "The manual", "path": "Settings, Help, Open the manual"},
@@ -2602,7 +2629,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

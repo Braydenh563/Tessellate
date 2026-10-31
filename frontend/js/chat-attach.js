@@ -1782,7 +1782,7 @@ async function chatSendTurn(preset, opts = {}) {
   // One in flight at a time: rounds can finish close together, and two
   // creates racing each other would make two conversations out of one thread.
   function checkpointTurn() {
-    if (checkpointInFlight) return checkpointRun;
+    if (checkpointInFlight || convRef.private) return checkpointRun;
     checkpointInFlight = true;
     checkpointRun = writeCheckpoint();
     return checkpointRun;
@@ -1849,7 +1849,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: it was done (the owner, 2026-10-12). The row holds the question and an
   //: empty answer; `openConversation` already drops that partial turn and
   //: puts the live bubbles back (`isStreamingConversation`).
-  if (convRef.id === null) checkpointTurn();
+  if (convRef.id === null && !convRef.private) checkpointTurn();
 
   // Captured once, not re-read at save time: the toggle can move on to the
   // next message while this one is still streaming, and the meta line and
@@ -1872,6 +1872,7 @@ async function chatSendTurn(preset, opts = {}) {
       persona: sentPersona,
       mode: $("response-mode-select").value || null,
       useTools: effectiveUseTools,
+      isPrivate: convRef.private,
       noteIds: sentAttachments,
       imageMediaIds: sentImages,
       documentIds: sentDocuments,
@@ -2520,7 +2521,8 @@ async function chatSendTurn(preset, opts = {}) {
       picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,
       picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
     };
-    if (convRef.id === null) {
+    if (convRef.private) {
+    } else if (convRef.id === null) {
       const created = await apiJson("/conversations", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -2968,7 +2970,20 @@ function reattachStreamingTurn() {
   return true;
 }
 
+//: A private chat with messages asks before it is left (chat-private.js).
+function chatLeaveHeld(retry) {
+  if (!chatConv.private || !(chatConv.turns.length || chatStreaming?.conv === chatConv)) return false;
+  chatPrivateLeave(retry);
+  return true;
+}
+
+function syncChatPrivate() {
+  $("chat-private-mark").hidden = !chatConv.private;
+  $("chat-private-toggle").ariaPressed = String(!!chatConv.private);
+}
+
 function newChatConversation() {
+  if (chatLeaveHeld(newChatConversation)) return;
   releaseChatComposer();
   recordTabVisit("chat", "new");
   chatConv = { id: null, turns: [] };
@@ -3009,6 +3024,7 @@ function newChatConversation() {
   //: for a scroll or resize that a brand-new chat may never get.
   syncChatJumpLatest();
   scrollTopUpdate?.();
+  syncChatPrivate();
 }
 
 // Delete the conversation open in the main pane, saved or not.
@@ -3021,7 +3037,7 @@ function newChatConversation() {
 // silently, there is nothing to lose and nothing to confirm, and anything
 // that made it to the server asks first, the same confirm the sidebar uses.
 async function deleteCurrentChat() {
-  if (chatConv.id === null && !chatConv.turns.length) {
+  if (chatConv.private || (chatConv.id === null && !chatConv.turns.length)) {
     newChatConversation();
     return;
   }

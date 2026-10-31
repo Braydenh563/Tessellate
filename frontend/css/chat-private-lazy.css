@@ -1,0 +1,18 @@
+/* A private chat (chat-private.js, INBOX 1481): the empty pane's one line.
+   The head's mark wears the .chat-usage pill; the switch is a ghost button. */
+.chat-empty-private {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  color: var(--muted);
+}
+.chat-empty-private .ph {
+  font-size: var(--text-display);
+}
+#chat-private-toggle[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}

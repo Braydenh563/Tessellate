@@ -385,6 +385,7 @@ document.addEventListener("keydown", (event) => {
   chatController.abort();
 });
 $("chat-new").addEventListener("click", newChatConversation);
+$("chat-private-toggle").addEventListener("click", chatPrivateToggle);
 {
   const sortSelect = $("chat-sidebar-sort");
   sortSelect.value = prefs.get(CHAT_SIDEBAR_SORT_KEY, null) || "recent";

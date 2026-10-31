@@ -2608,12 +2608,14 @@ async function streamChatEvents({
   onOffer,
   peek,
   attempt,
+  isPrivate,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [], locale: navigator.language };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
+  if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
   // Per-turn, not a setting: one quick answer shouldn't change the default
   // for every answer after it.

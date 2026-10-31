@@ -292,6 +292,7 @@ const REVEAL_TARGETS = {
   "chat-answers": { tab: "chat", el: "chat-input", focus: true, flash: false },
   "finder": { open: () => openFinder(), el: "finder-input", focus: true, flash: false },
   "chat-new": { tab: "chat", open: () => newChatConversation(), el: "chat-input", focus: true, flash: false },
+  "chat-private": { tab: "chat", open: () => chatPrivateStart(), el: "chat-input", focus: true, flash: false },
   "chat-attach": { tab: "chat", open: () => $("attach-note").click(), el: "note-picker-panel" },
   "chat-conversations": { tab: "chat", el: "conversation-list", fallback: "chat-sidebar" },
   "chat-agent-mode": { tab: "chat", sel: '#chat-mode-seg [data-chat-mode="agent"]', built: "switchTab" },

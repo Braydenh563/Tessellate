@@ -115,6 +115,8 @@ CSS_FILES = [
     CSS_DIR / "timeline-ticks-lazy.css",
     #: Quick sketch, the self-contained pad (media.js `openSketch` loads it).
     CSS_DIR / "sketch-pad.css",
+    #: A private chat's empty pane (chat-private.js, `LAZY_MODULES.chatPrivate`, INBOX 1481).
+    CSS_DIR / "chat-private-lazy.css",
     #: The Notes sidebar's folds (C43).
     CSS_DIR / "sidebar-folds-lazy.css",
     #: The thrown companion's fates (companion-throw.js loads it, D6).
