@@ -144,7 +144,6 @@
  "src/tessellate/api/routes_models.py::status": 17,
  "src/tessellate/api/routes_settings.py::_import_directory_files": 26,
  "src/tessellate/api/routes_spaces.py::delete_space": 27,
- "src/tessellate/api/routes_timeline.py::timeline": 41,
  "src/tessellate/api/routes_vision.py::count_notes": 17,
  "src/tessellate/api/routes_vision.py::tidy_proposals": 21,
  "src/tessellate/api/routes_whiteboard.py::list_boards": 20,
