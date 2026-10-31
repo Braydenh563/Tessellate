@@ -129,7 +129,7 @@ RECENT_DAYS = recognise.RECENT_DAYS
 _SCAFFOLD = re.compile(
     r"^\s*(?:"
     r"what(?:'s| is| are| did| have| was| were)?|"
-    r"which|show me|find( me)?|list|tell me( about)?|remind me( about)?|"
+    r"which|show me|pull up|bring up|find( me)?|list|tell me( about)?|remind me( about)?|"
     r"can you (?:show|find|tell|list)( me)?|do i have|did i (?:write|save|note|say)|"
     r"have i (?:written|saved|noted|said)|i (?:wrote|saved|noted|write|save|note)|"
     r"any(?:thing)?|all (?:my|the)|my|the|about|any notes|notes|note|"
@@ -576,6 +576,9 @@ def is_topic_word(term: str) -> bool:
     return bool(word) and word not in STOPWORDS and word not in FUNCTION_WORDS
 
 
+_LEADING_COMMAND = re.compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
+
+
 def search_terms(text: str) -> list[str]:
     """The words worth matching on, in the order they were typed.
 
@@ -584,7 +587,9 @@ def search_terms(text: str) -> list[str]:
     all-stopword query ("how do I") has no keywords in it, and inventing some
     from the raw words is how a search box answers with the whole notebook.
     """
-    words = [w for w in re.split(r"\W+", (text or "").lower()) if w]
+    #: "pull up my uni notes": the command is not a word to find ("up" is in a
+    #: dozen notes); only at the start, so "look up" inside a subject stays.
+    words = [w for w in re.split(r"\W+", _LEADING_COMMAND.sub("", (text or "").lower())) if w]
     terms = [w for w in words if len(w) > 1 and w not in STOPWORDS]
     #: "what do I know about Lisbon": "about" introduces the subject and is not
     #: part of it, so it matched every note that merely says "about" (audit

@@ -31,7 +31,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
@@ -415,11 +415,21 @@ class ScreenBody(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=20000)
+    #: What was typed, when `question` (the copy every reader scans) had a run
+    #: of blanks squeezed out of it: the model and the saved turn read this, so
+    #: pasted code keeps its indent. Never taken from the client.
+    raw_question: str | None = Field(default=None, exclude=True)
 
-    @field_validator("question")
+    @model_validator(mode="before")
     @classmethod
-    def _squeezed(cls, text: str) -> str:
-        return bounds.squeeze_blanks(text)
+    def _squeezed(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        data = {k: v for k, v in data.items() if k != "raw_question"}
+        typed = data.get("question")
+        if isinstance(typed, str) and bounds.squeeze_blanks(typed) != typed:
+            data = {**data, "question": bounds.squeeze_blanks(typed), "raw_question": typed}
+        return data
 
     #: Answer from the notebook as it stood at the end of this day
     #: (WORLD_CLASS_PLAN I5, row 23). Read, never act: the turn runs without
@@ -617,7 +627,7 @@ def _first_more_is_this(body: ChatRequest) -> None:
     """"Tell me more" as the first thing said with a note open is about that
     note (audit 1030 Z54), read as "summarise this"."""
     if body.open_note_id and not body.history and composer_digest.more_of_this(body.question):
-        body.question = "summarise this"
+        body.question, body.raw_question = "summarise this", None
 
 
 def _attached_only(body: ChatRequest) -> None:
@@ -1450,8 +1460,8 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
     extra = _picture_notes(session, composer.subject_terms(question))
     subject = composer_overview.topic(question)
     if subject:
-        extra += search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
-        extra += _filed_under(session, composer.subject_terms(subject))
+        said = search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT) + _filed_under(session, composer.subject_terms(subject))
+        extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
     seen = {entry.id for entry in entries}
     out = list(entries)
     for entry in extra:
@@ -1513,6 +1523,17 @@ def _with_open(session: Session, question: str, entries: list) -> list:
     )
     have = {e.id for e in entries}
     return entries + [e for e in found if e.id not in have]
+
+
+def _by_synonym(session: Session, subject: str) -> list:
+    """The notes that name a topic by another word ("uni" for "university"):
+    read only when the topic's own word finds fewer than two, which is no
+    overview (`composer_overview.members`)."""
+    found: list = []
+    for word in composer.subject_terms(subject)[:3]:
+        for other in sorted(a for a in composer._alternatives(composer._stem(word)) if len(a) >= 3 and a.isalpha()):  # noqa: SLF001
+            found += search_manager.keyword_search(session, other, limit=OVERVIEW_LIMIT) + _filed_under(session, [other])
+    return found
 
 
 def _filed_under(session: Session, terms: list[str]) -> list:
@@ -1760,7 +1781,13 @@ def _scan_notes(session: Session, holds) -> list:  # noqa: ANN001
     return found[: composer_money.SCAN_HITS]
 
 
-def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None) -> None:  # noqa: ANN001
+def _composer_reads(question: str) -> bool:
+    """Whether a counted-notes request is one the composer answers whole
+    (a ranking, an order, a count at one end of it) and so reads its own pool."""
+    return composer_versus.asks(question) or bool(composer_lists.list_order(question) or composer_lists.counted_order(question))
+
+
+def _search_notes(session: Session, question: str, found: _Found, attached: list, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
     #: Searched with the person's own abbreviations spelt out ("what's due in
     #: CC" also finds the notes that say Cloud Computing, B7).
     found.meaning_loading = _meaning_loading()
@@ -1772,7 +1799,8 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     #: "The latest notes about running", "my last 2 notes": the notes the
     #: request counted, not those widened by what the subject sounds like.
     counted = note_recency.recency(question, bare=len(question.split()) <= 3)
-    if counted is not None and not composer_versus.asks(question) and not composer_lists.list_order(question) and (counted.subject or counted.said_count or hit.mode == "recent"):
+    #: The composer's own pool only where the composer answers (decision 75): a model reads the search's.
+    if counted is not None and not (composed and _composer_reads(question)) and (counted.subject or counted.said_count or hit.mode == "recent"):
         found.entries = list(hit.entries)
     else:
         entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)
@@ -1789,7 +1817,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
         _whole_pool(session, question, found)
 
 
-def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None) -> None:  # noqa: ANN001
+def _retrieve_for(session: Session, question: str, found: _Found, attached: list, attached_notes_only: bool, as_of, locale: str | None, composed: bool = False) -> None:  # noqa: ANN001
     # `attached_notes_only`: the caller has already chosen the exact, closed set
     # of notes this turn should see; retrieval on top would only add notes
     # nobody asked for, matched against whatever the turn's own instruction
@@ -1800,7 +1828,7 @@ def _retrieve_for(session: Session, question: str, found: _Found, attached: list
         # whatever the question sounded like would only be noise beside it.
         found.mode = "stats"
     elif intent.needs_retrieval(found.detected) and not (attached_notes_only and attached):
-        _search_notes(session, question, found, attached, as_of, locale)
+        _search_notes(session, question, found, attached, as_of, locale, composed)
 
 
 def _rewind_as_of(session: Session, question: str, found: _Found, as_of, locale: str | None) -> None:  # noqa: ANN001
@@ -2117,8 +2145,8 @@ def _with_sources(session: Session, question: str, notes: list[dict], mode: str)
     return named + (matched + notes if mode in ("recent", "none") else notes + matched)
 
 
-def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None) -> None:
-    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale)
+def _retrieve_ranked(session: Session, question: str, found: "_Found", attached: list, attached_notes_only: bool, as_of: "date | None", locale: str | None, composed: bool = False) -> None:
+    _retrieve_for(session, question, found, attached, attached_notes_only, as_of, locale, composed)
     _rewind_as_of(session, question, found, as_of, locale)
     #: One ranker for every shape (audit 1029 C19): the note the subject
     #: names, then the one that defines it, then the rest as retrieved.
@@ -2155,6 +2183,7 @@ def _prepare(
     as_of: "date | None" = None,
     locale: str | None = None,
     skip_search: bool = False,
+    composed: bool = False,
 ) -> dict:
     """The shared first half of both chat endpoints: retrieve entries,
     bump their usage counters, log the question, gather AI settings.
@@ -2176,7 +2205,7 @@ def _prepare(
     #: plan, a countdown, a quiz), so the search and the hydration of every
     #: hit (0.1 to 1 s on 300 notes) are not paid for an answer that ignores them.
     if not skip_search:
-        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale)
+        _retrieve_ranked(session, question, found, attached, attached_notes_only, as_of, locale, composed)
     notes = _context_notes(session, found, attached, attached_docs, attached_files, attached_boards, as_of)
     #: Only the notes: a document or a file row has another table's id.
     _frame_matches(session, question, notes[: len(found.entries)], found.match_info, found.mode)
@@ -4292,7 +4321,7 @@ def _may_digest(prepared: dict, question: str) -> bool:
     """The digest answers unless this is a "newest notes" turn, which keeps
     the composer's: but "all the dates in my notes" reads as newest-first
     and is a computed answer (`ai/composer_lists.py`)."""
-    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None
+    return not str(prepared.get("search_mode") or "").endswith("recent") or composer_lists.computed_kind(question) is not None or composer_digest.shows_the_lot(question)
 
 
 def _forced_notes(req: _StreamRequest, follow: object) -> bool:
@@ -4304,7 +4333,7 @@ def _forced_notes(req: _StreamRequest, follow: object) -> bool:
         return True
     if not req.body.notes_only:
         return False
-    if composer_lists.computed_kind(req.question) is not None:
+    if composer_lists.computed_kind(req.question) is not None or composer_digest.shows_the_lot(req.question):
         return True
     #: "summarise my gym notes": a look-up, and Ask is where look-ups are
     #: answered, so it is read as the question it is (1324). A find is
@@ -4770,6 +4799,7 @@ def _stream_prepare(req: _StreamRequest) -> dict:
         as_of=None if req.skill else req.body.as_of,
         locale=req.body.locale,
         skip_search=early is not None,
+        composed=_app_answers(req, req.ollama.is_running()),
     )
     prepared["follow_on"] = follow
     prepared["early_events"] = early
@@ -5259,7 +5289,7 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     paste); the model is given all of it (`_in_full`)."""
     head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
     question, address = _address(skill["question"] if skill else question_noise.tidy(head) or head, session, skill)
-    return question, address, (None if skill or not tail else question + tail)
+    return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 
 _BARE_NAME = re.compile(r"^(?:(?:what|who)(?:'s| is| was) |tell me about |about )?(?P<name>[a-z][a-z-]{2,})\??$", re.I)

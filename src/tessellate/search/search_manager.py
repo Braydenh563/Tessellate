@@ -1395,11 +1395,12 @@ def _latest_about(session: Session, query: str, embeddings: EmbeddingService, li
     if rec is None:
         return None
     if not rec.subject:
-        return (_without_private(recent_entries(session, limit=rec.count)), "recent") if rec.said_count or bare else None
+        return (_without_private(recent_entries(session, limit=rec.count)), "recent") if (rec.said_count or bare) and not rec.oldest else None
     entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)
     terms = _meaningful_terms(rec.subject)
-    held = [e for e in entries if mode != "recent" and any(t in (e.content or "").lower() for t in terms)]
-    held.sort(key=lambda e: (e.created_at, e.id), reverse=True)
+    #: A tag is the subject too: "my 2 latest baking notes" are the notes tagged #baking.
+    held = [e for e in entries if mode != "recent" and any(t in f"{e.content or ''} {e.tags or ''}".lower() for t in terms)]
+    held.sort(key=lambda e: (e.created_at, e.id), reverse=not rec.oldest)
     return _without_private(held[: rec.count]), mode if held else "keyword"
 
 
