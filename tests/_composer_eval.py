@@ -148,7 +148,9 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
             from tessellate.ai import help_chat
 
             body = next((t["body"] for t in help_chat.HELP_TOPICS if t["id"] == part[2]), "")
-            if text not in body:
+            #: A long sentence is cut to its best clause, which ends in a stop of
+            #: its own where the topic goes on after a ";" or ",".
+            if text.rstrip(".;,: ") not in body:
                 failures.append(f"not in Help topic {part[2]}: {text!r}")
         elif kind == "shifted":
             problem = shifted_failure(part, by_id[part[2]]["content"], on)
