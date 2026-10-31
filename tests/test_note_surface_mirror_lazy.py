@@ -36,7 +36,9 @@ def test_a_keystroke_does_not_write_the_hidden_textarea():
 
 def test_the_box_reads_live_from_the_view():
     own = _fn("noteSurfaceOwnValue") + _fn("noteSurfaceMirrorTools")
-    assert "return view.state.doc.toString();" in own
+    # `docStr` is the view's own doc, joined once per version (audit 1028 D19),
+    # so the read is still live; only the join is memoised.
+    assert "return docStr(view.state.doc);" in own
     assert "view.state.selection.main" in own
 
 
