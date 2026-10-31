@@ -2326,6 +2326,8 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     _check_refs(session, body)
     _apply_scope(session, body)
     _apply_open(session, body)
+    if not body.image_media_ids and not deps.get_ollama().is_running():
+        return _composed_chat(body, session)
     prepared = _prepare(
         session,
         body.question,
@@ -2442,6 +2444,39 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
         ),
         ollama_running=ollama_running,
         sentence_grounding=sentence_grounding,
+    )
+
+
+def _composed_chat(body: ChatRequest, session: Session) -> ChatResponse:
+    """The non-streaming answer when no model runs: the stream's own turn (the
+    composer, the counted answers, the slash commands), read to its end, under
+    a line that says why. It used to be an apology over the matching notes
+    while the same question in the Chat tab got a composed answer (audit 1031
+    AI6)."""
+    req = _stream_request(body, session)
+    lead = librarian.offline_message(req.ollama)
+    cause = (
+        "The AI did not answer in time, so this comes from your notes alone."
+        if lead == librarian.BUSY_MESSAGE
+        else "The AI is not running, so this comes from your notes alone."
+    )
+    meta: dict = {}
+    text: list[str] = []
+    commanded = _guarded_slash_lines(req)
+    for line in commanded if commanded is not None else _stream_lines(req):
+        event = json.loads(line)
+        if event.get("type") == "meta":
+            meta = event
+        elif event.get("type") == "answer":
+            text.append(event.get("delta") or "")
+    skip = ("ai_response", "answered_by", "ollama_running", "raw_results", "search_mode")
+    fields = {k: meta[k] for k in ChatResponse.model_fields if k in meta and k not in skip}
+    return ChatResponse(
+        ai_response=f"{cause}\n\n{''.join(text)}".strip(),
+        raw_results=meta.get("raw_results") or [],
+        search_mode=meta.get("search_mode") or "keyword",
+        ollama_running=False,
+        **fields,
     )
 
 
@@ -5623,24 +5658,9 @@ def _address(question: str, session: Session, skill: dict | None) -> tuple:
     return address.question, address
 
 
-@router.post("/stream")
-@private_turn.route
-def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
-    """NDJSON stream. Line types, in order:
-    {"type":"status", "stage": "searching"}   (sent immediately, so the
-        browser gets a first byte at once instead of waiting on the, often
-        cold-start: semantic search; this is what keeps the UI's typing
-        indicator alive instead of appearing frozen)
-    {"type":"meta", raw_results, search_mode, answered_by}
-    {"type":"thinking", "delta": "..."}   (zero or more)
-    {"type":"answer", "delta": "..."}     (one or more)
-    {"type":"done"}
-    """
-    _check_refs(session, body)
-    if body.peek:
-        body.answer_from = "notes"
-    _apply_scope(session, body)
-    _apply_open(session, body)
+def _stream_request(body: ChatRequest, session: Session) -> _StreamRequest:
+    """What one chat turn settles before it answers: the same for the stream and
+    for the non-streaming route when no model runs."""
     ollama = deps.get_ollama()
     #: This surface's own model, if one is set (model_manager.FEATURES).
     #: A view over the same manager, so everything downstream, the agent
@@ -5683,7 +5703,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
         # `use_tools: false` with an action skill still means the skill.
         use_tools = True
 
-    req = _StreamRequest(
+    return _StreamRequest(
         body=body,
         session=session,
         ollama=ollama,
@@ -5701,6 +5721,27 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
         address=address,
         full_question=full_question,
     )
+
+
+@router.post("/stream")
+@private_turn.route
+def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
+    """NDJSON stream. Line types, in order:
+    {"type":"status", "stage": "searching"}   (sent immediately, so the
+        browser gets a first byte at once instead of waiting on the, often
+        cold-start: semantic search; this is what keeps the UI's typing
+        indicator alive instead of appearing frozen)
+    {"type":"meta", raw_results, search_mode, answered_by}
+    {"type":"thinking", "delta": "..."}   (zero or more)
+    {"type":"answer", "delta": "..."}     (one or more)
+    {"type":"done"}
+    """
+    _check_refs(session, body)
+    if body.peek:
+        body.answer_from = "notes"
+    _apply_scope(session, body)
+    _apply_open(session, body)
+    req = _stream_request(body, session)
 
     # X-Accel-Buffering: no tells reverse proxies (nginx) not to buffer the
     # stream, so tokens reach the browser as they're produced.

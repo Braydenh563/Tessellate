@@ -1554,10 +1554,13 @@ $("web-reader-ask").addEventListener("click", () => {
 $("web-reader-cite").addEventListener("click", () => {
   if (webReaderPage) citeWebPage(webReaderPage);
 });
-$("web-reader-copy").addEventListener("click", (e) => {
-  if (webReaderPage) copyWebLink(webReaderPage.url, e.currentTarget);
+$("web-reader-copy").addEventListener("click", async (e) => {
+  const button = e.currentTarget;
+  await ensureModule("webClip");
+  if (webReaderPage) copyWebLink(webReaderPage.url, button);
 });
-$("web-reader-open").addEventListener("click", () => {
+$("web-reader-open").addEventListener("click", async () => {
+  await ensureModule("webClip");
   if (webReaderPage) openWebPageExternally(webReaderPage.url);
 });
 $("web-reader-find").addEventListener("click", () => openGlobalFind({ scope: "web-reader" }));

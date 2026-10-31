@@ -9,8 +9,12 @@
 
 - AI3 (the dodged companion is `inert`; the tab-away state was already `visibility: hidden`, so the audit's opacity-0 stop is not reproduced), AI16 (already `visibility: hidden` on the parked sheet's children: 0 sidebar stops in 40 Tabs at 390, measured).
 
+- AI7, AI8, AI10, AI11, AI17 (arrow nudge; the emblem's gentle reduced-motion breath is a built decision, kept), HR2, HR12.
+
+- AI6 (`_composed_chat` in routes_chat.py; test_chat_api's two apology assertions follow, intent moved). Web panel code to web-results.js (boot ratchet: chat.js gz 17,025 to 14,819).
+
 ## Next
-- AI15, AI17, AI14, AI21, AI22, AI5, AI10, AI11, HR2 and the rest in order.
+- AI5, AI13, AI14, AI15, AI20 to AI23, HR4, HR6, HR14, HR15, HR18, HR20 to HR23.
 
 ## Left
 - wake_sources_seed.json atlas-life.js::raf 3 to 4: the frame budget's one rAF site times 3 s of frames beside animations that already force frames; it cannot be the tail's rAF (the tail rests on a timer).

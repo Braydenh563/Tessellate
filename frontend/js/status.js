@@ -2658,15 +2658,7 @@ function renderStatusBar() {
       //: The first task's name is already the label, and the label is part
       //: of the accessible name, so the title carries only what it adds
       //: (HR10: "running: X: X"): its detail, then the ones behind it.
-      title:
-        [
-          task.detail,
-          ...backgroundTasks.slice(1).map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`),
-        ]
-          .filter(Boolean)
-          .join("\n") +
-        (count > 1 || task.detail ? "\n\n" : "") +
-        "Click to open Activity, where each run shows its lines and can stop.",
+      title: [[task.detail, ...backgroundTasks.slice(1).map((t) => `${t.label}${t.detail ? `, ${t.detail}` : ""}`)].filter(Boolean).join("\n"), "Click to open Activity, where each run shows its lines and can stop."].filter(Boolean).join("\n\n"),
     });
   }
 

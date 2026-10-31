@@ -2323,10 +2323,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: Stop before the first word left a bubble with a name and no body
   //: (HR9); it says what happened where the answer would have been.
   if (stopped && !answerRaw && !toolEvents.length) {
-    const note = document.createElement("div");
-    note.className = "msg-meta";
-    note.textContent = "Stopped before an answer.";
-    bubble.appendChild(note);
+    bubble.append(Object.assign(document.createElement("div"), { className: "msg-meta", textContent: "Stopped before an answer." }));
   }
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(

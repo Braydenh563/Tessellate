@@ -119,7 +119,7 @@ def test_ai17_an_arrow_key_moves_the_companion_and_the_guide_says_so():
     from tessellate.ai import help_topics_more
 
     body = next(t["body"] for t in help_topics_more.MORE_TOPICS if t["id"] == "companion")
-    assert "arrow key" in body and "16 pixels" in body and "Shift for 64" in body
+    assert "arrow key" in body and "16 pixels" in body and "Shift 64" in body
 
 
 def test_ai10_requests_are_clipped_to_the_server_caps_before_they_go():

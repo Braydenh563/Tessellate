@@ -41,12 +41,12 @@ MORE_TOPICS: list[dict] = [
             "drag the handle at its corner (double-click or double-tap the handle "
             "for Medium again); the size is marked On this device, so a phone "
             "keeps its own. Drag it onto a panel and that page "
-            "keeps it there on this device; with the keyboard, Tab to it and press an arrow key "
-            "to move it 16 pixels (Shift for 64); throw it (let go while moving fast) and it flies, "
-            "bounces off the window's edges and stays where it lands. Move the pointer back and forth over it to rub it "
+            "keeps it there on this device; Tab to it and an arrow key "
+            "moves it 16 pixels (Shift 64); throw it (let go while moving fast) and it flies, "
+            "bounces off the window's edges and stays put. Move the pointer back and forth over it to rub it "
             "and it leans into your hand; shake it up and down while you carry "
             "it and it turns upside down, then lands a little dizzy (each has a "
-            "switch in Appearance, under What it does on its own). When it has "
+            "switch under What it does on its own). When it has "
             "something on (headphones while a sound plays, a bell for a "
             "reminder, a moon on its ear as it rests), rest the pointer on it and its "
             "tooltip says what and why. Its large view (double-click it) has a "
@@ -57,8 +57,7 @@ MORE_TOPICS: list[dict] = [
             "its spot here, a size, Call back and reset its place, and Hide. "
             "Ctrl+Shift+Y shows or hides it from anywhere, and the command "
             "palette and Find anything have Show or hide the companion. If it "
-            "is ever out of reach, Call back (beside the setting, in its menu "
-            "or in the command palette) brings it back."
+            "is ever out of reach, Call back (in the setting, its menu or the palette) brings it back."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },

@@ -124,7 +124,8 @@ def test_ai8_a_long_run_of_letters_is_not_a_call_to_the_assistant(client):
 
 def test_ai7_a_chart_question_answers_with_what_the_chart_shows(client):
     for text in ("# Soup\n\nLentil soup for lunch.", "# Flight\n\nBooked the flight to Lisbon."):
-        assert client.post("/entries", json={"content": text}).status_code in (200, 201)
+        saved = client.post("/entries", json={"content": text})
+        assert saved.status_code in (200, 201)
     said = _said(client, "chart my notes by category")
     assert "Notes per category" in said and "in all" in said, said
     assert "don't mention" not in said and "Is there a word" not in said
@@ -185,3 +186,13 @@ def test_hr2_the_status_names_a_busy_runner(client, monkeypatch):
     if not body["ollama_running"] and not body["ollama_checking"]:
         assert body["ollama_busy"] is True
         assert "did not answer in time" in body["unreachable_hint"]
+
+
+def test_ai6_the_non_streaming_chat_composes_when_no_model_runs(ai_client, fake_ollama):
+    ai_client.post("/entries", json={"content": "Sourdough starter needs feeding every morning at 7."})
+    fake_ollama.running = False
+    body = ai_client.post("/chat", json={"question": "what did I write about sourdough"}).json()
+    assert body["ai_response"].startswith("The AI is not running, so this comes from your notes alone.")
+    assert "isn't available right now" not in body["ai_response"]
+    assert "7" in body["ai_response"]
+    assert len(body["raw_results"]) == 1 and body["answered_by"] is None and body["ollama_running"] is False
