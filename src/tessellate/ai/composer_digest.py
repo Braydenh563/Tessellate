@@ -802,7 +802,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     #: Not again when the fact already says the day it was written.
     when = f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
     #: A fact that already names the note is not "from" it again (audit 1031 C36).
-    if not getattr(view, "titled", False) or (view.title and view.title.strip().lower() in fact.lower()):
+    if not getattr(view, "titled", False) or (view.title and re.sub(r"^(?:the|a|an)\s+", "", view.title.strip().lower()) in fact.lower()):
         return f"{fact}{when}."
     return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
 

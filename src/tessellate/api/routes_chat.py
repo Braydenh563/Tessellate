@@ -1811,11 +1811,30 @@ def _with_each_side(session: Session, question: str, entries: list, locale: str 
     merged = list(entries)
     seen = {e.id for e in merged}
     for side in sides:
+        #: A side named by a title is that note, first (audit 1031 C50): at 207
+        #: notes the five likest "dentist" were filler that said the word.
+        titled = _titled_entry(session, side)
+        if titled is not None:
+            merged = [titled, *(e for e in merged if e.id != titled.id)]
+            seen.add(titled.id)
         for entry in search_manager.retrieve_detailed(session, side, deps.get_embeddings(), limit=3, locale=locale).entries:
             if entry.id not in seen:
                 seen.add(entry.id)
                 merged.append(entry)
     return merged
+
+
+def _titled_entry(session: Session, side: str):  # noqa: ANN202
+    """The note whose title is `side` ("the dentist", "Lisbon trip"), or None."""
+    core = re.sub(r"^(?:the|my|our)\s+|\s+notes?$", "", " ".join(side.lower().split()), flags=re.I).strip()
+    if len(core) < 3:
+        return None
+    rows = session.scalars(
+        select(Entry).where(
+            Entry.content.ilike(f"#%{core}%"), Entry.is_deleted.is_(False), Entry.deleted_at.is_(None), Entry.is_private.is_(False),
+        ).limit(20)
+    ).all()
+    return next((e for e in rows if re.sub(r"^(?:the|a|an)\s+", "", composer_frame.note_title(e.content).lower().strip()) == core), None)
 
 
 def _with_records(session: Session, question: str, entries: list, locale: str | None) -> list:  # noqa: ANN001
