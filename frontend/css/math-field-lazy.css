@@ -1,0 +1,79 @@
+/* math-field-lazy.css: the Word-style equation field (math-field.js; INBOX
+   1473 a). Loaded with it (lazy-entries.js `LAZY_MODULES.mathField`), never at
+   boot. MathLive draws inside a shadow root, so what reaches it from here is
+   its custom properties and its parts; the colours are the app's tokens, which
+   is what lets one field follow every look and the dark theme. */
+
+math-field.math-field {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(var(--control-h) * 1.6);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  background: var(--input-bg, var(--bg));
+  color: var(--text);
+  font-size: var(--text-h1);
+  --hue: 215;
+  --caret-color: var(--accent);
+  --selection-background-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  --selection-color: var(--text);
+  --placeholder-color: var(--accent);
+  --placeholder-opacity: 0.75;
+  --smart-fence-color: var(--muted);
+  --text-font-family: var(--font-sans, system-ui, sans-serif);
+  --keyboard-zindex: 2600;
+}
+
+math-field.math-field:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* MathLive's own keyboard button and menu button: the keyboard is offered on a
+   touch screen only (the field's policy is "auto" there and "manual" else), and
+   the menu is off, so neither draws a stray control on a pointer device. */
+math-field.math-field::part(menu-toggle) {
+  display: none;
+}
+
+@media (pointer: fine) {
+  math-field.math-field::part(virtual-keyboard-toggle) {
+    display: none;
+  }
+}
+
+.math-field-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.math-field-latex {
+  width: 100%;
+  min-height: calc(var(--control-h) * 1.6);
+  resize: vertical;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+}
+
+/* The field hung over the equation it edits: the popover shell, fixed to the
+   window, wide enough for a formula and no wider than the window. */
+.math-field-pop.help-popover {
+  position: fixed;
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: calc(100vw - var(--space-4));
+  overflow: visible;
+}
+
+.math-field-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}

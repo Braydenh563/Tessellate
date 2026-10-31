@@ -32,8 +32,11 @@ Object.assign(LAZY_MODULES, {
   glassControls: ["/css/glass-controls-lazy.css"],
   //: Ask, Chat and the Guide's screen context (screen-context.js's header).
   screenContext: ["/js/screen-context.js"],
-  //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16).
-  mathEditor: ["/css/math-editor-lazy.css", "/js/math-editor.js"],
+  //: Word-style equation fields, MathLive and its glue (math-field.js's header; INBOX 1473 a):
+  //: the first edit of a rendered `$...$` and the guided equation editor both fetch it.
+  mathField: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js"],
+  //: The guided equation editor (math-editor.js's header; DOCUMENTS_PLAN 16), on the same field.
+  mathEditor: ["/css/math-field-lazy.css", "/vendor/mathlive/mathlive.min.js", "/js/math-field.js", "/css/math-editor-lazy.css", "/js/math-editor.js"],
   //: The model badge's spec panel, editing an answer, a note's Explain row, the extract preview's Save (gesture-kit.js's header).
   gestureKit: ["/js/gesture-kit.js"],
   //: A row's expand chevron and the bell's untagged and review nudges (notes-lazy.js).
@@ -60,6 +63,7 @@ installStandIns({
   phoneMore: ["openPhoneMoreSheet"],
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
+  mathField: ["openMathInPlace"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
   notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue"],
   quickAdd: ["reminderComposeAdd"],

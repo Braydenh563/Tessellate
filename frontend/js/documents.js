@@ -8976,14 +8976,35 @@ function docLivePlugin(CM) {
     ignoreEvent() {
       return false;
     }
-    toDOM() {
+    toDOM(view) {
       const host = document.createElement("span");
       host.className = this.display ? "cm-md-math cm-md-math-block" : "cm-md-math";
       try {
-        host.appendChild(docMathRender(this.tex, this.display));
+        //: An empty `{}` is a box left to fill (the field's dotted box), so
+        //: it is drawn as one here: a fraction with nothing under it is a
+        //: target to click, not a 12px sliver.
+        host.appendChild(docMathRender(this.tex.replace(/\{\s*\}/g, "{\u25a1}"), this.display));
       } catch {
         host.textContent = this.tex;
       }
+      host.title = "Click to edit the equation";
+      //: **A click edits the equation where it is** (INBOX 1473 a): a field
+      //: over the widget (math-field.js, lazy) in place of the caret landing on
+      //: raw TeX. The press is taken here so the editor never sees it and the
+      //: selection stays where it was; the range is the widget's own, read
+      //: when the press lands, and the field checks it is still that text
+      //: before it writes.
+      host.addEventListener("mousedown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const delim = this.display ? "$$" : "$";
+        const from = view.posAtDOM(host);
+        const to = from + delim.length * 2 + this.tex.length;
+        ensureModule("mathField").then(() => {
+          if (typeof openMathInPlace === "function") openMathInPlace({ view, host, from, to, delim, tex: this.tex });
+        });
+      });
       return host;
     }
   }
