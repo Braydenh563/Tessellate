@@ -114,7 +114,12 @@ def test_typing_asks_for_one_redraw_per_frame_and_wiring_no_longer_debounces() -
     (the file's own rAF; a new one would be a new wake source), so the input
     handler only reads the matches and asks."""
     assert "graphSearchDebounceTimeout" not in WIRING and "setTimeout(applyGraphHighlight" not in WIRING
-    assert '$("graph-search").addEventListener("input", () => applyGraphHighlight(true));' in GRAPH
+    # Perf 1031 row 19: the first key is still drawn at once (no pause before the
+    # first letter, the 1029 finding); the keys after it share one redraw a gap.
+    assert '$("graph-search").addEventListener("input", graphSearchTyped);' in GRAPH
+    typed = _function(GRAPH, "graphSearchTyped")
+    assert typed.index("if (wait <= 0)") < typed.index("setTimeout(")
+    assert "applyGraphHighlight(true)" in typed
     assert "requestAnimationFrame" not in _function(GRAPH, "applyGraphHighlight")
     # A query change is a cheap frame (the scene stays); everything else is a whole one.
     assert "gcRequestDraw(gcTab, cheap === true)" in _function(GRAPH, "applyGraphHighlight")

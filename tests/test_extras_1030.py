@@ -214,10 +214,16 @@ def test_y3_a_folds_summary_heading_is_never_hidden_as_an_echo():
 
 def test_y16_the_library_preload_waits_when_the_browser_saves_data():
     """Audit 1030 Y16: boards and documents (330 KB gzipped) were fetched
-    three seconds after unlock on every link, metered or not."""
+    three seconds after unlock on every link, metered or not. Since perf 1031
+    row 21 the warm is after the first touch of the page and still skipped
+    when the browser saves data or has fewer than four cores."""
     from tests._app_js import app_js_text
 
     js = app_js_text()
+    body = js.split("function warmLibraryAfterInput() {", 1)[1].split("\n}\n", 1)[0]
+    assert "navigator.connection?.saveData" in body
+    assert "hardwareConcurrency" in body
+    assert 'ensureModule("library")' in body
     line = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
-    assert 'navigator.connection?.saveData || "library"' in line
+    assert '"library"' not in line  # not at boot
     assert line.rstrip().endswith(".forEach(ensureModule), 3000);")

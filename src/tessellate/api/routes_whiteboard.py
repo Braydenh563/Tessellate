@@ -3216,6 +3216,14 @@ def update_node(
     node = deps.get_or_404(db, WhiteboardNode, node_id, "That node could not be found.")
     _require_entry(db, node_in.entry_id)
     _require_board(db, node_in.board_id)
+    _save_node(db, node, node_in)
+    db.commit()
+    db.refresh(node)
+    return node
+
+
+def _save_node(db: Session, node: WhiteboardNode, node_in: WhiteboardNodeBase) -> None:
+    """What `PUT /nodes/{id}` writes, shared with `save-many`."""
     before = _node_state(node)
     node.entry_id = node_in.entry_id
     # `board_id` was read from the body and then never assigned, so moving a
@@ -3235,9 +3243,6 @@ def update_node(
         f"card on board {node.board_id}",
         payload={"after": _node_state(node), "before": before},
     )
-    db.commit()
-    db.refresh(node)
-    return node
 
 
 @router.delete("/nodes/{node_id}")
@@ -3298,6 +3303,14 @@ def update_sketch(
 ) -> WhiteboardSketch:
     sketch = deps.get_or_404(db, WhiteboardSketch, sketch_id, "That sketch could not be found.")
     _require_board(db, sketch_in.board_id)
+    _save_sketch(db, sketch, sketch_in)
+    db.commit()
+    db.refresh(sketch)
+    return sketch
+
+
+def _save_sketch(db: Session, sketch: WhiteboardSketch, sketch_in: WhiteboardSketchBase) -> None:
+    """What `PUT /sketches/{id}` writes, shared with `save-many`."""
     before = _sketch_state(sketch)
     sketch.data = sketch_in.data
     sketch.board_id = sketch_in.board_id
@@ -3311,9 +3324,6 @@ def update_sketch(
         f"drawing on board {sketch.board_id}",
         payload={"after": _sketch_state(sketch), "before": before},
     )
-    db.commit()
-    db.refresh(sketch)
-    return sketch
 
 
 @router.delete("/sketches/{sketch_id}")
@@ -3397,6 +3407,14 @@ def update_object(
     obj = deps.get_or_404(db, WhiteboardObject, object_id, "That item could not be found.")
     _require_board(db, body.board_id)
     _require_object_data(body)
+    _save_object(db, obj, body)
+    db.commit()
+    db.refresh(obj)
+    return _object_to_out(obj)
+
+
+def _save_object(db: Session, obj: WhiteboardObject, body: WhiteboardObjectBase) -> None:
+    """What `PUT /objects/{id}` writes, shared with `save-many`."""
     # The kind an object was created as doesn't change: an image resized or
     # moved is still an image; nothing in the UI offers "turn this into a
     # text box", so treating a mismatched kind here as a client bug rather
@@ -3418,9 +3436,68 @@ def update_object(
         f"{obj.kind} on board {obj.board_id}",
         payload={"after": _object_state(obj), "before": before},
     )
+
+
+class SaveManyNode(WhiteboardNodeBase):
+    id: int
+
+
+class SaveManySketch(WhiteboardSketchBase):
+    id: int
+
+
+class SaveManyObject(WhiteboardObjectBase):
+    id: int
+
+
+class ItemsSaveMany(BaseModel):
+    """Every item a gesture moved, each as its own `PUT` body plus its id."""
+
+    nodes: list[SaveManyNode] = Field(default_factory=list, max_length=5000)
+    sketches: list[SaveManySketch] = Field(default_factory=list, max_length=5000)
+    objects: list[SaveManyObject] = Field(default_factory=list, max_length=5000)
+
+
+def _rows_by_id(db: Session, model, ids: list[int], missing: str) -> dict[int, object]:
+    if len(set(ids)) != len(ids):
+        raise HTTPException(status_code=422, detail="Each item is saved once per batch.")
+    rows = {row.id: row for row in db.scalars(select(model).where(model.id.in_(ids)))} if ids else {}
+    if len(rows) != len(ids):
+        raise HTTPException(status_code=404, detail=missing)
+    return rows
+
+
+@router.put("/items/save-many")
+@events.writes("whiteboard_object", "edited")
+def save_items(body: ItemsSaveMany, db: Session = Depends(get_session)) -> dict:
+    """Save a whole selection's move in one request and one transaction.
+
+    **Why this exists** (audit 1031 BD2: Ctrl+A on 362 items and two arrow
+    presses sent 167 `PUT`s, three long tasks of 189 to 274 ms). A nudge, a
+    multi-drag, a turn, a resize and an undo of any of them each wrote one
+    request per item, each its own transaction, and a half-saved selection
+    for as long as they took. This takes the same bodies the three `PUT`s take
+    and applies them through the same helpers; the batch is all or nothing,
+    every id and board and note checked before anything is written, and
+    whatever it records folds into the one event `events.writes` opens.
+    """
+    nodes = _rows_by_id(db, WhiteboardNode, [n.id for n in body.nodes], "That node could not be found.")
+    sketches = _rows_by_id(db, WhiteboardSketch, [n.id for n in body.sketches], "That sketch could not be found.")
+    objects = _rows_by_id(db, WhiteboardObject, [n.id for n in body.objects], "That item could not be found.")
+    for board_id in {item.board_id for item in (*body.nodes, *body.sketches, *body.objects)}:
+        _require_board(db, board_id)
+    for entry_id in {n.entry_id for n in body.nodes}:
+        _require_entry(db, entry_id)
+    for item in body.objects:
+        _require_object_data(item)
+    for item in body.nodes:
+        _save_node(db, nodes[item.id], item)
+    for item in body.sketches:
+        _save_sketch(db, sketches[item.id], item)
+    for item in body.objects:
+        _save_object(db, objects[item.id], item)
     db.commit()
-    db.refresh(obj)
-    return _object_to_out(obj)
+    return {"saved": len(nodes) + len(sketches) + len(objects)}
 
 
 @router.delete("/objects/{object_id}")

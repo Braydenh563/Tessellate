@@ -27,6 +27,9 @@ import traceback
 from collections import deque
 
 SLOW_REQUEST_MS = 1000
+#: A read that takes a quarter of a second is slow: the 150 to 210 ms list routes
+#: never reached the report at 1 s, while a write that waits on a model is not.
+SLOW_GET_MS = 250
 SLOW_QUERY_MS = 250
 KEEP = 200
 EXCEPTIONS_KEEP = 50
@@ -68,7 +71,7 @@ def shape_of(statement: str) -> str:
 
 
 def note_request(method: str, path: str, ms: float, status: int) -> None:
-    if ms < SLOW_REQUEST_MS or _BY_DESIGN.search(path):
+    if ms < (SLOW_GET_MS if method == "GET" else SLOW_REQUEST_MS) or _BY_DESIGN.search(path):
         return
     row = {"at": clock(), "method": method, "route": route_of(path), "ms": round(ms), "status": status}
     with _lock:

@@ -2773,7 +2773,7 @@ async function wbMapFoldToLevel(level) {
       changed.push(node);
     }
   }
-  for (const node of changed) await wbSaveObject(node);
+  await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
   if (changed.length) {
     renderWhiteboardNow();
     wbSyncMapToolState();
@@ -7191,7 +7191,7 @@ async function wbMapStyleMany(topics, patchOf) {
   }
   if (!changed.length) return 0;
   wbPushDragUndo(entries);
-  for (const node of changed) await wbSaveObject(node);
+  await wbSaveMany(changed.map((item) => ({ kind: "object", item })));
   renderWhiteboardNow();
   return changed.length;
 }

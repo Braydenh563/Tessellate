@@ -2177,7 +2177,5 @@ function installStandIns(table) {
 installStandIns(LAZY_ENTRY_POINTS);
 //: Fetched soon after boot, not on first use: the outbox is for the moment
 //: the server is gone, when no script can be fetched (quick-note.js).
-//: The library bundle (boards and documents, a third of a megabyte) waits for
-//: first use when the browser asks to save data (audit 1030 Y16; `true` names
-//: no module, so ensureModule skips it).
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", navigator.connection?.saveData || "library"].forEach(ensureModule), 3000);
+//: The library bundle is warmed after the first touch (lazy-entries.js), not here.
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk"].forEach(ensureModule), 3000);

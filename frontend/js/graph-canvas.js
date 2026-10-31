@@ -5239,6 +5239,27 @@ function gcReshuffle(s = gcTab) {
 //: frozen" behaviour.
 //: The heat an update starts from: the worker's `DRAG_ALPHA`.
 const GC_UPDATE_ALPHA = 0.3;
+//: **A few new notes on a settled map do not settle it again** (perf 1031 row
+//: 19, GR5: one note added to a 2,000-note map kept the layout running for
+//: 15.8 s, 46 long tasks, because a note with no place made the whole map "not
+//: placed" and so heated from 1). The notes already there are held where they
+//: stand (the saved view's own `freezeIds` and thaw), the new ones start beside
+//: their links (`gcSeedBesideNeighbours`) and relax from a low heat.
+const GC_MINIMAP_MS = 1200;
+const GC_ADD_ALPHA = 0.05;
+const GC_ADD_MAX = 8;
+const GC_ADD_MIN_NOTES = 200;
+//: What the worker's forces depend on, apart from the notes themselves.
+function gcForcesKey(s) {
+  return JSON.stringify([gcWorkerParams(s), s.layoutSeed || 0, document.documentElement.dataset.perf === "on"]);
+}
+//: The ids to hold when only a few notes are new, else null.
+function gcAdditionHolds(s, nodes, prior, viewPositions) {
+  if (s.tree || viewPositions || prior.size < GC_ADD_MIN_NOTES || s.lastForces !== gcForcesKey(s)) return null;
+  const added = nodes.filter((n) => !prior.has(n.id) || !Number.isFinite(prior.get(n.id).x));
+  if (!added.length || added.length > GC_ADD_MAX || added.length >= nodes.length) return null;
+  return nodes.filter((n) => prior.has(n.id) && n.fx == null).map((n) => n.id);
+}
 function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   if (!s.worker) {
     // Version-stamped for the same reason index.html's script tags are
@@ -5341,9 +5362,13 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         }
         // Hand the buffer back so the worker can reuse it (see its `pool`).
         s.worker.postMessage({ type: "recycle", buffer: positions.buffer }, [positions.buffer]);
-        if (s.size === "full") {
-          graphMinimapTick += 1;
-          if (graphMinimapTick % 8 === 0) graphMinimapQueuePaint();
+        //: By the clock, not by the tick count: a tick is 16 ms on a small map
+        //: and 80 on a big one, so one paint in eight was eight a second on one
+        //: and one a second on the other, each rewriting up to 700 dots and 700
+        //: lines. The map at rest paints it again (`end`).
+        if (s.size === "full" && now - (s.minimapAt || 0) >= GC_MINIMAP_MS) {
+          s.minimapAt = now;
+          graphMinimapQueuePaint();
         }
       } else if (message.type === "frame") {
         gcFrameIntro(s, message.positions, message.start);
@@ -5415,7 +5440,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   //: note had been added since. Held in the init itself now, with no warm-up
   //: and no intro for a restore.
   const held = new Set(viewSeed?.freezeIds || []);
-  const restoring = Boolean(viewSeed?.restore);
+  const restoring = Boolean(viewSeed?.restore || viewSeed?.addition);
   const init = {
     type: "init",
     epoch: s.epoch,
@@ -5496,7 +5521,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
   //: a hidden category or a deleted note, every note still there already
   //: placed and the forces unchanged, reheats as a drag does rather than
   //: from full heat, which shuffled the whole map for one note's change.
-  const forces = JSON.stringify([init.params, init.seed, init.perf]);
+  const forces = gcForcesKey(s);
   if (init.alpha === 1 && viewSeed?.holdIfSettled && s.lastForces === forces) init.alpha = GC_UPDATE_ALPHA;
   s.lastForces = forces;
   s.layoutSig = sig;
@@ -6049,13 +6074,15 @@ async function renderGraphCanvas(s = gcTab) {
     //: After the frame, which is set on where the notes are going.
     gcTweenFromPrior(s, nodes, prior);
   } else {
+    const heldForAdd = gcAdditionHolds(s, nodes, prior, viewPositions);
     //: The stale simulation could still have spent the flag during the
     //: awaits above (it is only cut off by the epoch bump, just now).
     if (reframe) gcSetAutoFitDone(s, false);
     gcStartWorker(nodes, edges, gcWorldFor(nodes.length, width, height), s, {
-      alpha: viewPositions && !unplacedByView ? 0 : 1,
-      freezeIds: seededUnpinnedIds,
+      alpha: heldForAdd ? GC_ADD_ALPHA : viewPositions && !unplacedByView ? 0 : 1,
+      freezeIds: heldForAdd || seededUnpinnedIds,
       restore: restoring,
+      addition: Boolean(heldForAdd),
       //: Every note is where the last layout left it: see the hold in
       //: `gcStartWorker`. A saved view's own seeding is its own decision.
       holdIfSettled: !viewPositions && visibleNodes.every((n) => Number.isFinite(prior.get(n.id)?.x)),

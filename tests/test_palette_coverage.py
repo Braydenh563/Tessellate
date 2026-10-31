@@ -180,4 +180,4 @@ def test_a_row_run_for_these_words_comes_first_next_time():
     assert 'prefs.json("palette-picks"' in _function("palettePicks")
     assert 'prefs.setJSON("palette-picks"' in _function("palettePick")
     assert "localStorage" not in PALETTE
-    assert "row.title = match.why" in _function("renderPalette")
+    assert "row.title = match.why" in _function("paletteDrawRows")

@@ -603,9 +603,15 @@ async function renderTimeline() {
       //: The strip, the recall row and the row gap's 0.3s ease all move Today.
       drawTimelineScrubber();
       renderTimelineDayStrip();
-      renderTimelineRecall();
       setTimeout(timelineScrollToToday, 700);
-      timelineLoadMore(TIMELINE_PAGE - TIMELINE_FIRST);
+      //: **The two reads nobody is waiting for come after the first screen**
+      //: (perf 1031 row 53: seven requests on open, the second page of rows and
+      //: the recall row's two among them). A second after the rows, so they are
+      //: not in the tab's first seconds; scrolling pages on its own (`scroll`).
+      setTimeout(() => {
+        renderTimelineRecall();
+        timelineLoadMore(TIMELINE_PAGE - TIMELINE_FIRST);
+      }, TIMELINE_LATE_MS);
     }, 0)
   );
 }
@@ -615,6 +621,8 @@ async function renderTimeline() {
 //: years (the Time range's own `on=` rule, the dashboard widget's), and the
 //: whole notebook's density summed by year. Asked once a day; a press runs
 //: the range the dock already has, so the feed is the one list either way.
+//: How long after the rows the recall row and the second page are asked.
+const TIMELINE_LATE_MS = 1500;
 const timelineRecall = { day: "", memories: [], years: {} };
 async function renderTimelineRecall() {
   const now = new Date();

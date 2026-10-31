@@ -123,7 +123,6 @@ function graphPinStep(label, changes) {
 // already does. See that function's node-build step for the decision this
 // exists to carry out: a restored arrangement holds, it does not re-settle.
 let graphPendingViewPositions = null;
-let graphMinimapTick = 0; // throttles minimap repaints during a cooling layout
 //: A no-op kept for the label tickbox's handler (wiring.js): the canvas draws
 //: its names in the frame, so there is no label layer to catch up.
 let graphCatchUpLabels = () => {};
@@ -2278,7 +2277,26 @@ function applyGraphHighlight(cheap) {
 //: for a frame; `gcRequestDraw` keeps one frame queued, so a burst of keys is
 //: one redraw. The pause that used to sit here made the first letters wait for
 //: nothing: what is slow is the repaint, not the match (audit 1029 G10).
-$("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+//: **At most one highlight a `GRAPH_SEARCH_GAP_MS`, the first at once** (perf
+//: 1031 row 19, GR3: 2,000 notes at 4x, thirteen keys, one redraw per key). The
+//: first letter still lands as it is typed; the letters after it wait for the
+//: gap and the last of them is drawn, so a burst is two redraws, not one a key.
+const GRAPH_SEARCH_GAP_MS = 180;
+function graphSearchTyped() {
+  const typed = graphSearchTyped;
+  const wait = (typed.at || 0) + GRAPH_SEARCH_GAP_MS - performance.now();
+  clearTimeout(typed.timer);
+  if (wait <= 0) {
+    typed.at = performance.now();
+    applyGraphHighlight(true);
+    return;
+  }
+  typed.timer = setTimeout(() => {
+    typed.at = performance.now();
+    applyGraphHighlight(true);
+  }, wait);
+}
+$("graph-search").addEventListener("input", graphSearchTyped);
 
 //: **Walking the matches** (audit 1029 G11). Enter goes to the next match and
 //: pans to it, Shift+Enter to the one before, both wrapping; the match is ringed

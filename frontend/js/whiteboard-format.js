@@ -201,23 +201,26 @@ async function wbFmtApply(field, patch, said) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   if (!entries.length) return;
   await wbRecordGesture(async () => {
+    //: Rows and objects are saved together at the end, in one request (perf
+    //: 1031 row 20); a drawn shape still saves as it is changed.
+    const saves = [];
     for (const entry of entries) {
       const kind = wbFmtKind(entry);
       if (!kind || !(WB_FMT_FIELDS[kind] || []).includes(field)) continue;
       const partial = patch(entry, kind);
       if (!partial) continue;
       if (entry.kind === "sketch") {
-        await wbSaveSketchProps(entry.item, partial);
+        if (wbSketchSetProps(entry.item, partial)) saves.push({ kind: "sketch", item: entry.item });
       } else if (partial.row) {
         Object.assign(entry.item, partial.row);
-        if (entry.kind === "node") await wbSaveNode(entry.item);
-        else await wbSaveObject(entry.item);
+        saves.push({ kind: entry.kind, item: entry.item });
       } else if (entry.kind === "object") {
         entry.item.data = { ...entry.item.data, ...partial };
         for (const [key, value] of Object.entries(partial)) if (value === undefined) delete entry.item.data[key];
-        await wbSaveObject(entry.item);
+        saves.push({ kind: "object", item: entry.item });
       }
     }
+    await wbSaveMany(saves);
   });
   wbScheduleRender();
   if (said) wbAnnounce(said);
@@ -338,14 +341,16 @@ async function wbFmtScaleSelection(entries, box, axis, target) {
   if (!(size > 0) || Math.abs(size - target) < 0.5) return;
   const f = target / size;
   const ax = box.minX, ay = box.minY;
+  const saves = [];
   for (const e of entries) {
     if (wbFmtKind(e) === "link" || !e.bbox) continue;
     if (e.kind === "sketch") {
       const parsed = wbSketchParsedData(e.item);
       if (!parsed) continue;
-      await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+      wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
         sx: horizontal ? f : 1, sy: horizontal ? 1 : f, anchorX: ax, anchorY: ay,
       }));
+      saves.push({ kind: "sketch", item: e.item });
       continue;
     }
     const item = e.item;
@@ -356,9 +361,9 @@ async function wbFmtScaleSelection(entries, box, axis, target) {
       item.y = Math.round(ay + ((item.y || 0) - ay) * f);
       item.height = Math.round(Math.max(WB_OBJECT_MIN_SIZE, (e.bbox.maxY - e.bbox.minY) * f));
     }
-    if (e.kind === "node") await wbSaveNode(item);
-    else await wbSaveObject(item);
+    saves.push({ kind: e.kind, item });
   }
+  await wbSaveMany(saves);
 }
 
 //: A card, text box or picture turns about its centre (`rotation`). A drawn
@@ -1124,21 +1129,23 @@ function wbTurnSelection(degrees = 90) {
   return wbRecordGesture(async () => {
     const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item) && e.bbox);
     let turned = 0;
+    const saves = [];
     for (const e of entries) {
       if (e.kind === "sketch") {
         const parsed = wbSketchParsedData(e.item);
         if (typeof parsed?.d !== "string") continue;
-        await wbSaveSketchD(e.item, wbTransformPathD(parsed.d, {
+        wbSketchSetD(e.item, wbTransformPathD(parsed.d, {
           rotate: degrees, anchorX: (e.bbox.minX + e.bbox.maxX) / 2, anchorY: (e.bbox.minY + e.bbox.maxY) / 2,
         }));
+        saves.push({ kind: "sketch", item: e.item });
       } else {
         if (wbFmtKind(e) === "topic") continue;
         e.item.rotation = ((Math.round((e.item.rotation || 0) + degrees) % 360) + 360) % 360 || null;
-        if (e.kind === "node") await wbSaveNode(e.item);
-        else await wbSaveObject(e.item);
+        saves.push({ kind: e.kind, item: e.item });
       }
       turned += 1;
     }
+    await wbSaveMany(saves);
     if (turned) wbAnnounce(`Turned ${degrees} degrees.`);
     else toast("Select a shape, note or picture to turn it.");
   }).then(() => wbScheduleRender());
@@ -1247,6 +1254,7 @@ async function wbGrowShapeToLabel(sketch) {
 function wbAutoSizeSelection() {
   return wbRecordGesture(async () => {
     let grown = 0;
+    const saves = [];
     for (const e of wbFmtEntries().filter((x) => !wbIsLocked(x.kind, x.item) && x.bbox)) {
       const kind = wbFmtKind(e);
       if (kind === "shape") {
@@ -1263,11 +1271,11 @@ function wbAutoSizeSelection() {
         const fit = el.querySelector(".wb-text-content") ? wbTextFitHeight(el) : wbCardFitHeight(el);
         if (!(fit > current + 1)) continue;
         e.item.height = Math.round(fit);
-        if (e.kind === "node") await wbSaveNode(e.item);
-        else await wbSaveObject(e.item);
+        saves.push({ kind: e.kind, item: e.item });
         grown += 1;
       }
     }
+    await wbSaveMany(saves);
     wbAnnounce(grown ? "Grown to fit the words." : "Everything already fits.");
   }).then(() => wbScheduleRender());
 }
@@ -1860,6 +1868,7 @@ async function wbWriteColourPair(pair, how) {
   const entries = wbFmtEntries().filter((e) => !wbIsLocked(e.kind, e.item));
   const used = new Set();
   await wbRecordGesture(async () => {
+    const saves = [];
     for (const entry of entries) {
       const kind = wbFmtKind(entry);
       if (kind !== "shape" && kind !== "text") continue;
@@ -1867,12 +1876,13 @@ async function wbWriteColourPair(pair, how) {
       const { fill, border } = pick(wbFmtValue(entry, "fill"), wbFmtValue(entry, "stroke"));
       for (const colour of [fill, border]) if (colour) used.add(colour);
       if (entry.kind === "sketch") {
-        await wbSaveSketchProps(entry.item, { ...(fill ? { fill, fillOpacity: 1 } : {}), ...(border ? { color: border } : {}) });
+        if (wbSketchSetProps(entry.item, { ...(fill ? { fill, fillOpacity: 1 } : {}), ...(border ? { color: border } : {}) })) saves.push({ kind: "sketch", item: entry.item });
       } else {
         entry.item.data = { ...entry.item.data, ...(fill ? { bg: fill } : {}), ...(border ? { border_color: border } : {}) };
-        await wbSaveObject(entry.item);
+        saves.push({ kind: "object", item: entry.item });
       }
     }
+    await wbSaveMany(saves);
   });
   for (const colour of used) wbRememberColour(colour);
   wbScheduleRender();
