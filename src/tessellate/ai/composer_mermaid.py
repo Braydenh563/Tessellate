@@ -63,12 +63,25 @@ _WANT = (
     ("mindmap", re.compile(r"\b(?:mind\s?-?maps?|concept maps?|spider diagrams?)\b", re.I)),
     ("", re.compile(r"\b(?:diagrams?|charts?|graphs?|mermaid|visual(?:i[sz]e)?)\b", re.I)),
 )
-_ASK = re.compile(
-    r"\b(?:make|draw|turn|create|show|give|build|generate|render|convert|put|map|sketch|can you|could you|do)\b"
-    r".{0,80}?\b(?:flow\s?-?charts?|flow diagrams?|time\s?-?lines?|mind\s?-?maps?|diagrams?|mermaid|concept maps?)\b"
-    r"|\b(?:as|into) an? (?:flow\s?-?chart|time\s?-?line|mind\s?-?map|diagram)\b",
+#: A diagram is asked for by a drawing verb aimed at a diagram noun, with a
+#: subject ("of", "for", "from"...) or an object ("this", "my notes") and "as"
+#: or "into": "make a flowchart of the move", "turn this into a mind map". A
+#: question that only mentions a diagram ("the project timeline", "notes on
+#: heart diagrams", "show me my mind map") is an ordinary question.
+_SHAPE = r"(?:flow\s?-?charts?|flow diagrams?|time\s?-?lines?|mind\s?-?maps?|concept maps?|diagrams?|charts?|mermaid)"
+_ASK_MAKE = re.compile(
+    r"\b(?:make|draw|sketch|create|build|generate|render|plot|map(?: out)?)\b[^.?!:\n]{0,30}?"
+    rf"\b(?:an?|the|my|some|one)\s+(?:[a-z]+\s+){{0,2}}?{_SHAPE}"
+    r"(?:\s+(?:of|for|from|about|on|showing|that|which|using)\s+\S|\s*[:\n]\s*\S)",
     re.I,
 )
+_ASK_TURN = re.compile(
+    r"\b(?:turn|convert|put|make|show|draw|map|sketch|render)\b\s+(?:me\s+|us\s+)?\S+(?:\s+\S+){0,7}?\s+(?:as|into|to)\s+"
+    rf"(?:an?\s+)?(?:[a-z]+\s+)?{_SHAPE}\b",
+    re.I,
+)
+#: A question about diagrams, not a request for one.
+_QUESTION = re.compile(r"^\W*(?:what|when|where|who|whom|whose|which|why|how|do|does|did|is|are|was|were|has|have|had|am)\b", re.I)
 
 
 def wanted(text: str) -> str:
@@ -82,7 +95,10 @@ def wanted(text: str) -> str:
 
 def asks(question: str) -> bool:
     """Whether a chat question asks for a diagram ("make a flowchart of ...")."""
-    return bool(_ASK.search(question or ""))
+    text = question or ""
+    if _QUESTION.search(text):
+        return False
+    return bool(_ASK_MAKE.search(text) or _ASK_TURN.search(text))
 
 
 # --- labels and ids -----------------------------------------------------------------
@@ -394,10 +410,12 @@ def _subject(question: str) -> tuple[str, list[str]]:
 
 
 def _about(notes: list[dict], words: list[str]) -> list[dict]:
-    """The notes that say a subject word (its first five letters), else all."""
+    """The notes that say a subject word (its first five letters); with no
+    subject word ("my notes", all of them), the first few notes."""
+    if not words:
+        return notes[:8]
     stems = [w[:5] for w in words]
-    held = [n for n in notes if any(re.search(rf"\b{re.escape(s)}", str(n.get("content") or ""), re.I) for s in stems)]
-    return (held or notes)[:8]
+    return [n for n in notes if any(re.search(rf"\b{re.escape(s)}", str(n.get("content") or ""), re.I) for s in stems)][:8]
 
 
 def _notes_lead(count: int, said: str) -> str:
@@ -419,11 +437,13 @@ def answer(question: str, notes: list[dict], *, previous: str = "", opened: str 
         made = diagram(text, want=want)
         lead = "Here it is as {shape}, drawn by plain rule with no model."
     else:
+        if _REFERS.search(question) and not _SUBJECT_AFTER.search(question):
+            return None  # "turn this into a flowchart" with nothing to turn
         said, words = _subject(question)
         chosen = _about([n for n in notes if (n.get("content") or "").strip()], words)
         made = diagram("", want=want, notes=chosen, subject=said[:1].upper() + said[1:] if said else "")
         lead = _notes_lead(len(chosen), said)
     if made is None:
-        return None
+        return None  # nothing on the subject: the ordinary answer, not a drawing of other notes
     shape = {"flowchart": "a flowchart", "timeline": "a timeline", "mindmap": "a mind map"}[made.shape]
     return {"text": lead.format(shape=shape) + "\n\n" + fenced(made), "grounding": [], "answered": True, "shape": "diagram", "next": []}

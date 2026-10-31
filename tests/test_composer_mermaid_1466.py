@@ -169,18 +169,65 @@ def test_notes_become_a_mind_map_with_each_note_a_branch():
     assert any(d == 2 and "beans need poles" in w for d, w in branches)
 
 
-@pytest.mark.parametrize(
-    "question",
-    ["make a diagram of my notes on the garden", "turn this into a flowchart", "can you draw a mind map of my trip notes",
-     "show my boiler notes as a timeline", "generate a mermaid chart of the project", "put the steps into a flowchart"],
-)
+#: A diagram is asked for by a make, draw, turn, sketch or map verb aimed at a
+#: diagram noun with a subject or an object (review finding 2).
+ASKS = [
+    "make a diagram of my notes on the garden",
+    "turn this into a flowchart",
+    "can you draw a mind map of my trip notes",
+    "show my boiler notes as a timeline",
+    "generate a mermaid chart of the project",
+    "put the steps into a flowchart",
+    "draw a timeline of the launch",
+    "sketch a flow chart for the onboarding steps",
+    "could you make me a quick mind map from my reading notes",
+    "map my garden notes as a mind map",
+    "create a timeline of the kitchen work",
+    "make a chart of my weekly mileage",
+    "convert these notes to a diagram",
+    "draw a diagram: first unplug it, then wait, then plug it back in",
+]
+NOT_ASKS = [
+    "what is the timeline for the move",
+    "when is the boiler service",
+    "what did I write about diagrams",
+    "can you tell me the project timeline",
+    "give me a summary of the launch timeline",
+    "do I have notes on heart diagrams",
+    "show me my mind map",
+    "is there a flowchart in my notes",
+    "tell me about the timeline",
+    "summary of the launch timeline",
+    "what does my chart of accounts say",
+    "how do I draw a flowchart",
+    "did I make a diagram of the wiring",
+    "where is my mind map about the move",
+    "list my diagrams",
+    "find my notes on timelines",
+    "can you show me the timeline for the house sale",
+    "what is a mind map",
+    "I made a diagram of the wiring last week",
+    "make a flowchart",
+]
+
+
+@pytest.mark.parametrize("question", ASKS)
 def test_a_chat_ask_for_a_diagram_is_read(question):
     assert cm.asks(question)
 
 
-@pytest.mark.parametrize("question", ["what is the timeline for the move", "when is the boiler service", "what did I write about diagrams"])
+@pytest.mark.parametrize("question", NOT_ASKS)
 def test_a_question_that_only_mentions_a_shape_is_not_an_ask(question):
     assert not cm.asks(question)
+    assert cm.answer(question, [{"id": 1, "content": "# Project\nLaunch plan: ship in May."}]) is None
+
+
+def test_a_diagram_with_no_subject_to_draw_falls_through():
+    """Nothing to refer to, or no note on the subject: no unrelated drawing."""
+    notes = [{"id": 1, "content": "Boiler serviced today. Next service is due in May."}]
+    assert cm.answer("turn this into a flowchart", notes) is None
+    assert cm.answer("make a diagram of the launch", notes) is None
+    assert cm.answer("make a diagram of my notes", notes) is not None
 
 
 @pytest.mark.parametrize(("phrase", "shape"), [("make a flowchart", "flowchart"), ("as a time line", "timeline"), ("mind-map it", "mindmap"), ("a diagram please", "")])
