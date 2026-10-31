@@ -560,3 +560,9 @@
   height: var(--control-h-lg);
   padding-block: 0;
 }
+
+/* No caption engine installed: the doors to Live captions are not drawn
+   (its own class, because the dialog toggles `hidden` by state). */
+.captions-off {
+  display: none !important;
+}

@@ -962,6 +962,7 @@ async function openMeetingRecorder() {
   //: A recording folded into the dock is brought back, not reset.
   if (meetingRecorder) return showMeetingRecorder();
   nameMeetingMic();
+  syncCaptionsDoors();
   overlayReturnFocus = document.activeElement;
   delete $("meeting-overlay").dataset.target;
   $("meeting-overlay").classList.remove("meeting-into", "voice-note");
@@ -1506,6 +1507,7 @@ let recordingsAsk = 0;
 async function renderRecordings() {
   const list = $("recordings-list");
   if (!list) return;
+  syncCaptionsDoors();
   let body = null;
   const q = ($("recordings-search")?.value || "").trim();
   try {
@@ -2426,6 +2428,17 @@ $("recordings-record")?.addEventListener("click", () => openVoiceNote());
 //: **Live captions from where a person looks for them** (V6): the voice
 //: note's Live captions and the Recordings bar's Captions. The dialog makes
 //: way for the floating bar; a recording in hand already writes its words.
+//: **A door that can only explain itself is not drawn** (audit 1031 Z14): with
+//: no caption engine installed, Live captions and Captions would open a toast.
+//: Asked fresh at each opening (installing the helper in Settings, Packages
+//: needs no reload); an unknown answer keeps the doors, as before. The reason
+//: is in the Guide's Live captions topic and each help popover.
+async function syncCaptionsDoors() {
+  const status = await apiJson("/voice/status", { silent: true }).catch(() => null);
+  const off = status?.captions?.available === false;
+  for (const id of ["meeting-captions", "recordings-captions"]) $(id)?.classList.toggle("captions-off", off);
+}
+
 function openLiveCaptionsFrom() {
   if (meetingRecorder) return toast("This recording already writes its words in the dialog as you speak.", "info");
   if (!$("meeting-overlay").classList.contains("hidden")) closeMeetingRecorder();

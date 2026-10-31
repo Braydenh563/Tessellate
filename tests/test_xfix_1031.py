@@ -71,3 +71,16 @@ def test_z5_a_pickable_chart_has_full_size_chips_on_a_phone() -> None:
     css = (frontend_text("ask-chart.js") and open("frontend/css/utilities-lazy.css", encoding="utf-8").read())
     assert ".ask-chart-chips {\n  display: none;" in css
     assert "min-height: var(--target-min);" in css
+
+
+def test_z14_live_captions_doors_are_hidden_when_no_engine_is_installed() -> None:
+    js = frontend_text("meetings.js")
+    body = js[js.index("async function syncCaptionsDoors"):]
+    body = body[: body.index("\n}\n")]
+    assert "/voice/status" in body and "captions?.available === false" in body
+    assert '"meeting-captions"' in body and '"recordings-captions"' in body
+    assert "captions-off" in body, "its own class, so the dialog's state toggle of `hidden` never undoes it"
+    assert "syncCaptionsDoors()" in js[js.index("async function openMeetingRecorder"):js.index("function openVoiceNote")]
+    assert "syncCaptionsDoors()" in js[js.index("async function renderRecordings"):][:400]
+    css = open("frontend/css/meetings-lazy.css", encoding="utf-8").read()
+    assert ".captions-off {\n  display: none !important;" in css

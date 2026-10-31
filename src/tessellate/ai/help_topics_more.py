@@ -1179,7 +1179,7 @@ MORE_TOPICS: list[dict] = [
             "captions write its words into the dialog as you speak, and the "
             "full transcript replaces them after. Captions need a local speech "
             "helper; its row in Settings, Packages says what is missing, and "
-            "without one the row says so and nothing is recorded."
+            "without one the buttons are not shown and nothing is recorded."
         ),
         "badge": {"label": "Notes", "tab": "notes"},
     },
