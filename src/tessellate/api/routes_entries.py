@@ -64,7 +64,7 @@ from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_sug
 )
 from tessellate.core.database import LIKE_ESCAPE
 from tessellate.core.deps import get_session
-from tessellate.entry import duplicates, link_facts, manager
+from tessellate.entry import duplicates, link_facts, manager, repo
 from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS, names_label
 from tessellate.entry import meetings as meeting_shape
 from tessellate.entry import properties as note_properties
@@ -1156,7 +1156,7 @@ def decide_filing(
     category stays and becomes the person's (`user_filed`), which is what a
     move to another category already does. Logged, so the activity log says
     who decided."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     if bool(entry.user_filed) != body.accepted:
         entry.user_filed = body.accepted
         manager.log_action(
@@ -1434,7 +1434,7 @@ def answer_suggested_tags(
     """Take or discard the tags filing suggested (INBOX 440). A taken tag is
     added like one typed by hand; a discarded one is remembered so no later
     filing pass offers it on this note again."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     if body.mute is not None:
         entry.tag_suggest_off = body.mute
     offered = {tag.casefold(): tag for tag in _json_tags(entry.suggested_tags)}
@@ -1459,7 +1459,7 @@ def add_context(
     """Append context to an existing note and let the janitor rethink the
     category with the fuller picture. If the user filed this
     entry themselves, the category is left alone, their call stands."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     # Appending to the ciphertext made the note unreadable for good, and the
     # filing below would read its text: a private note is edited in its own
     # editor (same refusal as generate-title and remove-title).
@@ -2409,7 +2409,7 @@ def entry_bookmarks(entry_id: int, session: Session = Depends(get_session)) -> l
 def attach_bookmark(
     entry_id: int, body: AttachBookmarkBody, session: Session = Depends(get_session)
 ) -> dict:
-    _existing_entry(session, entry_id)
+    repo.writable_entry(session, entry_id)
     deps.get_or_404(session, Bookmark, body.bookmark_id, "That bookmark could not be found.")
     already = (
         session.query(EntryBookmark)
@@ -2429,7 +2429,7 @@ def attach_bookmark(
 def detach_bookmark(
     entry_id: int, bookmark_id: int, session: Session = Depends(get_session)
 ) -> dict:
-    _existing_entry(session, entry_id)
+    repo.writable_entry(session, entry_id)
     row = session.query(EntryBookmark).filter_by(entry_id=entry_id, bookmark_id=bookmark_id).first()
     # When it was attached, so Undo puts it back in its place in the list.
     created_at = row.created_at.isoformat() if row is not None and row.created_at else None
@@ -2862,7 +2862,7 @@ def update_entry(
     the version it was made from is refused with 412 when the note is no
     longer that version, whatever the body changes, so an outside client
     cannot clobber a background AI edit it never saw."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     refuse_unless_match(
         if_match,
         current_hash=content_hash(manager.readable_content(entry)),
@@ -2970,7 +2970,7 @@ class WikiRenameIn(BaseModel):
 def wiki_rename(entry_id: int, body: WikiRenameIn, session: Session = Depends(get_session)) -> dict:
     """Rewrite `[[old]]` as this note's current name in every note that still
     writes the old one (GRAPH_PLAN 518; offered by the edit that renamed it)."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     first = (manager.readable_content(entry) or "").strip().split("\n", 1)[0]
     new_name = re.sub(r"^\s{0,3}#{1,6}\s+", "", first).strip()
     if not new_name or len(new_name) > 120 or "]" in new_name or "[" in new_name:
@@ -3605,7 +3605,7 @@ def restore_event(
     is snapshotted first and the restore records its own event: undoing an
     undo has to work, or this is a trap rather than a safety net.
     """
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     row = session.get(AuditLog, event_id)
     if row is None or row.entity_type != "entry" or row.entity_id != entry.id:
         raise HTTPException(status_code=404, detail="That version no longer exists.")
@@ -3665,7 +3665,7 @@ def restore_revision(
     Restoring is itself an edit, so the current text is saved first, undoing
     an undo has to work, or this is a trap rather than a safety net.
     """
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     revision = session.get(EntryRevision, revision_id)
     if revision is None or revision.entry_id != entry.id:
         raise HTTPException(status_code=404, detail="That version no longer exists.")
@@ -3690,7 +3690,7 @@ def set_entry_privacy(
     Needs the vault open, which means the app must be unlocked, the data key
     only exists in memory while it is.
     """
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     if not manager.set_private(session, entry, body.private):
         raise HTTPException(
             status_code=409,
@@ -3718,7 +3718,7 @@ def generate_entry_title(
     action rather than something that runs on every save. Replaces an
     existing title rather than stacking a second heading on top of it.
     """
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     # `readable_content` decrypts a private note for reading; writing that
     # decrypted text straight back to `entry.content` (below) would silently
     # replace the ciphertext with plaintext, the note would stop being
@@ -3776,7 +3776,7 @@ def remove_entry_title(entry_id: int, session: Session = Depends(get_session)) -
     heading line; a note with no title is returned unchanged rather than
     treated as an error, since the client only offers this action when
     `entry.title` is already set and a stale menu shouldn't 400."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     # Same reason as generate-title: writing decrypted text back to
     # `entry.content` would un-encrypt the note as a side effect.
     if entry.is_private:
@@ -4034,7 +4034,7 @@ def _connected_files(session: Session, text: str) -> list[dict]:
 def create_link(
     entry_id: int, body: LinkBody, session: Session = Depends(get_session)
 ) -> EntryOut:
-    source = _existing_entry(session, entry_id)
+    source = repo.writable_entry(session, entry_id)
     target = _existing_entry(session, body.target_id)
     link = manager.create_link(
         session, source, target, reason=body.reason, link_type=body.link_type,
@@ -4059,7 +4059,7 @@ def create_link(
 def delete_link(
     entry_id: int, link_id: int, session: Session = Depends(get_session)
 ) -> EntryOut:
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     link = session.get(EntryLink, link_id)
     if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
         raise HTTPException(status_code=404, detail="That link could not be found.")
@@ -4073,7 +4073,7 @@ def patch_link(
 ) -> EntryOut:
     """Change a link's type (GRAPH_PLAN KG9), its properties (KG3) or its
     direction (INBOX 693)."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     link = session.get(EntryLink, link_id)
     if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
         raise HTTPException(status_code=404, detail="That link could not be found.")
@@ -4096,7 +4096,7 @@ def update_link_reason(
     """Add, edit, or clear a link's reason by hand, whether it started
     with none, one somebody typed, or one `create_link` deduced on its own.
     """
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     link = session.get(EntryLink, link_id)
     if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
         raise HTTPException(status_code=404, detail="That link could not be found.")
@@ -4115,7 +4115,7 @@ def generate_link_reason_endpoint(
     entry_id: int, link_id: int, session: Session = Depends(get_session)
 ) -> dict:
     """Ask the model to generate a specific reason why these two notes are connected."""
-    entry = _existing_entry(session, entry_id)
+    entry = repo.writable_entry(session, entry_id)
     link = session.get(EntryLink, link_id)
     if link is None or entry.id not in (link.source_entry_id, link.target_entry_id):
         raise HTTPException(status_code=404, detail="That link could not be found.")

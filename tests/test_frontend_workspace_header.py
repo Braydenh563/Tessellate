@@ -149,10 +149,12 @@ def test_an_upload_takes_the_space_the_header_names(client):
     from tessellate.core.database import MediaUpload
 
     png = b"\x89PNG\r\n\x1a\n" + b"0" * 64
+    #: A real space: the header must name one (audit 1031 BK3).
+    space_b = client.post("/spaces", json={"name": "Space b", "icon": "ph-circles-four"}).json()["id"]
     named = client.post(
         "/media/upload",
         files={"file": ("inside.png", io.BytesIO(png), "image/png")},
-        headers={"X-Workspace-ID": "space-b"},
+        headers={"X-Workspace-ID": space_b},
     )
     bare = client.post(
         "/media/upload", files={"file": ("outside.png", io.BytesIO(png), "image/png")}
@@ -164,5 +166,5 @@ def test_an_upload_takes_the_space_the_header_names(client):
             row.original_name: row.workspace_id
             for row in session.scalars(select(MediaUpload)).all()
         }
-    assert spaces["inside.png"] == "space-b"
+    assert spaces["inside.png"] == space_b
     assert spaces["outside.png"] == "default"

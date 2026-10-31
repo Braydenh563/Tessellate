@@ -81,8 +81,46 @@ _SESSION_IDLE_TTL = 12 * 60 * 60  # fallback default; overridden by the
 # session_idle_ttl_minutes preference (Settings, Account) once one is set
 _SESSION_MAX_AGE = 7 * 24 * 60 * 60  # this old → expired, however busy
 
+#: **One lock for the token tables** (audit 1031 BK7; 1028 K2, K23). Requests
+#: run in the threadpool, and a single dict call is atomic but a sweep, a grant
+#: and a sign-out are several: two grants for one session each saw "no ticket
+#: yet" and left two. Every table below is a `GuardedTable` on this lock, so no
+#: single mutation interleaves, and the multi-step moves take it themselves
+#: (re-entrant, so a move may call another). Held for dictionary work only,
+#: never across the vault, the disk or a password check.
+_token_lock = threading.RLock()
+
+
+class GuardedTable:
+    """Marks the dict and set below: each mutator runs under `lock`."""
+
+    lock = _token_lock
+
+
+def _locked(name: str, base: type):
+    def call(self, *args, **kwargs):
+        with self.lock:
+            return getattr(base, name)(self, *args, **kwargs)
+
+    call.__name__ = name
+    return call
+
+
+class _GuardedDict(GuardedTable, dict):
+    pass
+
+
+class _GuardedSet(GuardedTable, set):
+    pass
+
+
+for _name in ("__setitem__", "__delitem__", "pop", "popitem", "setdefault", "update", "clear"):
+    setattr(_GuardedDict, _name, _locked(_name, dict))
+for _name in ("add", "discard", "remove", "pop", "clear", "update", "intersection_update", "difference_update"):
+    setattr(_GuardedSet, _name, _locked(_name, set))
+
 # token -> [issued_at, last_used_at]
-_active_tokens: dict[str, list[float]] = {}
+_active_tokens: dict[str, list[float]] = _GuardedDict()
 
 # **The media ticket** (WORLD_CLASS_PLAN §12, S1). A declarative load (`<img
 # src>`, an `<iframe>`, a CSS background) cannot attach the X-Auth-Token
@@ -107,7 +145,7 @@ MEDIA_COOKIE = "memorymap_media"
 # `/mermaid-frame` too: the diagram frame is a page load, which sends no header.
 MEDIA_COOKIE_PATHS = ("/media", "/files", "/mermaid-frame")
 # ticket -> the session token it was issued for
-_media_tickets: dict[str, str] = {}
+_media_tickets: dict[str, str] = _GuardedDict()
 register_cache_reset(_media_tickets.clear)
 
 # The desktop window's "Open in a new tab" hands the link to the system
@@ -118,7 +156,7 @@ register_cache_reset(_media_tickets.clear)
 # its life because a PDF viewer asks for ranges more than once.
 MEDIA_LINK_SECONDS = 120
 # ticket -> (decoded path, expiry, session token)
-_media_links: dict[str, tuple[str, float, str]] = {}
+_media_links: dict[str, tuple[str, float, str]] = _GuardedDict()
 register_cache_reset(_media_links.clear)
 _MEDIA_LINK_PATH = re.compile(r"/(?:media|files)/[A-Za-z0-9._~%/-]+")
 # Module state, not app state, so `deps.reset_app_state()` (the thing every
@@ -165,18 +203,17 @@ def _sweep_expired(idle_ttl: int) -> None:
     it is written on.
     """
     now = time.time()
-    dead = [
-        token
-        # A snapshot, and pop: requests run in the threadpool, and an unlock
-        # on one device mid-sweep on another raised "dictionary changed size
-        # during iteration" or a KeyError (audit 1028 K2).
-        for token, (issued, seen) in list(_active_tokens.items())
-        if now - seen > idle_ttl or now - issued > _SESSION_MAX_AGE
-    ]
-    for token in dead:
-        _active_tokens.pop(token, None)
+    with _token_lock:
+        dead = [
+            token
+            for token, (issued, seen) in list(_active_tokens.items())
+            if now - seen > idle_ttl or now - issued > _SESSION_MAX_AGE
+        ]
+        for token in dead:
+            _active_tokens.pop(token, None)
+        if dead:
+            _forget_dead_tickets()
     if dead:
-        _forget_dead_tickets()
         # The key goes with the last session that gave the password, even
         # while a session without it is still live (tests/test_vault_sessions).
         vault.revoke(dead)
@@ -186,11 +223,9 @@ def _sweep_expired(idle_ttl: int) -> None:
 
 def _forget_dead_tickets() -> None:
     """Drop every media ticket whose session is gone."""
-    # Snapshots and pop: a sync route runs in the threadpool, and a grant on
-    # one device mid-sweep on another raised "dictionary changed size
-    # during iteration" (audit 1028 K23, as K2).
-    for ticket in [t for t, token in list(_media_tickets.items()) if token not in _active_tokens]:
-        _media_tickets.pop(ticket, None)
+    with _token_lock:
+        for ticket in [t for t, token in list(_media_tickets.items()) if token not in _active_tokens]:
+            _media_tickets.pop(ticket, None)
 
 
 def _cookie_secure(request: Request) -> bool:
@@ -285,10 +320,11 @@ def _grant_media(request: Request, response: Response, token: str) -> None:
     # session's earlier ticket is already gone from the jar it was set in;
     # keeping it here would only let the table grow by one per reload (the
     # boot path asks again every time) until the session ends.
-    for stale in [t for t, owner in list(_media_tickets.items()) if owner == token]:
-        _media_tickets.pop(stale, None)
     ticket = secrets.token_urlsafe(32)
-    _media_tickets[ticket] = token
+    with _token_lock:
+        for stale in [t for t, owner in list(_media_tickets.items()) if owner == token]:
+            _media_tickets.pop(stale, None)
+        _media_tickets[ticket] = token
     for path in MEDIA_COOKIE_PATHS:
         response.set_cookie(
             MEDIA_COOKIE,
@@ -316,11 +352,12 @@ def _revoke_media(request: Request, response: Response) -> None:
 def _token_valid(token: str | None, idle_ttl: int) -> bool:
     """Is this token live? Using it also keeps it alive."""
     _sweep_expired(idle_ttl)
-    entry = _active_tokens.get(token) if token else None
-    if entry is None:
-        return False
-    entry[1] = time.time()
-    return True
+    with _token_lock:
+        entry = _active_tokens.get(token) if token else None
+        if entry is None:
+            return False
+        entry[1] = time.time()
+        return True
 
 # Brute-force throttle for unlock attempts. The app binds 127.0.0.1, but a
 # server log showed a public client address arriving through a proxy header,
@@ -799,22 +836,23 @@ DEVICE_WAIT_SECONDS = 45.0
 #: are told to press Unlock again.
 _device_waits = threading.BoundedSemaphore(4)
 #: Which device each LAN session belongs to, so Remove signs it out.
-_device_tokens: dict[str, str] = {}
+_device_tokens: dict[str, str] = _GuardedDict()
 #: Every token handed to another device, whether or not it had a device
 #: cookie: switching LAN mode off ends them all (INBOX 900).
-_network_tokens: set[str] = set()
+_network_tokens: set[str] = _GuardedSet()
 
 
 def _end_network_sessions() -> int:
     """Sign out every other device now: LAN mode was switched off."""
-    ended = [t for t in list(_network_tokens) if t in _active_tokens]
-    for token in ended:
-        _active_tokens.pop(token, None)
-        _device_tokens.pop(token, None)
+    with _token_lock:
+        ended = [t for t in list(_network_tokens) if t in _active_tokens]
+        for token in ended:
+            _active_tokens.pop(token, None)
+            _device_tokens.pop(token, None)
+        _network_tokens.clear()
+        _forget_dead_tickets()
     if ended:
         vault.revoke(ended)
-    _network_tokens.clear()
-    _forget_dead_tickets()
     return len(ended)
 
 
