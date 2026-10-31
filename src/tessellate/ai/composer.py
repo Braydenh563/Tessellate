@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, composer_versus, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_sides, composer_tables, composer_tree, composer_versus, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -884,38 +884,61 @@ _SIDE_CONNECTOR = re.compile(r"\s(?:and|with|to|vs\.?|versus)\s", re.I)
 _SIDE_PRIORITY = (r"and", r"vs\.?", r"versus", r"with", r"to")
 
 
-def _clean_split(span: str) -> tuple[str, str] | None:
+def _clean_split(span: str) -> tuple[str, str, str] | None:
     for word in _SIDE_PRIORITY:
         hit = re.search(rf"\s{word}\s", span, re.I)
         if hit and span[: hit.start()].strip() and span[hit.end():].strip():
-            return span[: hit.start()], span[hit.end():]
+            return span[: hit.start()], span[hit.end():], hit.group(0).strip()
     return None
 
 
-def compare_sides(question: str) -> tuple[str, str] | None:
-    """The two things a comparison names, as typed: ("Lisbon", "Porto")."""
+#: The words that join two sides and may also sit inside a name ("Trip to
+#: Lisbon"); a span cut at "or" or "than" was cut where the person meant it.
+_NAME_JOINERS = frozenset({"and", "with", "to", "vs", "versus"})
+
+
+def _raw_sides(text: str, match: re.Match) -> list[str]:
+    """The sides a comparison pattern cut, as typed and one list: each of the
+    two spans may name several ("the dentist, the Lisbon trip or the Tokyo
+    trip"), cut at its commas and at the word that joins them."""
+    raw_a, raw_b = match.group("a"), match.group("b")
+    words = text[match.end("a"): match.start("b")].lower().replace(",", " ").replace(".", " ").split()
+    joiner = words[-1] if words else ""
+    if joiner in _NAME_JOINERS and (_SIDE_CONNECTOR.search(f" {raw_a} ") or _SIDE_CONNECTOR.search(f" {raw_b} ")):
+        clean = _clean_split(text[match.start("a"): match.end("b")].strip(" ?.!"))
+        if clean:
+            raw_a, raw_b, joiner = clean[0], clean[1], clean[2].lower().rstrip(".")
+    return [*composer_sides.listed(raw_a, joiner), *composer_sides.listed(raw_b, joiner)]
+
+
+def _numbered_sides(sides: list[str]) -> list[str]:
+    """"compare sourdough loaf one and two": a side that is only a number is
+    the one before it with its own number (audit 1029 C36)."""
+    out: list[str] = []
+    for side in sides:
+        before = re.match(rf"(.+ )(?:{_SIDE_NUMBERS})$", out[-1].strip(), re.I) if out else None
+        out.append(before.group(1) + side if before and re.fullmatch(_SIDE_NUMBERS, side.strip(), re.I) else side)
+    return out
+
+
+def compare_sides(question: str) -> tuple[str, ...] | None:
+    """The things a comparison names, as typed: ("Lisbon", "Porto"), or three
+    to six of them for "which is soonest, the dentist, the Lisbon trip or the
+    Tokyo trip". A format wish ("in a table", "please") is no part of a name."""
     #: Once, not once per pattern: each reading spell-checks every unknown
     #: word (audit 1030 Z65).
     text = rephrase(question)
     for pattern in _COMPARE_SIDES:
         match = pattern.search(text)
-        if match:
-            raw_a, raw_b = match.group("a"), match.group("b")
-            if _SIDE_CONNECTOR.search(f" {raw_a} ") or _SIDE_CONNECTOR.search(f" {raw_b} "):
-                span = text[match.start("a"): match.end("b")]
-                clean = _clean_split(span.strip(" ?.!"))
-                if clean:
-                    raw_a, raw_b = clean
-            #: "the Porto and Lisbon notes": one "notes" names both sides.
-            b = _bare_side(raw_b)
-            #: "compare sourdough loaf one and two": the second side is the
-            #: first's name with its own number (audit 1029 C36).
-            numbered = re.match(rf"(.+ )(?:{_SIDE_NUMBERS})$", raw_a.strip(), re.I)
-            if numbered and re.fullmatch(_SIDE_NUMBERS, b, re.I):
-                b = numbered.group(1) + b
-            a = _bare_side(raw_a, shared_noun=raw_b.strip(" ,").rpartition(" ")[2].casefold() in _NOTES_NOUNS)
-            if subject_terms(a) and subject_terms(b):
-                return a, b
+        if not match:
+            continue
+        raw = _numbered_sides([composer_sides.strip_format(side) for side in _raw_sides(text, match)])
+        #: "the Porto and Lisbon notes": one "notes" names every side.
+        shared = bool(raw) and raw[-1].rpartition(" ")[2].casefold() in _NOTES_NOUNS
+        sides = [_bare_side(side, shared_noun=shared) for side in raw]
+        sides = [side for side in sides if subject_terms(side)]
+        if len(sides) >= composer_sides.MIN_SIDES:
+            return tuple(sides[: composer_sides.MAX_SIDES])
     return None
 
 
@@ -2794,25 +2817,27 @@ def _parallel(mine: list[NoteView], side: set[str], theirs: list[NoteView], othe
     return same or mine
 
 
-def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
+def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
     """Each side's sentences as (terms, stems, own notes, picks); a note named
     for a side belongs to it even when its sentences never repeat the name
     ("Trip to Lisbon": "Flights booked for 3 December"), and a sentence in the
-    other side's note that mentions this side is still the other side's."""
+    other sides' notes that mentions this side is still theirs."""
     terms = [subject_terms(label) for label in sides]
     stems = [{_stem(t) for t in ts} for ts in terms]
-    own = [_own_notes(stems[0], stems[1], views), _own_notes(stems[1], stems[0], views)]
-    if set(map(id, own[0])) & set(map(id, own[1])):
-        own = [[], []]
-    own = [_parallel(own[0], stems[0], own[1], stems[1]), _parallel(own[1], stems[1], own[0], stems[0])]
-    picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in (0, 1)]
+    others = [set().union(*(st for j, st in enumerate(stems) if j != i)) for i in range(len(sides))]
+    own = [_own_notes(stems[i], others[i], views) for i in range(len(sides))]
+    ids = [set(map(id, mine)) for mine in own]
+    if any(ids[i] & ids[j] for i in range(len(sides)) for j in range(i)):
+        own = [[] for _ in sides]
+    own = [_parallel(own[i], stems[i], [v for j, o in enumerate(own) if j != i for v in o], others[i]) for i in range(len(sides))]
+    picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in range(len(sides))]
     #: A note the person named is read from its top, not by which of its
     #: sentences repeat the name.
-    picks = [[s for v in own[i] for s in v.sentences[:3]] or picks[i] for i in (0, 1)]
+    picks = [[s for v in own[i] for s in v.sentences[:3]] or picks[i] for i in range(len(sides))]
     return terms, stems, own, picks
 
 
-def _compare_lead(out: _Answer, sides: tuple[str, str], counts: list[int]) -> None:
+def _compare_lead(out: _Answer, sides: tuple[str, ...], counts: list[int]) -> None:
     out.t(_unlike_before(out, ["of_found", "across_found"])[0])
     for i, (label, n) in enumerate(zip(sides, counts)):
         if i:
@@ -2826,7 +2851,7 @@ _LENGTH_ASK = re.compile(r"\b(?:longer|shorter|bigger|smaller)\b", re.I)
 def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
     """"which is longer, A or B" with one note a side: both lengths first."""
     asked = _LENGTH_ASK.search(question or "")
-    if not asked or len(own[0]) != 1 or len(own[1]) != 1:
+    if not asked or len(own) != 2 or len(own[0]) != 1 or len(own[1]) != 1:
         return False
     sized = sorted(((composer_frame.note_words(v.note.get("content")), v) for v in (own[0][0], own[1][0])), key=lambda p: -p[0])
     if sized[0][0] == sized[1][0]:
@@ -2858,28 +2883,39 @@ def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     return versus is not None
 
 
-def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
+def _compare(out: _Answer, sides: tuple[str, ...], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
     """A line that counts each side, each side its own short list, then what
-    speaks of both."""
+    speaks of two or more of them."""
     terms, stems, own, picks = _side_picks(sides, views, meaning_for)
-    a_only = [s for s in picks[0] if own[0] or not (stems[1] & set(s.words))][:3]
-    b_only = [s for s in picks[1] if own[1] or not (stems[0] & set(s.words))][:3]
-    #: What speaks of both is not a line already said under a side.
-    both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
-    if not (a_only or b_only):
+    n = len(sides)
+    others = [set().union(*(stems[j] for j in range(n) if j != i)) for i in range(n)]
+    only = [[s for s in picks[i] if own[i] or not (others[i] & set(s.words))][:3] for i in range(n)]
+    #: What speaks of two sides is not a line already said under a side.
+    said = {id(s) for side in only for s in side}
+    both = [s for s in picks[0] if others[0] & set(s.words) and id(s) not in said][:2] if n == 2 else _shared(picks, others, said)
+    if not any(only):
         return False
     if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
-        _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
+        _compare_lead(out, sides, [len({s.note_id for s in side}) for side in only])
     #: The lead names only what follows (probe P15): no "Here is what
-    #: each says." before the two headings that say it.
+    #: each says." before the headings that say it.
     out.t("stop")
-    for label, side, side_terms in ((sides[0], a_only, terms[0]), (sides[1], b_only, terms[1])):
+    for label, side, side_terms in zip(sides, only, terms):
         _compare_side(out, label, side, side_terms)
     if both:
         out.t("para", "bold", "both", "bold")
         for s in both:
-            out.t("line").item(s, terms[0] + terms[1]).cite(out.views[s.note_id], again=True)
+            out.t("line").item(s, [t for ts in terms for t in ts]).cite(out.views[s.note_id], again=True)
     return True
+
+
+def _shared(picks: list[list], others: list[set[str]], said: set[int]) -> list:
+    """Sentences, under three or more sides, that mention another side than
+    the one they were picked for."""
+    seen: list = []
+    for i, side in enumerate(picks):
+        seen += [s for s in side if others[i] & set(s.words) and id(s) not in said and s not in seen]
+    return seen[:2]
 
 
 _LEADING_ARTICLE = re.compile(r"^(?:the|a|an|my|our|your)\s+(?=\S)", re.I)
