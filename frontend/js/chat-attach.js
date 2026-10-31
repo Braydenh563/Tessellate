@@ -93,7 +93,7 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
   const pill = onRemove !== undefined;
   chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
   chipEl.dataset.state = state;
-  chipEl.title = title || (pill && size ? `${name}, ${formatFileSize(size)}` : name);
+  chipEl.title = title || name;
   let tile;
   if (thumb) {
     tile = document.createElement("img");

@@ -44,36 +44,31 @@ function modelMenuSave(key, list) {
 //: Where a model lives, from its name and the status (see the header).
 function modelSource(name) {
   const lower = String(name).toLowerCase();
-  if (/[:-]cloud$/.test(lower)) return { key: "cloud", label: "Ollama cloud", icon: "ph-cloud" };
-  if (/^(hf\.co|huggingface\.co)\//.test(lower)) return { key: "hf", label: "From Hugging Face", icon: "ph-package" };
+  if (/[:-]cloud$/.test(lower)) return { key: "cloud", label: "Ollama cloud", icon: "cloud" };
+  if (/^(hf\.co|huggingface\.co)\//.test(lower)) return { key: "hf", label: "From Hugging Face", icon: "package" };
   if (typeof modelStatus !== "undefined" && modelStatus && modelStatus.is_local === false) {
-    return { key: "server", label: "On the model server", icon: "ph-hard-drives" };
+    return { key: "server", label: "On the model server", icon: "hard-drives" };
   }
-  return { key: "local", label: "On this computer", icon: "ph-desktop" };
+  return { key: "local", label: "On this computer", icon: "desktop" };
 }
 
 function modelCountLabel(count) {
   return `${count} model${count === 1 ? "" : "s"}`;
 }
 
-//: One shown row: the option's own row does the choosing, a pin sits beside it.
+//: One shown row: the shared rich picker row, whose press runs the option's own row; a pin sits beside it.
 function modelMenuItem(model, state) {
   const item = document.createElement("div");
   item.className = "mm-item";
   item.dataset.find = `${model.value} ${model.label}`.toLowerCase();
-  const row = document.createElement("button");
-  row.type = "button";
-  row.className = "menu-item select-option mm-option";
-  row.setAttribute("role", "option");
+  const row = richPickerRow({
+    icon: model.icon,
+    label: model.value ? shortModelName(model.value) : model.label,
+    tag: "button",
+    className: "mm-option",
+  });
   row.dataset.value = model.value;
   row.title = model.value || model.label;
-  const glyph = document.createElement("i");
-  glyph.className = `ph ${model.icon} mm-glyph`;
-  glyph.setAttribute("aria-hidden", "true");
-  const name = document.createElement("span");
-  name.className = "mm-name";
-  name.textContent = model.value ? shortModelName(model.value) : model.label;
-  row.append(glyph, name);
   row.addEventListener("click", (event) => {
     event.stopPropagation();
     model.row.click();
@@ -128,7 +123,7 @@ function modelMenuGroup(source, models, state) {
   caret.className = "ph ph-caret-right mm-caret";
   caret.setAttribute("aria-hidden", "true");
   const glyph = document.createElement("i");
-  glyph.className = `ph ${source.icon} mm-glyph`;
+  glyph.className = `ph ph-${source.icon} mm-glyph`;
   glyph.setAttribute("aria-hidden", "true");
   const words = document.createElement("span");
   words.className = "mm-group-words";
@@ -180,7 +175,7 @@ function applyModelQuery(state) {
 function modelMenuRender(state) {
   const parts = [];
   const byValue = new Map(state.models.map((model) => [model.value, model]));
-  if (state.fallback) parts.push(modelMenuItem({ ...state.fallback, icon: "ph-circle-dashed" }, state));
+  if (state.fallback) parts.push(modelMenuItem({ ...state.fallback, icon: "circle-dashed" }, state));
   const pinned = state.pins.map((name) => byValue.get(name)).filter(Boolean);
   const recent = state.recent
     .filter((name) => !state.pins.includes(name))
@@ -323,3 +318,6 @@ function modelMenuRemember(value) {
   if (!value) return;
   modelMenuSave(MODEL_RECENT_KEY, [value, ...modelMenuList(MODEL_RECENT_KEY).filter((name) => name !== value)].slice(0, 8));
 }
+
+//: `enhanceSelect` calls this on a picker's menu once the file is in (no stand-in: the draw is synchronous).
+enhanceSelect.richMenu = decorateModelMenu;

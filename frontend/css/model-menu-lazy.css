@@ -22,27 +22,18 @@
   align-items: center;
   gap: var(--space-1);
 }
-.mm-option {
-  display: flex;
+/* The row is the shared rich picker row; here it fills the line beside its pin. */
+.mm-item > .mm-option {
   flex: 1 1 auto;
-  align-items: center;
-  gap: var(--space-3);
   min-width: 0;
   width: auto;
+}
+.mm-option[aria-selected="true"] {
+  background: var(--accent-soft);
 }
 .mm-glyph {
   flex: 0 0 auto;
   color: var(--muted);
-}
-.mm-option.is-chosen .mm-glyph {
-  color: var(--accent-text);
-}
-/* One line, cut by an ellipsis; the whole name is the row's title. */
-.mm-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .mm-pin {
   flex: 0 0 auto;
@@ -72,7 +63,7 @@
 .mm-caret {
   flex: 0 0 auto;
   color: var(--muted);
-  transition: transform var(--motion-fast) var(--ease-out);
+  transition: transform var(--ui-fast) var(--ease-out);
 }
 .mm-group-head[aria-expanded="true"] .mm-caret {
   transform: rotate(90deg);

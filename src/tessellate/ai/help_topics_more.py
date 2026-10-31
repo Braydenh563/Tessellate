@@ -1380,6 +1380,22 @@ MORE_TOPICS.extend(
             "badge": {"label": "Notes", "tab": "notes"},
         },
         {
+            "id": "chat-model-picker",
+            "keywords": (
+                "model picker", "choose a model", "pick a model", "pin a model", "pinned model", "recent models",
+                "search models", "model for the chat tab", "switch the model", "which model",
+            ),
+            "body": (
+                "The model picker beside the Chat, Ask and Writing boxes opens with a "
+                "search, then Pinned and Recent models, then one row per source "
+                "with its count (On this computer, 4 models): press a row to fold "
+                "or open it. Every model has a pin that lifts it to the top. The "
+                "arrows move, Enter chooses (in the search, the first match) and "
+                "Escape closes it. It is the same choice as Settings, Models."
+            ),
+            "badge": {"label": "Chat", "tab": "chat"},
+        },
+        {
             "id": "chat-attach-cards",
             "keywords": (
                 "attached note", "attached a note", "attach a note to chat", "note card in chat",
@@ -2522,6 +2538,7 @@ TOPIC_META: dict[str, dict] = {
     "note-outbox": {"title": "Saving while the server is away", "path": "Notes tab, above Capture"},
     "attachments": {"title": "Pictures and files in a note", "path": "Capture, or a note being edited"},
     "chat-attach-cards": {"title": "Notes and files attached to a chat message", "path": "Chat, above the box and above a sent message"},
+    "chat-model-picker": {"title": "Choosing the model for a box", "path": "Chat, Ask and Writing, beside the mode buttons"},
     "filing": {"title": "How a note is filed", "path": "A note's card, beside its category"},
     "suggested-tags": {"title": "Suggested tags", "path": "A note's card"},
     "tag-manager": {"title": "Managing tags", "path": "Notes tab, the ... menu, Manage tags"},
@@ -2569,7 +2586,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "chat-model-picker", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

@@ -42,7 +42,8 @@ def test_a_model_is_filed_under_the_source_its_name_says() -> None:
 def test_the_picker_is_wired_into_every_feature_model_select_and_lazy() -> None:
     selects = frontend_text("sheets-selects.js")
     assert 'select.classList.contains("feature-model-select")' in selects
-    assert 'typeof decorateModelMenu === "function"' in selects
+    assert "enhanceSelect.richMenu?.(menu, select, opener)" in selects
+    assert "enhanceSelect.richMenu = decorateModelMenu" in frontend_text("model-menu.js")
     assert 'ensureModule("modelMenu")' in selects
     entries = frontend_text("lazy-entries.js")
     assert 'modelMenu: ["/css/model-menu-lazy.css", "/js/model-menu.js"]' in entries
@@ -67,10 +68,11 @@ def test_the_picker_has_search_recent_groups_and_pins_in_that_order() -> None:
     assert "closeActionMenus()" in keys
 
 
-def test_the_picker_sheet_uses_tokens_and_ellipsis_names() -> None:
+def test_the_picker_sheet_uses_tokens_and_the_shared_rich_picker_row() -> None:
+    js = frontend_text("model-menu.js")
+    assert "richPickerRow(" in js and 'setAttribute("role", "option")' not in js
     css = (JS_DIR.parent / "css" / "model-menu-lazy.css").read_text(encoding="utf-8")
-    name = css[css.index(".mm-name {") :][:160]
-    assert "text-overflow: ellipsis" in name and "white-space: nowrap" in name
     assert "position: sticky" in css[css.index(".mm-search {") :][:120]
     assert "min-width: var(--target-min)" in css[css.index(".mm-pin {") :][:260]
+    assert "--motion-" not in css, "an interface transition runs on --ui-*"
     assert not re.search(r"\d+px", css), "spacing and size read tokens"

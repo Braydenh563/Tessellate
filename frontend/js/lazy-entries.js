@@ -51,8 +51,7 @@ Object.assign(LAZY_MODULES, {
   //: The generated faces, the companion and Atlas (see "The characters" below).
   characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
 });
-setTimeout(() => ensureModule("loadFailed"), 3000);
-setTimeout(() => ensureModule("modelMenu"), 3000);
+setTimeout(() => ["loadFailed", "modelMenu"].forEach(ensureModule), 3000);
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
   noteActions: ["openImprove", "closeImprove", "runImprove", "applyImprove", "reevaluateEntry", "attachFileTo", "attachFromLibrary"],

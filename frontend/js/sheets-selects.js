@@ -898,7 +898,7 @@ function enhanceSelect(select) {
       }
     }
     //: A model picker is drawn in the picker's own shape (model-menu.js, lazy, INBOX 1477).
-    if (rich && typeof decorateModelMenu === "function") decorateModelMenu(menu, select, opener);
+    if (rich) enhanceSelect.richMenu?.(menu, select, opener);
     syncValue();
   };
 
@@ -906,7 +906,7 @@ function enhanceSelect(select) {
     event.stopPropagation();
     if (select.disabled) return;
     if (menu.classList.contains("hidden")) {
-      if (rich && typeof decorateModelMenu !== "function") ensureModule("modelMenu").then(() => menu.classList.contains("hidden") || rebuild());
+      if (rich && !enhanceSelect.richMenu) ensureModule("modelMenu").then(() => menu.classList.contains("hidden") || rebuild());
       rebuild();
       openActionMenu(menu, opener);
       focusMenuItem(menu.querySelector(".is-chosen"), menu);
