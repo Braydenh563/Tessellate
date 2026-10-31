@@ -1,0 +1,44 @@
+/* The Notes tab's capture card (INBOX 1479), fetched with capture-card.js on
+   the capture bar's first focus. One writing surface on `.note-composer`'s
+   own recipe (07-whiteboard-misc.css): the title and the body give up their
+   edges to it, so the card reads as one thing you write into. */
+.capture-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.capture-card[hidden] {
+  display: none;
+}
+.capture-card .note-composer {
+  margin-bottom: 0;
+}
+.capture-card-title {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-size: var(--text-h3);
+  font-weight: 600;
+}
+/* The body grows with the words up to a cap, then scrolls inside itself, so
+   the foot with Save is never pushed off the screen (INBOX 1357). */
+.capture-card-body {
+  min-height: calc(var(--control-h-lg) * 2);
+  max-height: 40vh;
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  overflow-y: auto;
+  resize: none;
+  field-sizing: content;
+}
+.capture-card-status {
+  min-height: 1.4em;
+  margin: 0;
+}
+.capture-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.capture-card-spacer {
+  flex: 1 1 auto;
+}

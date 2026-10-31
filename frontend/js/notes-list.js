@@ -2195,6 +2195,12 @@ const expandedRows = new Set();
 $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
 $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
 $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+//: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
+for (const type of ["focusin", "click", "input"]) {
+  $("capture-bar")?.addEventListener(type, (event) => {
+    Promise.all(["/css/capture-card-lazy.css", "/js/capture-card.js"].map(lazyScript)).then(() => openCaptureCard(event.target));
+  });
+}
 
 //: **A map's topics live on their map** (audit 2026-10-05, UX-06). Each
 //: topic a concept map's Tab or Enter makes is a note (`map_topic`), and a

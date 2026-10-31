@@ -117,7 +117,9 @@ HELP_TOPICS: list[dict] = [
         "id": "capture",
         "keywords": ("capture", "note", "template", "dictate", "sketch", "improve", "proofread", "generate title", "generate a title", "title from its words", "draft", "tag", "category", "categorise", "write", "compose"),
         "body": (
-            "Notes tab: type into \"Capture a thought\" and Save. A local AI files "
+            "Notes tab: the \"Add a note\" line above the list opens in place into a card "
+            "(title and words; Close keeps your draft, Escape closes, Ctrl+Enter saves). "
+            "Or type into \"Capture a thought\" and Save. A local AI files "
             "it into a category and suggests tags; you can re-file or edit anytime. "
             "Save as draft keeps it unfiled under Drafts instead, and after either, "
             "Write another takes you back to the box. "

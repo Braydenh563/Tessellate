@@ -10814,3 +10814,20 @@ header#top-bar button.space-switcher-btn:focus-visible {
 .library-image-tile .library-image-actions {
   opacity: 1;
 }
+
+/* **The Notes tab's capture bar** (INBOX 1479): one line above the list that
+   opens in place into the card (capture-card-lazy.css). The line is a field
+   of the page's own recipe; the card shows while `.is-open`. */
+.capture-bar {
+  margin-bottom: var(--space-4);
+}
+.capture-bar-input {
+  width: 100%;
+  height: var(--control-h-lg);
+  margin: 0;
+  border-radius: var(--radius-lg);
+  padding-inline: var(--space-4);
+}
+.capture-bar.is-open .capture-bar-input {
+  display: none;
+}
