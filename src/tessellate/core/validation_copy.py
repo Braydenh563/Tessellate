@@ -15,6 +15,14 @@ silent.
 
 from __future__ import annotations
 
+
+class Said(ValueError):
+    """A validator's refusal written for the person, passed through as is.
+
+    A plain ValueError may quote what was sent ("Unknown timezone 'x'"), so it
+    keeps the generic sentence; one raised as `Said` names no input and is the
+    answer itself (DC8: an unknown file type lists the valid ones)."""
+
 #: Field name (the last part of the location) to the words the screen uses.
 #: Only names that differ from the code's own spelling go here.
 LABELS: dict[str, str] = {
@@ -80,6 +88,8 @@ _PLAIN = {
 def sentence(kind: str, field: str, ctx: dict | None = None) -> str:
     """One validation error as a sentence; `kind` is pydantic's error type."""
     ctx = ctx or {}
+    if kind == "value_error" and isinstance(ctx.get("error"), Said):
+        return str(ctx["error"])
     name = label(field)
     text = _length(kind, name, ctx)
     if text:

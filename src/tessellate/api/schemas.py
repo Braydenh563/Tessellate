@@ -6,6 +6,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from tessellate.core.validation_copy import Said
 from tessellate.entry.cleantext import is_blank
 from tessellate.entry.tagnames import normalise_tags
 
@@ -14,7 +15,7 @@ def not_blank(value: str | None, what: str = "note") -> str | None:
     """Refuse text that holds nothing a reader can see: spaces, line breaks and
     zero-width characters alone. The text itself is kept as sent."""
     if value is not None and is_blank(value):
-        raise ValueError(f"That {what} is blank. Write something first.")
+        raise Said(f"That {what} is blank. Write something first.")
     return value
 
 

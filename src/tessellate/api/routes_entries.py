@@ -43,6 +43,7 @@ from tessellate.api.schemas import (
 )
 from tessellate.core import deps, events, jobruns, jobs, vault
 from tessellate.core.events import ACTOR_USER_AND_AI
+from tessellate.core.validation_copy import Said
 from tessellate.core.database import (  # noqa: F401 (EntryLink used in link_suggestions)
     AuditLog,
     Bookmark,
@@ -3141,7 +3142,7 @@ def check_link_props(value: dict | None) -> dict | None:
     if value is None:
         return None
     if len(value) > LINK_PROPS_MAX:
-        raise ValueError(f"A link holds {LINK_PROPS_MAX} properties at most.")
+        raise Said(f"A link holds {LINK_PROPS_MAX} properties at most.")
     out = {}
     for key, item in value.items():
         key = " ".join(str(key).split())[:40]

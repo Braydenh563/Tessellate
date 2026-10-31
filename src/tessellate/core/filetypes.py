@@ -23,6 +23,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from tessellate.core.validation_copy import Said
+
 #: What a document is when nobody has said otherwise. Markdown, by direct
 #: instruction: this app is a notebook first, and every document that existed
 #: before file types did is one of these.
@@ -162,7 +164,7 @@ def require(value: str) -> str:
     (audit 1031 DC8: `exe` and `../../etc` both became `md`)."""
     known = _resolve(value)
     if known is None:
-        raise ValueError(f"Unknown file type. Use one of: {', '.join(sorted(_BY_EXT))}.")
+        raise Said(f"Unknown file type. Use one of: {', '.join(sorted(_BY_EXT))}.")
     return known
 
 

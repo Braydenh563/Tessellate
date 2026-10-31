@@ -706,3 +706,13 @@ def test_library_preview_reads_a_table_and_markers_as_plain_words(client):
     preview = next(d["preview"] for d in client.get("/documents").json() if d["title"] == "Sleep")
     assert "|" not in preview and "---" not in preview and "**" not in preview and "](" not in preview
     assert "Stage, Share" in preview and "REM, 25%" in preview and preview.startswith("Intro with bold and a link")
+
+
+def test_a_validator_that_quotes_its_input_keeps_the_generic_sentence():
+    """Only a `Said` refusal passes through; a plain ValueError may echo what
+    was sent, so it keeps "Check the <label> and try again." (BK8)."""
+    from tessellate.core.validation_copy import Said, sentence
+
+    assert sentence("value_error", "file_type", {"error": Said("Use one of: md.")}) == "Use one of: md."
+    plain = sentence("value_error", "timezone", {"error": ValueError("Unknown timezone 'x<y'")})
+    assert "x<y" not in plain and plain.startswith("Check the")
