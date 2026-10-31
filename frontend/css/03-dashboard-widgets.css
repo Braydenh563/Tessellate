@@ -698,7 +698,6 @@ header#top-bar select,
   opacity: 1;
 }
 
-
 /* Full width, on its own line: inline after the label it ran off the right
    edge of the card as soon as the job name got long. */
 .task-progress {
@@ -2660,7 +2659,6 @@ button.answer-figure-open {
   min-width: 0;
 }
 
-
 .result-reason-connected {
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -3174,27 +3172,6 @@ button.answer-figure-open {
   border-radius: 50%;
 }
 
-/* A head whose face did not arrive (the characters bundle failed to load,
-   `plainHead` in lazy-entries.js): the name's initial in a quiet disc, the
-   size a 20px head is, filling the 18px user mark. */
-.plain-head {
-  display: grid;
-  place-items: center;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  line-height: 1;
-}
-
-.msg-user-mark > .plain-head {
-  inline-size: 100%;
-  block-size: 100%;
-}
-
 /* The app emblem as an assistant's head (Appearance, Assistant avatar;
    assistant-avatar.js): the mark (`emblemArt`) filling the box
    `assistantAvatar` asked for, breathing like every emblem and left out of
@@ -3481,7 +3458,6 @@ button.answer-figure-open {
   opacity: 1;
 }
 
-
 .chat-empty {
   padding: 1.5rem 1rem;
 }
@@ -3493,7 +3469,6 @@ button.answer-figure-open {
     radial-gradient(120% 90% at 50% 0%, var(--accent-soft), transparent 60%),
     var(--inner);
 }
-
 
 /* Zoom controls as one floating pill. */
 .graph-zoom {
@@ -3675,7 +3650,6 @@ button.answer-figure-open {
   color: var(--on-accent);
   background: var(--accent-surface);
 }
-
 
 .timeline-custom-range {
   gap: var(--space-1);
@@ -4026,7 +4000,6 @@ button.answer-figure-open {
   display: none;
 }
 
-
 #graph-help-toggle {
   position: static;
   margin-left: 0;
@@ -4067,7 +4040,6 @@ button.answer-figure-open {
    this head is a `.dock` now, and the dock recipe owns its gap, its one
    control height and the width search grows to. */
 
-
 /* ---------------------------------------------------------------------------
    Placed at the end of this file on purpose. A panel keeps its original class
    (`.help-body`, `.setting-hint`) when `wireHelpPopover` promotes it,
@@ -4106,7 +4078,6 @@ button.answer-figure-open {
   /* Arrives from its '?': the menus' grow (10-responsive.css, "a menu or
      popover grows from what opened it"). */
 }
-
 
 /* The caret. Two squares rotated 45°, the back one carries the border, the
    front one covers the join so the panel's own edge reads as continuous. */

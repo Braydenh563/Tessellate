@@ -1,0 +1,17 @@
+/* plain-head-lazy.css: a head whose face did not arrive (the characters bundle failed to load,
+   `plainHead` in lazy-entries.js): the name's initial in a quiet disc, the
+   size a 20px head is, filling the 18px user mark. */
+.plain-head {
+  display: grid;
+  place-items: center;
+  inline-size: 1.25rem;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-xs);
+}
+
+.msg-user-mark > .plain-head {
+  inline-size: 100%;
+}
