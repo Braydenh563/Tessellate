@@ -9183,8 +9183,7 @@ input[type="file"] {
    behind. */
 .wb-map-edge-group:hover .wb-map-edge-handle,
 .wb-map-edge-handle.is-shown,
-.wb-map-edge-handle.is-dragging,
-.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-handle {
+.wb-map-edge-handle.is-dragging {
   opacity: 1;
   pointer-events: auto;
   /* `move`, the cursor the link's own bend grip already uses: this drags a
@@ -10740,10 +10739,10 @@ header#top-bar {
 @media (max-width: 599.98px) {
   /* The Notes + opens Capture, so while Capture is the section showing it
      would float over the box it opens and offer what is already there. */
-  .tab-page:has(#capture:not(.hidden)) > #notes-new-note.dock-fab {
+  .tab-page:where(#tab-notes):has(#capture:not(.hidden)) > #notes-new-note.dock-fab {
     display: none;
   }
-  .tab-page:has(#library-view-whiteboard:not(.hidden)) > .dock-fab {
+  .tab-page:has(> #library-view-whiteboard:not(.hidden)) > .dock-fab {
     display: none;
   }
 }
