@@ -43,6 +43,9 @@ SHORT_KEEP_MIN = 2
 #: Key sentences per note in a write-up, and words per sentence before a cut.
 WRITE_UP_POINTS = 3
 SUMMARY_SENTENCES = 2
+SUMMARY_MIN = 3
+#: "Key words" under a summary are worth a line only past this many sentences.
+KEY_WORDS_MIN = 5
 
 #: The kinds that need a model, with the one line said instead of a draft.
 NEEDS_MODEL = {
@@ -50,7 +53,20 @@ NEEDS_MODEL = {
     "translate": "Translating needs a model. Connect one in Settings, Models, then press Draft again. Your text is untouched.",
     "rewrite": "A new voice needs a model; with none, Plain is the voice that works. Connect one in Settings, Models.",
     "revise": "Folding thoughts into a draft needs a model. Connect one in Settings, Models, or pick Draft a note to add them below.",
-    "refine": "With no model, Refine does shorter, a summary, plain words, bullets, prose or a diagram. Connect a model in Settings, Models for anything else.",
+    "refine": "With no model, Refine takes: shorter, add a summary, as bullets, as a list, as prose, plain, formal, tidy up or a diagram. Connect a model in Settings, Models for anything else.",
+}
+
+#: One line for a pass that would hand the text back as it came (INBOX 1488):
+#: said instead of a draft that looks like work and is not.
+NOTHING_TO_DO = {
+    "bullets": "Nothing to split: the text is already bullets, or one short line.",
+    "expand": "No bullets to join: the text is already prose. Write the points as a list first, or pick Tidy.",
+    "plain": "Nothing to swap: the words are already plain.",
+    "shorter": "Already short: there is no filler or repeat to cut.",
+    "summary": "Too short to sum up: a summary needs three sentences or more.",
+    "note": "Nothing to write up: your words are already in order. Add notes with Use notes, or pick Tidy.",
+    "tidy": "Nothing to tidy: the spelling, capitals and full stops look right.",
+    "formal": "Already formal: no contractions or slang to change.",
 }
 
 #: Fillers: dropped wherever they stand as words of their own.
@@ -436,7 +452,8 @@ def summary_of(text: str) -> str:
             s = _ended(trim(concise(s)))
             if len(s.split()) >= 3 and not _hedge(s) and not any(_same(s, x) for x in said):
                 said.append(s)
-    if not said:
+    #: Under three sentences a summary is the text again.
+    if len(said) < SUMMARY_MIN:
         return ""
     lead = _kept(said, SUMMARY_SENTENCES if len(said) > 3 else 1)
     return " ".join(lead) + _key_words(said, lead)
@@ -448,7 +465,7 @@ def _key_words(said: list[str], lead: list[str]) -> str:
     have = {w for s in lead for w in _words(s)}
     counts = Counter(w for s in said for w in set(_words(s)) if w not in have)
     words = [w for w, n in counts.most_common(3) if n >= 1]
-    return f" Key words: {', '.join(words)}." if len(said) > 1 and words else ""
+    return f" Key words: {', '.join(words)}." if len(said) >= KEY_WORDS_MIN and words else ""
 
 
 def _block_sentences(kind: str, lines: list[str]) -> list[str]:
@@ -476,10 +493,12 @@ def with_summary(text: str) -> str:
 def _tidy(thoughts: str) -> str:
     """Loose thoughts as a note: each line's sentences capitalised and ended,
     fillers trimmed, list lines kept as a list."""
+    from tessellate.ai import composer_tidy
+
     out = []
     for kind, lines in _blocks(thoughts):
         if kind == "prose":
-            out.append(" ".join(_ended(trim(concise(s))) for line in lines for s in sentences(line)))
+            out.append(composer_tidy.fixed(" ".join(_ended(trim(concise(s))) for line in lines for s in sentences(line))))
         elif kind == "list":
             out.append("\n".join(_relist(line, lambda t: trim(t).rstrip(".")) for line in lines))
         else:
@@ -493,6 +512,15 @@ def note_name(note: dict, size: int = 80) -> str:
     from tessellate.ai import composer_frame
 
     return _cap(composer_frame.note_label(note) or composer_frame.note_title(note.get("content") or "", size=size)) or "Untitled"
+
+
+def _write_up_name(note: dict) -> str:
+    """A note's name for the write-up: its first sentence when that is short
+    ("Dentist visit"), so the rest of the note is points under it and not
+    part of its name."""
+    name = note_name(note)
+    first = sentences(name)[0] if sentences(name) else name
+    return first.rstrip(".") if len(first.split()) <= 8 and first != name else name
 
 
 def _named_by(sentence: str, title: str) -> bool:
@@ -549,42 +577,49 @@ def _when(source: dict) -> date | None:
         return None
 
 
-def _month(day: date) -> str:
+_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+
+def _day_heading(day: date, today: date) -> str:
+    """"Thursday 29 October" ("Thursday 29 October 2025" in another year)."""
     from tessellate.ai import realise
 
-    return f"{realise._MONTHS[day.month - 1]} {day.year}"
+    year = f" {day.year}" if day.year != today.year else ""
+    return f"{_WEEKDAYS[day.weekday()]} {day.day} {realise._MONTHS[day.month - 1]}{year}"
 
 
 def write_up(thoughts: str, sources: list[dict] | None, today: date) -> str:
-    """The thoughts tidied, then the chosen notes oldest first, grouped by
-    month when they span more than one, each under its name and when."""
+    """The thoughts tidied, then the chosen notes oldest first, grouped under
+    a heading for each day when they span more than one, each with its key
+    points."""
     notes = [(s, _when(s)) for s in sources or [] if (s.get("content") or "").strip()]
     notes.sort(key=lambda pair: pair[1] or date.max)
     tidied = _tidy(thoughts).strip()
-    named = [(note_name(s), s, day) for s, day in notes]
+    named = [(_write_up_name(s), s, day) for s, day in notes]
     title = _write_up_title(tidied, [n for n, _s, _d in named])
     parts = [part for part in (f"# {title}" if title else "", tidied) if part]
     return "\n\n".join(parts + _note_blocks(named, today))
 
 
 def _note_blocks(named: list, today: date) -> list[str]:
-    """Each note's block, under a month heading when they span months."""
+    """Each note's block, under a day heading when the notes span days."""
     from tessellate.ai import realise
 
-    months = {_month(day) for _n, _s, day in named if day}
-    month = ""
+    days = {day for _n, _s, day in named if day}
+    heading: date | None = None
     parts: list[str] = []
     for name, source, day in named:
-        if len(months) > 1 and day and _month(day) != month:
-            month = _month(day)
-            parts.append(f"## {month}")
-        parts.append(_note_block(name, source, f", written {realise.relative_day(day, today)}" if day else ""))
+        if len(days) > 1 and day and day != heading:
+            heading = day
+            parts.append(f"## {_day_heading(day, today)}")
+        said = "" if len(days) > 1 or not day else f", written {realise.relative_day(day, today)}"
+        parts.append(_note_block(name, source, said))
     return parts
 
 
 def _note_block(name: str, source: dict, when: str) -> str:
     points = _note_points(source.get("content") or "", name)
-    return "\n".join([f"**{name}**{when}" + (":" if points else ".")] + [f"- {p}" for p in points])
+    return "\n".join([f"**{name}**{when}" + (":" if points else "")] + [f"- {p}" for p in points])
 
 
 # --- the door --------------------------------------------------------------------------
@@ -596,6 +631,8 @@ _ASKS = (
     ("summary", re.compile(r"\b(?:summary|summari[sz]e|sum (?:it )?up|tl;?dr|in short|key points|overview)\b", re.I)),
     ("bullets", re.compile(r"\b(?:bullets?|bullet points|(?:a |into a )?list|point form)\b", re.I)),
     ("expand", re.compile(r"\b(?:prose|paragraphs?|full sentences|write it out)\b", re.I)),
+    ("tidy", re.compile(r"\b(?:tidy|tidied|spell\w*|proofread|typos?|grammar|punctuation|capitals?|clean(?:ed)? (?:it )?up|fix (?:it|this|the (?:text|writing|draft)))\b", re.I)),
+    ("formal", re.compile(r"\b(?:formal(?:ly)?|professional(?:ly)?|business(?: ?like)?)\b", re.I)),
     ("plain", re.compile(r"\b(?:plain(?:er|ly)?|simpl(?:e|er|ify)|easier|jargon|clearer)\b", re.I)),
     ("shorter", re.compile(r"\b(?:short(?:er|en)?|trim|cut|tighten|tighter|concise|brief(?:er)?|less wordy|condense)\b", re.I)),
 )
@@ -610,7 +647,12 @@ def refine_kind(instruction: str) -> str:
 
 
 def _by_kind(kind: str, text: str) -> str:
-    return {"bullets": to_bullets, "expand": to_prose, "plain": plainly, "shorter": shorter, "summary": with_summary}[kind](text)
+    from tessellate.ai import composer_tidy
+
+    return {
+        "bullets": to_bullets, "expand": to_prose, "plain": plainly, "shorter": shorter, "summary": with_summary,
+        "tidy": composer_tidy.tidy, "formal": composer_tidy.formally,
+    }[kind](text)
 
 
 _SAID = {
@@ -619,8 +661,20 @@ _SAID = {
     "plain": "Put in plain words by plain rule, with no model: long words swapped, long sentences split.",
     "shorter": "Made shorter by plain rule, with no model: fillers and repeats out, the key sentences kept.",
     "summary": "Added a summary from the draft's own key sentences, with no model.",
+    "tidy": "Tidied by plain rule, with no model: spelling, capitals, apostrophes and full stops put right.",
+    "formal": "Put in a formal voice by plain rule, with no model: contractions spelled out, slang swapped, fillers out.",
     "note": "Written up by plain rule, with no model: your words tidied and each note's key points under its date.",
 }
+
+
+def _done(shape: str, source: str, made: str) -> Pass:
+    """`made` as a pass of `shape`, or the line saying there was nothing to do
+    when it is the source over again (INBOX 1488: no control echoes its input)."""
+    from tessellate.ai import composer_tidy
+
+    if not made.strip() or composer_tidy.same(made, source):
+        return Pass("", NOTHING_TO_DO[shape])
+    return Pass(made, _SAID[shape], shape)
 
 
 def compose(
@@ -628,7 +682,8 @@ def compose(
     sources: list[dict] | None = None, today: date | None = None,
 ) -> Pass:
     """One Writing room pass with no model: the text, and the line to say.
-    An empty `text` means this pass needs a model and `message` says so."""
+    An empty `text` means this pass needs a model, or had nothing to change,
+    and `message` says which."""
     kind = (kind or "").strip().lower()
     text = draft if (draft or "").strip() else thoughts
     if (instruction or "").strip():
@@ -638,7 +693,7 @@ def compose(
         if asked == "diagram":
             #: Drawn by `composer_mermaid.drafted`, which reads this module.
             return Pass("", "", "diagram")
-        return Pass(_by_kind(asked, text), _SAID[asked], asked)
+        return _done(asked, text, _by_kind(asked, text))
     return _by_mode(kind, thoughts, draft, tone, length, sources, today or _user_today())
 
 
@@ -649,19 +704,36 @@ def _user_today() -> date:
     return composer.user_today()
 
 
+def _unchanged(a: str, b: str) -> bool:
+    from tessellate.ai import composer_tidy
+
+    return composer_tidy.same(a, b)
+
+
+#: The kinds that are one pass over the text with nothing else to read.
+_ONE_PASS = ("plain", "formal", "tidy")
+
+
 def _by_mode(kind: str, thoughts: str, draft: str, tone: str, length: str, sources, today: date) -> Pass:  # noqa: ANN001
     text = draft if (draft or "").strip() else thoughts
     if kind.startswith("translate"):
         return Pass("", NEEDS_MODEL["translate"])
+    if kind == "rewrite" and tone in ("plain", "formal"):
+        kind = tone
     if kind == "rewrite":
-        return Pass(plainly(text), _SAID["plain"], "plain") if tone == "plain" else Pass("", NEEDS_MODEL["rewrite"])
+        return Pass("", NEEDS_MODEL["rewrite"])
     if kind == "diagram":
         return Pass("", "", "diagram")
+    if kind in _ONE_PASS:
+        return _done(kind, text, _by_kind(kind, text))
     if kind in ("bullets", "expand"):
-        done = _by_kind(kind, thoughts if (thoughts or "").strip() else draft)
-        return Pass(_toned(done, tone, length), _SAID[kind], kind)
+        source = thoughts if (thoughts or "").strip() else draft
+        made = _toned(_by_kind(kind, source), tone, length)
+        return _done(kind, source, made)
     if kind == "note":
         written = write_up(thoughts, sources, today)
+        if written.strip() and not sources and _unchanged(written, thoughts):
+            return Pass("", NOTHING_TO_DO["note"])
         if (draft or "").strip() and written:
             written = f"{draft.rstrip()}\n\n{written}"
         return Pass(_toned(written, tone, length), _SAID["note"], "note") if written.strip() else Pass("", NEEDS_MODEL["revise"])
@@ -669,7 +741,11 @@ def _by_mode(kind: str, thoughts: str, draft: str, tone: str, length: str, sourc
 
 
 def _toned(text: str, tone: str, length: str) -> str:
-    """The two selects, where a rule can honour them: Plain and Short."""
+    """The two selects, where a rule can honour them: Plain or Formal, and Short."""
+    from tessellate.ai import composer_tidy
+
     if tone == "plain":
         text = plainly(text)
+    elif tone == "formal":
+        text = composer_tidy.formally(text)
     return shorter(text) if length == "short" else text
