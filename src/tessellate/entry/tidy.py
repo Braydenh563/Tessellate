@@ -45,7 +45,7 @@ from datetime import timedelta
 from sqlalchemy import func, or_, select
 
 from tessellate.core import events
-from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, utcnow
+from tessellate.core.database import AuditLog, Entry, EntryLink, Reminder, plain_reason, utcnow
 from tessellate.entry import link_facts, link_wording, manager
 
 logger = logging.getLogger("tessellate.tidy")
@@ -727,8 +727,9 @@ def _apply_link_reasons(session, chosen: list[dict]) -> tuple[int, dict]:  # noq
         link = session.get(EntryLink, _id_number(row["id"]))
         if link is None or not link_wording.is_generic(link.reason):
             continue
-        undo.append({"id": link.id, "reason": link.reason, "now": row["change"]})
-        link.reason = row["change"]
+        now = plain_reason(row["change"])  # what the column will hold and read back
+        undo.append({"id": link.id, "reason": link.reason, "now": now})
+        link.reason = now
     return len(undo), {"links": undo}
 
 
@@ -968,7 +969,7 @@ def _undo_links(session, undo: dict) -> int:  # noqa: ANN001
     restored = 0
     for item in undo.get("links", []):
         link = session.get(EntryLink, item["id"])
-        if link is not None and link.reason == item["now"]:
+        if link is not None and link.reason == plain_reason(item["now"]):  # an older undo may hold the marked-up text
             link.reason = item["reason"]
             restored += 1
     return restored
