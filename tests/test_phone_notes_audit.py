@@ -127,7 +127,7 @@ def test_the_drawer_opener_says_what_it_holds_and_closes_on_a_choice():
     shell = _read("phone-shell.js")
     assert '[data-dock-name="notes"]\', label: "Categories" }' in shell
     assert "Categories and tags" not in shell
-    close = shell[shell.index('getElementById("category-list")?.addEventListener("click"'):]
+    close = shell[shell.index('("category-list")?.addEventListener("click"'):]
     close = close[: close.index("\n});")]
     assert 'classList.remove("sidebar-sheet-open")' in close
     assert 'setAttribute("aria-expanded", "false")' in close

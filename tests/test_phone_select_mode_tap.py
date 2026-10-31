@@ -36,6 +36,7 @@ const openNotePage = (entry) => opened.push(entry.id);
 const li = {{ dataset: {{ id: '7' }}, querySelector: () => null, classList: {{ contains: () => false }} }};
 const target = {{ closest: (sel) => (sel.startsWith('li') ? li : null) }};
 const document = {{ getElementById: () => ({{ addEventListener: (type, fn) => {{ handler = fn; }} }}) }};
+const $ = (id) => document.getElementById(id);
 const window = {{ matchMedia: () => ({{ matches: true }}), getSelection: () => '' }};
 {match.group(0)}
 initNotePage();

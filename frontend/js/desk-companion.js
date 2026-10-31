@@ -168,7 +168,7 @@
     if (!content || saving) return;
     saving = true;
     $("desk-note-save").disabled = true;
-    noteStatus("Saving...");
+    noteStatus("Saving…");
     try {
       const response = await call("/entries", "POST", { content });
       if (response.status === 401) {

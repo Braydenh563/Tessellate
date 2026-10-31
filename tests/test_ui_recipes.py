@@ -6353,7 +6353,6 @@ def test_the_notes_rail_resize_recipe_is_in_the_index() -> None:
     assert "NOTES_RAIL_STEP = 16" in js and '"Home"' in js and "(pointer: fine) and (min-width: 600px)" in js
 
 
-<<<<<<< HEAD
 def test_the_shared_picture_control_is_in_the_index_and_the_guide() -> None:
     """UX review 1031 item 12: one grip and align button for every surface that
     shows a note's picture, with its keys, its hit area and its ground held."""
@@ -6367,7 +6366,8 @@ def test_the_shared_picture_control_is_in_the_index_and_the_guide() -> None:
     assert 'addEventListener("focusin"' in layout, "the control exists before the pointer does"
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
     assert "Tab to the corner and use the arrow keys" in topics
-=======
+
+
 def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     """INBOX 1467 parts 1 and 2: one reference shape, one reorder engine, none in the boot."""
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
@@ -6391,4 +6391,3 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
->>>>>>> agent/objmove-1031
