@@ -6,6 +6,9 @@ portal and walking through it, vanishing in a puff of smoke, walking off the
 edge of the screen and coming out somewhere else, ducking below the bottom bar
 and climbing down from the top and vice versa ... the companion needs to be a
 companion, not something that distracts the user from their work."
+The duck was withdrawn on INBOX 1463 (it went through the status bar, was cut
+by its clip-path on the way and came down from the top bar): see
+`tests/test_companion_never_clipped_1463.py`.
 
 `companionTravelChoose` (frontend/js/companion-travel.js, lazy) is pure: the
 last move, where it goes and the window in; one of the calm moves out. These
@@ -35,7 +38,7 @@ PURE = TRAVEL[: TRAVEL.index("//: ---- Playing a move")]
 needs_node = pytest.mark.skipif(not shutil.which("node"), reason="needs node")
 
 WIN = [1440, 900]
-BARS = [48, 852]  # the top bar's lower edge, the bottom bar's upper edge
+BARS = [48, 852]  # the top bar's lower edge, the bottom bar's upper edge (a stale argument the chooser ignores)
 
 
 def _run(cases: list[dict]) -> list:
@@ -56,7 +59,7 @@ def _all_moves(o: dict) -> set[str]:
 
 @needs_node
 def test_never_the_same_move_twice_in_a_row() -> None:
-    for last in ("walk", "portal", "smoke", "edge", "duck"):
+    for last in ("walk", "portal", "smoke", "edge"):
         for dx in (-1200, -500, 300, 900):
             for y0 in (60, 400, 800):
                 moves = _run([{"o": _o(last=last, dx=dx, y0=y0, x0=700, x1=700 + dx), "roll": i / 100} for i in range(100)])
@@ -66,7 +69,7 @@ def test_never_the_same_move_twice_in_a_row() -> None:
 @needs_node
 def test_a_far_move_is_one_of_the_calm_ones_and_all_of_them_turn_up() -> None:
     seen = _all_moves(_o(y0=800, x0=900, x1=100, dx=800, dy=-300))
-    assert {"portal", "smoke", "edge", "duck"} <= seen
+    assert {"portal", "smoke", "edge"} <= seen
     assert "leap" not in seen and "arc" not in seen
 
 
@@ -79,13 +82,6 @@ def test_a_short_move_only_walks() -> None:
 def test_reduced_motion_is_a_fade_and_nothing_else() -> None:
     for last in ("", "walk", "portal"):
         assert _all_moves(_o(reduced=True, last=last)) == {"fade"}
-
-
-@needs_node
-def test_ducking_needs_it_to_be_at_a_bar() -> None:
-    assert "duck" not in _all_moves(_o(y0=400))
-    assert "duck" in _all_moves(_o(y0=780))
-    assert "duck" in _all_moves(_o(y0=56))
 
 
 @needs_node

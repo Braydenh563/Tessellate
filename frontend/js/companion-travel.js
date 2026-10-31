@@ -17,38 +17,34 @@
 //:   portal  a ring opens beside it, it walks in; one opens where it is going
 //:   smoke   a puff, gone; a puff there, back
 //:   edge    off the nearest side of the window, in from the side nearest there
-//:   duck    at a bar: down behind the bottom bar and climbing down from the
-//:           top bar, or up behind the top and climbing up from beneath the
-//:           bottom (the reverse)
 //:   walk    on foot (avatars.js's own: a level way, or a climb across levels)
 //:   fade    Reduce motion: a crossfade, and nothing else
-//: Every move is one animation of the host's `translate` and `opacity` (and a
-//: `clip-path` where a bar hides it), on the compositor but for the clip, plus
-//: a few small elements for the rings and the puffs (the lazy sheet).
+//: Every move is one animation of the host's `translate` and `opacity`, on the
+//: compositor, plus a few small elements for the rings and the puffs (the lazy
+//: sheet). **It never passes through a bar** (INBOX 1463, the owner: "the
+//: companion just went through the bottom bar and started falling from the top
+//: bar and ... part of its body was missing"): the duck move, which hid it
+//: behind one bar with a `clip-path` and let it down from the other, is gone,
+//: and no move leaves the window by its top or bottom (the edge move leaves by
+//: a side only). Nothing here clips it.
 //: `nmb.travelForce` names a move to play whatever the chooser would say (the
 //: sweep, scratchpad/ui-sweeps/companiontravel.js).
-const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge", "duck"];
+const COMPANION_TRAVEL_MOVES = ["walk", "portal", "smoke", "edge"];
 //: A way on foot off the window and back in may not be longer than this many of its own widths.
 const COMPANION_TRAVEL_EDGE_SIZES = 14;
-//: How close to a bar (its own heights) it has to be to duck behind it.
-const COMPANION_TRAVEL_BAR_SIZES = 3;
 
 //: The weight of each move, pure. `o`: `last` (the move before), `dx`, `dy`
 //: (back to where it was), `size` its width, `reduced`, `win` [width,
-//: height], `x0`, `y0` where it was, `x1` where it goes, `lines` [the top
-//: bar's lower edge, the bottom bar's upper one].
+//: height], `x0` where it was and `x1` where it goes.
 function companionTravelWeights(o) {
   if (o.reduced) return { fade: 1 };
   const s = o.size;
   const d = Math.hypot(o.dx, o.dy);
   const [width] = o.win;
-  const w = { walk: d <= s * 8 ? 3 : 0.6, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 3 : 0, edge: 0, duck: 0 };
+  const w = { walk: d <= s * 8 ? 3 : 0.6, portal: d > s * 2.5 ? 3 : 0, smoke: d > s * 2 ? 3 : 0, edge: 0 };
   const out = Math.min(o.x0, width - s - o.x0);
   const into = Math.min(o.x1, width - s - o.x1);
   if (d > s * 3 && out + into + s * 2 <= s * COMPANION_TRAVEL_EDGE_SIZES) w.edge = 2;
-  const tall = s * 1.44;
-  const near = s * COMPANION_TRAVEL_BAR_SIZES;
-  if (d > s * 3 && (o.y0 + tall >= o.lines[1] - near || o.y0 <= o.lines[0] + near)) w.duck = 2;
   if (o.last in w) w[o.last] = 0;
   return w;
 }
@@ -190,71 +186,16 @@ const COMPANION_TRAVEL_PLAYERS = {
     companionTravelSteps(buddy, t1 + gap, t2);
     companionTravelAt(t1 + gap, () => (buddy.dataset.turn = inFrom < 0 ? "r" : "l"));
   },
-  //: Behind a bar, out of sight, and back by the far one, hand over hand.
-  duck(buddy, dx, dy, ctx) {
-    const k = 1 / Math.max(0.7, nmb.scale || 1);
-    const H = NMB_H;
-    const [top, bottom] = ctx.lines;
-    const y0 = ctx.was.y;
-    const y1 = nmb.y;
-    const down = ctx.down;
-    //: Clip insets (px, from the box's top and bottom) hiding what is past the line it goes behind.
-    const clip = (a, b) => `inset(${Math.max(-40, a * k)}px -60px ${Math.max(-40, b * k)}px -60px)`;
-    let outY;
-    let outClip;
-    let inY;
-    let inClip;
-    let backClip;
-    let mouth;
-    if (down) {
-      //: Down behind the bottom bar; in from behind the top bar, down.
-      outY = bottom - y0 + 4;
-      outClip = clip(-99, y0 + outY + H - bottom);
-      backClip = clip(-99, y0 + H - bottom);
-      inY = top - H - y1 - 4;
-      inClip = clip(top - (y1 + inY), -99);
-      mouth = clip(top - y1, -99);
-    } else {
-      //: Up behind the top bar; in from beneath the bottom bar, up.
-      outY = top - H - y0 - 4;
-      outClip = clip(top - (y0 + outY), -99);
-      backClip = clip(top - y0, -99);
-      inY = bottom - y1 + 4;
-      inClip = clip(-99, y1 + inY + H - bottom);
-      mouth = clip(-99, y1 + H - bottom);
-    }
-    const t1 = Math.max(450, Math.abs(outY) * COMPANION_TRAVEL_PACE);
-    const t2 = Math.max(450, Math.min(2600, Math.abs(inY) * COMPANION_TRAVEL_PACE));
-    const gap = 200;
-    const T = t1 + gap + t2;
-    const a = t1 / T;
-    ctx.frames = [
-      { translate: `${dx}px ${dy}px`, clipPath: backClip, offset: 0 },
-      { translate: `${dx}px ${dy + outY}px`, clipPath: outClip, offset: a },
-      { translate: `0px ${inY}px`, clipPath: inClip, offset: a + 0.001 },
-      { translate: `0px ${inY}px`, clipPath: inClip, offset: (t1 + gap) / T },
-      { translate: "0px 0px", clipPath: mouth, offset: 1 },
-    ];
-    ctx.ms = T;
-    //: Its hands take hold on the way: down or up the face of the page.
-    nameMarkBuddyTravel(buddy, "climb");
-    companionTravelSteps(buddy, 0, T);
-    companionTravelAt(t1 + gap, () => nameMarkBuddyTravel(buddy, "climb"));
-  },
 };
 
 //: Play a far move; false when it should be walked (the chooser's "walk", or no player for it).
 function companionTravelPlay(buddy, dx, dy, size, flies, was) {
-  const { top, bottom } = nameMarkBuddyLedges();
-  const lines = [top ? top.bottom : 0, bottom ? bottom.top : innerHeight];
-  const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, y0: was.y, x1: nmb.x, lines };
+  const o = { last: nmb.travelLast || "", dx, dy, size, flies, reduced: nameMarkBuddyNoTravel(), win: [innerWidth, innerHeight], x0: was.x, x1: nmb.x };
   const move = nmb.travelForce || companionTravelChoose(o, Math.random());
   nmb.travelLast = move;
   const player = COMPANION_TRAVEL_PLAYERS[move];
   if (!player) return false;
-  //: Which bar a duck goes behind: the one it is nearer.
-  const down = was.y + NMB_H / 2 > (lines[0] + lines[1]) / 2;
-  const ctx = { was, lines, down, frames: [], body: null, ms: 0, turn: "" };
+  const ctx = { was, frames: [], body: null, ms: 0, turn: "" };
   for (const t of nmb.travelTimers) clearTimeout(t);
   nmb.travelTimers = [];
   for (const fx of nmb.travelFx) fx.remove();
