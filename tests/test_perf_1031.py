@@ -72,3 +72,32 @@ def test_a_selection_is_saved_by_one_request_per_gesture():
     assert "wbTakeMoveRun(pending)" in wb  # an undo of a batch of moves is one request too
     mp = frontend_text("whiteboard-map.js")
     assert "for (const node of changed) await wbSaveObject(node)" not in mp
+
+
+def test_one_note_added_to_a_big_map_does_not_heat_the_whole_map():
+    # One note on 2,000 kept the layout running 15.8 s with 46 long tasks at 4x (GR5):
+    # a note without a place made every render "not placed" and heated from 1.
+    js = frontend_text("graph-canvas.js")
+    body = _between(js, "function gcAdditionHolds(", "function gcStartWorker(")
+    assert "prior.size < GC_ADD_MIN_NOTES" in body
+    assert "added.length > GC_ADD_MAX" in body
+    assert "s.lastForces !== gcForcesKey(s)" in body  # a changed force is a real relayout
+    render = _between(js, "const heldForAdd = gcAdditionHolds(", "graphRenderStats(")  # up to the end of the force branch
+    assert "alpha: heldForAdd ? GC_ADD_ALPHA" in render
+    assert "freezeIds: heldForAdd ||" in render
+    assert "addition: Boolean(heldForAdd)" in render
+
+
+def test_the_minimap_paints_by_the_clock_while_the_layout_settles():
+    # One paint in eight ticks was eight a second on a small map; each rewrites 1,400 elements.
+    js = frontend_text("graph-canvas.js")
+    assert "now - (s.minimapAt || 0) >= GC_MINIMAP_MS" in js
+    assert "graphMinimapTick" not in js and "graphMinimapTick" not in frontend_text("graph.js")
+
+
+def test_graph_search_keys_share_a_redraw():
+    # 13 keys at 2,000 notes and 4x: a redraw each. The first key is still drawn at once.
+    js = frontend_text("graph.js")
+    body = _between(js, "function graphSearchTyped() {", "$(\"graph-search\").addEventListener(\"input\"")
+    assert body.index("if (wait <= 0)") < body.index("setTimeout(")
+    assert "clearTimeout(typed.timer)" in body
