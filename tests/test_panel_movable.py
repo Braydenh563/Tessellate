@@ -57,7 +57,7 @@ out.dockRead = a.panelStoreRead("dock-me");
 a.panelStoreWrite("odd", { x: 0, y: 0, w: null, h: null, dock: "sideways" });
 out.dockBad = a.panelStoreRead("odd");
 out.zones = {};
-for (const [n, x, y] of [["mid", 500, 400], ["l", 3, 400], ["r", 997, 400], ["t", 500, 2], ["b", 500, 799], ["tl", 5, 5], ["tr", 995, 5], ["bl", 5, 795], ["br", 995, 795], ["edgeIn", 24, 400], ["edgeOut", 25, 400], ["topThirdL", 200, 2], ["topThirdR", 800, 2], ["topMidEdge", 340, 2]]) out.zones[n] = a.panelSnapZone(x, y, 1000, 800);
+for (const [n, x, y] of [["mid", 500, 400], ["l", 3, 400], ["r", 997, 400], ["t", 500, 2], ["b", 500, 799], ["tl", 5, 5], ["tr", 995, 5], ["bl", 5, 795], ["br", 995, 795], ["edgeIn", 48, 400], ["edgeOut", 49, 400], ["edge0", 0, 400], ["rEdge", 999, 400], ["bEdge", 500, 799], ["rBand", 951, 400], ["rOut", 950, 400], ["cornerSq", 47, 752], ["topThirdL", 200, 2], ["topThirdR", 800, 2], ["topMidEdge", 340, 2]]) out.zones[n] = a.panelSnapZone(x, y, 1000, 800);
 out.rects = {};
 for (const z of ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"]) out.rects[z] = a.panelZoneRect(z, 1000, 800, 12);
 out.noRect = a.panelZoneRect("", 1000, 800, 12);
@@ -184,8 +184,12 @@ def test_snap_zones_follow_the_pointer_to_an_edge_or_corner(maths) -> None:
     assert z["mid"] == ""
     assert (z["l"], z["r"], z["t"], z["b"]) == ("left", "right", "max", "bottom")
     assert (z["tl"], z["tr"], z["bl"], z["br"]) == ("tl", "tr", "bl", "br")
-    # 24px is inside the zone, 25px is not
+    # 48px is inside the zone, 49px is not; the very edge (0 and the last pixel)
+    # counts on every side, and the band is 48px wide on the right too
     assert z["edgeIn"] == "left" and z["edgeOut"] == ""
+    assert (z["edge0"], z["rEdge"], z["bEdge"]) == ("left", "right", "bottom")
+    assert (z["rBand"], z["rOut"]) == ("right", "")
+    assert z["cornerSq"] == "bl"
     # the top band is read by thirds: one gesture, one height
     assert (z["topThirdL"], z["topThirdR"], z["topMidEdge"]) == ("tl", "tr", "max")
 

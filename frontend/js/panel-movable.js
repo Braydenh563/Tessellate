@@ -38,7 +38,10 @@ const PANEL_MIN_H = 160;
 const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
 const PANEL_SKIP = "button, a, input, select, textarea, summary, [contenteditable], .panel-grip";
 const PANEL_STATE = new WeakMap();
-const PANEL_EDGE = 24;
+//: INBOX 1472: a band from the very edge (0px, and past it when the pointer is
+//: captured outside the window) in to 48px. It was 24 with `x >= vw - 24`, which
+//: the last pixel column (`vw - 1`) made 23 on the right and bottom.
+const PANEL_EDGE = 48;
 const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
 
 //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
@@ -61,9 +64,9 @@ function panelClampSize(rect, w, h, vw, vh) {
 //: when two meet.
 function panelSnapZone(x, y, vw, vh) {
   const l = x <= PANEL_EDGE;
-  const r = x >= vw - PANEL_EDGE;
+  const r = x >= vw - 1 - PANEL_EDGE;
   const t = y <= PANEL_EDGE;
-  const b = y >= vh - PANEL_EDGE;
+  const b = y >= vh - 1 - PANEL_EDGE;
   //: The top band is read by thirds so one gesture always gives one height:
   //: the middle third maximises, the outer thirds are the top quarters.
   if (t) return x < vw / 3 ? "tl" : x > (2 * vw) / 3 ? "tr" : "max";
@@ -517,6 +520,9 @@ function panelHeadDown(e) {
     head.removeEventListener("pointerup", done);
     head.removeEventListener("pointercancel", done);
     panel.classList.remove("panel-moving");
+    //: The drop reads the pointer where it was let go, not the last move: a
+    //: flick to the very edge can end with no move event at the edge.
+    if (ev.type === "pointerup" && moved > 4) zone = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (zone) panelShowZone(null);
     if (zone && ev.type === "pointerup") panelDock(panel, st, zone);
     panelSave(panel);
