@@ -3453,9 +3453,22 @@ def _with_older(text: str, older: list, result: dict) -> str:
         return text
     line = supersede.older_line(older, voice=_composer_voice(), today=user_now(deps.get_config()).date(), seed=len(text))
     #: "It's your only note on that so far" is not true with an older one.
-    only = {composer_digest._BASE["only_note"], *(v.get("only_note", "") for v in composer_digest.VOICES.values())}
-    kept = [part for part in text.split("\n\n") if part.strip() not in only]
+    kept = [part for part in text.split("\n\n") if not composer_digest.is_only_claim(part)]
     return "\n\n".join([*kept, line])
+
+
+def _with_words_only(text: str, prepared: dict, result: dict) -> str:
+    """"Your only note on it" is a claim about the whole notebook; a search
+    that read words only (no search by meaning) cannot make it, so the line
+    says what was measured instead (blind test 2026-10-31, item 3)."""
+    words_only = prepared.get("search_mode") == "keyword" or prepared.get("meaning_off") or prepared.get("meaning_loading")
+    if not words_only or not result.get("grounding"):
+        return text
+    parts = text.split("\n\n")
+    if not any(composer_digest.is_only_claim(part) for part in parts):
+        return text
+    swapped = [composer_digest.PHRASES["only_words"] if composer_digest.is_only_claim(part) else part for part in parts]
+    return "\n\n".join(swapped)
 
 
 def _with_lapsed(text: str, current: list, result: dict, req: _StreamRequest) -> str:
@@ -3945,6 +3958,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
             return redirected
     text, asks = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
     text = _with_older(text, older, result)
+    text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}]
     if result["grounding"]:

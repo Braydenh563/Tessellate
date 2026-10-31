@@ -94,6 +94,8 @@ _BASE = {
     "no_place": "Your notes don't say where, but they do say this.",
     "only_note": "It's your only note on that so far.",
     "only_kind": "It's your only {noun} so far.",
+    #: Said instead of the two above when only the words were searched.
+    "only_words": "Only one note uses those words; notes that say it differently need search by meaning.",
     #: The joins between lines and the closing pattern (INBOX 870: "one or
     #: two words between directly giving me what I can see from the notes
     #: on the right ... feels like the response is completely useless").
@@ -413,6 +415,29 @@ def _bare_gap(gap: str) -> str:
 #: Phrases worded by the question as well as the turn: the same question says
 #: the same thing, a different one does not.
 _SEEDED = frozenset({"only_note", "only_one"})
+
+
+def only_note_lines() -> frozenset[str]:
+    """Every wording of the closing "your only note on that" claim, in every
+    voice (a voice may hold several, a tuple)."""
+    said: set[str] = set()
+    for table in (_BASE, *VOICES.values()):
+        value = table.get("only_note")
+        if value:
+            said.update(value if isinstance(value, tuple) else (value,))
+    return frozenset(said)
+
+
+def is_only_claim(line: str) -> bool:
+    """Whether a paragraph is that closing claim ("only note", "only review")."""
+    line = line.strip()
+    if line in only_note_lines():
+        return True
+    return any(re.fullmatch(re.escape(str(t)).replace(r"\{noun\}", ".+?"), line) for t in _only_kinds())
+
+
+def _only_kinds() -> list[str]:
+    return [v for table in (_BASE, *VOICES.values()) if (v := table.get("only_kind")) and isinstance(v, str)]
 
 
 class _Phrases(dict):

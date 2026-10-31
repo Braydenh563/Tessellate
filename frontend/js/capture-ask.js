@@ -916,6 +916,8 @@ function flashEntry(id) {
   // The reset above fixes the view, so `resolveNotePage` can name the target's page.
   const targetPage = resolveNotePage(id);
   if (targetPage) notesCurrentPage = targetPage;
+  //: Opening is the whole note, not a clipped row (blind test 2026-10-31).
+  expandedRows.add(id);
   renderSidebar();
   noteEngine.jumpId = id; // paint through the target: later rows only exist after a scroll
   renderEntries();
@@ -939,6 +941,9 @@ function flashEntry(id) {
     card.classList.remove("flash");
     void card.offsetWidth;
     card.classList.add("flash");
+    //: Focus lands on the note as a click leaves it (it was left on <body>), so
+    //: the arrows, Enter and the Connections column read from it at once.
+    card.focus({ preventScroll: true });
     // Announce it too: a colour change alone tells a screen-reader user
     // nothing about where they've just been sent.
     // Just the note's own text: card.textContent would drag in the category
