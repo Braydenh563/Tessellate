@@ -51649,6 +51649,8 @@ Fixed:
 
 1489. **The owner, 2026-10-31, verbatim (screenshots: the Notes page's Categories panel head, a faint lighter box behind "Categories" and its two buttons inside the panel's own rounded box; a tab pill "Settings x" with a faint box behind the label inside the pill):** "faint box behind the header of the notes page and the tab pills". Recommendation taken: one surface per element; a head or a pill label never draws its own background inside its container. Find the class (every panel head and pill whose inner element has a background, border or shadow on a parent that has one), fix by cause, and add a lint so a nested surface cannot come back. Agent faint-1031.
 
+1494. **The owner, 2026-10-31, verbatim (screenshot: the note capture's foot, a well holding "Note", "To-do", "Draw" and a picture button, none of the three looking chosen):** "no visual active state on this pill selector". Recommendation taken: the class is the `.seg` well keyed its chosen look to `.active` only while this switch sets `aria-pressed`; either now paints the chosen ground in every palette and hover never repaints a chosen segment (`tests/test_seg_pressed_1494.py`). Fixed by the hub.
+
 ## Moved from HANDOVER (2026-10-31): the PR 149 plan and session records to 2026-09-26
 
 ## How to proceed after PR 149 (the owner asked, 2026-09-14)
@@ -51712,4 +51714,3 @@ in HISTORY.md, "Moved from HANDOVER, 2026-09-26".
 **Previously (2026-09-13 evening and midday):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-21".
 
 **Previously (2026-09-13 morning to midday):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-13 night".
-
