@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Validation copy, audit 1031 BK8 and HR13: a bad request is answered by the field's label and the limit ("The due time isn't a date or time that can be read.", "The name can be at most 80 characters.", "The text can be at most 500,000 characters.") from one `core/validation_copy.py`, never pydantic's words or a column name; the memory line has one cap (`memory.MAX_PREFERENCE_CHARS`) shared by the Settings field, the route and the tool, held by a test.
 - Composer, audit 1031 C24, C27 and the date asks: what changed or is different between two things is a comparison; what happened last week is said as what the notes hold; when did I start running is the earliest dated line that says it; what do my notes say about tomorrow says what is on it.
 - Composer, audit 1031 C36, C49 and C50: no joiner says Meanwhile or a switch of notes, a typed the stays in the count line, a source is named once in a sentence, a link question says the reason the person wrote, my week from a weekend is the coming seven days, and a compare side named by a title is that note at any size.
 - Acts, audit 1031 C41 and C42: pin is worded as the Favourites menu words it; a ticked item is said to be already ticked, not missing; a day with no clock says its time is the default; one next-ask chip of each kind, the same strip in Chat and Ask.

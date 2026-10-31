@@ -33,7 +33,7 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.ai import budget as run_budget
-from tessellate.ai import backend_hint, librarian, presets, skill_composer, skills
+from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
 from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, security
 from tessellate.core.config import default_preferences
@@ -1574,7 +1574,7 @@ def list_skills() -> dict:
 
 
 class PreferenceBody(BaseModel):
-    content: str | None = Field(default=None, max_length=200)
+    content: str | None = Field(default=None, max_length=memory.MAX_PREFERENCE_CHARS)
     active: bool | None = None
     #: Undo of answering a proposal (INBOX 898) puts the question back; Redo
     #: answers it again by sending `proposed: false` with the verdict.
@@ -1624,7 +1624,6 @@ def list_memory(
 ) -> dict:
     """A page of what the AI has been told to remember, newest first."""
     offset = paging.start(cursor, offset)
-    from tessellate.ai import memory
     from tessellate.core.database import UserPreference
 
     total = session.scalar(select(func.count(UserPreference.id))) or 0

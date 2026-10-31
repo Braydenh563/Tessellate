@@ -127,6 +127,7 @@ from tessellate.core import (
     passes,
     security,
     startup_status,
+    validation_copy,
 )
 from tessellate.core.deps import init_app_state
 from tessellate.entry import manager
@@ -969,12 +970,7 @@ def _register_error_handlers(app: FastAPI) -> None:
         Now the sentence the frontend already built from that list
         (`plainHttpError`), `code: "invalid"`, and the fields, never the input.
         """
-        fields = []
-        for error in exc.errors():
-            loc = [str(part) for part in error.get("loc", ()) if part not in ("body", "query", "path")]
-            fields.append({"field": ".".join(loc), "message": str(error.get("msg", ""))[:200]})
-        named = fields[0]["field"].rsplit(".", 1)[-1].replace("_", " ") if fields and fields[0]["field"] else ""
-        detail = f"Check the {named} and try again." if named else "That was not accepted. Check what you entered and try again."
+        detail, fields = validation_copy.describe(exc.errors())
         return JSONResponse(
             status_code=422,
             content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
