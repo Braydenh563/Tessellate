@@ -206,6 +206,15 @@ function mathFieldPane({ tex = "", label = "Equation", onChange = () => {}, onKe
       box.value = next;
     },
     focus: () => field.focus({ preventScroll: true }),
+    //: Focus for a field that has just opened, with the first empty box
+    //: selected when there is one (so typing fills it, as clicking a fraction
+    //: with nothing under it asks for), else the caret at the end.
+    start: () => {
+      field.focus({ preventScroll: true });
+      if (!/\{\s*\}/.test(box.value)) return;
+      field.position = 0;
+      field.executeCommand("moveToNextPlaceholder");
+    },
     //: A structure's first box takes the selection; with none it is a box
     //: like the rest (MathLive's `#@` would otherwise reach back and wrap the
     //: last thing typed, which Word's gallery never does).
@@ -297,7 +306,7 @@ function openMathInPlace({ view, host, from, to, delim, tex }) {
   document.addEventListener("pointerdown", outside, true);
   window.addEventListener("resize", place);
   window.addEventListener("scroll", place, true);
-  pane.focus();
+  pane.start();
   mathFieldState.open = { pop, close: (back = true) => finish(false, back) };
   return mathFieldState.open;
 }

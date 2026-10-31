@@ -482,7 +482,7 @@ function openMathEditor({ target = null, anchor = null } = {}) {
   document.body.appendChild(panel);
   initHelpToggles(panel);
   mathEditorPlace(panel, anchor);
-  pane.focus();
+  pane.start();
   //: For a moment after opening, focus that lands outside comes back: an
   //: editor behind can mount and take it a frame later (the icon picker
   //: measured 127ms on the note composer's first use).
