@@ -622,7 +622,6 @@ textarea.has-gutter {
   bottom: 0;
   z-index: 2;
   padding-block: var(--space-2);
-  background: var(--card);
 }
 
 /* The chrome above the box (toolbar, fields, wrapped rows at 700) can still
@@ -632,7 +631,6 @@ textarea.has-gutter {
   position: sticky;
   bottom: 0;
   z-index: 2;
-  background: var(--card);
   padding-block: var(--space-2);
 }
 

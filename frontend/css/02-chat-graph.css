@@ -2014,6 +2014,7 @@ kbd {
   font-size: var(--text-base);
   font-weight: 600;
   background: none;
+  box-shadow: none;
   color: var(--accent-text);
   border: 1px solid transparent;
   flex: 0 0 auto;
@@ -2032,6 +2033,7 @@ kbd {
   padding: 0.1rem;
   border: none;
   background: none;
+  box-shadow: none;
   color: inherit;
   opacity: 0.6;
   cursor: pointer;
