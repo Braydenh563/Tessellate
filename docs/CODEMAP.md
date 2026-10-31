@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8158, test files 1752, tests 15198, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8158, test files 1753, tests 15199, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7466)
 
@@ -636,35 +636,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `attachSelectionContext` | frontend/js/chat-attach.js:565 |
 | `attachedNotes` | frontend/js/chat-attach.js:703 |
 | `attachmentChip` | frontend/js/chat-attach.js:87 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2724 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3071 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2728 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3075 |
 | `chatDockMoreOpen` | frontend/js/chat-attach.js:1216 |
-| `chatLeaveHeld` | frontend/js/chat-attach.js:2980 |
+| `chatLeaveHeld` | frontend/js/chat-attach.js:2984 |
 | `chatQueueShow` | frontend/js/chat-attach.js:1415 |
 | `chatSendTurn` | frontend/js/chat-attach.js:1424 |
 | `chatTidyTyped` | frontend/js/chat-attach.js:1386 |
 | `chatTurnObjects` | frontend/js/chat-attach.js:711 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3100 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3104 |
 | `clearSelectionAttachment` | frontend/js/chat-attach.js:589 |
 | `closeChatDockMore` | frontend/js/chat-attach.js:1253 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
 | `closeNotePicker` | frontend/js/chat-attach.js:1201 |
 | `commitStagedImages` | frontend/js/chat-attach.js:239 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2830 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3045 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3105 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2834 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3049 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3109 |
 | `flattenNoteMarkdown` | frontend/js/chat-attach.js:740 |
-| `followupChain` | frontend/js/chat-attach.js:2753 |
-| `followupMatches` | frontend/js/chat-attach.js:2751 |
-| `followupParent` | frontend/js/chat-attach.js:2744 |
-| `followupTrail` | frontend/js/chat-attach.js:2770 |
+| `followupChain` | frontend/js/chat-attach.js:2757 |
+| `followupMatches` | frontend/js/chat-attach.js:2755 |
+| `followupParent` | frontend/js/chat-attach.js:2748 |
+| `followupTrail` | frontend/js/chat-attach.js:2774 |
 | `importChatDocuments` | frontend/js/chat-attach.js:329 |
 | `isImageFile` | frontend/js/chat-attach.js:280 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:2959 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:2963 |
 | `keepUnreadableChatFile` | frontend/js/chat-attach.js:300 |
-| `markFollowup` | frontend/js/chat-attach.js:2794 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2885 |
-| `newChatConversation` | frontend/js/chat-attach.js:2991 |
+| `markFollowup` | frontend/js/chat-attach.js:2798 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2889 |
+| `newChatConversation` | frontend/js/chat-attach.js:2995 |
 | `noteLabel` | frontend/js/chat-attach.js:717 |
 | `noteNamePlain` | frontend/js/chat-attach.js:777 |
 | `notePickerColumns` | frontend/js/chat-attach.js:1064 |
@@ -676,34 +676,34 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `notePickerRoving` | frontend/js/chat-attach.js:1054 |
 | `notePickerShape` | frontend/js/chat-attach.js:884 |
 | `notePickerUsedIn` | frontend/js/chat-attach.js:866 |
-| `offerFollowups` | frontend/js/chat-attach.js:2652 |
-| `offerReminder` | frontend/js/chat-attach.js:2591 |
+| `offerFollowups` | frontend/js/chat-attach.js:2656 |
+| `offerReminder` | frontend/js/chat-attach.js:2595 |
 | `openChatDockMore` | frontend/js/chat-attach.js:1229 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
 | `openNotePicker` | frontend/js/chat-attach.js:1166 |
-| `paintChatTimer` | frontend/js/chat-attach.js:2898 |
+| `paintChatTimer` | frontend/js/chat-attach.js:2902 |
 | `plainText` | frontend/js/chat-attach.js:755 |
-| `promptTitle` | frontend/js/chat-attach.js:3089 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:2970 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2704 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:2929 |
+| `promptTitle` | frontend/js/chat-attach.js:3093 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:2974 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2708 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:2933 |
 | `renderAttachments` | frontend/js/chat-attach.js:830 |
 | `renderBoardAttachments` | frontend/js/chat-attach.js:484 |
 | `renderDocumentAttachments` | frontend/js/chat-attach.js:530 |
 | `renderFileAttachments` | frontend/js/chat-attach.js:434 |
-| `renderFollowups` | frontend/js/chat-attach.js:2690 |
+| `renderFollowups` | frontend/js/chat-attach.js:2694 |
 | `renderImageAttachments` | frontend/js/chat-attach.js:166 |
 | `renderSelectionAttachment` | frontend/js/chat-attach.js:594 |
 | `revalidateSelection` | frontend/js/chat-attach.js:632 |
-| `saveFollowups` | frontend/js/chat-attach.js:2813 |
+| `saveFollowups` | frontend/js/chat-attach.js:2817 |
 | `selectionContextBlock` | frontend/js/chat-attach.js:683 |
 | `sendChatMessage` | frontend/js/chat-attach.js:1395 |
 | `setActiveChoice` | frontend/js/chat-attach.js:763 |
 | `setNoteLabel` | frontend/js/chat-attach.js:787 |
 | `setNotePickerSource` | frontend/js/chat-attach.js:1139 |
-| `startChatTimer` | frontend/js/chat-attach.js:2910 |
-| `stopChatTimer` | frontend/js/chat-attach.js:2919 |
-| `syncChatPrivate` | frontend/js/chat-attach.js:2986 |
+| `startChatTimer` | frontend/js/chat-attach.js:2914 |
+| `stopChatTimer` | frontend/js/chat-attach.js:2923 |
+| `syncChatPrivate` | frontend/js/chat-attach.js:2990 |
 
 ### frontend/js/sheets-selects.js (55)
 
@@ -14884,50 +14884,50 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:2987 |
-| `_act_of` | src/tessellate/ai/help_chat.py:2726 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:2765 |
-| `_aware` | src/tessellate/ai/help_chat.py:3464 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3273 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2657 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3361 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3377 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3344 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2647 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2579 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2643 |
-| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3434 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2805 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2885 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2602 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:3197 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:3037 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:3005 |
-| `_place` | src/tessellate/ai/help_chat.py:3318 |
-| `_preference` | src/tessellate/ai/help_chat.py:3400 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:3100 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3547 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2748 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2794 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3348 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3409 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3418 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:3086 |
-| `answer` | src/tessellate/ai/help_chat.py:3627 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3562 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2973 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3445 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3708 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2944 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3327 |
-| `names_app` | src/tessellate/ai/help_chat.py:3692 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3493 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3277 |
-| `source_names` | src/tessellate/ai/help_chat.py:2940 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2922 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2908 |
-| `topics_for` | src/tessellate/ai/help_chat.py:3044 |
-| `with_asks` | src/tessellate/ai/help_chat.py:3482 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:2988 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2727 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:2766 |
+| `_aware` | src/tessellate/ai/help_chat.py:3465 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3274 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2658 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3362 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3378 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3345 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2648 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2580 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2644 |
+| `_lead_topic_first` | src/tessellate/ai/help_chat.py:3435 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2806 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2886 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2603 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:3198 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:3038 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:3006 |
+| `_place` | src/tessellate/ai/help_chat.py:3319 |
+| `_preference` | src/tessellate/ai/help_chat.py:3401 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:3101 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3548 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2749 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2795 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3349 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3410 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3419 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:3087 |
+| `answer` | src/tessellate/ai/help_chat.py:3628 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3563 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2974 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3446 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3709 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2945 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3328 |
+| `names_app` | src/tessellate/ai/help_chat.py:3693 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3494 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3278 |
+| `source_names` | src/tessellate/ai/help_chat.py:2941 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2923 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2909 |
+| `topics_for` | src/tessellate/ai/help_chat.py:3045 |
+| `with_asks` | src/tessellate/ai/help_chat.py:3483 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
@@ -22411,7 +22411,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15198)
+## Tests (15199)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23645,6 +23645,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_quick_access_phone.py | 1 |
 | tests/test_quickadd.py | 13 |
 | tests/test_rank4_1101.py | 6 |
+| tests/test_rank4_chat_1101.py | 1 |
 | tests/test_raw_fetch_headers.py | 2 |
 | tests/test_reading.py | 14 |
 | tests/test_readings_f10.py | 4 |

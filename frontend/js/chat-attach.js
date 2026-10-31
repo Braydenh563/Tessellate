@@ -1714,7 +1714,7 @@ async function chatSendTurn(preset, opts = {}) {
   let toolsUnsupportedEvent = null;
   // Whether the user pressed Stop. An empty answer they asked for needs no
   // explanation; one they didn't ask for does.
-  let miss, stopped = false;
+  let miss, failure = "", stopped = false;
   // Set when the agent ends its turn by handing the job to a saved skill.
   // The run can't start from inside the stream, this turn is still holding
   // the input box and the conversation, so it is remembered and started
@@ -2170,6 +2170,7 @@ async function chatSendTurn(preset, opts = {}) {
       timeline.failRunningStep(
         said && said.length <= 160 ? said : "The model stopped before it finished. Try again, or check Settings, Models."
       );
+      failure = said && said.length <= 160 ? said : "The model stopped before it finished.";
       if (viewing()) {
         status.textContent = error.message;
         status.classList.add("error");
@@ -2419,14 +2420,17 @@ async function chatSendTurn(preset, opts = {}) {
     if (!stopped && !handoff && !asked) {
       const note = document.createElement("p");
       note.className = "muted";
+      //: A failed turn says why (the server's own sentence) and offers the
+      //: way out: Try again, and Settings, Models (audit 1031 HR2, AI6).
       note.textContent = miss
         ? "Can't reach the app. Is it open?"
-        : "The model wrote nothing. Try again, or ask it another way.";
+        : failure || "The model wrote nothing. Try again, or ask it another way.";
       timeline.ensureAnswerBox().replaceChildren(note);
       // Retry and delete at minimum, so there's always a way forward.
       bubble.appendChild(
         chatMessageActions([
           { label: "ph:arrow-clockwise", title: "Try again", onClick: () => regenerateLastAnswer() },
+          ...(failure ? [{ label: "ph:gear", title: "Open Settings, Models", onClick: () => openSettingsModal("models") }] : []),
           { label: "ph:trash", title: "Delete this message", onClick: () => removeChatBubble(bubble) },
         ])
       );
