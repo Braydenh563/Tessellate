@@ -109,3 +109,27 @@ def test_an_open_stream_that_holds_no_session_does_not_hold_a_restore(client, mo
         restored = client.post("/backups/restore", json={"name": name})
         assert restored.status_code == 200, restored.text
         assert time.monotonic() - started < 1.5
+
+
+def test_a_long_poll_behind_the_unlock_check_does_not_hold_a_restore(client, monkeypatch):
+    """`/auth/lan-watch` waits half a minute in its handler; the unlock check
+    in front of it read the password table and let go, so the restore does
+    not wait it out (it sat at "Restoring…" and was refused, E2E first-run)."""
+    from tessellate.api import routes_auth
+
+    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 2.0)
+    monkeypatch.setattr(routes_auth, "WATCH_SECONDS", 4.0)
+    monkeypatch.setattr(routes_auth, "_require_this_computer", lambda request: None)
+    _save(client, "kept")
+    name = client.post("/backups").json()["name"]
+    polled: list[int] = []
+    poll = threading.Thread(target=lambda: polled.append(client.get("/auth/lan-watch?since=0").status_code))
+    poll.start()
+    time.sleep(0.5)
+    started = time.monotonic()
+    restored = client.post("/backups/restore", json={"name": name})
+    took = time.monotonic() - started
+    poll.join(10)
+    assert polled == [200]
+    assert restored.status_code == 200, restored.text
+    assert took < 1.5

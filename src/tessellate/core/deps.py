@@ -500,6 +500,17 @@ def get_session(request: Request = None) -> Iterator[Session]:
         yield from _open_session(request)
 
 
+@contextmanager
+def brief_session(request: Request | None = None) -> Iterator[Session]:
+    """`get_session` for a check that reads and lets go before the handler
+    runs, so a long poll behind it is not counted as in flight."""
+    held = get_session(request)
+    try:
+        yield next(held)
+    finally:
+        held.close()
+
+
 def _open_session(request: Request | None) -> Iterator[Session]:
     """One session per request, always closed.
 

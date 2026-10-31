@@ -99,3 +99,16 @@ def test_open_panels_are_put_away_while_the_overlay_shows():
     assert ".modal-overlay:not(.hidden)" in block
     assert "[role=dialog]:not(.hidden)" in block
     assert '"prompt"' in block, "a prompt over live work gives the panels back after it"
+
+
+def test_only_showing_or_hiding_the_overlay_puts_panels_away():
+    """The overlay's other classes change while it shows; each change ran the
+    pass again and hid Settings, which the boot route had opened under the
+    lock, for good (E2E first-run: a backup after a restore found Dashboard).
+    The observer acts on the change of shown or hidden only."""
+    js = app_js_text()
+    start = js.index("const lockStash")
+    block = js[start : js.index(".observe($(\"lock-overlay\")", start)]
+    observer = block[block.index("new MutationObserver") :]
+    first = observer.split("\n")[1]
+    assert "lockSeen.shown ===" in first and "return" in first, first

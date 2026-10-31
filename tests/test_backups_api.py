@@ -160,6 +160,11 @@ def test_the_restore_route_answers_a_damaged_backup_with_a_sentence(client):
     folder = backup.backups_dir(config.data_dir)
     empty = folder / "memorymap-29990101-000000.db"
     sqlite3.connect(empty).close()  # a valid file with no tables in it
+    # The restore closes every connection first, and the last one to close
+    # folds the WAL into the file: fold it now, so the bytes compared are the
+    # notebook's, not the moment of that checkpoint.
+    with deps.get_db().engine.connect() as connection:
+        connection.exec_driver_sql("PRAGMA wal_checkpoint(TRUNCATE)")
     before = config.db_path.read_bytes()
 
     response = client.post("/backups/restore", json={"name": empty.name})

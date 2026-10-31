@@ -50,7 +50,7 @@ from tessellate.core import (
     vault,
 )
 from tessellate.core.config import ConfigManager
-from tessellate.core.deps import get_config, get_session, register_cache_reset
+from tessellate.core.deps import brief_session, get_config, get_session, register_cache_reset
 from tessellate.core.database import Entry, User, Vault
 from tessellate.entry import manager
 from tessellate.entry.manager import log_action
@@ -695,18 +695,23 @@ def _no_password_yet(request: Request, session: Session) -> bool:
 NO_PASSWORD_ELSEWHERE = "Set a password on the computer Tessellate runs on first."
 
 
+def _no_password_yet_now(request: Request) -> bool:
+    with brief_session(request) as session:
+        return _no_password_yet(request, session)
+
+
 def require_unlock(
     request: Request,
-    session: Session = Depends(get_session, scope="function"),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
 ) -> None:
     """Dependency that gates every data route once a password exists.
 
-    Its session closes when the handler returns, not when the response ends,
-    so a stream that holds no session of its own (`/jobs/stream`, a minute)
-    is not a request in flight that a restore must wait for (audit 1031 BK5)."""
-    if _no_password_yet(request, session):
+    The check holds a session only while it reads (`brief_session`), so a
+    long poll or stream that holds none of its own (`/auth/lan-watch`,
+    `/jobs/stream`) is not a request in flight that a restore must wait for
+    (audit 1031 BK5)."""
+    if _no_password_yet_now(request):
         return  # setup not done yet, nothing to protect
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     if not _token_valid(x_auth_token, idle_ttl):
@@ -715,7 +720,6 @@ def require_unlock(
 
 def require_unlock_media(
     request: Request,
-    session: Session = Depends(get_session, scope="function"),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
     memorymap_media: str | None = Cookie(default=None),
@@ -733,7 +737,7 @@ def require_unlock_media(
     header. **A `?token=` query parameter is no longer read**: it was the
     fallback here until 2026-09-24, and it was the leak S1 describes.
     """
-    if _no_password_yet(request, session):
+    if _no_password_yet_now(request):
         return
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
     token = x_auth_token or _media_tickets.get(memorymap_media or "")

@@ -233,10 +233,16 @@ $("lock-btn").addEventListener("click", lockNow);
 //: after it, so a half-written dialog loses nothing.
 //: Non-modal panels too (1031 DC2): the AI panel sat over Unlock (z 2100 v 50).
 //: They return only after a password prompt, never after a real lock.
+//: Only a change of shown or hidden counts: the overlay's other classes change
+//: while it shows, and each pass hid again what the boot route had opened
+//: under it (Settings after a restore, E2E first-run).
 const lockStash = [];
 let lockReturn;
+const lockSeen = { shown: !$("lock-overlay").classList.contains("hidden") };
 new MutationObserver(() => {
-  if ($("lock-overlay").classList.contains("hidden")) {
+  if (lockSeen.shown === !$("lock-overlay").classList.contains("hidden")) return;
+  lockSeen.shown = !lockSeen.shown;
+  if (!lockSeen.shown) {
     lockReturn = lockReturn?.focus(); // focus() returns undefined: forgets it too
     for (const el of lockStash) {
       try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal ? el.showModal() : el.classList.remove("hidden"); } catch { /* reopened meanwhile */ }
