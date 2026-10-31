@@ -31,6 +31,13 @@ def test_only_slow_requests_are_kept_and_streams_are_not_slow():
     assert rows == [{"method": "GET", "route": "/entries/:id", "n": 2, "max_ms": 2400, "status": 500, "avg_ms": 1700}]
 
 
+def test_a_read_over_a_quarter_second_is_kept_and_a_write_waits_for_a_second():
+    diagring.note_request("GET", "/library", 260, 200)
+    diagring.note_request("POST", "/entries", 600, 200)
+    diagring.note_request("POST", "/entries", 1200, 200)
+    assert {(r["method"], r["n"]) for r in diagring.slow_routes()} == {("GET", 1), ("POST", 1)}
+
+
 def test_a_statement_keeps_its_shape_and_loses_its_literals():
     diagring.note_query("SELECT * FROM entries WHERE title = 'my private plan' AND id = 42", 900)
     diagring.note_query("SELECT 1", 3)

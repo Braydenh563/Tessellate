@@ -221,3 +221,22 @@ function onDomReady(fn) {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
   else queueMicrotask(fn);
 }
+
+//: The library bundle (boards, documents, d3: 72 scripts, 4.9 MB decoded) is
+//: not fetched at boot at all (perf 1031 row 21, PF4: 103 scripts and 6.5 MB
+//: parsed in the first nine seconds on a tab that opened nothing). It is warmed
+//: at the first idle moment after the person first touches the page, and only
+//: with four cores or more and no data saving (audit 1030 Y16); a visit to a
+//: surface that needs it fetches it on the spot (`ensureModule`).
+function warmLibraryAfterInput() {
+  if (navigator.connection?.saveData || (navigator.hardwareConcurrency || 2) < 4) return;
+  const warm = (event) => {
+    //: Typing the password is not the person arriving: the lock screen is over
+    //: the page until they are in.
+    if (event.target?.closest?.("#lock-overlay")) return;
+    for (const type of ["pointerdown", "keydown"]) window.removeEventListener(type, warm, true);
+    (window.requestIdleCallback || ((fn) => setTimeout(fn, 1500)))(() => ensureModule("library"), { timeout: 8000 });
+  };
+  for (const type of ["pointerdown", "keydown"]) window.addEventListener(type, warm, { capture: true, passive: true });
+}
+warmLibraryAfterInput();

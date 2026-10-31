@@ -148,3 +148,15 @@ def test_the_open_suggestions_panel_is_redrawn_at_most_every_400ms_while_typing(
     assert "DOC_PROSE_PANEL_GAP_MS" in soon and "clearTimeout(soon.timer)" in soon
     render = _between(js, "function renderDocProse() {", "function docProsePanelSoon() {")
     assert "docProsePanelSoon();" in render and "renderDocProsePanel();" not in render
+
+
+def test_the_library_bundle_is_not_fetched_at_boot_or_by_the_password():
+    # 103 scripts and 6.5 MB decoded in the first nine seconds on a tab that opened
+    # nothing; now 85 and 3.6 MB. Typing the password is on the lock screen.
+    js = frontend_text("app.js")
+    warm = _between(frontend_text("lazy-entries.js"), "function warmLibraryAfterInput() {", "warmLibraryAfterInput();")
+    assert 'event.target?.closest?.("#lock-overlay")' in warm
+    assert "requestIdleCallback" in warm
+    assert 'ensureModule("library")' in warm
+    boot = next(row for row in js.splitlines() if '"dragEdge", "search"' in row and "setTimeout" in row)
+    assert "library" not in boot
