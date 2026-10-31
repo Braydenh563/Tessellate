@@ -193,7 +193,7 @@ def test_hr20_confirms_queue_so_each_one_takes_focus():
 def test_hr22_the_engine_detail_reads_on_the_hover_tone():
     """The muted detail on a hovered engine row was 3.8:1 light and 3.2:1 dark (HR22)."""
     css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
-    rule = css[css.index(".provider-option:is(:hover, :has(:focus-visible)) .muted") :][:120]
+    rule = css[css.index(".provider-option:is(:hover, :has(:focus-visible)) .provider-detail") :][:120]
     assert "color: var(--text);" in rule, rule
 
 

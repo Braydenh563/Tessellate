@@ -182,7 +182,9 @@
 }
 
 /* The hover tone is darker than the muted text can read on (3.8:1 light,
-   3.2:1 dark, audit 1031 HR22): under it the detail takes the body colour. */
-.provider-option:is(:hover, :has(:focus-visible)) .muted {
+   3.2:1 dark, audit 1031 HR22): under it the detail takes the body colour.
+   Keyed on its own class: `.muted` is on every page, and a `:has()` keyed on
+   it restyles all of them (tests/test_has_invalidation.py). */
+.provider-option:is(:hover, :has(:focus-visible)) .provider-detail {
   color: var(--text);
 }

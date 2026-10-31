@@ -729,7 +729,7 @@ async function renderWebSearch() {
     const title = document.createElement("strong");
     title.textContent = provider.label;
     const detail = document.createElement("span");
-    detail.className = "muted";
+    detail.className = "muted provider-detail";
     detail.textContent = provider.detail;
     text.append(title, document.createElement("br"), detail);
     row.append(radio, text);
