@@ -578,10 +578,12 @@ _ASKS = {
     "left": re.compile(r"\bwhat do i (?:still )?(?:need|have) to\b|\bwhat(?:'s| is) (?:left|outstanding|still to do)\b|\bto buy\b", re.I),
     "overview": re.compile(
         r"\bwhat (?:have|did) i (?:saved|save|written|write|noted|got|kept)\b|\bwhat(?:'s| is) there\b|\bwhat do i have\b|"
-        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat do my notes say\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
+        r"\bwhat \w+(?: \w+)? (?:have|did) i (?:saved|save|written|write|kept|got|noted)\b|\bwhat (?:do|does|did) (?:my|the) (?:notes|entries) (?:say|tell me|have|mention|know|cover)\b|\btell me about\b|\beverything (?:about|on)\b|\bsummari[sz]e\b|\bwhat(?:'s| is) the plan\b|"
         r"\bplans? for\b|^\s*how(?:'s| is| are) (?:my |the )?.+ going\b|\bwhat have i (?:learned|learnt)\b|^\s*how many (?:of my )?(?:notes|entries)\b|"
         #: "what about social connections" asks for the lot (INBOX 1420).
-        r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b",
+        r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b|"
+        #: "show me my study notes": the notes on a subject, said whole, not one fact from one of them.
+        r"^\s*(?:please )?(?:show|give|get|bring up|pull up|find)(?: me)? (?:all )?(?:of )?(?:my|the) (?!(?:last|latest|newest|recent|first|oldest|next)\b)[\w&'-]+(?: [\w&'-]+)?\s+(?:notes|entries)\s*[.?!]*$",
         re.I,
     ),
 }
@@ -1946,6 +1948,14 @@ def _heading_said(label: str) -> str:
     if any(w[:1].isupper() for w in label.split()[1:3]):
         return label.strip()
     return _fragment(label.strip(), _NAMES.get())
+
+
+def _said_in_a_frame(text: str) -> str:
+    """A name or a clause put after other words, lower case only where its
+    first word is a plain dictionary word (`composer_frame.bind_lower`)."""
+    if any(w[:1].isupper() for w in text.split()[1:3]):
+        return text
+    return _fragment(text.strip(), _NAMES.get())
 
 
 def _past(body: str) -> str:
@@ -4579,4 +4589,5 @@ def web(question: str, pages: list[dict], composed: dict | None = None) -> dict 
     return _result(out, "web", question)
 
 
-composer_lists.bind(_day, _row, Fact, _span)
+composer_lists.bind(_day, _row, Fact, _span, _your_note)
+composer_frame.bind_lower(_said_in_a_frame)

@@ -16,7 +16,7 @@ import re
 from datetime import date, timedelta
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_lists, recognise
+from tessellate.ai import composer, composer_frame, composer_lists, recognise
 
 #: "How much money have I recorded I've spent" and "what have I spent so far"
 #: are the same total: the ask can say where the figures are kept.
@@ -154,7 +154,7 @@ def _clause_items(view, sentence, refunds: bool, dimension: str = "money") -> li
             continue
         #: "Discounted from $150 to $68": what was paid is where the price went.
         pick = said[-1] if len(said) > 1 and _moved(clause, said) else said[0]
-        last = _what(clause, pick.at, pick.end, last) or composer_lists._title(view)  # noqa: SLF001
+        last = _what(clause, pick.at, pick.end, last) or _note_name(view)
         found.append(Item(last, pick[2], pick[1], view, sentence))
     return found
 
@@ -332,7 +332,7 @@ def _due_by(views: list, win: _Win | None, subject: list[str], test, dimension: 
         for sentence in view.sentences:
             if _about(view, sentence, subject, test) and said.search(sentence.text):
                 due.extend(
-                    Item(composer_lists._title(view), found[0][2], found[0][1], view, sentence)  # noqa: SLF001
+                    Item(_note_name(view), found[0][2], found[0][1], view, sentence)  # noqa: SLF001
                     for clause in re.split(r"[;,.](?!\d)", sentence.text)
                     if (found := _read(clause, dimension)) and clause_words.search(clause)
                 )
@@ -399,10 +399,23 @@ _BOUGHT = re.compile(
 )
 
 
+#: A figure and its unit in a name ("5km", "a 10 km run"): the answer says the figure once, in its own place.
+_FIGURE_IN_NAME = re.compile(r"\b\d[\d.,]*\s?(?:[a-zA-Zµ]+\b)?")
+
+
 def _note_name(view) -> str:  # noqa: ANN001
-    if not view.titled and (m := _BOUGHT.search(str(view.note.get("content") or ""))):
+    """A note as a sum names it: its title, what it bought, or a short noun
+    phrase for what it is about ("your note on the run"), never its whole
+    line and never a figure the answer says beside it (composer-1031)."""
+    if view.titled:
+        return composer_lists._title(view)  # noqa: SLF001
+    if m := _BOUGHT.search(str(view.note.get("content") or "")):
         return m.group("what").strip()
-    return composer_lists._title(view)  # noqa: SLF001
+    named = composer_frame.short_name(view.note)
+    bare = " ".join(_FIGURE_IN_NAME.sub("", named).split())
+    if not bare or re.search(r"\b(?:on|of|for|about|after|before)$", bare):
+        return f"your note of {composer_lists._day(view.written, composer.user_today())}" if view.written else composer_lists._title(view)  # noqa: SLF001
+    return bare
 
 
 def _spent_line(items: list, symbol: str, on: str, when: str) -> tuple[str, float]:
@@ -493,7 +506,7 @@ def _refunds_and_due(out, views: list, win: _Win | None, subject: list[str], dim
     back = mine(_items(views, win, subject, refunds=True, dimension=dimension))
     if back:
         off = sum(i.value for i in back)
-        line = f"Less {_say(unit, off)} refunded ({_listed(sorted({composer_lists._title(i.view) for i in back}))}), that is {_say(unit, total - off)} net."  # noqa: SLF001
+        line = f"Less {_say(unit, off)} refunded ({_listed(sorted({_note_name(i.view) for i in back}))}), that is {_say(unit, total - off)} net."  # noqa: SLF001
         out.lines.append(line)
         _cite_all(out, back, line)
     if due := mine(_still_due(views, win, subject, dimension)):
@@ -521,7 +534,7 @@ def _most(out, size: str, noun: str, views: list) -> bool:  # noqa: ANN001
     for sign in dict.fromkeys(i.symbol for i in items):
         #: The most of each currency: a dollar is not weighed against a pound.
         pick = (min if size.lower() in _SMALL else max)((i for i in items if i.symbol == sign), key=lambda i: i.value)
-        line = f"{pick.label}, at {_money(pick.symbol, pick.value)}, is the {size.lower()} amount in {composer_lists._title(pick.view)}."  # noqa: SLF001
+        line = f"{pick.label}, at {_money(pick.symbol, pick.value)}, is the {size.lower()} amount in {_note_name(pick.view)}."  # noqa: SLF001
         out.lines.append(line)
         _cite_all(out, [pick], line)
     return True
@@ -613,7 +626,7 @@ _MEASURE = re.compile(
 )
 _CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights", "month", "months", "year", "years"})
 _DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
-_DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
+_DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
 #: Verbs that say a measure was recorded, not what was done: no filter.
 _ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have"})
 _PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
@@ -690,7 +703,7 @@ def _figure(value: float, unit: str) -> str:
 def _measures_line(items: list[Item], unit: str, tail: str) -> str:
     by_note: dict[str, float] = {}
     for item in items:
-        name = composer_lists._title(item.view)  # noqa: SLF001
+        name = _note_name(item.view)
         by_note[name] = by_note.get(name, 0) + item.value
     total = _figure(sum(by_note.values()), unit)
     if len(by_note) == 1:
@@ -821,7 +834,7 @@ def _goal_in(views: list, dimension: str) -> Item | None:
     for view in views:
         for sentence in view.sentences:
             if _TARGET_WORD.search(sentence.text + " " + str(view.title)):
-                goals += [(bool(_TARGET_WORD.search(sentence.text)), view.written or date.min, Item(composer_lists._title(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
+                goals += [(bool(_TARGET_WORD.search(sentence.text)), view.written or date.min, Item(_note_name(view), m[2], m[1], view, sentence)) for m in _read(sentence.text, dimension)]  # noqa: SLF001
     return max(goals, key=lambda g: g[:2])[2] if goals else None
 
 
@@ -972,7 +985,7 @@ def _side(items: list[Item], win: _Win, unit: str) -> str:
         return f"nothing recorded {win.said}"
     by_note: dict[str, float] = {}
     for item in items:
-        name = composer_lists._title(item.view)  # noqa: SLF001
+        name = _note_name(item.view)
         by_note[name] = by_note.get(name, 0) + item.value
     return f"{_say(unit, sum(by_note.values()))} {win.said} ({_listed([f'{name} {_say(unit, v)}' for name, v in by_note.items()])})"
 
@@ -991,7 +1004,7 @@ def _in_one_currency(*sets: list[Item]) -> tuple[list[list[Item]], list[Item]]:
 def _left_out(out, left: list[Item]) -> None:  # noqa: ANN001
     """"Not counted": an amount in another currency, named beside the total."""
     if left:
-        line = f"Not counted, in another currency: {_listed([f'{_money(i.symbol, i.value)} ({composer_lists._title(i.view)})' for i in left])}."  # noqa: SLF001
+        line = f"Not counted, in another currency: {_listed([f'{_money(i.symbol, i.value)} ({_note_name(i.view)})' for i in left])}."  # noqa: SLF001
         out.lines.append(line)
         _cite_all(out, left, line)
 
