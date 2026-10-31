@@ -665,3 +665,45 @@ def test_a_total_spend_ask_says_the_priced_and_the_regular_amounts(notebook, que
 def test_a_spend_ask_with_no_rate_and_no_amount_says_so(notebook):
     said, _ = notebook("what do I spend on the dentist")
     assert "found no amounts" in said, said
+
+
+# C28. A quote is the note's own words; a day is said once.
+
+@pytest.mark.parametrize("question", [
+    "what do I know about running", "what is in my running plan", "tell me about running", "what have I written about running", "running",
+])
+def test_a_quoted_line_keeps_the_note_s_own_words_and_gives_the_date_outside(notebook, question):
+    said, _ = notebook(question)
+    assert "“Tuesday 5 km easy. Saturday 3 October long run”" not in said, said
+    if "Saturday long run" in said:
+        assert "“Tuesday 5 km easy. Saturday long run”, the Saturday being 3 October" in said, said
+
+
+def test_a_pinned_weekday_leaves_the_quotation_and_is_said_after_it():
+    from tessellate.ai import composer_digest
+
+    assert composer_digest._unpinned("Tuesday 5 km easy. Saturday 3 October long run") == (
+        "Tuesday 5 km easy. Saturday long run", ", the Saturday being 3 October")
+    assert composer_digest._unpinned("Bake on Sunday") == ("Bake on Sunday", "")
+
+
+@pytest.mark.parametrize("question", ["when did I last run", "when did I run", "what day did I last run"])
+def test_a_day_is_said_once_in_a_when_answer(notebook, question):
+    import re
+
+    said, _ = notebook(question)
+    lead = said.split("\n")[0]
+    days = re.findall(r"\b\d{1,2} (?:January|February|March|April|May|June|July|August|September|October|November|December)\b", lead)
+    assert len(days) == len(set(days)), lead
+
+
+@pytest.mark.parametrize("text, said", [
+    ("Felt good after the run on Sunday 25 October, 6 km", True), ("Felt good after the run on 25 October", True),
+    ("Felt good after the run", False), ("Ran on 5 October", False), ("Ran on 125 October", False),
+])
+def test_a_fact_that_names_the_day_is_not_given_it_again(text, said):
+    from datetime import date
+
+    from tessellate.ai import composer_digest
+
+    assert composer_digest._says_day(text, date(2026, 10, 25), date(2026, 10, 31)) is said

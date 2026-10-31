@@ -782,6 +782,12 @@ class _Out:
 _KIND_NOUN = {"document": "document", "board": "board", "map": "mind map", "picture": "picture"}
 
 
+def _says_day(text: str, day: date | None, today: date) -> bool:
+    """Whether `text` names `day` already, "on Sunday 25 October" as much as
+    "on 25 October": the day is said once (audit 1031 C28)."""
+    return day is not None and bool(re.search(rf"\b{re.escape(_day(day, today))}\b", text, re.I))
+
+
 def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     """"Fact, from your note of 3 March." for a note; a document, board or
     map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
@@ -802,7 +808,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         #: one of your notes" read as a tail on the person's own words).
         return f"{fact}."
     #: Not again when the fact already says the day it was written.
-    when = f", written {_said_day(view.written, today)}" if _TIMED.get() and f"on {_day(view.written, today)}".lower() not in fact.lower() else ""
+    when = f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
     if not getattr(view, "titled", False):
         return f"{fact}{when}."
     return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
@@ -1793,6 +1799,21 @@ rinse drain soak toast roast fry grill steam blend squat press lift stretch
 """.split()) | _LEAD_VERBS
 
 
+#: A weekday the app pinned to its date ("Saturday 3 October"): inside a
+#: quotation it is the note's own words, so the date goes outside it.
+_PINNED_DAY = re.compile(rf"\b((?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day) (\d{{1,2}} (?:{'|'.join(composer._MONTHS)})(?: \d{{4}})?)\b")  # noqa: SLF001
+
+
+def _unpinned(said: str) -> tuple[str, str]:
+    """`said` with each pinned weekday back as the note wrote it, and the
+    asides that give the dates: ("Saturday long run", ", the Saturday being 3 October")."""
+    pins = _PINNED_DAY.findall(said)
+    if not pins:
+        return said, ""
+    plain = _PINNED_DAY.sub(r"\1", said)
+    return plain, ", " + " and ".join(f"the {day} being {date}" for day, date in dict.fromkeys(pins))
+
+
 def _wrote(body: str, i: int) -> str:
     """`body`, words of the note with no subject of their own, after a verb
     of writing that does not change who they are about (audit 1030 Z1, Z2):
@@ -1808,7 +1829,8 @@ def _wrote(body: str, i: int) -> str:
     if _CALENDAR_WORD.match(first.capitalize()) or (first.lower() in _IMPERATIVES and not (len(body.split()) >= 2 and body.split()[1].lower() in _NOUN_AFTER)):
         #: Quoted as written, capital and all: it is the note's sentence.
         said = _DAY_NAME.sub(lambda m: m.group(0).capitalize(), body[:1].upper() + body[1:].rstrip("."))
-        return f"your note says “{said}”"
+        said, pinned = _unpinned(said)
+        return f"your note says “{said}”{pinned}"
     return f"{_pick('noted', i)} {body}"
 
 
@@ -3296,7 +3318,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
         #: A heading the note gives itself ("Psych lecture") names the note;
         #: a label the answer gave the fact ("How it went") does not.
         name = f"your {_fragment(lead.label, _NAMES.get())} note" if _label_names(lead.label, lead.view) else _your_note(lead.view)
-        day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
+        day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written and not _says_day(body, lead.view.written, today) else ""
         out.lines.append(f"From {name}{day}: {body}.")
     else:
         out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
