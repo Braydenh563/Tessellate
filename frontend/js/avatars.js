@@ -5098,20 +5098,32 @@ function nameMarkBuddyUnheld() {
 //: (one box read every 700ms; it was two seconds, in the air all that time,
 //: INBOX 521) catches only what changes with nothing announcing it
 //: (content arriving above the panel), eased rather than jumped.
-const nmbFollow = { movingAt: 0, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0 };
-function nameMarkBuddyKeepUp(ms = 1500) {
+const nmbFollow = { movingAt: 0, moving: false, frame: 0, until: 0, poll: 0, observer: null, scrollAt: 0, recheck: 0, support: 0, nap: 0, rest: 0 };
+function nameMarkBuddyKeepUp(ms = 1500, wake = true) {
   if (!nmb.glue) return;
+  if (wake) nmbFollow.nap = nmbFollow.rest = 0;
   nmbFollow.until = Math.max(nmbFollow.until, performance.now() + ms);
   if (!nmbFollow.frame) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
 }
+//: A panel that has held still for three reads is read at 8Hz, not every
+//: frame, until something announces a move (`nameMarkBuddyKeepUp` with
+//: `wake`): content growing under a streaming answer fires the observer
+//: every frame and each read settled the layout that growth dirtied (the lag
+//: log: 302 frame reads in 12s, 643ms of it forced). A move nothing announced
+//: is found within 120ms and eased on foot anyway (`nameMarkBuddyCatchUp`).
 function nameMarkBuddyFollowFrame(now) {
   nmbFollow.frame = 0;
-  nameMarkBuddyFollow();
-  //: `document.getAnimations()` settles style for the whole page: asked
-  //: every 120ms while the loop runs, not every frame.
-  if (now - nmbFollow.movingAt > 120) {
-    nmbFollow.movingAt = now;
-    nmbFollow.moving = !!nmb.glue && nameMarkBuddyPanelMoving(nmb.glue.el);
+  if (now >= nmbFollow.nap) {
+    const [x, y] = [nmb.x, nmb.y];
+    nameMarkBuddyFollow();
+    nmbFollow.rest = nmb.x === x && nmb.y === y ? nmbFollow.rest + 1 : 0;
+    nmbFollow.nap = nmbFollow.rest >= 3 && !nmbFollow.moving ? now + 120 : 0;
+    //: `document.getAnimations()` settles style for the whole page: asked
+    //: every 120ms while the loop runs, not every frame.
+    if (now - nmbFollow.movingAt > 120) {
+      nmbFollow.movingAt = now;
+      nmbFollow.moving = !!nmb.glue && nameMarkBuddyPanelMoving(nmb.glue.el);
+    }
   }
   if (nmb.glue && (now < nmbFollow.until || nmbFollow.moving)) nmbFollow.frame = requestAnimationFrame(nameMarkBuddyFollowFrame);
   //: Its panel came to rest somewhere new: a floating button may be over it
@@ -5309,7 +5321,7 @@ function nameMarkBuddyWatch() {
     //: which holds nothing to follow, its going (hidden, emptied, folded away,
     //: with no scroll, resize or class change to say so) is a look at the
     //: perch now. A resize observer costs nothing while it rests.
-    if (!nmbFollow.observer) nmbFollow.observer = new ResizeObserver(() => (nmb.glue ? nameMarkBuddyKeepUp() : queueNameMarkBuddyCheck()));
+    if (!nmbFollow.observer) nmbFollow.observer = new ResizeObserver(() => (nmb.glue ? nameMarkBuddyKeepUp(1500, false) : queueNameMarkBuddyCheck()));
     nmbFollow.observer.disconnect();
     const bar = !g && ["bar", "hang"].includes(nmb.spot?.edge?.kind) ? nmb.spot.edge.el : null;
     if (bar) nmbFollow.observer.observe(bar);
@@ -5382,7 +5394,12 @@ document.addEventListener("scroll", (event) => {
 //: place in that frame.
 for (const type of ["pointerdown", "pointerup", "keydown", "transitionrun", "animationstart", "transitionend", "transitioncancel", "animationend"]) {
   document.addEventListener(type, (event) => {
-    if (nmb.glue && !event.target?.closest?.("#nm-buddy")) nameMarkBuddyKeepUp();
+    const el = nmb.glue?.el;
+    if (!el || event.target?.closest?.("#nm-buddy")) return;
+    //: A transition or animation elsewhere (a typing dot, a fading line)
+    //: moves nothing it perches on: it keeps the loop up without waking it.
+    const near = !/^(?:transition|animation)/.test(type) || !(event.target instanceof Node) || event.target.contains(el) || el.contains(event.target);
+    nameMarkBuddyKeepUp(1500, near);
   }, { passive: true, capture: true });
 }
 
@@ -6571,9 +6588,12 @@ function nameMarkBuddyStillGood(obstacles) {
 function nameMarkBuddyCheck() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nmb.pinned || nmb.away || nmb.visit || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) return;
-  if (nameMarkBuddyMenuOpen()) {
+  //: Not while an answer is being written: its transcript dirties the layout
+  //: every frame and the sweep reads every control (the lag log: 94 to 160ms).
+  const thinking = buddy.classList.contains("nmb-think");
+  if (nameMarkBuddyMenuOpen() || thinking) {
     clearTimeout(nmbFollow.recheck);
-    nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, 600);
+    nmbFollow.recheck = setTimeout(queueNameMarkBuddyCheck, thinking ? 1500 : 600);
     return;
   }
   const tab = nameMarkBuddyTab();
@@ -6626,16 +6646,20 @@ function nameMarkBuddyCheck() {
   else nameMarkBuddyQueuePlace();
 }
 
+//: A timer past the frame, not the frame callback: its sweep reads a box per
+//: control on the tab, and run inside the frame the first read settled the
+//: layout the frame was about to do anyway (the lag log: 94 to 160ms, 62 to
+//: 136 of it forced); one timer on, the layout is clean.
 function queueNameMarkBuddyCheck() {
   if (nmb.checkFrame || !document.getElementById("nm-buddy")) return;
-  nmb.checkFrame = requestAnimationFrame(() => {
+  nmb.checkFrame = requestAnimationFrame(() => setTimeout(() => {
     nmb.checkFrame = 0;
     if (nmb.coverDirty) {
       nmb.coverDirty = false;
       nameMarkBuddyCoverCheck();
     }
     nameMarkBuddyCheck();
-  });
+  }));
 }
 
 //: **On its own time** (INBOX 426 m, the owner: "atlas needs to move and
@@ -6667,7 +6691,7 @@ function nameMarkBuddyBeat() {
   const buddy = document.getElementById("nm-buddy");
   if (!buddy || nmb.pinned || nmb.away || nmb.visit) return;
   const busy = buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")
-    || nameMarkBuddyMenuOpen();
+    || nameMarkBuddyMenuOpen() || buddy.classList.contains("nmb-think");
   if (busy || document.hidden) {
     nameMarkBuddyQueuePlace();
     return;

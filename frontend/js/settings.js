@@ -2547,8 +2547,13 @@ function renderThemePresets() {
 //: The accent the theme wears with no accent chosen: read with the choice
 //: (the data-accent rule, an inline custom colour) lifted for one
 //: synchronous style read, so nothing paints in between.
+//: Kept for as long as nothing on the root but the accent itself, and the
+//: custom CSS, has changed: lifting the choice and putting it back is two
+//: whole-page style recalculations, once per Appearance open (the lag log).
 function themeDefaultAccent() {
   const root = document.documentElement;
+  const key = [...root.attributes].filter((a) => a.name !== "data-accent").map((a) => `${a.name}=${a.value.replace(/--accent:[^;]*;?/g, "")}`).join("|") + prefs.get("custom-css", "");
+  if (themeDefaultAccent.kept?.key === key) return themeDefaultAccent.kept.value;
   const chosen = root.dataset.accent;
   const inline = root.style.getPropertyValue("--accent");
   const priority = root.style.getPropertyPriority("--accent");
@@ -2557,6 +2562,7 @@ function themeDefaultAccent() {
   const value = getComputedStyle(root).getPropertyValue("--accent").trim();
   if (chosen !== undefined) root.dataset.accent = chosen;
   if (inline) root.style.setProperty("--accent", inline, priority);
+  themeDefaultAccent.kept = { key, value };
   return value;
 }
 
@@ -2587,10 +2593,13 @@ function renderAppearance() {
   // Seed the harmony picker from whatever accent is showing, so "Apply" on an
   // untouched picker keeps the colour you already have rather than jumping to
   // an arbitrary default.
-  const showing = getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent")
-    .trim();
-  if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  //: Seeded a timer past the frame: the read settles the style of a page the
+  //: press has just rewritten, and was the press's largest cost (the lag
+  //: log: 295ms of a 376ms press, forced).
+  afterFrames(() => setTimeout(() => {
+    const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  }), 1);
   $("contrast-toggle").checked = contrastOn();
   $("reduce-motion-toggle").checked = appearancePref("motion") === "reduced";
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
