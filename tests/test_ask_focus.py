@@ -53,16 +53,22 @@ def _text(events):
 _EVENING = datetime(2026, 8, 1, 21, 0)
 
 
+@pytest.fixture(autouse=True)
+def _fixed_clock(monkeypatch):
+    """Every test here, not only the greeting's: a Chat greeting is welcomed by
+    the part of the day too, and the route words every date from the clock."""
+    from tessellate.api import routes_chat
+
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: _EVENING)
+
+
 @pytest.mark.parametrize("said", ["hey", "hello", "hi there", "good morning", "yo"])
-def test_a_greeting_gets_a_hint_not_an_answer(ai_client, fake_ollama, monkeypatch, said):
+def test_a_greeting_gets_a_hint_not_an_answer(ai_client, fake_ollama, said):
     """Its own event type, deliberately. Reported after the first version
     shipped as an `answer`: a paragraph of instructions sitting where the
     answer goes, beside a results panel reading "No matching records", reads
     as the app having failed rather than as guidance. The hint is the whole
     reply: the empty-reply stand-in (Z71) never adds a welcome after it."""
-    from tessellate.api import routes_chat
-
-    monkeypatch.setattr(routes_chat, "user_now", lambda _c: _EVENING)
     fake_ollama.librarian_reply = "Hello there! How are you today?"
     events = _events(ai_client, said, notes_only=True)
     hints = [e for e in events if e["type"] == "hint"]
