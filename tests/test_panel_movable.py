@@ -37,6 +37,10 @@ const out = {
   up: a.panelClampMove(rect, 0, 0, 0, -5000, 1000, 800, 40),
   down: a.panelClampMove(rect, 0, 0, 0, 5000, 1000, 800, 40),
   free: a.panelClampMove(rect, 10, 20, 50, 60, 1000, 800, 40),
+  underSidebar: a.panelClampMove(rect, 0, 0, -5000, 0, 1000, 800, 40, { left: 316, top: 0, right: 1000, bottom: 800 }),
+  underStatus: a.panelClampMove(rect, 0, 0, 0, 5000, 1000, 800, 40, { left: 0, top: 0, right: 1000, bottom: 760 }),
+  beforeDock: a.panelClampMove(rect, 0, 0, 5000, 0, 1000, 800, 40, { left: 0, top: 0, right: 600, bottom: 800 }),
+  tooWide: a.panelClampMove({ left: 300, top: 100, width: 900, height: 400 }, 0, 0, -5000, 0, 1000, 800, 40, { left: 316, top: 0, right: 1000, bottom: 800 }),
   tiny: a.panelClampSize(rect, 10, 10, 1000, 800),
   huge: a.panelClampSize(rect, 9999, 9999, 1000, 800),
   narrow: a.panelClampSize({ left: 0, top: 0, width: 200, height: 100 }, 10, 10, 1000, 800),
@@ -105,10 +109,16 @@ def maths() -> dict:
 @node
 def test_a_head_never_leaves_the_window(maths) -> None:
     # 500 wide at left 300 in a 1000 window: 64px stays visible either side
-    assert maths["farRight"] == {"x": 636, "y": 0}
-    assert maths["farLeft"] == {"x": -736, "y": 0}
+    # INBOX 1474: the whole panel stays in the free area (it used to park half
+    # off the window, which let a panel sit under a sidebar)
+    assert maths["farRight"] == {"x": 200, "y": 0}
+    assert maths["farLeft"] == {"x": -300, "y": 0}
     assert maths["up"] == {"x": 0, "y": -100}
-    assert maths["down"] == {"x": 0, "y": 660}
+    assert maths["down"] == {"x": 0, "y": 300}
+    assert maths["underSidebar"] == {"x": 16, "y": 0}
+    assert maths["underStatus"] == {"x": 0, "y": 260}
+    assert maths["beforeDock"] == {"x": -200, "y": 0}
+    assert maths["tooWide"] == {"x": 16, "y": 0}
     assert maths["free"] == {"x": 50, "y": 60}
 
 
@@ -237,3 +247,10 @@ def test_the_reset_button_and_the_snap_preview_are_recipe_shaped() -> None:
     assert "dialog-head-btn" in js and "ph-arrow-counter-clockwise" in js
     assert "panel-snap-preview" in js and "pointer-events: none" in css
     assert "backdrop-filter" not in css
+
+
+def test_the_free_area_is_the_window_less_sidebars_the_status_bar_and_docked_panels() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    body = js[js.index("function panelSafe(") : js.index("//: `data-panel-zones=")]
+    assert 'aside.sidebar-panel' in body and "status-bar" in body and ".panel-movable-on" in body
+    assert "panelClampMove(" in js[js.index("function panelClamp(") : js.index("function panelClamp(") + 900]

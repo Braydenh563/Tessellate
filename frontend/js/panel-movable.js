@@ -32,7 +32,6 @@
 //: (INBOX 1434): DESIGN.md `panelMovable`.
 const PANEL_KEY = "tessellate.panels";
 const PANEL_STEP = 16;
-const PANEL_KEEP = 64;
 const PANEL_MIN_W = 280;
 const PANEL_MIN_H = 160;
 const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
@@ -45,12 +44,14 @@ const PANEL_EDGE = 48;
 const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
 
 //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
-function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH) {
-  const dx = nx - ox;
-  const dy = ny - oy;
-  const keep = Math.min(PANEL_KEEP, rect.width);
-  const left = Math.min(Math.max(rect.left + dx, keep - rect.width), vw - keep);
-  const top = Math.min(Math.max(rect.top + dy, 0), Math.max(0, vh - headH));
+//: **A panel stays inside the free area** (INBOX 1474, the owner: "I can drag
+//: the attach panel behind the sidebar"): `safe` is the window minus the
+//: sidebar, the status bar and any panel docked to a side (`panelSafe`), and
+//: the whole panel stays in it when it fits, else its top left does.
+function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH, safe) {
+  const b = safe || { left: 0, top: 0, right: vw, bottom: vh };
+  const left = Math.min(Math.max(rect.left + nx - ox, b.left), Math.max(b.left, b.right - rect.width));
+  const top = Math.min(Math.max(rect.top + ny - oy, 0), Math.max(0, b.bottom - Math.max(rect.height, headH)));
   return { x: ox + (left - rect.left), y: oy + (top - rect.top) };
 }
 function panelClampSize(rect, w, h, vw, vh) {
@@ -88,9 +89,10 @@ function panelZoneRect(zone, vw, vh, inset, safe) {
   const south = zone === "bottom" || zone === "bl" || zone === "br";
   return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
 }
-//: The window minus the top bar, the status bar and a side tab rail, read
-//: when a drag starts or a dock is fitted, never per move.
-function panelSafe(vw, vh) {
+//: The window minus the top bar, the status bar, a side tab rail, a sidebar
+//: and the panels docked to a side, read when a drag starts or a dock is
+//: fitted, never per move. `except` is the panel being placed.
+function panelSafe(vw, vh, except) {
   const safe = { left: 0, top: 0, right: vw, bottom: vh };
   const seen = (id) => {
     const el = document.getElementById(id);
@@ -102,6 +104,16 @@ function panelSafe(vw, vh) {
   if (bar) safe.top = Math.max(0, Math.round(bar.bottom));
   if (foot) safe.bottom = Math.min(vh, Math.round(foot.top));
   if (tabs && tabs.height > tabs.width && tabs.left < vw / 2) safe.left = Math.round(tabs.right);
+  const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
+  const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
+  for (const el of [...sides, ...docked]) {
+    if (!el.getClientRects().length) continue;
+    const r = el.getBoundingClientRect();
+    const zone = PANEL_STATE.get(el)?.dock || "";
+    if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
+    if (r.left + r.width / 2 < vw / 2) safe.left = Math.max(safe.left, Math.round(r.right));
+    else safe.right = Math.min(safe.right, Math.round(r.left));
+  }
   return safe;
 }
 //: `data-panel-zones="left right max"` on a panel limits its zones.
@@ -243,13 +255,12 @@ function panelClamp(panel, st) {
   const vh = window.innerHeight;
   const head = panelHeadOf(panel);
   const headH = head ? head.offsetHeight : 40;
+  const safe = panelSafe(vw, vh, panel);
   const place = () => {
     const r = panel.getBoundingClientRect();
-    //: Whole panel inside the window when it fits (a drag may park it half
-    //: off, a window resize or a reload brings it back), else its head.
-    const left = Math.min(Math.max(r.left, 0), Math.max(0, vw - r.width));
-    const top = Math.min(Math.max(r.top, 0), Math.max(0, vh - Math.max(r.height, headH)));
-    const m = panelClampMove(r, st.x, st.y, st.x + left - r.left, st.y + top - r.top, vw, vh, headH);
+    //: Whole panel inside the free area when it fits (a window resize or a
+    //: reload brings it back), else its top left.
+    const m = panelClampMove(r, st.x, st.y, st.x, st.y, vw, vh, headH, safe);
     if (m.x === st.x && m.y === st.y) return;
     st.x = m.x;
     st.y = m.y;
@@ -307,7 +318,7 @@ function panelShowZone(r) {
 //: Fill the dock zone: size first, then one rect read to learn where the
 //: centred layout put it, and translate the difference.
 function panelFit(panel, st) {
-  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight));
+  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel));
   if (!z) {
     st.dock = "";
     return;
@@ -472,7 +483,7 @@ function panelHeadDown(e) {
   const vh = window.innerHeight;
   const hh = head.offsetHeight;
   const inset = panelInset();
-  const safe = panelSafe(vw, vh);
+  const safe = panelSafe(vw, vh, panel);
   let moved = 0;
   let x0 = e.clientX;
   let y0 = e.clientY;
@@ -499,7 +510,7 @@ function panelHeadDown(e) {
       x0 = ev.clientX;
       y0 = ev.clientY;
     }
-    const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh);
+    const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh, safe);
     st.x = m.x;
     st.y = m.y;
     panel.style.translate = `${m.x}px ${m.y}px`;
@@ -619,7 +630,7 @@ function panelGripKey(e) {
     st.y += before.top - after.top;
   } else {
     const head = panelHeadOf(panel);
-    const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40);
+    const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40, panelSafe(vw, vh, panel));
     st.x = m.x;
     st.y = m.y;
   }
