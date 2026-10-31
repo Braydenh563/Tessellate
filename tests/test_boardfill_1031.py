@@ -50,7 +50,9 @@ def test_the_line_opacity_row_is_offered_to_shapes_and_lines_and_stored_as_opaci
         row = re.search(rf"^  {kind}: \[(.*?)\],$", FORMAT_JS, re.M).group(1)
         assert '"strokealpha"' in row, kind
     assert 'case "strokealpha"' in FORMAT_JS
-    assert re.search(r'wbFmtApply\("strokealpha"[^;]*opacity:', FORMAT_JS)
+    # the key table (boardfill2 shares it with diagrams): a shape's line is `opacity`
+    assert 'line: "opacity"' in FORMAT_JS.split("function wbFmtAlphaKeys(")[1][:300]
+    assert 'wbFmtApply("strokealpha"' in FORMAT_JS
 
 
 def test_opacity_travels_with_a_copied_style_and_a_reset():

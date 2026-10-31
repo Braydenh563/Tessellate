@@ -2941,12 +2941,15 @@ MORE_TOPICS.extend([
         "keywords": (
             "mermaid on a board", "live diagram", "mermaid diagram on the board", "edit a mermaid diagram",
             "flowchart on a board", "diagram object", "pie chart on a board", "gantt on a board",
+            "diagram fill", "diagram opacity", "solid diagram boxes",
         ),
         "body": (
             "A live Mermaid diagram on a board: Insert, Mermaid diagram... opens the "
             "source with a preview; Add to board places it at its drawing's shape. "
             "It is any Mermaid diagram (flowchart, sequence, class, state, Gantt, pie "
             "and the rest), drawn as a note draws it and redrawn with the theme. "
+            "Select it and the Format panel's Style tab sets its Fill colour, Fill opacity "
+            "and Line opacity (0, 25, 50, 75, 100; 100 is a fully solid fill), and the boxes redraw. "
             "Double-click it to change the source; a mistake shows the reason in the "
             "box instead of a picture. Turn into shapes, in the same window, replaces "
             "a flowchart, state, class or sequence diagram with shapes and connectors "

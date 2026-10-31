@@ -83,7 +83,7 @@ const mermaidState = {
   listening: false,
   //: The colour probe, the theme read once per burst, the theme-move debounce.
   probe: null,
-  themeMemo: null,
+  themeMemo: null,  // a Map of look to theme, for one burst
   redrawTimer: 0,
 };
 const MERMAID_CACHE_MAX = 80;
@@ -159,13 +159,48 @@ function mermaidHex(rgb) {
   return `#${rgb.slice(0, 3).map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
 }
 
+// MERMAID-LOOK-BEGIN
 function mermaidMix(base, over, amount) {
   return base.slice(0, 3).map((v, i) => v + (over[i] - v) * amount);
 }
 
+//: How much of the accent a box's fill is when nothing was chosen.
+function mermaidFillShare(strong) {
+  return strong ? 0.28 : 0.16;
+}
+
+//: **The fills of a diagram** (INBOX 1486). `look` is what the board object
+//: stored, `{fill: [r, g, b], fillAlpha, lineAlpha}` with any part missing, or
+//: null for the look every diagram had. The picture carries its own opaque
+//: ground, so a fill's opacity is its mix over that ground: 1 is the colour
+//: itself, 0 is the ground. Boxes (nodes, actors, notes, activation bars) take
+//: the strength chosen; the grouping fills (clusters, sections) one step
+//: lighter, as the defaults always were.
+function mermaidFills(ground, accent, strong, look) {
+  const softer = mermaidMix(ground, accent, 0.08);
+  if (!look || (!look.fill && look.fillAlpha == null)) return { soft: mermaidMix(ground, accent, mermaidFillShare(strong)), softer, note: softer };
+  const base = look.fill || accent;
+  const share = look.fillAlpha ?? mermaidFillShare(strong);
+  const soft = mermaidMix(ground, base, share);
+  return { soft, softer: mermaidMix(ground, base, share / 2), note: soft };
+}
+
+//: A line's colour at its opacity over the ground; no opacity leaves it be.
+function mermaidFaded(ground, colour, alpha) {
+  return alpha == null || alpha >= 1 ? colour.slice(0, 3) : mermaidMix(ground, colour, Math.max(0, alpha));
+}
 function mermaidLuma([r, g, b]) {
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 }
+
+//: The words on a box the person gave a fill: the theme's ink, or the ground
+//: when that reads better on the fill (white words on a solid blue box). A
+//: diagram with no stored look keeps the ink, as it always did.
+function mermaidInkOn(fill, ink, ground, look) {
+  if (!look) return ink;
+  return Math.abs(mermaidLuma(fill) - mermaidLuma(ink)) >= Math.abs(mermaidLuma(fill) - mermaidLuma(ground)) ? ink : ground;
+}
+// MERMAID-LOOK-END
 
 function mermaidHue([r, g, b]) {
   const [x, y, z] = [r / 255, g / 255, b / 255];
@@ -184,7 +219,7 @@ function mermaidTokenColour(name, fallback) {
 
 //: Light, dark and high contrast all come from the tokens in force, so a
 //: theme switch needs no table here; the key says when they moved.
-function mermaidTheme() {
+function mermaidTheme(look = null) {
   const ground = mermaidTokenColour("--modal-bg-opaque", "#ffffff");
   const ink = mermaidTokenColour("--ink", "#1f2430");
   const accent = mermaidTokenColour("--accent", "#4664f0");
@@ -192,9 +227,15 @@ function mermaidTheme() {
   const dark = mermaidLuma(ground) < 0.45;
   const strong = document.documentElement.dataset.contrast === "on";
   const hex = mermaidHex;
-  const soft = mermaidMix(ground, accent, strong ? 0.28 : 0.16);
-  const softer = mermaidMix(ground, accent, 0.08);
-  const line = mermaidMix(ground, ink, strong ? 1 : 0.7);
+  const { soft, softer, note } = mermaidFills(ground, accent, strong, look);
+  const onSoft = mermaidInkOn(soft, ink, ground, look);
+  const onSofter = mermaidInkOn(softer, ink, ground, look);
+  const onNote = mermaidInkOn(note, ink, ground, look);
+  //: A line's opacity fades its borders and strokes toward the ground; text keeps its ink.
+  const fade = (rgb) => mermaidFaded(ground, rgb, look?.lineAlpha);
+  const edge = fade(strong ? ink : accent);
+  const quiet = fade(muted);
+  const line = fade(mermaidMix(ground, ink, strong ? 1 : 0.7));
   const hue = mermaidHue(accent);
   //: Twelve slices or branches round the accent's hue, light enough in the
   //: dark theme and dark enough in the light one that the label colour below
@@ -207,44 +248,44 @@ function mermaidTheme() {
     background: hex(ground),
     fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
     primaryColor: hex(soft),
-    primaryTextColor: hex(ink),
-    primaryBorderColor: hex(strong ? ink : accent),
+    primaryTextColor: hex(onSoft),
+    primaryBorderColor: hex(edge),
     secondaryColor: hex(softer),
-    secondaryTextColor: hex(ink),
-    secondaryBorderColor: hex(muted),
+    secondaryTextColor: hex(onSofter),
+    secondaryBorderColor: hex(quiet),
     tertiaryColor: hex(ground),
     tertiaryTextColor: hex(ink),
-    tertiaryBorderColor: hex(muted),
+    tertiaryBorderColor: hex(quiet),
     lineColor: hex(line),
     textColor: hex(ink),
     mainBkg: hex(soft),
-    nodeBorder: hex(strong ? ink : accent),
-    nodeTextColor: hex(ink),
+    nodeBorder: hex(edge),
+    nodeTextColor: hex(onSoft),
     clusterBkg: hex(softer),
-    clusterBorder: hex(muted),
+    clusterBorder: hex(quiet),
     titleColor: hex(ink),
     edgeLabelBackground: hex(ground),
-    noteBkgColor: hex(softer),
-    noteTextColor: hex(ink),
-    noteBorderColor: hex(muted),
+    noteBkgColor: hex(note),
+    noteTextColor: hex(onNote),
+    noteBorderColor: hex(quiet),
     actorBkg: hex(soft),
-    actorBorder: hex(strong ? ink : accent),
-    actorTextColor: hex(ink),
-    actorLineColor: hex(muted),
-    signalColor: hex(ink),
+    actorBorder: hex(edge),
+    actorTextColor: hex(onSoft),
+    actorLineColor: hex(quiet),
+    signalColor: hex(fade(ink)),
     signalTextColor: hex(ink),
     labelBoxBkgColor: hex(soft),
-    labelBoxBorderColor: hex(muted),
-    labelTextColor: hex(ink),
+    labelBoxBorderColor: hex(quiet),
+    labelTextColor: hex(onSoft),
     loopTextColor: hex(ink),
-    activationBkgColor: hex(softer),
-    activationBorderColor: hex(muted),
+    activationBkgColor: hex(note),
+    activationBorderColor: hex(quiet),
     sequenceNumberColor: hex(ground),
     taskBkgColor: hex(soft),
-    taskTextColor: hex(ink),
-    taskTextLightColor: hex(ink),
+    taskTextColor: hex(onSoft),
+    taskTextLightColor: hex(onSoft),
     taskTextOutsideColor: hex(ink),
-    taskBorderColor: hex(accent),
+    taskBorderColor: hex(fade(accent)),
     sectionBkgColor: hex(softer),
     altSectionBkgColor: hex(ground),
     gridColor: hex(mermaidMix(ground, ink, 0.2)),
@@ -266,16 +307,29 @@ function mermaidTheme() {
 
 // --- asking the frame ---------------------------------------------------------
 
-//: The theme read once per burst: a page of figures asks for it per figure.
+//: A board object's stored look (`{fill: "#hex", fillAlpha, lineAlpha}`, any
+//: part missing) as the numbers `mermaidFills` takes; null when it stored none.
+function mermaidLook(raw) {
+  if (!raw) return null;
+  const fill = raw.fill && raw.fill !== "transparent" ? mermaidRgba(raw.fill).slice(0, 3) : null;
+  const num = (v) => (Number.isFinite(Number(v)) && v !== null && v !== "" && v !== undefined ? Math.max(0, Math.min(1, Number(v))) : null);
+  const look = { fill, fillAlpha: num(raw.fillAlpha), lineAlpha: num(raw.lineAlpha) };
+  return look.fill || look.fillAlpha !== null || look.lineAlpha !== null ? look : null;
+}
 
-function mermaidThemeNow() {
+//: The theme read once per burst: a page of figures asks for it per figure.
+//: Each look is read once per burst too.
+
+function mermaidThemeNow(look = null) {
   if (!mermaidState.themeMemo) {
-    mermaidState.themeMemo = mermaidTheme();
+    mermaidState.themeMemo = new Map();
     setTimeout(() => {
       mermaidState.themeMemo = null;
     }, 50);
   }
-  return mermaidState.themeMemo;
+  const tag = look ? JSON.stringify(look) : "";
+  if (!mermaidState.themeMemo.has(tag)) mermaidState.themeMemo.set(tag, mermaidTheme(mermaidLook(look)));
+  return mermaidState.themeMemo.get(tag);
 }
 
 function mermaidCacheKey(themeKey, source) {
@@ -285,8 +339,8 @@ function mermaidCacheKey(themeKey, source) {
 //: The answer already known for this source in the theme in force, or null.
 //: A figure built from a known answer is complete at once, which is what lets
 //: a print or a redraw on a caret move be synchronous.
-function mermaidKnown(source) {
-  return mermaidState.cache.get(mermaidCacheKey(mermaidThemeNow().key, source)) || null;
+function mermaidKnown(source, look = null) {
+  return mermaidState.cache.get(mermaidCacheKey(mermaidThemeNow(look).key, source)) || null;
 }
 
 //: The one-line reason a source was refused by the parser, remembered so the
@@ -295,8 +349,8 @@ function mermaidFailure(source) {
   return mermaidState.bad.get(source) || "";
 }
 
-function mermaidRequest(source) {
-  const theme = mermaidThemeNow();
+function mermaidRequest(source, look = null) {
+  const theme = mermaidThemeNow(look);
   const key = mermaidCacheKey(theme.key, source);
   const hit = mermaidState.cache.get(key);
   if (hit) return Promise.resolve(hit);
@@ -432,8 +486,8 @@ function mermaidInlineForExport(live, clone) {
 
 
 function mermaidRedrawAll() {
-  mermaidState.themeMemo = mermaidTheme();
-  const now = mermaidState.themeMemo.key;
+  mermaidState.themeMemo = null;
+  const now = mermaidThemeNow().key;
   for (const figure of document.querySelectorAll("figure.md-mermaid")) {
     if (figure.mermaidSource && figure.mermaidKey !== now) mermaidFill(figure, figure.mermaidSource);
   }
