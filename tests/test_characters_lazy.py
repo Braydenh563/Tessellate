@@ -112,3 +112,17 @@ def test_every_boot_mention_of_a_character_function_waits_for_it():
                 continue
             loose.append(f"{file}:{number} {name}")
     assert not loose, "a boot file names a character function that is not there yet: " + ", ".join(loose)
+
+
+def test_a_head_has_a_plain_face_when_the_bundle_cannot_be_fetched():
+    """Routed to a 500 in Playwright (dupfetch 1031), the chat's heads stayed
+    empty for good: `afterCharacters` waited for a bundle that never came. The
+    idle load now says so (`charactersLost`) and each head's fallback runs: the
+    app's emblem for its own voice, the name's initial for a persona or you."""
+    assert re.search(r"ensureModule\(\"characters\"\)\.then\(\(ok\) => ok \|\| charactersLost\(\)\)", ENTRIES)
+    assert "function afterCharacters(fn, fallback)" in ENTRIES
+    chat_agent = (JS / "chat-agent.js").read_text(encoding="utf-8")
+    assert "() => emblemHead(holder, size)" in chat_agent
+    assert "() => plainHead(holder, name)" in chat_agent
+    assert "() => plainHead(mark, userMarkSeed())" in chat_agent
+    assert "() => plainHead(holder, name)" in (JS / "chat.js").read_text(encoding="utf-8")

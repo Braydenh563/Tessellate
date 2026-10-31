@@ -400,7 +400,7 @@ function userMarkEl() {
   mark.className = "msg-user-mark";
   mark.setAttribute("aria-hidden", "true");
   mark.dataset.userMark = "18";
-  afterCharacters(() => mark.appendChild(nameMark(userMarkSeed(), 18)));
+  afterCharacters(() => mark.appendChild(nameMark(userMarkSeed(), 18)), () => plainHead(mark, userMarkSeed()));
   return mark;
 }
 
@@ -1069,7 +1069,7 @@ function paintPersonaAvatar(holder, persona, size = 20) {
     return;
   }
   //: The faces come after the page (`afterCharacters`, lazy-entries.js).
-  afterCharacters(() => paintNamedHead(holder, name, size));
+  afterCharacters(() => paintNamedHead(holder, name, size), () => plainHead(holder, name));
 }
 
 function paintNamedHead(holder, name, size) {
@@ -1122,7 +1122,7 @@ function paintAssistantAvatar(holder, size = 20) {
   holder.dataset.assistantAvatar = String(size);
   //: After the faces (`afterCharacters`, lazy-entries.js): the first heads are
   //: asked for while the scripts load, before `appearancePref` exists.
-  afterCharacters(() => holder.replaceChildren(assistantAvatar(size)));
+  afterCharacters(() => holder.replaceChildren(assistantAvatar(size)), () => emblemHead(holder, size));
 }
 
 function repaintAssistantAvatars(emblemsOnly = false) {

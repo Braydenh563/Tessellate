@@ -3392,13 +3392,13 @@ let askHistoryOpen = false;
 //: The badge's last answer, kept so Get started (first-run.js) reads it instead of
 //: asking again: at boot both asked within half a second, and a POST between them
 //: (`/recordings/recover`) emptied the GET cache. `null` until the badge has read.
-let askHistoryTotal = null;
+let askBadgeTotal = null;
 
 async function loadAskHistoryBadge() {
   const badge = $("ask-history-badge");
   if (!badge) return;
   const stats = await apiJson("/ask-history/stats").catch(() => null);
-  if (stats) askHistoryTotal = stats.total || 0;
+  if (stats) askBadgeTotal = stats.total || 0;
   if (!stats || !stats.total) {
     badge.classList.add("hidden");
     return;

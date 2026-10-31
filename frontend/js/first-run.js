@@ -38,7 +38,7 @@ async function firstStepsRead() {
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
   //: either one is the third step done.
   const [asks, chats, sample] = await Promise.all([
-    askHistoryTotal === null ? apiJson("/ask-history/stats").catch(() => ({ total: 0 })) : { total: askHistoryTotal },
+    askBadgeTotal === null ? apiJson("/ask-history/stats").catch(() => ({ total: 0 })) : { total: askBadgeTotal },
     apiJson("/conversations?limit=1").catch(() => []),
     apiJson("/help/sample-notebook").catch(() => ({ live: 0, added: true })),
   ]);

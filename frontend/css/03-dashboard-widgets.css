@@ -3174,6 +3174,27 @@ button.answer-figure-open {
   border-radius: 50%;
 }
 
+/* A head whose face did not arrive (the characters bundle failed to load,
+   `plainHead` in lazy-entries.js): the name's initial in a quiet disc, the
+   size a 20px head is, filling the 18px user mark. */
+.plain-head {
+  display: grid;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.msg-user-mark > .plain-head {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
 /* The app emblem as an assistant's head (Appearance, Assistant avatar;
    assistant-avatar.js): the mark (`emblemArt`) filling the box
    `assistantAvatar` asked for, breathing like every emblem and left out of

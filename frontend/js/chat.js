@@ -1750,7 +1750,7 @@ function fillPersonaMark(holder, name, size = 20) {
   //: draws it for the assistant's name. The chat's reply label keeps the
   //: live logo, so the app's mark and Atlas's face both stay in the app.
   //: The faces arrive after the page (`afterCharacters`, lazy-entries.js).
-  afterCharacters(() => holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size)));
+  afterCharacters(() => holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size)), () => plainHead(holder, name));
 }
 
 function personaOptions() {
