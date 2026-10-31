@@ -569,6 +569,13 @@ def _asks_a_kind(text: str) -> bool:
     return composer_lists.holding_ask(text) is not None
 
 
+def _asks_an_order(text: str) -> bool:
+    """"List my notes in order": the order is not a word to find (the composer lists them)."""
+    from tessellate.ai import composer_lists
+
+    return composer_lists.list_order(text) is not None
+
+
 def _find(text: str) -> dict | None:
     whats =_WHATS_IN.fullmatch(text.strip())
     if whats:
@@ -592,7 +599,7 @@ def _find_by_head(text: str) -> dict | None:
         if head is None:
             continue
         rest = text[len(head):].strip()
-        if intent == "find" and _sums_money(text):
+        if intent == "find" and (_sums_money(text) or _asks_an_order(text)):
             return None
         if intent == "find":
             listed = _listing(text, head, rest)

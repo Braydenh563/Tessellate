@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, filed_name, realise, recognise, utilities
+from tessellate.ai import composer, composer_versus, filed_name, realise, recognise, utilities
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -32,6 +32,22 @@ _ORDER = re.compile(
 )
 _MENTION = re.compile(
     r"^how (?:many times|often) (?:did|do|have|had) i (?:mention(?:ed)?|(?:write|wrote|written|talk|talked|say|said|jot|jotted down) about)\s+(?:the\s+|my\s+)?(?P<what>[\w' -]{1,40})$",
+    re.I,
+)
+#: "list my notes oldest first", "my notes, newest first", "show all my notes
+#: in order": every note, told by the day it was written. The order is a word
+#: of its own (never a subject), so it is read before any filing is.
+_OLDEST_FIRST = (
+    r"oldest first|earliest first|first to last|oldest to (?:newest|latest|most recent)|earliest to latest|from (?:the )?oldest(?: to (?:the )?(?:newest|latest))?"
+    r"|(?:in )?chronological(?: order|ly)?|in order|in date order|by date|(?:in )?the order (?:i|they were) (?:wrote|written|made|added)(?: them)?"
+)
+_NEWEST_FIRST = (
+    r"newest first|latest first|most recent first|last to first|newest to (?:oldest|earliest)|latest to (?:oldest|earliest)|from (?:the )?newest(?: to (?:the )?oldest)?"
+    r"|(?:in )?reverse(?: chronological)?(?: order|ly)?|backwards"
+)
+_ORDERED = re.compile(
+    r"^(?:(?:can|could|would) you )?(?:please\s+)?(?:(?:list|show(?: me)?|give me|display|sort|order|put|see)\s+)?(?:all\s+)?(?:of\s+)?(?:my|the)\s+(?:notes|entries)"
+    rf"(?:\s+(?:sorted|ordered|arranged|listed))?[,\s]*(?:(?:by|from)\s+)?(?P<old>{_OLDEST_FIRST})?(?P<new>{_NEWEST_FIRST})?(?:\s+(?:please|pls))?$",
     re.I,
 )
 _LIST_LEAD = re.compile(
@@ -86,14 +102,14 @@ class _Helpers:
     """The digest's day, row, fact and span makers. The digest binds them when
     it loads (`bind`), so this module never imports it back (a cycle)."""
 
-    day = row = fact = span = None
+    day = row = fact = span = name = None
 
 
 _h = _Helpers()
 
 
-def bind(day, row, fact, span) -> None:  # noqa: ANN001
-    _h.day, _h.row, _h.fact, _h.span = day, row, fact, span
+def bind(day, row, fact, span, name) -> None:  # noqa: ANN001
+    _h.day, _h.row, _h.fact, _h.span, _h.name = day, row, fact, span, name
 
 
 def list_target(question: str) -> tuple[str, str] | None:
@@ -190,6 +206,14 @@ def due_ask(question: str) -> tuple[list[str], list[str], tuple[str, int] | None
     return subject, kinds, window
 
 
+def list_order(question: str) -> str | None:
+    """"oldest" or "newest" for a request to list every note in an order, else None."""
+    found = _ORDERED.match(_q(question))
+    if not found or not (found.group("old") or found.group("new")):
+        return None
+    return "oldest" if found.group("old") else "newest"
+
+
 def kind(question: str) -> str | None:
     """Which computed shape `question` is, or None."""
     q = _q(question)
@@ -197,10 +221,14 @@ def kind(question: str) -> str | None:
         return None
     if utilities.until_subject(q):
         return "until"
+    if list_order(q):
+        return "ordered"
     if _ORDER.match(q):
         return "order"
     if _MENTION.match(q):
         return "mentions"
+    if composer_versus.asks(q):
+        return "which"
     if holding_ask(q):
         return "holding"
     due = due_ask(q)
@@ -320,6 +348,36 @@ def _order(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     out.lines.append(line)
     for view, sentence in ((va, sa), (vb, sb)):
         _cite(out, view, sentence, line)
+    return True
+
+
+def _ordered(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """The notes in the order asked: the first eight, each by its title and day."""
+    oldest = list_order(asked) == "oldest"
+    members = sorted((v for v in views if v.sentences), key=lambda v: (v.written or date.min, v.rank), reverse=not oldest)
+    if not members:
+        return False
+    shown = members[:SHOWN]
+    lines = [(f"{_title(view)}, {_day(view.written, today)}" if view.written else _title(view), view, view.sentences[0]) for view in shown]
+    which = "oldest" if oldest else "newest"
+    _block(out, f"Your notes, {which} first:", lines)
+    if len(members) > SHOWN:
+        out.lines.append(f"{'More' if len(members) >= POOL_LIMIT else realise.count_word(len(members) - SHOWN).capitalize() + ' more'} are on the right.")
+    return True
+
+
+def _which(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """"Which trip is sooner", "which note is the oldest about baking": the
+    notes on the subject ranked by the word, the figures or days first."""
+    versus = composer_versus.which_one(_q(asked), views, today, composer._stem)
+    if versus is None:
+        return False
+    lines = []
+    for row in versus.rows[:4]:
+        sentence = next((s for s in row.view.sentences if row.at is not None and s.start <= row.at < s.end), None) or (row.view.sentences[0] if row.view.sentences else None)
+        if sentence is not None:
+            lines.append((_trim(sentence.text), row.view, sentence))
+    _block(out, composer_versus.said(versus, _h.name), lines)
     return True
 
 
@@ -671,7 +729,7 @@ def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_SHAPES = {"until": _until, "order": _order, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
+_SHAPES = {"until": _until, "order": _order, "which": _which, "ordered": _ordered, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
 
 
 def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

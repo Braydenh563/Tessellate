@@ -13,7 +13,7 @@ import itertools
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_lists
+from tessellate.ai import composer_lists, composer_versus
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, like_escape
 
 #: Notes read for one computed answer: the list's count and the mentions are
@@ -53,6 +53,23 @@ def _mentioning(session: Session, question: str) -> list[Entry]:
     return list(itertools.islice(hits, LIST_LIMIT))
 
 
+def _naming(session: Session, question: str) -> list[Entry]:
+    """The notes that name every word of a "which trip is sooner" question's
+    subject, as a word or the start of one ("bak" for "baking", "bake"): the
+    search's five may leave out the oldest or the newest of them."""
+    words = [w.rstrip("e") for w in composer_versus.subject_of(question) if len(w) > 2]
+    if not words or not all(w.isascii() for w in words):
+        return []
+    clauses = [func.lower(Entry.content).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) | func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words]
+    return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(Entry.created_at.desc()).limit(LIST_LIMIT)))
+
+
+def _in_order(session: Session, question: str) -> list[Entry]:
+    """The notes at the end of the order asked, so "oldest first" holds the oldest."""
+    first = Entry.created_at.asc() if composer_lists.list_order(question) == "oldest" else Entry.created_at.desc()
+    return list(session.scalars(select(Entry).where(*_live()).order_by(first).limit(LIST_LIMIT)))
+
+
 def _dated(session: Session) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live(), Entry.content.op("GLOB")("*[0-9]*")).order_by(Entry.created_at.desc()).limit(DATED_LIMIT)))
 
@@ -76,6 +93,10 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _filed(session, *composer_lists.list_target(question))
     elif which == "mentions":
         found = _mentioning(session, question)
+    elif which == "ordered":
+        found = _in_order(session, question)
+    elif which == "which":
+        found = _naming(session, question)
     elif which in ("dates", "due_for"):
         found = _dated(session)
     elif which == "holding":

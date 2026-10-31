@@ -33,7 +33,7 @@ def c(text: str, v: str = "", e: str = "", k: str = "") -> Cand:
 
 OPENERS: tuple[Cand, ...] = (
     c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Here is what I have.", "w"),
-    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Here is the answer.", "wf"),
+    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Right away.", "wf"),
     c("Okay, steady. Let us take this one step at a time.", "w", "S"), c("Take a breath, this is manageable.", "w", "S"),
     c("No rush. We will go through it together.", "w", "S"), c("Okay, steady.", "t", "S"), c("One thing at a time.", "t", "S"),
     c("Sorry about that.", "wt", "U"), c("That sounds frustrating, so let me help.", "w", "U"), c("Fair enough, let me put it right.", "w", "U"),
@@ -385,9 +385,12 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
     #: A card's own label said back ("remind you on Friday at 9: call the dentist").
     #: The line after an answer that points at the next step (`composer_tone.closing`).
     "close_next": (
-        c("I can see you've been working on “{t}”. Ask me what is left on it, or when it is due.", "w"),
+        #: Never "I can see you've been working on ..." or "Since you've been in
+        #: ...": that is the screen-aware closing's (`composer_aware`, only with a
+        #: screen), and a note's line is never a place (composer-1031).
+        c("“{t}” is your newest note. Ask me what is left on it, or when it is due.", "w"),
         c("Your latest note is “{t}”. Want a summary of it, or what is left to do?", "w"),
-        c("Since you've been in “{t}” lately, I can list what is still open there.", "w"),
+        c("I can list what is still open in “{t}”, your newest note.", "w"),
         c("Next, I can open “{t}” or pull out its dates.", "w"),
         c("If it helps, ask me who is involved in “{t}”, your newest note.", "w"),
         c("Most recently you wrote “{t}”. Say the word and I will go through it with you.", "w"),

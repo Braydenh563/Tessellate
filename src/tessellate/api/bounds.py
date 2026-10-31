@@ -6,6 +6,7 @@ reaches for a name here instead of choosing its own number (or none).
 
 from __future__ import annotations
 
+import re
 from typing import Annotated
 
 from fastapi import HTTPException
@@ -36,6 +37,19 @@ LABEL_MAX = 80
 #: this range is not a place, and 1e308 breaks the camera fit.
 PIN_LIMIT = 1_000_000.0
 PinCoord = Annotated[float, Field(ge=-PIN_LIMIT, le=PIN_LIMIT, allow_inf_nan=False)]
+
+#: A run of blanks longer than any sentence needs. A question of 20,000 spaces
+#: is a payload, and the readers that scan for a word after "any blanks" would
+#: walk all of it (second eye 1030 F14), so a longer run is cut to one blank
+#: (or one line break when the run holds one) before any reader sees it.
+BLANK_RUN_MAX = 40
+_BLANK_RUN = re.compile(rf"\s{{{BLANK_RUN_MAX},}}")
+
+
+def squeeze_blanks(text: str) -> str:
+    """`text` with every run of `BLANK_RUN_MAX` or more blanks made one."""
+    return _BLANK_RUN.sub(lambda run: "\n" if "\n" in run.group() else " ", text)
+
 
 def display_name(raw: str | None, fallback: str) -> str:
     """The name to keep for an upload: no folders, no control characters, at

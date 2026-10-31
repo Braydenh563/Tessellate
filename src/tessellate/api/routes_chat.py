@@ -31,13 +31,13 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import or_, select
 from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -415,6 +415,12 @@ class ScreenBody(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=20000)
+
+    @field_validator("question")
+    @classmethod
+    def _squeezed(cls, text: str) -> str:
+        return bounds.squeeze_blanks(text)
+
     #: Answer from the notebook as it stood at the end of this day
     #: (WORLD_CLASS_PLAN I5, row 23). Read, never act: the turn runs without
     #: tools, which would read and change the notebook as it is now.
@@ -1516,7 +1522,9 @@ def _filed_under(session: Session, terms: list[str]) -> list:
     if not words:
         return []
     clauses = [func.lower(Entry.tags).like(f'%"{like_escape(w.rstrip("s"))}%', escape=LIKE_ESCAPE) for w in words]
-    named = select(Category.id).where(or_(*(func.lower(Category.name).like(f"{like_escape(w.rstrip('s'))}%", escape=LIKE_ESCAPE) for w in words)))
+    #: A word at the start of the name or after a space in it ("study" is in "Courses & study").
+    said = [like_escape(w.rstrip("s")) for w in words]
+    named = select(Category.id).where(or_(*(func.lower(Category.name).like(pattern, escape=LIKE_ESCAPE) for w in said for pattern in (f"{w}%", f"% {w}%"))))
     clauses.append(Entry.category_id.in_(named))
     query = (
         select(Entry)
@@ -1764,7 +1772,7 @@ def _search_notes(session: Session, question: str, found: _Found, attached: list
     #: "The latest notes about running", "my last 2 notes": the notes the
     #: request counted, not those widened by what the subject sounds like.
     counted = note_recency.recency(question, bare=len(question.split()) <= 3)
-    if counted is not None and (counted.subject or counted.said_count or hit.mode == "recent"):
+    if counted is not None and not composer_versus.asks(question) and not composer_lists.list_order(question) and (counted.subject or counted.said_count or hit.mode == "recent"):
         found.entries = list(hit.entries)
     else:
         entries = _with_neighbours(session, question, _widened(session, question, hit.entries, scope=hit.category), scope=hit.category)

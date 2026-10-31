@@ -187,9 +187,26 @@ def note_words(content: str | None) -> int:
     return sum(1 for token in body.split() if any(c.isalnum() for c in token))
 
 
+_SAID_IN_A_FRAME = []
+
+
+def bind_lower(said) -> None:  # noqa: ANN001
+    """The digest hands in how a name is said after other words: lower case
+    only where its first word is a plain dictionary word, so "Myers
+    chapters" and "Lisbon trip" keep their capital (composer-1031). This
+    module imports no composer, so it is given, not imported."""
+    _SAID_IN_A_FRAME[:] = [said]
+
+
 def _lower(text: str) -> str:
     """"Movie review" as "movie review"; "League of Legends" and "Gym
     Routine Overview" keep their capitals: a later capital marks a name."""
+    if _SAID_IN_A_FRAME:
+        return _SAID_IN_A_FRAME[0](text)
+    return _plain_lower(text)
+
+
+def _plain_lower(text: str) -> str:
     words = text.split()
     if len(words) > 1 and any(w[:1].isupper() for w in words[1:3]):
         return text
@@ -369,10 +386,26 @@ _WHEN_WORDS = re.compile(r"\s*\b(?:today|yesterday|tonight|this (?:morning|after
 _TRAILING_PARTICLE = re.compile(r"\s+(?:back|up|out|off|again|too)$", re.I)
 
 
+#: "Felt really good after the run today": the note is about what the feeling
+#: followed, "your note on the run", never the feeling itself.
+_FEELING = re.compile(
+    r"^(?:felt|feel|feeling|was|am|were)\s+(?:\w+\s+){0,3}?(?:after|about|during|before|at|from|with)\s+(?P<what>.+)$", re.I)
+
+
+def _feeling_name(clause: str) -> str:
+    found = _FEELING.match(clause)
+    what = " ".join(_WHEN_WORDS.sub("", found.group("what")).split()) if found else ""
+    what = re.sub(r"\bmy\b", "your", what, flags=re.I)
+    return f"your note on {what}" if 0 < len(what.split()) <= _NAME_WORDS else ""
+
+
 def _diary_name(line: str, lower) -> str:  # noqa: ANN001
     """A title-less diary line by what it is about: "had design class today
     for prototyping" is "your note on design class for prototyping", never
     "the had design class ..." (INBOX 1461); "" when the line is not one."""
+    feeling = _feeling_name(re.split(r"[,;:.!?]", line, maxsplit=1)[0].strip())
+    if feeling:
+        return feeling
     verb = _DIARY_VERB.match(line)
     if not verb or re.search(r"[,;:.!?]", line):
         return ""

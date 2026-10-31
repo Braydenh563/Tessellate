@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_tables, composer_tree, composer_versus, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -251,6 +251,7 @@ PHRASES: dict[str, str] = {
     "is_shorter": " is the shorter note: ",
     "words_against": " words against ",
     "words_in": " in ",
+    **composer_versus.SAID,
     "mention_many": " mention ",
     "each_side": "Here is what each says.",
     "side_notes": " notes",
@@ -2836,6 +2837,27 @@ def _length_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     return True
 
 
+def _versus_answer(out: _Answer, versus) -> None:  # noqa: ANN001
+    """The lead of `composer_versus.which_one`, then the line each figure or
+    day was read from."""
+    composer_versus.write(out, versus)
+    out.t("stop")
+    for i, row in enumerate(versus.rows[:4]):
+        at = row.at
+        view = row.view
+        s = next((x for x in view.sentences if at is not None and x.start <= at < x.end), None) or (view.sentences[0] if view.sentences else None)
+        if s is not None:
+            out.t("para" if i == 0 else "line").item(s, []).cite(view, again=True)
+
+
+def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool:
+    """"which is cheaper, A or B": both figures (or days) first."""
+    versus = composer_versus.two(question, own, out.today)
+    if versus:
+        composer_versus.write(out, versus)
+    return versus is not None
+
+
 def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
     """A line that counts each side, each side its own short list, then what
     speaks of both."""
@@ -2846,7 +2868,7 @@ def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meanin
     both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
     if not (a_only or b_only):
         return False
-    if not _length_lead(out, question, own):
+    if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
         _compare_lead(out, sides, [len({s.note_id for s in side}) for side in (a_only, b_only)])
     #: The lead names only what follows (probe P15): no "Here is what
     #: each says." before the two headings that say it.
@@ -5765,6 +5787,10 @@ def _fill_by_shape(out: "_Answer", p, shape: str, question: str, terms: list, ty
         _newest(out, views_list, guessing=_guessing_recent(question))
         return shape, None
     sides = compare_sides(question) if shape == "compare" else None
+    versus = None if sides else composer_versus.which_one(question, views_list, out.today, _stem)
+    if versus:
+        _versus_answer(out, versus)
+        return shape, None
     if sides and _compare(out, sides, views_list, _meaning_maker(shape, views_list, embed), question):
         return shape, None
     shape = "what" if shape == "compare" else shape
