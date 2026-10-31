@@ -3268,7 +3268,10 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
         #: A bare list item ("Passport") is no news of a subject: prose leads a latest ask.
         prose = not (latest and f.sentence.kind in {"item", "task"})
-        return (acts, _cued(cue, f.sentence.text), prose, id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: A sentence that is itself a question answers none ("What are you reading
+        #: at the moment?" in an ice-breakers note, audit 1031 C18).
+        asked_back = f.sentence.text.rstrip().endswith("?")
+        return (not asked_back, acts, _cued(cue, f.sentence.text), prose, id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 

@@ -2018,6 +2018,24 @@ def _without_filler(run: re.Match[str]) -> str:
     return "" if word and _FILLER.match(word.group(1)) else run.group(0)
 
 
+#: "What am I reading", "what have I been reading lately": the books the
+#: notes keep, not the words "reading" sits in (a question inside an
+#: ice-breakers note; audit 1031 C18). "reading" alone names no kind of note.
+_READING_NOW = re.compile(
+    r"(?P<lead>(?:and |so |ok |okay )?what)(?P<mid> am i(?: currently)?) reading"
+    r"(?P<tail>(?: (?:right now|at the moment|lately|these days|currently|now|at present|recently|at this time))?[?.!\s]*)",
+    re.I,
+)
+
+
+def media_kind(text: str) -> str:
+    """"what am I reading" as "what book am I reading": the kind of note the
+    verb asks for named, so the notes kept as books are searched. `text`
+    itself for any other question."""
+    found = _READING_NOW.fullmatch((text or "").strip())
+    return f"{found['lead']} book{found['mid']} reading{found['tail']}" if found else text
+
+
 def drop_filler(text: str) -> str:
     """`text` without its filler words and the punctuation typed after them
     ("errrmmm. hi test test" is "hi test test"); as typed when nothing else

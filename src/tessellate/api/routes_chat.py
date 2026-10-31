@@ -5520,7 +5520,7 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     paste); the model is given all of it (`_in_full`)."""
     head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
-    question, address = _address(skill["question"] if skill else question_noise.drop_filler(question_noise.tidy(head)) or head, session, skill)
+    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.drop_filler(question_noise.tidy(head))) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 

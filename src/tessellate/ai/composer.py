@@ -3600,6 +3600,30 @@ def _named_notes(answer: str) -> list[str]:
     return names
 
 
+#: "Which is the main note on uni", "which one is the defining note": the
+#: note that is plainly about the subject (`composer_digest._defines`), asked
+#: for, not a note property to search for (audit 1031 C26).
+_DEFINING_WORD = r"(?:main|defining|key|best|central|principal|primary|core|top|most important|definitive)"
+_DEFINING = re.compile(
+    rf"(?:and |so |ok |okay )?(?:which|whats?)(?:'s| is| one is| note is| one's)?(?: (?:is|note is|one is))? (?:my |the |your )?{_DEFINING_WORD}"
+    r"(?: (?:note|one|entry))?(?: (?:note|one|entry))?(?: (?:on|about|for|in|of) (?P<x>.+?))?[?.!\s]*",
+    re.I,
+)
+
+
+def _defining_ask(question: str, turns: list[dict]) -> FollowOn | None:
+    """The overview of the subject, whose lead is its defining note: the
+    subject is named, or the earlier question's."""
+    found = _DEFINING.fullmatch((question or "").strip())
+    if not found:
+        return None
+    previous = str(turns[-1].get("question") or "").strip() if turns else ""
+    named = re.sub(r"^(?:the|my|our)\s+", "", (found.group("x") or "").strip(), flags=re.I)
+    terms = subject_terms(previous) if previous else []
+    subject = named or (_asked_span(previous, terms) or " ".join(terms) if previous else "")
+    return FollowOn(f"what do I know about {subject}", previous, "", "subject") if subject else None
+
+
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
     follow-up that only means something against the turn before (INBOX 725,
@@ -3617,6 +3641,9 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
         t for t in (history or [])
         if str(t.get("question") or "").strip() and not question_noise.social_kind(str(t.get("question") or ""))
     ]
+    defining = _defining_ask(question, turns)
+    if defining is not None:
+        return defining
     if not turns:
         return None
     return _follow_one(question, _standing(turns))

@@ -585,3 +585,60 @@ def test_a_due_ask_is_still_a_due_ask(question):
     from tessellate.ai import composer_lists
 
     assert composer_lists.computed_kind(question) in {"due_for", "dates"}, question
+
+
+# C26. "Which is the main note" is the defining note of the subject, never "your newest notes".
+
+_UNI = [{"question": "what do I know about uni", "answer": "x"}]
+
+
+@pytest.mark.parametrize("question", [
+    "which is the main note", "which one is the defining note", "which note is the best one", "what's the key note", "whats my main note",
+    "which is the central note?", "and which is the principal note", "which is the top note",
+])
+def test_a_defining_note_ask_leans_on_the_subject_before_it(question):
+    from tessellate.ai import composer
+
+    follow = composer.follow_on(question, _UNI)
+    assert follow is not None and follow.question == "what do I know about university", (question, follow)
+
+
+@pytest.mark.parametrize("question, subject", [
+    ("which is the main note on uni", "university"), ("which note is the key one for sourdough", "sourdough"), ("what's the best note about Lisbon", "Lisbon"),
+])
+def test_a_defining_note_ask_names_its_own_subject(question, subject):
+    from tessellate.ai import composer
+
+    follow = composer.follow_on(question, None)
+    assert follow is not None and follow.question.endswith(subject) or subject == "university" and follow.question.endswith("uni"), (question, follow)
+
+
+@pytest.mark.parametrize("question", ["what is the main idea of my notes", "which is the best note ever written", "which is the main character", "the main note"])
+def test_other_main_questions_are_not_a_defining_ask(question):
+    from tessellate.ai import composer
+
+    assert composer.follow_on(question, _UNI) is None, question
+
+
+def test_a_defining_note_ask_after_the_uni_overview_never_lists_the_newest_notes(notebook):
+    first, _ = notebook("what do I know about uni")
+    said, _ = notebook("which is the main note", history=[{"question": "what do I know about uni", "answer": first}])
+    assert "five newest" not in said and "couldn't find" not in said, said
+
+
+# C18. "What am I reading" is the Books note, not a question another note asks.
+
+@pytest.mark.parametrize("question", [
+    "what am I reading", "What am I reading?", "what am I reading right now", "what am I reading at the moment",
+    "what am I currently reading",
+])
+def test_what_am_i_reading_is_the_books_note(notebook, question):
+    said, _ = notebook(question)
+    assert "Books note" in said and "Ice Breakers" not in said, said
+
+
+@pytest.mark.parametrize("question", ["what is reading", "what am I reading about", "what was I reading in September", "what am I rereading"])
+def test_media_kind_leaves_other_questions_as_they_are(question):
+    from tessellate.ai import question_noise
+
+    assert question_noise.media_kind(question) == question
