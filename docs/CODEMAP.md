@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6984, frontend ids 2595, CSS sections 506, backend routes 632, backend modules 7689, test files 1632, tests 14173, plan headings 990.
+Counts: frontend functions 6984, frontend ids 2595, CSS sections 506, backend routes 632, backend modules 7692, test files 1632, tests 14176, plan headings 990.
 
 ## Frontend functions (6984)
 
@@ -11767,7 +11767,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7689)
+## Backend modules (7692)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13807,70 +13807,70 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Candidate` | src/tessellate/ai/facts.py:179 |
-| `_Similar` | src/tessellate/ai/facts.py:804 |
-| `_answered_ids` | src/tessellate/ai/facts.py:1115 |
+| `_Similar` | src/tessellate/ai/facts.py:809 |
+| `_answered_ids` | src/tessellate/ai/facts.py:1120 |
 | `_answered_next` | src/tessellate/ai/facts.py:278 |
-| `_answers_by_rule` | src/tessellate/ai/facts.py:1186 |
-| `_asked_notes` | src/tessellate/ai/facts.py:1165 |
-| `_due_questions` | src/tessellate/ai/facts.py:1158 |
-| `_entries_to_read` | src/tessellate/ai/facts.py:497 |
-| `_fingerprint` | src/tessellate/ai/facts.py:418 |
-| `_for_the_model` | src/tessellate/ai/facts.py:1152 |
-| `_forgotten_event_type` | src/tessellate/ai/facts.py:1473 |
-| `_heading` | src/tessellate/ai/facts.py:1124 |
-| `_judge` | src/tessellate/ai/facts.py:780 |
-| `_known_pairs` | src/tessellate/ai/facts.py:909 |
+| `_answers_by_rule` | src/tessellate/ai/facts.py:1191 |
+| `_asked_notes` | src/tessellate/ai/facts.py:1170 |
+| `_due_questions` | src/tessellate/ai/facts.py:1163 |
+| `_entries_to_read` | src/tessellate/ai/facts.py:502 |
+| `_fingerprint` | src/tessellate/ai/facts.py:423 |
+| `_for_the_model` | src/tessellate/ai/facts.py:1157 |
+| `_forgotten_event_type` | src/tessellate/ai/facts.py:1478 |
+| `_heading` | src/tessellate/ai/facts.py:1129 |
+| `_judge` | src/tessellate/ai/facts.py:785 |
+| `_known_pairs` | src/tessellate/ai/facts.py:914 |
 | `_line_around` | src/tessellate/ai/facts.py:269 |
-| `_links` | src/tessellate/ai/facts.py:1143 |
-| `_local_answer` | src/tessellate/ai/facts.py:762 |
-| `_local_disagreement` | src/tessellate/ai/facts.py:741 |
-| `_narrow` | src/tessellate/ai/facts.py:442 |
-| `_open_claims_and_questions` | src/tessellate/ai/facts.py:927 |
-| `_pair_fact` | src/tessellate/ai/facts.py:941 |
-| `_pair_json` | src/tessellate/ai/facts.py:1409 |
-| `_pair_key` | src/tessellate/ai/facts.py:904 |
-| `_pair_passes` | src/tessellate/ai/facts.py:976 |
-| `_plain_words` | src/tessellate/ai/facts.py:737 |
+| `_links` | src/tessellate/ai/facts.py:1148 |
+| `_local_answer` | src/tessellate/ai/facts.py:767 |
+| `_local_disagreement` | src/tessellate/ai/facts.py:746 |
+| `_narrow` | src/tessellate/ai/facts.py:447 |
+| `_open_claims_and_questions` | src/tessellate/ai/facts.py:932 |
+| `_pair_fact` | src/tessellate/ai/facts.py:946 |
+| `_pair_json` | src/tessellate/ai/facts.py:1414 |
+| `_pair_key` | src/tessellate/ai/facts.py:909 |
+| `_pair_passes` | src/tessellate/ai/facts.py:981 |
+| `_plain_words` | src/tessellate/ai/facts.py:742 |
 | `_pref_key` | src/tessellate/ai/facts.py:99 |
 | `_proposed` | src/tessellate/ai/facts.py:350 |
 | `_qa_pairs` | src/tessellate/ai/facts.py:360 |
-| `_release` | src/tessellate/ai/facts.py:482 |
+| `_release` | src/tessellate/ai/facts.py:487 |
 | `_retire_not_own_questions` | src/tessellate/ai/facts.py:395 |
-| `_rule_answer` | src/tessellate/ai/facts.py:1174 |
-| `_rule_notes` | src/tessellate/ai/facts.py:1131 |
-| `_run_json` | src/tessellate/ai/facts.py:1246 |
+| `_rule_answer` | src/tessellate/ai/facts.py:1179 |
+| `_rule_notes` | src/tessellate/ai/facts.py:1136 |
+| `_run_json` | src/tessellate/ai/facts.py:1251 |
 | `_sentence_spans` | src/tessellate/ai/facts.py:122 |
 | `_template_questions` | src/tessellate/ai/facts.py:338 |
-| `_terms` | src/tessellate/ai/facts.py:727 |
-| `_visible` | src/tessellate/ai/facts.py:1324 |
-| `_words_alike` | src/tessellate/ai/facts.py:733 |
-| `_written` | src/tessellate/ai/facts.py:932 |
-| `as_json` | src/tessellate/ai/facts.py:1390 |
+| `_terms` | src/tessellate/ai/facts.py:732 |
+| `_visible` | src/tessellate/ai/facts.py:1329 |
+| `_words_alike` | src/tessellate/ai/facts.py:738 |
+| `_written` | src/tessellate/ai/facts.py:937 |
+| `as_json` | src/tessellate/ai/facts.py:1395 |
 | `candidates` | src/tessellate/ai/facts.py:372 |
-| `edit` | src/tessellate/ai/facts.py:1427 |
+| `edit` | src/tessellate/ai/facts.py:1432 |
 | `enabled` | src/tessellate/ai/facts.py:230 |
-| `fingerprint_of` | src/tessellate/ai/facts.py:429 |
-| `forget` | src/tessellate/ai/facts.py:1528 |
-| `json_payload_value` | src/tessellate/ai/facts.py:1230 |
+| `fingerprint_of` | src/tessellate/ai/facts.py:434 |
+| `forget` | src/tessellate/ai/facts.py:1533 |
+| `json_payload_value` | src/tessellate/ai/facts.py:1235 |
 | `kept_question` | src/tessellate/ai/facts.py:327 |
-| `latest_card` | src/tessellate/ai/facts.py:1292 |
-| `listing` | src/tessellate/ai/facts.py:1342 |
+| `latest_card` | src/tessellate/ai/facts.py:1297 |
+| `listing` | src/tessellate/ai/facts.py:1347 |
 | `own_question` | src/tessellate/ai/facts.py:289 |
-| `remove` | src/tessellate/ai/facts.py:1447 |
-| `reset` | src/tessellate/ai/facts.py:1437 |
-| `restore` | src/tessellate/ai/facts.py:1467 |
-| `run` | src/tessellate/ai/facts.py:533 |
-| `run_facts` | src/tessellate/ai/facts.py:1271 |
-| `runner_enabled` | src/tessellate/ai/facts.py:1570 |
+| `remove` | src/tessellate/ai/facts.py:1452 |
+| `reset` | src/tessellate/ai/facts.py:1442 |
+| `restore` | src/tessellate/ai/facts.py:1472 |
+| `run` | src/tessellate/ai/facts.py:538 |
+| `run_facts` | src/tessellate/ai/facts.py:1276 |
+| `runner_enabled` | src/tessellate/ai/facts.py:1575 |
 | `sentences` | src/tessellate/ai/facts.py:238 |
 | `set_switches` | src/tessellate/ai/facts.py:215 |
-| `snapshot` | src/tessellate/ai/facts.py:1480 |
+| `snapshot` | src/tessellate/ai/facts.py:1485 |
 | `stored_switches` | src/tessellate/ai/facts.py:192 |
 | `switches` | src/tessellate/ai/facts.py:200 |
-| `tombstoned` | src/tessellate/ai/facts.py:1453 |
-| `unforget` | src/tessellate/ai/facts.py:1501 |
-| `visible` | src/tessellate/ai/facts.py:1383 |
-| `visible_counts` | src/tessellate/ai/facts.py:1261 |
+| `tombstoned` | src/tessellate/ai/facts.py:1458 |
+| `unforget` | src/tessellate/ai/facts.py:1506 |
+| `visible` | src/tessellate/ai/facts.py:1388 |
+| `visible_counts` | src/tessellate/ai/facts.py:1266 |
 
 ### src/tessellate/ai/fence.py (6)
 
@@ -14821,21 +14821,24 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `post` | src/tessellate/ai/provider_http.py:211 |
 | `refuse_off_host_redirect` | src/tessellate/ai/provider_http.py:61 |
 
-### src/tessellate/ai/question_cues.py (11)
+### src/tessellate/ai/question_cues.py (14)
 
 | Name | File:line |
 |---|---|
-| `_stem` | src/tessellate/ai/question_cues.py:107 |
-| `answer_sentences` | src/tessellate/ai/question_cues.py:141 |
-| `asks` | src/tessellate/ai/question_cues.py:83 |
-| `best_answer` | src/tessellate/ai/question_cues.py:150 |
-| `core` | src/tessellate/ai/question_cues.py:72 |
-| `cue` | src/tessellate/ai/question_cues.py:77 |
-| `normal` | src/tessellate/ai/question_cues.py:102 |
-| `not_asked` | src/tessellate/ai/question_cues.py:88 |
-| `score` | src/tessellate/ai/question_cues.py:129 |
-| `stems` | src/tessellate/ai/question_cues.py:115 |
-| `subject` | src/tessellate/ai/question_cues.py:121 |
+| `_only_urls` | src/tessellate/ai/question_cues.py:104 |
+| `_paragraph` | src/tessellate/ai/question_cues.py:108 |
+| `_pasted` | src/tessellate/ai/question_cues.py:123 |
+| `_stem` | src/tessellate/ai/question_cues.py:144 |
+| `answer_sentences` | src/tessellate/ai/question_cues.py:178 |
+| `asks` | src/tessellate/ai/question_cues.py:85 |
+| `best_answer` | src/tessellate/ai/question_cues.py:187 |
+| `core` | src/tessellate/ai/question_cues.py:74 |
+| `cue` | src/tessellate/ai/question_cues.py:79 |
+| `normal` | src/tessellate/ai/question_cues.py:139 |
+| `not_asked` | src/tessellate/ai/question_cues.py:90 |
+| `score` | src/tessellate/ai/question_cues.py:166 |
+| `stems` | src/tessellate/ai/question_cues.py:152 |
+| `subject` | src/tessellate/ai/question_cues.py:158 |
 
 ### src/tessellate/ai/question_noise.py (34)
 
@@ -21245,7 +21248,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14173)
+## Tests (14176)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22391,7 +22394,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_query_understanding.py | 20 |
 | tests/test_question_noise.py | 32 |
 | tests/test_questions_no_model_1466.py | 17 |
-| tests/test_questions_own.py | 8 |
+| tests/test_questions_own.py | 11 |
 | tests/test_questions_spec.py | 9 |
 | tests/test_quick_access.py | 28 |
 | tests/test_quick_access_phone.py | 1 |
