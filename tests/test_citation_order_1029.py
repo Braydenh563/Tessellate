@@ -49,13 +49,14 @@ def _run(cases: list[dict]) -> list:
     ask = (JS / "capture-ask.js").read_text(encoding="utf-8")
     script = (
         _fn(agent, "sourcesByFirstMention")
+        + _fn(ask, "citeKey")
         + _fn(ask, "citationNumbers")
         + f"""
 const cases = {json.dumps(cases)};
 console.log(JSON.stringify(cases.map((c) => {{
   const ordered = sourcesByFirstMention(c.sources, c.sentences);
   const numbers = citationNumbers(c.sentences, ordered);
-  return {{ order: ordered.map((s) => s.id), marks: c.sentences.map((g) => numbers.get(g.note_id)) }};
+  return {{ order: ordered.map((s) => s.id), marks: c.sentences.map((g) => numbers.get(citeKey(g.kind, g.note_id))) }};
 }})));"""
     )
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, check=True).stdout
@@ -93,6 +94,32 @@ def test_markers_read_one_two_three_whatever_the_relevance_rank():
     assert got[0]["order"] == [3, 2, 1, 4, 5]
     #: 99 is not in the panel: after the listed notes, as before.
     assert got[5]["marks"] == [1, 3, 2]
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="needs node")
+def test_note_7_and_document_7_in_one_answer_keep_their_own_numbers():
+    """A document's id is another table's (INBOX 1357): keyed by bare id, the
+    second of note 7 and document 7 overwrote the first's number."""
+    sources = [{"kind": "note", "id": 7}, {"kind": "document", "id": 7}, {"kind": "note", "id": 8}]
+    sentences = [
+        {"kind": "document", "note_id": 7, "sentence": "the document says the first thing"},
+        {"note_id": 7, "sentence": "the note says the second thing"},
+        {"kind": "note", "note_id": 8, "sentence": "the other note says the third thing"},
+        {"kind": "document", "note_id": 7, "sentence": "the document says a fourth thing"},
+    ]
+    got = _run([{"sources": sources, "sentences": sentences}, {"sources": [], "sentences": sentences}])
+    #: Panel order: the cited notes take the note places (note 7, then 8)
+    #: and the document keeps its own place.
+    assert got[0]["order"] == [7, 7, 8]
+    assert got[0]["marks"] == [2, 1, 3, 2]
+    #: With no panel list: numbered by first mention, one number a source.
+    assert got[1]["marks"] == [1, 2, 3, 1]
+
+
+def test_no_surface_reads_a_citation_number_by_bare_note_id():
+    for name in ("capture-ask.js", "ask-compose.js", "chat-agent.js", "chat-attach.js"):
+        text = (JS / name).read_text(encoding="utf-8")
+        assert not re.search(r"numberFor\.(?:get|has|set)\((?:[a-z]+\.note_id|noteId)\b", text), name
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")

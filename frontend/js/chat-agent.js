@@ -2194,7 +2194,7 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
 //: or file keeps its place. One order here, so every marker and card agrees.
 function sourcesByFirstMention(sources, sentences) {
   const rank = new Map();
-  for (const g of sentences || []) if (!rank.has(g.note_id)) rank.set(g.note_id, rank.size);
+  for (const g of sentences || []) if (!rank.has(citeKey(g.kind, g.note_id))) rank.set(citeKey(g.kind, g.note_id), rank.size);
   if (!rank.size) return sources;
   const places = [];
   const notes = [];
@@ -2203,9 +2203,10 @@ function sourcesByFirstMention(sources, sentences) {
     places.push(at);
     notes.push(source);
   });
-  const cited = notes.filter((n) => rank.has(n.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+  const key = (n) => citeKey(n.kind, n.id);
+  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
   const out = sources.slice();
-  [...cited, ...notes.filter((n) => !rank.has(n.id))].forEach((n, k) => (out[places[k]] = n));
+  [...cited, ...notes.filter((n) => !rank.has(key(n)))].forEach((n, k) => (out[places[k]] = n));
   return out;
 }
 
@@ -2544,6 +2545,7 @@ const DRAFT_QUICKSTARTS = [
   //: The language is the last one chosen in the kind menu's "Translate into"
   //: group, Spanish until one has been; the menu shows which, and changing
   //: it there is how another language is picked.
+  { label: "Make a diagram", icon: "ph:tree-structure", kind: "diagram", title: "Draw the steps, dates or points in the box as a flowchart, timeline or mind map" },
   { label: "Translate", icon: "ph:translate", kind: "translate", model: 1, title: "Translate what is in the box, into the language chosen in the menu" },
 ];
 
@@ -2592,6 +2594,8 @@ function renderDraftQuickstarts() {
       if (start.tone) $("draft-tone").value = start.tone;
       markDraftQuickstart(start.kind);
       //: With no model the chips that need one say so (X20, INBOX 1466).
+      //: A line left by the last chip is about that chip: cleared first.
+      setDraftStatus("");
       if (aiIsOff() && start.model) setDraftStatus(`${start.label} needs a model. ${AI_OFFLINE_HINT}.`);
       saveDraftLocally();
       $("draft-thoughts").focus();
@@ -2609,10 +2613,9 @@ function markDraftQuickstart(kind) {
   if (!host) return;
   [...host.children].forEach((chip, index) => {
     const own = DRAFT_QUICKSTARTS[index]?.kind;
-    chip.classList.toggle(
-      "active",
-      own === kind || (own === "translate" && String(kind).startsWith("translate-"))
-    );
+    const on = own === kind || (own === "translate" && String(kind).startsWith("translate-"));
+    chip.classList.toggle("active", on);
+    chip.setAttribute("aria-pressed", String(on));
   });
 }
 

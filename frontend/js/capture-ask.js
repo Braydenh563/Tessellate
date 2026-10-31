@@ -1063,19 +1063,26 @@ function clickableResult(entry) {
 //   recomputed: two loops that agree today disagree after the next edit.
 //   A note the panel did not list (it caps its rows) still gets a number,
 //   after the listed ones.
+//: **Keyed by kind and id** (`citeKey`): a document's id is another table's,
+//: so note 7 and document 7 cited in one answer took one number between them
+//: (INBOX 1357). A board or a map is an entry, so it keys as a note.
+function citeKey(kind, id) {
+  return `${kind === "document" ? "document" : "note"}:${id}`;
+}
+
 function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
   if (orderedSources && orderedSources.length) {
     orderedSources.forEach((source, index) => {
-      if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(source.id, index + 1);
+      if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(citeKey(source.kind, source.id), index + 1);
     });
     let next = orderedSources.length + 1;
     for (const g of sentences || []) {
-      if (!numberFor.has(g.note_id)) numberFor.set(g.note_id, next++);
+      if (!numberFor.has(citeKey(g.kind, g.note_id))) numberFor.set(citeKey(g.kind, g.note_id), next++);
     }
   } else {
     for (const g of sentences || []) {
-      if (!numberFor.has(g.note_id)) numberFor.set(g.note_id, numberFor.size + 1);
+      if (!numberFor.has(citeKey(g.kind, g.note_id))) numberFor.set(citeKey(g.kind, g.note_id), numberFor.size + 1);
     }
   }
   return numberFor;
@@ -1200,7 +1207,7 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     //: fragment that could match anywhere, and the backend never grounds one.
     if (key.length < 12 && !g.anchor) continue;
     if (!bySentence.has(key)) bySentence.set(key, []);
-    if (!bySentence.get(key).some((row) => row.note_id === g.note_id)) bySentence.get(key).push(g);
+    if (!bySentence.get(key).some((row) => citeKey(row.kind, row.note_id) === citeKey(g.kind, g.note_id))) bySentence.get(key).push(g);
   }
   //: Longest first, and a claimed stretch is never reused by a different
   //: sentence: when one grounded sentence is contained in another, the short
@@ -1218,7 +1225,7 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     claimed.push([start, start + key.length]);
     const [node, offset] = index.at[start + key.length - 1];
     const { parent, before } = citationInsertionPoint(node, offset, targets);
-    rows.sort((a, b) => (numberFor.get(a.note_id) || 0) - (numberFor.get(b.note_id) || 0));
+    rows.sort((a, b) => (numberFor.get(citeKey(a.kind, a.note_id)) || 0) - (numberFor.get(citeKey(b.kind, b.note_id)) || 0));
     for (const g of rows) parent.insertBefore(citationMarker(g, byId, numberFor), before);
   }
   collapseCitationRuns(targets);
@@ -1289,14 +1296,15 @@ function citationMarker(g, byId, numberFor) {
   const link = document.createElement("button");
   link.type = "button";
   link.className = "answer-citation-link";
-  const entry = byId.get(g.note_id);
+  const entry = g.kind === "document" ? undefined : byId.get(g.note_id);
+  const number = numberFor.get(citeKey(g.kind, g.note_id));
   // A note a tool read mid-turn is not in `rawResults`; the backend
   // sends its opening words on the entry itself for exactly this case.
   const name = citationName(entry?.content || g.label || "");
-  link.textContent = String(numberFor.get(g.note_id));
+  link.textContent = String(number);
   //: No `title`: the peek below is what a hover shows now, and a native
   //: tooltip would draw a second, plainer box over it a moment later.
-  link.setAttribute("aria-label", `Source ${numberFor.get(g.note_id)}: ${name}`);
+  link.setAttribute("aria-label", `Source ${number}: ${name}`);
   link.setAttribute("aria-haspopup", "dialog");
   link.setAttribute("aria-expanded", "false");
   //: **A mark previews its note where it is; going there is a second,
@@ -1311,7 +1319,7 @@ function citationMarker(g, byId, numberFor) {
   const start = own.length ? Math.min(...own.map((part) => part.start)) : g.start;
   const end = own.length ? Math.max(...own.map((part) => part.end)) : g.end;
   const describe = () => ({
-    noteId: g.note_id, number: numberFor.get(g.note_id), entry, label: g.label, start, end,
+    noteId: g.note_id, number, entry, label: g.label, start, end,
     signals: g.signals, verdict: g.verdict, terms: g.terms, line: g.sentence, parts: g.parts,
   });
   link.addEventListener("click", (event) => {
@@ -1680,7 +1688,7 @@ function numberMatchingRecords(target, numberFor) {
   if (!list) return;
   for (const li of list.querySelectorAll("li[data-id]")) {
     li.querySelector(":scope > .record-index")?.remove();
-    const n = numberFor.get(Number(li.dataset.id)) ?? numberFor.get(li.dataset.id);
+    const n = numberFor.get(citeKey("note", li.dataset.id));
     if (!n) {
       li.classList.remove("is-numbered");
       continue;
@@ -1815,12 +1823,13 @@ function renderAnswerGrounding(
     return;
   }
   const byId = new Map((rawResults || []).map((entry) => [entry.id, entry]));
-  const byNote = new Map(); // note_id -> sentences[]
-  const labelFor = new Map(); // note_id -> backend label, for touched notes
+  const byNote = new Map(); // citeKey -> { noteId, kind, said: sentences[] }
+  const labelFor = new Map(); // citeKey -> backend label, for touched notes
   for (const g of sentences) {
-    if (!byNote.has(g.note_id)) byNote.set(g.note_id, []);
-    byNote.get(g.note_id).push(g.sentence);
-    if (g.label && !labelFor.has(g.note_id)) labelFor.set(g.note_id, g.label);
+    const key = citeKey(g.kind, g.note_id);
+    if (!byNote.has(key)) byNote.set(key, { noteId: g.note_id, kind: g.kind, said: [] });
+    byNote.get(key).said.push(g.sentence);
+    if (g.label && !labelFor.has(key)) labelFor.set(key, g.label);
   }
   ensureModule("replyKit");
   const fold = target.appendChild(document.createElement("details"));
@@ -1840,13 +1849,13 @@ function renderAnswerGrounding(
   const chips = [...byNote.entries()].sort(
     (a, b) => (numberFor.get(a[0]) || 0) - (numberFor.get(b[0]) || 0)
   );
-  for (const [noteId, forSentences] of chips) {
-    const entry = byId.get(noteId);
-    const n = numberFor.get(noteId) || 0;
+  for (const [key, { noteId, kind, said: forSentences }] of chips) {
+    const entry = kind === "document" ? undefined : byId.get(noteId);
+    const n = numberFor.get(key) || 0;
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip result-reason-chip result-reason-connected answer-grounding-chip";
-    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(noteId) || "", 30);
+    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(key) || "", 30);
     // A tooltip prints characters: `plainText` (chat-attach.js, run at render).
     chip.title = plainText(forSentences.join(" "));
     chip.addEventListener("click", () => {
@@ -1974,12 +1983,12 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       sources.append(evidenceSpan("muted answer-evidence-none", "No note says this", "p"));
     }
     for (const g of row.sources) {
-      const entry = byId.get(g.note_id) || allEntries.find((e) => e.id === g.note_id) || null;
+      const entry = g.kind === "document" ? null : byId.get(g.note_id) || allEntries.find((e) => e.id === g.note_id) || null;
       const content = entry?.content || g.label || "";
       const card = evidenceSpan("answer-evidence-card", "", "button");
       card.type = "button";
       const head = evidenceSpan("citation-peek-head");
-      const number = String(numberFor.get(g.note_id) || "");
+      const number = String(numberFor.get(citeKey(g.kind, g.note_id)) || "");
       const title = noteLabel({ content }, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
@@ -2177,6 +2186,19 @@ function clearAskAnswerFoot() {
     strip.replaceChildren();
     strip.classList.add("hidden");
   }
+}
+
+//: **The answer and its foot are said aloud** (UX review 1031, M11): the box
+//: has no live region, so nothing told a screen reader an answer, its related
+//: notes, sources or follow-ups had arrived. Counts are of what is showing.
+function announceAskFoot() {
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((el) => !el.closest(".hidden")).length;
+  const parts = [
+    ["related note", shown("#ask-answer-related .answer-related-chip")],
+    ["source", shown("#ask-answer-sources .chat-source-card")],
+    ["follow-up question", shown("#ask-followups .chip-interactive")],
+  ].filter(([, count]) => count);
+  announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
 }
 
 function renderAskAnswerFoot(object, meta) {
@@ -3283,7 +3305,7 @@ async function askQuestion(preset) {
       //: answer composed from the notes brings its own (INBOX 725), built
       //: from what it found and did not say, and asks no model for them.
       const followups = () => renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);
-      ensureModule("askCompose").then(followups).catch(() => {});
+      ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot);
     }
     askStatusText("");
     // Asking changes both quick-access lists, and, for a real (non-hint)

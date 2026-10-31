@@ -102,6 +102,8 @@ for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
     if (id === "draft-kind") {
       const kind = $("draft-kind").value;
       markDraftQuickstart(kind);
+      //: A chip's "needs a model" line is about that chip, not the next pass.
+      setDraftStatus("");
       //: The Translate chip goes back to the last language picked here.
       if (kind.startsWith("translate-")) {
         try {
@@ -153,6 +155,8 @@ $("draft-discard").addEventListener("click", async () => {
   renderDraftVersions();
   clearDraftTarget();
   setDraftStatus("");
+  $("draft-diagram").replaceChildren();
+  $("draft-diagram").classList.add("hidden");
   updateDraftCount();
   saveDraftLocally();
 });

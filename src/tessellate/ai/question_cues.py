@@ -55,6 +55,8 @@ _RHETORICAL = re.compile(
     re.I,
 )
 _URL = re.compile(r"https?://|www\.", re.I)
+#: A line that is only an address (bare, in angle brackets, or as a link).
+_URL_LINE = re.compile(r"^\s*(?:[-*]\s+)?(?:<?(?:https?://|www\.)\S+>?|\[[^\]]*\]\((?:https?://|www\.)[^)]*\))\s*$", re.I)
 _YOU = re.compile(r"\byou(?:r|rs)?\b", re.I)
 #: Words that make a sentence a question, not what it is about.
 _ASKING = frozenset(
@@ -96,7 +98,42 @@ def not_asked(content: str, start: int, end: int) -> bool:
         return True
     if _RHETORICAL.search(words.rstrip("*_ ")):
         return True
-    return bool(_URL.search(content) and _YOU.search(words))
+    return bool(_YOU.search(words) and _pasted(content, start, end))
+
+
+def _only_urls(lines: list[str]) -> bool:
+    return bool(lines) and all(_URL_LINE.match(line) for line in lines)
+
+
+def _paragraph(lines: list[str], index: int, step: int) -> list[str]:
+    """The paragraph past `index` in direction `step`, when blank lines come
+    between: its non-blank lines, else []."""
+    at = index + step
+    if not 0 <= at < len(lines) or lines[at].strip():
+        return []
+    while 0 <= at < len(lines) and not lines[at].strip():
+        at += step
+    found: list[str] = []
+    while 0 <= at < len(lines) and lines[at].strip():
+        found.append(lines[at])
+        at += step
+    return found
+
+
+def _pasted(content: str, start: int, end: int) -> bool:
+    """A question sits with a page's address: a URL in its own line outside
+    the question, on the line just above or below it, or a paragraph of only
+    URLs just before or after it. A URL elsewhere in the note, in another
+    paragraph, is the person's own note, not a paste around this question."""
+    lines = content.split("\n")
+    row = content.count("\n", 0, start)
+    first = content.rfind("\n", 0, start) + 1
+    last = content.find("\n", end)
+    beside = content[first:start] + " " + content[end:len(content) if last < 0 else last]
+    neighbours = [lines[i] for i in (row - 1, row + 1) if 0 <= i < len(lines)]
+    if any(_URL.search(text) for text in [beside, *neighbours]):
+        return True
+    return _only_urls(_paragraph(lines, row, -1)) or _only_urls(_paragraph(lines, content.count("\n", 0, max(end - 1, start)), 1))
 
 
 def normal(text: str) -> str:

@@ -117,3 +117,13 @@ def test_a_plain_text_cell_is_kept_as_typed_and_an_html_one_is_still_stripped() 
     script = pure + 'console.log(JSON.stringify([wbDrawioText("a <b> &amp; c", false), wbDrawioText("a<br>b &amp; <i>c</i>")]));'
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True)
     assert json.loads(out.stdout) == ["a <b> &amp; c", "a\nb & c"]
+
+
+@pytest.mark.parametrize("at", [0, 60, 117, 118, 119, 120])
+def test_a_long_title_is_cut_before_it_is_escaped(at: int) -> None:
+    """Cutting the escaped text can split `&amp;` and write malformed XML."""
+    title = "x" * at + "& & &" + "y" * 20
+    made = _export(STATE, f", title: {json.dumps(title)}")
+    root = ET.fromstring(made["xml"].split("\n", 1)[1])  # raises on a cut entity
+    name = root.find("diagram").get("name")
+    assert name == title[:120]

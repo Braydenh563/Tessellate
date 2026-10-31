@@ -396,9 +396,14 @@ def _retire_not_own_questions(session: Session) -> int:
     """Tombstone the stored questions `kept_question` would not take now
     (INBOX 745 (b)): they leave the list at the next pass, and a tombstone is
     "already known", so a later read does not bring them back. A row whose
-    note no longer holds its text is left to the edit path."""
+    note no longer holds its text is left to the edit path. Only the rows the
+    rule pass wrote (`model == "local"`): a row a model decided on, or the
+    person edited, is not undone by a rule after the fact."""
     rows = list(session.scalars(
-        select(DerivedFact).where(DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None))
+        select(DerivedFact).where(
+            DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None),
+            DerivedFact.model == "local", DerivedFact.edited_by_user.is_not(True),
+        )
     ).all())
     notes = {
         entry.id: entry.content or ""

@@ -2169,7 +2169,7 @@ function syncModelGatedControls(status = modelStatus) {
   //: thing that said so was a title on a button that could not be pressed.
   renderAiOfflineNotice(
     $("draft-offline"),
-    "No model connected, so nothing can be drafted. The rest of this tab works."
+    "No model connected. Only Carry on and Translate need one; the rest works by rule."
   );
   //: UX-12: any other AI-only widget names its own line.
   for (const line of document.querySelectorAll("[data-offline-line]")) renderAiOfflineNotice(line, line.dataset.offlineLine);

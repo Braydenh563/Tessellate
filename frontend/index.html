@@ -1921,9 +1921,10 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Your own words stay in the box: nothing here overwrites what
               you typed, Undo steps back through every pass, and every draft
               Atlas produced is kept under the box so you can go back to one.
-              Drafting and Refine need a model connected: with none, pressing
-              them says so and offers Set up a model, and everything else on
-              this tab still works. Suggest a title takes the title from your
+              Carry on and Translate need a model connected: with none, pressing
+              them says so and offers Set up a model. Every other mode, and
+              Refine's shorter, writes by plain rule, marked From your words.
+              Suggest a title takes the title from your
               own words, and Split into notes cuts the text at its headings
               and paragraphs.</p>
           </div>
@@ -2066,6 +2067,10 @@ Link to another note with [[its first few words]]."></textarea>
                    `.library-chip` recipe. Undo steps back one pass; these are
                    the way back to any of them, which is what a desk full of
                    crossed-out pages gives you and a single undo does not. -->
+              <!-- A diagram pass is drawn here as a picture (`drawDraftDiagram`,
+                   the vendored Mermaid like a document's); the box above keeps
+                   the source, which is what a save keeps. -->
+              <div id="draft-diagram" class="draft-diagram hidden" role="img" aria-label="Diagram preview"></div>
               <div class="row draft-versions hidden" id="draft-versions"
                 aria-label="Earlier drafts"></div>
               <!-- The refine field and the button that reads it are one

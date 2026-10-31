@@ -111,7 +111,7 @@ function linkCitedTitles(targets, sentences, byId, numberFor) {
       name.setAttribute("aria-label", `Open the ${kind === "map" ? "mind map" : kind} ${g.title}`);
       name.style.cursor = "pointer";
       const describe = () => ({
-        noteId: g.note_id, number: numberFor.get(g.note_id), entry: byId.get(g.note_id), label: g.label,
+        noteId: g.note_id, number: numberFor.get(citeKey(g.kind, g.note_id)), entry: g.kind === "document" ? undefined : byId.get(g.note_id), label: g.label,
         start: g.start, end: g.end, signals: g.signals, verdict: g.verdict, terms: g.terms,
       });
       name.addEventListener("mouseenter", () => scheduleCitationPeek(name, describe));
