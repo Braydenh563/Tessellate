@@ -112,8 +112,12 @@ def test_the_keyboard_lands_somewhere_after_every_note_step():
     notes = _read("notes-list.js")
     assert "else focusBodyAfterRender = id;" in _function(notes, "openNoteEditor")
     assert "focusNoteRow(back)" in _function(_read("note-edit-panels.js"), "closeNoteForm")
+    # Since notes N11 the guard (only when focus is lost) and the focus call
+    # live in the one `restoreFocusTo` contract, which focusNoteRow calls.
     row = _function(notes, "focusNoteRow")
-    assert "active !== document.body" in row and "row.focus(" in row
+    assert "restoreFocusTo(" in row and "row.tabIndex = 0;" in row
+    contract = _function(notes, "restoreFocusTo")
+    assert "here !== document.body" in contract and "el.focus(" in contract
     assert "if (!many) focusNoteRow(noteIds[0]);" in _read("categories-panel.js")
     sheet = _function(_read("phone-shell.js"), "openSheet")
     assert "'.sheet-row[aria-current=\"true\"]'" in sheet
