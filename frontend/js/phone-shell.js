@@ -1006,6 +1006,17 @@ initRowSwipe($("reminder-groups"), {
 let notePageOpenId = null;
 let notePageClose = null;
 
+//: The sheet's head already says the note's name, so the card inside does
+//: not say it again (audit 1031 N14): its own `.entry-title`, or the opening
+//: heading of a note that has no stored title. Text compared with the
+//: clipped head, so a long heading still matches.
+function dropRepeatedTitle(root, title) {
+  root.querySelector(".entry-title")?.remove();
+  const first = root.querySelector(".entry-content")?.firstElementChild;
+  const said = (first?.textContent || "").replace(/\s+/g, " ").trim();
+  if (first && /^H[1-6]$/.test(first.tagName) && said && title.startsWith(said.slice(0, 80))) first.remove();
+}
+
 function openNotePage(entry, returnFocus = null) {
   if (!entry || notePageOpenId === entry.id) return;
   expandedNotes.add(entry.id);
@@ -1026,6 +1037,7 @@ function openNotePage(entry, returnFocus = null) {
       const item = entryItem(entry, { actions: true });
       item.querySelector(".entry-content")?.classList.remove("entry-clamped");
       item.querySelector(".entry-more")?.remove();
+      dropRepeatedTitle(item, title);
       list.appendChild(item);
       card.appendChild(list);
       const actions = item.querySelector(".entry-actions");
@@ -1059,6 +1071,7 @@ function refreshNotePage(ids) {
   const fresh = entryItem(entry, { actions: true }).querySelector(".entry-content");
   if (!fresh) return;
   fresh.classList.remove("entry-clamped");
+  dropRepeatedTitle(fresh.parentNode || fresh, entry.title || noteNamePlain(entry.content, 80) || "Note");
   old.replaceWith(fresh);
 }
 

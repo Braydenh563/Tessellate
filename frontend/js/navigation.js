@@ -2164,7 +2164,7 @@ function tabPlaceholder(page, on) {
 // outright rather than matching opening/closing pairs, which handles a
 // truncated run the same way as a complete one.
 function stripMarkdownPreview(text) {
-  return text
+  return previewBlocks(text)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/^>\s?/gm, "")
     .replace(/^[-*+]\s+/gm, "")

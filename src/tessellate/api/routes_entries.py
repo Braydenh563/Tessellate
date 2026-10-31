@@ -2743,9 +2743,16 @@ def get_entry(
     entry_id: int,
     response: Response,
     deleted: bool = False,
+    open: bool = False,  # noqa: A002 - the query word is the contract
     session: Session = Depends(get_session),
 ) -> EntryOut:
     """One entry. `?deleted=true` also reaches into the bin.
+
+    **Only `?open=1` counts as an open** (audit 1031 N5). The graph hover card,
+    the swipe sheet, the chat agent and the image layout all read a note this
+    way without a person reading it, and each bumped "Views", the "most used"
+    sort and the Continue pill; a read is not an open unless the caller says
+    a person is looking at the note.
 
     The bin used to be a panel that listed every deleted note with its full
     text, so "read a binned note before deciding whether to restore it" came
@@ -2763,7 +2770,7 @@ def get_entry(
     entry = _existing_entry(session, entry_id)
     if entry.is_deleted and not deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
-    if not entry.is_deleted:
+    if open and not entry.is_deleted:
         entry.access_count += 1  # opening an entry counts as using it
         #: And on which day (WORLD_CLASS_PLAN section 17 row 5): "most opened
         #: this month" cannot be read off an all-time count.
@@ -2776,6 +2783,7 @@ def get_entry(
         # pill pointing at whatever was newest. Same guard as the count: a
         # note read on its way out of the bin has not been come back to.
         entry.last_opened_at = utcnow()
+    if not entry.is_deleted:
         # A private note has no audit trail at all otherwise, encrypted at
         # rest and invisible to the AI is the whole promise, but nothing
         # recorded *when* one was actually opened and decrypted for

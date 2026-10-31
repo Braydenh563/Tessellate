@@ -2445,7 +2445,7 @@ async function openGraphPopup(event, node) {
   graphPopupAnchor = { x: event.clientX, y: event.clientY };
   placeGraphPopup();
 
-  const entry = await apiJson(`/entries/${node.id}`).catch(() => null);
+  const entry = await apiJson(`/entries/${node.id}?open=1`).catch(() => null);
   if (!entry || graphPopupId !== node.id) {
     if (graphPopupId === node.id) {
       $("graph-popup-content").value = "";

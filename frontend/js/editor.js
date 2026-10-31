@@ -1252,6 +1252,10 @@ function editorLinkMatches(needle) {
       // then find the INNER brackets and resolve to the wrong note.
       value: (entry.content || "")
         .split("\n")[0]
+        //: Without the heading marker (audit 1031 N34): `[[# Very long title]]`
+        //: put a hash in the text and resolved only by prefix luck; the resolver
+        //: strips the marker from the note, so the title alone finds it.
+        .replace(/^\s*#{1,6}\s+/, "")
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()

@@ -2386,7 +2386,7 @@ function entryItem(entry, options = {}) {
         }
         items.push({ label: "ph:tag Kind and properties…", title: "What kind of link this is (Part of, Supports…) and its properties", run: () => openLinkTypeSheet(entry.id, link), group: "kind" });
         items.push({ label: "ph:link-break Remove the link", title: "Remove this link (undoable)", run: unlink, group: "remove" });
-        connection.appendChild(kebabMenu(items, `Actions for the link to ${label}`, { vertical: true }));
+        connection.appendChild(kebabMenu(items, `Actions for the link to ${label || "a note without a title"}`, { vertical: true }));
       }
       linkRow.appendChild(connection);
     }
