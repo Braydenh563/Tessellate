@@ -145,6 +145,7 @@ def _to_out(
         edited_at=getattr(entry, "edited_at", None),
         parent_id=entry.parent_id,
         pinned=entry.pinned,
+        colour=getattr(entry, "colour", None),
         user_filed=entry.user_filed,
         is_private=bool(getattr(entry, "is_private", False)),
         is_draft=bool(getattr(entry, "is_draft", False)),
@@ -815,6 +816,8 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         entry.is_draft = True
     if body.map_topic:
         entry.map_topic = True
+    if body.colour:
+        entry.colour = body.colour
     if body.source_url:
         entry.source_url = body.source_url
         entry.source_title = body.source_title
@@ -2902,6 +2905,9 @@ def update_entry(
         manager.log_action(
             session, "edited", "entry", entry.id, "pinned" if body.pinned else "unpinned"
         )
+        session.commit()
+    if "colour" in body.model_fields_set and body.colour != entry.colour:
+        entry.colour = body.colour
         session.commit()
     if body.is_draft is not None and body.is_draft != entry.is_draft:
         entry.is_draft = body.is_draft

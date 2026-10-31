@@ -249,6 +249,33 @@ function clearQuickNote() {
   keepQuickNoteDraft();
 }
 
+//: What follows a note that reached the server, for the quick note and the Notes
+//: tab's capture card alike: the toast with its way to the note, the list
+//: refreshed, filing watched and the undo entry.
+function announceSavedNote(saved, reminded = "") {
+  toastAction(
+    (saved.filing_state === "pending" ? "Saved. Filing it now." : `Filed under “${saved.category}”.`) + reminded,
+    "Go to it",
+    () => flashEntry(saved.id),
+    { go: { open: "entry", id: saved.id } },
+  );
+  //: In the list now, not when filing settles: measured, 2 to 4 s later
+  //: on every tab but the dashboard when this waited on the watch.
+  refreshEntries([saved.id]).catch(() => {});
+  if (saved.filing_state === "pending") watchFiling(saved);
+  pushUndo(
+    "Created a note",
+    async () => {
+      await api(`/entries/${saved.id}`, { method: "DELETE" });
+      await refreshEntries([saved.id]);
+    },
+    async () => {
+      await api(`/entries/${saved.id}/restore`, { method: "POST" });
+      await refreshEntries([saved.id]);
+    },
+  );
+}
+
 let quickNoteSaving = false;
 
 async function saveQuickNote() {
@@ -274,28 +301,7 @@ async function saveQuickNote() {
       return;
     }
     const saved = result.saved;
-    const reminded = slots?.due ? await quickNoteReminder(saved.id, slots) : "";
-    toastAction(
-      (saved.filing_state === "pending" ? "Saved. Filing it now." : `Filed under “${saved.category}”.`) + reminded,
-      "Go to it",
-      () => flashEntry(saved.id),
-      { go: { open: "entry", id: saved.id } },
-    );
-    //: In the list now, not when filing settles: measured, 2 to 4 s later
-    //: on every tab but the dashboard when this waited on the watch.
-    refreshEntries([saved.id]).catch(() => {});
-    if (saved.filing_state === "pending") watchFiling(saved);
-    pushUndo(
-      "Created a note",
-      async () => {
-        await api(`/entries/${saved.id}`, { method: "DELETE" });
-        await refreshEntries([saved.id]);
-      },
-      async () => {
-        await api(`/entries/${saved.id}/restore`, { method: "POST" });
-        await refreshEntries([saved.id]);
-      },
-    );
+    announceSavedNote(saved, slots?.due ? await quickNoteReminder(saved.id, slots) : "");
   } catch (error) {
     //: Refused or failed and not held: the words stay in the box (and in
     //: storage, from the last keystroke), with the reason under them.

@@ -62,6 +62,21 @@ class SpaceResponse(BaseModel):
 MAX_NOTE_CONTENT = 500_000
 
 
+#: The swatch keys a note's colour may be (INBOX 1479): the ones the category
+#: picker draws (`routes_categories.CATEGORY_PALETTE_KEYS`, which a test keeps
+#: equal), so one palette serves both.
+NOTE_COLOURS = (
+    "red", "orange", "amber", "lime", "green", "teal",
+    "cyan", "blue", "indigo", "violet", "magenta", "pink",
+)
+
+
+def known_note_colour(value: str | None) -> str | None:
+    if value is not None and value not in NOTE_COLOURS:
+        raise ValueError("Pick one of the colour swatches")
+    return value
+
+
 class EntryCreate(BaseModel):
     content: str = Field(min_length=1, max_length=MAX_NOTE_CONTENT, description="The thought to store")
     tags: list[str] = Field(default_factory=list, max_length=200)
@@ -132,6 +147,13 @@ class EntryCreate(BaseModel):
     #: (the server stopped after the commit) is answered with the note it
     #: already made rather than a second copy.
     client_key: str | None = Field(default=None, max_length=80)
+    #: The note's colour from the capture card's dots (INBOX 1479).
+    colour: str | None = None
+
+    @field_validator("colour")
+    @classmethod
+    def _colour_is_a_swatch(cls, value: str | None) -> str | None:
+        return known_note_colour(value)
 
 
 class EntryUpdate(BaseModel):
@@ -158,6 +180,14 @@ class EntryUpdate(BaseModel):
             return None
         return normalise_tags(tags)
     pinned: bool | None = None
+    #: A swatch key to set the colour, null to clear it; left out, it stays.
+    colour: str | None = None
+
+    @field_validator("colour")
+    @classmethod
+    def _colour_is_a_swatch(cls, value: str | None) -> str | None:
+        return known_note_colour(value)
+
     is_draft: bool | None = None
     #: The `content_hash` of the text this edit started from, so a save made
     #: over text another window has since changed is refused (409) rather
@@ -278,6 +308,8 @@ class EntryOut(BaseModel):
     edited_at: datetime | None = None
     parent_id: int | None = None
     pinned: bool = False
+    #: The note's own colour, a swatch key (INBOX 1479); null for none.
+    colour: str | None = None
     user_filed: bool = False
     # Private notes are encrypted at rest and kept out of search and the AI.
     is_private: bool = False

@@ -1,0 +1,177 @@
+/* The Notes tab's capture card (INBOX 1479), fetched with capture-card.js on
+   the capture bar's first focus. One writing surface on `.note-composer`'s
+   own recipe (07-whiteboard-misc.css): the title and the body give up their
+   edges to it, so the card reads as one thing you write into. */
+.capture-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.capture-card[hidden] {
+  display: none;
+}
+.capture-card .note-composer {
+  margin-bottom: 0;
+}
+/* The title and the bell share a row, so the title is not the surface's own
+   child: it gives up its edge here, as the direct children do. */
+.capture-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-3);
+}
+.note-composer > .capture-card-head .capture-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.note-composer > .capture-card-head .capture-card-title:focus-visible {
+  outline: none;
+}
+.capture-card-bell,
+.capture-card-bell .menu-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.note-composer > .capture-card-tags {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+.capture-card-colours:empty {
+  display: none;
+}
+.note-composer > .capture-card-head .capture-card-title {
+  padding: var(--space-4) var(--space-2) var(--space-2) var(--space-4);
+  font-size: var(--text-h3);
+  font-weight: 600;
+}
+/* One row of dots under the card: the eight swatches and None, five a row on a phone. */
+.capture-card-colours .swatch-picker {
+  grid-template-columns: repeat(9, max-content);
+  gap: var(--space-2);
+  padding: 0;
+}
+@media (max-width: 599.98px) {
+  .capture-card-colours .swatch-picker {
+    grid-template-columns: repeat(5, max-content);
+  }
+}
+.capture-card-due {
+  white-space: nowrap;
+}
+/* The body grows with the words up to a cap, then scrolls inside itself, so
+   the foot with Save is never pushed off the screen (INBOX 1357). */
+.capture-card-body {
+  min-height: calc(var(--control-h-lg) * 2);
+  max-height: 40vh;
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  overflow-y: auto;
+  resize: none;
+  field-sizing: content;
+}
+.capture-card-status {
+  min-height: 1.4em;
+  margin: 0;
+}
+.capture-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+.capture-card-spacer {
+  flex: 1 1 auto;
+}
+.capture-card-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-2) var(--space-3);
+}
+.capture-card-items[hidden],
+.capture-card-body[hidden] {
+  display: none;
+}
+.capture-card-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.capture-card-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.capture-card-item.is-dragging {
+  background: var(--accent-surface);
+  border-radius: var(--radius-md);
+}
+.capture-card-grip {
+  cursor: grab;
+  touch-action: none;
+}
+/* A row's field gives up its edge to the card, like the title and body. */
+.note-composer > .capture-card-items .capture-card-item-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.capture-card-add {
+  align-self: flex-start;
+}
+.note-composer > .capture-card-items .capture-card-item-text:focus-visible {
+  outline: none;
+}
+.note-composer:has(.capture-card-item-text:focus-visible, .capture-card-title:focus-visible) {
+  border-color: var(--accent-text);
+  box-shadow: inset 0 0 0 1px var(--accent-text);
+}
+/* The mode switch sits at the foot's left, where the reference has it. */
+.capture-card-modes {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+/* The pictures on the note being written: small squares, each with its own
+   remove button over its corner. */
+.capture-card-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.capture-card-thumbs[hidden] {
+  display: none;
+}
+.capture-card-thumb {
+  position: relative;
+  display: inline-block;
+  inline-size: 5.5rem;
+  block-size: 5.5rem;
+}
+.capture-card-thumb img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+.capture-card-thumb button {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-sm);
+}

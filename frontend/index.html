@@ -2631,6 +2631,22 @@ Link to another note with [[its first few words]]."></textarea>
             </ul>
             <p class="muted">Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
           </div>
+          <!-- **The capture bar** (INBOX 1479, the owner's reference Notes panel):
+               one line that opens in place into a card (title, body, Close and
+               Save). Only the line is here; the card is the lazy
+               capture-card.js, fetched on the first focus of the field below
+               (notes-list.js), so the boot scripts do not carry it. -->
+          <div id="capture-bar" class="capture-bar" role="group" aria-label="Add a note">
+            <div id="capture-bar-row" class="capture-bar-row">
+              <div class="seg capture-bar-modes" role="group" aria-label="Kind of note">
+                <button type="button" data-mode="note" aria-pressed="true" title="Write a note">Note</button>
+                <button type="button" data-mode="todo" aria-pressed="false" title="Write a to-do list">To-do</button>
+              </div>
+              <input id="capture-bar-input" class="capture-bar-input" type="text" autocomplete="off"
+                placeholder="Add a note…" aria-label="Add a note: opens the note card">
+      <button type="button" id="capture-bar-picture" class="ghost icon-only capture-bar-picture" title="Add pictures" aria-label="Add pictures to a new note"><i class="ph ph-image" aria-hidden="true"></i></button>
+            </div>
+          </div>
           <ul id="entry-list" class="entry-list"></ul>
           <div id="notes-pagination" class="row notes-pagination hidden" role="navigation" aria-label="Notes pages">
             <button id="notes-page-prev" class="ghost small" type="button" aria-label="Previous page"><i class="ph ph-caret-left ph-lead" aria-hidden="true"></i> Prev</button>
