@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-CHAT = (ROOT / "frontend" / "js" / "chat.js").read_text(encoding="utf-8")
+CHAT = (ROOT / "frontend" / "js" / "web-results.js").read_text(encoding="utf-8")
 CSS = (ROOT / "frontend" / "css" / "03-dashboard-widgets.css").read_text(encoding="utf-8")
 
 

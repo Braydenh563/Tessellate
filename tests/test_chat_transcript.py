@@ -293,8 +293,10 @@ def test_web_pieces_of_the_owners_list():
     assert '[...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")],' in agent
     groups = agent[agent.index("const CHAT_SOURCE_GROUPS = [") :][:200]
     assert groups.index('key: "web"') < groups.index('key: "note"')
+    #: The web panel's search code moved to the lazy web-results.js (AI6); the
+    #: composer's status line stays in chat.js. The intent is unchanged.
+    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in frontend_text("web-results.js")
     chat = frontend_text("chat.js")
-    assert 'smallButton("ph:arrow-clockwise Try again", "Search again", () => runWebSearch())' in chat
     assert 'webEngineInfo?.state === "absent" ? "Setting SearXNG up…' in chat
     assert "the first run pulls the image" not in chat + frontend_text("settings-controls.js")
     clip = frontend_text("web-clip.js")
