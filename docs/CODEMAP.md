@@ -978,7 +978,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerPaintTitle` | frontend/js/router.js:161 |
 | `routerRestore` | frontend/js/router.js:240 |
 
-### frontend/js/settings-panes.js (38)
+### frontend/js/settings-panes.js (36)
 
 | Name | File:line |
 |---|---|
@@ -987,39 +987,37 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:1177 |
+| `catalogueRun` | frontend/js/settings-panes.js:1107 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
-| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:835 |
-| `currentZoom` | frontend/js/settings-panes.js:1079 |
-| `downloadExport` | frontend/js/settings-panes.js:1053 |
+| `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:765 |
+| `currentZoom` | frontend/js/settings-panes.js:1009 |
+| `downloadExport` | frontend/js/settings-panes.js:983 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `hud` | frontend/js/settings-panes.js:1124 |
+| `hud` | frontend/js/settings-panes.js:1054 |
 | `initAutoGrow` | frontend/js/settings-panes.js:441 |
 | `initComposerResize` | frontend/js/settings-panes.js:363 |
-| `loadPreferences` | frontend/js/settings-panes.js:664 |
-| `markPrefsDirty` | frontend/js/settings-panes.js:982 |
-| `markPrefsSaved` | frontend/js/settings-panes.js:998 |
-| `nudgeZoom` | frontend/js/settings-panes.js:1145 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1505 |
-| `paletteCommands` | frontend/js/settings-panes.js:1227 |
-| `paletteKeys` | frontend/js/settings-panes.js:1491 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1516 |
+| `loadPreferences` | frontend/js/settings-panes.js:594 |
+| `markPrefsDirty` | frontend/js/settings-panes.js:912 |
+| `markPrefsSaved` | frontend/js/settings-panes.js:928 |
+| `nudgeZoom` | frontend/js/settings-panes.js:1075 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1435 |
+| `paletteCommands` | frontend/js/settings-panes.js:1157 |
+| `paletteKeys` | frontend/js/settings-panes.js:1421 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1446 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
-| `renderAccount` | frontend/js/settings-panes.js:488 |
-| `renderAutonomousSettings` | frontend/js/settings-panes.js:752 |
-| `renderPinSettings` | frontend/js/settings-panes.js:541 |
-| `renderPrefs` | frontend/js/settings-panes.js:682 |
-| `renderWebSearch` | frontend/js/settings-panes.js:774 |
-| `reportTimezone` | frontend/js/settings-panes.js:608 |
-| `savePrefs` | frontend/js/settings-panes.js:875 |
-| `saveSearchProvider` | frontend/js/settings-panes.js:813 |
-| `setPreference` | frontend/js/settings-panes.js:857 |
-| `setZoom` | frontend/js/settings-panes.js:1083 |
-| `updateProfileCount` | frontend/js/settings-panes.js:1041 |
+| `renderAutonomousSettings` | frontend/js/settings-panes.js:682 |
+| `renderPrefs` | frontend/js/settings-panes.js:612 |
+| `renderWebSearch` | frontend/js/settings-panes.js:704 |
+| `reportTimezone` | frontend/js/settings-panes.js:538 |
+| `savePrefs` | frontend/js/settings-panes.js:805 |
+| `saveSearchProvider` | frontend/js/settings-panes.js:743 |
+| `setPreference` | frontend/js/settings-panes.js:787 |
+| `setZoom` | frontend/js/settings-panes.js:1013 |
+| `updateProfileCount` | frontend/js/settings-panes.js:971 |
 | `watchOverlays` | frontend/js/settings-panes.js:453 |
-| `wirePrefsDirtyMarks` | frontend/js/settings-panes.js:1017 |
+| `wirePrefsDirtyMarks` | frontend/js/settings-panes.js:947 |
 
 ### frontend/js/media.js (10)
 
@@ -5946,7 +5944,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `semanticQuestionText` | frontend/js/semantic-notice.js:21 |
 | `semanticSetAutoInstall` | frontend/js/semantic-notice.js:36 |
 
-### frontend/js/settings-controls.js (68)
+### frontend/js/settings-controls.js (70)
 
 | Name | File:line |
 |---|---|
@@ -5987,6 +5985,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `previewTheme` | frontend/js/settings-controls.js:2966 |
 | `refreshSearxngHost` | frontend/js/settings-controls.js:1196 |
 | `releaseThemeHold` | frontend/js/settings-controls.js:2973 |
+| `renderAccount` | frontend/js/settings-controls.js:3311 |
 | `renderAutoChoices` | frontend/js/settings-controls.js:3111 |
 | `renderDuplicateGroups` | frontend/js/settings-controls.js:1807 |
 | `renderFeatureModelRows` | frontend/js/settings-controls.js:3213 |
@@ -5998,6 +5997,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderMaintenance` | frontend/js/settings-controls.js:2782 |
 | `renderMcpSnippet` | frontend/js/settings-controls.js:2203 |
 | `renderMemorySettings` | frontend/js/settings-controls.js:2633 |
+| `renderPinSettings` | frontend/js/settings-controls.js:3364 |
 | `renderSmallModelAuto` | frontend/js/settings-controls.js:3136 |
 | `renderStatusBarSettings` | frontend/js/settings-controls.js:2147 |
 | `resetAllFeatureModels` | frontend/js/settings-controls.js:1479 |
