@@ -8,57 +8,56 @@ Counts: frontend functions 7021, frontend ids 2596, CSS sections 506, backend ro
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
-### frontend/js/app.js (48)
+### frontend/js/app.js (47)
 
 | Name | File:line |
 |---|---|
 | `$` | frontend/js/app.js:166 |
 | `activeSpaceId` | frontend/js/app.js:400 |
 | `api` | frontend/js/app.js:404 |
-| `apiJson` | frontend/js/app.js:646 |
+| `apiJson` | frontend/js/app.js:625 |
 | `apiPagedList` | frontend/js/app.js:581 |
-| `askPasswordPrompt` | frontend/js/app.js:763 |
+| `askPasswordPrompt` | frontend/js/app.js:742 |
 | `authToken` | frontend/js/app.js:172 |
-| `chip` | frontend/js/app.js:1356 |
-| `chipWords` | frontend/js/app.js:1351 |
-| `clearApiCache` | frontend/js/app.js:642 |
-| `confirmDialog` | frontend/js/app.js:1444 |
-| `confirmVerb` | frontend/js/app.js:1437 |
-| `ensureModule` | frontend/js/app.js:2009 |
-| `enterWithoutPassword` | frontend/js/app.js:721 |
+| `chip` | frontend/js/app.js:1335 |
+| `chipWords` | frontend/js/app.js:1330 |
+| `clearApiCache` | frontend/js/app.js:621 |
+| `confirmDialog` | frontend/js/app.js:1423 |
+| `confirmVerb` | frontend/js/app.js:1416 |
+| `ensureModule` | frontend/js/app.js:1988 |
+| `enterWithoutPassword` | frontend/js/app.js:700 |
 | `hide` | frontend/js/app.js:168 |
-| `hideBootSplash` | frontend/js/app.js:954 |
-| `initAuth` | frontend/js/app.js:967 |
-| `installStandIns` | frontend/js/app.js:2217 |
-| `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
-| `lazyAssetStamp` | frontend/js/app.js:1948 |
-| `lazyScript` | frontend/js/app.js:1989 |
-| `lockFieldForPin` | frontend/js/app.js:861 |
-| `lockNow` | frontend/js/app.js:928 |
+| `hideBootSplash` | frontend/js/app.js:933 |
+| `initAuth` | frontend/js/app.js:946 |
+| `installStandIns` | frontend/js/app.js:2196 |
+| `lazyAssetStamp` | frontend/js/app.js:1927 |
+| `lazyScript` | frontend/js/app.js:1968 |
+| `lockFieldForPin` | frontend/js/app.js:840 |
+| `lockNow` | frontend/js/app.js:907 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2044 |
-| `onDomReady` | frontend/js/app.js:1980 |
-| `promptDialog` | frontend/js/app.js:1554 |
-| `purgeLockedContent` | frontend/js/app.js:914 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:2023 |
+| `onDomReady` | frontend/js/app.js:1959 |
+| `promptDialog` | frontend/js/app.js:1533 |
+| `purgeLockedContent` | frontend/js/app.js:893 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
-| `refreshActiveTab` | frontend/js/app.js:1194 |
+| `refreshActiveTab` | frontend/js/app.js:1173 |
 | `refuseStagedUrls` | frontend/js/app.js:232 |
 | `replaceMissingMedia` | frontend/js/app.js:303 |
-| `resumeWithoutPassword` | frontend/js/app.js:731 |
-| `setBusy` | frontend/js/app.js:1396 |
-| `setLabel` | frontend/js/app.js:1270 |
-| `settingsModalOpen` | frontend/js/app.js:1344 |
-| `settleLockPrompt` | frontend/js/app.js:742 |
+| `resumeWithoutPassword` | frontend/js/app.js:710 |
+| `setBusy` | frontend/js/app.js:1375 |
+| `setLabel` | frontend/js/app.js:1249 |
+| `settingsModalOpen` | frontend/js/app.js:1323 |
+| `settleLockPrompt` | frontend/js/app.js:721 |
 | `show` | frontend/js/app.js:167 |
-| `showLockScreen` | frontend/js/app.js:809 |
-| `smallButton` | frontend/js/app.js:1731 |
-| `spinnerEl` | frontend/js/app.js:1387 |
-| `stagePrimary` | frontend/js/app.js:1380 |
+| `showLockScreen` | frontend/js/app.js:788 |
+| `smallButton` | frontend/js/app.js:1710 |
+| `spinnerEl` | frontend/js/app.js:1366 |
+| `stagePrimary` | frontend/js/app.js:1359 |
 | `stagedImageByUrl` | frontend/js/app.js:200 |
-| `startApp` | frontend/js/app.js:1015 |
-| `startWithoutPassword` | frontend/js/app.js:706 |
-| `whenScriptsLoaded` | frontend/js/app.js:1929 |
-| `wireBackdropClose` | frontend/js/app.js:1719 |
+| `startApp` | frontend/js/app.js:994 |
+| `startWithoutPassword` | frontend/js/app.js:685 |
+| `whenScriptsLoaded` | frontend/js/app.js:1908 |
+| `wireBackdropClose` | frontend/js/app.js:1698 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
 ### frontend/js/prefs.js (6)
@@ -345,7 +344,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `announceAskFoot` | frontend/js/capture-ask.js:2203 |
 | `answerFigure` | frontend/js/capture-ask.js:2037 |
 | `answerObject` | frontend/js/capture-ask.js:2130 |
-| `askAsOf` | frontend/js/capture-ask.js:3432 |
+| `askAsOf` | frontend/js/capture-ask.js:3437 |
 | `askNotesOnTheRight` | frontend/js/capture-ask.js:2267 |
 | `askOpenContext` | frontend/js/capture-ask.js:884 |
 | `askQuestion` | frontend/js/capture-ask.js:2993 |
@@ -389,10 +388,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `heldOffline` | frontend/js/capture-ask.js:592 |
 | `holdPictureTokens` | frontend/js/capture-ask.js:2031 |
 | `liveMarkdownRenderer` | frontend/js/capture-ask.js:2844 |
-| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3393 |
+| `loadAskHistoryBadge` | frontend/js/capture-ask.js:3397 |
 | `loadCaptureDocuments` | frontend/js/capture-ask.js:280 |
 | `loadSuggestions` | frontend/js/capture-ask.js:3367 |
-| `loadTemplates` | frontend/js/capture-ask.js:3465 |
+| `loadTemplates` | frontend/js/capture-ask.js:3470 |
 | `matchReasonBadge` | frontend/js/capture-ask.js:2483 |
 | `newChat` | frontend/js/capture-ask.js:2927 |
 | `notePictures` | frontend/js/capture-ask.js:1753 |
@@ -428,7 +427,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `setAnsweredBy` | frontend/js/capture-ask.js:2338 |
 | `setAsking` | frontend/js/capture-ask.js:2887 |
 | `settleCaptureStatus` | frontend/js/capture-ask.js:129 |
-| `showAskAsOf` | frontend/js/capture-ask.js:3438 |
+| `showAskAsOf` | frontend/js/capture-ask.js:3443 |
 | `showCitedPassage` | frontend/js/capture-ask.js:1646 |
 | `stopAnswer` | frontend/js/capture-ask.js:2893 |
 | `streamChat` | frontend/js/capture-ask.js:2514 |
@@ -1035,32 +1034,32 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startMicLevelMeter` | frontend/js/media.js:213 |
 | `toggleDictation` | frontend/js/media.js:294 |
 
-### frontend/js/status.js (125)
+### frontend/js/status.js (126)
 
 | Name | File:line |
 |---|---|
 | `agentActivityNotice` | frontend/js/status.js:667 |
 | `agentActivityQuiet` | frontend/js/status.js:659 |
-| `agentModeAvailable` | frontend/js/status.js:2774 |
-| `aiIsOff` | frontend/js/status.js:2053 |
-| `aiOffGlyph` | frontend/js/status.js:2420 |
-| `aiOfflineDismissed` | frontend/js/status.js:2221 |
-| `aiOfflineNoticeHidden` | frontend/js/status.js:2217 |
-| `aiStatusState` | frontend/js/status.js:2306 |
+| `agentModeAvailable` | frontend/js/status.js:2775 |
+| `aiIsOff` | frontend/js/status.js:2054 |
+| `aiOffGlyph` | frontend/js/status.js:2421 |
+| `aiOfflineDismissed` | frontend/js/status.js:2222 |
+| `aiOfflineNoticeHidden` | frontend/js/status.js:2218 |
+| `aiStatusState` | frontend/js/status.js:2307 |
 | `announcedReminders` | frontend/js/status.js:42 |
 | `appStackIsNewer` | frontend/js/status.js:1584 |
 | `armReminderTimer` | frontend/js/status.js:515 |
 | `askNotificationPermission` | frontend/js/status.js:378 |
-| `backendLabel` | frontend/js/status.js:2837 |
+| `backendLabel` | frontend/js/status.js:2838 |
 | `boardHistoryActive` | frontend/js/status.js:1549 |
 | `checkDueReminders` | frontend/js/status.js:532 |
-| `closeModelGate` | frontend/js/status.js:2072 |
+| `closeModelGate` | frontend/js/status.js:2073 |
 | `closeNotifications` | frontend/js/status.js:358 |
-| `dismissAiOffline` | frontend/js/status.js:2229 |
+| `dismissAiOffline` | frontend/js/status.js:2230 |
 | `dismissToast` | frontend/js/status.js:899 |
 | `dismissedNotificationIds` | frontend/js/status.js:232 |
-| `embeddingProblemDetail` | frontend/js/status.js:2491 |
-| `embeddingToastDue` | frontend/js/status.js:2497 |
+| `embeddingProblemDetail` | frontend/js/status.js:2492 |
+| `embeddingToastDue` | frontend/js/status.js:2498 |
 | `forcedReadIds` | frontend/js/status.js:187 |
 | `forcedUnreadIds` | frontend/js/status.js:156 |
 | `insightLine` | frontend/js/status.js:1466 |
@@ -1071,24 +1070,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `isNotificationUnread` | frontend/js/status.js:211 |
 | `jobsRunning` | frontend/js/status.js:1896 |
 | `keepToastAction` | frontend/js/status.js:337 |
-| `lastAnswerLine` | frontend/js/status.js:2442 |
+| `kickBackgroundTaskPoll` | frontend/js/status.js:3004 |
+| `lastAnswerLine` | frontend/js/status.js:2443 |
 | `loadMostUsed` | frontend/js/status.js:1760 |
 | `loadRecentQuestions` | frontend/js/status.js:1733 |
 | `lockFieldWants` | frontend/js/status.js:955 |
 | `noteDamagedNotebook` | frontend/js/status.js:1272 |
 | `noteServerDown` | frontend/js/status.js:1328 |
 | `noteServerUp` | frontend/js/status.js:1337 |
-| `noticeTaskTransitions` | frontend/js/status.js:3082 |
+| `noticeTaskTransitions` | frontend/js/status.js:3104 |
 | `noticeUnwatchedAnswer` | frontend/js/status.js:702 |
 | `notificationsMuted` | frontend/js/status.js:644 |
 | `notificationsReadAt` | frontend/js/status.js:138 |
 | `notify` | frontend/js/status.js:459 |
-| `nudgeEmbeddingProblem` | frontend/js/status.js:2507 |
+| `nudgeEmbeddingProblem` | frontend/js/status.js:2508 |
 | `offerUndo` | frontend/js/status.js:1491 |
 | `openLanPanel` | frontend/js/status.js:596 |
-| `openModelGate` | frontend/js/status.js:2082 |
-| `paintPrivacyChip` | frontend/js/status.js:3180 |
-| `paintStatusItem` | frontend/js/status.js:2563 |
+| `openModelGate` | frontend/js/status.js:2083 |
+| `paintPrivacyChip` | frontend/js/status.js:3202 |
+| `paintStatusItem` | frontend/js/status.js:2564 |
 | `paintTitle` | frontend/js/status.js:492 |
 | `paintUndoDoor` | frontend/js/status.js:1683 |
 | `performRedo` | frontend/js/status.js:1605 |
@@ -1102,19 +1102,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `pushEntryPutUndo` | frontend/js/status.js:1524 |
 | `pushUndo` | frontend/js/status.js:1402 |
 | `recordNotification` | frontend/js/status.js:97 |
-| `refreshBackgroundTasks` | frontend/js/status.js:3001 |
+| `refreshBackgroundTasks` | frontend/js/status.js:3023 |
 | `refreshModelStatus` | frontend/js/status.js:1924 |
-| `refreshPrivacyChip` | frontend/js/status.js:3194 |
+| `refreshPrivacyChip` | frontend/js/status.js:3216 |
 | `rememberAnnounced` | frontend/js/status.js:50 |
 | `reminderNoticeKey` | frontend/js/status.js:228 |
 | `renderAgentActivityMode` | frontend/js/status.js:738 |
-| `renderAiOfflineNotice` | frontend/js/status.js:2244 |
-| `renderAiPill` | frontend/js/status.js:2450 |
-| `renderChatModeSeg` | frontend/js/status.js:2778 |
+| `renderAiOfflineNotice` | frontend/js/status.js:2245 |
+| `renderAiPill` | frontend/js/status.js:2451 |
+| `renderChatModeSeg` | frontend/js/status.js:2779 |
 | `renderNotifMuteToggle` | frontend/js/status.js:267 |
 | `renderNotificationBadge` | frontend/js/status.js:247 |
-| `renderSettings` | frontend/js/status.js:2848 |
-| `renderStatusBar` | frontend/js/status.js:2606 |
+| `renderSettings` | frontend/js/status.js:2849 |
+| `renderStatusBar` | frontend/js/status.js:2607 |
 | `renderUndoBar` | frontend/js/status.js:1665 |
 | `reopenAnswerPanel` | frontend/js/status.js:717 |
 | `resetStatusCadence` | frontend/js/status.js:1847 |
@@ -1122,7 +1122,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `sayChatModelChosen` | frontend/js/status.js:1810 |
 | `scheduleServerDownRetry` | frontend/js/status.js:1352 |
 | `scheduleUndoBar` | frontend/js/status.js:1657 |
-| `setChatMode` | frontend/js/status.js:2821 |
+| `setChatMode` | frontend/js/status.js:2822 |
 | `setForcedReadIds` | frontend/js/status.js:196 |
 | `setForcedUnreadIds` | frontend/js/status.js:165 |
 | `setTitleCount` | frontend/js/status.js:497 |
@@ -1130,17 +1130,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `settingsOpen` | frontend/js/status.js:1863 |
 | `settleNotification` | frontend/js/status.js:116 |
 | `settleUndoFromToast` | frontend/js/status.js:1512 |
-| `showAgentNoModelHint` | frontend/js/status.js:2816 |
+| `showAgentNoModelHint` | frontend/js/status.js:2817 |
 | `showServerDownBanner` | frontend/js/status.js:1311 |
-| `startPrivacyChip` | frontend/js/status.js:3204 |
+| `startPrivacyChip` | frontend/js/status.js:3226 |
 | `startReminderWatch` | frontend/js/status.js:607 |
 | `storedNotifications` | frontend/js/status.js:84 |
 | `surfaceHistory` | frontend/js/status.js:1566 |
-| `syncAgentPaletteAvailability` | frontend/js/status.js:2288 |
-| `syncModelGatedControls` | frontend/js/status.js:2103 |
+| `syncAgentPaletteAvailability` | frontend/js/status.js:2289 |
+| `syncModelGatedControls` | frontend/js/status.js:2104 |
 | `syncNotifBlocked` | frontend/js/status.js:373 |
 | `taskEndingWords` | frontend/js/status.js:130 |
-| `taskKey` | frontend/js/status.js:3062 |
+| `taskKey` | frontend/js/status.js:3084 |
 | `toast` | frontend/js/status.js:1102 |
 | `toastAction` | frontend/js/status.js:1244 |
 | `toastActionButton` | frontend/js/status.js:1224 |
@@ -1158,12 +1158,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `toastReduced` | frontend/js/status.js:857 |
 | `toastStack` | frontend/js/status.js:862 |
 | `toastYield` | frontend/js/status.js:975 |
-| `toggleAiStatusPopup` | frontend/js/status.js:2748 |
+| `toggleAiStatusPopup` | frontend/js/status.js:2749 |
 | `toggleNotificationMute` | frontend/js/status.js:283 |
 | `unreadNotifications` | frontend/js/status.js:241 |
 | `voiceLine` | frontend/js/status.js:1096 |
 | `whenText` | frontend/js/status.js:1085 |
-| `withoutEndStop` | frontend/js/status.js:2487 |
+| `withoutEndStop` | frontend/js/status.js:2488 |
 
 ### frontend/js/ai-tools.js (36)
 
