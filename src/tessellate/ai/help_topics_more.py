@@ -1996,8 +1996,9 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
-                "Documents, Boards and maps, Images and Files. Press and hold a card, "
-                "then move; a dashed gap shows where it will land. The sort then reads "
+                "Documents, Boards and maps, Images and Files. Press and hold a card "
+                "still for a moment, then move; a dashed gap shows where it will land, "
+                "and moving at once selects its text instead. The sort then reads "
                 "Custom order. Drop it where it started, or press Escape, and nothing "
                 "changes. The toast has Undo. From the keyboard, focus a card and press "
                 "Alt+Up or Alt+Down to move it one place. To copy a card, focus it and "

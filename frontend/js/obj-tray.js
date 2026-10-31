@@ -4,8 +4,9 @@
 // in a card's menu; opened, it lists what it holds. An item is dragged out (it
 // is a card like any other, so the carry mode takes it), or clicked to paste
 // where you were typing, or removed. The tray holds references only, in memory
-// and in `sessionStorage` (try/catch: it can come back empty), so it survives
-// a page change and a reload of the tab but not the browser.
+// and in `sessionStorage` per space (try/catch: it can come back empty), so it
+// survives a page change and a reload of the tab but not the browser or a
+// switch of space.
 
 const OBJ_TRAY_KEY = "obj-tray";
 const OBJ_TRAY_MAX = 30;
@@ -15,9 +16,15 @@ let objTray = objTrayRead();
 //: click on an item pastes (opening the tray takes the focus away).
 let objTrayFrom = null;
 
+//: One tray per space: switching space reloads the page, and a card from the
+//: space left would not open in the one entered (it answers 404).
+function objTrayStoreKey() {
+  return `${OBJ_TRAY_KEY}:${window.activeSpaceId?.() ?? "all"}`;
+}
+
 function objTrayRead() {
   try {
-    const rows = JSON.parse(sessionStorage.getItem(OBJ_TRAY_KEY) || "[]");
+    const rows = JSON.parse(sessionStorage.getItem(objTrayStoreKey()) || "[]");
     return rows.map((row) => objRef(row.kind, row.id, row.title, row.url)).filter(Boolean).slice(0, OBJ_TRAY_MAX);
   } catch {
     return [];
@@ -26,7 +33,7 @@ function objTrayRead() {
 
 function objTrayWrite() {
   try {
-    sessionStorage.setItem(OBJ_TRAY_KEY, JSON.stringify(objTray));
+    sessionStorage.setItem(objTrayStoreKey(), JSON.stringify(objTray));
   } catch {
     // The tray still works from memory.
   }

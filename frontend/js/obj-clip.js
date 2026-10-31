@@ -61,7 +61,8 @@ function objPasteDestination(target) {
   const dest = objDestinationAt(target);
   if (dest && dest.type !== "text" && dest.type !== "tray" && dest.type !== "board") return dest;
   if (dest?.type === "text" || target?.closest?.(OBJ_EDITABLE)) return null;
-  if (!window.wbCommandsLive?.()) return null;
+  //: A mind map has its own outline paste, which runs when this lets go.
+  if (!window.wbCommandsLive?.() || window.wbIsMap?.()) return null;
   return { type: "board", el: $("whiteboard-container") };
 }
 

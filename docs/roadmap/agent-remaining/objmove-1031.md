@@ -16,3 +16,11 @@ Left:
 - Not unit-tested in a real clipboard: the `copy` and `paste` events are driven by Playwright's Ctrl+C and Ctrl+V and by node stubs, not by a second application.
 - Reminder box drop writes the title (the reminder parser reads words), never a link.
 - `tests/test_global_scope_ratchet.py::test_cross_file_guards_only_go_down` (277 against a cap of 276) and `tests/test_lazy_css.py` (desk-companion-lazy.css, forced-colors-lazy.css, semantic-notice-lazy.css not listed in `tests/_css_paths.py` or loaded) fail on the working branch without this work.
+
+Review 1031 (agent/objfix-1031), done in one commit (items 1, 5, 6, 7, 8, 10, 11; tests `tests/test_obj_review_1031.py`, `tests/test_obj_drag_hold.py`):
+- First reorder stores the whole list (`OBJ_SURFACES[].all()`: notes from `allEntries`, docs from `libraryDocsAll`, boards from `wbBoardsAll`, media from `libraryImagesCache`); a new object ranks first. A drop that shows the same list (pinned notes) returns false and stores nothing.
+- Drag arms after a still 250 ms hold (under 4 px), at once from `[data-obj-grip]` (no card has one yet), never from a press inside selected text.
+Left:
+- Documents seeded from the last unfiltered render (`libraryDocsAll`): a first reorder made while a search is already on and no unfiltered render came before falls back to the visible documents.
+- No visual cue yet that the 250 ms hold has completed (cursor or lift); the UX audit may name one.
+- Space switch drops the tray (a tray is kept per space, so "All" does not show another space's cards).
