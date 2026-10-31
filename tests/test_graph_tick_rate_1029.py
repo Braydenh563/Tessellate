@@ -67,7 +67,9 @@ console.log(JSON.stringify(out));
 
 def test_the_tick_handler_snaps_and_the_frame_measures_full_draws() -> None:
     handler = CANVAS[CANVAS.index('if (message.type === "tick")') : CANVAS.index('} else if (message.type === "frame")')]
-    assert re.search(r"s\.gliding = true;\s*\n(?:\s*//.*\n)*\s*if \(gcTickSnaps\(s\)\) gcGlideFinish\(s\);", handler)
+    assert re.search(r"s\.gliding = true;\s*\n(?:\s*//.*\n)*\s*if \(gcTickSettles\(s\)\) gcGlideFinish\(s\);", handler)
+    # perf3-1031: the snap is `gcTickSettles` now, a costly map or a cooling layout.
+    assert "const gcTickSettles = (s) => gcTickSnaps(s) || gcCooling(s);" in CANVAS
     assert "s.layoutRunning = message.running !== false;" in handler
     assert "const costly = s.layoutRunning && gcTickSnaps(s);" in CANVAS
     assert "s.dragNode || costly || s.alpha > 0.03 ? null : gcLineGrid(" in CANVAS
