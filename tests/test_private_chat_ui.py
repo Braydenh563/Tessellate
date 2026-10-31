@@ -80,7 +80,10 @@ def test_leaving_a_private_chat_with_messages_asks_once_then_discards():
     assert "chatController?.abort()" in leave and "chatConv = { id: null, turns: [] };" in leave
     assert leave.index("if (!ok) return;") < leave.index("retry();")
     # closing the tab asks too
-    assert 'addEventListener("beforeunload"' in PRIVATE_JS
+    #: the app's one guard (navigation.js), not a second listener here
+    nav = (JS_DIR / "navigation.js").read_text(encoding="utf-8")
+    assert 'addEventListener("beforeunload"' not in PRIVATE_JS
+    assert "chatConv.private && chatConv.turns.length" in nav
 
 
 def test_the_switch_ends_an_empty_private_chat_in_place_and_asks_for_a_full_one():

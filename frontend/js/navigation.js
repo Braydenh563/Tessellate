@@ -1734,7 +1734,9 @@ function recordingLive() {
 }
 
 window.addEventListener("beforeunload", (event) => {
-  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive()) return;
+  //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
+  const privateChat = typeof chatConv !== "undefined" && chatConv.private && chatConv.turns.length;
+  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";
 });
