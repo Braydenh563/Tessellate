@@ -5077,8 +5077,10 @@ def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
 def _unsaid_greeting(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
     """A model that answered small talk with nothing at all ("hello" under an
-    empty reply) leaves a blank bubble: the app's own reply stands in (Z71)."""
-    if t.conversational and t.ollama_running and not t.answer_text.strip():
+    empty reply) leaves a blank bubble: the app's own reply stands in (Z71).
+    A turn that already said what it is for (the Ask box's hint) asked no
+    model, so nothing is unsaid."""
+    if t.conversational and t.ollama_running and not t.answer_text.strip() and "hint" not in t.sent_kinds:
         t.answer_text = _social_reply(req, prepared)
         yield _event({"type": "answer", "delta": t.answer_text})
 

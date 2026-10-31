@@ -28,6 +28,9 @@ not spending.
 from __future__ import annotations
 
 import json
+from datetime import datetime
+
+import pytest
 
 from tessellate.ai import fence, librarian
 
@@ -44,13 +47,24 @@ def _text(events):
 # --- small talk belongs in the Chat tab -------------------------------------
 
 
-def test_a_greeting_gets_a_hint_not_an_answer(ai_client, fake_ollama):
+#: A fixed evening, never the real clock: the welcome a greeting can draw
+#: names the part of the day, so a real clock made this test's failure text
+#: change with the hour it ran at.
+_EVENING = datetime(2026, 8, 1, 21, 0)
+
+
+@pytest.mark.parametrize("said", ["hey", "hello", "hi there", "good morning", "yo"])
+def test_a_greeting_gets_a_hint_not_an_answer(ai_client, fake_ollama, monkeypatch, said):
     """Its own event type, deliberately. Reported after the first version
     shipped as an `answer`: a paragraph of instructions sitting where the
     answer goes, beside a results panel reading "No matching records", reads
-    as the app having failed rather than as guidance."""
+    as the app having failed rather than as guidance. The hint is the whole
+    reply: the empty-reply stand-in (Z71) never adds a welcome after it."""
+    from tessellate.api import routes_chat
+
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: _EVENING)
     fake_ollama.librarian_reply = "Hello there! How are you today?"
-    events = _events(ai_client, "hey", notes_only=True)
+    events = _events(ai_client, said, notes_only=True)
     hints = [e for e in events if e["type"] == "hint"]
     assert len(hints) == 1
     assert hints[0]["text"] == librarian.ASK_IS_FOR_NOTES
