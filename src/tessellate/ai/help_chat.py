@@ -1634,13 +1634,15 @@ HELP_TOPICS.extend(
             ),
             "body": (
                 "Saving to the library. To save your own: select things and press "
-                "Ctrl+Shift+S, or right-click, Library, for a selection, a drawn shape, a style, a sticky "
+                "Ctrl+Shift+S, or right-click, Save to the library, for a selection, a drawn shape, a style, a sticky "
                 "or text preset, a palette of the selection's colours, or on a mind map a branch; Board, "
                 "Save this board as a template keeps the whole board. New board then offers your templates "
                 "beside the built-in ones. The library's ⋮ makes a new library, imports a library file and "
                 "exports one. A placed item is an ordinary copy: changing the library later never changes "
                 "a board. In Agent mode the assistant can search the library and place from it, draw "
                 "shapes and frames, and move, edit or delete what is on a board, asking first. "
+                "A PNG export joins the image library only when Also add to the image library is ticked in the "
+                "export dialog; Board, Show hints brings the first-steps card back. "
                 "For diagrams, the UML set has class, interface, enumeration and package boxes with the six "
                 "relations; Entity relationship has entities, attributes and crow's foot lines; Wireframe has "
                 "a window, button, input, checkbox, dropdown, image, navigation bar and card."

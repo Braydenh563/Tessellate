@@ -286,6 +286,7 @@ const WB_COMMANDS = [
   { id: "copy-link", group: "Board", icon: "ph:link", label: "Copy this board's or mind map's address to open it in the app", menu: "Copy app link", keys: "", surface: "both", run: wbClickId("wb-copy-link") },
   { id: "delete-board", group: "Board", icon: "ph:trash", label: "Delete this board and everything on it", keys: "", surface: "both", run: wbClickId("wb-delete-board") },
   { id: "keys", group: "Board", icon: "ph:keyboard", label: "Every key and gesture on a board", menu: "Keys and controls", keys: "?", surface: "both", run: wbClickId("wb-help-btn") },
+  { id: "show-hints", group: "Board", icon: "ph:lightbulb", label: "Show the card of first steps on this board again", menu: "Show hints", keys: "", surface: "board", run: wbClickId("wb-show-hints") },
   { id: "export", group: "Board", icon: "ph:download-simple", label: "Export this board", keys: "", surface: "both", run: wbClickId("wb-export") },
   { id: "copy-image", group: "Board", icon: "ph:copy", label: "Copy as an image", keys: "", surface: "both", run: () => wbCopyAsImage() },
   { id: "copy-svg", group: "Board", icon: "ph:code", label: "Copy as SVG", keys: "", surface: "both", run: () => wbCopyAsSvg() },

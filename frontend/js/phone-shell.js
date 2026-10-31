@@ -2007,9 +2007,17 @@ function dockItemCount(dock, arrange = true) {
   return count + (arrange ? dock.querySelectorAll(".dock-menu-list > [data-folded-from]").length : 0);
 }
 
+//: **The Notes dock keeps its three list controls** (1031 N27: Sort, Cards or
+//: Rows and Select folded into the ⋯ at 1440 and from 1100 down, two clicks
+//: away for the controls used most). Past 900 its row fits them, so it folds
+//: by width alone, at 900, and never by item count.
+const DOCK_KEEPS_ABOVE = "(min-width: 900px)";
+
 function foldDockArrange(narrow) {
+  const roomy = window.matchMedia(DOCK_KEEPS_ABOVE).matches;
   for (const dock of document.querySelectorAll(".dock[data-dock-name]")) {
-    const fold = narrow || dockItemCount(dock) > DOCK_FOLD_PAST;
+    const keeps = dock.dataset.dockName === "notes";
+    const fold = keeps ? !roomy : narrow || dockItemCount(dock) > DOCK_FOLD_PAST;
     const menu = dock.querySelector(":scope > .dock-actions > .dock-more > .dock-menu-list");
     if (menu) {
       foldZoneIntoMenu(dock, menu, fold);
@@ -2031,6 +2039,7 @@ function initDockFolding() {
   foldDockArrange(query.matches);
   // A window dragged across the boundary, or a tablet rotated, re-decides.
   query.addEventListener("change", (event) => foldDockArrange(event.matches));
+  window.matchMedia(DOCK_KEEPS_ABOVE).addEventListener("change", () => foldDockArrange(query.matches));
 }
 
 initDockFolding();
@@ -2058,7 +2067,7 @@ function foldDockActions(narrow) {
     if (!menu) continue;
     //: Still past seven once sort and view have gone: the same second fold
     //: at any width (OPEN row 568).
-    const fold = narrow || dockItemCount(dock, false) > DOCK_FOLD_PAST;
+    const fold = narrow || (dock.dataset.dockName !== "notes" && dockItemCount(dock, false) > DOCK_FOLD_PAST);
     if (fold) {
       const moving = [...dock.querySelectorAll(":scope > .dock-actions > [data-fold-narrow]")];
       let after = null;
