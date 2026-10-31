@@ -4159,7 +4159,6 @@ span > .chip {
    rule and each size themselves; measured against each other they were three
    different heights on one line. */
 .doc-dock .ghost.small,
-.doc-dock .doc-file-type,
 .doc-dock .seg {
   height: var(--control-h);
 }
@@ -4183,19 +4182,6 @@ span > .chip {
   padding-block: 0;
 }
 
-/* **The select needs its block padding zeroed too, or the height clips the
-   text.** Reported with a dark-mode screenshot: "the elements in the top
-   documents dock are misaligned, have the text cut off, not the same height".
-   The base `select` rule sets `padding: var(--space-4) var(--space-5)` and
-   `line-height: 1.5`; with `box-sizing: border-box` and a fixed 2.3rem
-   height, the padding eats the line box from both ends and the glyphs are
-   sliced top and bottom. Every other control here is a button, which is why
-   this was the only one that showed it. */
-.doc-dock .doc-file-type {
-  padding-block: 0;
-  line-height: var(--control-h);
-}
-
 /* The title row's two controls share a height of their own, taller than the
    action row's, because the title is set at 1.15rem and a 2.3rem box around
    it reads as cramped. Declared on the row so the pair can never disagree. */
@@ -4203,8 +4189,7 @@ span > .chip {
   --identity-h: 2.75rem;
 }
 
-.doc-dock-identity > .doc-title-input,
-.doc-dock-identity > .doc-file-type {
+.doc-dock-identity > .doc-title-input {
   height: var(--identity-h);
   line-height: var(--identity-h);
   margin-bottom: 0;
@@ -4604,14 +4589,6 @@ span > .chip {
    decorations inside CodeMirror now, which have no geometry to keep in step
    with anything because they are the text. The three underline shapes live
    in the theme object in documents.js, for the reason 09-editor.css gives. */
-
-.doc-file-type {
-  /* On the title row now, where there is room for the whole label, it was
-     truncated to "Markdow…" at 9rem on the action row, which is the width
-     that row could spare. */
-  max-width: 13rem;
-  flex: 0 0 auto;
-}
 
 /* --- Live preview -----------------------------------------------------------
 

@@ -1743,10 +1743,6 @@ summary > .ph-lead,
   flex: 1 1 auto;
   min-width: 0;
 }
-.doc-dock-menu-list #doc-file-type {
-  width: 100%;
-  max-width: none;
-}
 /* INBOX 18: the pinned group at the end of a formatting strip had square
    corners and was opaque only on the note form. It is not pinned any more
    (INBOX 426 a: it was drawn over Insert), so it has no ground of its own:

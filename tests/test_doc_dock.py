@@ -57,7 +57,7 @@ def test_every_control_in_the_dock_is_sized_by_that_one_rule():
     """A select, a segmented control and a button each arrive from a different
     base rule and each size themselves."""
     selectors = CSS.split(".doc-dock .ghost.small,")[1].split("{")[0]
-    for part in (".doc-file-type", ".seg"):
+    for part in (".seg",):
         assert part in selectors, part
 
 
@@ -102,11 +102,11 @@ def test_the_name_and_the_type_share_a_row():
     #: 2026-09-27), and the first close tag was that label's.
     identity = HTML.split('class="doc-dock-identity"')[1].split('class="row doc-actions"')[0]
     assert 'id="doc-title"' in identity
-    # DOCUMENTS Phase 1 moved the file type off the identity row into the
-    # dock's ⋯ menu (its "File type" section): the row is the title alone and
-    # the action row stays at five controls.
-    menu = HTML.split('id="doc-dock-menu"')[1].split("</details>")[0]
-    assert 'id="doc-file-type"' in menu
+    # INBOX 1482: the type left the dock for the foot (a button opening the
+    # grouped picker, `docTypeMenu`), so the identity row is still the title
+    # alone and the dock's ⋯ menu no longer holds a select for it.
+    assert 'id="doc-type-slot"' in HTML.split('id="doc-statusbar"')[1]
+    assert 'id="doc-file-type"' not in HTML
     assert 'id="doc-file-type"' not in identity
 
 
