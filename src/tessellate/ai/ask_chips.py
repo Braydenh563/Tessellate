@@ -28,8 +28,10 @@ _ASKABLE = re.compile(
 )
 
 
-#: A second suggestion chained on the first: "ask me “a” or “b”".
-_CHAINED = re.compile(r"\s*(?:(?:,|or|and|then)\s*)?[“\"]([^“”\"\n]{3,120}?)[”\"]", re.I)
+#: A second suggestion chained on the first: "ask me “a” or “b”". The space
+#: before it is skipped by hand (`_quoted`), so the pattern never opens on a
+#: run of spaces it might have to give back (CodeQL 1899).
+_CHAINED = re.compile(r"(?:(?:,|or|and|then)\s*)?[“\"]([^“”\"\n]{3,120}?)[”\"]", re.I)
 
 
 def _quoted(text: str) -> list[str]:
@@ -37,7 +39,11 @@ def _quoted(text: str) -> list[str]:
     for match in _SUGGESTED.finditer(text):
         out.append(match.group(1))
         at = match.end()
-        while (more := _CHAINED.match(text, at)) is not None:
+        while True:
+            while at < len(text) and text[at].isspace():
+                at += 1
+            if (more := _CHAINED.match(text, at)) is None:
+                break
             out.append(more.group(1))
             at = more.end()
     return out

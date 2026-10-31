@@ -12597,8 +12597,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_quoted` | src/tessellate/ai/ask_chips.py:35 |
-| `lift` | src/tessellate/ai/ask_chips.py:46 |
+| `_quoted` | src/tessellate/ai/ask_chips.py:37 |
+| `lift` | src/tessellate/ai/ask_chips.py:52 |
 
 ### src/tessellate/ai/autonomous.py (38)
 
