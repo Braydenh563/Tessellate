@@ -67,9 +67,28 @@ def _sentences(text: str) -> list[str]:
     return [s.strip().rstrip(".!?") for s in _SENTENCE.split(text or "")]
 
 
-def _subjects(text: str) -> list[tuple[frozenset, str]]:
-    """Each state sentence's subject words and its value."""
-    return [state for state in (_state(s) for s in _sentences(text)) if state]
+_RELATION = re.compile(r"^(?:my|our|his|her|their|your)\s+\w+$", re.I)
+_DAYS = re.compile(r"\b(?:mon|tues|wednes|thurs|fri|satur|sun)day\b|\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b", re.I)
+
+
+def _kind(value: str) -> str:
+    """What sort of thing a value is: a relation ("my sister") never
+    changes into a price, and a price is not a person."""
+    if _RELATION.match(value.strip()):
+        return "relation"
+    if re.search(r"\d", value):
+        return "number"
+    return "day" if _DAYS.search(value) else "text"
+
+
+def _form(sentence: str) -> str:
+    return "colon" if _COLON.match(sentence) else "copula"
+
+
+def _subjects(text: str) -> list[tuple[frozenset, str, str]]:
+    """Each state sentence's subject words, its value and its clause form."""
+    rows = [(_state(s), _form(s)) for s in _sentences(text)]
+    return [(state[0], state[1], form) for state, form in rows if state]
 
 
 _SPELLED = re.compile(r"\b(\d{1,2}) (January|February|March|April|May|June|July|August|September|October|November|December) (\d{4})\b")
@@ -109,7 +128,7 @@ def current(question: str, notes: list[dict]) -> tuple[list[dict], list[Replaced
 def _read(question: str, notes: list[dict]) -> list[tuple]:
     """Each note with its subjects that the question names, and its day."""
     asked = frozenset(w for w in query_understanding.search_terms(question or "") if w not in _VALIDITY)
-    return [(n, [(w, v) for w, v in _subjects(str(n.get("content") or "")) if w & asked], _day(n)) for n in notes]
+    return [(n, [row for row in _subjects(str(n.get("content") or "")) if row[0] & asked], _day(n)) for n in notes]
 
 
 def _replaced_by(row: tuple, read: list[tuple]) -> Replaced | None:
@@ -119,11 +138,22 @@ def _replaced_by(row: tuple, read: list[tuple]) -> Replaced | None:
     for newer, new_subjects, new_day in read:
         if newer is older or not old_day or not new_day or new_day <= old_day:
             continue
-        for words, value in old_subjects:
-            match = next((v for w, v in new_subjects if _same(words, w)), None)
+        for words, value, form in old_subjects:
+            match = next((v for w, v, f in new_subjects if _same(words, w) and _alike(value, form, v, f)), None)
             if match is not None and match.lower() != value.lower():
                 return Replaced(older, newer, value, old_day)
     return None
+
+
+def _alike(old: str, old_form: str, new: str, new_form: str) -> bool:
+    """A value replaces another only as the same sort of thing (audit 1031
+    C2: a gift list's "Sara: a jazz record" is no new value of "Sara is my
+    sister"): the same kind (a price for a price, days for days), or the same
+    clause form when neither is a relation."""
+    a, b = _kind(old), _kind(new)
+    if "relation" in (a, b):
+        return a == b
+    return a == b != "text" or old_form == new_form
 
 
 _NATURAL = (
@@ -148,6 +178,14 @@ _PROFESSIONAL = (
 )
 
 
+def _you(value: str) -> str:
+    """A note's first-person value said to the person who wrote it ("my
+    sister" is "your sister"), never spliced in as written."""
+    for first, second in ((r"\bI am\b", "you are"), (r"\bI'm\b", "you are"), (r"\bI\b", "you"), (r"\bmy\b", "your"), (r"\bmine\b", "yours"), (r"\bme\b", "you")):
+        value = re.sub(first, second, value)
+    return value
+
+
 def older_line(replaced: list[Replaced], *, voice: str = "natural", today: date | None = None, seed: int = 0) -> str:
     """One line for the first note left out: what it said, and when."""
     if not replaced:
@@ -159,7 +197,7 @@ def older_line(replaced: list[Replaced], *, voice: str = "natural", today: date 
         when = f"{first.written.day} {first.written:%B}" + ("" if first.written.year == today.year else f" {first.written.year}")
     lines = _PROFESSIONAL if voice == "professional" else _NATURAL
     line = lines[seed % len(lines)]
-    return line.format(when=when or "an earlier day", value=first.value.rstrip("."))
+    return line.format(when=when or "an earlier day", value=_you(first.value.rstrip(".")))
 
 
 # --- a window that has closed ---------------------------------------------------------

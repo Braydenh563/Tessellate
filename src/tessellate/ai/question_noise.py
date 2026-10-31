@@ -1994,9 +1994,46 @@ _WORD_RUN = re.compile(r"\S+")
 _FILLER_SHAPE = re.compile(r"([A-Za-z]+)[.,;:!…]*")
 
 
+def is_filler(word: str) -> bool:
+    """Whether `word` is a sound typed while thinking ("umm", "errm")."""
+    return bool(_FILLER.match(word))
+
+
+#: Words typed around a note, not naming one ("a random ahh note"): a chip
+#: about "random ahh" asks for nothing (INBOX 1496).
+_NO_SUBJECT = frozenset(
+    "random randomly ahh ahhh ahhhh lol lmao ngl tbh bruh idk whatever some any one thing things stuff something "
+    "anything like just really very kinda sorta old new little bit".split()
+)
+
+
+def filler_subject(text: str) -> bool:
+    """Whether every word of `text` is filler, so it names no subject."""
+    words = re.findall(r"[a-z']+", (text or "").lower())
+    return bool(words) and all(w in _NO_SUBJECT or is_filler(w) for w in words)
+
+
 def _without_filler(run: re.Match[str]) -> str:
     word = _FILLER_SHAPE.fullmatch(run.group(0))
     return "" if word and _FILLER.match(word.group(1)) else run.group(0)
+
+
+#: "What am I reading", "what have I been reading lately": the books the
+#: notes keep, not the words "reading" sits in (a question inside an
+#: ice-breakers note; audit 1031 C18). "reading" alone names no kind of note.
+_READING_NOW = re.compile(
+    r"(?P<lead>(?:and |so |ok |okay )?what)(?P<mid> am i(?: currently)?) reading"
+    r"(?P<tail>(?: (?:right now|at the moment|lately|these days|currently|now|at present|recently|at this time))?[?.!\s]*)",
+    re.I,
+)
+
+
+def media_kind(text: str) -> str:
+    """"what am I reading" as "what book am I reading": the kind of note the
+    verb asks for named, so the notes kept as books are searched. `text`
+    itself for any other question."""
+    found = _READING_NOW.fullmatch((text or "").strip())
+    return f"{found['lead']} book{found['mid']} reading{found['tail']}" if found else text
 
 
 def drop_filler(text: str) -> str:
@@ -2035,6 +2072,28 @@ def asks_identity(message: str) -> bool:
     return len(text) <= 80 and bool(_IDENTITY.search(text))
 
 
+#: Said to the assistant about itself or about the person, with no note to
+#: look in (audit 1031 C21): "do you like me", "what do you think", "how do
+#: you feel". Whole message only: "what do you think about Lisbon"
+#: names a subject and is a question about the notes.
+_OPINION_ASK = re.compile(
+    r"^(?:(?:do|did|would|will|can|could|does) (?:you|u|ya) (?:even |actually |really |still |ever )?"
+    r"(?:like|love|hate|know|trust|miss|want|care about|care|believe|think|feel|reckon|enjoy|mind|get|understand|see|hear|have feelings)"
+    r"(?: (?:me|us|so|i am|im|i'm|that|this|it|anything|a thing))?"
+    r"|what (?:do|did|would|are) (?:you|u|ya) (?:think|feel|reckon|believe|say)(?: (?:of|about) (?:me|us|yourself|that|this|it))?"
+    r"|how (?:do|did|would) (?:you|u|ya) (?:feel|like it|find it|see it)(?: (?:about|towards?) (?:me|us|it|this|that))?"
+    r"|(?:are|r) (?:you|u|ya) (?:(?:even |actually |really |just |so )*(?:smart|clever|dumb|stupid|happy|sad|alive|conscious|sentient|lonely|bored|tired|mad|angry|funny|nice|friendly)))"
+    r"(?: (?:lol|haha|though|tho|then|too|right|now|or not|at all|honestly|really|even))*$"
+)
+def addressed_kind(message: str) -> str | None:
+    """"who" for a question put to the assistant about itself or the person
+    ("do you like me"), else None."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(drop_filler(message or "")).lower())).strip()
+    if len(text) > 80:
+        return None
+    return "who" if _OPINION_ASK.search(text) else None
+
+
 def _social_phrases(text: str) -> tuple[list[str], str]:
     """The kinds of the social phrases in `text`, longest first, and the text without them."""
     kinds: list[str] = []
@@ -2053,6 +2112,8 @@ def social_kind(message: str) -> str | None:
     about what it is talking to is "who", whatever leads into it."""
     if asks_identity(message):
         return "who"
+    if kind := addressed_kind(message):
+        return kind
     raw = destretch(drop_filler((message or "").strip()))
     if raw and not strip_symbols(raw):
         return "reaction" if re.search(r"[\U0001F600-\U0001F64F]", raw) else "ack"

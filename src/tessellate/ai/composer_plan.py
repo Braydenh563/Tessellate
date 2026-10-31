@@ -205,7 +205,8 @@ def window(question: str, today: date) -> tuple[date, date, str] | None:
     if span:
         return span
     for _s, _e, phrase in when_words.find(low):
-        found = _dated_phrase(phrase, low, today)
+        #: "anything about Christmas" is a topic to search, not a day to list.
+        found = None if recognise.a_topic_phrase(low, phrase, holiday=False) else _dated_phrase(phrase, low, today)
         if not found:
             continue
         if found[1] < today:
@@ -706,8 +707,19 @@ def _written_from(text: str, today: date) -> bool:
     return False
 
 
+#: "what do I know about tomorrow": a day that has not come holds no notes
+#: written then; what the notebook knows of it is what is on it. Only a day
+#: named relative to now, never a holiday or a month (those are topics, C3).
+_KNOW_AHEAD = re.compile(
+    rf"^{_LEAD}(?:what do i know|what can you tell me|tell me|anything|what have i got|what is there|what(?:'s|’s) there|what do my notes have)\s+"
+    r"(?:about|on|for|regarding)\s+(?:the )?(?:tomorrow|tonight|day after tomorrow|(?:next|this coming|this) (?:week|month|weekend|(?:mon|tues|wednes|thurs|fri|satur|sun)day))\W*$", re.I)
+
+
 def _asks_due(text: str, today: date) -> bool:
     """"What is due", or a bare span ("the next 7 days"), or "what's on" with a window."""
+    if _KNOW_AHEAD.match(text):
+        win = window(text, today)
+        return win is not None and win[1] >= today
     if _DUE.match(text):
         return not lookback(text, today)
     win = window(text, today)

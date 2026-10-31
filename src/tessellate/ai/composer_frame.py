@@ -342,13 +342,21 @@ def lower_name(text: str) -> str:
     return _lower(text)
 
 
+NON_LATIN = re.compile(r"[\u0400-\u052f\u0590-\u06ff\u0900-\u097f\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
+
+
 def own_title(content: str) -> str:
     """A one-line note that is only a name ("Atlas retro meeting"): short,
     no sentence marks, not an instruction and not the person's own "I";
     "" otherwise."""
     line = _first_line(content.strip())
     #: "Gym: squats at 80 kg" is a label and its detail, never a title.
-    if "\n" in content.strip() or not line or re.search(r"[,;:.!?]", line) or len(line.split()) > 6:
+    if "\n" in content.strip() or not line or re.search(r"[,;:.!?、。！？；：，]", line) or len(line.split()) > 6:
+        return ""
+    #: A line in a script with no spaces or stops of the kind this reads
+    #: ("今日は雨が降っていたので、...") cannot be judged a name: it is the
+    #: note's words, quoted whole, never "only a title" (audit 1031 C10).
+    if NON_LATIN.search(line):
         return ""
     if _FINITE.search(line):
         #: "Intro to Cloud Computing starts Monday" says something: a
@@ -539,7 +547,13 @@ def group_line(group: Group, notes: list[dict], topic: str, lower=_lower) -> str
         #: "Closest to conversation, your conversation notes" said it twice.
         line = f"closest of all are {theme}: {names}" + (f", {joined}" if joined else "")
     elif group.joined_by.startswith("share "):
-        line = f"{theme} {group.joined_by}: {names}"
+        #: Only the notes that carry the tag share it; the others are in the
+        #: group through a link (audit 1031 C14).
+        holders = [i for i in group.ids if group.name in _tag_list(by_id[i])]
+        others = [i for i in group.ids if i not in holders]
+        line = f"{theme} {group.joined_by}: {_names(holders or group.ids, by_id, lower)}"
+        if holders and others:
+            line += f"; {_names(others, by_id, lower)} {'is' if len(others) == 1 else 'are'} linked to {'it' if len(holders) == 1 else 'them'}"
     else:
         line = f"{theme} go together: {names}" + (f", {joined}" if joined else "")
     if group.band == "closest" and topic != group.name:

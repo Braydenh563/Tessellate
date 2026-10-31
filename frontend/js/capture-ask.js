@@ -3271,7 +3271,9 @@ async function askQuestion(preset) {
     //: render is what makes the answer readable as it arrives and the markers
     //: simply have to be the last thing written, against the finished text.
     if (!hinted) {
-      conversation.push({ question, answer: answerRaw });
+      //: The notes this answer cited ride with the turn, as Chat's do, so
+      //: "how much does it cost" after an Ask answer names what "it" was.
+      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources) });
       show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
       //: What the ⋯ keeps (B12): the answer as written, and the notes it cites.
       askKept = {

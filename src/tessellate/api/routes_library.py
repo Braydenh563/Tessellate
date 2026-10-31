@@ -584,7 +584,7 @@ def _shelved(session: Session) -> list[dict]:
             "preview": _clip(doc.content),
             "updated_at": doc.archived_at.isoformat(),
             "detail": "archived",
-            "size": len(doc.content.split()),
+            "size": cjk.word_count(doc.content),
             "entry_id": None,
             "mime": None,
             "pinned": False,

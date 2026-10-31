@@ -32,7 +32,9 @@ def _function(source: str, name: str) -> str:
 
 def _run(names: list[tuple[str, str]], call: str):
     body = "\n".join(_function(src, name) for src, name in names)
-    script = f"const TEXT_READING_WPM = 220;\n{body}\nconsole.log(JSON.stringify({call}));"
+    #: `textCounts` counts words through the one helper (`wordCount`, settings-wiring.js).
+    counter = SETTINGS_JS[SETTINGS_JS.index("const WORD_PER_CHARACTER") : SETTINGS_JS.index("function textCounts(")]
+    script = f"const TEXT_READING_WPM = 220;\n{counter}\n{body}\nconsole.log(JSON.stringify({call}));"
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)
 

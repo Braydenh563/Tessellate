@@ -105,6 +105,11 @@ _LATEST_WORDS = frozenset({"latest", "newest", "recent"})
 _UPDATE_NOUNS = frozenset({"news", "update", "updates", "word", "info", "information", "development", "developments"})
 
 
+#: The same status ask worded without "latest": "what's new with uni", "any
+#: news on Lisbon", "where am I with the thesis".
+_NEWS = re.compile(r"\b(?:what(?:'s|s| s| is) new|news|where am i(?: at)?) (?:with|on|about) (.+)$")
+
+
 def status_subject(text: str) -> str:
     """The subject of a "what's the latest on X" question; empty for any other.
     Every note on X is the pool (the newest leads the answer), so the notes
@@ -112,7 +117,8 @@ def status_subject(text: str) -> str:
     words = _WORD.findall((text or "").lower()[:300])[:60]
     at = next((i for i, w in enumerate(words) if w in _LATEST_WORDS), -1)
     if at < 0 or "most" in words[:at - 1]:
-        return ""
+        found = _NEWS.search(" ".join(words))
+        return _status_rest(["on", *found.group(1).split()]) if found else ""
     return _status_rest(words[at + 1:])
 
 
@@ -127,6 +133,6 @@ def _status_rest(rest: list[str]) -> str:
 
 
 def _status_named(subject: list[str]) -> str:
-    if not subject or subject[0] in {"last", "this", "next", "yesterday", "today"}:
+    if not subject or subject[0] in {"last", "this", "next", "yesterday", "today", "it", "that", "this"}:
         return ""  # a time, not a subject
     return "" if subject[0] in _NOUNS and len(subject) == 1 else " ".join(subject)

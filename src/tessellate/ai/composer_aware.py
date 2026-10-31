@@ -147,11 +147,11 @@ def opening(aw: Awareness, seed: str) -> str:
 
 _PICK_UP_OPEN = (
     "Shall we carry on with “{title}”? I can summarise it or list what is left in it.",
-    "You have “{title}” open. Ask me what is left on it, or what it links to.",
+    "You have “{title}” open. Ask me “what is left in {title}” or “what does {title} link to”.",
     "Want to pick up “{title}” where you left it? I can go through it with you.",
 )
 _TOPIC = (
-    "You were talking about {topic}; ask me for the notes on it if you want to go on.",
+    "You were talking about {topic}; ask me “what did I write about {topic}” if you want to go on.",
     "We were on {topic}. I can pull the notes on it up again.",
 )
 _HOWTO = (

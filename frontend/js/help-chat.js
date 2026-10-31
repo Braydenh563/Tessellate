@@ -735,6 +735,9 @@ function helpChatChips(row, items, pick, titled) {
 //: B11, B86: asked what to ask, the asks are chips that fill Chat's or
 //: Ask's box (not sent), in the greeting's chip recipe.
 function renderHelpChatAsks(row, asks, to) {
+  //: A question the Guide itself suggested is asked of the Guide in one
+  //: click (INBOX 1497); a question for Chat or Ask is put in that box.
+  if (to === "guide") return helpChatChips(row, asks, (ask) => askAtlas(ask), "Ask Atlas: ");
   helpChatChips(row, asks, (ask) => fillAskBox(ask, to), to === "notes" ? "Put in Notes, Ask: " : "Put in Chat: ");
 }
 

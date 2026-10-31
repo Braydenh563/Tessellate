@@ -595,6 +595,10 @@ def _since_found(views: list, verb: list[str], obj: list[str], today: date) -> l
             have = set(composer._words(s.text))  # noqa: SLF001
             if all(v in have for v in verb) and all(o in have or o in head for o in obj):
                 day = _when_said(view, s, today)
+                #: "Ran twice" in a week's review is two runs in that week, on no day
+                #: of its own: not the last day (audit 1031 C15).
+                if day == view.written and composer_doings._HOW_MANY.search(s.text):  # noqa: SLF001
+                    continue
                 if day and day <= today:
                     found.append((day, view, s))
     return found

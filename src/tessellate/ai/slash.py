@@ -175,12 +175,27 @@ def parse(text: str) -> tuple[str, str] | None:
 #: note" and "my oldest friend" are not commands. The first group, when it
 #: holds digits, is the argument.
 _ASKING = r"^(?:which|what|whats|show|list|give|any|do|are|find|pick|pull|surprise)\b"
+#: A pick asked for loosely (INBOX 1496): "errm a random ahh note", "any note
+#: will do", "pick a note for me". The word "random" with up to two filler
+#: words before "note", or a bare "a note" after a picking word and nothing
+#: after it. Never one that names a subject ("a random note about cooking")
+#: or an act on it ("delete a random note").
+_PICK_ACTS = r"(?:delete|remove|archive|edit|rename|pin|unpin|move|merge|tag|add|write|create|make|append|share|export)"
+_VAGUE_PICK = re.compile(
+    rf"^(?!.*\b{_PICK_ACTS}\b)(?!(?:\S+\s+){{10}})(?!(?:what|who|when|why|how|where)\b.*\b(?:is|are|does|do|mean|means)\b)(?:"
+    r".*(?<!the )(?<!my )(?<!about )(?<!on )(?<!this )(?<!that )\b(?:random|rando?m|randomly)\b(?:\s+(?!(?:about|on|of|from|with|in|for|the|my|and)\b)[a-z']{2,8}){0,2}?\s+notes?\b(?!\s+(?:about|on|from|with|tagged|in|for(?! me)|that|where|of(?! mine)|i)\b)"
+    r"|.*\b(?:pick|choose|surprise|give|show|get|pull)\b(?:\s+\w+){0,2}\s+(?:a|an|any|one|some) notes?(?: for me| please| at random)?\W*$"
+    r"|.*\bany notes?(?: will do| is fine| works)?\W*$"
+    r")",
+    re.I,
+)
 _INFERRED = (
     ("untagged", re.compile(_ASKING + r".*\b(?:untagged|no tags?|without (?:any )?tags?|not tagged|haven'?t tagged)\b", re.I)),
     ("pinned", re.compile(_ASKING + r".*\bpinn?ed\b.*\bnotes?\b|" + _ASKING + r".*\bnotes?\b.*\bpinn?ed\b", re.I)),
     ("oldest", re.compile(_ASKING + r".*?\b(?:(\d+) )?oldest notes?\b", re.I)),
     ("todo", re.compile(_ASKING + r".*\b(?:open|unchecked|outstanding)\s+(?:to-?dos?|check ?boxes|tick ?boxes)\b", re.I)),
     ("random", re.compile(_ASKING + r".*\b(?:a|one) (?:random|rando?m) notes?\b", re.I)),
+    ("random", _VAGUE_PICK),
 )
 
 

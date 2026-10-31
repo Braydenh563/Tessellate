@@ -2117,6 +2117,51 @@ def _dated_said(text: str, low: str) -> str:
     return ""
 
 
+#: A time phrase that points at "now" or counts back from it: a window of
+#: when notes were written. Any other ("Christmas", "October", "the weekend")
+#: is a thing the notes may talk about.
+_DEICTIC_PHRASE = re.compile(
+    r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|\d+ (?:days?|weeks?|months?|years?) ago)$",
+    re.I,
+)
+_ABOUT_PHRASE = r"\b(?:about|regarding|concerning)\s+(?:the |my |our )?{}\s*[?.!]*$"
+PHRASE_FILLER = frozenset("in on at from during for the a an of".split())
+_TOPIC_HOLIDAYS = frozenset(
+    "christmas xmas easter halloween thanksgiving diwali eid ramadan hanukkah passover valentines boxing new year new years".split()
+)
+#: A question that asks what was done or written is about when.
+_WHEN_ASK = re.compile(r"\b(?:did|have|had|was) (?:i|we)\b|\bwhat happened\b|\b(?:wrote|written|made|jotted|noted|added|captured)\b", re.I)
+
+
+def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
+    """Whether the time phrase is what the question is about, not when notes
+    were written (audit 1031 C3): "what do I know about Christmas", "who is
+    coming for Christmas". A holiday needs a "what did I do" to be a window;
+    a holiday, month or weekend after "about" is searched for. The search
+    (`search/query.py`) and the composer's plan both read it."""
+    bare = re.sub(r"^(?:in|on|from|during|for|at|the)\s+", "", phrase.strip(), flags=re.I)
+    if not bare or _DEICTIC_PHRASE.match(phrase.strip()):
+        return False
+    if re.search(_ABOUT_PHRASE.format(re.escape(bare)), question or "", re.I):
+        return True
+    return holiday and bare.lower().replace("'", "") in _TOPIC_HOLIDAYS and not _WHEN_ASK.search(question or "")
+
+
+#: The preposition a holiday or a bare weekend takes (audit 1031 C3: "nothing
+#: went into your notes Christmas" had none).
+_HOLIDAY_PREP = {
+    "christmas": "at Christmas", "xmas": "at Christmas", "easter": "at Easter", "new year": "at New Year",
+    "new year's": "at New Year", "halloween": "on Halloween", "thanksgiving": "at Thanksgiving",
+    "boxing day": "on Boxing Day", "valentine's day": "on Valentine's Day", "new year's day": "on New Year's Day",
+    "new year's eve": "on New Year's Eve", "christmas eve": "on Christmas Eve", "christmas day": "on Christmas Day",
+    "the weekend": "over the weekend", "weekend": "over the weekend",
+}
+
+
+def _holiday_said(low: str) -> str:
+    return _HOLIDAY_PREP.get(low.removeprefix("on ").removeprefix("at ").removeprefix("for ").strip(), "")
+
+
 def adverbial(phrase: str) -> str:
     """A time phrase as it follows a verb or a count, carrying the
     preposition it needs (audit 1029 C10): "20 October" is "on 20 October",
@@ -2125,6 +2170,8 @@ def adverbial(phrase: str) -> str:
     "since 3 October" stand as they are. A range of days is "from" the first."""
     text = " ".join(str(phrase or "").split())
     low = text.lower()
+    if text and (said := _holiday_said(low)):
+        return said
     if not text or _ADVERB_LEAD.match(low):
         return text
     if said := _rolling_said(text):

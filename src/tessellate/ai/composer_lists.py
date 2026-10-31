@@ -178,7 +178,9 @@ _DUE_LEAD = re.compile(
     re.I,
 )
 #: A question about the past or about what a thing is is not a list of dates.
-_DUE_NOT = re.compile(r"\b(?:did|was|were|wrote|written|had|mean|means|about|format|worth|weigh|cover|covers|covered)\b", re.I)
+#: Nor is "what do my notes mentioning test say": the word "test" is the thing
+#: searched for, not a date asked after (audit 1031 C19).
+_DUE_NOT = re.compile(r"\b(?:did|was|were|wrote|written|had|mean|means|about|format|worth|weigh|cover|covers|covered|say|says|mention\w*|contain\w*|hold|holds|holding)\b", re.I)
 _KIND_WORDS = frozenset("exam test quiz quizz assignment assessment presentation essay".split())
 _DUE_FILLER = frozenset(
     "what what's whats which is are do does i have got any anything the my me our show list tell give need know to for of in on at by a an "

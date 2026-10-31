@@ -174,7 +174,14 @@ def category_notes(topic: str, ctx: Ctx, limit: int = 6) -> list[dict]:
     #: A tag names notes as a category does ("list my running notes" says
     #: three tagged #running, so "summarise my running notes" is the same three).
     tagged = {t.lower() for t in names}
-    return [n for n in ctx.notes if str(n.get("category") or "").lower() in names or tagged & {str(t).lower() for t in n.get("tags") or []}][:limit]
+
+    def filed(n: dict) -> bool:
+        #: "my social notes" is the category "Social connections": a category
+        #: that opens on the words asked is that category (audit 1031 C23).
+        category = str(n.get("category") or "").lower()
+        return category in names or category.startswith(wanted + " ")
+
+    return [n for n in ctx.notes if filed(n) or tagged & {str(t).lower() for t in n.get("tags") or []}][:limit]
 
 
 def _link(note: dict) -> str:
@@ -279,10 +286,14 @@ def _target(ctx: Ctx, topic: str, verb: str, what: str, *, strict: bool) -> tupl
     return None, _nothing_named(ctx, topic, verb)
 
 
+_EMPHASIS = re.compile(r"\*\*(.+?)\*\*|(?<!\*)\*(?!\s)(.+?)(?<!\s)\*(?!\*)")
+
+
 def _stopped(sentences: list[str]) -> str:
     """Sentences read as one run: each ends with a stop, so a label line
-    ("Attendees: Sara, Tom, Priya") is not glued to the next one."""
-    return " ".join(s if s.rstrip().endswith((".", "!", "?", ":", "…")) else s.rstrip() + "." for s in sentences)
+    ("Attendees: Sara, Tom, Priya") is not glued to the next one. The note's
+    own emphasis marks are not shown as asterisks (audit 1031 C23)."""
+    return _EMPHASIS.sub(lambda m: m.group(1) or m.group(2), " ".join(s if s.rstrip().endswith((".", "!", "?", ":", "…")) else s.rstrip() + "." for s in sentences))
 
 
 def _list_said(note: dict) -> str:
