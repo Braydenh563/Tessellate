@@ -3318,12 +3318,13 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: "when did I bake banana bread": the sentence that says the whole
         #: doing leads, whatever else the note holds (audit 1031 C16).
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
-        #: A bare list item ("Passport") is no news of a subject: prose leads a latest ask.
-        prose = not (latest and f.sentence.kind in {"item", "task"})
         #: A sentence that is itself a question answers none ("What are you reading
         #: at the moment?" in an ice-breakers note, audit 1031 C18).
         asked_back = f.sentence.text.rstrip().endswith("?")
-        return (not asked_back, acts, _cued(cue, f.sentence.text), prose, id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: A bare list item ("Passport") is no news of a subject: prose leads a
+        #: latest ask. Said in the tuple itself: CodeQL lost the local in this
+        #: closure and read it as possibly unset.
+        return (not asked_back, acts, _cued(cue, f.sentence.text), not (latest and f.sentence.kind in {"item", "task"}), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
