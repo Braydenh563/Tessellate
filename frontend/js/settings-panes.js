@@ -1173,53 +1173,10 @@ document.addEventListener(
   true
 );
 
-//: Kept at boot, not in reveal-targets.js: settings.js and settings-find.js ring a
-//: Settings control with it on a plain deep link, with no catalogue row involved.
-const revealTimers = new WeakMap();
-
-//: The ring, on what the person can see. An enhanced `<select>` is a 1x1
-//: clipped box behind its opener (`enhanceSelect`, and openSettingsModal's
-//: own comment on the deep link that ringed nothing because of it), and a
-//: checkbox is a square whose meaning is in the label beside it, so both ring
-//: their visible representative.
+//: settings.js, settings-find.js and help-chat.js ring a control on a plain
+//: deep link; the ring itself is in reveal-targets.js (`flashRevealedNow`).
 function flashRevealed(target) {
-  if (!target) return null;
-  const shown =
-    target.closest(".select-shell") ||
-    (target.matches('input[type="checkbox"], input[type="radio"], input[type="color"], input[type="range"]')
-      ? target.closest("label, .setting-row, .row")
-      : null) ||
-    target;
-  //: Scrolled only when it is not already in the window: a scroll moves the
-  //: page under a resting pointer, and the hover that follows closed a menu
-  //: group the reveal had just opened (measured on the phone's note sheet).
-  const box = shown.getBoundingClientRect();
-  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
-  //: Inside an open menu only the menu's own list scrolls: a scroll of the
-  //: page closes every open menu (`closeActionMenusOnScroll`), which took the
-  //: document's Export group away the moment it was ringed on a phone.
-  const menu = shown.closest(".action-menu, .dock-menu-list, .doc-dock-menu-list, [role='menu'], .sheet-card");
-  if (!inView && menu) {
-    for (let box = shown.parentElement; box && menu.contains(box); box = box.parentElement) {
-      if (box.scrollHeight > box.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(box).overflowY)) {
-        const offset = shown.getBoundingClientRect().top - box.getBoundingClientRect().top;
-        box.scrollTop += offset - box.clientHeight / 2 + shown.offsetHeight / 2;
-        break;
-      }
-    }
-  } else if (!inView) {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    shown.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center", inline: "nearest" });
-  }
-  shown.classList.remove("feature-reveal");
-  void shown.offsetWidth;
-  shown.classList.add("feature-reveal");
-  //: Taken off again, reduced motion included: under that setting the ring is
-  //: static rather than animated, and a class nothing removes is a ring that
-  //: stays for good (the Search relevance report, openSettingsModal).
-  clearTimeout(revealTimers.get(shown));
-  revealTimers.set(shown, setTimeout(() => shown.classList.remove("feature-reveal"), 2700));
-  return shown;
+  if (target) ensureModule("reveal").then(() => flashRevealedNow(target));
 }
 
 //: A row's declaration, turned into the `run` the three lists call.
