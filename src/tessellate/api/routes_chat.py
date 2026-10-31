@@ -2411,7 +2411,7 @@ def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResp
     _check_refs(session, body)
     _apply_scope(session, body)
     _apply_open(session, body)
-    if not body.image_media_ids and not deps.get_ollama().is_running() and _composes_offline(body):
+    if _composes_offline(body):
         return _composed_chat(body, session)
     prepared = _prepare(
         session,
@@ -2501,7 +2501,10 @@ def _composes_offline(body: ChatRequest) -> bool:
     """A turn about the notes is composed from them when no model runs; a hello
     or a question about the app is not, it keeps the plain offline greeting
     ("No model is no reason to answer a hello with an error": a hello was
-    getting "this comes from your notes alone" over a welcome)."""
+    getting "this comes from your notes alone" over a welcome). A turn with
+    pictures, or with a model running, goes the model's way."""
+    if body.image_media_ids or deps.get_ollama().is_running():
+        return False
     kind = _detect_intent(body.question, False, body.note_ids, body.document_ids, body.file_ids, body.board_ids)
     return kind not in (intent.SMALLTALK, intent.ABOUT_APP)
 

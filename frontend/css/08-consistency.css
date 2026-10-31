@@ -9442,9 +9442,6 @@ h3.wb-sidebar-title {
 }
 /* "Show more" had no room either side: flush under the note's text and
    flush over the metadata row (the owner at release). */
-#entry-list:not(.is-rows) > li > .entry-more {
-  margin-block: var(--space-2) var(--space-3);
-}
 /* One gap above a card's metadata row, whatever sits above it (wrapup-0927
    10(d), "a small gap between a note card's text and its metadata row").
    Measured in card view: 6.4px under the text, 8px under "Show more" (the
@@ -10890,12 +10887,8 @@ header#top-bar button.space-switcher-btn:focus-visible {
     background: var(--card);
   }
 }
-/* --- The target floor (audit 1031 class 28: UX2, SH11, N21, BD6, BD8) ------
-   WCAG 2.5.8 asks 24 x 24 CSS px. "Show more", a Library title and the board
-   grips measured under it; each takes `--target-min` (28) by `min-*`, with
-   the layout kept (a negative margin takes back what the box gained). The
-   rail's link menus (1.5rem above) and a card's task boxes (01-forms-
-   settings.css) were brought to size where they are declared. */
+/* --- The target floor (audit 1031 class 28): WCAG 2.5.8's 24 px. Each control
+   takes `--target-min` by `min-*`; a negative margin keeps the layout. */
 #entry-list .entry-more,
 #entry-list:not(.is-rows) > li:not(.list-window-sentinel) > .entry-more {
   display: flex;

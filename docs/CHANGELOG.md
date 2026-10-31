@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Complexity (ranked row 24): the no-model check for `/chat` lives in `_composes_offline`, so the handler is back under its seed (19 to 17) and the ratchet is green
 - Validation (BK8 and DC8 together): a validator's refusal written for the person (`Said`) reaches the screen, so an unknown document type lists the valid ones again; a plain ValueError, which may quote what was sent, keeps the generic sentence
 - Red 1031 (CI on PR 211): a hello with no model gets the plain greeting again, not "this comes from your notes alone" over a welcome; a no-model ask is logged as an ask, so Ask again lists it; the "only one note has those words" line sits above an offer, which stays the last word; the chat menu's Activity row wears the Activity icon; the engine row's detail has its own class instead of a `:has()` keyed on `.muted`; the composer imports in about 0.2 s again because the Guide acts' stems are built on first use, not at import
 - Panels open where you left them is findable from the panel: the reset button in a panel's head names the switch, Find anything finds it by "remember panel", "panel position" or "forget panel" (it is the first result), and the Guide topic says where it is; checked that off opens a panel in the middle after closing and after a reload (INBOX 1505).
