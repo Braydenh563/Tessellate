@@ -479,7 +479,7 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 
 ## Placed from INBOX: 107d, the segmented mini bars
 
-1482. **The owner, 2026-10-31 15:06 local, verbatim:** "rich text document?" (screenshots of the same reference app: a document tab "Untitled" with "+", "Start typing or paste text to create a document...", and a type button in the foot ("python") opening a list grouped Documents (Rich text, markdown, pdf), Email and data (email, csv), Code (bash, c, c++, c#, css, Word/DOCX, go, html, ...), each with its glyph.) Answer: Tessellate's Documents are rich text already (the Word-like editor; code files open in the code editor). Recommendation taken: the new-file type picker and a document's type button take that grouped list with glyphs (Documents, Data, Code), built on the `kebabMenu` groups (INBOX 1469). Next free agent.
+INBOX 1482 (the file type picker) is built and moved to HISTORY.md ("Moved from the plans, 2026-10-31 (file type picker 1482)") on 2026-10-31: a plan holds open work only.
 
 "Note in the redesign documents and where it is supposed to that I want to get
 rid of and redesign these mini menu bars as they are in a couple popups around
