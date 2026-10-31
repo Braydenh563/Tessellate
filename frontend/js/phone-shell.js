@@ -413,15 +413,22 @@ function tabPageScroller(tab) {
   let target = scrolls(page) ? page : null;
   if (!target) {
     //: The page's biggest scrolling region: a tab whose own box does not
-    //: scroll (Notes, the Library) scrolls a list inside it.
+    //: scroll (Notes, the Library) scrolls a list inside it. Every one is
+    //: within three levels (`.layout > .tab-main`, a Library section, the
+    //: Timeline's feed), so the walk stops there: it read `scrollHeight` of
+    //: every element on the page (Library 6,122, 14 to 140ms at 4x).
     let best = 0;
-    for (const el of page.querySelectorAll("*")) {
-      const area = scrolls(el) ? el.clientWidth * el.clientHeight : 0;
-      if (area > best) {
-        best = area;
-        target = el;
+    const walk = (parent, depth) => {
+      for (const el of parent.children) {
+        const area = scrolls(el) ? el.clientWidth * el.clientHeight : 0;
+        if (area > best) {
+          best = area;
+          target = el;
+        }
+        if (depth < 4) walk(el, depth + 1);
       }
-    }
+    };
+    walk(page, 1);
   }
   return target || page;
 }
@@ -579,12 +586,17 @@ function initNotesSubtabHeightToken() {
     const box = strip.getBoundingClientRect().height;
     //: The strip's own bottom margin counts: it is the gap the strip keeps
     //: below itself, and a bar that stopped at the strip's edge would touch it.
-    const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
-    const h = Math.round(box + gap);
     //: Zero while the tab is hidden (the strip has no box at all then) would
     //: put the bar back under the strip the moment Notes was opened. Leave the
-    //: stylesheet's value standing until there is a real one.
-    if (h > 0) page.style.setProperty("--notes-sticky-top", `${h}px`);
+    //: last real value standing. The test is the box, not the sum with the
+    //: margin: a hidden strip still reads its 10px margin, so the sum wrote
+    //: `10px` on every hide and `46px` on every show, and a custom property
+    //: changed on the page restyles the whole page (1,794 elements, 100 to
+    //: 230ms at 4x on the Notes tab).
+    if (!(box > 0)) return;
+    const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
+    const h = `${Math.round(box + gap)}px`;
+    if (page.style.getPropertyValue("--notes-sticky-top") !== h) page.style.setProperty("--notes-sticky-top", h);
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
