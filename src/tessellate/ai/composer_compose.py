@@ -338,11 +338,12 @@ def greeted_as(question: str, hour: int) -> str:
     return (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "") -> str:
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
     """A greeting built from what the app knows: the time of day, what is due
-    today (`due`, None when unknown), the title of the last note (`last`) and
-    the streak in days. No note yet is the empty welcome. Each known fact is
-    one clause; which come, in what order and joined how is the mood's."""
+    today (`due`, None when unknown), the title of the last note (`last`, a
+    link to `last_href` when given) and the streak in days. No note yet is
+    the empty welcome. Each known fact is one clause; which come, in what
+    order and joined how is the mood's."""
     if notes <= 0:
         new = frame("welcome_new", mood)
         return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
@@ -353,7 +354,8 @@ def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = ""
     elif due == 0:
         clauses.append(("due", frame("w_quiet", mood)))
     if last:
-        clauses.append(("last", frame("w_last", mood, last=f"“{last}”")))
+        named = f"[{last.replace('[', '(').replace(']', ')')}]({last_href})" if last_href else f"“{last}”"
+        clauses.append(("last", frame("w_last", mood, last=named)))
     if streak >= 2:
         clauses.append(("streak", frame("w_streak", mood, streak=f"{streak} days")))
     clauses.sort(key=lambda kv: _stable(mood.seed, "order", kv[0]))

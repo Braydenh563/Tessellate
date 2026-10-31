@@ -63,7 +63,7 @@ def events(session: Session, question: str, history: list[dict], *, now: datetim
     return out
 
 
-def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None) -> str:
+def welcome_line(session: Session, now: datetime, *, question: str = "", voice: str = "natural", seed: str = "", said: list[str] | None = None, link: bool = False) -> str:
     """The composed welcome (CHAT_PLAN 1353): the time of day, the reminders
     due today, the title of the last note and the writing streak, built by the
     composition layer in the person's voice. A failure to count anything
@@ -86,4 +86,23 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
     due = sum(1 for r in _reminders(session) if hasattr(r["due_at"], "date") and r["due_at"].date() < tomorrow)
     last = study.title_of(notes[0]["content"]) if notes else ""
     mood = composer_compose.mood_of(question, voice=voice, seed=seed, said=said or [], intent="welcome")
-    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question)
+    #: In Chat the last note is a link the client opens (INBOX 1485: "didnt
+    #: reference the note and no link or source was shown?").
+    href = f"#/notes/{notes[0]['id']}" if link and notes else ""
+    return composer_compose.welcome(mood, hour=now.hour, due=due, last=realise.cut_title(last, 60), streak=facts.streak, notes=total, question=question, last_href=href)
+
+
+def mentioning(session: Session, word: str) -> int:
+    """How many visible notes hold `word` (the full-text index, stemmed: "test"
+    finds "testing"), for a ping's one line (INBOX 1485); 0 when unreadable."""
+    from sqlalchemy import func
+    from sqlalchemy import text as sql_text
+
+    if not word.isalpha():
+        return 0
+    try:
+        ids = select(sql_text("rowid")).select_from(sql_text("entries_fts")).where(sql_text("entries_fts MATCH :w"))
+        return int(session.scalar(select(func.count(Entry.id)).where(*_visible(), Entry.id.in_(ids)), {"w": f'"{word}"'}) or 0)
+    except Exception:  # noqa: BLE001  # no index yet: nothing is counted
+        log.exception("chat: counting the notes a ping names failed")
+        return 0

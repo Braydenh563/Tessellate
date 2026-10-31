@@ -525,6 +525,17 @@ SOCIAL_PHRASES: dict[str, str] = {
     "oh no": "reaction", "oh wow": "reaction", "no way": "reaction", "thats great": "reaction",
     "that's great": "reaction", "nice one": "thanks", "well done": "reaction", "oh dear": "reaction",
     "who are you": "who", "whats your name": "who", "what's your name": "who",
+    #: A repair: the last reply missed (INBOX 1485). Owned and read again,
+    #: never searched for ("not what I asked" found "not asked").
+    "not what i asked": "repair", "thats not what i asked": "repair", "that's not what i asked": "repair",
+    "that is not what i asked": "repair", "not what i meant": "repair", "thats not what i meant": "repair",
+    "that's not what i meant": "repair", "not what i said": "repair", "thats wrong": "repair",
+    "that's wrong": "repair", "that is wrong": "repair", "wrong answer": "repair", "no i meant": "repair",
+    "you misunderstood": "repair", "you misunderstood me": "repair", "you got it wrong": "repair",
+    "you got that wrong": "repair", "thats not right": "repair", "that's not right": "repair",
+    "that is not right": "repair", "you misread": "repair", "you misread me": "repair",
+    "i didnt ask that": "repair", "i didn't ask that": "repair", "i did not ask that": "repair",
+    "not what i was asking": "repair", "thats not it": "repair", "that's not it": "repair",
 }
 
 #: One-word turns that are not in `SOCIAL` above: reactions and confusion.
@@ -594,6 +605,9 @@ SOCIAL_PHRASES.update({
     "how have you been": "how", "how are you doing": "how", "how is your day": "how",
     "how was your day": "how", "how's your day": "how", "hows your day": "how", "how do you do": "how",
     "you ok": "how", "are you ok": "how", "are you okay": "how", "you alright": "how",
+    #: "are u" before ok, good, well or alright is a how-are-you; before
+    #: anything else it is not ("are u an ai??" got "Good.", INBOX 1485).
+    **{f"{are} {you} {how}": "how" for are in ("are", "r") for you in ("you", "u") for how in ("ok", "okay", "good", "well", "alright", "all right", "doing ok", "doing well", "doing good")},
     "hope you are well": "how", "hope youre well": "how", "hi there": "greeting",
     "hello there": "greeting", "hey there": "greeting", "hey you": "greeting", "good day": "greeting",
     "hi again": "greeting", "hello again": "greeting", "hey again": "greeting", "well hello": "greeting",
@@ -1970,11 +1984,51 @@ def destretch(text: str) -> str:
     return _LETTERS.sub(lambda m: _unstretched(m.group(0)), text)
 
 
+#: Sounds typed while thinking ("errrmmm", "umm", "uhh", "hmm"): read past,
+#: never searched for (INBOX 1485). Not "er", "um" inside a word, or "hum".
+_FILLER = re.compile(r"^(?:u+m+|u+h+m*|e+r+m+|e+r{2,}|h+m+|m{2,}|e+h+m+|a+h+m+)$", re.I)
+_FILLER_TOKEN = re.compile(r"(?:(?<=\s)|^)([A-Za-z]+)[.,;:!…]*(?=\s|$)")
+
+
+def drop_filler(text: str) -> str:
+    """`text` without its filler words and the punctuation typed after them
+    ("errrmmm. hi test test" is "hi test test"); as typed when nothing else
+    is left ("hmm" alone is a turn of its own)."""
+    if not text or not re.search(r"(?i)\b(?:u|e|h|m|a)", text):
+        return text
+    kept = _FILLER_TOKEN.sub(lambda m: "" if _FILLER.match(m.group(1)) else m.group(0), text)
+    kept = " ".join(kept.split()).lstrip(",.;: ")
+    return kept if re.search(r"\w", kept) else text
+
+
+#: "r u an ai??", "are you a real person", "am I talking to a bot", "who are
+#: you", "what are you": a question about what it is talking to, answered by
+#: Atlas about itself, never searched for in the notes or on the web (INBOX
+#: 1485). Read at the end of the message, after any lead-in ("whoa, stop
+#: right there"). "are u ok" stays a how-are-you.
+_WHAT_I_AM = r"(?:an? )?(?:real )?(?:ai|a i|bot|robot|human|person|real|machine|program|computer|chatbot|llm|chatgpt|gpt|human being|actual person)"
+_IDENTITY = re.compile(
+    rf"(?:^| )(?:are|r) (?:you|u|ya) (?:even |actually |really |just )?{_WHAT_I_AM}(?: or (?:not|what|an? \w+|\w+))?(?: (?:lol|haha|though|tho|then|too|right|now|or what))*$"
+    rf"|^(?:who|what) (?:are|r) (?:you|u|ya)(?: (?:exactly|even|actually|really|then|again|lol|anyway))*$"
+    rf"|(?:^| )am i (?:talking|speaking|chatting|texting) (?:to|with) {_WHAT_I_AM}(?: or \w+(?: \w+)?)?$"
+    r"|^(?:is this|is it|this is) (?:an? )?(?:ai|bot|robot|chatbot|real person|human|machine)(?: or \w+(?: \w+)?)?$"
+)
+
+
+def asks_identity(message: str) -> bool:
+    """Whether `message` asks what Atlas is (`_IDENTITY`)."""
+    text = " ".join(re.split(r"[^\w']+", strip_symbols(drop_filler(message or "")).lower())).strip()
+    return len(text) <= 80 and bool(_IDENTITY.search(text))
+
+
 def social_kind(message: str) -> str | None:
     """The kind of conversational turn a message is when every part of it is
     one ("ty", "lol", "ok thx", "right ok", "wait what", "how r u", an emoji
-    alone), else None: a turn with a question in it is a question."""
-    raw = destretch((message or "").strip())
+    alone), else None: a turn with a question in it is a question. A question
+    about what it is talking to is "who", whatever leads into it."""
+    if asks_identity(message):
+        return "who"
+    raw = destretch(drop_filler((message or "").strip()))
     if raw and not strip_symbols(raw):
         return "reaction" if re.search(r"[\U0001F600-\U0001F64F]", raw) else "ack"
     text = strip_symbols(raw).lower()
@@ -1998,7 +2052,7 @@ def social_kind(message: str) -> str | None:
         else:
             return None
     #: "ok thanks" is thanks; "lol ok" is laughter: the most telling part.
-    for kind in ("confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad"):
+    for kind in ("repair", "confused", "thanks", "sorry", "bye", "morning", "greeting", "how", "who", "frustrated", "reaction", "laugh", "compliment", "insult", "emotion", "glad"):
         if kind in kinds:
             return kind
     return "ack"
@@ -2142,7 +2196,8 @@ def repair(text: str, report: list | None = None, known=frozenset(), fixed: list
     {"typed", "chosen", "alternative"}; every misspelling put right (not slang
     spelled out) is added to `fixed` as (typed, chosen), which is what lets an
     answer say how it read the question."""
-    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, SLANG.keys(), fixed)
+    #: A small-talk word is a word: "hi test" was glued into "hitest" (INBOX 1485).
+    tokens = spelling.rejoin(_COMMA_RUN.sub(", ", strip_symbols(text)).split(" "), known, SLANG.keys() | SOCIAL.keys(), fixed)
     tokens = [spelling.drop_stray(t, known, fixed) for t in tokens]
     out: list[str] = []
     i = 0
