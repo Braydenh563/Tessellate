@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "what do I spend on groceries" and the total spend read a standing amount ("rent is $1,200 a month") as the rate it is (audit 1031 C30)
 - Composer: "what am I reading" is the Books note, not a question another note asks (audit 1031 C18); "which is the main note" is the subject's defining note (C26)
 - Composer: "what's new with X", "news on X" and "where am I with X" are the latest-on-X ask, and a bare checklist item never leads it (audit 1031 C48); a "notes mentioning X" question is the same listing in Ask and Chat (C19)
 - Suggested questions are chips: a quoted "ask me ..." in the Guide, Chat or Ask is lifted by one helper into a one-click chip, and a lint holds every suggesting template to it (INBOX 1497); the Guide leads with the sentence that names the act asked (export, import, print, share, delete, restore, move, rename, attach, pin) from whichever matched topic holds it

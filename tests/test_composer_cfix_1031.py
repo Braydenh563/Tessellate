@@ -642,3 +642,26 @@ def test_media_kind_leaves_other_questions_as_they_are(question):
     from tessellate.ai import question_noise
 
     assert question_noise.media_kind(question) == question
+
+
+# C30. "What do I spend on X" reads "X about $N a week" as the rate it is.
+
+@pytest.mark.parametrize("question, said", [
+    ("what do I spend on groceries", "groceries about $80 a week"), ("how much do I spend on groceries a week", "groceries about $80 a week"),
+    ("what do I spend on rent", "rent $1,200 a month"), ("what do I spend on rent a month", "rent $1,200 a month"),
+    ("how much do I spend on rent", "rent $1,200 a month"), ("What do I spend on Groceries?", "groceries about $80 a week"),
+])
+def test_a_spend_ask_reads_a_standing_amount_as_a_rate(notebook, question, said):
+    said_back, _ = notebook(question)
+    assert said in said_back and "found no amounts" not in said_back, said_back
+
+
+@pytest.mark.parametrize("question", ["what is my total spend", "how much do I spend", "total spend"])
+def test_a_total_spend_ask_says_the_priced_and_the_regular_amounts(notebook, question):
+    said, _ = notebook(question)
+    assert "rent $1,200 a month and groceries about $80 a week" in said and "passport $193" in said, said
+
+
+def test_a_spend_ask_with_no_rate_and_no_amount_says_so(notebook):
+    said, _ = notebook("what do I spend on the dentist")
+    assert "found no amounts" in said, said
