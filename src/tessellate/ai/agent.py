@@ -1716,6 +1716,172 @@ def _plan_exempt(question: str) -> frozenset[str]:
     return frozenset({"make_plan"}) if tools.asks_for_plan(question) else frozenset()
 
 
+def _focus_names(question: str, history: list[dict] | None, notes: list[dict], allowed_tools: list[str] | None, tier) -> list[str] | None:  # noqa: ANN001
+    # A skill's declared tools are the only ones offered for its run: fewer
+    # schemas on the wire (roadmap §11a) and a narrower thing to go wrong.
+    # An ordinary turn declares nothing, so the question is read for what it
+    # plausibly needs: see tools.focus_for. Note the asymmetry: the skill's
+    # list is also *enforced* below, while the focus is only an economy. A
+    # tool left out because a cue didn't fire must still run if the model
+    # somehow calls it.
+    focus_names = (
+        allowed_tools if allowed_tools is not None else _focus(question, history)
+    )
+    if tier.narrow_toolbox and allowed_tools is None:
+        # **One stable toolbox for a small model, not a per-question guess.**
+        # `_focus` is an economy: it reads the question's words and adds the
+        # groups they hint at, so the same model sees a different set every
+        # turn and the set is usually larger than the core. Both halves are
+        # wrong here. A small model does better with a short list it sees
+        # every time than with a longer one tuned to the question, and the
+        # orchestration three (`make_plan`, `run_skill`, `save_skill`) are the
+        # ones it reaches for instead of answering: `ORCHESTRATION_TOOLS`
+        # already documents that, and `within_budget` already drops them on a
+        # small *window*. This is the same judgement made on the model's size.
+        #
+        # A skill's declared list is exempt (`allowed_tools is not None`): it
+        # asked for exactly those tools, and dropping one breaks the run
+        # rather than simplifying it.
+        #:
+        #: **Plus the tools the request itself names** (INBOX 527, measured on
+        #: Qwen2.5-1.5B): the core alone holds one write, `create_note`, so
+        #: "Pin my dentist note" was offered no `pin_note` and the model wrote
+        #: a duplicate note instead; 2 of 10 everyday requests chose a right
+        #: tool. The cued groups are added after the core, which stays first
+        #: and stable; a broad request (None) still gets the core alone.
+        cued = _focus(question, history) or []
+        #: `save_user_preference` only when the request is about the user
+        #: (H4, Qwen2.5-3B under the forced first call: "Note down: ...",
+        #: "Save this: ..." and "Put ... in my note" saved a preference, 3/20).
+        keep_pref = bool(_PREFERENCE_CUE.search(question or ""))
+        focus_names = [
+            name
+            for name in dict.fromkeys([*tools.CORE_TOOLS, *cued])
+            if _narrow_keeps(name, question, keep_pref)
+        ]
+    if focus_names is not None and allowed_tools is None and _picture_in_hand(question, notes):
+        focus_names = [name for name in focus_names if name not in _CANVAS_TOOLS]
+    return focus_names
+
+
+def _fit_toolboxes(
+    session: Session, question: str, history: list[dict] | None, tier, budget, offered: list[dict],  # noqa: ANN001
+    unoffered: set[str] | frozenset[str],
+) -> tuple[list[dict], list[dict]]:
+    """The tools this turn offers, and the wider set a miss widens to, each fitted to the window."""
+    every_tool = offered
+    # What the turn widens to if the model reaches for something it was not
+    # shown (the correction below). For a small model that is the ordinary
+    # question-focused set, **not** the whole registry: the narrowing above
+    # is a judgement about the model rather than a guess about the
+    # question, so a miss is evidence the focus was wrong, not evidence
+    # that a 3B can suddenly choose between twenty-two schemas.
+    every_tool = tools.with_relation_types(
+        tools.ollama_tools(_focus(question, history) if tier.narrow_toolbox else None),
+        session,
+    )
+    if unoffered:
+        every_tool = [
+            t for t in every_tool if t["function"]["name"] not in unoffered
+        ]
+    if budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS:
+        every_tool = tools.compact_schemas(every_tool)
+    keep = tools.keep_first_for(question)
+    exempt = _plan_exempt(question)
+    chances = dict(tools.rank_tools(question, _recent_text(history)))
+    every_tool, _ = tools.within_budget(every_tool, budget.tool_schema_chars, keep, exempt, chances)
+    offered, dropped = tools.within_budget(offered, budget.tool_schema_chars, keep, exempt, chances)
+    if dropped:
+        # Visible in Settings, Logs, because "the AI didn't use the tool I
+        # expected" is otherwise indistinguishable from the model choosing
+        # not to. Each name carries the chance the question gave it.
+        logging.getLogger("tessellate.agent").info(
+            "%s (%d-token window)", tools.ranking_line([t["function"]["name"] for t in offered], dropped, chances), budget.window_tokens
+        )
+    return offered, every_tool
+
+
+def _composition_tokens(messages: list[dict], offered: list[dict]) -> dict[str, int]:
+    # Roadmap §11a's prescribed first step: measure before cutting. One line
+    # per turn saying what the prompt is made of, so "which half dominates a
+    # real chat: the notes or the history?" is answered from the log rather
+    # than argued about. Chars, not tokens: the ratio is what matters, and
+    # the true token counts already arrive in each round's stats event.
+    system_chars = len(messages[0]["content"])
+    history_chars = sum(len(m["content"]) for m in messages[1:-1])
+    notes_chars = len(messages[-1]["content"])
+    tool_schema_chars = len(json.dumps(offered))
+    logging.getLogger("tessellate.agent").info(
+        "prompt composition: system=%d history=%d notes+question=%d "
+        "tool_schemas=%d chars (%d tools offered)",
+        system_chars,
+        history_chars,
+        notes_chars,
+        tool_schema_chars,
+        len(offered),
+    )
+    # §88.4 item 4's next step past the log line above: the same breakdown,
+    # as a rough token estimate (chars/4: the same approximation
+    # ai/context.py's own budgeting uses), attached to the first round's
+    # stats event so the UI's metadata line can show it rather than it
+    # being visible only in Settings -> Logs. Measured once, here, before
+    # the loop below appends any tool-result rounds to `messages`, a
+    # later round's true composition would need re-measuring inside the
+    # loop, which this does not attempt; the first round is also the one
+    # every turn actually has, tool calls or not.
+    return {
+        "system": system_chars // context.CHARS_PER_TOKEN,
+        "history": history_chars // context.CHARS_PER_TOKEN,
+        "notes": notes_chars // context.CHARS_PER_TOKEN,
+        "tool_schemas": tool_schema_chars // context.CHARS_PER_TOKEN,
+    }
+
+
+def _round_limits(max_rounds: int, earned_rounds: int, tier) -> tuple[int, int]:  # noqa: ANN001
+    # Rounds are granted, then earned (see EARNED_ROUNDS). `allowance` is what
+    # this turn has so far; a round that does something new adds one to it, up
+    # to `ceiling`. A turn that loops never adds anything and stops where the
+    # flat cap always stopped it.
+    granted = max(1, max_rounds)
+    ceiling = granted + max(0, earned_rounds)
+    if tier.max_rounds is not None:
+        # The cap is on the ceiling as well as the grant, or the earned rounds
+        # put the total straight back to twelve: see SMALL_MODEL_MAX_ROUNDS.
+        granted = min(granted, tier.max_rounds)
+        ceiling = min(ceiling, tier.max_rounds)
+    return granted, ceiling
+
+
+def _first_toolbox(session: Session, question: str, focus_names, tier, budget, barred: set[str]) -> tuple[list[dict], set[str]]:  # noqa: ANN001
+    offered = tools.with_relation_types(tools.ollama_tools(focus_names), session)
+    # Tools this turn may not use whatever it was offered. The one caller is a
+    # run refusing to start another run (`tools.RUN_STARTERS`): each run brings
+    # its own fresh rounds, so nesting them means the bound on a turn stops
+    # meaning anything, and the plan on screen stops describing what is
+    # happening. Withdrawn from the wire *and* refused below, because a model
+    # that calls a tool it was never offered must not get it either.
+    #: The web tools a first-person question does not need are only left off
+    #: the wire (audit 1030 A3); a call a model makes anyway is judged as before.
+    unoffered = barred | tools.web_barred(question)
+    if unoffered:
+        offered = [t for t in offered if t["function"]["name"] not in unoffered]
+    # On a small window, trim the descriptions even when the full set would
+    # fit. `within_budget` compacts only once the schemas overflow their share,
+    # which is the right rule for a large model, but on an 8k window the
+    # focused set measured 4,827 chars against a 7,901-char allowance, so it
+    # "fits" and is sent in full, spending 1,206 tokens where 996 does the same
+    # job. Affordable is not the same as wise: what the allowance leaves unspent
+    # is what the notes and the conversation get, and on a small model those are
+    # exactly what runs out first.
+    #
+    # Safe for a skill's declared list too (hence above the `allowed_tools`
+    # branch): compaction never removes a tool, so nothing a skill asked for
+    # can go missing this way.
+    if tier.compact_schemas or (budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS):
+        offered = tools.compact_schemas(offered)
+    return offered, unoffered
+
+
 def _prepare_turn(
     session: Session,
     question: str,
@@ -1794,77 +1960,9 @@ def _prepare_turn(
         mode=mode,
         images=images,
     )
-    # A skill's declared tools are the only ones offered for its run: fewer
-    # schemas on the wire (roadmap §11a) and a narrower thing to go wrong.
-    # An ordinary turn declares nothing, so the question is read for what it
-    # plausibly needs: see tools.focus_for. Note the asymmetry: the skill's
-    # list is also *enforced* below, while the focus is only an economy. A
-    # tool left out because a cue didn't fire must still run if the model
-    # somehow calls it.
-    focus_names = (
-        allowed_tools if allowed_tools is not None else _focus(question, history)
-    )
-    if tier.narrow_toolbox and allowed_tools is None:
-        # **One stable toolbox for a small model, not a per-question guess.**
-        # `_focus` is an economy: it reads the question's words and adds the
-        # groups they hint at, so the same model sees a different set every
-        # turn and the set is usually larger than the core. Both halves are
-        # wrong here. A small model does better with a short list it sees
-        # every time than with a longer one tuned to the question, and the
-        # orchestration three (`make_plan`, `run_skill`, `save_skill`) are the
-        # ones it reaches for instead of answering: `ORCHESTRATION_TOOLS`
-        # already documents that, and `within_budget` already drops them on a
-        # small *window*. This is the same judgement made on the model's size.
-        #
-        # A skill's declared list is exempt (`allowed_tools is not None`): it
-        # asked for exactly those tools, and dropping one breaks the run
-        # rather than simplifying it.
-        #:
-        #: **Plus the tools the request itself names** (INBOX 527, measured on
-        #: Qwen2.5-1.5B): the core alone holds one write, `create_note`, so
-        #: "Pin my dentist note" was offered no `pin_note` and the model wrote
-        #: a duplicate note instead; 2 of 10 everyday requests chose a right
-        #: tool. The cued groups are added after the core, which stays first
-        #: and stable; a broad request (None) still gets the core alone.
-        cued = _focus(question, history) or []
-        #: `save_user_preference` only when the request is about the user
-        #: (H4, Qwen2.5-3B under the forced first call: "Note down: ...",
-        #: "Save this: ..." and "Put ... in my note" saved a preference, 3/20).
-        keep_pref = bool(_PREFERENCE_CUE.search(question or ""))
-        focus_names = [
-            name
-            for name in dict.fromkeys([*tools.CORE_TOOLS, *cued])
-            if _narrow_keeps(name, question, keep_pref)
-        ]
-    if focus_names is not None and allowed_tools is None and _picture_in_hand(question, notes):
-        focus_names = [name for name in focus_names if name not in _CANVAS_TOOLS]
-    offered = tools.with_relation_types(tools.ollama_tools(focus_names), session)
-    # Tools this turn may not use whatever it was offered. The one caller is a
-    # run refusing to start another run (`tools.RUN_STARTERS`): each run brings
-    # its own fresh rounds, so nesting them means the bound on a turn stops
-    # meaning anything, and the plan on screen stops describing what is
-    # happening. Withdrawn from the wire *and* refused below, because a model
-    # that calls a tool it was never offered must not get it either.
+    focus_names = _focus_names(question, history, notes, allowed_tools, tier)
     barred = set(blocked_tools or ())
-    #: The web tools a first-person question does not need are only left off
-    #: the wire (audit 1030 A3); a call a model makes anyway is judged as before.
-    unoffered = barred | tools.web_barred(question)
-    if unoffered:
-        offered = [t for t in offered if t["function"]["name"] not in unoffered]
-    # On a small window, trim the descriptions even when the full set would
-    # fit. `within_budget` compacts only once the schemas overflow their share,
-    # which is the right rule for a large model, but on an 8k window the
-    # focused set measured 4,827 chars against a 7,901-char allowance, so it
-    # "fits" and is sent in full, spending 1,206 tokens where 996 does the same
-    # job. Affordable is not the same as wise: what the allowance leaves unspent
-    # is what the notes and the conversation get, and on a small model those are
-    # exactly what runs out first.
-    #
-    # Safe for a skill's declared list too (hence above the `allowed_tools`
-    # branch): compaction never removes a tool, so nothing a skill asked for
-    # can go missing this way.
-    if tier.compact_schemas or (budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS):
-        offered = tools.compact_schemas(offered)
+    offered, unoffered = _first_toolbox(session, question, focus_names, tier, budget, barred)
     # Then fit what is left to the window the model actually has, rather than
     # to a constant. See tools.within_budget: 4096 is Ollama's fallback, not a
     # fact, and a model declaring 32k was being rationed as if it were a 3B.
@@ -1894,79 +1992,10 @@ def _prepare_turn(
     if focused_only and focus_names is not None and messages:
         messages[0]["content"] += FOCUS_NOTE
     if allowed_tools is None:
-        # What the turn widens to if the model reaches for something it was not
-        # shown (the correction below). For a small model that is the ordinary
-        # question-focused set, **not** the whole registry: the narrowing above
-        # is a judgement about the model rather than a guess about the
-        # question, so a miss is evidence the focus was wrong, not evidence
-        # that a 3B can suddenly choose between twenty-two schemas.
-        every_tool = tools.with_relation_types(
-            tools.ollama_tools(_focus(question, history) if tier.narrow_toolbox else None),
-            session,
-        )
-        if unoffered:
-            every_tool = [
-                t for t in every_tool if t["function"]["name"] not in unoffered
-            ]
-        if budget is not None and budget.window_tokens <= SMALL_WINDOW_TOKENS:
-            every_tool = tools.compact_schemas(every_tool)
-        keep = tools.keep_first_for(question)
-        exempt = _plan_exempt(question)
-        chances = dict(tools.rank_tools(question, _recent_text(history)))
-        every_tool, _ = tools.within_budget(every_tool, budget.tool_schema_chars, keep, exempt, chances)
-        offered, dropped = tools.within_budget(offered, budget.tool_schema_chars, keep, exempt, chances)
-        if dropped:
-            # Visible in Settings, Logs, because "the AI didn't use the tool I
-            # expected" is otherwise indistinguishable from the model choosing
-            # not to. Each name carries the chance the question gave it.
-            logging.getLogger("tessellate.agent").info(
-                "%s (%d-token window)", tools.ranking_line([t["function"]["name"] for t in offered], dropped, chances), budget.window_tokens
-            )
-    # Roadmap §11a's prescribed first step: measure before cutting. One line
-    # per turn saying what the prompt is made of, so "which half dominates a
-    # real chat: the notes or the history?" is answered from the log rather
-    # than argued about. Chars, not tokens: the ratio is what matters, and
-    # the true token counts already arrive in each round's stats event.
-    system_chars = len(messages[0]["content"])
-    history_chars = sum(len(m["content"]) for m in messages[1:-1])
-    notes_chars = len(messages[-1]["content"])
-    tool_schema_chars = len(json.dumps(offered))
-    logging.getLogger("tessellate.agent").info(
-        "prompt composition: system=%d history=%d notes+question=%d "
-        "tool_schemas=%d chars (%d tools offered)",
-        system_chars,
-        history_chars,
-        notes_chars,
-        tool_schema_chars,
-        len(offered),
-    )
-    # §88.4 item 4's next step past the log line above: the same breakdown,
-    # as a rough token estimate (chars/4: the same approximation
-    # ai/context.py's own budgeting uses), attached to the first round's
-    # stats event so the UI's metadata line can show it rather than it
-    # being visible only in Settings -> Logs. Measured once, here, before
-    # the loop below appends any tool-result rounds to `messages`, a
-    # later round's true composition would need re-measuring inside the
-    # loop, which this does not attempt; the first round is also the one
-    # every turn actually has, tool calls or not.
-    composition_tokens = {
-        "system": system_chars // context.CHARS_PER_TOKEN,
-        "history": history_chars // context.CHARS_PER_TOKEN,
-        "notes": notes_chars // context.CHARS_PER_TOKEN,
-        "tool_schemas": tool_schema_chars // context.CHARS_PER_TOKEN,
-    }
+        offered, every_tool = _fit_toolboxes(session, question, history, tier, budget, offered, unoffered)
+    composition_tokens = _composition_tokens(messages, offered)
 
-    # Rounds are granted, then earned (see EARNED_ROUNDS). `allowance` is what
-    # this turn has so far; a round that does something new adds one to it, up
-    # to `ceiling`. A turn that loops never adds anything and stops where the
-    # flat cap always stopped it.
-    granted = max(1, max_rounds)
-    ceiling = granted + max(0, earned_rounds)
-    if tier.max_rounds is not None:
-        # The cap is on the ceiling as well as the grant, or the earned rounds
-        # put the total straight back to twelve: see SMALL_MODEL_MAX_ROUNDS.
-        granted = min(granted, tier.max_rounds)
-        ceiling = min(ceiling, tier.max_rounds)
+    granted, ceiling = _round_limits(max_rounds, earned_rounds, tier)
     return _TurnPlan(
         agent_model=agent_model,
         tier=tier,

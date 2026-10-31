@@ -3,7 +3,6 @@
  "src/tessellate/ai/agent.py::_dispatch_call": 30,
  "src/tessellate/ai/agent.py::_first_round_tools": 16,
  "src/tessellate/ai/agent.py::_fit_result": 16,
- "src/tessellate/ai/agent.py::_prepare_turn": 40,
  "src/tessellate/ai/agent.py::_run_and_record": 23,
  "src/tessellate/ai/agent.py::_tool_sources": 30,
  "src/tessellate/ai/agent.py::build_agent_messages": 16,
