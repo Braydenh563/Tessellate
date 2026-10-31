@@ -3694,24 +3694,12 @@ function nameMarkBuddyObstacles(tab) {
   const held = nmb.obstaclesHeld;
   if (held?.tab === tab) return held.boxes.slice();
   nameMarkBuddyTextCache = new WeakMap();
-  const roots = [
-    document.getElementById(`tab-${tab}`), document.getElementById("top-bar"), document.getElementById("status-bar"),
-    document.getElementById("phone-tab-dock"), document.getElementById("toast-box"), document.querySelector(".pointer-menu-host"),
-    ...document.querySelectorAll(".modal-overlay:not(.hidden), .dock-fab, #scroll-top, .chat-jump-latest"),
-  ];
   //: A popup's whole box, not only the controls in it (INBOX 430: the
   //: notifications panel was blocked by it): it is where the reader is
   //: looking the moment it opens.
   const boxes = nameMarkBuddyPopups();
-  for (const root of roots) {
-    if (!root) continue;
-    const found = root.matches(NAME_MARK_BUDDY_NEVER_COVER) ? [root] : [];
-    for (const el of [...found, ...root.querySelectorAll(NAME_MARK_BUDDY_NEVER_COVER)]) {
-      if (el.closest("#nm-buddy")) continue;
-      const box = nameMarkBuddyShown(el);
-      if (box) boxes.push(box);
-    }
-  }
+  boxes.push(...nameMarkBuddyControlBoxes(tab));
+  for (const root of nameMarkBuddyFloaters()) nameMarkBuddyControlsIn(root, boxes);
   //: **The chat's latest message is never covered** (INBOX 443): it is
   //: what the reader is reading, an answer still being written included.
   //: The words check alone let its legs hang over the bubble's empty edge.
@@ -3722,6 +3710,55 @@ function nameMarkBuddyObstacles(tab) {
   }
   if (held) Object.assign(held, { tab, boxes: boxes.slice() });
   return boxes;
+}
+
+//: **Only what is near it** (INBOX 1463 and 1465, the owner's lag log:
+//: `nameMarkBuddyTick` 198 to 202ms). Whether it still covers nothing is a
+//: question about the few boxes under and around its own shape: the tab's
+//: controls (`nameMarkBuddyControlBoxes`, kept until the page changes) and
+//: what floats over the page, kept to those within `NMB_NEAR_PX` of it. A hit
+//: test at the points of its shape was measured first and lost: 60 of them
+//: took 20 to 35ms at 4x CPU on 14,000 to 17,000 elements (hitcost.js),
+//: as long as the sweep they were to replace.
+const NMB_NEAR_PX = 24;
+function nameMarkBuddyNear(x, y, pose, legs = "", tab = nameMarkBuddyTab()) {
+  const shape = nameMarkBuddyShape(x, y, pose, legs);
+  const near = (b) => shape.some((p) => b.right > p.left - NMB_NEAR_PX && b.left < p.right + NMB_NEAR_PX && b.bottom > p.top - NMB_NEAR_PX && b.top < p.bottom + NMB_NEAR_PX);
+  return nameMarkBuddyObstacles(tab).filter(near);
+}
+
+//: **The tab's controls, measured once while the page holds still.** The
+//: whole sweep (a box for every control on the tab and the window's bars)
+//: is kept until the page changes under it: a scroll or a resize
+//: (`nameMarkBuddyIndexReset`), an element added, removed or re-classed in a
+//: tab (the views observer below), another tab, or `NMB_COVERS_MAX_MS`, for
+//: whatever moves with none of those (a panel's own transition).
+const NMB_COVERS_MAX_MS = 15000;
+function nameMarkBuddyControlBoxes(tab) {
+  if (nmb.covers?.tab === tab && performance.now() - nmb.covers.at < NMB_COVERS_MAX_MS) return nmb.covers.boxes;
+  const boxes = [];
+  for (const id of [`tab-${tab}`, "top-bar", "status-bar", "phone-tab-dock"]) nameMarkBuddyControlsIn(document.getElementById(id), boxes);
+  nmb.covers = { tab, boxes, at: performance.now() };
+  return boxes;
+}
+function nameMarkBuddyControlsIn(root, boxes) {
+  if (!root) return;
+  const found = root.matches(NAME_MARK_BUDDY_NEVER_COVER) ? [root] : [];
+  for (const el of [...found, ...root.querySelectorAll(NAME_MARK_BUDDY_NEVER_COVER)]) {
+    if (el.closest("#nm-buddy")) continue;
+    const box = nameMarkBuddyShown(el);
+    if (box) boxes.push(box);
+  }
+}
+//: What floats over the page and comes and goes on its own (a toast, a
+//: dialog, a floating button), found by id and class, never by a selector
+//: over the whole document: one such query over 17,000 elements was 6 to
+//: 50ms of the sweep at 4x CPU (parts3.js).
+function nameMarkBuddyFloaters() {
+  const out = [document.getElementById("toast-box"), document.getElementById("scroll-top"), document.getElementsByClassName("pointer-menu-host")[0]];
+  for (const name of ["dock-fab", "chat-jump-latest"]) out.push(...document.getElementsByClassName(name));
+  for (const el of document.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
+  return out;
 }
 
 //: One landing's worth of choosing (`fn`) on one measure of the page: a
@@ -3751,15 +3788,29 @@ function nameMarkBuddyMeasureOnce(fn) {
 //: missed (the owner, 2026-10-11, over Notes' Reload / Manage tags menu:
 //: "the companion still covers some parts of the ui and doesnt move out of
 //: the way"); any open details menu and any shown menu or listbox counts.
-const NMB_POPUPS = "#notif-panel:not(.hidden), .action-menu:not(.hidden), .select-menu:not(.hidden), .help-popover:not(.hidden), #tour-spot:not(.hidden), #tour-card:not(.hidden), details[open][class*=\"menu\"] > :not(summary), [role=\"menu\"]:not(.hidden), [role=\"listbox\"]:not(.hidden), #wb-format:not(.hidden), #wb-sidebar-panel:not(.hidden)";
+//: Found by id, class and tag (`nameMarkBuddyPopupEls`), not by one
+//: selector over the whole document: that query alone was 15 to 50ms at
+//: 4x CPU on the Library and the dashboard (parts3.js), on every check.
 function nameMarkBuddyPopups() {
   const boxes = [];
-  for (const el of document.querySelectorAll(NMB_POPUPS)) {
-    if (el === nmb.menu || el.closest("#nm-buddy, .nm-viewer")) continue;
+  for (const el of nameMarkBuddyPopupEls()) {
+    if (el === nmb.menu || el.classList.contains("hidden") || el.closest("#nm-buddy, .nm-viewer")) continue;
     const box = nameMarkBuddyShown(el);
     if (box) boxes.push(box);
   }
   return boxes;
+}
+const NMB_POPUP_IDS = ["notif-panel", "tour-spot", "tour-card", "wb-format", "wb-sidebar-panel"];
+//: Every menu and list the app draws with a role of menu or listbox is one
+//: of these classes (roles.js: 136 under the first three, 18 under the rest);
+//: a new kind of menu adds its class here.
+const NMB_POPUP_CLASSES = ["action-menu", "select-menu", "help-popover", "space-menu", "wb-board-menu", "wb-shape-menu", "wb-lib-list", "nav-history-menu", "rich-picker-list", "doc-suggest-menu", "doc-complete-list"];
+function nameMarkBuddyPopupEls() {
+  const out = NMB_POPUP_IDS.map((id) => document.getElementById(id)).filter(Boolean);
+  for (const name of NMB_POPUP_CLASSES) out.push(...document.getElementsByClassName(name));
+  for (const d of document.getElementsByTagName("details")) if (d.open && /menu/.test(d.className)) out.push(...[...d.children].filter((c) => c.tagName !== "SUMMARY"));
+  for (const d of document.getElementsByTagName("dialog")) if (d.open) out.push(d);
+  return out;
 }
 //: Checked a moment after any press or key (the way a popup opens), from
 //: boxes only. Over one, it fades at once, so the popup is readable that
@@ -4027,6 +4078,7 @@ let nameMarkBuddyIndexObserver = null;
 
 function nameMarkBuddyIndexReset() {
   nameMarkBuddyIndex = null;
+  nmb.covers = null;
 }
 
 //: The tab's surfaces, found by walking it rather than by naming them all:
@@ -6655,9 +6707,11 @@ function nameMarkBuddyCheck() {
     placeNameMarkBuddy(buddy, false, [nmb.x, nmb.y]);
     return;
   }
-  const all = nameMarkBuddyObstacles(tab);
-  const obstacles = nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(all, nmb.spot) : all;
-  if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, obstacles, nmb.legs)) return;
+  //: Near its shape first (`nameMarkBuddyNear`): the whole tab's controls
+  //: only once one is under it, to find the nearest clear place.
+  const yours = (boxes) => (nmb.perch === "yours" ? nameMarkBuddyYoursObstacles(boxes, nmb.spot) : boxes);
+  if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, yours(nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs, tab)), nmb.legs)) return;
+  const obstacles = yours(nameMarkBuddyObstacles(tab));
   const here = { ...(nmb.spot || {}), x: nmb.x, y: nmb.y, pose: nmb.pose, legs: nmb.legs };
   const aside = nameMarkBuddyStepAside(here, obstacles);
   nmb.moves = (nmb.moves || 0) + 1;
@@ -6725,7 +6779,7 @@ function nameMarkBuddyBeat() {
   //: card 400px away by 20 points).
   const fresh = nmb.fresh;
   nmb.fresh = false;
-  if (!own && !(fresh && ["bar", "hang", "corner"].includes(nmb.perch)) && nameMarkBuddyStillGood(nameMarkBuddyObstacles(tab))) {
+  if (!own && !(fresh && ["bar", "hang", "corner"].includes(nmb.perch)) && nameMarkBuddyStillGood(Number.isFinite(nmb.x) ? nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs, tab) : [])) {
     nmb.tab = tab;
     return;
   }
@@ -6755,14 +6809,16 @@ function nameMarkBuddyViewChanged() {
 }
 if (globalThis.MutationObserver) {
   const views = new MutationObserver((records) => {
+    //: The tab's controls are measured again on the next look (`nmb.covers`).
+    nmb.covers = null;
     for (const r of records) {
       const el = r.target;
-      if (el.classList.contains("tab-page") || !el.matches(NMB_VIEWS)) continue;
+      if (r.type !== "attributes" || el.classList.contains("tab-page") || !el.matches(NMB_VIEWS)) continue;
       if (/(^|\s)hidden(\s|$)/.test(r.oldValue || "") !== el.classList.contains("hidden")) return nameMarkBuddyViewChanged();
     }
   });
   const watch = () => {
-    for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+    for (const page of document.querySelectorAll(".tab-page")) views.observe(page, { subtree: true, childList: true, attributes: true, attributeFilter: ["class", "hidden"], attributeOldValue: true });
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", watch);
   else watch();
@@ -7266,7 +7322,7 @@ function nameMarkBuddyRefit() {
 //: again; a control under it is, and nothing along the same edge was free.
 function nameMarkBuddyRefitClear(buddy) {
   if (nmb.perch === "yours" || (nmb.glue && (nmb.glue.held || nmb.glue.lost)) || nameMarkBuddyMenuOpen()) return false;
-  if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyObstacles(nameMarkBuddyTab()), nmb.legs)) return false;
+  if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs), nmb.legs)) return false;
   placeNameMarkBuddy(buddy, false, [nmb.x, nmb.y]);
   return true;
 }
@@ -7790,7 +7846,8 @@ function nameMarkBuddyTick() {
     nameMarkBuddySchedule();
     return;
   }
-  nameMarkBuddyCheck();
+  //: Its look for controls under it a frame on, when the layout is clean.
+  queueNameMarkBuddyCheck();
   const idle = Date.now() - nmb.lastInput;
   nameMarkBuddyContext(buddy);
   nmb.onBoard = nameMarkBuddyOnBoard();
@@ -8558,7 +8615,7 @@ function nameMarkBuddyWander(now) {
     nmb.home = null;
     const tab = nameMarkBuddyTab();
     nameMarkBuddyIndexReset();
-    if (home.tab === tab && !nameMarkBuddyHits(home.x, home.y, home.pose, nameMarkBuddyObstacles(tab), home.legs)) {
+    if (home.tab === tab && !nameMarkBuddyHits(home.x, home.y, home.pose, nameMarkBuddyNear(home.x, home.y, home.pose, home.legs, tab), home.legs)) {
       nmb.moveWhy = "back from a wander";
       nameMarkBuddyMoveTo(buddy, home);
       return true;

@@ -523,7 +523,8 @@ def test_the_companion_shows_and_hides_from_anywhere() -> None:
 def test_it_gets_out_of_a_popups_way() -> None:
     # INBOX 430: "the notifications panel was blocked by it". A popup is an
     # obstacle as a whole box; over one it fades at once and steps aside.
-    assert '"#notif-panel:not(.hidden)' in AV
+    # Found by id since INBOX 1465 (`NMB_POPUP_IDS`), hidden ones skipped.
+    assert re.search(r'^const NMB_POPUP_IDS = \["notif-panel", ', AV, re.M)
     assert "const boxes = nameMarkBuddyPopups();" in _fn("nameMarkBuddyObstacles")
     dodge = _fn("nameMarkBuddyDodge")
     assert 'buddy.classList.toggle("nmb-dodge", over)' in dodge
@@ -535,7 +536,7 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # INBOX 430: "Atlas spills out of its ring in the tour". The tour's ring
     # and card are popups it gets out of the way of, looked at again once a
     # step has settled, measured by the drawn figure's box.
-    assert "#tour-spot:not(.hidden), #tour-card:not(.hidden)" in AV
+    assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
     assert "nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
@@ -1799,9 +1800,11 @@ def test_the_companion_steps_off_a_dock_more_menu():
     way". A dock's "more" menu is an open `<details>`, which the popup list
     missed (measured: the figure now ends clear of the open menu's box)."""
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
-    popups = re.search(r"const NMB_POPUPS = \"(.*)\";", js).group(1)
-    assert 'details[open][class*=\\"menu\\"] > :not(summary)' in popups
-    assert '[role=\\"menu\\"]:not(.hidden)' in popups
+    # Found by tag and role since INBOX 1465 (one selector over the whole document cost 15 to 50ms a look).
+    popups = js[js.index("function nameMarkBuddyPopupEls("):].split("\n}\n", 1)[0]
+    assert 'getElementsByTagName("details")' in popups and "d.open && /menu/.test(d.className)" in popups and 'c.tagName !== "SUMMARY"' in popups
+    assert '"action-menu"' in re.search(r"^const NMB_POPUP_CLASSES = \[(.*)\];$", js, re.M).group(1)
+    assert 'el.classList.contains("hidden")' in js[js.index("function nameMarkBuddyPopups("):].split("\n}\n", 1)[0]
 
 
 # The companion's words check counts only drawn text (INBOX 812).
