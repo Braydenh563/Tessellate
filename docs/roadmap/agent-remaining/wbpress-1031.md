@@ -1,0 +1,3 @@
+- done: b3af755 OPEN 813 mind map add at 390 (style recalculation: undo bar flush, root-anchored `:has()`, edge and plus cascade, closed select menu, adopt redraw).
+- next: 200 topics at 390 is still 90 to 110 ms synchronous: `renderWbObjects` (whiteboard.js, about 36 ms), `wbRenderMapEdges` geometry (whiteboard-map.js, about 25 ms), `wbBeginTextEdit` flush (whiteboard.js, about 45 ms); measure on a quiet machine and on the owner's hardware.
+- not verified: a real phone; quiet-machine timings (load was 3 to 13 here); the 50 ms bar at 200 topics.

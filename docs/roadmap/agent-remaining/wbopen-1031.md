@@ -7,7 +7,7 @@ Outcome per row is in OPEN.md's ledger ("wbopen-1031 (...)"); built rows' text i
 Left, one line each:
 
 - 807 merged cells in board tables: no span model yet (`data.cells` is a grid of strings; `wbSvgTable` in whiteboard-format.js:1491 and the table renderer would need `data.merges`). L.
-- 813 Row 4 at 390, press to editable: map78.js addChild editable 79 to 134 ms (bar 50) at load 13; 1440 23 to 36 ms. Measure on a quiet machine, then `renderWbObjects` and `wbBeginTextEdit` (whiteboard.js) first.
+- 813 Row 4 at 390, press to editable: by cause in wbpress-1031 (b3af755). The cost was browser style recalculation (forced flushes, root-anchored `:has()` rules, an edge reorder cascade, a closed select menu rebuilt, a full edge redraw after the server answer), not layout. Interleaved before and after, median of 10: 390 px 20 topics 83 to 42 ms (0.51x, 0.54x at 4x CPU throttle), 200 topics 173 to 110 ms (0.64x); 1440 20 topics 0.96x, 200 topics 0.81x. Left: 200 topics at 390 is still above 50 ms (`renderWbObjects`, `wbRenderMapEdges` geometry, `wbBeginTextEdit` flush).
 - 815 watches in JavaScript are evaluated natively (`evaluate`, api/run_sandbox.py:272): a design limit.
 - 816 Python runtime reloads per document: needs the Pyodide extra installed to time the cold Debug.
 - 817 the console on .html, .css, .svg, .sql is a fresh worker (`runHtml`, run_sandbox.py:603).
