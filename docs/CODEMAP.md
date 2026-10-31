@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7028, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7760, test files 1656, tests 14334, plan headings 990.
+Counts: frontend functions 7031, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7760, test files 1656, tests 14335, plan headings 990.
 
-## Frontend functions (7028)
+## Frontend functions (7031)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -906,60 +906,60 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aboveDockFab` | frontend/js/navigation.js:2443 |
-| `activeNotesSection` | frontend/js/navigation.js:2269 |
-| `arrowNavTarget` | frontend/js/navigation.js:201 |
-| `backgroundWriteFailed` | frontend/js/navigation.js:1785 |
-| `chatMessagesEl` | frontend/js/navigation.js:2415 |
-| `chatMidStream` | frontend/js/navigation.js:1719 |
-| `closeNavHistoryMenu` | frontend/js/navigation.js:892 |
-| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1747 |
-| `coversAFormPrimary` | frontend/js/navigation.js:2576 |
-| `entryLabel` | frontend/js/navigation.js:990 |
-| `formPrimaryButtons` | frontend/js/navigation.js:2537 |
-| `goToTabHistory` | frontend/js/navigation.js:1081 |
-| `hasUnsavedWork` | frontend/js/navigation.js:1698 |
-| `initNotesSubtabs` | frontend/js/navigation.js:2329 |
-| `initScrollTopButton` | frontend/js/navigation.js:2596 |
-| `insideClosedDetails` | frontend/js/navigation.js:1534 |
-| `loadSurface` | frontend/js/navigation.js:1282 |
-| `measureSpacingPx` | frontend/js/navigation.js:2567 |
-| `menuOfOpener` | frontend/js/navigation.js:1556 |
-| `menuRowsOf` | frontend/js/navigation.js:1541 |
-| `mermaidSoon` | frontend/js/navigation.js:366 |
-| `openHistoryEntry` | frontend/js/navigation.js:1141 |
-| `openNavHistoryMenu` | frontend/js/navigation.js:912 |
-| `openRowMenu` | frontend/js/navigation.js:144 |
-| `openSelectionScope` | frontend/js/navigation.js:314 |
-| `paintTabHistory` | frontend/js/navigation.js:939 |
-| `placeDockMenuInWindow` | frontend/js/navigation.js:1353 |
-| `positionScrollTopForNested` | frontend/js/navigation.js:2452 |
-| `recordTabVisit` | frontend/js/navigation.js:1027 |
-| `recordingLive` | frontend/js/navigation.js:1726 |
-| `renderMarkdown` | frontend/js/navigation.js:375 |
-| `resetNavigationForNewSession` | frontend/js/navigation.js:2231 |
-| `resetNavigationToDefaults` | frontend/js/navigation.js:2250 |
-| `restoreSettingsScroll` | frontend/js/navigation.js:1128 |
-| `revealTab` | frontend/js/navigation.js:818 |
-| `rowMenuAtEvent` | frontend/js/navigation.js:123 |
-| `scrollTopTargetEl` | frontend/js/navigation.js:2419 |
-| `scrollingPage` | frontend/js/navigation.js:2368 |
-| `showNotesSection` | frontend/js/navigation.js:2274 |
-| `spacingPx` | frontend/js/navigation.js:2560 |
-| `stepTabHistory` | frontend/js/navigation.js:1071 |
-| `stripMarkdownPreview` | frontend/js/navigation.js:2158 |
-| `surfaceRecovered` | frontend/js/navigation.js:1260 |
-| `switchTab` | frontend/js/navigation.js:1834 |
-| `syncScrollLock` | frontend/js/navigation.js:2754 |
-| `tabLabel` | frontend/js/navigation.js:978 |
-| `tabPlaceholder` | frontend/js/navigation.js:2094 |
-| `tabSkeletonBar` | frontend/js/navigation.js:2075 |
-| `tabSkeletonDock` | frontend/js/navigation.js:2085 |
-| `tabSkeletonPiece` | frontend/js/navigation.js:2064 |
-| `usageCount` | frontend/js/navigation.js:1795 |
-| `usageFeatureName` | frontend/js/navigation.js:1791 |
-| `usageFlush` | frontend/js/navigation.js:1799 |
-| `watchDockMenuPlacement` | frontend/js/navigation.js:1415 |
+| `aboveDockFab` | frontend/js/navigation.js:2448 |
+| `activeNotesSection` | frontend/js/navigation.js:2274 |
+| `arrowNavTarget` | frontend/js/navigation.js:206 |
+| `backgroundWriteFailed` | frontend/js/navigation.js:1790 |
+| `chatMessagesEl` | frontend/js/navigation.js:2420 |
+| `chatMidStream` | frontend/js/navigation.js:1724 |
+| `closeNavHistoryMenu` | frontend/js/navigation.js:897 |
+| `confirmLeavingUnsavedWork` | frontend/js/navigation.js:1752 |
+| `coversAFormPrimary` | frontend/js/navigation.js:2581 |
+| `entryLabel` | frontend/js/navigation.js:995 |
+| `formPrimaryButtons` | frontend/js/navigation.js:2542 |
+| `goToTabHistory` | frontend/js/navigation.js:1086 |
+| `hasUnsavedWork` | frontend/js/navigation.js:1703 |
+| `initNotesSubtabs` | frontend/js/navigation.js:2334 |
+| `initScrollTopButton` | frontend/js/navigation.js:2601 |
+| `insideClosedDetails` | frontend/js/navigation.js:1539 |
+| `loadSurface` | frontend/js/navigation.js:1287 |
+| `measureSpacingPx` | frontend/js/navigation.js:2572 |
+| `menuOfOpener` | frontend/js/navigation.js:1561 |
+| `menuRowsOf` | frontend/js/navigation.js:1546 |
+| `mermaidSoon` | frontend/js/navigation.js:371 |
+| `openHistoryEntry` | frontend/js/navigation.js:1146 |
+| `openNavHistoryMenu` | frontend/js/navigation.js:917 |
+| `openRowMenu` | frontend/js/navigation.js:149 |
+| `openSelectionScope` | frontend/js/navigation.js:319 |
+| `paintTabHistory` | frontend/js/navigation.js:944 |
+| `placeDockMenuInWindow` | frontend/js/navigation.js:1358 |
+| `positionScrollTopForNested` | frontend/js/navigation.js:2457 |
+| `recordTabVisit` | frontend/js/navigation.js:1032 |
+| `recordingLive` | frontend/js/navigation.js:1731 |
+| `renderMarkdown` | frontend/js/navigation.js:380 |
+| `resetNavigationForNewSession` | frontend/js/navigation.js:2236 |
+| `resetNavigationToDefaults` | frontend/js/navigation.js:2255 |
+| `restoreSettingsScroll` | frontend/js/navigation.js:1133 |
+| `revealTab` | frontend/js/navigation.js:823 |
+| `rowMenuAtEvent` | frontend/js/navigation.js:128 |
+| `scrollTopTargetEl` | frontend/js/navigation.js:2424 |
+| `scrollingPage` | frontend/js/navigation.js:2373 |
+| `showNotesSection` | frontend/js/navigation.js:2279 |
+| `spacingPx` | frontend/js/navigation.js:2565 |
+| `stepTabHistory` | frontend/js/navigation.js:1076 |
+| `stripMarkdownPreview` | frontend/js/navigation.js:2163 |
+| `surfaceRecovered` | frontend/js/navigation.js:1265 |
+| `switchTab` | frontend/js/navigation.js:1839 |
+| `syncScrollLock` | frontend/js/navigation.js:2759 |
+| `tabLabel` | frontend/js/navigation.js:983 |
+| `tabPlaceholder` | frontend/js/navigation.js:2099 |
+| `tabSkeletonBar` | frontend/js/navigation.js:2080 |
+| `tabSkeletonDock` | frontend/js/navigation.js:2090 |
+| `tabSkeletonPiece` | frontend/js/navigation.js:2069 |
+| `usageCount` | frontend/js/navigation.js:1800 |
+| `usageFeatureName` | frontend/js/navigation.js:1796 |
+| `usageFlush` | frontend/js/navigation.js:1804 |
+| `watchDockMenuPlacement` | frontend/js/navigation.js:1420 |
 | `wireLongPress` | frontend/js/navigation.js:24 |
 
 ### frontend/js/router.js (12)
@@ -5366,28 +5366,31 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `objPasteDestination` | frontend/js/obj-clip.js:64 |
 | `objToastCopied` | frontend/js/obj-clip.js:19 |
 
-### frontend/js/obj-drag.js (18)
+### frontend/js/obj-drag.js (21)
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:73 |
-| `objDragBegin` | frontend/js/obj-drag.js:121 |
-| `objDragFinish` | frontend/js/obj-drag.js:186 |
-| `objDragFrame` | frontend/js/obj-drag.js:137 |
-| `objDragKey` | frontend/js/obj-drag.js:171 |
-| `objDragListen` | frontend/js/obj-drag.js:83 |
-| `objDragMove` | frontend/js/obj-drag.js:107 |
-| `objDragNoNative` | frontend/js/obj-drag.js:94 |
-| `objDragRoute` | frontend/js/obj-drag.js:145 |
-| `objDragSchedule` | frontend/js/obj-drag.js:133 |
-| `objDragSeed` | frontend/js/obj-drag.js:60 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:180 |
-| `objDragTick` | frontend/js/obj-drag.js:156 |
-| `objDragUp` | frontend/js/obj-drag.js:167 |
-| `objDragVerdict` | frontend/js/obj-drag.js:101 |
-| `objGhostMake` | frontend/js/obj-drag.js:31 |
-| `objPressInSelection` | frontend/js/obj-drag.js:51 |
-| `objPressOnGrip` | frontend/js/obj-drag.js:45 |
+| `objDragArm` | frontend/js/obj-drag.js:79 |
+| `objDragBegin` | frontend/js/obj-drag.js:157 |
+| `objDragCue` | frontend/js/obj-drag.js:92 |
+| `objDragFinish` | frontend/js/obj-drag.js:222 |
+| `objDragFrame` | frontend/js/obj-drag.js:173 |
+| `objDragKey` | frontend/js/obj-drag.js:207 |
+| `objDragListen` | frontend/js/obj-drag.js:101 |
+| `objDragMove` | frontend/js/obj-drag.js:141 |
+| `objDragNoMenu` | frontend/js/obj-drag.js:120 |
+| `objDragNoNative` | frontend/js/obj-drag.js:126 |
+| `objDragNoScroll` | frontend/js/obj-drag.js:115 |
+| `objDragRoute` | frontend/js/obj-drag.js:181 |
+| `objDragSchedule` | frontend/js/obj-drag.js:169 |
+| `objDragSeed` | frontend/js/obj-drag.js:64 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:216 |
+| `objDragTick` | frontend/js/obj-drag.js:192 |
+| `objDragUp` | frontend/js/obj-drag.js:203 |
+| `objDragVerdict` | frontend/js/obj-drag.js:133 |
+| `objGhostMake` | frontend/js/obj-drag.js:35 |
+| `objPressInSelection` | frontend/js/obj-drag.js:55 |
+| `objPressOnGrip` | frontend/js/obj-drag.js:49 |
 
 ### frontend/js/obj-order.js (10)
 
@@ -14193,8 +14196,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2954 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3080 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2955 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3081 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -21379,7 +21382,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14334)
+## Tests (14335)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22419,7 +22422,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_notification_detail_period_1029.py | 3 |
 | tests/test_notifications_centre.py | 8 |
 | tests/test_obj_clip.py | 5 |
-| tests/test_obj_drag_hold.py | 2 |
+| tests/test_obj_drag_hold.py | 3 |
 | tests/test_obj_order.py | 9 |
 | tests/test_obj_ref.py | 6 |
 | tests/test_obj_review_1031.py | 20 |
