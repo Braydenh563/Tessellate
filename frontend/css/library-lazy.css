@@ -7614,3 +7614,24 @@ input[type="color"].wb-mixed {
     overflow-wrap: anywhere;
   }
 }
+
+/* A fill's or line's opacity in the Format panel: the slider over its five presets (INBOX 1486). */
+.wb-fmt-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.wb-fmt-presets {
+  flex-wrap: nowrap;
+}
+.wb-fmt-presets button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-1);
+}
+
+/* A shape shows a pointer under Select only; every other tool's cursor holds over it (INBOX 1486). */
+#whiteboard-container[data-current-tool="select"] .sketch-group {
+  cursor: pointer;
+}

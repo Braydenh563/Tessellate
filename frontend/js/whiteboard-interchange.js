@@ -610,7 +610,10 @@ function wbDrawioLook(s) {
   const look = {};
   if (s.strokeColor === "none") look.noStroke = true;
   else if (hex(s.strokeColor)) look.color = hex(s.strokeColor);
-  if (hex(s.fillColor)) Object.assign(look, { fill: hex(s.fillColor), fillOpacity: 1 });
+  //: draw.io's fillOpacity and strokeOpacity are percentages, 100 when absent.
+  const pct = (v) => (v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(100, Number(v))) / 100);
+  if (hex(s.fillColor)) Object.assign(look, { fill: hex(s.fillColor), fillOpacity: pct(s.fillOpacity) ?? 1 });
+  if (pct(s.strokeOpacity) !== null && pct(s.strokeOpacity) < 1) look.opacity = pct(s.strokeOpacity);
   if (hex(s.fontColor)) look.label_color = hex(s.fontColor);
   if (Number(s.fontStyle) & 1) look.label_bold = true;
   if (Number(s.fontStyle) & 2) look.label_italic = true;
@@ -714,6 +717,8 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
   const bounds = box || (() => null);
   const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\r?\n/g, "&#xa;");
   const hex = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v.toLowerCase() : null);
+  //: A fill or a line under 100% says so, as draw.io's own percentages.
+  const opacityKeys = (d) => `${hex(d.fill) && d.fillOpacity != null && d.fillOpacity < 1 ? `fillOpacity=${Math.round(d.fillOpacity * 100)};` : ""}${d.opacity != null && d.opacity < 1 ? `strokeOpacity=${Math.round(d.opacity * 100)};` : ""}`;
   const skipped = {};
   const skip = (what) => { skipped[what] = (skipped[what] || 0) + 1; };
   const ids = new Map();
@@ -760,7 +765,7 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     const shape = WB_DRAWIO_SHAPES_OUT[d.shape] || "rounded=0";
     const width = Math.max(1, Math.round((Number(d.width) || 2) / 2));
     vertex(`sketch:${sk.id}`,
-      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
+      `${shape};whiteSpace=wrap;html=0;${hex(d.color) ? `strokeColor=${hex(d.color)};` : ""}${hex(d.fill) ? `fillColor=${hex(d.fill)};` : "fillColor=none;"}${opacityKeys(d)}strokeWidth=${width};${d.dash === "dashed" || d.dash === "dotted" ? "dashed=1;" : ""}${font(d.label_size, d.label_bold, d.label_italic, d.label_underline, d.label_color)}`,
       d.label || "", { x: bb.minX, y: bb.minY, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
   }
   for (const [sk, d] of links) {

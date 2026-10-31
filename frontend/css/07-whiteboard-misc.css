@@ -2125,32 +2125,19 @@ body.scroll-top-visible .skills-split > .tab-main {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-/* Per-tool cursor, asked for directly: grab/grabbing already told you when
-   you could pan; nothing told you what the other tools would do until you
-   tried them. `data-current-tool` is still set (JS, on tool switch) as a
-   styling hook for anything that wants it, but the cursor image itself is
-   set as an inline `style.cursor`, a generated `cursor: url(svg) x y` per
-   tool, see `wbCursorForTool` in app.js. That replaced an earlier version
-   that hid the native cursor and tracked the pointer with a `mousemove`-
-   positioned `<div>`: reported (and reproduced) as "my mouse keeps snapping
-   to an invisible grid", a JS-positioned overlay only moves as often as
-   `mousemove` actually fires, which lags a real, GPU-composited cursor
-   image badly enough on a fast swipe to read as snapping. */
-/* **An item may not promise a drag under a tool that does not drag.**
-   Reported (INBOX 115): "when Im on the delete tool on the mindmap and hover
-   over a mindmap text node, the cursor changes to the grabber hand". Measured
-   with `getComputedStyle(el).cursor` once per tool over a map node, its text
-   and a whiteboard object: 32 of those pairs answered `grab` while the click
-   would have deleted, erased, drawn, filled or started a link.
-   The cause is specificity, not a missing case. Every item on the board
-   carries `cursor: grab` because Select and Hand really do drag it, and an
-   item's own rule beats the tool cursor `updateWbCursor` writes inline on the
-   container. Under any other tool the item is not a handle, it is whatever
-   happens to be under the point the tool acts on, so it hands the cursor back
-   to the container rather than naming a second cursor here: `inherit` cannot
-   drift out of step with `wbCursorForTool` the way a copied list would. */
+/* Per-tool cursor: `data-current-tool` is a styling hook; the cursor image is
+   an inline `style.cursor` per tool (`wbCursorForTool`), a real GPU-composited
+   cursor rather than a `mousemove`-positioned div (that lagged: "my mouse
+   keeps snapping to an invisible grid").
+   **An item may not promise a drag under a tool that does not drag** (INBOX 115
+   on a map node, 1486 on shapes under the bucket: "the cursor changes to a
+   pointer or touch hand"). Items carry `cursor: grab` or `pointer` for Select
+   and Hand; under any other tool they hand the cursor back to the container,
+   and `inherit` cannot drift from `wbCursorForTool` the way a copied list
+   would. A shape's group once wrote an inline cursor at creation, which this
+   rule cannot reach; that write is gone. */
 #whiteboard-container:not([data-current-tool="select"]):not([data-current-tool="pan"])
-  :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content) {
+  :is(.wb-object, .wb-object-grip, .node-card, .wb-map-text, .wb-text-content, .sketch-group) {
   cursor: inherit;
 }
 .wb-panel-grip.is-dragging {

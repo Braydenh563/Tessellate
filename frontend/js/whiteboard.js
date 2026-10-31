@@ -5649,7 +5649,7 @@ let wbCopiedStyle = null; // { kind: "sketch" | "object", style: {...} }
 // `type`, not position: pasting a style must never move or reshape the
 // thing it lands on.
 const WB_SKETCH_STYLE_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
+  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "startCap", "endCap", "startCapSize", "endCapSize",
   "dashPattern", "round", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "shadow", "shadow_x", "shadow_y", "shadow_blur",
 ];
@@ -5739,7 +5739,7 @@ async function wbPasteCopiedStyle() {
 //: sticky goes back to the first paper; a map topic back to following its
 //: map and level (`wbMapResetToBranch`'s keys). One undo step for the lot.
 const WB_SKETCH_RESET_KEYS = [
-  "color", "width", "dash", "fill", "fillOpacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
+  "color", "width", "dash", "fill", "fillOpacity", "opacity", "noStroke", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "rough", "jumps", "round", "dashPattern", "flow", "gradient", "fillStyle", "jumpSize", "gapStart", "gapEnd",
   "startCapSize", "endCapSize", "label_size", "label_color", "label_bold", "label_italic", "label_underline", "label_strike", "label_font", "label_align", "label_valign", "label_lh", "label_ls",
 ];
 const WB_OBJECT_RESET_KEYS = ["color", "bg", "border_color", "font_size", "bold", "italic", "underline", "strike", "font_family", "align", "valign", "line_height", "letter_spacing", "alpha", "shadow", "shadow_x", "shadow_y", "shadow_blur", "radii", "pad", "fold"];
@@ -13207,6 +13207,40 @@ function wbSelectionBounds(pad = 40) {
   return { minX: minX - pad, minY: minY - pad, width: maxX - minX + pad * 2, height: maxY - minY + pad * 2 };
 }
 
+//: **A press anywhere inside the selection's box is a press on the
+//: selection** (INBOX 1486, the owner: "cant select in the middle to drag a
+//: group selection or object??"). Only a press on a member's own body used to
+//: drag it, so the empty space between a frame and its cards, or inside an
+//: unfilled shape, started a marquee and dropped the selection. Measured
+//: before: a frame and three cards selected, a press at an empty middle
+//: point and a 100px drag moved 0 of 4 objects and left 0 selected.
+function wbPointInSelectionBounds(x, y) {
+  if (wbIsMap() || (!wbSelectedItem && wbMultiSelection.size === 0)) return false;
+  const b = wbSelectionBounds(0);
+  return Boolean(b) && x >= b.minX && x <= b.minX + b.width && y >= b.minY && y <= b.minY + b.height;
+}
+
+//: What that drag carries: the selection less anything locked, and a lone
+//: frame's contents (its title drag's rule). Null when nothing can move.
+function wbSelectionDragOrigin() {
+  const base = wbMultiSelection.size > 0
+    ? [...wbMultiSelection]
+    : wbSelectedItem ? [wbMultiKey(wbSelectedItem.kind, wbSelectedItem.id)] : [];
+  const keys = new Set();
+  let lone = null;
+  for (const key of base) {
+    const sep = key.indexOf(":");
+    const kind = key.slice(0, sep);
+    const item = wbFindItem(kind, Number(key.slice(sep + 1)));
+    if (!item || wbIsLocked(kind, item)) continue;
+    keys.add(key);
+    lone = base.length === 1 ? item : null;
+  }
+  if (lone && lone.kind === "frame") for (const key of wbFrameContents(lone)) keys.add(key);
+  if (!keys.size) return null;
+  return wbCaptureBulkMoveOrigin(null, keys.size === wbMultiSelection.size && keys.size > 1 ? wbMultiSelection : keys);
+}
+
 // What's actually framed on screen right now, in board-space coordinates, 
 // the inverse of the pan/zoom transform the container itself carries.
 function wbVisibleBounds() {
@@ -17353,6 +17387,8 @@ async function initWhiteboard() {
         wbMarqueeJustSelected = false;
       } else if (window.currentTool === "select" && wbSelectFrameAt(...getLogicalMouse(e), 8 / (d3.zoomTransform(containerEl).k || 1))) {
         // A click on a panel's body or a frame's edge selected that frame.
+      } else if (window.currentTool === "select" && wbPointInSelectionBounds(...getLogicalMouse(e))) {
+        // A click inside the selection's box is on the selection: it stays.
       } else {
         clearWbSelection();
         // The other half of the Escape fix: a click on empty canvas is the
@@ -17436,6 +17472,12 @@ async function initWhiteboard() {
   //: one place that can forget to remove the element.
   function wbEndMarqueeDrag() {
     if (wbMarqueeStart?.place) wbClearAlignmentGuides();
+    //: A selection drag cut off (cancelled, capture lost) goes back where it
+    //: was; one that ended normally cleared `wbMarqueeStart` first.
+    if (wbMarqueeStart?.move && wbMarqueeStart.origin) {
+      wbApplyBulkMove(wbMarqueeStart.origin, 0, 0);
+      for (const entry of wbMarqueeStart.origin.values()) delete entry.item._liveD;
+    }
     wbMarqueeEl?.remove();
     wbMarqueeEl = null;
     wbMarqueeStart = null;
@@ -17482,7 +17524,10 @@ async function initWhiteboard() {
     //: Deferring both to the first real movement keeps the press a press: a
     //: click reaches whatever was under it, and a drag is still a drag from
     //: the point it started at.
-    wbMarqueeStart = { x, y, shiftKey: e.shiftKey, pointerId: e.pointerId, pending: true, place };
+    //: A press inside the selection's box drags the selection (Shift adds to
+    //: it, so that press stays a marquee).
+    const move = !place && !e.shiftKey && window.currentTool === "select" && wbPointInSelectionBounds(x, y);
+    wbMarqueeStart = { x, y, shiftKey: e.shiftKey, pointerId: e.pointerId, pending: true, place, move };
     //: **The overlay layer, above the cards.** INBOX 84: "whiteboard
     //: rectangle selection draws behind objects." `#wb-zoom-group` lives in
     //: `#wb-svg-layer`, which is *under* `#wb-html-layer` by DOM order, on
@@ -17568,8 +17613,39 @@ async function initWhiteboard() {
       // pointer to capture. The window-level listeners below still end it.
     }
   }
+  //: The selection drag's frames: the same 4-unit threshold as the marquee,
+  //: then the whole selection by the pointer's travel from the press, Shift on
+  //: one axis, grid-snapped by distance like a card's own drag.
+  function wbSelectionDragMove(e) {
+    const start = wbMarqueeStart;
+    const [x, y] = getLogicalMouse(e);
+    if (start.pending) {
+      if (Math.abs(x - start.x) < 4 && Math.abs(y - start.y) < 4) return;
+      start.origin = wbSelectionDragOrigin();
+      if (!start.origin) return wbEndMarqueeDrag();
+      start.pending = false;
+      try {
+        containerEl.setPointerCapture(start.pointerId);
+      } catch (err) {
+        // A synthetic press has no real pointer; the window listeners end it.
+      }
+    }
+    const lock = wbAxisLock(x - start.x, y - start.y, e.shiftKey);
+    wbApplyBulkMove(start.origin, lock === "y" ? 0 : wbSnap(x - start.x, e.altKey), lock === "x" ? 0 : wbSnap(y - start.y, e.altKey));
+    wbQueueSelectionBar();
+  }
+  function wbEndSelectionDrag() {
+    const { origin, pending } = wbMarqueeStart;
+    wbMarqueeStart = null;
+    wbEndMarqueeDrag();
+    //: The release's own click lands on the canvas: it is not a clear.
+    wbMarqueeJustSelected = true;
+    if (pending || !origin) return;
+    wbFinishDrag(null, origin, false);
+  }
   window.addEventListener("pointermove", (e) => {
     if (!wbMarqueeStart) return;
+    if (wbMarqueeStart.move) return wbSelectionDragMove(e);
     let [x, y] = getLogicalMouse(e);
     //: Shift makes a drawn box square, read live rather than from the press
     //: (on the marquee the press's Shift means "add to the selection").
@@ -18104,6 +18180,7 @@ async function initWhiteboard() {
   window.addEventListener("lostpointercapture", () => wbEndMarqueeDrag());
   window.addEventListener("pointerup", (e) => {
     if (!wbMarqueeStart) return;
+    if (wbMarqueeStart.move) return wbEndSelectionDrag();
     let [x, y] = getLogicalMouse(e);
     const start = wbMarqueeStart;
     if (start.place && e.shiftKey) [x, y] = wbSquareCorner(start, x, y);
@@ -21863,7 +21940,6 @@ function renderWhiteboard() {
     .append("g")
     .attr("class", "sketch-group")
     .attr("data-id", d => d.id)
-    .style("cursor", () => (window.currentTool === "delete" || window.currentTool === "eraser" || window.currentTool === "select") ? "pointer" : "default")
     .call(sketchDrag)
     .on("dblclick", async (event, d) => {
       // Asked for directly: "double click on lines, add points for curving
