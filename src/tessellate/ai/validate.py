@@ -113,26 +113,20 @@ def _measures_by_sentence(parts: list) -> list[tuple[int, str]]:
     return out
 
 
-def maxims(result: dict, question: str = "", notes: list[dict] | None = None) -> list[Finding]:
-    """Decision 52's lint over one composed answer."""
-    parts = result.get("parts") or []
-    found: list[Finding] = []
-    # quantity: one fact once.
+def _quantity_findings(parts: list) -> list[Finding]:
+    """One fact once: a quote said twice, a measured value said in two sentences."""
     quotes = [str(p[1]).strip().rstrip(".").lower() for p in parts if p[0] == "quote"]
-    found.extend(Finding("quantity", "quote said twice", q[:80]) for q in {q for q in quotes if quotes.count(q) > 1})
+    found = [Finding("quantity", "quote said twice", q[:80]) for q in {q for q in quotes if quotes.count(q) > 1}]
     seen: dict[str, int] = {}
     for sentence, value in _measures_by_sentence(parts):
         if value in seen and seen[value] != sentence and value not in ("1",):
             found.append(Finding("quantity", "measured value said twice", value))
         seen.setdefault(value, sentence)
-    # quality: numbers only where a fact or the question put them.
-    found.extend(Finding("quality", "number in the app's own words", str(part[1])[:80])
-                 for part in parts if part[0] in APP_KINDS and _values(str(part[1])))
-    # relation: every quote is a grounded sentence of a note the answer cites.
-    cited = {row.get("note_id") for row in result.get("grounding") or []}
-    found.extend(Finding("relation", "quote with no grounding row", str(part[1])[:80])
-                 for part in parts if part[0] == "quote" and len(part) > 2 and part[2] is not None and part[2] not in cited)
-    # manner: how the words read.
+    return found
+
+
+def _joining_comma_findings(parts: list) -> list[Finding]:
+    found: list[Finding] = []
     for before, after in zip(parts, parts[1:]):
         if before[0] == "template" and _COMMA_END.search(str(before[1])) and after[0] in ("quote", "template"):
             text = str(after[1])
@@ -143,13 +137,24 @@ def maxims(result: dict, question: str = "", notes: list[dict] | None = None) ->
                 continue
             if text and realise.after_comma(text) != text:
                 found.append(Finding("manner", "capital after a joining comma", text[:60]))
+    return found
+
+
+def _cut_title_findings(parts: list, notes: list[dict] | None) -> list[Finding]:
     titles = {int(n["id"]): _title_of(n) for n in (notes or []) if n.get("id") is not None}
+    found: list[Finding] = []
     for part in parts:
         if part[0] == "title" and len(part) > 2 and str(part[1]).endswith("…"):
             whole = titles.get(part[2], "")
             kept = str(part[1])[:-1]
             if whole and whole.startswith(kept) and whole[len(kept):len(kept) + 1].isalnum():
                 found.append(Finding("manner", "title cut through a word", str(part[1])))
+    return found
+
+
+def _wording_findings(result: dict, parts: list) -> list[Finding]:
+    """How the words read: exclamation, doubled space, a sentence over forty words."""
+    found: list[Finding] = []
     text = str(result.get("text") or "")
     app_text = "".join(str(p[1]) for p in parts if p[0] in APP_KINDS)
     if _SHOUT.search(app_text):
@@ -158,6 +163,25 @@ def maxims(result: dict, question: str = "", notes: list[dict] | None = None) ->
                  for m in _DOUBLED.finditer(text))
     found.extend(Finding("manner", "app sentence over forty words", sentence[:80])
                  for sentence in _app_sentences(parts) if len(sentence.split()) > MAX_APP_WORDS)
+    return found
+
+
+def maxims(result: dict, question: str = "", notes: list[dict] | None = None) -> list[Finding]:
+    """Decision 52's lint over one composed answer."""
+    parts = result.get("parts") or []
+    # quantity: one fact once.
+    found = _quantity_findings(parts)
+    # quality: numbers only where a fact or the question put them.
+    found.extend(Finding("quality", "number in the app's own words", str(part[1])[:80])
+                 for part in parts if part[0] in APP_KINDS and _values(str(part[1])))
+    # relation: every quote is a grounded sentence of a note the answer cites.
+    cited = {row.get("note_id") for row in result.get("grounding") or []}
+    found.extend(Finding("relation", "quote with no grounding row", str(part[1])[:80])
+                 for part in parts if part[0] == "quote" and len(part) > 2 and part[2] is not None and part[2] not in cited)
+    # manner: how the words read.
+    found.extend(_joining_comma_findings(parts))
+    found.extend(_cut_title_findings(parts, notes))
+    found.extend(_wording_findings(result, parts))
     return found
 
 

@@ -94,7 +94,6 @@
  "src/tessellate/ai/tools/whiteboard.py::_add_map_node": 19,
  "src/tessellate/ai/utilities.py::_dates": 18,
  "src/tessellate/ai/utilities.py::answer": 39,
- "src/tessellate/ai/validate.py::maxims": 46,
  "src/tessellate/ai/vision_ocr.py::pdf_vision_ocr_and_store": 16,
  "src/tessellate/api/app.py::RevalidatedStatic._precompressed": 21,
  "src/tessellate/api/asset_strip.py::_js_regex_allowed": 18,
