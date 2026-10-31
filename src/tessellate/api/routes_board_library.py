@@ -44,6 +44,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.api.downloads import attachment_headers, safe_filename
 from tessellate.api.routes_whiteboard import (
     BOARD_BG_COLOR_RE,
     BOARD_LAYOUTS,
@@ -763,11 +764,11 @@ def export_library(library_id: int | None = None, db: Session = Depends(get_sess
         "library": {"name": library.name},
         "items": [{"kind": r.kind, "name": r.name, "tags": r.tags or [], "payload": r.payload or {}} for r in rows],
     }
-    safe = re.sub(r"[^A-Za-z0-9 _-]+", "", library.name).strip() or "Library"
+    name = safe_filename(library.name, "memorymap-library.json", "Library")
     return Response(
         content=json.dumps(body, indent=1),
         media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="{safe}.memorymap-library.json"'},
+        headers=attachment_headers(name),
     )
 
 

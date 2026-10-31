@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -903,13 +904,6 @@ def unarchive_document(document_id: int, session: Session = Depends(get_session)
     return _summary(document)
 
 
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands."""
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "document"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
-
-
 class LinkBody(BaseModel):
     entry_id: int
 
@@ -1085,11 +1079,7 @@ def export_markdown(
     return Response(
         content=body,
         media_type=media_type,
-        headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, kind.ext)}"'
-            )
-        },
+        headers=attachment_headers(safe_filename(document.title, kind.ext, "document")),
     )
 
 
@@ -1126,9 +1116,7 @@ def export_bundle(
         content=data,
         media_type="application/zip",
         headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, "zip")}"'
-            ),
+            **attachment_headers(safe_filename(document.title, "zip", "document")),
             #: What travelled, for the frontend's own message and for a test
             #: that wants the answer without opening the archive.
             "X-Assets": str(len(carried)),

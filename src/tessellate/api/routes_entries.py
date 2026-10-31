@@ -28,6 +28,7 @@ from tessellate.ai import backend_hint, extractor, filing_certainty, janitor, le
 from tessellate.ai import tensions as tensions_module
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers, safe_filename
 from tessellate.api.edit_conflicts import content_hash, entity_tag, refuse_if_stale, refuse_unless_match
 from tessellate.api.schemas import (
     AttachmentOut,
@@ -2809,19 +2810,6 @@ def _refuse_while_sealed(entry) -> None:  # noqa: ANN001
         raise HTTPException(status_code=409, detail="Unlock first.")
 
 
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands.
-
-    Same rule `routes_documents.py`'s own `_safe_filename` already enforces
-    for a document: not shared, because the two files don't otherwise
-    import from each other and a title-to-filename sanitiser is small
-    enough that a shared module for it would be the premature abstraction.
-    """
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "note"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
-
-
 @router.get("/{entry_id}/export.md")
 def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Response:
     """One note's own text, as a download, BACKLOG.md §95 item D.14: "Full
@@ -2847,9 +2835,7 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{_safe_filename(title, "md")}"'
-        },
+        headers=attachment_headers(safe_filename(title, "md")),
     )
 
 

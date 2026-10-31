@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Notes audit 1031 (nfix, N31): Download .md no longer fails for a note whose title is Japanese, Chinese, Cyrillic or Greek; one `api/downloads.py` helper gives every download (notes, documents, board libraries, subtitles, calendar files) an ASCII fallback plus an RFC 5987 `filename*` with the real name.
 - CI (PR 211): the document status strip stays one row at every width (the file type picker wrapped it at 700px and squeezed the editor under 260px); CodeQL 1895 to 1897 fixed (files closed in a test, the models status cold flag written as one expression).
 - Segmented wells (INBOX 1494): a `.seg` segment chosen by `aria-pressed` gets the chosen ground like `.active` does, in every palette, so the note capture's Note / To-do switch shows which is on; hover never repaints a chosen segment.
 - Audit 1031 leftovers (xleft 1031): every saved-note toast (sketch, web page, picture text, quick note, capture) comes from one `announceSavedNote` with an Open button and hands focus back to its opener; the bell hears an app-started job only when it failed (the night shift counts notes and boards apart); the tray pastes only into a remembered box that is still on screen; the background art draws 12 frames a second after 30 s without a pointer; the code map lists the functions of a script that is one closure (sketch-pad.js, 143).

@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import speakers, voice
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers
 from tessellate.core import activity, background, deps, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
@@ -464,11 +465,12 @@ def rename_speaker(recording_id: int, body: RenameSpeakerBody, session: Session 
 def _subtitles(session: Session, recording_id: int, ext: str) -> Response:
     row, segments = _segments_of(session, recording_id)
     body = transcript.to_srt(segments) if ext == "srt" else transcript.to_vtt(segments)
-    name = re.sub(r"[^A-Za-z0-9._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    stem = re.sub(r"[^\w._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    name = f"{stem}.{ext}"
     return Response(
         content=body.encode("utf-8"),
         media_type="application/x-subrip" if ext == "srt" else "text/vtt",
-        headers={"Content-Disposition": f'attachment; filename="{name}.{ext}"'},
+        headers=attachment_headers(name),
     )
 
 
