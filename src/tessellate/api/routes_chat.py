@@ -3770,6 +3770,10 @@ def _with_words_only(text: str, prepared: dict, result: dict) -> str:
     #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
     said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
     swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
+    #: The line is a footer, but an offer ("Start a list of films?") stays the last word:
+    #: an answer ends on its question (the gold shape rule), so the footer goes above it.
+    if swapped and said and swapped[-1].rstrip().endswith("?"):
+        return "\n\n".join([*swapped[:-1], *said, swapped[-1]])
     return "\n\n".join([*swapped, *said])
 
 

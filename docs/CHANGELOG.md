@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Red 1031 (CI on PR 211): a hello with no model gets the plain greeting again, not "this comes from your notes alone" over a welcome; a no-model ask is logged as an ask, so Ask again lists it; the "only one note has those words" line sits above an offer, which stays the last word; the chat menu's Activity row wears the Activity icon; the engine row's detail has its own class instead of a `:has()` keyed on `.muted`; the composer imports in about 0.2 s again because the Guide acts' stems are built on first use, not at import
 - Lock screen, audit 1031 DC2 follow-up: only showing or hiding the lock screen puts panels away, so Settings opened by the address under it is still there after unlock; the unlock check holds no session through a long poll, so a restore no longer waits out the LAN watch.
 - Restore, audit 1031 BK5 follow-up: the unlock check lets go of its session when the handler returns, so an open jobs stream no longer holds a restore for its whole wait and then refuses it (E2E first-run restore).
 - Composer, audit 1031 C24, C27 and the date asks: what changed or is different between two things is a comparison; what happened last week is said as what the notes hold; when did I start running is the earliest dated line that says it; what do my notes say about tomorrow says what is on it.
