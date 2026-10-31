@@ -21679,6 +21679,29 @@ function wbScheduleRender() {
   });
 }
 
+//: **A floating bar or popover tied to an item closes when the item leaves
+//: the board** (INBOX 1510(b): the text-format bar stayed after the box a
+//: quick-add arrow made was deleted). Delete, undo, cut and a board switch
+//: all end in a render, so the render asks once: an editor whose element is
+//: gone (editor.js `editorCloseOrphans`), and each popover below whose item
+//: is no longer in the board's state. Read by item, not by element, because
+//: a render rebuilds the elements of items that are still here.
+const WB_ITEM_POPOVERS = [
+  { ref: () => wbCommentState && { kind: wbCommentState.kind, id: wbCommentState.id }, close: () => wbCloseComments() },
+  { ref: () => typeof wbMapNoteState !== "undefined" && wbMapNoteState && { kind: "object", id: wbMapNoteState.id }, close: () => wbMapCloseNote() },
+  { ref: () => typeof wbMarkerUi !== "undefined" && wbMarkerUi.pop && { kind: "object", id: wbMarkerUi.pop.id }, close: () => wbMapCloseMarkers() },
+  { ref: () => typeof wbMapRadialFor !== "undefined" && wbMapRadialFor != null && { kind: "object", id: wbMapRadialFor }, close: () => wbCloseMapRadial() },
+  { ref: () => typeof wbMapLinkRadialFor !== "undefined" && wbMapLinkRadialFor != null && { kind: "object", id: wbMapLinkRadialFor }, close: () => wbCloseMapLinkRadial() },
+];
+
+function wbCloseOrphanedPopovers() {
+  editorCloseOrphans();
+  for (const popover of WB_ITEM_POPOVERS) {
+    const ref = popover.ref();
+    if (ref && !wbFindItem(ref.kind, ref.id)) popover.close();
+  }
+}
+
 // The unbatched escape hatch. Prefer wbScheduleRender(); use this only when
 // the very next statement has to read the rendered DOM.
 function renderWhiteboardNow() {
@@ -22640,6 +22663,7 @@ function renderWhiteboard() {
   wbPaintLocks();
   wbPaintHidden();
   wbPaintCommentMarks();
+  wbCloseOrphanedPopovers();
 
   //: A frame later, not now: a fresh element has to be drawn once before it
   //: is culled, which is what gives `contain-intrinsic-size: auto` a size to

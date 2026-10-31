@@ -2127,6 +2127,27 @@ function selectionBarSync() {
   selectionBarShow(active);
 }
 
+//: **A bar or menu whose text has left the page closes with it** (the owner,
+//: 2026-11-01, INBOX 1510(b): "I used these arrows to make another text box
+//: from a note but then deleted the new one but now this floating popup
+//: toolbar is not going away"). Removing a focused editor with text selected
+//: fires no `selectionchange` in Chromium, so `selectionBarSync` never ran
+//: and the bar kept its last place over an empty board. A surface whose
+//: element is detached can format nothing; a caller that removes editors
+//: (the board, after every render) asks here.
+function editorSurfaceGone(surface) {
+  return Boolean(surface?.el) && !surface.el.isConnected;
+}
+
+function editorCloseOrphans() {
+  if (editorSurfaceGone(selectionBarState.textarea)) selectionBarHide();
+  if (editorMenuState.open && editorSurfaceGone(editorMenuState.textarea)) editorCloseMenu();
+  if (typeof selectionPopupField !== "undefined" && selectionPopupField?.el && !selectionPopupField.el.isConnected) {
+    selectionPopupField = null;
+    hideSelectionPopup();
+  }
+}
+
 //: `selectionchange` is the one event that fires for *every* way a selection
 //: can change, drag, shift+arrow, double-click, select-all, undo, where
 //: mouseup/keyup each miss several. It fires on `document`, not the element.
