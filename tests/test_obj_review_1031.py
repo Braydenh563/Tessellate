@@ -239,7 +239,7 @@ def test_the_card_menu_has_move_rows_only_for_a_card_in_a_list() -> None:
 @needs_node
 def test_a_tray_item_pastes_where_the_hand_last_was_even_with_no_pointer() -> None:
     out = run(FILES, STUBS + """
-    const chat = { isConnected: true, closest: (sel) => (sel.includes("#chat-input") ? chat : null), matches: () => false };
+    const chat = { isConnected: true, getClientRects: () => [{}], closest: (sel) => (sel.includes("#chat-input") ? chat : null), matches: () => false };
     objTrayFrom = chat;
     const dest = objTrayDestination();
     objTrayFrom = { isConnected: false, closest: () => null };

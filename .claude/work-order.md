@@ -1,5 +1,5 @@
 mode: continue
-status: stopped (owner stopped the cfix, nfix and tabspeed2 agents; their committed branches wait on the owner; the Fable suite runs and merges as files land)
+status: active (fix agents resumed at the owner's word; the Fable suite runs and merges as files land)
 max-continues: 400
 max-idle-minutes: 60
 finish-up: 98%
@@ -103,6 +103,6 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] PR 211 Tests and CodeQL alerts (agent ci-1031)
 - [x] Fable composer audit merged (50 rows, audit-1031-composer.md)
 - [x] Fable notes audit merged (50 rows, audit-1031-notes.md)
-- [!] Notes fixes: audit-1031-notes N rows (agent nfix-1031): agent stopped by the owner; branch agent/nfix-1031 (6 commits) held unmerged for the owner
+- [ ] Notes fixes: audit-1031-notes N rows (agent nfix-1031, resumed)
 - [ ] Fable full audit suite: ai, harness, shell, board, docs, code, graph, backend, ux, perf, architecture, ranked (one Fable agent, wt-a-suite)
-- [!] Composer fixes: audit-1031-composer C rows (S1 first) + INBOX 1495, 1496, 1497 (agent cfix-1031, after owner3): agent stopped by the owner; branch agent/cfix-1031 (8 commits) held unmerged for the owner
+- [ ] Composer fixes: audit-1031-composer C rows + INBOX 1495, 1496, 1497 (agent cfix-1031, resumed)

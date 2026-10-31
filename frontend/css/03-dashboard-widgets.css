@@ -2051,7 +2051,7 @@ header#top-bar select,
 }
 
 @media (hover: hover) {
-  #entry-list li:hover,
+  #entry-list li:where(:not(.row-shell)):hover,
   #entry-list li:where(:not(.row-shell)):is(:focus-visible, :has(:focus-visible)) {
     border-color: var(--accent);
     box-shadow: var(--shadow-sm);
