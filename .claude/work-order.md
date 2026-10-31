@@ -61,7 +61,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Mind map at phone width: template framing, toasts, title, fab overlap (agent mapphone-1031)
 - [x] Boot and tab duplicate fetches, avatar fallback, Notes sub-tab memory (agent dupfetch-1031)
 - [x] Independent review of 5aab070..96a23e7 (reviewer, Opus)
-- [ ] Composer round four: total time, uni overview phrasings, superlatives, count plus latest, article in leads (agent composer4-1031)
+- [x] Composer round four: total time, uni overview phrasings, superlatives, count plus latest, article in leads (agent composer4-1031)
 - [x] Leftover-list polish: back-to-top under fab, Library hints, objmove L2 and L3, wbopen rows (agent polish5-1031)
 - [x] INBOX 1468 reminder save and edit (agent remfix-1031)
 - [ ] INBOX 1469 and 1470 submenus, picture-card drag (agent submenu-1031)
@@ -74,7 +74,8 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1463 companion clip and status bar (agent compclip-1031)
 - [ ] Owner lag log hotspots (agent lagfix-1031)
 - [x] Paste null file item (owner log)
-- [ ] Perf audit findings (perf-1031.md)
+- [x] Perf audit (perf-1031.md); fixes: agent perf2-1031
+- [ ] Perf audit top five fixes (agent perf2-1031) (perf-1031.md)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
