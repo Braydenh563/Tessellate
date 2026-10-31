@@ -493,6 +493,8 @@ HELP_TOPICS: list[dict] = [
         #: said "g then a letter" until INBOX 410: the chord had been "m" for
         #: months, and the guide was the one place still teaching the old key.
         "body": (
+            "The first Tab offers Skip to the list. The category list is one Tab stop: "
+            "arrows, Home and End walk it, the right arrow reaches a row's menu. "
             "Press ? for the full list; Settings, Keyboard shortcuts rebinds any of "
             "them (press a shortcut's keys, marked with a pencil, then the keys you want; type in the "
             "field above the list to find one), and on a Mac "
@@ -1110,6 +1112,8 @@ HELP_TOPICS.extend(
                 "Settings, Account & security: set a password and the notebook "
                 "asks for it when it opens. The lock button in the top bar locks it "
                 "now, and it locks itself after the idle time you choose there. "
+                "After a few wrong passwords the lock screen says how long to wait and "
+                "Unlock counts it down. "
                 "While it is locked, an open dialog or popover is put away, and "
                 "it comes back as it was after you unlock, and the lock screen takes focus. "
                 "Private notes are encrypted with that password and are never sent "

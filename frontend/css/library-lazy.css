@@ -7751,3 +7751,13 @@ input[type="color"].wb-mixed {
 .doc-new-split #doc-new .ph-lead {
   display: none;
 }
+/* Board grips on a touch screen (audit 1031 BD6): drawn at 10px, grabbed at 24+. */
+@media (pointer: coarse) {
+  .wb-resize-handle,
+  .wb-rotate-handle {
+    box-sizing: content-box;
+    border: var(--space-3) solid transparent;
+    margin: calc(var(--space-3) * -1);
+    background-clip: padding-box;
+  }
+}

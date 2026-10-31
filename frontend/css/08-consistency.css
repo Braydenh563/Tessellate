@@ -2989,6 +2989,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    with scratchpad/ui-sweeps/cardopen.js). */
 .card-open {
   cursor: pointer;
+  min-block-size: var(--target-min);
 }
 /* And the card keeps those layers to itself, so an overlay at 1 and a tick
    at 2 can never rise over a sticky bar the grid scrolls under. */
@@ -3567,15 +3568,6 @@ body .chip.item-label,
   align-items: center;
   gap: var(--space-1);
   position: relative;
-}
-/* The take target is the tag's words, 14px tall; an invisible band lifts the
-   press area to --target-min without growing the chip (audit: 68x14). */
-.entry-meta > .chip.suggested-tag > .suggested-tag-take::before {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: calc(50% - var(--target-min) / 2);
-  block-size: var(--target-min);
 }
 .entry-meta > .chip.filing-sure {
   gap: var(--space-1);
@@ -8484,8 +8476,8 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
     align-self: center;
   }
   #entry-list .link-connection > .menu-wrap > button {
-    width: 1.3rem;
-    height: 1.3rem;
+    width: 1.5rem;
+    height: 1.5rem;
     min-width: 0;
     min-height: 0;
     margin-inline-end: 2px;
@@ -10894,4 +10886,26 @@ header#top-bar button.space-switcher-btn:focus-visible {
   #capture .capture-commit-row {
     background: var(--card);
   }
+}
+/* --- The target floor (audit 1031 class 28: UX2, SH11, N21, BD6, BD8) ------
+   WCAG 2.5.8 asks 24 x 24 CSS px. "Show more", a Library title and the board
+   grips measured under it; each takes `--target-min` (28) by `min-*`, with
+   the layout kept (a negative margin takes back what the box gained). The
+   rail's link menus (1.5rem above) and a card's task boxes (01-forms-
+   settings.css) were brought to size where they are declared. */
+#entry-list .entry-more,
+#entry-list:not(.is-rows) > li:not(.list-window-sentinel) > .entry-more {
+  display: flex;
+  align-items: center;
+  min-height: var(--target-min);
+  margin-block: calc(var(--space-2) - var(--space-3)) calc(var(--space-3) * -1);
+}
+/* A suggested tag's two controls are buttons (N37) that keep the chip's face. */
+.entry-meta > .chip.suggested-tag > button {
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: 0;
+  align-self: stretch;
+  color: inherit;
 }

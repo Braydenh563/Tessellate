@@ -1005,6 +1005,8 @@ function updateReminderBadge(reminders) {
   syncPhoneMoreRuns();
 
   let badge = button.querySelector(".tab-badge");
+  //: The name is the words on the tab, badge and all (UX7, label-content-name-mismatch).
+  button.setAttribute("aria-label", due ? `Reminders ${due}` : "Reminders");
   if (!due) {
     badge?.remove();
     return;

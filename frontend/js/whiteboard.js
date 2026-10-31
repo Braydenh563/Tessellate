@@ -676,7 +676,11 @@ function wbShowZoomLevel(k) {
   if (pct === wbZoomLevel.pct) return;
   wbZoomLevel.pct = pct;
   wbZoomLevel.el ||= document.getElementById("wb-zoom-level");
-  if (wbZoomLevel.el) wbZoomLevel.el.textContent = `${pct}%`;
+  if (wbZoomLevel.el) {
+    wbZoomLevel.el.textContent = `${pct}%`;
+    //: The name starts with the visible words (BD4, label-content-name-mismatch).
+    wbZoomLevel.el.setAttribute("aria-label", `${pct}%, zoom level, press for 100%`);
+  }
 }
 
 //: Run a queued zoom frame now rather than on the next one: for a transform
@@ -24664,7 +24668,7 @@ function drawLibraryBoardsGallery(listed) {
     const title = document.createElement("strong");
     title.className = "library-card-title";
     title.textContent = board.title;
-    cardOpener(title, open, `${isMapCard ? "Map" : "Board"}: ${board.title}`);
+    cardOpener(title, open, `${board.title}, ${isMapCard ? "map" : "board"}`);
 
     const meta = document.createElement("span");
     meta.className = "muted library-card-meta";

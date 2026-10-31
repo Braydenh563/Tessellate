@@ -200,6 +200,22 @@ function eachSidebar(fn) {
   }
 }
 
+//: **A parked sidebar cannot be reached** (AI16, SH19: the off-canvas chat and
+//: category sheets stayed in the Tab order and the accessibility tree, their
+//: rows and a button 84 px past the viewport). Below 600 a sidebar that is not
+//: open is `inert`; above it the sidebar is a rail. Every open and close goes
+//: through `setSidebarSheet`, so no observer has to watch the class.
+const SIDEBAR_PHONE = "(max-width: 599.98px)";
+function syncSidebarInert() {
+  const phone = window.matchMedia(SIDEBAR_PHONE).matches;
+  eachSidebar((aside) => { aside.inert = phone && !aside.classList.contains("sidebar-sheet-open"); });
+}
+function setSidebarSheet(aside, open) {
+  aside.classList.toggle("sidebar-sheet-open", open);
+  syncSidebarInert();
+  return open;
+}
+
 function applySidebarSheetMode(stacked) {
   eachSidebar((aside) => {
     if (stacked) {
@@ -212,9 +228,9 @@ function applySidebarSheetMode(stacked) {
       aside.parentElement?.classList.remove("layout-sidebar-collapsed");
       // A sheet opens closed. Arriving with the content already covered is
       // the failure a sheet exists to avoid.
-      aside.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(aside, false);
     } else {
-      aside.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(aside, false);
       if (aside.dataset.deskCollapsed) {
         aside.classList.add("sidebar-collapsed");
         aside.parentElement?.classList.add("layout-sidebar-collapsed");
@@ -267,7 +283,7 @@ function initSidebarSheetDismissal() {
   wireInPlaceSheetDismissal({
     find: () => document.querySelector(".sidebar-sheet-open"),
     close: (open) => {
-      open.classList.remove("sidebar-sheet-open");
+      setSidebarSheet(open, false);
       //: The rail's own button is the opener, so focus goes back to it: the
       //: same contract `openSheet`'s `returnFocus` keeps.
       const opener = open.querySelector(".sidebar-collapse-toggle");
@@ -360,7 +376,7 @@ function makeSidebarResizable(aside) {
     // toggling them here would put back exactly the rules the sheet was built
     // to avoid fighting.
     if (layoutIsStacked()) {
-      const open = aside.classList.toggle("sidebar-sheet-open");
+      const open = setSidebarSheet(aside, !aside.classList.contains("sidebar-sheet-open"));
       collapseBtn.setAttribute("aria-expanded", String(open));
       return;
     }
@@ -465,6 +481,7 @@ function initResizableSidebars() {
   }
   makeWebPanelResizable($("web-panel"));
   applySidebarSheetMode(layoutIsStacked());
+  window.matchMedia(SIDEBAR_PHONE).addEventListener("change", syncSidebarInert);
   initSidebarSheetDismissal();
 }
 

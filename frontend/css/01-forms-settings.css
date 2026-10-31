@@ -1339,8 +1339,8 @@ input.md-task-inline:disabled,
    [type="checkbox"]`, 07-whiteboard-misc.css), which drew it as a 28px
    accent slab: this box is a mark at the text's size, not a target. */
 #entry-list .entry-content .entry-task > input[type="checkbox"]:disabled {
-  width: 1.1em;
-  height: 1.1em;
+  width: 1.125rem;
+  height: 1.125rem;
   min-width: 0;
   min-height: 0;
   margin: 0 var(--space-2) 0 0;

@@ -289,6 +289,35 @@ function lockFail(message, field = $("lock-password"), line = $("lock-error")) {
   field.focus();
   field.select();
 }
+//: **A throttled unlock says so** (1031 SH6): the server answers 429 with the
+//: wait ("Try again in 2 seconds."), and the line kept "That password is
+//: wrong." for a right password typed inside the window. Unlock is off, and
+//: counts down in its own label (the line is a live region: said once), until
+//: the wait has passed; then the field takes focus again.
+function lockFailed(error) {
+  if (error.status !== 429) return lockFail(error.message);
+  const submit = $("lock-submit");
+  const seconds = Math.max(1, Number(/(\d+)\s*second/.exec(error.message)?.[1]) || 5);
+  const end = Date.now() + seconds * 1000;
+  clearTimeout(submit._waitTimer);
+  submit.dataset.label ||= submit.textContent;
+  submit.disabled = true;
+  lockFail(error.message);
+  const tick = () => {
+    const left = Math.ceil((end - Date.now()) / 1000);
+    if (left > 0) {
+      submit.textContent = `${submit.dataset.label} in ${left}`;
+      submit._waitTimer = setTimeout(tick, 1000);
+      return;
+    }
+    submit.textContent = submit.dataset.label;
+    submit.disabled = false;
+    $("lock-error").textContent = "";
+    $("lock-password").removeAttribute("aria-invalid");
+    $("lock-password").focus();
+  };
+  tick();
+}
 async function submitLockForm() {
   const password = $("lock-password").value;
   const errorLine = $("lock-error");
@@ -306,7 +335,7 @@ async function submitLockForm() {
     try {
       await prompt.submit(password);
     } catch (error) {
-      lockFail(error.message);
+      lockFailed(error);
       return;
     }
     settleLockPrompt(true);
@@ -348,7 +377,7 @@ async function submitLockForm() {
     //: when the dialog closes.
     if (mode === "setup") offerRecoveryKey(password);
   } catch (error) {
-    lockFail(error.message);
+    lockFailed(error);
   }
 }
 

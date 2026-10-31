@@ -1868,7 +1868,10 @@ function entryItem(entry, options = {}) {
     const group = chip("", "tag suggested-tag");
     group.replaceChildren();
     group.dataset.tag = tag;
-    const take = document.createElement("span");
+    //: Real buttons (N37), not spans with a role: a keyboard, a screen reader and a
+    //: finger all meet a control. The look is the chip's own (08-consistency.css).
+    const take = document.createElement("button");
+    take.type = "button";
     take.className = "suggested-tag-take";
     setLabel(take, `ph:plus ${tag}`);
     //: Each suggestion says what in the note backs it (WORLD_CLASS 23,
@@ -1879,11 +1882,11 @@ function entryItem(entry, options = {}) {
       event.stopPropagation();
       answerTags(entry, { take: [tag] });
     });
-    makeUnlinkAccessible(take);
     //: A short name: the reason belongs to the hover, not to a screen reader's every pass.
     take.setAttribute("aria-label", `Add tag ${tag}`);
     group.appendChild(take);
-    const discard = document.createElement("span");
+    const discard = document.createElement("button");
+    discard.type = "button";
     discard.className = "unlink";
     setLabel(discard, "ph:x");
     discard.title = `Dismiss: stop suggesting #${tag} for this note`;
@@ -1891,7 +1894,6 @@ function entryItem(entry, options = {}) {
       event.stopPropagation();
       answerTags(entry, { discard: [tag] });
     });
-    makeUnlinkAccessible(discard);
     discard.setAttribute("aria-label", `Dismiss tag ${tag}`);
     group.appendChild(discard);
     meta.appendChild(group);

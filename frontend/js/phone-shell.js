@@ -521,6 +521,15 @@ $("skip-link").addEventListener("click", (e) => {
   e.preventDefault();
   $(`tab-${prefs.get("activeTab", null) || "notes"}`).focus();
 });
+//: Past the sidebar, the dock and the composer to the first row of the page's
+//: list (UX1: 51 Tabs from the composer to the first note).
+$("skip-to-list").addEventListener("click", (e) => {
+  e.preventDefault();
+  const page = $(`tab-${prefs.get("activeTab", null) || "notes"}`);
+  const rows = page?.querySelectorAll("#entry-list > li, .library-card .card-open, li[tabindex], tbody tr[tabindex]") || [];
+  const first = [...rows].find((el) => el.tabIndex >= 0 && el.checkVisibility?.() !== false);
+  (first || page?.querySelector("[role=tabpanel], h1, h2") || $(`tab-btn-${prefs.get("activeTab", null) || "notes"}`))?.focus?.();
+});
 initSelectionPopup();
 initEntryListKeyboardNav();
 scrollTopUpdate = initScrollTopButton();
@@ -886,7 +895,7 @@ mountPhoneSidebarOpeners();
 $("category-list")?.addEventListener("click", () => {
   const aside = $("sidebar");
   if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
-  aside.classList.remove("sidebar-sheet-open");
+  setSidebarSheet(aside, false);
   aside.querySelector(".sidebar-collapse-toggle")?.setAttribute("aria-expanded", "false");
   const opener = document.querySelector('.phone-sidebar-opener[aria-controls="sidebar"]');
   opener?.setAttribute("aria-expanded", "false");

@@ -439,7 +439,7 @@ select optgroup {
      means anything.
      Snapping moved nothing by more than 0.05rem, except 1.6→1.7rem. Sizes
      above 2.2rem are single hero elements and are left alone. */
-  --text-xs: 0.7rem;
+  --text-xs: 0.75rem;
   /* badges, counters */
   --text-sm: 0.75rem;
   /* dense metadata */

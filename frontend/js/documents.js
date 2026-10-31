@@ -243,6 +243,8 @@ function docTypeSync(type) {
   opener.dataset.ext = type.ext;
   setLabel(opener, `ph:${type.icon || "file-code"} ${type.label}`);
   opener.title = `File type: ${type.label} (.${type.ext}). Press to change it`;
+  //: The name starts with the words drawn on the button (DC5, label-content-name-mismatch).
+  opener.setAttribute("aria-label", `${type.label}, file type`);
   //: The menu itself, not `nextElementSibling`: an open menu is moved to `<body>`.
   const menu = docTypeState.menu;
   menu?.querySelector('[aria-current="true"]')?.removeAttribute("aria-current");

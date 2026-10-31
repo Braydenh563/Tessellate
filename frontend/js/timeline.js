@@ -729,10 +729,23 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
 function timelineUnitText(n, unit) {
   return `${n} ${unit}${n === 1 ? "" : "s"}`;
 }
-function timelineCountLine(shown, loaded, tail) {
+//: Which kinds the items are (1031 SH15: "230 items" for 206 notes, the rest
+//: reminders, maps and documents, said nothing). Only when there is more than
+//: one kind; a feed of notes alone reads as before.
+function timelineKindsText(rows) {
+  const counts = new Map();
+  for (const row of rows) counts.set(row.kind, (counts.get(row.kind) || 0) + 1);
+  if (counts.size < 2) return "";
+  const word = (kind, n) => {
+    const name = (TIMELINE_KIND_NAMES[kind] || "Note").toLowerCase();
+    return `${n} ${name}${n === 1 ? "" : "s"}`;
+  };
+  return ` (${TIMELINE_KINDS.filter((k) => counts.has(k.key)).map((k) => word(k.key, counts.get(k.key))).join(", ")})`;
+}
+function timelineCountLine(shown, loaded, tail, rows = []) {
   const more = timelineNextCursor ? "+" : "";
   const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
-  return `${count} item${shown === 1 && !more ? "" : "s"} · ${tail}`;
+  return `${count} item${shown === 1 && !more ? "" : "s"}${timelineKindsText(rows)} · ${tail}`;
 }
 
 //: **The feed is windowed** (`windowRows`, notes-list.js): a row is built only
@@ -785,7 +798,8 @@ function timelineFocusFirstIn(section, options) {
 function appendTimelineRows(fresh) {
   const feed = $("timeline-feed");
   const scale = feed.dataset.scale || "day";
-  const visible = new Set(timelineVisibleRows().map((row) => row.key));
+  const shownRows = timelineVisibleRows();
+  const visible = new Set(shownRows.map((row) => row.key));
   const win = timelineWindow.win || newTimelineWindow(feed.dataset.density || "full");
   const runs = [];
   for (const row of fresh) {
@@ -807,7 +821,8 @@ function appendTimelineRows(fresh) {
   }
   applyTimelineRowTabOrder();
   $("timeline-count").textContent = timelineCountLine(
-    visible.size, visible.size, timelineUnitText(feed.querySelectorAll(".timeline-bucket").length, scale));
+    visible.size, visible.size, timelineUnitText(feed.querySelectorAll(".timeline-bucket").length, scale),
+    shownRows);
 }
 
 //: The end of the feed is the request for the next page. 600px of warning
@@ -978,7 +993,7 @@ function paintTimelineFeed(rows) {
   //: since Phase 4, and a count line that calls a reminder a note is the same
   //: small lie the response's `notes` key was telling until today.
   $("timeline-count").textContent = rows.length
-    ? timelineCountLine(rows.length, timelineRows.length, timelineUnitText(buckets.length, unit))
+    ? timelineCountLine(rows.length, timelineRows.length, timelineUnitText(buckets.length, unit), rows)
     : "";
 
   const fragment = document.createDocumentFragment();
@@ -2073,7 +2088,7 @@ function paintTimelineTable(rows) {
   body.replaceChildren();
   const column = TIMELINE_COLUMNS.find((c) => c.key === timelineSort.key);
   $("timeline-count").textContent = rows.length
-    ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`)
+    ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`, rows)
     : "";
   const sorted = timelineSortedRows(rows);
   const fragment = document.createDocumentFragment();
