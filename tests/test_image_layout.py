@@ -66,14 +66,16 @@ def test_saving_a_layout_writes_the_note_once_and_names_what_changed():
 
 
 def test_the_align_menu_offers_what_the_document_editor_offered():
-    menu = LAYOUT[LAYOUT.index("openMenuAtPoint(") :][:900]
-    for label in ("ph:text-align-left Left", "ph:text-align-center Centre", "ph:text-align-right Right", "ph:x Inline"):
+    menu = LAYOUT[LAYOUT.index("openMenuAtPoint(") :][:1100]
+    for label in ("ph:text-align-left Left", "ph:text-align-center Centre", "ph:text-align-right Right", "ph:text-align-justify Inline"):
         assert label in menu, label
 
 
 def test_the_live_editor_hands_the_shared_control_its_own_write():
     live = DOCUMENTS[DOCUMENTS.index("function docImageLive(") :][:1500]
     assert "imageWireEdit(frame, options, { write, widest })" in live
+    # the grip or the align button that had the keys keeps them (WCAG 2.4.3)
+    assert "held.kind" in live and "controls.align" in live
     assert "imageAltWith(" in live
 
 
@@ -81,3 +83,32 @@ def test_the_center_and_right_rules_exist_for_a_picture_read_in_a_card():
     css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
     assert ".cm-md-figure.cm-md-figure-center > :is(.md-picture, .thumb-wrap)" in css
     assert ".cm-md-figure.cm-md-figure-right > :is(.md-picture, .thumb-wrap)" in css
+
+
+def test_the_control_exists_before_the_pointer_does():
+    """UX review 1031 items 3 to 5: a control added on the first hover alone
+    was out of reach of the keyboard and, until a tap, of a finger; and the
+    keys were lost after a save or a menu because focus fell to the invisible
+    point the menu opens at."""
+    # focus anywhere in a card wires its pictures; a touch screen wires at layout
+    assert 'document.addEventListener("focusin", imageFocusEdit)' in LAYOUT
+    assert "(pointer: coarse)" in LAYOUT
+    # the timeline wires its body after both of its draws
+    assert TIMELINE_DETAIL.count("imageWireAll(body)") == 2
+    # the align menu names its button as the focus's home and anchors at its right edge
+    menu = LAYOUT[LAYOUT.index("openMenuAtPoint(") :][:1100]
+    assert "box.right - 8, box.bottom + 4, align)" in menu
+    # a save puts the keys back on the grip or button that had them
+    write = LAYOUT[LAYOUT.index("function imageWirePicture(") :][:1800]
+    assert "imageRefocus(" in write and "frame.contains(document.activeElement)" in write
+
+
+def test_the_picture_control_is_visible_over_a_picture_and_big_enough_to_hit():
+    css = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    grip = css[css.index(".cm-md-image-grip {") :][:400]
+    # 24px hit area (WCAG 2.5.8) with the 12px drawing on the ::before
+    assert "width: 24px" in grip and "height: 24px" in grip
+    assert ".cm-md-image-grip::before" in css
+    # a ground of its own: a transparent glyph was 1.3:1 over a picture
+    align = css[css.index("button.cm-md-image-align.ghost.icon-only") :][:300]
+    assert "background: var(--card)" in align and "box-shadow: var(--shadow-sm)" in align

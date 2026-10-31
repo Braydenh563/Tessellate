@@ -144,8 +144,11 @@ function imageApplyOptions(img, options) {
 //: The grip is a slider to a screen reader and to the keys (the arrows, 10px;
 //: with Shift, 50px), and a drag to the hand, held to between 40px and the
 //: column. `host.resize === false` leaves the grip off a thumbnail, which has
-//: a fixed size by design; the align button stays. Returns the grip, so the
-//: Live editor can give it the keys back after its write redraws the picture.
+//: a fixed size by design; the align button stays. Returns both controls
+//: (`{ align, grip }`, the grip null on a thumbnail), so a surface can give
+//: the keys back to the one that had them after its write redraws the picture
+//: (WCAG 2.4.3). The align menu hands its button back as the focus's home,
+//: not the invisible point it opens at.
 const IMAGE_MIN = 40;
 
 function imageWireEdit(frame, options, host) {
@@ -163,15 +166,15 @@ function imageWireEdit(frame, options, host) {
   align.addEventListener("click", (event) => {
     event.stopPropagation();
     const box = align.getBoundingClientRect();
-    const pick = (value) => () => host.write({ align: value });
+    const pick = (value) => () => host.write({ align: value }, "align");
     openMenuAtPoint([
       makeMenuItem("ph:text-align-left Left", "On the left, text below it", pick("left")),
       makeMenuItem("ph:text-align-center Centre", "In the middle of the column", pick("center")),
       makeMenuItem("ph:text-align-right Right", "On the right", pick("right")),
-      makeMenuItem("ph:x Inline", "In the line, as written", pick(null)),
-    ], "Align the picture", box.left, box.bottom + 4);
+      makeMenuItem("ph:text-align-justify Inline", "In the line, as written", pick(null)),
+    ], "Align the picture", box.right - 8, box.bottom + 4, align);
   });
-  if (host.resize === false) return null;
+  if (host.resize === false) return { align, grip: null };
   const grip = document.createElement("span");
   grip.className = "cm-md-image-grip";
   grip.tabIndex = 0;
@@ -220,9 +223,9 @@ function imageWireEdit(frame, options, host) {
     event.preventDefault();
     event.stopPropagation();
     const next = keys[event.key];
-    host.write({ width: next ? Math.max(IMAGE_MIN, Math.min(host.widest(), next)) : null });
+    host.write({ width: next ? Math.max(IMAGE_MIN, Math.min(host.widest(), next)) : null }, "grip");
   });
-  return grip;
+  return { align, grip };
 }
 
 //: **A note's picture, laid out**: the hook notes-list.js calls after it has
@@ -256,6 +259,8 @@ function imageLayout(img) {
   }
   const laid = imageApplyOptions(frame, options);
   if (laid.parentNode !== parent) parent.insertBefore(laid, next);
+  //: A finger has no hover: the controls are drawn (and reachable) from the start.
+  if (window.matchMedia?.("(pointer: coarse)").matches) queueMicrotask(() => imageWirePicture(img));
 }
 
 //: Where a picture's note is, when the surface lets a picture be edited in
@@ -296,12 +301,15 @@ async function imageSaveNote(img, id, change) {
   }
 }
 
-//: The first hover over an editable picture adds the control (once). The
-//: timeline's note view is not a card, so it hands its body a `imageEditAfter`
-//: to draw itself again with the saved text.
-function imageHoverEdit(event) {
-  const img = event.target instanceof Element ? event.target.closest("img[data-alt]") : null;
-  if (!img || img.dataset.editWired) return;
+//: **A picture's control is added once, and before the pointer arrives.** A
+//: hover (the mouse), a focus anywhere in the card (the keyboard: the Guide
+//: promises the arrow keys, and a control that exists only after a pointer has
+//: passed is out of reach of both the keys and a finger), and, on a touch
+//: screen, as soon as the picture is laid out. The timeline's note view is
+//: not a card, so it marks its body (`data-image-edit`) and hands it an
+//: `imageEditAfter` to draw itself again with the saved text.
+function imageWirePicture(img) {
+  if (!img || img.dataset.editWired || img.dataset.alt === undefined) return;
   const target = imageEditTarget(img);
   const frame = img.closest(".cm-md-image-frame, .thumb-wrap");
   if (!target || !frame) return;
@@ -311,14 +319,49 @@ function imageHoverEdit(event) {
   imageWireEdit(frame, options, {
     resize: !thumb,
     widest: () => Math.max(IMAGE_MIN, Math.floor((target.root.querySelector(".entry-content") || target.root).getBoundingClientRect().width - 16)),
-    write: async (change) => {
+    write: async (change, kind) => {
+      //: Which picture of the note this is, and whether the keys were on its
+      //: grip or its align button, read before the save redraws both.
+      const at = [...target.root.querySelectorAll("img[data-alt]")].indexOf(img);
+      const held = kind && frame.contains(document.activeElement) ? kind : null;
       const content = await imageSaveNote(img, target.id, change);
-      if (content !== false && target.root.imageEditAfter) target.root.imageEditAfter(content);
+      if (content === false) return;
+      if (target.root.imageEditAfter) target.root.imageEditAfter(content);
+      if (held) imageRefocus(target.id, target.root.dataset.imageEdit !== undefined, at, held);
     },
   });
 }
 
+//: The control that had the keys, found again on the redrawn picture: the card
+//: or the note view is looked up afresh (the save replaced them), and a
+//: thumbnail, which has no grip, hands its align button the keys instead.
+function imageRefocus(id, marked, at, held) {
+  const root = document.querySelector(marked ? `[data-image-edit="${id}"]` : `li[data-id="${id}"]`);
+  const img = root?.querySelectorAll("img[data-alt]")[at];
+  if (!img) return;
+  imageWirePicture(img);
+  const frame = img.closest(".cm-md-image-frame, .thumb-wrap");
+  const control = (held === "grip" && frame?.querySelector(".cm-md-image-grip")) || frame?.querySelector(".cm-md-image-align");
+  control?.focus({ preventScroll: true });
+}
+
+//: Every picture under a card or a note view, wired (the timeline calls this
+//: after it draws its body; the card's focus does through `imageFocusEdit`).
+function imageWireAll(root) {
+  for (const img of root.querySelectorAll("img[data-alt]:not([data-edit-wired])")) imageWirePicture(img);
+}
+
+function imageHoverEdit(event) {
+  imageWirePicture(event.target instanceof Element ? event.target.closest("img[data-alt]") : null);
+}
+
+function imageFocusEdit(event) {
+  const card = event.target instanceof Element ? event.target.closest("li[data-id]") : null;
+  if (card) imageWireAll(card);
+}
+
 document.addEventListener("pointerover", imageHoverEdit);
+document.addEventListener("focusin", imageFocusEdit);
 
 //: Pictures drawn before this file arrived (the first seconds of a session, a
 //: connection saving data) are plain; lay them out now.
