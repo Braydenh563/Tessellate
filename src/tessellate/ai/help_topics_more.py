@@ -1452,7 +1452,7 @@ MORE_TOPICS.extend(
             ),
             "body": (
                 "The tags Atlas suggested when it filed a note stay on the note's "
-                "card as \"+ tag\": one press adds the tag, and its x stops "
+                "card as \"+ tag\": one press adds the tag, and its x (Dismiss) stops "
                 "suggesting it (Undo in the notice brings it back, and the note's "
                 "Edit form lists the ones turned down under Not suggested, each "
                 "one press from coming back). With no AI running they come from your own tags: "

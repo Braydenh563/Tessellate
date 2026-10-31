@@ -1831,9 +1831,9 @@ Link to another note with [[its first few words]]."></textarea>
                  reasoning the other three draft-creating paths already use, 
                  none of them file a category either. -->
             <button id="save-draft-btn" class="ghost"
-              title="Save without filing it yet, find it later under Drafts in the sidebar"
+              title="Keep it as a draft: nothing is filed, and it waits under Drafts in the sidebar. Save files it by category and tags."
               aria-label="Save as draft">Save as draft</button>
-            <button id="save-btn" data-shortcut="save"><i class="ph ph-check ph-lead" aria-hidden="true"></i> Save</button>
+            <button id="save-btn" data-shortcut="save" title="Save the note and file it by category and tags. Save as draft keeps it unfiled instead."><i class="ph ph-check ph-lead" aria-hidden="true"></i> Save</button>
           </div>
           <p><span id="save-status" class="status" role="status"></span></p>
         </section>
@@ -2474,7 +2474,7 @@ Link to another note with [[its first few words]]."></textarea>
                   aria-describedby="search-help-hint">
               </div>
               <details class="doc-dock-menu dock-menu" id="notes-filter-menu">
-                <summary class="ghost small doc-dock-menu-btn" title="Match by meaning, save this filter"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
+                <summary class="ghost small doc-dock-menu-btn" title="Filter options: match notes by meaning, or keep this search to come back to"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
                 <div class="doc-dock-menu-list dock-menu-list">
                   <label class="dock-menu-check semantic-toggle" title="Search by concept instead of exact keywords">
                     <input type="checkbox" id="semantic-search-toggle"> <i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Semantic: match by meaning
@@ -6138,7 +6138,7 @@ Link to another note with [[its first few words]]."></textarea>
                   aria-label="Search the library">
               </div>
               <details class="doc-dock-menu dock-menu" id="library-filter-menu">
-                <summary class="ghost small doc-dock-menu-btn" title="Match by meaning, include the bin"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
+                <summary class="ghost small doc-dock-menu-btn" title="Filter options: match by meaning, or include the bin"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
                 <div class="doc-dock-menu-list dock-menu-list">
                   <label class="dock-menu-check"
                     title="Also match notes by meaning, not just the words you typed. Documents, chats and images still match on their words.">
