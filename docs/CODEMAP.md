@@ -24,20 +24,20 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `clearApiCache` | frontend/js/app.js:642 |
 | `confirmDialog` | frontend/js/app.js:1437 |
 | `confirmVerb` | frontend/js/app.js:1430 |
-| `ensureModule` | frontend/js/app.js:2003 |
+| `ensureModule` | frontend/js/app.js:2002 |
 | `enterWithoutPassword` | frontend/js/app.js:721 |
 | `hide` | frontend/js/app.js:168 |
 | `hideBootSplash` | frontend/js/app.js:954 |
 | `initAuth` | frontend/js/app.js:967 |
-| `installStandIns` | frontend/js/app.js:2211 |
+| `installStandIns` | frontend/js/app.js:2210 |
 | `kickBackgroundTaskPoll` | frontend/js/app.js:611 |
-| `lazyAssetStamp` | frontend/js/app.js:1942 |
-| `lazyScript` | frontend/js/app.js:1983 |
+| `lazyAssetStamp` | frontend/js/app.js:1941 |
+| `lazyScript` | frontend/js/app.js:1982 |
 | `lockFieldForPin` | frontend/js/app.js:861 |
 | `lockNow` | frontend/js/app.js:928 |
 | `mediaSrc` | frontend/js/app.js:255 |
-| `mountNoteSurfaceNow` | frontend/js/app.js:2038 |
-| `onDomReady` | frontend/js/app.js:1974 |
+| `mountNoteSurfaceNow` | frontend/js/app.js:2037 |
+| `onDomReady` | frontend/js/app.js:1973 |
 | `promptDialog` | frontend/js/app.js:1547 |
 | `purgeLockedContent` | frontend/js/app.js:914 |
 | `recordBrowserLog` | frontend/js/app.js:23 |
@@ -57,7 +57,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `stagedImageByUrl` | frontend/js/app.js:200 |
 | `startApp` | frontend/js/app.js:1015 |
 | `startWithoutPassword` | frontend/js/app.js:706 |
-| `whenScriptsLoaded` | frontend/js/app.js:1923 |
+| `whenScriptsLoaded` | frontend/js/app.js:1922 |
 | `wireBackdropClose` | frontend/js/app.js:1712 |
 | `zoomWheelDelta` | frontend/js/app.js:249 |
 
@@ -83,12 +83,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:109 |
-| `charactersArrived` | frontend/js/lazy-entries.js:123 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:139 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:134 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:159 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:114 |
+| `afterCharacters` | frontend/js/lazy-entries.js:111 |
+| `charactersArrived` | frontend/js/lazy-entries.js:125 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:141 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:136 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:161 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:116 |
 
 ### frontend/js/note-cards.js (39)
 
@@ -180,40 +180,38 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `captionCredit` | frontend/js/lightbox.js:142 |
 | `renderInlineAction` | frontend/js/lightbox.js:12 |
 
-### frontend/js/selection.js (30)
+### frontend/js/selection.js (28)
 
 | Name | File:line |
 |---|---|
 | `appendSelectionToNote` | frontend/js/selection.js:80 |
 | `bookmarkKind` | frontend/js/selection.js:414 |
-| `clampSelectionMenu` | frontend/js/selection.js:643 |
+| `clampSelectionMenu` | frontend/js/selection.js:619 |
 | `clippingMarkdown` | frontend/js/selection.js:20 |
 | `dialogHead` | frontend/js/selection.js:105 |
-| `fieldSelection` | frontend/js/selection.js:478 |
-| `hideSelectionPopup` | frontend/js/selection.js:634 |
-| `initSelectionPopup` | frontend/js/selection.js:808 |
-| `libraryPickLabel` | frontend/js/selection.js:427 |
+| `fieldSelection` | frontend/js/selection.js:454 |
+| `hideSelectionPopup` | frontend/js/selection.js:610 |
+| `initSelectionPopup` | frontend/js/selection.js:784 |
 | `noteFieldPickButton` | frontend/js/selection.js:328 |
-| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:908 |
+| `openSelectionMenuFromKeyboard` | frontend/js/selection.js:884 |
 | `pickEntryDialog` | frontend/js/selection.js:297 |
 | `pickerDialog` | frontend/js/selection.js:131 |
 | `pickerEmpty` | frontend/js/selection.js:215 |
 | `pickerListState` | frontend/js/selection.js:195 |
 | `pickerListbox` | frontend/js/selection.js:226 |
 | `pickerNoteAbout` | frontend/js/selection.js:290 |
-| `pickerRememberedSource` | frontend/js/selection.js:439 |
-| `remindFromSelection` | frontend/js/selection.js:451 |
+| `remindFromSelection` | frontend/js/selection.js:427 |
 | `saveSelectionAsNote` | frontend/js/selection.js:30 |
-| `selectionIsActionable` | frontend/js/selection.js:755 |
-| `selectionMenuItems` | frontend/js/selection.js:523 |
-| `selectionNoteId` | frontend/js/selection.js:516 |
-| `selectionPointInRange` | frontend/js/selection.js:869 |
-| `selectionPopup` | frontend/js/selection.js:625 |
-| `selectionRestoreOnContextMenu` | frontend/js/selection.js:878 |
+| `selectionIsActionable` | frontend/js/selection.js:731 |
+| `selectionMenuItems` | frontend/js/selection.js:499 |
+| `selectionNoteId` | frontend/js/selection.js:492 |
+| `selectionPointInRange` | frontend/js/selection.js:845 |
+| `selectionPopup` | frontend/js/selection.js:601 |
+| `selectionRestoreOnContextMenu` | frontend/js/selection.js:854 |
 | `selectionSource` | frontend/js/selection.js:10 |
-| `showSelectionPopupAt` | frontend/js/selection.js:679 |
-| `syncSelectionPopup` | frontend/js/selection.js:769 |
-| `wrapFieldSelection` | frontend/js/selection.js:504 |
+| `showSelectionPopupAt` | frontend/js/selection.js:655 |
+| `syncSelectionPopup` | frontend/js/selection.js:745 |
+| `wrapFieldSelection` | frontend/js/selection.js:480 |
 
 ### frontend/js/notes-list.js (118)
 
@@ -686,7 +684,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `startChatTimer` | frontend/js/chat-attach.js:2904 |
 | `stopChatTimer` | frontend/js/chat-attach.js:2913 |
 
-### frontend/js/sheets-selects.js (51)
+### frontend/js/sheets-selects.js (50)
 
 | Name | File:line |
 |---|---|
@@ -724,7 +722,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openKebabSheet` | frontend/js/sheets-selects.js:1147 |
 | `parseServerTime` | frontend/js/sheets-selects.js:1707 |
 | `personaDisplayName` | frontend/js/sheets-selects.js:2250 |
-| `personaNamesNow` | frontend/js/sheets-selects.js:2360 |
 | `relativeTime` | frontend/js/sheets-selects.js:1717 |
 | `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1578 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:530 |
@@ -808,13 +805,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `syncSkillVerifyRow` | frontend/js/skills.js:155 |
 | `updateBatchCount` | frontend/js/skills.js:1257 |
 
-### frontend/js/shell-reminders.js (50)
+### frontend/js/shell-reminders.js (49)
 
 | Name | File:line |
 |---|---|
 | `addReminder` | frontend/js/shell-reminders.js:1482 |
 | `armMinuteTick` | frontend/js/shell-reminders.js:41 |
-| `buildSelect` | frontend/js/shell-reminders.js:1655 |
 | `clearDoneReminders` | frontend/js/shell-reminders.js:1003 |
 | `clipText` | frontend/js/shell-reminders.js:783 |
 | `curtainShell` | frontend/js/shell-reminders.js:1615 |
@@ -1169,49 +1165,46 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `whenText` | frontend/js/status.js:1085 |
 | `withoutEndStop` | frontend/js/status.js:2482 |
 
-### frontend/js/ai-tools.js (39)
+### frontend/js/ai-tools.js (36)
 
 | Name | File:line |
 |---|---|
-| `_namesSignature` | frontend/js/ai-tools.js:118 |
-| `applyEmbeddingBackend` | frontend/js/ai-tools.js:832 |
-| `applyFeatureModel` | frontend/js/ai-tools.js:418 |
-| `applyPalette` | frontend/js/ai-tools.js:1240 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1175 |
-| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:879 |
-| `featureModelChoiceLabel` | frontend/js/ai-tools.js:412 |
-| `featureModelMenuItem` | frontend/js/ai-tools.js:455 |
-| `featureModelRow` | frontend/js/ai-tools.js:394 |
-| `featureModelState` | frontend/js/ai-tools.js:402 |
-| `fillModelSelect` | frontend/js/ai-tools.js:122 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1210 |
-| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:828 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:988 |
-| `paintTaskRunLines` | frontend/js/ai-tools.js:54 |
-| `placeChatModelPanel` | frontend/js/ai-tools.js:274 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1196 |
-| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:587 |
-| `renderChatActiveModelBadge` | frontend/js/ai-tools.js:199 |
-| `renderChatModelPicker` | frontend/js/ai-tools.js:155 |
-| `renderEmbeddingPicker` | frontend/js/ai-tools.js:602 |
-| `renderFeatureModels` | frontend/js/ai-tools.js:441 |
-| `renderOcrModelPicker` | frontend/js/ai-tools.js:568 |
-| `renderReindex` | frontend/js/ai-tools.js:764 |
-| `renderUtilityModelPicker` | frontend/js/ai-tools.js:319 |
-| `renderVisionModelPicker` | frontend/js/ai-tools.js:342 |
-| `saveUiState` | frontend/js/ai-tools.js:1046 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:1123 |
-| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:701 |
-| `syncFeatureModelSelects` | frontend/js/ai-tools.js:490 |
-| `taskElapsed` | frontend/js/ai-tools.js:80 |
-| `taskRunFold` | frontend/js/ai-tools.js:31 |
-| `taskRunLinesText` | frontend/js/ai-tools.js:21 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:1035 |
-| `uiStatePayload` | frontend/js/ai-tools.js:1022 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1164 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1091 |
-| `wireFeatureModelSelects` | frontend/js/ai-tools.js:550 |
-| `wireReindexButton` | frontend/js/ai-tools.js:743 |
+| `_namesSignature` | frontend/js/ai-tools.js:65 |
+| `applyEmbeddingBackend` | frontend/js/ai-tools.js:778 |
+| `applyFeatureModel` | frontend/js/ai-tools.js:365 |
+| `applyPalette` | frontend/js/ai-tools.js:1186 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:1121 |
+| `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:825 |
+| `featureModelChoiceLabel` | frontend/js/ai-tools.js:359 |
+| `featureModelMenuItem` | frontend/js/ai-tools.js:402 |
+| `featureModelRow` | frontend/js/ai-tools.js:341 |
+| `featureModelState` | frontend/js/ai-tools.js:349 |
+| `fillModelSelect` | frontend/js/ai-tools.js:69 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1156 |
+| `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:774 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:934 |
+| `placeChatModelPanel` | frontend/js/ai-tools.js:221 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1142 |
+| `renderAutonomousModelPicker` | frontend/js/ai-tools.js:533 |
+| `renderChatActiveModelBadge` | frontend/js/ai-tools.js:146 |
+| `renderChatModelPicker` | frontend/js/ai-tools.js:102 |
+| `renderEmbeddingPicker` | frontend/js/ai-tools.js:548 |
+| `renderFeatureModels` | frontend/js/ai-tools.js:388 |
+| `renderOcrModelPicker` | frontend/js/ai-tools.js:514 |
+| `renderReindex` | frontend/js/ai-tools.js:710 |
+| `renderUtilityModelPicker` | frontend/js/ai-tools.js:266 |
+| `renderVisionModelPicker` | frontend/js/ai-tools.js:289 |
+| `saveUiState` | frontend/js/ai-tools.js:992 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:1069 |
+| `syncEmbeddingPickerState` | frontend/js/ai-tools.js:647 |
+| `syncFeatureModelSelects` | frontend/js/ai-tools.js:436 |
+| `taskElapsed` | frontend/js/ai-tools.js:31 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:981 |
+| `uiStatePayload` | frontend/js/ai-tools.js:968 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:1110 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1037 |
+| `wireFeatureModelSelects` | frontend/js/ai-tools.js:496 |
+| `wireReindexButton` | frontend/js/ai-tools.js:689 |
 
 ### frontend/js/phone-shell.js (61)
 
@@ -4655,13 +4648,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `lanWatchOnce` | frontend/js/lan-watch.js:22 |
 | `lanWirePanel` | frontend/js/lan-watch.js:224 |
 
-### frontend/js/library-pick.js (3)
+### frontend/js/library-pick.js (5)
 
 | Name | File:line |
 |---|---|
-| `libraryPickAbout` | frontend/js/library-pick.js:4 |
-| `pickLibraryItemDialog` | frontend/js/library-pick.js:23 |
-| `pickMediaDialog` | frontend/js/library-pick.js:171 |
+| `libraryPickAbout` | frontend/js/library-pick.js:28 |
+| `libraryPickLabel` | frontend/js/library-pick.js:6 |
+| `pickLibraryItemDialog` | frontend/js/library-pick.js:47 |
+| `pickMediaDialog` | frontend/js/library-pick.js:195 |
+| `pickerRememberedSource` | frontend/js/library-pick.js:18 |
 
 ### frontend/js/library.js (260)
 
@@ -5548,13 +5543,14 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelZoneFor` | frontend/js/panel-movable.js:105 |
 | `panelZoneRect` | frontend/js/panel-movable.js:74 |
 
-### frontend/js/personas-pane.js (3)
+### frontend/js/personas-pane.js (4)
 
 | Name | File:line |
 |---|---|
-| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:223 |
-| `renderPersonas` | frontend/js/personas-pane.js:12 |
-| `savePersonaList` | frontend/js/personas-pane.js:3 |
+| `personaNamesNow` | frontend/js/personas-pane.js:4 |
+| `renderDashboardPersonaSelect` | frontend/js/personas-pane.js:229 |
+| `renderPersonas` | frontend/js/personas-pane.js:18 |
+| `savePersonaList` | frontend/js/personas-pane.js:9 |
 
 ### frontend/js/phone-more.js (1)
 
@@ -5676,11 +5672,12 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `reminderFormClear` | frontend/js/quickadd.js:517 |
 | `reminderFormError` | frontend/js/quickadd.js:507 |
 
-### frontend/js/reminder-edit.js (1)
+### frontend/js/reminder-edit.js (2)
 
 | Name | File:line |
 |---|---|
-| `reminderEditForm` | frontend/js/reminder-edit.js:7 |
+| `buildSelect` | frontend/js/reminder-edit.js:8 |
+| `reminderEditForm` | frontend/js/reminder-edit.js:21 |
 
 ### frontend/js/reminder-notify.js (4)
 
@@ -6282,10 +6279,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `tagSuggestToken` | frontend/js/tag-suggest.js:19 |
 | `takeTagSuggest` | frontend/js/tag-suggest.js:132 |
 
-### frontend/js/task-steps.js (1)
+### frontend/js/task-steps.js (4)
 
 | Name | File:line |
 |---|---|
+| `paintTaskRunLines` | frontend/js/task-steps.js:76 |
+| `taskRunFold` | frontend/js/task-steps.js:53 |
+| `taskRunLinesText` | frontend/js/task-steps.js:43 |
 | `taskSteps` | frontend/js/task-steps.js:16 |
 
 ### frontend/js/tidy.js (21)
@@ -11106,7 +11106,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/08-consistency.css | 10817 |
 | frontend/css/09-editor.css | 1030 |
 | frontend/css/10-responsive.css | 2708 |
-| frontend/css/appearance-panel-lazy.css | 297 |
+| frontend/css/appearance-panel-lazy.css | 305 |
 | frontend/css/appearance-panel-own-lazy.css | 84 |
 | frontend/css/ask-compose-lazy.css | 258 |
 | frontend/css/atlas-lazy.css | 62 |

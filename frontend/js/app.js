@@ -1767,7 +1767,6 @@ const LAZY_MODULES = {
   //: The image viewer (2026-09-27, the boot-script gzip budget): see
   //: lightbox-view.js's header.
   lightbox: ["/css/lightbox-lazy.css", "/js/lightbox-view.js"],
-  activity: ["/js/activity-panel.js"],
   //: Run, preview and test for a code document (DOCUMENTS_PLAN 23, D1): the
   //: protocol and its languages, loaded on the first Run.
   run: ["/js/run-core.js", "/js/run-tests.js", "/js/run-debug.js"],

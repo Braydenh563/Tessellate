@@ -4,6 +4,20 @@
 //: Cancel handlers use the always-loaded `editingReminderId`, `reminderPutUndoably`
 //: and `loadReminders`.
 
+// A <select> from [value, label] pairs, with one option preselected.
+function buildSelect(options, selected) {
+  const select = document.createElement("select");
+  select.className = "small-select";
+  for (const [value, label] of options) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    if (value === selected) option.selected = true;
+    select.appendChild(option);
+  }
+  return select;
+}
+
 function reminderEditForm(reminder) {
   const wrap = document.createElement("div");
   wrap.className = "inline-action";
