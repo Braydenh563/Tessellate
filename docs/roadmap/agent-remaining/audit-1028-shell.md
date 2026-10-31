@@ -19,7 +19,7 @@ Clean-eye audit, read-only. "verified" is run (driven in Playwright on a scratch
 | S13 | med | a11y | Placeholder-only inputs with no label | frontend/index.html:1312, :10901, :15046 | code | Add visible or aria-label text | S |
 | S14 | med | a11y | tab-documents aria-labelledby points at the wrong or missing element | frontend/index.html:4687 | code | Point it at the tab button id | S |
 | S15 | med | a11y | Only one forced-colors rule exists in the whole CSS | frontend/css/sketch-pad.css:229 | run | Add forced-colors rules for buttons, focus ring, selected tab, chips | M |
-| S16 | med | perf | Notes list never recycles rows: 60 then chunks of 40 appended forever, DOM grows without bound | frontend/js/notes-list.js:1890-1960 | code | Window the list (virtualise) or cap rendered rows with placeholders | L |
+| S16 | med | perf | **Fixed 96781b7.** Notes list never recycles rows: 60 then chunks of 40 appended forever, DOM grows without bound | frontend/js/notes-list.js:1890-1960 | code | Window the list (virtualise) or cap rendered rows with placeholders. Built: the Notes list was already windowed (N9); 2,000 notes 49 built rows at the bottom before, 38 after, 4,607 notes 49 to 38, jump to the 1,500th note 214 and 321 ms before, 120 and 386 ms after (a loaded machine) | L |
 | S17 | med | arch | Four copies of the relative-time helper | dashboard.js:4506, sheets-selects.js:1716, shell-reminders.js:1251, note-cards.js:1187 | code | One shared helper in an early script | S |
 | S18 | med | ux | Support email constant hard-coded in toast code | frontend/js/status.js:927 | code | Read from config or settings | S |
 | S19 | med | a11y | Toast timers dismiss on a fixed delay with no pause on hover or focus (WCAG 2.2.1) | frontend/js/status.js:1128 | code | Pause on hover/focus, keep errors until dismissed | S |
@@ -56,7 +56,7 @@ Clean-eye audit, read-only. "verified" is run (driven in Playwright on a scratch
 | S50 | med | missing | No full-text search operators (tag:, in:, before:) surfaced | search | code | Parse and document operators | M |
 | S51 | med | utility | Dashboard shows greeting and counts but no actionable "resume where you left off" | dashboard.js | code | Recent notes strip plus last-open note | S |
 | S52 | med | ux | Graph has no search-to-focus node field on the main bar | graph.js | code | Add a find box | S |
-| S53 | med | ux | Timeline paging is a separate mechanism from the Notes list paging | timeline.js:504 vs notes-list.js | code | Share one incremental renderer | M |
+| S53 | med | ux | **Fixed 96781b7.** Timeline paging is a separate mechanism from the Notes list paging | timeline.js:504 vs notes-list.js | code | Share one incremental renderer. Built: `windowRows`; Timeline 2,000 rows 27,531 elements to 15,997 (77 rows built), repaint of 2,000 rows 59 to 16.5 ms | M |
 | S54 | low | bug | Duplicate-looking id was flagged but exists only in an HTML comment | index.html | code | None (false positive, dropped from fixes) | S |
 | S55 | low | ux | Settings labels use mixed case in places against sentence-case rule | settings panes | code | Sweep strings | S |
 | S56 | low | ux | Toast stack can cover the bottom nav at phone width | ask390.png | run | Offset above nav safe area | S |
