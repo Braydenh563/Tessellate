@@ -50,6 +50,10 @@ let docSaveTimer = null;
 //: order preserved: the picker's order is a decision (see filetypes.py) and
 //: sorting it here would quietly undo it.
 let docFileTypes = [];
+//: The picker's state: `pending` is the type a blank page was started as (New's
+//: caret, or the foot's button before anything is typed; null means markdown,
+//: cleared when a document is shown); `menu` and `opener` are the foot's own.
+const docTypeState = { pending: null, menu: null, opener: null };
 
 //: Markdown's own entry, used before the fetch lands. Everything that reads a
 //: file type has to work on the very first paint, and a null here would mean
@@ -80,18 +84,8 @@ async function loadDocFileTypes() {
   if (docFileTypes.length) return;
   const body = await apiJson("/documents/file-types", { silent: true }).catch(() => null);
   docFileTypes = (body && body.types) || [];
-  const picker = $("doc-file-type");
-  if (!picker || !docFileTypes.length) return;
-  picker.replaceChildren();
-  for (const type of docFileTypes) {
-    const option = document.createElement("option");
-    option.value = type.ext;
-    // The extension as well as the name: "Markdown" says what it is, ".md"
-    // says what it will download as, and the download is the half people
-    // check before sending a file to someone.
-    option.textContent = `${type.label} (.${type.ext})`;
-    picker.appendChild(option);
-  }
+  if (!docFileTypes.length) return;
+  docTypeMount();
   syncDocFileType();
 }
 
@@ -99,8 +93,167 @@ async function loadDocFileTypes() {
 //: document saved before file types existed, for an unknown extension, and
 //: for the window between load and the fetch above landing.
 function docFileType() {
-  const ext = currentDoc?.file_type || "md";
+  //: A blank page (no `currentDoc` yet) takes the type picked for it, so the
+  //: first keystroke creates a file of that type (`docTypeState.pending`).
+  const ext = (currentDoc ? currentDoc.file_type : docTypeState.pending) || "md";
   return docFileTypes.find((t) => t.ext === ext) || DEFAULT_FILE_TYPE;
+}
+
+//: **One picker for a file's type, drawn in two places** (INBOX 1482, the
+//: owner's screenshots of a type button in a document's foot opening a list
+//: grouped Documents, Data, Code, each row with its glyph). `docTypeMenu` is a
+//: `kebabMenu` of the served table (`group` and `icon` come from filetypes.py),
+//: with the group names drawn as headings and a filter field, because
+//: thirty-odd rows are found by typing; the foot's button
+//: (`#doc-type-slot`) changes the open document's type and New's caret
+//: (`#doc-new-type-slot`) starts a blank file of one. Never a second list.
+function docTypeItems(onPick) {
+  return docFileTypes.map((type) => ({
+    label: `ph:${type.icon || "file-code"} ${type.label}`,
+    title:
+      type.ext === "md"
+        ? "Markdown (.md): the rich text editor, formatted as you type"
+        : `${type.label} (.${type.ext})`,
+    group: type.group || "Code",
+    run: () => onPick(type.ext),
+  }));
+}
+
+//: The hairlines `kebabMenu` draws between groups become a heading over each
+//: group here (rows and headings are one-to-one with the table, in its order).
+function docTypeHeadings(menu) {
+  menu.querySelectorAll(":scope > .menu-sep").forEach((rule) => rule.remove());
+  let last = null;
+  menu.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+    const type = docFileTypes[i];
+    row.dataset.docType = type.ext;
+    row.dataset.group = type.group || "Code";
+    if (row.dataset.group === last) return;
+    last = row.dataset.group;
+    const heading = document.createElement("div");
+    heading.className = "menu-heading";
+    heading.setAttribute("role", "presentation");
+    heading.dataset.group = last;
+    heading.textContent = last;
+    row.before(heading);
+  });
+}
+
+//: A heading with every row under it filtered out goes too.
+function docTypeHeadingsFit(menu) {
+  const shown = new Set();
+  for (const row of menu.querySelectorAll(":scope > .menu-item:not([hidden])")) shown.add(row.dataset.group);
+  for (const heading of menu.querySelectorAll(":scope > .menu-heading")) heading.hidden = !shown.has(heading.dataset.group);
+}
+
+function docTypeFilterKey(event, menu) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+  } else if (event.key === "Home" || event.key === "End") {
+    //: The menu's own Home and End walk the rows; in the field they move the caret.
+    event.stopPropagation();
+  }
+}
+
+//: Typing narrows the list through `listFilter`, the app's one filter field
+//: (it hides rows and says when none match; Escape clears it first). The field
+//: takes the focus when the menu opens (not on a phone, where that would raise
+//: the keyboard over the list) and a letter typed on a row goes to it; the
+//: arrows leave the field for the rows through the menu's own keys.
+function docTypeFilter(menu, opener) {
+  const filter = listFilter(menu, { label: "Filter types", threshold: 0, rows: ":scope > .menu-item", inside: true });
+  const { input, refresh } = filter;
+  input.addEventListener("input", () => docTypeHeadingsFit(menu));
+  input.addEventListener("keydown", (event) => docTypeFilterKey(event, menu));
+  menu.addEventListener("keydown", (event) => {
+    if (event.target !== input && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) input.focus();
+  });
+  opener.addEventListener("click", () => {
+    if (input.value) {
+      input.value = "";
+      refresh();
+      docTypeHeadingsFit(menu);
+    }
+    if (window.matchMedia("(hover: hover)").matches) input.focus();
+  });
+}
+
+function docTypeMenu(onPick, ariaLabel) {
+  const wrap = kebabMenu(docTypeItems(onPick), ariaLabel);
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const opener = wrap.querySelector(":scope > button");
+  docTypeHeadings(menu);
+  docTypeFilter(menu, opener);
+  return { wrap, menu, opener };
+}
+
+//: What the foot's button does: on an open document the type changes and is
+//: saved at once (a mode that has visibly switched but not persisted is one
+//: reload away from silently reverting); on a blank page it is the type the
+//: first keystroke will create.
+async function docTypeChoose(ext) {
+  if (!currentDoc) {
+    docTypeState.pending = ext === "md" ? null : ext;
+    docSetPlaceholder(docBlankPlaceholder());
+    syncDocFileType({ prose: false });
+    return;
+  }
+  if ((currentDoc.file_type || "md") === ext) return;
+  currentDoc = { ...currentDoc, file_type: ext };
+  syncDocFileType();
+  await saveDocument({ silent: true });
+}
+
+function docBlankPlaceholder() {
+  return docTypeState.pending
+    ? `Start typing and a new .${docTypeState.pending} file is created for you.`
+    : "Start typing and a new document is created for you.\n\nMarkdown works here, headings, **bold**, lists, tables, links.";
+}
+
+//: Both pickers are built once the table has arrived (`loadDocFileTypes`).
+function docTypeMount() {
+  const foot = $("doc-type-slot");
+  if (foot && !foot.firstChild) {
+    const { wrap, opener, menu } = docTypeMenu(docTypeChoose, "File type of this document");
+    docTypeState.menu = menu;
+    docTypeState.opener = opener;
+    opener.id = "doc-type-button";
+    opener.classList.remove("icon-only", "kebab-opener", "ghost", "small");
+    opener.classList.add("doc-statusbar-item", "doc-statusbar-button", "doc-type-button");
+    foot.replaceChildren(wrap);
+  }
+  const head = $("doc-new-type-slot");
+  if (head && !head.firstChild) {
+    const { wrap, opener } = docTypeMenu((ext) => startBlankDocument(ext), "Start a document of another type");
+    opener.id = "doc-new-type";
+    opener.classList.remove("icon-only", "ghost");
+    opener.classList.add("split-button-caret");
+    setLabel(opener, "ph:caret-down");
+    opener.title = "New document of another type";
+    head.replaceChildren(wrap);
+  }
+}
+
+//: The foot's button names the type and its row wears the check. Only when the
+//: type changed: opening one more document of the same type writes nothing.
+function docTypeSync(type) {
+  const opener = docTypeState.opener;
+  if (!opener || opener.dataset.ext === type.ext) return;
+  opener.dataset.ext = type.ext;
+  setLabel(opener, `ph:${type.icon || "file-code"} ${type.label}`);
+  opener.title = `File type: ${type.label} (.${type.ext}). Press to change it`;
+  //: The menu itself, not `nextElementSibling`: an open menu is moved to `<body>`.
+  const menu = docTypeState.menu;
+  menu?.querySelector('[aria-current="true"]')?.removeAttribute("aria-current");
+  menu?.querySelector(".doc-type-check")?.remove();
+  const row = menu?.querySelector(`[data-doc-type="${type.ext}"]`);
+  if (!row) return;
+  row.setAttribute("aria-current", "true");
+  const check = document.createElement("i");
+  check.className = "ph ph-check ph-trail doc-type-check";
+  check.setAttribute("aria-hidden", "true");
+  row.append(check);
 }
 
 // Everything about the editor that depends on the type, applied in one place
@@ -109,8 +262,7 @@ function docFileType() {
 //: the same check a frame later (DOCUMENTS 25 row 7).
 function syncDocFileType({ prose = true } = {}) {
   const type = docFileType();
-  const picker = $("doc-file-type");
-  if (picker) picker.value = type.ext;
+  docTypeSync(type);
 
   // A code file has no rendered form. Offering Live and Split for one is
   // offering to show a wall of escaped source, so those two options are
@@ -1001,6 +1153,7 @@ function renderDocList() {
 
 function showNoDocument() {
   currentDoc = null;
+  docTypeState.pending = null;
   $("doc-title").value = "";
   docResetDocument("");
   // Deliberately NOT disabled. Disabling them meant that on a notebook with no
@@ -1009,9 +1162,7 @@ function showNoDocument() {
   // now creates the document, which is what every editor does.
   $("doc-title").disabled = false;
   docBoxEl().disabled = false;
-  docSetPlaceholder(
-    "Start typing and a new document is created for you.\n\nMarkdown works here, headings, **bold**, lists, tables, links."
-  );
+  docSetPlaceholder(docBlankPlaceholder());
   $("doc-saved").textContent = "";
   renderDocPreview();
   renderDocStats();
@@ -2018,7 +2169,7 @@ async function docDropIfUntouched(nextId = null, { titled = false } = {}) {
 //: 16, decided): the editor opens empty and the first keystroke in the title
 //: or the text creates the row (`ensureDocumentExists`), so cancelling or
 //: walking away leaves nothing behind. A template has content, so it posts.
-async function startBlankDocument() {
+async function startBlankDocument(fileType = null) {
   const seq = ++docOpenSeq;
   docRememberPositionNow();
   if (docDirty) await saveDocument({ silent: true });
@@ -2026,6 +2177,9 @@ async function startBlankDocument() {
   await ensureDocEditor();
   if (seq !== docOpenSeq) return;
   showNoDocument();
+  //: A file of another type (New's caret): said in the empty page's own words.
+  docTypeState.pending = fileType && fileType !== "md" ? fileType : null;
+  if (docTypeState.pending) docSetPlaceholder(docBlankPlaceholder());
   syncDocFileType({ prose: false });
   docDirty = false;
   renderDocList();
@@ -2192,8 +2346,9 @@ async function ensureDocumentExists() {
   creatingDocument = (async () => {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
+      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "", file_type: docTypeState.pending || "md" }),
     });
+    docTypeState.pending = null;
     currentDoc = doc;
     docsMadeThisSession.add(doc.id);
     docs.unshift({ ...doc });
@@ -15277,15 +15432,6 @@ for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #
 //: The same `setDocGutter`, so this and the strip's button are two views of
 //: one remembered choice rather than two settings; `applyDocGutter` writes
 //: both their pressed states back.
-$("doc-file-type").addEventListener("change", async (event) => {
-  if (!currentDoc) return;
-  currentDoc = { ...currentDoc, file_type: event.target.value };
-  syncDocFileType();
-  // Saved immediately rather than left to the autosave: changing the type
-  // changes how the editor behaves *now*, and a mode that has visibly
-  // switched but not persisted is one reload away from silently reverting.
-  await saveDocument({ silent: true });
-});
 wireDocScrollSync();
 try {
   //: **Live is the default now.** Asked for: "I want the text editor to be
@@ -23304,6 +23450,7 @@ function docCmSpellcheck(CM) {
 function docCmApplySpellcheck() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.spell) return;
+  if (!docCmChanged("spell", String(docWordlistReady() || !docFileType().previewable))) return;
   docCmView.dispatch({ effects: docCmParts.spell.reconfigure(docCmSpellcheck(CM)) });
 }
 
@@ -23587,13 +23734,12 @@ function docCmSyncFileType() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.language) return;
   const type = docFileType();
-  docCmView.dispatch({
-    effects: [
-      docCmParts.language.reconfigure(docCmViewLanguage(CM)),
-      docCmParts.wrap.reconfigure(docCmDrawFor(CM, type)),
-      ...(docCmParts.code ? [docCmParts.code.reconfigure(docCodeTools(CM))] : []),
-    ],
-  });
+  const effects = docCmLanguageEffects(CM);
+  if (docCmChanged("type", `${type.ext}|${docView === "plain"}`)) {
+    effects.push(docCmParts.wrap.reconfigure(docCmDrawFor(CM, type)));
+    if (docCmParts.code) effects.push(docCmParts.code.reconfigure(docCodeTools(CM)));
+  }
+  if (effects.length) docCmView.dispatch({ effects });
 }
 
 //: **What Plain means, in one function.** The owner: "I want to be able to
@@ -23620,8 +23766,32 @@ function docCmViewLanguage(CM) {
 function docCmSyncLanguage() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.language) return;
-  docCmView.dispatch({ effects: docCmParts.language.reconfigure(docCmViewLanguage(CM)) });
+  const effects = docCmLanguageEffects(CM);
+  if (!effects.length) return;
+  docCmView.dispatch({ effects });
   docCmSyncCodeTools();
+}
+
+//: **A setting the view already has is not sent again** (lagfix-1031:
+//: `syncDocFileType` cost 26 to 364 ms on an open, and a CPU profile of twelve
+//: opens put 213 of its 367 ms in `docCmSyncFileType`, in CodeMirror reading the
+//: DOM selection after the dispatch). Every reconfigure is a transaction, so
+//: `setDocView`, `docCmSyncFileType` and `docCmApplySpellcheck` each sent
+//: theirs on every open, and opening a second Markdown file paid for changes
+//: that changed nothing. Each is a pure function of the view and a small key
+//: (extension and Plain, or the spellcheck answer), so that pair is the memo:
+//: a new view (the engine remounted) never matches the old one.
+const docCmApplied = new Map();
+function docCmChanged(name, key) {
+  const last = docCmApplied.get(name);
+  if (last && last.view === docCmView && last.key === key) return false;
+  docCmApplied.set(name, { view: docCmView, key });
+  return true;
+}
+
+function docCmLanguageEffects(CM) {
+  if (!docCmChanged("language", docView === "plain" ? "plain" : docFileType().ext)) return [];
+  return [docCmParts.language.reconfigure(docCmViewLanguage(CM))];
 }
 
 //: The line-number preference, applied to the engine. `applyDocGutter` still

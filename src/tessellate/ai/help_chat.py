@@ -316,7 +316,7 @@ HELP_TOPICS: list[dict] = [
             "them. "
             "The status bar counts characters, words, lines and reading time the way "
             "the note composer does (an emoji is one character); in a code file it "
-            "shows lines, characters and the language instead. New, Code file makes one. Search "
+            "shows lines, characters and the language instead. The type button (and New's arrow) lists file types; Markdown is rich text. Search "
             "documents reads a window: \"harbor last week\" finds the ones "
             "about the harbor edited in the last week."
         ),

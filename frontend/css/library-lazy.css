@@ -7635,3 +7635,52 @@ input[type="color"].wb-mixed {
 #whiteboard-container[data-current-tool="select"] .sketch-group {
   cursor: pointer;
 }
+
+/* --- the file type picker (INBOX 1482) ------------------------------------
+   A `kebabMenu` of the file types with a heading over each group and
+   `listFilter`'s field at its head (`docTypeMenu`, documents.js). The field
+   sticks while the rows scroll under it; a row the filter rules out is
+   `hidden`, and the menu's `display: flex` rows would otherwise ignore the
+   attribute. */
+.action-menu:has(> .list-filter),
+.sheet-list:has(> .list-filter) {
+  overflow-y: auto;
+}
+.action-menu > .list-filter,
+.sheet-list > .list-filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  margin: var(--space-1) var(--space-1) var(--space-2);
+  background: var(--modal-bg);
+}
+.action-menu > .menu-heading,
+.sheet-list > .menu-heading {
+  flex: none;
+  padding: var(--space-3) var(--space-5) var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.action-menu > .menu-item[hidden],
+.action-menu > .menu-heading[hidden],
+.sheet-list > .menu-item[hidden],
+.sheet-list > .menu-heading[hidden] {
+  display: none;
+}
+.doc-type-slot {
+  display: inline-flex;
+}
+.doc-type-button {
+  white-space: nowrap;
+}
+/* The picker's current row names itself with the trailing check. */
+.menu-item .doc-type-check {
+  margin-inline-start: auto;
+}
+/* New's split button gives up its plus glyph: with the caret and the template
+   button beside it the sidebar head (240px) squeezed "Recent" to "Rec...". */
+.doc-new-split #doc-new .ph-lead {
+  display: none;
+}
