@@ -106,3 +106,8 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] Notes fixes: audit-1031-notes N rows (agent nfix-1031, resumed)
 - [ ] Fable full audit suite: ai, harness, shell, board, docs, code, graph, backend, ux, perf, architecture, ranked (one Fable agent, wt-a-suite)
 - [ ] Composer fixes: audit-1031-composer C rows + INBOX 1495, 1496, 1497 (agent cfix-1031, resumed)
+- [ ] Companion at rest: AI1 + HR1 (about 130 animations idle, 540ms blocked per 5s at 4x; agent turn 1,003ms getAnimations + 165ms atlasRigRead), after a fix agent frees a slot
+- [ ] Fix the high and medium rows of audit-1031-ai.md and audit-1031-harness.md (Sonnet agent per surface)
+- [ ] Fix each later Fable surface's high and medium rows as it lands (shell, board, docs, code, graph, backend, ux, perf, architecture)
+- [ ] PR 211 CI green on the head after each batch
+- [ ] Morning summary in HANDOVER, retro
