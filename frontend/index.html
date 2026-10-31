@@ -2822,6 +2822,9 @@ Link to another note with [[its first few words]]."></textarea>
                      are the fact people actually reason about when deciding
                      whether to compress or fork; the token count says how
                      heavy it has become, and neither means much alone. -->
+                <!-- A private chat (INBOX 1481): a quiet mark while it is on. -->
+                <span id="chat-private-mark" class="chat-usage chat-private-mark" hidden
+                  title="Private chat: nothing here is saved or remembered"><i class="ph ph-ghost" aria-hidden="true"></i> Private</span>
                 <span id="chat-turns" class="chat-usage" hidden
                   title="How many exchanges are in this conversation"></span>
                 <!-- **How full the model's window is, for the thread rather
@@ -3332,6 +3335,9 @@ Link to another note with [[its first few words]]."></textarea>
                         data-needs-model="A persona is a prompt for a model, so it changes nothing until one is connected"></select>
                     </span>
                   </label>
+                  <!-- A chat that is not kept (INBOX 1481): chat-private.js. -->
+                  <button id="chat-private-toggle" class="ghost small" type="button" aria-pressed="false"
+                    title="A private chat is not saved, and nothing in it is remembered or learned. The answers still come from your notes."><i class="ph ph-ghost ph-lead" aria-hidden="true"></i> Private chat</button>
                   <!-- You could pick a persona but never see what it actually
                        told the model to do. -->
                   <button id="persona-peek" class="ghost small" type="button"

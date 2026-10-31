@@ -139,6 +139,7 @@ UTILITIES = {
     "launcher logs": ("settings-controls.js", 'apiJson("/system/open-logs-folder"', "Settings, About, Maintenance, Open the launcher logs", "maintenance"),
     "desktop shortcut": ("settings-controls.js", 'apiJson("/system/desktop-shortcut"', "Settings, About, Maintenance, Make a desktop shortcut", "maintenance"),
     "uninstall steps": ("settings-controls.js", "function openUninstallSteps()", "Settings, About, Maintenance, Uninstall", "maintenance"),
+    "private chat": ("chat-private.js", "function chatPrivateToggle()", "Chat, the gear under the message box, Private chat, the chat's ⋯ menu, the palette's Private chat", "chat-private"),
     "insert template": ("app-palette.js", "label: `ph:note-blank Insert template: ${template.name}`,", "the palette's insert template", "insert-template"),
 }
 

@@ -6393,3 +6393,18 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
+
+
+def test_a_private_chat_is_one_flag_with_three_doors_and_one_confirm() -> None:
+    """INBOX 1481: the recipe is in the index, there is one send path, one mark and one confirm."""
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "`chatConv.private`" in design and "`chatPrivateToggle`" in design and "`chatLeaveHeld`" in design
+    js = app_js_text()
+    #: One flag, read where a turn is written: no second send path for a private chat.
+    assert js.count("convRef.private") == 4 and "private: true" not in js
+    #: One mark, one confirm: the lazy file holds the only dialog, and the three doors share its function.
+    private = (ROOT / "frontend" / "js" / "chat-private.js").read_text(encoding="utf-8")
+    assert private.count("confirmDialog(") == 1
+    assert js.count("chatPrivateToggle()") >= 3
+    css = (ROOT / "frontend" / "css" / "chat-private-lazy.css").read_text(encoding="utf-8")
+    assert "var(--space-3)" in css and not re.search(r"#[0-9a-fA-F]{3,6}\b|\b\d+px\b", css)
