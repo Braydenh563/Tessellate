@@ -6820,6 +6820,7 @@ function nameMarkBuddyBeat() {
   nmb.fresh = false;
   if (!own && !(fresh && ["bar", "hang", "corner"].includes(nmb.perch)) && nameMarkBuddyStillGood(Number.isFinite(nmb.x) ? nameMarkBuddyNear(nmb.x, nmb.y, nmb.pose, nmb.legs, tab) : [])) {
     nmb.tab = tab;
+    if (fresh) nameMarkBuddyGlanceAtPage();
     return;
   }
   nmb.quiet = fresh;
@@ -7271,6 +7272,7 @@ function nameMarkBuddyQuietEnter(buddy, pose, fromLeft, reach) {
   nmb.lastEnter = how;
   buddy.dataset.route = `enter-${how}`;
   nmb.hopAnim = null;
+  setTimeout(nameMarkBuddyGlanceAtPage, NMB_QUIET_FADE_MS + 120);
   if (how === "fade") {
     nmb.anim = buddy.animate([{ opacity: 0 }, { opacity: 1 }], { duration: NMB_QUIET_FADE_MS, easing: "ease-out" });
     return how;
@@ -7836,12 +7838,58 @@ function nameMarkBuddyState(buddy = document.getElementById("nm-buddy")) {
   return state;
 }
 
-//: Into a new state: arriving from a move it settles into its place (a
-//: small give, added to whatever the pose is doing). Nothing without motion.
+//: **Between two states, a beat** (INBOX 1463, the owner: "I want every
+//: micro detail animated and accounted for"). Each change of state that has
+//: a body to it gets a small move of the body, added to whatever the pose
+//: is doing (`composite: "add"`, the compositor's, never a layout), from
+//: two ways each so it is not the same twice running (`nmb.settleLast`):
+//:   arriving (moving to resting or idling)  a give at the knees, or a sway to a stop
+//:   coming to (sleeping to anything)        a rise and a small shake of the head's weight
+//:   done reacting (reacting to resting)     a breath out, or a small nod
+//: Into sleep is the long ease it already has (`nameMarkBuddyEase`), and into
+//: an act is the act's own cue (`nameMarkBuddyLimbs(buddy, "cue")`). With
+//: less motion asked for (`nameMarkBuddyStill`), none: it only fades.
+const NMB_SETTLES = {
+  arrive: [
+    [[0, 0, 0], [0.35, 1.6, 0], [0.7, -0.4, 0], [1, 0, 0]],
+    [[0, 0, 0], [0.4, 0, 1.6], [0.75, 0, -0.6], [1, 0, 0]],
+  ],
+  wake: [
+    [[0, 0, 0], [0.4, -1.4, 0], [1, 0, 0]],
+    [[0, 0, 0], [0.3, -1, -1.2], [0.65, 0, 0.8], [1, 0, 0]],
+  ],
+  calm: [
+    [[0, 0, 0], [0.3, -1, 0], [0.7, 0.6, 0], [1, 0, 0]],
+    [[0, 0, 0], [0.35, 1.2, 0], [1, 0, 0]],
+  ],
+};
+const NMB_BEAT_MS = { arrive: 380, wake: 700, calm: 600 };
+function nameMarkBuddySettleKind(from, to) {
+  if (to === "sleeping" || to === "moving") return "";
+  if (from === "moving") return "arrive";
+  if (from === "sleeping") return "wake";
+  return from === "reacting" && to === "resting" ? "calm" : "";
+}
 function nameMarkBuddySettleIn(buddy, from, to) {
+  const kind = nameMarkBuddySettleKind(from, to);
   const char = buddy.querySelector(".nm-buddy-char");
-  if (from !== "moving" || to === "sleeping" || !char || typeof char.animate !== "function" || nameMarkBuddyStill()) return;
-  char.animate([{ translate: "0 0" }, { translate: "0 1.5px", offset: 0.4 }, { translate: "0 0" }], { duration: 320, easing: "ease-out", composite: "add" });
+  if (!kind || !char || typeof char.animate !== "function" || nameMarkBuddyStill()) return;
+  const ways = NMB_SETTLES[kind];
+  const pick = nameMarkBuddyPickVariant(ways.length, nmb.settleLast?.[kind] ?? -1);
+  nmb.settleLast = { ...nmb.settleLast, [kind]: pick };
+  const side = buddy.dataset.turn === "l" ? -1 : 1;
+  const frames = ways[pick].map(([offset, y, r]) => ({ offset, translate: `0 ${y}px`, rotate: `${r * side}deg` }));
+  char.animate(frames, { duration: NMB_BEAT_MS[kind], easing: "ease-in-out", composite: "add" });
+}
+
+//: **It looks at a new page rather than crossing it** (INBOX 1463): come
+//: in quietly, or staying put while the view under it changes, its eyes and
+//: head turn to the middle of the page for a moment and come back.
+function nameMarkBuddyGlanceAtPage() {
+  if (nameMarkBuddyStill() || document.getElementById("nm-buddy")?.classList.contains("nmb-sleep")) return;
+  nameMarkBuddyAim([innerWidth / 2, innerHeight * 0.45]);
+  clearTimeout(nmb.releaseTimer);
+  nmb.releaseTimer = setTimeout(nameMarkBuddyRelease, 1300);
 }
 
 //: The weighted pick: every behaviour that suits where it is and is off

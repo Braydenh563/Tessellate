@@ -69,7 +69,7 @@ MORE_TOPICS: list[dict] = [
             "companion moves too much", "companion distracting", "companion travels",
             "companion sneezes", "companion grooms", "companion sighs",
             "companion tumbles across the screen", "companion falls from the top",
-            "showy entrances", "companion entrance",
+            "showy entrances", "companion entrance", "companion settles",
             "companion in the way", "companion covers my text", "companion covers the button",
         ),
         "body": (
@@ -83,7 +83,10 @@ MORE_TOPICS: list[dict] = [
             "off one side of the window and comes in at the other. Never the "
             "same way twice in a row. On a new page it fades in where it rests "
             "or takes a few steps in its corner, and a new view in the same tab "
-            "crossfades it to its new spot; to have it glide, walk on, tumble "
+            "crossfades it to its new spot, and it glances at the new page rather "
+            "than crossing it. Arriving it gives a little at the knees, waking it "
+            "rises, and after a reaction it breathes out, never the same way twice "
+            "running. To have it glide, walk on, tumble "
             "or drop in instead, turn on Showy entrances in Settings, "
             "Appearance, Atlas and faces. The rest of the time it sits, looks around, "
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
