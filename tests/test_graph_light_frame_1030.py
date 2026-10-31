@@ -77,7 +77,8 @@ console.log(JSON.stringify(out));
 def test_a_big_map_is_drawn_plain_only_while_its_layout_runs_and_nothing_needs_the_full_frame() -> None:
     items = re.search(r"\nconst GC_LIGHT_ITEMS = (\d+);", CANVAS).group(1)
     out = _node(LIGHT % (items, _function(CANVAS, "gcLightFrame")))
-    assert out.pop("running") is True
+    running = out.pop("running")
+    assert running is True
     assert not any(out.values()), out
 
 
