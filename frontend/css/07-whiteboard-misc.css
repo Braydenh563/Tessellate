@@ -7350,6 +7350,13 @@ button.connection-row:is(:hover, :focus-visible) {
 .wb-topbar #wb-map-chip {
   flex: none;
 }
+@media (max-width: 599.98px) {
+  /* The picker's closed face is the map's name alone here (data-face-narrow),
+     so it takes the chip's room: at 390 the name read "Min...". */
+  #wb-map-chip {
+    display: none;
+  }
+}
 @media (max-width: 76rem) {
   /* Visually hidden, not display:none: the word stays the button's accessible
      name (dog3 item 21: it was the tooltip's description, 'Undo, select,

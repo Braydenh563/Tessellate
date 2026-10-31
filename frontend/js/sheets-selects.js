@@ -701,6 +701,21 @@ function labelledMenu(label, items, ariaLabel, openerClass = "ghost small") {
 // rather than trusting a one-time build.
 const SELECT_ENHANCED = "data-enhanced-select";
 
+//: **A row may draw a shorter face on a phone** (`data-face-narrow`, blind test
+//: 1031: the boards picker read "Min..." at 390 because every row opens with
+//: its kind and ends with its count). The menu still lists the whole row; only
+//: the closed button changes, and it follows the window across the breakpoint.
+const NARROW_FACE = window.matchMedia("(max-width: 599.98px)");
+const narrowFaceWatched = new WeakSet();
+function selectFaceText(option, resync) {
+  const short = option.dataset.faceNarrow;
+  if (short && !narrowFaceWatched.has(resync)) {
+    narrowFaceWatched.add(resync);
+    NARROW_FACE.addEventListener("change", resync);
+  }
+  return short && NARROW_FACE.matches ? short : option.textContent.trim();
+}
+
 function enhanceSelect(select) {
   if (!select || select.hasAttribute(SELECT_ENHANCED)) return;
   // A multi-select is a different control with different semantics, and
@@ -788,7 +803,11 @@ function enhanceSelect(select) {
 
   const syncValue = () => {
     const chosen = select.options[select.selectedIndex];
-    valueText.textContent = chosen ? chosen.textContent.trim() : "";
+    valueText.textContent = chosen ? selectFaceText(chosen, syncValue) : "";
+    //: A face cut down for a phone keeps the whole row in the tooltip.
+    opener.title = chosen?.dataset.faceNarrow && NARROW_FACE.matches
+      ? chosen.textContent.trim()
+      : select.title || label;
     //: **The name contains what is written on the button** (WCAG 2.5.3, Label
     //: in Name; axe `label-content-name-mismatch`, 22 findings in 2026-10-10's
     //: sweep, every sort and model picker). "Sort notes" was the whole name

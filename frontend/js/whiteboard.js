@@ -2921,6 +2921,20 @@ function wbZoomToSelection() {
 //: whole tree, which is what every map tool does on open.
 const WB_MAP_OPEN_MIN_SCALE = 0.45;
 
+//: **On a phone the floor is the text, not the tree** (blind test 1031, 390px:
+//: a 7-topic template framed at 0.24, so a 17px topic read at 4px, a pill was
+//: 44x11 and the 24px add handle covered it). A topic's own text is 17px, so
+//: 0.72 reads at 12px, and a map that does not fit at that opens centred on
+//: its root at that same scale, the rest a pan away. The canvas width is the
+//: test rather than the pointer: a narrow desktop window has the same problem.
+const WB_MAP_PHONE_MAX_WIDTH = 600;
+const WB_MAP_PHONE_SCALE = 0.72;
+
+function wbMapFrameScales(container) {
+  const phone = container.clientWidth <= WB_MAP_PHONE_MAX_WIDTH;
+  return phone ? { min: WB_MAP_PHONE_SCALE, open: WB_MAP_PHONE_SCALE } : { min: WB_MAP_OPEN_MIN_SCALE, open: 1 };
+}
+
 //: **Frame a map when it opens**, rather than leaving the canvas wherever the
 //: last board left it.
 //:
@@ -2941,7 +2955,8 @@ function wbFrameMapOnOpen() {
   const container = document.getElementById("whiteboard-container");
   if (!container) return;
   wbZoomToFit({ animate: false });
-  if (d3.zoomTransform(container).k >= WB_MAP_OPEN_MIN_SCALE) return;
+  const scales = wbMapFrameScales(container);
+  if (d3.zoomTransform(container).k >= scales.min) return;
   const root = wbMapIndex().roots[0];
   const bounds = wbContentBounds();
   if (!root || !bounds) return;
@@ -2950,7 +2965,7 @@ function wbFrameMapOnOpen() {
   //: wide window, so the same map opened at 0.4 there and at 1:1 on a narrow
   //: one).
   wbFit.on = false;
-  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), 1);
+  const target = wbMapOpenTarget(bounds, wbItemBBox("object", root), wbFreeArea(container), scales.open);
   d3.select(container).call(wbZoom.transform, d3.zoomIdentity.translate(target.x, target.y).scale(target.k));
 }
 
@@ -18891,6 +18906,7 @@ async function refreshBoardList(justCreated = null) {
     const kind = board.type === "map" ? "Mind map" : "Board";
     opt.dataset.title = board.title;
     opt.dataset.kind = kind;
+    opt.dataset.faceNarrow = board.title;
     opt.textContent = board.id === null
       ? `${kind} · ${board.title}`
       : `${kind} · ${board.title} (${wbBoardCountWords(board.type === "map",

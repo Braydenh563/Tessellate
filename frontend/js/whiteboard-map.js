@@ -6367,7 +6367,7 @@ async function wbMapTidy({ onlyBranch = null, quiet = false } = {}) {
   //: half of pressing Tab and must never move the view while someone is
   //: typing, and a tidy whose result already fits is a view nobody asked to
   //: have changed.
-  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbZoomToFit({ animate: false });
+  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbFrameMapOnOpen();
   await wbSaveBulkMove(origin);
   return origin.size;
 }
