@@ -98,3 +98,5 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Base red and 1490 regression: no_open_items, route_688 clock, mermaid flowchart, knitting, Departure year, SearXNG how-to (composer6-1031 resumed)
 - [ ] Fix audit-1031-extras Z1 to Z20, Z20 first (agent xfix-1031)
 - [x] Base red round 2: docs_site CONTRIBUTING mirror, emblem_turns, get_started_1301, hover_focus_pairs wb-map-edge, icon_only status-tray, lazy_css capture-card and math-field, wb_format alpha presets, wb_line_ends (agent basered2-1031)
+- [ ] INBOX 1491 meeting popup minimise, 1492 lag log (unlock, models/status, tab-label, openDocument), 1493 stamp vote toggle (agent owner3-1031)
+- [ ] PR 211 Tests and CodeQL alerts (agent ci-1031)
