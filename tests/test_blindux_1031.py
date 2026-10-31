@@ -7,6 +7,7 @@ import json
 import pytest
 
 from tessellate.ai import composer_digest
+from tests._objmove_node import JS, needs_node, run
 from tessellate.entry import manager
 
 
@@ -64,3 +65,22 @@ def test_i3_every_way_to_a_note_opens_it_out_and_focuses_it():
     body = _function_body(app_js_text(), "flashEntry")
     assert "expandedRows.add(id)" in body
     assert "card.focus(" in body
+
+
+@needs_node
+def test_i4_the_move_rows_have_icons_and_lead_the_menu_in_custom_order():
+    out = run(["obj-ref.js", "obj-clip.js", "obj-drag.js", "obj-order.js", "obj-reorder.js"], """
+    globalThis.$ = () => null;
+    const moves = OBJ_MENU_ROWS.filter((r) => r.moves).map((r) => [r.label, r.icon]);
+    __out({ moves, hint: OBJ_ORDER_HINT });
+    """)
+    assert out["moves"] == [["Move up", "arrow-up"], ["Move down", "arrow-down"]]
+    assert "Drag" in out["hint"] and "Alt+Up" in out["hint"] and "Alt+Down" in out["hint"]
+    assert "\u2014" not in out["hint"] and "!" not in out["hint"]
+
+
+def test_i4_the_folded_more_button_is_named_sort_and_view():
+    text = (JS / "phone-shell.js").read_text(encoding="utf-8")
+    body = _function_body(text, "nameFoldedButton")
+    assert '"Sort and view"' in body and "aria-label" in body
+    assert "nameFoldedButton(menu" in _function_body(text, "foldZoneIntoMenu")

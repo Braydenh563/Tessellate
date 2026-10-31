@@ -124,18 +124,30 @@ function objKebabRows(menu) {
   const rule = document.createElement("div");
   rule.className = "menu-sep";
   rule.setAttribute("role", "separator");
-  const rows = OBJ_MENU_ROWS.filter((row) => !row.show || row.show(hit.card)).map((row) => objMenuRow(row, hit.card));
+  const shown = OBJ_MENU_ROWS.filter((row) => !row.show || row.show(hit.card));
+  //: A list in Custom order is being arranged: its Move rows lead the menu
+  //: (blind test 2026-10-31: they were last of fourteen, with no icon).
+  const arranging = objArranging(hit.card);
+  const moves = arranging ? shown.filter((row) => row.moves) : [];
+  const rows = shown.filter((row) => !moves.includes(row)).map((row) => objMenuRow(row, hit.card));
+  if (moves.length) menu.prepend(...moves.map((row) => objMenuRow(row, hit.card)), rule.cloneNode());
   //: Above a menu's own delete, not after it.
   const danger = menu.querySelector(":scope > .menu-danger");
   if (danger) danger.before(rule, ...rows);
   else menu.append(rule, ...rows);
 }
 
+//: Whether the card's list is in Custom order (a list's sort select says so).
+function objArranging(card) {
+  const hit = objSurfaceAt(card);
+  return Boolean(hit && $(hit.def.select)?.value === "custom");
+}
+
 function objMenuRow(row, card) {
   const button = document.createElement("button");
   button.className = "menu-item";
   button.setAttribute("role", "menuitem");
-  setLabel(button, row.label);
+  setLabel(button, row.icon ? `ph:${row.icon} ${row.label}` : row.label);
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     closeActionMenus();
@@ -150,6 +162,6 @@ function objMenuRow(row, card) {
 //: a phone has no drag and no Alt key.
 const OBJ_MENU_ROWS = [
   { label: "Copy card", run: (ref) => objClipPut(ref) },
-  { label: "Move up", show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), -1, false) },
-  { label: "Move down", show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), 1, false) },
+  { label: "Move up", icon: "arrow-up", moves: true, show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), -1, false) },
+  { label: "Move down", icon: "arrow-down", moves: true, show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), 1, false) },
 ];

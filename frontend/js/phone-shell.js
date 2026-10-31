@@ -1880,6 +1880,7 @@ function dockArrangeLabel(menu) {
 function foldZoneIntoMenu(dock, menu, fold) {
   const inRow = dock.querySelector(":scope > .dock-arrange");
   const inMenu = menu.querySelector(":scope > .dock-arrange");
+  nameFoldedButton(menu, fold && Boolean(inRow || inMenu));
   if (fold && inRow) {
     inRow.replaceWith(dockArrangeSlot(dock));
     inRow.classList.add("dock-arrange-folded");
@@ -1891,6 +1892,18 @@ function foldZoneIntoMenu(dock, menu, fold) {
     else dock.querySelector(":scope > .dock-find")?.after(inMenu);
     menu.querySelector(":scope > .dock-arrange-label")?.remove();
   }
+}
+
+//: The `...` that holds the sort says so: "Sort and view" in its tooltip and
+//: name while the zone is inside, "More" again when it is back (blind test
+//: 2026-10-31: a button with no label that held the only way to reorder).
+function nameFoldedButton(menu, folded) {
+  const button = menu.closest(".dock-menu")?.querySelector(":scope > summary");
+  if (!button) return;
+  button.dataset.moreName ||= button.getAttribute("title") || "More";
+  const name = folded ? "Sort and view" : button.dataset.moreName;
+  button.setAttribute("title", name);
+  button.setAttribute("aria-label", name);
 }
 
 // The arrange zone's other children, in and out of a menu that is one of them.

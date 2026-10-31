@@ -221,6 +221,36 @@ function objReorderKick() {
   }
 }
 
+//: **One line says how a list in Custom order is arranged** (blind test
+//: 2026-10-31: "nothing says how to reorder"). It sits over the list while its
+//: sort is Custom order and goes when another sort is chosen.
+const OBJ_ORDER_HINT = "Custom order is on. Drag a card, or press Alt+Up or Alt+Down on it, to move it. Choose another sort to go back.";
+
+function objOrderHintSync(def) {
+  const list = document.querySelector(def.list);
+  const on = $(def.select)?.value === "custom";
+  let hint = document.getElementById(`obj-order-hint-${def.scope}`);
+  if (on && list && !hint) {
+    hint = document.createElement("p");
+    hint.id = `obj-order-hint-${def.scope}`;
+    hint.className = "muted obj-order-hint";
+    hint.textContent = OBJ_ORDER_HINT;
+    list.before(hint);
+  } else if (!on) {
+    hint?.remove();
+  }
+}
+
+function objOrderHints() {
+  for (const def of OBJ_SURFACES) {
+    const select = $(def.select);
+    if (!select) continue;
+    select.addEventListener("change", () => objOrderHintSync(def));
+    objOrderHintSync(def);
+  }
+}
+
 //: Capture, ahead of the lists' own arrow-key walking, which would move the focus instead.
 window.addEventListener("keydown", objReorderKey, true);
+objOrderHints();
 objReorderKick();
