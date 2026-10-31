@@ -1,7 +1,7 @@
 # social-1031 remaining
 
 Done:
-- INBOX 1485: pings, filler, identity, repair lines and the hello's last-note link (tests/test_social_1485.py, through `/chat/stream`, Chat and Agent mode, Web on, model off and on).
+- 966563c: INBOX 1485, pings, filler, identity, repair lines and the hello's last-note link (tests/test_social_1485.py, through `/chat/stream`, Chat and Agent mode, Web on, model off and on).
 
 Next:
 - Not driven in a browser: the hello's `[title](#/notes/N)` link and the ping's "Show my notes about test" chip are checked as stream events only.
