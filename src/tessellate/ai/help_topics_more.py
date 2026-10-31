@@ -266,18 +266,41 @@ MORE_TOPICS: list[dict] = [
         "badge": {"label": "What it learned", "section": "learned"},
     },
     {
+        "id": "make-a-diagram",
+        "keywords": (
+            "make a diagram", "draw a diagram", "diagram of", "a diagram", "create a diagram",
+            "diagram without a model", "flowchart", "draw a flowchart", "chart of my plan",
+            "plan as a diagram", "map out", "visualise my notes", "visualize my notes",
+        ),
+        "body": (
+            "With no model, two places make a diagram. Library tab, Create, New mind map "
+            "opens a map you type into (Tab adds a child, Enter a sibling), and its "
+            "templates, Trip plan among them, start you with branches in place. "
+            "Insert, Mermaid diagram on a board takes a few lines of text and draws a "
+            "flowchart, sequence, state, Gantt or pie chart live. A note's menu, "
+            "Make a mind map, builds a map from that note's headings and lists. "
+            "The Writing room's diagram needs a model for anything beyond a rule-made "
+            "flowchart, timeline or mind map."
+        ),
+        "badge": {"label": "Mind maps", "tab": "library"},
+    },
+    {
         "id": "open-questions",
         "keywords": (
             "open questions", "questions view", "unanswered", "undecided", "still undecided",
             "answered by", "mark answered", "drop a question", "ask about these",
             "find questions", "generate questions", "read notes now",
             "questions without a model", "i wonder", "need to find out",
+            "questions my notes leave open", "leave open", "left open", "unanswered questions",
+            "questions in my notes", "questions i have not answered", "questions i haven't answered",
+            "still unanswered", "left unanswered", "unanswered in my notes",
         ),
         "body": (
             "Notes, Questions lists the questions your notes ask in passing, "
             "your own ones only (not a quote, a prompt list, a script's line or "
             "a joke answered on the next line), "
-            "found when Atlas reads your notes (Read notes now, or on its own "
+            "found when Atlas reads your notes (Read notes now, which says how many it "
+            "read and found, or on its own "
             "with background tasks on), grouped by note, newest note first: "
             "Open, Answered or Dropped, picked in the bar with a count on each. A "
             "note that asks any says so on its card (2 open questions); pressing "
@@ -1992,7 +2015,8 @@ MORE_TOPICS.extend(
                 "put in order", "alt arrow", "drag a note", "drag a document", "drag a board",
                 "drag an image", "sort my own way", "copy a note", "paste a note", "copy a card",
                 "paste into chat", "paste on a board", "tray", "drag a card to chat", "drag a note onto a board",
-                "carry a card", "hold a card",
+                "carry a card", "hold a card", "own order", "my own order", "own way", "my own way",
+                "order my notes", "arrange my notes", "arrange notes", "put my notes in order", "rearrange",
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
@@ -2000,7 +2024,10 @@ MORE_TOPICS.extend(
                 "still for a moment, then move; a dashed gap shows where it will land, "
                 "and moving at once selects its text instead. The sort then reads "
                 "Custom order. Drop it where it started, or press Escape, and nothing "
-                "changes. The toast has Undo. From the keyboard, focus a card and press "
+                "changes. The toast has Undo. While a list is in Custom order a line above "
+                "it says how to move a card, and a card's menu leads with Move up and Move "
+                "down. The sort is in the Sort and view button when the row is narrow. "
+                "From the keyboard, focus a card and press "
                 "Alt+Up or Alt+Down to move it one place, or choose Move up or Move "
                 "down in its menu (on a phone too). To copy a card, focus it and "
                 "press Ctrl+C (Cmd+C on a Mac), or choose Copy card in its menu: a toast "
@@ -2329,6 +2356,7 @@ MORE_TOPICS.extend(
 #: order. An entry with no meta is laid out from its id and body alone.
 TOPIC_META: dict[str, dict] = {
     "open-questions": {"title": "Open questions", "path": "Notes tab, Questions"},
+    "make-a-diagram": {"title": "Making a diagram", "path": "Library tab, Create"},
     "capture": {"title": "Capturing a note", "path": "Notes tab", "steps": (
         "Open the Notes tab (t then n).", "Type into Capture a thought.", "Press Save: a local AI files it and suggests tags.")},
     "ask-chat": {"title": "Asking and chatting", "path": "Chat tab, or Ctrl+Shift+A over any tab"},
@@ -2547,7 +2575,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "debugger", "code-panel", "margin-reader",
     )),
     ("Boards and maps", (
-        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
+        "whiteboard", "whiteboard-controls", "whiteboard-selection", "board-history", "board-library", "board-library-saving", "board-templates", "board-format", "board-connectors", "board-diagram-tools", "board-workshop", "board-paste", "make-a-diagram", "mind-maps", "mind-map-controls", "mind-map-features", "mind-map-import-export", "mind-map-study", "mind-map-look", "emoji-and-icons",
         "board-comments", "sticky-notes",
         "mind-map-structure", "mind-map-lines", "mind-map-callouts", "board-current-layer", "board-keyboard-create", "board-hand-drawn", "board-tables", "board-mermaid", "board-edit-data", "board-colours",
     )),

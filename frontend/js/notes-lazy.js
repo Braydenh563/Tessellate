@@ -52,8 +52,17 @@ function toggleRowExpanded(id) {
   updateExpandAllButton();
 }
 
+//: Only with a model running (`modelStatus` is the status poll's, status.js).
+function reviewNudgeWanted() {
+  return typeof modelStatus !== "undefined" && modelStatus?.ollama_running === true;
+}
+
 //: The bell says so once a week, past a handful, as it does for untagged.
 async function nudgeReviewQueue() {
+  //: "Atlas was unsure" is about a model's choices: with none running, the
+  //: queue is only notes nobody has filed yet, and the line would be untrue
+  //: (blind test 2026-10-31).
+  if (!reviewNudgeWanted()) return;
   const queue = await apiJson("/review-queue?limit=1", { silent: true, cacheMs: 60000 }).catch(() => null);
   if (!queue || queue.count < UNTAGGED_NUDGE_MIN) return;
   const now = new Date();

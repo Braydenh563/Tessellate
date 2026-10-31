@@ -1788,6 +1788,8 @@ async function loadMostUsed() {
     const count = document.createElement("span");
     count.className = "count";
     count.textContent = `×${entry.access_count}`;
+    //: What the number counts (blind test 2026-10-31: "x4, of what?").
+    count.title = `Opened or asked about ${entry.access_count} ${entry.access_count === 1 ? "time" : "times"}`;
     li.append(text, count);
     li.addEventListener("click", () => flashEntry(entry.id));
     list.appendChild(li);

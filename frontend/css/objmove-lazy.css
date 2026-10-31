@@ -112,3 +112,9 @@ html.obj-dragging .obj-target {
   margin: 0;
   font-size: var(--text-sm);
 }
+
+/* The one line over a list in Custom order: how to arrange it. */
+.obj-order-hint {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+}

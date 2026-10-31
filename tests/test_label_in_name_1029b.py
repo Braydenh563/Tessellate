@@ -54,7 +54,7 @@ def test_the_reminders_badge_and_the_more_badge_are_read_apart_from_the_word() -
 
 def test_the_tidy_button_names_the_count_it_draws() -> None:
     text = _body(_read("tidy.js"), "const count = $(\"notes-tidy-count\");")
-    assert "`Tidy, ${count.textContent} to look at`" in text, "99+ is drawn, so 99+ is said"
+    assert "`Tidy, ${count.textContent} ${body.total === 1 ? \"thing\" : \"things\"} to look at`" in text, "99+ is drawn, so 99+ is said"
     assert "${body.total} to look at" not in text.split("button.title", 1)[0]
 
 
