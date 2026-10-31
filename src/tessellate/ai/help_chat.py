@@ -119,6 +119,8 @@ HELP_TOPICS: list[dict] = [
         "body": (
             "Notes tab: type into \"Capture a thought\" and Save. A local AI files "
             "it into a category and suggests tags; you can re-file or edit anytime. "
+            "Save as draft keeps it unfiled under Drafts instead, and after either, "
+            "Write another takes you back to the box. "
             "Use a template, dictate with the microphone icon, sketch with the "
             "palette icon, or run \"Improve\" to proofread first, which needs no model (rewording does). "
             "A note's ... menu has Generate title, which with no model takes the title from the "

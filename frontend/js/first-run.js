@@ -18,7 +18,22 @@ function writeNoteHint() {
   return `A half sentence is fine; add a #tag if you like.${keys ? ` ${keys} saves one from any tab.` : ""}`;
 }
 
-async function firstStepsState() {
+//: One in-flight read shared by the card, the Get started menu and the bell
+//: row: they asked at once at boot and each fetched the three lists (the
+//: second /help/sample-notebook, blind test 2026-10-31). It is dropped as
+//: soon as it settles, so a later press reads fresh.
+let firstStepsPending = null;
+
+function firstStepsState() {
+  if (!firstStepsPending) {
+    firstStepsPending = firstStepsRead().finally(() => {
+      firstStepsPending = null;
+    });
+  }
+  return firstStepsPending;
+}
+
+async function firstStepsRead() {
   const named = Boolean(((typeof prefsCache === "object" && prefsCache?.display_name) || "").trim());
   //: An answer from Ask is kept in the Ask history, a chat in the chat list:
   //: either one is the third step done.
@@ -337,7 +352,10 @@ async function firstStepsBellRow() {
   body.className = "notif-body";
   const title = document.createElement("strong");
   title.className = "notif-title";
-  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done`;
+  //: Names what is left: "2 of 3 done" with no name set read as wrong to
+  //: a blind tester (2026-10-31) when it was true (a note and an answer).
+  const todo = steps.filter((step) => !step.done).map((step) => step.label.toLowerCase());
+  title.textContent = `Get started, ${steps.length - left} of ${steps.length} done. Left: ${todo.join(", ")}`;
   const list = document.createElement("ul");
   list.className = "notif-start-steps";
   for (const step of steps) {

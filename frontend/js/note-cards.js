@@ -1870,22 +1870,25 @@ function entryItem(entry, options = {}) {
     //: Each suggestion says what in the note backs it (WORLD_CLASS 23,
     //: decision 5): "It mentions “exam”."
     const reason = entry.suggested_tag_reasons?.[tag];
-    take.title = reason ? `Suggested: add #${tag}. ${reason}` : `Suggested: add #${tag}`;
+    take.title = reason ? `Add tag ${tag}. ${reason}` : `Add tag ${tag}`;
     take.addEventListener("click", (event) => {
       event.stopPropagation();
       answerTags(entry, { take: [tag] });
     });
     makeUnlinkAccessible(take);
+    //: A short name: the reason belongs to the hover, not to a screen reader's every pass.
+    take.setAttribute("aria-label", `Add tag ${tag}`);
     group.appendChild(take);
     const discard = document.createElement("span");
     discard.className = "unlink";
     setLabel(discard, "ph:x");
-    discard.title = `Not #${tag}: stop suggesting it for this note`;
+    discard.title = `Dismiss: stop suggesting #${tag} for this note`;
     discard.addEventListener("click", (event) => {
       event.stopPropagation();
       answerTags(entry, { discard: [tag] });
     });
     makeUnlinkAccessible(discard);
+    discard.setAttribute("aria-label", `Dismiss tag ${tag}`);
     group.appendChild(discard);
     meta.appendChild(group);
   }
@@ -2060,7 +2063,7 @@ function entryItem(entry, options = {}) {
     const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
     const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
     const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
-    mark.title = `${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
+    mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
     meta.appendChild(mark);
   }
 

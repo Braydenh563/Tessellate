@@ -18,6 +18,10 @@ function offerJumpToNewNote(saved, status) {
   jump.title = "Open this note in your list";
   jump.addEventListener("click", () => flashEntry(saved.id));
   status.append(" ", jump);
+  //: The way back to writing, on Capture itself: the Notes dock (and its
+  //: New note) is hidden while Capture shows, so the line offers the box
+  //: (blind test 2026-10-31, item 9). The same small button as "Go to it".
+  status.append(" ", smallButton("ph:pencil-simple Write another", "Back to the box for the next note", focusCaptureBox));
   //: A notebook's first note: the first steps' third, asking, offered here (25c).
   if (allEntries.length === 1) status.append(" ", smallButton("ph:chat-circle Ask about it", "Ask your notebook; the answer comes from your notes", openAskFromDashboard));
 }
