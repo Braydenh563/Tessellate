@@ -37,7 +37,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_social, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -1678,6 +1678,10 @@ def _computed_answer(session: Session, question: str, detected: str, as_of, atta
     #: rows; the model still writes the sentence when it runs (the answer is
     #: handed to it as ground truth), and with the model stopped the computed
     #: sentence is a complete answer on its own.
+    #: "is this working" listed the week's notes (INBOX 1485): a social turn
+    #: is never read as a question about what was done.
+    if detected == intent.SMALLTALK and _social_line(question):
+        return detected, None
     stats = _activity(session, question) if as_of is None and not attached else None
     if stats is not None:
         return intent.NOTES, stats
@@ -3102,7 +3106,7 @@ def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:
     try:
         return chat_extra.welcome_line(
             req.session, user_now(deps.get_config()).replace(tzinfo=None), question=req.question,
-            voice=_chat_voice(req), seed=seed, said=recent,
+            voice=_chat_voice(req), seed=seed, said=recent, link=True,
         )
     except Exception:  # noqa: BLE001  # the stored greetings answer
         logging.getLogger("tessellate.chat").exception("chat: the composed welcome failed")
@@ -3117,7 +3121,7 @@ def _hello_reply(req: _StreamRequest, seed: str, recent: list[str]) -> str:
         return ""
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen else ""
     #: The welcome already names the last note: no second sentence about it.
-    invite = "" if "“" in welcome else _newest_word(req.session)
+    invite = "" if "“" in welcome or "](#/notes/" in welcome else _newest_word(req.session)
     asks = composer.invitation(req.question, invite, _composer_voice(), seed) if invite else composer.greeting_ask(req.question, _composer_voice(), seed)
     return "\n\n".join(p for p in (" ".join(p for p in (welcome, asks) if p), sees) if p)
 
@@ -3130,8 +3134,11 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     #: A next step names only a subject whose notes were found: the turn
     #: before named notes (its `objects`), never "nothing matched" (INBOX 1459).
     asked = str(last.get("question") or "") if last.get("objects") else ""
-    if composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
+    kind = composer.social_kind(req.question, prepared["intent"])
+    if kind in ("greeting", "morning") and (hello := _hello_reply(req, seed, recent)):
         return hello
+    if kind == "repair":
+        return _repair_reply(req, last, seed)
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3144,9 +3151,30 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
     )
     #: Only a hello says what the app can see (composer awareness): after
     #: "lol" or a groan it was a line with nothing to say (INBOX 1459).
-    hello = composer.social_kind(req.question, prepared["intent"]) in ("greeting", "morning", "how")
+    if kind == "test" and (subject := composer_social.ping_subject(req.question)):
+        said = composer_social.ping(said, chat_extra.mentioning(req.session, subject), subject, _composer_voice(), seed)
+    hello = kind in ("greeting", "morning", "how")
     sees = composer_aware.opening(_awareness(req), seed) if req.body.screen and hello else ""
     return f"{said}\n\n{sees}" if sees else said
+
+
+def _repair_reply(req: _StreamRequest, last: dict, seed: str) -> str:
+    """"Not what I asked" (INBOX 1485): the miss owned, what the message
+    before was read as, and its better reading: Atlas on itself when it
+    asked what Atlas is. Never a search for the repair's own words."""
+    asked = str(last.get("question") or "")
+    better = personal.about_me(asked) or ""
+    if not better and question_noise.social_kind(asked) == "who":
+        better = composer.social(asked, intent.SMALLTALK, voice=_chat_voice(req), seed=seed)
+    return composer_social.repair(asked, last, better, _composer_voice(), seed)
+
+
+def _ping_offer(req: _StreamRequest, prepared: dict) -> list[dict]:
+    """A ping that says "test" offers its notes as a chip (INBOX 1485)."""
+    subject = composer_social.ping_subject(req.question) if composer.social_kind(req.question, prepared["intent"]) == "test" else ""
+    if not subject or not chat_extra.mentioning(req.session, subject):
+        return []
+    return [{"type": "offer", "offer": {"kind": "ask", "label": "", "asks": composer_social.ping_asks(subject)}}]
 
 
 def _newest_word(session: Session) -> str:
@@ -3544,7 +3572,7 @@ def _small_talk_events(req: _StreamRequest, prepared: dict, ollama_running: bool
         #: The app answers small talk itself when the answer is composed (the
         #: Ask box's From your notes, or no model): "what can you do" or
         #: "hello" there used to get no answer at all (engine probe P2).
-        return [{"type": "answer", "delta": _social_reply(req, prepared)}]
+        return [{"type": "answer", "delta": _social_reply(req, prepared)}, *_ping_offer(req, prepared)]
     #: A question about what Atlas can do is not small talk: with a model
     #: up it goes to the model with the app's own line (decision 75).
     if req.body.notes_only and not _asks_capability(req, prepared):
@@ -3564,7 +3592,7 @@ def _small_talk_events(req: _StreamRequest, prepared: dict, ollama_running: bool
         #: The app's own voice, warm and varied (INBOX 741): with no model
         #: running Chat still answers from the notes, so small talk says
         #: so rather than "the AI model isn't running".
-        return [{"type": "answer", "delta": _social_reply(req, prepared)}]
+        return [{"type": "answer", "delta": _social_reply(req, prepared)}, *_ping_offer(req, prepared)]
     return None
 
 
@@ -5288,7 +5316,8 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     characters (those passes cost words x length: 38 s for a 20,000-character
     paste); the model is given all of it (`_in_full`)."""
     head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
-    question, address = _address(skill["question"] if skill else question_noise.tidy(head) or head, session, skill)
+    #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
+    question, address = _address(skill["question"] if skill else question_noise.drop_filler(question_noise.tidy(head)) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 
@@ -5299,10 +5328,17 @@ def _names_a_note_word(session: Session, question: str, detected: str) -> bool:
     """"What is Atlas" and a bare "atlas" are a lookup when a note holds the
     word, not a question about the assistant that shares the name (audit 1030
     Z50): the notebook comes first."""
-    if detected not in (intent.ABOUT_APP, intent.SMALLTALK):
+    if detected not in (intent.ABOUT_APP, intent.SMALLTALK) or _social_line(question):
         return False
     found = _BARE_NAME.match(" ".join((question or "").split()))
     return bool(found and _in_notes(session)(found.group("name").lower()))
+
+
+def _social_line(question: str) -> bool:
+    """A ping, keys pressed at random or a social turn ("test", "hi test
+    test", "r u an ai??", "not what I asked"): never a lookup, a count or
+    a search, even when a note holds its words (INBOX 1485)."""
+    return intent.is_test(question) or intent.is_mash(question) or bool(question_noise.social_kind(question))
 
 
 def _notes_first(session: Session, question: str, detected: str) -> str:

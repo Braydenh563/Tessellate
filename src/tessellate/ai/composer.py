@@ -4199,7 +4199,9 @@ def social(
     same seed and turns give the same words. `invite` is a word of the
     newest note: a hello, a test or an unclear turn ends on an ask about it
     (`INVITES`) when its opener offered none."""
-    kind = social_kind(message, intent)
+    #: A repair is worded by the route, which has the turn before
+    #: (`composer_social.repair`); anywhere else it is confusion.
+    kind = social_kind(message, intent).replace("repair", "confused")
     line = _social_line(message, kind, previous, last_question, voice, recent, seed)
     if invite and kind in _INVITE_KINDS and "“" not in line and not line.endswith("?"):
         line = f"{line} {invitation(message, invite, voice, seed)}"

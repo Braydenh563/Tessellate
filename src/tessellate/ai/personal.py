@@ -348,7 +348,8 @@ _SELF: tuple[tuple[re.Pattern, str], ...] = (
      "I'm Atlas, the part of Tessellate that answers from your notes. Tessellate runs on this computer, and no one else sees what you ask."),
     (re.compile(r"\bhow old are you\b|\bwhen were you (?:made|born)\b"),
      "Old enough to read your notes, young enough to have no birthday. I'm Atlas, and I live on this computer."),
-    (re.compile(r"\bare you (?:a )?(?:real|human|person|robot|bot|ai)\b|\bare you real\b"),
+    #: "are u an ai??", "r u a real person" (INBOX 1485).
+    (re.compile(r"\b(?:are|r) you (?:even |actually |really |just )?(?:an? )?(?:real |actual )?(?:real|human|person|robot|bot|ai|machine|program|computer|chatbot)\b"),
      "I'm a program, not a person: Atlas, reading your notes on this computer."),
     (re.compile(r"\bwhat(?:'s| is) your fav(?:ou?rite)? (\w+)"),
      "I don't have one; I'm a program. I'm happiest when a question finds the right note."),

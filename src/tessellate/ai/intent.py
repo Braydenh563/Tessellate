@@ -173,11 +173,13 @@ def classify(message: str) -> str:
     you do" and then answered with note citations). Only those two routes are
     taken from the repaired text, so a misspelt name never leaves the notes.
     """
+    from tessellate.ai import question_noise
+
+    #: "errrmmm. hi" is "hi": filler is read past, never searched (INBOX 1485).
+    message = question_noise.drop_filler(message)
     routed = _classify(message)
     if routed != NOTES:
         return routed
-    from tessellate.ai import question_noise
-
     fixed = question_noise.repair(question_noise.tidy(message))
     if fixed != message:
         again = _classify(fixed)
@@ -318,9 +320,21 @@ _TEST = re.compile(
 )
 
 
+#: What may come before a ping without making it a question: "hi test
+#: test", "hey, is this working", "ok just testing" (INBOX 1485).
+_PING_LEAD = re.compile(r"^(?:(?:hi|hey|hello|hiya|yo|sup|ok|okay|so|just|only|again|another|quick|a) )+")
+
+
 def is_test(message: str) -> bool:
-    text = _normalise(message)
-    return bool(text) and len(text) <= 40 and bool(_TEST.fullmatch(text))
+    """A message sent to see whether the app answers (`_TEST`), after any
+    filler ("errrmmm") and greeting ("hi test test"): a ping, never a
+    search for "test" (INBOX 1485)."""
+    from tessellate.ai import question_noise
+
+    text = _normalise(question_noise.drop_filler(message or ""))
+    if not text or len(text) > 40:
+        return False
+    return bool(_TEST.fullmatch(text) or _TEST.fullmatch(_PING_LEAD.sub("", text)))
 
 
 def needs_retrieval(intent: str) -> bool:

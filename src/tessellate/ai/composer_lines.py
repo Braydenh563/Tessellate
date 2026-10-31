@@ -271,11 +271,12 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("{due} fall due today.", "f"), c("Today you have {due} due.", "f"),
         c("{due} are on today's list.", "p"), c("Today's list holds {due}.", "p"),
     ),
+    #: A note is written, never a place one was in (INBOX 1485).
     "w_last": (
-        c("Your last note was {last}.", "w"), c("You last wrote {last}.", "w"), c("Last time you were in {last}.", "w"),
+        c("Your last note was {last}.", "w"), c("You last wrote {last}.", "w"), c("Most recently you wrote {last}.", "w"),
         c("Last note: {last}.", "t"), c("Latest: {last}.", "t"),
         c("The most recent entry is {last}.", "f"), c("Your latest note is {last}.", "f"),
-        c("The last page you filled was {last}.", "p"), c("You left off at {last}.", "p"),
+        c("The last page you filled was {last}.", "p"), c("You left off with {last}.", "p"),
     ),
     "w_streak": (
         c("That is {streak} of writing in a row.", "w"), c("You have written {streak} running.", "w"),

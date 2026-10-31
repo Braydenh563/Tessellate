@@ -43,7 +43,9 @@ def test_the_voice_changes_the_welcome(session):
 def test_hi_in_chat_is_answered_with_a_welcome(client, session):
     _fill(session)
     out = _ask(client, "hi")
-    assert "“Tides”" in out["text"], out["text"]
+    #: In Chat the last note is a link to it, no longer a quoted title
+    #: (INBOX 1485: "didnt reference the note and no link or source was shown?").
+    assert "[Tides](#/notes/" in out["text"], out["text"]
     assert "!" not in out["text"]
 
 
