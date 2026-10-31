@@ -72,9 +72,13 @@ def test_the_palettes_enter_does_not_reach_the_box_it_opens():
     """New note from the palette began every note with a blank line ("\\n"
     in the box before the first keystroke); after: ""."""
     code = app_js_text()
-    assert 'event.key === "Enter" && matches[paletteIndex]) {' in code
-    at = code.index('event.key === "Enter" && matches[paletteIndex]) {')
-    assert "event.preventDefault();" in code[at : at + 300]
+    # The palette's keys are one handler since the windowed list (perf 1031
+    # row 18); the Enter branch still stops the key before the row runs.
+    start = code.index("function paletteKeydown(event)")
+    at = code.index('event.key === "Enter") {', start)
+    branch = code[at : code.index("\n  }\n", at)]
+    assert "if (!match) return;" in branch
+    assert branch.index("event.preventDefault();") < branch.index("paletteRun(match)")
 
 
 def test_inline_tags_are_read_from_the_text():
