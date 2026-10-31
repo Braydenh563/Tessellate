@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer, audit 1031 C24, C27 and the date asks: what changed or is different between two things is a comparison; what happened last week is said as what the notes hold; when did I start running is the earliest dated line that says it; what do my notes say about tomorrow says what is on it.
 - Composer, audit 1031 C36, C49 and C50: no joiner says Meanwhile or a switch of notes, a typed the stays in the count line, a source is named once in a sentence, a link question says the reason the person wrote, my week from a weekend is the coming seven days, and a compare side named by a title is that note at any size.
 - Acts, audit 1031 C41 and C42: pin is worded as the Favourites menu words it; a ticked item is said to be already ticked, not missing; a day with no clock says its time is the default; one next-ask chip of each kind, the same strip in Chat and Ask.
 - Composer, audit 1031 C31, C32, C39, C40: a title-less note is named by its own words and never twice; a note's list is said as one clause; a person overview keeps to what the notes say of them; one citation style to an answer, titled or dated, never both. Fifteen functions split under complexity 15 (composer, composer_digest, composer_money, composer_doings, composer_frame, lexical_filing, question_noise, routes_chat).

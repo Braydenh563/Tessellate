@@ -221,6 +221,40 @@ def asked(text: str) -> tuple[str, str, str] | None:
     return None
 
 
+#: "when did I start running", "when did I first run": the earliest line that says it was done.
+_FIRST = re.compile(r"^when did i (?:first )?(?:(?:start|begin|began|started)(?: to)? (?:first )?)?(?P<v>[a-z]+)(?P<r>.*)$")
+_STARTING = re.compile(r"^when did i (?:first )?(?:start|begin|began|started)\b")
+
+
+def _bare(verb: str, started: bool) -> str:
+    """"running" is "run" after "start"; a bare verb stays as it is."""
+    if not (started and verb.endswith("ing") and len(verb) > 5):
+        return verb
+    stem = verb[:-3]
+    return stem[:-1] if len(stem) > 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou" else stem
+
+
+def first(text: str, views: list, today: date) -> tuple[str, Done] | None:
+    """(the line, the doing) for "when did I start running": the oldest day a
+    line says it was done, said as that day. None for a question of another
+    shape or a doing no line says."""
+    q = " ".join(text.lower().replace("?", " ").split())
+    found = _FIRST.match(q)
+    if not found or not (_STARTING.match(q) or " first " in f" {q} ") or _ABOUT.match(found.group("v")):
+        return None
+    began = bool(_STARTING.match(q))
+    verb = _bare(found.group("v"), began)
+    forms = _forms(verb)[2] | _forms(verb + "e")[2]
+    done = doings(views, forms, _object(found.group("r")), today)
+    if not done:
+        return None
+    oldest = done[0]
+    said = f"{found.group('v')}{found.group('r')}".rstrip()
+    did = f"started {'to ' if ' to ' in q[:28] else ''}{said}" if began else f"first {_forms(verb)[1]}{found.group('r')}".rstrip()
+    km = f" ({oldest.km:g} km)" if oldest.km else ""
+    return f"You {did} on {oldest.day.day} {oldest.day:%B}{km}.", oldest
+
+
 def answer(out, text: str, views: list, today: date) -> bool:  # noqa: ANN001
     """Say how often, how many times or how much; False when the question is
     not one of these or no line says the doing."""

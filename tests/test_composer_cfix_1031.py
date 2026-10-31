@@ -908,7 +908,8 @@ def test_a_total_of_something_else_is_not_a_measure_sum(notebook, question):
 
 @pytest.mark.parametrize("question", [
     "what do I know about tomorrow", "tell me about tomorrow", "anything on tomorrow",
-    "what have I got on tomorrow", "what can you tell me about tomorrow",
+    "what have I got on tomorrow", "what can you tell me about tomorrow", "what do my notes say about tomorrow",
+    "what does my notebook say about tomorrow", "what do my notes tell me about tomorrow", "what do my notes say on tomorrow",
 ])
 def test_what_do_i_know_about_tomorrow_says_what_is_on_it(notebook, question):
     said, _ = notebook(question)
@@ -1322,3 +1323,53 @@ def test_c36_a_source_is_named_once_in_a_sentence(notebook, question):
     said, _ = notebook(question)
     for sentence in re.split(r"(?<=[.!?])\s+|\n", said):
         assert sentence.lower().count("complete social skills guide") <= 1, sentence
+
+
+# "When did I start running": the earliest line that says it was done, not the plan.
+
+@pytest.mark.parametrize("question", [
+    "when did I start running", "when did I first run", "when did I begin running", "when did I start to run", "when did I first start running",
+])
+def test_the_start_of_a_doing_is_its_earliest_dated_line(notebook, question):
+    said, _ = notebook(question)
+    assert "3 October" in said and "Running plan" not in said, said
+    assert "17 October" not in said.split("\n", 1)[0], said
+
+
+@pytest.mark.parametrize("question", ["when did I start learning Spanish", "when did I start the gym", "when did I start doing yoga"])
+def test_the_start_of_a_streak_or_a_missing_doing_is_not_a_run(notebook, question):
+    said, _ = notebook(question)
+    assert "3 October: 5 km" not in said, said
+
+
+# C24 (rest). "What changed between A and B" is a comparison, said as one.
+
+@pytest.mark.parametrize("question", [
+    "what changed between the dentist and the Lisbon trip", "what is different between the dentist and the Lisbon trip",
+    "what's different between the dentist and the Lisbon trip", "what are the changes between the dentist and the Lisbon trip",
+])
+def test_what_changed_between_two_things_is_a_comparison(notebook, question):
+    said, _ = notebook(question)
+    assert "**Dentist**" in said and "**Lisbon trip**" in said, said
+    assert "“changed”" not in said and "“different”" not in said, said
+
+
+def test_a_third_side_keeps_its_lines(notebook):
+    said, _ = notebook("compare the dentist, the Lisbon trip and the Tokyo trip")
+    for side, needle in (("Dentist", "9:30"), ("Lisbon trip", "Hotel Alfama"), ("Tokyo trip", "Kyoto")):
+        assert f"**{side}**" in said and needle in said, said
+
+
+# C27 (rest). "What happened last week" is "what did I do", said as what the notes hold.
+
+@pytest.mark.parametrize("question", ["what happened last week", "what happened last weekend", "what has happened this week"])
+def test_what_happened_is_said_as_what_the_notes_hold_not_a_creation_log(notebook, question):
+    said, _ = notebook(question)
+    assert "made the note" not in said, said
+    assert "banana" in said.lower() or "Spanish" in said or "this week" in question, said
+
+
+@pytest.mark.parametrize("question", ["what happened to the dentist note", "what happened in Lisbon", "what happened at the meeting with Priya"])
+def test_what_happened_with_a_subject_is_not_a_recap(notebook, question):
+    said, _ = notebook(question)
+    assert "you made" not in said and "made the note" not in said, said

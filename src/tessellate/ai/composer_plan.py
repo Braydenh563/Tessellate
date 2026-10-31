@@ -598,6 +598,9 @@ def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     if win is not None:
         for _s, _e, phrase in when_words.find(text.lower()):
             leftover -= _stems(phrase)
+    #: The know-ahead shape has nothing after its day: "my notes say" is not a subject.
+    if _KNOW_AHEAD.match(text):
+        leftover = set()
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
     return _due(ctx, win or ahead_default(today))
@@ -714,7 +717,8 @@ def _written_from(text: str, today: date) -> bool:
 #: written then; what the notebook knows of it is what is on it. Only a day
 #: named relative to now, never a holiday or a month (those are topics, C3).
 _KNOW_AHEAD = re.compile(
-    rf"^{_LEAD}(?:what do i know|what can you tell me|tell me|anything|what have i got|what is there|what(?:'s|’s) there|what do my notes have)\s+"
+    rf"^{_LEAD}(?:what do i know|what can you tell me|tell me|anything|what have i got|what is there|what(?:'s|’s) there|what do my notes have|"
+    r"what (?:do|does) my (?:notes?|notebook|diary|journal) (?:say|tell me|show|have))\s+"
     r"(?:about|on|for|regarding)\s+(?:the )?" + recognise.AHEAD_DAY_WORDS + r"\W*$", re.I)
 
 

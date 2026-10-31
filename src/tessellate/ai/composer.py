@@ -5939,7 +5939,7 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = re.compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+\w+ing\b)|"
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+(?:\w+ing|to\s+\w+)\b)|"
     r"added|add|saved|save|put together|jotted|typed)\b",
     re.I,
 )

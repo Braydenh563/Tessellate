@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
+from tessellate.ai import composer, composer_doings, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -3525,6 +3525,13 @@ def _single_when(out: _Out, lead: Fact, rest: list[Fact], question: str, today: 
     started = _streak_start(out, lead, rest, question, today)
     if started is not None:
         return started
+    began = composer_doings.first(clean(question), list(_VIEWS.get()), today)
+    if began is not None:
+        #: The earliest line that says the doing was done, not a plan's weekday.
+        line, done = began
+        out.lines.append(line)
+        out.rows.append(_row(line, Fact(done.view, done.sentence, "Started", done.sentence.text, "")))
+        return []
     if _WHEN_DID.match(clean(question)) and _event_lead(out, lead, today):
         return []
     days = _DAYS_PLURAL.search(lead.body)
