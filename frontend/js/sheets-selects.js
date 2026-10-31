@@ -142,7 +142,7 @@ window.addEventListener("resize", () => {
   clearTimeout(sidebarRefitTimer);
   sidebarRefitTimer = setTimeout(() => {
     for (const id of ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]) {
-      const aside = document.getElementById(id);
+      const aside = $(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -161,7 +161,7 @@ for (const query of [STACKED_LAYOUT, SIDEBAR_TABLET_BAND]) {
   window.matchMedia(query).addEventListener("change", () => {
     applySidebarSheetMode(layoutIsStacked());
     for (const id of SIDEBAR_IDS) {
-      const aside = document.getElementById(id);
+      const aside = $(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -195,7 +195,7 @@ const SIDEBAR_IDS = ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]
 
 function eachSidebar(fn) {
   for (const id of SIDEBAR_IDS) {
-    const aside = document.getElementById(id);
+    const aside = $(id);
     if (aside) fn(aside, id);
   }
 }
@@ -460,10 +460,10 @@ function makeSidebarResizable(aside) {
 
 function initResizableSidebars() {
   for (const id of SIDEBAR_IDS) {
-    const aside = document.getElementById(id);
+    const aside = $(id);
     if (aside) makeSidebarResizable(aside);
   }
-  makeWebPanelResizable(document.getElementById("web-panel"));
+  makeWebPanelResizable($("web-panel"));
   applySidebarSheetMode(layoutIsStacked());
   initSidebarSheetDismissal();
 }
@@ -534,7 +534,7 @@ function resetWebPanelWidth(panel) {
 }
 
 window.matchMedia(WEB_PANEL_NARROW).addEventListener("change", () => {
-  const panel = document.getElementById("web-panel");
+  const panel = $("web-panel");
   if (!panel?.dataset.resizable) return;
   const saved = Number(prefs.get("webPanelWidth", null));
   if (Number.isFinite(saved) && saved >= WEB_PANEL_MIN && !webPanelIsNarrow()) {
@@ -774,7 +774,7 @@ function enhanceSelect(select) {
   //: Settings, Account's idle-lock select and the Graph's colour select.
   const labelledBy = (select.getAttribute("aria-labelledby") || "")
     .split(/\s+/)
-    .map((id) => id && document.getElementById(id)?.textContent.trim())
+    .map((id) => id && $(id)?.textContent.trim())
     .filter(Boolean)
     .join(" ");
   //: A `<label>` that wraps the select would otherwise lend its options too.
@@ -1327,6 +1327,7 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   menu.setAttribute("role", "menu");
 
   const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
+    window.objKebabRows?.(menu);
     if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
       openKebabSheet(menu, opener, ariaLabel);
       return;

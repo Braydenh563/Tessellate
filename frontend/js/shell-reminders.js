@@ -136,7 +136,7 @@ window.addEventListener("resize", () => {
 // the wordmark, the status pill's current text and which header buttons are
 // showing, none of which a width range knows about.
 function tabRowSpace() {
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   const bar = $("tab-bar");
   if (!header || !bar) return 0;
   const style = getComputedStyle(header);
@@ -161,7 +161,7 @@ function tabRowSpace() {
 //: drawn (absolutely placed, filling the gap, or on its own row), so the
 //: answer cannot feed itself.
 function tabCentreSpace() {
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   const bar = $("tab-bar");
   if (!header || !bar) return 0;
   const style = getComputedStyle(header);
@@ -237,7 +237,7 @@ function syncTabOverflowFade() {
   // its own: where all seven fit with room to spare at any width the app is
   // usable at. Photographed on a 7-tab window: "Dashboard" clipped to "oard"
   // at the left edge, which no amount of edge-fading makes readable.
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   // Below 600 the strip is not in the header at all: `dockTabBar` moves it
   // onto the body so `position: fixed` can reach the viewport past the
   // header's backdrop filter. The wrap question is then meaningless, and
@@ -537,7 +537,7 @@ const PHONE_BAR_RECEDE_PX = 12;
 const phoneBarLastTop = new WeakMap();
 
 function markTabBarRecede(region) {
-  const dock = document.getElementById("phone-tab-dock");
+  const dock = $("phone-tab-dock");
   if (!dock) return;
   //: The bar only exists in the phone band; above it there is nothing to
   //: recede, and an attribute left behind would be waiting for the next
@@ -639,7 +639,7 @@ function syncScrollEdges() {
   //: And a tab you have just arrived on shows its bar whole, whatever the tab
   //: you left was scrolled to. `syncScrollEdges` already runs on a tab change
   //: and on a resize, which are the two moments this is true of.
-  document.getElementById("phone-tab-dock")?.removeAttribute("data-receded");
+  $("phone-tab-dock")?.removeAttribute("data-receded");
 }
 
 window.addEventListener("resize", syncScrollEdges, { passive: true });
@@ -1533,8 +1533,8 @@ function defaultDueValue() {
 //: "Add all to calendar (.ics)" in the Reminders dock's More menu: every open
 //: reminder in this space, one file. The menu closes first so the save
 //: dialog (or the desktop's saved-to toast) is not drawn under it.
-document.getElementById("reminders-export-ics")?.addEventListener("click", () => {
-  document.getElementById("reminders-more-menu")?.removeAttribute("open");
+$("reminders-export-ics")?.addEventListener("click", () => {
+  $("reminders-more-menu")?.removeAttribute("open");
   downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
 });
 

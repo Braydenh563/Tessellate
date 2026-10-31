@@ -475,6 +475,12 @@ function renderLibraryFilters() {
   }
 }
 
+//: "Custom order" (obj-order.js, lazy): the order a drag or Alt+Arrow left. Until
+//: that file has arrived every item ranks the same, so the list keeps the server's order.
+function libraryCustomCmp(scope, keyOf) {
+  return (a, b) => (window.objOrderRank ? objOrderRank(scope, keyOf(a)) - objOrderRank(scope, keyOf(b)) : 0);
+}
+
 function librarySorted(items) {
   const sort = $("library-sort")?.value || "recent";
   const copy = [...items];
@@ -3084,6 +3090,7 @@ const LIBRARY_DOC_SORTS = {
   //: name would have made every document sort as zero and the order look
   //: arbitrary rather than broken, which is the failure that hides longest.
   longest: (a, b) => (Number(b.words) || 0) - (Number(a.words) || 0),
+  custom: libraryCustomCmp("docs", (doc) => `document:${doc.id}`),
 };
 
 //: **Filtering documents by a property they declare about themselves**
@@ -3388,6 +3395,7 @@ async function renderLibraryDocuments() {
     //: controls inside a control.
     const open = document.createElement("article");
     open.className = "doc-list-item";
+    Object.assign(open.dataset, { obj: `document:${doc.id}`, objTitle: doc.title || "Untitled" });
     const openDoc = () => {
       // switchTab first, then open. Reported as "the documents subtab document
       // cards don't even do anything": openDocument() loaded the document
@@ -8713,6 +8721,7 @@ const LIBRARY_MEDIA_SORTS = {
       sensitivity: "base",
     }),
   largest: (a, b) => (Number(b.size_bytes) || 0) - (Number(a.size_bytes) || 0),
+  custom: libraryCustomCmp("media", (row) => `${row._isImage && !row._isAttachment ? "image" : "file"}:${row.id}`),
 };
 
 const LIBRARY_MEDIA_SORT_KEY = "library-media-sort";
@@ -8880,6 +8889,8 @@ function filterLibraryImagesGallery() {
   for (const image of images) {
     const fig = document.createElement("figure");
     fig.className = "library-image-tile";
+    //: A picture is staged by its media row, a file (an attachment or a PDF) by its id (obj-ref.js).
+    Object.assign(fig.dataset, { obj: `${image._isImage && !image._isAttachment ? "image" : "file"}:${image.id}`, objTitle: image.original_name || "", objUrl: image.url || "" });
     // **A PDF is not an image, and rendering one as an <img> is why files
     // "dont appear anywhere".** Reported directly, and this is the whole
     // mechanism: every `/media/upload` row was rendered into an `<img

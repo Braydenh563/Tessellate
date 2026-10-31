@@ -219,7 +219,7 @@ function addAtlasLine(panel) {
 
 function initHelpToggles(root = document) {
   for (const trigger of root.querySelectorAll("[data-help-for]")) {
-    const panel = document.getElementById(trigger.dataset.helpFor);
+    const panel = $(trigger.dataset.helpFor);
     if (!panel) continue;
     wireHelpPopover(trigger, panel);
     addAtlasLine(panel);
@@ -439,7 +439,7 @@ let globalFindScope = null;
 //: nothing you could see and scrolled a page you were not looking at.
 function globalFindWalkableRoot() {
   if (globalFindScope && globalFindScope.checkVisibility?.()) return globalFindScope;
-  const settings = document.getElementById("settings-modal");
+  const settings = $("settings-modal");
   if (settings && !settings.classList.contains("hidden")) return settings;
   return document.querySelector(".tab-page:not(.hidden)");
 }
@@ -451,7 +451,7 @@ function globalFindWalkableRoot() {
 //: and switches to the first that does, so Ctrl+F answers "where is the
 //: setting for X" rather than "not on this page".
 function settingsSectionContaining(needle) {
-  const modal = document.getElementById("settings-modal");
+  const modal = $("settings-modal");
   if (!modal || modal.classList.contains("hidden")) return null;
   const lower = needle.toLowerCase();
   for (const section of modal.querySelectorAll(".settings-section.hidden")) {
@@ -565,17 +565,17 @@ function globalFindStep(delta) {
 }
 
 function openGlobalFind(opts = {}) {
-  const reader = document.getElementById("web-reader");
+  const reader = $("web-reader");
   const readerOpen = reader && !reader.classList.contains("hidden") && reader.checkVisibility?.();
   const scopeReader =
     readerOpen &&
     (opts.scope === "web-reader" || Boolean(document.activeElement?.closest?.("#web-panel")));
-  const scope = scopeReader ? document.getElementById("web-reader-text") : null;
+  const scope = scopeReader ? $("web-reader-text") : null;
   if (scope !== globalFindScope) {
     globalFindClearHighlights();
     globalFindScope = scope;
   }
-  const findInput = document.getElementById("global-find-input");
+  const findInput = $("global-find-input");
   if (findInput) {
     const words = scope ? "Find in this page" : "Find on this page";
     findInput.placeholder = `${words}…`;
@@ -608,8 +608,8 @@ function openGlobalFind(opts = {}) {
     $("settings-search").select();
     return;
   }
-  const wbCanvas = document.getElementById("wb-canvas-view");
-  const wbView = document.getElementById("library-view-whiteboard");
+  const wbCanvas = $("wb-canvas-view");
+  const wbView = $("library-view-whiteboard");
   if (
     wbCanvas && !wbCanvas.classList.contains("hidden") &&
     wbView && !wbView.classList.contains("hidden") &&
@@ -967,7 +967,7 @@ if (dashFind) {
     openFinder(event.key);
     //: Opened with the letter already in it, so `openFinder`'s own `select()`
     //: would highlight it and the next keystroke would replace it.
-    const input = document.getElementById("finder-input");
+    const input = $("finder-input");
     if (input) input.setSelectionRange(input.value.length, input.value.length);
   });
   const keysHint = dashFind.querySelector(".dash-find-keys");
