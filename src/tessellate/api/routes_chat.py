@@ -37,7 +37,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -2716,7 +2716,7 @@ def _unmatched_recents(req: _StreamRequest, prepared: dict) -> bool:
 def _web_first(req: _StreamRequest, prepared: dict) -> bool:
     """The web before the notes: when no note matched, or when the turn asks
     for the web outright ("search the web for ...")."""
-    return not prepared["notes"] or toolwords.asks_web(req.question)
+    return toolwords.asks_web(req.question) or (not prepared["notes"] and composer_unplaced.worthy(req.question or ""))
 
 
 def _web_allowed(req: _StreamRequest) -> bool:
@@ -3664,6 +3664,16 @@ def _personal_unsearched(req: _StreamRequest, ollama_running: bool) -> str:
     return str(own["text"]) if own else ""
 
 
+def _unplaced_events(req: _StreamRequest) -> list[dict]:
+    """A message nothing placed, with no note to answer it (INBOX 1490): a
+    short question back, with the notes and the web as its two chips, never a
+    web search the person did not ask for."""
+    web_on = _web_pref_on()
+    said = composer_unplaced.clarify(req.question or "", web_on=web_on, voice=_composer_voice(), seed=_reply_seed(req)[1])
+    asks = composer_unplaced.chips(req.question or "", web_on=web_on)
+    return [{"type": "answer", "delta": said}, {"type": "offer", "offer": {"kind": "ask", "label": "", "asks": asks}}]
+
+
 def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
@@ -3676,6 +3686,8 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     own = _personal_unsearched(req, ollama_running)
     if own:
         return [{"type": "answer", "delta": own}]
+    if not ollama_running and not req.images_raw and composer_unplaced.unplaced(req.question or ""):
+        return _unplaced_events(req)
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
@@ -4091,7 +4103,9 @@ def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | 
             req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
         if unknown is not None:
             return _suggest_events(unknown)
-    if not ollama_running and _web_allowed(req):
+    if not follow and not ollama_running and not req.images_raw and composer_unplaced.unplaced(req.question or ""):
+        return _unplaced_events(req)
+    if not ollama_running and _web_allowed(req) and (follow or composer_unplaced.worthy(req.question or "")):
         web = _web_answer(req, follow.question if follow else req.question)
         if web:
             return list(_web_events(*web))

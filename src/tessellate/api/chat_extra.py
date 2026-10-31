@@ -93,16 +93,17 @@ def welcome_line(session: Session, now: datetime, *, question: str = "", voice: 
 
 
 def mentioning(session: Session, word: str) -> int:
-    """How many visible notes hold `word` (the full-text index, stemmed: "test"
-    finds "testing"), for a ping's one line (INBOX 1485); 0 when unreadable."""
-    from sqlalchemy import func
-    from sqlalchemy import text as sql_text
+    """How many notes the notes search finds for `word` ("test" finds
+    "testing"), for a ping's one line (INBOX 1485). The search the listing
+    runs (`search_notes`), so the count offered, the list shown and the answer
+    given are one number (INBOX 1487); 0 when unreadable."""
+    from tessellate.ai import tool_say
+    from tessellate.ai import tools as agent_tools
 
     if not word.isalpha():
         return 0
     try:
-        ids = select(sql_text("rowid")).select_from(sql_text("entries_fts")).where(sql_text("entries_fts MATCH :w"))
-        return int(session.scalar(select(func.count(Entry.id)).where(*_visible(), Entry.id.in_(ids)), {"w": f'"{word}"'}) or 0)
+        return tool_say.matched(agent_tools.execute_tool(session, "search_notes", {"query": word}))
     except Exception:  # noqa: BLE001  # no index yet: nothing is counted
         log.exception("chat: counting the notes a ping names failed")
         return 0
