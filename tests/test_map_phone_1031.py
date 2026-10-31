@@ -46,12 +46,13 @@ def test_a_wide_canvas_keeps_the_fit_floor_and_the_1_to_1_fallback():
     assert _scales(1200) == {"min": 0.45, "open": 1}
 
 
-def test_the_frame_uses_the_scales_and_a_tidy_that_spills_frames_the_same_way():
+def test_the_frame_uses_the_scales_and_a_tidy_that_spills_frames_a_narrow_canvas_the_same_way():
     start = WB.index("function wbFrameMapOnOpen(")
     body = WB[start : WB.index("\n}\n", start)]
     assert "scales.min" in body and "scales.open" in body
-    assert "wbFrameMapOnOpen();" in MAP[MAP.index("wbMapSpillsOffCanvas()) wbFrame") :][:80]
-    assert "if (onlyBranch == null && wbMapSpillsOffCanvas()) wbZoomToFit" not in MAP
+    # Review: desktop keeps the plain fit; only a narrow canvas takes the phone
+    # frame, through wbFrameSpilledMap (tests/test_polish5_1031.py).
+    assert "wbMapSpillsOffCanvas()) wbFrameSpilledMap();" in MAP
 
 
 def test_the_boards_picker_face_is_the_name_alone_on_a_phone():

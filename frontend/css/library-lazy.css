@@ -7594,3 +7594,23 @@ input[type="color"].wb-mixed {
 #library-view-whiteboard.wb-presenting .whiteboard-floating-panel.wb-timer-bar:not(.hidden) {
   display: flex;
 }
+
+/* --- the board picker's face on a phone (polish5-1031) -------------------------
+   A long map name read "Quarterly roadmap for ..." at 90px of text, and a touch
+   screen never shows the tooltip that holds the whole row. The face gives back
+   its side padding and may run to two lines; the bar's height is the opener's
+   own 44px, so it does not grow. --- */
+@media (max-width: 599.98px) {
+  .wb-topbar .select-shell > .select-opener {
+    padding-inline: var(--space-2);
+    gap: var(--space-1);
+  }
+  .wb-topbar .select-shell .select-value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
