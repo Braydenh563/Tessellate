@@ -317,6 +317,7 @@ function wbBoardThumbSpec(element, opts = {}) {
     const a = { x, y, width: w, height: h, rx: R(strokeW * 2) };
     if (d.bg) {
       a.fill = d.bg;
+      if (d.bg_alpha != null && d.bg_alpha < 1) a["fill-opacity"] = String(Math.max(0, d.bg_alpha));
       a.stroke = d.border_color || "none";
     } else {
       a.fill = "none";

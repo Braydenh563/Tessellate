@@ -82,7 +82,7 @@ const WB_FMT_FIELDS = {
   //: A straight line or arrow: a line that takes ends.
   arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
   image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
@@ -1485,7 +1485,7 @@ function wbSvgBoxRadii(el, data, w, h) {
 }
 
 function wbSvgBoxBackdrop(el, data, w, h) {
-  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paper = data?.bg && data.bg !== "transparent" ? (wbExportColour(wbPaperPaint(data)) || data.bg) : "none";
   const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
   //: A sticky's paper can be a gradient, which has no background colour to read.
   const fill = paint.fill !== "none" ? paint.fill : paper;

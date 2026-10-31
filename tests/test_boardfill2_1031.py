@@ -141,10 +141,10 @@ def _fields(kind: str) -> str:
     return re.search(rf"^  {kind}: \[(.*?)\],$", FORMAT_JS, re.M).group(1)
 
 
-def test_the_fill_opacity_row_is_its_own_field_offered_to_shapes_and_diagrams():
+def test_the_fill_opacity_row_is_its_own_field_offered_to_shapes_text_and_diagrams():
     row = re.search(r'<div class="wb-fmt-row" data-fmt="(\w+)" role="group" aria-label="Fill opacity">', INDEX)
     assert row and row.group(1) == "fillalpha"
-    for kind in ("shape", "diagram"):
+    for kind in ("shape", "text", "diagram"):
         assert '"fillalpha"' in _fields(kind), kind
     for kind in ("diagram",):
         assert '"fill"' in _fields(kind) and '"strokealpha"' in _fields(kind)
@@ -170,8 +170,27 @@ def test_one_recipe_writes_the_opacity_of_a_shape_a_text_box_and_a_diagram():
     assert INDEX.count('data-alpha-for="fillalpha"') == 5
 
 
+def test_a_text_box_keeps_its_fill_opacity_through_the_server(client):
+    made = client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "x", "bg": "#fff4a3", "bg_alpha": 0.4}, "x": 0, "y": 0, "width": 200, "height": 120})
+    assert made.status_code in (200, 201), made.text
+    assert made.json()["data"]["bg_alpha"] == 0.4
+
+
+def test_text_boxes_stickies_and_cards_paint_and_export_the_fill_opacity():
+    assert "function wbPaperPaint(" in WB
+    assert WB.count("wbPaperPaint(d.data)") >= 2, "the build and the paint of a text box both use it"
+    assert "wbPaperPaint(" in FORMAT_JS.split("function wbSvgBoxBackdrop(")[1].split("\n}\n")[0]
+
+
+def test_a_text_box_paints_the_fill_at_its_opacity_and_a_zero_is_kept():
+    paint = WB.split("function wbPaperPaint(")[1].split("\n}\n")[0]
+    assert "color-mix(in srgb" in paint and "bg_alpha" in paint
+    assert "alpha >= 1" in paint and "alpha == null" in paint, "0 is a real answer, absent is solid"
+
+
 def test_help_names_the_opacity_for_diagrams():
     topics = (ROOT / "src" / "tessellate" / "ai" / "help_topics_more.py").read_text(encoding="utf-8") + (
         ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
     low = topics.lower()
     assert "diagram" in low and "fill opacity" in low
+    assert "sticky's or text box's fill" in low
