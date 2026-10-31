@@ -11,7 +11,8 @@ from tessellate.core.database import Entry, EntryLink
 from tessellate.entry import manager
 from tests.test_composer_route_688 import _ask
 
-GYM = "Gym plan: I lift on Monday and Thursday at 6pm.\n\nNeed to buy new gloves before next week."
+#: A checklist, because the "What is left in" chip is offered only for a note that has one (C47).
+GYM = "Gym plan: I lift on Monday and Thursday at 6pm.\n\nNeed to buy new gloves before next week.\n\n- [ ] Buy gloves\n- [x] Pay the membership"
 COACH = "Coach says my bench form needs work before the next block"
 SOUP = "Recipe: lentil soup. Simmer for 25 minutes."
 
