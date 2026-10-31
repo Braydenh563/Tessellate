@@ -141,7 +141,13 @@ function notesRailMark(entry) {
     notesSpySchedule();
   }).observe(list, { childList: true });
   //: Capture, so a scroll of whichever element holds the list is heard.
-  document.addEventListener("scroll", notesSpySchedule, { capture: true, passive: true });
+  //: Only a scroller that holds the list: the capture box's own scroller, a code
+  //: block in a card or the palette scrolling is not the list moving, and each
+  //: one paid for a pick (a rect per visible card) on a dirty layout.
+  document.addEventListener("scroll", (event) => {
+    const target = event.target;
+    if (target === document || target.contains?.(list)) notesSpySchedule();
+  }, { capture: true, passive: true });
   //: A card chosen by hand pins it (its menu is acting on it, not choosing).
   list.addEventListener("focusin", (event) => {
     const li = event.target.closest?.("li[data-id]");

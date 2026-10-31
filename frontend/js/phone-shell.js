@@ -1691,7 +1691,11 @@ function initKeyboardInset() {
   // put back to the top, because iOS scrolls the document to show a focused
   // field and leaves it scrolled.
   const fieldSelector = "input, textarea, select, [contenteditable]";
-  const settle = () => [0, 120, 320, 700].forEach((delay) => setTimeout(write, delay));
+  //: Only where a keyboard can come up over the page: a mouse-and-keyboard window
+  //: has none, and four `innerHeight` reads a focus were a forced layout of the
+  //: whole page each (1.2 s at 4x with the companion out, audit 1031 PF1).
+  const touchy = window.matchMedia("(any-pointer: coarse)");
+  const settle = () => touchy.matches && [0, 120, 320, 700].forEach((delay) => setTimeout(write, delay));
   document.addEventListener("focusin", (event) => {
     if (event.target.closest?.(fieldSelector)) settle();
   });
