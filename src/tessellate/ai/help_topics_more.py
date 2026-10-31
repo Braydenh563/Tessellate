@@ -3213,7 +3213,7 @@ MORE_TOPICS.append({
         "or Ctrl+Y), Clear and a More menu (a picture under the ink, the paper "
         "colour). On a narrow window the palette, size and style are under "
         "Colour, size and style. Ctrl and the wheel zoom, 0 fits the page. "
-        "Save as note adds the sketch to a new note once something is drawn; "
+        "Save as note adds the sketch to a new note once something is drawn, and the toast has an Open button; "
         "Download PNG saves the picture; a picture's Annotate opens it here."
     ),
     "badge": {"label": "Notes", "tab": "notes"},

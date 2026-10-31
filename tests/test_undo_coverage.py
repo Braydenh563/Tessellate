@@ -49,7 +49,8 @@ SEEDS = {
 }
 #: Whole acts that do their write and put the step on the stack themselves, so
 #: a caller that hands them the work is covered.
-WRAPPERS = {"toastEntityMerge", "graphRemoveLink", "wbBoardMadeStep", "graphPinStep", "wbBoardPutStep", "wbLibPairStep"}
+#: `announceSavedNote` pushes the made note's Undo itself (quick-note.js).
+WRAPPERS = {"announceSavedNote", "toastEntityMerge", "graphRemoveLink", "wbBoardMadeStep", "graphPinStep", "wbBoardPutStep", "wbLibPairStep"}
 #: Closures that are the inverse of an act, named for it. They take the
 #: coverage of the function that owns them.
 INVERSE_NAMES = {

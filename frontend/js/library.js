@@ -8195,9 +8195,8 @@ onDomReady(() => {
         method: "POST",
         body: JSON.stringify({ content: body, defer_filing: true }),
       });
-      pushEntryCreateUndo(created, "Saved a picture's text as a note");
-      toast("Saved as a note.");
       $("ocr-workspace").classList.add("hidden");
+      announceSavedNote(created, "", { message: "Saved as a note.", undoLabel: "Saved a picture's text as a note" });
       flashEntry(created.id);
     } catch (error) {
       toast(error.message || voiceLine("failed", { what: "save that note" }), true);
