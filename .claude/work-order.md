@@ -67,17 +67,22 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1471, 1472, 1474, 1475 graph popup toggle, snap zones, dock push, minimise pills (agent snapgraph-1031) (merged)
 - [x] INBOX 1473 per-span live preview (agent livepreview-1031) and equation field (agent mathfield-1031) (merged)
 - [x] INBOX 1476 to 1478 chips, model picker, popup anatomy and glass (agent chips-1031) (merged; 1478 popup anatomy left open)
-- [ ] INBOX 1483 natural dates (agent dates-1031)
+- [x] INBOX 1483 natural dates (agent dates-1031)
 - [x] INBOX 1484 image read once (agent imgread-1031) (merged)
-- [ ] BACKLOG 1481 private chat (agent private-1031)
+- [x] BACKLOG 1481 private chat (agent private-1031)
 - [x] INBOX 1463 companion clip and status bar (agent compclip-1031) (merged)
-- [ ] Owner lag log hotspots (agent lagfix-1031)
+- [x] Owner lag log hotspots (agent lagfix-1031)
 - [x] Paste null file item (owner log)
 - [x] Perf audit (perf-1031.md); fixes: agent perf2-1031
-- [ ] Perf audit top five fixes (agent perf2-1031) (perf-1031.md)
+- [x] Perf audit top five fixes (agent perf2-1031) (perf-1031.md)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
 - [ ] Scan rotation: bugs, security, architecture, UI, learnability (after every three items)
-- [ ] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
-- [>] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only.
+- [x] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
+- [!] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only. Fable start refused by the lean-workflow guard (owner must name it again in a message); the owner's second choice, Opus, runs it (agent fablecomp-1031).
+- [ ] Companion NPC upgrade, INBOX 1463 open items 1 to 5 (agent fablecomp-1031, Opus)
+- [ ] Diagram, sticky, text and card fill opacity (agent boardfill2-1031)
+- [ ] INBOX 1482 grouped file type picker (agent typepick-1031)
+- [ ] INBOX 1479 capture card (agent capture-1031)
+- [ ] INBOX 1478 popup anatomy (agent popups-1031)
