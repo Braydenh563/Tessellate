@@ -69,7 +69,7 @@ vm.runInContext(process.argv[1] + "\n;globalThis.__wake = atlasRigWake; globalTh
 const classes = new Set(["nmb-walking"]);
 const buddy = { id: "nm-buddy", dataset: {}, classList: { contains: (c) => classes.has(c) }, style: { getPropertyValue: () => "" } };
 const box = { isConnected: true, dataset: { atlasMood: "calm" }, classList: { contains: (c) => c === "atl-figure-box" }, closest: () => buddy, toggleAttribute() {} };
-const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: { getAnimations: () => { reads.anim += 1; return probeAnims; } }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
+const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: {}, running: { get size() { return probeAnims.length; } }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
 const rig = { box, body: {}, look: "masculine", arms: [arm("l"), arm("r")], raf: 0, at: 0, still: 0, host: buddy, observer: {}, pose: el(), heads: [el()], lag: { x: 0, v: 0, w: 9, t: null }, fresh: false };
 box.atlasRig = rig;
 const run = (n) => { for (let i = 0; i < n; i += 1) { clock += 16.7; const f = frames; frames = []; for (const g of f) g(clock); } };
@@ -182,5 +182,5 @@ def test_carried_or_thrown_the_idle_loops_hold() -> None:
         assert part in rule.group(1).split(", ")
     assert "atl-layer-lower" not in rule.group(1), "the legs' flick while held is the carry's own"
     frame = _fn(LIFE, "atlasTailFrame")
-    assert 'const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging");' in frame
+    assert 'const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");' in frame
     assert "loops ? anim.play() : anim.pause()" in frame

@@ -4,7 +4,7 @@
  "appearance-panel.js::raf": 1,
  "ask-chart.js::resize-observer": 1,
  "ask-compose.js::mutation-observer": 1,
- "atlas-life.js::raf": 3,
+ "atlas-life.js::raf": 4,
  "atlas-motion.js::mutation-observer": 1,
  "atlas-motion.js::raf": 2,
  "atlas.js::interval": 1,

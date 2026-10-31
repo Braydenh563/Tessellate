@@ -250,6 +250,43 @@ function atlasTailPick(tail, state, now) {
   tail.until = now + (base.ms || (calm ? 9000 + Math.random() * 9000 : 4000 + Math.random() * 5000));
   tail.settle = now + ATLAS_TAIL_SETTLE_MS;
 }
+//: **A frame budget** (audit AI1, 2026-10-31: at 4x CPU the companion at
+//: rest was 30 fps and 540 ms of long tasks per 5 s; at 1x, 60 fps and two).
+//: While the companion is on screen and moving, a few seconds of frames are
+//: timed now and then (a rAF loop beside the animations that already force
+//: a frame, so it adds none): when their mean runs past 21 ms (under 48 fps), or a fifth of them run past 32 ms, the page
+//: carries `data-atlas-lite` for the rest of the visit, and the figure keeps
+//: its sway, breath and blink and drops the planets' glow and swirl and
+//: every drift (atlas-lazy.css, and the ring loops below). It waits five
+//: seconds after the first look so the entrance, which is always heavy, is
+//: not what it times, and looks again once a minute while it is not lite.
+const atlasBudget = { at: 0, last: null };
+function atlasFrameBudget(now) {
+  const root = document.documentElement;
+  if ((atlasBudget.at && now - atlasBudget.at < 60000) || root.hasAttribute("data-atlas-lite")) return;
+  const first = !atlasBudget.at;
+  atlasBudget.at = now;
+  const run = { last: 0, start: 0, n: 0, sum: 0, long: 0 };
+  const step = (t) => {
+    if (document.hidden || document.querySelector("#nm-buddy.nm-buddy-dragging")) return;
+    if (run.last) {
+      run.n += 1;
+      run.sum += t - run.last;
+      if (t - run.last > 32) run.long += 1;
+    }
+    run.last = t;
+    run.start = run.start || t;
+    if (t - run.start < 3000) {
+      next();
+      return;
+    }
+    atlasBudget.last = { n: run.n, mean: run.n ? +(run.sum / run.n).toFixed(1) : 0, long: run.long };
+    if (run.n >= 20 && (run.sum / run.n > 21 || run.long / run.n >= 0.2)) root.setAttribute("data-atlas-lite", "");
+  };
+  //: One `requestAnimationFrame` site: the first frame waits out the entrance.
+  const next = () => requestAnimationFrame(step);
+  setTimeout(next, first ? 5000 : 0);
+}
 function atlasTailFrame(tail, now) {
   tail.raf = 0;
   const { box, spec } = tail;
@@ -259,7 +296,9 @@ function atlasTailFrame(tail, now) {
   //: The rings' and the planets' loops run and rest with it (`atlasRingLoops`).
   //: And hold while it is carried or thrown, as its CSS loops do there
   //: (atlas-lazy.css, B87a): drawn every frame then, each one restyles.
-  const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging");
+  //: And in the lite set (`atlasFrameBudget`), where they are not played at all.
+  const loops = live && !box.closest("#nm-buddy.nm-buddy-dragging") && !document.documentElement.hasAttribute("data-atlas-lite");
+  if (live) atlasFrameBudget(now);
   for (const anim of box.atlasLoops || []) if (loops !== (anim.playState === "running")) loops ? anim.play() : anim.pause();
   //: Thirty a second: each draw repaints the tail's layer.
   tail.tick += 1;

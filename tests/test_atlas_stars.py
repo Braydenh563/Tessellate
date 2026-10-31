@@ -58,7 +58,7 @@ const box = {
   querySelector: (s) => (s.includes("nmp-stars") && s.includes("arc") ? arc : s.includes("nmp-stars") ? root : null),
   querySelectorAll: (s) => (s.includes("atl-juggle") ? stars : []),
 };
-const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: { getAnimations: () => [] }, hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
+const arm = (side) => ({ side, sgn: side === "r" ? 1 : -1, probe: {}, running: new Set(), hold: null, groups: [el()], paths: [el()], hand: el(), geo: {}, j: { sh: { x: 0, v: 0, w: 14, t: null }, el: { x: 0, v: 0, w: 14, t: null }, wr: { x: 0, v: 0, w: 14, t: null }, sy: { x: 1, v: 0, w: 14, t: null } }, hist: [], drawn: [0, 0], shown: "", antic: null });
 const rig = { box, body: {}, look: "masculine", arms: [arm("l"), arm("r")], raf: 0, at: 0, still: 0, host: buddy, observer: {}, pose: null, heads: [], lag: { x: 0, v: 0, w: 9, t: null }, fresh: false };
 box.atlasRig = rig;
 const run = (n, each) => { for (let i = 0; i < n; i += 1) { clock += 1000 / 60; const f = frames; frames = []; for (const g of f) g(clock); if (each) each(); } };

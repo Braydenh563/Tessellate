@@ -8647,7 +8647,9 @@ function nameMarkBuddyBlend(buddy, change, ms = NMB_BLEND_MS) {
     //: animates inside a drawing and steps it by hand).
     if (!(typeof CSSAnimation === "function" && anim instanceof CSSAnimation) || anim.playState === "finished" || anim.playState === "idle") continue;
     const el = anim.effect && anim.effect.target;
-    if (!el) continue;
+    //: Not the rings' planets (audit HR1: a third of the animations read
+    //: here): their loops run through every mood and act, never handed back.
+    if (!el || el.closest(".atl-orbits")) continue;
     const props = new Set();
     for (const frame of anim.effect.getKeyframes()) for (const key of Object.keys(frame)) if (NMB_BLEND_PROPS.includes(key)) props.add(key);
     if (!props.size) continue;
