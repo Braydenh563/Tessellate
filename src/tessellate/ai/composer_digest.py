@@ -784,6 +784,18 @@ def _only_a_title(view, today: date) -> str:  # noqa: ANN001
     return f"{said[0].upper() + said[1:]}{day} has only its title so far."
 
 
+def _fact_names_title(view, fact: str) -> bool:  # noqa: ANN001
+    """Whether `fact` says the note's title as a name, so "from" it again is a
+    repeat (C36). One common word ("Sister") inside "your sister's birthday"
+    is the subject of the fact, not the note named: it needs the title as
+    written, and never as a possessive."""
+    title = re.sub(r"^(?:the|a|an)\s+", "", (view.title or "").strip(), flags=re.I)
+    if not title:
+        return False
+    flags = re.I if " " in title else 0
+    return bool(re.search(rf"\b{re.escape(title)}\b(?!['\u2019]s)", fact, flags))
+
+
 def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     """"Fact, from your note of 3 March." for a note; a document, board or
     map is said as itself by its title (INBOX 1357, class F: "Hamlet delays
@@ -802,7 +814,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     #: Not again when the fact already says the day it was written.
     when = f", written {_said_day(view.written, today)}" if _TIMED.get() and not _says_day(fact, view.written, today) else ""
     #: A fact that already names the note is not "from" it again (audit 1031 C36).
-    if not getattr(view, "titled", False) or (view.title and re.sub(r"^(?:the|a|an)\s+", "", view.title.strip().lower()) in fact.lower()):
+    if not getattr(view, "titled", False) or _fact_names_title(view, fact):
         return f"{fact}{when}."
     return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
 
