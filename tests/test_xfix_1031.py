@@ -35,3 +35,15 @@ def test_z17_palette_rows_never_name_the_lazy_caught_const_directly() -> None:
     assert "paletteCaught)" not in panes and "...paletteCaught }" not in panes
     assert "paletteCaughtNow()" in panes
     assert 'typeof paletteCaught === "undefined"' in js
+
+
+def test_z19_a_carried_note_is_filed_by_a_drop_on_a_category_or_a_space() -> None:
+    js = frontend_text("obj-carry.js")
+    assert "OBJ_FILE_DESTS" in js and "#category-list li[data-category]" in js
+    assert "OBJ_RENDERERS.category" in js and "OBJ_RENDERERS.space" in js
+    assert "moveNotesToCategory([ref.id]" in js and "moveNotesToSpace([ref.id]" in js
+    assert 'g.ref?.kind !== "note"' in js, "only notes are filed"
+    assert "data-space-id" in js and ':not([data-space-id="all"])' in js
+    assert "closeSpaceMenu()" in js, "the menu the hover opened is closed at the end"
+    assert "dataset.category = category" in frontend_text("notes-list.js")
+    assert "async function moveNotesToSpace" in frontend_text("batch-space.js")

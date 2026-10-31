@@ -46,16 +46,25 @@ async function batchMoveToSpace() {
   if (!spacesCache.length) await loadSpaces().catch(() => {});
   const space = await pickSpaceDialog(`Move ${batchNoun(ids)} to which space?`);
   if (!space) return;
+  if (await moveNotesToSpace(ids, space)) exitSelectMode();
+}
+
+//: The move itself, for the picker above and for a card carried onto a space in
+//: the switcher's menu (obj-carry.js): one request, one toast, one Undo. Null
+//: when it failed; the answer when it did (`moved` 0: all there already).
+async function moveNotesToSpace(ids, space) {
   let moved;
   try {
     moved = await batchSpaceRequest(space.id, ids, activeSpaceId());
   } catch (error) {
     toast(error.message, true);
-    return;
+    return null;
   }
-  exitSelectMode();
   await refreshEntries(ids);
-  if (!moved.moved) return toast(`They are all in ${space.name} already.`);
+  if (!moved.moved) {
+    toast(`They are all in ${space.name} already.`);
+    return moved;
+  }
   const back = async () => {
     const groups = new Map();
     for (const [id, from] of Object.entries(moved.from)) groups.set(from, [...(groups.get(from) || []), Number(id)]);
@@ -71,6 +80,7 @@ async function batchMoveToSpace() {
     settleUndoFromToast(action);
     await back();
   });
+  return moved;
 }
 
 // --- delete a space (audit 1029 X5; out of spaces-find.js to keep the boot small) ---

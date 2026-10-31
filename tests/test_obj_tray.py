@@ -20,7 +20,7 @@ const ref = (id) => objRef("note", id, `Note ${id}`);
 def test_the_tray_holds_each_object_once_in_the_order_added() -> None:
     out = run(FILES, STUBS + """
     objTrayAdd(ref(1)); objTrayAdd(ref(2)); objTrayAdd(ref(1));
-    __out({ held: objTray.map(objKey), stored: JSON.parse(store["obj-tray:all"]).map((r) => r.id) });
+    __out({ held: objTray.map(objKey), stored: JSON.parse(store["obj-tray"]).map((r) => r.id) });
     """)
     assert out == {"held": ["note:1", "note:2"], "stored": [1, 2]}
 
@@ -40,9 +40,9 @@ def test_a_full_tray_refuses_one_more_and_says_so() -> None:
 @needs_node
 def test_the_tray_reads_back_what_was_stored_and_survives_garbage() -> None:
     out = run(FILES, STUBS + """
-    store["obj-tray:all"] = JSON.stringify([{ kind: "note", id: 3, title: "Kept" }, { kind: "tag", id: 1 }, { nonsense: true }]);
+    store["obj-tray"] = JSON.stringify([{ kind: "note", id: 3, title: "Kept" }, { kind: "tag", id: 1 }, { nonsense: true }]);
     const kept = objTrayRead().map(objKey);
-    store["obj-tray:all"] = "{not json";
+    store["obj-tray"] = "{not json";
     __out({ kept, bad: objTrayRead() });
     """)
     assert out == {"kept": ["note:3"], "bad": []}

@@ -2602,6 +2602,8 @@ function renderSidebar() {
     //: "All" is the row for no filter at all, so it is not lit while Drafts
     //: or Favourites is (INBOX 432: two rows looked chosen at once).
     if (category === activeCategory && !draftsOnly && !favouritesOnly && !(!category && noteSearch === "tag:meeting")) markSidebarRowCurrent(li);
+    //: The row a carried note is dropped on (obj-carry.js `OBJ_FILE_DESTS`).
+    if (category && category !== "Uncategorised") li.dataset.category = category;
     const name = document.createElement("span");
     name.className = "category-name";
     //: Every name on one edge (INBOX 437 (4)): All takes a glyph as Drafts
