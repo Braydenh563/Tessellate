@@ -1997,7 +1997,12 @@ def drop_filler(text: str) -> str:
     if not text or not re.search(r"(?i)\b(?:u|e|h|m|a)", text):
         return text
     kept = _FILLER_TOKEN.sub(lambda m: "" if _FILLER.match(m.group(1)) else m.group(0), text)
-    kept = " ".join(kept.split()).lstrip(",.;: ")
+    if kept == text:
+        return text
+    #: Spaces fold within a line; the line breaks stay (a numbered list after a
+    #: colon is steps, and "make this a flowchart:\n1. ..." must keep them).
+    lines = [" ".join(line.split()) for line in kept.split("\n")]
+    kept = "\n".join(line for line in lines if line).lstrip(",.;: \n")
     return kept if re.search(r"\w", kept) else text
 
 
