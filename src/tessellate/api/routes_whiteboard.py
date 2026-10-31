@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import unicodedata
 from collections import OrderedDict
@@ -316,7 +317,7 @@ def _clamp(limit: float):
             number = float(value)
         except (TypeError, ValueError):
             return 0.0
-        return 0.0 if number != number else max(-limit, min(limit, number))
+        return 0.0 if math.isnan(number) else max(-limit, min(limit, number))
 
     return clamp
 

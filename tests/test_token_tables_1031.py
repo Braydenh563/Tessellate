@@ -42,13 +42,13 @@ class _Response:
         pass
 
 
-def _run(workers: int, job) -> list[BaseException]:
-    errors: list[BaseException] = []
+def _run(workers: int, job) -> list[Exception]:
+    errors: list[Exception] = []
 
     def body(n: int) -> None:
         try:
             job(n)
-        except BaseException as exc:  # noqa: BLE001  # the test reports whatever a thread raised
+        except Exception as exc:  # noqa: BLE001  # the test reports whatever a thread raised
             errors.append(exc)
 
     threads = [threading.Thread(target=body, args=(n,)) for n in range(workers)]

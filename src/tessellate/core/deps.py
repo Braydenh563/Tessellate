@@ -381,12 +381,12 @@ embedmodels.set_in_use_check(_embedding_model_in_use)
 #: after 5 s (a space deleted elsewhere stops being accepted), and whenever a
 #: `Space` row is inserted or deleted through this process.
 _SPACE_IDS_TTL = 5.0
-_space_ids: tuple[float, frozenset[str]] | None = None
+#: One slot, `(when, ids)` or None; a list so no function rebinds a global.
+_space_ids: list[tuple[float, frozenset[str]] | None] = [None]
 
 
 def forget_space_ids() -> None:
-    global _space_ids
-    _space_ids = None
+    _space_ids[0] = None
 
 
 def _on_space_row_change(*_args: object) -> None:
@@ -407,15 +407,14 @@ register_cache_reset(forget_space_ids)
 
 
 def _space_known(session: Session, workspace_id: str) -> bool:
-    global _space_ids
     from tessellate.core.database import Space
 
     now = time.monotonic()
-    cached = _space_ids
+    cached = _space_ids[0]
     if cached and now - cached[0] < _SPACE_IDS_TTL and workspace_id in cached[1]:
         return True
     ids = frozenset(row[0] for row in session.query(Space.id).all())
-    _space_ids = (now, ids)
+    _space_ids[0] = (now, ids)
     return workspace_id in ids
 
 

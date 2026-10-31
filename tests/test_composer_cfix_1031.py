@@ -416,7 +416,6 @@ def test_a_name_in_a_chip_keeps_its_capital(notebook):
     "what have I written about university", "anything about uni",
 ])
 def test_the_opening_count_and_the_times_line_agree(notebook, question):
-    import re
 
     said, _ = notebook(question)
     words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
@@ -470,7 +469,6 @@ def test_the_greeting_names_a_japanese_note_by_a_short_form(client, session, mon
 
 
 def test_no_surface_counts_words_by_its_own_split():
-    import re
 
     from tests._app_js import app_js_text
 
@@ -480,7 +478,6 @@ def test_no_surface_counts_words_by_its_own_split():
 
 
 def test_the_head_dot_is_drawn_between_shown_chips_only():
-    import re
     from pathlib import Path
 
     # Spaces around combinators are dropped: the boot CSS budget keeps some
@@ -518,7 +515,6 @@ def test_a_pick_with_a_subject_or_an_act_is_no_pick(question):
     "a screenshot of a grassy hill with blue arrows",
 ])
 def test_a_caption_that_names_its_kind_is_said_once(caption):
-    import re
     from datetime import date
 
     from tessellate.ai import composer
@@ -695,7 +691,6 @@ def test_a_pinned_weekday_leaves_the_quotation_and_is_said_after_it():
 
 @pytest.mark.parametrize("question", ["when did I last run", "when did I run", "what day did I last run"])
 def test_a_day_is_said_once_in_a_when_answer(notebook, question):
-    import re
 
     said, _ = notebook(question)
     lead = said.split("\n")[0]
@@ -832,7 +827,6 @@ def _attempts(client, question, n=6):
     "what have I written about uni", "what about uni", "what do I know about Lisbon", "what about social connections", "what do I know about running",
 ])
 def test_a_retry_says_the_same_numbers_and_the_same_notes(notebook, client, question):
-    import re
 
     said = _attempts(client, question)
     figures = [sorted(set(re.findall(r"\b\d[\d,.]*\b", t))) for t in said]
@@ -965,7 +959,6 @@ def test_my_social_notes_summarises_every_note_filed_under_social_connections(no
     "summarise the social skills guide", "summarise my social notes", "give me the short version of the social skills guide",
 ])
 def test_a_summary_does_not_show_emphasis_asterisks_in_the_note_s_words(notebook, question):
-    import re
 
     said, _ = notebook(question)
     body = re.sub(r"\[\*\*[^\]]*\*\*\]", "", said)
@@ -992,7 +985,6 @@ def test_a_compare_opens_without_claiming_a_process(notebook, question):
     "compare the sourdough starter and the sourdough loaf", "compare my running plan with my running log", "which is the soonest the dentist or the Lisbon trip",
 ])
 def test_a_compare_s_side_headings_start_with_a_capital(notebook, question):
-    import re
 
     said, _ = notebook(question)
     heads = re.findall(r"^\*\*([^*\n]+)\*\*$", said, flags=re.M)
