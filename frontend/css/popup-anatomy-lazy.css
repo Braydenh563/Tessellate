@@ -113,7 +113,9 @@
 /* --- The Activity popup (the Tasks popup) ---------------------------------
    Its cards made it taller than a short window, and it had no cap: the head
    went off the top with the close button in it. The panel scrolls inside the
-   window and its head stays. */
+   window and its head stays. The head is bare at rest and takes the opaque
+   ground only when stuck (08-consistency.css, INBOX 1503): a ground of its
+   own made a darker block inset in the glass panel. */
 .agent-monitor {
   max-height: calc(100dvh - var(--space-9) * 3);
   overflow-y: auto;
@@ -124,7 +126,6 @@
   top: 0;
   z-index: 1;
   padding-top: var(--space-4);
-  background: var(--modal-bg-opaque);
 }
 
 /* --- The reference's glass, the parts that keep the words readable --------

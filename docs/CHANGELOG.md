@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- The Activity panel's head sits on the panel's own surface: it was sticky on an opaque ground of its own, a darker block inset in the glass (dark (22, 22, 21) against the panel's (27, 27, 26), light (247, 247, 245) against (240, 240, 239)); it is now bare at rest and takes the ground only while stuck, and a lint fails any dialog, panel or monitor head that paints a ground of its own (INBOX 1503).
 - Lock screen, audit 1031 DC2 follow-up: only showing or hiding the lock screen puts panels away, so Settings opened by the address under it is still there after unlock; the unlock check holds no session through a long poll, so a restore no longer waits out the LAN watch.
 - Restore, audit 1031 BK5 follow-up: the unlock check lets go of its session when the handler returns, so an open jobs stream no longer holds a restore for its whole wait and then refuses it (E2E first-run restore).
 - Jobs have one lane table: `jobruns.lane_of` names each running and finished row `user` (an answer, a draft, a transcription, the model calls behind them) or `background`; the Tasks history fold, the bell and the running list read that field, and the three client copies of the kind lists are gone. The Activity panel opens from the chat menu with nothing running, with its history (HR6, aifix) (audit 1031 HR4, HR6, SH3).
