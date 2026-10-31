@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7420, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 8109, test files 1732, tests 15074, plan headings 989.
+Counts: frontend functions 7421, frontend ids 2621, CSS sections 513, backend routes 632, backend modules 8109, test files 1733, tests 15079, plan headings 989.
 
-## Frontend functions (7420)
+## Frontend functions (7421)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4790,32 +4790,33 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `openImprove` | frontend/js/improve-panel.js:3 |
 | `runImprove` | frontend/js/improve-panel.js:44 |
 
-### frontend/js/lag-watch.js (22)
+### frontend/js/lag-watch.js (23)
 
 | Name | File:line |
 |---|---|
-| `lagApi` | frontend/js/lag-watch.js:87 |
-| `lagApiWho` | frontend/js/lag-watch.js:98 |
-| `lagErrorsStart` | frontend/js/lag-watch.js:274 |
-| `lagFile` | frontend/js/lag-watch.js:62 |
-| `lagFlush` | frontend/js/lag-watch.js:149 |
-| `lagFrame` | frontend/js/lag-watch.js:156 |
-| `lagInput` | frontend/js/lag-watch.js:163 |
-| `lagNote` | frontend/js/lag-watch.js:104 |
-| `lagNoteError` | frontend/js/lag-watch.js:261 |
-| `lagObserve` | frontend/js/lag-watch.js:180 |
-| `lagRafClose` | frontend/js/lag-watch.js:214 |
-| `lagRafInstall` | frontend/js/lag-watch.js:233 |
-| `lagRafOwner` | frontend/js/lag-watch.js:196 |
-| `lagRafTop` | frontend/js/lag-watch.js:207 |
-| `lagRequest` | frontend/js/lag-watch.js:172 |
-| `lagScriptCause` | frontend/js/lag-watch.js:68 |
-| `lagSnapshot` | frontend/js/lag-watch.js:293 |
-| `lagStackOwner` | frontend/js/lag-watch.js:187 |
-| `lagStart` | frontend/js/lag-watch.js:328 |
-| `lagTarget` | frontend/js/lag-watch.js:56 |
+| `lagApi` | frontend/js/lag-watch.js:91 |
+| `lagApiWho` | frontend/js/lag-watch.js:102 |
+| `lagErrorsStart` | frontend/js/lag-watch.js:303 |
+| `lagFile` | frontend/js/lag-watch.js:66 |
+| `lagFlush` | frontend/js/lag-watch.js:166 |
+| `lagFrame` | frontend/js/lag-watch.js:173 |
+| `lagFrameWhy` | frontend/js/lag-watch.js:183 |
+| `lagInput` | frontend/js/lag-watch.js:192 |
+| `lagNote` | frontend/js/lag-watch.js:108 |
+| `lagNoteError` | frontend/js/lag-watch.js:290 |
+| `lagObserve` | frontend/js/lag-watch.js:209 |
+| `lagRafClose` | frontend/js/lag-watch.js:243 |
+| `lagRafInstall` | frontend/js/lag-watch.js:262 |
+| `lagRafOwner` | frontend/js/lag-watch.js:225 |
+| `lagRafTop` | frontend/js/lag-watch.js:236 |
+| `lagRequest` | frontend/js/lag-watch.js:201 |
+| `lagScriptCause` | frontend/js/lag-watch.js:72 |
+| `lagSnapshot` | frontend/js/lag-watch.js:322 |
+| `lagStackOwner` | frontend/js/lag-watch.js:216 |
+| `lagStart` | frontend/js/lag-watch.js:357 |
+| `lagTarget` | frontend/js/lag-watch.js:58 |
 | `lagView` | frontend/js/lag-watch.js:51 |
-| `lagWireSettings` | frontend/js/lag-watch.js:315 |
+| `lagWireSettings` | frontend/js/lag-watch.js:344 |
 
 ### frontend/js/lan-watch.js (19)
 
@@ -22312,7 +22313,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15074)
+## Tests (15079)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23155,6 +23156,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_lag_1415.py | 7 |
 | tests/test_lag_1419.py | 5 |
 | tests/test_lag_1465.py | 8 |
+| tests/test_lag_attribution_1031.py | 5 |
 | tests/test_lag_layout_reads.py | 8 |
 | tests/test_lag_log.py | 6 |
 | tests/test_lan.py | 126 |
