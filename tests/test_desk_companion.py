@@ -420,3 +420,11 @@ def test_the_window_is_see_through_to_the_root_element_and_a_hit_is_two_lines():
     script = (ROOT / "frontend" / "js" / "desk-companion.js").read_text(encoding="utf-8")
     assert '$("desk-menu").addEventListener("keydown"' in script and "ArrowDown" in script
     assert "said.startsWith(title.textContent)" in script
+
+
+def test_the_settings_switch_with_a_question_mark_gives_way_to_it():
+    """UX review 1031 item 1: at 390 the label did not shrink and the row was
+    524.7px wide in a 263.6px one; the "?" fell to its own line."""
+    css = (ROOT / "frontend" / "css" / "settings-controls-lazy.css").read_text(encoding="utf-8")
+    rule = css[css.index("#settings-modal .help-head > .check-row {") :][:120]
+    assert "flex: 1 1 0" in rule and "min-width: 0" in rule
