@@ -29,7 +29,7 @@ _ASKABLE = re.compile(
 
 
 #: A second suggestion chained on the first: "ask me “a” or “b”".
-_CHAINED = re.compile(r"\s*(?:,|or|and|then)?\s*[“\"]([^“”\"\n]{3,120}?)[”\"]", re.I)
+_CHAINED = re.compile(r"\s*(?:(?:,|or|and|then)\s*)?[“\"]([^“”\"\n]{3,120}?)[”\"]", re.I)
 
 
 def _quoted(text: str) -> list[str]:
