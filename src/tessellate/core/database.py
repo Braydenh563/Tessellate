@@ -625,6 +625,17 @@ class LinkReason(TypeDecorator):
     #: Until then no vault can be open, and no key is exactly what it says.
     key_source = staticmethod(lambda: None)
 
+    def process_bind_param(self, value, dialect):
+        """Store what is read: a plain reason is written as `plain_reason`
+        reads it, so what a caller wrote and what the row holds compare equal
+        (Tidy's undo checks the stored reason against the one it wrote).
+        Ciphertext goes in untouched."""
+        if not value:
+            return value
+        from tessellate.core import crypto
+
+        return value if crypto.is_encrypted(value) else plain_reason(value)
+
     def process_result_value(self, value, dialect):
         if not value:
             return value
