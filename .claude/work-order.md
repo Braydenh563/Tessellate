@@ -97,4 +97,4 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [!] Fable deep analysis (extras done, 9b59975; the plugin guard refuses the next Fable spawn until the owner names Fable again in a new message), one Fable at a time (owner named it): extras, notes, composer, ai, harness, shell, board, docs, code, graph, backend, ux, perf, then architecture and the ranked file (agent/audit-1031)
 - [ ] Base red and 1490 regression: no_open_items, route_688 clock, mermaid flowchart, knitting, Departure year, SearXNG how-to (composer6-1031 resumed)
 - [ ] Fix audit-1031-extras Z1 to Z20, Z20 first (agent xfix-1031)
-- [ ] Base red round 2: docs_site CONTRIBUTING mirror, emblem_turns, get_started_1301, hover_focus_pairs wb-map-edge, icon_only status-tray, lazy_css capture-card and math-field, wb_format alpha presets, wb_line_ends (agent basered2-1031)
+- [x] Base red round 2: docs_site CONTRIBUTING mirror, emblem_turns, get_started_1301, hover_focus_pairs wb-map-edge, icon_only status-tray, lazy_css capture-card and math-field, wb_format alpha presets, wb_line_ends (agent basered2-1031)
