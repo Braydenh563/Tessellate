@@ -4167,7 +4167,7 @@ SOCIAL_PROFESSIONAL = composer_tables.SOCIAL_PROFESSIONAL
 #: name, in both voices, with no model and with one.
 SOCIAL["who"] = (
     "This is Atlas's assistant speaking. With no model running I answer from your notes in their own words.",
-    "The assistant that works for Atlas, that's me. I find things in your notes and say what they say.",
+    "Atlas's assistant, that's me. I find things in your notes and say what they say.",
     "Atlas's assistant, at your service: I answer from your notes, and to talk to Atlas itself you can connect a model.",
     "Think of me as Atlas's assistant: ask me when something is, what you decided or what you did last week.",
 )
