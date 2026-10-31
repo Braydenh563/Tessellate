@@ -232,7 +232,9 @@ def streak(session: Session, now: datetime, timed: bool) -> StatAnswer:
     last = found[-1]
     current = _span_days(last) if last[1] >= today - timedelta(days=1) else 0
     where = f", {activity._span(best[0], best[1], today)}" if timed and best[0] != best[1] else ""
-    text = f"Your longest streak is {_days(_span_days(best))} in a row{where}. {_now_line(current, _span_days(best))}"
+    #: The app's own streak, labelled as one: a note's "the streak is 42
+    #: days" is that note's (audit 1030 Z59).
+    text = f"Your longest writing streak is {_days(_span_days(best))} in a row{where}, a note each day. {_now_line(current, _span_days(best))}"
     facts = [{"longest_days": _span_days(best), "current_days": current}]
     return StatAnswer(kind="streak", text=text, facts=facts)
 

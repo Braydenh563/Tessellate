@@ -3558,6 +3558,17 @@ def _related_sentence(related: list) -> str:
     )
 
 
+def _personal_unsearched(req: _StreamRequest, ollama_running: bool) -> str:
+    """What the notebook says of its writer ("what have I been studying
+    lately"), read from every note, when the search found none: "lately"
+    narrowed the search to recent notes, and the note that says it was
+    older (audit 1030 Z59). Only where the app answers itself."""
+    if ollama_running and not _composed(req, ollama_running):
+        return ""
+    own = personal.answer(req.question, lambda: personal.notes_of(req.session), user_now(deps.get_config()).date())
+    return str(own["text"]) if own else ""
+
+
 def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
@@ -3567,6 +3578,9 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     if unknown is not None and not ollama_running:
         #: An instruction nothing understood is not a search for its words.
         return _suggest_events(unknown)
+    own = _personal_unsearched(req, ollama_running)
+    if own:
+        return [{"type": "answer", "delta": own}]
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):

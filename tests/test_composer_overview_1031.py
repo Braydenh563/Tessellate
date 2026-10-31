@@ -71,7 +71,8 @@ def test_the_fold_and_the_counts_agree(answer, question):
     more = (support.get("more") or {}).get("lines") or []
     if more:
         first_folded = paras.index(more[0])
-        assert first_folded - 1 <= composer_digest.LINES["overview"], paras[:first_folded]
+        #: The opening, the summary line, then at most LINES told lines.
+        assert first_folded - 2 <= composer_digest.LINES["overview"], paras[:first_folded]
         assert support["more"]["label"] == f"Show {realise.count_word(len(more))} more"
     right = re.search(r"\b(\w+) more on the right\.", text)
     on_right = 0 if not right else {realise.count_word(n).lower(): n for n in range(1, 11)}[right.group(1).lower()]

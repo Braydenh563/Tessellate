@@ -87,7 +87,7 @@ _AHEAD_SAID = re.compile(r"\b(?:will|going to|coming|upcoming|due|next|ahead|dea
 _FILLER_STEMS = frozenset(study.stem(w) for w in (
     "what whats is are do have got any anything due deadlines deadline coming up upcoming on my plate the this next week today tomorrow "
     "tonight weekend month happening scheduled ahead for me tell show list give need know check calendar horizon hand submit plan "
-    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing".split()))
+    "organise organize schedule agenda busy look like day rest days few couple month by in a an of to am we doing soon".split()))
 
 
 @dataclass
@@ -555,6 +555,18 @@ def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
     return today, today + timedelta(days=6 - today.weekday()) if today.weekday() < 6 else today, "this week"
 
 
+#: **One window for "what is due" with no time named** (audit 1030 Z27: "due
+#: soon" said two weeks, "coming up" seven days, over different items). Both
+#: readers take it from here: `composer_lists.window_of` too.
+AHEAD_DAYS = 14
+AHEAD_SAID = "the next two weeks"
+
+
+def ahead_default(today: date) -> tuple[date, date, str]:
+    """Today to two weeks on: "soon", "coming up", "what's on my plate"."""
+    return today, today + timedelta(days=AHEAD_DAYS - 1), AHEAD_SAID
+
+
 def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
     win = window(text, today)
     leftover = {s for s in _stems(re.sub(r"[^\w\s']", " ", _SPAN_WORDS.sub(" ", text))) if s not in _FILLER_STEMS}
@@ -563,7 +575,7 @@ def _due_reply(ctx: Ctx, text: str, today: date) -> Reply | None:
             leftover -= _stems(phrase)
     if leftover or (win is None and ctx.open_ids):
         return None  # a subject, or "what is the deadline?" with a note open: the notes' (composer_open)
-    return _due(ctx, win or (today, today + timedelta(days=6), "the next 7 days"))
+    return _due(ctx, win or ahead_default(today))
 
 
 # --- what is left ----------------------------------------------------------------------

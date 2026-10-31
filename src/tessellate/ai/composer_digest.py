@@ -812,9 +812,27 @@ def _fragment(text: str, names: set[str]) -> str:
     if _starts_a_title(text, bool(verb)):
         return text
     known = _dictionary()
-    if known and word.lower() not in known:
+    if known and (word.lower() not in known or _a_name(word.lower(), known)):
         return text
     return text[0].lower() + text[1:]
+
+
+def _a_name(word: str, known: frozenset[str]) -> bool:
+    """Whether a capitalised word the shipped list holds is a name all the
+    same ("Lisbon", "Tokyo", "Sara"): the list is lower case, so a name
+    and a word look alike in it; a word has its kin there ("glaze", "glazes",
+    "glazed"), a name has none, and it is not one of the common words.
+    Calendar words are names in English (hub, 2026-10-31: "proper-noun
+    casing must survive the clause rewrite")."""
+    from tessellate.ai import common_words
+
+    if _CALENDAR_WORD.fullmatch(word.capitalize()):
+        return True
+    if word in common_words.WORDS or len(word) < 3:
+        return False
+    kin = {word + end for end in ("s", "es", "ed", "d", "ing", "er", "ers", "ly", "al", "y")}
+    kin |= {word[: -len(end)] + add for end, add in (("s", ""), ("es", ""), ("ed", ""), ("ed", "e"), ("ing", ""), ("ing", "e"), ("y", "ies")) if word.endswith(end)}
+    return not kin & known
 
 
 #: The verbs a to-do or a piece of advice starts with. A list item that does
@@ -985,7 +1003,7 @@ def _pin(text: str, written: date) -> str:
 
 #: A weekday said alone ("moved to Friday", "on Monday", "next Tuesday"):
 #: the note's week tells which, so it is said with its date once read.
-_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
+_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|(?:mornings|afternoons|evenings|nights)\b|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
 _WEEKDAY_ALONE = re.compile(r"^(?P<pre>on )?(?:(?:this|next|last) )?(?P<day>(?:mon|tues|wednes|thurs|fri|satur|sun)day)$", re.I)
 
 
@@ -2284,7 +2302,9 @@ def _offer(facts: list[Fact], asked: str | None = None) -> dict | None:
     return {"kind": "reminder", "label": PHRASES["remind"].format(action=action), "text": action[0].upper() + action[1:]}
 
 
-_ON_DAY = re.compile(r"(?<!\s)\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b", re.I)
+#: With the date a weekday is pinned to, when it carries one ("on Thursday 6
+#: August", `_pin_weekdays`): the two go together.
+_ON_DAY = re.compile(r"(?<!\s)\s+on\s+((?:mon|tues|wednes|thurs|fri|satur|sun)day)\b(?:\s\d{1,2}\s[A-Za-z]+(?:\s\d{4})?)?", re.I)
 #: What makes an instruction a task rather than advice: a thing or person
 #: it is about ("the tutor", "my passport", "Daniel") or a day or number.
 _SPECIFIC_CASED = re.compile(r"(?<=\s)[A-Z][a-z]+")
@@ -2849,8 +2869,8 @@ def _summarised(out: _Out, members, kind: str, framed: bool, moved: str) -> bool
 
 
 def _fold_past_budget(out: _Out, kind: str) -> None:
-    """At most LINES[kind] lines under the opening; the rest go behind Show
-    more, in the order told, ahead of what is already folded."""
+    """At most LINES[kind] told lines under the opening; the rest go behind
+    Show more, in the order told, ahead of what is already folded."""
     keep = 1 + LINES[kind]
     if len(out.lines) > keep:
         out.more[:0] = out.lines[keep:]
@@ -2866,9 +2886,13 @@ def _overview(out: _Out, question: str, members, facts, today: date, kind: str) 
     if framed:
         _framed(out, question, members, facts, today, groups)
     else:
+        #: The summary heads the lines and is not one of them: the five told
+        #: lines and "Show five more" stay as they were (gold B5).
+        summary = out.lines.pop() if summed else ""
         _told_lines(out, members, facts, today, kind, moved)
         if summed:
             _fold_past_budget(out, kind)
+            out.lines.insert(1, summary)
     _overview_tail(out, kind, members, today, moved, len(shown_notes))
 
 

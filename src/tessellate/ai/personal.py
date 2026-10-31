@@ -66,7 +66,9 @@ _READERS: tuple[tuple[str, re.Pattern, Callable[[re.Match], tuple[str, str]]], .
      lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
     ("person", re.compile(r"\b([A-Z][a-z]+) (?:is|was) my (" + _REL + r")\b"),
      lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
-    ("learning", re.compile(r"\b(?:I'm|I am|started|been|now|currently) learning ([A-Za-z]+(?: [a-z]+)?)(?= on| at| with|" + _STOP[3:], re.I),
+    #: "I'm learning Spanish", and a note's own "Learning Spanish with
+    #: Duolingo." with its "I" dropped (audit 1030 Z59).
+    ("learning", re.compile(r"(?:\b(?:I'm|I am|started|been|now|currently) |^\s*)learning ([A-Za-z]+(?: [a-z]+)?)(?= on| at| with|" + _STOP[3:], re.I),
      lambda m: (f"you're learning {m.group(1)}", m.group(1))),
 )
 
@@ -133,7 +135,9 @@ _ASKS: tuple[tuple[str, re.Pattern], ...] = (
     ("person", re.compile(r"^(?:what(?:'s| is) my (" + _REL + r")(?:'s|s)? name|who(?:'s| is) my (" + _REL + r")|"
                           r"what(?:'s| is) my (" + _REL + r") called|what do i call my (" + _REL + r"))\b")),
     ("pets", re.compile(r"^(?:do i have (?:a |any )?(?:pets?|dogs?|cats?)|what pets do i have)\b")),
-    ("learning", re.compile(r"^what (?:\w+ )?am i (?:learning|studying)\b")),
+    #: Every learn question one verb stem: "what am I learning", "what have I
+    #: been studying", "what do I want to learn" (audit 1030 Z59).
+    ("learning", re.compile(r"^what (?:\w+ )?(?:am i|have i been|do i want to|i'?m) (?:learn|study)(?:ing)?\b")),
     ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i|"
                            r"what have i told you about (?:me|myself))\b")),
     ("advice", re.compile(r"^(?:what|which) should i (eat|watch|listen to|read|cook)\b")),

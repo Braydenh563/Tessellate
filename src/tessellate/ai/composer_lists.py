@@ -130,7 +130,10 @@ def window_of(question: str) -> tuple[str, int]:
     to the month's end, 99999 every date ahead."""
     if re.search(r"\b(?:all|every) (?:the |my )?dates?\b", question, re.I):
         return "ahead in your notes", 99999
-    return recognise.ahead_window(question) or ("in the next two weeks", 14)
+    from tessellate.ai import composer_plan
+
+    #: The plan's one default window (audit 1030 Z27).
+    return recognise.ahead_window(question) or (f"in {composer_plan.AHEAD_SAID}", composer_plan.AHEAD_DAYS)
 
 
 def _only_a_window(rest: str | None) -> bool:
