@@ -2010,10 +2010,8 @@ function initGraphKeyboard() {
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openGraphPopup(
-        { ...graphNodeScreenPoint(current), stopPropagation() {} },
-        current
-      );
+      if (graphPopupShows(current)) closeGraphPopup(true);
+      else openGraphPopup({ ...graphNodeScreenPoint(current), stopPropagation() {} }, current);
       return;
     }
     // Step through this note's own connections: the relationship the map is
@@ -2403,6 +2401,12 @@ function renderGraphPopupHeader(entry, node) {
   const name = entry.category || node.category || "";
   category.classList.toggle("hidden", !name);
   if (name) setLabel(category, `ph:folders ${name}`);
+}
+
+//: INBOX 1471: the same note's second click closes its panel (a click on
+//: another note still switches it; Esc and the empty canvas close as before).
+function graphPopupShows(node) {
+  return graphPopupId === node.id && !$("graph-popup").classList.contains("hidden");
 }
 
 async function openGraphPopup(event, node) {

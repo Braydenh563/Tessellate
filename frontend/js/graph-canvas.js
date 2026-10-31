@@ -5047,6 +5047,10 @@ function gcClickNode(event, node, s = gcTab) {
     beginOrCompleteLink(node);
     return;
   }
+  if (graphPopupShows(node)) {
+    closeGraphPopup();
+    return;
+  }
   openGraphPopup(event || { clientX: 0, clientY: 0, stopPropagation() {} }, node);
 }
 
