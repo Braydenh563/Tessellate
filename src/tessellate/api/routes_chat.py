@@ -38,6 +38,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
 from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import ask_chips
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -646,6 +647,55 @@ def _attached_only(body: ChatRequest) -> None:
         body.attached_notes_only = True
 
 
+#: "what is in the Sara note", "what does the Tom note say", "what is Tom's
+#: note about", "the note called Sara": a question that names a note by its
+#: title (audit 1031 C7). The name is checked against the titles; a phrase that
+#: is no note's title ("the shopping note" when none is called that) is left to
+#: the search.
+_TITLED_ASK = re.compile(r"^(?:what|who|when|where|how|which|why|is|does|did|has|have|tell|show|summari[sz]e|read|explain|describe|give|list|any|anything)\b", re.I)
+_NOTE_NAMED = (
+    re.compile(r"\b(?:the|my|that) (?P<x>[\w'’&-]+(?: [\w'’&-]+){0,3}?) note\b", re.I),
+    re.compile(r"\b(?P<x>[\w&-]+(?: [\w&-]+){0,2}?)['’]s note\b", re.I),
+    re.compile(r"\bnote (?:called|titled|named) (?P<x>[\w'’&-]+(?: [\w'’&-]+){0,3})", re.I),
+)
+_NOT_A_NAME = frozenset({"this", "that", "open", "current", "new", "last", "first", "latest", "newest", "oldest", "same", "other", "whole", "entire", "next", "right", "wrong", "whole"})
+
+
+def _named_note(session: Session, body: ChatRequest) -> bool:
+    """Bind the note the question names by title as the closed set the answer
+    reads. Only one note with that title counts; two are left to the search."""
+    q = " ".join((body.question or "").split()).rstrip("?.! ")
+    if not _TITLED_ASK.match(q):
+        return False
+    for which, pattern in enumerate(_NOTE_NAMED):
+        for found in pattern.finditer(q):
+            words = found.group("x").split()
+            #: "what is Tom's note": the owner is the words next to "'s".
+            names = [" ".join(words[i:]) for i in range(len(words))] if which == 1 else [" ".join(words)]
+            for name in names:
+                if _titled_note(session, body, re.sub(r"^(?:in|from|of|on|at|for|about|with|to)\s+", "", name.strip(), flags=re.I)):
+                    #: "called" is how the note was named, not a word to look for.
+                    body.question = re.sub(r"\bnote (?:called|titled|named)\b", "note", body.question, flags=re.I)
+                    return True
+    return False
+
+
+def _titled_note(session: Session, body: ChatRequest, name: str) -> bool:
+    """Bind the one note titled `name`."""
+    if not name or name.lower() in _NOT_A_NAME:
+        return False
+    rows = session.execute(
+        select(Entry).where(Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(name)}%", escape=LIKE_ESCAPE))  # noqa: E712
+        .order_by(Entry.created_at.desc()).limit(80)
+    ).scalars()
+    titled = [e for e in rows if composer_frame.note_title(e.content or "").strip().lower() == name.lower()]
+    if len(titled) != 1:
+        return False
+    body.note_ids = [titled[0].id]
+    body.attached_notes_only = True
+    return True
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
@@ -653,6 +703,8 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     search finds. Notes attached by hand, or a scope, win over both."""
     if body.note_ids or body.document_ids or body.scope:
         _attached_only(body)
+        return
+    if _named_note(session, body):
         return
     _first_more_is_this(body)
     if composer_digest.about_this(body.question):
@@ -1469,7 +1521,11 @@ def _widened(session: Session, question: str, entries: list, scope: str = "") ->
     extra = _picture_notes(session, composer.subject_terms(question))
     subject = composer_overview.topic(question)
     if subject:
-        said = search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT) + _filed_under(session, composer.subject_terms(subject))
+        #: The notes filed under the subject (its category, its tag) come first:
+        #: a keyword rank by how often a word repeats put a note that says
+        #: "reading" nine times above the Books note (audit 1031 C4).
+        filed = _filed_under(session, composer.subject_terms(subject))
+        said = filed + search_manager.keyword_search(session, subject, limit=OVERVIEW_LIMIT)
         extra += said if len({e.id for e in said}) >= 2 else said + _by_synonym(session, subject)
     seen = {entry.id for entry in entries}
     out = list(entries)
@@ -1709,6 +1765,14 @@ def _recall_window(session: Session, question: str, found: _Found) -> None:
     asked = composer.plan(question, user_now(deps.get_config()).date())
     if asked.kind == "recall" and asked.window:
         found.entries = search_manager.entries_between(session, asked.window[0], asked.window[1], archived=question_noise.asks_archived(question))
+        found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
+    elif asked.window and not found.entries and not asked.terms and asked.window_phrase:
+        #: "How much did I save in October": the question's own verb is no
+        #: term, so nothing was searched; the window's notes are the pool the
+        #: readers ask (audit 1031 C3).
+        stems = composer.window_verb_stems(question, asked.window_phrase)
+        window = search_manager.entries_between(session, asked.window[0], asked.window[1], limit=1000 if stems else 40, archived=question_noise.asks_archived(question))
+        found.entries = [e for e in window if composer.holds_any(stems, e.content or "")][:40] if stems else window
         found.mode, found.connected_ids, found.match_info, found.when_phrase = "window", set(), {}, asked.window_phrase
     elif asked.window and found.entries:
         #: **A subject inside a window keeps the window** (1324): "what did I
@@ -3505,7 +3569,9 @@ def _no_notes_line(req: _StreamRequest, ollama_running: bool) -> str:
     if ollama_running and not _composed(req, ollama_running):
         return librarian.NO_RESULTS_MESSAGE
     planned = composer.plan(req.question or "")
-    if not planned.window or planned.terms or not planned.window_phrase:
+    #: Only a recall ("what did I write in May") says nothing was written; "how
+    #: much did I save in May" asks about what the notes hold (audit 1031 C3).
+    if not planned.window or planned.terms or not planned.window_phrase or planned.kind != "recall":
         return librarian.NO_RESULTS_MESSAGE
     from sqlalchemy import func
 
@@ -3887,7 +3953,43 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
     if follow is None and result.get("grounding"):
         _remember_rows(req.question, current, today, result)
+    #: A question the answer itself suggests ("ask me “...”") is a chip too
+    #: (INBOX 1497): the sentence may stay, the chip is the action.
+    suggested = ask_chips.lift(str(result.get("text") or ""))
+    if suggested:
+        result["next"] = list(dict.fromkeys([*suggested, *(result.get("next") or [])]))
+    if follow is None and result.get("next"):
+        result["next"] = _answerable_chips(list(result["next"]), current, today)
     return result, follow, current, older
+
+
+#: What an answer says when it could not answer: its own "missing" lines and the
+#: plain no-result and no-checklist lines.
+_CANNOT = re.compile(
+    r"None of (?:these|your) (?:notes|records)|do(?:es)? not (?:talk about|mention|address)|couldn't find|I don't see any mention|nothing in these notes|"
+    r"No note found brings up|omit(?:s)? |lacks any reference|no recorded information|absence of documentation|No checklist|nothing comes up|"
+    r"doesn't seem to be in the notes|I looked, but nothing|Nothing is dated|has anything left to tick",
+    re.I,
+)
+
+
+def _answerable_chips(chips: list, current: list, today) -> list:  # noqa: ANN001
+    """The chips the composer can answer on the notes it just read (audit 1031
+    C47): each question is composed against the same pool, and one that is
+    answered with a "none of these notes mention" or with nothing is not offered.
+    An action chip ("Open ...") is kept."""
+    kept = []
+    for chip in chips:
+        if not isinstance(chip, str) or chip.startswith("Open ") or not current:
+            kept.append(chip)
+            continue
+        try:
+            trial = composer.compose(chip, current, today=today, voice=_composer_voice())
+        except Exception:  # noqa: BLE001 - a chip that cannot be tried is not offered
+            continue
+        if trial.get("grounding") and not _CANNOT.search(str(trial.get("text") or "")):
+            kept.append(chip)
+    return kept
 
 
 def _composed_grounding_event(req: _StreamRequest, result: dict, asks: list[str] | tuple = ()) -> dict:
@@ -4027,7 +4129,22 @@ def _linked_notes(session: Session, result: dict) -> list[dict]:
     return items
 
 
-def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None) -> tuple[str, list[str]]:
+_CHECKLIST = re.compile(r"^\s*[-*+] \[[ xX]\]", re.M)
+
+
+def _first_cited_has_list(session: Session, result: dict) -> bool:
+    """Whether the first note an answer cited keeps a checklist: "What is left
+    in it" is a question only such a note answers (audit 1031 C47)."""
+    from tessellate.ai.tools._common import _visible
+
+    for kind, nid in _cited_ids(result)[:1]:
+        if kind != "document":
+            row = session.query(Entry.content).filter(Entry.id == nid, *_visible()).first()
+            return bool(row and _CHECKLIST.search(str(row[0] or "")))
+    return False
+
+
+def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] | None = None, listed: bool = True) -> tuple[str, list[str]]:
     """The answer's next step: the screen-aware closing line when the screen
     is known, else the chips for the cited note (INBOX 1466: the prose offer
     "Next, I can open ..." is the follow-up strip's now, not both). Left off
@@ -4050,7 +4167,7 @@ def _with_next_step(text: str, size: str, req: _StreamRequest, cited: list[str] 
         return text, []
     #: Its heading, not a whole first line ("Project Atlas budget: Sam says ..."): a chip is short.
     name = named[0] if len(named[0]) <= 40 else named[0].split(": ", 1)[0].strip()
-    return text, [f"Open \u201c{name}\u201d", f"What is left in \u201c{name}\u201d?"]
+    return text, [f"Open \u201c{name}\u201d", *([f"What is left in \u201c{name}\u201d?"] if listed else [])]
 
 
 def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) -> list:
@@ -4080,13 +4197,18 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else [])]
+    #: Every question the finished text suggests is a chip (INBOX 1497); one
+    #: the grounding event already carries is not said twice.
+    suggested = [q for q in ask_chips.lift(text) if q not in (result.get("next") or []) and q not in asks]
     if result["grounding"]:
         _name_documents(req.session, result["grounding"])
-        events.append(_composed_grounding_event(req, result, asks))
+        events.append(_composed_grounding_event(req, result, [*asks, *suggested]))
         #: The notes linked to the ones it cited: the related row (INBOX 1466).
         related = _linked_notes(req.session, result)
         if related:
             events.append({"type": "related", "items": related})
+    elif suggested or asks:
+        events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [*asks, *suggested][:4]}})
     return events
 
 
@@ -4105,7 +4227,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
     """The composed text and the asks that close it (`_with_next_step`)."""
     text = result["text"]
     asks: list[str] = []
-    if missed and not follow and personal.general(req.question or ""):
+    #: "what is this" is the open note, whatever it holds (audit 1031 C11), never the world.
+    if missed and not follow and personal.general(req.question or "") and not composer_digest.about_this(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(
@@ -4114,7 +4237,7 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
         text += _search_footer(prepared, result)
     size = composer_tone.length(_resolve_mode(req.body.mode))
     if not follow and ((result["grounding"] and not said_none) or (said_none and req.body.screen)):
-        text, asks = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result))
+        text, asks = _with_next_step(composer_tone.fit(text, size), size, req, _cited_titles(req.session, result), _first_cited_has_list(req.session, result))
     return text, asks
 
 
@@ -4183,6 +4306,9 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         down = _web_events_or_down(req, req.question)
         if down:
             return down
+    if not ollama_running and not req.images_raw and composer_unplaced.jibe(req.question or ""):
+        #: A jibe is banter even when a note holds the word "mum" (audit 1031 C21).
+        return _unplaced_events(req)
     if not prepared["notes"] and not req.images_raw:
         return _no_notes_events(req, ollama_running)
     if _composed(req, ollama_running) or not ollama_running:
@@ -5397,7 +5523,7 @@ def _asked(body: ChatRequest, session: Session, skill: dict | None) -> tuple:
     paste); the model is given all of it (`_in_full`)."""
     head, tail = body.question[: composer.PLAN_CHARS], body.question[composer.PLAN_CHARS :]
     #: Filler ("errrmmm. hi") is read past before anything reads it (INBOX 1485).
-    question, address = _address(skill["question"] if skill else question_noise.drop_filler(question_noise.tidy(head)) or head, session, skill)
+    question, address = _address(skill["question"] if skill else question_noise.media_kind(question_noise.drop_filler(question_noise.tidy(head))) or head, session, skill)
     return question, address, None if skill else (body.raw_question or (question + tail if tail else None))
 
 

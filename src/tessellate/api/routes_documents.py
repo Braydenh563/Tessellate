@@ -187,7 +187,7 @@ def _summary(document: Document) -> dict:
         "id": document.id,
         "title": document.title,
         "updated_at": document.updated_at.isoformat(),
-        "words": len(document.content.split()),
+        "words": cjk.word_count(document.content),
         "preview": _preview(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold

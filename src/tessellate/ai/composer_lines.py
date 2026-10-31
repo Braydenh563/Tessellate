@@ -389,26 +389,26 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         #: Never "I can see you've been working on ..." or "Since you've been in
         #: ...": that is the screen-aware closing's (`composer_aware`, only with a
         #: screen), and a note's line is never a place (composer-1031).
-        c("“{t}” is your newest note. Ask me what is left on it, or when it is due.", "w"),
+        c("“{t}” is your newest note. Ask me “what is left in {t}” or “when is {t} due”.", "w"),
         c("Your latest note is “{t}”. Want a summary of it, or what is left to do?", "w"),
         c("I can list what is still open in “{t}”, your newest note.", "w"),
         c("Next, I can open “{t}” or pull out its dates.", "w"),
-        c("If it helps, ask me who is involved in “{t}”, your newest note.", "w"),
+        c("If it helps, ask me “who is involved in {t}”, your newest note.", "w"),
         c("Most recently you wrote “{t}”. Say the word and I will go through it with you.", "w"),
-        c("Next: “{t}”, your newest note. Summary, dates or what is left?", "t"), c("Latest note: “{t}”. Ask for what is open on it.", "t"),
+        c("Next: “{t}”, your newest note. Summary, dates or what is left?", "t"), c("Latest note: “{t}”. Ask “what is left in {t}”.", "t"),
         c("“{t}” is your newest. Dates or tasks?", "t"), c("Want “{t}” opened?", "t"),
         c("Your most recent note is “{t}”. I can summarise it, list its dates or show what remains open.", "f"),
         c("Should you wish to continue with “{t}”, your newest note, I can list what is outstanding.", "f"),
         c("The latest entry is “{t}”; I can retrieve its dates or its open items.", "f"),
         c("“{t}” is where you left off. Shall I dig out its open items or dates?", "p"), c("Fresh off your keyboard: “{t}”. Want the dates or what is left?", "p"),
-        c("Your newest page, “{t}”, is still warm. Ask what is left on it.", "p"),
+        c("Your newest page, “{t}”, is still warm. Ask “what is left in {t}”.", "p"),
     ),
     #: The same next step for a note the answer cited that is not the newest
     #: one: no "latest" or "newest" (INBOX 1357, class K: "Your latest note is
     #: Hello" under a gym answer, Hello being the oldest note).
     "close_cited": (
         c("Want me to open “{t}”, or pull out its dates?", "w"), c("Next, I can open “{t}” or pull out its dates.", "w"),
-        c("If it helps, ask me what is still open in “{t}”.", "w"), c("Say the word and I will go through “{t}” with you.", "w"),
+        c("If it helps, ask me “what is still open in {t}”.", "w"), c("Say the word and I will go through “{t}” with you.", "w"),
         c("I can summarise “{t}” or list what is left in it.", "w"),
         c("Open “{t}”? Dates or tasks?", "t"), c("“{t}”: summary, dates or what is left?", "t"),
         c("I can retrieve the dates or the open items in “{t}”.", "f"), c("Should you wish, I can summarise “{t}”.", "f"),

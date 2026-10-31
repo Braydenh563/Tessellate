@@ -2077,6 +2077,16 @@ function deactivateControls(root) {
   }
 }
 
+//: A note's lines as a card reads them: the picture block the app appends and
+//: the lines that are only an image dropped (a picture has its thumbnail).
+function sourceLines(content) {
+  return stripFrontmatter(String(content || ""))
+    .replace(/\n*\[Pictures in this note[\s\S]*$/, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !/^!\[[^\]]*\]\([^)]*\)$/.test(line));
+}
+
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
@@ -2097,19 +2107,21 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
   };
   for (const entry of meta?.raw_results || []) {
     if (grounded?.size && !grounded.has(entry.id)) continue;
-    const label = noteLabel(entry, 60);
-    //: A note has no title, so its label *is* its opening words, which means
-    //: the preview has to start where the label stopped, or the card prints
-    //: the same sentence twice (measured: it did).
-    const flat = String(entry.content || "").replace(/\s+/g, " ").trim();
+    //: The card's title is the note's first line and its preview what follows
+    //: it, the picture block the app adds and an image-only line left out
+    //: (INBOX 1496: the title said twice, then the body again).
+    const lines = sourceLines(entry.content);
+    const label = lines.length ? noteLabel({ content: lines[0] }, 60) : noteLabel(entry, 60);
+    const flat = notePreviewText(lines.join("\n")).replace(/\s+/g, " ").trim();
     const head = label.replace(/…$/, "");
     //: The label is elided at 60 characters, which usually lands mid-word, so
     //: the remainder starts mid-word too, and the card read "ling and why it
     //: matters for gradients." (measured, in a screenshot). Dropping the
     //: partial first word costs nothing and is the difference between a
-    //: preview and a typo.
-    const rest = flat.startsWith(head)
-      ? flat.slice(head.length).replace(/^\S*\s+/, "")
+    //: preview and a typo. Only after an elided label: a whole title ends
+    //: at a word.
+    const rest = flat.toLowerCase().startsWith(head.toLowerCase())
+      ? flat.slice(head.length).replace(label.endsWith("…") ? /^\S*\s+/ : /^\s+/, "")
       : flat;
     //: A board or a mind map is a row of `raw_results` too (INBOX 744: "whiteboard
     //: shows as a note and clicking it takes me to the notes page").
@@ -2390,11 +2402,14 @@ function chatSourcesPanel(input) {
       }
       card.appendChild(strip);
     }
-    const foot = document.createElement("span");
-    foot.className = "chat-source-foot muted";
-    const group = CHAT_SOURCE_GROUPS.find((g) => g.key === source.kind);
-    foot.textContent = source.url ? sourceHost(source.url) || "the web" : group?.one || source.kind;
-    card.appendChild(foot);
+    //: A web card says where it is from; a note's kind is its icon already, and
+    //: the bare word "note" under it was a line of its own (INBOX 1496).
+    if (source.url) {
+      const foot = document.createElement("span");
+      foot.className = "chat-source-foot muted";
+      foot.textContent = sourceHost(source.url) || "the web";
+      card.appendChild(foot);
+    }
     grid.appendChild(card);
   });
   body.appendChild(grid);

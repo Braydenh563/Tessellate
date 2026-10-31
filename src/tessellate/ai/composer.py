@@ -454,7 +454,8 @@ _ASKING_WORDS = frozenset(
     #: last week" was told "No note found brings up last"). The window they
     #: name is read by `when.window`; the subject is what is left.
     """last ago today yesterday tonight lately earlier summarise summarize
-    summary done pattern patterns habit habits trend trends""".split()
+    summary done pattern patterns habit habits trend trends
+    else another rest total version gist tldr""".split()
 )
 #: A time phrase names a window, not a subject: "last week", "3 days ago",
 #: "this month" come off whole before the subject is read, so "week 4"
@@ -650,17 +651,7 @@ _F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": 
 #: note that says "Ran" (audit 1030 Z4: "when did I run 8 km" answered with
 #: another run's sentence). Only forms that are rarely another word: not
 #: "saw", "left", "found", "felt".
-IRREGULAR_PAST = {
-    "ran": "run", "wrote": "write", "written": "write", "ate": "eat", "eaten": "eat", "swam": "swim", "swum": "swim",
-    "rode": "ride", "ridden": "ride", "drove": "drive", "driven": "drive", "bought": "buy", "went": "go", "gone": "go",
-    "flew": "fly", "flown": "fly", "took": "take", "taken": "take", "made": "make", "sold": "sell", "gave": "give",
-    "given": "give", "came": "come", "told": "tell", "spoke": "speak", "spoken": "speak", "slept": "sleep", "paid": "pay",
-    "met": "meet", "began": "begin", "begun": "begin", "broke": "break", "broken": "break", "chose": "choose",
-    "chosen": "choose", "forgot": "forget", "forgotten": "forget", "sent": "send", "built": "build", "heard": "hear",
-    "won": "win", "lost": "lose", "sat": "sit", "stood": "stand", "taught": "teach", "caught": "catch",
-    "brought": "bring", "drank": "drink", "drunk": "drink", "sang": "sing", "sung": "sing", "wore": "wear", "worn": "wear",
-    "woke": "wake", "grew": "grow", "grown": "grow",
-}
+IRREGULAR_PAST = variants.IRREGULAR_PAST
 
 
 def _stem_plain(word: str) -> str:
@@ -678,12 +669,19 @@ def _stem_plain(word: str) -> str:
 
 def _strip_suffix(w: str) -> str:
     for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
-        if w.endswith(suffix) and len(w) - len(suffix) >= least:
+        #: "baked", "liked", "named": a three-letter stem that lost a silent "e"
+        #: (it ends in a consonant; "ahead" and "bread" do not qualify).
+        short_ed = suffix == "ed" and len(w) == 5 and w[2] not in "aeiou" + "y" and w[-3] not in _VOWELS and _one_syllable_cvc(w[:-2])
+        if w.endswith(suffix) and (len(w) - len(suffix) >= least or short_ed):
             if suffix == "s" and w.endswith(("ss", "us", "is")):
                 break
             if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
                 continue
             w = w[: len(w) - len(suffix)] + keep
+            #: A plural of an "-ing" or "-ed" word folds like the word: "meetings"
+            #: and "meeting" are one key (audit 1031 C8).
+            if suffix in ("s", "es") and w.endswith(("ing", "ed")):
+                return _strip_suffix(w)
             #: "running" is "run" and "stopped" is "stop": the doubled last
             #: consonant a suffix brought is taken off with it (INBOX 725,
             #: measured: "what do my notes say about running" missed every
@@ -1014,7 +1012,8 @@ _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
 #: abbreviations; never merges two sentences, the safer direction here.
-_SPLIT = re.compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
+#: A full-width stop ends a sentence with no space after it (audit 1031 C10).
+_SPLIT = re.compile(r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*)")
 #: The lead-ins a person opens a sentence with that carry no claim, the tested
 #: list (INBOX 725: "Trim lead-ins ("So basically,") from quotes with a tested
 #: list"). `LEAD_INS` are taken off only with the comma or colon after them,
@@ -1156,7 +1155,9 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     #: A short line with a figure ("Rent 650.", "Mum 0412 555 019") or a
     #: "Label: value" shape is a fact, not noise: budgets, numbers and lists
     #: of values are written that way (audit 1028 E5).
-    if not words or (kind == "prose" and len(text.split()) < 3 and not _short_fact(text)):
+    #: A script with no spaces is one "word" to `split`: its length is its characters.
+    thin = len(text.split()) < 3 and not (composer_frame.NON_LATIN.search(text) and len(text) >= 6)
+    if not words or (kind == "prose" and thin and not _short_fact(text)):
         return None
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
 
@@ -1385,7 +1386,7 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     body = line_start + (len(line) - len(line.lstrip(" >")))
     cursor = body
     for match in _SPLIT.finditer(content, body, line_end):
-        unit = _unit(view, content, cursor, match.end(1), "prose", None)
+        unit = _unit(view, content, cursor, match.end(1) if match.group(1) else match.end(2), "prose", None)
         if unit:
             view.sentences.append(unit)
         cursor = match.end()
@@ -2943,7 +2944,9 @@ def heading_name(label: str) -> str:
 
 def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # noqa: ANN001
     """One side's heading and its lines."""
-    out.t("para", "bold").asked(heading_name(label)).t("bold")
+    name = heading_name(label)
+    #: Starts the line it heads, so it takes a capital as the note's title does (audit 1031 C24).
+    out.t("para", "bold").asked(name[:1].upper() + name[1:]).t("bold")
     #: The lead said each side's count ("one mentions Lisbon and two
     #: mention Porto"); the heading does not say it again (decision 52).
     if not side:
@@ -3481,6 +3484,9 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
     question's own subject. Each is a fixed question around the person's own
     words, so a chip never offers what the notes cannot answer about."""
     asked = {_stem(t) for t in terms} | {_stem(w) for w in query_understanding.search_terms(question)}
+    #: "random ahh" names no subject: the chips about it would ask for nothing.
+    if question_noise.filler_subject(" ".join(terms)):
+        terms = []
     found = (
         _shared_tag_pick(views, asked, cited),
         _unquoted_note_pick(views, asked, cited),
@@ -3505,6 +3511,14 @@ _PRONOUN = re.compile(r"\b(it|that|this|them|those|they)\b", re.I)
 #: with an asking word and either says "it" or has no subject of its own.
 _ASKS_SLOT = re.compile(r"^(?:and |so |ok |okay )*(?:what|when|where|who|which|how|why|is|are|was|were|does|do|did|can|could|will|would|should)\b", re.I)
 _SLOT_PRONOUN = re.compile(r"\b(?:it|its|that|them|those)\b", re.I)
+#: A question about a total or an instance with no subject of its own:
+#: "how far in total", "what's the total", "when was the last one".
+_TOTAL_WORDS = frozenset({"far", "much", "many", "long", "total", "last", "latest", "first", "next", "previous", "one", "altogether"})
+_TOTAL_ASK = re.compile(
+    r"^(?:and |so |ok |okay )*(?:what|when|where|how)\b(?!.*(?-i:[A-Z]\w|\d))"
+    r"(?=.*\b(?:in total|in all|altogether|the total|(?:the )?(?:last|latest|first|next|previous) one)\b)[^.]*$",
+    re.I,
+)
 #: A pronoun that is the point of the phrase, not a reference to a note.
 _NOT_REFERRING = re.compile(r"\b(?:what|how|when) (?:is|was) (?:it|that) like\b|\bwhat is (?:it|that)\b$|\bhow is it\b", re.I)
 
@@ -3588,6 +3602,30 @@ def _named_notes(answer: str) -> list[str]:
     return names
 
 
+#: "Which is the main note on uni", "which one is the defining note": the
+#: note that is plainly about the subject (`composer_digest._defines`), asked
+#: for, not a note property to search for (audit 1031 C26).
+_DEFINING_WORD = r"(?:main|defining|key|best|central|principal|primary|core|top|most important|definitive)"
+_DEFINING = re.compile(
+    rf"(?:and |so |ok |okay )?(?:which|whats?)(?:'s| is| one is| note is| one's)?(?: (?:is|note is|one is))? (?:my |the |your )?{_DEFINING_WORD}"
+    r"(?: (?:note|one|entry))?(?: (?:note|one|entry))?(?: (?:on|about|for|in|of) (?P<x>.+?))?[?.!\s]*",
+    re.I,
+)
+
+
+def _defining_ask(question: str, turns: list[dict]) -> FollowOn | None:
+    """The overview of the subject, whose lead is its defining note: the
+    subject is named, or the earlier question's."""
+    found = _DEFINING.fullmatch((question or "").strip())
+    if not found:
+        return None
+    previous = str(turns[-1].get("question") or "").strip() if turns else ""
+    named = re.sub(r"^(?:the|my|our)\s+", "", (found.group("x") or "").strip(), flags=re.I)
+    terms = subject_terms(previous) if previous else []
+    subject = named or (_asked_span(previous, terms) or " ".join(terms) if previous else "")
+    return FollowOn(f"what do I know about {subject}", previous, "", "subject") if subject else None
+
+
 def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
     """"Tell me more", "what about the second one", "when was that": a
     follow-up that only means something against the turn before (INBOX 725,
@@ -3605,6 +3643,9 @@ def follow_on(question: str, history: list[dict] | None) -> FollowOn | None:
         t for t in (history or [])
         if str(t.get("question") or "").strip() and not question_noise.social_kind(str(t.get("question") or ""))
     ]
+    defining = _defining_ask(question, turns)
+    if defining is not None:
+        return defining
     if not turns:
         return None
     return _follow_one(question, _standing(turns))
@@ -3661,7 +3702,8 @@ def _follow_ordinal(text: str, previous: str, last: dict, turns: list[dict]) -> 
     if names and (index == -1 or index < len(names)):
         resolved = text[: ordinal.start()] + f"“{names[index]}”" + text[ordinal.end():]
         return FollowOn(resolved, previous, "", "ordinal")
-    return None
+    #: No list to count in: "when was the last one" may still lean on the subject.
+    return _NOT_THIS
 
 
 def _follow_correction(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
@@ -3779,13 +3821,39 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
     return None
 
 
+#: "what should I get her", "what else do I know about him": a person the turn
+#: before named (audit 1031 C12).
+_PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
+
+
 def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
-    if not (_PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]):
+    bare = _PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]
+    #: "how much does it cost", "when is it due": the slot word is not a subject.
+    leans = refers_back(text) and _SLOT_PRONOUN.search(text)
+    person = _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:])
+    #: "what's the total", "how far in total": no subject of its own at all.
+    subjectless = bool(_TOTAL_ASK.search(text)) and not (bare or leans or person or _PRONOUN.search(text)) and not (
+        set(subject_terms(text)) - _TOTAL_WORDS
+    )
+    if not (bare or leans or person or subjectless):
         return None
     subject = _asked_span(previous, subject_terms(previous))
     if not subject:
         return None
-    return FollowOn(_PRONOUN.sub(lambda _match: subject, text, count=1), previous, "", "pronoun")
+    article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
+    #: A bare "that" keeps the old bare subject; the newer slot and person
+    #: follow-ons read with the article ("how much does the Lisbon trip cost").
+    named = (article.group(0).strip() + " " if article and not bare else "") + subject
+    if subjectless:
+        return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
+    pattern = _PRONOUN if bare else (_SLOT_PRONOUN if leans else _PERSON_PRONOUN)
+
+    def said(match: re.Match) -> str:
+        #: "her birthday" is "Sara's birthday"; "get her" is "get Sara".
+        possessive = match.group(0).lower() in ("his", "hers") or (match.group(0).lower() == "her" and bool(text[match.end():].strip(" ?.!")))
+        return named + ("'s" if possessive and pattern is _PERSON_PRONOUN else "")
+
+    return FollowOn(pattern.sub(said, text, count=1), previous, "", "pronoun")
 
 
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
@@ -4226,23 +4294,23 @@ _INVITE_KINDS = ("greeting", "morning", "test", "unclear")
 INVITES = {
     "natural": (
         "Your newest note mentions {subject}: ask “what did I write about {subject}” to pick up from there.",
-        "Lately you've been writing about {subject}; ask about it if you'd like to pick that back up.",
+        "Lately you've been writing about {subject}; ask me “what did I write about {subject}” to pick that back up.",
         "Your last note was about {subject}, so ask “what did I write about {subject}” to start there.",
         "Picking up where you left off: ask “what did I write about {subject}”.",
-        "The last thing you wrote touched on {subject}. Ask about it and I'll find the notes.",
-        "If it helps, “what did I write about {subject}” brings back your newest note.",
-        "Your notes most recently turned to {subject}; ask and I'll go through them with you.",
+        "The last thing you wrote touched on {subject}. Ask me “what did I write about {subject}” and I'll find the notes.",
+        "If it helps, ask me “what did I write about {subject}” and I will bring back your newest note.",
+        "Your notes most recently turned to {subject}; ask me “what did I write about {subject}” and I'll go through them with you.",
         "Carry on from your latest note: ask “what did I write about {subject}”.",
     ),
     "professional": (
         "The most recent note concerns {subject}; ask “what did I write about {subject}” to review it.",
-        "The latest entry mentions {subject}; ask about it to bring up the notes.",
-        "Your most recent entry refers to {subject}; ask to review it.",
+        "The latest entry mentions {subject}; ask “what did I write about {subject}” to bring up the notes.",
+        "Your most recent entry refers to {subject}; ask “what did I write about {subject}” to review it.",
         "To continue, ask “what did I write about {subject}”.",
-        "The newest note relates to {subject}; ask about it to return to it.",
-        "Recent entries mention {subject}; ask about it to retrieve them.",
+        "The newest note relates to {subject}; ask “what did I write about {subject}” to return to it.",
+        "Recent entries mention {subject}; ask “what did I write about {subject}” to retrieve them.",
         "To see the most recent entry, ask “what did I write about {subject}”.",
-        "The last entry recorded was about {subject}; ask to see it.",
+        "The last entry recorded was about {subject}; ask “what did I write about {subject}” to see it.",
     ),
 }
 
@@ -4494,10 +4562,29 @@ def _subject_left(question: str, terms: list[str], phrase: str) -> bool:
     return bool([t for t in left if t.lower() not in _RECALL_VERBS] if _RECALL.search(question or "") else left)
 
 
+def window_verb_stems(question: str, phrase: str) -> list[str]:
+    """The words of a question that is not a recall but names a window and no
+    subject ("how much did I save in October": save): what a note in the
+    window must hold to be read, the phrase's own words and the asking words
+    left out."""
+    said = {_stem(w) for w in re.findall(r"[\w']+", (phrase or "").lower())}
+    return [st for st in _words(question) if st not in said and st not in _ASKING_WORDS and len(st) > 2]
+
+
+def holds_any(stems: list[str], text: str) -> bool:
+    """Whether `text` holds any of the stems, or a word that starts with one
+    ("save" in "saved")."""
+    words = set(_words(text))
+    return any(_holds(st, words) or any(w.startswith(st) for w in words) for st in stems)
+
+
 def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> tuple[tuple | None, list[str]]:
     """The window the phrase names (None for none, or for one still ahead
     that sits beside a subject) and the subject terms left once the phrase's
     own words are taken out."""
+    if phrase and rec.a_topic_phrase(question, phrase):
+        said = [w for w in re.findall(r"[\w']+", phrase.lower()) if w not in rec.PHRASE_FILLER]
+        return None, terms + [w for w in said if w not in terms]
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today and _subject_left(question, terms, phrase):
         return None, terms
@@ -4735,6 +4822,68 @@ def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
     return max(lines, key=lambda line: (score(line), -lines.index(line)))
 
 
+#: The acts a how-to can name, and the words that say each in a help sentence
+#: (the coordinator, 2026-10-31: "how do I export documents?" led with the
+#: editor's four views, a sentence that never says export). A question that
+#: names an act is answered by the sentence that names it, whichever matched
+#: topic holds it.
+_HELP_ACTS: dict[str, tuple[str, ...]] = {
+    "export": ("export", "download"),
+    "import": ("import", "bring"),
+    "print": ("print", "pdf"),
+    "share": ("share", "publish", "send"),
+    "delete": ("delete", "remove", "trash", "bin"),
+    "restore": ("restore", "recover", "undelete"),
+    "move": ("move", "drag", "reorder"),
+    "rename": ("rename", "retitle"),
+    "attach": ("attach", "upload"),
+    "pin": ("pin", "unpin", "star", "favourite", "favorite"),
+}
+_HELP_ACT_STEMS = {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
+
+
+def _help_act(question: str) -> str:
+    """The act a how-to names (the first one typed), or ""."""
+    for word in re.findall(r"[a-z]+", (question or "").lower()):
+        stem = _stem(word)
+        for act, stems in _HELP_ACT_STEMS.items():
+            if stem in stems:
+                return act
+    return ""
+
+
+def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str] | None:
+    """The sentence naming `act` that says the most of the question, over every
+    matched topic (the first earns a little for coming first), with its
+    topic's id; None when no matched topic names the act."""
+    from tessellate.ai import help_chat
+
+    stems = _HELP_ACT_STEMS[act]
+    best: tuple[float, str, str] | None = None
+    for order, topic in enumerate(topics):
+        ask = _help_ask(question, topic)
+        for index, line in enumerate(help_chat.help_sentences(str(topic.get("body") or ""))):
+            words = [_stem(w) for w in re.findall(r"[a-z]+", line.lower())]
+            at = next((i for i, w in enumerate(words) if w in stems), None)
+            if at is None:
+                continue
+            #: A sentence that opens on the act is about it; one that mentions
+            #: it in passing ("in a print") is not.
+            #: The topic named for the act ("import-export") holds its sentence;
+            #: a wall of a sentence is a poor lead.
+            named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
+            score = _help_shared(line, ask) + named + (1.5 if at < 5 else 0.75 if at < 12 else 0.0) - (1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0) - 0.15 * order - 0.05 * index
+            if best is None or score > best[0]:
+                best = (score, line, str(topic.get("id", "")))
+    if best is None:
+        return None
+    lead = best[1]
+    if len(lead.split()) > _HELP_LEAD_WORDS:
+        clauses = [c for c in _clauses(lead) if stems & {_stem(w) for w in re.findall(r"[a-z]+", c.lower())}]
+        lead = max(clauses, key=lambda c: _help_shared(c, _help_ask(question, {"id": best[2]}))) if clauses else lead
+    return lead, best[2]
+
+
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     """The one sentence of the best topic that answers a how-to (its step
     sentence sharing the most of the question's words) and the topic's id:
@@ -4742,6 +4891,10 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     so help and chat say it in one voice. None with no topic."""
     if not topics:
         return None
+    act = _help_act(question)
+    named = _act_sentence(question, topics, act) if act else None
+    if named is not None:
+        return named
     topic = topics[0]
     from tessellate.ai import help_chat
 
@@ -5700,8 +5853,8 @@ def _window_gate(out: "_Answer", p, said: str, question: str, shape: str, views_
 #: "When was my gym log written", "what day did I create the pasta recipe",
 #: "what date was the essay started": about the note's own day, not its words.
 _WRITTEN_WHEN = re.compile(
-    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|started|start|"
-    r"added|add|saved|save|put together|jotted|typed|began|begun)\b",
+    r"\b(?:when|what (?:day|date))\b.{0,50}?\b(?:written|wrote|write|made|make|created|create|(?:started|start|began|begun)(?!\s+\w+ing\b)|"
+    r"added|add|saved|save|put together|jotted|typed)\b",
     re.I,
 )
 

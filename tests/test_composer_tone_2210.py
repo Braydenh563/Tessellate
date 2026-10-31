@@ -45,7 +45,9 @@ def test_closing_names_the_recent_work():
     line = composer_tone.closing(recent=["Harbor launch plan", "Dentist"], seed="s")
     assert "Harbor launch plan" in line
     assert "!" not in line and chr(0x2014) not in line
-    assert line[0].isupper()
+    #: A line may open on the quoted title ("“Harbor launch plan” is your newest note."):
+    #: the frame set has always held those, and the seed's pick once avoided them by luck.
+    assert line.lstrip("\u201c\"")[0].isupper()
 
 
 def test_closing_varies_with_the_seed():

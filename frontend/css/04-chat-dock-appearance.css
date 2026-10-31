@@ -738,7 +738,8 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    middle dot between the model, the length and the cost is the same
    separator the sidebar's own "21 min ago · 1 turn" line uses, so the two
    readings of "how big is this thread" are drawn the same way. */
-.chat-subline > *+*::before {
+/* Between shown chips only (INBOX 1495). */
+.chat-subline>:not([hidden])~:not([hidden])::before {
   content: "·";
   margin-right: var(--space-3);
   color: var(--border);
@@ -5411,12 +5412,12 @@ span > .chip {
    of the row is unchanged and only the pill's box moves. `overflow` stays
    visible here (unlike `#chat-usage`, which clips for its ellipsis), so an
    absolutely positioned pseudo-element outside the border box is drawn. */
-.chat-subline > * + .chat-context-pill {
+.chat-subline>:not([hidden])~.chat-context-pill {
   position: relative;
   margin-left: var(--space-5);
 }
 
-.chat-subline > * + .chat-context-pill::before {
+.chat-subline>:not([hidden])~.chat-context-pill::before {
   position: absolute;
   /* A box exactly as wide as the space the row's gap and the margin above
      leave open, sitting flush against the pill's left edge, with the dot

@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from tessellate.ai import utilities
+from tessellate.core import cjk
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/utilities/counts_1010.md"
@@ -59,6 +60,15 @@ def test_the_browser_counts_the_same():
     got = _node(fn + f"\nconsole.log(JSON.stringify(textCounts({json.dumps(text)})));")
     assert {k: got[k] for k in ("words", "chars", "lines")} == _wc()
     assert got["read"] == utilities.counts(text)["read"]
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+@pytest.mark.parametrize("text", ["", "two words", "考え：仕事を済ませてから、練習", "buy 牛乳 and 卵", "한국어 단어", "  spaced   out  "])
+def test_the_browser_and_the_server_count_words_the_same_way(text):
+    source = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    shared = source[source.index("const WORD_PER_CHARACTER") : source.index("function textCounts(")]
+    got = _node(shared + f"\nconsole.log(JSON.stringify(wordCount({json.dumps(text)})));")
+    assert got == cjk.word_count(text)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")

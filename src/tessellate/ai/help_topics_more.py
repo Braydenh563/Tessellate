@@ -1891,7 +1891,9 @@ MORE_TOPICS.extend(
                 "next shorter; and tell me more, once everything is said, "
                 "says that is all your notes hold. When one word means two "
                 "things in your notes (python the code, python the snake), "
-                "the answer takes the newer and offers one chip for the other."
+                "the answer takes the newer and offers one chip for the other. A "
+                "question the answer itself suggests (ask me \"...\") joins "
+                "them as a button that asks it."
             ),
             "badge": {"label": "Chat", "tab": "chat"},
         },

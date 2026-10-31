@@ -1303,7 +1303,7 @@ header#top-bar {
 header#top-bar h1 {
   margin: 0;
   font-size: var(--text-h3);
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
   white-space: nowrap;
   /* Never shrinks. `flex: 0 1 auto` with `min-width: 0` let the box get
      narrower than the text while `white-space: nowrap` kept the text at full

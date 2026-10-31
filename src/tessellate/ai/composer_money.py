@@ -464,15 +464,51 @@ def _only_priced(out, items: list[Item]) -> bool:  # noqa: ANN001
     return True
 
 
+#: "Rent is $1,200 a month", "groceries about $80 a week": a standing amount,
+#: said as the rate it is, never as money paid (audit 1031 C30).
+_RATE = re.compile(r"(?P<sign>[$£€¥])\s?(?P<n>\d[\d,]*(?:\.\d+)?)\s*(?:/|(?:a|per|each|every)\s+)(?P<per>day|week|fortnight|month|quarter|year)\b", re.I)
+_APPROX = re.compile(r"\b(?:about|around|roughly|approximately|approx|~)\b", re.I)
+_RATE_FILLER = re.compile(r"\b(?:is|are|was|were|cost|costs|runs|about|around|roughly|approximately|approx|at|of|comes to|come to)\b|~", re.I)
+#: A period typed with the ask ("what do I spend on rent a month") is no part of the subject.
+_PERIOD_ASKED = re.compile(r"\b(?:(?:a|per|each|every) (?:day|week|fortnight|month|quarter|year)|daily|weekly|monthly|yearly|annually)\b", re.I)
+
+
+def _rates(views: list, subject: list[str]) -> list[tuple[str, Item]]:
+    """The standing amounts the notes give about the subject, each as the
+    words to say it and its Item (for the citation)."""
+    found: list[tuple[str, Item]] = []
+    for view in views:
+        for sentence in view.sentences:
+            hit = _RATE.search(sentence.text)
+            if not hit or not _about(view, sentence, subject):
+                continue
+            before = sentence.text[: hit.start()]
+            label = " ".join(_RATE_FILLER.sub(" ", before).split()).strip(" :-,") or _note_name(view)  # noqa: SLF001
+            said = f"{label.lower()} {'about ' if _APPROX.search(before) else ''}{hit['sign']}{hit['n']} a {hit['per'].lower()}"
+            found.append((said, Item(label, hit["sign"], float(hit["n"].replace(",", "")), view, sentence)))
+    return found
+
+
+def _say_rates(out, rates: list[tuple[str, Item]], lead: str) -> bool:  # noqa: ANN001
+    lead = lead.replace("a regular amount", "regular amounts") if len(rates) > 1 else lead
+    line = f"{lead} {_listed([said for said, _ in rates])}."
+    out.lines.append(line)
+    _cite_all(out, [item for _, item in rates], line)
+    return True
+
+
 def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     win = _window_asked(rest, today, views)
-    subject, said = _subject(rest)
+    subject, said = _subject(_PERIOD_ASKED.sub(" ", rest))
     every = _items(views, win, subject)
     items = spent_only(every, today)
+    rates = [] if win else _rates(views, subject)
     if every and not items:
-        return _only_priced(out, every)
+        return _only_priced(out, every) and (not rates or _say_rates(out, rates, "Your notes also give a regular amount:"))
     when = f" {win.said}" if win else ""
     on = f" on {said}" if said else ""
+    if not items and rates:
+        return _say_rates(out, rates, "Your notes give a regular amount:")
     if not items:
         out.lines.append(f"I found no amounts spent{on}{when} in your notes.")
         return True
@@ -628,7 +664,10 @@ _CALENDAR = frozenset({"day", "days", "week", "weeks", "fortnight", "fortnights"
 _DIMENSION_WORDS = {"far": "length", "distance": "length", "weight": "mass", "time": "time", "long": "time"}
 _DOER = re.compile(r"^\s*(?:(?:did|have|had|do) (?:i|we)|i've|i have|we've|i|we) (?P<verb>[a-z]+)\b(?P<after>.*)$", re.I)
 #: Verbs that say a measure was recorded, not what was done: no filter.
-_ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have"})
+_ANY_VERB = frozenset({"spend", "spent", "been", "got", "get", "done", "do", "logged", "recorded", "noted", "tracked", "put", "had", "have", "go", "went", "gone"})
+#: "how far in total", "how many km altogether": the sum asked with no doing
+#: word; what follows ("for running") names the subject.
+_TOTAL_TAIL = re.compile(r"\s*(?:in total|altogether|overall|all up|in all|in sum)\b(?P<after>[^?!.]*)", re.I)
 _PAST = {"run": ("ran", "run"), "swim": ("swam", "swum"), "ride": ("rode", "ridden"), "drive": ("drove", "driven"), "lose": ("lost", "lost"), "gain": ("gained", "gained")}
 _BASE = {forms[0]: verb for verb, forms in _PAST.items()} | {forms[1]: verb for verb, forms in _PAST.items()}
 
@@ -682,10 +721,13 @@ def _measure_asked(q: str) -> _Measure | None:
     if not dimension:
         return None
     doer = _DOER.match(m.group("rest"))
+    total = None if doer or m.group("noun") else _TOTAL_TAIL.fullmatch(m.group("rest"))
     #: "How many days until..." and "how far is the station" are a day and a
-    #: fact, not a sum: a sum is asked of something done.
-    if not doer and not m.group("noun") or word in _CALENDAR or _one_day(m.group("rest")):
+    #: fact, not a sum: a sum is asked of something done, or asked as a total.
+    if not (doer or m.group("noun") or total) or word in _CALENDAR or _one_day(m.group("rest")):
         return None
+    if total:
+        return _Measure(dimension, word if named else "", "", total.group("after"))
     verb = doer.group("verb").lower() if doer and doer.group("verb").lower() not in _ANY_VERB else ""
     #: "total time spent on sourdough": "spent" is the sum's own word, not a doing to match.
     rest = re.sub(r"^\s*(?:spent|taken|logged|recorded)\b", "", m.group("rest"))

@@ -21,7 +21,9 @@ _UNSEGMENTED = re.compile(
 #: What counts one by one in a word count: Han and kana (Hangul and the
 #: south-east Asian scripts are not counted by character).
 _PER_CHARACTER = re.compile("[⺀-⿟぀-ヿㇰ-ㇿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]")
-_IGNORED = re.compile(r"[ー・　-〿]")
+#: Ignored: the long-vowel mark, the middle dot, CJK punctuation, and full-width punctuation
+#: (the colon, comma, brackets and so on; full-width letters and digits stay words).
+_IGNORED = re.compile(r"[ー・\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65]")
 
 
 def has(text: str) -> bool:

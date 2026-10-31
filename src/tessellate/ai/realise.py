@@ -284,12 +284,31 @@ def after_comma(text: str) -> str:
 _DANGLING = frozenset("a an the and or but nor of to in on at for with by from as is are was were my your our their its this that if so then".split())
 
 
+#: A run of Han or kana: a line in it has no spaces to cut at, and each of its
+#: characters says what a word does (INBOX 1495).
+_SPACELESS = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]{6}")
+_CLAUSE_MARK = re.compile(r"[：:、，,。！？!?（(]")
+
+
+def _clip_spaceless(flat: str, limit: int) -> str:
+    """A long line with no spaces, clipped at its first clause mark past a
+    short lead ("考え：仕事を済ませてから、..." as "考え：仕事を済ませてから…"),
+    else at `limit` characters."""
+    for mark in _CLAUSE_MARK.finditer(flat, 4):
+        if mark.start() <= limit:
+            return flat[: mark.start()].rstrip("：:、，,") + "…"
+        break
+    return flat[:limit].rstrip("：:、，,") + "…"
+
+
 def cut_title(title: str, limit: int) -> str:
     """The one clip for a name or a line said back (audit 1029 C9): at most
     `limit` characters, cut at a word with an ellipsis, never through a word
     and never after a word that cannot end a phrase. Text that fits is
     returned whole, spaces folded."""
     flat = " ".join((title or "").split())
+    if _SPACELESS.search(flat) and len(flat) > limit // 3:
+        return _clip_spaceless(flat, limit // 3)
     clipped = clip_words(flat, limit)
     if clipped == flat:
         return flat

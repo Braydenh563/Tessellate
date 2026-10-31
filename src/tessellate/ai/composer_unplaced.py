@@ -70,6 +70,16 @@ _SMALL = frozenset("up good new that this it next wrong going happening popping 
 _SHORT_OPEN = re.compile(r"^(?:what's|whats|who's|whos|define) (?P<rest>[a-z0-9'-]{2,40})$")
 
 
+#: "ur mum", "your mom is fat", "ya dad": a jibe at the assistant's family. A
+#: note about someone's mum answers "what did mum say", never this (C21).
+_JIBE = re.compile(r"^(?:ur|your|yer|ya|yo|youre|you're|you are|u r) (?:mum|mom|mama|momma|mother|dad|father|face|nan|gran)(?: (?:is|was|so|lol|haha|too|fat|ugly|stupid|dumb|gay|a \w+))*$")
+
+
+def jibe(message: str) -> bool:
+    """The whole message is a jibe at the assistant: asked back, whatever notes hold "mum"."""
+    return bool(_JIBE.search(clean(message)))
+
+
 def clean(message: str) -> str:
     """Lowercase words and nothing else: no emoji, no stray punctuation."""
     return " ".join(re.sub(r"[^\w' ]+", " ", (message or "").lower().replace("’", "'")).split())
