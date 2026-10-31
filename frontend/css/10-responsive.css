@@ -2318,20 +2318,7 @@ header#top-bar[data-scrolled="1"],
     padding-inline: var(--space-1) var(--space-2);
   }
   #tab-documents .doc-statusbar {
-    flex-wrap: nowrap;
     overflow: hidden;
-  }
-  #tab-documents .doc-statusbar > * {
-    flex: 0 0 auto;
-  }
-  /* The counts give way, with an ellipsis, so the two controls keep their
-     words and their targets. */
-  #tab-documents #doc-counts {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   /* A phone's formatting is the bar at the thumb (below), always there in
      Edit, so the dock's way back to the desktop strip (INBOX 574) would be a

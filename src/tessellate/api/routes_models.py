@@ -211,11 +211,8 @@ def _installed_state(client, *, patient: bool = True) -> tuple[list[dict] | None
         last_known = _installed_known.get(key)
     #: `patient=False` (the shortlist) never waits past the short budget: sizes
     #: fall back to the shipped figures, which is better than a blank card list.
-    cold = not (has_known or not patient)
-    if not cold:
-        wait = INSTALLED_REFRESH_BUDGET
-    else:
-        wait = 0 if key in _installed_cold_paid else INSTALLED_COLD_BUDGET
+    cold = bool(patient and not has_known)
+    wait = (0 if key in _installed_cold_paid else INSTALLED_COLD_BUDGET) if cold else INSTALLED_REFRESH_BUDGET
     flight.done.wait(wait)
     if not flight.done.is_set():
         if cold:

@@ -5,6 +5,8 @@ docs/roadmap/agent-remaining/xfix-1031.md); these keep the shape from drifting.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from tests._app_js import frontend_text
 
 
@@ -68,7 +70,7 @@ def test_z2_stopping_a_clock_is_offered_back() -> None:
 def test_z5_a_pickable_chart_has_full_size_chips_on_a_phone() -> None:
     js = frontend_text("ask-chart.js")
     assert "function askChartChips" in js and "chart.interactive && chart.onPick" in js
-    css = (frontend_text("ask-chart.js") and open("frontend/css/utilities-lazy.css", encoding="utf-8").read())
+    css = Path("frontend/css/utilities-lazy.css").read_text(encoding="utf-8")
     assert ".ask-chart-chips {\n  display: none;" in css
     assert "min-height: var(--target-min);" in css
 
@@ -82,7 +84,7 @@ def test_z14_live_captions_doors_are_hidden_when_no_engine_is_installed() -> Non
     assert "captions-off" in body, "its own class, so the dialog's state toggle of `hidden` never undoes it"
     assert "syncCaptionsDoors()" in js[js.index("async function openMeetingRecorder"):js.index("function openVoiceNote")]
     assert "syncCaptionsDoors()" in js[js.index("async function renderRecordings"):][:400]
-    css = open("frontend/css/meetings-lazy.css", encoding="utf-8").read()
+    css = Path("frontend/css/meetings-lazy.css").read_text(encoding="utf-8")
     assert "button.captions-off {\n  display: none;" in css
 
 
