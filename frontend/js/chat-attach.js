@@ -2320,6 +2320,14 @@ async function chatSendTurn(preset, opts = {}) {
   //: composer or a specific ai model generated it"; INBOX 1300 C14: "a badge
   //: or smnth similar"): the `replyByline` chip through `finishReply` above,
   //: From your notes, the model, or Composer when the app answered itself.
+  //: Stop before the first word left a bubble with a name and no body
+  //: (HR9); it says what happened where the answer would have been.
+  if (stopped && !answerRaw && !toolEvents.length) {
+    const note = document.createElement("div");
+    note.className = "msg-meta";
+    note.textContent = "Stopped before an answer.";
+    bubble.appendChild(note);
+  }
   if (answerRaw || toolEvents.length) {
     bubble.appendChild(
       messageMetaLine({
@@ -3082,10 +3090,13 @@ function chatDeleteUndo(gone, after = () => {}) {
 //: are chat-undo.js, fetched on the first write, out of the boot scripts.
 async function promptTitle(message, initial) {
   const asked = promptDialog(message, initial);
-  document.querySelector(".prompt-card input").maxLength = 120;
-  const next = (await asked)?.trim();
-  if (next === "") toast("Title kept.");
-  return next || null;
+  //: A blank title cannot be saved (the field is required, so Save says
+  //: so in place), which makes "" mean one thing: Esc or Cancel, and that
+  //: changes nothing, so nothing is said (AI19; it toasted "Title kept.").
+  const field = document.querySelector(".prompt-card input");
+  field.maxLength = 120;
+  field.required = true;
+  return (await asked)?.trim() || null;
 }
 
 function chatWriteRecord(name, ...args) {

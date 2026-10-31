@@ -198,6 +198,8 @@ async function modelCancel(model, button) {
   if (button) button.disabled = true;
   try {
     await api(`/models/jobs/cancel?kind=pull&name=${encodeURIComponent(model.name)}`, { method: "POST" });
+    //: The row used to vanish with nothing said (HR19).
+    toast(`Stopped downloading ${model.name}.`);
   } catch (error) {
     toast(error.message, true);
   }

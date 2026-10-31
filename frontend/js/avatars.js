@@ -3870,6 +3870,9 @@ function nameMarkBuddyDodge() {
   const me = face.getBoundingClientRect();
   const over = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
   buddy.classList.toggle("nmb-dodge", over);
+  //: Faded to a ghost, it is not a place the keyboard may stop either: a
+  //: face nobody can see took Tab and left focus on nothing (AI3).
+  buddy.toggleAttribute("inert", over);
   if (!over) return;
   if (!nmb.pinned) queueNameMarkBuddyCheck();
   //: Looked at again while it is faded, so it fades back as soon as it has

@@ -3413,6 +3413,11 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     lead = _guide_lead(question, topics)
     if state and re.search(r"\bby default\b", lead):
         lead = _second_sentence(question, topics[0]["body"], lead) or lead
+    #: The topic's instruction is written for the switch off ("Turn it on
+    #: in ..."); said after "... is on now." it contradicts, so each state
+    #: gets its own sentence (audit 1031 AI12).
+    if state.endswith(" is on now."):
+        lead = re.sub(r"^Turn it on\b", "Turn it off", lead)
     return " ".join(x for x in (state, lead) if x)
 
 

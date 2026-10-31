@@ -1022,7 +1022,7 @@ async function saveFile(filename, blob) {
   }
   downloadBlob(blob, filename);
   //: UX-11: a download said nothing; Settings' list is the desktop's folder.
-  toast(`Downloaded ${filename}, to your browser's downloads.`);
+  toast(`Downloaded ${filename} to your browser's downloads.`);
   //: The browser's own downloads shelf has the file; this is the record of
   //: it inside the app, so the notifications list says the same thing on a
   //: browser tab as it does on the desktop (INBOX 159).

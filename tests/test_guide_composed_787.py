@@ -155,7 +155,9 @@ def test_a_switch_topic_says_how_the_switch_is_set_now(monkeypatch):
     for on in (False, True):
         monkeypatch.setattr(help_chat, "_preference", lambda _key, _default, on=on: on)
         lead = help_chat.offline_answer("how do i turn on web search")["content"].split("\n\n")[0]
-        assert lead.startswith(f"Web search is {'on' if on else 'off'} now. Turn it on in Settings, Web search"), lead
+        #: One instruction per state (audit 1031 AI12): "is on now. Turn it
+        #: on in ..." contradicted itself, so on says how to turn it off.
+        assert lead.startswith(f"Web search is {'on' if on else 'off'} now. Turn it {'off' if on else 'on'} in Settings, Web search"), lead
         assert "by default" not in lead
 
 

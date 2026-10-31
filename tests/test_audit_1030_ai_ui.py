@@ -67,10 +67,13 @@ def test_chat_pin_rename_and_archive_offer_undo_on_the_toast_a32():
     assert 'toast("Archived.");' not in (frontend / "sheets-selects.js").read_text(encoding="utf-8")
 
 
-def test_a_rename_is_bounded_and_a_blank_one_says_the_title_was_kept_a33():
+def test_a_rename_is_bounded_and_a_blank_one_cannot_be_saved_a33():
+    #: The intent moved with audit 1031 AI19: a blank title used to resolve
+    #: like a cancel and toast "Title kept." (so did Esc); the field is now
+    #: required, so a blank cannot be saved and Esc says nothing.
     js = app_js_text()
     assert js.count("await promptTitle(") == 3
-    assert ".maxLength = 120" in js and 'toast("Title kept.")' in js
+    assert ".maxLength = 120" in js and "field.required = true" in js and 'toast("Title kept.")' not in js
     assert RenameBody(title="  Trip  ").title == "Trip"
     with pytest.raises(ValidationError):
         RenameBody(title="   ")
