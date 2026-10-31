@@ -25,6 +25,7 @@ from tessellate.ai.model_manager import (
     FOLLOW_UTILITY_MODEL,
     SUGGESTED_MODELS,
 )
+from tessellate.ai import ollama_client
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.core import background, deps, hardware, ocr, security
 from tessellate.core.deps import get_session
@@ -446,8 +447,13 @@ def status(session: Session = Depends(get_session)) -> dict:
     #: running"); a custom one is as likely a typo, so the line names it.
     default_url = deps.DEFAULT_BASE_URLS.get(provider, "")
     custom = (ollama.base_url or "").rstrip("/") != default_url.rstrip("/")
+    #: A runner busy with a generation or a model load answers late, not
+    #: never: a probe that timed out (not refused) says so (audit 1031 HR2).
+    busy = not running and not checking and ollama_client.is_quiet(ollama.base_url)
     unreachable_hint = (
-        f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
+        "The model server did not answer in time. It is probably busy, so it is asked again."
+        if busy
+        else f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
         if not running and custom
         else None
     )
@@ -457,6 +463,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         # backend is answering", which is the question the pill asks whoever
         # is answering it.
         "ollama_running": running,
+        "ollama_busy": busy,
         #: True when nothing has answered yet and the runner is still being
         #: asked (the first seconds after a start): "not known", not "down".
         #: The page keeps what it had and asks again in a moment.

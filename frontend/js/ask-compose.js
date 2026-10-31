@@ -791,7 +791,7 @@ async function renderAskFollowups(question, answer, given = null) {
       picks = await apiJson("/chat/followups", {
         method: "POST",
         silent: true,
-        body: JSON.stringify({ question, answer }),
+        body: JSON.stringify({ question: clipFor("followQuestion", question), answer: clipFor("followAnswer", answer) }),
       });
     } catch {
       return;

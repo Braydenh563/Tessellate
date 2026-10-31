@@ -65,6 +65,15 @@ function assistantLabel() {
 //: being wider than the bubble it belongs to.
 const MSG_ACTIONS_VISIBLE = 5;
 
+//: **What the server takes, in one place** (audit 1031 AI10): a long question
+//: sent whole to a speculative route came back 422 twice per question. Each
+//: route's cap is here, and a request clips to it before it is sent.
+const CLIP_LIMITS = { warm: 2000, followQuestion: 2000, followAnswer: 20000 };
+
+function clipFor(route, text) {
+  return String(text ?? "").slice(0, CLIP_LIMITS[route]);
+}
+
 function chatMessageActions(actions) {
   actions = actions.filter(Boolean);
   const row = document.createElement("div");
@@ -169,7 +178,8 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
       title: "Save this answer as a draft note",
       onClick: () => saveChatAnswerAsNote(question, text),
     },
-    { label: "ph:tree-structure", title: "Mind map this", onClick: () => chatKeep("map", text) },
+    //: Under a sentence there is no outline to draw (the server says 422).
+    String(text || "").trim().split(/\s+/).length < 4 ? null : { label: "ph:tree-structure", title: "Mind map this", onClick: () => chatKeep("map", text) },
     { label: "ph:alarm", title: "Set a reminder from this answer", onClick: () => reminderFromChatAnswer(text) },
     ...(onEdit ? [{ label: "ph:pencil-simple", title: "Edit this answer", onClick: onEdit }] : []),
     {

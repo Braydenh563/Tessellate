@@ -24,6 +24,22 @@ AI_FAILED_MESSAGE = (
     "The AI couldn't finish that. Check that it is running and the model is "
     "installed in Settings, Models, then try again."
 )
+#: The same line for a runner that took the probe and did not answer in time
+#: (busy with a generation or a load): not "doesn't seem to be running"
+#: (audit 1031 HR2).
+BUSY_MESSAGE = (
+    "The AI answer isn't available right now (the model did not answer in "
+    "time, it may be busy), but here are the notes that match your question."
+)
+
+
+def offline_message(ollama) -> str:  # noqa: ANN001
+    """OFFLINE_MESSAGE for a refused or missing server, BUSY_MESSAGE for a quiet one."""
+    from tessellate.ai import ollama_client
+
+    return BUSY_MESSAGE if ollama_client.is_quiet(getattr(ollama, "base_url", "")) else OFFLINE_MESSAGE
+
+
 NO_RESULTS_MESSAGE = "I couldn't find any saved notes matching that question."
 
 
@@ -828,7 +844,7 @@ def answer(
     if not notes and not images and not image_context:
         return NO_RESULTS_MESSAGE, None
     if not ollama.is_running():
-        return OFFLINE_MESSAGE, None
+        return offline_message(ollama), None
 
     model = model_override or (
         model_manager.utility_model() if use_utility_model else model_manager.chat_model()

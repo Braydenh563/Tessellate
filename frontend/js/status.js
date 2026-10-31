@@ -2892,7 +2892,7 @@ function renderSettings() {
   ollamaLine.textContent = status.ollama_running
     ? `${backend} is running`
     : status.unreachable_hint || `${backend} isn't running`;
-  ollamaLine.className = `status ${status.ollama_running ? "ok" : "off"}`;
+  ollamaLine.className = `status ${status.ollama_running ? "ok" : status.ollama_busy ? "is-checking" : "off"}`;
   //: A slow poll keeps the last answer on screen (see refreshModelStatus), so
   //: the line says so instead of presenting a stale answer as fresh.
   if (modelStatusProblem === "slow") {

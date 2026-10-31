@@ -9933,6 +9933,14 @@ function nameMarkBuddyBuild() {
       event.preventDefault();
       nameMarkBuddyMenu(buddy);
     }
+    //: The drag has a keyboard twin (WCAG 2.5.7): an arrow moves it 16px,
+    //: with Shift 64, and the place is kept like a drop's (AI17).
+    const step = NMB_NUDGE[event.key];
+    if (step && !nmb.visit && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      const far = event.shiftKey ? 64 : 16;
+      nameMarkBuddyNudge(buddy, step[0] * far, step[1] * far);
+    }
   });
   let hold = 0;
   face.addEventListener("pointerdown", (event) => {
@@ -9959,6 +9967,19 @@ function nameMarkBuddyBuild() {
     // Nothing to tidy.
   }
   return buddy;
+}
+
+const NMB_NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+function nameMarkBuddyNudge(buddy, dx, dy) {
+  if (!Number.isFinite(nmb.x)) return;
+  const spot = { x: nmb.x + dx, y: nmb.y + dy, pose: nmb.pose, legs: nmb.legs };
+  nmb.placedAt = Date.now();
+  nameMarkBuddyMoveTo(buddy, spot);
+  const spots = nameMarkBuddySpots();
+  delete spots["*"];
+  spots[nameMarkBuddyTab()] = nameMarkBuddySpotFor(spot);
+  nameMarkBuddyKeepSpots(spots);
 }
 
 function syncNameMarkBuddy() {

@@ -2661,7 +2661,7 @@ async function offerFollowups(bubble, question, answer, given = null) {
       picks = await apiJson("/chat/followups", {
         method: "POST",
         silent: true,
-        body: JSON.stringify({ question, answer }),
+        body: JSON.stringify({ question: clipFor("followQuestion", question), answer: clipFor("followAnswer", answer) }),
       });
     } catch {
       return; // no honest error state for a suggestion, see the module note

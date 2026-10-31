@@ -260,10 +260,16 @@ def split(text: str, known=frozenset(), in_notes=None) -> Address:  # noqa: ANN0
 _EMOTICON = re.compile(r"(?:(?<=\s)|^)(?:[:;=8xX][-o^']?[)(DPpOo3/\\|*]+|<3|\^[_.]?\^|[xX]D+|[:;]'?[()])(?=\s|$|[.,!?])")
 
 
+#: A call is a few words. Past this it is a message, and a 3,000-character
+#: run of letters is not a name for the assistant (audit 1031 AI8: it was
+#: greeted "Right here. What's up?").
+CALL_MAX_CHARS = 120
+
+
 def _split(text: str, known) -> Address:  # noqa: ANN001
     raw = _EMOTICON.sub("", text or "").strip()
     tokens = _tokens(raw)
-    if not tokens:
+    if not tokens or len(raw) > CALL_MAX_CHARS:
         return Address(question=raw)
     known = frozenset(w.lower() for w in known)
     found = _head(raw, tokens, known)

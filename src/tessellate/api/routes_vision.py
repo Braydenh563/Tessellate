@@ -387,23 +387,26 @@ class ChartQuestion(BaseModel):
 _BY_WORDS = {"category": "per category", "tag": "per tag", "day": "per day", "week": "per week", "month": "per month", "year": "per year"}
 
 
-@router.post("/charts/question")
-def chart_for_question(body: ChartQuestion, session: Session = Depends(get_session)) -> dict:
-    """A chart's numbers for a counting or trend question, or `chart: null`.
-    No model: the words choose the grouping and the period, the records give
-    the counts, so the chart is the same with the model off."""
-    asked = parse_chart_question(body.question)
+def question_chart(session: Session, question: str) -> dict | None:
+    """The chart a counting or trend question asks for, or None: no model, the
+    words choose the grouping and the period and the records give the counts."""
+    asked = parse_chart_question(question)
     if asked is None:
-        return {"chart": None}
+        return None
     rows = count_notes(session, asked["by"], asked["since"], asked["until"])
     total = sum(r["value"] for r in rows) if asked["by"] not in ("tag",) else None
     return {
-        "chart": {
-            "title": f"Notes {_BY_WORDS[asked['by']]}, {asked['period']}",
-            "by": asked["by"],
-            "kind": "bar" if asked["by"] in ("category", "tag") else "line",
-            "period": asked["period"],
-            "rows": rows,
-            "total": total,
-        }
+        "title": f"Notes {_BY_WORDS[asked['by']]}, {asked['period']}",
+        "by": asked["by"],
+        "kind": "bar" if asked["by"] in ("category", "tag") else "line",
+        "period": asked["period"],
+        "rows": rows,
+        "total": total,
     }
+
+
+@router.post("/charts/question")
+def chart_for_question(body: ChartQuestion, session: Session = Depends(get_session)) -> dict:
+    """A chart's numbers for a counting or trend question, or `chart: null`.
+    The chart is the same with the model off."""
+    return {"chart": question_chart(session, body.question)}

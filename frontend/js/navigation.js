@@ -1839,7 +1839,7 @@ document.addEventListener("input", (event) => {
     const q = box.value.trim();
     if (q.split(/\s+/).length < 3 || q === warmState.last || !authToken()) return;
     warmState.last = q;
-    apiJson("/search/warm", { method: "POST", body: JSON.stringify({ q }), silent: true }).catch(backgroundWriteFailed);
+    apiJson("/search/warm", { method: "POST", body: JSON.stringify({ q: clipFor("warm", q) }), silent: true }).catch(backgroundWriteFailed);
   }, 600);
 });
 

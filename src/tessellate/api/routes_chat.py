@@ -3731,6 +3731,22 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     return _no_notes_answer(req, ollama_running) + _web_chip(req)
 
 
+_CHART_ASKED = re.compile(r"\b(?:chart|graph|plot|visuali[sz]e|trend)\b", re.I)
+
+
+def _chart_line(req: _StreamRequest) -> str:
+    """What the chart beside a counting question shows, or ""."""
+    from tessellate.api import routes_vision
+
+    if not _CHART_ASKED.search(req.question or ""):
+        return ""
+    drawn = routes_vision.question_chart(req.session, req.question or "")
+    if not drawn or not any(row["value"] for row in drawn["rows"]):
+        return ""
+    total = f", {drawn['total']:,} in all" if drawn["total"] is not None else ""
+    return f"{drawn['title']}{total}."
+
+
 def _no_notes_answer(req: _StreamRequest, ollama_running: bool) -> list:
     """The line for a question no note answers, and what else the notebook holds on it."""
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
@@ -4199,6 +4215,14 @@ def _no_model_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
         drawn = _diagram_events(req, prepared)
         if drawn is not None:
             return drawn
+    #: A question the chart route draws ("chart my notes by category") is not
+    #: a search for the word "chart": the line says what the chart shows, so
+    #: the two halves agree (audit 1031 AI7). Only when a chart is asked for
+    #: by name: a plain count ("how many notes about soup") is the counted
+    #: answer's.
+    charted = _chart_line(req) if _app_answers(req, ollama_running) and not req.images_raw else ""
+    if charted:
+        return [{"type": "answer", "delta": charted}]
     if _web_first(req, prepared) and not req.images_raw and not ollama_running and _web_allowed(req):
         #: No note answers, no model runs, and web search is on: the web's
         #: own sentences, cited by address (decision 37).

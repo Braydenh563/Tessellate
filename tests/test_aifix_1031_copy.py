@@ -110,3 +110,37 @@ def test_ai16_a_parked_sidebar_sheet_is_out_of_the_tab_order():
     css = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
     parked = re.search(r"#skills-sidebar > \* \{\s*visibility: hidden;", css)
     assert parked, "the parked sheet's children are visibility: hidden (INBOX 433)"
+
+
+def test_ai17_an_arrow_key_moves_the_companion_and_the_guide_says_so():
+    src = _text("avatars.js")
+    assert "const NMB_NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };" in src
+    assert "const far = event.shiftKey ? 64 : 16;" in src
+    from tessellate.ai import help_topics_more
+
+    body = next(t["body"] for t in help_topics_more.MORE_TOPICS if t["id"] == "companion")
+    assert "arrow key" in body and "16 pixels" in body and "Shift for 64" in body
+
+
+def test_ai10_requests_are_clipped_to_the_server_caps_before_they_go():
+    from tessellate.api import routes_chat, routes_search
+
+    chat = _text("chat.js")
+    caps = dict(re.findall(r"(\w+): (\d+)", re.search(r"const CLIP_LIMITS = \{([^}]*)\}", chat).group(1)))
+    assert int(caps["warm"]) == routes_search.WarmBody.model_fields["q"].metadata[0].max_length
+    follow = routes_chat.FollowupBody.model_fields
+    assert int(caps["followQuestion"]) == follow["question"].metadata[0].max_length
+    assert int(caps["followAnswer"]) == follow["answer"].metadata[0].max_length
+    assert 'clipFor("warm", q)' in _text("navigation.js")
+    for name in ("chat-attach.js", "ask-compose.js"):
+        assert 'clipFor("followQuestion", question)' in _text(name) and 'clipFor("followAnswer", answer)' in _text(name)
+    # A one-word answer has no outline: the mind map item is not offered for it.
+    assert 'trim().split(/\\s+/).length < 4 ? null : { label: "ph:tree-structure"' in chat
+
+
+def test_hr12_an_import_the_server_refuses_says_why():
+    src = _text("settings-controls.js")
+    body = src[src.index("function pickJsonFile"):src.index("function textToSteps")]
+    assert "await apply(data);" in body
+    assert "apply(JSON.parse(" not in body
+    assert 'toast(error?.message || "Couldn\'t import that file.", true);' in body

@@ -65,9 +65,11 @@ _CHALLENGE_MARKERS = (
     "detected unusual",
     "are you a robot",
     "captcha",
-    "blocked",
-    "rate limit",
 )
+#: "blocked" and "rate limit" were here too, and a proxy's deny page or a
+#: captive portal says both: with no network the app told people DuckDuckGo
+#: was rate-limiting them (audit 1031 AI11). A page that names none of the
+#: markers above is reported as what it is, an unexpected page.
 
 def _private_session() -> requests.Session:
     """A one-shot session that keeps nothing between calls.

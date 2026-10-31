@@ -96,3 +96,92 @@ def test_hr8_a_table_of_zeros_recommends_nothing():
     good = bench.ModelScore("b")
     good.filing, good.citation, good.tools = [1.0], [1.0], [1.0]
     assert zero.score < bench.RECOMMEND_FLOOR <= good.score
+
+
+def _said(client, question):
+    import json
+
+    body = {"question": question, "answer_from": "notes", "notes_only": True, "use_tools": False}
+    said = ""
+    with client.stream("POST", "/chat/stream", json=body) as response:
+        for line in response.iter_lines():
+            if line.strip() and (event := json.loads(line))["type"] == "answer":
+                said += event["delta"]
+    return said
+
+
+def test_ai8_a_long_run_of_letters_is_not_a_call_to_the_assistant(client):
+    from tessellate.ai import composer_replies, vocative
+
+    calls = {line.replace("{name}", "").strip() for lines in composer_replies.CALL.values() for line in lines}
+    assert vocative.split("yo brotatockiibidyrizzler").call
+    for size in (600, 3000):
+        said = _said(client, "q" * size)
+        assert said
+        assert not any(call and call in said for call in calls if len(call) > 12), said
+        assert not vocative.split("q" * size).call
+
+
+def test_ai7_a_chart_question_answers_with_what_the_chart_shows(client):
+    for text in ("# Soup\n\nLentil soup for lunch.", "# Flight\n\nBooked the flight to Lisbon."):
+        assert client.post("/entries", json={"content": text}).status_code in (200, 201)
+    said = _said(client, "chart my notes by category")
+    assert "Notes per category" in said and "in all" in said, said
+    assert "don't mention" not in said and "Is there a word" not in said
+    drawn = client.post("/charts/question", json={"question": "chart my notes by category"}).json()["chart"]
+    assert said.startswith(drawn["title"])
+
+
+def test_ai11_a_proxy_deny_page_is_not_reported_as_rate_limiting(monkeypatch):
+    import pytest
+
+    from tessellate.search import websearch
+
+    class _Page:
+        status_code = 200
+        text = "<html><title>Access blocked</title><body>This request was blocked by your network policy. Rate limit rules apply.</body></html>"
+
+        def raise_for_status(self):
+            return None
+
+    class _Session:
+        def post(self, *a, **k):
+            return _Page()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(websearch, "_private_session", lambda: _Session())
+    with pytest.raises(websearch.WebSearchError) as raised:
+        websearch._search_duckduckgo("anything", 5)
+    assert "rate-limiting" not in str(raised.value)
+    assert "unexpected page" in str(raised.value)
+
+
+def test_hr2_a_probe_that_timed_out_reads_as_busy_and_a_refusal_as_gone(monkeypatch):
+    from tessellate.ai import librarian, ollama_client
+
+    class _Runner:
+        base_url = "http://127.0.0.1:59999"
+
+    ollama_client._down_until.clear()
+    assert librarian.offline_message(_Runner()) == librarian.OFFLINE_MESSAGE
+    ollama_client.mark_quiet(_Runner.base_url)
+    try:
+        said = librarian.offline_message(_Runner())
+        assert said == librarian.BUSY_MESSAGE
+        assert "running" not in said
+    finally:
+        ollama_client._down_until.clear()
+
+
+def test_hr2_the_status_names_a_busy_runner(client, monkeypatch):
+    from tessellate.ai import ollama_client
+
+    status = client.get("/models/status").json()
+    assert status["ollama_busy"] is False
+    monkeypatch.setattr(ollama_client, "is_quiet", lambda _base: True)
+    body = client.get("/models/status").json()
+    if not body["ollama_running"] and not body["ollama_checking"]:
+        assert body["ollama_busy"] is True
+        assert "did not answer in time" in body["unreachable_hint"]

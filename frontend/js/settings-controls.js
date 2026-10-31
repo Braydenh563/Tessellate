@@ -2588,10 +2588,19 @@ function pickJsonFile(inputId, apply) {
     const file = input.files[0];
     input.value = "";
     if (!file) return;
+    let data;
     try {
-      apply(JSON.parse(await file.text()));
+      data = JSON.parse(await file.text());
     } catch {
-      toast("That file isn't valid JSON.", "info");
+      return toast("That file isn't valid JSON.", "info");
+    }
+    //: The apply step is awaited: a refused save (a prompt over its limit)
+    //: used to be an unhandled rejection, so an import said nothing at all
+    //: (audit 1031 HR12).
+    try {
+      await apply(data);
+    } catch (error) {
+      toast(error?.message || "Couldn't import that file.", true);
     }
   };
   input.click();
