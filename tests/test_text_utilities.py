@@ -53,7 +53,9 @@ def test_the_counts_equal_wc_on_the_fixture():
 @pytest.mark.skipif(shutil.which("node") is None or shutil.which("wc") is None, reason="node or wc missing")
 def test_the_browser_counts_the_same():
     text = FIXTURE.read_text(encoding="utf-8")
-    fn = "const TEXT_READING_WPM = 220;\n" + _function(JS / "settings-wiring.js", "textCounts")
+    source = (JS / "settings-wiring.js").read_text(encoding="utf-8")
+    shared = source[source.index("const WORD_PER_CHARACTER") : source.index("function textCounts(")]
+    fn = "const TEXT_READING_WPM = 220;\n" + shared + _function(JS / "settings-wiring.js", "textCounts")
     got = _node(fn + f"\nconsole.log(JSON.stringify(textCounts({json.dumps(text)})));")
     assert {k: got[k] for k in ("words", "chars", "lines")} == _wc()
     assert got["read"] == utilities.counts(text)["read"]

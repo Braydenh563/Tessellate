@@ -34,5 +34,5 @@ def word_count(text: str) -> int:
     text = text or ""
     if not has(text):
         return len(text.split())
-    per_character = len(_PER_CHARACTER.findall(_IGNORED.sub("", text)))
-    return per_character + len(_PER_CHARACTER.sub(" ", text).split())
+    text = _IGNORED.sub(" ", text)
+    return len(_PER_CHARACTER.findall(text)) + len(_PER_CHARACTER.sub(" ", text).split())

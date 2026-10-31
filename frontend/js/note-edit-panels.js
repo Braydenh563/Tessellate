@@ -528,8 +528,8 @@ function renderEditForm(li, entry) {
   count.className = "char-count muted note-edit-count note-edit-counts";
   count.setAttribute("aria-live", "polite");
   const recount = () => {
-    const words = (stripFrontmatter(`${titleInput.value}
-${textarea.value}`).match(/\S+/g) || []).length;
+    const words = wordCount(stripFrontmatter(`${titleInput.value}
+${textarea.value}`));
     const minutes = words / 220;
     const read = !words ? "" : minutes < 1 ? " · under a min" : ` · ${Math.round(minutes)} min read`;
     count.textContent = `${words.toLocaleString()} word${words === 1 ? "" : "s"}${read}`;

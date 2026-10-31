@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
@@ -1337,9 +1337,9 @@ def document_revisions(
     #: Newest first, and each row is compared with the version that *came
     #: after* it: for the newest revision that is the document as it stands
     #: now, which is why this walks with `newer` seeded from the document.
-    newer_words = len((document.content or "").split())
+    newer_words = cjk.word_count(document.content)
     for row in rows:
-        words = len((row.content or "").split())
+        words = cjk.word_count(row.content)
         out.append(
             DocumentRevisionOut(
                 id=row.id,

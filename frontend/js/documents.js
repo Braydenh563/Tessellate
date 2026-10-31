@@ -13046,7 +13046,7 @@ $("doc-ai-result").addEventListener("input", () => {
 function syncDocAiPanel() {
   const verb = docAiVerb();
   const selection = ($("doc-ai-panel").dataset.selection || "").trim();
-  const wordCount = selection ? selection.split(/\s+/).length : 0;
+  const selectionWords = wordCount(selection);
 
   const runLabel = { edit: "Suggest an edit", write: "Write it", remove: "Remove it" }[verb];
   setLabel($("doc-ai-run"), `ph:sparkle ${runLabel}`);
@@ -13062,15 +13062,15 @@ function syncDocAiPanel() {
 
   if (verb === "write") {
     $("doc-ai-scope").textContent = selection
-      ? `Inserting new text directly after the ${wordCount} selected word(s).`
+      ? `Inserting new text directly after the ${selectionWords} selected word(s).`
       : "Inserting new text at the end of the document.";
   } else if (verb === "remove") {
     $("doc-ai-scope").textContent = selection
-      ? `Removing the ${wordCount} selected word(s): or say what to remove from within them.`
+      ? `Removing the ${selectionWords} selected word(s): or say what to remove from within them.`
       : "Say what to remove from the whole document.";
   } else {
     $("doc-ai-scope").textContent = selection
-      ? `Rewriting the ${wordCount} selected word(s).`
+      ? `Rewriting the ${selectionWords} selected word(s).`
       : "Rewriting the whole document. Select some text first to work on just that.";
   }
 
