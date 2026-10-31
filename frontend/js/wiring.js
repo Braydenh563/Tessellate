@@ -87,7 +87,7 @@ $("draft-continue-note").addEventListener("click", async () => {
   draftNoteId = entry.id;
   draftNoteLabel = clipText(entry.title || notePreviewText(entry.content) || "a note", 40);
   $("draft-kind").value = "continue";
-  markDraftQuickstart("continue");
+  window.markDraftQuickstart?.("continue");
   renderDraftTarget();
   // The note as it stands is version one, so the way back to what it said
   // before Atlas touched it is the same chip row as every other pass.
@@ -101,7 +101,7 @@ for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
   $(id).addEventListener("change", () => {
     if (id === "draft-kind") {
       const kind = $("draft-kind").value;
-      markDraftQuickstart(kind);
+      window.markDraftQuickstart?.(kind);
       //: A chip's "needs a model" line is about that chip, not the next pass.
       setDraftStatus("");
       //: The Translate chip goes back to the last language picked here.
@@ -116,7 +116,6 @@ for (const id of ["draft-kind", "draft-tone", "draft-length"]) {
     saveDraftLocally();
   });
 }
-renderDraftQuickstarts();
 $("draft-extract").addEventListener("click", () => openExtractPreview($("draft-text").value));
 $("extract-close").addEventListener("click", closeExtractPreview);
 $("extract-cancel").addEventListener("click", closeExtractPreview);

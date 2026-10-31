@@ -2533,24 +2533,6 @@ function restoreDraftLocally() {
   }
 }
 
-//: **The five asks the free-text instruction was being used for**, written
-//: down once. A chip sets what to write and, where it helps, a first line in
-//: the thoughts box; nothing runs until Draft is pressed, so a chip is a
-//: starting point rather than a button that spends a minute of a local
-//: model's time on a guess.
-const DRAFT_QUICKSTARTS = [
-  { label: "Write up my notes", icon: "ph:note-pencil", kind: "note", title: "Turn what is in the box into one organised note" },
-  { label: "Carry on writing", icon: "ph:pencil-line", kind: "continue", model: 1, title: "Keep writing from where the draft stops, in the same voice" },
-  { label: "Say it plainly", icon: "ph:chat-text", kind: "rewrite", tone: "plain", title: "The same draft in plain words" },
-  { label: "Bullets to prose", icon: "ph:text-align-left", kind: "expand", title: "Open the bullet points out into paragraphs" },
-  { label: "Prose to bullets", icon: "ph:list-bullets", kind: "bullets", title: "Close the writing back up into bullet points" },
-  //: The language is the last one chosen in the kind menu's "Translate into"
-  //: group, Spanish until one has been; the menu shows which, and changing
-  //: it there is how another language is picked.
-  { label: "Make a diagram", icon: "ph:tree-structure", kind: "diagram", title: "Draw the steps, dates or points in the box as a flowchart, timeline or mind map" },
-  { label: "Translate", icon: "ph:translate", kind: "translate", model: 1, title: "Translate what is in the box, into the language chosen in the menu" },
-];
-
 //: **Translate a note from where it is read** (INBOX 405). Writing room
 //: already translates; this takes the note there, loaded and set to the last
 //: language picked, rather than asking the reader to copy it across. Nothing
@@ -2579,46 +2561,6 @@ function draftTranslateKind() {
     /* storage blocked: the default stands */
   }
   return `translate-${code}`;
-}
-
-function renderDraftQuickstarts() {
-  const host = $("draft-quickstarts");
-  if (!host) return;
-  host.replaceChildren();
-  for (const start of DRAFT_QUICKSTARTS) {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "library-chip";
-    chip.title = start.title;
-    setLabel(chip, `${start.icon} ${start.label}`);
-    chip.addEventListener("click", () => {
-      $("draft-kind").value = start.kind === "translate" ? draftTranslateKind() : start.kind;
-      if (start.tone) $("draft-tone").value = start.tone;
-      markDraftQuickstart(start.kind);
-      //: With no model the chips that need one say so (X20, INBOX 1466).
-      //: A line left by the last chip is about that chip: cleared first.
-      setDraftStatus("");
-      if (aiIsOff() && start.model) setDraftStatus(`${start.label} needs a model. ${AI_OFFLINE_HINT}.`);
-      saveDraftLocally();
-      $("draft-thoughts").focus();
-    });
-    host.appendChild(chip);
-  }
-  markDraftQuickstart($("draft-kind").value);
-}
-
-//: The chip and the select say the same thing, so picking either marks the
-//: other: two controls that disagree about what the next pass will do is the
-//: defect this feature is full of everywhere else it has been tried.
-function markDraftQuickstart(kind) {
-  const host = $("draft-quickstarts");
-  if (!host) return;
-  [...host.children].forEach((chip, index) => {
-    const own = DRAFT_QUICKSTARTS[index]?.kind;
-    const on = own === kind || (own === "translate" && String(kind).startsWith("translate-"));
-    chip.classList.toggle("active", on);
-    chip.setAttribute("aria-pressed", String(on));
-  });
 }
 
 function renderDraftSources() {

@@ -158,6 +158,12 @@ def test_write_up_never_leaves_a_dangling_stop_after_a_bare_name():
     assert "**Buy stamps**, written today\n" in out + "\n" and "**." not in out and "**Buy stamps**." not in out
 
 
+def test_write_up_with_nothing_to_write_from_is_not_a_bare_title():
+    assert cw.write_up("", None, TODAY) == ""
+    done = cw.compose(kind="note", thoughts="", draft="My draft.", today=TODAY)
+    assert done.text == "" and done.message == cw.NOTHING_TO_DO["note"]
+
+
 def test_write_up_spells_and_capitalises_the_thoughts():
     assert cw.write_up("i am japanese", None, TODAY) == "I am Japanese."
 

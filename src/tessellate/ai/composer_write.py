@@ -64,7 +64,7 @@ NOTHING_TO_DO = {
     "plain": "Nothing to swap: the words are already plain.",
     "shorter": "Already short: there is no filler or repeat to cut.",
     "summary": "Too short to sum up: a summary needs three sentences or more.",
-    "note": "Nothing to write up: your words are already in order. Add notes with Use notes, or pick Tidy.",
+    "note": "Nothing to write up: add thoughts or notes (Use notes) to work from, or pick Tidy for a spelling pass.",
     "tidy": "Nothing to tidy: the spelling, capitals and full stops look right.",
     "formal": "Already formal: no contractions or slang to change.",
 }
@@ -596,6 +596,8 @@ def write_up(thoughts: str, sources: list[dict] | None, today: date) -> str:
     notes.sort(key=lambda pair: pair[1] or date.max)
     tidied = _tidy(thoughts).strip()
     named = [(_write_up_name(s), s, day) for s, day in notes]
+    if not tidied and not named:
+        return ""
     title = _write_up_title(tidied, [n for n, _s, _d in named])
     parts = [part for part in (f"# {title}" if title else "", tidied) if part]
     return "\n\n".join(parts + _note_blocks(named, today))
@@ -736,7 +738,7 @@ def _by_mode(kind: str, thoughts: str, draft: str, tone: str, length: str, sourc
             return Pass("", NOTHING_TO_DO["note"])
         if (draft or "").strip() and written:
             written = f"{draft.rstrip()}\n\n{written}"
-        return Pass(_toned(written, tone, length), _SAID["note"], "note") if written.strip() else Pass("", NEEDS_MODEL["revise"])
+        return Pass(_toned(written, tone, length), _SAID["note"], "note") if written.strip() else Pass("", NOTHING_TO_DO["note"])
     return Pass("", NEEDS_MODEL.get(kind, NEEDS_MODEL["revise"]))
 
 

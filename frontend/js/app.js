@@ -2219,4 +2219,4 @@ installStandIns(LAZY_ENTRY_POINTS);
 //: The library bundle (boards and documents, a third of a megabyte) waits for
 //: first use when the browser asks to save data (audit 1030 Y16; `true` names
 //: no module, so ensureModule skips it).
-setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", navigator.connection?.saveData || "library"].forEach(ensureModule), 3000);
+setTimeout(() => ["quickNote", "quickAdd", "fieldClear", "chordGuide", "notePanels", "dragEdge", "search", "writingDesk", navigator.connection?.saveData || "library"].forEach(ensureModule), 3000);
