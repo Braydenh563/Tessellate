@@ -18,7 +18,7 @@ const OBJ_EDITABLE = "input, textarea, select, [contenteditable='true'], .cm-edi
 
 function objToastCopied(ref) {
   const name = ref.title.length > 40 ? `${ref.title.slice(0, 39)}…` : ref.title;
-  toast(`Copied “${name}”.`);
+  toast(`Copied “${name}”`);
   announce(`Copied ${OBJ_NOUN[ref.kind].toLowerCase()} ${ref.title}.`);
 }
 
@@ -46,9 +46,13 @@ function objCopyByEvent(text) {
   return Boolean(done);
 }
 
+//: A card's own tick is the first Tab stop of a document, board or picture: it is the card for a copy.
+const OBJ_TICK = "input[type='checkbox'], input[type='radio']";
+
 document.addEventListener("copy", (event) => {
   const el = document.activeElement;
-  if (el?.closest?.(OBJ_EDITABLE) || window.getSelection()?.toString()) return;
+  const field = el?.closest?.(OBJ_EDITABLE);
+  if ((field && !field.matches(OBJ_TICK)) || window.getSelection()?.toString()) return;
   const hit = objCardAt(el);
   if (!hit) return;
   event.preventDefault();
@@ -78,7 +82,9 @@ document.addEventListener("paste", (event) => {
 //: The one landing for a paste, a drop and a tray click: renders, and says why
 //: when it could not.
 function objPasteAt(ref, dest) {
-  if (!objRender(ref, dest)) toast(dest.type === "chat" ? "That message has all the attachments it takes." : "Nothing here takes that.", "info");
+  if (dest.type === "chat" && ref.kind === "note" && attachedNoteIds.includes(ref.id)) return toast("Already attached", "info");
+  if (!objRender(ref, dest)) return toast(dest.type === "chat" ? "That message has all the attachments it takes." : "Nothing here takes that.", "info");
+  if (dest.type === "chat") announce(`Attached ${ref.title} to the message.`);
 }
 
 //: --- The board ------------------------------------------------------------
@@ -111,13 +117,18 @@ OBJ_RENDERERS.board = (ref, dest) => {
 //: `kebabMenu` calls this as a menu opens (sheets-selects.js): a menu inside a
 //: card gets Copy beneath its own rows, once.
 function objKebabRows(menu) {
-  const hit = !menu.dataset.objRows && objCardAt(menu);
+  //: Not a link's own menu inside a note card: its rows are about the link, and Copy would take the note.
+  const hit = !menu.dataset.objRows && !menu.closest(".link-connection") && objCardAt(menu);
   if (!hit) return;
   menu.dataset.objRows = "1";
   const rule = document.createElement("div");
   rule.className = "menu-sep";
   rule.setAttribute("role", "separator");
-  menu.append(rule, ...OBJ_MENU_ROWS.map((row) => objMenuRow(row, hit.card)));
+  const rows = OBJ_MENU_ROWS.filter((row) => !row.show || row.show(hit.card)).map((row) => objMenuRow(row, hit.card));
+  //: Above a menu's own delete, not after it.
+  const danger = menu.querySelector(":scope > .menu-danger");
+  if (danger) danger.before(rule, ...rows);
+  else menu.append(rule, ...rows);
 }
 
 function objMenuRow(row, card) {
@@ -129,10 +140,16 @@ function objMenuRow(row, card) {
     event.stopPropagation();
     closeActionMenus();
     const ref = objRefFromCard(card);
-    if (ref) row.run(ref);
+    if (ref) row.run(ref, card);
   });
   return button;
 }
 
-//: Rows later files add to (the tray, part 5): `{ label, run(ref) }`.
-const OBJ_MENU_ROWS = [{ label: "Copy", run: (ref) => objClipPut(ref) }];
+//: Rows later files add to (the tray, part 5): `{ label, run(ref, card), show?(card) }`.
+//: Move up and Move down are the drag's other way (obj-reorder.js's `objReorderStep`):
+//: a phone has no drag and no Alt key.
+const OBJ_MENU_ROWS = [
+  { label: "Copy card", run: (ref) => objClipPut(ref) },
+  { label: "Move up", show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), -1, false) },
+  { label: "Move down", show: (card) => Boolean(objSurfaceAt(card)), run: (ref, card) => objReorderStep(objSurfaceAt(card), 1, false) },
+];

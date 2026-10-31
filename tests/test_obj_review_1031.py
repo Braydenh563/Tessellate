@@ -189,3 +189,128 @@ def test_the_tray_is_kept_per_space() -> None:
 def test_the_picture_stage_gives_every_picture_a_key() -> None:
     text = (JS / "obj-ref.js").read_text(encoding="utf-8")
     assert "key: `obj-${ref.id}`" in text
+
+
+# --- The UX audit of the same surfaces (ux-1031b) -------------------------------------
+
+@needs_node
+def test_a_key_move_is_announced_and_undone_by_ctrl_z_without_a_toast_per_press() -> None:
+    out = run(FILES, STUBS + """
+    allEntries = notes(4);
+    const pushed = [];
+    globalThis.pushUndo = (...args) => pushed.push(args[0]);
+    const def = OBJ_SURFACES.find((d) => d.scope === "notes");
+    const card = { id: 3 };
+    const unit = { tagName: "LI", matches: () => true, firstElementChild: null, dataset: { id: "3" } };
+    const keys = noteKeys([4, 3, 2, 1]);
+    const hit = { def, list: { children: [] }, unit };
+    // the list's cards, as the step reads them
+    globalThis.objUnitsOf = () => keys.map((k) => ({ key: k }));
+    globalThis.objUnitKey = (u) => u.key;
+    globalThis.objUnitRef = () => ({ kind: "note", id: 3, title: "Three" });
+    objReorderStep(hit, 1);
+    __out({ pushed, undos: undos.length, said });
+    """)
+    assert out["pushed"] == ["Move Three"] and out["undos"] == 0
+    assert out["said"] == ["Moved Three to place 3 of 4. Ctrl+Z undoes it."]
+
+
+@needs_node
+def test_the_card_menu_has_move_rows_only_for_a_card_in_a_list() -> None:
+    out = run(FILES, STUBS + """
+    const rows = Object.fromEntries(OBJ_MENU_ROWS.map((r) => [r.label, r.show ? r.show({ inList: true }) : true]));
+    globalThis.objSurfaceAt = (card) => (card.inList ? {} : null);
+    const shownIn = OBJ_MENU_ROWS.filter((r) => r.label.startsWith("Move")).map((r) => [r.show({ inList: true }), r.show({ inList: false })]);
+    __out({ labels: OBJ_MENU_ROWS.map((r) => r.label), shownIn });
+    """)
+    assert out["labels"] == ["Copy card", "Move up", "Move down", "Add to tray"]
+    assert out["shownIn"] == [[True, False], [True, False]]
+
+
+@needs_node
+def test_a_tray_item_pastes_where_the_hand_last_was_even_with_no_pointer() -> None:
+    out = run(FILES, STUBS + """
+    const chat = { isConnected: true, closest: (sel) => (sel.includes("#chat-input") ? chat : null), matches: () => false };
+    objTrayFrom = chat;
+    const dest = objTrayDestination();
+    objTrayFrom = { isConnected: false, closest: () => null };
+    globalThis.wbCommandsLive = () => false;
+    __out({ type: dest && dest.type, gone: objTrayDestination() });
+    """)
+    assert out == {"type": "chat", "gone": None}
+
+
+@needs_node
+def test_removing_a_tray_item_keeps_the_focus_in_the_tray() -> None:
+    out = run(FILES, STUBS + """
+    const focused = [];
+    const use = (n) => ({ focus: () => focused.push(`use ${n}`) });
+    let uses = [use(0), use(1), use(2)];
+    const holder = { querySelectorAll: () => uses, querySelector: () => ({ focus: () => focused.push("button") }) };
+    document.activeElement = { closest: () => holder };
+    objTrayKeepFocus(() => { uses = [use(0), use(1)]; }, 1);
+    objTrayKeepFocus(() => { uses = [use(0), use(1)]; }, 5);
+    uses = [];
+    globalThis.$ = () => ({ focus: () => focused.push("trigger") });
+    holder.querySelector = () => null;
+    objTrayKeepFocus(() => {}, 0);
+    document.activeElement = { closest: () => null };
+    objTrayKeepFocus(() => {}, 0);
+    __out(focused);
+    """)
+    assert out == ["use 1", "use 1", "trigger"], "the next item, the last when it was last, the trigger when empty, nothing when the focus was elsewhere"
+
+
+@needs_node
+def test_a_card_already_held_says_so_and_a_second_paste_of_a_note_says_so() -> None:
+    out = run(FILES, STUBS + """
+    objTray = []; objTrayAdd(objRef("note", 1, "Soup"));
+    OBJ_RENDERERS.tray(objRef("note", 1, "Soup"));
+    OBJ_RENDERERS.tray(objRef("note", 2, "Tea"));
+    attachedNoteIds.push(2);
+    objPasteAt(objRef("note", 2, "Tea"), { type: "chat", el: {} });
+    objPasteAt(objRef("note", 3, "Jam"), { type: "chat", el: {} });
+    __out({ toasts, said, held: objTray.length });
+    """)
+    assert out["toasts"] == ["“Soup” is already in the tray", "Added “Tea” to the tray", "Already attached"]
+    assert out["said"] == ["Attached Jam to the message."]
+
+
+@needs_node
+def test_ctrl_c_on_a_cards_tick_copies_the_card() -> None:
+    out = run(FILES, STUBS + """
+    const tick = { dataset: { id: "5" }, querySelector: () => null, matches: (sel) => sel === OBJ_TICK || sel === "#entry-list > li[data-id]" };
+    const card = { dataset: { id: "5" }, querySelector: () => null, matches: (sel) => sel === "#entry-list > li[data-id]" };
+    card.closest = (sel) => (sel.includes("#entry-list > li[data-id]") ? card : null);
+    tick.closest = (sel) => (sel === OBJ_EDITABLE ? tick : sel.includes("#entry-list > li[data-id]") ? card : null);
+    window.getSelection = () => ({ toString: () => "" });
+    document.activeElement = tick;
+    const event = { clipboardData: { setData() {} }, preventDefault() { this.stopped = true; } };
+    handlers.copy.forEach((fn) => fn(event));
+    __out({ copied: Boolean(event.stopped), toasts });
+    """)
+    assert out["copied"] is True and out["toasts"] == ["Copied “Five”"]
+
+
+def test_carry_outlines_the_composer_box_and_the_gap_is_one_slot_everywhere() -> None:
+    carry = (JS / "obj-carry.js").read_text(encoding="utf-8")
+    assert 'dest.el.closest(".chat-dock")' in carry
+    css = (JS.parent / "css" / "objmove-lazy.css").read_text(encoding="utf-8")
+    assert "#entry-list > li.obj-gap" in css and ".obj-armed" in css
+
+
+def test_the_four_lists_help_and_the_shortcut_sheet_name_the_drag_the_copy_and_the_tray() -> None:
+    html = (JS.parent / "index.html").read_text(encoding="utf-8")
+    sentence = "Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order."
+    assert html.count(sentence) == 4
+    assert "Move the focused card one place up or down in its list" in html
+    assert "Copy the focused card" in html
+    features = (JS / "app-features.js").read_text(encoding="utf-8")
+    assert 'name: "Tray"' in features and 'name: "Your own order"' in features
+
+
+def test_the_notes_card_menu_gets_the_card_rows_and_a_links_own_menu_does_not() -> None:
+    menus = (JS / "menus.js").read_text(encoding="utf-8")
+    assert "window.objKebabRows?.(menu);" in menus
+    clip = (JS / "obj-clip.js").read_text(encoding="utf-8")
+    assert '.link-connection' in clip

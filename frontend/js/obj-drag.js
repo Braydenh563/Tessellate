@@ -75,6 +75,9 @@ function objDragArm(event) {
   if (!seed) return;
   objDragNow = { ...seed, id: event.pointerId, x0: event.clientX, y0: event.clientY, x: event.clientX, y: event.clientY, t0: event.timeStamp, live: false };
   objDragListen(true);
+  //: The hold is over: the cursor says the card can be taken now.
+  const g = objDragNow;
+  g.cue = setTimeout(() => g.card.classList.add("obj-armed"), g.grip ? 0 : OBJ_DRAG_MS);
 }
 
 function objDragListen(on) {
@@ -184,6 +187,8 @@ function objDragFinish(cancel, event) {
   const g = objDragNow;
   objDragNow = null;
   objDragListen(false);
+  clearTimeout(g?.cue);
+  g?.card.classList.remove("obj-armed");
   if (!g?.live) return;
   cancelAnimationFrame(g.tick);
   OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);

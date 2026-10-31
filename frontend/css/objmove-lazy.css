@@ -35,6 +35,18 @@
   background: var(--accent-soft);
   list-style: none;
 }
+/* A notes list's own `#entry-list li` rule outranks the class, so the gap there
+   is the same dashed slot as in every other list. */
+#entry-list > li.obj-gap {
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+/* The hold before a drag is over: the card can be taken now. */
+.obj-armed,
+.obj-armed * {
+  cursor: grab;
+}
 /* The card being moved is hidden by the script (an inline display), so no rule
    here has to out-shout the list's own. */
 

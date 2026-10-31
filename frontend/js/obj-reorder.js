@@ -81,7 +81,7 @@ function objShownUnder(def, keys, order) {
 //: `keys` are the visible cards' keys in screen order before the move. False,
 //: and nothing at all changed, when the list would look the same afterwards (a
 //: drag round a pinned note: pinned notes stay on top in every order).
-function objReorderCommit(def, ref, keys, from, to) {
+function objReorderCommit(def, ref, keys, from, to, quiet = false) {
   const stored = objOrderLoad(def.scope);
   const whole = def.all?.() || [];
   const next = objMergeOrder(whole.length ? whole : stored, keys, objMoveKey(keys, from, to));
@@ -90,9 +90,12 @@ function objReorderCommit(def, ref, keys, from, to) {
   const apply = (order, sort) => {
     objOrderSave(def.scope, order);
     objSetSort(def, sort);
+    objRefocus(def, objKey(ref), 90);
   };
   apply(next, "custom");
-  offerUndo(`Move ${ref.title}`, `Moved “${ref.title}”`, () => apply(stored, was), () => apply(next, "custom"));
+  //: A key press is announced and Ctrl+Z undoes it; a toast for each press piled up.
+  if (quiet) pushUndo(`Move ${ref.title}`, () => apply(stored, was), () => apply(next, "custom"));
+  else offerUndo(`Move ${ref.title}`, `Moved “${ref.title}”`, () => apply(stored, was), () => apply(next, "custom"));
   return true;
 }
 
@@ -167,17 +170,24 @@ function objReorderKey(event) {
   //: A field's own Alt+Arrow (a rename box inside a card) is not a move.
   if (event.target?.closest?.(OBJ_EDITABLE)) return;
   const hit = objSurfaceAt(document.activeElement);
-  const ref = hit && objUnitRef(hit.unit);
-  if (!ref) return;
+  if (!hit || !objUnitRef(hit.unit)) return;
   event.preventDefault();
   event.stopPropagation();
+  objReorderStep(hit, dir);
+}
+
+//: One place up or down: the keys' move and the card menu's Move up and Move
+//: down rows (a drag has to have a way that is not a drag). `hit` is
+//: `objSurfaceAt`'s. A key press is said and undone by Ctrl+Z; a menu click
+//: (a phone has no keys) gets the toast with Undo.
+function objReorderStep(hit, dir, byKey = true) {
+  const ref = objUnitRef(hit.unit);
   const keys = objUnitsOf(hit.list, hit.def).map(objUnitKey);
   const from = keys.indexOf(objKey(ref));
   const to = from + dir;
   if (to < 0 || to >= keys.length) return announce(`${ref.title} is already ${dir < 0 ? "first" : "last"}.`);
-  if (!objReorderCommit(hit.def, ref, keys, from, to)) return announce(`${ref.title} cannot move there.`);
-  announce(`Moved ${ref.title} to place ${to + 1} of ${keys.length}.`);
-  objRefocus(hit.def, objKey(ref), 90);
+  if (!objReorderCommit(hit.def, ref, keys, from, to, byKey)) return announce(`${ref.title} cannot move there.`);
+  if (byKey) announce(`Moved ${ref.title} to place ${to + 1} of ${keys.length}. Ctrl+Z undoes it.`);
 }
 
 //: The list is drawn again after a move, sometimes twice (a document list

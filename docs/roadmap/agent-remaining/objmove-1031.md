@@ -24,3 +24,11 @@ Left:
 - Documents seeded from the last unfiltered render (`libraryDocsAll`): a first reorder made while a search is already on and no unfiltered render came before falls back to the visible documents.
 - No visual cue yet that the 250 ms hold has completed (cursor or lift); the UX audit may name one.
 - Space switch drops the tray (a tray is kept per space, so "All" does not show another space's cards).
+
+UX audit 1031 (ux-1031b.md), done: H1, H2, H3, M1 to M7, M13, M14 (shortcuts sheet rows, two Tools and features rows; no palette-only "Tray" row beyond them), L1, L4 (Copy card above Delete), L5, L6 (the reminder wording in the Guide), L7 (copy and tray toasts), L8, L2 in part (cursor turns to a hand after the hold, `.obj-armed`).
+Left from the audit:
+- L2: no resting grab cursor and no `aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"` on the card stop (a resting grab cursor on text would contradict text selection).
+- L3: a "Custom order" chip beside each list heading (new UI: needs its recipe and lint in DESIGN.md, test_ui_recipes).
+- L6: "Already attached" is said for a second paste of a note only; the other kinds go through their own attach functions, which stay silent.
+- M14: shortcut rows are static HTML (not in the rebindable registry, which is boot code at its byte cap).
+- On the phone the tray sheet's first focus is the sheet's own close button.

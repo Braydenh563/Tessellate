@@ -46,8 +46,13 @@ function objCarryBegin(g) {
   Object.assign(g, { scroller: null, marked: null, hoverTab: "", hoverEl: null, hoverTimer: 0 });
 }
 
+//: What is outlined for a target: the composer's whole box, not its text area (which draws no outline).
+function objCarryOutline(dest) {
+  return dest?.type === "chat" ? dest.el.closest(".chat-dock") || dest.el : dest?.el;
+}
+
 function objCarryUpdate(g) {
-  g.hoverTab || objCarryMark(g, objCarryTarget(g)?.el);
+  g.hoverTab || objCarryMark(g, objCarryOutline(objCarryTarget(g)));
   objCarryNav(g);
 }
 

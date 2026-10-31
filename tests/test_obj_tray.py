@@ -78,7 +78,7 @@ def test_a_drop_on_the_tray_control_adds_and_an_add_to_tray_row_exists() -> None
     objRender(ref(5), dest);
     __out({ type: dest.type, held: objTray.map(objKey), rows: OBJ_MENU_ROWS.map((row) => row.label) });
     """)
-    assert out == {"type": "tray", "held": ["note:5"], "rows": ["Copy", "Add to tray"]}
+    assert out == {"type": "tray", "held": ["note:5"], "rows": ["Copy card", "Move up", "Move down", "Add to tray"]}
 
 
 @needs_node

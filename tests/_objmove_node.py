@@ -24,7 +24,7 @@ const ctx = {
   sortEntries: (entries) => entries, noteSort: "newest",
   handlers, addEventListener: () => {}, removeEventListener: () => {},
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, RegExp, Promise, Boolean,
-  log,
+  log, setTimeout: () => 0, clearTimeout: () => {},
   document: {
     execCommand: () => true, activeElement: null, querySelector: () => null, querySelectorAll: () => [], documentElement: { dataset: {} },
     addEventListener: (type, fn) => { (handlers[type] = handlers[type] || []).push(fn); }, removeEventListener: () => {},

@@ -48,16 +48,33 @@ function objTrayAdd(ref) {
   return true;
 }
 
+//: A redraw replaces the buttons, so the one that had the focus is gone: the
+//: focus goes to the item that took its place (or the next control, or the
+//: trigger when the tray is empty).
+function objTrayKeepFocus(change, at) {
+  const holder = document.activeElement?.closest?.("#obj-tray, .obj-tray");
+  change();
+  if (!holder) return;
+  const uses = holder.querySelectorAll(".obj-tray-use");
+  const next = uses[Math.min(at, uses.length - 1)] || holder.querySelector("button:not(:disabled)") || $("status-tray");
+  next?.focus();
+}
+
 function objTrayRemove(key) {
-  objTray = objTray.filter((row) => objKey(row) !== key);
-  objTrayChanged();
+  const at = objTray.findIndex((row) => objKey(row) === key);
+  objTrayKeepFocus(() => {
+    objTray = objTray.filter((row) => objKey(row) !== key);
+    objTrayChanged();
+  }, at);
 }
 
 function objTrayClear() {
   const was = objTray;
   if (!was.length) return;
-  objTray = [];
-  objTrayChanged();
+  objTrayKeepFocus(() => {
+    objTray = [];
+    objTrayChanged();
+  }, 0);
   offerUndo("Clear tray", "Tray cleared", () => { objTray = was; objTrayChanged(); }, () => { objTray = []; objTrayChanged(); });
 }
 
@@ -103,7 +120,7 @@ function objTrayDraw(holder) {
   const body = document.createElement(rows.length ? "ul" : "p");
   body.className = rows.length ? "obj-tray-list" : "obj-tray-empty muted";
   if (rows.length) body.append(...rows);
-  else body.textContent = "Drop a card here, or choose Add to tray in its menu.";
+  else body.textContent = window.matchMedia?.("(pointer: fine)").matches ? "Drop a card here, or choose Add to tray in its menu." : "Choose Add to tray in a card's menu.";
   holder.replaceChildren(head, body);
 }
 
@@ -129,8 +146,9 @@ function objTrayRow(ref) {
   const use = document.createElement("button");
   use.type = "button";
   use.className = "ghost quiet obj-tray-use";
-  use.title = "Paste where you were typing, or drag it out";
   setLabel(use, `${OBJ_ICON_LABEL[ref.kind]} ${ref.title}`);
+  use.title = `${ref.title}: paste where you were typing, or drag it out`;
+  use.setAttribute("aria-label", `${OBJ_NOUN[ref.kind]}: ${ref.title}`);
   use.addEventListener("click", () => objTrayPaste(ref));
   const remove = smallButton("ph:x", `Take ${ref.title} out of the tray`, () => objTrayRemove(objKey(ref)));
   li.append(use, remove);
@@ -142,7 +160,7 @@ const OBJ_ICON_LABEL = Object.fromEntries(Object.entries(OBJ_ICON).map(([kind, i
 //: Where a click on an item lands: the field that had the focus, else the open
 //: board. Unlike a paste it also takes text fields, which it writes into.
 function objTrayDestination() {
-  const dest = objDestinationAt(objTrayFrom);
+  const dest = objTrayFrom?.isConnected ? objDestinationAt(objTrayFrom) : null;
   if (dest && dest.type !== "tray") return dest;
   return window.wbCommandsLive?.() ? { type: "board", el: $("whiteboard-container") } : null;
 }
@@ -155,8 +173,9 @@ function objTrayPaste(ref) {
 }
 
 OBJ_RENDERERS.tray = (ref) => {
+  if (objTray.some((row) => objKey(row) === objKey(ref))) return toast(`“${ref.title}” is already in the tray`, "info") || true;
   const held = objTrayAdd(ref);
-  toast(held ? `Added “${ref.title}” to the tray.` : "The tray is full. Take something out first.", held ? undefined : "info");
+  toast(held ? `Added “${ref.title}” to the tray` : "The tray is full. Take something out first.", held ? undefined : "info");
   return true;
 };
 
@@ -166,8 +185,12 @@ OBJ_MENU_ROWS.push({ label: "Add to tray", run: (ref) => OBJ_RENDERERS.tray(ref)
   const button = $("status-tray");
   const panel = $("obj-tray");
   if (!button || !panel) return;
-  //: Before the click moves the focus to the button.
-  button.addEventListener("pointerdown", () => { objTrayFrom = document.activeElement; }, true);
+  //: The last field the hand was in, whatever opens the tray (a pointer, a key, the
+  //: phone's sheet), not what the press happens to find: opening it moves the focus.
+  document.addEventListener("focusin", (event) => {
+    const el = event.target;
+    if (!el.closest?.("#obj-tray, .obj-tray, #status-tray") && objDestinationAt(el)) objTrayFrom = el;
+  });
   //: Captured, ahead of the popover's own listener: a button with no box (below
   //: 600 the bar is not on screen and the header's menu presses it) opens the sheet.
   button.addEventListener("click", (event) => {
@@ -178,7 +201,13 @@ OBJ_MENU_ROWS.push({ label: "Add to tray", run: (ref) => OBJ_RENDERERS.tray(ref)
   }, true);
   wireHelpPopover(button, panel);
   button.addEventListener("click", () => {
-    if (button.getAttribute("aria-expanded") === "true") placeHelpPopover(panel, button);
+    if (button.getAttribute("aria-expanded") !== "true") return;
+    placeHelpPopover(panel, button);
+    //: Into the panel: it is last in the page, seven Tab stops from the button.
+    (panel.querySelector(".obj-tray-use") || panel.querySelector("button:not(:disabled)"))?.focus();
+  });
+  panel.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") button.focus();
   });
   objTrayPaint();
 })();
