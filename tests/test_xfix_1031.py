@@ -1,0 +1,37 @@
+"""Audit 1031 extras (Z rows): source-level checks for the fixes that have no server half.
+
+Each test names its row. The behaviour was driven in a browser (numbers in
+docs/roadmap/agent-remaining/xfix-1031.md); these keep the shape from drifting.
+"""
+from __future__ import annotations
+
+from tests._app_js import frontend_text
+
+
+def test_z11_tools_and_features_draws_a_first_page_and_the_rest_on_scroll() -> None:
+    js = frontend_text("dashboard.js")
+    assert "const FEATURES_FIRST_ROWS = 40;" in js
+    body = js[js.index("function featuresPaint"):js.index("function renderFeatures")]
+    assert "IntersectionObserver" in body and "isIntersecting" in body
+    assert "createDocumentFragment" in body
+
+
+def test_z3_every_palette_row_is_in_the_catalogue_or_found_by_its_words() -> None:
+    js = frontend_text("app-features.js")
+    rows = js[js.index("function featureCommandRows"):]
+    rows = rows[: rows.index("\n}\n")]
+    assert "!r.group" in rows, "the open document's own rows are left out"
+    assert "held.also" in rows, "a row held under another name is found by the palette's words"
+    render = frontend_text("dashboard.js")
+    render = render[render.index("function renderFeatures"):]
+    render = render[: render.index("\n}\n")]
+    assert "featureCommandRows(groups)" in render and "item.also" in render
+
+
+def test_z17_palette_rows_never_name_the_lazy_caught_const_directly() -> None:
+    js = frontend_text("settings-panes.js")
+    panes = js[js.index("function paletteCommands"):]
+    panes = panes[: panes.index("\n}\n")]
+    assert "paletteCaught)" not in panes and "...paletteCaught }" not in panes
+    assert "paletteCaughtNow()" in panes
+    assert 'typeof paletteCaught === "undefined"' in js

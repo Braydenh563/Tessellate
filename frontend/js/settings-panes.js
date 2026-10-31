@@ -1154,6 +1154,13 @@ const POPUP_TOOLS = [
   },
 ];
 
+//: What the palette caught from the field it was opened over (`paletteCaught`,
+//: app-palette.js, lazy): nothing yet when that file is not in, so a caller
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw.
+function paletteCaughtNow() {
+  return typeof paletteCaught === "undefined" ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
+}
+
 function paletteCommands() {
   //: **The documents editor's own commands, at the top, while one is open**
   //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
@@ -1384,8 +1391,8 @@ function paletteCommands() {
     //: from the words (`utilityPaletteRows`, app-palette.js).
     ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
-    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaught)) },
-    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },
+    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaughtNow())) },
+    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
     { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
