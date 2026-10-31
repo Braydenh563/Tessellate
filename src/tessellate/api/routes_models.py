@@ -407,6 +407,34 @@ def _semantic_offer(embeddings, config) -> bool:  # noqa: ANN001
     )
 
 
+def _unreachable_state(ollama, provider: str, running: bool, checking: bool) -> tuple[bool, str | None]:  # noqa: ANN001
+    """`(busy, hint)` for a backend that has not answered (see `status`)."""
+    default_url = deps.DEFAULT_BASE_URLS.get(provider, "")
+    custom = (ollama.base_url or "").rstrip("/") != default_url.rstrip("/")
+    #: A runner busy with a generation or a model load answers late, not
+    #: never: a probe that timed out (not refused) says so (audit 1031 HR2).
+    busy = not running and not checking and ollama_client.is_quiet(ollama.base_url)
+    hint = (
+        "The model server did not answer in time. It is probably busy, so it is asked again."
+        if busy
+        else f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
+        if not running and custom
+        else None
+    )
+    return busy, hint
+
+
+def _effective_chat_model(running: bool, installed: list[dict], provider: str, chat_model: str) -> str:
+    """The model that answers: the one loaded, when an OpenAI-dialect server lacks the chosen name."""
+    if running and provider != "ollama" and installed and not _name_matches(chat_model, installed):
+        return installed[0]["name"]
+    return chat_model
+
+
+def _overridden_count(manager) -> int:  # noqa: ANN001
+    return sum(1 for row in manager.feature_rows() if row["overridden"])
+
+
 @router.get("/status")
 def status(session: Session = Depends(get_session)) -> dict:
     """One call that tells the UI everything: is Ollama up, what's
@@ -445,18 +473,7 @@ def status(session: Session = Depends(get_session)) -> dict:
     #: Section 21 row 12: nothing answered, at an address the person set.
     #: The default address unanswered is a server not started ("isn't
     #: running"); a custom one is as likely a typo, so the line names it.
-    default_url = deps.DEFAULT_BASE_URLS.get(provider, "")
-    custom = (ollama.base_url or "").rstrip("/") != default_url.rstrip("/")
-    #: A runner busy with a generation or a model load answers late, not
-    #: never: a probe that timed out (not refused) says so (audit 1031 HR2).
-    busy = not running and not checking and ollama_client.is_quiet(ollama.base_url)
-    unreachable_hint = (
-        "The model server did not answer in time. It is probably busy, so it is asked again."
-        if busy
-        else f"Nothing answered at {ollama.base_url}. Check the address, and that the server is running."
-        if not running and custom
-        else None
-    )
+    busy, unreachable_hint = _unreachable_state(ollama, provider, running, checking)
 
     return {
         # Named for Ollama because the whole UI is, and it means "the chat
@@ -517,12 +534,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         # configured name is not one it serves, the loaded one is what runs.
         # Ollama has no such fallback: there the configured name stands, and
         # `chat_model_installed` says it will fail.
-        "chat_model_effective": (
-            installed[0]["name"]
-            if running and provider != "ollama" and installed
-            and not _name_matches(chat_model, installed)
-            else chat_model
-        ),
+        "chat_model_effective": _effective_chat_model(running, installed, provider, chat_model),
         # "" means "same as chat model" (utility model).
         "utility_model": manager._config.get_preference("utility_model", ""),
         # What background jobs actually run on, and why (INBOX 277): the
@@ -557,9 +569,7 @@ def status(session: Session = Depends(get_session)) -> dict:
         "feature_models": manager.feature_rows(),
         #: What the mass reset would clear. The button says the number and
         #: does nothing when it is zero.
-        "feature_models_overridden": sum(
-            1 for row in manager.feature_rows() if row["overridden"]
-        ),
+        "feature_models_overridden": _overridden_count(manager),
         #: The two sentinel values a feature's select can send back through
         #: `/feature-model` for "Same as chat model" / "Same as utility
         #: model" (INBOX 430), so the frontend never hardcodes a string that
