@@ -2706,9 +2706,11 @@ def test_every_status_bar_control_has_a_way_in_on_a_phone() -> None:
         assert f'$("{name}")' in docker, f"{name} is no longer moved into the phone header"
     moved = {"status-back", "status-undo", "ai-status"}
     exceptions = {"status-notes", "status-command", "status-clock"}
-    # The transient ones bring the bar itself back while they show.
-    responsive_css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    transient = {name for name in ids if f"#{name}:not(.hidden" in responsive_css}
+    # The transient ones bring the bar itself back while they show. The list is
+    # `watchStatusBarIdle`'s (a class on the root, which replaced a root-anchored
+    # `:has()` that made every DOM write re-match the page: OPEN 813).
+    watcher = app.split("function watchStatusBarIdle", 1)[1][:600]
+    transient = {name for name in ids if f"#{name}" in watcher}
     assert "status-task" in transient, "a running job no longer brings the phone's status bar back"
     # The agent's runs do not (INBOX 430, the owner: "hide the agent-runs bar
     # on phones and fold its count into More"): their count is More's badge

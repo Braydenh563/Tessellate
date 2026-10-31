@@ -122,3 +122,22 @@ def test_no_has_is_keyed_only_on_a_class_everything_wears():
                 if classes and classes <= UBIQUITOUS and "#" not in keyed:
                     found.append(f"{path.name}: {selector}")
     assert not found, "\n".join(found)
+
+
+def test_no_has_looks_for_a_contenteditable_attribute():
+    """OPEN 813: `#entry-list > li:not(:has(textarea, details[open],
+    [contenteditable="true"]))` made turning a map topic's text editable
+    restyle the board twice over: an attribute named inside a `:has()` is
+    checked against every `contenteditable` write on the page, and the board's
+    topic editor writes one on every add. Measured at 390px on a 20-topic map,
+    the write plus the focus cost 22ms of style work with it and 12ms without
+    (the note editor's CodeMirror root is `.cm-editor`, which says the same
+    thing by class)."""
+    found = []
+    for path in CSS:
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for prelude in re.findall(r"([^{}]+)\{", text):
+            for has in re.findall(r":has\(([^()]*(?:\([^()]*\)[^()]*)*)\)", prelude):
+                if "contenteditable" in has:
+                    found.append(f"{path.name}: {' '.join(prelude.split())}")
+    assert not found, "\n".join(found)
