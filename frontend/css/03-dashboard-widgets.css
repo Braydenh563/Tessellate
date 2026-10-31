@@ -385,13 +385,16 @@
    selected one legible), so the fix is the missing feedback, not a resting
    fill: the surface appears under the pointer, and the label goes to full
    --ink so the hovered option looks as real as the selected one. */
-.seg button:not(.active):hover,
-.seg button:not(.active):is(:focus-visible, :has(:focus-visible)) {
+.seg button:not(.active, [aria-pressed="true"]):hover,
+.seg button:not(.active, [aria-pressed="true"]):is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }
 
-.seg button.active {
+/* A segment says it is chosen by `.active` or by `aria-pressed` (the note
+   capture's Note / To-do switch, INBOX 1494): either one paints it, so a
+   switch that only sets the attribute is never left with no chosen look. */
+.seg button:is(.active, [aria-pressed="true"]) {
   background: var(--accent-surface);
   color: var(--on-accent);
 }

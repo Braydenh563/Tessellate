@@ -2904,7 +2904,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    segmented control say "you are here". Classic and the colour looks keep
    their filled tabs exactly (the owner's "the current look" option). */
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) #tab-bar button.active,
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .seg button.active,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .seg button:is(.active, [aria-pressed="true"]),
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chip.active {
   border-color: transparent;
   background: color-mix(in srgb, var(--ink) 11%, transparent);
