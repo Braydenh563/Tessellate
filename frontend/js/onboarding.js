@@ -245,7 +245,7 @@ function renderOnboardingSlide() {
   //: pleased and always moving, with one line in its own voice; the later
   //: cards keep the app's logo, so a new person meets both.
   const atlas = $("onboarding-atlas");
-  const greet = onboardingRun.index === 0 && typeof atlasMark === "function";
+  const greet = onboardingRun.index === 0;
   atlas.classList.toggle("hidden", !greet);
   $("onboarding-emblem").classList.toggle("hidden", greet);
   //: One mark per card (INBOX 472).

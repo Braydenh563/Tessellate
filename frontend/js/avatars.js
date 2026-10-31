@@ -2931,22 +2931,7 @@ document.addEventListener("change", (event) => {
   if (event.target?.id === "persona-select") syncNameMarkBuddy();
 });
 
-//: The dashboard's mark, when Appearance swaps the logo for a face: yours,
-//: or the persona the greeting speaks as (the chat's own when it matches
-//: Chat). Null keeps the logo.
-function dashboardMarkSeed() {
-  const choice = typeof appearancePref === "function" ? appearancePref("dash-mark", "logo") : "logo";
-  if (choice === "me") return typeof userMarkSeed === "function" ? userMarkSeed() : "You";
-  //: Atlas by name, whoever the greeting speaks as (the owner: "the
-  //: dashboard mark should have atlas as an option as well"). "Greeting
-  //: persona" only shows Atlas while Atlas is that persona.
-  if (choice === "atlas") return "Atlas";
-  if (choice === "persona") {
-    return (typeof prefsCache !== "undefined" && prefsCache?.dashboard_persona) || document.getElementById("persona-select")?.value || "Atlas";
-  }
-  return null;
-}
-
+//: The dashboard's mark seed (`dashboardMarkSeed`) is in dashboard.js: the dashboard asks it at boot.
 
 // --- the profile's "Your look" controls ------------------------------------
 //: Shuffle, back to the name's own, and the pickers (look, mood, hair,
@@ -9079,16 +9064,7 @@ function nameMarkBuddyHide(buddy) {
   );
 }
 
-//: Whether it is out: chosen in Appearance, or still on the page.
-function nameMarkBuddyShowing() {
-  let choice = "off";
-  try {
-    choice = prefs.get("avatar-buddy", null) || "off";
-  } catch (e) {
-    choice = "off";
-  }
-  return choice !== "off" || !!document.getElementById("nm-buddy");
-}
+//: Whether it is out (chosen in Appearance, or still on the page): `nameMarkBuddyShowing`, lazy-entries.js.
 
 //: **Show or hide it from anywhere** (INBOX 430, the owner: "a show/hide
 //: companion hotkey, and palette action"): Ctrl+Shift+Y (`toggleCompanion`

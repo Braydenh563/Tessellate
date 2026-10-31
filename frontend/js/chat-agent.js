@@ -381,15 +381,18 @@ function userMarkSeed() {
 //: can never show two different people.
 function paintUserMarks() {
   const seed = userMarkSeed();
-  for (const holder of document.querySelectorAll("[data-user-mark]")) {
-    holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
-  }
+  //: The faces come after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => {
+    for (const holder of document.querySelectorAll("[data-user-mark]")) {
+      holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
+    }
+  });
   const head = $("profile-head-name");
   if (head) head.textContent = ((prefsCache && prefsCache.display_name) || "").trim() || "Your profile";
   //: The companion, when it is you (INBOX 426 d, the owner: "I changed my
   //: name but the companion which was me didnt update"): it redraws when
   //: the name it is drawn from has changed, and does nothing otherwise.
-  if (typeof syncNameMarkBuddy === "function") syncNameMarkBuddy();
+  syncNameMarkBuddy();
 }
 
 function userMarkEl() {
@@ -397,7 +400,7 @@ function userMarkEl() {
   mark.className = "msg-user-mark";
   mark.setAttribute("aria-hidden", "true");
   mark.dataset.userMark = "18";
-  mark.appendChild(nameMark(userMarkSeed(), 18));
+  afterCharacters(() => mark.appendChild(nameMark(userMarkSeed(), 18)));
   return mark;
 }
 
@@ -1065,16 +1068,15 @@ function paintPersonaAvatar(holder, persona, size = 20) {
     paintAssistantAvatar(holder, size);
     return;
   }
+  //: The faces come after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => paintNamedHead(holder, name, size));
+}
+
+function paintNamedHead(holder, name, size) {
   const key = chatHeadKey(name, size);
   const source = chatHeadSources.get(key);
   if (source) {
     holder.replaceChildren(source.cloneNode(true));
-    return;
-  }
-  //: Nothing to draw a face with yet (the faces script failing to load):
-  //: the persona's own fallback, never an empty box.
-  if (typeof nameMark !== "function") {
-    fillPersonaMark(holder, name, size);
     return;
   }
   const face = nameMark(name, size);
@@ -1095,11 +1097,9 @@ function paintPersonaAvatar(holder, persona, size = 20) {
 //: crop it, 218 nodes a reply: 32,700 nodes in a 150-turn chat, and the first
 //: paint went from 580 to 981ms (chatheads.js). The emblem is the app's
 //: mark as a few SVG layers (assistant-avatar.js, lazy; `emblemArt`), about
-//: 20 nodes a head. No Atlas to draw (the faces script failing to
-//: load): the emblem, never an empty box.
+//: 20 nodes a head. Called only once the faces are in (`paintAssistantAvatar`).
 function assistantAvatar(size = 20) {
-  const emblem = typeof atlasAvatar !== "function" || (typeof appearancePref === "function" && appearancePref("assistant-avatar", "atlas") === "emblem");
-  if (emblem) {
+  if (appearancePref("assistant-avatar", "atlas") === "emblem") {
     const box = document.createElement("span");
     box.className = "assistant-emblem";
     box.setAttribute("aria-hidden", "true");
@@ -1120,7 +1120,9 @@ function assistantAvatar(size = 20) {
 //: where it stands (`repaintAssistantAvatars`) rather than at the next reply.
 function paintAssistantAvatar(holder, size = 20) {
   holder.dataset.assistantAvatar = String(size);
-  holder.replaceChildren(assistantAvatar(size));
+  //: After the faces (`afterCharacters`, lazy-entries.js): the first heads are
+  //: asked for while the scripts load, before `appearancePref` exists.
+  afterCharacters(() => holder.replaceChildren(assistantAvatar(size)));
 }
 
 function repaintAssistantAvatars(emblemsOnly = false) {

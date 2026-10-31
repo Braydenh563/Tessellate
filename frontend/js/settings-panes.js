@@ -691,11 +691,12 @@ async function renderPrefs() {
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
   $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
-  //: The saved look, and its controls (avatars.js).
-  if (typeof setOwnNameMarkStyle === "function") {
-    setOwnNameMarkStyle(prefsCache.avatar_style || {});
+  //: The saved look, and its controls (avatars.js, once it is in).
+  const savedLook = prefsCache.avatar_style || {};
+  afterCharacters(() => {
+    setOwnNameMarkStyle(savedLook);
     mountProfileLook();
-  }
+  });
   $("pref-bin-days").value = prefsCache.recycle_bin_days;
   $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
   $("pref-search-min-sim").value = prefsCache.search_min_similarity;
@@ -1024,7 +1025,7 @@ function wirePrefsDirtyMarks() {
   //: marks wait for the save, since that is when the name is real.
   $("pref-display-name")?.addEventListener("input", (e) => {
     const typed = e.target.value.trim();
-    $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56));
+    afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
     const head = $("profile-head-name");
     if (head) head.textContent = typed || "Your profile";
   });

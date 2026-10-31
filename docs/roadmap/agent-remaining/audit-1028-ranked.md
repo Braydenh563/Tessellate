@@ -21,7 +21,7 @@ Open audit-1028 rows (38 fixed rows left out, 12 in progress marked), ranked by 
 | 15 | B4 | high | full board render per frame with no dirty set | new | L |
 | 16 | D7 | high | prose spell pass walks whole document every pause | fixed (673039d, reconciled 2026-10-30) | M |
 | 17 | S2 | high | graph layout blocks the main thread at about 2,000 notes | fixed 2026-10-30 (graph-1030: 25 to 9-10 s, long tasks 149 to 20) | L |
-| 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | left (large, shell-1031.md) | M |
+| 18 | S3 | high | 1.1 MB index.html with comments and mascot code in boot path | fixed 1031: avatars and atlas lazy (boot bytes 0.77x, lock FCP 0.71x); comment stripping left | M |
 | 19 | B1 | high | whiteboard.js is 25k lines; initWhiteboard is one 4,064-line closure | docs/roadmap/WORLD_CLASS_PLAN.md:3755 | L |
 | 20 | B2 | high | whiteboard-map.js is 10,810 lines and 350 functions | docs/roadmap/WORLD_CLASS_PLAN.md:3255 | L |
 | 21 | U7 | high | code text is proportional, not monospace | fixed (673039d, reconciled 2026-10-30) | S |
