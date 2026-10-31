@@ -69,7 +69,7 @@ _KINDS: tuple[tuple[str, re.Pattern], ...] = (
         r"\bwho(?:'s| is) (?:this|it)(?: note)? (?:about|for|with)\b", re.I)),
     ("when", re.compile(
         r"\bdeadlines?\b|\bdue (?:date|when|by)\b|\bwhen\s+(?:is|does|do|did|are|will|should|was)\s+(?:it|this|that|we)?\s*(?:due|happening|happen|start|end|finish|over)?\b|"
-        r"\bwhat (?:date|day)\b|\bby when\b|\bwhen is (?:it )?due\b|\bwhen\s+(?:is|are)\s+the\b", re.I)),
+        r"\bwhat (?:dates?|days?)\b|\b(?:which|any|all the|list the|show the|what are the) (?:dates?|days?|deadlines?)\b|\bdates?\b[^?]*\b(?:mentioned|in (?:it|this|here)|given|named|are there)\b|\bby when\b|\bwhen is (?:it )?due\b|\bwhen\s+(?:is|are)\s+the\b", re.I)),
     ("point", re.compile(
         r"\b(?:main|key|big|core)\s+(?:point|idea|takeaway)s?\b|\btake-?aways?\b|\bwhat(?:'s| is)\s+important\b|\bwhat matters\b|\bgist\b", re.I)),
 )
@@ -80,7 +80,7 @@ _GENERIC = frozenset(
     "here there left remaining outstanding still next step steps todo todos action actions item items task tasks need needs have has "
     "to of in on at for by deadline deadlines due date day time main key point points idea takeaway takeaways important matters "
     "gist involved mentioned named people person me my i you we be get about any all open done packed ticked checked finished "
-    "complete completed not yet un total many much".split()
+    "complete completed not yet un total many much dates days deadlines mention mentions mentioning include includes included contain contains contained given".split()
 )
 
 _DO = re.compile(

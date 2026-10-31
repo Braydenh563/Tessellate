@@ -1030,6 +1030,9 @@ def _did(word: str) -> bool:
     return any(w in known for w in (low, low[:-1], low[:-2], low[:-3]))
 
 
+_WEATHER_VERBS = frozenset("rained snowed poured drizzled hailed stormed thundered sleeted misted".split())
+
+
 def _second_person(text: str) -> str:
     """The writer's words said to them: "I'm doing" to "you're doing", and a
     diary line with no subject ("Went to the range") given its "you"."""
@@ -1038,7 +1041,13 @@ def _second_person(text: str) -> str:
         #: "thinking of buying the mouse": what the writer was doing then.
         return "you were " + text[0].lower() + text[1:]
     first = re.match(r"[A-Za-z]+", text)
-    if first and _did(first.group(0)):
+    if first and first.group(0).lower() in _WEATHER_VERBS:
+        #: "Rained all day, baked banana bread": the weather did the first, the
+        #: writer the rest (audit 1031 C13).
+        head, comma, rest = text.partition(",")
+        rest = rest.strip()
+        text = "it " + head[0].lower() + head[1:] + (f", and you {rest[0].lower() + rest[1:]}" if comma and rest and not rest.lower().startswith(("and ", "but ")) else (", " + rest if rest else ""))
+    elif first and _did(first.group(0)):
         text = "you " + text[0].lower() + text[1:]
     return text
 
@@ -1396,9 +1405,19 @@ def _picture_of(view: composer.NoteView) -> Fact | None:
     return _picture_fact(view, shown, read) if shown or read else None
 
 
+_DAY_HEADING = re.compile(
+    r"^(?:[A-Za-z]+:\s*)?(?:(?:mon|tues|wednes|thurs|fri|satur|sun)day,?\s+)?(?:\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:,?\s+\d{4})?\.?$",
+    re.I,
+)
+
+
 def _left_out(view: composer.NoteView, s, known) -> bool:  # noqa: ANN001
     """A picture's sentences are said as one fact; one the person marked wrong is not said."""
-    return s.kind in ("picture", "picture_text") or bool(known and known.is_wrong(view.id, s.text))
+    if s.kind in ("picture", "picture_text") or bool(known and known.is_wrong(view.id, s.text)):
+        return True
+    #: "Diary: Saturday 24 October." is the note's day, not something it says
+    #: (audit 1031 C13); a note that is only that line still says it.
+    return len(view.sentences) > 1 and bool(_DAY_HEADING.match(s.text.strip()))
 
 
 _IT_IS = re.compile(r"^it(?:'s|’s| is)\s+", re.I)
@@ -1476,6 +1495,18 @@ def _unanswerable(stems: list[str], views: list[composer.NoteView]) -> bool:
     return any(st not in _VERBS() and not composer._holds(st, everywhere) for st in stems)
 
 
+def _typed_first(members: list[composer.NoteView], question: str) -> list[composer.NoteView]:
+    """"books" is the notes that say "book" or "books", before the ones that
+    only say "booked" (the stemmer folds all three; audit 1031 C8). Only a
+    plural noun asks this, and only when some member says it as typed."""
+    plural = [t for t in composer.subject_terms(clean(question)) if len(t) > 3 and t.endswith("s") and not t.endswith(("ss", "us", "is"))]
+    if not plural or len(members) < 2:
+        return members
+    said = re.compile(r"\b(?:" + "|".join(re.escape(w) for t in plural for w in (t, t[:-1])) + r")\b", re.I)
+    typed = [v for v in members if said.search(" ".join(str(v.note.get(k) or "") for k in ("content", "title", "category")) + " " + " ".join(map(str, v.note.get("tags") or [])))]
+    return typed or members
+
+
 def _members(question: str, views: list[composer.NoteView]) -> list[composer.NoteView]:
     """The notes the question is about: a category it names, else the notes
     that hold most of its words (in the text, the title or the tags)."""
@@ -1495,7 +1526,7 @@ def _members(question: str, views: list[composer.NoteView]) -> list[composer.Not
         return []
     best = max(h for h, _ in scored)
     need = best if best >= 2 else 1
-    return [v for h, v in scored if h >= need]
+    return _typed_first([v for h, v in scored if h >= need], question)
 
 
 def _scored_members(stems: list[str], views: list[composer.NoteView]) -> list[tuple[int, composer.NoteView]]:
@@ -4326,7 +4357,7 @@ def _points_block(out: _Out, said: list, title: str) -> str:
     points = []
     for text, fact in said:
         label = f"**{fact.label}:** " if fact.label and fact.label.lower() != title.lower() else ""
-        points.append(f"- {label}{text[:1].upper() + text[1:]}.")
+        points.append(f"- {label}{text[:1].upper() + text[1:]}{'' if text.endswith(('.', '。', '！', '？')) else '.'}")
         out.rows.append(_row(text, fact))
     return "\n".join(points)
 
@@ -4764,7 +4795,8 @@ def _result(out: _Out, kind: str, question: str) -> dict:
     paragraphs = list(out.lines) + out.more + out.closing[: 2 + len(out.insights)]
     if out.offer:
         paragraphs.append(out.offer["label"])
-    text = "\n\n".join(paragraphs)
+    #: A full-width stop already ends the quoted sentence; no ASCII one follows it.
+    text = re.sub(r"([。！？])\.", r"\1", "\n\n".join(paragraphs))
     n = len(out.rows)
     return {
         "text": text,

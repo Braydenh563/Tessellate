@@ -651,17 +651,7 @@ _F_PLURALS = {"knives": "knife", "wives": "wife", "shelves": "shelf", "loaves": 
 #: note that says "Ran" (audit 1030 Z4: "when did I run 8 km" answered with
 #: another run's sentence). Only forms that are rarely another word: not
 #: "saw", "left", "found", "felt".
-IRREGULAR_PAST = {
-    "ran": "run", "wrote": "write", "written": "write", "ate": "eat", "eaten": "eat", "swam": "swim", "swum": "swim",
-    "rode": "ride", "ridden": "ride", "drove": "drive", "driven": "drive", "bought": "buy", "went": "go", "gone": "go",
-    "flew": "fly", "flown": "fly", "took": "take", "taken": "take", "made": "make", "sold": "sell", "gave": "give",
-    "given": "give", "came": "come", "told": "tell", "spoke": "speak", "spoken": "speak", "slept": "sleep", "paid": "pay",
-    "met": "meet", "began": "begin", "begun": "begin", "broke": "break", "broken": "break", "chose": "choose",
-    "chosen": "choose", "forgot": "forget", "forgotten": "forget", "sent": "send", "built": "build", "heard": "hear",
-    "won": "win", "lost": "lose", "sat": "sit", "stood": "stand", "taught": "teach", "caught": "catch",
-    "brought": "bring", "drank": "drink", "drunk": "drink", "sang": "sing", "sung": "sing", "wore": "wear", "worn": "wear",
-    "woke": "wake", "grew": "grow", "grown": "grow",
-}
+IRREGULAR_PAST = variants.IRREGULAR_PAST
 
 
 def _stem_plain(word: str) -> str:
@@ -685,6 +675,10 @@ def _strip_suffix(w: str) -> str:
             if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
                 continue
             w = w[: len(w) - len(suffix)] + keep
+            #: A plural of an "-ing" or "-ed" word folds like the word: "meetings"
+            #: and "meeting" are one key (audit 1031 C8).
+            if suffix in ("s", "es") and w.endswith(("ing", "ed")):
+                return _strip_suffix(w)
             #: "running" is "run" and "stopped" is "stop": the doubled last
             #: consonant a suffix brought is taken off with it (INBOX 725,
             #: measured: "what do my notes say about running" missed every
@@ -1015,7 +1009,8 @@ _ITEM = re.compile(r"^(\s*(?:[-*+]|\d{1,3}[.)])\s+|\s*(?=\[[ xX]\]\s))(\[[ xX]\]
 #: Where one sentence ends and the next begins: a stop (and the quote mark or
 #: bracket closing it), a space, and a capital or a digit. Misses some
 #: abbreviations; never merges two sentences, the safer direction here.
-_SPLIT = re.compile(r"([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])")
+#: A full-width stop ends a sentence with no space after it (audit 1031 C10).
+_SPLIT = re.compile(r"(?:([.!?][\"”’)]?)\s+(?=[\"“‘(]?[A-Z0-9])|([。！？][」』”’)]?)\s*)")
 #: The lead-ins a person opens a sentence with that carry no claim, the tested
 #: list (INBOX 725: "Trim lead-ins ("So basically,") from quotes with a tested
 #: list"). `LEAD_INS` are taken off only with the comma or colon after them,
@@ -1157,7 +1152,9 @@ def _unit(view: NoteView, content: str, start: int, end: int, kind: str, done: b
     #: A short line with a figure ("Rent 650.", "Mum 0412 555 019") or a
     #: "Label: value" shape is a fact, not noise: budgets, numbers and lists
     #: of values are written that way (audit 1028 E5).
-    if not words or (kind == "prose" and len(text.split()) < 3 and not _short_fact(text)):
+    #: A script with no spaces is one "word" to `split`: its length is its characters.
+    thin = len(text.split()) < 3 and not (composer_frame.NON_LATIN.search(text) and len(text) >= 6)
+    if not words or (kind == "prose" and thin and not _short_fact(text)):
         return None
     return Sentence(view.id, view.rank, start, end, text, words, kind, done)
 
@@ -1386,7 +1383,7 @@ def _line_units(view: NoteView, content: str, line_start: int, line: str) -> Non
     body = line_start + (len(line) - len(line.lstrip(" >")))
     cursor = body
     for match in _SPLIT.finditer(content, body, line_end):
-        unit = _unit(view, content, cursor, match.end(1), "prose", None)
+        unit = _unit(view, content, cursor, match.end(1) if match.group(1) else match.end(2), "prose", None)
         if unit:
             view.sentences.append(unit)
         cursor = match.end()

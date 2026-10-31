@@ -646,6 +646,55 @@ def _attached_only(body: ChatRequest) -> None:
         body.attached_notes_only = True
 
 
+#: "what is in the Sara note", "what does the Tom note say", "what is Tom's
+#: note about", "the note called Sara": a question that names a note by its
+#: title (audit 1031 C7). The name is checked against the titles; a phrase that
+#: is no note's title ("the shopping note" when none is called that) is left to
+#: the search.
+_TITLED_ASK = re.compile(r"^(?:what|who|when|where|how|which|why|is|does|did|has|have|tell|show|summari[sz]e|read|explain|describe|give|list|any|anything)\b", re.I)
+_NOTE_NAMED = (
+    re.compile(r"\b(?:the|my|that) (?P<x>[\w'’&-]+(?: [\w'’&-]+){0,3}?) note\b", re.I),
+    re.compile(r"\b(?P<x>[\w&-]+(?: [\w&-]+){0,2}?)['’]s note\b", re.I),
+    re.compile(r"\bnote (?:called|titled|named) (?P<x>[\w'’&-]+(?: [\w'’&-]+){0,3})", re.I),
+)
+_NOT_A_NAME = frozenset({"this", "that", "open", "current", "new", "last", "first", "latest", "newest", "oldest", "same", "other", "whole", "entire", "next", "right", "wrong", "whole"})
+
+
+def _named_note(session: Session, body: ChatRequest) -> bool:
+    """Bind the note the question names by title as the closed set the answer
+    reads. Only one note with that title counts; two are left to the search."""
+    q = " ".join((body.question or "").split()).rstrip("?.! ")
+    if not _TITLED_ASK.match(q):
+        return False
+    for which, pattern in enumerate(_NOTE_NAMED):
+        for found in pattern.finditer(q):
+            words = found.group("x").split()
+            #: "what is Tom's note": the owner is the words next to "'s".
+            names = [" ".join(words[i:]) for i in range(len(words))] if which == 1 else [" ".join(words)]
+            for name in names:
+                if _titled_note(session, body, re.sub(r"^(?:in|from|of|on|at|for|about|with|to)\s+", "", name.strip(), flags=re.I)):
+                    #: "called" is how the note was named, not a word to look for.
+                    body.question = re.sub(r"\bnote (?:called|titled|named)\b", "note", body.question, flags=re.I)
+                    return True
+    return False
+
+
+def _titled_note(session: Session, body: ChatRequest, name: str) -> bool:
+    """Bind the one note titled `name`."""
+    if not name or name.lower() in _NOT_A_NAME:
+        return False
+    rows = session.execute(
+        select(Entry).where(Entry.is_deleted == False, Entry.is_private == False, Entry.content.ilike(f"%{like_escape(name)}%", escape=LIKE_ESCAPE))  # noqa: E712
+        .order_by(Entry.created_at.desc()).limit(80)
+    ).scalars()
+    titled = [e for e in rows if composer_frame.note_title(e.content or "").strip().lower() == name.lower()]
+    if len(titled) != 1:
+        return False
+    body.note_ids = [titled[0].id]
+    body.attached_notes_only = True
+    return True
+
+
 def _apply_open(session: Session, body: ChatRequest) -> None:
     """"Summarise this" on any tab (CHAT_PLAN B10): the open note, else the
     open category, becomes the closed set the answer reads; "summarise
@@ -653,6 +702,8 @@ def _apply_open(session: Session, body: ChatRequest) -> None:
     search finds. Notes attached by hand, or a scope, win over both."""
     if body.note_ids or body.document_ids or body.scope:
         _attached_only(body)
+        return
+    if _named_note(session, body):
         return
     _first_more_is_this(body)
     if composer_digest.about_this(body.question):
@@ -4119,7 +4170,8 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
     """The composed text and the asks that close it (`_with_next_step`)."""
     text = result["text"]
     asks: list[str] = []
-    if missed and not follow and personal.general(req.question or ""):
+    #: "what is this" is the open note, whatever it holds (audit 1031 C11), never the world.
+    if missed and not follow and personal.general(req.question or "") and not composer_digest.about_this(req.question or ""):
         #: "what's the capital of France": the world, not the notes, and
         #: said so rather than "nothing in your notes about capital".
         text = personal.general_reply(
