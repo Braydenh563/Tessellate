@@ -84,7 +84,7 @@ SETTINGS_LISTS = (
     ("sheets-selects.js", "async function renderPersonas(", "persona-list"),
     ("settings-data.js", "async function renderBackups(", "backup-list"),
     ("settings-data.js", "async function renderPrivacyReceipt(", "privacy-switches"),
-    ("settings-panes.js", "async function renderAccount(", "account-facts"),
+    ("settings-controls.js", "async function renderAccount(", "account-facts"),
 )
 
 

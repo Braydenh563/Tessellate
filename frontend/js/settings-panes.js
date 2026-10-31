@@ -485,77 +485,7 @@ function watchOverlays() {
 
 // --- account & security ------------------------------------------------------------
 
-async function renderAccount() {
-  const facts = $("account-facts");
-  facts.replaceChildren();
-  showSkeletons(facts, 3, "li");
-  const info = await apiJson("/auth/account").catch(() => null);
-  clearSkeletons(facts);
-  if (!info) {
-    const li = document.createElement("li");
-    li.className = "muted";
-    li.textContent = "Couldn't read the account state.";
-    facts.appendChild(li);
-    return;
-  }
-  const rows = [
-    ["Password", info.configured ? "Set" : "Not set yet"],
-    [
-      "Created",
-      info.created_at ? new Date(info.created_at).toLocaleDateString() : "Unknown",
-    ],
-    [
-      "Private notes",
-      info.vault_exists
-        ? info.vault_open
-          ? "Encryption key loaded: private notes are readable"
-          : "Locked: unlock to read private notes"
-        : "No encrypted notes yet",
-    ],
-    ["Open sessions", String(info.active_sessions)],
-    //: INBOX 663: the recovery key's row and its one button, drawn by
-    //: account-recovery.js (lazy: the boot scripts' total cap).
-    await recoveryAccountRow(info),
-  ];
-  if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
-  $("account-password-on-open").checked = info.password_on_open !== false;
-  renderPinSettings(info.pin);
-  renderLanAccess().catch(() => {});
-  for (const [label, value] of rows) {
-    //: A label column and a value column (`.account-facts`), not "Label: value"
-    //: in bold run-in: four facts read as a table, so they are laid out as one.
-    const li = document.createElement("li");
-    const name = document.createElement("span");
-    name.className = "account-fact-label";
-    name.textContent = label;
-    const text = document.createElement("span");
-    text.textContent = value;
-    li.append(name, text);
-    facts.appendChild(li);
-  }
-}
 
-//: "PIN for this computer" (owner, 2026-10-12): the fields show only where a
-//: PIN can be set, which is this computer with an OS protected store; the
-//: line under the heading says why when it cannot.
-function renderPinSettings(pin) {
-  const state = $("account-pin-state");
-  if (!state || !pin) return;
-  const usable = pin.available && pin.here;
-  $("account-pin-fields").classList.toggle("hidden", !usable);
-  $("account-pin-set").classList.toggle("hidden", !usable);
-  $("account-pin-set").textContent = pin.set ? "Change PIN" : "Set up a PIN for this computer";
-  $("account-pin-forget").classList.toggle("hidden", !(pin.set && pin.here));
-  if (!pin.here) {
-    state.textContent = "A PIN can be set up only on the computer this notebook runs on.";
-  } else if (!pin.available) {
-    state.textContent = "This computer has no protected store for a PIN, so the password is the only way in here.";
-  } else {
-    state.textContent = pin.set
-      ? "A PIN is set: the lock screen takes it or your password, on this computer only."
-      : "Unlock on this computer with a few digits instead of your password.";
-  }
-}
 
 // --- Account & security: other devices (LAN mode) -----------------------------
 //
