@@ -3475,7 +3475,7 @@ def _with_words_only(text: str, prepared: dict, result: dict) -> str:
     parts = text.split("\n\n")
     if not any(composer_digest.is_only_claim(part) for part in parts):
         return text
-    swapped = [composer_digest.PHRASES["only_words"] if composer_digest.is_only_claim(part) else part for part in parts]
+    swapped = [composer_digest.only_words_line(part) if composer_digest.is_only_claim(part) else part for part in parts]
     return "\n\n".join(swapped)
 
 

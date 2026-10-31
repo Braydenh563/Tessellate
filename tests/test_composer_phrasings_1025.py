@@ -125,7 +125,8 @@ def test_fixed_phrases_come_in_variants(ask):
         line
         for q in ("what is the harbor launch plan", "when is the dentist", "what is hydration", "what are the three gates", "what is the Lisbon trip", "what is the Porto trip")
         for line in ask(q).splitlines()
-        if "only note" in line or "only one" in line
+        #: Case-blind: the words-only wording opens "Only one note" (blind test 1031).
+        if "only note" in line.lower() or "only one" in line.lower()
     }
     assert len(said) >= 2, said
 

@@ -94,8 +94,6 @@ _BASE = {
     "no_place": "Your notes don't say where, but they do say this.",
     "only_note": "It's your only note on that so far.",
     "only_kind": "It's your only {noun} so far.",
-    #: Said instead of the two above when only the words were searched.
-    "only_words": "Only one note uses those words; notes that say it differently need search by meaning.",
     #: The joins between lines and the closing pattern (INBOX 870: "one or
     #: two words between directly giving me what I can see from the notes
     #: on the right ... feels like the response is completely useless").
@@ -426,6 +424,26 @@ def only_note_lines() -> frozenset[str]:
         if value:
             said.update(value if isinstance(value, tuple) else (value,))
     return frozenset(said)
+
+
+#: Said in place of the "only note" claim when only the words were searched
+#: (blind test 2026-10-31, item 3), worded in turn like the claim it replaces.
+ONLY_WORDS = (
+    "Only one note uses those words; notes that say it differently need search by meaning.",
+    "Only one note has those exact words; search by meaning finds notes worded another way.",
+    "That is the only one with those words; notes put differently need search by meaning.",
+    "Only one note matches those words so far; search by meaning would catch other wordings.",
+)
+
+
+def only_words_line(claim: str) -> str:
+    """The words-only line for an "only note" claim: the claim's own turn in
+    its tuple picks the wording, so a retry that reworded the claim rewords
+    this too."""
+    natural = VOICES["natural"]["only_note"]
+    claim = claim.strip()
+    turn = natural.index(claim) if claim in natural else sum(map(ord, claim))
+    return ONLY_WORDS[turn % len(ONLY_WORDS)]
 
 
 def is_only_claim(line: str) -> bool:
