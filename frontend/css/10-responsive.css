@@ -1734,7 +1734,7 @@ header#top-bar[data-scrolled="1"],
    604px canvas); a desktop board takes the same row for itself now. The
    map's gesture hint names two keys a phone does not have; there the +
    handles on a selected node are the gesture, and they are already 44px. */
-#tab-library:has(#library-view-whiteboard:not(.hidden) #wb-canvas-view:not(.hidden)) #library-subtabs {
+#tab-library:has(> #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) #library-subtabs {
   display: none;
 }
 @media (max-width: 599.98px) and (pointer: coarse) {
@@ -2511,13 +2511,13 @@ header#top-bar[data-scrolled="1"],
     display: contents;
   }
   /* New note floats over the edit form's Save otherwise (INBOX 606). */
-  .tab-page:has(.note-edit-surface) > .dock-fab {
+  .tab-page:where(#tab-notes):has(.note-edit-surface) > .dock-fab {
     display: none;
   }
   /* The same for the graph's node panel and its new-note panel: the fab sits
      at z-index 44, above the panel's 40, and floated over the sheet's own
      bottom-right control (the ⋯ in the action row, INBOX 883). */
-  .tab-page:has(#graph-popup:not(.hidden), #graph-new:not(.hidden)) > .dock-fab {
+  .tab-page:has(> #graph-card > #graph-box > :is(#graph-popup, #graph-new):not(.hidden)) > .dock-fab {
     display: none;
   }
   /* An icon picker since INBOX 599: its square, not a stretched field. */

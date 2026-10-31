@@ -1,3 +1,4 @@
-- done: b3af755 OPEN 813 mind map add at 390 (style recalculation: undo bar flush, root-anchored `:has()`, edge and plus cascade, closed select menu, adopt redraw).
-- next: 200 topics at 390 is still 90 to 110 ms synchronous: `renderWbObjects` (whiteboard.js, about 36 ms), `wbRenderMapEdges` geometry (whiteboard-map.js, about 25 ms), `wbBeginTextEdit` flush (whiteboard.js, about 45 ms); measure on a quiet machine and on the owner's hardware.
-- not verified: a real phone; quiet-machine timings (load was 3 to 13 here); the 50 ms bar at 200 topics.
+- done: b3af755 OPEN 813 mind map add at 390 (undo bar flush, root-anchored `:has()`, edge and plus cascade, closed select menu, adopt redraw).
+- done: dec5b0b the line's end grips by a class on its `<g>`, the tab-anchored `:has()` rules by `:has(> child)`; 390 px 30 ms at 20 topics, 51 ms at 200.
+- next: a per-edge geometry cache in `wbRenderMapEdges` (whiteboard-map.js, about 15 ms at 200 topics) needs a key over every input of `wbMapEdgeGeometry`; the universal `.sidebar-panel ~ *` rule (07-whiteboard-misc.css, 10-responsive.css) scans every sibling of every restyled node; measure on a quiet machine and on the owner's hardware.
+- not verified: a real phone; `renderWbObjects` incremental for an add (9 ms at 200 topics, left as is).

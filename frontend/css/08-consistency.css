@@ -4101,7 +4101,7 @@ body .chip.item-label,
   display: none;
 }
 @media (max-width: 599.98px) {
-  .tab-page:has(#library-view-documents.hidden) > #library-new-doc.dock-fab {
+  .tab-page:has(> #library-view-documents.hidden) > #library-new-doc.dock-fab {
     display: none;
   }
 }

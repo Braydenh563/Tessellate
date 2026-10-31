@@ -8595,6 +8595,12 @@ function wbMapCrossLinkInfo(sketchId) {
   return { sketch, data, source, target, index };
 }
 
+//: A waypoint handle shown or hidden, with the line's `<g>` that shows its ends.
+function wbMapEdgeShown(handle, on) {
+  handle.classList.toggle("is-shown", on);
+  handle.parentNode.classList.toggle("is-shown", on);
+}
+
 //: **Which lines show their waypoint handle without being pointed at.**
 //:
 //: Two routes, and the second is not a luxury. Hover (the `<g>` wrapper, in
@@ -8625,10 +8631,13 @@ function wbSyncMapEdgeHandles() {
       if (handle) want.add(handle);
     }
   }
+  //: The line's own `<g>` carries the class too: the two end grips are shown by
+  //: it, where a `:has()` on the handle made every class write on the board
+  //: re-match two hundred lines (OPEN 813).
   for (const handle of group.querySelectorAll(".wb-map-edge-handle.is-shown")) {
-    if (!want.has(handle)) handle.classList.remove("is-shown");
+    if (!want.has(handle)) wbMapEdgeShown(handle, false);
   }
-  for (const handle of want) if (!handle.classList.contains("is-shown")) handle.classList.add("is-shown");
+  for (const handle of want) if (!handle.classList.contains("is-shown")) wbMapEdgeShown(handle, true);
   //: **The selected topic's lines are drawn last** (K31): SVG takes the
   //: pointer in paint order, and a sibling line sharing a leg (an elbow's
   //: trunk, a stack of topics under one another) lay over this line's end
