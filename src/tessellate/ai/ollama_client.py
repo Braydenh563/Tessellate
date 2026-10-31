@@ -40,6 +40,7 @@ from tessellate.ai.provider import (
     offered_tool_names,
     split_thinking,
 )
+from tessellate.core import activity
 
 # `OllamaError` is not a subclass of the neutral error, it *is* the neutral
 # error. Every `except OllamaError` in the routes was written to mean "the AI
@@ -335,7 +336,7 @@ class OllamaClient(Provider):
         """The model's own specification, in one flat shape for the UI (§11).
 
         Reading these was the gap: the app knew the context length and nothing
-        else, so Settings → Models could not say how big a model was, how it
+        else, so Settings, Models could not say how big a model was, how it
         was quantised, or whether it could use tools at all, which is the
         first thing to check when "agent mode does nothing".
         """
@@ -514,7 +515,11 @@ class OllamaClient(Provider):
                 f"{self.base_url}/api/pull",
                 json={"name": name},
                 stream=True,
-                timeout=None,  # a multi-GB download has no sane timeout
+                #: No total timeout (a multi-GB download takes what it takes),
+                #: but a connection silent for five minutes is dead: it froze
+                #: the progress bar for good (audit 1028 E39). Ollama's
+                #: slowest quiet step, the digest check, is well inside it.
+                timeout=(10, 300),
             ) as response:
                 response.raise_for_status()
                 for line in response.iter_lines():
@@ -629,7 +634,7 @@ class OllamaClient(Provider):
                     timeout=self._request_timeout(),
                 ) as response:
                     response.raise_for_status()
-                    for line in response.iter_lines():
+                    for line in activity.stop_aware(response, response.iter_lines()):
                         if not line:
                             continue
                         data = json.loads(line)
@@ -843,7 +848,7 @@ class OllamaClient(Provider):
                         shown = True
                         yield {"content_delta": visible}
 
-                for line in response.iter_lines():
+                for line in activity.stop_aware(response, response.iter_lines()):
                     if not line:
                         continue
                     data = json.loads(line)

@@ -1,6 +1,6 @@
 """What background work has finished, and how it went.
 
-Settings → Background tasks showed only what was *running*, on the reasoning
+Settings, Background tasks showed only what was *running*, on the reasoning
 that a finished job is not a task and a screen that accumulates them is a log.
 That is tidy and it is wrong in one specific way, which is the way that
 matters: **a job that fails disappears at the moment it becomes interesting.**

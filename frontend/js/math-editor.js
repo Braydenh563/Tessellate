@@ -1,57 +1,114 @@
 // math-editor.js: the guided equation editor (DOCUMENTS_PLAN row 16; the
 // owner, 2026-10-26: "an easier and guided way to write out mathematical
-// equations and symbols like with word or desmos").
+// equations and symbols like with word or desmos"; and 2026-10-31, INBOX 1473:
+// "word equations ... edit the boxes where stuff goes ... I want latex as well").
 //
 // One lazy module (lazy-entries.js `LAZY_MODULES.mathEditor`, with
-// math-editor-lazy.css), and every surface is a thin caller of
-// `openMathEditor({target, anchor})`: the "/" menu's Equation row in Notes,
-// Documents, a board's text and the Chat box, the document's Insert menu, and
-// Alt+= (Word's key) in any of those and in the Ask box.
+// math-editor-lazy.css and the field it is built on, math-field.js), and every
+// surface is a thin caller of `openMathEditor({target, anchor})`: the "/"
+// menu's Equation row in Notes, Documents, a board's text and the Chat box, the
+// document's Insert menu, and Alt+= (Word's key) in any of those and in the
+// Ask box.
 //
 // What it writes is TeX between `$` (inline) or `$$` (display), the dialect
 // the one renderer already draws (`docMathRender`, documents.js), so a note
 // stays plain text and the editor adds no second format. Its anatomy is the
 // icon picker's, from the recipe index: the popover shell lifted to <body>,
-// the dialog head with its '?' and X, a `.seg` of Inline and Display, the
-// TeX box over a live preview, a `.search-field`, the palette's groups under
-// pinned heads, and the dialog foot (Cancel, Insert).
+// the dialog head with its '?' and X, a `.tabs-line` of Inline and Display, the
+// equation field, a `.search-field`, the palette's groups under pinned heads,
+// and the dialog foot (Cancel, Insert).
 //
-// **Guided, as Word's linear format and Desmos are**: typing `a/` makes a
-// fraction with the caret in its denominator, `^` and `_` open a slot, an
-// operator or a space leaves a filled script, `alpha`, `pi`, `sqrt` or `sin`
-// followed by a space become the symbol, `>=`, `!=`, `->` and `+-` become one
-// sign. Tab goes to the next empty slot. Backspace straight after a change
-// undoes it, so nothing typed is lost to a guess.
+// **The equation is a MathLive field, as Word's is** (math-field.js): a
+// structure drawn as it will read with dotted boxes where things go, which
+// are clicked or reached with Tab, `\frac` and the rest typed as LaTeX
+// converting as they are typed, `/` making a fraction, `^` and `_` a script.
+// The palette inserts a structure at the cursor (a selection goes into its
+// first box), and the LaTeX button shows the same equation as raw TeX in a text
+// box that stays in step with the field. It replaces the guided typing this
+// file had for a plain text box: the field does all of that natively.
 
 // MATH-EDITOR-CORE-BEGIN
 
-//: The palette. A template's empty `{}` or `[]` is a slot, which Tab walks
-//: and the preview draws as a box. `sample` is what a structure's tile shows,
-//: drawn by the renderer; a symbol's tile is its glyph.
-const MATH_EDITOR_STRUCTURES = [
-  ["fraction", "\\frac{}{}", "\\frac{a}{b}"],
-  ["square root", "\\sqrt{}", "\\sqrt{x}"],
-  ["nth root", "\\sqrt[]{}", "\\sqrt[n]{x}"],
-  ["power", "^{}", "x^{n}"],
-  ["subscript", "_{}", "x_{i}"],
-  ["subscript and power", "_{}^{}", "x_{i}^{n}"],
-  ["sum", "\\sum_{}^{}", "\\sum_{i}^{n}"],
-  ["product", "\\prod_{}^{}", "\\prod_{i}^{n}"],
-  ["integral", "\\int_{}^{}", "\\int_{a}^{b}"],
-  ["limit", "\\lim_{{} \\to {}}", "\\lim_{x \\to a}"],
-  ["derivative", "\\frac{d}{d{}}", "\\frac{d}{dx}"],
-  ["partial derivative", "\\frac{\\partial {}}{\\partial {}}", "\\frac{\\partial f}{\\partial x}"],
-  ["brackets", "\\left( {} \\right)", "\\left( x \\right)"],
-  ["absolute value", "\\left| {} \\right|", "\\left| x \\right|"],
-  ["binomial", "\\binom{}{}", "\\binom{n}{k}"],
-  ["vector", "\\vec{}", "\\vec{v}"],
-  ["hat", "\\hat{}", "\\hat{x}"],
-  ["bar", "\\overline{}", "\\overline{x}"],
-  ["matrix", "\\begin{pmatrix} {} & {} \\\\ {} & {} \\end{pmatrix}", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"],
-  ["square matrix", "\\begin{bmatrix} {} & {} \\\\ {} & {} \\end{bmatrix}", "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}"],
-  ["determinant", "\\begin{vmatrix} {} & {} \\\\ {} & {} \\end{vmatrix}", "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}"],
-  ["cases", "\\begin{cases} {} & {} \\\\ {} & {} \\end{cases}", "\\begin{cases} a & x > 0 \\\\ b & x \\le 0 \\end{cases}"],
-  ["text", "\\text{}", "\\text{abc}"],
+//: The palette, as Word's equation ribbon groups it. A template's `#@` is the
+//: box that takes the selection and `#?` any other box (MathLive's own
+//: placeholders); `sample` is what its tile draws, by the renderer.
+const MATH_EDITOR_TEMPLATES = [
+  ["fraction", "Fraction", [
+    ["fraction", "\\frac{#@}{#?}", "\\frac{a}{b}"],
+    ["small fraction", "\\tfrac{#@}{#?}", "\\tfrac{a}{b}"],
+    ["derivative", "\\frac{d#@}{d#?}", "\\frac{dy}{dx}"],
+    ["partial derivative", "\\frac{\\partial #@}{\\partial #?}", "\\frac{\\partial f}{\\partial x}"],
+    ["binomial", "\\binom{#@}{#?}", "\\binom{n}{k}"],
+  ]],
+  ["script", "Script", [
+    ["superscript", "#@^{#?}", "x^{n}"],
+    ["subscript", "#@_{#?}", "x_{i}"],
+    ["subscript and superscript", "#@_{#?}^{#?}", "x_{i}^{n}"],
+  ]],
+  ["radical", "Radical", [
+    ["square root", "\\sqrt{#@}", "\\sqrt{x}"],
+    ["nth root", "\\sqrt[#?]{#@}", "\\sqrt[n]{x}"],
+  ]],
+  ["integral", "Integral", [
+    ["integral", "\\int_{#?}^{#?}#@", "\\int_{a}^{b}f"],
+    ["double integral", "\\iint_{#?}#@", "\\iint_{D}f"],
+    ["triple integral", "\\iiint_{#?}#@", "\\iiint_{V}f"],
+    ["contour integral", "\\oint_{#?}#@", "\\oint_{C}f"],
+  ]],
+  ["operator-large", "Large operator", [
+    ["sum", "\\sum_{#?}^{#?}#@", "\\sum_{i}^{n}a"],
+    ["product", "\\prod_{#?}^{#?}#@", "\\prod_{i}^{n}a"],
+    ["coproduct", "\\coprod_{#?}^{#?}#@", "\\coprod_{i}^{n}a"],
+    ["union", "\\bigcup_{#?}^{#?}#@", "\\bigcup_{i}^{n}A"],
+    ["intersection", "\\bigcap_{#?}^{#?}#@", "\\bigcap_{i}^{n}A"],
+  ]],
+  ["bracket", "Bracket", [
+    ["parentheses", "\\left(#@\\right)", "\\left(x\\right)"],
+    ["square brackets", "\\left[#@\\right]", "\\left[x\\right]"],
+    ["braces", "\\left\\{#@\\right\\}", "\\left\\{x\\right\\}"],
+    ["absolute value", "\\left|#@\\right|", "\\left|x\\right|"],
+    ["floor", "\\left\\lfloor #@\\right\\rfloor", "\\left\\lfloor x\\right\\rfloor"],
+    ["ceiling", "\\left\\lceil #@\\right\\rceil", "\\left\\lceil x\\right\\rceil"],
+    ["angle brackets", "\\left\\langle #@\\right\\rangle", "\\left\\langle x\\right\\rangle"],
+  ]],
+  ["function", "Function", [
+    ["sine", "\\sin\\left(#@\\right)", "\\sin\\left(x\\right)"],
+    ["cosine", "\\cos\\left(#@\\right)", "\\cos\\left(x\\right)"],
+    ["tangent", "\\tan\\left(#@\\right)", "\\tan\\left(x\\right)"],
+    ["logarithm", "\\log\\left(#@\\right)", "\\log\\left(x\\right)"],
+    ["logarithm with base", "\\log_{#?}\\left(#@\\right)", "\\log_{b}\\left(x\\right)"],
+    ["natural logarithm", "\\ln\\left(#@\\right)", "\\ln\\left(x\\right)"],
+    ["exponential", "e^{#@}", "e^{x}"],
+  ]],
+  ["accent", "Accent", [
+    ["hat", "\\hat{#@}", "\\hat{x}"],
+    ["bar", "\\overline{#@}", "\\overline{x}"],
+    ["tilde", "\\tilde{#@}", "\\tilde{x}"],
+    ["dot", "\\dot{#@}", "\\dot{x}"],
+    ["double dot", "\\ddot{#@}", "\\ddot{x}"],
+    ["vector", "\\vec{#@}", "\\vec{v}"],
+  ]],
+  ["limit", "Limit and log", [
+    ["limit", "\\lim_{#? \\to #?}#@", "\\lim_{x \\to a}f"],
+    ["limit to infinity", "\\lim_{#? \\to \\infty}#@", "\\lim_{n \\to \\infty}a"],
+    ["maximum", "\\max_{#?}#@", "\\max_{x}f"],
+    ["minimum", "\\min_{#?}#@", "\\min_{x}f"],
+    ["supremum", "\\sup_{#?}#@", "\\sup_{x}f"],
+    ["infimum", "\\inf_{#?}#@", "\\inf_{x}f"],
+  ]],
+  ["operator", "Operator", [
+    ["right arrow", "#@ \\to #?", "a \\to b"],
+    ["arrow both ways", "#@ \\leftrightarrow #?", "a \\leftrightarrow b"],
+    ["implies", "#@ \\Rightarrow #?", "a \\Rightarrow b"],
+    ["text", "\\text{#@}", "\\text{abc}"],
+  ]],
+  ["matrix", "Matrix", [
+    ["2 by 2 matrix", "\\begin{pmatrix}#@&#?\\\\#?&#?\\end{pmatrix}", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"],
+    ["3 by 3 matrix", "\\begin{pmatrix}#@&#?&#?\\\\#?&#?&#?\\\\#?&#?&#?\\end{pmatrix}", "\\begin{pmatrix} a & b & c \\\\ d & e & f \\\\ g & h & i \\end{pmatrix}"],
+    ["square bracket matrix", "\\begin{bmatrix}#@&#?\\\\#?&#?\\end{bmatrix}", "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}"],
+    ["determinant", "\\begin{vmatrix}#@&#?\\\\#?&#?\\end{vmatrix}", "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}"],
+    ["cases", "\\begin{cases}#@&#?\\\\#?&#?\\end{cases}", "\\begin{cases} a & x > 0 \\\\ b & x \\le 0 \\end{cases}"],
+  ]],
 ];
 
 //: Symbol groups as `name=glyph` pairs: the TeX is `\name`, which the
@@ -65,212 +122,23 @@ const MATH_EDITOR_SYMBOLS = [
   ["calculus", "Calculus", "sum=∑ prod=∏ int=∫ iint=∬ oint=∮ partial=∂ nabla=∇ lim=lim sin=sin cos=cos tan=tan log=log ln=ln exp=exp"],
 ];
 
-//: Every group as `{key, label, items: [{name, tex, glyph, sample}]}`.
+//: Every group as `{key, label, items: [{name, tex, glyph, sample}]}`: the
+//: structures first, then the symbols.
 function mathEditorGroups() {
-  const groups = [{
-    key: "structures",
-    label: "Structures",
-    items: MATH_EDITOR_STRUCTURES.map(([name, tex, sample]) => ({ name, tex, sample, glyph: "" })),
-  }];
+  const groups = MATH_EDITOR_TEMPLATES.map(([key, label, items]) => ({
+    key,
+    label,
+    structures: true,
+    items: items.map(([name, tex, sample]) => ({ name, tex, sample, glyph: "" })),
+  }));
   for (const [key, label, pairs] of MATH_EDITOR_SYMBOLS) {
     const items = pairs.split(" ").map((pair) => {
       const [name, glyph] = pair.split("=");
       return { name, tex: `\\${name}`, glyph, sample: "" };
     });
-    groups.push({ key, label, items });
+    groups.push({ key, label, structures: false, items });
   }
   return groups;
-}
-
-//: Words that become a command when a space (or a bracket, or an operator)
-//: follows them: every symbol's name, and a few spellings people type.
-const MATH_EDITOR_ALIASES = { inf: "infty", infinity: "infty", deg: "degree" };
-
-function mathEditorWordCommand(word) {
-  if (MATH_EDITOR_ALIASES[word]) return MATH_EDITOR_ALIASES[word];
-  const known = mathEditorWordCommand.names || (mathEditorWordCommand.names = new Set(
-    MATH_EDITOR_SYMBOLS.flatMap(([, , pairs]) => pairs.split(" ").map((pair) => pair.split("=")[0]))
-  ));
-  return known.has(word) ? word : null;
-}
-
-//: Two characters that are one sign.
-const MATH_EDITOR_PAIRS = {
-  ">=": "\\ge ", "<=": "\\le ", "!=": "\\ne ", "->": "\\to ", "=>": "\\Rightarrow ", "+-": "\\pm ", "~=": "\\approx ",
-};
-
-//: The index of the brace or bracket that opens the one closing at `at`, or -1.
-function mathEditorMatch(text, at, open, close) {
-  let depth = 0;
-  for (let i = at; i >= 0; i -= 1) {
-    if (text[i] === close) depth += 1;
-    else if (text[i] === open) {
-      depth -= 1;
-      if (depth === 0) return i;
-    }
-  }
-  return -1;
-}
-
-//: Inside `\text{...}`, where words are words: no change is made there.
-function mathEditorInText(before) {
-  const at = Math.max(before.lastIndexOf("\\text{"), before.lastIndexOf("\\mathrm{"), before.lastIndexOf("\\operatorname{"));
-  if (at < 0) return false;
-  let depth = 0;
-  for (let i = before.indexOf("{", at); i < before.length; i += 1) {
-    if (before[i] === "{") depth += 1;
-    else if (before[i] === "}") depth -= 1;
-  }
-  return depth > 0;
-}
-
-//: Where the term that ends at the end of `text` starts: Word's rule for
-//: what a `/` puts over the line. Groups and scripts first (`x^{2}`,
-//: `\frac{a}{b}`), then one base: a bracketed group, a command, or a run of
-//: letters and digits.
-function mathEditorTermStart(text) {
-  let at = text.length;
-  for (;;) {
-    const c = text[at - 1];
-    if (c === "}") {
-      const open = mathEditorMatch(text, at - 1, "{", "}");
-      if (open < 0) return at;
-      at = open;
-    } else if ((c === "^" || c === "_") && at < text.length) {
-      at -= 1;
-    } else {
-      break;
-    }
-  }
-  if (text[at - 1] === ")") {
-    const open = mathEditorMatch(text, at - 1, "(", ")");
-    return open < 0 ? at : open;
-  }
-  let start = at;
-  while (start > 0 && /[A-Za-z0-9.]/.test(text[start - 1])) start -= 1;
-  if (start > 0 && text[start - 1] === "\\" && /^[A-Za-z]/.test(text.slice(start, at))) start -= 1;
-  return start;
-}
-
-function mathEditorPair(before, typed, after) {
-  const sign = MATH_EDITOR_PAIRS[before.slice(-1) + typed];
-  if (!sign || before.slice(-2, -1) === "\\") return null;
-  const head = before.slice(0, -1) + sign;
-  return { value: head + after, caret: head.length };
-}
-
-function mathEditorScript(before, typed, after) {
-  if ((typed !== "^" && typed !== "_") || after.startsWith("{") || before.endsWith("\\")) return null;
-  return { value: `${before}${typed}{}${after}`, caret: before.length + 2 };
-}
-
-//: An operator or a space typed at the end of a filled `^{...}` or `_{...}`
-//: steps out of it first, as Word's does: `x^2+1` is x squared, plus one.
-function mathEditorLeave(before, typed, after) {
-  if (!" +-=<>,".includes(typed) || !after.startsWith("}")) return null;
-  const open = mathEditorMatch(`${before}}`, before.length, "{", "}");
-  if (open < 1 || open === before.length - 1 || !"^_".includes(before[open - 1])) return null;
-  const head = `${before}}${typed === " " ? "" : typed}`;
-  return { value: head + after.slice(1), caret: head.length };
-}
-
-function mathEditorFraction(before, typed, after) {
-  if (typed !== "/" || before.endsWith("\\")) return null;
-  const start = mathEditorTermStart(before);
-  let top = before.slice(start);
-  if (top.startsWith("(") && mathEditorMatch(top, top.length - 1, "(", ")") === 0) top = top.slice(1, -1);
-  const head = `${before.slice(0, start)}\\frac{${top}}{`;
-  const caret = top ? head.length : before.slice(0, start).length + 6;
-  return { value: `${head}}${after}`, caret };
-}
-
-function mathEditorWord(before, typed, after) {
-  if (/[A-Za-z]/.test(typed)) return null;
-  const found = /(?:^|[^A-Za-z\\])([A-Za-z]{2,})$/.exec(before);
-  const name = found && mathEditorWordCommand(found[1]);
-  const head = found ? before.slice(0, before.length - found[1].length) : "";
-  if (name) {
-    const kept = `${head}\\${name}${typed === " " ? " " : ` ${typed}`}`;
-    return { value: kept + after, caret: kept.length };
-  }
-  if (found && found[1] === "sqrt") {
-    const kept = `${head}\\sqrt{`;
-    const rest = typed === " " || typed === "(" ? "" : typed;
-    return { value: `${kept}}${rest}${after}`, caret: kept.length };
-  }
-  return null;
-}
-
-//: **The guided typing, as one pure step**: `value` has just had one
-//: character typed at `caret - 1`. Returns the changed `{value, caret}`, or
-//: null when the typing stands as it is.
-function mathEditorAuto(value, caret) {
-  const text = String(value || "");
-  if (caret < 1 || caret > text.length) return null;
-  const typed = text[caret - 1];
-  const before = text.slice(0, caret - 1);
-  const after = text.slice(caret);
-  if (mathEditorInText(before)) return null;
-  return mathEditorPair(before, typed, after)
-    || mathEditorLeave(before, typed, after)
-    || mathEditorScript(before, typed, after)
-    || mathEditorFraction(before, typed, after)
-    || mathEditorWord(before, typed, after);
-}
-
-const MATH_EDITOR_SLOT = /\{\}|\[\]/g;
-
-//: The caret position inside the next empty slot after `from`, or -1.
-function mathEditorNextSlot(value, from) {
-  MATH_EDITOR_SLOT.lastIndex = 0;
-  for (let m = MATH_EDITOR_SLOT.exec(value); m; m = MATH_EDITOR_SLOT.exec(value)) {
-    if (m.index >= from) return m.index + 1;
-  }
-  return -1;
-}
-
-//: Where Tab goes: the next empty slot, else out past the brace the caret
-//: is inside (Desmos's right arrow out of a denominator), else -1.
-function mathEditorTabStop(value, from) {
-  const slot = mathEditorNextSlot(value, from);
-  if (slot >= 0) return slot;
-  const close = value.indexOf("}", from);
-  return close >= 0 ? close + 1 : -1;
-}
-
-//: The caret position inside the last empty slot that ends before `from`, or -1.
-function mathEditorPrevSlot(value, from) {
-  let best = -1;
-  MATH_EDITOR_SLOT.lastIndex = 0;
-  for (let m = MATH_EDITOR_SLOT.exec(value); m; m = MATH_EDITOR_SLOT.exec(value)) {
-    if (m.index + 1 < from) best = m.index + 1;
-  }
-  return best;
-}
-
-//: A palette pick at the selection: a selection becomes the first slot's
-//: content (select `x`, pick the fraction, and `x` is over the line); the
-//: caret goes to the first slot still empty, or after the insert. A command
-//: ending in letters gets a space, so `\alpha` and the next `x` stay two.
-function mathEditorInsert(value, start, end, tex) {
-  const text = String(value || "");
-  const chosen = text.slice(start, end);
-  let piece = /[A-Za-z]$/.test(tex) ? `${tex} ` : tex;
-  if (chosen) {
-    MATH_EDITOR_SLOT.lastIndex = 0;
-    const slot = MATH_EDITOR_SLOT.exec(piece);
-    piece = slot ? `${piece.slice(0, slot.index + 1)}${chosen}${piece.slice(slot.index + 1)}` : `${chosen}${piece}`;
-  }
-  const next = text.slice(0, start) + piece + text.slice(end);
-  const inside = mathEditorNextSlot(next, start);
-  const caret = inside >= 0 && inside <= start + piece.length ? inside : start + piece.length;
-  return { value: next, caret };
-}
-
-//: What the preview draws: an empty slot as a box, so a half-built fraction
-//: shows where its parts go.
-function mathEditorPreviewTex(tex) {
-  return String(tex || "").replace(/\{\}/g, "{□}").replace(/\[\]/g, "[□]");
 }
 
 //: The markdown written into the note, always on one line: no spaces inside
@@ -310,7 +178,6 @@ function mathEditorSpan(value, start, end) {
   }
   return null;
 }
-
 // MATH-EDITOR-CORE-END
 
 const mathEditorState = { open: null };
@@ -343,7 +210,7 @@ function mathEditorTile(item) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "ghost math-editor-tile";
-  button.title = `${item.name}: ${item.tex}`;
+  button.title = item.name;
   button.setAttribute("aria-label", item.name);
   button._item = item;
   button.appendChild(mathEditorTileFace(item));
@@ -357,7 +224,7 @@ function mathEditorPalette(list, query) {
   const parts = [];
   for (const group of mathEditorGroups()) {
     const items = group.items.filter((item) => {
-      const hay = `${item.name} ${group.label} ${item.tex}`.toLowerCase();
+      const hay = `${item.name} ${group.label} ${group.structures ? "" : item.tex}`.toLowerCase();
       return words.every((word) => hay.includes(word));
     });
     if (!items.length) continue;
@@ -365,7 +232,7 @@ function mathEditorPalette(list, query) {
     head.className = "math-editor-group";
     head.textContent = group.label;
     const grid = document.createElement("div");
-    grid.className = group.key === "structures" ? "math-editor-grid math-editor-grid-wide" : "math-editor-grid";
+    grid.className = group.structures ? "math-editor-grid math-editor-grid-wide" : "math-editor-grid";
     grid.setAttribute("role", "group");
     grid.setAttribute("aria-label", group.label);
     grid.append(...items.map(mathEditorTile));
@@ -378,29 +245,6 @@ function mathEditorPalette(list, query) {
     parts.push(none);
   }
   list.replaceChildren(...parts);
-}
-
-function mathEditorDrawPreview(preview, tex, display) {
-  const body = String(tex || "").trim();
-  if (!body) {
-    const hint = document.createElement("span");
-    hint.className = "muted";
-    hint.textContent = "The equation shows here as you type.";
-    preview.replaceChildren(hint);
-    return;
-  }
-  if (typeof docMathRender !== "function") {
-    preview.textContent = body;
-    ensureModule("library").then(() => {
-      if (preview.isConnected && typeof docMathRender === "function") mathEditorDrawPreview(preview, tex, display);
-    });
-    return;
-  }
-  try {
-    preview.replaceChildren(docMathRender(mathEditorPreviewTex(body), display));
-  } catch {
-    preview.textContent = body;
-  }
 }
 
 function mathEditorHelp() {
@@ -423,7 +267,7 @@ function mathEditorHelp() {
   body.setAttribute("aria-label", "About the equation editor");
   const text = document.createElement("p");
   text.textContent =
-    "Type it plainly: a/b makes a fraction, ^ and _ open a power or a subscript, and a space or an operator steps out of one. Names such as alpha, pi, sqrt, sum or sin become the symbol after a space, and >=, !=, -> and +- become one sign. Tab goes to the next empty box, Backspace straight after a change undoes it. Pick from the palette to insert at the cursor; a selection goes into the first box. Inline sits in a sentence, Display on its own line. Ctrl+Enter inserts. What is written is TeX between dollar signs, so the note stays plain text; put the cursor in an equation and open this again to edit it.";
+    "Click a dotted box to fill it, Tab goes to the next box and the arrows move through the equation. Type it as you would write it: / makes a fraction, ^ and _ open a power or a subscript, and LaTeX such as \\frac or \\alpha turns into the symbol as you type it. Pick a structure or a symbol from the palette to insert it at the cursor; a selection goes into the first box. The LaTeX button shows the same equation as raw TeX to edit directly. Inline sits in a sentence, Display on its own line. Ctrl+Enter inserts. What is written is TeX between dollar signs, so the note stays plain text; click a drawn equation in a note, or put the cursor in one and open this again, to edit it.";
   body.appendChild(text);
   return { help, body };
 }
@@ -482,53 +326,20 @@ function mathEditorSearch(onInput) {
   return field;
 }
 
-//: Tab and Shift+Tab walk the empty slots; with none left they move the
-//: focus as Tab always does. Ctrl+Enter inserts.
-function mathEditorKeys(input, view) {
-  input.addEventListener("keydown", (event) => {
+//: Ctrl+Enter inserts, from the field or the LaTeX box; Escape, taken before
+//: the field sees it (MathLive's own Escape is its LaTeX-entry switch, left
+//: alone while the field is in that mode), closes the panel.
+function mathEditorKeys(paneOf, insert, escape) {
+  return (event) => {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      view.insert();
-      return;
-    }
-    if (event.key === "Backspace" && view.undoAuto()) {
+      event.stopPropagation();
+      insert();
+    } else if (event.key === "Escape" && paneOf().field.mode !== "latex") {
       event.preventDefault();
-      return;
+      event.stopPropagation();
+      escape();
     }
-    if (event.key !== "Tab" || event.ctrlKey || event.altKey) return;
-    const at = event.shiftKey
-      ? mathEditorPrevSlot(input.value, input.selectionStart)
-      : mathEditorTabStop(input.value, input.selectionEnd);
-    if (at < 0) return;
-    event.preventDefault();
-    input.setSelectionRange(at, at);
-  });
-}
-
-//: The guided typing on the box: one change per typed character, kept so a
-//: Backspace straight after puts back what was typed.
-function mathEditorGuide(input, onChange) {
-  let last = null;
-  input.addEventListener("input", (event) => {
-    last = null;
-    if (event.inputType === "insertText" && event.data && event.data.length === 1) {
-      const was = { value: input.value, caret: input.selectionStart };
-      const changed = mathEditorAuto(input.value, input.selectionStart);
-      if (changed) {
-        input.value = changed.value;
-        input.setSelectionRange(changed.caret, changed.caret);
-        last = { was, now: changed.value };
-      }
-    }
-    onChange();
-  });
-  return () => {
-    if (!last || input.value !== last.now) return false;
-    input.value = last.was.value;
-    input.setSelectionRange(last.was.caret, last.was.caret);
-    last = null;
-    onChange();
-    return true;
   };
 }
 
@@ -586,10 +397,22 @@ function mathEditorWrite(surface, start, tex, display) {
   return true;
 }
 
+//: The line under the head: what to do, and the button that shows the TeX.
+function mathEditorLede(toggle) {
+  const row = document.createElement("div");
+  row.className = "math-editor-lede-row";
+  const lede = document.createElement("p");
+  lede.className = "muted math-editor-lede";
+  lede.textContent = "Click a box to fill it, or pick a structure; it is written as TeX.";
+  row.append(lede, toggle);
+  return row;
+}
+
 //: **Opens the editor** for `target` (an editor surface or a text box),
 //: hung from `anchor` when given. Returns `{close, panel}`.
 function openMathEditor({ target = null, anchor = null } = {}) {
   closeMathEditor();
+  if (!mathFieldConfigure()) return null;
   const surface = mathEditorSurface(target || document.activeElement);
   const start = mathEditorStart(surface);
   let display = start.display;
@@ -611,82 +434,55 @@ function openMathEditor({ target = null, anchor = null } = {}) {
   const head = dialogHead(start.editing ? "Edit equation" : "Equation", () => close());
   head.querySelector(".dialog-head-title")?.after(help);
 
-  const lede = document.createElement("p");
-  lede.className = "muted math-editor-lede";
-  lede.textContent = "Type it plainly or pick a symbol; it is written as TeX.";
-
-  const input = document.createElement("textarea");
-  input.className = "math-editor-input";
-  input.rows = 2;
-  input.spellcheck = false;
-  input.autocomplete = "off";
-  input.setAttribute("aria-label", "Equation, as TeX");
-  input.placeholder = "e.g. x^2 + y^2 = r^2, or a/b";
-  input.value = start.tex;
-
-  const preview = document.createElement("div");
-  preview.className = "math-editor-preview";
-  preview.setAttribute("aria-live", "polite");
-  preview.setAttribute("aria-label", "Preview");
-  const redraw = () => mathEditorDrawPreview(preview, input.value, display);
+  const view = {
+    insert: () => {
+      if (mathEditorWrite(surface, start, pane.tex(), display)) close(false);
+      else pane.focus();
+    },
+  };
+  const escape = () => (helpBody.classList.contains("hidden") ? close() : help.click());
+  const pane = mathFieldPane({ tex: start.tex, label: "Equation", onKey: mathEditorKeys(() => pane, () => view.insert(), escape) });
+  pane.field.setAttribute("aria-describedby", "math-editor-help");
   const mode = mathEditorModes(display, (on, refocus = true) => {
     display = on;
     mode.sync(on);
-    redraw();
-    if (refocus) input.focus({ preventScroll: true });
+    if (refocus) pane.focus();
   });
 
   const list = document.createElement("div");
   list.className = "math-editor-list";
   const search = mathEditorSearch((q) => mathEditorPalette(list, q));
   mathEditorPalette(list, "");
-
-  const view = {
-    insert: () => {
-      if (mathEditorWrite(surface, start, input.value, display)) close(false);
-      else input.focus({ preventScroll: true });
-    },
-    undoAuto: () => false,
-  };
-  view.undoAuto = mathEditorGuide(input, redraw);
-  mathEditorKeys(input, view);
   const { foot } = mathEditorFoot(() => close(), view.insert, start.editing ? "Update" : "Insert");
 
   list.addEventListener("click", (event) => {
     const tile = event.target.closest(".math-editor-tile");
-    if (!tile) return;
-    const at = mathEditorInsert(input.value, input.selectionStart, input.selectionEnd, tile._item.tex);
-    input.value = at.value;
-    input.focus({ preventScroll: true });
-    input.setSelectionRange(at.caret, at.caret);
-    redraw();
+    if (tile) pane.insert(tile._item.tex);
   });
 
   //: **No key leaves the panel** (the icon picker's rule): an Enter or a
   //: letter here must not reach the canvas or the editor behind it.
   panel.addEventListener("keydown", (event) => {
     event.stopPropagation();
-    if (event.key !== "Escape") return;
+    //: Escape from the field itself was taken (or left to MathLive) above.
+    if (event.key !== "Escape" || event.target === pane.field) return;
     event.preventDefault();
-    if (!helpBody.classList.contains("hidden")) help.click();
-    else close();
+    escape();
   });
   //: An outside press closes it only while nothing has been typed: a
   //: half-written equation is not thrown away by a stray click.
   const outside = (event) => {
-    if (panel.contains(event.target) || helpBody.contains(event.target)) return;
-    if (input.value.trim() && input.value !== start.tex) return;
+    if (panel.contains(event.target) || helpBody.contains(event.target) || mathFieldOwns(event.target)) return;
+    if (pane.tex() && pane.tex() !== start.tex) return;
     close(false);
   };
   document.addEventListener("pointerdown", outside, true);
 
-  panel.append(head, helpBody, mode.tabs, lede, input, preview, search, list, foot);
+  panel.append(head, helpBody, mode.tabs, mathEditorLede(pane.toggle), pane.el, search, list, foot);
   document.body.appendChild(panel);
   initHelpToggles(panel);
   mathEditorPlace(panel, anchor);
-  redraw();
-  input.focus({ preventScroll: true });
-  input.setSelectionRange(input.value.length, input.value.length);
+  pane.start();
   //: For a moment after opening, focus that lands outside comes back: an
   //: editor behind can mount and take it a frame later (the icon picker
   //: measured 127ms on the note composer's first use).
@@ -696,7 +492,7 @@ function openMathEditor({ target = null, anchor = null } = {}) {
       document.removeEventListener("focusin", keepFocus, true);
       return;
     }
-    if (!panel.contains(event.target) && !helpBody.contains(event.target)) input.focus({ preventScroll: true });
+    if (!panel.contains(event.target) && !helpBody.contains(event.target)) pane.focus();
   };
   document.addEventListener("focusin", keepFocus, true);
   mathEditorState.open = { panel, close };

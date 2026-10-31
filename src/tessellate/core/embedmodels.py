@@ -1244,7 +1244,7 @@ def _clear_directory(model: EmbedModel) -> tuple[bool, str]:
     except OSError:
         logger.warning("couldn't remove %s from the cache", model.id, exc_info=True)
         return False, (
-            f"Couldn't remove {model.label}: see Settings → Logs for why. "
+            f"Couldn't remove {model.label}: see Settings, Logs for why. "
             "It may be in use by a running model."
         )
     return True, ""

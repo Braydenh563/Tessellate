@@ -26,8 +26,17 @@
     title: "Quick sketch",
     //: async (blob, caption) => void. Null hides Save as note.
     save: null,
+    //: What the save button and the caption say, when the host files the
+    //: picture somewhere other than a new note (the capture card adds it to
+    //: the note being written).
+    saveLabel: "Save as note",
+    saveTitle: "Save as a new note",
+    captionHint: "Caption (becomes the note text)",
     //: (message, isError) => void. Null leaves the status line to say it.
     toast: null,
+    //: (message, label, run) => void: a notice with one button. Null leaves
+    //: the status line to say it, without the button.
+    toastAction: null,
     //: (message, { confirmLabel, cancelLabel }) => Promise<boolean>.
     confirm: async (message) => window.confirm(message),
     //: { get(key, fallback), set(key, value) }. With none the settings last
@@ -283,7 +292,7 @@
     const keys = TOOLS.map((t) => h("li", {}, h("kbd", {}, t.key), ` ${t.label}`));
     const areas = [
       ["Tools", "pick one on the left or press its letter. A shape runs corner to corner; Alt draws it from the centre, Shift keeps it square, round or at 45 degrees."],
-      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them."],
+      ["Colours", "the ink well colours lines, text and the bucket, the fill well the inside of shapes. A swatch sets the ringed well; X swaps them. A recent colour's small x, or Delete on it, takes it off, with an Undo; the plus saves the colour you have as a swatch again."],
       ["Shape style", "outline, outline and fill, or fill only, for rectangles, ellipses and polygons."],
       ["Size", "[ and ] change it; with the Text tool it is the text size."],
       ["More", "sets the paper colour or adds a picture under the ink; Clear keeps both."],
@@ -323,12 +332,16 @@
       iconButton("sliders-horizontal", "Colour, size and style", () => toggleStyle(), { extra: "sp-style-toggle", data: { sp: "style-toggle" } }));
     const swatches = h("div", { class: "sp-swatches", role: "group", "aria-label": "Palette", "data-sp": "swatches" },
       SWATCHES.map(([hex, name]) => swatch(hex, name)));
-    const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent" });
-    const custom = h("label", { class: "sp-custom", title: "Any colour" },
-      h("span", { class: "sp-visually-hidden" }, "Any colour"),
+    const recent = h("div", { class: "sp-swatches sp-recent", role: "group", "aria-label": "Recent colours", "data-sp": "recent", onkeydown: forgetRecentKey });
+    const custom = h("label", { class: "sp-custom", title: "Pick any colour" },
+      h("span", { class: "sp-visually-hidden" }, "Pick any colour"),
       h("input", { type: "color", "data-sp": "custom", value: S.ink, oninput: (e) => setColour(e.target.value), onchange: (e) => rememberColour(e.target.value) }),
-      icon("plus"));
-    const palette = h("div", { class: "sp-group sp-palette", role: "group", "aria-label": "Palette and any colour", "data-sp": "palette", "data-rove": "" }, swatches, recent, custom);
+      icon("eyedropper"));
+    //: The current colour, kept as a swatch again (the owner, 2026-10-29: a
+    //: removed swatch was "hard to resave"): a plus that is live while the
+    //: colour is not already one of the swatches, and says why when it is not.
+    const keep = h("button", { type: "button", class: "ghost icon-button sp-keep", "data-sp": "keep", title: "Save colour", "aria-label": "Save colour", "aria-disabled": "true", onclick: keepColour }, icon("plus"));
+    const palette = h("div", { class: "sp-group sp-palette", role: "group", "aria-label": "Palette and any colour", "data-sp": "palette", "data-rove": "" }, swatches, recent, custom, keep);
     return [wells, h("div", { class: "sp-style", id: "sp-style", "data-sp": "style" }, palette, buildStroke())];
   }
 
@@ -476,9 +489,9 @@
   function buildFoot() {
     const saving = typeof S.host.save === "function";
     return h("div", { class: "sp-foot", "data-sp": "foot" },
-      saving ? h("input", { type: "text", maxlength: "200", class: "sp-caption", "data-sp": "caption", placeholder: "Caption (becomes the note text)", "aria-label": "Caption for this sketch" }) : null,
+      saving ? h("input", { type: "text", maxlength: "200", class: "sp-caption", "data-sp": "caption", placeholder: S.host.captionHint, "aria-label": "Caption for this sketch" }) : null,
       h("button", { type: "button", class: `${saving ? "ghost" : ""} sp-download`.trim(), "data-sp": "download", title: "Download PNG", "aria-label": "Download PNG", onclick: downloadPng }, icon("download-simple"), h("span", { class: "sp-download-label" }, "Download PNG")),
-      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", "aria-disabled": "true", title: "Draw something first", onclick: saveNote }, "Save as note") : null);
+      saving ? h("button", { type: "button", class: "sp-save", "data-sp": "save", "aria-disabled": "true", title: "Draw something first", onclick: saveNote }, S.host.saveLabel) : null);
   }
 
   function build(root) {
@@ -510,7 +523,7 @@
   //: toolbar pattern): the arrows walk the group, Home and End go to its
   //: ends. Tab crossed 45 stops before; the slider keeps its own arrows.
   function roveItems(group) {
-    return [...group.querySelectorAll("button, input[type=color]")].filter((el) => el.closest("[data-rove]") === group
+    return [...group.querySelectorAll("button:not(.sp-unpick), input[type=color]")].filter((el) => el.closest("[data-rove]") === group
       && !el.closest("[role=menu], .action-menu") && el.getClientRects().length);
   }
 
@@ -619,6 +632,22 @@
       b.setAttribute("aria-pressed", String(on));
     }
     S.host.prefs.set("colours", { ink: S.ink, fill: S.fill });
+    paintKeep(current);
+  }
+
+  //: Save colour is live only for a colour that is not a swatch already.
+  function paintKeep(current) {
+    if (!S.el.keep) return;
+    const known = SWATCHES.some(([c]) => c.toLowerCase() === current) || S.recent.some((c) => c.toLowerCase() === current);
+    S.el.keep.setAttribute("aria-disabled", String(known));
+    S.el.keep.title = known ? "Save colour: this colour is already a swatch" : `Save colour ${current}`;
+  }
+
+  function keepColour() {
+    const current = (S.well === "fill" ? S.fill : S.ink).toLowerCase();
+    if (S.el.keep.getAttribute("aria-disabled") === "true") return say("This colour is already a swatch.");
+    rememberColour(current);
+    say(`Saved ${current} as a swatch.`);
   }
 
   function swapColours() {
@@ -636,8 +665,42 @@
     paintRecent();
   }
 
+  //: A colour added by eye can be taken off again (the owner, 2026-10-29):
+  //: the x sits beside the swatch, never inside it (a button in a button),
+  //: and stays out of the arrow rove; Delete on the swatch is the key way.
+  //: Taking one off says so with an Undo, since a press on a 16px x is easy to
+  //: land by accident; the colour goes back where it was.
+  function forgetColour(hex) {
+    const at = Math.max(0, S.recent.indexOf(hex));
+    S.recent = S.recent.filter((c) => c !== hex);
+    S.host.prefs.set("recent", S.recent);
+    paintRecent();
+    const restore = () => {
+      if (S.recent.includes(hex)) return;
+      S.recent = [...S.recent.slice(0, at), hex, ...S.recent.slice(at)].slice(0, 6);
+      S.host.prefs.set("recent", S.recent);
+      paintRecent();
+    };
+    if (S.host.toastAction) S.host.toastAction(`Removed ${hex} from the recent colours.`, "Undo", restore);
+    else say(`Removed ${hex}. Save colour puts it back.`);
+  }
+
+  function forgetRecentKey(e) {
+    const hex = e.target.closest?.(".sp-swatch")?.dataset.colour;
+    if (!hex || (e.key !== "Delete" && e.key !== "Backspace")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const i = S.recent.indexOf(hex);
+    forgetColour(hex);
+    const next = S.el.recent.querySelectorAll(".sp-swatch")[Math.min(i, S.recent.length - 1)];
+    (next || S.root.querySelector('[data-sp="custom"]'))?.focus();
+  }
+
   function paintRecent() {
-    S.el.recent.replaceChildren(...S.recent.map((hex) => swatch(hex, `Recent ${hex}`)));
+    S.el.recent.replaceChildren(...S.recent.map((hex) => h("span", { class: "sp-recent-item" },
+      swatch(hex, `Recent ${hex}, Delete removes it`),
+      h("button", { type: "button", class: "sp-unpick", tabindex: "-1", title: "Remove this colour", "aria-label": `Remove ${hex}`,
+        onclick: (e) => { e.stopPropagation(); forgetColour(hex); } }, icon("x")))));
     S.el.recent.classList.toggle("sp-hidden", S.recent.length === 0);
     paintWells();
     refreshRove();
@@ -1575,7 +1638,7 @@
     S.dirty = on;
     if (!S.el.save) return;
     S.el.save.setAttribute("aria-disabled", String(!on));
-    S.el.save.title = on ? "Save as a new note" : "Draw something first";
+    S.el.save.title = on ? S.host.saveTitle : "Draw something first";
   }
 
   // --- Output ------------------------------------------------------------------------------------------------------

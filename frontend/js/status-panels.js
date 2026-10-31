@@ -1,4 +1,4 @@
-// status-panels.js: the search engine health rows, the backend picker, the undo history menu and Email support report, moved out of status.js on 2026-10-12 for the boot gzip budget. Each is called for its effect: `lazy-entries.js` stands in until this loads.
+// status-panels.js: the search engine health rows, the backend picker, the undo history menu and Email support report, moved out of status.js on 2026-10-12 (the model offer popover on 2026-10-30) for the boot gzip budget. Each is called for its effect: `lazy-entries.js` stands in until this loads.
 
 //: **A report by email, with the bundle saved first** (INBOX 256, the owner:
 //: "suggest that they download the support bundle and send it to my email
@@ -106,6 +106,8 @@ function renderSearchEngineHealth(status) {
     state = "… warming up";
   } else if (status.embedding_backend !== "ollama" && status.builtin_embedding_installing) {
     state = "installing, search uses keywords until it is done";
+  } else if (status.semantic_off) {
+    state = "off until you allow the download (Settings, Search and index)";
   } else if (status.embedding_backend !== "ollama" && status.builtin_embedding_installed === false) {
     //: "not ready" read as "wait", when nothing was coming (INBOX 431 (3)).
     state = "not installed, search uses keywords (install it under Packages)";
@@ -121,13 +123,13 @@ function renderSearchEngineHealth(status) {
   const reindex = status.reindex;
   const cover = status.embedding_coverage;
   const parts = [state];
-  if (reindex && reindex.status === "running" && reindex.total) {
-    parts.push(`indexing ${reindex.done} of ${reindex.total} notes`);
-  } else if (status.embedding_ready && cover && cover.total) {
+  if (reindex?.status === "running" && reindex.total) {
+    parts.push(`indexing ${reindex.done} of ${nounCount(reindex.total, "note")}`);
+  } else if (status.embedding_ready && cover?.total) {
     parts.push(
       cover.indexed >= cover.total
-        ? `all ${cover.total} notes searchable by meaning`
-        : `${cover.indexed} of ${cover.total} notes searchable by meaning`
+        ? `all ${nounCount(cover.total, "note")} searchable by meaning`
+        : `${cover.indexed} of ${nounCount(cover.total, "note")} searchable by meaning`
     );
   }
   const last = status.last_search?.mode;
@@ -173,4 +175,39 @@ function renderBackendPicker(status) {
   if (lock && document.activeElement !== lock) {
     lock.checked = status.local_only_ai !== false;
   }
+}
+
+//: The popover a model-gated control opens with no model (DOCUMENTS_PLAN 24
+//: row 3); moved here for the boot gzip budget, a stand-in until it loads.
+function openModelOffer(control) {
+  closeHelpPopovers();
+  const panel = document.createElement("div");
+  panel.className = "help-body model-offer";
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Needs a model");
+  const why = document.createElement("p");
+  why.textContent = `${control.dataset.needsModel}, and no model is connected. ${control.dataset.modelOffer}`.trim();
+  const setUp = smallButton("ph:plugs Set up a model", "Open Settings at Models, where a local or remote model is connected", () => {
+    entry.close();
+    openSettingsModal("models");
+  });
+  setUp.classList.add("primary");
+  panel.append(why, setUp);
+  const entry = {
+    panel,
+    trigger: control,
+    close() {
+      openHelpPopovers.delete(entry);
+      panel.remove();
+      control.setAttribute("aria-expanded", "false");
+    },
+  };
+  panel.style.visibility = "hidden";
+  panel.classList.add("help-popover");
+  (control.closest("dialog[open]") || document.body).appendChild(panel);
+  panel.addEventListener("click", (event) => event.stopPropagation());
+  openHelpPopovers.add(entry);
+  control.setAttribute("aria-expanded", "true");
+  placeHelpPopover(panel, control);
+  setUp.focus();
 }

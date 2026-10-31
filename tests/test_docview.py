@@ -106,7 +106,7 @@ def test_a_converted_document_reports_the_install_hint_when_markitdown_is_absent
     tmp_path, monkeypatch
 ):
     """Not an error: an answer. The package is installable from inside the
-    app (Settings → Optional extras), so the hint is the useful thing to say."""
+    app (Settings, Optional extras), so the hint is the useful thing to say."""
     from tessellate.entry import importer
 
     monkeypatch.setattr(importer, "markitdown_available", lambda: False)

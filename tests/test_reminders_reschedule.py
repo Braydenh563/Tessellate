@@ -79,7 +79,7 @@ def test_the_edit_forms_alert_is_set_and_cleared_through_the_same_put(client):
     assert changed.status_code == 200 and changed.json()["alert_minutes"] == 60
     cleared = client.put(f"/reminders/{made['id']}", json={"alert_minutes": 0})
     assert cleared.json()["alert_minutes"] is None and cleared.json()["priority"] == "high"
-    form = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "shell-reminders.js").read_text(encoding="utf-8")
-    body = form[form.index("function reminderEditForm("):form.index("async function reminderPutUndoably(")]
+    form = (Path(__file__).resolve().parents[1] / "frontend" / "js" / "reminder-edit.js").read_text(encoding="utf-8")
+    body = form[form.index("function reminderEditForm("):]
     assert "alert_minutes: Number(alertSelect.value)" in body and "alert_minutes: alertNow" in body
     assert "recurringSelect, alertSelect]" in body and "wrap.append(textInput, fields, row)" in body

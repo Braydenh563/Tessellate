@@ -589,7 +589,8 @@ def backdate(ids: dict[str, int]) -> None:
         days_ago = (len(keys) - 1 - i) * 48 / len(keys)
         when = now - dt.timedelta(days=days_ago, hours=rng.uniform(0, 6), minutes=rng.uniform(0, 59))
         stamps.append(min(when, now - dt.timedelta(minutes=5 + (len(keys) - i) * 3)))
-    db = sqlite3.connect(DATA / "memorymap.db")
+    #: The file the app writes: `tessellate.db`, or the old name on a notebook from before the rename (audit 1031 N29).
+    db = sqlite3.connect(next((p for p in (DATA / "tessellate.db", DATA / "memorymap.db") if p.exists()), DATA / "tessellate.db"))
     with db:
         for key, when in zip(keys, stamps):
             iso = when.strftime("%Y-%m-%d %H:%M:%S.%f")

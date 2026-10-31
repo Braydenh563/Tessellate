@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import logging
 import re
 import threading
@@ -50,6 +51,7 @@ from tessellate.core.database import (
 from tessellate.core import events
 from tessellate.core.lookahead import Ahead
 from tessellate.entry import link_facts, timewords
+from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from tessellate.entry.tagnames import normalise_tags
 
 # Where entries land when no AI is available or the AI can't decide.
@@ -145,6 +147,27 @@ def entry_space(entry: Entry) -> str:
     return getattr(entry, "workspace_id", None) or "default"
 
 
+#: The longest a category name may be; `/categories` refuses more, and now
+#: every other writer clips to it instead of storing 300 characters.
+#: **The one private-note rule** (audit 1031 N3, N23, N40): a private note's
+#: words show in its own row and editor and nowhere else. Anything that points
+#: at it (a link chip, the Connections sheet, the near-duplicate line) calls it
+#: this, vault open or locked; the search never indexes it and the `[[` picker
+#: leaves it out.
+PRIVATE_LABEL = "Private note"
+
+
+MAX_CATEGORY_LENGTH = 100
+
+
+def category_label(name: str | None) -> str:
+    """A category name as it is stored (audit 1031 N6): invisible characters
+    gone, spacing collapsed, ends trimmed, clipped to 100, and a blank name is
+    Uncategorised. The one rule every writer shares, as `normalise_tags` is for
+    tags, so a note route cannot make a name `/categories` would refuse."""
+    return clean_name(name)[:MAX_CATEGORY_LENGTH].strip() or UNCATEGORISED
+
+
 def get_or_create_category(
     session: Session, name: str, workspace_id: str | None = None
 ) -> Category:
@@ -185,13 +208,24 @@ def get_or_create_category(
     # one space (the session's, or the column default); the lookup now asks
     # the same space the insert would write to.
     workspace_id = category_space(session, workspace_id)
+    name = category_label(name)
 
     def _find() -> Category | None:
-        return session.scalar(
+        exact = session.scalar(
             select(Category).where(
                 Category.name == name, Category.workspace_id == workspace_id
             )
         )
+        if exact is not None:
+            return exact
+        # "work" is "Work": the first spelling made is the one kept, as tags do.
+        wanted = name_key(name)
+        for other in session.scalars(
+            select(Category).where(Category.workspace_id == workspace_id).order_by(Category.id)
+        ):
+            if name_key(other.name) == wanted:
+                return other
+        return None
 
     category = _find()
     if category is not None:
@@ -275,13 +309,17 @@ def create_entry(
     in batches. `dates=False` leaves the date phrases to a caller that sets
     `created_at` first and calls `record_dates` itself (an import), so the
     note is not read for dates twice."""
+    from tessellate.entry.properties import lift_title
+
     category = get_or_create_category(session, category_name)
     entry = Entry(
-        content=content,
+        content=lift_title(content),
         category_id=category.id,
         # The schema normalises an HTTP write; this is every other writer
         # (the AI tools, imports, passive capture), held to the same rule.
-        tags=json.dumps(normalise_tags(tags)),
+        # No comma split here: a restore or import brings back a legacy tag
+        # that holds one, and the split is for what a person types (schema).
+        tags=json.dumps(normalise_tags(tags, split=False)),
         ai_confidence=ai_confidence,
         client_key=client_key or None,
     )
@@ -336,6 +374,9 @@ def _list_entries_filter(
         query = query.where(Entry.is_deleted == False)  # noqa: E712
     if not include_archived:
         query = query.where(Entry.archived_at.is_(None))
+    #: A blank note (whitespace only, INBOX 1439) is nobody's note: no list
+    #: row, no count, no graph node, whichever surface asks.
+    query = query.where(func.trim(Entry.content, " \t\r\n") != "")
     if boards == BOARDS_EXCLUDE:
         query = query.where(Entry.is_board == False)  # noqa: E712
     elif boards == BOARDS_ONLY:
@@ -394,19 +435,46 @@ def list_sort_key(entry: Entry) -> tuple:
     return (bool(entry.pinned), entry.created_at, entry.id)
 
 
-def count_entries(
+def note_filter(
+    query,
+    *,
+    include_archived: bool = True,
+    boards: str = BOARDS_EXCLUDE,
+    include_drafts: bool = False,
+):
+    """The where-clause that says what a note is (see `count_notes`); a
+    surface that lists or groups notes builds on this, never its own."""
+    #: `deleted_at` too: the bin is both flags, and some writers set one.
+    query = _list_entries_filter(query, False, include_archived, boards).where(Entry.deleted_at.is_(None))
+    return query if include_drafts else query.where(Entry.is_draft == False)  # noqa: E712
+
+
+def count_notes(
     session: Session,
-    include_deleted: bool = False,
-    include_archived: bool = False,
-    boards: str = BOARDS_INCLUDE,
+    *,
+    include_archived: bool = True,
+    boards: str = BOARDS_EXCLUDE,
+    include_drafts: bool = False,
 ) -> int:
-    """How many `list_entries` would return with no `limit`, the total a
-    paginated caller needs to know when it has seen everything. Takes the
-    same `boards` mode for the reason `_list_entries_filter` exists at all:
-    a count that includes boards over a list that does not is a header that
-    lies about the list under it."""
-    query = _list_entries_filter(
-        select(func.count()).select_from(Entry), include_deleted, include_archived, boards
+    """How many notes there are: the one definition every count in the app uses.
+
+    A note is every entry not in the bin, archived included; boards, drafts
+    (the graph, the categories and the Notes tab each keep them out, and a
+    blank one is a draft nobody wrote) and blank entries are not notes.
+    INBOX 1439: six surfaces counted six ways, 282, 279 and 277 in the same
+    minute. Private notes count: that a note exists is not what privacy hides.
+    A surface that shows a subset, such as the Notes list (`include_archived=
+    False`, the archive is its own view; `include_drafts=True`, because the
+    list endpoint still returns the rows and the client sorts drafts out),
+    passes the flag that widens or narrows it; the predicate is
+    `_list_entries_filter`'s, so a paginated list's total cannot drift from the
+    rows under it either.
+    """
+    query = note_filter(
+        select(func.count()).select_from(Entry),
+        include_archived=include_archived,
+        boards=boards,
+        include_drafts=include_drafts,
     )
     return session.scalar(query) or 0
 
@@ -628,8 +696,12 @@ def _update_entry_fields(
     tags: list[str] | None = None,
 ) -> Entry:
     """The edit itself. One write, one `edited` event; see `update_entry`."""
+    from tessellate.entry.properties import lift_title
+
     was = events.entry_state(entry)
     changed = []
+    if content is not None:
+        content = lift_title(content)
     if content is not None and entry.is_private:
         #: Whoever the caller is, a private note's text lands encrypted.
         stored = content_for_entry(entry, content)
@@ -650,7 +722,9 @@ def _update_entry_fields(
             entry.user_filed = True
             changed.append(f"category={category_name}")
     if tags is not None:
-        entry.tags = json.dumps(normalise_tags(tags))
+        #: No comma split: background writers (the janitor, a tag suggestion,
+        #: undo) pass the note's own tags back, a legacy "work, home" with them.
+        entry.tags = json.dumps(normalise_tags(tags, split=False))
         changed.append("tags")
     if changed:
         mark_edited(entry)
@@ -952,6 +1026,35 @@ def links_for_entries_bulk(
     return out
 
 
+def links_count_bulk(session: Session, entry_ids: list[int]) -> dict[int, int]:
+    """How many notes each of `entry_ids` is linked to: `len` of what
+    `links_for_entries_bulk` returns for it, without building the other side.
+
+    The timeline draws a count and nothing else of a link, and the full form
+    loads every linked note's whole text to throw it away (3.5 ms of a 20 ms
+    page at 100 rows). Two reads of columns only, and the same rule: a link
+    counts for each of its ends on the page, once for a note linked to itself,
+    and not at all when the note at the other end is not visible here.
+    """
+    if not entry_ids:
+        return {}
+    id_set = set(entry_ids)
+    pairs = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
+            or_(EntryLink.source_entry_id.in_(id_set), EntryLink.target_entry_id.in_(id_set))
+        )
+    ).all()
+    touched = {end for pair in pairs for end in pair}
+    visible = set(session.scalars(select(Entry.id).where(Entry.id.in_(touched)))) if touched else set()
+    counts: dict[int, int] = {}
+    for source, target in pairs:
+        if source in id_set and target in visible:
+            counts[source] = counts.get(source, 0) + 1
+        if target in id_set and target != source and source in visible:
+            counts[target] = counts.get(target, 0) + 1
+    return counts
+
+
 def entries_for_document(session: Session, document_id: int) -> list[Entry]:
     """The notes attached to this document. Binned notes drop out on their
     own: a note in the recycle bin should not still be feeding a draft."""
@@ -1121,7 +1224,7 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     for attachment in attachments:
         if uploads_dir is not None:
             try:
-                (uploads_dir / attachment.stored_name).unlink(missing_ok=True)
+                _upload_path(uploads_dir, attachment.stored_name).unlink(missing_ok=True)
             except OSError as exc:
                 # The row goes either way, a file that won't delete must not
                 # block the purge: but a folder that has stopped accepting
@@ -1141,11 +1244,10 @@ def _hard_delete(session: Session, entries: list[Entry], uploads_dir: Path | Non
     session.execute(delete(Attachment).where(Attachment.entry_id.in_(ids)))
     session.execute(delete(EmbeddingRecord).where(EmbeddingRecord.entry_id.in_(ids)))
     session.execute(delete(ChunkVector).where(ChunkVector.entry_id.in_(ids)))
-    session.execute(
-        delete(EntryLink).where(
-            or_(EntryLink.source_entry_id.in_(ids), EntryLink.target_entry_id.in_(ids))
-        )
-    )
+    # The table, not the mapped class: the class carries the space filter, and a link
+    # stamped for another space would survive its note (every space's, as the delete is).
+    links = EntryLink.__table__
+    session.execute(delete(links).where(or_(links.c.source_entry_id.in_(ids), links.c.target_entry_id.in_(ids))))
     # **Everything else that points at an entry, or the delete fails outright.**
     #
     # Reported twice in one sitting, "request failed (500) when I tried to
@@ -1430,11 +1532,23 @@ def attachments_for_entries_bulk(
     return out
 
 
+def _upload_path(uploads_dir: Path, stored_name: str) -> Path:
+    """`uploads_dir / stored_name`, refused (OSError, which every caller
+    already treats as "leave the file") when the name reaches outside the
+    folder: a stored name comes from the database, and a restored database
+    is not trusted (audit 1028 K7)."""
+    base = os.path.join(os.path.realpath(str(uploads_dir)), "")
+    candidate = os.path.realpath(os.path.join(base, stored_name))
+    if not candidate.startswith(base):
+        raise OSError("attachment path outside the uploads folder")
+    return Path(candidate)
+
+
 def delete_attachment(
     session: Session, attachment: Attachment, uploads_dir: Path
 ) -> None:
     try:
-        (uploads_dir / attachment.stored_name).unlink(missing_ok=True)
+        _upload_path(uploads_dir, attachment.stored_name).unlink(missing_ok=True)
     except OSError:
         pass  # a stuck file shouldn't block removing the record
     log_action(session, "detached", "entry", attachment.entry_id, attachment.filename)
@@ -1613,7 +1727,10 @@ def all_tags(session: Session) -> dict[str, int]:
     notebook version gets the cached dict.
     """
     _ensure_tag_cache_reset_registered()
-    fingerprint = _tag_fingerprint(session)
+    # Whether the vault is open is part of what the counts say: a locked
+    # private note's tags are not counted (INBOX 1437), so the cache must not
+    # carry an unlocked answer across a lock.
+    fingerprint = (_tag_fingerprint(session), note_is_sealed(True))
     with _tag_cache.lock:
         if _tag_cache.entry is not None and _tag_cache.entry[0] == fingerprint:
             return _tag_cache.entry[1]
@@ -1627,8 +1744,12 @@ def all_tags(session: Session) -> dict[str, int]:
     # 20k+ notes went on materialising entities it then discarded). The
     # fingerprint cache above keeps this off the hot path most of the time;
     # this makes the miss itself cheap instead of merely rare.
+    sealed = note_is_sealed(True)
     for raw in session.scalars(
-        select(Entry.tags).where(Entry.is_deleted == False)  # noqa: E712
+        select(Entry.tags).where(
+            Entry.is_deleted == False,  # noqa: E712
+            *([Entry.is_private == False] if sealed else []),  # noqa: E712
+        )
     ):
         for tag in tags_from_json(raw):
             counts[tag] = counts.get(tag, 0) + 1
@@ -1672,7 +1793,7 @@ def _retag(session: Session, entries, change) -> dict[int, list[str]]:
     before: dict[int, list[str]] = {}
     for entry in entries:
         old = entry_tags(entry)
-        new = normalise_tags(change(entry, list(old)))
+        new = normalise_tags(change(entry, list(old)), split=False)
         if new == old:
             continue
         record_revision(session, entry)
@@ -1696,6 +1817,8 @@ def rename_tags(session: Session, olds: list[str], new: str) -> dict[int, list[s
     cleaned = normalise_tags([new])
     if not cleaned:
         raise ValueError("A tag needs a name.")
+    if len(cleaned) > 1:
+        raise ValueError("A tag name cannot hold a comma. Rename one tag at a time.")
     new = cleaned[0]
     wanted = set(olds)
     if not wanted:
@@ -1739,7 +1862,7 @@ def edit_tags_on_notes(
     "Food" on one note and "food" on another are one tag to the person),
     and the add runs after it, so a name in both lists ends up added.
     """
-    drop = {t.casefold() for t in normalise_tags(remove)}
+    drop = {t.casefold() for t in normalise_tags(remove, split=False)}
     put = normalise_tags(add)
     if not ids or not (drop or put):
         return {}
@@ -2379,6 +2502,23 @@ def entry_tags(entry: Entry) -> list[str]:
     return tags_from_json(entry.tags)
 
 
+def note_is_sealed(is_private: object) -> bool:
+    """True when a private note's words must stay hidden right now: the note
+    is private and the vault is locked. The one vault gate for the read
+    surfaces that are not the note's text (tags, previews, word counts,
+    export, history; INBOX 1437), so each asks here instead of re-deriving it."""
+    from tessellate.core import vault
+
+    return bool(is_private) and vault.key() is None
+
+
+def shown_tags(entry: Entry) -> list[str]:
+    """`entry_tags` for a response: a private note's tags are as private as
+    its text, so none while the vault is locked. Writers keep `entry_tags`,
+    which must see the stored list (a locked rename must not drop them)."""
+    return [] if note_is_sealed(getattr(entry, "is_private", False)) else tags_from_json(entry.tags)
+
+
 # --- category management (rename / delete) -----------------------------------
 
 
@@ -2395,12 +2535,7 @@ def all_categories(session: Session) -> list[dict]:
     cannot drift apart again by one of them gaining a filter.
     """
     rows = list(session.scalars(select(Category).order_by(Category.name)))
-    query = _list_entries_filter(
-        select(Entry.category_id, func.count(Entry.id)),
-        include_deleted=False,
-        include_archived=False,
-        boards=BOARDS_EXCLUDE,
-    ).where(Entry.is_draft == False)  # noqa: E712
+    query = note_filter(select(Entry.category_id, func.count(Entry.id)), include_archived=False)
     counts = {
         category_id: total
         for category_id, total in session.execute(query.group_by(Entry.category_id))
@@ -2461,9 +2596,9 @@ def rename_category(session: Session, category_id: int, new_name: str) -> dict:
     category = session.get(Category, category_id)
     if category is None:
         raise ValueError("That category no longer exists.")
-    new_name = new_name.strip()
-    if not new_name:
+    if is_blank(new_name):
         raise ValueError("A category needs a name.")
+    new_name = category_label(new_name)
     if new_name == category.name:
         return {"renamed": False, "merged": False, "moved": 0}
 
@@ -2472,13 +2607,23 @@ def rename_category(session: Session, category_id: int, new_name: str) -> dict:
     # view merged it into the default space's "Garden" and both uni notes
     # then read as Uncategorised in uni (measured 2026-10-03). In another
     # space the name is simply free, so this is a plain rename.
-    existing = session.scalar(
-        select(Category).where(
-            Category.name == new_name,
-            Category.workspace_id == category_space(session, category.workspace_id),
-        )
+    wanted = name_key(new_name)
+    existing = next(
+        (
+            other
+            for other in session.scalars(
+                select(Category)
+                .where(
+                    Category.workspace_id == category_space(session, category.workspace_id),
+                    Category.id != category.id,
+                )
+                .order_by(Category.id)
+            )
+            if name_key(other.name) == wanted
+        ),
+        None,
     )
-    if existing is not None and existing.id != category.id:
+    if existing is not None:
         # Merge: move the entries across, then drop the now-empty category.
         moved = _reassign(session, category.id, existing.id)
         log_action(session, "edited", "category", existing.id, f"merged {category.name} → {new_name}")
@@ -2702,7 +2847,7 @@ def extract_title(content: str) -> str | None:
     """
     from tessellate.entry.properties import strip as strip_properties
 
-    for line in strip_properties(content or "").splitlines():
+    for line in strip_bidi(strip_properties(content or "")).splitlines():
         stripped = line.strip()
         if not stripped:
             continue
@@ -2827,13 +2972,32 @@ def join_blocks(text: str, strip=lambda line: line, limit: int | None = None) ->
     return "".join(out)
 
 
+#: A picture's `|` options in its alt (`![A river|300|right](url)`): a width in
+#: pixels (or `300x200`) and left, centre or right. Not words.
+_IMAGE_OPTION = re.compile(r"\d{1,4}(?:x\d{1,4})?|left|centre|center|right", re.IGNORECASE)
+_IMAGE_ALT_GROUP = 7  # the `!\[(...)\]` group of _INLINE_MD
+
+
+def _picture_words(alt: str) -> str:
+    """A picture's alt as the words it says: the caption written after its
+    options when there is one, else its name (image-layout.js
+    `imageOptionsFromAlt`, so the preview and the picture agree)."""
+    name, *rest = alt.split("|")
+    caption = [p.strip() for p in rest if p.strip() and not _IMAGE_OPTION.fullmatch(p.strip())]
+    return " ".join(caption) or name.strip()
+
+
 def strip_inline_markdown(text: str) -> str:
     """A note's text as plain words: bold/italic/strike/code markers gone,
-    an image or link reduced to its alt/link text. Markers only: block
-    structure (headings, blockquotes, wiki-links) is each caller's own
-    concern, since callers disagree on what to do with those."""
+    an image or link reduced to its alt/link text (a picture's width and
+    alignment dropped). Markers only: block structure (headings,
+    blockquotes, wiki-links) is each caller's own concern, since callers
+    disagree on what to do with those."""
     return _INLINE_MD.sub(
-        lambda m: next(g for g in m.groups() if g is not None), text
+        lambda m: _picture_words(m.group(m.lastindex))
+        if m.lastindex == _IMAGE_ALT_GROUP
+        else next(g for g in m.groups() if g is not None),
+        text,
     )
 
 
@@ -3222,9 +3386,20 @@ def wiki_shown(inner: str) -> str:
     return (shown.strip() if bar else "") or target.strip()
 
 
+#: Bidi embedding, override and isolate controls: they reorder what follows on
+#: screen, so a label could read differently from the note (audit 1029 N20).
+_BIDI_CONTROLS = re.compile("[\u202a-\u202e\u2066-\u2069]")
+
+
+def strip_bidi(text: str) -> str:
+    """`text` without bidi controls, for anything shown as a label."""
+    return _BIDI_CONTROLS.sub("", text or "")
+
+
 def wiki_plain(text: str) -> str:
-    """Some text with each `[[link]]` replaced by the words it draws."""
-    return WIKI_LINK.sub(lambda match: wiki_shown(match.group(1)), text or "")
+    """Some text with each `[[link]]` replaced by the words it draws, bidi
+    controls dropped (it builds previews)."""
+    return WIKI_LINK.sub(lambda match: wiki_shown(match.group(1)), strip_bidi(text))
 
 
 def wiki_link_targets(content: str) -> list[str]:

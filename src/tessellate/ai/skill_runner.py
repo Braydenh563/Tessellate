@@ -1042,7 +1042,7 @@ def _observe_turn(run: _RunState, source) -> Iterator[dict]:  # noqa: ANN001
     return seen
 
 
-_OFFLINE_REASON = "Ollama isn't reachable: check Settings → Models and try again."
+_OFFLINE_REASON = "Ollama isn't reachable: check Settings, Models and try again."
 _RAN_OUT_REASON = "ran out of rounds before finishing, Resume continues from here, or split this step into two smaller ones"
 #: **Say what to do about it, not only what happened.** Reported: *"skills are
 #: too hard for small ais and things go wrong often."* One empty turn from a
@@ -1427,6 +1427,7 @@ def _run_skill(
             exhausted_note=note,
             # The run draws its own card; a step's rounds are not a second one.
             show_plan=False,
+            approved=True,
         )
 
     if not steps:

@@ -49,8 +49,11 @@ CALLED_FLOOR = {
     "atkinson": 4,
     #: 26 since the Timeline strip's labels (timeline-ticks.js: scaleTime, timeFormat,
     #: timeDay, timeMonday, timeMonth, timeYear) and the Treemap layout (`treemap`,
-    #: `treemapSquarify`; GRAPH_PLAN VC11).
-    "d3": 26,
+    #: `treemapSquarify`; GRAPH_PLAN VC11). 22 since the SVG graph renderer was
+    #: removed (audit 1029 row 60): its force simulation (`forceCenter`,
+    #: `forceManyBody`) and its styling helpers went with it; the canvas graph
+    #: lays out in its own worker.
+    "d3": 22,
     #: 12 since the Dashboard sky draws on the canvas context (its colour parsing was
     #: 426 ms of 540 ms busy idle at 4x CPU); p5 keeps the sketch, noise and timing.
     "p5": 12,
@@ -59,6 +62,9 @@ CALLED_FLOOR = {
     "mammoth": 2,
     #: initialize, render and parse, in the diagram frame (mermaid-frame.js).
     "mermaid": 3,
+    #: The Word-style equation field (math-field.js): the field, its font and sound
+    #: paths, getValue, setValue, insert, executeCommand, the keyboard policy, menuItems.
+    "mathlive": 10,
     "docx": 12,
     #: Brief 83: the Translate worker, a download extra (its WASM engine is not vendored).
     "translate": 11,

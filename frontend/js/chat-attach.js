@@ -40,6 +40,7 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
       body: JSON.stringify({ text: trimmed, source_entry_ids: sourceEntryIds }),
     });
     extractProposal = { ...body, source_document_id: sourceDocumentId };
+    await lazyScript("/js/extract-preview.js");
     renderExtractPreview(body);
   } catch (error) {
     status.classList.add("error");
@@ -48,196 +49,11 @@ async function openExtractPreview(text, { sourceEntryIds = [], sourceDocumentId 
 }
 
 // What a link's `kind` (from `ai.extractor`) reads as in the preview.
-const EXTRACT_LINK_KIND_LABEL = { sibling: "new note", source: "source", related: "related" };
-
-function extractRefLabel(ref, notes) {
-  if (ref.startsWith("existing:")) return "an existing note";
-  const note = notes.find((n) => n.ref === ref);
-  return note ? note.title || clipText(notePreviewText(note.content), 30) : ref;
-}
-
-function renderExtractPreview(body) {
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent =
-    body.message ||
-    `${body.notes.length} note${body.notes.length === 1 ? "" : "s"} proposed: review, then save.`;
-
-  // Built with createElement, not an `innerHTML` template per iteration.
-  // The old version escaped everything correctly, so this is not a security
-  // fix: it is this file's own rule (see the header comment: "All DOM nodes
-  // are built with createElement/textContent, never innerHTML"), and the rule
-  // exists because an `innerHTML` assignment inside a loop re-invokes the HTML
-  // parser once per proposed note, and because the next person to add a field
-  // here is one forgotten `escapeHtml` away from an injection.
-  const field = (type, className, { placeholder, label, value } = {}) => {
-    const input = document.createElement("input");
-    input.type = type;
-    input.className = className;
-    if (placeholder) input.placeholder = placeholder;
-    if (label) input.setAttribute("aria-label", label);
-    if (value !== undefined) input.value = value;
-    return input;
-  };
-
-  const list = $("extract-notes-list");
-  list.replaceChildren();
-  for (const note of body.notes) {
-    const card = document.createElement("div");
-    card.className = "extract-note-card";
-    card.dataset.ref = note.ref;
-
-    const keepLabel = document.createElement("label");
-    keepLabel.className = "row align-center checkbox-label";
-    const keep = field("checkbox", "extract-note-keep");
-    keep.checked = true;
-    keepLabel.append(keep, document.createTextNode(" Keep this note"));
-
-    const title = field("text", "extract-note-title", {
-      placeholder: "Title (optional)",
-      label: "Note title",
-      value: note.title || "",
-    });
-
-    const content = document.createElement("textarea");
-    content.className = "extract-note-content";
-    content.rows = 6;
-    content.setAttribute("aria-label", "Note content");
-    content.value = note.content;
-
-    const meta = document.createElement("div");
-    meta.className = "row extract-note-meta";
-    const category = document.createElement("span");
-    category.className = "muted extract-note-category";
-    category.textContent = `Filed under: ${note.category}`;
-    meta.append(
-      category,
-      field("text", "extract-note-tags", {
-        placeholder: "Tags, comma separated",
-        label: "Tags for this note",
-      })
-    );
-
-    card.append(keepLabel, title, content, meta);
-    list.appendChild(card);
-  }
-
-  const linksBox = $("extract-links-list");
-  linksBox.replaceChildren();
-  if (body.links.length) {
-    const heading = document.createElement("p");
-    heading.className = "muted";
-    heading.textContent = "Links";
-    linksBox.appendChild(heading);
-  }
-  for (const link of body.links) {
-    const row = document.createElement("label");
-    row.className = "row align-center extract-link-row checkbox-label";
-    row.dataset.sourceRef = link.source_ref;
-    row.dataset.targetRef = link.target_ref;
-    const kindLabel = EXTRACT_LINK_KIND_LABEL[link.kind] || "note";
-    // Raw, not escaped: this now goes into a text node, where escaping would
-    // render the entities literally ("A &amp; B" on screen).
-    const target = link.target_preview || extractRefLabel(link.target_ref, body.notes);
-    const keep = document.createElement("input");
-    keep.type = "checkbox";
-    keep.className = "extract-link-keep";
-    keep.checked = true;
-    const desc = document.createElement("span");
-    desc.className = "extract-link-desc";
-    const why = document.createElement("span");
-    why.className = "muted";
-    why.textContent = `(${kindLabel}: ${link.reason})`;
-    desc.append(
-      document.createTextNode(
-        `${extractRefLabel(link.source_ref, body.notes)} → ${target} `
-      ),
-      why
-    );
-    row.append(keep, desc);
-    linksBox.appendChild(row);
-  }
-
-  $("extract-commit").disabled = body.notes.length === 0;
-}
-
+//: The proposal's cards (`renderExtractPreview`) are extract-preview.js, fetched
+//: with the first proposal: only an extraction reaches them.
 function closeExtractPreview() {
   $("extract-panel").classList.add("hidden");
   extractProposal = null;
-}
-
-async function commitExtractPreview() {
-  if (!extractProposal) return;
-  const keptRefs = new Set();
-  const notes = [];
-  for (const card of $("extract-notes-list").querySelectorAll(".extract-note-card")) {
-    if (!card.querySelector(".extract-note-keep").checked) continue;
-    const ref = card.dataset.ref;
-    const original = extractProposal.notes.find((n) => n.ref === ref);
-    if (!original) continue;
-    const content = card.querySelector(".extract-note-content").value.trim();
-    if (!content) continue; // an edited-down-to-nothing note is dropped, not saved empty
-    keptRefs.add(ref);
-    notes.push({
-      ref,
-      title: card.querySelector(".extract-note-title").value.trim(),
-      content,
-      category: original.category,
-      tags: card
-        .querySelector(".extract-note-tags")
-        .value.split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-  }
-  if (!notes.length) {
-    toast("Keep at least one note to save.");
-    return;
-  }
-
-  const links = [];
-  for (const row of $("extract-links-list").querySelectorAll(".extract-link-row")) {
-    if (!row.querySelector(".extract-link-keep").checked) continue;
-    const sourceRef = row.dataset.sourceRef;
-    const targetRef = row.dataset.targetRef;
-    if (!keptRefs.has(sourceRef)) continue; // its source note was dropped
-    if (!targetRef.startsWith("existing:") && !keptRefs.has(targetRef)) continue; // its sibling was dropped
-    const original = extractProposal.links.find(
-      (l) => l.source_ref === sourceRef && l.target_ref === targetRef
-    );
-    if (original) links.push({ source_ref: sourceRef, target_ref: targetRef, reason: original.reason });
-  }
-
-  $("extract-commit").disabled = true;
-  const status = $("extract-status");
-  status.classList.remove("error");
-  status.textContent = "Saving…";
-  try {
-    const result = await apiJson("/entries/extract/commit", {
-      method: "POST",
-      body: JSON.stringify({
-        notes,
-        links,
-        source_document_id: extractProposal.source_document_id || null,
-      }),
-    });
-    closeExtractPreview();
-    const madeIds = result.notes.map((n) => n.id).filter((id) => id != null);
-    if (madeIds.length) {
-      pushRoutePairUndo(
-        `Saved ${madeIds.length} extracted note${madeIds.length === 1 ? "" : "s"}`,
-        madeIds.map((id) => [`/entries/${id}`, "DELETE"]),
-        madeIds.map((id) => [`/entries/${id}/restore`, "POST"]),
-        () => refreshEntries(madeIds)
-      );
-    }
-    toast(`Saved ${result.notes.length} note${result.notes.length === 1 ? "" : "s"}.`);
-    await loadEntries();
-  } catch (error) {
-    status.classList.add("error");
-    status.textContent = error.message;
-    $("extract-commit").disabled = false;
-  }
 }
 
 // --- attaching notes to a chat message ------------------------------------------
@@ -264,10 +80,18 @@ let lastChatImageAttachments = [];
 //: A tile (the picture, or the kind's glyph), the name with its extension kept
 //: when the stem is cut, one facts line, a bar while it uploads, a round x.
 //: `state` is "ready", "uploading" (with `progress` 0..1) or "error" (the
-//: facts line then says why).
-function attachmentChip({ name, size, thumb, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
+//: facts line then says why). A notebook item (`notebookCard`, chat-agent.js)
+//: passes its own `icon` and `facts` (a note's name is words, not a file name,
+//: so no extension is split off) and `onOpen`, which makes the tile and the
+//: words one button; the remove x stays its sibling.
+function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
   const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip att-chip";
+  //: **Staged is a pill, sent is a card** (INBOX 1476, the owner: the grey slab
+  //: is not "very clean and dynamic"). A staged chip (`onRemove` given, null while it uploads) is waiting in a
+  //: composer: one quiet line, the glyph, the name cut at about 14 characters,
+  //: the kind in brackets, the x. Sent, it keeps the two-line card.
+  const pill = onRemove !== undefined;
+  chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
   chipEl.dataset.state = state;
   chipEl.title = title || name;
   let tile;
@@ -277,11 +101,11 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
     tile.alt = "";
   } else {
     tile = document.createElement("i");
-    tile.className = `ph ${attachmentIconClass("", name) || "ph-file"}`;
+    tile.className = `ph ${icon || attachmentIconClass("", name) || "ph-file"}`;
     tile.setAttribute("aria-hidden", "true");
   }
   tile.classList.add("att-chip-tile");
-  const ext = attachmentExt(name);
+  const ext = icon ? "" : attachmentExt(name);
   const stem = document.createElement("span");
   stem.className = "att-chip-stem";
   stem.textContent = ext ? name.slice(0, -(ext.length + 1)) : name;
@@ -297,17 +121,28 @@ function attachmentChip({ name, size, thumb, state = "ready", progress = 0, erro
   const facts = document.createElement("span");
   facts.className = "att-chip-facts";
   const kind = fileKindLabel("", name);
-  facts.textContent =
+  const factsLine =
     state === "uploading"
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
         ? error || "Could not attach"
-        : [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+        : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+  facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
   const body = document.createElement("span");
   body.className = "att-chip-body";
   body.append(nameEl, facts);
-  chipEl.append(tile, body);
+  if (onOpen) {
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "att-chip-open";
+    open.setAttribute("aria-haspopup", "dialog");
+    if (title) open.setAttribute("aria-label", `${title}, ${facts.textContent}`);
+    open.append(tile, body);
+    open.addEventListener("click", onOpen);
+    chipEl.append(open);
+  } else chipEl.append(tile, body);
   if (state === "uploading") {
+    lazyScript("/css/chip-bar-lazy.css");
     const bar = document.createElement("progress");
     bar.className = "att-chip-bar";
     bar.max = 100;
@@ -545,7 +380,7 @@ async function importChatDocuments(files) {
   const label =
     made.length === 1
       ? `Added “${first.title}” to your documents.`
-      : `Added ${made.length} files to your documents.`;
+      : `Added ${nounCount(made.length, "file")} to your documents.`;
   toastAction(label, made.length === 1 ? "Open it" : "Show them", () => {
     switchTab("documents");
     if (made.length === 1) openDocument(first.id);
@@ -652,23 +487,16 @@ function renderBoardAttachments() {
   box.replaceChildren();
   box.classList.toggle("hidden", attachedBoards.length === 0);
   for (const board of attachedBoards) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    const label = document.createElement("span");
-    setLabel(label, `ph:tree-structure ${board.name}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Don't send “${board.name}” with this message`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
-      renderBoardAttachments();
-      announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "map", id: board.id, name: board.name }, {
+        removeTitle: `Don't send “${board.name}” with this message`,
+        onRemove: () => {
+          attachedBoards = attachedBoards.filter((b) => b.id !== board.id);
+          renderBoardAttachments();
+          announce(`Removed attachment. ${attachedBoards.length} map(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -706,8 +534,7 @@ function renderDocumentAttachments() {
   box.classList.toggle("hidden", attachedDocuments.length === 0);
   for (const document_ of attachedDocuments) {
     box.appendChild(
-      attachmentChip({
-        name: document_.name,
+      notebookCard({ kind: "document", id: document_.id, name: document_.name }, {
         removeTitle: `Don't send “${document_.name}” with this message`,
         onRemove: () => {
           attachedDocuments = attachedDocuments.filter((d) => d.id !== document_.id);
@@ -770,31 +597,22 @@ function renderSelectionAttachment() {
   box.replaceChildren();
   box.classList.toggle("hidden", !attachedSelection);
   if (!attachedSelection) return;
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip";
-  //: The full passage on hover. A chip can only show a few words of it, and
+  //: The full passage on hover: a pill can only name where it is from, and
   //: "which selection is this?" is the one question it has to answer.
-  chipEl.title = attachedSelection.text;
-  const label = document.createElement("span");
-  const words = attachedSelection.text.replace(/\s+/g, " ").trim();
-  const shown = words.length > 42 ? `${words.slice(0, 41)}…` : words;
-  //: A page's reading (the OCR workspace, INBOX 717) has a file and a page,
-  //: not a line in an editor.
-  setLabel(label, attachedSelection.kind === "reading"
-    ? `ph:scan ${attachedSelection.title}: “${shown}”`
-    : `ph:text-aa ${attachedSelection.title} · line ${attachedSelection.line}: “${shown}”`);
-  const remove = document.createElement("button");
-  remove.className = "attachment-remove";
-  remove.type = "button";
-  setLabel(remove, "ph:x");
-  remove.title = "Don't send this with your message";
-  remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => {
-    clearSelectionAttachment();
-    announce("Selection removed.");
-  });
-  chipEl.append(label, remove);
-  box.appendChild(chipEl);
+  const reading = attachedSelection.kind === "reading";
+  box.appendChild(
+    attachmentChip({
+      name: attachedSelection.title,
+      icon: reading ? "ph-scan" : "ph-text-aa",
+      facts: reading ? "Reading" : `line ${attachedSelection.line}`,
+      title: `${attachedSelection.title}${reading ? "" : `, line ${attachedSelection.line}`}: “${attachedSelection.text.replace(/\s+/g, " ").trim().slice(0, 300)}”`,
+      removeTitle: "Don't send this with your message",
+      onRemove: () => {
+        clearSelectionAttachment();
+        announce("Selection removed.");
+      },
+    }),
+  );
 }
 
 //: **Re-validated at send, not trusted from when it was attached.** This is
@@ -923,7 +741,7 @@ function flattenNoteMarkdown(md) {
   //: Front matter is the note's settings, not its words (INBOX 1323).
   return stripFrontmatter(md)
     .replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|[-*+]\s+|\d+[.)]\s+)/gm, "")
-    .replace(/!?\[([^\]]{0,300})\]\([^)]{0,500}\)?/g, "$1")
+    .replace(/!?\[([^\]|]{0,300})[^\]]{0,300}\]\([^)]{0,500}\)?/g, "$1")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
@@ -1016,25 +834,17 @@ function renderAttachments() {
   box.classList.toggle("hidden", notes.length === 0);
   $("attach-note").classList.toggle("has-attachments", notes.length > 0);
   for (const entry of notes) {
-    const chipEl = document.createElement("span");
-    chipEl.className = "chip attachment-chip";
-    chipEl.title = entry.content;
-    const label = document.createElement("span");
-    setLabel(label, `ph:paperclip ${noteLabel(entry)}`);
-    const remove = document.createElement("button");
-    remove.className = "attachment-remove";
-    remove.type = "button";
-    setLabel(remove, "ph:x");
-    remove.title = `Remove "${noteLabel(entry, 24)}"`;
-    remove.setAttribute("aria-label", remove.title);
-    remove.addEventListener("click", () => {
-      attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
-      renderAttachments();
-      renderNotePickerList();
-      announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
-    });
-    chipEl.append(label, remove);
-    box.appendChild(chipEl);
+    box.appendChild(
+      notebookCard({ kind: "note", id: entry.id, name: entry.content }, {
+        removeTitle: `Remove “${noteNamePlain(entry.content, 24) || "this note"}”`,
+        onRemove: () => {
+          attachedNoteIds = attachedNoteIds.filter((id) => id !== entry.id);
+          renderAttachments();
+          renderNotePickerList();
+          announce(`Removed attachment. ${attachedNoteIds.length} note(s) attached.`);
+        },
+      }),
+    );
   }
 }
 
@@ -1085,7 +895,7 @@ function notePickerShape(source) {
       },
       meta: (row) => {
         const when = relativeTime(row.updated_at);
-        return [notePickerFacts(when && `Edited ${when}`, row.words ? `${row.words} word${row.words === 1 ? "" : "s"}` : "")];
+        return [notePickerFacts(when && `Edited ${when}`, row.words ? nounCount(row.words, "word") : "")];
       },
       search: (row) => `${row.title || ""} ${row.preview || ""}`,
       isOn: (row) => attachedDocuments.some((d) => d.id === row.id),
@@ -1606,6 +1416,11 @@ function chatQueueShow() {
   if (chatQueue.length || document.querySelector(".chat-queue")) ensureModule("replyKit").then(() => chatQueuePaint()).catch(() => {});
 }
 
+//: **A bare "undo" or "redo" typed in chat runs the app's own** (audit 1028
+//: E13), as Ctrl+Z does: sent as a question it got the Help line, and the
+//: change the person meant to take back stayed.
+const CHAT_UNDO_WORDS = /^(undo|redo)( that| it)?\.?$/i;
+
 async function chatSendTurn(preset, opts = {}) {
   const input = $("chat-input");
   const status = $("chat-status");
@@ -1617,6 +1432,10 @@ async function chatSendTurn(preset, opts = {}) {
       input.focus();
     }
     return;
+  }
+  if (preset == null && CHAT_UNDO_WORDS.test(typed)) {
+    input.value = "";
+    return chatWriteRecord("chatHistoryTyped", /^undo/i.test(typed));
   }
 
   // Plan mode is applied here, on the way out, rather than by whatever control
@@ -1657,6 +1476,8 @@ async function chatSendTurn(preset, opts = {}) {
       question = `${question}\n\n${webPageContextBlock(page)}`;
     }
   }
+  // Over the server's limit: say so, keep the draft (audit 1028 E8).
+  if (question.length > 2e4) return lazyScript("/js/chat-edit.js").then(() => chatTooLong(typed, !preset));
   lastChatQuestion = question;
   if (!opts.replaceLast) regenerateLastAnswer.retries = 0; // a new question is a first ask
 
@@ -1820,7 +1641,10 @@ async function chatSendTurn(preset, opts = {}) {
   //: back, so a late delta after `finally` re-attached "Writing the answer"
   //: under a finished turn. The flag says the turn is over.
   let turnEnded = false;
+  //: Set by the model's first word; see the waiting line below (H8).
+  let heard = false;
   const clearPending = () => {
+    heard = true;
     if (turnEnded) return;
     //: Only when not already last: `onAnswer` calls this per delta, and
     //: re-appending the last child restarts its CSS animation, which froze
@@ -1958,7 +1782,7 @@ async function chatSendTurn(preset, opts = {}) {
   // One in flight at a time: rounds can finish close together, and two
   // creates racing each other would make two conversations out of one thread.
   function checkpointTurn() {
-    if (checkpointInFlight) return checkpointRun;
+    if (checkpointInFlight || convRef.private) return checkpointRun;
     checkpointInFlight = true;
     checkpointRun = writeCheckpoint();
     return checkpointRun;
@@ -1981,6 +1805,7 @@ async function chatSendTurn(preset, opts = {}) {
         document_ids: sentDocuments.length ? sentDocuments : null,
         file_ids: sentFiles.length ? sentFiles : null,
         note_ids: sentAttachments.length ? sentAttachments : null,
+        board_ids: sentBoards.length ? sentBoards : null,
         followup_of: followupOf,
         persona: savedPersona(sentPersona),
       };
@@ -2024,7 +1849,7 @@ async function chatSendTurn(preset, opts = {}) {
   //: it was done (the owner, 2026-10-12). The row holds the question and an
   //: empty answer; `openConversation` already drops that partial turn and
   //: puts the live bubbles back (`isStreamingConversation`).
-  if (convRef.id === null) checkpointTurn();
+  if (convRef.id === null && !convRef.private) checkpointTurn();
 
   // Captured once, not re-read at save time: the toggle can move on to the
   // next message while this one is still streaming, and the meta line and
@@ -2035,11 +1860,10 @@ async function chatSendTurn(preset, opts = {}) {
 
   let slowLoadTimeout;
   try {
+    //: A silent model used to leave "Waking the model..." up forever (H8).
     slowLoadTimeout = setTimeout(() => {
-      if (!meta && !stopped) {
-        status.textContent = "Loading model… (this may take a moment)";
-      }
-    }, 5000);
+      if (!heard && viewing()) status.textContent = "Waiting for the model… Stop, or ask again.";
+    }, 8e3);
     await streamChat({
       progress: pendingLine,
       question,
@@ -2048,6 +1872,7 @@ async function chatSendTurn(preset, opts = {}) {
       persona: sentPersona,
       mode: $("response-mode-select").value || null,
       useTools: effectiveUseTools,
+      isPrivate: convRef.private,
       noteIds: sentAttachments,
       imageMediaIds: sentImages,
       documentIds: sentDocuments,
@@ -2070,7 +1895,7 @@ async function chatSendTurn(preset, opts = {}) {
       onMeta: (m) => {
         meta = m;
         //: No model runs: the answer is composed from the notes (INBOX 725).
-        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "The model is writing…";
+        status.textContent = m && m.composed ? "Composing from your notes, no AI…" : "Waking the model…";
       },
       onRelated: (event) => {
         ensureModule("replyKit").then(() => renderRelatedElsewhere(groundingHolder, event.items)).catch(() => {});
@@ -2080,7 +1905,7 @@ async function chatSendTurn(preset, opts = {}) {
       },
       onGroundingLive: (event) => {
         groundingSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta, toolEvents: [], touched: [], sentences: groundingSentences });
         placeLiveCitations();
       },
       onGrounding: (event) => {
@@ -2210,11 +2035,10 @@ async function chatSendTurn(preset, opts = {}) {
         }
         if (event.proposal) {
           // Asked where it was suggested, not in a settings page nobody opens.
-          const card = document.createElement("div");
-          renderMemoryProposal(card, event.proposal);
-          timeline.tool(card.firstElementChild || card);
+          showWaiting(recordsHolder, renderMemoryProposal, event.proposal);
         }
         if (event.ok) toolsActed = true;
+        if (event.wrote) bubble.dataset.wrote = "1";
         //: A page the model read opens in place under its step (INBOX 1300
         //: C06): the web fold's reader, the same one a composed answer's
         //: results use. Its search results are the Sources panel's cards.
@@ -2238,31 +2062,14 @@ async function chatSendTurn(preset, opts = {}) {
       onPanel: (event) => drawAnswerPanels(timeline.holder, [event]).then(chatScrollToEnd),
       onConfirm: (event) => {
         clearPending();
-        const card = document.createElement("div");
-        renderToolConfirm(card, event);
-        //: An act's card is the answer's own (CHAT_PLAN decision 38), under
-        //: its line, never folded away in a step group with its Confirm.
-        if (event.type === "act") timeline.holder.appendChild(card);
-        else timeline.tool(card.firstElementChild || card);
+        //: Waiting cards are output (`showWaiting`); an act's is the answer's own.
+        showWaiting(event.type === "act" ? timeline.holder : recordsHolder, renderToolConfirm, event);
+        if (event.done) bubble.dataset.wrote = "1"; // an act that ran at once wrote
         status.textContent = "Waiting for your confirmation…";
       },
       onAsk: (event) => {
         clearPending();
-        //: **The question is output, not a step.**
-        //:
-        //: Reported: *"the question the agent asked me appeared in the step
-        //: and not the actual output."* A step group folds itself shut into
-        //: "Finished 1 step" the moment prose starts (`startAnswer`), so a
-        //: question filed there is a question that disappears while it is
-        //: still waiting to be answered, and the answer box underneath then
-        //: says the model wrote nothing, which is the screenshot.
-        //:
-        //: `recordsHolder` is the bubble's own output area, under the steps
-        //: and above the sources, where everything else the turn is waiting
-        //: on (a confirmation, a memory proposal's outcome) already lands.
-        const card = document.createElement("div");
-        renderAgentQuestion(card, event);
-        recordsHolder.appendChild(card.firstElementChild || card);
+        showWaiting(recordsHolder, renderAgentQuestion, event);
         status.textContent = "Waiting for your answer…";
         chatAwaitingAgentAnswer = true;
         asked = true;
@@ -2408,6 +2215,9 @@ async function chatSendTurn(preset, opts = {}) {
             : "stalled"
           : "done";
     endAgentRun(activityRun, { state: endState });
+    //: The transcript is not a live region (deltas every 66 ms would be read
+    //: word by word), so a finished answer is said once (audit 1028 E35).
+    if (endState === "done" && viewing()) announce(timeline.text());
     //: …and Atlas's face says how it went, for a moment.
     if (typeof setAtlasMood === "function") {
       setAtlasMood(endState === "done" ? "happy" : endState === "failed" ? "surprised" : "calm", 5000);
@@ -2457,7 +2267,8 @@ async function chatSendTurn(preset, opts = {}) {
     meta,
     toolEvents,
     touched: [...touchedItems.values()],
-    grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
+    sentences: groundingSentences,
+    grounded: meta?.composed ? new Set((groundingSentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
@@ -2582,7 +2393,7 @@ async function chatSendTurn(preset, opts = {}) {
     //: A plan the model drew waits for Run the plan (row 3: approved once,
     //: with each step's writes listed); a skill the person saved starts.
     const plan = handoff;
-    if (plan.type === "run_plan") planProposalCard(timeline.holder, plan, () => startPlannedRun(plan.goal, plan.steps));
+    if (plan.type === "run_plan") showWaiting(recordsHolder, planProposalCard, plan, () => startPlannedRun(plan.goal, plan.steps));
     else setTimeout(() => startSkill({ name: plan.skill }, plan.inputs || {}), 0);
   }
   if (!answerRaw) {
@@ -2590,9 +2401,9 @@ async function chatSendTurn(preset, opts = {}) {
     // bubble sitting there with the notes disclosure, no answer, no error and
     // no buttons: a dead end with nothing to click and nothing explaining it.
     if (opts.replaceLast) {
-      // A regenerate already removed the old answer; don't leave a blank in
-      // its place, since the previous one is gone either way.
+      //: No new answer: the old one goes back (audit 1029 H7).
       bubble.remove();
+      if (opts.restore) $("chat-messages").appendChild(opts.restore);
       toast("The model returned nothing that time. Try again.", "info");
       return;
     }
@@ -2704,12 +2515,14 @@ async function chatSendTurn(preset, opts = {}) {
       // build one prompt and then forgotten, the bubble showed no sign the
       // answer had been given a note to read.
       note_ids: sentAttachments.length ? sentAttachments : null,
+      board_ids: sentBoards.length ? sentBoards : null,
       followup_of: followupOf,
       //: The thumbnails' words, so a reopened chat keeps them (INBOX 502).
       picture_alts: meta?.picture_alts && Object.keys(meta.picture_alts).length ? meta.picture_alts : null,
       picture_sizes: meta?.picture_sizes && Object.keys(meta.picture_sizes).length ? meta.picture_sizes : null,
     };
-    if (convRef.id === null) {
+    if (convRef.private) {
+    } else if (convRef.id === null) {
       const created = await apiJson("/conversations", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -3035,9 +2848,10 @@ async function deleteChatTurn(assistantBubble) {
   }
   // The user bubble is the one immediately before this assistant bubble.
   const userBubble = assistantBubble.previousElementSibling;
-  if (userBubble && userBubble.classList.contains("user")) userBubble.remove();
+  if (userBubble && userBubble.classList.contains("user")) dropChatBubble(userBubble);
   assistantBubble.remove();
   chatConv.turns.splice(index, 1);
+  renderChatTurnCount();
   // The turn below is the end of the thread now, so its saved chips come back.
   refreshFollowupVisibility();
   if (!$("chat-messages").querySelector(".msg")) renderChatEmptyState();
@@ -3077,7 +2891,7 @@ function mountChatTimer(bubble) {
 
 function paintChatTimer() {
   const box = chatTimerBox;
-  if (!box) return;
+  if (!box || document.hidden) return; // a hidden tab paints nothing; the next tick catches up
   const seconds = Math.floor((performance.now() - chatTimerStartedAt) / 1000);
   // Plain seconds under a minute, m:ss above it, "97s" is a number you have
   // to convert, and by then it is the interesting case.
@@ -3156,7 +2970,20 @@ function reattachStreamingTurn() {
   return true;
 }
 
+//: A private chat with messages asks before it is left (chat-private.js).
+function chatLeaveHeld(retry) {
+  if (!chatConv.private || !(chatConv.turns.length || chatStreaming?.conv === chatConv)) return false;
+  chatPrivateLeave(retry);
+  return true;
+}
+
+function syncChatPrivate() {
+  $("chat-private-mark").hidden = !chatConv.private;
+  $("chat-private-toggle").ariaPressed = String(!!chatConv.private);
+}
+
 function newChatConversation() {
+  if (chatLeaveHeld(newChatConversation)) return;
   releaseChatComposer();
   recordTabVisit("chat", "new");
   chatConv = { id: null, turns: [] };
@@ -3197,6 +3024,7 @@ function newChatConversation() {
   //: for a scroll or resize that a brand-new chat may never get.
   syncChatJumpLatest();
   scrollTopUpdate?.();
+  syncChatPrivate();
 }
 
 // Delete the conversation open in the main pane, saved or not.
@@ -3209,7 +3037,7 @@ function newChatConversation() {
 // silently, there is nothing to lose and nothing to confirm, and anything
 // that made it to the server asks first, the same confirm the sidebar uses.
 async function deleteCurrentChat() {
-  if (chatConv.id === null && !chatConv.turns.length) {
+  if (chatConv.private || (chatConv.id === null && !chatConv.turns.length)) {
     newChatConversation();
     return;
   }
@@ -3252,6 +3080,14 @@ function chatDeleteUndo(gone, after = () => {}) {
 
 //: **Every chat write is on the undo bar** (CHAT_PLAN 8 row 5): the helpers
 //: are chat-undo.js, fetched on the first write, out of the boot scripts.
+async function promptTitle(message, initial) {
+  const asked = promptDialog(message, initial);
+  document.querySelector(".prompt-card input").maxLength = 120;
+  const next = (await asked)?.trim();
+  if (next === "") toast("Title kept.");
+  return next || null;
+}
+
 function chatWriteRecord(name, ...args) {
   lazyScript("/js/chat-undo.js").then(() => window[name](...args));
 }

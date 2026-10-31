@@ -1,0 +1,154 @@
+/* popup-anatomy-lazy.css: one anatomy for every popup (INBOX 1478, the owner's
+   reference screenshots; DESIGN.md row "A popup's anatomy"). Loaded by
+   drag-edge.js with the late bundles (`LAZY_MODULES.popupAnatomy`), so it costs
+   the boot sheets nothing; they are at their cap.
+
+   The head: an accent glyph, then the title; the help '?', the tools, minimise
+   and close sit at the right (08-consistency.css and panel-movable.js own
+   those). Under it a glyph tab row where the popup has tabs, and the content in
+   bordered cards, each headed by a glyph and a title over a hairline. */
+
+/* --- The head's glyph ---------------------------------------------------- */
+.dialog-head .pop-glyph {
+  margin-inline-end: var(--space-2);
+  color: var(--accent-text);
+  font-size: 1.15em;
+  vertical-align: -0.15em;
+}
+
+/* --- The glyph tab row ---------------------------------------------------
+   `.tabs-line.popup-kinds` (05-sidebars-themes.css) with a glyph before the
+   word and a count after it. A page's second-level strip stays words only. */
+.popup-kinds > button > .pop-tab-glyph {
+  font-size: 1.1em;
+}
+/* A row wider than a phone scrolls inside itself in a popup (the strip never
+   widens the page); in a Settings pane the jump row wraps instead, since
+   nothing in Settings scrolls sideways (`tests/test_settings_no_sideways.py`). */
+.activity-tabs,
+.wb-template-kind,
+.note-picker-sources {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pane-tabs {
+  flex-wrap: wrap;
+}
+.popup-kinds > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pop-count {
+  margin-inline-start: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--chip-bg);
+  /* Ink: the muted grey on the chip measured 4.31:1 in light (12px words). */
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.popup-kinds > button[aria-selected="true"] > .pop-count,
+.popup-kinds > button[aria-current="true"] > .pop-count {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* --- The bordered card ---------------------------------------------------
+   A glyph and a title over a hairline, the control that belongs to the card
+   at its right (a toggle, a count), one muted line, then the card's content. */
+.pop-card {
+  margin-block: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--inner);
+  overflow: hidden;
+}
+.pop-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--divider);
+}
+.pop-card-head > .pop-glyph {
+  flex: none;
+  color: var(--accent-text);
+}
+/* Two classes: `.card h3` is the eyebrow (12px, upper case, muted) and would
+   otherwise win, as it did for the dialog head's title (08-consistency.css). */
+.pop-card .pop-card-title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+.pop-card-aside {
+  flex: none;
+  margin-inline-start: auto;
+}
+.pop-card-body {
+  padding: var(--space-3) var(--space-4);
+}
+.pop-card-body > :is(ul, p):first-child,
+.pop-card-body > :is(ul, p):last-child {
+  margin-block: 0;
+}
+.pop-card-hint {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* --- The Activity popup (the Tasks popup) ---------------------------------
+   Its cards made it taller than a short window, and it had no cap: the head
+   went off the top with the close button in it. The panel scrolls inside the
+   window and its head stays. */
+.agent-monitor {
+  max-height: calc(100dvh - var(--space-9) * 3);
+  overflow-y: auto;
+  padding-top: 0;
+}
+.agent-monitor > .monitor-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-top: var(--space-4);
+  background: var(--modal-bg-opaque);
+}
+
+/* --- The reference's glass, the parts that keep the words readable --------
+   The owner asked how a reference app does glass (INBOX 1478): a 32% panel
+   tint, a top highlight, blur 24px at 170% saturation, a 22% ink border.
+   Measured on the Appearance panel's 29 text runs over the real dashboard and
+   over a black and white stripe backdrop (worst case), AA being 4.5:1
+   (`scratchpad/ui-sweeps/popupglass.js`):
+     reference tint 32%   light 4.31 / 1.95,  dark 5.15 / 2.23   (fails)
+     tint 72%             light 5.29 / 3.99,  dark 6.64 / 4.59   (fails in light)
+     tint 90%             light 5.37 / 5.00,  dark 6.64 / 5.83   (holds)
+     the app's own tint with the highlight and border   light 4.65, dark 5.15 (holds)
+   So the tint and the blur are not adopted (the tokens' tint is 96 to 98%,
+   where a blur cannot be seen, and a third blur value is refused by the
+   lint); the highlight and the border are, on the popups that float over the
+   app. The highlight is ink, so it only tints the top 55%, and the muted
+   words there still clear 4.5:1 in both themes. */
+.appearance-panel:not(.peeking),
+.agent-monitor.card.glass {
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+.appearance-panel:not(.peeking) {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--ink) 14%, transparent) 0%, color-mix(in srgb, var(--ink) 4%, transparent) 26%, transparent 55%);
+}
+.agent-monitor.card.glass {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--ink) 14%, transparent) 0%, color-mix(in srgb, var(--ink) 4%, transparent) 26%, transparent 55%), linear-gradient(var(--card), var(--card)), var(--page);
+}

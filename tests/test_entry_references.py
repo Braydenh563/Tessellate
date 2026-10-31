@@ -15,6 +15,8 @@ claim one that is not.
 
 from __future__ import annotations
 
+import pytest
+
 
 def _note(client, content: str) -> dict:
     return client.post("/entries", json={"content": content}).json()
@@ -407,10 +409,13 @@ def test_a_note_in_another_space_is_not_a_reference_from_this_one(client):
 def test_a_long_label_is_found_through_the_index_with_the_scan_semantics(client):
     """ARCH-11 (audit 2026-10-05): a label with an interior word reads only
     the notes the full-text index says hold that phrase, and still finds a
-    mention whose first and last words run on ("biweekly reviews") or whose
-    case differs, and still skips a note with the words apart."""
+    mention whose case differs, and still skips a note with the words apart.
+    A run-on ("biweekly reviews") is no longer a mention: since audit 1029
+    N1 a mention is a whole word, so the substring case moved to the next
+    test."""
     label = _note(client, "Weekly review of the garden plan")
-    _note(client, "notes from our biWEEKLY REVIEW OF THE GARDEN PLANS, kept")
+    _note(client, "notes from our WEEKLY REVIEW OF THE GARDEN PLAN, kept")
+    _note(client, "notes from our biweekly review of the garden plans, kept")
     _note(client, "weekly review, of the garden, plan")
     _note(client, "the garden plan and a weekly review of it")
     counts = _counts(client, [label["id"]])
@@ -429,3 +434,31 @@ def test_interior_phrase_leaves_out_the_edges_and_short_labels():
     assert _interior_phrase("a " + chr(0x2014) + " b") is None
     assert _interior_phrase("café crème brûlée") == '"crème"'
 
+
+
+@pytest.mark.parametrize(
+    ("title", "text", "expected"),
+    [
+        ("t", "went to the shop at 5 and ate toast", 0),
+        ("rem", "the remainder of the day, a reminder", 0),
+        ("Friday", "see you on Friday.", 1),
+        ("Friday", "fridays are long", 0),
+        ("Friday", "FRIDAY drinks", 1),
+        ("Roof", "the roofer came", 0),
+        ("Roof", "the roof leaks", 1),
+        ("t", "see [[t]] for more", 1),
+        ("Ops", "Ops is on call", 1),
+        ("Ab", "Ab is two letters", 0),
+    ],
+)
+def test_a_mention_is_a_whole_word_with_a_three_character_floor(client, title, text, expected):
+    """Audit 1029 N1: a title is mentioned as a word, not as a substring, and
+    a one or two letter title is only ever linked, never guessed at."""
+    note = _note(client, title)
+    _note(client, text)
+    counts = _counts(client, [note["id"]])
+    assert counts[str(note["id"])].get("note", 0) == expected
+    references = client.get(f"/entries/{note['id']}/references").json()["total"]
+    assert references == expected
+    connections = client.get(f"/entries/{note['id']}/connections").json()
+    assert len(connections["incoming"]) == expected

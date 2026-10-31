@@ -192,6 +192,29 @@
   animation: none;
 }
 
+/* A slow reload of a map already shown (audit 1029 G30, `renderGraphCanvas`):
+   a thin accent line runs under the count from 400 ms until the data is in.
+   Less motion: the line holds still. */
+#graph-stats[aria-busy="true"] {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) -40% 100% / 40% 2px no-repeat;
+  animation: graph-reloading 1.2s linear infinite;
+}
+@keyframes graph-reloading {
+  to {
+    background-position: 140% 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #graph-stats[aria-busy="true"] {
+    animation: none;
+    background-position: 50% 100%;
+  }
+}
+:root[data-motion="reduced"] #graph-stats[aria-busy="true"] {
+  animation: none;
+  background-position: 50% 100%;
+}
+
 .graph-edge-similar {
   stroke-dasharray: 2 5;
   stroke-width: 1.2;
@@ -390,6 +413,12 @@
    the canvas underneath. DESIGN.md, "A card about one dot on a canvas". */
 .graph-hovercard {
   position: absolute;
+  /* Placed by a transform on its own layer, and laid out apart from the page
+     (audit 1029 G5): a hover moves it without a repaint or a page layout. */
+  left: 0;
+  top: 0;
+  will-change: transform;
+  contain: layout style;
   /* Over the canvas; the popup (which hides it) and the menus stay above. */
   z-index: 2;
   max-width: min(18rem, calc(100% - 1.5rem));
@@ -404,6 +433,12 @@
 }
 .graph-hovercard[hidden] {
   display: none;
+}
+/* --- motion: a note's hover card fades in (INBOX 1462) -------------------
+   `opacity` only: the card is placed by its own `transform`, which a rise
+   would fight, and it leaves at once. */
+.graph-hovercard:not([hidden]) {
+  animation: ui-fade var(--ui-fast) var(--ease-out);
 }
 .graph-hovercard-head {
   display: flex;
@@ -446,7 +481,7 @@
    then 1400: it met the legend row's box at 1440 and the zoom strip at 390).
    A lift of 12rem was tried and put it halfway up the screen (the owner,
    2026-10-22); this one is the legend row's own height. */
-:root body:has(#tab-graph:not(.hidden)) #toast-box {
+:root body[data-tab="graph"] #toast-box {
   right: calc(var(--space-4) + 4.5rem);
 }
 
@@ -513,4 +548,34 @@
   flex: 1 1 0;
   min-width: 0;
   white-space: nowrap;
+}
+
+/* The match count beside the graph's search box (audit 1029 G11): a quiet
+   line that keeps its place, so the dock does not shift as it fills. */
+.dock[data-dock-name="graph"] .graph-search-count {
+  min-width: 5.5rem;
+  white-space: nowrap;
+}
+.dock[data-dock-name="graph"] .graph-search-count:empty {
+  min-width: 0;
+}
+
+/* **The legend wraps to two rows, then scrolls** (audit 1029 G9). It was one
+   row that scrolled sideways (a legend of three rows had eaten the canvas, when
+   it sat in the page's flow); it floats over the map now and is bounded, so it
+   wraps to two rows and scrolls down past them. Measured at 1440x900 with 17
+   entries: scrollWidth 2088 in 1308, five of them out of sight. A chip keeps
+   its size; the row's height is the bound. */
+.graph-legend-row #graph-legend {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-size: var(--text-base);
+  max-height: 5.2em;
+  min-height: 0;
+  scrollbar-width: thin;
+}
+.graph-legend-row #graph-legend > * {
+  flex: 0 0 auto;
 }

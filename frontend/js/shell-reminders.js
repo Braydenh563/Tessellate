@@ -31,26 +31,44 @@ function tickClocks() {
 //: three clocks (header, Dashboard, status bar). Measured, `idle.js`.
 const MINUTE_TICK_MARGIN_MS = 250;
 
+//: **One chain for every minute-level painter** (audit 1028 S38): the three
+//: clocks and the reminder check used to chain their own timeouts, four wakes
+//: a minute for one minute of work. They share this one; the stopper takes a
+//: painter off, and the last one off clears the timer.
+const minuteTickers = new Set();
+let minuteHandle = null;
+
+function armMinuteTick() {
+  if (minuteHandle !== null) return;
+  const wait = 60000 - (Date.now() % 60000) + MINUTE_TICK_MARGIN_MS;
+  //: Named, not an arrow: `scratchpad/ui-sweeps/idle.js` counts wakes by
+  //: `fn.name`, and a census of anonymous callbacks cannot tell anyone
+  //: which one to look at.
+  minuteHandle = setTimeout(function minuteTick() {
+    minuteHandle = null;
+    for (const paint of [...minuteTickers]) {
+      try {
+        paint();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    if (minuteTickers.size) armMinuteTick();
+  }, wait);
+}
+
 function startMinuteTicker(paint) {
-  let handle = null;
-  const schedule = () => {
-    const wait = 60000 - (Date.now() % 60000) + MINUTE_TICK_MARGIN_MS;
-    //: Named, not an arrow: `scratchpad/ui-sweeps/idle.js` counts wakes by
-    //: `fn.name`, and a census of anonymous callbacks cannot tell anyone
-    //: which one to look at.
-    handle = setTimeout(function minuteTick() {
-      paint();
-      schedule();
-    }, wait);
-  };
   paint();
-  schedule();
-  //: The caller keeps the stopper rather than an id: a chained timeout has a
-  //: different id after every tick, so a caller holding the first one could
-  //: not cancel the chain.
+  minuteTickers.add(paint);
+  armMinuteTick();
+  //: The caller keeps the stopper rather than an id: the chain's timeout has
+  //: a different id after every tick.
   return () => {
-    if (handle !== null) clearTimeout(handle);
-    handle = null;
+    minuteTickers.delete(paint);
+    if (!minuteTickers.size && minuteHandle !== null) {
+      clearTimeout(minuteHandle);
+      minuteHandle = null;
+    }
   };
 }
 
@@ -118,7 +136,7 @@ window.addEventListener("resize", () => {
 // the wordmark, the status pill's current text and which header buttons are
 // showing, none of which a width range knows about.
 function tabRowSpace() {
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   const bar = $("tab-bar");
   if (!header || !bar) return 0;
   const style = getComputedStyle(header);
@@ -143,7 +161,7 @@ function tabRowSpace() {
 //: drawn (absolutely placed, filling the gap, or on its own row), so the
 //: answer cannot feed itself.
 function tabCentreSpace() {
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   const bar = $("tab-bar");
   if (!header || !bar) return 0;
   const style = getComputedStyle(header);
@@ -219,7 +237,7 @@ function syncTabOverflowFade() {
   // its own: where all seven fit with room to spare at any width the app is
   // usable at. Photographed on a 7-tab window: "Dashboard" clipped to "oard"
   // at the left edge, which no amount of edge-fading makes readable.
-  const header = document.getElementById("top-bar");
+  const header = $("top-bar");
   // Below 600 the strip is not in the header at all: `dockTabBar` moves it
   // onto the body so `position: fixed` can reach the viewport past the
   // header's backdrop filter. The wrap question is then meaningless, and
@@ -254,10 +272,12 @@ function syncTabOverflowFade() {
 // are not using. Its `scrollIntoView` shows in profiles as the tab switch's
 // own layout flushed here; guarding or deferring it measured no faster.
 function revealActiveTab() {
-  const active = document.querySelector("#tab-bar button.active");
-  if (active && active.scrollIntoView) {
-    active.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }
+  //: A strip that fits (no fade at either end, as the last sync left it) has
+  //: no tab out of view: asking left the whole new page's layout to be
+  //: settled here, mid-click (the lag log: 80 to 218ms on every switch).
+  const bar = $("tab-bar");
+  if (!bar || !/(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) return;
+  document.querySelector("#tab-bar button.active")?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
   syncTabOverflowFade();
 }
 
@@ -296,6 +316,7 @@ const GLIDE_CHOSEN = ':scope > .active, :scope > [aria-selected="true"], :scope 
 function glideStrip(strip) {
   if (!strip || strip.glide) return;
   let at = null;
+  let glided = null;
   const place = (move) => {
     const tab = strip.querySelector(GLIDE_CHOSEN);
     if (!tab || !tab.offsetWidth || strip.closest("#phone-tab-dock")) {
@@ -320,21 +341,23 @@ function glideStrip(strip) {
       const m = new DOMMatrix(getComputedStyle(strip, "::before").transform);
       from = { x: at.x + m.e, y: at.y + m.f, w: at.w * m.a, h: at.h * m.d };
     }
+    //: Read before the writes: after them the read paid a style pass (3 to 30ms at a tab switch).
+    const tokens = getComputedStyle(strip);
+    const ms = parseFloat(tokens.getPropertyValue("--ui-slow")) * 1000;
+    const ease = tokens.getPropertyValue("--ease-in-out").trim() || "ease-in-out";
     for (const k of ["x", "y", "w", "h"]) strip.style.setProperty(`--glide-${k}`, `${next[k]}px`);
     if (!strip.classList.contains("has-glide")) strip.classList.add("has-glide");
     at = next;
-    const tokens = getComputedStyle(strip);
-    const ms = parseFloat(tokens.getPropertyValue("--ui-slow")) * 1000;
     if (!from || !ms || !window.KeyframeEffect || !("pseudoElement" in KeyframeEffect.prototype)) return;
-    for (const running of strip.getAnimations({ subtree: true })) {
-      if (running.effect?.pseudoElement === "::before") running.cancel();
-    }
-    strip.animate(
+    //: The one it started itself, not `getAnimations`: that settled the style
+    //: the custom properties above had just dirtied (8 to 73ms a switch).
+    glided?.cancel();
+    glided = strip.animate(
       [
         { transform: `translate(${from.x - next.x}px, ${from.y - next.y}px) scale(${from.w / next.w}, ${from.h / next.h})` },
         { transform: "none" },
       ],
-      { duration: ms, easing: tokens.getPropertyValue("--ease-in-out").trim() || "ease-in-out", pseudoElement: "::before" }
+      { duration: ms, easing: ease, pseudoElement: "::before" }
     );
   };
   strip.glide = place;
@@ -517,7 +540,7 @@ const PHONE_BAR_RECEDE_PX = 12;
 const phoneBarLastTop = new WeakMap();
 
 function markTabBarRecede(region) {
-  const dock = document.getElementById("phone-tab-dock");
+  const dock = $("phone-tab-dock");
   if (!dock) return;
   //: The bar only exists in the phone band; above it there is nothing to
   //: recede, and an attribute left behind would be waiting for the next
@@ -554,7 +577,9 @@ function onScrollEdge(event) {
   if (scrollEdgeFrame) return;
   // Coalesced to one measurement per frame: a scroll event fires far more
   // often than the screen repaints, and this one reads layout.
-  scrollEdgeFrame = requestAnimationFrame(() => {
+  //: After the frame's layout, a timer past it (see `scheduleUpdate`,
+  //: navigation.js): in the frame, its scrollTop read was the forced layout.
+  scrollEdgeFrame = requestAnimationFrame(() => setTimeout(() => {
     scrollEdgeFrame = 0;
     markScrollEdge(region);
     //: The same guard the edge effect uses: a menu, a dialog or a sheet
@@ -566,7 +591,7 @@ function onScrollEdge(event) {
     ) {
       markTabBarRecede(region);
     }
-  });
+  }));
 }
 
 // Capture, because scroll does not bubble: without it this would only ever
@@ -619,7 +644,7 @@ function syncScrollEdges() {
   //: And a tab you have just arrived on shows its bar whole, whatever the tab
   //: you left was scrolled to. `syncScrollEdges` already runs on a tab change
   //: and on a resize, which are the two moments this is true of.
-  document.getElementById("phone-tab-dock")?.removeAttribute("data-receded");
+  $("phone-tab-dock")?.removeAttribute("data-receded");
 }
 
 window.addEventListener("resize", syncScrollEdges, { passive: true });
@@ -782,8 +807,22 @@ function stripFrontmatter(text) {
   return source;
 }
 
+//: What a one-line preview cannot draw (audit 1031 N38): a fence's own line,
+//: a block formula, a table's divider row and its pipes. One pass for both
+//: preview helpers (`notePreviewText` here, `stripMarkdownPreview` in
+//: navigation.js), so a table reads "a · b" in the timeline, the rail, the
+//: dashboard and chat alike, and never as "| a | b | |---|---|".
+function previewBlocks(text) {
+  return String(text || "")
+    .replace(/^(```|~~~)[^\n]*\n([\s\S]*?)(?:\n\1[^\n]*|(?![\s\S]))/gm, "$2")
+    .replace(/\$\$[\s\S]*?\$\$/g, "formula")
+    .replace(/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm, "")
+    .replace(/^[ \t]*\|(.*)\|[ \t]*$/gm, (_row, cells) => cells.split("|").map((cell) => cell.trim()).filter(Boolean).join(" · "));
+}
+
 function notePreviewText(content) {
-  return stripFrontmatter(content || "")
+  return previewBlocks(stripFrontmatter(content || ""))
+    .replace(/[\u202a-\u202e\u2066-\u2069]/g, "") // bidi controls reorder a label (N20)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")
     .replace(
@@ -854,7 +893,7 @@ async function loadReminders() {
   if (all) armReminderTimer(all);
   clearSkeletons($("reminder-groups"));
   if (!all) {
-    surfaceFailed($("reminders-empty"), "reminders", loadReminders);
+    surfaceFailed($("reminders-empty"), "your reminders", loadReminders);
     return;
   }
   surfaceRecovered($("reminders-empty"));
@@ -975,14 +1014,15 @@ function updateReminderBadge(reminders) {
     badge.className = "tab-badge";
     button.appendChild(badge);
   }
-  badge.textContent = due;
-  badge.title = `${due} reminder${due === 1 ? "" : "s"} due`;
+  badge.textContent = ` ${due}`;
+  badge.title = `${nounCount(due, "reminder")} due`;
 }
 
 async function clearDoneReminders() {
   //: To the end, or this clears the first page's done rows and reports that
   //: count as if it were all of them.
-  const all = await apiPagedList("/reminders", 200).catch(() => []);
+  const all = await apiPagedList("/reminders", 200).catch(() => null);
+  if (!all) return toast("Could not load your reminders. Try again.", true, { action: ["Try again", clearDoneReminders] });
   const done = all.filter((r) => r.done);
   if (!done.length) return;
   if (!(await confirmDialog(`Delete ${done.length} completed reminder${done.length === 1 ? "" : "s"}?`))) {
@@ -1030,7 +1070,8 @@ function reminderItem(reminder, label) {
   }
 
   if (editingReminderId === reminder.id) {
-    li.appendChild(reminderEditForm(reminder));
+    //: The form is its own lazy file (reminder-edit.js): only an edit needs it.
+    lazyScript("/js/reminder-edit.js").then(() => li.replaceChildren(reminderEditForm(reminder)));
     return li;
   }
 
@@ -1110,7 +1151,7 @@ function reminderItem(reminder, label) {
       )
     );
     actions.appendChild(
-      smallButton("ph:arrow-right tmrw", "Snooze to tomorrow 9am", () =>
+      smallButton("ph:arrow-right Tomorrow", "Snooze to tomorrow 9am", () =>
         snoozeReminderTo(reminder, presetDate("tomorrow"))
       )
     );
@@ -1372,7 +1413,7 @@ function updateDueReadout() {
   else if (minutes < 60 * 24) relative = `in about ${Math.round(minutes / 60)} h`;
   else {
     const days = Math.round(minutes / (60 * 24));
-    relative = `in ${days} day${days === 1 ? "" : "s"}`;
+    relative = `in ${nounCount(days, "day")}`;
   }
   setLabel(readout, `ph:alarm ${relative}: ${pretty}`);
   readout.classList.toggle("error", minutes < 0);
@@ -1430,98 +1471,6 @@ async function snoozeReminderTo(reminder, when) {
     settleUndoFromToast(action);
     await back();
   });
-}
-
-function reminderEditForm(reminder) {
-  const wrap = document.createElement("div");
-  wrap.className = "inline-action";
-  const textInput = document.createElement("input");
-  textInput.type = "text";
-  textInput.maxLength = 500;
-  textInput.value = reminder.text;
-  const dueInput = document.createElement("input");
-  dueInput.type = "datetime-local";
-  dueInput.value = toLocalInputValue(reminder.due_at);
-  const prioritySelect = buildSelect(
-    [
-      ["normal", "Normal"],
-      ["low", "Low priority"],
-      ["high", "High priority"],
-    ],
-    reminder.priority || "normal"
-  );
-  prioritySelect.title = "Priority";
-  const recurringSelect = buildSelect(
-    [
-      ["none", "Once"],
-      ["daily", "Daily"],
-      ["weekly", "Weekly"],
-      ["monthly", "Monthly"],
-      //: A rule the menu has no word for (every weekday) is kept, not
-      //: dropped to Once by a Save that only changed the text.
-      ...(["none", "daily", "weekly", "monthly"].includes(reminder.recurring || "none") ? [] : [[reminder.recurring, reminder.repeat_words || reminder.recurring]]),
-    ],
-    reminder.recurring || "none"
-  );
-  recurringSelect.title = "Repeat";
-  //: The early alert was only ever settable when a reminder was made (the
-  //: quick add reads "1 day before"); the edit form had no way to change or
-  //: clear it. 0 is the API's word for "no alert".
-  const alertPresets = [[0, "No alert"], [10, "10 minutes before"], [30, "30 minutes before"], [60, "1 hour before"], [1440, "1 day before"], [10080, "1 week before"]];
-  const alertNow = Number(reminder.alert_minutes) || 0;
-  if (!alertPresets.some(([minutes]) => minutes === alertNow)) alertPresets.push([alertNow, reminder.alert_words || `${alertNow} minutes before`]);
-  const alertSelect = buildSelect(alertPresets.map(([minutes, label]) => [String(minutes), label]), String(alertNow));
-  alertSelect.title = "Alert";
-  alertSelect.setAttribute("aria-label", "Alert");
-  const row = document.createElement("div");
-  row.className = "row";
-  row.appendChild(
-    smallButton("Save", "", async () => {
-      const text = textInput.value.trim();
-      if (!text || !dueInput.value) {
-        toast("A reminder needs text and a time.", "info");
-        return;
-      }
-      editingReminderId = null;
-      const before = { text: reminder.text, due_at: reminder.due_at, priority: reminder.priority || "normal", recurring: reminder.recurring || "none", alert_minutes: alertNow };
-      await reminderPutUndoably(reminder.id, "Edited a reminder", before, {
-        text,
-        due_at: new Date(dueInput.value).toISOString(),
-        priority: prioritySelect.value,
-        recurring: recurringSelect.value,
-        alert_minutes: Number(alertSelect.value),
-      });
-    }, false)
-  );
-  row.appendChild(
-    smallButton("Cancel", "", () => {
-      editingReminderId = null;
-      loadReminders();
-    })
-  );
-  const fields = document.createElement("div");
-  fields.className = "row";
-  fields.style.flexWrap = "wrap";
-  for (const field of [dueInput, prioritySelect, recurringSelect, alertSelect]) {
-    field.style.height = "var(--control-h)";
-    fields.append(field);
-  }
-  wrap.append(textInput, fields, row);
-  //: Enter saves and Escape cancels, from any field in the form: the two
-  //: keys every inline editor answers. Only the buttons did before.
-  wrap.addEventListener("keydown", (event) => {
-    if (event.isComposing) return;
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      row.querySelectorAll("button")[1]?.click();
-    } else if (event.key === "Enter" && event.target.tagName === "INPUT") {
-      event.preventDefault();
-      row.querySelector("button")?.click();
-    }
-  });
-  setTimeout(() => textInput.focus(), 0);
-  return wrap;
 }
 
 //: **Every reminder act undoes** (TIMELINE_PLAN 11 row 1): create, complete
@@ -1582,27 +1531,9 @@ async function addReminder(text, dueValue, entryId = null, opts = {}) {
 
 // Magic Add (`magicAddReminder`) is quickadd.js's, with the chips.
 
-// The Wave O reminder poller used to live here. **It was dead code with a
-// live timer**, and that combination is worse than either half.
-//
-// §36C rewrote `checkDueReminders` further down this file, badge, title
-// count, one-notification-per-reminder, announced ids in localStorage, and a
-// second `async function checkDueReminders` at the same scope simply replaces
-// the first. What did not get deleted was the `setInterval(...)` that sat
-// beside the old one, and since the name resolves to the surviving
-// definition, that stray timer was running the *new* poller on a second
-// 30-second interval. Two effects, both real:
-//
-// - twice the requests, for nothing;
-// - and a race on the announcement: both polls read `announcedReminders()`
-//   before either calls `rememberAnnounced`, so a reminder coming due could
-//   be announced twice: which is precisely the "notifications are noisy"
-//   shape of report this rewrite existed to fix.
-//
-// Found by opening the app in a real browser and reading the network log,
-// which also showed the other half: the surviving poller runs before the
-// unlock and 401s once per load. Its predecessor guarded on `authToken()`;
-// that guard moved with the deletion (see `checkDueReminders` below).
+// The old Wave O poller is gone: a stray setInterval beside the rewritten
+// checkDueReminders ran it twice (double requests, a race on the announced
+// ids). One poller now; it guards on authToken() (see checkDueReminders).
 
 // Default due time for new reminders: tomorrow morning, 9am.
 // The field starts at today's date and the current time, so the common case
@@ -1620,8 +1551,8 @@ function defaultDueValue() {
 //: "Add all to calendar (.ics)" in the Reminders dock's More menu: every open
 //: reminder in this space, one file. The menu closes first so the save
 //: dialog (or the desktop's saved-to toast) is not drawn under it.
-document.getElementById("reminders-export-ics")?.addEventListener("click", () => {
-  document.getElementById("reminders-more-menu")?.removeAttribute("open");
+$("reminders-export-ics")?.addEventListener("click", () => {
+  $("reminders-more-menu")?.removeAttribute("open");
   downloadFromApi("/reminders/export.ics", "tessellate-reminders.ics");
 });
 
@@ -1710,6 +1641,8 @@ function curtainShell(ready) {
       root.classList.remove("shell-curtain");
       hideBootSplash();
       liftLockScreen();
+      //: The faces and the companion come once the page is up and still (lazy-entries.js).
+      loadCharactersIdle();
     }));
   };
   //: And the dashboard's widgets, when it is the first tab (`dashSettled`).
@@ -1731,21 +1664,4 @@ function liftLockScreen() {
     if (overlay.dataset.mode !== "prompt" && prefs.get("token", null)) overlay.classList.add("hidden");
   };
   setTimeout(gone, reducedMotionWanted() ? 0 : 220);
-}
-
-// ---- from app.js (search-boot-1005): buildSelect ----
-// Moved whole. Every use is in this file, so it is not needed before this file loads.
-
-// A <select> from [value, label] pairs, with one option preselected.
-function buildSelect(options, selected) {
-  const select = document.createElement("select");
-  select.className = "small-select";
-  for (const [value, label] of options) {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = label;
-    if (value === selected) option.selected = true;
-    select.appendChild(option);
-  }
-  return select;
 }

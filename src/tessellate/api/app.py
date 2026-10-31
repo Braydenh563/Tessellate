@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import threading
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -77,6 +78,7 @@ from tessellate.api import (
     routes_graph,
     routes_help,
     routes_insights,
+    routes_diag,
     routes_lag,
     routes_library,
     routes_maintenance,
@@ -103,12 +105,16 @@ from tessellate.api import (
     routes_map_suggest,
     routes_map_from_notes,
 )
+from tessellate.ai.provider import ProviderError
 from tessellate.api.routes_auth import require_unlock
 from tessellate.api.this_computer import is_another_device
 from tessellate.core import (
+    afterunlock,
     backup,
     bgtasks,
+    deadline,
     deps,
+    diagring,
     diskspace,
     egress,
     events,
@@ -256,7 +262,7 @@ def asset_stamps() -> dict[str, str]:
 #: served. `clip.html` and `capture.html` joined (OPEN 1101): a plain
 #: `?v=<version>` let an edit inside one version be served stale from the
 #: immutable HTTP cache.
-STAMPED_PAGES = ("offline.html", "clip.html", "capture.html")
+STAMPED_PAGES = ("offline.html", "clip.html", "capture.html", "desktop-companion.html")
 
 
 def served_offline_html(name: str = "offline.html") -> bytes:
@@ -748,7 +754,7 @@ def _backup_if_due() -> None:
         # daily local backups, and without this line a backup that has been
         # failing for months looks exactly like one that has been working.
         logging.getLogger("tessellate.startup").warning(
-            "today's local backup didn't run: check Settings → Logs",
+            "today's local backup didn't run: check Settings, Logs",
             exc_info=True,
         )
 
@@ -968,6 +974,16 @@ def _register_error_handlers(app: FastAPI) -> None:
             content={"detail": detail, "code": "invalid", "hint": None, "fields": fields},
         )
 
+    @app.exception_handler(OverflowError)
+    async def _overflow_handler(_request, exc: OverflowError) -> JSONResponse:
+        """A number beyond what the store holds (an id or offset above 2^63)
+        names nothing: a refused request, not a server fault (audit 1030 A41)."""
+        error_logger.info("a number was too large: %s", exc)
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},
+        )
+
     @app.exception_handler(Exception)
     async def _unhandled_exception_handler(_request, exc: Exception) -> JSONResponse:
         if _is_out_of_space(exc):
@@ -988,17 +1004,29 @@ def _register_error_handlers(app: FastAPI) -> None:
                 },
                 headers={"Retry-After": "2"},
             )
+        if getattr(_request.state, "deadline_expired", False) and isinstance(exc, ProviderError):
+            # The route's deadline (core/deadline.py) cut the model call and
+            # the route had no notes-only fallback of its own.
+            return JSONResponse(
+                status_code=504,
+                content={
+                    "detail": "The model took too long to answer. Try again in a moment.",
+                    "code": "model_slow",
+                    "hint": None,
+                },
+            )
         # A fresh id per failure, logged next to the real traceback and
         # handed back to the user, "it broke" with no ref is unreportable;
         # this ref is the thing a bug report can actually be filed against.
         ref = uuid.uuid4().hex
         error_logger.exception("Unhandled exception (ref=%s)", ref, exc_info=exc)
+        diagring.note_exception(_request.url.path, exc, ref)
         return JSONResponse(
             status_code=500,
             content={
                 "detail": (
                     "Something went wrong inside Tessellate. Try again, and if it "
-                    "keeps happening, check Settings > Logs."
+                    "keeps happening, check Settings, Logs."
                 ),
                 "code": "internal",
                 "ref": ref,
@@ -1130,14 +1158,27 @@ class RequestPulse:
             await self.app(scope, receive, send)
             return
         embeddings.note_request()
+        started = time.perf_counter()
+        status = 0
+
+        async def timed_send(message) -> None:  # noqa: ANN001
+            nonlocal status
+            if message["type"] == "http.response.start":
+                status = message["status"]
+            await send(message)
+
         #: Which device this request is for (core/origin.py): carried into
         #: the jobs it queues, so a phone's save cannot start an install here.
         another = is_another_device(Request(scope))
         if not another and scope.get("method") in _ACTS and origin.has_deferred():
             origin.run_deferred(jobs.enqueue)
         #: The request's endpoint names a model call no run owns (INBOX 805).
-        with origin.acting_for(another), jobruns.for_request(scope):
-            await self.app(scope, receive, send)
+        try:
+            with origin.acting_for(another), jobruns.for_request(scope):
+                await self.app(scope, receive, timed_send)
+        finally:
+            #: A slow route is one line in the diagnostics report (core/diagring.py).
+            diagring.note_request(scope.get("method", ""), scope.get("path", ""), (time.perf_counter() - started) * 1000, status)
 
 
 def _start_services() -> Path:
@@ -1148,6 +1189,7 @@ def _start_services() -> Path:
     2026-10-05, ARCH-22: create_app was 354 lines)."""
     pin_static_mime_types()
     logbuffer.install()  # start capturing logs for the Settings viewer
+    diagring.install_query_hook()  # slow statements, for the diagnostics report
     # The privacy receipt's record (core/egress.py): before anything below
     # can open a socket, so a startup download or a warmup that phones home
     # is on the receipt too. Idempotent, and permanent by design.
@@ -1161,9 +1203,16 @@ def _start_services() -> Path:
     # A job record still saying "running" belongs to the process that just
     # ended; say so before anything new can be mistaken for it.
     jobruns.mark_interrupted()
+    #: **A launch with a password holds its heavy work until the first unlock**
+    #: (INBOX 1492: `/auth/unlock` 5072 ms, `/models/status` 3743 ms in the
+    #: owner's lag log): the search model's load, the speller, the day's
+    #: housekeeping and the queued jobs start after the unlock answer has
+    #: gone (core/afterunlock.py), never beside it.
+    if _has_password():
+        afterunlock.arm()
     # The durable jobs (core/jobstore.py): the readings and filings a closed
     # or killed process left queued or half done are queued again, once.
-    jobs.resume()
+    afterunlock.defer("resume-jobs", jobs.resume)
     ledger_path = deps.get_config().data_dir / egress.LEDGER_NAME
     # Keep the ledger current as connections happen, not only on a receipt
     # read and at a clean shutdown, so a killed process loses at most
@@ -1196,19 +1245,38 @@ def _start_services() -> Path:
         deps.get_config().get_preference("season_locale", ""),
     )
     if deps.get_config().get_preference("warm_search_model_at_launch", True):
-        embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
-        #: The speller's lists and the UK/US pairs (INBOX 895), about a
-        #: second built once on the job pool, so the first question does not
-        #: wait for them.
-        from tessellate.ai import spelling
-
-        spelling.warm_in_background()
+        afterunlock.defer("search-warmup", _warm_search_at_launch)
     # The filing model's warm-up and the retry of stand-ins are *not* started
     # here: `create_app` runs for every test app too, and a model call at
     # construction was an extra round on every fake model in the suite. The
     # page asks for both once it is unlocked (`POST /models/warm-filing`).
     startup_status.set_phase("Starting the server…")
     return ledger_path
+
+
+def _has_password() -> bool:
+    """Whether this notebook has a password to give (a lock screen to wait
+    for). An unreadable database answers no: the work then runs at launch."""
+    try:
+        from sqlalchemy import select
+
+        from tessellate.core.database import User
+
+        with deps.get_db().session() as session:
+            return session.scalar(select(User.id)) is not None
+    except Exception:  # noqa: BLE001  # nothing to wait for is the old behaviour
+        return False
+
+
+def _warm_search_at_launch() -> None:
+    """The search model's load (the session factory is handed in so
+    embeddings never has to import the dependency container) and the speller's
+    lists and the UK/US pairs (INBOX 895), about a second built once on the
+    job pool, so the first question does not wait for them."""
+    embeddings.start_warmup(deps.get_embeddings(), deps.get_db().session)
+    from tessellate.ai import spelling
+
+    spelling.warm_in_background()
 
 
 def _add_middleware(app: FastAPI) -> None:
@@ -1313,6 +1381,8 @@ def _include_routers(app: FastAPI, locked: list) -> None:
     app.include_router(routes_settings.router, dependencies=locked)
     app.include_router(routes_maintenance.router, dependencies=locked)
     app.include_router(routes_lag.router, dependencies=locked)
+    app.include_router(routes_diag.router, dependencies=locked)
+    routes_diag.BUILD["hash"] = lambda: asset_hash(FRONTEND_DIR / "js" / "app.js")
     # The browser's own crash reports, which have to reach the log *before*
     # unlock: that is when the failure they describe happens. One route, and
     # `routes_settings.open_router`'s own comment says why it is separate.
@@ -1569,7 +1639,7 @@ def create_app() -> FastAPI:
         # tests/test_flaw_class_lints.py): it is the app's housekeeping, a
         # quiet kind, after the server is up (ARCH-19).
         routes_models.prewarm_installed()
-        jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance")
+        afterunlock.defer("maintenance", lambda: jobs.enqueue("maintenance", _startup_maintenance, name="startup maintenance"))
         yield
         # Never raises: `stop_all` swallows per-job failures itself, and a
         # shutdown that fails to shut down is worse than one that leaves a
@@ -1592,6 +1662,8 @@ def create_app() -> FastAPI:
         # call that cannot be interrupted and the workers are daemons: see
         # `jobs.Pool.shutdown`.
         jobs.shutdown(deadline=_JOB_SHUTDOWN_SECONDS)
+        if deps._db is not None:
+            deps._db.optimize()
         # The receipt's ledger keeps what this launch saw; the writer thread
         # (`egress.configure`) flushes within a second of a connection and the
         # route on every read, so this is the last drain on a clean quit.
@@ -1619,7 +1691,7 @@ def create_app() -> FastAPI:
 
     # Everything that touches the user's data sits behind the unlock
     # gate; /auth itself and /health stay open.
-    locked = [Depends(require_unlock)]
+    locked = [Depends(require_unlock), Depends(deadline.guard)]
     _include_routers(app, locked)
     _add_system_routes(app, locked)
 

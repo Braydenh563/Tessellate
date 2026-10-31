@@ -43,6 +43,21 @@ function splitTableRow(line) {
   return cells;
 }
 
+//: Where a code fence or a pipe table that starts at line `i` ends (the line
+//: after it), else 0. A note card hands such a block to `renderMarkdown`
+//: whole, so it reads as it does in a document, Chat and the Read view; an
+//: unclosed fence runs to the end, as that renderer reads it.
+function mdBlockEnd(lines, i) {
+  let j = i + 1;
+  if (lines[i].trim().startsWith("```")) {
+    while (j < lines.length && !lines[j].trim().startsWith("```")) j++;
+    return j + 1;
+  }
+  if (!lines[i].includes("|") || j >= lines.length || !isTableSeparator(lines[j])) return 0;
+  while (++j < lines.length && lines[j].includes("|") && lines[j].trim());
+  return j;
+}
+
 // Column alignment from the separator row: ":--" left, "--:" right,
 // ":-:" centre, else none.
 function columnAlign(spec) {
@@ -582,7 +597,7 @@ function mdDocumentCard(doc, name = "") {
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
   const bits = ["Document"];
-  if (doc && Number.isFinite(doc.words)) bits.push(`${doc.words.toLocaleString()} words`);
+  if (doc && Number.isFinite(doc.words)) bits.push(nounCount(doc.words, "word"));
   if (doc && doc.updated_at) {
     const when = new Date(doc.updated_at);
     if (!Number.isNaN(when.getTime())) bits.push(`edited ${when.toLocaleDateString()}`);
@@ -895,7 +910,7 @@ function buildTableBlock(scroller, headers, bodyRows, rawTable) {
   bar.className = "code-bar";
   const label = document.createElement("span");
   label.className = "code-lang";
-  label.textContent = bodyRows.length ? `table · header and ${bodyRows.length} row${bodyRows.length === 1 ? "" : "s"}` : "table · header only";
+  label.textContent = bodyRows.length ? `table · header and ${nounCount(bodyRows.length, "row")}` : "table · header only";
   const cells = (row) => headers.map((_, c) => (row[c] || "").trim());
   const rows = [cells(headers), ...bodyRows.map(cells)];
   const tsv = rows.map((row) => row.map((v) => v.replace(/\t/g, " ")).join("\t")).join("\n");

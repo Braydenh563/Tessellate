@@ -321,11 +321,11 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         logger.exception("update download failed")
         _state.outcome = "failed"
         if not _state.error:
-            _state.error = "Download failed: see Settings → Logs for details."
+            _state.error = "Download failed: see Settings, Logs for details."
         _state.step = (
             "Couldn't download the update, this can happen if a firewall, "
             "proxy, or antivirus is blocking the download, or if you're "
-            "offline. Check your connection and try again from Settings → "
+            "offline. Check your connection and try again from Settings, "
             "About."
         )
         _state.running = False
@@ -370,7 +370,7 @@ def _run_apply(download_url: str, asset_name: str) -> None:
         _state.outcome = "failed"
         # Not str(exc): a WinError from Popen/the filesystem can carry a
         # real local path. See the download except block's own comment.
-        _state.error = "Couldn't start the installer, see Settings → Logs for details."
+        _state.error = "Couldn't start the installer, see Settings, Logs for details."
         _state.step = (
             "The downloaded update was blocked from running, this is "
             "usually antivirus or Windows SmartScreen quarantining a new "
@@ -381,8 +381,8 @@ def _run_apply(download_url: str, asset_name: str) -> None:
     except Exception:
         logger.exception("update apply failed")
         _state.outcome = "failed"
-        _state.error = "Update failed: see Settings → Logs for details."
-        _state.step = "Couldn't apply the update, see Settings → Logs for why."
+        _state.error = "Update failed: see Settings, Logs for details."
+        _state.step = "Couldn't apply the update, see Settings, Logs for why."
     finally:
         _state.running = False
 
@@ -391,16 +391,16 @@ def record_update_choice(config, check: bool) -> None:  # noqa: ANN001  # a Conf
     """The answer to "check for updates automatically?", asked once (the
     owner, 2026-10-05, WORLD_CLASS_PLAN 12 "Decisions made").
 
-    Yes turns the in-app check on everywhere. In a source checkout the
-    launcher's pull *is* its check, so yes turns that on too; the packaged
-    app keeps installing behind its own switch, because "tell me a version
-    exists" and "run an installer by itself" are different sizes of
-    consequence (core/config.py). No turns both off. Either way the question
-    is not asked again; Settings, About holds both switches.
+    Yes turns the in-app check on, which shows the update bar when a version
+    exists. It never turns on the launcher's pull on start (INBOX 1440:
+    nothing installs without a press), so "tell me" and "change my code by
+    itself" stay different sizes of consequence (core/config.py). No turns
+    both off. Either way the question is not asked again; Settings, About
+    holds the switches.
     """
     config.set_preference("update_check_enabled", bool(check))
-    if not check or not getattr(sys, "frozen", False):
-        config.set_preference("auto_update_enabled", bool(check))
+    if not check:
+        config.set_preference("auto_update_enabled", False)
     config.set_preference("update_choice_made", True)
 
 
@@ -722,16 +722,12 @@ def apply_update(tag: str | None = None) -> dict:
     if not config.get_preference("update_check_enabled", False):
         raise HTTPException(
             status_code=403,
-            detail="Turn on 'Check GitHub for a newer version' in Settings → "
+            detail="Turn on 'Check GitHub for a newer version' in Settings, "
             "About first: this needs to know a release actually exists.",
         )
-    if not config.get_preference("auto_update_enabled", False):
-        raise HTTPException(
-            status_code=403,
-            detail="Automatic updates are turned off in Settings → About. "
-            "Turn on 'Update automatically' first, or download the "
-            "installer from the release page instead.",
-        )
+    # No `auto_update_enabled` guard (INBOX 1440): this request is the press on
+    # the update bar's or Settings' Update button, the consent itself. That
+    # switch now only decides whether a launcher copy pulls code on start.
     if not _can_auto_apply():
         raise HTTPException(
             status_code=409,

@@ -45,7 +45,10 @@ console.log(JSON.stringify(out));
 
 def test_math_render_failures_show_the_source():
     assert "host.textContent = this.tex" in _js("documents.js")
-    assert "preview.textContent = body;\n  }\n}" in _js("math-editor.js")
+    #: The guided editor's own preview, which this once also pinned, went with the
+    #: in-place equation field (a9a01e5): MathLive draws the field itself and its
+    #: LaTeX toggle shows the source, so the document's widget is the one fallback left.
+    assert "LaTeX" in _js("math-field.js")
 
 
 def test_untouched_drop_is_limited_to_documents_made_this_session():

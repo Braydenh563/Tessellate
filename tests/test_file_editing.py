@@ -259,7 +259,7 @@ def test_no_syntax_pattern_nests_a_quantifier():
 
 
 def test_keywords_do_not_use_the_user_chosen_accent():
-    """Settings → Appearance writes any hex onto `--accent`, so a keyword
+    """Settings, Appearance writes any hex onto `--accent`, so a keyword
     painted with it can be set to a colour with no contrast against the code
     behind it. Found on a profile whose accent was #cdd5e0: keywords measured
     `rgb(205, 213, 224)` against near-white text. Strings, numbers and

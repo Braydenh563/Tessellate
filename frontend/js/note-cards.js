@@ -865,9 +865,9 @@ function mapCountLabel(board) {
   const sketches = Math.max(0, (board?.sketch_count || 0) - links);
   const objects = board?.object_count || 0;
   const parts = [];
-  if (nodes) parts.push(`${nodes} card${nodes === 1 ? "" : "s"}`);
-  if (links) parts.push(`${links} link${links === 1 ? "" : "s"}`);
-  if (sketches) parts.push(`${sketches} drawing${sketches === 1 ? "" : "s"}`);
+  if (nodes) parts.push(nounCount(nodes, "card"));
+  if (links) parts.push(nounCount(links, "link"));
+  if (sketches) parts.push(nounCount(sketches, "drawing"));
   if (objects) {
     //: **"items", not "images", on a board.** `object_count` is
     //: `count(WhiteboardObject)` with no filter on `kind`
@@ -877,8 +877,8 @@ function mapCountLabel(board) {
     //: widget and in the Library, which is the same class of wrong noun §5
     //: item 12 fixed for a map's nodes and missed here.
     parts.push(isMap
-      ? `${objects} topic${objects === 1 ? "" : "s"}`
-      : `${objects} item${objects === 1 ? "" : "s"}`);
+      ? nounCount(objects, "topic")
+      : nounCount(objects, "item"));
   }
   return parts.length ? parts.join(" · ") : isMap ? "Empty map" : "Empty board";
 }
@@ -1335,7 +1335,7 @@ function fitNoteMetas(metas) {
     }
     more.hidden = !fold.length;
     more.firstChild.textContent = `+${fold.length}`;
-    more.setAttribute("aria-label", `${fold.length} more tags`);
+    more.setAttribute("aria-label", nounCount(fold.length, "more tag", "more tags"));
     more.title = fold.map((el) => `#${el.dataset.tag}`).reverse().join(" ");
     meta.classList.remove("is-measuring");
   }
@@ -1428,6 +1428,10 @@ function entryItem(entry, options = {}) {
   // The phone's swipe underlays read their words from the row (`initRowSwipe`,
   // 10-responsive.css): what a swipe right and a swipe left will do to it.
   if (entry.pinned) li.classList.add("is-favourite-row");
+  if (CATEGORY_PALETTE[entry.colour]) {
+    li.dataset.colour = entry.colour;
+    li.style.setProperty("--swatch", CATEGORY_PALETTE[entry.colour]);
+  }
   if (!entry.is_board && !entry.is_draft && options.actions) {
     li.dataset.swipeRight = entry.pinned ? "Unfavourite" : "Favourite";
     li.dataset.swipeLeft = "Bin";
@@ -1607,9 +1611,11 @@ function entryItem(entry, options = {}) {
   const body = entry.title ? bodyWithoutTitleLine(entry.content) : stripFrontmatter(entry.content);
   const fillContent = () => renderNoteText(
     content,
-    //: Heading hashes are source, not words (dogfood item 18).
-    (content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body).replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•"),
-    searchHighlightTerms()
+    content.classList.contains("entry-clamped") ? body.replace(/\n[ \t\r]*(?:\n[ \t\r]*)+/g, "\n") : body,
+    searchHighlightTerms(),
+    //: Heading hashes are source, not words (dogfood item 18). Run on the
+    //: prose only, not the whole note: a code fence keeps its own `#` and `-`.
+    (prose) => prose.replace(/^#{1,6}[ \t]+/gm, "").replace(/^( *)-(?= \w)/gm, "$1•")
   );
   fillContent();
   content.addEventListener("remove-inline-image", async (e) => {
@@ -1868,22 +1874,25 @@ function entryItem(entry, options = {}) {
     //: Each suggestion says what in the note backs it (WORLD_CLASS 23,
     //: decision 5): "It mentions “exam”."
     const reason = entry.suggested_tag_reasons?.[tag];
-    take.title = reason ? `Suggested: add #${tag}. ${reason}` : `Suggested: add #${tag}`;
+    take.title = reason ? `Add tag ${tag}. ${reason}` : `Add tag ${tag}`;
     take.addEventListener("click", (event) => {
       event.stopPropagation();
       answerTags(entry, { take: [tag] });
     });
     makeUnlinkAccessible(take);
+    //: A short name: the reason belongs to the hover, not to a screen reader's every pass.
+    take.setAttribute("aria-label", `Add tag ${tag}`);
     group.appendChild(take);
     const discard = document.createElement("span");
     discard.className = "unlink";
     setLabel(discard, "ph:x");
-    discard.title = `Not #${tag}: stop suggesting it for this note`;
+    discard.title = `Dismiss: stop suggesting #${tag} for this note`;
     discard.addEventListener("click", (event) => {
       event.stopPropagation();
       answerTags(entry, { discard: [tag] });
     });
     makeUnlinkAccessible(discard);
+    discard.setAttribute("aria-label", `Dismiss tag ${tag}`);
     group.appendChild(discard);
     meta.appendChild(group);
   }
@@ -2038,11 +2047,17 @@ function entryItem(entry, options = {}) {
     const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
       ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
       : "";
+    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
+    //: "month of Nov 30" read as a date).
     const label = clock
       ? `${dayLabel}, ${clock}`
-      : when.precision === "day" || when.precision === "minute"
-        ? dayLabel
-        : `${when.precision} of ${dayLabel}`;
+      : when.precision === "month"
+        ? day.toLocaleDateString(undefined, { month: "short" })
+        : when.precision === "year"
+          ? String(day.getFullYear())
+          : when.precision === "week"
+            ? `week of ${dayLabel}`
+            : dayLabel;
     //: The date alone, the phrase on hover (owner, with a screenshot of
     //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
     //: the notes metadata and badges a bit more"). What a reader scans for is
@@ -2058,7 +2073,7 @@ function entryItem(entry, options = {}) {
     const shown = mentioned.slice(0, 3).map((m) => m.label).join(", ");
     const more = mentioned.length > 3 ? ` +${mentioned.length - 3}` : "";
     const mark = chip(`ph:calendar-blank Mentions ${shown}${more}`, "when");
-    mark.title = `${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
+    mark.title = `Dates this note mentions, not a reminder. ${mentioned.map((m) => m.title).join("; ")}. Worked out from the day this note was written.`;
     meta.appendChild(mark);
   }
 
@@ -2377,7 +2392,7 @@ function entryItem(entry, options = {}) {
         }
         items.push({ label: "ph:tag Kind and properties…", title: "What kind of link this is (Part of, Supports…) and its properties", run: () => openLinkTypeSheet(entry.id, link), group: "kind" });
         items.push({ label: "ph:link-break Remove the link", title: "Remove this link (undoable)", run: unlink, group: "remove" });
-        connection.appendChild(kebabMenu(items, `Actions for the link to ${label}`, { vertical: true }));
+        connection.appendChild(kebabMenu(items, `Actions for the link to ${label || "a note without a title"}`, { vertical: true }));
       }
       linkRow.appendChild(connection);
     }

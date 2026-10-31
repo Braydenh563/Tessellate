@@ -448,7 +448,10 @@ def test_the_companion_and_dashboard_fall_back_to_atlas_not_to_you() -> None:
     # has a face of its own now.
     buddy = APP[APP.index("function nameMarkBuddySeed(") :][:900]
     assert 'document.getElementById("persona-select")?.value || "Atlas"' in buddy
-    dash = APP[APP.index("function dashboardMarkSeed(") :][:700]
+    # dashboardMarkSeed moved to dashboard.js (S3): the dashboard asks it at
+    # boot, before avatars.js is in. The rule it holds is unchanged.
+    dashboard = (ROOT / "frontend" / "js" / "dashboard.js").read_text(encoding="utf-8")
+    dash = dashboard[dashboard.index("function dashboardMarkSeed(") :][:700]
     assert '|| "Atlas"' in dash
 
 

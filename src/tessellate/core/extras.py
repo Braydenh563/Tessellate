@@ -22,7 +22,7 @@ Three properties this deliberately has:
   interpreter is not importable by it in any way worth relying on, so every
   entry says so rather than pretending the feature is now on.
 - **It runs as a background job like everything else**, which means the status
-  bar and Settings → Background tasks show it without either of them learning
+  bar and Settings, Background tasks show it without either of them learning
   anything new: see `routes_tasks.py`.
 """
 
@@ -51,7 +51,7 @@ from tessellate.core.subproc import NO_WINDOW
 #: no log anywhere near it. Two separate bugs turned out to be behind that one
 #: screenshot:
 #:
-#: 1. "The log above" was true of exactly one screen, Settings → Extras,
+#: 1. "The log above" was true of exactly one screen, Settings, Extras,
 #:    which keeps `_state.log` on screen (`extras-log-wrap`) after the install
 #:    stops. The history card renders `taskhistory.record`'s `detail` string
 #:    alone, with no log ever attached to it, so the same sentence pointed at
@@ -60,10 +60,10 @@ from tessellate.core.subproc import NO_WINDOW
 #:    read: the same fix `search/searxng_manager._reason` already used for
 #:    its own installer, mirrored here rather than reinvented.
 #: 2. A first attempt at this routed pip's output through `logging` (see
-#:    `core/logbuffer.py`, which backs Settings → Logs), but only in
+#:    `core/logbuffer.py`, which backs Settings, Logs), but only in
 #:    `_run_uninstall`'s `finally` block. `_run_install`, the path the report
 #:    was actually about, never called `_logger` at all, so a failed install
-#:    still never reached Settings → Logs no matter what the panel said.
+#:    still never reached Settings, Logs no matter what the panel said.
 #:    Never caught because nobody had reproduced a real failure end-to-end
 #:    since the change: reproducing one (`tests/test_extras.py`) is what
 #:    found it. Both worker functions call `_logger` now.
@@ -149,7 +149,7 @@ def find_system_python() -> str | None:
     inside `_pip_base_command` alone.
 
     Two callers document why failing outright in frozen mode isn't
-    acceptable here: INSTALL.md promises Settings → Packages works with "no
+    acceptable here: INSTALL.md promises Settings, Packages works with "no
     terminal or Python install required" from the Windows installer, and
     Managed SearXNG's from-source install is offered from that same
     packaged build. So this looks for a real Python already on PATH first
@@ -395,7 +395,7 @@ EXTRAS: tuple[Extra, ...] = (
         module="pypdfium2",
         size="~16 MB",
         caveat="Reading the pages still needs a vision or OCR model, see "
-        "Settings → Models. This only supplies the images.",
+        "Settings, Models. This only supplies the images.",
     ),
     Extra(
         id="voice",
@@ -729,7 +729,7 @@ EXTRAS: tuple[Extra, ...] = (
         # than as a separate server you point the app at. See the Models
         # screen's provider picker for the llama-server recipe.
         unavailable="llama.cpp itself is already supported, run "
-        "llama-server and point Settings → Models at it as an "
+        "llama-server and point Settings, Models at it as an "
         "OpenAI-compatible backend, no install here needed. This extra is "
         "specifically for running a GGUF in-process instead of as a "
         "separate server, which isn't built: it means shipping a compiled "
@@ -1324,7 +1324,7 @@ def _run_uninstall(extra: Extra) -> None:
         # owner of the machine reads; the caller gets the fact, not the internals.
         _logger.exception("Couldn't run pip to remove %s", extra.label)
         _state.outcome = "failed"
-        _state.step = "Couldn't run pip: see Settings → Logs for why."
+        _state.step = "Couldn't run pip: see Settings, Logs for why."
     finally:
         #: Down with the process, as the installs do: a removal left it up, and
         #: every install after it was refused as "already running".
@@ -1532,7 +1532,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         # a generic fact to `_state.step`, which is what `/extras` returns.
         _logger.exception("Couldn't run pip to install %s", extra.label)
         _state.outcome = "failed"
-        _state.step = "Couldn't run pip: see Settings → Logs for why."
+        _state.step = "Couldn't run pip: see Settings, Logs for why."
     finally:
         _state.running = False
         _state.process = None
@@ -1548,7 +1548,7 @@ def _run_install(extra: Extra, reinstall: bool = False) -> None:
         shutil.rmtree(pip_tmp, ignore_errors=True)
         # See the module docstring's numbered note above `_logger`: this call
         # was missing entirely until now, which is the actual reason a failed
-        # *install* never reached Settings → Logs, `_run_uninstall` had it,
+        # *install* never reached Settings, Logs, `_run_uninstall` had it,
         # this function did not.
         if _state.outcome == "failed":
             _logger.error(
@@ -1594,7 +1594,7 @@ def _run_download_install(extra: Extra, reinstall: bool = False) -> None:
         # workers above already follow).
         _logger.exception("Couldn't download %s", extra.label)
         _state.outcome = "failed"
-        _state.step = "Couldn't download it: check the connection, or see Settings → Logs for why."
+        _state.step = "Couldn't download it: check the connection, or see Settings, Logs for why."
     finally:
         if _state.cancelled:
             _state.outcome = "cancelled"
@@ -1625,7 +1625,7 @@ def _run_download_uninstall(extra: Extra) -> None:
     except OSError:
         _logger.exception("Couldn't remove %s", extra.label)
         _state.outcome = "failed"
-        _state.step = "Couldn't remove it: see Settings → Logs for why."
+        _state.step = "Couldn't remove it: see Settings, Logs for why."
     finally:
         _state.running = False
 
@@ -1853,7 +1853,7 @@ def _run_bulk() -> None:
                 )
                 _logger.exception("Couldn't %s one package in a bulk batch", verb)
                 item["outcome"] = "failed"
-                item["message"] = "Couldn't finish it: see Settings → Logs for why."
+                item["message"] = "Couldn't finish it: see Settings, Logs for why."
             finally:
                 _state.running = False
                 _state.process = None

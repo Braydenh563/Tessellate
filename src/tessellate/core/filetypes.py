@@ -51,6 +51,14 @@ class FileType:
     #: markdown renders; showing a Preview button that produces a wall of
     #: escaped source for a .py file is a control that lies about what it does.
     previewable: bool = False
+    #: Which heading the picker lists it under (INBOX 1482): the table is
+    #: ordered so each group is one run, and the picker draws a heading
+    #: wherever this changes. "Documents" is what you write in, "Data" is
+    #: structured text, "Code" is everything with a language mode.
+    group: str = "Code"
+    #: A Phosphor glyph name, drawn at the row's start. The bundled font has
+    #: a file glyph for the common languages; the rest share `file-code`.
+    icon: str = "file-code"
 
 
 #: Ordered as it is offered in the picker: the notebook's own formats first,
@@ -58,42 +66,42 @@ class FileType:
 #: programmatically: "the ones you will actually pick" is not alphabetical,
 #: and a picker whose first entry is ".c" for a note-taking app is wrong.
 FILE_TYPES: tuple[FileType, ...] = (
-    FileType("md", "Markdown", line_comment="", block_comment=("<!-- ", " -->"), previewable=True),
-    FileType("txt", "Plain text"),
-    FileType("csv", "CSV", line_comment="#"),
-    FileType("json", "JSON", line_comment="//"),
-    FileType("yaml", "YAML", line_comment="#"),
-    FileType("toml", "TOML", line_comment="#"),
-    FileType("ini", "INI", line_comment=";"),
-    FileType("bash", "Bash", line_comment="#"),
-    FileType("c", "C", line_comment="//", block_comment=("/* ", " */"), indent="    "),
-    FileType("cpp", "C++", line_comment="//", block_comment=("/* ", " */"), indent="    "),
-    FileType("cs", "C#", line_comment="//", block_comment=("/* ", " */"), indent="    "),
-    FileType("css", "CSS", line_comment="", block_comment=("/* ", " */")),
+    FileType("md", "Markdown", line_comment="", block_comment=("<!-- ", " -->"), previewable=True, group="Documents", icon="file-md"),
+    FileType("txt", "Plain text", group="Documents", icon="file-txt"),
+    FileType("csv", "CSV", line_comment="#", group="Data", icon="file-csv"),
+    FileType("json", "JSON", line_comment="//", group="Data", icon="brackets-curly"),
+    FileType("yaml", "YAML", line_comment="#", group="Data", icon="list-bullets"),
+    FileType("toml", "TOML", line_comment="#", group="Data", icon="sliders-horizontal"),
+    FileType("ini", "INI", line_comment=";", group="Data", icon="file-ini"),
+    FileType("xml", "XML", line_comment="", block_comment=("<!-- ", " -->"), group="Data", icon="brackets-angle"),
+    FileType("bash", "Bash", line_comment="#", icon="terminal-window"),
+    FileType("c", "C", line_comment="//", block_comment=("/* ", " */"), indent="    ", icon="file-c"),
+    FileType("cpp", "C++", line_comment="//", block_comment=("/* ", " */"), indent="    ", icon="file-cpp"),
+    FileType("cs", "C#", line_comment="//", block_comment=("/* ", " */"), indent="    ", icon="file-c-sharp"),
+    FileType("css", "CSS", line_comment="", block_comment=("/* ", " */"), icon="file-css"),
     #: A patch has no comment syntax: a line starting `#` is context to `git
     #: apply`, so Ctrl+/ inserts nothing rather than corrupting the hunk.
-    FileType("diff", "Diff"),
+    FileType("diff", "Diff", icon="git-diff"),
     #: No extension at all: `normalise("Dockerfile")` lowercases the whole
     #: name, which is this key.
-    FileType("dockerfile", "Dockerfile", line_comment="#"),
+    FileType("dockerfile", "Dockerfile", line_comment="#", icon="package"),
     FileType("go", "Go", line_comment="//", indent="\t"),
-    FileType("html", "HTML", line_comment="", block_comment=("<!-- ", " -->")),
-    FileType("java", "Java", line_comment="//", indent="    "),
-    FileType("js", "JavaScript", line_comment="//", block_comment=("/* ", " */")),
+    FileType("html", "HTML", line_comment="", block_comment=("<!-- ", " -->"), icon="file-html"),
+    FileType("java", "Java", line_comment="//", indent="    ", icon="coffee"),
+    FileType("js", "JavaScript", line_comment="//", block_comment=("/* ", " */"), icon="file-js"),
     FileType("kt", "Kotlin", line_comment="//", indent="    "),
     FileType("php", "PHP", line_comment="//", indent="    "),
-    FileType("py", "Python", line_comment="#", indent="    "),
+    FileType("py", "Python", line_comment="#", indent="    ", icon="file-py"),
     FileType("r", "R", line_comment="#"),
-    FileType("rb", "Ruby", line_comment="#"),
-    FileType("rs", "Rust", line_comment="//", indent="    "),
-    FileType("sql", "SQL", line_comment="--", block_comment=("/* ", " */"), indent="    "),
+    FileType("rb", "Ruby", line_comment="#", icon="diamond"),
+    FileType("rs", "Rust", line_comment="//", indent="    ", icon="file-rs"),
+    FileType("sql", "SQL", line_comment="--", block_comment=("/* ", " */"), indent="    ", icon="file-sql"),
     #: Brief 69 (D6): an SVG previews in the run panel; it edits as XML.
-    FileType("svg", "SVG", line_comment="", block_comment=("<!-- ", " -->")),
+    FileType("svg", "SVG", line_comment="", block_comment=("<!-- ", " -->"), icon="file-svg"),
     FileType("swift", "Swift", line_comment="//", indent="    "),
-    FileType("ts", "TypeScript", line_comment="//", block_comment=("/* ", " */")),
+    FileType("ts", "TypeScript", line_comment="//", block_comment=("/* ", " */"), icon="file-ts"),
     FileType("vbs", "VBScript", line_comment="'", indent="    "),
     FileType("vb", "Visual Basic", line_comment="'", indent="    "),
-    FileType("xml", "XML", line_comment="", block_comment=("<!-- ", " -->")),
 )
 
 _BY_EXT = {ft.ext: ft for ft in FILE_TYPES}
@@ -159,6 +167,8 @@ def as_dicts() -> list[dict]:
             "block_comment": list(ft.block_comment) if ft.block_comment else None,
             "indent": ft.indent,
             "previewable": ft.previewable,
+            "group": ft.group,
+            "icon": ft.icon,
         }
         for ft in FILE_TYPES
     ]

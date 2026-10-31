@@ -128,8 +128,8 @@ const ALPHA_DECAY = 0.0228;
 //:   moved it (an init, a drag released, a reheat), the loop stops and says
 //:   `end`, as if it had cooled. Nothing is lost: a drag or a reheat starts it
 //:   again from where it stands.
-const SETTLE_FULL_TICKS_UP_TO = 1500;
-const SETTLE_TICKS_BIG = 120;
+const SETTLE_FULL_TICKS_UP_TO = 750;
+const SETTLE_TICKS_BIG = 100;
 const SETTLE_BUDGET_MS = 20000;
 let settleFrom = 0;
 
@@ -1125,8 +1125,20 @@ const HOME_PULL = 1.5;
 const CLEAR_GAP = 4;
 const CLEAR_STRENGTH = 0.6;
 const CLEAR_CELL = 40;
+//: The grid is a dense array over the notes' extent; past this many cells
+//: (a note flung far out) the cell doubles instead.
+const CLEAR_GRID_MAX = 1 << 18;
 const clearPts = new Float64Array(10);
-const clear = { curved: true, stamp: 0 };
+const clear = {
+  curved: true,
+  stamp: 0,
+  start: new Int32Array(1),
+  items: new Int32Array(0),
+  sx: new Float64Array(0),
+  sy: new Float64Array(0),
+  sneed: new Float64Array(0),
+  mark: new Int32Array(0),
+};
 
 function clearCurve(a, b) {
   // Drawn straight in every shape but Organic, whose long curves are its
@@ -1213,37 +1225,126 @@ function clearanceForce() {
   let widest = 0;
   for (const node of nodes) widest = Math.max(widest, node.r || 8);
   const reach = widest + CLEAR_GAP;
-  const grid = new Map();
+  //: **The notes by cell in two typed arrays, not a Map of lists** (audit
+  //: 1029 row 35): a long line's corridor reads hundreds of cells, nearly
+  //: all empty, and a Map lookup on a number key was most of this force's
+  //: time (2,000 notes, 3,800 links spread over the world: 195 ms a call).
+  //: Counting sort over the notes' extent; reads outside it are skipped.
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
   for (const node of nodes) {
-    const key = Math.floor(node.x / CLEAR_CELL) * 100003 + Math.floor(node.y / CLEAR_CELL);
-    const list = grid.get(key);
-    if (list) list.push(node);
-    else grid.set(key, [node]);
+    if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) continue;
+    if (node.x < minX) minX = node.x;
+    if (node.x > maxX) maxX = node.x;
+    if (node.y < minY) minY = node.y;
+    if (node.y > maxY) maxY = node.y;
+  }
+  if (minX > maxX) return;
+  let cell = CLEAR_CELL;
+  let cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+  let rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  while (cols * rows > CLEAR_GRID_MAX) {
+    cell *= 2;
+    cols = Math.floor(maxX / cell) - Math.floor(minX / cell) + 1;
+    rows = Math.floor(maxY / cell) - Math.floor(minY / cell) + 1;
+  }
+  const gx0 = Math.floor(minX / cell);
+  const gy0 = Math.floor(minY / cell);
+  const cells = cols * rows;
+  if (clear.start.length < cells + 1) clear.start = new Int32Array(cells + 1);
+  if (clear.items.length < nodes.length) clear.items = new Int32Array(nodes.length);
+  const start = clear.start;
+  const items = clear.items;
+  start.fill(0, 0, cells + 1);
+  const cellOf = (node) =>
+    Number.isFinite(node.x) && Number.isFinite(node.y)
+      ? (Math.floor(node.x / cell) - gx0) * rows + Math.floor(node.y / cell) - gy0
+      : -1;
+  for (const node of nodes) {
+    const at = cellOf(node);
+    if (at >= 0) start[at + 1] += 1;
+  }
+  for (let i = 1; i <= cells; i++) start[i] += start[i - 1];
+  //: Filled in the notes' order, as the lists were, so pushes sum the same.
+  //: The cell-sorted coordinates are kept beside the indices (`sx`, `sy`,
+  //: `sneed`), so the scan reads three flat arrays and touches a note's
+  //: object only when the note is within reach of the chord.
+  const count = nodes.length;
+  if (clear.sx.length < count) {
+    clear.sx = new Float64Array(count);
+    clear.sy = new Float64Array(count);
+    clear.sneed = new Float64Array(count);
+    clear.mark = new Int32Array(count);
+  }
+  const { sx, sy, sneed, mark } = clear;
+  const fill = start.slice(0, cells);
+  for (let index = 0; index < count; index++) {
+    const node = nodes[index];
+    const at = cellOf(node);
+    if (at < 0) continue;
+    const slot = fill[at]++;
+    items[slot] = index;
+    sx[slot] = node.x;
+    sy[slot] = node.y;
+    sneed[slot] = (node.r || 8) + CLEAR_GAP;
+  }
+  //: A mark per note says it was already asked for this line; stamps only
+  //: grow, so the marks are cleared once, when the stamp first outgrows them.
+  if (clear.stamp > 2000000000) {
+    mark.fill(0);
+    clear.stamp = 0;
   }
   for (const link of links) {
     const a = link.source;
     const b = link.target;
-    const count = clearCurve(a, b);
-    clear.stamp += 1;
+    const points = clearCurve(a, b);
+    const stamp = ++clear.stamp;
+    const ai = a.index;
+    const bi = b.index;
     //: Chord by chord, not the whole line's box: a note within `reach` of the
     //: line is within it of a chord, so the cells round each chord hold every
     //: note the box did. A long diagonal line's box is mostly empty air (the
     //: 300-note seed: this force was 64% of a tick, 7 of 11 ms).
-    for (let c = 1; c < count; c++) {
+    //: And only the chord's corridor, not its box (audit 1029 row 35): each
+    //: column of cells takes the rows the chord crosses within it, padded by
+    //: the reach. A long diagonal's box at 2,000 notes asked 290,000 notes a
+    //: tick, 81% of the worker's time.
+    for (let c = 1; c < points; c++) {
       const ax = clearPts[c * 2 - 2];
       const ay = clearPts[c * 2 - 1];
-      const bx = clearPts[c * 2];
-      const by = clearPts[c * 2 + 1];
-      const x1 = Math.floor((Math.max(ax, bx) + reach) / CLEAR_CELL);
-      const y1 = Math.floor((Math.max(ay, by) + reach) / CLEAR_CELL);
-      for (let gx = Math.floor((Math.min(ax, bx) - reach) / CLEAR_CELL); gx <= x1; gx++) {
-        for (let gy = Math.floor((Math.min(ay, by) - reach) / CLEAR_CELL); gy <= y1; gy++) {
-          const list = grid.get(gx * 100003 + gy);
-          if (!list) continue;
-          for (const node of list) {
-            if (node === a || node === b || node._clear === clear.stamp) continue;
-            node._clear = clear.stamp;
-            clearNearest(node, count);
+      const dx = clearPts[c * 2] - ax;
+      const dy = clearPts[c * 2 + 1] - ay;
+      const l2 = dx * dx + dy * dy || 1;
+      const lo = Math.min(ax, ax + dx);
+      const hi = Math.max(ax, ax + dx);
+      const x1 = Math.min(Math.floor((hi + reach) / cell), gx0 + cols - 1);
+      for (let gx = Math.max(Math.floor((lo - reach) / cell), gx0); gx <= x1; gx++) {
+        const u0 = dx ? (Math.max(lo, gx * cell - reach) - ax) / dx : 0;
+        const u1 = dx ? (Math.min(hi, (gx + 1) * cell + reach) - ax) / dx : 1;
+        const ya = ay + dy * u0;
+        const yb = ay + dy * u1;
+        const y1 = Math.min(Math.floor((Math.max(ya, yb) + reach + 1) / cell), gy0 + rows - 1);
+        const column = (gx - gx0) * rows - gy0;
+        for (let gy = Math.max(Math.floor((Math.min(ya, yb) - reach - 1) / cell), gy0); gy <= y1; gy++) {
+          const end = start[column + gy + 1];
+          for (let k = start[column + gy]; k < end; k++) {
+            const at = items[k];
+            if (at === ai || at === bi || mark[at] === stamp) continue;
+            // Clear of this chord: no push from it, and a chord it is near
+            // finds it in its own corridor.
+            const px = sx[k] - ax;
+            const py = sy[k] - ay;
+            let u = (px * dx + py * dy) / l2;
+            u = u < 0 ? 0 : u > 1 ? 1 : u;
+            const ex = px - u * dx;
+            const ey = py - u * dy;
+            const need = sneed[k];
+            if (ex * ex + ey * ey >= need * need) continue;
+            mark[at] = stamp;
+            const node = nodes[at];
+            clearNearest(node, points);
             clearPush(node, a, b);
           }
         }
@@ -1625,8 +1726,11 @@ function untangleSetup(edges) {
   untangle.cleaned = false;
   untangle.holding = false;
   untangle.mark = null;
-  if (edges.length > UNTANGLE_MAX_EDGES) return;
-  for (const edge of edges) {
+  //: Past the edge cap the stage is skipped, but its buffers are still built (empty),
+  //: sized for this run: a dependent (`untangleCleanup`, `lineGridBuild`) reached on a
+  //: skipped stage then sees no lines instead of null or the last run's arrays (the
+  //: 2,000-note crash, audit G1). Every typed array here is allocated for the current sizes.
+  for (const edge of edges.length > UNTANGLE_MAX_EDGES ? [] : edges) {
     const a = indexById.get(edge.source);
     const b = indexById.get(edge.target);
     if (a === b) continue;
@@ -1697,7 +1801,10 @@ function crossingsOn(mine) {
 //: A whole category turns or mirrors about its middle when that lowers the
 //: crossings on its lines: its links out then face the categories they join.
 const UNTANGLE_TURN_STEPS = 8;
-function untangleGroups(still) {
+//: Within the pass's budget (`until`, audit 1029 row 35): each turn counts the
+//: crossings on all of a category's lines, and at 2,000 notes the 10 x 16
+//: turns took 7.2 s in one call against a budget of 0.6 s.
+function untangleGroups(still, until = Infinity) {
   const groups = new Map();
   nodes.forEach((node, i) => {
     if (still(node)) return;
@@ -1706,6 +1813,7 @@ function untangleGroups(still) {
   });
   let gained = 0;
   for (const members of groups.values()) {
+    if (Date.now() >= until) break;
     if (members.length < 2) continue;
     const lines = [...new Set(members.flatMap((i) => untangle.incident[i]))];
     if (!lines.length) continue;
@@ -1717,7 +1825,7 @@ function untangleGroups(still) {
     let best = before;
     let bestAt = null;
     for (let mirror = 0; mirror < 2; mirror++) {
-      for (let step = 0; step < UNTANGLE_TURN_STEPS; step++) {
+      for (let step = 0; step < UNTANGLE_TURN_STEPS && Date.now() < until; step++) {
         if (!mirror && !step) continue;
         const angle = (2 * Math.PI * step) / UNTANGLE_TURN_STEPS;
         const cos = Math.cos(angle);
@@ -2487,7 +2595,7 @@ function untangleLayout() {
   untangle.total = crossingsOn(untangle.edges.map((_, i) => i));
   untangle.gain = 0;
   for (let round = 0; round < UNTANGLE_ROUNDS && Date.now() < until; round++) {
-    let gained = untangleGroups(still);
+    let gained = untangleGroups(still, until);
     for (let i = 0; i < nodes.length && Date.now() < until; i++) {
       const node = nodes[i];
       const mine = untangle.incident[i];
@@ -2648,7 +2756,8 @@ function settleUntangled(until, deadline, cap) {
   if (untangle.passes > 0 && !untangle.cleaned) {
     if (late()) return "late";
     untangle.cleaned = true;
-    if (untangleCleanup()) landTargets();
+    // No links past the cap (G1): nothing to clear, but marked cleaned so it is not owed again.
+    if (untangle.edges.length && untangleCleanup()) landTargets();
   }
   for (const node of nodes) {
     node.vx = 0;
@@ -2961,14 +3070,24 @@ function loop() {
   // is actually watching is the one following their pointer, and a
   // neighbourhood that reorganises at 10 Hz under a pointer that tracks at
   // 60 Hz looks right; the reverse does not.
-  const share = dragging ? 2 : 1;
+  timer = setTimeout(loop, loopYield(cost));
+}
+
+//: **Audit 1029 row 35: the duty cycle only where it is needed.** The half
+//: core above was measured when the canvas drew every frame between ticks; it
+//: now draws a costly map once a tick (`gcTickSnaps`, graph-canvas.js), and
+//: 2,000 notes at half a core took 28.7 s to come to rest. So a costly tick
+//: is followed by a short turn (`LOOP_YIELD_MS`, long enough to hear a drag),
+//: except during a drag and in performance mode, which settings.js turns on
+//: by itself at two cores or fewer: those keep the duty cycle.
+const LOOP_YIELD_MS = 8;
+function loopYield(cost) {
   // Performance mode: the yield doubles, so the simulation takes at most a
   // quarter of a core and a small laptop keeps its frames for the paint.
   const rest = perf ? 2 : 1;
-  timer = setTimeout(
-    loop,
-    (cost >= 12 ? Math.min(120, cost * share) : Math.max(4, 16 - cost)) * rest
-  );
+  if (cost < 12) return Math.max(4, 16 - cost) * rest;
+  if (!dragging && !perf) return LOOP_YIELD_MS;
+  return Math.min(120, cost * (dragging ? 2 : 1)) * rest;
 }
 
 //: Every message that moves the layout comes through here, so this is where
@@ -3178,6 +3297,20 @@ self.onmessage = (event) => {
       settleGlide.left = 0;
       pending.on = false;
       untangle.holding = false;
+      //: **A layout restored at rest stays there** (audit G6; GRAPH_PLAN, the
+      //: map opens settled). Alpha 0 with every note placed is a saved or held
+      //: map that was untangled before it was kept: owing the passes again ran
+      //: them and their relax over it, every note moved (500 notes: RMS 99 px).
+      //: Nothing is stepped (the collision ignores alpha); it is posted as it
+      //: came and is at rest. Any later message that heats it runs as before.
+      if (message.alpha === 0 && nodes.every((n) => n.x !== undefined)) {
+        untangle.done = true;
+        untangle.passes = UNTANGLE_PASSES;
+        untangle.cleaned = true;
+        post(true);
+        self.postMessage({ type: "end", alpha: 0, epoch });
+        break;
+      }
       if (message.warm) pendingStart(true, message.intro === true, message.bloom === true);
       run();
       break;

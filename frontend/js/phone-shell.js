@@ -254,7 +254,7 @@ function renderBrandLogo() {
     return;
   }
   for (const [id, size, animate] of EMBLEM_SLOTS) {
-    const holder = document.getElementById(id);
+    const holder = $(id);
     if (holder) renderEmblemWhenShown(holder, size, animate);
   }
   //: The assistant heads that wear the emblem take the new colour or motion.
@@ -391,34 +391,44 @@ for (const button of document.querySelectorAll("#tab-bar button")) {
 //: the switch left it on the button: a tab that focuses its own field on
 //: arrival (Chat's composer) keeps that. From the keyboard (`detail` 0) the
 //: focus stays in the strip, where its arrows are expected.
+//: Found two frames on (INBOX 1446): `switchTab` reveals after an await.
 function focusTabPage(button) {
-  if (document.activeElement !== button) return;
-  const target = tabPageScroller(button.dataset.tab);
-  if (!target) return;
-  if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
-  target.focus({ preventScroll: true });
+  afterFrames(() => {
+    if (document.activeElement !== button) return;
+    const target = tabPageScroller(button.dataset.tab);
+    if (!target) return;
+    if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  });
 }
 
 //: The region that scrolls a tab's page: the page itself, or the biggest
 //: scrolling region inside it (Notes and the Library scroll a list).
 function tabPageScroller(tab) {
-  const page = document.getElementById(`tab-${tab}`);
+  const page = $(`tab-${tab}`);
   if (!page || !page.getClientRects().length) return null;
-  const scrolls = (el) => /(auto|scroll)/.test(getComputedStyle(el).overflowY) &&
-    el.scrollHeight > el.clientHeight + 1;
+  //: The size test first: a hidden or short box fails it without a style lookup.
+  const scrolls = (el) => el.scrollHeight > el.clientHeight + 1 &&
+    /(auto|scroll)/.test(getComputedStyle(el).overflowY);
   let target = scrolls(page) ? page : null;
   if (!target) {
     //: The page's biggest scrolling region: a tab whose own box does not
-    //: scroll (Notes, the Library) scrolls a list inside it.
+    //: scroll (Notes, the Library) scrolls a list inside it. Every one is
+    //: within three levels (`.layout > .tab-main`, a Library section, the
+    //: Timeline's feed), so the walk stops there: it read `scrollHeight` of
+    //: every element on the page (Library 6,122, 14 to 140ms at 4x).
     let best = 0;
-    for (const el of page.querySelectorAll("*")) {
-      if (!el.getClientRects().length || !scrolls(el)) continue;
-      const area = el.clientWidth * el.clientHeight;
-      if (area > best) {
-        best = area;
-        target = el;
+    const walk = (parent, depth) => {
+      for (const el of parent.children) {
+        const area = scrolls(el) ? el.clientWidth * el.clientHeight : 0;
+        if (area > best) {
+          best = area;
+          target = el;
+        }
+        if (depth < 4) walk(el, depth + 1);
       }
-    }
+    };
+    walk(page, 1);
   }
   return target || page;
 }
@@ -487,12 +497,16 @@ document.addEventListener("keydown", (e) => {
 //: Tab's starting point stays where a removed splash or lock screen sat, so
 //: the first Tab skipped "Skip to content" (INBOX 1326): focusing the body
 //: puts it back at the top, unless something real already has focus.
+//: After the frame, checked then (a field focused meanwhile keeps it): focus() here forced the layout, 38 to 47ms.
 function tabFromTop() {
-  const b = document.body, a = document.activeElement;
-  if (a && a !== b && !$("lock-overlay").contains(a)) return;
-  b.tabIndex = -1;
-  b.focus({ preventScroll: true });
-  b.removeAttribute("tabindex");
+  afterFrames(() => setTimeout(() => {
+    const b = document.body, a = document.activeElement;
+    //: A focus inside an open lock screen stays (sweep 1028b W9).
+    if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
+    b.tabIndex = -1;
+    b.focus({ preventScroll: true });
+    b.removeAttribute("tabindex");
+  }), 1);
 }
 
 new MutationObserver((_, seen) => {
@@ -542,7 +556,7 @@ initResizableSidebars();
 // own CSP refuses. No feedback loop: the bar's height comes from its content,
 // and nothing in it is sized from this token.
 function initHeaderHeightToken() {
-  const bar = document.getElementById("top-bar");
+  const bar = $("top-bar");
   if (!bar || typeof ResizeObserver === "undefined") return;
   const write = () => {
     const h = Math.round(bar.getBoundingClientRect().height);
@@ -565,19 +579,24 @@ initHeaderHeightToken();
 //: with Large text and density, so it is measured into a token on `#tab-notes`
 //: (only this tab has the strip), the shape of `initHeaderHeightToken`.
 function initNotesSubtabHeightToken() {
-  const strip = document.getElementById("notes-subtabs");
-  const page = document.getElementById("tab-notes");
+  const strip = $("notes-subtabs");
+  const page = $("tab-notes");
   if (!strip || !page || typeof ResizeObserver === "undefined") return;
   const write = () => {
     const box = strip.getBoundingClientRect().height;
     //: The strip's own bottom margin counts: it is the gap the strip keeps
     //: below itself, and a bar that stopped at the strip's edge would touch it.
-    const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
-    const h = Math.round(box + gap);
     //: Zero while the tab is hidden (the strip has no box at all then) would
     //: put the bar back under the strip the moment Notes was opened. Leave the
-    //: stylesheet's value standing until there is a real one.
-    if (h > 0) page.style.setProperty("--notes-sticky-top", `${h}px`);
+    //: last real value standing. The test is the box, not the sum with the
+    //: margin: a hidden strip still reads its 10px margin, so the sum wrote
+    //: `10px` on every hide and `46px` on every show, and a custom property
+    //: changed on the page restyles the whole page (1,794 elements, 100 to
+    //: 230ms at 4x on the Notes tab).
+    if (!(box > 0)) return;
+    const gap = parseFloat(getComputedStyle(strip).marginBottom) || 0;
+    const h = `${Math.round(box + gap)}px`;
+    if (page.style.getPropertyValue("--notes-sticky-top") !== h) page.style.setProperty("--notes-sticky-top", h);
   };
   //: No first call of its own: an observer reports a new target at once, and
   //: there the layout is clean (a direct read forced the page's first layout).
@@ -610,15 +629,15 @@ initNotesSubtabHeightToken();
 const PHONE_TABS = "(max-width: 599.98px)";
 
 function dockTabBar(toBottom) {
-  const bar = document.getElementById("tab-bar");
-  const header = document.getElementById("top-bar");
+  const bar = $("tab-bar");
+  const header = $("top-bar");
   if (!bar || !header) return;
   // The strip's host on a phone is `#phone-tab-dock`, not the body itself:
   // the bar has a fifth column that is not a tab (More), and `#tab-bar` is a
   // `role="tablist"` that may not hold one. The box is the bar; the strip is
   // its first child. Falling back to the body keeps this working against a
   // page that predates the box rather than leaving the strip in the header.
-  const dock = document.getElementById("phone-tab-dock") || document.body;
+  const dock = $("phone-tab-dock") || document.body;
   if (toBottom) {
     if (bar.parentElement === dock) return;
     // Where to put it back. The header's children are fixed markup, so the
@@ -678,6 +697,7 @@ const PHONE_STATUS_ROWS = [
   { id: "status-find", label: "ph:magnifying-glass Find" },
   //: INBOX 896: the bar's button opens a sheet itself when it has no box.
   { id: "status-lan", label: "ph:wifi-high Other devices" },
+  { id: "status-tray", label: "ph:tray Tray" },
   //: `live`: the row's words are the control's own as the menu opens (the
   //: Local chip's verdict, row 1641).
   { id: "privacy-chip", label: "ph:shield-check Privacy record", live: true },
@@ -746,6 +766,20 @@ function initPhoneHeaderMore() {
 }
 
 initPhoneHeaderMore();
+
+//: The phone's status bar gives its height back while none of its four
+//: transient items shows (10-responsive.css, `:root.status-bar-idle`). Their
+//: own class changes are watched: a `:has()` on the root asked it after every
+//: element added anywhere, 4 to 6ms each time (OPEN 813).
+function watchStatusBarIdle() {
+  const bar = $("status-bar");
+  const live = ":is(#status-task,#status-timer,#offline-indicator,#power-saver-indicator):not(.hidden,.status-slot-off)";
+  const sync = () => document.documentElement.classList.toggle("status-bar-idle", !bar.querySelector(live));
+  new MutationObserver(sync).observe(bar, { subtree: true, attributeFilter: ["class"] });
+  sync();
+}
+
+watchStatusBarIdle();
 
 // The three status-bar controls that move into the phone header, and back
 // above 600. Moved, never copied: a marker holds each one's place in the bar,
@@ -827,7 +861,7 @@ const PHONE_SIDEBAR_OPENERS = [
 
 function mountPhoneSidebarOpeners() {
   for (const { aside: asideId, dock: dockSel, label } of PHONE_SIDEBAR_OPENERS) {
-    const aside = document.getElementById(asideId);
+    const aside = $(asideId);
     const dock = document.querySelector(dockSel);
     if (!aside || !dock || dock.querySelector(":scope > .dock-nav")) continue;
     const nav = document.createElement("span");
@@ -849,7 +883,7 @@ mountPhoneSidebarOpeners();
 
 //: Choosing a category on a phone closes the drawer, so the filtered list it
 //: chose is what shows; the row's ⋯ stops its own click before this.
-document.getElementById("category-list")?.addEventListener("click", () => {
+$("category-list")?.addEventListener("click", () => {
   const aside = $("sidebar");
   if (!window.matchMedia(PHONE_TABS).matches || !aside?.classList.contains("sidebar-sheet-open")) return;
   aside.classList.remove("sidebar-sheet-open");
@@ -951,7 +985,7 @@ function initRowSwipe(list, actions) {
   list.addEventListener("pointercancel", end);
 }
 
-initRowSwipe(document.getElementById("entry-list"), {
+initRowSwipe($("entry-list"), {
   right: (li) => li.querySelector(".favourite-btn")?.click(),
   // The menu builds its rows on open, so the bin is reached as the one
   // function the menu's own row calls, not by pressing a row that does
@@ -965,7 +999,7 @@ initRowSwipe(document.getElementById("entry-list"), {
 //: Reminders (Phase 11 item 8, "reminders as rows with swipe done"): right
 //: presses the row's own Done checkbox, which toggles and saves as a tap on
 //: it would; there is no left.
-initRowSwipe(document.getElementById("reminder-groups"), {
+initRowSwipe($("reminder-groups"), {
   right: (li) => li.querySelector('input[type="checkbox"]')?.click(),
 });
 
@@ -983,6 +1017,17 @@ initRowSwipe(document.getElementById("reminder-groups"), {
 // the list, and the page closes itself when its note is no longer in it.
 let notePageOpenId = null;
 let notePageClose = null;
+
+//: The sheet's head already says the note's name, so the card inside does
+//: not say it again (audit 1031 N14): its own `.entry-title`, or the opening
+//: heading of a note that has no stored title. Text compared with the
+//: clipped head, so a long heading still matches.
+function dropRepeatedTitle(root, title) {
+  root.querySelector(".entry-title")?.remove();
+  const first = root.querySelector(".entry-content")?.firstElementChild;
+  const said = (first?.textContent || "").replace(/\s+/g, " ").trim();
+  if (first && /^H[1-6]$/.test(first.tagName) && said && title.startsWith(said.slice(0, 80))) first.remove();
+}
 
 function openNotePage(entry, returnFocus = null) {
   if (!entry || notePageOpenId === entry.id) return;
@@ -1004,6 +1049,7 @@ function openNotePage(entry, returnFocus = null) {
       const item = entryItem(entry, { actions: true });
       item.querySelector(".entry-content")?.classList.remove("entry-clamped");
       item.querySelector(".entry-more")?.remove();
+      dropRepeatedTitle(item, title);
       list.appendChild(item);
       card.appendChild(list);
       const actions = item.querySelector(".entry-actions");
@@ -1037,6 +1083,7 @@ function refreshNotePage(ids) {
   const fresh = entryItem(entry, { actions: true }).querySelector(".entry-content");
   if (!fresh) return;
   fresh.classList.remove("entry-clamped");
+  dropRepeatedTitle(fresh.parentNode || fresh, entry.title || noteNamePlain(entry.content, 80) || "Note");
   old.replaceWith(fresh);
 }
 
@@ -1046,7 +1093,7 @@ function closeNotePageIfGone() {
 }
 
 function initNotePage() {
-  const list = document.getElementById("entry-list");
+  const list = $("entry-list");
   if (!list) return;
   list.addEventListener("click", (event) => {
     if (!window.matchMedia(PHONE_TABS).matches) return;
@@ -1105,7 +1152,7 @@ function ocrPhonePage(phone) {
   overlay.classList.toggle("sheet-overlay", phone);
   card.classList.toggle("sheet-card", phone);
   card.classList.toggle("sheet-card-page", phone);
-  let bar = document.getElementById(OCR_PHONE_BAR_ID);
+  let bar = $(OCR_PHONE_BAR_ID);
   if (phone) {
     if (!bar) {
       bar = document.createElement("div");
@@ -1137,7 +1184,7 @@ function initOcrPhonePage() {
   // move, and stamping a variant on a hidden dialog leaves state behind that
   // the next open would have to undo.
   window.matchMedia(PHONE_TABS).addEventListener("change", (event) => {
-    const overlay = document.getElementById("ocr-workspace");
+    const overlay = $("ocr-workspace");
     if (overlay && !overlay.classList.contains("hidden")) ocrPhonePage(event.matches);
   });
 }
@@ -1153,7 +1200,7 @@ const PHONE_SHEET_DIALOGS = ["extract-panel", "history-overlay", "connections-ov
 
 function phoneSheetDialogs(phone) {
   for (const id of PHONE_SHEET_DIALOGS) {
-    const overlay = document.getElementById(id);
+    const overlay = $(id);
     overlay?.classList.toggle("sheet-overlay", phone);
     overlay?.querySelector(":scope > .modal-card")?.classList.toggle("sheet-card", phone);
   }
@@ -1541,7 +1588,7 @@ function phoneMoreRunCount() {
 //: count rides on More as the badge a tab's count already is, and the runs
 //: are a row in More's sheet. Called whenever the status item repaints.
 function syncPhoneMoreRuns() {
-  const more = document.getElementById("phone-more-btn");
+  const more = $("phone-more-btn");
   if (!more) return;
   const runs = phoneMoreRunCount();
   //: Reminders due ride on More too (audit 1018, item 8): at 390 the
@@ -1559,11 +1606,10 @@ function syncPhoneMoreRuns() {
     badge.className = "tab-badge";
     more.appendChild(badge);
   }
-  badge.textContent = String(shown);
-  badge.title = due
-    ? `${due} reminder${due === 1 ? "" : "s"} due`
-    : `${runs} agent run${runs === 1 ? "" : "s"}`;
-  more.setAttribute("aria-label", due ? `More: ${due} reminder${due === 1 ? "" : "s"} due` : "More");
+  badge.textContent = ` ${shown}`;
+  const words = due ? `${nounCount(due, "reminder")} due` : `${runs} agent run${runs === 1 ? "" : "s"}`;
+  badge.title = words;
+  more.setAttribute("aria-label", `More: ${words}`);
 }
 
 //: Due-or-overdue reminders, as `updateReminderBadge` last counted them.
@@ -1577,7 +1623,7 @@ function phoneMoreDueCount() {
 // you are on three of the seven, which is the defect the caption work fixed for
 // the other four.
 function syncPhoneMoreButton(activeTabName) {
-  const more = document.getElementById("phone-more-btn");
+  const more = $("phone-more-btn");
   if (!more) return;
   const behindMore = PHONE_MORE_TABS.includes(activeTabName);
   more.classList.toggle("active", behindMore);
@@ -1633,9 +1679,9 @@ function initKeyboardInset() {
     // few pixels of covered strip is a toolbar settling, not a keyboard.
     root.classList.toggle("keyboard-open", inset > 120);
   };
+  //: Not written at init: the stylesheet's own `0px` is the answer until the viewport moves, and reading `innerHeight` here forced the first layout of the whole page (INBOX 1465).
   viewport.addEventListener("resize", write);
   viewport.addEventListener("scroll", write);
-  write();
   // iOS animates the keyboard in over about a quarter of a second and does
   // not always fire a resize at the end of it, so the covered strip written
   // at the start can be stale for the whole time the person is typing (the
@@ -1685,16 +1731,17 @@ initKeyboardInset();
 //: The jump list already says the pane's name, so the pane's own first heading
 //: saying it again one row below is dropped on a phone (`.jump-echo`, 07-whiteboard-misc.css;
 //: UX audit 2026-10-18). Only the h3: a dock holding actions keeps them.
+//: An h3 in a fold's summary is that fold's only name, so it stays (audit 1030 Y3).
 function echoSettingsPaneTitle(select) {
   for (const h of document.querySelectorAll("#settings-modal h3.jump-echo")) h.classList.remove("jump-echo");
   if (select.value.includes("#")) return;
   const head = document.querySelector(`#settings-${CSS.escape(select.value)} h3`);
   const shown = select.options[select.selectedIndex]?.textContent.trim().toLowerCase();
-  if (head && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
+  if (head && !head.closest("summary") && shown && head.textContent.trim().toLowerCase() === shown) head.classList.add("jump-echo");
 }
 
 function buildSettingsJumpList() {
-  const nav = document.getElementById("settings-nav");
+  const nav = $("settings-nav");
   if (!nav || document.getElementById("settings-jump")) return;
 
   const select = document.createElement("select");
@@ -1709,7 +1756,7 @@ function buildSettingsJumpList() {
   select.setAttribute("data-no-select-enhance", "");
 
   for (const group of nav.querySelectorAll(":scope > div[role='group']")) {
-    const heading = document.getElementById(group.getAttribute("aria-labelledby"));
+    const heading = $(group.getAttribute("aria-labelledby"));
     const optgroup = document.createElement("optgroup");
     optgroup.label = heading ? heading.textContent.trim() : "Sections";
     for (const button of group.querySelectorAll("button[data-section]")) {
@@ -1744,8 +1791,8 @@ function buildSettingsJumpList() {
   // After the search field, which stays: searching the sections' contents and
   // jumping to one by name are different questions (the search field's own
   // comment makes that case).
-  const search = document.getElementById("settings-search");
-  const count = document.getElementById("settings-search-count");
+  const search = $("settings-search");
+  const count = $("settings-search-count");
   (count || search || nav.firstElementChild)?.after(select);
 }
 
@@ -1785,7 +1832,7 @@ const FAB_IDS = [
 
 function floatPrimaryActions(floating) {
   for (const id of FAB_IDS) {
-    const button = document.getElementById(id);
+    const button = $(id);
     if (!button) continue;
     const page = button.closest(".tab-page");
     if (!page) continue;
@@ -1872,6 +1919,7 @@ function dockArrangeLabel(menu) {
 function foldZoneIntoMenu(dock, menu, fold) {
   const inRow = dock.querySelector(":scope > .dock-arrange");
   const inMenu = menu.querySelector(":scope > .dock-arrange");
+  nameFoldedButton(menu, fold && Boolean(inRow || inMenu));
   if (fold && inRow) {
     inRow.replaceWith(dockArrangeSlot(dock));
     inRow.classList.add("dock-arrange-folded");
@@ -1883,6 +1931,18 @@ function foldZoneIntoMenu(dock, menu, fold) {
     else dock.querySelector(":scope > .dock-find")?.after(inMenu);
     menu.querySelector(":scope > .dock-arrange-label")?.remove();
   }
+}
+
+//: The `...` that holds the sort says so: "Sort and view" in its tooltip and
+//: name while the zone is inside, "More" again when it is back (blind test
+//: 2026-10-31: a button with no label that held the only way to reorder).
+function nameFoldedButton(menu, folded) {
+  const button = menu.closest(".dock-menu")?.querySelector(":scope > summary");
+  if (!button) return;
+  button.dataset.moreName ||= button.getAttribute("title") || "More";
+  const name = folded ? "Sort and view" : button.dataset.moreName;
+  button.setAttribute("title", name);
+  button.setAttribute("aria-label", name);
 }
 
 // The arrange zone's other children, in and out of a menu that is one of them.
@@ -2001,7 +2061,14 @@ function foldDockActions(narrow) {
         control.replaceWith(slot);
         control.dataset.rowClass = control.className;
         control.className = "doc-dock-menu-item dock-folded-action";
-        if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
+        //: A worded control (Select) shows its own short word in the menu, not
+        //: its title as a second one: the title ran 437px wide on a phone and
+        //: pushed the menu off the window (audit 1028 S21).
+        const own = control.querySelector(".dock-word");
+        if (own) {
+          own.classList.replace("dock-word", "dock-folded-word");
+          own.dataset.folded = "1";
+        } else if (!control.querySelector(".toolbar-word, .dock-folded-word")) {
           const word = document.createElement("span");
           word.className = "dock-folded-word";
           word.textContent = control.getAttribute("aria-label") || control.title || "";
@@ -2017,7 +2084,11 @@ function foldDockActions(narrow) {
         if (!slot) continue;
         control.className = control.dataset.rowClass || "";
         delete control.dataset.rowClass;
-        control.querySelector(":scope > .dock-folded-word")?.remove();
+        const kept = control.querySelector(":scope > .dock-folded-word[data-folded]");
+        if (kept) {
+          kept.classList.replace("dock-folded-word", "dock-word");
+          delete kept.dataset.folded;
+        } else control.querySelector(":scope > .dock-folded-word")?.remove();
         //: The space `append(" ", word)` put before the word, left behind as
         //: a trailing text node that would widen the icon button by a glyph.
         if (control.lastChild?.nodeType === Node.TEXT_NODE && !control.lastChild.data.trim()) {
@@ -2056,7 +2127,7 @@ initAutoGrow(); // capture + magic-add boxes follow their content
 // api()'s isLockout path; with none at all, the common case, lock screen
 // still up: it was ~20 requests a load, every one with an empty
 // X-Auth-Token header, logged as browser console errors and, for the
-// non-silent calls among them, into Settings → Logs. None of it painted
+// non-silent calls among them, into Settings, Logs. None of it painted
 // anything (the lock overlay covers the tab), and startApp() already reloads
 // the real data once a session exists (`entriesReady.then(refreshActiveTab)`
 // above): so the early fetch was pure waste, not a second source of truth.
@@ -2098,7 +2169,7 @@ for (const button of document.querySelectorAll("#chat-mode-seg button")) {
 
 // ROADMAP item C: "several extras only take effect on restart and the app
 // says so without offering one." This is that offer, a plain restart, not
-// tied to any preference changing, for Settings → About.
+// tied to any preference changing, for Settings, About.
 //: The app's own caches, forgotten (INBOX 487): service worker, Cache Storage,
 //: the server's compressed files. Each part is best effort; the caller reloads.
 async function clearAppCache() {
@@ -2177,32 +2248,9 @@ $("semantic-search-toggle")?.addEventListener("change", () => {
   // the term, then reload if semantic is on", is written out at the
   // "Search the notebook" selection action.
   if (noteSearch) loadEntries();
+  //: Turning it on with no engine would otherwise change nothing and say nothing (N25).
+  if ($("semantic-search-toggle").checked && meaningEngineMissing()) toast(MEANING_ENGINE_WORDS, "info");
 });
-// The review panel for the background librarian (ROADMAP §40 item 2).
-//
-// A true dry-run is not available here, the agent picks each call from the
-// result of the last one, so a pass with the writes stubbed out stops
-// resembling the pass that would really run, and a preview that lies is worse
-// than no preview. What is available is honest and nearly as useful: every
-// write already captured the call that reverses it, so the pass can be read
-// back and undone one item at a time. `changeRow` is the same renderer the
-// chat uses for a skill's result, so Undo here goes through exactly the path
-// the chat's own Undo buttons do.
-async function renderAutonomousReview() {
-  const box = $("autonomous-review");
-  const list = $("autonomous-review-list");
-  if (!box || !list) return;
-
-  const pass = await apiJson("/tasks/autonomous/last").catch(() => null);
-  const changes = pass?.changes || [];
-  box.classList.toggle("hidden", changes.length === 0);
-  if (!changes.length) return;
-
-  const when = pass.finished_at ? whenText(pass.finished_at) : "";
-  $("autonomous-review-title").textContent =
-    `What the last run changed, ${changes.length} thing(s)` + (when ? `, ${when}` : "");
-  list.replaceChildren(...changes.map((change) => changeRow(change)));
-}
 
 // There is no Tags / Recycle bin / Activity shortcut in the notes sidebar, and
 // `openLibraryOn` went with them. The buttons were dropped once with their
@@ -2220,7 +2268,7 @@ async function renderAutonomousReview() {
 $("entry-template")?.addEventListener("click", () => openNoteTemplateDialog());
 $("note-template-use")?.addEventListener("click", () => useNoteTemplate());
 //: Manage templates, from the picker (the owner at release): the list is
-//: made and edited in Settings > Templates, so the way there is here too.
+//: made and edited in Settings, Templates, so the way there is here too.
 $("note-template-manage")?.addEventListener("click", () => {
   $("note-template-dialog")?.close?.();
   openSettingsModal("templates");

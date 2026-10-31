@@ -49,7 +49,7 @@ async function tidyBadge(force = false) {
   if (!count || !button) return;
   count.textContent = body.total > 99 ? "99+" : body.total ? String(body.total) : "";
   count.hidden = !body.total;
-  const words = body.total ? `Tidy, ${body.total} to look at` : "Tidy";
+  const words = body.total ? `Tidy, ${count.textContent} ${body.total === 1 ? "thing" : "things"} to look at` : "Tidy";
   button.setAttribute("aria-label", words);
   button.title = body.total
     ? `Tidy: ${body.total} things to look at (weak links, stray tags, uncategorised and duplicate notes, old reminders)`

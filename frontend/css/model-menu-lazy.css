@@ -1,0 +1,98 @@
+/* The composer's model picker (model-menu.js, INBOX 1477): a search field, a
+   Recent section, one collapsible row per source and a pin on every model. It
+   draws inside the select menu `enhanceSelect` already opens, so the width,
+   height cap and scrolling come from `.select-menu`; this sheet only shapes
+   what is in it. */
+.select-menu.model-menu {
+  width: min(22rem, 90vw);
+  max-width: 90vw;
+  max-height: min(26rem, 70vh);
+  overflow-x: hidden;
+}
+/* The search stays at the top while the list scrolls under it. */
+.mm-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: var(--space-2);
+  background: inherit;
+}
+.mm-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+/* The row is the shared rich picker row; here it fills the line beside its pin. */
+.mm-item > .mm-option {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+.mm-option[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+.mm-glyph {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+.mm-pin {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.mm-pin:is(:hover, :focus-visible),
+.mm-pin[aria-pressed="true"] {
+  color: var(--accent-text);
+}
+/* A source: caret, glyph, its name and the count after it, folding its models. */
+.mm-group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+.mm-caret {
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform var(--ui-fast) var(--ease-out);
+}
+.mm-group-head[aria-expanded="true"] .mm-caret {
+  transform: rotate(90deg);
+}
+.mm-group-words {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mm-group-count {
+  color: var(--muted);
+  font-weight: 400;
+}
+.mm-group-list {
+  padding-left: var(--space-5);
+}
+/* Searching narrows every row at once, so the sections that repeat them step aside. */
+.mm-body.is-searching > .mm-section,
+.mm-body.is-searching > .mm-item {
+  display: none;
+}
+.mm-empty {
+  padding: var(--space-3) var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-caret {
+    transition: none;
+  }
+}

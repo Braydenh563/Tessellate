@@ -571,7 +571,7 @@ async function renderTimeline() {
   //: and the two used to look identical on screen: "Nothing to plot yet" over
   //: a notebook full of dated notes. See `surfaceFailed`.
   if (!body) {
-    surfaceFailed($("timeline-empty"), "timeline", renderTimeline);
+    surfaceFailed($("timeline-empty"), "your timeline", renderTimeline);
     return;
   }
   surfaceRecovered($("timeline-empty"));
@@ -652,7 +652,7 @@ async function renderTimelineRecall() {
   const seen = new Set();
   for (const memory of timelineRecall.memories) {
     const years = now.getFullYear() - memory.when.getFullYear();
-    const ago = years > 0 ? `${years} year${years === 1 ? "" : "s"} ago` : `${now.getMonth() - memory.when.getMonth() + 12 * years} months ago`;
+    const ago = years > 0 ? `${nounCount(years, "year")} ago` : `${now.getMonth() - memory.when.getMonth() + 12 * years} months ago`;
     if (seen.has(ago) || seen.size >= 3) continue;
     seen.add(ago);
     chips.push(button(`ph:clock-counter-clockwise On this day, ${ago}: ${clipText(memory.title, 30)}`, "Show what you wrote on this date in earlier months and years", range("onthisday")));
@@ -722,71 +722,92 @@ async function timelineLoadMore(limit = TIMELINE_PAGE) {
   }
 }
 
-//: The new page, into the feed as it stands: into the last bucket if it
-//: continues it, into a new section if it does not.
-//:
-//: **In chunks, across frames.** A page is 300 rows and a row is eight
-//: elements, and building all of them in one go was measured at a 117ms frame
-//: during paging, over the 100ms the plan draws its line at. Sixty rows a
-//: frame keeps every frame inside the budget and the rows still arrive well
-//: before the scroll reaches them (the fetch starts 600px early).
-const TIMELINE_APPEND_CHUNK = 60;
-//: **And by time, not only by count** (libtl-0926): sixty rows measured
-//: 42 to 85ms a frame on a thousand-note seed while scrolling, because each
-//: row also re-counted its whole section (`querySelectorAll`, a walk that
-//: grows with the section, per row) and every chunk rebuilt the set of
-//: visible rows. Now a chunk stops at 6ms of building, the set is built once
-//: per page, and a section's count is a number written once per chunk.
-const TIMELINE_APPEND_BUDGET_MS = 6;
+//: **One header line for the feed, the grid and the table.** A page is not the
+//: range: while `timelineNextCursor` says more follow, the count is what is
+//: loaded and a plus ("300+ items"), never a total it is not. "1 day", not
+//: "1 days"; "1 item" only when nothing follows.
+function timelineUnitText(n, unit) {
+  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+}
+function timelineCountLine(shown, loaded, tail) {
+  const more = timelineNextCursor ? "+" : "";
+  const count = shown === loaded ? `${shown}${more}` : `${shown} of ${loaded}${more}`;
+  return `${count} item${shown === 1 && !more ? "" : "s"} · ${tail}`;
+}
 
-function appendTimelineRows(fresh, from = 0, visible = null) {
+//: **The feed is windowed** (`windowRows`, notes-list.js): a row is built only
+//: near the reader, and a row far from them is a one-element shell holding its
+//: place, so the DOM follows the screen and not the range (27,500 nodes at
+//: 2,000 rows). `left` is how many of the first rows are built as they land,
+//: a screenful and some, the rest come with the first look. `guess` is a
+//: shell's height until its row has drawn once (`heights`, by key).
+const TIMELINE_ROW_GUESS = { full: 64, compact: 44, dense: 42 };
+const TIMELINE_ROWS_BUILT_FIRST = 40;
+const timelineWindow = { win: null, heights: new Map(), density: "", left: 0 };
+
+function newTimelineWindow(density) {
+  timelineWindow.win?.stop();
+  if (timelineWindow.density !== density) timelineWindow.heights.clear();
+  timelineWindow.density = density;
+  timelineWindow.left = TIMELINE_ROWS_BUILT_FIRST;
+  timelineWindow.win = windowRows($("timeline-scroll"), {
+    heights: timelineWindow.heights,
+    guess: TIMELINE_ROW_GUESS[density] || TIMELINE_ROW_GUESS.full,
+    keyOf: (row) => row.key,
+    tag: (li, row) => { li.dataset.key = row.key; },
+    build: (row) => timelineRowElement(row, density),
+    stays: (li) => li.contains(document.activeElement) || li.getAttribute("aria-expanded") === "true",
+  });
+  return timelineWindow.win;
+}
+
+//: Every row of the feed, built or not: a hollow one is a shell with its key.
+function timelineRowEls() {
+  return [...$("timeline-scroll").querySelectorAll(".timeline-row, .row-shell")];
+}
+
+//: A row by key, built if it was a shell (focus needs a row that is drawn).
+function timelineRowByKey(key) {
+  if (!key) return null;
+  const row = $("timeline-scroll").querySelector(`:is(.timeline-row, .row-shell)[data-key="${CSS.escape(key)}"]`);
+  return row && (timelineWindow.win?.fill(row) ?? row);
+}
+
+function timelineFocusFirstIn(section, options) {
+  timelineRowByKey(section?.querySelector(".timeline-row, .row-shell")?.dataset.key)?.focus(options);
+}
+
+//: The new page, into the feed as it stands: into the last bucket if it
+//: continues it, into a new section if it does not. The rows go in as shells
+//: (`windowRows`, notes-list.js), one element each, and the ones near the
+//: reader are built a frame later, so a page of 300 is one pass and not sixty
+//: rows a frame (it was measured at a 117ms frame built whole).
+function appendTimelineRows(fresh) {
   const feed = $("timeline-feed");
   const scale = feed.dataset.scale || "day";
-  const density = feed.dataset.density || "full";
-  visible ||= new Set(timelineVisibleRows().map((row) => row.key));
-  let section = feed.lastElementChild;
-  const started = performance.now();
-  const touched = new Set();
-  let next = from;
-  for (; next < fresh.length && next < from + TIMELINE_APPEND_CHUNK; next += 1) {
-    if (next > from && performance.now() - started > TIMELINE_APPEND_BUDGET_MS) break;
-    const row = fresh[next];
+  const visible = new Set(timelineVisibleRows().map((row) => row.key));
+  const win = timelineWindow.win || newTimelineWindow(feed.dataset.density || "full");
+  const runs = [];
+  for (const row of fresh) {
     if (!visible.has(row.key)) continue;
     const key = timelineBucketKey(row.when, scale);
-    if (!section || section.dataset.bucket !== key) {
-      section = document.createElement("section");
-      section.className = "timeline-bucket";
-      section.dataset.bucket = key;
-      const head = document.createElement("h3");
-      head.className = "timeline-bucket-head";
-      const label = document.createElement("span");
-      label.className = "timeline-bucket-label";
-      label.textContent = timelineBucketLabel(key, scale);
-      const count = document.createElement("span");
-      count.className = "muted timeline-bucket-count";
-      count.textContent = "0";
-      head.append(label, count);
-      const list = document.createElement("ul");
-      list.className = "timeline-rows";
-      section.append(head, list);
-      feed.appendChild(section);
+    if (runs.at(-1)?.key === key) runs.at(-1).rows.push(row);
+    else runs.push({ key, rows: [row] });
+  }
+  for (const run of runs) {
+    const section = feed.lastElementChild;
+    if (!section || section.dataset.bucket !== run.key) {
+      feed.appendChild(timelineBucketSection(run, scale, feed.dataset.density, false));
+      continue;
     }
     const list = section.querySelector(".timeline-rows");
-    list.appendChild(timelineRowElement(row, density));
-    touched.add(section);
-  }
-  for (const done of touched) {
-    done.querySelector(".timeline-bucket-count").textContent = String(done.querySelector(".timeline-rows").childElementCount);
-  }
-  if (next < fresh.length) {
-    requestAnimationFrame(() => appendTimelineRows(fresh, next, visible));
-    return;
+    win.add(list, run.rows);
+    const count = section.querySelector(".timeline-bucket-count");
+    if (count) count.textContent = String(list.childElementCount);
   }
   applyTimelineRowTabOrder();
-  const total = feed.querySelectorAll(".timeline-row").length;
-  $("timeline-count").textContent = `${total} note${total === 1 ? "" : "s"} · ${
-    feed.querySelectorAll(".timeline-bucket").length
-  } ${{ day: "day", week: "week", month: "month", year: "year" }[scale]}s`;
+  $("timeline-count").textContent = timelineCountLine(
+    visible.size, visible.size, timelineUnitText(feed.querySelectorAll(".timeline-bucket").length, scale));
 }
 
 //: The end of the feed is the request for the next page. 600px of warning
@@ -912,6 +933,7 @@ function paintTimeline() {
   //: breakpoint switches the mode, and the hidden feed kept its rows beside
   //: the table's: every `.timeline-row` query (the keyboard walk, the tab
   //: order, the sweeps) then counted both, measured as 113 rows read as 226.
+  if (calendar || table) timelineWindow.win?.stop();
   if (calendar) {
     $("timeline-table-body").replaceChildren();
     $("timeline-feed").replaceChildren();
@@ -936,6 +958,7 @@ function paintTimelineFeed(rows) {
   feed.dataset.scale = scale;
   feed.dataset.density = density;
   feed.replaceChildren();
+  newTimelineWindow(density);
 
   // Buckets in the order the rows are in, so the grouping is one pass and the
   // feed's order is the array's order: the two cannot drift.
@@ -950,15 +973,12 @@ function paintTimelineFeed(rows) {
     current.rows.push(row);
   }
 
-  const unit = { day: "day", week: "week", month: "month", year: "year" }[scale];
-  const filtered = rows.length !== timelineRows.length;
+  const unit = scale;
   //: "Items", not "notes": the feed holds documents, boards and reminders
   //: since Phase 4, and a count line that calls a reminder a note is the same
   //: small lie the response's `notes` key was telling until today.
   $("timeline-count").textContent = rows.length
-    ? `${filtered ? `${rows.length} of ${timelineRows.length}` : rows.length} item${
-        rows.length === 1 ? "" : "s"
-      } · ${buckets.length} ${unit}${buckets.length === 1 ? "" : "s"}`
+    ? timelineCountLine(rows.length, timelineRows.length, timelineUnitText(buckets.length, unit))
     : "";
 
   const fragment = document.createDocumentFragment();
@@ -1034,8 +1054,8 @@ function timelineBucketSection(bucket, scale, density, isToday = bucket.rows.len
   }
   const list = document.createElement("ul");
   list.className = "timeline-rows";
-  for (const row of bucket.rows) list.appendChild(timelineRowElement(row, density));
   section.append(head, list);
+  timelineWindow.win.add(list, bucket.rows, () => timelineWindow.left-- > 0);
   //: A day ahead with nothing in it is its head and the calendar's Add.
   if (!bucket.rows.length && bucket.key > timelineBucketKey(new Date(), "day")) {
     head.appendChild(smallButton("ph:plus Add", "Add a reminder or an event on this day", () => timelineCalendarCall("timelineCalAdd", bucket.key)));
@@ -1247,7 +1267,8 @@ async function renderTimelineDayStrip() {
     button.title = has ? `Open the page for ${long}` : `Start the page for ${long}`;
     const name = document.createElement("span");
     name.className = "timeline-day-name";
-    name.textContent = day.toLocaleDateString(undefined, { weekday: "short" });
+    //: A trailing space: the weekday and the number are read apart ("Fri 23").
+    name.textContent = `${day.toLocaleDateString(undefined, { weekday: "short" })} `;
     const num = document.createElement("span");
     num.className = "timeline-day-num";
     num.textContent = String(day.getDate());
@@ -1610,7 +1631,7 @@ function timelineRowElement(row, density) {
 // `scrollIntoView` takes the page with it (DESIGN.md's rule for a list that
 // says where you are), and the feed is a box inside a card.
 function focusTimelineRow(key) {
-  const row = $("timeline-scroll").querySelector(`.timeline-row[data-key="${key}"]`);
+  const row = timelineRowByKey(key);
   if (!row) return;
   const box = $("timeline-scroll");
   const offset = row.getBoundingClientRect().top - box.getBoundingClientRect().top;
@@ -1679,7 +1700,7 @@ function openTimelineRowDetail(detail, row) {
 $("timeline-scroll").addEventListener("keydown", (event) => {
   const row = event.target.closest?.(".timeline-row");
   if (!row || event.target !== row) return;
-  const rows = [...$("timeline-scroll").querySelectorAll(".timeline-row")];
+  const rows = timelineRowEls();
   const at = rows.indexOf(row);
   const go = (index) => {
     const next = rows[Math.max(0, Math.min(rows.length - 1, index))];
@@ -1770,13 +1791,13 @@ function timelineStepScale(delta) {
   const focused = document.activeElement?.closest?.(".timeline-row");
   const anchor = focused && box.contains(focused)
     ? focused
-    : [...box.querySelectorAll(".timeline-row")].find((el) => el.getBoundingClientRect().bottom > top);
+    : timelineRowEls().find((el) => el.getBoundingClientRect().bottom > top);
   const key = anchor?.dataset.key;
   const was = anchor ? anchor.getBoundingClientRect().top : top;
   const select = $("timeline-scale");
   select.value = to;
   select.dispatchEvent(new Event("change", { bubbles: true }));
-  const again = key ? box.querySelector(`.timeline-row[data-key="${CSS.escape(key)}"]`) : null;
+  const again = timelineRowByKey(key);
   if (again) {
     box.scrollTop += again.getBoundingClientRect().top - was;
     if (focused) again.focus({ preventScroll: true });
@@ -2050,12 +2071,9 @@ function timelineSortedRows(rows) {
 function paintTimelineTable(rows) {
   const body = $("timeline-table-body");
   body.replaceChildren();
-  const filtered = rows.length !== timelineRows.length;
   const column = TIMELINE_COLUMNS.find((c) => c.key === timelineSort.key);
   $("timeline-count").textContent = rows.length
-    ? `${filtered ? `${rows.length} of ${timelineRows.length}` : rows.length} note${
-        rows.length === 1 ? "" : "s"
-      } · by ${(column ? column.label : "date").toLowerCase()}`
+    ? timelineCountLine(rows.length, timelineRows.length, `by ${(column ? column.label : "date").toLowerCase()}`)
     : "";
   const sorted = timelineSortedRows(rows);
   const fragment = document.createDocumentFragment();
@@ -2404,7 +2422,7 @@ $("timeline-jump-today")?.addEventListener("click", () => {
     timelineStripEnd = null;
     renderTimelineDayStrip();
   }
-  timelineScrollToToday()?.querySelector(".timeline-row")?.focus();
+  timelineFocusFirstIn(timelineScrollToToday());
 });
 
 //: Today's section at the top of the feed's window, the days ahead above it

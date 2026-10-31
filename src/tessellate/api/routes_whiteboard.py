@@ -27,6 +27,7 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Annotated
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from tessellate.api import paging
@@ -258,7 +259,12 @@ FRAME_KIND = "frame"
 TABLE_KIND = "table"
 MAX_TABLE_ROWS = 50
 MAX_TABLE_COLS = 20
-VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND} | MAP_REFERENCE_KINDS
+#: A live Mermaid diagram (INBOX 1451): its source is `data.mermaid`, drawn
+#: by the browser's diagram frame; nothing drawn is stored, so a theme
+#: change or an edit redraws it.
+DIAGRAM_KIND = "diagram"
+MAX_MERMAID_CHARS = 20_000
+VALID_OBJECT_KINDS = {"image", "text", FRAME_KIND, MAP_TOPIC_KIND, TABLE_KIND, DIAGRAM_KIND} | MAP_REFERENCE_KINDS
 
 
 #: A card/sketch/object's own persisted group, asked for directly (Ctrl+G).
@@ -358,6 +364,8 @@ class WhiteboardObjectData(BaseModel):
     #: header, drawn bold on a tint.
     cells: list[list[Annotated[str, StringConstraints(max_length=500)]]] | None = Field(default=None, max_length=50)
     header: bool | None = None
+    #: A diagram's Mermaid source (`DIAGRAM_KIND`).
+    mermaid: str | None = Field(default=None, max_length=MAX_MERMAID_CHARS)
     #: **A table's column widths** (wb5): one relative weight per column, so
     #: [2, 1, 1] is a first column twice the others and the box's width the
     #: sum. Absent means equal; a length other than the columns is refused.
@@ -380,6 +388,15 @@ class WhiteboardObjectData(BaseModel):
     #: The Format panel's opacity and shadow (WHITEBOARD_PLAN decision 19).
     alpha: float | None = Field(default=None, ge=0.05, le=1)
     shadow: bool | None = None
+    #: This item's own keep-proportions switch (INBOX 1313): a corner drag keeps
+    #: the ratio without Shift. A schema that does not name it drops it.
+    keep_ratio: bool | None = None
+    #: A picture cropped to a shape (INBOX 1313): a name from this short list,
+    #: never a path, so nothing a client sends reaches a style.
+    crop: str | None = Field(default=None, pattern="^(ellipse|diamond|hexagon|triangle)$")
+    #: Voting dots on a board item (Miro's; INBOX 1313): how many it holds.
+    #: Content, not a look. Zero is "none", so it is not stored.
+    votes: int | None = Field(default=None, ge=1, le=99)
     color: str | None = Field(default=None, max_length=20)
     #: 0 is a topic's pin to the app's own size against a map's theme
     #: (`MAP_APP_DEFAULT_PINS`); 1 to 7 stay refused (`_size_or_pin`).
@@ -387,6 +404,11 @@ class WhiteboardObjectData(BaseModel):
     #: A text box's own fill/border: asked for directly (the properties
     #: panel). Images have no use for either; left `None` there.
     bg: str | None = Field(default=None, max_length=20)
+    #: How solid that fill is, and for a diagram how solid its lines are (the
+    #: Format panel's Fill opacity and Line opacity; INBOX 1486). 0 is a real
+    #: answer (see-through), so absent, not zero, means "as it always was".
+    bg_alpha: float | None = Field(default=None, ge=0, le=1)
+    line_alpha: float | None = Field(default=None, ge=0, le=1)
     border_color: str | None = Field(default=None, max_length=20)
     #: How the text sits in its box, and whether it is shown as rendered
     #: markdown: asked for directly ("text alignment, font size etc", "rendered
@@ -547,6 +569,13 @@ class WhiteboardObjectData(BaseModel):
         Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")],
         Annotated[int, Field(ge=1, le=999)],
     ] | None = None
+    #: **Which of those are yours** (INBOX 1493): a press on a stamp is a
+    #: toggle per person, so the stamps this notebook's owner put on the topic
+    #: are named here, each one counted in `stamps` too. Private to this
+    #: install: the exports carry the counts, not whose they are.
+    stamped: list[Annotated[str, StringConstraints(pattern=r"^(up|heart|star|question|check|fire)$")]] | None = Field(
+        default=None, max_length=6
+    )
     #: **Markers** (MINDMAP_PLAN decision 34): a priority 1 to 5, how far
     #: along it is (0 to 100, the menu offers quarters), a flag, and up to six
     #: Phosphor glyph names drawn before the label. Content, not a look: a
@@ -681,6 +710,16 @@ class WhiteboardObjectData(BaseModel):
             pairs = (part.split(":", 1) for part in value.split(",") if ":" in part)
             return {name.strip(): count.strip() for name, count in pairs}
         return value
+
+    @field_validator("stamped")
+    @classmethod
+    def _stamped_have_a_count(cls, value, info):
+        """A stamp with no count cannot be yours; the rest is kept in order."""
+        if not value:
+            return value
+        counted = info.data.get("stamps") or {}
+        kept = [name for name in dict.fromkeys(value) if name in counted]
+        return kept or None
 
     @field_validator("icon")
     @classmethod
@@ -855,6 +894,8 @@ def _require_object_data(body: WhiteboardObjectBase) -> None:
         raise HTTPException(
             status_code=422, detail=f"A {body.kind} item needs some content."
         )
+    elif body.kind == DIAGRAM_KIND and not (body.data.mermaid or "").strip():
+        raise HTTPException(status_code=422, detail="A diagram needs its Mermaid source.")
     elif body.kind == TABLE_KIND:
         _require_table_cells(body.data.cells)
         if body.data.col_widths is not None and len(body.data.col_widths) != len(body.data.cells[0]):
@@ -2455,22 +2496,26 @@ async def put_thumbnail(
     fp: str = Query(...),
     db: Session = Depends(get_session),
 ) -> dict:
-    _thumb_board(db, board_id)
+    #: The lookup and the write go to the thread pool, and the body grows in a
+    #: bytearray (audit 1028 K18): in the event loop they stalled every other
+    #: request while a board list's thumbnails came in.
+    await run_in_threadpool(_thumb_board, db, board_id)
     if not board_thumbs.valid_fp(fp):
         raise HTTPException(status_code=422, detail="That thumbnail version is not valid.")
     declared = int(request.headers.get("content-length") or 0)
     if declared > board_thumbs.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    data = b""
+    data = bytearray()
     async for chunk in request.stream():
         data += chunk
         if len(data) > board_thumbs.MAX_BYTES:
             raise HTTPException(status_code=413, detail="That thumbnail is too large.")
-    mime = board_thumbs.sniff(data)
+    body = bytes(data)
+    mime = board_thumbs.sniff(body)
     if mime is None:
         raise HTTPException(status_code=415, detail="A thumbnail must be a WebP or JPEG image.")
-    board_thumbs.save(deps.get_config().data_dir, board_id, fp, mime, data)
-    return {"fp": fp, "bytes": len(data)}
+    await run_in_threadpool(board_thumbs.save, deps.get_config().data_dir, board_id, fp, mime, body)
+    return {"fp": fp, "bytes": len(body)}
 
 
 #: Served under `/media` because an `<img src>` cannot send the auth header and

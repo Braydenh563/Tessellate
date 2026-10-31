@@ -153,7 +153,7 @@ Everything you need is in **Settings, Web search**:
 Press **Forgot your password?** on the lock screen, on the computer the notebook
 lives on. With your recovery key (shown when you set up, or made in Settings,
 Account & security) you choose a new password and keep your private notes.
-Without it, "I don't have it" resets the password, as
+Without it, "I don't have it" asks for a six-digit code that Tessellate prints in the terminal it runs in (ten minutes, one use), then resets the password, as
 `python -m tessellate --reset-password` does in a terminal: ordinary notes,
 documents, boards and settings are kept; **private notes stay sealed**, because
 only the password or the recovery key opens them. The reset also turns off

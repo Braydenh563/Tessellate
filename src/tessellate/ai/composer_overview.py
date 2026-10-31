@@ -30,7 +30,9 @@ _ASKS = (
         re.I,
     ),
     re.compile(r"^\s*what\s+do\s+i\s+(?:know|have)(?:\s+written)?\s+(?:about|on)\s+(?P<t>.+?)\s*\??$", re.I),
-    re.compile(r"^\s*(?:summari[sz]e|sum\s+up|go\s+over|tell\s+me\s+about|show\s+me)\s+(?:all\s+)?my\s+(?P<t>.+?)\s*\??$", re.I),
+    #: "what do my notes say about university": the same ask, in the notes' words.
+    re.compile(r"^\s*what\s+(?:do|does|did)\s+(?:my|the)\s+(?:notes|entries)\s+(?:say|tell\s+me|have|mention|know|cover)\s+(?:about|on|for)\s+(?:my\s+)?(?P<t>.+?)\s*\??$", re.I),
+    re.compile(r"^\s*(?:summari[sz]e|sum\s+up|go\s+over|tell\s+me\s+about|(?:show|give|get)(?:\s+me)?|bring\s+up|pull\s+up)\s+(?:all\s+)?(?:of\s+)?my\s+(?P<t>.+?)\s*\??$", re.I),
     #: The owner's own words (decision 70: "What have I saved about courses
     #: & study?") and their kin: a topic asked about as a whole, so it is
     #: counted from every note on it, not the five a search ranked first.

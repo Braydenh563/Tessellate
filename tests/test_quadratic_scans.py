@@ -161,16 +161,19 @@ def test_question_title_is_linear_on_a_long_first_line(text):
 
 
 def test_question_title_matches_the_old_pattern():
-    from tessellate.ai.questions import _title
+    from tessellate.ai.questions import _plain, _title
 
     def reference(content: str) -> str:
-        first = (content or "").strip().split("\n", 1)[0].strip().lstrip("#").strip()
+        #: The title is read as a row shows it (`_plain`: no list marker, no
+        #: `**` or `__`, INBOX 745 b), so the pin reads the same: it moved with
+        #: the code, and the alphabet below now holds the marks it strips.
+        first = _plain((content or "").strip().split("\n", 1)[0].strip().lstrip("#").strip())
         sentence = re.match(r"(.+?[.!?])(?:\s|$)", first)
         if sentence and len(sentence.group(1)) <= 60:
             return sentence.group(1)
         return first if len(first) <= 60 else first[:59].rstrip() + "…"
 
-    alphabet = ["a", "b", " ", ".", "!", "?", "...", ". ", "\n", "\t", " ", "#", "1.5", "e.g.", "x" * 20]
+    alphabet = ["a", "b", " ", ".", "!", "?", "...", ". ", "\n", "\t", " ", "#", "1.5", "e.g.", "x" * 20, "**", "__", "- ", "* ", "1. ", "2) "]
     cases = list(_random_strings(alphabet, count=4000, length=14)) + [
         "",
         "Plans for the shed. Then the roof.",

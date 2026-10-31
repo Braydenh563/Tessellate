@@ -479,6 +479,8 @@ Moved to HISTORY.md ("From DOCUMENTS_PLAN.md Phase 3", two entries) on
 
 ## Placed from INBOX: 107d, the segmented mini bars
 
+INBOX 1482 (the file type picker) is built and moved to HISTORY.md ("Moved from the plans, 2026-10-31 (file type picker 1482)") on 2026-10-31: a plan holds open work only.
+
 "Note in the redesign documents and where it is supposed to that I want to get
 rid of and redesign these mini menu bars as they are in a couple popups around
 the place and they desperately need a modern redesign or alternative", with a

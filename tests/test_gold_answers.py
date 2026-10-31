@@ -71,10 +71,11 @@ def test_no_note_answer_quotes_brackets_or_repeats_the_sources(item):
     assert not {"no_brackets", "no_quoting", "never"} & set(failed), failed
 
 
-def test_the_owners_question_opens_with_the_count_and_the_span():
+def test_the_owners_question_opens_with_the_count():
     result = composer_digest.answer("What have I saved about courses & study?", NOTES, today=TODAY)
     lines = result["text"].split("\n\n")
-    assert lines[0] == "You have four notes about uni, 17 July to 4 August."
+    #: The count without the span: the question is not about time (INBOX 1441).
+    assert lines[0] == "You have four notes about uni."
     #: The first note told as what happened (the owner, 2026-10-11), its
     #: "next week" said from today; the narration tests further down have the rest.
     assert lines[1].startswith("You went back to uni the week of 20 July") and "classes on Tuesdays and Thursdays" in lines[1]
@@ -266,7 +267,11 @@ def test_a_short_answer_has_no_more():
 def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
-    assert "today" not in text and "On 2 September, you trimmed your first bowl." in text
+    #: A note's own "today" is said against the day it was written, as the
+    #: date and how far back (INBOX 1461, newer than 1441's undated line);
+    #: since INBOX 1483 a day five weeks back is said by its month, never
+    #: "2 September (a month ago)".
+    assert "today" not in text and "Back in September, you trimmed your first bowl." in text, text
 
 
 @pytest.mark.parametrize(("question", "subject"), [
@@ -290,7 +295,8 @@ def test_the_owners_when_question_leads_with_the_day():
     answered with the note as written, then its day."""
     item = next(a for a in FIXTURE["answers"] if a["n"] == 21)
     result = _answer(item)
-    assert result["text"] == "On 17 July you bought a gaming mouse, discounted from $150 to $68."
+    #: The date first, then how far back in words (INBOX 1483).
+    assert result["text"] == "On 17 July, about three months ago, you bought a gaming mouse, discounted from $150 to $68."
     row = result["grounding"][0]
     #: The mark sits after the day: "On 17 July[1] you bought ...".
     assert row["anchor"] == "On 17 July" and row["source"].startswith("You just bought")
@@ -299,11 +305,13 @@ def test_the_owners_when_question_leads_with_the_day():
 @pytest.mark.parametrize(
     ("question", "note", "said"),
     [
-        ("when did I buy the kindle", "I just bought a new Kindle yesterday lol \U0001F602", "On 16 July you bought a Kindle."),
-        ("when did I run the 5k", "Finally finished the 5k run today!!", "On 17 July you finally finished the 5k run."),
-        ("when did i see Sam", "Saw Sam at the cafe \U0001F642", "On 17 July you saw Sam at the cafe."),
-        ("when did I book flights", "I've just booked flights to Lisbon haha", "On 17 July you booked flights to Lisbon."),
-        ("when did I get my phone??", "Got a new iPhone lmao", "On 17 July you got an iPhone."),
+        #: "On 17 July, about three months ago, you ...": INBOX 1483 moved
+        #: the bare date to the date and how far back, as a person says it.
+        ("when did I buy the kindle", "I just bought a new Kindle yesterday lol \U0001F602", "On 16 July, about three months ago, you bought a Kindle."),
+        ("when did I run the 5k", "Finally finished the 5k run today!!", "On 17 July, about three months ago, you finally finished the 5k run."),
+        ("when did i see Sam", "Saw Sam at the cafe \U0001F642", "On 17 July, about three months ago, you saw Sam at the cafe."),
+        ("when did I book flights", "I've just booked flights to Lisbon haha", "On 17 July, about three months ago, you booked flights to Lisbon."),
+        ("when did I get my phone??", "Got a new iPhone lmao", "On 17 July, about three months ago, you got an iPhone."),
     ],
 )
 def test_a_when_question_says_the_day_then_what_happened_without_the_asides(question, note, said):
@@ -413,5 +421,6 @@ def test_a_day_line_is_prose_not_a_date_label():
         text = composer_digest.answer(question, NOTES, today=TODAY)["text"]
         assert not re.search(r"^\*\*\d{1,2} [A-Z][a-z]+:\*\*", text, re.M), text
     gym = composer_digest.answer("how's the gym going?", NOTES, today=TODAY)["text"]
-    assert "On 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
+    #: Composer5-1031 (INBOX 1483, the owner's one date table: relative first, then the date): was "On 8 September, you squatted ...".
+    assert "Four weeks ago, on 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
     assert "by 2 October, your squat was up to 90 kg for 5, and your knee felt fine." in gym or "on 2 October, your squat" in gym

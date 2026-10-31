@@ -81,3 +81,46 @@ def _alembic_head() -> str:
     config = Config(str(root / "alembic.ini"))
     config.set_main_option("script_location", str(root / "migrations"))
     return ScriptDirectory.from_config(config).get_current_head()
+
+
+def test_a_string_default_with_a_quote_still_upgrades(tmp_path, monkeypatch):
+    """Audit 1028 K21: the added column's default went into the DDL inside
+    single quotes as it was, so one apostrophe broke every start."""
+    from tessellate.core.database import Base
+
+    db_path = tmp_path / "quote.db"
+    DatabaseManager(db_path).engine.dispose()
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.execute('ALTER TABLE audit_log DROP COLUMN "actor"')
+        conn.commit()
+    finally:
+        conn.close()
+    column = Base.metadata.tables["audit_log"].c.actor
+    monkeypatch.setattr(column.default, "arg", "the owner's")
+    DatabaseManager(db_path).engine.dispose()
+    conn = sqlite3.connect(str(db_path))
+    try:
+        defaults = {row[1]: row[4] for row in conn.execute('PRAGMA table_info("audit_log")')}
+    finally:
+        conn.close()
+    assert defaults["actor"] == "'the owner''s'"
+
+
+def test_a_clean_quit_runs_pragma_optimize(tmp_path):
+    """Audit 1028 K37: no statistics were ever gathered, so plans drifted as
+    notebooks grew. `optimize` runs it; the app's lifespan calls it on quit."""
+    import inspect
+
+    from tessellate.api import app as app_module
+
+    db = DatabaseManager(tmp_path / "opt.db")
+    seen = []
+    from sqlalchemy import event
+
+    event.listen(db.engine, "before_cursor_execute", lambda *a: seen.append(a[2]))
+    db.optimize()
+    db.engine.dispose()
+    assert "PRAGMA optimize" in seen
+    source = inspect.getsource(app_module)
+    assert "deps._db.optimize()" in source

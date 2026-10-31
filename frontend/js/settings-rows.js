@@ -69,6 +69,7 @@ const SETTING_ROWS = [
   { key: "searxng_autostart", id: "searxng-autostart" },
   { key: "update_check_enabled", id: "pref-update-check" },
   { key: "auto_update_enabled", id: "pref-auto-update" },
+  { key: "show_update_bar", id: "pref-update-bar" },
   { key: "update_channel", id: "pref-update-channel-main", on: "main", off: "stable" },
   { key: "update_beta", id: "pref-update-beta" },
   { key: "voice_model", id: "voice-model-select" },
@@ -78,6 +79,7 @@ const SETTING_ROWS = [
   { key: "show_console_on_startup", id: "pref-show-console" },
   { key: "close_to_tray", id: "pref-close-to-tray" },
   { key: "new_window_on_launch", id: "pref-new-window-on-launch" },
+  { key: "desktop_companion", id: "pref-desktop-companion" },
   { key: "status_bar_clock", id: "status-bar-clock-toggle" },
 ];
 
@@ -94,6 +96,8 @@ const LOOK_ROWS = [
   { key: "motion", id: "reduce-motion-toggle", on: "reduced", off: "auto" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },
   { key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" },
+  { key: "panel-pos", id: "panel-restore-toggle", on: "on", off: "off", base: "on" },
+  { key: "panel-push", id: "panel-push-toggle", on: "on", off: "off", base: "on" },
   { key: "progress-motion", id: "progress-motion" },
   { key: "show-thinking-words", id: "pref-show-thinking-words", on: "on", off: "off" },
   { key: "perf", id: "perf-mode" },
@@ -522,12 +526,12 @@ function wireSettingsFile() {
 
 // --- Reveal replies ---------------------------------------------------------------
 
-//: Settings, Appearance, Reveal replies (INBOX 1300 C28): whether a reply no
-//: model wrote rises into place (`replyReveal`, reply-kit.js, reads it). Kept
-//: on this device, like Interface animations beside it.
-(() => {
-  const box = $("reply-motion-toggle");
-  if (!box) return;
-  box.checked = prefs.get("reply-motion", "on") !== "off";
-  box.addEventListener("change", () => prefs.set("reply-motion", box.checked ? "on" : "off"));
-})();
+//: Settings, Appearance, Reveal replies (INBOX 1300 C28: `replyReveal`,
+//: reply-kit.js) and Panels open where you left them (INBOX 1434:
+//: panel-movable.js): kept on this device, like Interface animations.
+for (const [id, key] of [["reply-motion-toggle", "reply-motion"], ["panel-restore-toggle", "panel-pos"], ["panel-push-toggle", "panel-push"]]) {
+  const box = $(id);
+  if (!box) continue;
+  box.checked = prefs.get(key, "on") !== "off";
+  box.addEventListener("change", () => prefs.set(key, box.checked ? "on" : "off"));
+}

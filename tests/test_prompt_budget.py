@@ -130,7 +130,7 @@ def test_a_large_model_is_not_trimmed_at_all(app_state):
 
 
 def test_turning_tools_off_actually_shrinks_what_is_sent(app_state):
-    """Settings → Tools is the escape hatch when a model is too small for the
+    """Settings, Tools is the escape hatch when a model is too small for the
     full registry, so it has to reach the wire, not just the executor."""
     everything = len(json.dumps(tools.ollama_tools()))
     app_state.set_preference(

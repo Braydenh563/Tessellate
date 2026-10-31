@@ -164,7 +164,7 @@ AGENT_ICON = "strategy"
 #: Where the agent glyph is drawn, by file. Each is the agent itself or one of
 #: its runs; a new place is a decision, so it is a line here.
 AGENT_ICON_PLACES = {
-    "index.html": 4,  # the popup agent's head and input, Agent mode (toggle, segment); Activity wears ph-activity (decision 70)
+    "index.html": 7,  # the popup agent's head and input, Agent mode (toggle, segment), the Activity popup's Agent runs tab and its This session card (INBOX 1478); Activity wears ph-activity (decision 70)
     "agent-activity.js": 1,  # the status bar's runs
     "chat-attach.js": 1,  # an agent turn's run in the activity panel
     "chat.js": 1,  # a past turn answered in Agent mode
@@ -290,7 +290,7 @@ def test_ask_and_agent_wear_the_two_glyphs_in_the_chat_dock() -> None:
     assert ask and ask.group(1) == f"ph-{AI_ICON}", ask and ask.group(1)
     assert agent and agent.group(1) == f"ph-{AGENT_ICON}", agent and agent.group(1)
     #: The panel is Activity now, every job and the agent's runs (decision 70).
-    assert 'ph-activity ph-lead" aria-hidden="true"></i> Activity' in HTML
+    assert 'ph-activity pop-glyph" aria-hidden="true"></i> Activity' in HTML
 
 
 def test_design_md_has_the_ai_and_agent_row() -> None:

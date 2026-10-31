@@ -527,7 +527,7 @@ def normalise(raw: dict, known_tools: set[str] | None = None) -> dict:
         if known_tools is not None and tool not in known_tools:
             raise SkillError(
                 f"There is no tool called “{tool}”. Pick from the tools shown "
-                "in Settings → Tools it can use."
+                "in Settings, Tools it can use."
             )
         tools.append(tool)
     if len(tools) > MAX_TOOLS:

@@ -60,14 +60,45 @@ async function noteFormMayClose() {
 
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
-  requestAnimationFrame(() => {
-    const active = document.activeElement;
-    if (active && active !== document.body && active.isConnected) return;
+  restoreFocusTo(() => {
     const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
-    if (!row) return;
+    if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
-    row.focus({ preventScroll: true });
+    return row;
+  });
+}
+
+//: **One focus contract after an act** (audit 1031 N11): when an act leaves
+//: the keyboard on the page (the control it was on went away or was hidden),
+//: it goes to `target`, a node or a function that finds one after the redraw.
+//: Nothing moves if the person has already gone somewhere else, so a tab
+//: change does not pull focus into a hidden tab. Hidden counts as lost: the
+//: browser only moves focus off a node just hidden after this frame.
+function restoreFocusTo(target) {
+  requestAnimationFrame(() => {
+    const here = document.activeElement;
+    if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
+    const el = target instanceof Node ? target : target();
+    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
+  });
+}
+
+//: The control of a note's row that holds the keyboard, as classes (without
+//: the state ones: "is-favourite" flips with the act) to find it in the redrawn row.
+function heldNoteControl() {
+  const el = document.activeElement;
+  const li = el?.closest?.("#entry-list > li[data-id]");
+  return li && { id: li.dataset.id, cls: [...el.classList].filter((t) => !t.startsWith("is-")).join(".") };
+}
+
+function restoreNoteControl(held) {
+  if (!held) return;
+  restoreFocusTo(() => {
+    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    //: Else the row itself (Save changes closed its form), which a script may focus.
+    if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
+    return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
   });
 }
 
@@ -129,7 +160,7 @@ async function resolveCategoryChoice(select) {
   if (select.value !== "__new__") return select.value;
   // promptDialog resolves to trimmed text, or "" for cancel: one shape for
   // both, so there is no null to check the way window.prompt needed.
-  const name = await promptDialog("Name for the new category:", "", { confirmLabel: "Create" });
+  const name = await promptDialog("Name for the new category", "", { confirmLabel: "Create" });
   return name || undefined;
 }
 
@@ -182,28 +213,37 @@ function liveQueryIds(q) {
 //: nothing), and `GET /search` (`search/query.py`) has all three. They are
 //: asked of the engine, the way `type:` and `prop:` are asked of
 //: `/entries/query`, and the list keeps its own order and its own look.
-const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space):(?:"[^"]{1,200}"|[^\s"]+))/gi;
+const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|urgent|clipped)(?:\s|$))):(?:"[^"]{1,200}"|[^\s"]+))/gi;
 //: One object for this file's engine state (the global-scope ratchet counts
 //: top-level `let`s): `ids` answers `q`, `pending` is the question in the air,
 //: `capped` says the engine's page (50) was full, `semanticFor` is the box text
 //: the Semantic toggle's results were loaded for, and `rank` their order.
-const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map() };
+//: `jumpId` is set by `flashEntry` while it renders: the first paint must reach that id.
+const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: "", rank: new Map(), jumpId: null };
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
+//: Every page of the engine's answer, up to 500 notes (audit 1031 N16); `more` is true only if page ten had more.
+async function enginePages(q, kind) {
+  const ids = new Set();
+  let more = false;
+  for (let page = 1; page <= 10; page++) {
+    const body = await apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50&page=${page}`, { silent: true });
+    for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
+    if (!(more = Boolean(body.more))) break;
+  }
+  return { ids, more };
+}
+
 function engineQueryIds(q) {
   if (noteEngine.q === q && noteEngine.ids) return noteEngine.ids;
   if (noteEngine.pending !== q) {
     noteEngine.pending = q;
     const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
-    apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50`, { silent: true })
-      .then((body) => {
+    enginePages(q, kind)
+      .then(({ ids, more }) => {
         if (noteEngine.pending !== q) return;
-        const hits = (body.hits || []).filter((hit) => hit.kind === "note");
-        noteEngine.q = q;
-        noteEngine.ids = new Set(hits.map((hit) => hit.id));
-        noteEngine.capped = (body.hits || []).length >= 50;
-        noteEngine.pending = "";
+        Object.assign(noteEngine, { q, ids, capped: more, pending: "" });
         renderEntries();
       })
       .catch(() => {
@@ -243,6 +283,18 @@ function showNotesFilter(query) {
   search.dispatchEvent(new Event("input"));
   search.focus();
 }
+
+//: A feature that needs the meaning engine says so when it is not ready (audit 1031 N25);
+//: a still-warming engine is not a missing one.
+function meaningEngineMissing() {
+  return Boolean(modelStatus) && modelStatus.embedding_ready === false && !modelStatus.embedding_warming;
+}
+
+const MEANING_ENGINE_WORDS = "The meaning engine is not ready, so only the words are compared. Set it up in Settings, Models.";
+
+//: The `is:` words the filter knows (`matchesSearch` below). Any other is a typo or a
+//: filter that does not exist, and an empty list says so (audit 1031 N18).
+const NOTE_FLAGS = "pinned favourite favourites favorite starred private linked draft drafts untagged untitled review".split(" ");
 
 function parseNoteQuery(raw) {
   const query = {
@@ -307,37 +359,6 @@ function parseNoteQuery(raw) {
     else query.words.push(lower);
   }
   return query;
-}
-
-//: KG7: a structural query's bar over the list: how many, and the same notes
-//: as a table and on the graph.
-function liveQueryBar(visible) {
-  const list = $("entry-list");
-  let bar = list.parentElement?.querySelector(":scope > .note-query-bar");
-  const parsed = noteSearch ? parseNoteQuery(noteSearch) : null;
-  const live = Boolean(parsed) && (parsed.structural.length > 0 || parsed.engine.length > 0);
-  if (!live) {
-    bar?.remove();
-    return;
-  }
-  if (!bar) {
-    bar = document.createElement("div");
-    bar.className = "row note-query-bar";
-    list.before(bar);
-  }
-  const ids = visible.map((e) => e.id);
-  const count = document.createElement("span");
-  count.className = "muted";
-  //: The engine answers one page (50); a full page says so rather than
-  //: letting the count pass for the whole of a larger answer.
-  count.textContent = parsed.engine.length > 0 && noteEngine.capped
-    ? `The first ${ids.length} notes that match this query`
-    : `${ids.length} note${ids.length === 1 ? "" : "s"} match this query`;
-  bar.replaceChildren(
-    count,
-    smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
-    smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
-  );
 }
 
 function noteQueryIsEmpty(query) {
@@ -422,7 +443,7 @@ function matchesSearch(entry) {
     //: kept because it is in this app's own help text, in saved filters people
     //: already have, and in muscle memory. Two spellings of one flag is a
     //: smaller cost than breaking a filter somebody saved.
-    if ((flag === "pinned" || flag === "favourite" || flag === "favourites") && !entry.pinned) {
+    if (/^(pinned|favou?rites?|starred)$/.test(flag) && !entry.pinned) {
       return false;
     }
     if (flag === "private" && !entry.is_private) return false;
@@ -430,6 +451,9 @@ function matchesSearch(entry) {
     if (flag === "linked" && !(entry.links || []).length && !/\[\[[^\]\n]{1,120}\]\]/.test(entry.content || "")) return false;
     if ((flag === "draft" || flag === "drafts") && !entry.is_draft) return false;
     if (flag === "untagged" && tags.length) return false;
+    if (flag === "untitled" && entry.title) return false;
+    //: A word that is no filter narrows to nothing, and the empty list says so (`noMatchHint`).
+    if (!NOTE_FLAGS.includes(flag)) return false;
     //: The review queue (section 17, row 1): unsure or Uncategorised filings
     //: nobody has decided on (`entryNeedsReview`, above).
     if (flag === "review" && !entryNeedsReview(entry)) return false;
@@ -805,43 +829,28 @@ function unlatex(text) {
   return out;
 }
 
-// `compact`: skip the actual <img> and show the alt text instead, for a
-// label-sized surface (a link chip, a document sidebar button) where a
-// note's own image markdown would otherwise cram a thumbnail into a spot
-// sized for a line of text. The note card's own body always gets the real
-// image; everywhere smaller gets the same treatment `notePreviewText`
-// already gives one to a plain-text preview.
+// `compact`: show the alt text, not the <img>, on a label-sized surface (a
+// link chip, a sidebar button); the note card's body always gets the image.
 //
-// `options` is where appendInline's five real behavioural differences from
-// the note-card grammar live, now that the two hand-rolled parsers (each
-// with its own separately maintained `isRenderableUrl` call, per
-// ROADMAP.md §0/§2) are one function:
-//   - `dismissible` (default true): render an image with the note-card
-//     delete/lightbox chrome. appendInline's callers (chat, documents, table
-//     cells) pass false: there is no note markdown line for a "remove this
-//     image" click to edit there, so they get a plain <img>.
-//   - `autolinkBareUrls` (default false): turn a plain `https://…` run into
-//     a real link. Off for note cards (unchanged), on for appendInline.
-//   - `underscoreSyntax` (default false): also recognize `__bold__`/
-//     `_italic_` and bare-URL autolinking, using INLINE_MD_LEGACY instead of
-//     INLINE_MD: see that constant's comment for why this is a second
-//     literal pattern rather than a superset with the extra alternatives
-//     suppressed after matching.
-//   - `strikeTag` (default "s"): appendInline's callers always used <del>,
-//     not the note-card renderer's <s>; style.css has separate rules for
-//     `.entry-content s` vs `.answer/.bubble-answer/.dash-body del`.
-//   - `applyLatex` (default true): appendInline never ran unlatex() on its
-//     text, so it stays off for that mode to keep behaviour unchanged.
-// Every default matches renderInlineMarkdown's original, options-less
-// behaviour exactly, so no existing call site needs to change.
+// `options`, appendInline's differences from the note-card grammar:
+//   - `dismissible` (default true): the note-card delete/lightbox chrome.
+//     Chat, documents and table cells pass false: no note line to edit.
+//   - `autolinkBareUrls` (default false): a plain `https://…` becomes a link.
+//   - `underscoreSyntax` (default false): also `__bold__`/`_italic_`, using
+//     INLINE_MD_LEGACY (see that constant for why it is a second pattern).
+//   - `strikeTag` (default "s"): appendInline's callers use <del>; style.css
+//     has separate rules for `.entry-content s` and `.answer del`.
+//   - `applyLatex` (default true): appendInline never ran unlatex().
 // The allow-list for anything a note's own text can turn into an href:
 // web links, mail, this app's own paths and in-page anchors. Everything
 // else (javascript:, data:, vbscript:, file:) becomes a dead link rather
 // than a live one. Kept beside the renderer that needs it.
 function safeHref(url) {
   const value = String(url || "").trim();
-  if (/^(https?:|mailto:|tel:)/i.test(value)) return value;
-  if (/^[/#?.]/.test(value) || !/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+  // As a browser reads it: controls dropped (audit 1028 D14).
+  const probe = value.replace(/[\0- \x7f]/g, "");
+  if (/^(https?:|mailto:|tel:)/i.test(probe)) return value;
+  if (/^[/#?.]/.test(probe) || !/^[a-z][a-z0-9+.-]*:/i.test(probe)) return value;
   return "#";
 }
 
@@ -898,11 +907,41 @@ function readableUrl(url) {
   const host = parsed.hostname.replace(/^www\./i, "");
   const segments = parsed.pathname.split("/").filter(Boolean);
   if (!segments.length) return host;
-  let last = decodeURIComponent(segments[segments.length - 1]);
+  let last = decodeURIComponent(segments.at(-1));
   if (last.length > READABLE_URL_SEGMENT) last = last.slice(0, READABLE_URL_SEGMENT - 1) + "\u2026";
   //: An ellipsis stands in for the middle of a deep path, so "site / … / page"
   //: still says there was more between them.
   return segments.length > 1 ? `${host} / \u2026 / ${last}` : `${host} / ${last}`;
+}
+
+//: **A picture at another address is never asked for** (audit 1029 N7). The
+//: page's CSP (`img-src 'self' data: blob:`) refuses it, which read as
+//: "deleted" and logged four errors a render. The card says so and links to
+//: it instead of building the `<img>`.
+//: The blank lines before a picture on its own line are the markdown's, not
+//: the note's: kept, they stacked on the box's own margin into a 33px gap
+//: under a sketch's caption (dog3-1026 row 15).
+function appendPictureBox(element, box) {
+  const before = element.lastChild?.lastChild || element.lastChild;
+  if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
+  element.appendChild(box);
+}
+
+function isRemoteImage(url) {
+  return /^https?:\/\//i.test(url) && !url.startsWith(`${location.origin}/`);
+}
+
+function remoteImageNote(url) {
+  const note = document.createElement("span");
+  note.className = "entry-image-note";
+  note.title = "This notebook works offline, so pictures from the web are not loaded.";
+  const open = document.createElement("a");
+  open.href = safeHref(url);
+  open.target = "_blank";
+  open.rel = "noopener noreferrer";
+  open.textContent = "Open link";
+  note.append("Remote image not loaded. ", open);
+  return note;
 }
 
 //: A link label worth reading as inline markdown: it holds emphasis or code.
@@ -993,25 +1032,22 @@ function appendInlineRun(element, text, terms, compact, options) {
     if (imageUrl !== undefined) {
       if (compact) {
         element.appendChild(document.createTextNode(imageAlt || "Image"));
+      } else if (isRemoteImage(imageUrl)) {
+        appendPictureBox(element, remoteImageNote(imageUrl));
       } else if (isRenderableUrl(imageUrl)) {
+        const img = document.createElement("img");
+        img.src = mediaSrc(imageUrl);
+        img.alt = imageAlt || "";
+        img.className = dismissible ? "attachment-thumb" : "entry-inline-image";
+        img.loading = "lazy";
         if (!dismissible) {
-          const img = document.createElement("img");
-          img.src = mediaSrc(imageUrl);
-          img.alt = imageAlt || "";
-          img.className = "entry-inline-image";
-          img.loading = "lazy";
           element.appendChild(img);
+          window.imageLayout?.(img);
           cursor = pattern.lastIndex;
           continue;
         }
         const wrapper = document.createElement("span");
         wrapper.className = "thumb-wrap";
-        const img = document.createElement("img");
-        img.src = mediaSrc(imageUrl);
-        img.alt = imageAlt || "";
-        img.className = "attachment-thumb";
-        img.loading = "lazy";
-        img.style.cursor = "zoom-in";
         img.addEventListener("click", (e) => {
           e.stopPropagation();
           openLightbox([{ filename: imageAlt || "Image", getUrl: () => mediaSrc(imageUrl) }], 0);
@@ -1041,7 +1077,7 @@ function appendInlineRun(element, text, terms, compact, options) {
         // separate feature.
         img.addEventListener("error", () => {
           const placeholder = document.createElement("span");
-          placeholder.className = "entry-inline-image-deleted";
+          placeholder.className = "entry-image-note";
           placeholder.append(document.createTextNode(`${imageAlt || "Image"} deleted`));
           const dismiss = document.createElement("span");
           dismiss.className = "unlink";
@@ -1052,12 +1088,8 @@ function appendInlineRun(element, text, terms, compact, options) {
           placeholder.appendChild(dismiss);
           wrapper.replaceWith(placeholder);
         });
-        //: The blank lines before a picture on its own line are the
-        //: markdown's, not the note's: kept, they stacked on the wrapper's own
-        //: margin into a 33px gap under a sketch's caption (dog3-1026 row 15).
-        const before = element.lastChild?.lastChild || element.lastChild;
-        if (before?.nodeType === Node.TEXT_NODE) before.textContent = before.textContent.trimEnd();
-        element.appendChild(wrapper);
+        appendPictureBox(element, wrapper);
+        window.imageLayout?.(img);
       } else {
         element.appendChild(document.createTextNode(match[0]));
       }
@@ -1454,13 +1486,13 @@ function resolveWikiTarget(name) {
 // always did. When a note contains neither, the DOM produced is identical to
 // before, which is why the fall-through appends to `element` directly rather
 // than wrapping runs in a container.
-function renderNoteText(element, text, terms) {
+function renderNoteText(element, text, terms, prose = (s) => s) {
   element.replaceChildren();
   const lines = String(text ?? "").replace(/\r\n/g, "\n").split("\n");
   let buffer = [];
   const flush = () => {
     if (!buffer.length) return;
-    renderNoteInline(element, buffer.join("\n"), terms);
+    renderNoteInline(element, prose(buffer.join("\n")), terms);
     buffer = [];
   };
 
@@ -1483,8 +1515,21 @@ function renderNoteText(element, text, terms) {
     const columns = mdColumnsFrom(lines, i);
     if (columns) {
       flush();
-      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms)));
+      element.appendChild(mdColumnsElement(columns.columns, (host, body) => renderNoteText(host, body, terms, prose)));
       i = columns.end;
+      continue;
+    }
+    //: **A table or a code fence draws as it does everywhere else** (audit
+    //: 1029 N8: the card showed `| a | b |` and the fence's backticks as
+    //: text). Search terms are not marked inside the block.
+    const blockEnd = mdBlockEnd(lines, i);
+    if (blockEnd) {
+      flush();
+      const box = document.createElement("div");
+      box.className = "entry-md-block";
+      renderMarkdown(box, lines.slice(i, blockEnd).join("\n"));
+      element.appendChild(box);
+      i = blockEnd;
       continue;
     }
     const maths = mdMathBlockFrom(lines, i);
@@ -1541,8 +1586,12 @@ function renderNoteText(element, text, terms) {
         i = j;
         continue;
       }
-      // An ordinary blockquote, not a callout: leave it to the inline pass
-      // exactly as it was written, rather than eating the "> " markers.
+      //: A plain quote draws as one (audit 1031 N26); its body goes back through this
+      //: function, so nested quotes nest and search words stay marked.
+      flush();
+      element.appendChild(mdQuoteElement(quoted, (host, body) => renderNoteText(host, body.join("\n"), terms, prose)));
+      i = j;
+      continue;
     }
 
     //: **A task reads as a task** (qa-1005): "- [x] Beta invite list" was the
@@ -1633,6 +1682,10 @@ function renderNoteInline(element, text, terms) {
       else offerToCreateWikiTarget(name);
     });
     element.appendChild(link);
+    //: A link to nothing says so and offers the note (audit 1029 N22).
+    if (!mapTarget && wikiLinkTarget(name).trim()) {
+      element.appendChild(chip("Create", "", (event) => { event.stopPropagation(); offerToCreateWikiTarget(name); }));
+    }
     cursor = pattern.lastIndex;
   }
   if (cursor < text.length) {
@@ -1771,45 +1824,6 @@ function whyThisResultChip(entry) {
   return badge;
 }
 
-// One call per settled query, not per keystroke: the caller debounces, and a
-// reply that arrives after the box has moved on is dropped rather than
-// painting reasons for a query nobody is looking at any more.
-async function refreshNoteSearchWhy() {
-  const asked = noteSearch;
-  if (!asked) {
-    noteSearchWhy.clear();
-    return;
-  }
-  // What the person is looking at, when that is unambiguous: one note opened
-  // out in the list is the app's own "open note", and it is what makes the
-  // third signal (distance over the links) mean anything. Two open rows, or
-  // none, is not a context, and passing a guess would put "linked to the open
-  // note" on a note linked to something nobody is reading.
-  const open =
-    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null);
-  let body;
-  try {
-    // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search
-    // box shows a page, not a notebook, and a note past the fiftieth best
-    // match simply carries no reason chip rather than a wrong one.
-    body = await apiJson(
-      `/search?q=${encodeURIComponent(asked)}&kind=note,board,map&limit=50` +
-        (open ? `&entry_id=${open}` : "")
-    );
-  } catch {
-    // The list is already rendered and already correct; the reasons are the
-    // only thing missing, so a failed call leaves the notes alone.
-    return;
-  }
-  if (noteSearch !== asked) return;
-  noteSearchWhy.clear();
-  for (const hit of body?.hits || []) noteSearchWhy.set(hit.id, hit);
-  noteSearchCorrection = body?.corrected
-    ? { asked, corrected: body.corrected, ids: new Set((body.hits || []).map((hit) => hit.id)) }
-    : null;
-  renderEntries();
-}
-
 // Sort comparator for the chosen mode (Wave J). Pinned always floats to
 // the top first, matching the server's own ordering.
 function noteEditedTime(entry) {
@@ -1854,126 +1868,188 @@ function sortEntries(entries) {
   return [...entries].sort((a, b) => byPinned(a, b) || cmp(a, b));
 }
 
-// --- incremental list rendering (ROADMAP §85.4 items 3 and 4) ---------------
-//
-// **The problem this solves, measured rather than assumed.** Four of this
-// app's lists: the Notes list, the Library grid, the Timeline, the log
-// console: built one DOM node per record for the *entire* collection, with
-// no cap and no windowing. At 1,501 notes `renderEntries()` took ~533ms, and
-// it re-runs on every search keystroke, sort change, filter and save.
-//
-// **Why chunk-on-scroll rather than true virtualisation.** Real
-// virtualisation (absolute positioning against a scroll offset) needs to know
-// each row's height before it renders one. Every list here has variable
-// heights: a note card grows with its text, its tags, its attachments and
-// whether its inline actions are open, so a virtualiser would either need
-// measurement passes that cost what it saves, or fixed heights the design
-// does not have. Rendering in chunks as the end of the list approaches keeps
-// the DOM proportional to what has been *scrolled past* rather than to the
-// notebook, needs no height information at all, and leaves the list one
-// continuous scroll rather than turning it into pages, which is the
-// distinction BACKLOG §77 draws and deliberately asks for.
-//
-// **The honest trade:** the browser's own Ctrl+F cannot find text in a chunk
-// that has not rendered yet. That is a real loss, and it is why `initial` is
-// generous rather than minimal, a screenful and change is always present , 
-// and why it is applied to lists that have their own search box sitting
-// directly above them. It is not applied anywhere that the browser's find is
-// the only way through.
-//
-// `root: null` (the viewport) rather than the scroll container: an element
-// inside the scrolled-away part of a *nested* scroller is not intersecting
-// the viewport either, so one observer is correct for both a page-level and a
-// container-level scroll, without having to find which one this list is in.
-const listWindows = new WeakMap();
+//: **One windowed list, for Notes and the Timeline** (audit 1029 N9, audit 1028
+//: S16 and S53). `renderIncrementally` (library.js) only ever added: a list
+//: scrolled to its end held every card, 300 notes 12,126 elements, and the
+//: Timeline's own paging did the same with 8 elements a row, 27,500 nodes at
+//: 2,000 rows. Here every row is an empty `<li class="row-shell">` holding its
+//: place (its key, the height it last drew at), and only the rows within
+//: `ROW_WINDOW_MARGIN` of the scroller's window are built; a built row that is
+//: `ROW_WINDOW_FAR` past the window becomes a shell again once the scroll
+//: settles. A shell is one element, so a notebook costs one node a row plus
+//: the screenful. The keyboard builds the row it moves to (`fill`), the
+//: selection lives in `selectedIds` and not in the rows, and a row being
+//: edited, holding focus, open or with a menu open is never hollowed
+//: (`stays`), nor the one Tab stop. One instance serves any number of lists (the Timeline has a
+//: list a day) and `add` appends, which is how a page of the Timeline lands.
+const ROW_WINDOW_MARGIN = "1200px 0px";
+const ROW_WINDOW_BATCH = 6;
+const ROW_WINDOW_FAR = 3000;
+const ROW_WINDOW_CARRY = ["rail-subject", "flash"];
 
-function renderIncrementally(container, items, buildItem, options = {}) {
-  //: `budgetMs` (opt-in, libtl-0926): build for at most that long a frame and
-  //: carry on next frame while the sentinel is still near, instead of forty
-  //: items in one go. The Library's forty cards measured 42 to 83ms a chunk
-  //: on a thousand-note seed, six frames dropped each time a chunk landed
-  //: mid-scroll. The observer alone cannot drive this, because it only
-  //: fires when the sentinel's intersection *changes*: a sentinel that is
-  //: still near after a small chunk never fires again. So `near` keeps the
-  //: observer's last answer and the pump runs on frames until it goes false.
-  const { initial = 60, chunk = 40, afterChunk, budgetMs = 0 } = options;
-
-  // Tear down the previous run first. Without this a re-render (a keystroke in
-  // the search box) leaves the old observer alive, still holding the old
-  // items, still appending them into a container that has moved on, the
-  // "listener added without removal" shape, and the reason this is a
-  // WeakMap rather than a local.
-  listWindows.get(container)?.disconnect();
-  listWindows.delete(container);
-
-  const paint = (from, to) => {
-    const fragment = document.createDocumentFragment();
-    for (let i = from; i < to; i++) fragment.appendChild(buildItem(items[i], i));
-    container.appendChild(fragment);
+function windowRows(root, o) {
+  const info = new WeakMap(); // row -> { items, i }
+  const lists = new WeakMap(); // list -> its items
+  const live = new Set(); // rows built now
+  let timer = 0;
+  let off = false;
+  const carry = (to, from) => {
+    if (!from) return to;
+    to.tabIndex = from.tabIndex;
+    for (const name of ROW_WINDOW_CARRY) if (from.classList.contains(name)) to.classList.add(name);
+    return to;
   };
-
-  paint(0, Math.min(initial, items.length));
-  afterChunk?.();
-  if (items.length <= initial) return;
-
-  let rendered = initial;
-  // A zero-height marker after the last painted item. It is the *list's* own
-  // last child rather than a sibling of the container, so it moves down as
-  // chunks land and it inherits whatever scroller the list is in.
-  const sentinel = document.createElement("li");
-  sentinel.className = "list-window-sentinel";
-  sentinel.setAttribute("aria-hidden", "true");
-  container.appendChild(sentinel);
-
-  let near = false;
-  let pumping = 0;
-  let done = false;
-  const buildNext = () => {
-    const next = Math.min(rendered + chunk, items.length);
-    const started = performance.now();
-    // Insert *before* the sentinel so it stays last and keeps observing.
-    const fragment = document.createDocumentFragment();
-    let i = rendered;
-    for (; i < next; i++) {
-      if (budgetMs && i > rendered && performance.now() - started > budgetMs) break;
-      fragment.appendChild(buildItem(items[i], i));
-    }
-    container.insertBefore(fragment, sentinel);
-    rendered = i;
-    afterChunk?.();
-    if (rendered >= items.length) {
-      done = true;
-      observer.disconnect();
-      listWindows.delete(container);
-      sentinel.remove();
-    }
+  const shellFor = (items, i, from) => {
+    const li = document.createElement("li");
+    li.className = "row-shell";
+    li.setAttribute("aria-hidden", "true");
+    //: Hidden inline, not by a rule: the boot stylesheets are at their cap.
+    li.style.cssText = `visibility:hidden;height:${o.heights.get(o.keyOf(items[i])) || o.guess}px`;
+    li.tabIndex = -1;
+    o.tag(li, items[i]);
+    info.set(li, { items, i });
+    return carry(li, from);
   };
-  const pump = () => {
-    pumping = 0;
-    if (done || !near || listWindows.get(container) !== observer) return;
-    buildNext();
-    if (!done && near) pumping = requestAnimationFrame(pump);
+  const make = (items, i, from) => {
+    const li = carry(o.build(items[i], i), from);
+    info.set(li, { items, i });
+    live.add(li);
+    observer.observe(li);
+    return li;
   };
-  const observer = new IntersectionObserver(
-    (entries) => {
-      near = entries.some((entry) => entry.isIntersecting);
-      if (!near) return;
-      if (!budgetMs) {
-        buildNext();
-        return;
+  //: A shell is hidden, so it cannot take focus: the keyboard (Home, End,
+  //: the arrows) builds the row it is moving to first.
+  function fill(shell) {
+    const at = info.get(shell);
+    if (!at || !shell.classList.contains("row-shell") || !shell.parentElement) return shell;
+    const li = make(at.items, at.i, shell);
+    shell.replaceWith(li);
+    o.onFill?.(li);
+    return li;
+  }
+  //: The rows beyond it come with it, further from the window: a few rows in
+  //: one frame cost less than a row in every frame of a scroll.
+  function fillRun(target, up) {
+    const run = [target];
+    const step = up ? "previousElementSibling" : "nextElementSibling";
+    for (let el = target[step]; el?.classList.contains("row-shell") && run.length < ROW_WINDOW_BATCH; el = el[step]) run.push(el);
+    for (const shell of run) fill(shell);
+  }
+  //: Rows are emptied once the scroll settles, never on the frame they left:
+  //: building a card is mostly the browser styling its forty elements, so a
+  //: row read a moment ago and scrolled back to is kept. Every position is
+  //: read before any row is replaced, so it is one layout.
+  function settle() {
+    if (off) return;
+    const box = root ? root.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+    const far = [];
+    for (const li of live) {
+      if (!li.isConnected) live.delete(li);
+      else if (li.tabIndex !== 0 && !o.stays(li)) {
+        const r = li.getBoundingClientRect();
+        if (r.bottom < box.top - ROW_WINDOW_FAR || r.top > box.bottom + ROW_WINDOW_FAR) far.push([li, r.height]);
       }
-      if (!pumping) pump();
+    }
+    for (const [li, height] of far) {
+      const at = info.get(li);
+      if (height) o.heights.set(o.keyOf(at.items[at.i]), height);
+      const shell = shellFor(at.items, at.i, li);
+      li.replaceWith(shell);
+      live.delete(li);
+      observer.observe(shell);
+    }
+    o.onSettle?.();
+  }
+  const observer = new IntersectionObserver((seen) => {
+    if (off) return;
+    for (const { target, isIntersecting, boundingClientRect, rootBounds } of seen) {
+      const at = info.get(target);
+      if (!at || !target.parentElement) continue;
+      if (!target.classList.contains("row-shell")) {
+        if (boundingClientRect.height) o.heights.set(o.keyOf(at.items[at.i]), boundingClientRect.height);
+      } else if (isIntersecting) fillRun(target, rootBounds && boundingClientRect.top < rootBounds.top);
+    }
+    clearTimeout(timer);
+    timer = setTimeout(settle, 300);
+  }, { root, rootMargin: ROW_WINDOW_MARGIN });
+  //: `now(item, i)` says which rows are built as they land; the rest are shells.
+  function add(list, more, now = () => false) {
+    const items = lists.get(list) || [];
+    lists.set(list, items);
+    const from = items.length;
+    for (const item of more) items.push(item);
+    const fragment = document.createDocumentFragment();
+    more.forEach((item, k) => {
+      const i = from + k;
+      if (now(item, i)) return fragment.appendChild(make(items, i));
+      const shell = shellFor(items, i);
+      observer.observe(shell);
+      fragment.appendChild(shell);
+    });
+    list.appendChild(fragment);
+  }
+  function stop() {
+    off = true;
+    observer.disconnect();
+    clearTimeout(timer);
+  }
+  return { add, fill, stop };
+}
+
+const noteWindow = { win: null, fill: (li) => li, heights: new Map(), mode: "", items: null, list: null };
+
+function notesScroller(list) {
+  for (let el = list.parentElement; el && el !== document.body; el = el.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) return el;
+  }
+  return null;
+}
+
+const NOTE_WINDOW_FIRST = 12;
+const noteRowStays = (li) => li.contains(document.activeElement) || Number(li.dataset.id) === editingId
+  || li.matches(':has(textarea, details[open], [contenteditable="true"], .action-menu:not(.hidden))');
+
+function renderWindowed(list, items, buildItem, { keep, afterChunk, settled, grown } = {}) {
+  if (grown) {
+    //: The window stays; the new rows join its end and the rows built say how many there are now.
+    noteWindow.items = items;
+    noteWindow.win.add(list, grown);
+    for (const li of list.querySelectorAll(":scope > li[aria-setsize]")) li.setAttribute("aria-setsize", String(items.length));
+    afterChunk?.();
+    return;
+  }
+  noteWindow.win?.stop();
+  if (noteWindow.mode !== notesViewMode) noteWindow.heights.clear();
+  noteWindow.mode = notesViewMode;
+  noteWindow.items = items;
+  noteWindow.list = list;
+  const win = windowRows(notesScroller(list), {
+    heights: noteWindow.heights,
+    guess: notesViewMode === "rows" ? 50 : 132,
+    keyOf: (item) => item[0].id,
+    tag: (li, item) => { li.dataset.id = item[0].id; },
+    //: Built rows say where they are in the whole list; the shells are hidden
+    //: from screen readers.
+    build: (item, i) => {
+      const li = buildItem(item, i);
+      li.setAttribute("aria-posinset", String(i + 1));
+      li.setAttribute("aria-setsize", String(noteWindow.items.length));
+      return li;
     },
-    // Start the next chunk while the sentinel is still a screen away, so the
-    // list refills before the user reaches the bottom rather than after.
-    { root: null, rootMargin: "600px 0px" }
-  );
-  observer.observe(sentinel);
-  listWindows.set(container, observer);
+    stays: noteRowStays,
+    onFill: (li) => entryCardControls(li, li.tabIndex === 0),
+    onSettle: settled,
+  });
+  noteWindow.win = win;
+  noteWindow.fill = win.fill;
+  //: A redraw builds the rows that were built before it (the same place in
+  //: the list), the note being jumped to or edited, or the first screenful.
+  win.add(list, items, (item, i) => (keep.size ? keep.has(item[0].id) : i < NOTE_WINDOW_FIRST));
+  afterChunk?.();
 }
 
 // BACKLOG §77 item 1, the user-facing page-size control, deliberately kept
-// separate from §86's scroll-chunking (renderIncrementally above): that stays
+// separate from §86's scroll-chunking (`renderIncrementally`, library.js): that stays
 // one continuous scroll under "All notes" (the default, and this function's
 // no-op path). A numeric size instead slices whatever list renderEntries was
 // about to paint down to one page and updates the Prev/Next bar.
@@ -2009,23 +2085,14 @@ function paginateNotesForDisplay(items) {
 // jump. Threads are the reason this can't be a plain sort-then-slice: a
 // child's position depends on its parent's position, not on the child's own
 // sort key, so `renderEntries`'s own thread-flattening (`ordered`,
-// `addWithChildren`) is reproduced here rather than approximated.
+// `addWithChildren`) lives here, and `renderEntries` calls it.
 //
 // Reads the same module-level filter state `renderEntries` does
 // (`draftsOnly`, `activeCategory`, `noteSearch`, `noteSort`), a caller that
 // wants a *different* view's ordering (see `resolveNotePage` below) sets
 // those first, the same way `flashEntry` already resets category/search/
 // drafts before it ever draws anything.
-function orderedNotesForCurrentView() {
-  let visible = draftsOnly
-    ? allEntries.filter((e) => e.is_draft)
-    : favouritesOnly
-      ? allEntries.filter((e) => e.pinned && noteListed(e))
-      : activeCategory
-        ? allEntries.filter((e) => e.category === activeCategory && noteListed(e))
-        : allEntries.filter(noteListed);
-  visible = visible.filter(matchesSearch);
-
+function orderedNotesForCurrentView(visible = libraryVisibleRows()) {
   const flat = Boolean(noteSearch) || noteSort !== "newest";
   if (flat) return sortEntries(visible).map((entry) => [entry, 0]);
 
@@ -2161,56 +2228,27 @@ function setNotesViewMode(mode) {
 //: coming back to a tidy one.
 const expandedRows = new Set();
 
-function toggleRowExpanded(id) {
-  const open = !expandedRows.has(id);
-  if (open) {
-    expandedRows.add(id);
-    notesRailId = id;
-  } else {
-    expandedRows.delete(id);
-    //: Closing the note the rail is about closes the rail's subject with it:
-    //: a column describing a note nobody has open is the chrome-with-nothing
-    //: the local map already learned not to be.
-    if (notesRailId === id) notesRailId = null;
-  }
-  const li = document.querySelector(`#entry-list > li[data-id="${id}"]`);
-  if (!li) return renderEntries();
-  //: **In place, and animated** (INBOX 676, the owner: "the dropdown and
-  //: collapse should be a smooth animation adn not sudden and janky"). This
-  //: was a full list redraw: a new row in one frame (49.6 to 237.8px) and a
-  //: new chevron, so its glyph could not turn. The row is the same DOM open
-  //: or closed (CSS hides what a closed row does not show), so the class
-  //: alone is the change. The height runs from where the row *is*, read
-  //: before the previous animation is cancelled, so a second press mid-way
-  //: turns back from there instead of snapping; what the change reveals
-  //: fades in over the same time. `--ui-slow` is the Interface animations
-  //: switch's token: 0s with it off, and then nothing animates.
-  const from = li.getBoundingClientRect().height;
-  const parts = [...li.querySelectorAll(":scope > :not(.row-expand, .entry-title)")];
-  const seen = parts.map((el) => (el.getAnimations().length ? +getComputedStyle(el).opacity : 0));
-  for (const el of [li, ...parts]) for (const a of el.getAnimations()) if (a.id === "row") a.cancel();
-  li.classList.toggle("row-expanded", open);
-  const button = li.querySelector(":scope > .row-expand");
-  if (button) {
-    button.title = open ? "Show less of this note" : "Show the whole note here";
-    button.setAttribute("aria-label", button.title);
-    button.setAttribute("aria-expanded", String(open));
-  }
-  const to = li.getBoundingClientRect().height;
-  const style = getComputedStyle(li);
-  const duration = parseFloat(style.getPropertyValue("--ui-slow")) * 1000 || 0;
-  const easing = style.getPropertyValue("--ease-in-out").trim() || "ease-in-out";
-  if (duration && Math.abs(to - from) > 1) {
-    li.animate({ height: [`${from}px`, `${to}px`], overflow: ["hidden", "hidden"] }, { id: "row", duration, easing });
-    parts.forEach((el, i) => el.animate({ opacity: [seen[i], 1] }, { id: "row", duration, easing }));
-  }
-  scheduleNotesRail();
-  updateExpandAllButton();
-}
-
 $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
 $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
 $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
+//: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
+//: Offline the file is not there (and the failed fetch is forgotten, app.js `lazyScript`), so the bar says
+//: so once and points at the Capture section, whose box is in the page already.
+//: Fetched a few seconds after boot too, while the server answers: the service worker keeps only what
+//: the page has already asked for, so a card never opened before going offline would not be there.
+setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
+function captureCardNeedsConnection(event) {
+  if (event.type === "input") return;
+  lazyLoadFailed("The capture bar");
+}
+for (const type of ["focusin", "click", "input"]) {
+  $("capture-bar-row")?.addEventListener(type, (event) => {
+    ensureModule("captureCard").then((loaded) => {
+      if (loaded) openCaptureCard(event.target, event.type);
+      else captureCardNeedsConnection(event);
+    });
+  });
+}
 
 //: **A map's topics live on their map** (audit 2026-10-05, UX-06). Each
 //: topic a concept map's Tab or Enter makes is a note (`map_topic`), and a
@@ -2283,35 +2321,92 @@ function libraryVisibleRows() {
 let rowEnterIds = null;
 let rowEnterTimer = 0;
 
-function renderEntries() {
+//: **A page that arrives adds its rows; it does not redraw the list** (perf3
+//: item 1). The rows now drawn, in order and as the same note objects, are a
+//: prefix of what the list should show: the rest is what is appended. Null
+//: when anything else is true (a note changed, the order moved, a thread
+//: joined, the view mode turned, a held note or a skeleton is in the list),
+//: and the list is rebuilt as before. Nothing is appended for no new rows: a
+//: redraw asked for with nothing new is a note that changed in place.
+function noteListGrownBy(list, ordered) {
+  const was = noteWindow.items;
+  if (!was?.length || !noteWindow.win || noteWindow.list !== list || noteWindow.mode !== notesViewMode) return null;
+  if (ordered.length <= was.length || list.childElementCount !== was.length) return null;
+  if (list.lastElementChild.dataset.id !== String(was[was.length - 1][0].id)) return null;
+  for (let i = 0; i < was.length; i++) if (was[i][0] !== ordered[i][0] || was[i][1] !== ordered[i][1]) return null;
+  return ordered.slice(was.length);
+}
+
+//: What the list was holding, which its rebuild builds again, and an empty list.
+function resetNoteList(list) {
+  //: **A row that arrives after the first render fades in** (ledger 1538). The
+  //: list redraws whole, so what was on screen is remembered by id and a card
+  //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
+  //: first render, and a render after the list was empty, mark nothing.
+  rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
+  //: The rows built now are where the reader is: the redraw builds them again.
+  const keep = new Set([...list.querySelectorAll(":scope > li[data-id]:not(.row-shell)")].map((li) => Number(li.dataset.id)));
+  if (noteEngine.jumpId != null) keep.add(noteEngine.jumpId);
+  if (editingId != null) keep.add(editingId);
+  clearTimeout(rowEnterTimer);
+  rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
+  list.replaceChildren();
+  return keep;
+}
+
+//: The filter words outlive a reload in this tab (audit 1031 N44), read here at load
+//: because the first render runs before the later wiring files and would forget them.
+try {
+  noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
+  if (noteEngine.remembered) {
+    $("note-search").value = noteEngine.remembered;
+    noteSearch = noteEngine.remembered;
+    $("save-search").classList.remove("hidden");
+  }
+} catch {
+  /* storage blocked: an empty box, as before */
+}
+function rememberNoteFilter(words) {
+  if (words === noteEngine.remembered) return;
+  noteEngine.remembered = words;
+  try {
+    if (words) sessionStorage.setItem("note-filter", words);
+    else sessionStorage.removeItem("note-filter");
+  } catch {
+    /* storage blocked: this page only */
+  }
+}
+
+//: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
+function renderEntries(appendOnly = false) {
+  const list = $("entry-list");
+  rememberNoteFilter(noteSearch);
+  // Drafts stay out of All/category views entirely, user-reported: they
+  // should only show up in the Drafts filter until saved as a real note.
+  const visible = libraryVisibleRows();
+  // Flat for a search or non-default sort, threaded for newest: one ordering
+  // with `resolveNotePage`, so a jump's page is the page that renders.
+  const ordered = paginateNotesForDisplay(orderedNotesForCurrentView(visible));
+  const grown = noteListGrownBy(list, ordered);
+  if (appendOnly && !grown) return;
+  delete list.dataset.stale;
   closeNotePageIfGone();
   notesRailSync();
   // A cleared box clears its reasons here rather than at each of the five
   // places that can clear the box: a reason for a query nobody typed is
   // worse than no reason at all.
   if (!noteSearch && noteSearchWhy.size) noteSearchWhy.clear();
-  const list = $("entry-list");
   const empty = $("empty-message");
   const noMatch = $("no-match-message");
-  //: **A row that arrives after the first render fades in** (ledger 1538). The
-  //: list redraws whole, so what was on screen is remembered by id and a card
-  //: whose id was not there is marked (`entryItem` reads `rowEnterIds`). The
-  //: first render, and a render after the list was empty, mark nothing.
-  rowEnterIds = new Set([...list.querySelectorAll(":scope > li[data-id]")].map((li) => li.dataset.id));
-  clearTimeout(rowEnterTimer);
-  rowEnterTimer = setTimeout(() => { rowEnterIds = null; }, 1000);
-  list.replaceChildren();
+  const keep = grown ? null : resetNoteList(list);
   // Re-applied on every render, not just on a click: `replaceChildren`
   // above leaves the class alone, but a later render that rebuilt the <ul>
   // itself would not: and this failing silently would look like the
   // toggle not working rather than a class being dropped.
   applyNotesViewMode();
   //: Held notes first (quick-note.js); loads it only when one is held.
-  if (prefs.get("noteOutbox", null)) renderPendingNoteRows();
+  if (!grown && prefs.get("noteOutbox", null)) renderPendingNoteRows();
 
-  // Drafts stay out of All/category views entirely, user-reported: they
-  // should only show up in the Drafts filter until saved as a real note.
-  const visible = libraryVisibleRows();
   //: **A selection is of what is on screen** (INBOX 432). Ticking five notes
   //: and then choosing a category left "5 selected" over two visible rows,
   //: and Tag or Delete then acted on all five, three of them out of sight.
@@ -2358,59 +2453,11 @@ function renderEntries() {
   const notebookEmpty = allEntries.length === 0;
   empty.classList.toggle("hidden", !notebookEmpty);
   noMatch.classList.toggle("hidden", notebookEmpty || visible.length > 0);
+  noMatchHint(noMatch);
 
-  // A search or a non-default sort means the user wants a flat, ordered
-  // list: thread nesting only applies to the default newest view.
-  const flat = Boolean(noteSearch) || noteSort !== "newest";
-  if (flat) {
-    renderIncrementally(
-      list,
-      paginateNotesForDisplay(sortEntries(visible)),
-      (entry) => entryItem(entry, { actions: true }),
-      {
-        afterChunk: () => {
-          applyEntryListTabOrder(list);
-          ensureCardCounts(list, _entriesLoadGeneration);
-        },
-      }
-    );
-    return;
-  }
-
-  // Threads (Wave B): children render indented under their parent. A
-  // child whose parent isn't visible (filtered out) shows at top level.
-  const visibleIds = new Set(visible.map((e) => e.id));
-  const childrenOf = new Map();
-  for (const entry of visible) {
-    if (entry.parent_id && visibleIds.has(entry.parent_id)) {
-      if (!childrenOf.has(entry.parent_id)) childrenOf.set(entry.parent_id, []);
-      childrenOf.get(entry.parent_id).push(entry);
-    }
-  }
-
-  // Flattened to `[entry, depth]` pairs *before* rendering, rather than
-  // recursing straight into the DOM. A thread has to stay whole, a parent and
-  // its continuations are one unit and must never be split across a chunk
-  // boundary: so the recursion produces the order and the depth, and the
-  // renderer below decides how much of that order to paint. Threads are the
-  // reason this list cannot simply be sliced: position in `visible` is not
-  // position on screen.
-  const ordered = [];
-  const addWithChildren = (entry, depth) => {
-    ordered.push([entry, depth]);
-    // Oldest continuation first: a thread reads top to bottom.
-    const children = (childrenOf.get(entry.id) || []).slice().reverse();
-    for (const child of children) addWithChildren(child, depth + 1);
-  };
-
-  for (const entry of visible) {
-    const parentVisible = entry.parent_id && visibleIds.has(entry.parent_id);
-    if (!parentVisible) addWithChildren(entry, 0);
-  }
-
-  renderIncrementally(
+  renderWindowed(
     list,
-    paginateNotesForDisplay(ordered),
+    ordered,
     ([entry, depth]) => {
       const li = entryItem(entry, { actions: true });
       if (depth > 0) {
@@ -2420,15 +2467,17 @@ function renderEntries() {
       return li;
     },
     {
+      keep,
+      grown,
       afterChunk: () => {
         applyEntryListTabOrder(list);
         ensureCardCounts(list, _entriesLoadGeneration);
         // Expand-all reads the rendered rows, and `applyNotesViewMode` runs
-        // at the *top* of this function, right after `replaceChildren()`,
-        // when the list is empty and the button would read "Expand all
-        // (disabled)" forever. Refreshed here, once the rows exist.
+        // at the *top* of this function, when the list is empty: refreshed
+        // here, once the rows exist.
         updateExpandAllButton();
       },
+      settled: () => ensureCardCounts(list, _entriesLoadGeneration),
     }
   );
 }
@@ -2445,6 +2494,22 @@ function renderEntries() {
 // roving tabindex and the arrow-key walk below, so ArrowDown at the bottom of
 // the list would focus an invisible element and appear to do nothing.
 const entryListItems = (list) => Array.from(list.querySelectorAll(":scope > li[data-id]"));
+
+//: A shift-click range over every row between the two, built or not.
+function selectNoteRange(list, fromId, toId, on) {
+  const rows = entryListItems(list);
+  const a = rows.findIndex((li) => li.dataset.id === fromId);
+  const b = rows.findIndex((li) => li.dataset.id === toId);
+  if (a === -1 || b === -1) return;
+  for (const li of rows.slice(Math.min(a, b), Math.max(a, b) + 1)) {
+    if (on) selectedIds.add(Number(li.dataset.id));
+    else selectedIds.delete(Number(li.dataset.id));
+    const check = li.querySelector(":scope > .select-check");
+    if (check) check.checked = on;
+    if (!li.classList.contains("row-shell")) li.classList.toggle("is-selected", on);
+  }
+  updateBatchCount();
+}
 
 function applyEntryListTabOrder(list) {
   const items = entryListItems(list);
@@ -2499,12 +2564,13 @@ function initEntryListKeyboardNav() {
         event.key === "Home" ? 0
           : event.key === "End" ? items.length - 1
             : Math.min(Math.max(index + (event.key === "ArrowDown" ? 1 : -1), 0), items.length - 1);
-      entryListSetStop(items, items[nextIndex]);
-      items[nextIndex].focus();
+      const target = noteWindow.fill(items[nextIndex]);
+      entryListSetStop(entryListItems(list), target);
+      target.focus();
       // .focus() alone scrolls in most browsers, but not predictably, 
       // explicit and consistent with the same fix on the command palette's
       // own arrow-key nav, which has no focus to lean on at all.
-      items[nextIndex].scrollIntoView({ block: "nearest" });
+      target.scrollIntoView({ block: "nearest" });
     } else if (event.key === "Enter" && event.target === current) {
       // Only when the <li> itself has focus, not a button/link/textarea
       // inside it: those already handle their own Enter behaviour, and
@@ -2600,6 +2666,8 @@ function renderSidebar() {
     //: "All" is the row for no filter at all, so it is not lit while Drafts
     //: or Favourites is (INBOX 432: two rows looked chosen at once).
     if (category === activeCategory && !draftsOnly && !favouritesOnly && !(!category && noteSearch === "tag:meeting")) markSidebarRowCurrent(li);
+    //: The row a carried note is dropped on (obj-carry.js `OBJ_FILE_DESTS`).
+    if (category && category !== "Uncategorised") li.dataset.category = category;
     const name = document.createElement("span");
     name.className = "category-name";
     //: Every name on one edge (INBOX 437 (4)): All takes a glyph as Drafts
@@ -2872,7 +2940,15 @@ function showSkeletons(container, count = 3, tag = "div") {
 function skeletonRemember(container) {
   const rows = [...container.children].filter((el) => !el.classList.contains("skeleton"));
   //: The mean, not the first row: a group's heading would make every one short.
-  const shown = rows.filter((el) => el.getBoundingClientRect().top < innerHeight);
+  //: Rows run down the page, so the walk stops at the first one below the
+  //: fold; measuring every row of a long list read the whole list's layout
+  //: (INBOX 1426 L6, the notes list's 255 to 372ms response frame).
+  const shown = [];
+  for (const el of rows) {
+    if (el.getBoundingClientRect().top >= innerHeight) break;
+    shown.push(el);
+  }
+  if (!shown.length) return;
   const height = Math.round(shown.reduce((sum, el) => sum + el.offsetHeight, 0) / shown.length);
   if (!height) return;
   const seen = prefs.json("skeleton-seen", {});
@@ -2917,16 +2993,36 @@ const ENTRIES_PAGE_SIZE = 200;
 const ENTRIES_PROGRESS_MS = 250;
 let _entriesProgressTimer = null;
 
-function paintEntriesProgress() {
+function paintEntriesProgress(list = true) {
   clearTimeout(_entriesProgressTimer);
   _entriesProgressTimer = null;
   renderStatusBar(); // the notebook's size changed, and the bar reads it here
-  renderEntries();
+  //: A list nobody can see is not painted (perf-1031 item 1: six repaints,
+  //: 1.4 s at 4x, behind the Dashboard on a reload). `revealTab`
+  //: (navigation.js) draws it once, when the Notes tab is shown.
+  if (list) renderEntriesWhenShown(list === "append");
 }
+
+//: The repaint a background change asks for (a page arriving, the spaces or
+//: the map index answering): drawn now if the tab is up, once on reveal if not.
+//: The debt is `data-stale` on the list itself, so it is no module state.
+function renderEntriesWhenShown(appendOnly = false) {
+  if ($("tab-notes").classList.contains("hidden")) $("entry-list").dataset.stale = "1";
+  else renderEntries(appendOnly);
+}
+
+//: **Past this many rows a page that is not the last repaints the count, not
+//: the list** (perf-1031 item 3). `renderEntries` rebuilds every row, so a
+//: notebook of 2,000 notes repainted it about eight times as pages arrived:
+//: 37 frames over 50 ms and 5.7 s blocked at 4x, the last at 910 ms. The first
+//: page and the last still paint the list; a short list still grows by steps.
+const ENTRIES_PROGRESS_LIST_MAX = 600;
 
 function scheduleEntriesProgress() {
   if (_entriesProgressTimer !== null) return;
-  _entriesProgressTimer = setTimeout(paintEntriesProgress, ENTRIES_PROGRESS_MS);
+  //: A repaint costs more as the list grows (27 to 46ms over eight at 2,000 notes), so the gap grows with it.
+  const gap = ENTRIES_PROGRESS_MS * Math.max(1, allEntries.length / 800);
+  _entriesProgressTimer = setTimeout(paintEntriesProgress, gap, allEntries.length <= ENTRIES_PROGRESS_LIST_MAX ? true : "append");
 }
 
 async function loadEntries() {
@@ -2934,7 +3030,10 @@ async function loadEntries() {
   //: throws, and a throw used to leave the skeletons and then the empty state
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
-  return loadSurface($("empty-message"), "notes", _loadEntries);
+  const held = heldNoteControl();
+  const result = await loadSurface($("empty-message"), "your notes", _loadEntries);
+  restoreNoteControl(held);
+  return result;
 }
 
 async function _loadEntries() {
@@ -3105,7 +3204,9 @@ async function refreshEntries(ids) {
   ensureMapChipsFor(rows, generation);
   renderStatusBar();
   renderSidebar();
+  const held = heldNoteControl();
   renderEntries();
+  restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
   fillCategoryOptions($("entry-category"), null);
@@ -3252,7 +3353,7 @@ function reminderCountChip(entry, options = {}) {
   if ((!options.actions && !options.facts) || entry.is_board || entry.is_draft) return null;
   const count = reminderCountsCache.get(entry.id) || 0;
   if (!count) return null;
-  const alarm = chip(`ph:alarm ${count} reminder${count === 1 ? "" : "s"}`, "reminders", (event) => {
+  const alarm = chip(`ph:alarm ${nounCount(count, "reminder")}`, "reminders", (event) => {
     event.stopPropagation();
     toggleNoteReminders(entry);
   });
@@ -3285,7 +3386,7 @@ function noteTopicChip(entry) {
     await switchTab("graph");
     showTopicInGraph(entry.id);
   });
-  mark.title = `In the topic ${topic.name}, ${topic.size} notes. Open it on the graph`;
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Open it on the graph`;
   return mark;
 }
 
@@ -3352,7 +3453,7 @@ function ensureCardCounts(list, generation) {
 
 function ensureOneCardCount(list, generation, source) {
   const wanted = [];
-  for (const li of list.querySelectorAll("li[data-id]")) {
+  for (const li of list.querySelectorAll("li[data-id]:not(.row-shell)")) {
     const id = Number(li.dataset.id);
     if (!id || source.cache.has(id) || source.inFlight.has(id)) continue;
     wanted.push(id);
@@ -3368,17 +3469,21 @@ function ensureOneCardCount(list, generation, source) {
         const given = counts[String(id)];
         source.cache.set(id, given === undefined || given === null ? source.empty : given);
       }
+      //: Every chip in, then one fit: a fit reads widths (INBOX 1446).
+      const fitted = [];
       for (const id of wanted) {
         const li = list.querySelector(`li[data-id="${id}"]`);
         const meta = li && li.querySelector(":scope > .entry-meta");
         if (!meta || meta.querySelector(source.marker)) continue;
         const entry = allEntries.find((e) => e.id === id);
         const built = entry && source.chip(entry);
-        if (built) meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
-        if (built) fitNoteMetas([meta]);
+        if (!built) continue;
+        meta.insertBefore(built, meta.querySelector(":scope > .entry-date, :scope > .entry-meta-end"));
+        fitted.push(meta);
       }
+      fitNoteMetas(fitted);
       // The page may hold more than one batch; the next call finds the rest.
-      if (list.querySelectorAll("li[data-id]").length > wanted.length) {
+      if (list.querySelectorAll("li[data-id]:not(.row-shell)").length > wanted.length) {
         ensureOneCardCount(list, generation, source);
       }
     })
@@ -3393,45 +3498,9 @@ function ensureMapChipsFor(page, generation) {
   if (!page.some((entry) => String(entry.content || "").includes("[["))) return;
   loadMapBoardIndex()
     .then(() => {
-      if (generation === _entriesLoadGeneration) renderEntries();
+      if (generation === _entriesLoadGeneration) renderEntriesWhenShown();
     })
     .catch(() => {});
-}
-
-//: The bell says so once a week, past a handful, as it does for untagged.
-async function nudgeReviewQueue() {
-  const queue = await apiJson("/review-queue?limit=1", { silent: true, cacheMs: 60000 }).catch(() => null);
-  if (!queue || queue.count < UNTAGGED_NUDGE_MIN) return;
-  const now = new Date();
-  const week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 86400000));
-  recordNotification({
-    kind: "assist",
-    title: `${queue.count} filings to check`,
-    detail: "Atlas was unsure where these belong. Accept each, or move it.",
-    key: `review:${now.getFullYear()}-${week}`,
-    action: { tab: "notes", filter: "is:review" },
-  });
-}
-
-//: **The app notices what the person has not got round to** (INBOX 162).
-//: Once the notebook is loaded, a bell entry counts the real notes with no
-//: tag and offers the filtered list. Keyed by the ISO week, so it is said
-//: once a week at most however often the list reloads, and only past a
-//: handful: three untagged notes is a Tuesday, not a backlog.
-const UNTAGGED_NUDGE_MIN = 5;
-
-function nudgeUntaggedNotes() {
-  const untagged = allEntries.filter((e) => !e.is_board && !e.is_draft && !e.map_topic && !(e.tags || []).length);
-  if (untagged.length < UNTAGGED_NUDGE_MIN) return;
-  const now = new Date();
-  const week = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 86400000));
-  recordNotification({
-    kind: "assist",
-    title: `${untagged.length} notes have no tags`,
-    detail: "Tags are how notes find each other. Open the list and add a few.",
-    key: `untagged:${now.getFullYear()}-${week}`,
-    action: { tab: "notes", filter: "is:untagged" },
-  });
 }
 
 // --- the connections rail (WORLD_CLASS_PLAN D2) --------------------------------
@@ -3751,7 +3820,7 @@ function offerWikiRename(entryId, saved) {
     try {
       const done = await apiJson(`/entries/${entryId}/wiki-rename`, { method: "POST", body: JSON.stringify({ old: offer.old }) });
       pushWikiRenameUndo(entryId, offer.old, done);
-      toast(`Updated ${done.rewritten} note${done.rewritten === 1 ? "" : "s"}.`);
+      toast(`Updated ${nounCount(done.rewritten, "note")}.`);
       await loadEntries().catch(() => {});
     } catch (error) {
       toast(error.message || "Couldn't update those links.", true);

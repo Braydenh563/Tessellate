@@ -50,12 +50,13 @@ in the panel that already lists the readings `core/filejobs.py` announces.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import queue
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 
 from tessellate.core import jobruns, jobstore, model_gate, origin
 
@@ -217,6 +218,8 @@ LABELS: dict[str, str] = {
     "vision-pdf": "Reading a scan with the vision model",
     "file-entry": "Filing a note",
     "warm-filing": "Warming up the filing model",
+    #: "Warm: warm the spelling lists" said the kind twice (audit 1030 Y7).
+    "warm": "Warming up",
     #: INBOX 696: a "Background job" row says nothing a person can read.
     "embed-entry": "Updating a note's search vector",
     "bench": "Timing a model",
@@ -293,6 +296,10 @@ class Pool:
         self._seq = 0
         self._started = False
         self._stopping = threading.Event()
+        #: Cleared while `held()`: no job is admitted. Cleared and checked
+        #: under `_lock`, the lock admission takes, so none slips in between.
+        self._open = threading.Event()
+        self._open.set()
 
     # -- starting -----------------------------------------------------------
 
@@ -433,15 +440,8 @@ class Pool:
                     # A chat turn in flight goes first (`core/model_gate.py`,
                     # ARCH-09): the job stays queued until it is done.
                     model_gate.yield_to_interactive(stop=self._stopping)
-                with self._lock:
-                    self._queued.pop(job.seq, None)
-                    if self._stopping.is_set():
-                        # Drained, not run: this is what makes shutdown fast
-                        # with a long queue behind it. A durable job's row
-                        # stays queued, so the next launch runs it.
-                        continue
-                    job.started_at = time.time()
-                    self._running[job.seq] = job
+                if not self._admit(job):
+                    continue
                 # A remembered job is claimed first: a row cancelled while it
                 # waited, or claimed by another server on the same file,
                 # is not run.
@@ -477,6 +477,42 @@ class Pool:
                         jobstore.finish(job.durable_id, error=error, db=job.durable_db)
             finally:
                 work_queue.task_done()
+
+    def _admit(self, job: _Job) -> bool:
+        """Move a job from queued to running, once the pool is not held; False
+        when the pool is stopping."""
+        while True:
+            self._open.wait(0.2)
+            with self._lock:
+                if self._stopping.is_set():
+                    # Drained, not run: this is what makes shutdown fast
+                    # with a long queue behind it. A durable job's row
+                    # stays queued, so the next launch runs it.
+                    self._queued.pop(job.seq, None)
+                    return False
+                if not self._open.is_set():
+                    continue
+                self._queued.pop(job.seq, None)
+                job.started_at = time.time()
+                self._running[job.seq] = job
+                return True
+
+    @contextlib.contextmanager
+    def held(self, deadline: float = 20.0) -> Iterator[bool]:
+        """No job starts inside this block, and it is entered once the running
+        ones have finished, or at `deadline` seconds, yielding whether the pool
+        was idle by then. A restore swaps the database file inside it (audit
+        1028 K19: a job still writing went to the old file, or failed on the
+        disposed engine). Queued jobs run when the block ends."""
+        with self._lock:
+            self._open.clear()
+        try:
+            end = time.monotonic() + deadline
+            while self.running_count() and time.monotonic() < end:
+                time.sleep(0.05)
+            yield self.running_count() == 0
+        finally:
+            self._open.set()
 
     # -- reporting ----------------------------------------------------------
 

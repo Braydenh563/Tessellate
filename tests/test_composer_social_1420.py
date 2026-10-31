@@ -133,9 +133,9 @@ def test_the_link_reasons_carry_no_markdown_and_no_doubled_article():
 def test_a_bare_title_is_named_without_its_colon_or_a_second_article():
     from tessellate.ai import composer_frame
 
-    assert composer_frame.short_name({"content": social.ICE}) == "the Ice Breakers"
+    assert composer_frame.short_name({"content": social.ICE}) == "Ice Breakers"
     assert composer_frame.short_name({"content": social.GUIDE}) == "The Complete Social Skills Guide"
-    assert composer_frame.short_name({"content": social.FOLLOW}) == "the Follow-Up Questions"
+    assert composer_frame.short_name({"content": social.FOLLOW}) == "Follow-Up Questions"
 
 
 def test_an_untitled_note_is_named_by_a_whole_description_not_a_cut_phrase():
@@ -200,8 +200,10 @@ def test_untitled_uni_notes_are_named_by_what_they_are_about(question):
     assert "uni days this week are Tuesday," not in text and "your uni days this week are Tuesday" not in text.split("\n\n")[1], text
     assert not re.search(r"you (?:noted|wrote|said|mentioned) that you had (?:noted|jotted|written)", text), text
     assert "however" not in text
-    #: The 20 July note is said with its verb: what the person wrote.
-    assert re.search(r"20 July, you \w+(?: down)? that cloud computing is the delivery", text), text
+    #: The 20 July note is said with its verb: what the person wrote. Its
+    #: day is not said: the question is not about time (INBOX 1441).
+    assert re.search(r"\b[Yy]ou \w+(?: down)? that cloud computing is the delivery", text), text
+    assert "20 July" not in text, text
     assert defects(text) == [], text
 
 

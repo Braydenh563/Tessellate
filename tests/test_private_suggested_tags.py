@@ -1,10 +1,10 @@
 """A private note's kept tag suggestions travel exactly like its tags.
 
 Decision (2026-10-04): `Entry.suggested_tags` and `Entry.discarded_tags` are
-handled the way `tags` are for a private note. Tags stay readable by decision
-(`manager._seal_link_reasons`: "the link itself and the note's tags"), so a
-suggestion may be shown wherever the tags are, and must be shown nowhere the
-tags are not. The check is a comparison, not a list of places: a surface that
+handled the way `tags` are for a private note. Tags stay readable while the
+vault is open, and hidden everywhere while it is locked (INBOX 1437, which
+replaced the 2026-10-04 "tags stay readable" line), so a suggestion may be
+shown wherever the tags are, and must be shown nowhere the tags are not. The check is a comparison, not a list of places: a surface that
 hides the tags (search, the graph, the model's context, a locked export) hides
 the suggestions, and a surface that never carried a suggestion at all (every
 one but the note itself) stays that way.
@@ -74,6 +74,9 @@ def test_suggestions_appear_only_where_the_tags_do(client, session, locked):
         vault.close()
     seen = _where(client, entry_id, TAG, SUGGESTED)
     tags_at, suggested_at = seen[TAG], seen[SUGGESTED]
+    if locked:  # INBOX 1437: a locked private note's tags show nowhere
+        assert tags_at == set() and suggested_at == set(), (tags_at, suggested_at)
+        return
     assert tags_at, "the tag shows up nowhere: the comparison would pass for nothing"
     assert suggested_at <= tags_at, f"suggested tags leak at {sorted(suggested_at - tags_at)}"
 
@@ -88,11 +91,11 @@ def test_discarded_tags_are_never_handed_out(client, session, locked):
 
 def test_the_note_itself_carries_them_like_its_tags(client, session):
     entry_id = _private_note(client, session)
-    for _ in (0, 1):
-        body = client.get(f"/entries/{entry_id}").json()
-        assert body["tags"] == [TAG]
-        assert body["suggested_tags"] == [SUGGESTED]
-        vault.close()
+    body = client.get(f"/entries/{entry_id}").json()
+    assert body["tags"] == [TAG] and body["suggested_tags"] == [SUGGESTED]
+    vault.close()  # INBOX 1437: locked, neither shows
+    body = client.get(f"/entries/{entry_id}").json()
+    assert not body["tags"] and not body["suggested_tags"]
 
 
 def test_answering_a_suggestion_on_a_private_note_works_like_tagging_it(client, session):

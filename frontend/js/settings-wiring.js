@@ -61,7 +61,7 @@ async function persistSavedSearches(next) {
 async function saveCurrentSearch() {
   const query = $("note-search").value.trim();
   if (!query) return;
-  const name = await promptDialog("Name this filter:", query.slice(0, 40), { confirmLabel: "Save filter" });
+  const name = await promptDialog("Name this filter", query.slice(0, 40), { confirmLabel: "Save filter" });
   if (!name) return;
   // Re-saving an existing name updates it rather than adding a duplicate you
   // then have to hunt down and remove.
@@ -244,6 +244,14 @@ window.addEventListener("storage", (event) => {
   showLockScreen(false);
 });
 //: The lock form's submit (moved from app.js, whose only caller is here).
+//: The one failure helper (sweep 1028b W9, audit 1029 X23): the message is said under the field, the field is marked and described by it, and focus goes back to it selected. The recovery card uses it with its own field and line.
+function lockFail(message, field = $("lock-password"), line = $("lock-error")) {
+  line.textContent = message;
+  field.setAttribute("aria-invalid", "true");
+  field.setAttribute("aria-describedby", line.id);
+  field.focus();
+  field.select();
+}
 async function submitLockForm() {
   const password = $("lock-password").value;
   const errorLine = $("lock-error");
@@ -252,7 +260,7 @@ async function submitLockForm() {
   //: A new password needs 8 (SEC-17); one set before that still unlocks.
   const floor = mode === "setup" ? 8 : 4;
   if (password.length < floor) {
-    errorLine.textContent = `Use at least ${floor} characters.`;
+    lockFail(`Use at least ${floor} characters.`);
     return;
   }
   if (mode === "prompt") {
@@ -261,7 +269,7 @@ async function submitLockForm() {
     try {
       await prompt.submit(password);
     } catch (error) {
-      errorLine.textContent = error.message;
+      lockFail(error.message);
       return;
     }
     settleLockPrompt(true);
@@ -303,7 +311,7 @@ async function submitLockForm() {
     //: when the dialog closes.
     if (mode === "setup") offerRecoveryKey(password);
   } catch (error) {
-    errorLine.textContent = error.message;
+    lockFail(error.message);
   }
 }
 
@@ -361,6 +369,7 @@ $("lock-password-show").addEventListener("click", (event) => {
   button.querySelector("i").className = `ph ${show ? "ph-eye-slash" : "ph-eye"}`;
   field.focus();
 });
+$("lock-password").addEventListener("input", () => $("lock-password").removeAttribute("aria-invalid"));
 $("lock-password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") submitLockForm();
   if (e.key === "Escape" && lockPrompt) {
@@ -420,7 +429,7 @@ $("entry-content").addEventListener("input", () => {
 //: truth about being locked, and a second source of truth is how a boundary
 //: like this drifts back open.
 function notebookLocked() {
-  const overlay = document.getElementById("lock-overlay");
+  const overlay = $("lock-overlay");
   return Boolean(overlay) && !overlay.classList.contains("hidden");
 }
 
@@ -610,9 +619,7 @@ document.addEventListener("keydown", (e) => {
   //: board's own chords; the same handoff undo already makes
   //: (`boardHistoryActive`), one owner for one shortcut.
   if (chorded && !(typeof wbOwnsChord === "function" && wbOwnsChord(e))) {
-    const inTextField =
-      ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) ||
-      document.activeElement?.isContentEditable;
+    const inTextField = inEditable(document.activeElement);
     //: **Ctrl+Y is redo too**, the Windows habit: the board's own Redo
     //: button and Edit menu already print "Ctrl+Y" and nothing answered it
     //: (the Guide agent's finding, 2026-09-24). Same rule as Ctrl+Shift+Z:
@@ -664,7 +671,7 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (e.key === "Escape" && !$("graph-popup").classList.contains("hidden")) {
-    closeGraphPopup();
+    closeGraphPopup(true);
     return;
   }
   if (e.key === "Escape" && !$("palette-overlay").classList.contains("hidden")) {
@@ -732,27 +739,30 @@ document.addEventListener("keydown", (e) => {
   //: correction (measured by `scratchpad/ui-sweeps/typingguard.js`). Fixing
   //: the shared guard means the one after that is born working.
   const el = document.activeElement;
-  const typing =
-    ["INPUT", "TEXTAREA", "SELECT"].includes(el && el.tagName) || Boolean(el && el.isContentEditable);
-  const overlayOpen =
-    settingsModalOpen() ||
-    !$("palette-overlay").classList.contains("hidden") ||
-    !$("sketch-overlay").classList.contains("hidden");
+  const typing = el?.tagName === "SELECT" || inEditable(el) || mapEditorShown();
   // Unchorded shortcuts ("/", "?") only fire when you're not typing and no
   // overlay is open, so they never steal a literal slash mid-sentence.
   //: Single-key shortcuts can be turned off (WCAG 2.1.4): speech input types
   //: letters.
   const singleKeys = singleKeysOn();
   const now = performance.now();
-  if (typing) typingBurst.at = now;
-  const burst = !typing && e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
+  //: Only Escape's tail below answers a key typed in a field, so any other
+  //: returns here. The overlay test used to run first, on every keystroke: a
+  //: `getClientRects()` per dialog, a forced layout (INBOX 1465: 158 to 314 ms).
+  if (typing) {
+    typingBurst.at = now;
+    if (e.key !== "Escape") return;
+  }
+  const burst = e.key.length === 1 && now - typingBurst.at < 1500 && (typingBurst.at = now);
   //: `boardOwns`: a key the open board answers itself (`wbOwnsChord`), such
   //: as a letter typed while a new map topic is still being made.
   const boardOwns = typeof wbOwnsChord === "function" && wbOwnsChord(e);
-  if (!typing && !burst && !overlayOpen && singleKeys && !boardOwns) {
+  if (!burst && singleKeys && !boardOwns) {
     for (const [id, def] of Object.entries(shortcuts)) {
       const bare = !/\+/.test(def.keys);
       if (bare && matchesShortcut(e, def.keys)) {
+        //: Any open modal, not a list of three (audit 1029 X1), asked only for a matching key.
+        if (activeOverlay() || document.querySelector("dialog[open]")) break;
         e.preventDefault();
         runShortcut(id);
         return;
@@ -837,12 +847,8 @@ document.addEventListener("keydown", (e) => {
       return; // wait for the second key; a lone "m" does nothing on its own
     }
   }
-  if (e.key === "Escape" && settingsModalOpen()) closeSettingsModal();
   if (e.key === "Escape") closeActionMenus();
-  if (e.key === "Escape" && linkSource !== null) {
-    linkSource = null;
-    renderEntries();
-  }
+  if (e.key === "Escape" && linkSource !== null) linkCancel();
 });
 
 // Clicking anywhere outside an open ⋯ menu closes it (Wave L).
@@ -887,6 +893,15 @@ document.addEventListener("pointerdown", (e) => {
 // Topmost is the last match in document order, so a confirm opened from
 // Settings traps Tab, not Settings. Visibility is `.hidden` plus
 // `getClientRects()`, because a fixed overlay's `offsetParent` is null.
+//: A map topic whose editor is open counts as typing whether or not it holds
+//: the focus: an editor shown without it must not hand its keys to the
+//: chords (blind test 1031). The DOM is read here, not through the board's
+//: bundle, which may not have loaded.
+const mapEditorShown = () =>
+  Boolean(document.querySelector("#wb-html-layer .wb-map-text[contenteditable]:not([contenteditable=false])"));
+//: A text field, or a contenteditable host or its child, read from the markup: `isContentEditable` flushes style.
+const inEditable = (el) => el?.closest("input,textarea,[contenteditable]:not([contenteditable=false])");
+
 function activeOverlay() {
   const open = [
     ...document.querySelectorAll('[role="dialog"][aria-modal="true"]'),
@@ -1186,9 +1201,9 @@ let tabJumpArmedAt = 0;
 //: because the tab switch that follows does not depend on the save landing.
 function closeOverlaysForChord() {
   if (settingsModalOpen()) closeSettingsModal();
-  const palette = document.getElementById("palette-overlay");
+  const palette = $("palette-overlay");
   if (palette && !palette.classList.contains("hidden")) closePalette();
-  const sketch = document.getElementById("sketch-overlay");
+  const sketch = $("sketch-overlay");
   if (sketch && !sketch.classList.contains("hidden")) closeSketch();
   //: Atlas's sheet, when it is open (settings.js owns the closer).
   if (typeof helpChatSheetClose === "function") helpChatSheetClose();
@@ -1200,14 +1215,11 @@ function closeOverlaysForChord() {
 //: rows are buttons too (the owner: "make these popup options when I press
 //: m, actual clickable nav buttons"); a click on the dimmed page, Escape and a
 //: second `m` all mean "not this". `role="status"` so a screen reader hears it.
-let chordGuideTimer = null;
-
 //: The panel's builders (`chordGuideEl`, `chordGuideGroup`, `chordGuideKey`,
 //: `showTabJumpHint`) are in chord-guide.js, loaded after boot; see its header.
 function hideChordGuide() {
   const guide = document.getElementById("chord-guide");
   if (!guide) return;
-  window.clearTimeout(chordGuideTimer);
   guide.classList.add("hidden");
 }
 
@@ -1259,7 +1271,7 @@ function runShortcut(id) {
       else closePalette();
     },
     findAnything: () => {
-      const overlay = document.getElementById("finder-overlay");
+      const overlay = $("finder-overlay");
       if (overlay && overlay.classList.contains("hidden")) openFinder();
       else closeFinder();
     },
@@ -1359,6 +1371,7 @@ function resetShortcuts() {
   prefs.remove(SHORTCUT_STORE);
   shortcuts = loadShortcuts();
   restampShortcutHints();
+  //: The list is built by reveal-targets.js, a lazy file the Settings button can beat.
   renderShortcutList();
   toast("Shortcuts reset to their defaults.");
 }
@@ -1373,85 +1386,15 @@ const SHORTCUT_STATUS_IDS = ["shortcut-status", "shortcut-status-settings"];
 
 function setShortcutStatus(text) {
   for (const id of SHORTCUT_STATUS_IDS) {
-    const el = document.getElementById(id);
+    const el = $(id);
     if (el) el.textContent = text;
   }
 }
 
 function setShortcutStatusError(isError) {
   for (const id of SHORTCUT_STATUS_IDS) {
-    document.getElementById(id)?.classList.toggle("error", isError);
+    $(id)?.classList.toggle("error", isError);
   }
-}
-
-function renderShortcutList() {
-  for (const listId of SHORTCUT_LIST_IDS) {
-    const list = document.getElementById(listId);
-    if (list) buildShortcutList(list);
-  }
-}
-
-//: **The key chip is the button** (INBOX 810, Row actions): a column of
-//: thirty-one bordered "Change" buttons was the heaviest thing in the pane,
-//: louder than the keys it changes. Pressing the keys starts the rebind and
-//: pressing them again cancels it; its title says which ("Change" or
-//: "Cancel"), and the back-to-default is a quiet icon after the words.
-function buildShortcutList(list) {
-  list.replaceChildren();
-  for (const [id, def] of Object.entries(shortcuts)) {
-    const li = document.createElement("li");
-    const capturing = capturingShortcut === id;
-    const change = document.createElement("button");
-    change.className = "ghost small quiet shortcut-key";
-    change.type = "button";
-    const combo = document.createElement("kbd");
-    combo.textContent = capturing ? "Press keys…" : def.keys;
-    if (capturing) combo.classList.add("capturing");
-    //: A pencil says the keys are the way to change them (INBOX 1300 C22).
-    const pen = document.createElement("i");
-    pen.className = `ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`;
-    pen.setAttribute("aria-hidden", "true");
-    change.append(combo, pen);
-    change.title = capturing ? "Cancel" : "Change";
-    change.setAttribute(
-      "aria-label",
-      capturing ? `Cancel changing the shortcut for: ${def.label}` : `Change the shortcut for: ${def.label}, now ${def.keys}`
-    );
-    change.addEventListener("click", () => {
-      capturingShortcut = capturingShortcut === id ? null : id;
-      setShortcutStatus(
-        capturingShortcut ? "Press the keys you want, or Escape to cancel." : ""
-      );
-      renderShortcutList();
-      //: The list was redrawn: the focus goes back to the same row's keys.
-      list.querySelector(`[data-shortcut="${id}"] .shortcut-key`)?.focus();
-    });
-
-    const label = document.createElement("span");
-    label.textContent = def.label;
-    li.dataset.shortcut = id;
-    li.append(change, label);
-
-    // Only offer "default" when it isn't already the default.
-    const changed = def.keys !== DEFAULT_SHORTCUTS[id].keys;
-    if (changed) {
-      const revert = document.createElement("button");
-      revert.className = "ghost small quiet icon-only";
-      revert.type = "button";
-      setLabel(revert, "ph:arrow-counter-clockwise");
-      revert.title = `Back to ${DEFAULT_SHORTCUTS[id].keys}`;
-      revert.setAttribute("aria-label", revert.title);
-      revert.addEventListener("click", () => {
-        shortcuts[id].keys = DEFAULT_SHORTCUTS[id].keys;
-        saveShortcutOverrides();
-        renderShortcutList();
-      });
-      li.appendChild(revert);
-    }
-    list.appendChild(li);
-  }
-  //: Thirty-one rows: typed to (row 1643, `listFilter`).
-  listFilter(list, { label: "Filter shortcuts" })?.refresh();
 }
 
 // While rebinding, this handler runs before everything else and swallows the
@@ -1487,39 +1430,6 @@ function captureShortcutKey(event) {
   return true;
 }
 
-function openShortcuts() {
-  capturingShortcut = null;
-  setShortcutStatus("");
-  renderShortcutList();
-  //: **The editor's rows come from the editor's own table**
-  //: (DOCUMENTS_PLAN Phase 4 item 4: "a `?` shortcut sheet generated from the
-  //: same table so the two cannot disagree"). documents.js is lazily loaded,
-  //: so the section says where its contents are rather than sitting empty
-  //: when this dialog is opened before that bundle has ever been fetched.
-  ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
-  const editorList = $("shortcut-list-documents");
-  const editorNote = $("shortcut-list-documents-note");
-  if (editorList && typeof renderDocShortcutSheet === "function") {
-    renderDocShortcutSheet(editorList);
-    editorNote?.classList.add("hidden");
-  } else if (editorNote) {
-    editorNote.classList.remove("hidden");
-  }
-  //: The board's rows, from the board's own table (whiteboard-commands.js),
-  //: and the section scrolled into view when "?" was pressed on a board.
-  const boardList = $("shortcut-list-whiteboard");
-  const boardNote = $("shortcut-list-whiteboard-note");
-  const onBoard = typeof wbCommandsLive === "function" && wbCommandsLive();
-  if (boardList && typeof renderWbShortcutSheet === "function") {
-    renderWbShortcutSheet(boardList);
-    boardNote?.classList.add("hidden");
-  } else if (boardNote) {
-    boardNote.classList.remove("hidden");
-  }
-  $("shortcuts-overlay").classList.remove("hidden");
-  if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
-  $("shortcuts-close").focus();
-}
 function closeShortcuts() {
   // Stop listening for a rebind. Without this, closing the dialog mid-capture
   // leaves the handler swallowing every keypress in the app, the shortcut you
@@ -1543,12 +1453,17 @@ document.addEventListener("keydown", (e) => {
   // that shape. `tabindex="-1"` is excluded on purpose: it means
   // programmatically focusable but *not* in the tab order, so including it
   // would invent stops the user never asked for.
+  //: Shown is `getClientRects().length`, not `offsetParent`: an SVG has no
+  //: `offsetParent`, so a hidden one passed the old test, and when it was
+  //: the first stop the wrap's `focus()` landed nowhere and Tab from the last
+  //: button stayed on it (audit 1031 Z15, the welcome's hidden emblem). A
+  //: fixed-position control had the opposite fault: it was always dropped.
   const focusables = [
     ...overlay.querySelectorAll(
       'button, [href], input, select, textarea, [contenteditable=""], ' +
         '[contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     ),
-  ].filter((el) => !el.disabled && el.offsetParent !== null);
+  ].filter((el) => !el.disabled && el.getClientRects().length > 0);
   if (!focusables.length) return;
   const first = focusables[0];
   const last = focusables[focusables.length - 1];
@@ -1696,9 +1611,17 @@ function renderCaptureFiles() {
 //: `wc` on one fixture. Here, not in documents.js, because the composer
 //: below counts at boot and the documents bundle is lazy.
 const TEXT_READING_WPM = 220;
+//: One word count for every surface (notes audit 1031 N15): a Han or kana character is a word of its own
+//: (`core/cjk.py` word_count is the server's twin), everything else is counted by its spaces.
+const WORD_PER_CHARACTER = /[\u2e80-\u2fdf\u3040-\u30ff\u31f0-\u31ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/g;
+function wordCount(text) {
+  const value = String(text || "").replace(/[ー・\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65]/g, " ");
+  return (value.match(WORD_PER_CHARACTER) || []).length + (value.replace(WORD_PER_CHARACTER, " ").match(/\S+/g) || []).length;
+}
+
 function textCounts(text) {
   const value = String(text || "");
-  const words = (value.match(/\S+/g) || []).length;
+  const words = wordCount(value);
   const minutes = words / TEXT_READING_WPM;
   const read = !words ? "" : minutes < 1 ? "under a min" : minutes < 60 ? `${Math.round(minutes)} min read` : `${(minutes / 60).toFixed(1)}h read`;
   let chars = 0;
@@ -1974,9 +1897,10 @@ document.addEventListener("paste", async (e) => {
   const items = (e.clipboardData || e.originalEvent.clipboardData).items;
   const files = [];
   for (const item of items) {
-    if (item.kind === 'file') {
-      files.push(item.getAsFile());
-    }
+    //: `getAsFile` answers null for a file item the browser will not hand over
+    //: (seen in the owner's log 2026-10-31: `null.type` in the filter below).
+    const file = item.kind === "file" ? item.getAsFile() : null;
+    if (file) files.push(file);
   }
   if (!files.length) return;
   //: A spreadsheet or Word copy carries a picture of what it copied beside

@@ -173,6 +173,10 @@ Open a section for the detail.
 - A ```mermaid block draws as a diagram (flowchart, sequence, class, state, Gantt, pie and
   more) in documents, chat and exports, with Mermaid 12.2.0 shipped in the app and loaded on
   first use, so it works offline.
+- Equations are drawn as you write them, as in Word: click one in a note or document, or open the
+  equation editor (Alt+=), and fill the dotted boxes of a fraction, script, root, integral, sum,
+  bracket, function, accent, limit or matrix, or type LaTeX; the file keeps plain TeX between
+  dollar signs. MathLive (MIT) is shipped in the app and loaded on the first equation edit.
 - The Writing room turns rough thoughts into a proper note, or a pasted block
   into several linked notes, before anything is saved.
 - Export a document as Markdown, HTML, PDF or Word, and your notes as JSON,
@@ -489,7 +493,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first: the
 one rule is that every feature must work with no cloud service. In short:
 
 ```
-pytest -n auto                  # 12,400+ tests, fully offline, every AI call faked
+pytest -n auto                  # 14,300+ tests, fully offline, every AI call faked
 bash scripts/gate.sh --changed  # lints, node --check, ruff, and the tests that name your files
 ruff check .                    # what CI lints with
 ```

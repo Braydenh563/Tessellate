@@ -25,7 +25,8 @@ from datetime import date, datetime, time, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import notebook_stats
+from tessellate.ai import notebook_stats, realise
+from tessellate.ai import composer_plan
 from tessellate.ai import when as when_words
 
 #: The doing verbs, by what they ask for. "work on" and "do" are every kind of
@@ -44,10 +45,12 @@ _OWN = re.compile(r"\b(?:i|i've|i'd|me|my|we|our)\b", re.I)
 #: Said of the past: "what do I have on this week" asks what is coming, not
 #: what was done, so a bare present "do" is not a recap.
 _PAST = re.compile(r"\b(?:did|was|were|been)\b|\b\w+ed\b|\b(?:made|done|built|threw|thrown|got|activity|history)\b", re.I)
+_LISTED = re.compile(r"\b(?:notes?|entries|entry)\b", re.I)
+
 #: Words that are neither a subject nor a doing: the question's frame.
 _FRAME = frozenset(
     "what which show list tell give me my i i've i'd we our us all everything anything stuff things thing "
-    "did do does done have has had been get got up to on in at over during the a an of for this that these "
+    "did do does done have has had been get got up to on in at over during the a an of for this that these is was were s "
     "please pls plz can could you u summary summarise summarize recap overview "
     "so far lately recently whole entire full".split()
 )
@@ -97,19 +100,66 @@ def _kinds_named(rest: str) -> set[str] | None:
     return kinds
 
 
+def _is_dated_listing(text: str, back: object) -> bool:
+    """"notes from 24 to 30 September" is a list by date, which leaves
+    archived notes out; only "what is on" with no past verb reads as activity."""
+    return bool(back and not _PAST.search(text) and _LISTED.search(text))
+
+
+def _doing_of(text: str, phrase: str, back: object) -> str | None:
+    """The most specific doing wins: "what did I delete" is binned, not "did"."""
+    bare = text.replace(phrase, " ")
+    verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
+    return "all" if verb is None and back else verb
+
+
+#: "Summarise my week", "recap last week", "sum up the month": a request for a
+#: period's recap, which is asked as "what did I do ..." (the class: any
+#: summary of a bare period, not of a subject). The period is read by `when`
+#: (one reader, tests/test_one_reader.py); a bare unit is "this" one.
+_RECAP = re.compile(
+    r"^\W*(?:(?:please|pls|can you|could you|will you|would you)\s+)*(?:(?:give me|do)\s+(?:a |an |the )?)?"
+    r"(?:summari[sz]e|sum up|recap|summary|rundown|overview)(?:\s+of)?\s+(?:(?:my|our|the)\s+)?(?P<span>\w.*)$",
+    re.I,
+)
+
+
+def as_recap(text: str) -> str:
+    """A request to summarise a bare period, put as the question it is: "what
+    did I do this week"; any other text as it came."""
+    found = _RECAP.match(text) if len(text) <= 200 else None
+    if not found:
+        return text
+    # The trailing marks are cut here, not in the pattern: a lazy span before
+    # "\W*$" backtracks polynomially on a run of spaces (CodeQL).
+    span = " ".join(found.group("span").split())
+    end = len(span)
+    while end and not (span[end - 1].isalnum() or span[end - 1] == "_"):
+        end -= 1
+    span = span[:end]
+    for said in (span, f"this {span}"):
+        times = when_words.find(said)
+        if times and times[0][2].lower() == said.lower():
+            return f"what did I do {said}"
+    return text
+
+
 def read(question: str, today: date) -> Asked | None:
     """The window, the doing and the kinds of an own-activity question, or
     None when it is not one (no window, no doing, or a subject named)."""
-    text = (question or "").strip()
-    if not text or len(text) > 200 or not _OWN.search(text):
+    text = as_recap((question or "").strip())
+    if not text or len(text) > 200:
+        return None
+    #: "What is on 14 August" with the day gone asks what that day held, in the
+    #: present tense and with no "I": the plan's one date reader says so.
+    back = composer_plan.lookback(text, today)
+    if not (back or _OWN.search(text)) or _is_dated_listing(text, back):
         return None
     window = _window(text, today)
-    if window is None or not _PAST.search(text):
+    if window is None or not (back or _PAST.search(text)):
         return None
     phrase, span = window
-    #: The most specific doing wins: "what did I delete" is binned, not "did".
-    bare = text.replace(phrase, " ")
-    verb = next((k for k, v in _VERBS if re.search(rf"\b(?:{v})\b", bare, re.I)), None)
+    verb = _doing_of(text, phrase, back)
     if verb is None:
         return None
     kinds = _kinds_named(_VERB.sub(" ", re.sub(re.escape(phrase), " ", text, flags=re.I)))
@@ -132,7 +182,7 @@ def _day_words(day: date, today: date) -> str:
 def _title_of(content: str) -> str:
     from tessellate.ai import composer
 
-    return (composer._title(content or "")[0] or "Untitled").strip()[:80]
+    return realise.cut_title((composer._title(content or "")[0] or "Untitled").strip(), 80)
 
 
 def _bounds(start: date, end: date) -> tuple[datetime, datetime]:
@@ -204,7 +254,7 @@ def _document_events(session: Session, lo: datetime, hi: datetime, inside) -> li
         )
     ).all()
     for doc in documents:
-        title = (doc.title or "Untitled").strip()[:80]
+        title = realise.cut_title((doc.title or "Untitled").strip(), 80)
         said = f"**{title}** (now in the bin)" if doc.deleted_at is not None else _link("document", doc.id, title)
         _made_edited(out, "document", said, inside(doc.created_at), inside(doc.updated_at))
         binned = inside(doc.deleted_at)
@@ -227,7 +277,7 @@ def _reminder_events(session: Session, lo: datetime, hi: datetime, inside) -> li
     #: facts: a reminder made from a private note says none of its words.
     private = private_note_ids(session, [r.entry_id for r in reminders])
     for reminder in reminders:
-        text = PRIVATE_REMINDER if reminder.entry_id in private else (reminder.text or "").strip()[:80]
+        text = PRIVATE_REMINDER if reminder.entry_id in private else realise.cut_title((reminder.text or "").strip(), 80)
         done, made = inside(reminder.done_at), inside(reminder.created_at)
         if reminder.done and done:
             out.append((done, "done", "reminder", text))
@@ -342,15 +392,28 @@ def _summary(rows: list[tuple[datetime, str, str, str]]) -> str:
     return parts[0] if parts else ""
 
 
-def _by_day(rows: list[_Event]) -> dict[date, list[str]]:
+def _by_day(rows: list[_Event], glosses: dict[str, str] | None = None) -> dict[date, list[str]]:
+    """Each day's clauses. A made note with a gloss is said as what it holds,
+    its sentence ending off so clauses join (audit 1031 C27: "what did I do
+    last weekend" is not a creation log)."""
     by_day: dict[date, list[str]] = {}
     for when_at, doing, kind, said in rows[:_LIMIT]:
-        by_day.setdefault(when_at.date(), []).append(_clause(doing, kind, said))
+        gloss = glosses.get(said) if glosses and doing == "made" and kind == "note" else None
+        by_day.setdefault(when_at.date(), []).append(gloss.rstrip(".!? ") if gloss else _clause(doing, kind, said))
     return by_day
 
 
+#: Clauses said on one day's line: a day of twelve edits was one 1,200
+#: character bullet (audit 1029 C11); the rest are counted, never dropped silently.
+_PER_DAY = 5
+
+
 def _day_lines(by_day: dict[date, list[str]], today: date) -> list[str]:
-    return [f"- **{_day_words(day, today)}:** " + "; ".join(clauses) + "." for day, clauses in by_day.items()]
+    lines = []
+    for day, clauses in by_day.items():
+        said = "; ".join(clauses[:_PER_DAY]) + (f"; and {_n(len(clauses) - _PER_DAY)} more" if len(clauses) > _PER_DAY else "")
+        lines.append(f"- **{_day_words(day, today)}:** {said}.")
+    return lines
 
 
 def _filtered(rows: list[_Event], asked: Asked) -> list[_Event]:
@@ -364,11 +427,43 @@ def _head(asked: Asked, today: date) -> str:
     return f"{when[:1].upper()}{when[1:]}" + (f" ({_span(asked.start, asked.end, today)})" if asked.start != asked.end else "")
 
 
-def _recap_lines(rows: list[_Event], asked: Asked, today: date) -> list[str]:
-    by_day = _by_day(rows)
+_NOTE_ID = re.compile(r"\(#/notes/(\d+)\)")
+
+
+def _first_sentence(text: str) -> str:
+    return realise.cut_title(re.split(r"(?<=[.!?])\s", " ".join(text.split()), maxsplit=1)[0], 140)
+
+
+def _glosses(session: Session, rows: list[_Event]) -> dict[str, str]:
+    """The line a made note is said as on a "what did I do on 25 October":
+    what the note says, not that it was made (audit 1030 Z28). A titled note
+    is its link and its first sentence; one with no title is its sentence as
+    the link."""
+    from tessellate.ai import composer
+    from tessellate.core.database import Entry
+
+    found = {r[3]: int(m.group(1)) for r in rows if r[1] == "made" and r[2] == "note" and (m := _NOTE_ID.search(r[3]))}
+    contents = dict(session.execute(select(Entry.id, Entry.content).where(Entry.id.in_(set(found.values())))).all()) if found else {}
+    said: dict[str, str] = {}
+    for key, ident in found.items():
+        content = str(contents.get(ident) or "")
+        name, start = composer._title(content)  # noqa: SLF001
+        body = _first_sentence(re.sub(r"^[#*>\-\s]+", "", content[start:].strip())) if start else ""
+        if start:
+            said[key] = f"{key}: {body}" if body else key
+        elif name:
+            said[key] = f"[{realise.cut_title(content, 140)}](#/notes/{ident})"
+    return said
+
+
+def _recap_lines(rows: list[_Event], asked: Asked, today: date, glosses: dict[str, str] | None = None) -> list[str]:
+    by_day = _by_day(rows, glosses if asked.start != asked.end else None)
     if asked.start == asked.end:
         #: One day: the head already says which, so no day label per line.
-        return [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
+        said = [f"- {clause[:1].upper()}{clause[1:]}." for clause in by_day.get(asked.start, [])]
+        if glosses:
+            said = [f"- {glosses[r[3]]}" if r[1] == "made" and r[3] in glosses else line for r, line in zip(rows[:_LIMIT], said)]
+        return said
     return _day_lines(by_day, today)
 
 
@@ -385,7 +480,9 @@ def answer(question: str, session: Session, now: datetime) -> notebook_stats.Sta
     rows = _filtered(_events(session, asked.start, asked.end, zone), asked)
     if not rows:
         return notebook_stats.StatAnswer(kind="activity", text=_empty(asked, session, today, zone), facts=[])
-    lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today)]
+    #: Only a "what did I do" (every kind of change) is said as what the notes hold.
+    glosses = _glosses(session, rows) if asked.verb == "all" else None
+    lines = [f"{_head(asked, today)} you {_summary(rows)}:", *_recap_lines(rows, asked, today, glosses)]
     if len(rows) > _LIMIT:
         lines.append(f"And {len(rows) - _LIMIT} more.")
     facts = [{"when": r[0].isoformat(), "doing": r[1], "kind": r[2], "what": r[3]} for r in rows[:_LIMIT]]
@@ -398,13 +495,13 @@ _WEEK_NAMED = 3
 
 #: What a reminder's words keep when the parser lifts its date out ("when I get
 #: home , probably around"): words that only lead into a date.
-_DATE_STUB = re.compile(r"(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
+_DATE_STUB = re.compile(r"(?<![\s,;:])(?:[\s,;:]+(?:probably|maybe|perhaps|around|about|at|on|by|before|for|until|till))+[\s,;:.]*$", re.I)
 
 
 def _reminder_words(text: str) -> str:
     """A reminder's text as the digest says it: no space before a comma and no
     dangling lead-in to a date that is said beside it."""
-    words = re.sub(r"\s+([,.;:!?])", r"\1", (text or "").strip()[:80])
+    words = re.sub(r"\s+([,.;:!?])", r"\1", realise.cut_title(text or "", 80))
     return _DATE_STUB.sub("", words).rstrip(" ,;:") or words
 
 

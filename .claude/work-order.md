@@ -1,17 +1,115 @@
 mode: continue
-status: stopped (usage: owner's 48% line, 2026-10-27)
-max-continues: 40
-max-idle-minutes: 90
-started: 2026-10-25 night
-stop: owner's 48% weekly usage line
+status: active (fix agents resumed at the owner's word; the Fable suite runs and merges as files land)
+max-continues: 400
+max-idle-minutes: 60
+finish-up: 98%
+note: owner 2026-10-31 (after the reset) "scaling back to the regular lean workflow ... once the current agents are finished": no new agents; status done after fablecomp, composer5, basered merge
+started: 2026-10-30 11:40Z
+ends: 2026-10-31 07:00Z (weekly reset)
+tier: max (three agents at once, one Opus or Fable); Fable only as the owner's named second-eye reviewer, one at a time
 
-- [x] Merge wb, docs, composer agents; gate; push; open PR (PR 204)
-- [x] INBOX 1350: phone/LAN security review + fixes (lansec merged 99cb7a7)
-- [x] INBOX 1350: custom domain write-up + smallest safe build
-- [~] INBOX 1350 + OPEN Shell rows: half-window sweep (shell merged e7ec76c; shell2 running)
-- [ ] Fixer B: dog1-1025.md whiteboard and mind map section (queued for the next free slot)
-- [~] INBOX 1351: dogfood rounds (round 1 done, dog1-1025.md; fixer A running; round 2 after fixes) (blind-tester as a uni student, no model, per surface) then fix agent; repeat until a round finds under 3
-- [ ] INBOX 1351: battery: idle CPU and wakeups with no model, cut polling and timers
-- [ ] Composer round 3 (after composer2)
-- [ ] Second rounds: whiteboard/mindmap draw.io gaps, document editor upgrades, composer expansion
-- [ ] Remaining INBOX items (18), then OPEN.md by impact
+- [x] Composer audit 1030: Z65 typo speed, Z11/Z12 defining note leads, Z16-Z18 question words, Z19/Z60, Z53/Z54, then the rest (agent composer-z)
+- [x] Audits 1030 ai and extras: every open row (agent ai-extras)
+- [x] Fable second eye: composer and architecture review, findings file (agent fable-eye)
+- [x] INBOX 1451: live Mermaid diagram object on the board (and 1453 panel layer)
+- [x] INBOX 1455 open-note chip ran a search, 1456 "what expenses have I recorded" missed the $68 mouse (hub)
+- [x] INBOX 1452 left-drag select, right-drag pan (hub)
+- [x] INBOX 1454 panelMovable polish (agent panels)
+- [x] Quantity engine step 2: money onto recognise.measures, status words, differences (agent quantity)
+- [>] Stress classes (with the Fable-fix agent: F2 who-is, F3 still-on-list, ambiguous names): next appointment, PTO dates, note 44 dumps, comparisons, follow-ons, ambiguous names
+- [>] Fable findings: fix every confirmed one (agent fable-fix)
+- [>] Audits 1028 and 1029: leftover open rows (hub: K4, K19, D10, D11, D13 fixed; 19 stale rows reconciled)
+- [x] INBOX 1451 Mermaid board object (built 10-30)
+- [x] INBOX 1459, 1461 composer (agent composer-1031, merged ed793df)
+- [x] Composer follow-up: date register, naming, overviews, weekday pins, Z rows (agent composer2-1031)
+- [x] INBOX 1460 notebook attachment cards (agent attach-1031, merged)
+- [x] INBOX 1462 cheap transitions (agent motion-1031, merged)
+- [x] INBOX 1463 companion fall split (agent companion-1031, merged)
+- [x] INBOX 1464 desktop companion (agent desktop-1031, merged)
+- [x] Audit 1028 S rows (agent shell-1031, merged; S3, S16, S36, S42, S53 left)
+- [x] INBOX 1465 image read again after centring (hub, ec64c8a)
+- [x] INBOX 1465 image align and resize everywhere (agent imgalign-1031, merged 92bb57f)
+- [x] INBOX 1465 lag log, speed sweep (agent speed-1031, merged; graph open 207 ms forced layout left)
+- [x] Speed pass 2: graph open, Library and Timeline opens, notes-list compile (agent speed2-1031)
+- [x] Notes list and Timeline windowing, S16 and S53 (agent listwin-1031)
+- [x] Timeline route at 5,000 notes (19.5 s first page), entries and library paging (agent tlspeed-1031)
+- [x] Dashboard revisit shift 0.21, Escape in Settings help popovers (agent dashcls-1031)
+- [x] OPEN 813 mind map add-child latency at 390 (agent wbpress-1031)
+- [x] Learnability: blind test of six core goals (blind-tester)
+- [x] Ask answer foot sections with no model, INBOX 1466 rest (agent askfoot-1031)
+- [x] Review of the 1031 merges (reviewer: 2 high, 5 med, 4 low) and UX audit of drag, tray, Ask foot (ux-auditor)
+- [x] Review fixes: obj order seeding, keyless image chips, Alt+arrows in inputs, drag hold, map paste, tray per space (agent objfix-1031)
+- [x] Review fixes: diagram asks, pasted questions, citation keys, drawio title (agent revfix-1031)
+- [x] S3 rest: avatars.js and atlas.js off the boot path (agent bootlazy-1031)
+- [x] Chat attachment leftovers: reloaded chat keeps its map (agent fixes-1031, merged)
+- [x] Search negated operators -tag: -kind: -is: -title: (hub, S50 leftover)
+- [x] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
+- [x] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
+- [x] OPEN B45, B48 whiteboard rows (agent wbopen-1031): 13 built, .drawio export; 11 left in its remaining list
+- [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
+- [x] UI review of the 1031 merges (ux-auditor: 6 high, 6 medium, 6 low)
+- [x] Fix the UI review findings (agent uxfix-1031)
+- [>] OPEN.md: proposed batches (B45, B48 whiteboard: agent wbopen-1031)
+- [x] Red tests after bootlazy and tlspeed merges, boot gzip under cap (agent redfix-1031)
+- [x] Tidy link reasons apply and undo again (agent tidyfix-1031)
+- [x] CodeQL 1876 to 1884 fixed and threads resolved
+- [x] Blind test 1, 2, 11: mind map template focus, Dashboard blank after unlock (agent blindfix-1031)
+- [x] Blind test 3 to 10: Ask "only note", custom order hint, Guide topics, questions feedback, notifications (agent blindux-1031)
+- [x] Mind map press at 390/200 under 80 ms: text-edit flush, incremental render, edge cache (agent wbpress-1031 round 2)
+- [x] Composer leftovers: Z58 rest, run distance naming, closing quotes, casing, overview routing, F13, F14 (agent composer3-1031)
+- [x] Blind-test leftovers: double first-steps fetch, bell Get started, unclear labels, back to writing, real drag (agent labels-1031)
+- [x] Mind map at phone width: template framing, toasts, title, fab overlap (agent mapphone-1031)
+- [x] Boot and tab duplicate fetches, avatar fallback, Notes sub-tab memory (agent dupfetch-1031)
+- [x] Independent review of 5aab070..96a23e7 (reviewer, Opus)
+- [x] Composer round four: total time, uni overview phrasings, superlatives, count plus latest, article in leads (agent composer4-1031)
+- [x] Leftover-list polish: back-to-top under fab, Library hints, objmove L2 and L3, wbopen rows (agent polish5-1031)
+- [x] INBOX 1468 reminder save and edit (agent remfix-1031)
+- [x] INBOX 1469 and 1470 submenus, picture-card drag (agent submenu-1031) (merged)
+- [x] INBOX 1471, 1472, 1474, 1475 graph popup toggle, snap zones, dock push, minimise pills (agent snapgraph-1031) (merged)
+- [x] INBOX 1473 per-span live preview (agent livepreview-1031) and equation field (agent mathfield-1031) (merged)
+- [x] INBOX 1476 to 1478 chips, model picker, popup anatomy and glass (agent chips-1031) (merged; 1478 popup anatomy left open)
+- [x] INBOX 1483 natural dates (agent dates-1031)
+- [x] INBOX 1484 image read once (agent imgread-1031) (merged)
+- [x] BACKLOG 1481 private chat (agent private-1031)
+- [x] INBOX 1463 companion clip and status bar (agent compclip-1031) (merged)
+- [x] Owner lag log hotspots (agent lagfix-1031)
+- [x] Paste null file item (owner log)
+- [x] Perf audit (perf-1031.md); fixes: agent perf2-1031
+- [x] Perf audit top five fixes (agent perf2-1031) (perf-1031.md)
+- [>] Plan phases (ROADMAP table order): fed to agents as they free up; seven agents run on the owner's 1031 items first
+- [>] BACKLOG: after the plan phases
+- [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running
+- [>] Scan rotation: bugs, security, architecture, UI, learnability (after every three items). Round 1031: reviewer on private chat and cplx merges (running)
+- [x] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
+- [!] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only. Fable start refused by the lean-workflow guard (owner must name it again in a message); the owner's second choice, Opus, runs it (agent fablecomp-1031).
+- [x] Companion NPC upgrade, INBOX 1463 open items 1 to 5 (agent fablecomp-1031, Opus)
+- [x] Diagram, sticky, text and card fill opacity (agent boardfill2-1031)
+- [x] INBOX 1482 grouped file type picker (agent typepick-1031)
+- [x] INBOX 1479 capture card (agent capture-1031)
+- [x] INBOX 1478 popup anatomy (agent popups-1031)
+- [x] Perf leftovers: notes list append, statistics aggregate, graph cooling draws (agent perf3-1031)
+- [x] Private chat leaks found by review: skill/plan runs, tool audit rows, narrator log lines, row cache (agent privfix-1031)
+- [x] Composer leftovers round five: three-side comparisons, format tails, list vs overview, latest pick, day leads (agent composer5-1031)
+- [x] Tests red on the base: complexity, events driver, code format guard, input bounds, gold floor (agent basered-1031)
+- [x] INBOX 1487 notes mentioning X, 1490 unplaced asks and web search (agent composer6-1031)
+- [x] INBOX 1488 Writing room with no model (agent writing2-1031)
+- [x] INBOX 1489 nested faint surfaces (agent faint-1031)
+- [!] Fable deep analysis (extras done, 9b59975; the plugin guard refuses the next Fable spawn until the owner names Fable again in a new message), one Fable at a time (owner named it): extras, notes, composer, ai, harness, shell, board, docs, code, graph, backend, ux, perf, then architecture and the ranked file (agent/audit-1031)
+- [x] Base red and 1490 regression: no_open_items, route_688 clock, mermaid flowchart, knitting, Departure year, SearXNG how-to (composer6-1031 resumed)
+- [x] Fix audit-1031-extras Z1 to Z20 (xfix merged: 15 rows)
+- [x] Extras leftovers Z4, Z7, Z10, Z13, Z18 (xleft merged)
+- [x] Base red round 2: docs_site CONTRIBUTING mirror, emblem_turns, get_started_1301, hover_focus_pairs wb-map-edge, icon_only status-tray, lazy_css capture-card and math-field, wb_format alpha presets, wb_line_ends (agent basered2-1031)
+- [x] INBOX 1491 meeting popup minimise, 1492 lag log (unlock, models/status, tab-label, openDocument), 1493 stamp vote toggle (agent owner3-1031)
+- [x] PR 211 Tests and CodeQL alerts (agent ci-1031)
+- [x] Fable composer audit merged (50 rows, audit-1031-composer.md)
+- [x] Fable notes audit merged (50 rows, audit-1031-notes.md)
+- [x] Notes fixes round 1 merged (nfix-1031: N1, N16, N25, N26, N28, N42, N44 and earlier rows); left N11 rest, N17, N20, N21, N27 (owner), N45, N46
+- [ ] Fable full audit suite: ai, harness, shell, board, docs, code, graph, backend, ux, perf, architecture, ranked (one Fable agent, wt-a-suite)
+- [ ] Composer fixes: audit-1031-composer C rows + INBOX 1495, 1496, 1497 (agent cfix-1031, resumed)
+- [ ] Companion at rest: AI1 + HR1 (about 130 animations idle, 540ms blocked per 5s at 4x; agent turn 1,003ms getAnimations + 165ms atlasRigRead), after a fix agent frees a slot
+- [ ] Fix the every row (all severities) of audit-1031-ai.md and audit-1031-harness.md (Sonnet agent per surface)
+- [ ] Fix every row (all severities, owner 16:45) of each later Fable surface as it lands (shell, board, docs, code, graph, backend, ux, perf, architecture)
+- [ ] PR 211 CI green on the head after each batch
+- [ ] Morning summary in HANDOVER, retro
+- [ ] Notes rows left: N11 rest, N17, N20, N21 (boot CSS bytes first), N45, N46
+- [ ] Then plans, OPEN.md, INBOX all done; then fix and implement items from the odysseus repo (owner 16:44)

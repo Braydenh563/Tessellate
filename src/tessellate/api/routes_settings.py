@@ -16,6 +16,7 @@ import platform
 import re
 import sys
 import tempfile
+import time
 import zipfile
 from collections.abc import AsyncIterator
 from pathlib import Path
@@ -32,13 +33,14 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.ai import budget as run_budget
-from tessellate.ai import librarian, presets, skill_composer, skills
+from tessellate.ai import backend_hint, librarian, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
 from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
+from tessellate.entry.cleantext import import_path
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
 
@@ -441,6 +443,7 @@ class PreferencesBody(BaseModel):
     # Separate switch: "notify me" vs. "download and run the installer
     # without asking each time", see core.config's own comment.
     auto_update_enabled: bool | None = None
+    show_update_bar: bool | None = None
     update_channel: Literal["stable", "main"] | None = None
     update_beta: bool | None = None
     searxng_autostart: bool | None = None
@@ -466,6 +469,9 @@ class PreferencesBody(BaseModel):
     #: server rather than bringing the running window forward. Read by
     #: __main__.py before any window opens (core/instance_lock.py).
     new_window_on_launch: bool | None = None
+    #: The corner companion in a window of its own while the app window is in
+    #: the tray (core/desk_companion.py). Off until turned on.
+    desktop_companion: bool | None = None
     #: The person's own face: a shuffle and per-part overrides (AvatarStyle).
     avatar_style: AvatarStyle | None = None
     #: Which status-bar slots the user has switched off. **The list of what is
@@ -599,6 +605,16 @@ class PreferencesBody(BaseModel):
     # would be worse to have the server reject a setting the UI has just added
     # than to store a key nobody reads.
     ui_state: dict[str, str] | None = None
+
+    @field_validator("display_name")
+    @classmethod
+    def _plain_display_name(cls, value: str | None) -> str | None:
+        """A name, not markup: angle brackets and control characters go, and
+        runs of space close up. `<img src=x> Ada` showed as that in the
+        greeting and the Profile heading (audit 1030 Y9)."""
+        if value is None:
+            return value
+        return " ".join(re.sub(r"[<>\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069]", " ", value).split())
 
     @field_validator("ui_state")
     @classmethod
@@ -813,7 +829,7 @@ def _preferences_from(config) -> dict:
         # Saved correctly and honoured correctly (routes_auth.py's three
         # idle-timeout checks all read it) but never once echoed back here, 
         # the same shape of bug Tier 1 item 4a already fixed for eight other
-        # preferences. Settings → Account's timeout field showed its HTML
+        # preferences. Settings, Account's timeout field showed its HTML
         # default on every reload no matter what had actually been saved and
         # was actually in effect, which reads as "my setting didn't save."
         "session_idle_ttl_minutes": config.get_preference("session_idle_ttl_minutes", 720),
@@ -843,6 +859,7 @@ def _preferences_from(config) -> dict:
         "web_search_enabled": config.get_preference("web_search_enabled", False),
         "update_check_enabled": config.get_preference("update_check_enabled", False),
         "auto_update_enabled": config.get_preference("auto_update_enabled", False),
+        "show_update_bar": config.get_preference("show_update_bar", True),
         "update_choice_made": config.get_preference("update_choice_made", False) is True,
         "update_channel": config.get_preference("update_channel", "stable"),
         "update_beta": config.get_preference("update_beta", False) is True,
@@ -927,6 +944,7 @@ def _preferences_from(config) -> dict:
         "close_to_tray": config.get_preference("close_to_tray", True),
         # Default False, matching `_run_desktop` in __main__.py.
         "new_window_on_launch": config.get_preference("new_window_on_launch", False),
+        "desktop_companion": config.get_preference("desktop_companion", False),
         "avatar_style": _clean_avatar_style(config.get_preference("avatar_style", {})),
         "status_bar_hidden": config.get_preference("status_bar_hidden", []),
         "status_bar_clock": config.get_preference("status_bar_clock", False),
@@ -1052,6 +1070,7 @@ _THIS_COMPUTER_PREFERENCES: dict[str, object] = {
     "show_console_on_startup": None,
     "close_to_tray": None,
     "new_window_on_launch": None,
+    "desktop_companion": None,
     "searxng_autostart": False,
     "semantic_auto_install": False,
     "auto_update_enabled": False,
@@ -2162,9 +2181,10 @@ def embedding_model_choices() -> dict:
     choices = embedmodels.catalogue()
     #: Which Ollama rows are pulled already, for Install against Reinstall
     #: and Uninstall (the owner's second addendum). Ollama's local list only.
-    ollama = deps.get_ollama()
     try:
-        pulled = {str(m.get("name", "")) for m in (ollama.list_models() or [])} if ollama.is_running() else set()
+        from tessellate.api import routes_models
+
+        pulled = routes_models._installed_names()
     except Exception:  # noqa: BLE001  # Ollama down: nothing is pulled as far as this screen knows
         pulled = set()
     for row in choices:
@@ -2290,7 +2310,7 @@ def remove_embedding_model(model_id: str) -> dict:
 
 @router.get("/logs")
 def server_logs(limit: int = Query(default=200, ge=1, le=logbuffer.MAX_RECORDS)) -> list[dict]:
-    """Recent server-side log records for the Settings → Logs viewer."""
+    """Recent server-side log records for the Settings, Logs viewer."""
     return logbuffer.recent(limit=limit)
 
 
@@ -2307,8 +2327,25 @@ class ClientError(BaseModel):
     kind: str = Field(default="error", max_length=40)
 
 
+#: Lines one client may log per minute (audit 1028 K10): open to the LAN in
+#: LAN mode, so a flood must not push real warnings out of the ring buffer.
+CLIENT_LOG_PER_MINUTE = 30
+_client_log_times: dict[str, list[float]] = {}
+_client_log_clock = time.monotonic
+
+
+def _client_log_allowed(client: str) -> bool:
+    now = _client_log_clock()
+    recent = [t for t in _client_log_times.get(client, ()) if now - t < 60]
+    if len(_client_log_times) > 256:
+        _client_log_times.clear()
+    allowed = len(recent) < CLIENT_LOG_PER_MINUTE
+    _client_log_times[client] = recent + [now] if allowed else recent
+    return allowed
+
+
 @open_router.post("/logs/client", status_code=204)
-def record_client_error(body: ClientError, response: Response) -> None:
+def record_client_error(body: ClientError, request: Request, response: Response) -> None:
     """Put a browser-side failure into the same log everything else uses.
 
     Asked for directly: *"can you make any other erros like what aoppeared on
@@ -2317,7 +2354,7 @@ def record_client_error(body: ClientError, response: Response) -> None:
 
     The gap was real and had just cost a session. A JavaScript error aborts
     the rest of the file it is in, so the app can hang on its loading screen
-    with **nothing** in the terminal, nothing in Settings → Logs, and the only
+    with **nothing** in the terminal, nothing in Settings, Logs, and the only
     record sitting in a browser console nobody opens, least of all in the
     desktop shell, which has no obvious way to open one. The crash that
     prompted this (`Cannot access 'captureStagedFiles' before initialization`)
@@ -2325,7 +2362,7 @@ def record_client_error(body: ClientError, response: Response) -> None:
 
     Deliberately `logger.error`, not a new channel: `logbuffer`'s handler is
     already attached to the root logger, so this reaches the terminal, the
-    Settings → Logs viewer and `/logs/stream` at once, with no new plumbing to
+    Settings, Logs viewer and `/logs/stream` at once, with no new plumbing to
     keep in step. The `[browser]` prefix is what tells a reader the failure
     happened on the other side of the wire, which changes what they should
     look at next.
@@ -2339,18 +2376,21 @@ def record_client_error(body: ClientError, response: Response) -> None:
     What it accepts is bounded instead of authenticated: three short strings,
     length-capped by the schema, appended to a ring buffer that already caps
     itself at `MAX_RECORDS`, reachable only from an origin the CSP pins to
-    `'self'` on a server that binds to localhost. The worst an abuser of it
+    `'self'`, and rate-limited per client (LAN mode reaches it too). The worst an abuser of it
     can do is push older lines out of a 500-record buffer on their own
     machine.
     """
     # **Through `safe_value`, not raw.** Everything in this payload is
     # attacker-shaped by construction: it is text the browser was handed by
     # whatever failed, and a message containing a newline would draw a forged
-    # second row in the Settings → Logs viewer while control characters can
+    # second row in the Settings, Logs viewer while control characters can
     # rewrite what a terminal shows. `logbuffer.sanitise` runs at the ring
     # buffer and so protects the viewer only; the terminal sees the raw
     # record, which is exactly why this module's own helper exists and says
     # to clean at the call site.
+    response.status_code = 204
+    if not _client_log_allowed(request.client.host if request.client else ""):
+        return
     logger = logging.getLogger("tessellate.browser")
     kind = logbuffer.safe_value(body.kind, limit=40)
     message = logbuffer.safe_value(body.message, limit=logbuffer.MAX_MESSAGE_CHARS)
@@ -2633,7 +2673,7 @@ def _models_status_snapshot() -> dict:
     model_manager = deps.get_model_manager()
     embeddings = deps.get_embeddings()
     return {
-        "ollama_running": ollama.is_running(),
+        "ollama_running": backend_hint.running(ollama),
         "chat_model": model_manager.chat_model(),
         "utility_model": model_manager._config.get_preference("utility_model", ""),
         "embedding_backend": model_manager.embedding_backend(),
@@ -2702,7 +2742,7 @@ def export_json(session: Session = Depends(get_session)) -> Response:
             # search index either: `backup.strip_leftovers`.)
             "content": manager.readable_content(e),
             "category": category_names.get(e.category_id, manager.UNCATEGORISED),
-            "tags": manager.entry_tags(e),
+            "tags": manager.shown_tags(e),
             "ai_confidence": e.ai_confidence,
             # Said, so a note decrypted for the export is not mistaken for an
             # ordinary one by whatever reads the file next (SEC-14).
@@ -3235,7 +3275,7 @@ def _import_markdown_files(files: list[UploadFile], session: Session) -> dict:
         #: relative path as the filename when the picker was a directory
         #: picker, and the bare name otherwise; both are relative, which is
         #: the only kind stored.
-        relative = name.lstrip("/")[:500]
+        relative = import_path(name, "imported.md")
         seen = known.get(relative)
         if seen is not None and (seen is _PRIVATE or _text_hash(body.strip()) in seen):
             already += 1
@@ -3361,7 +3401,7 @@ def _create_document_notes(session: Session, sections: list[str], source_name: s
             ai_confidence=100,
         )
         entry.user_filed = True  # this file said where it came from, not the janitor
-        entry.source_path = (source_name or "document")[:500]
+        entry.source_path = import_path(source_name, "document")
         session.commit()
         deps.store_quietly(session, entry)
         ids.append(entry.id)
@@ -3388,7 +3428,7 @@ def export_csv(session: Session = Depends(get_session)) -> Response:
                 e.id,
                 manager.readable_content(e),
                 category_names.get(e.category_id, manager.UNCATEGORISED),
-                "|".join(manager.entry_tags(e)),
+                "|".join(manager.shown_tags(e)),
                 e.ai_confidence,
                 e.created_at.isoformat(),
                 e.is_deleted,

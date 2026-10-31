@@ -46,23 +46,15 @@ from functools import lru_cache
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import plain_words
 from tessellate.core.database import Category, Entry
 from tessellate.entry.manager import UNCATEGORISED
 
-#: Words with no say in where a note belongs. Short on purpose: anything
-#: frequent across *every* category already cancels out in the likelihoods,
-#: so this list only has to catch the words that would otherwise dominate a
-#: short note.
-_STOP = frozenset(
-    """a about after again all also am an and any are as at be because been
-    before being but by can could did do does doing done for from get got had
-    has have having he her here him his how i if in into is it its just like
-    me more most my no not now of off on once only or other our out over own
-    really same she should so some still such than that the their them then
-    there these they this those through to too up us very was we were what
-    when where which while who why will with would you your yes ok okay im
-    ive dont didnt cant wont thats today tomorrow yesterday""".split()
-)
+#: Words with no say in where a note belongs (`ai/plain_words.py`, shared with
+#: the statistics): anything frequent across *every* category already cancels
+#: out in the likelihoods, so the list only has to catch the words that would
+#: otherwise dominate a short note.
+_STOP = plain_words.PLAIN
 
 _WORD = re.compile(r"[a-z0-9]+(?:'[a-z]+)?")
 
@@ -449,7 +441,11 @@ def _why_line(candidate: Candidate) -> str:
     if candidate.named and not phrases and not candidate.words:
         return f"It says {candidate.name}."
     if phrases:
-        about = _quote_list(phrases[:3]) + f" ({', '.join(topics[:2])})"
+        about = _quote_list(phrases[:3])
+        #: A topic named by the very word quoted ("cooking (Cooking)") adds nothing, and
+        #: read beside a category of another name it looked like a contradiction (audit 1031 N7).
+        if {t.casefold() for t in topics[:2]} != {p.casefold() for p in phrases[:3]}:
+            about += f" ({', '.join(topics[:2])})"
         return f"It mentions {about}, like {joins}."
     if candidate.words:
         return f"It shares {_quote_list(candidate.words[:3])} with {joins}."

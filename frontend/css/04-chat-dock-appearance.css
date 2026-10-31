@@ -453,36 +453,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   min-height: 12rem;
 }
 
-/* A legend is a key, not a list to browse: past a couple of rows it is eating
-   the thing it explains. It scrolls at that point instead. */
-/* **One row that scrolls sideways, not two or three that stack.** Reported:
-   "the graph view area keeps feeling squashed on my screen due to the top
-   dock", with a screenshot showing eleven category chips wrapped over two
-   rows above the canvas.
-
-   `max-height: 5.5rem` let the legend take up to three rows of the thing
-   people came to look at, and it grows with the notebook, the more
-   categories you have, the less graph you get, which is backwards. A single
-   non-wrapping row is a fixed cost regardless of how many categories exist,
-   and horizontal scrolling is the right affordance for a list whose length
-   is not the point.
-
-   `scrollbar-width: thin` keeps the bar from claiming a chip's worth of
-   height back. */
-#graph-legend {
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  min-height: 0;
-  scrollbar-width: thin;
-}
-
-/* A chip must not shrink to fit the row, that is what turns a legend into
-   a line of ellipses. It keeps its size and the row scrolls instead. */
-#graph-legend > * {
-  flex: 0 0 auto;
-}
+/* The legend's wrapping and scrolling rules live in graph-lazy.css (audit 1029 G9). */
 
 /* The legend's collapse: asked for twice: "the categories toggle line
    needs to be collapsible or redesigned," the fixed-row-cost complaint
@@ -767,7 +738,8 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
    middle dot between the model, the length and the cost is the same
    separator the sidebar's own "21 min ago · 1 turn" line uses, so the two
    readings of "how big is this thread" are drawn the same way. */
-.chat-subline > *+*::before {
+/* Between shown chips only (INBOX 1495). */
+.chat-subline>:not([hidden])~:not([hidden])::before {
   content: "·";
   margin-right: var(--space-3);
   color: var(--border);
@@ -1558,12 +1530,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   opacity: 0.34;
 }
 
-.graph-node text.graph-pin-badge {
-  font-size: var(--text-xs);
-  stroke: none;
-  pointer-events: none;
-}
-
 .graph-node text.graph-label {
   font-weight: 500;
   fill: var(--ink);
@@ -1999,7 +1965,7 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   margin-top: 0;
 }
 
-/* About's own hero box (Settings → About): the emblem and app name read as
+/* About's own hero box (Settings, About): the emblem and app name read as
    a title card, not one more scannable row, so this is the one settings-group
    whose top is centred rather than left-aligned like the rest of the page.
    The description and version stay left-aligned underneath: a paragraph of
@@ -2179,7 +2145,7 @@ label.setting-check,
 
 /* Hover only where there is a pointer to hover with: on a phone the
    emulated hover stays on the row last tapped (measured, contrast.js at
-   390: Settings > Learned's first row held the 18% fill, its muted hint
+   390: Settings, Learned's first row held the 18% fill, its muted hint
    at 3.83:1). */
 @media (hover: hover) {
   .setting-check:hover,
@@ -3176,6 +3142,7 @@ span > .chip {
 .search-field > .search-field-input:hover,
 .search-field > .search-field-input:focus {
   flex: 1 1 auto;
+  align-self: stretch;
   min-width: 0;
   height: auto;
   margin: 0;
@@ -3279,19 +3246,6 @@ span > .chip {
   flex: 0 0 auto;
 }
 
-.attachment-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: 22rem;
-}
-
-.attachment-chip>span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* **The one attachment chip** (DESIGN.md "An attachment chip"). The owner:
    "better modern and proffessional this app styled attachment chips". A tile
    (the picture, or the kind's glyph), the name with its extension kept when
@@ -3299,6 +3253,8 @@ span > .chip {
    what went wrong), a thin bar while it uploads and a round x. Chat, the
    popup agent and any later composer build it with `attachmentChip()`. */
 .att-chip {
+  display: inline-flex;
+  align-items: center;
   max-width: 16rem;
   min-width: 0;
   gap: var(--space-3);
@@ -3358,26 +3314,34 @@ span > .chip {
 .att-chip[data-state="error"] .att-chip-facts {
   color: var(--error);
 }
-.att-chip-bar {
-  position: absolute;
-  inset: auto var(--space-2) 0;
-  width: auto;
-  height: 3px;
-  appearance: none;
+/* A notebook card (`notebookCard`): tile and words are one left-aligned button
+   (a centred one overflowed both ways, the black bar's cut), the x its sibling. */
+.att-chip-open {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* Covers the card's left side at the card's height (a button minimum would grow it). */
+  min-height: 0;
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  padding: var(--space-2) 0 var(--space-2) var(--space-2);
   border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  accent-color: var(--accent);
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.att-chip-bar::-webkit-progress-bar {
-  background: transparent;
+.att-chip-facts.att-chip-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
 }
-.att-chip-bar::-webkit-progress-value {
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-}
-.att-chip-bar::-moz-progress-bar {
-  background: var(--accent);
+.att-chip:has(> .att-chip-open:is(:hover, :focus-visible)) {
+  background: var(--ghost-btn-bg);
 }
 .att-chip-x {
   flex: 0 0 auto;
@@ -3396,20 +3360,36 @@ span > .chip {
 .att-chip-x:is(:hover, :focus-visible) {
   color: var(--error);
 }
-
-.attachment-remove {
+/* **Staged, the pill** (INBOX 1476, the owner: "very clean and dynamic"): a
+   chip with a remove x is one control-height line on the accent wash, no
+   border; the glyph, the name cut at 14 characters, the kind in brackets, the
+   x. Under 820px the buttons keep their 44px target and overhang it. */
+.att-chip-pill {
+  min-height: var(--control-h-lg);
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
   border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  font-weight: 700;
-  line-height: 1;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
 }
-
-.attachment-remove:is(:hover, :focus-visible),
-.attachment-remove:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--error);
+.att-chip-pill .att-chip-tile {
+  width: 1.25rem;
+  background: none;
+  border-radius: inherit;
+}
+.att-chip-pill :is(.att-chip-open, .att-chip-x) {
+  gap: var(--space-2);
+  margin: calc((var(--control-h-lg) - var(--target-min)) / 2) 0;
+  padding: 0;
+  border-radius: inherit;
+}
+.att-chip-pill .att-chip-body {
+  flex-flow: row;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.att-chip-pill .att-chip-stem {
+  max-width: 14ch;
 }
 
 /* --- the writing room -------------------------------------------------------- */
@@ -4180,7 +4160,6 @@ span > .chip {
    rule and each size themselves; measured against each other they were three
    different heights on one line. */
 .doc-dock .ghost.small,
-.doc-dock .doc-file-type,
 .doc-dock .seg {
   height: var(--control-h);
 }
@@ -4204,19 +4183,6 @@ span > .chip {
   padding-block: 0;
 }
 
-/* **The select needs its block padding zeroed too, or the height clips the
-   text.** Reported with a dark-mode screenshot: "the elements in the top
-   documents dock are misaligned, have the text cut off, not the same height".
-   The base `select` rule sets `padding: var(--space-4) var(--space-5)` and
-   `line-height: 1.5`; with `box-sizing: border-box` and a fixed 2.3rem
-   height, the padding eats the line box from both ends and the glyphs are
-   sliced top and bottom. Every other control here is a button, which is why
-   this was the only one that showed it. */
-.doc-dock .doc-file-type {
-  padding-block: 0;
-  line-height: var(--control-h);
-}
-
 /* The title row's two controls share a height of their own, taller than the
    action row's, because the title is set at 1.15rem and a 2.3rem box around
    it reads as cramped. Declared on the row so the pair can never disagree. */
@@ -4224,8 +4190,7 @@ span > .chip {
   --identity-h: 2.75rem;
 }
 
-.doc-dock-identity > .doc-title-input,
-.doc-dock-identity > .doc-file-type {
+.doc-dock-identity > .doc-title-input {
   height: var(--identity-h);
   line-height: var(--identity-h);
   margin-bottom: 0;
@@ -4625,14 +4590,6 @@ span > .chip {
    decorations inside CodeMirror now, which have no geometry to keep in step
    with anything because they are the text. The three underline shapes live
    in the theme object in documents.js, for the reason 09-editor.css gives. */
-
-.doc-file-type {
-  /* On the title row now, where there is room for the whole label, it was
-     truncated to "Markdow…" at 9rem on the action row, which is the width
-     that row could spare. */
-  max-width: 13rem;
-  flex: 0 0 auto;
-}
 
 /* --- Live preview -----------------------------------------------------------
 
@@ -5455,12 +5412,12 @@ span > .chip {
    of the row is unchanged and only the pill's box moves. `overflow` stays
    visible here (unlike `#chat-usage`, which clips for its ellipsis), so an
    absolutely positioned pseudo-element outside the border box is drawn. */
-.chat-subline > * + .chat-context-pill {
+.chat-subline>:not([hidden])~.chat-context-pill {
   position: relative;
   margin-left: var(--space-5);
 }
 
-.chat-subline > * + .chat-context-pill::before {
+.chat-subline>:not([hidden])~.chat-context-pill::before {
   position: absolute;
   /* A box exactly as wide as the space the row's gap and the margin above
      leave open, sitting flush against the pill's left edge, with the dot

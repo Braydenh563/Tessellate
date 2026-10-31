@@ -1,4 +1,4 @@
-"""Managing the embedding models on disk (Settings → Optional extras).
+"""Managing the embedding models on disk (Settings, Optional extras).
 
 The question that prompted this is worth keeping, because the answer is not
 obvious from the logs: *"the embedding model doesn't redownload every time I
@@ -89,7 +89,7 @@ def test_only_one_download_runs_at_a_time(client, monkeypatch):
 # `DownloadState`'s own docstring says "for /tasks and the panel", the panel
 # half (this file's own screen) was built, /tasks never was. A multi-hundred-MB
 # download with its own dropped-connection retry logic was invisible the
-# instant you clicked away from Settings → Optional extras.
+# instant you clicked away from Settings, Optional extras.
 
 
 def test_a_running_download_appears_in_the_shared_task_list(client, monkeypatch):

@@ -75,7 +75,7 @@ def test_the_categories_drawer_is_one_column_of_touch_rows():
 
 def test_a_phone_toast_stands_above_the_floating_button():
     css = (FRONTEND / "css" / "10-responsive.css").read_text(encoding="utf-8")
-    selector = "body:not(:has(#tab-chat:not(.hidden))):has(.tab-page:not(.hidden) > .dock-fab) #toast-box"
+    selector = 'body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box'
     lifted = _rule(_phone_block_with(css, selector), selector)
     # The fab's own line (its offset above the tab bar) plus its height.
     assert "var(--bottom-tabs-h) + var(--space-5)" in lifted
@@ -127,7 +127,7 @@ def test_the_drawer_opener_says_what_it_holds_and_closes_on_a_choice():
     shell = _read("phone-shell.js")
     assert '[data-dock-name="notes"]\', label: "Categories" }' in shell
     assert "Categories and tags" not in shell
-    close = shell[shell.index('getElementById("category-list")?.addEventListener("click"'):]
+    close = shell[shell.index('("category-list")?.addEventListener("click"'):]
     close = close[: close.index("\n});")]
     assert 'classList.remove("sidebar-sheet-open")' in close
     assert 'setAttribute("aria-expanded", "false")' in close

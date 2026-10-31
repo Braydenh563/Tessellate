@@ -1090,10 +1090,7 @@ Steps 1 to 4 and 6, and step 5's pickers, built 2026-10-10 (Brief 41): moved to 
 - 7 on chat bubbles and library cards; 1's panel padding 12 and sidebar gutter 8, not yet measured.
 - One focus ring at 1:1 (Chat, an `.active` button whose ring takes the ground's colour; `focusring.js`).
 
-## Placed from INBOX, 2026-09-09 to 2026-10-03 (all built)
-
-Built, each block in HISTORY.md: 100, 101 and 103 ("Moved from the plans, 2026-09-09"); 60, 102, 104 and 279 ("Moved from the plans, 2026-10-05 (UI_MODERNISATION_PLAN's built INBOX blocks)"); 94 ("Moved from the plans, 2026-10-05 (UI_MODERNISATION_PLAN 94 and 282, found built)").
-The evening batch of 2026-09-09, and 164, 165, 186, 282, 296 and 393: all built and moved whole to HISTORY.md ("Moved from the plans, 2026-10-05", the UI_MODERNISATION_PLAN blocks; 296 under "INBOX resolved, 2026-09-21").
+## Placed from INBOX, built (pointers)
 
 ## Settings information architecture (INBOX 444)
 
@@ -1185,12 +1182,6 @@ inside a 4,000px section.
 
 ## Placed from INBOX, 2026-10-05 (OPEN.md triage)
 
-- The Files rows' two rhythms: a measuring error, closed; HISTORY.md, "Moved
-  from the plans, 2026-10-05 (UI_MODERNISATION_PLAN: the Files rows' two
-  rhythms, a measuring error)".
-- The picker's other four sources: built; HISTORY.md, "Moved from the plans,
-  2026-10-05 (UI_MODERNISATION_PLAN: the attach picker's tiles)".
-
 460. **The owner, 2026-10-03 night, verbatim.** "I keep experiencing scroll
      jump when scrolling with two fingers on my trackpad?? idk". Placed: the
      orchestrator (reproduce with synthetic wheel streams; suspects: a
@@ -1214,10 +1205,6 @@ inside a 4,000px section.
      and the distance moved equalled the distance sent. No listener writes
      a scrollTop under a wheel, no scroller snaps or smooth-scrolls. Left:
      a real precision touchpad's momentum phase, which CDP cannot send.
-
-## Placed from INBOX, 2026-10-05 (header bars, Settings navigation)
-
-621 and 622 are built. Moved whole to [`HISTORY.md`](HISTORY.md) ("Moved from the plans, 2026-10-05 (INBOX 621 and 622: the header bars and the Settings navigation)"), with what they measured before and after.
 
 ## Placed from the owner's list, 2026-10-10
 
@@ -1355,7 +1342,7 @@ the order a person meets them, with what the code says today.
 | Chat | bubbles, meta lines, tool chips, the rail, attachments, the mode segment | `sendChatMessage` 1,079 lines renders and sends | metadata rule | the modes (Ask, Chat, Agent) are a segment with no explanation at rest | one bubble recipe with the meta line, one explanation line per mode |
 | Documents and code | DOCUMENTS 17 and 21 | the live view bar and the block bar | `docCmTheme` 871 lines of theme | the slash menus are one system (DOCUMENTS 18) | Brief 42 |
 | Whiteboard and mind map | the radial, the tool palette, the format panel, the properties sheet, the dock: five | `initWhiteboard` 3,730 lines | draw.io programme | the radial is a toolbar not a menu (linted) | the format panel as draw.io's one panel (programme phase 2) |
-| Graph | the options folds (three) | GRAPH decisions | `renderGraphSvg` 1,254 lines | folds are learnable | Brief 38 |
+| Graph | the options folds (three) | GRAPH decisions | `gcDraw` 729 lines | folds are learnable | Brief 38 |
 | Timeline | feed, table, scrubber | one row model | row tokens | keys documented in the plan, not the UI | Phase 5 adds the calendar; the keys go in the help popover |
 | Library | gallery, activity, filters | `filterLibraryImagesGallery` 1,546 lines | chips as `.library-chip` | the filter well recipe | split along the seams (Brief 45) |
 | Dashboard | greeting, clock, art, timer, streak, digest, widgets, quick links, features | nine blocks, 24 buttons, two filled (Save, Generate this week's dig) and a 4-item dock | widgets sized by `sizeDashWidgets` | the catalogue is a second navigation | "continue and today" (WORLD_CLASS decision 51) |
@@ -1597,3 +1584,13 @@ Rows: T1 and T2 (owner: voiceup, with V7's dialog work); T3 learnaudit; T4 gramm
 
 **The owner, 2026-10-27, verbatim.** "can you work on optimising everything, making transitions and adjustments smoother, dropdown panels and popups that appear smoother, better transitions, fail states, no glitches or visible lag etc, very very fast to use and flick between everything". With a lag log from their machine (Windows, 2026-10-27 08:13 to 08:21 UTC).
      Done (HISTORY, lag 1415): the forced layouts in the zoom keydown, dashboard map size, OCR fit and pinch, boot emblems and Settings focus. Open: (2) take `/models/status` 4.3 s, `/models/suggested` 4.1 s, `/models/warm-filing` 3.2 s off the request path or cache it, (3) one motion recipe for popovers, dropdowns and panels in DESIGN.md (enter and exit, reduced motion), (4) fail states per surface with a retry, (6) a lag budget sweep per tab (input under 100 ms, frame under 50 ms) as a test. Not reproduced, needs the owner's Windows data: Timeline first load 1180 ms, `app.js` `Response.json.then` layout, tab button onclick 85 to 135 ms, boot `status.js` build 1295 ms.
+
+## Placed from INBOX, 2026-10-29 (1435 Appearance panel, 1436 sketch and noise art)
+
+**1435** (Appearance quick panel): built e22c9f8, moved to HISTORY.md ("Moved from the plans, 2026-10-29 (appearance 1435)"); leftovers in `agent-remaining/appearance-1435.md`.
+
+**1436** (Wander and Drift, paused art as a picture, the cheaper-equivalent pass): built, moved to HISTORY.md ("Moved from the plans, 2026-10-29 (backgrounds 1436)"); left over in `agent-remaining/bgart-1436.md`.
+
+## Placed from INBOX, 2026-10-31
+
+- 1351 (the owner, 2026-10-25, verbatim in HISTORY): usable daily for life and uni, fast, reliable, accurate, no bug found in five minutes of use; standing, served by every polish and speed agent.

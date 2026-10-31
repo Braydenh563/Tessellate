@@ -231,7 +231,7 @@ async function docWordExport() {
   if (!currentDoc) return false;
   try {
     const D = await docWordLib("docx");
-    const blob = await docWordBlob(D, currentDoc.title, docCmView ? docCmView.state.doc.toString() : currentDoc.content || "");
+    const blob = await docWordBlob(D, currentDoc.title, docCmView ? docStr(docCmView.state.doc) : currentDoc.content || "");
     await saveFile(docExportName(currentDoc.title, "docx"), blob);
     return true;
   } catch (error) {

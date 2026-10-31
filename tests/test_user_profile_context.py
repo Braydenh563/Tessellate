@@ -1,4 +1,4 @@
-"""The local profile (Settings > Your profile), as the AI reads it.
+"""The local profile (Settings, Your profile), as the AI reads it.
 
 The profile is three things: a display name, a short "About me" and an avatar
 drawn from the name. The first two reach the model through one function,

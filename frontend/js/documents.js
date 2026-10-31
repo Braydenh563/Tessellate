@@ -50,6 +50,10 @@ let docSaveTimer = null;
 //: order preserved: the picker's order is a decision (see filetypes.py) and
 //: sorting it here would quietly undo it.
 let docFileTypes = [];
+//: The picker's state: `pending` is the type a blank page was started as (New's
+//: caret, or the foot's button before anything is typed; null means markdown,
+//: cleared when a document is shown); `menu` and `opener` are the foot's own.
+const docTypeState = { pending: null, menu: null, opener: null };
 
 //: Markdown's own entry, used before the fetch lands. Everything that reads a
 //: file type has to work on the very first paint, and a null here would mean
@@ -80,18 +84,8 @@ async function loadDocFileTypes() {
   if (docFileTypes.length) return;
   const body = await apiJson("/documents/file-types", { silent: true }).catch(() => null);
   docFileTypes = (body && body.types) || [];
-  const picker = $("doc-file-type");
-  if (!picker || !docFileTypes.length) return;
-  picker.replaceChildren();
-  for (const type of docFileTypes) {
-    const option = document.createElement("option");
-    option.value = type.ext;
-    // The extension as well as the name: "Markdown" says what it is, ".md"
-    // says what it will download as, and the download is the half people
-    // check before sending a file to someone.
-    option.textContent = `${type.label} (.${type.ext})`;
-    picker.appendChild(option);
-  }
+  if (!docFileTypes.length) return;
+  docTypeMount();
   syncDocFileType();
 }
 
@@ -99,8 +93,167 @@ async function loadDocFileTypes() {
 //: document saved before file types existed, for an unknown extension, and
 //: for the window between load and the fetch above landing.
 function docFileType() {
-  const ext = currentDoc?.file_type || "md";
+  //: A blank page (no `currentDoc` yet) takes the type picked for it, so the
+  //: first keystroke creates a file of that type (`docTypeState.pending`).
+  const ext = (currentDoc ? currentDoc.file_type : docTypeState.pending) || "md";
   return docFileTypes.find((t) => t.ext === ext) || DEFAULT_FILE_TYPE;
+}
+
+//: **One picker for a file's type, drawn in two places** (INBOX 1482, the
+//: owner's screenshots of a type button in a document's foot opening a list
+//: grouped Documents, Data, Code, each row with its glyph). `docTypeMenu` is a
+//: `kebabMenu` of the served table (`group` and `icon` come from filetypes.py),
+//: with the group names drawn as headings and a filter field, because
+//: thirty-odd rows are found by typing; the foot's button
+//: (`#doc-type-slot`) changes the open document's type and New's caret
+//: (`#doc-new-type-slot`) starts a blank file of one. Never a second list.
+function docTypeItems(onPick) {
+  return docFileTypes.map((type) => ({
+    label: `ph:${type.icon || "file-code"} ${type.label}`,
+    title:
+      type.ext === "md"
+        ? "Markdown (.md): the rich text editor, formatted as you type"
+        : `${type.label} (.${type.ext})`,
+    group: type.group || "Code",
+    run: () => onPick(type.ext),
+  }));
+}
+
+//: The hairlines `kebabMenu` draws between groups become a heading over each
+//: group here (rows and headings are one-to-one with the table, in its order).
+function docTypeHeadings(menu) {
+  menu.querySelectorAll(":scope > .menu-sep").forEach((rule) => rule.remove());
+  let last = null;
+  menu.querySelectorAll(":scope > .menu-item").forEach((row, i) => {
+    const type = docFileTypes[i];
+    row.dataset.docType = type.ext;
+    row.dataset.group = type.group || "Code";
+    if (row.dataset.group === last) return;
+    last = row.dataset.group;
+    const heading = document.createElement("div");
+    heading.className = "menu-heading";
+    heading.setAttribute("role", "presentation");
+    heading.dataset.group = last;
+    heading.textContent = last;
+    row.before(heading);
+  });
+}
+
+//: A heading with every row under it filtered out goes too.
+function docTypeHeadingsFit(menu) {
+  const shown = new Set();
+  for (const row of menu.querySelectorAll(":scope > .menu-item:not([hidden])")) shown.add(row.dataset.group);
+  for (const heading of menu.querySelectorAll(":scope > .menu-heading")) heading.hidden = !shown.has(heading.dataset.group);
+}
+
+function docTypeFilterKey(event, menu) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    menu.querySelector(":scope > .menu-item:not([hidden])")?.click();
+  } else if (event.key === "Home" || event.key === "End") {
+    //: The menu's own Home and End walk the rows; in the field they move the caret.
+    event.stopPropagation();
+  }
+}
+
+//: Typing narrows the list through `listFilter`, the app's one filter field
+//: (it hides rows and says when none match; Escape clears it first). The field
+//: takes the focus when the menu opens (not on a phone, where that would raise
+//: the keyboard over the list) and a letter typed on a row goes to it; the
+//: arrows leave the field for the rows through the menu's own keys.
+function docTypeFilter(menu, opener) {
+  const filter = listFilter(menu, { label: "Filter types", threshold: 0, rows: ":scope > .menu-item", inside: true });
+  const { input, refresh } = filter;
+  input.addEventListener("input", () => docTypeHeadingsFit(menu));
+  input.addEventListener("keydown", (event) => docTypeFilterKey(event, menu));
+  menu.addEventListener("keydown", (event) => {
+    if (event.target !== input && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) input.focus();
+  });
+  opener.addEventListener("click", () => {
+    if (input.value) {
+      input.value = "";
+      refresh();
+      docTypeHeadingsFit(menu);
+    }
+    if (window.matchMedia("(hover: hover)").matches) input.focus();
+  });
+}
+
+function docTypeMenu(onPick, ariaLabel) {
+  const wrap = kebabMenu(docTypeItems(onPick), ariaLabel);
+  const menu = wrap.querySelector(":scope > .action-menu");
+  const opener = wrap.querySelector(":scope > button");
+  docTypeHeadings(menu);
+  docTypeFilter(menu, opener);
+  return { wrap, menu, opener };
+}
+
+//: What the foot's button does: on an open document the type changes and is
+//: saved at once (a mode that has visibly switched but not persisted is one
+//: reload away from silently reverting); on a blank page it is the type the
+//: first keystroke will create.
+async function docTypeChoose(ext) {
+  if (!currentDoc) {
+    docTypeState.pending = ext === "md" ? null : ext;
+    docSetPlaceholder(docBlankPlaceholder());
+    syncDocFileType({ prose: false });
+    return;
+  }
+  if ((currentDoc.file_type || "md") === ext) return;
+  currentDoc = { ...currentDoc, file_type: ext };
+  syncDocFileType();
+  await saveDocument({ silent: true });
+}
+
+function docBlankPlaceholder() {
+  return docTypeState.pending
+    ? `Start typing and a new .${docTypeState.pending} file is created for you.`
+    : "Start typing and a new document is created for you.\n\nMarkdown works here, headings, **bold**, lists, tables, links.";
+}
+
+//: Both pickers are built once the table has arrived (`loadDocFileTypes`).
+function docTypeMount() {
+  const foot = $("doc-type-slot");
+  if (foot && !foot.firstChild) {
+    const { wrap, opener, menu } = docTypeMenu(docTypeChoose, "File type of this document");
+    docTypeState.menu = menu;
+    docTypeState.opener = opener;
+    opener.id = "doc-type-button";
+    opener.classList.remove("icon-only", "kebab-opener", "ghost", "small");
+    opener.classList.add("doc-statusbar-item", "doc-statusbar-button", "doc-type-button");
+    foot.replaceChildren(wrap);
+  }
+  const head = $("doc-new-type-slot");
+  if (head && !head.firstChild) {
+    const { wrap, opener } = docTypeMenu((ext) => startBlankDocument(ext), "Start a document of another type");
+    opener.id = "doc-new-type";
+    opener.classList.remove("icon-only", "ghost");
+    opener.classList.add("split-button-caret");
+    setLabel(opener, "ph:caret-down");
+    opener.title = "New document of another type";
+    head.replaceChildren(wrap);
+  }
+}
+
+//: The foot's button names the type and its row wears the check. Only when the
+//: type changed: opening one more document of the same type writes nothing.
+function docTypeSync(type) {
+  const opener = docTypeState.opener;
+  if (!opener || opener.dataset.ext === type.ext) return;
+  opener.dataset.ext = type.ext;
+  setLabel(opener, `ph:${type.icon || "file-code"} ${type.label}`);
+  opener.title = `File type: ${type.label} (.${type.ext}). Press to change it`;
+  //: The menu itself, not `nextElementSibling`: an open menu is moved to `<body>`.
+  const menu = docTypeState.menu;
+  menu?.querySelector('[aria-current="true"]')?.removeAttribute("aria-current");
+  menu?.querySelector(".doc-type-check")?.remove();
+  const row = menu?.querySelector(`[data-doc-type="${type.ext}"]`);
+  if (!row) return;
+  row.setAttribute("aria-current", "true");
+  const check = document.createElement("i");
+  check.className = "ph ph-check ph-trail doc-type-check";
+  check.setAttribute("aria-hidden", "true");
+  row.append(check);
 }
 
 // Everything about the editor that depends on the type, applied in one place
@@ -109,8 +262,7 @@ function docFileType() {
 //: the same check a frame later (DOCUMENTS 25 row 7).
 function syncDocFileType({ prose = true } = {}) {
   const type = docFileType();
-  const picker = $("doc-file-type");
-  if (picker) picker.value = type.ext;
+  docTypeSync(type);
 
   // A code file has no rendered form. Offering Live and Split for one is
   // offering to show a wall of escaped source, so those two options are
@@ -316,6 +468,7 @@ function foldDocMenuGroup(label, ids) {
   //: open, and so did every download row.
   const panel = group.querySelector(".action-menu.submenu");
   if (panel) panel.dataset.docDockSubmenu = "1";
+  return group;
 }
 
 //: **Three groups, because fourteen rows do not fit on a laptop.** Reported
@@ -335,9 +488,13 @@ function foldDocMenuGroup(label, ids) {
 //: the list: each is a verb on this document, none is a preference, and
 //: hiding a one-off action behind a flyout costs a click every time to save a
 //: row once.
-foldDocMenuGroup("ph:download-simple Download or print", [
+//: **First in the list** (audit 1028 U32): taking a document out was the
+//: ninth row, behind the layout switches. The rows keep their markup order;
+//: the group is moved, so ids and handlers are untouched.
+const docDownloadGroup = foldDocMenuGroup("ph:download-simple Download or print", [
   "doc-export-md", "doc-export-html", "doc-export-zip", "doc-export-docx", "doc-export-pdf",
 ]);
+docDownloadGroup?.parentElement?.prepend(docDownloadGroup);
 foldDocMenuGroup("ph:layout Editor and layout", [
   "doc-format-toggle", "doc-width-menu", "doc-text-size", "doc-line-spacing", "doc-toolbar-mode", "doc-code-wrap-row", "doc-whitespace-row",
   "doc-minimap-row",
@@ -570,7 +727,7 @@ function cmSurface(view, meta = null) {
     isDocument: meta ? false : true,
     view,
     get scrollEl() { return view.scrollDOM; },
-    get text() { return view.state.doc.toString(); },
+    get text() { return docStr(view.state.doc); },
     //: **The smallest change that gets there, not "the document is now this
     //: string".** Several callers still hand over a whole rebuilt document
     //: (the live view rewrites it on every keystroke, the AI panel replaces a
@@ -579,7 +736,7 @@ function cmSurface(view, meta = null) {
     //: proportional to the document on every character *and* makes Ctrl+Z
     //: undo the whole thing. The same prefix/suffix diff the D3 stack used.
     set text(next) {
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       const [from, to, insert] = docUndoDiffRange(current, next);
       view.dispatch({ changes: { from, to, insert }, annotations: docCmIsolate() });
@@ -687,6 +844,22 @@ function docSurface() {
   return textareaSurface(docBoxEl());
 }
 
+//: **A document's text, read once per version** (audit 1028 D19). CodeMirror's
+//: `Text.toString()` joins every line, so it costs the length of the document,
+//: and one typed character used to ask for it 24 times (the facts pass, the
+//: prose pass, the findings plugin, the autosave). A `Text` is immutable, so
+//: the string is keyed by the object: every state has its own, the old ones are
+//: collected with their states, and a second read is one map lookup.
+const docStrCache = new WeakMap();
+function docStr(doc) {
+  let text = docStrCache.get(doc);
+  if (text === undefined) {
+    text = doc.toString();
+    docStrCache.set(doc, text);
+  }
+  return text;
+}
+
 //: The document's text: the single most-read thing in this file.
 function docText() {
   return docSurface()?.text ?? "";
@@ -732,7 +905,7 @@ function asSurface(box) {
 }
 // DOC-SURFACE-END
 
-function setDocView(mode) {
+function setDocView(mode, { persist = true } = {}) {
   const type = docFileType();
   // A code file has no rendered form, so it can only be one of the two views
   // that do not need one. Asked for any other, that is the honest answer
@@ -741,7 +914,7 @@ function setDocView(mode) {
   docView = DOC_VIEWS.includes(mode) ? mode : "source";
   //: Source in a code file is the file's only editing view, not a choice.
   docViewState.held = !type.previewable && docView === "source";
-  try {
+  if (persist) try {
     if (!docViewState.held) prefs.set(DOC_VIEW_KEY, docView);
   } catch {
     // A private window with storage blocked is not a reason to refuse to
@@ -754,7 +927,8 @@ function setDocView(mode) {
   // guard makes it a no-op and you land back at the top of a long document you
   // were halfway down.
   const editor = docSurface();
-  const editorRange = editor ? editor.scrollHeight - editor.clientHeight : 0;
+  //: Off the Documents tab the editor is hidden and reads 0: skipped, it forced a layout at load (27ms).
+  const editorRange = editor && prefs.get("activeTab", null) === "documents" ? editor.scrollHeight - editor.clientHeight : 0;
   const editorRatio = editorRange > 0 ? editor.scrollTop / editorRange : null;
 
   // The editor is on screen in every mode but Read; the preview is shown in
@@ -827,6 +1001,7 @@ function setDocView(mode) {
 
 async function loadDocuments(selectId = null) {
   warmDocumentEngine();
+  if (docFactsStale && currentDoc) runDocFacts();
   //: Placeholders while it loads (INBOX 435 (6)); cleared on either answer.
   const sideList = document.getElementById("doc-list");
   showSkeletons(sideList, 4, "li");
@@ -855,7 +1030,7 @@ async function loadDocumentsNow(selectId) {
   //: both. See `surfaceFailed` in navigation.js.
   const loaded = await apiPagedList("/documents", DOCUMENTS_PAGE_SIZE).catch(() => null);
   if (!loaded) {
-    surfaceFailed(document.getElementById("doc-empty"), "documents", () => loadDocuments(selectId));
+    surfaceFailed(document.getElementById("doc-empty"), "your documents", () => loadDocuments(selectId));
     return;
   }
   surfaceRecovered(document.getElementById("doc-empty"));
@@ -922,7 +1097,7 @@ function renderDocList() {
     type.textContent = `.${doc.file_type || "md"}`;
     meta.append(
       type,
-      ` · ${doc.words} word${doc.words === 1 ? "" : "s"} · ${relativeTime(doc.updated_at)}`
+      ` · ${nounCount(doc.words, "word")} · ${relativeTime(doc.updated_at)}`
     );
     button.append(title, meta);
     button.addEventListener("click", () => openDocument(doc.id));
@@ -935,7 +1110,7 @@ function renderDocList() {
     const menu = kebabMenu(
       [
         makeMenuItem("ph:pencil-simple Rename", "Rename this document", async () => {
-          const next = await promptDialog("Rename this document:", doc.title || "");
+          const next = await promptDialog("Rename this document", doc.title || "");
           if (!next || next === doc.title) return;
           await renameDocumentWithUndo(doc, next).catch((e) => toast(e.message, true));
         }),
@@ -978,6 +1153,7 @@ function renderDocList() {
 
 function showNoDocument() {
   currentDoc = null;
+  docTypeState.pending = null;
   $("doc-title").value = "";
   docResetDocument("");
   // Deliberately NOT disabled. Disabling them meant that on a notebook with no
@@ -986,15 +1162,17 @@ function showNoDocument() {
   // now creates the document, which is what every editor does.
   $("doc-title").disabled = false;
   docBoxEl().disabled = false;
-  docSetPlaceholder(
-    "Start typing and a new document is created for you.\n\nMarkdown works here, headings, **bold**, lists, tables, links."
-  );
+  docSetPlaceholder(docBlankPlaceholder());
   $("doc-saved").textContent = "";
   renderDocPreview();
   renderDocStats();
   renderDocOutline();
   renderDocProperties();
   renderDocComments();
+  //: **A new empty page opens to write in** (audit 1028 U8). A phone's default
+  //: is Rendered, where the first tap on a blank page did nothing. Not stored:
+  //: the next document still opens the way the person last chose.
+  if (docView === "rendered") setDocView("live", { persist: false });
 }
 
 //: Runs `paint` once the frame with the new text has been drawn, if no later
@@ -1017,7 +1195,10 @@ async function openDocument(id) {
   //: holds that document (see `docRememberPositionNow`).
   docRememberPositionNow();
   // Never lose unsaved work by switching away from it.
-  if (docDirty) await saveDocument({ silent: true });
+  //: A document waiting on its conflict asks now (not silently): leaving is
+  //: the moment the answer is owed, and the banner is about to go.
+  if (docDirty) await saveDocument({ silent: !docConflictPending });
+  docConflictPending = null;
   await docDropIfUntouched(id);
   //: **The engine is loaded here, and this is the only place it is.** Awaited
   //: before the text is handed over, so the document goes straight into
@@ -1157,12 +1338,39 @@ window.addEventListener("pagehide", docRememberPositionNow);
 //: The text is kept on this device at that moment, dropped by the next save
 //: that lands, and offered back the next time that document opens, the same
 //: shape as the note form's kept edit (note-edit-panels.js).
-const DOC_EDIT_KEPT = "doc-edit-draft";
+//: One kept copy per document (audit 1028 D5): a single slot let a failed
+//: save of one document be overwritten by the next. At most five, each for
+//: two weeks and 2 MB (D4): documents carry no private flag and sit as plain
+//: text on this computer's disk already, so a lock keeps them rather than
+//: losing the words it exists to keep.
+const DOC_EDIT_KEPT = "doc-edit-drafts";
+const DOC_KEPT_MAX = 5;
+const DOC_KEPT_DAYS = 14;
+
+function docKeptDrafts() {
+  let all = {};
+  try {
+    all = prefs.json(DOC_EDIT_KEPT, {}) || {};
+  } catch {
+    all = {};
+  }
+  const cutoff = Date.now() - DOC_KEPT_DAYS * 864e5;
+  const stale = Object.keys(all).filter((id) => !(all[id]?.at > cutoff));
+  for (const id of stale) delete all[id];
+  //: Gone from storage too, not only from the offer.
+  if (stale.length) prefs.setJSON(DOC_EDIT_KEPT, all);
+  return all;
+}
 
 function keepDocEditLocally() {
   if (!currentDoc || !docDirty) return;
+  const content = docText();
+  if (content.length > 2e6) return;
   try {
-    prefs.setJSON(DOC_EDIT_KEPT, { id: currentDoc.id, title: $("doc-title").value, content: docText(), at: Date.now() });
+    const all = docKeptDrafts();
+    all[currentDoc.id] = { id: currentDoc.id, title: $("doc-title").value, content, at: Date.now() };
+    const newest = Object.values(all).sort((a, b) => b.at - a.at).slice(0, DOC_KEPT_MAX);
+    prefs.setJSON(DOC_EDIT_KEPT, Object.fromEntries(newest.map((kept) => [kept.id, kept])));
   } catch {
     /* storage full or blocked: nothing more can be done at unload */
   }
@@ -1170,8 +1378,11 @@ function keepDocEditLocally() {
 
 function forgetDocEditLocally(id) {
   try {
-    const kept = prefs.json(DOC_EDIT_KEPT, null);
-    if (kept && kept.id === id) prefs.remove(DOC_EDIT_KEPT);
+    const all = docKeptDrafts();
+    if (!(id in all)) return;
+    delete all[id];
+    if (Object.keys(all).length) prefs.setJSON(DOC_EDIT_KEPT, all);
+    else prefs.remove(DOC_EDIT_KEPT);
   } catch {
     /* nothing kept, nothing to forget */
   }
@@ -1184,13 +1395,8 @@ window.addEventListener("pagehide", keepDocEditLocally);
 //: message offers it back, as an edit (Ctrl+Z takes it out again) that the
 //: ordinary autosave then saves.
 function offerKeptDocEdit(doc) {
-  let kept = null;
-  try {
-    kept = prefs.json(DOC_EDIT_KEPT, null);
-  } catch {
-    kept = null;
-  }
-  if (!kept || kept.id !== doc.id) return;
+  const kept = docKeptDrafts()[doc.id];
+  if (!kept) return;
   if (kept.content === doc.content && (kept.title || "") === (doc.title || "")) {
     forgetDocEditLocally(doc.id);
     return;
@@ -1890,7 +2096,7 @@ print(f"mean {mean:.2f}, largest {max(numbers)}")
   },
 ];
 
-function docTemplateFill(template) {
+function docTemplateFill(template, typedTitle = "") {
   const now = new Date();
   const date = now.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
   //: **`{{isodate}}` is the local day, built by hand rather than from
@@ -1907,7 +2113,8 @@ function docTemplateFill(template) {
   //: A template's gallery label and the title it gives the document are not
   //: always the same words: "Daily" names the choice in the gallery, and the
   //: document it makes is called by its day (`docTitle`, section 14).
-  const title = template.id === "blank" ? docNextName() : fill(template.docTitle || template.title);
+  //: A title the person already typed is the name they chose (audit 1028 U34).
+  const title = typedTitle || (template.id === "blank" ? docNextName() : fill(template.docTitle || template.title));
   return {
     title,
     content: fill(template.content).replaceAll("{{title}}", title),
@@ -1944,13 +2151,17 @@ const docNextName = () => docUntitledName(docs.map((d) => d.title));
 //: Leaving a document that was made and never written in (a keystroke in the
 //: title, then undone; New, then another document) bins it, so the list does
 //: not fill with "Untitled document N". Anything with a word in it stays.
-async function docDropIfUntouched(nextId = null) {
+async function docDropIfUntouched(nextId = null, { titled = false } = {}) {
   const doc = currentDoc;
+  //: `titled`: a template is about to be made from the title the person typed, so
+  //: the empty document that title started is the stray (audit 1028 U34).
+  const untouched = titled ? !docText().trim() : docIsUntouched($("doc-title").value, docText());
   // Only a document made in this session: an older empty "Untitled document N" is the owner's.
-  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !docIsUntouched($("doc-title").value, docText())) return;
+  if (!doc || !docsMadeThisSession.has(doc.id) || doc.id === nextId || creatingDocument || !untouched) return;
   currentDoc = null;
   docs = docs.filter((d) => d.id !== doc.id);
-  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => {});
+  //: A delete that failed leaves the row on the server, so it goes back in the list (D36).
+  await apiJson(`/documents/${doc.id}`, { method: "DELETE" }).catch(() => { docs = [doc, ...docs]; });
   renderDocList();
 }
 
@@ -1958,7 +2169,7 @@ async function docDropIfUntouched(nextId = null) {
 //: 16, decided): the editor opens empty and the first keystroke in the title
 //: or the text creates the row (`ensureDocumentExists`), so cancelling or
 //: walking away leaves nothing behind. A template has content, so it posts.
-async function startBlankDocument() {
+async function startBlankDocument(fileType = null) {
   const seq = ++docOpenSeq;
   docRememberPositionNow();
   if (docDirty) await saveDocument({ silent: true });
@@ -1966,6 +2177,9 @@ async function startBlankDocument() {
   await ensureDocEditor();
   if (seq !== docOpenSeq) return;
   showNoDocument();
+  //: A file of another type (New's caret): said in the empty page's own words.
+  docTypeState.pending = fileType && fileType !== "md" ? fileType : null;
+  if (docTypeState.pending) docSetPlaceholder(docBlankPlaceholder());
   syncDocFileType({ prose: false });
   docDirty = false;
   renderDocList();
@@ -1974,7 +2188,11 @@ async function startBlankDocument() {
 
 async function createDocument(template = null) {
   if (!template) return startBlankDocument();
-  const body = docTemplateFill(template);
+  //: A titled blank the person started and then swapped for a template is not
+  //: left behind empty: its title carries into the template's document (U34).
+  const started = currentDoc && docsMadeThisSession.has(currentDoc.id) && !docText().trim() ? $("doc-title").value.trim() : "";
+  await docDropIfUntouched(null, { titled: true });
+  const body = docTemplateFill(template, started && !docIsUntouched(started, "") ? started : "");
   const doc = await apiJson("/documents", {
     method: "POST",
     body: JSON.stringify(body),
@@ -2128,8 +2346,9 @@ async function ensureDocumentExists() {
   creatingDocument = (async () => {
     const doc = await apiJson("/documents", {
       method: "POST",
-      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "" }),
+      body: JSON.stringify({ title: $("doc-title").value.trim() || docNextName(), content: "", file_type: docTypeState.pending || "md" }),
     });
+    docTypeState.pending = null;
     currentDoc = doc;
     docsMadeThisSession.add(doc.id);
     docs.unshift({ ...doc });
@@ -2148,7 +2367,12 @@ async function ensureDocumentExists() {
   }
 }
 
+//: Counts edits, so a save that lands knows whether words were typed
+//: while it was in flight (those keep the document dirty).
+let docEditSeq = 0;
+
 function markDocDirty() {
+  docEditSeq += 1;
   // Read off the surface, so they are right even before the save lands: the
   // point of them is live feedback while writing. Scheduled rather than run
   // here, because each is a pass over the whole document, see
@@ -2156,10 +2380,15 @@ function markDocDirty() {
   scheduleDocFacts();
   // No document yet? Typing makes one, then this save proceeds normally.
   if (!currentDoc) {
-    ensureDocumentExists().then(() => markDocDirty());
+    ensureDocumentExists().then(() => markDocDirty(), (error) => {
+      $("doc-saved").textContent = "Not saved";
+      $("doc-status").classList.add("error");
+      $("doc-status").textContent = error.message;
+    });
     return;
   }
   docDirty = true;
+  if (docConflictPending?.id === currentDoc.id) return;
   docSetStatusText($("doc-saved"), "Unsaved…");
   clearTimeout(docSaveTimer);
   // Autosave, but not on every keystroke, a pause is the natural moment.
@@ -2169,13 +2398,63 @@ function markDocDirty() {
 //: While the edit-conflict prompt is up, autosave waits for its answer
 //: rather than asking again every 1.2s of typing behind it.
 let docConflictOpen = false;
+//: **An autosave's conflict waits in the status line, not in a dialog** (audit
+//: 1028 D9). A silent save hit the modal in the middle of a sentence, which
+//: took the focus and sent the next keystrokes to it. Now the save stops, the
+//: status says the document changed in another window and offers "Resolve",
+//: and the dialog opens when asked for (or on an explicit save). `{ id,
+//: current }`: the other window's version, for the document it is about.
+let docConflictPending = null;
+
+//: One save at a time: a second PUT in flight carried the old base_hash (a
+//: false 409). One asked for meanwhile runs once after (audit 1028 D1).
+const docSaveQueue = { inFlight: null, again: null };
 
 async function saveDocument({ silent = false } = {}) {
+  if (docConflictPending && docConflictPending.id !== currentDoc?.id) docConflictPending = null;
   if (!currentDoc || docConflictOpen) return;
+  //: A save asked for by hand is the answer the banner waits for: it opens the
+  //: dialog. The autosave stays quiet.
+  if (docConflictPending) {
+    if (!silent) await docResolveConflict(docConflictPending.current, docText(), false, false);
+    return;
+  }
+  if (docSaveQueue.inFlight) {
+    docSaveQueue.again = { silent: silent && (docSaveQueue.again ? docSaveQueue.again.silent : true) };
+    await docSaveQueue.inFlight;
+    return;
+  }
+  let release;
+  docSaveQueue.inFlight = new Promise((resolve) => (release = resolve));
+  try {
+    await docSaveOnce(silent);
+  } finally {
+    docSaveQueue.inFlight = null;
+    const again = docSaveQueue.again;
+    docSaveQueue.again = null;
+    if (again) await saveDocument(again).catch(() => {});
+    release();
+  }
+}
+
+//: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
+function docFillBlankTitle() {
+  const field = $("doc-title");
+  if (!currentDoc || field.value.trim()) return false;
+  field.value = /^untitled document \d+$/i.test(currentDoc.title || "") ? currentDoc.title : docNextName();
+  return true;
+}
+
+let docSaveFailedSaid = false;
+
+async function docSaveOnce(silent) {
   clearTimeout(docSaveTimer);
-  //: An emptied title keeps a name of the same kind rather than going back to a bare "Untitled".
-  const title = $("doc-title").value.trim()
-    || (/^untitled document \d+$/i.test(currentDoc.title || "") ? currentDoc.title : docNextName());
+  const savingId = currentDoc.id;
+  const seqAtStart = docEditSeq;
+  //: A title emptied while typing is not written: the autosave keeps the
+  //: stored one, and leaving the field (or saving by hand) names it (D17).
+  if (!silent) docFillBlankTitle();
+  const title = $("doc-title").value.trim() || currentDoc.title || docNextName();
   const content = docText();
   try {
     const saved = await apiJson(`/documents/${currentDoc.id}`, {
@@ -2190,15 +2469,21 @@ async function saveDocument({ silent = false } = {}) {
       //: rather than overwriting it (WORLD_CLASS_PLAN 22.1 item 5).
       body: JSON.stringify({ title, content, file_type: currentDoc.file_type || "md", base_hash: currentDoc.content_hash }),
     });
+    docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
+    renderDocList();
+    if (currentDoc?.id !== savingId) return;
     currentDoc = saved;
-    docDirty = false;
+    //: Typed during the request: still dirty (D2).
+    if ((docDirty = docEditSeq !== seqAtStart)) {
+      keepDocEditLocally();
+      return docSetStatusText($("doc-saved"), "Unsaved…");
+    }
     forgetDocEditLocally(saved.id);
+    docSaveFailedSaid = false;
     $("doc-saved").textContent = "Saved";
     if (!silent) toast("Document saved.");
     //: An open preview shows what was saved (D6).
     docRunAfterSave();
-    docs = docs.map((d) => (d.id === saved.id ? { ...d, ...saved } : d));
-    renderDocList();
   } catch (error) {
     if (isEditConflict(error)) {
       await docResolveConflict(error.detail.current, content, silent);
@@ -2208,6 +2493,15 @@ async function saveDocument({ silent = false } = {}) {
     keepDocEditLocally();
     $("doc-status").classList.add("error");
     $("doc-status").textContent = error.message;
+    //: Said once per run of failures, with a way to try again (audit 1028
+    //: D34): the status bar's two words were the only sign, and autosave
+    //: retrying every pause must not stack a toast each time.
+    if (!docSaveFailedSaid) {
+      docSaveFailedSaid = true;
+      toast(voiceLine("failed", { what: "save the document", why: `${String(error.message || "no answer").replace(/\.$/, "")}. The text is kept on this device.` }), true, {
+        action: ["Try again", () => saveDocument({ silent: false })],
+      });
+    }
   }
 }
 
@@ -2217,8 +2511,17 @@ async function saveDocument({ silent = false } = {}) {
 //: as every content change does). "Take theirs" puts the other text in the
 //: editor as saved. No answer leaves the text here, unsaved, and the next
 //: edit asks again.
-async function docResolveConflict(current, mine, silent) {
+async function docResolveConflict(current, mine, silent, fromSave = true) {
   $("doc-saved").textContent = "Not saved";
+  if (silent) {
+    docConflictPending = { id: current.id, current };
+    keepDocEditLocally();
+    const saved = $("doc-saved");
+    saved.textContent = "Changed in another window. ";
+    saved.append(smallButton("Resolve", "Compare the two versions, keep yours or take the other window's", () => docResolveConflict(current, docText(), false, false)));
+    return;
+  }
+  docConflictPending = null;
   docConflictOpen = true;
   let answer = null;
   try {
@@ -2229,9 +2532,15 @@ async function docResolveConflict(current, mine, silent) {
   if (!currentDoc || currentDoc.id !== current.id) return;
   if (answer === "mine") {
     currentDoc = { ...currentDoc, content_hash: current.content_hash };
-    await saveDocument({ silent });
+    //: Directly, not through saveDocument, when this runs inside the save in
+    //: flight; from the banner there is none, so the queue is the way in.
+    if (fromSave) await docSaveOnce(silent);
+    else await saveDocument({ silent: false });
   } else if (answer === "theirs") {
     currentDoc = { ...currentDoc, ...current };
+    //: The title box too (audit 1028 D10): left on the old title, the next
+    //: save sent it back over the one just taken.
+    $("doc-title").value = current.title || "";
     docSurface().text = current.content || "";
     renderDocPreview();
     docDirty = false;
@@ -2425,6 +2734,12 @@ function docReplaceAll() {
   box.dispatchEvent(new Event("input", { bubbles: true }));
   $("doc-find-count").textContent = `Replaced ${count}`;
   docFindIndex = -1;
+}
+
+function docOpenReplace() {
+  toggleDocFindBar(true);
+  docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus();
+  return true;
 }
 
 function toggleDocFindBar(open) {
@@ -2973,6 +3288,15 @@ const DOC_COMMANDS = [
     code: true, run: () => docGoToDefinition() },
   { id: "references", icon: "ph:list-magnifying-glass", label: "List every use of the name at the caret", keys: "Shift+F12",
     code: true, run: () => docShowReferences() },
+  //: Every find chord named in one list, since Ctrl+G reads by file type
+  //: (VS Code's Go to line in code, find next in prose, where F3 does it
+  //: too and is the key listed; audit 1028 D32).
+  { id: "replace-here", icon: "ph:swap", label: "Find and replace in this document", keys: "Ctrl+H",
+    run: () => docOpenReplace() },
+  { id: "goto-line", icon: "ph:arrow-line-down", label: "Go to a line", keys: "Ctrl+G",
+    code: true, run: () => docCmView && window.CM6.search.gotoLine(docCmView) },
+  { id: "find-next", icon: "ph:arrow-down", label: "Find the next match", keys: "F3",
+    prose: true, run: () => docCmView && window.CM6.search.findNext(docCmView) },
   { id: "find-documents", icon: "ph:magnifying-glass", label: "Find in every document", keys: "Ctrl+Shift+F",
     run: () => docFindInDocuments() },
   { id: "replace-documents", icon: "ph:swap", label: "Replace in every document", keys: "none",
@@ -3378,7 +3702,7 @@ function docBlockMoveRun(view, delta) {
   if (!docFileType().previewable) return false;
   const selection = view.state.selection;
   if (selection.ranges.length !== 1 || !selection.main.empty) return false;
-  const edit = docBlockMoveEdit(view.state.doc.toString(), selection.main.head, delta);
+  const edit = docBlockMoveEdit(docStr(view.state.doc), selection.main.head, delta);
   if (!edit) return false;
   if (edit.noop) return true;
   view.dispatch({
@@ -3563,8 +3887,8 @@ function renderDocOutline() {
       //: The chip is a number on a row that is already a link, so the row's
       //: own name has to carry what the number means: a screen reader reading
       //: "Design notes 2/5" is reading a fraction with no unit.
-      button.title = `Jump to “${heading.text}”: ${done} of ${total} tasks done`;
-      chip.setAttribute("aria-label", `${done} of ${total} tasks done`);
+      button.title = `Jump to “${heading.text}”: ${done} of ${nounCount(total, "task")} done`;
+      chip.setAttribute("aria-label", `${done} of ${nounCount(total, "task")} done`);
       button.appendChild(chip);
     }
     button.addEventListener("click", () => jumpToDocLine(heading.line));
@@ -3980,7 +4304,7 @@ function renderDocPreview() {
     preview.insertBefore(docPropsReadNode(fm), preview.children[title ? 1 : 0] || null);
   }
   layerDocWikiLinks(preview);
-  docLayerImageOptions(preview);
+  imageLayoutRoot(preview);
   docRenderMermaidIn(preview);
   docWireReadTasks(preview, text);
 }
@@ -4478,8 +4802,14 @@ function mountGutterFor(textarea) {
   };
   if (textarea.isConnected) copyMetrics();
   else requestAnimationFrame(copyMetrics);
-  textarea.addEventListener("input", () => renderDocGutter(textarea));
-  for (const type of ["focus", "blur", "keyup", "mouseup"]) textarea.addEventListener(type, () => renderDocGutter(textarea));
+  //: Hidden is checked on this gutter first: `renderDocGutter` walks every
+  //: `.doc-gutter` in the page before it looks at one (394 ms over 61 keys in
+  //: a 14k-node page, perf-1031 item 2), so a hidden gutter costs no key.
+  const paint = () => {
+    if (!gutter.classList.contains("hidden")) renderDocGutter(textarea);
+  };
+  textarea.addEventListener("input", paint);
+  for (const type of ["focus", "blur", "keyup", "mouseup"]) textarea.addEventListener(type, paint);
   textarea.addEventListener("scroll", () => {
     if (!gutter.classList.contains("hidden")) gutter.scrollTop = textarea.scrollTop;
   });
@@ -5571,7 +5901,7 @@ function docTableCaretTo(context, row, col) {
 
 //: Leave a table downwards through `docTableExitEdit`, the way out as data.
 function docTableExit(view, table, dropLast) {
-  const out = docTableExitEdit(table, view.state.doc.toString(), dropLast);
+  const out = docTableExitEdit(table, docStr(view.state.doc), dropLast);
   view.dispatch({ changes: out.changes, selection: { anchor: out.anchor }, scrollIntoView: true, userEvent: "input" });
   return true;
 }
@@ -5659,7 +5989,7 @@ function docTablePasteEvent(event, view) {
     event.preventDefault();
     docUndoBreak();
     view.dispatch({ changes: result.edit, userEvent: "input.paste", scrollIntoView: true });
-    const table = docTableParse(view.state.doc.toString(), context.table.from);
+    const table = docTableParse(docStr(view.state.doc), context.table.from);
     if (table) docTableCaretTo({ surface: context.surface, table }, result.row, result.col);
     return true;
   }
@@ -5750,7 +6080,9 @@ function docHtmlToMarkdown(html) {
   const doc = new DOMParser().parseFromString(source, "text/html");
   const safeUrl = (url) => {
     const value = String(url || "").trim();
-    return /^(https?:|mailto:)/i.test(value) || (value.startsWith("/") && !value.startsWith("//")) ? value : "";
+    const ok = /^(https?:|mailto:)/i.test(value) || (value.startsWith("/") && !value.startsWith("//"));
+    //: Encoded: a ")" ended the Markdown link early (audit 1028 D16).
+    return ok ? value.replace(/[\s()<>]/g, (c) => encodeURIComponent(c)) : "";
   };
   //: Google Docs wraps a whole copy in `<b style="font-weight:normal">`, and
   //: marks real bold and italic on spans by style rather than by tag.
@@ -5773,7 +6105,7 @@ function docHtmlToMarkdown(html) {
     if (tag === "BR") return "\n";
     if (tag === "IMG") {
       const src = safeUrl(node.getAttribute("src"));
-      return src ? `![${(node.getAttribute("alt") || "").replace(/[[\]]/g, "")}](${src})` : "";
+      return src ? `![${(node.getAttribute("alt") || "").replace(/[[\]|]/g, "")}](${src})` : "";
     }
     let text = [...node.childNodes].map(inline).join("");
     if (tag === "CODE") return text.trim() ? `\`${text.replace(/`/g, "")}\`` : "";
@@ -6206,12 +6538,14 @@ function docTableGripsPlugin(CM) {
         view.requestMeasure(this.measure);
       }
       update(update) {
-        if (update.docChanged || update.selectionSet || update.viewportChanged || update.geometryChanged
-            || update.focusChanged || update.heightChanged) {
-          update.view.requestMeasure(this.measure);
+        //: The loop's own flags go through one request per frame, outside the loop.
+        if (update.docChanged || update.selectionSet || update.focusChanged) update.view.requestMeasure(this.measure);
+        else if (update.viewportChanged || update.geometryChanged || update.heightChanged) {
+          docMeasureNextFrame(this, update.view, this.measure);
         }
       }
       destroy() {
+        this.measureDead = true;
         this.layer.remove();
       }
 
@@ -6222,7 +6556,7 @@ function docTableGripsPlugin(CM) {
         //: in a table, and reading the document to say so on every keystroke of a
         //: long page would be the cost of a feature most lines never use.
         if (!doc.lineAt(head).text.includes("|") && !doc.lineAt(view.state.selection.main.anchor).text.includes("|")) return null;
-        const table = docTableParse(doc.toString(), head);
+        const table = docTableParse(docStr(doc), head);
         if (!table) return null;
         const scroller = view.scrollDOM;
         const sr = scroller.getBoundingClientRect();
@@ -7272,58 +7606,6 @@ function docColumnsAt(text, offset) {
   return docColumnsBlocks(text).find((block) => offset >= block.from && offset <= block.to) || null;
 }
 
-//: An image's `|`-separated options, by shape rather than by position.
-//: `width` is a number of pixels, `align` is one of left/center/right, and
-//: everything else is the caption (joined with a space, so a caption with a
-//: pipe in it survives as the sentence it was).
-function docImageOptions(spec) {
-  const parts = String(spec == null ? "" : spec).split("|");
-  const name = parts.shift();
-  const options = { name: (name || "").trim(), width: null, align: null, caption: "" };
-  const caption = [];
-  for (const raw of parts) {
-    const part = raw.trim();
-    if (!part) continue;
-    if (/^\d{1,4}$/.test(part)) {
-      options.width = Number(part);
-      continue;
-    }
-    //: `x`-separated dimensions are Obsidian's too (`300x200`). The height is
-    //: read and deliberately dropped: an image with both fixed is an image
-    //: with a stretched aspect ratio, and nobody means that.
-    const pair = /^(\d{1,4})x(\d{1,4})$/i.exec(part);
-    if (pair) {
-      options.width = Number(pair[1]);
-      continue;
-    }
-    const align = /^(left|centre|center|right)$/i.exec(part);
-    if (align) {
-      options.align = align[1].toLowerCase() === "centre" ? "center" : align[1].toLowerCase();
-      continue;
-    }
-    caption.push(part);
-  }
-  options.caption = caption.join(" ");
-  return options;
-}
-
-//: **An image's alt with its width or alignment changed** (DOCUMENTS_PLAN
-//: decision 8, the audit's D5): the name first, then the width, then the
-//: alignment, then the caption's words in the order they were written; an
-//: option set to null is taken out. Written back by the Live editor's grip
-//: and align menu, so the markdown stays the one place the size lives.
-function docImageAltWith(alt, change) {
-  const parts = String(alt == null ? "" : alt).split("|");
-  const name = parts.shift();
-  const now = docImageOptions(alt);
-  const kept = parts
-    .map((part) => part.trim())
-    .filter((part) => part && !/^\d{1,4}(x\d{1,4})?$/i.test(part) && !/^(left|centre|center|right)$/i.test(part));
-  const width = "width" in change ? change.width : now.width;
-  const align = "align" in change ? change.align : now.align;
-  return [name, ...(width ? [String(Math.round(width))] : []), ...(align ? [align] : []), ...kept].join("|");
-}
-
 // DOC-BLOCKS-END
 
 // =============================================================================
@@ -8099,7 +8381,8 @@ const DOC_MATH_OPERATORS = {
   star: "⋆", perp: "⊥", parallel: "∥", angle: "∠", degree: "°",
   ldots: "…", dots: "…", cdots: "⋯", vdots: "⋮",
   sum: "∑", prod: "∏", int: "∫", iint: "∬", oint: "∮",
-  bigcup: "⋃", bigcap: "⋂", sqrt: "√",
+  bigcup: "⋃", bigcap: "⋂", sqrt: "√", iiint: "∭", coprod: "∐",
+  lfloor: "⌊", rfloor: "⌋", lceil: "⌈", rceil: "⌉", langle: "⟨", rangle: "⟩",
 };
 
 //: A named function is set upright, not italic: `sin x` is a function applied
@@ -8324,7 +8607,7 @@ function docMathCommand(name, tokens, state) {
     if (!next) return { tag: "mrow", kids: [] };
     state.at += 1;
     if (next.kind === "cmd" && next.value === ".") return { tag: "mrow", kids: [] };
-    return { tag: "mo", text: next.value || "" };
+    return { tag: "mo", text: DOC_MATH_OPERATORS[next.value] || next.value || "" };
   }
   if (DOC_MATH_LETTERS[name]) return { tag: "mi", text: DOC_MATH_LETTERS[name] };
   if (DOC_MATH_OPERATORS[name]) return { tag: "mo", text: DOC_MATH_OPERATORS[name] };
@@ -8456,6 +8739,30 @@ function docSetLiveDecorations(on) {
   });
 }
 
+//: **A span's marks show while a selection is in it or touching it**
+//: (INBOX 1473 b, the owner: "like obsidian where it does it per phrase,
+//: word, or whatever text string is formatted when clicked inside or next
+//: to"). Every range counts, not only the main one, so each cursor of a
+//: multi-cursor edit and every span a selection crosses reveal. Ends are
+//: inclusive: a caret just after the closing `**` is "next to" the span.
+function docLiveSpanTouched(ranges, from, to) {
+  for (const range of ranges) {
+    if (range.from <= to && range.to >= from) return true;
+  }
+  return false;
+}
+
+//: Whether a new selection reveals exactly what the last build revealed.
+//: `probes` is the flat `[from, to, revealed, ...]` list a build records for
+//: every reveal it decided; when none flips, a caret move changes no
+//: decoration and the plugin keeps the set it has.
+function docLiveRevealSame(probes, ranges) {
+  for (let i = 0; i < probes.length; i += 3) {
+    if (docLiveSpanTouched(ranges, probes[i], probes[i + 1]) !== Boolean(probes[i + 2])) return false;
+  }
+  return true;
+}
+
 //: Built once and reused: a `ViewPlugin` is a class, and reconfiguring a
 //: compartment with a *new* class every time would tear the plugin's state
 //: down and rebuild it on every view switch.
@@ -8539,7 +8846,7 @@ function docLivePlugin(CM) {
       this.underSource = underSource;
       //: `![A river|400|center](/media/river.jpg)`: the options ride in the alt
       //: text, which is the form that survives being opened somewhere else.
-      this.options = docImageOptionsFromAlt(alt);
+      this.options = imageOptionsFromAlt(alt);
     }
     eq(other) {
       return other.src === this.src && other.alt === this.alt && other.underSource === this.underSource;
@@ -8558,17 +8865,17 @@ function docLivePlugin(CM) {
       //: paths. The embed path below already did this; this one never did.
       img.src = mediaSrc(this.src);
       img.alt = this.options.caption || this.options.name || "";
-      if (this.underSource) return docApplyImageOptions(img, this.options);
+      if (this.underSource) return imageApplyOptions(img, this.options);
       //: **Resized and aligned where it is shown** (decision 8, the audit's
       //: D5): a frame round the picture holding a grip on its lower right
       //: corner and an align button, both writing the options back into the
-      //: alt text (`docImageAltWith`), so Read, a print and an export agree.
+      //: alt text (`imageAltWith`), so Read, a print and an export agree.
       const frame = document.createElement("span");
       frame.className = "cm-md-image-frame";
       frame.appendChild(img);
       if (this.options.width) frame.dataset.sized = "1";
-      docWireImageEdit(view, frame, this.options);
-      return docApplyImageOptions(frame, this.options);
+      docImageLive(view, frame, this.options);
+      return imageApplyOptions(frame, this.options);
     }
   }
 
@@ -8857,14 +9164,35 @@ function docLivePlugin(CM) {
     ignoreEvent() {
       return false;
     }
-    toDOM() {
+    toDOM(view) {
       const host = document.createElement("span");
       host.className = this.display ? "cm-md-math cm-md-math-block" : "cm-md-math";
       try {
-        host.appendChild(docMathRender(this.tex, this.display));
+        //: An empty `{}` is a box left to fill (the field's dotted box), so
+        //: it is drawn as one here: a fraction with nothing under it is a
+        //: target to click, not a 12px sliver.
+        host.appendChild(docMathRender(this.tex.replace(/\{\s*\}/g, "{\u25a1}"), this.display));
       } catch {
         host.textContent = this.tex;
       }
+      host.title = "Click to edit the equation";
+      //: **A click edits the equation where it is** (INBOX 1473 a): a field
+      //: over the widget (math-field.js, lazy) in place of the caret landing on
+      //: raw TeX. The press is taken here so the editor never sees it and the
+      //: selection stays where it was; the range is the widget's own, read
+      //: when the press lands, and the field checks it is still that text
+      //: before it writes.
+      host.addEventListener("mousedown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const delim = this.display ? "$$" : "$";
+        const from = view.posAtDOM(host);
+        const to = from + delim.length * 2 + this.tex.length;
+        ensureModule("mathField").then(() => {
+          if (typeof openMathInPlace === "function") openMathInPlace({ view, host, from, to, delim, tex: this.tex });
+        });
+      });
       return host;
     }
   }
@@ -8929,7 +9257,7 @@ function docLivePlugin(CM) {
     constructor(spec) {
       super();
       this.spec = spec;
-      this.options = docImageOptions(spec);
+      this.options = imageOptions(spec);
       this.name = this.options.name;
     }
     eq(other) {
@@ -8953,10 +9281,15 @@ function docLivePlugin(CM) {
     }
   }
 
-  function build(view) {
+  //: `record` collects every reveal this build decided (`probes`, flat
+  //: `[from, to, revealed]`) and whether anything read the caret's exact
+  //: position rather than "touched or not" (`selFree`: a table's active cell
+  //: and its menu row do), which is what lets a caret move skip the rebuild.
+  function build(view, record = { probes: [], selFree: true }) {
     const state = view.state;
     const doc = state.doc;
     const sel = state.selection.main;
+    const selRanges = state.selection.ranges;
     const ranges = [];
     //: **Nothing is revealed while the editor is not focused.** A selection
     //: exists whether or not anyone is in the editor, and a document just
@@ -8967,41 +9300,46 @@ function docLivePlugin(CM) {
     //: that word or section", and an untouched document is the one case where
     //: nobody has clicked on anything at all.
     const focused = view.hasFocus;
-    const touched = (from, to) => focused && sel.from <= to && sel.to >= from;
+    const probe = (from, to) => {
+      const on = focused && docLiveSpanTouched(selRanges, from, to);
+      record.probes.push(from, to, on ? 1 : 0);
+      return on;
+    };
+    const touched = probe;
     const lineTouched = (pos) => {
       const line = doc.lineAt(pos);
       return touched(line.from, line.to);
     };
-    //: **A marker reveals when the caret is on its line, not when it is inside
-    //: its range**, and this is the fix for a measured defect rather than a
-    //: preference.
+    //: **Inline marks reveal per span, block marks per line** (INBOX 1473 b,
+    //: which remakes the line rule this file followed since the 28.4px note
+    //: below; DESIGN.md, "A markdown mark in Live view").
     //:
-    //: Revealing per range put four characters on screen immediately to the
-    //: left of the caret at the moment it crossed the range's edge, so the
-    //: caret moved *right* on a leftward keystroke. Measured with
-    //: `coordsAtPos` walking left through `A **bold** word here.`: x 560.3,
-    //: 554, 544.2, 531.1, and then **559.5** on the press that revealed the
-    //: markers, a 28.4px jump backwards. The document position was never
-    //: wrong (11 then 10, exactly one character); what moved was the text
-    //: under it.
+    //: A span (`**bold**`, `*em*`, `` `code` ``, `~~struck~~`, `==mark==`, a
+    //: link, a `[[wiki link]]`, an escape, a `$math$` range taken whole) shows
+    //: its marks while a selection is inside it or touching either end, and
+    //: every other span on the line stays rendered: Obsidian's rule, asked for
+    //: by name. Nested spans follow from containment: the caret inside `*b*`
+    //: in `**a *b* c**` is inside both, and in neither of their neighbours.
     //:
-    //: `EditorView.atomicRanges` is the usual answer to a caret and a hidden
-    //: range, and it is the wrong one here: it makes the arrow keys step
-    //: *over* the marker without revealing it, and the owner's sentence is
-    //: precisely about being able to "navigate with backspace, delete or
-    //: arrow keys etc to where those formatting markers are".
+    //: The cost the line rule was chosen to avoid comes back at a span's
+    //: right edge, and only there: ArrowLeft from just past `**bold** ` lands
+    //: touching the span, its marks appear to the caret's left, and the caret
+    //: is drawn one mark's width to the right of where it was (measured 28.4px
+    //: for `**` at the time). That is what Obsidian does, and what the owner
+    //: asked for; `cm-reveal.js` holds the rest of that walk to "never right".
+    //: A click is measured there too: the clicked character keeps its offset
+    //: and moves only by the opening mark's width, where the line rule moved
+    //: it by every mark before it on the line.
     //:
-    //: The line is what holds still. Horizontal movement within a line now
-    //: causes no reflow at all, because the line's markers are already up the
-    //: whole time the caret is on it; the one reflow left happens when the
-    //: caret *arrives* on the line, which is a click or a vertical move, and
-    //: both of those relocate the caret anyway so there is nothing to jar
-    //: against. It is also what `HeaderMark`, `QuoteMark` and `TaskMarker`
-    //: have always done here, so this makes the eight constructs agree
-    //: instead of splitting them into two behaviours.
-    //:
-    //: Both line ends, because a range can span a soft-wrapped link.
+    //: Block marks (`#`, a list's bullet or number, `>`, a task box, `---`, a
+    //: table's rule) keep the line rule, which is also Obsidian's: they sit at
+    //: the line's start, and revealing them as the caret crossed a word would
+    //: shift the whole line under it. Code fences and Mermaid keep their own
+    //: block rule (`blockRevealed`): the fence reveals while the caret is
+    //: anywhere in the block.
     const rangeRevealed = (from, to) =>
+      probe(from, to);
+    const blockRevealed = (from, to) =>
       touched(doc.lineAt(from).from, doc.lineAt(to).to);
     //: Whether the line numbers are showing, read once per build rather than
     //: per fenced block: the fence rows collapse only when they are off, see
@@ -9086,7 +9424,8 @@ function docLivePlugin(CM) {
             //: the three backticks were the one piece of syntax the live view
             //: still showed after you clicked off a code block (INBOX 198).
             //: Back the moment the caret is inside the block, like the rest.
-            if (!rangeRevealed(parent.from, parent.to)) hide(node.from, node.to);
+            const revealedBy = parent.name === "FencedCode" ? blockRevealed : rangeRevealed;
+            if (!revealedBy(parent.from, parent.to)) hide(node.from, node.to);
             return false;
           }
           if (name === "Link") {
@@ -9171,9 +9510,9 @@ function docLivePlugin(CM) {
           }
           //: `\*` is how a writer says "a star, not emphasis", and the
           //: backslash is syntax like every other marker here: hidden while
-          //: the caret is elsewhere, back when it is on the line.
+          //: the caret is elsewhere, back when it is in or beside the escape.
           if (name === "Escape") {
-            if (!lineTouched(node.from)) hide(node.from, node.from + 1);
+            if (!rangeRevealed(node.from, node.to)) hide(node.from, node.from + 1);
             return false;
           }
           if (name === "TaskMarker") {
@@ -9392,7 +9731,7 @@ function docLivePlugin(CM) {
             //: half-height row would clip the text that just came back, and
             //: the corner label would be saying the language a second time
             //: right next to where it is now written out.
-            const revealed = rangeRevealed(node.from, node.to);
+            const revealed = blockRevealed(node.from, node.to);
             for (let at = node.from; at <= node.to; ) {
               const line = doc.lineAt(at);
               const edge =
@@ -9680,6 +10019,7 @@ function docLivePlugin(CM) {
         const table = docTableParse(source(), line.from);
         if (!table) continue;
         for (const row of table.rows) tableSeen.add(doc.lineAt(row.from).number);
+        record.selFree = false;
         const inTable = focused && sel.from <= table.to && sel.to >= table.from;
         //: **An open menu holds its own opener on screen** (INBOX 290). The
         //: menu is drawn from `focused`, and pressing the kebab can take
@@ -9914,8 +10254,12 @@ function docLivePlugin(CM) {
   docLivePluginCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
-        this.decorations = build(view);
+        this.rebuild(view);
         this.gutterOn = docFenceGutterOn();
+      }
+      rebuild(view) {
+        this.record = { probes: [], selFree: true };
+        this.decorations = build(view, this.record);
       }
       update(update) {
         //: Selection as well as document and viewport: the whole idea of this
@@ -9946,12 +10290,18 @@ function docLivePlugin(CM) {
         //: tree object, a pointer check, so a keystroke inside a stable tree
         //: costs nothing extra.
         const gutterOn = docFenceGutterOn();
-        if (update.docChanged || update.viewportChanged || update.selectionSet
-            || update.focusChanged || gutterOn !== this.gutterOn
-            || syntaxTree(update.startState) !== syntaxTree(update.state)) {
-          this.gutterOn = gutterOn;
-          this.decorations = build(update.view);
-        }
+        const other = update.docChanged || update.viewportChanged || update.focusChanged
+          || gutterOn !== this.gutterOn
+          || syntaxTree(update.startState) !== syntaxTree(update.state);
+        if (!other && !update.selectionSet) return;
+        //: **A caret move rebuilds only when it flips a reveal** (INBOX 1473
+        //: b). With marks per span, most moves stay inside one span or
+        //: between two, and the decorations they would rebuild are the ones
+        //: already drawn; a table reads the exact caret, so it always does.
+        if (!other && this.record.selFree && (!update.view.hasFocus
+            || docLiveRevealSame(this.record.probes, update.state.selection.ranges))) return;
+        this.gutterOn = gutterOn;
+        this.rebuild(update.view);
       }
     },
     {
@@ -10078,7 +10428,7 @@ function docColumnsField(CM) {
   }
 
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     //: The cheap test first: a document with no `:::` in it at all is most of
     //: them, and this runs on every keystroke.
     if (!text.includes(":::")) return Decoration.none;
@@ -10126,7 +10476,7 @@ function docColumnsArrowKeymap(CM) {
     const state = view.state;
     const sel = state.selection.main;
     if (!sel.empty) return false;
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes(":::")) return false;
     const line = state.doc.lineAt(sel.head);
     const next = back ? line.from - 1 : line.to + 1;
@@ -10529,7 +10879,7 @@ function docMermaidField(CM) {
     }
   }
   const build = (state) => {
-    const text = state.doc.toString();
+    const text = docStr(state.doc);
     if (!text.includes("```mermaid") && !/```[ \t]+mermaid/.test(text)) return Decoration.none;
     const sel = state.selection.main;
     const ranges = [];
@@ -10658,183 +11008,46 @@ function docEmbedNode(target, name) {
   return null;
 }
 
-//: **An image's options, applied.** One function for both surfaces: the widget
-//: in Live and the `<img>` the preview's renderer produced, because "300 means
-//: 300 pixels wide" has to mean the same thing in the two views of one
-//: document or the width is a property of the view rather than of the image.
-//:
-//: The width is written through `style.width` rather than an attribute or an
-//: inline `style=`: this app's CSP refuses the attribute (DESIGN.md's note on
-//: a policy silently refusing the work), and the theme's own `max-width: 100%`
-//: still wins on a narrow pane, so an over-wide number cannot break the
-//: column.
-function docApplyImageOptions(img, options) {
-  if (!img || !options) return img;
-  if (options.width) img.style.width = `${options.width}px`;
-  if (!options.align && !options.caption) return img;
-  const figure = document.createElement("span");
-  figure.className = "cm-md-figure";
-  if (options.align) figure.classList.add(`cm-md-figure-${options.align}`);
-  if (img.parentNode) img.replaceWith(figure);
-  figure.appendChild(img);
-  if (options.caption) {
-    const caption = document.createElement("span");
-    caption.className = "cm-md-caption";
-    caption.textContent = options.caption;
-    figure.appendChild(caption);
-  }
-  return figure;
-}
-
-//: The grip and the align button on a picture in Live (decision 8). The
-//: picture's markdown is found from where its widget sits (`posAtDOM`), its
-//: alt rewritten in one change, one Undo step. The grip is a slider to a
-//: screen reader and to the keys (the arrows, 10px; with Shift, 50px), and a
-//: drag to the hand, held to between 40px and the text column's width.
-const DOC_IMAGE_MIN = 40;
-
-function docWireImageEdit(view, frame, options) {
-  const grip = document.createElement("span");
-  grip.className = "cm-md-image-grip";
-  grip.tabIndex = 0;
-  grip.setAttribute("role", "slider");
-  grip.setAttribute("aria-label", "Picture width");
-  grip.title = "Drag to resize the picture, or use the arrow keys";
-  const align = document.createElement("button");
-  align.type = "button";
-  align.className = "ghost icon-only small cm-md-image-align";
-  align.setAttribute("aria-label", "Align the picture");
-  align.title = "Align the picture: left, centre or right";
-  const glyph = document.createElement("i");
-  glyph.className = `ph ph-text-align-${options.align || "left"}`;
-  glyph.setAttribute("aria-hidden", "true");
-  align.appendChild(glyph);
-  frame.append(grip, align);
-  const widest = () => Math.max(DOC_IMAGE_MIN, Math.floor(view.contentDOM.getBoundingClientRect().width - 48));
-  const shown = () => Math.round(frame.getBoundingClientRect().width);
-  const setValue = () => {
-    grip.setAttribute("aria-valuemin", String(DOC_IMAGE_MIN));
-    grip.setAttribute("aria-valuemax", String(widest()));
-    grip.setAttribute("aria-valuenow", String(options.width || shown() || DOC_IMAGE_MIN));
-    grip.setAttribute("aria-valuetext", `${options.width || shown()} pixels wide`);
-  };
-  requestAnimationFrame(setValue);
-  //: Where this picture's markdown starts, read at the moment of writing:
-  //: the document may have moved under it since it was drawn.
-  const write = (change) => {
-    const root = frame.closest(".cm-md-figure") || frame;
+//: The Live editor's half of the picture control (image-layout.js
+//: `imageWireEdit`): the picture's markdown is found from where its widget
+//: sits (`posAtDOM`), its alt rewritten in one change, one Undo step.
+function docImageLive(view, frame, options) {
+  const root = () => frame.closest(".cm-md-figure") || frame;
+  const write = (change, kind) => {
     let at;
     try {
-      at = view.posAtDOM(root);
+      at = view.posAtDOM(root());
     } catch {
       return false;
     }
     const head = view.state.doc.sliceString(at, Math.min(view.state.doc.length, at + 2000));
     const m = /^!\[([^\]\n]*)\]\(/.exec(head);
     if (!m) return false;
-    const alt = docImageAltWith(m[1], change);
+    const alt = imageAltWith(m[1], change);
     if (alt === m[1]) return false;
-    docPhase2State.imageRefocus = change.align !== undefined ? null : at;
+    docPhase2State.imageRefocus = kind && frame.contains(document.activeElement) ? { at, kind } : null;
     view.dispatch({ changes: { from: at + 2, to: at + 2 + m[1].length, insert: alt } });
     return true;
   };
-  grip.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    grip.setPointerCapture?.(event.pointerId);
-    const startX = event.clientX;
-    const start = shown();
-    const max = widest();
-    let width = start;
-    frame.classList.add("is-resizing");
-    const move = (e) => {
-      width = Math.max(DOC_IMAGE_MIN, Math.min(max, Math.round(start + e.clientX - startX)));
-      frame.style.width = `${width}px`;
-      frame.dataset.sized = "1";
-    };
-    const up = () => {
-      grip.removeEventListener("pointermove", move);
-      grip.removeEventListener("pointerup", up);
-      grip.removeEventListener("pointercancel", up);
-      frame.classList.remove("is-resizing");
-      if (width !== start) write({ width });
-    };
-    grip.addEventListener("pointermove", move);
-    grip.addEventListener("pointerup", up);
-    grip.addEventListener("pointercancel", up);
+  const widest = () => Math.max(IMAGE_MIN, Math.floor(view.contentDOM.getBoundingClientRect().width - 48));
+  const controls = imageWireEdit(frame, options, { write, widest });
+  //: The control that had the keys (the grip, or the align button after its
+  //: menu) keeps them after its write redraws the picture.
+  const held = docPhase2State.imageRefocus;
+  if (held == null) return;
+  requestAnimationFrame(() => {
+    if (docPhase2State.imageRefocus !== held || !frame.isConnected) return;
+    let at = -1;
+    try {
+      at = view.posAtDOM(root());
+    } catch {
+      at = -1;
+    }
+    if (at === held.at) {
+      docPhase2State.imageRefocus = null;
+      (held.kind === "grip" && controls.grip ? controls.grip : controls.align).focus({ preventScroll: true });
+    }
   });
-  grip.addEventListener("keydown", (event) => {
-    const step = event.shiftKey ? 50 : 10;
-    const now = options.width || shown();
-    let next = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowUp") next = now + step;
-    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") next = now - step;
-    else if (event.key === "Home") next = DOC_IMAGE_MIN;
-    else if (event.key === "End") next = widest();
-    else if (event.key === "Delete" || event.key === "Backspace") next = 0;
-    if (next == null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    write({ width: next ? Math.max(DOC_IMAGE_MIN, Math.min(widest(), next)) : null });
-  });
-  align.addEventListener("mousedown", (event) => event.preventDefault());
-  align.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const box = align.getBoundingClientRect();
-    const pick = (value) => () => write({ align: value });
-    openMenuAtPoint([
-      makeMenuItem("ph:text-align-left Left", "On the left, text below it", pick("left")),
-      makeMenuItem("ph:text-align-center Centre", "In the middle of the column", pick("center")),
-      makeMenuItem("ph:text-align-right Right", "On the right", pick("right")),
-      makeMenuItem("ph:x Inline", "In the line, as written", pick(null)),
-    ], "Align the picture", box.left, box.bottom + 4);
-  });
-  //: The grip that was being pressed keeps the keys after its write redraws
-  //: the picture.
-  if (docPhase2State.imageRefocus != null) {
-    requestAnimationFrame(() => {
-      if (docPhase2State.imageRefocus == null || !frame.isConnected) return;
-      let at = -1;
-      try {
-        at = view.posAtDOM(frame.closest(".cm-md-figure") || frame);
-      } catch {
-        at = -1;
-      }
-      if (at === docPhase2State.imageRefocus) {
-        docPhase2State.imageRefocus = null;
-        grip.focus({ preventScroll: true });
-      }
-    });
-  }
-}
-
-//: **A markdown image's alt text is its caption once it carries options.**
-//: `![A river](/media/river.jpg)` is an image with alt text and stays one;
-//: `![A river|400](/media/river.jpg)` is a figure four hundred pixels wide
-//: captioned "A river", because somebody who writes an option has said this
-//: image is a figure. A wiki embed does not do this and must not: the part
-//: before the first pipe there is a file name, and captioning every embedded
-//: picture `photo.png` is worse than captioning none of them.
-function docImageOptionsFromAlt(alt) {
-  const text = String(alt == null ? "" : alt);
-  const options = docImageOptions(text);
-  if (text.includes("|") && !options.caption) options.caption = options.name;
-  return options;
-}
-
-//: The preview's half of the same thing. The renderer puts an image's options
-//: in its `alt`, because that is where they are written in the markdown
-//: (`![A river|400|center](/media/river.jpg)`), so reading them back off the
-//: alt is the same information rather than a second parse of the document.
-function docLayerImageOptions(root) {
-  if (!root) return;
-  for (const img of root.querySelectorAll("img")) {
-    const alt = img.getAttribute("alt") || "";
-    if (!alt.includes("|")) continue;
-    const options = docImageOptionsFromAlt(alt);
-    img.setAttribute("alt", options.caption || options.name);
-    docApplyImageOptions(img, options);
-  }
 }
 
 //: The chip an embed falls back to: a name that resolves to nothing yet, and a
@@ -10859,7 +11072,7 @@ function docEmbedFill(host, name, options = null) {
     host.replaceChildren(node);
     //: An image embed is the one kind these options mean anything for; a note
     //: card with a width of 300 is a card somebody has squashed.
-    if (node.tagName === "IMG") docApplyImageOptions(node, options);
+    if (node.tagName === "IMG") imageApplyOptions(node, options);
     return;
   }
   //: A block embed of a document nobody has opened has no text to draw yet.
@@ -10894,7 +11107,7 @@ function docEmbedFill(host, name, options = null) {
       const later = docEmbedNode(docEmbedTarget(name), name);
       if (later) {
         host.replaceChildren(later);
-        if (later.tagName === "IMG") docApplyImageOptions(later, options);
+        if (later.tagName === "IMG") imageApplyOptions(later, options);
       }
     })
     .catch(() => {});
@@ -10997,7 +11210,8 @@ function docOpenWikiTarget(name) {
 //: than handed to the browser.
 function docOpenLink(href) {
   const clean = String(href || "").trim();
-  if (!clean || /^(javascript|data|vbscript):/i.test(clean)) return;
+  //: The same allowlist every rendered link goes through (audit 1028 D15).
+  if (!clean || safeHref(clean) === "#") return;
   //: This app's own address (INBOX 483) opens its view in this window.
   const hash = appAddressHash(clean);
   if (hash) location.hash = hash;
@@ -11367,6 +11581,89 @@ function mdLinePrefixEdit(block, kind) {
   }).join("\n");
 }
 
+//: **Image opens a picker** (audit 1028 U10; it used to drop a bare
+//: `![image](https://)` and leave the person to find a URL). The file goes to
+//: the media store as a pasted or imported picture does (`/media/upload`) and
+//: the embed is written where the caret was. The old stub is the fallback when
+//: the upload fails, so the button never ends in nothing.
+function docImagePick(box, boxId) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (file) docImageUpload(box, boxId, file);
+  });
+  input.click();
+}
+
+async function docImageUpload(box, boxId, file, said = "") {
+  const { selectionStart: start, selectionEnd: end, value } = box;
+  const alt = said || value.slice(start, end) || file.name.replace(/\.[^.]+$/, "") || "image";
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    const uploaded = await apiJson("/media/upload", { method: "POST", headers: authHeaders(), body: form });
+    if (!uploaded || !uploaded.url) throw new Error("no address");
+    docUndoBreak();
+    const at = Math.min(start, box.value.length);
+    const embed = `![${alt}](${uploaded.url})`;
+    box.value = `${box.value.slice(0, at)}${embed}${box.value.slice(Math.min(end, box.value.length))}`;
+    box.setSelectionRange(at + embed.length, at + embed.length);
+    finishMarkdownEdit(box, boxId);
+  } catch {
+    const before = box.value;
+    docImageStub(box, boxId, start, end);
+    const stubbed = box.value;
+    //: Try again takes the stub back out first (if it is untouched), so the
+    //: picture lands where the first try would have.
+    const retry = () => {
+      if (box.value === stubbed) {
+        box.value = before;
+        box.setSelectionRange(start, end);
+      }
+      docImageUpload(box, boxId, file, said);
+    };
+    toast("Could not upload that picture. Add its address by hand.", true, { action: ["Try again", retry] });
+  }
+}
+
+//: **A picture pasted into a markdown document asks what it shows** (audit
+//: 1028 D27). The upload and the embed were already there (settings-wiring.js'
+//: paste handler), with the file's own name for alt text, "image.png". On
+//: `window` in the capture phase so it runs ahead of that one, and only for a
+//: clipboard that is a picture and nothing else; a copy with words in it is
+//: the words' paste. An empty answer or Escape still adds the picture.
+window.addEventListener("paste", (event) => {
+  const view = docCmView;
+  if (!view || !view.dom.contains(event.target) || view.dom.classList.contains("doc-content-code") || view.state.readOnly) return;
+  const data = event.clipboardData;
+  if (!data || data.getData("text/plain")) return;
+  const file = [...data.files].find((f) => f.type.startsWith("image/"));
+  if (!file) return;
+  event.preventDefault();
+  event.stopPropagation();
+  docImagePasteAsk(file);
+}, true);
+
+async function docImagePasteAsk(file) {
+  const said = await promptDialog("Describe this picture (optional)", "", { confirmLabel: "Add picture" });
+  await docImageUpload(docSurface(), "doc-content", file, said);
+}
+
+//: The address-by-hand form: the selection becomes the *alt text* and the
+//: caret lands on the URL, the same split `link` makes. (The first version
+//: passed the alt text as the body between the two markers and produced
+//: `![cat](cat)`: a picture whose address was its own caption.)
+function docImageStub(box, boxId, start, end) {
+  const alt = box.value.slice(start, end) || "image";
+  const url = "https://";
+  box.value = `${box.value.slice(0, start)}![${alt}](${url})${box.value.slice(end)}`;
+  const at = start + alt.length + 4;
+  box.setSelectionRange(at, at + url.length);
+  finishMarkdownEdit(box, boxId);
+}
+
 function applyMarkdown(kind, boxId = "doc-content") {
   const action = MD_ACTIONS[kind];
   const box = docSurfaceById(boxId);
@@ -11432,17 +11729,7 @@ function applyMarkdown(kind, boxId = "doc-content") {
     return;
   }
   if (action.custom === "image") {
-    //: The selection becomes the *alt text* and the caret lands on the URL,
-    //: which is the part still to be typed, the same split `link` above
-    //: makes. The first version passed the alt text as the body between the
-    //: two markers and produced `![cat](cat)`: a picture whose address was
-    //: its own caption. Caught by running it rather than by reading it.
-    const alt = selected || "image";
-    const url = "https://";
-    box.value = `${value.slice(0, start)}![${alt}](${url})${value.slice(end)}`;
-    const at = start + alt.length + 4;
-    box.setSelectionRange(at, at + url.length);
-    finishMarkdownEdit(box, boxId);
+    docImagePick(box, boxId);
     return;
   }
   if (action.custom === "properties") {
@@ -11697,7 +11984,7 @@ async function downloadDocumentExport(path, fallbackName) {
     await saveFile(match ? match[1] : fallbackName, await response.blob());
     const assets = Number(response.headers.get("X-Assets") || 0);
     if (assets > 0) {
-      toast(`Saved with ${assets} image${assets === 1 ? "" : "s"} beside it`);
+      toast(`Saved with ${nounCount(assets, "image")} beside it`);
     }
   } catch (error) {
     $("doc-status").classList.add("error");
@@ -12526,7 +12813,7 @@ function offerCreatedDocsUndo(docs) {
     }
     await loadDocuments(currentDoc?.id);
   };
-  return pushUndo(`Imported ${docs.length} documents`, each("bin"), each("restore"));
+  return pushUndo(`Imported ${nounCount(docs.length, "document")}`, each("bin"), each("restore"));
 }
 
 //: A note's link to this document, either way round. The server answers with
@@ -12577,7 +12864,7 @@ function docWriteOutsideHistory(text) {
     docSurface().text = text;
     return;
   }
-  const current = docCmView.state.doc.toString();
+  const current = docStr(docCmView.state.doc);
   if (current === text) return;
   const [from, to, insert] = docUndoDiffRange(current, text);
   docCmView.dispatch({ changes: { from, to, insert }, annotations: CM.state.Transaction.addToHistory.of(false) });
@@ -12715,7 +13002,7 @@ function renderDocAiDiff() {
     ? "No change: the model gave back the same text."
     : count === 1
       ? `One change, +${stat.added} −${stat.removed} lines. Skip it to leave the text as it is.`
-      : `${count} changes, +${stat.added} −${stat.removed} lines. Skip any you don't want.`;
+      : `${nounCount(count, "change")}, +${stat.added} −${stat.removed} lines. Skip any you don't want.`;
   //: Kept across a redraw: toggling the fourth change of eight must not take
   //: the reader back to the first.
   const scroll = view.scrollTop;
@@ -12761,7 +13048,7 @@ $("doc-ai-result").addEventListener("input", () => {
 function syncDocAiPanel() {
   const verb = docAiVerb();
   const selection = ($("doc-ai-panel").dataset.selection || "").trim();
-  const wordCount = selection ? selection.split(/\s+/).length : 0;
+  const selectionWords = wordCount(selection);
 
   const runLabel = { edit: "Suggest an edit", write: "Write it", remove: "Remove it" }[verb];
   setLabel($("doc-ai-run"), `ph:sparkle ${runLabel}`);
@@ -12777,15 +13064,15 @@ function syncDocAiPanel() {
 
   if (verb === "write") {
     $("doc-ai-scope").textContent = selection
-      ? `Inserting new text directly after the ${wordCount} selected word(s).`
+      ? `Inserting new text directly after the ${selectionWords} selected word(s).`
       : "Inserting new text at the end of the document.";
   } else if (verb === "remove") {
     $("doc-ai-scope").textContent = selection
-      ? `Removing the ${wordCount} selected word(s): or say what to remove from within them.`
+      ? `Removing the ${selectionWords} selected word(s): or say what to remove from within them.`
       : "Say what to remove from the whole document.";
   } else {
     $("doc-ai-scope").textContent = selection
-      ? `Rewriting the ${wordCount} selected word(s).`
+      ? `Rewriting the ${selectionWords} selected word(s).`
       : "Rewriting the whole document. Select some text first to work on just that.";
   }
 
@@ -13449,7 +13736,7 @@ const DOC_HISTORY_SOURCES = {
 
 function docHistoryDelta(words) {
   if (!words) return "no change in length";
-  return words > 0 ? `+${words} words` : `${words} words`;
+  return words > 0 ? `+${nounCount(words, "word")}` : nounCount(words, "word");
 }
 
 async function openDocHistory() {
@@ -13557,7 +13844,7 @@ function docHistoryRow(entry) {
   }
   const meta = document.createElement("p");
   meta.className = "muted text-sm";
-  meta.textContent = `${whenText(entry.created_at)} · ${entry.words} words`;
+  meta.textContent = `${whenText(entry.created_at)} · ${nounCount(entry.words, "word")}`;
   //: The opening of the version itself. A row saying only "You, 20 May,
   //: +140 words" makes you open every entry to find the one you want, which
   //: is the work this list is supposed to save.
@@ -13680,7 +13967,7 @@ function docPromptInModal(message, initial) {
 }
 
 async function docNameVersion(entry) {
-  const next = await docPromptInModal(entry.name ? "Rename this version:" : "Name this version:", entry.name || "");
+  const next = await docPromptInModal(entry.name ? "Rename this version" : "Name this version", entry.name || "");
   if (next === null || next === undefined) return;
   await docSetVersionName(entry, next);
 }
@@ -13705,7 +13992,7 @@ async function docSetVersionName(entry, name) {
 //: the name holds what is on screen.
 async function docNameCurrentVersion() {
   if (!currentDoc) return;
-  const name = await docPromptInModal("Name this version:", "");
+  const name = await docPromptInModal("Name this version", "");
   if (!name || !name.trim()) return;
   if (docDirty) await saveDocument({ silent: true });
   const docId = currentDoc.id;
@@ -13785,15 +14072,17 @@ async function toggleDocHistoryDiff(entry, row, button, box) {
 // request (`POST /documents/contents`), and the one undo step writes the
 // originals back the same way, so fifty documents change, or change back,
 // whole. Each changed document keeps the version it replaced in its history.
-const docReplace = { matches: [], timer: 0 };
+const docReplace = { matches: [], skipped: new Set(), timer: 0 };
 
 function docReplacePattern() {
   const find = $("doc-replace-find").value;
   if (!find) return null;
   const flags = $("doc-replace-case").checked ? "g" : "gi";
   const source = $("doc-replace-regex").checked ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  //: Whole word by letters in any script, not `\b`, which ends a word at "é" (D29).
+  const word = $("doc-replace-word").checked;
   try {
-    return new RegExp(source, flags);
+    return word ? new RegExp(`(?<![\\p{L}\\p{N}_])(?:${source})(?![\\p{L}\\p{N}_])`, `${flags}u`) : new RegExp(source, flags);
   } catch (error) {
     return { error: error.message };
   }
@@ -13841,19 +14130,55 @@ async function renderDocReplace() {
   docReplace.matches = matches;
   const total = matches.reduce((sum, m) => sum + m.count, 0);
   summary.textContent = matches.length
-    ? `${total} match${total === 1 ? "" : "es"} in ${matches.length} document${matches.length === 1 ? "" : "s"}.`
+    ? `${total} match${total === 1 ? "" : "es"} in ${nounCount(matches.length, "document")}.`
     : "No document has it.";
-  for (const match of matches) {
-    const row = document.createElement("li");
-    row.className = "doc-ai-history-entry";
-    row.textContent = `${match.title || "Untitled"} · ${match.count}`;
-    list.appendChild(row);
-  }
+  docReplace.skipped = new Set();
+  for (const match of matches) list.appendChild(docReplaceRow(match, pattern));
   run.disabled = !matches.length;
 }
 
-async function docWriteContents(items) {
-  await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: items }) });
+//: A row per document: a box to leave it out, and the first match in its
+//: line, so a pattern that catches the wrong thing shows before it runs (D29).
+function docReplaceRow(match, pattern) {
+  const row = document.createElement("li");
+  row.className = "doc-ai-history-entry doc-replace-row";
+  const label = document.createElement("label");
+  label.className = "row align-center checkbox-label small";
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.checked = true;
+  box.addEventListener("change", () => {
+    docReplace.skipped[box.checked ? "delete" : "add"](match.id);
+    $("doc-replace-run").disabled = docReplace.matches.every((m) => docReplace.skipped.has(m.id));
+  });
+  const name = document.createElement("span");
+  name.textContent = `${match.title || "Untitled"} · ${match.count}`;
+  label.append(box, name);
+  const snippet = document.createElement("span");
+  snippet.className = "muted text-sm doc-replace-snippet";
+  snippet.textContent = docReplaceSnippet(match.content, pattern);
+  row.append(label, snippet);
+  return row;
+}
+
+function docReplaceSnippet(text, pattern) {
+  pattern.lastIndex = 0;
+  const hit = pattern.exec(text);
+  pattern.lastIndex = 0;
+  if (!hit) return "";
+  const from = Math.max(0, hit.index - 30);
+  const to = Math.min(text.length, hit.index + hit[0].length + 30);
+  return `${from ? "…" : ""}${text.slice(from, to).replace(/\s+/g, " ")}${to < text.length ? "…" : ""}`;
+}
+
+//: Each write carries the hash of the text it was worked out from and keeps
+//: the hashes it gets back in `hashes`, so an undo or redo after one of these
+//: documents was edited is refused whole instead of writing over the edit
+//: (audit 1028 D11).
+async function docWriteContents(items, hashes) {
+  const sent = items.map((item) => ({ ...item, base_hash: hashes[item.id] || null }));
+  const res = await apiJson("/documents/contents", { method: "POST", body: JSON.stringify({ documents: sent }) });
+  Object.assign(hashes, res.hashes || {});
   const open = items.find((item) => item.id === currentDoc?.id);
   if (open) docShowSaved(await apiJson(`/documents/${open.id}`));
   loadDocuments(currentDoc?.id);
@@ -13861,28 +14186,30 @@ async function docWriteContents(items) {
 
 async function runDocReplace() {
   const pattern = docReplacePattern();
-  if (!pattern || pattern.error || !docReplace.matches.length) return;
+  const chosen = docReplace.matches.filter((m) => !docReplace.skipped?.has(m.id));
+  if (!pattern || pattern.error || !chosen.length) return;
   //: A plain replace is plain: `$&` and `$1` mean something only to a pattern.
   const typed = $("doc-replace-with").value;
   const replacement = $("doc-replace-regex").checked ? typed : typed.replace(/\$/g, "$$$$");
-  const before = docReplace.matches.map((m) => ({ id: m.id, content: m.content }));
-  const after = docReplace.matches.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
-  const total = docReplace.matches.reduce((sum, m) => sum + m.count, 0);
+  const before = chosen.map((m) => ({ id: m.id, content: m.content }));
+  const after = chosen.map((m) => ({ id: m.id, content: m.content.replace(pattern, replacement) }));
+  const total = chosen.reduce((sum, m) => sum + m.count, 0);
+  const hashes = Object.fromEntries(chosen.map((m) => [m.id, m.content_hash]));
   try {
-    await docWriteContents(after);
+    await docWriteContents(after, hashes);
   } catch (error) {
     return toast(error.message || "Couldn't replace. Nothing was changed.", true);
   }
   $("doc-replace-dialog").close();
   offerUndo(
-    `Replaced ${total} in ${after.length} document${after.length === 1 ? "" : "s"}`,
-    `Replaced ${total} in ${after.length} document${after.length === 1 ? "" : "s"}. Undo takes it all back.`,
-    () => docWriteContents(before),
-    () => docWriteContents(after)
+    `Replaced ${total} in ${nounCount(after.length, "document")}`,
+    `Replaced ${total} in ${nounCount(after.length, "document")}. Undo takes it all back.`,
+    () => docWriteContents(before, hashes),
+    () => docWriteContents(after, hashes)
   );
 }
 
-for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case"]) {
+for (const id of ["doc-replace-find", "doc-replace-regex", "doc-replace-case", "doc-replace-word"]) {
   $(id)?.addEventListener(id === "doc-replace-find" ? "input" : "change", () => {
     clearTimeout(docReplace.timer);
     docReplace.timer = setTimeout(renderDocReplace, 250);
@@ -13984,6 +14311,7 @@ $("doc-browse-all").addEventListener("click", () => {
 // delegation set up below, Escape for free from <dialog>.showModal().
 $("doc-storage-toggle").addEventListener("click", () => $("doc-storage-dialog").showModal());
 $("doc-title").addEventListener("input", () => { markDocDirty(); scheduleDocPreview(); });
+$("doc-title").addEventListener("blur", () => { if (docFillBlankTitle()) markDocDirty(); });
 //: **Enter in the title starts the body** (audit 2026-10-05, UX-05), the way
 //: Notion, Apple Notes and Obsidian behave: "Trip plan", Enter, "Day one..."
 //: used to type on into the title and save it as one long name over an empty
@@ -14213,12 +14541,11 @@ const EDITOR_TOOLBAR_MENUS = [
   {
     id: "insert",
     icon: "ph:plus-circle",
-    label: "Insert",
-    title: "Links, images and notes",
+    label: "Links and media",
+    title: "Links to notes and images",
     items: [
       ["wikilink", "Link to a note"],
-      ["image", "Image"],
-      ["ol", "Numbered list"],
+      ["image", "Image…"],
     ],
   },
 ];
@@ -14801,7 +15128,7 @@ function noteSurfaceMirrorTools(host, view, valueProto) {
     clearTimeout(host.noteMirrorTimer);
     if (!host.noteMirrorStale) return;
     host.noteMirrorStale = false;
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const range = view.state.selection.main;
     noteSurfaceMirroring = true;
     try {
@@ -14838,13 +15165,13 @@ function noteSurfaceOwnValue(host, view) {
     configurable: true,
     //: Live: the textarea behind it is only brought level once typing pauses.
     get() {
-      return view.state.doc.toString();
+      return docStr(view.state.doc);
     },
     set(next) {
       proto.set.call(this, next);
       host.noteMirrorStale = false;
       if (noteSurfaceMirroring) return;
-      const current = view.state.doc.toString();
+      const current = docStr(view.state.doc);
       if (next === current) return;
       host.noteSettingValue = true;
       try {
@@ -15107,15 +15434,6 @@ for (const button of document.querySelectorAll("#doc-view-seg [data-doc-view], #
 //: The same `setDocGutter`, so this and the strip's button are two views of
 //: one remembered choice rather than two settings; `applyDocGutter` writes
 //: both their pressed states back.
-$("doc-file-type").addEventListener("change", async (event) => {
-  if (!currentDoc) return;
-  currentDoc = { ...currentDoc, file_type: event.target.value };
-  syncDocFileType();
-  // Saved immediately rather than left to the autosave: changing the type
-  // changes how the editor behaves *now*, and a mode that has visibly
-  // switched but not persisted is one reload away from silently reverting.
-  await saveDocument({ silent: true });
-});
 wireDocScrollSync();
 try {
   //: **Live is the default now.** Asked for: "I want the text editor to be
@@ -17003,23 +17321,48 @@ function renderDocStatusBar() {
 //: Anything that needs them *now* (opening a document, a restore, a view
 //: switch) still calls the three directly.
 let docFactsTimer = null;
+//: Set when a pass was due while the Documents tab was hidden; the next visit
+//: runs it (`loadDocuments`), so nothing is out of date when it is seen again.
+let docFactsStale = false;
+let docFactsIdle = 0;
+
+function runDocFacts() {
+  docFactsStale = false;
+  renderDocStats();
+  renderDocOutline();
+  renderDocCounts();
+  renderDocComments();
+  //: The properties panel is drawn from the frontmatter's own text and
+  //: redraws only when that text moves, so it costs one parse of the top
+  //: of the document per pause in the typing.
+  renderDocProperties();
+}
 
 function scheduleDocFacts() {
   clearTimeout(docFactsTimer);
   docFactsTimer = setTimeout(() => {
     docFactsTimer = null;
     const run = () => {
-      renderDocStats();
-      renderDocOutline();
-      renderDocCounts();
-      renderDocComments();
-      //: The properties panel is drawn from the frontmatter's own text and
-      //: redraws only when that text moves, so it costs one parse of the top
-      //: of the document per pause in the typing.
-      renderDocProperties();
+      //: **Not while nobody can see it** (audit 1028 D20). A change that lands
+      //: with another tab in front (a sync, a restore, the AI's edit arriving)
+      //: used to rebuild the stats, outline, counts, comments and properties
+      //: for a hidden page: measured 65 ms of work on a 20k-word document per
+      //: change. Marked stale instead, and run once on the way back in.
+      if ($("tab-documents")?.classList.contains("hidden")) {
+        docFactsStale = true;
+        return;
+      }
+      runDocFacts();
     };
-    if (typeof requestIdleCallback === "function") requestIdleCallback(run, { timeout: 300 });
-    else requestAnimationFrame(run);
+    //: One queued pass at most: a second pause that arrives before the idle
+    //: callback has run replaces it, so a busy tab does not stack two.
+    if (typeof requestIdleCallback === "function") {
+      if (docFactsIdle) cancelIdleCallback(docFactsIdle);
+      docFactsIdle = requestIdleCallback(() => {
+        docFactsIdle = 0;
+        run();
+      }, { timeout: 300 });
+    } else requestAnimationFrame(run);
   }, 120);
 }
 
@@ -17112,25 +17455,9 @@ const DOC_PROSE_RULES = [
   },
 ];
 
-//: **Unambiguous typos only.** Every entry here is a string that is not a word
-//: in any English text, which is the bar an automatic replacement has to
-//: clear, because the cost of being wrong is that the app silently changed
-//: something the writer meant. `alot` is in; `dont` is not (an apostrophe is a
-//: style choice, and in a code block it is a quote).
-const DOC_AUTOCORRECT = {
-  teh: "the", adn: "and", taht: "that", tehn: "then", thsi: "this",
-  thier: "their", recieve: "receive", recieved: "received", seperate: "separate",
-  seperated: "separated", occured: "occurred", occuring: "occurring",
-  definately: "definitely", wich: "which", becuase: "because", becasue: "because",
-  alot: "a lot", accomodate: "accommodate", acheive: "achieve", acheived: "achieved",
-  arguement: "argument", beleive: "believe", calender: "calendar",
-  concious: "conscious", embarass: "embarrass", enviroment: "environment",
-  existance: "existence", goverment: "government", independant: "independent",
-  neccessary: "necessary", occassion: "occasion", persistant: "persistent",
-  publically: "publicly", recomend: "recommend", refered: "referred",
-  succesful: "successful", tommorow: "tomorrow", untill: "until",
-  wierd: "weird", writting: "writing", youre: "you're", ot: "to",
-};
+//: One table for the notes and the documents (audit 1031 N42): `AUTOCORRECT_TYPOS`, autocorrect.js,
+//: which this bundle loads first. Two copies had drifted, 42 rows against 89.
+const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;
 
 const DOC_LONG_SENTENCE_WORDS = 45;
 
@@ -17281,6 +17608,8 @@ function docSpellable(text, word, start, end) {
   const before = start > 0 && !opened ? text[start - 1] : "";
   const after = end < text.length && !closed ? text[end] : "";
   if (/[0-9_/@\\#$%&*+=<>~]/.test(before) || /[0-9_/@\\#$%&*+=<>~]/.test(after)) return false;
+  //: Next to é, ï, ß: a piece of a longer word (audit 1028 D8).
+  if (/\p{L}/u.test(before) || /\p{L}/u.test(after)) return false;
   if (after === "." && /[A-Za-z]/.test(text[end + 1] || "")) return false;
   if (before === "." && /[A-Za-z]/.test(text[start - 2] || "")) return false;
   //: A dotfile (" .gitignore", ".env"): a dot that opens a name, with nothing
@@ -17736,7 +18065,7 @@ function docProseFindings(text) {
       if (words > DOC_LONG_SENTENCE_WORDS) {
         found.push({
           rule: "long-sentence",
-          message: `${words} words in one sentence`,
+          message: `${nounCount(words, "word")} in one sentence`,
           start: at + cursor,
           end: at + cursor + sentence.length,
           text: text.slice(at + cursor, at + cursor + sentence.length),
@@ -17836,8 +18165,53 @@ let docProseFound = [];
 //: "Hide all suggestions for now": the marks, the count and the list go quiet
 //: for this sitting without touching the Settings switch or the dismissed
 //: list. Not stored, like a dismissal, so it can never be forgotten about.
-const docProse = { hidden: false, panelView: "list" };
+const docProse = { hidden: false, panelView: "list", win: null, timer: null };
 //: "list" is the suggestions, "dismissed" is the ones put away in this document.
+
+//: **Past this many characters the prose pass reads a window** (audit 1028
+//: D7), centred on what is on screen and cut at blank lines, so the cost of a
+//: pause is the window and not the document. Measured at 100,800 characters:
+//: see docs/roadmap/agent-remaining/docux-1028.md.
+const DOC_PROSE_WINDOW_CHARS = 30000;
+
+function docProseWindow(text) {
+  if (text.length <= DOC_PROSE_WINDOW_CHARS) return null;
+  let mid = 0;
+  try {
+    const ranges = docCmView ? docCmView.visibleRanges : [];
+    mid = ranges.length ? (ranges[0].from + ranges[ranges.length - 1].to) >> 1 : docCmView ? docCmView.state.selection.main.head : 0;
+  } catch {
+    mid = 0;
+  }
+  let to = Math.min(text.length, Math.max(0, mid - DOC_PROSE_WINDOW_CHARS / 2) + DOC_PROSE_WINDOW_CHARS);
+  let from = Math.max(0, to - DOC_PROSE_WINDOW_CHARS);
+  if (from > 0) {
+    //: Cut at a blank line, and never inside a fence: a window that began in
+    //: the middle of a code block would read its code as prose.
+    const cut = text.lastIndexOf("\n\n", from);
+    from = cut < 0 ? 0 : cut + 2;
+    let open = -1;
+    for (const fence of text.slice(0, from).matchAll(/^(?:```|~~~)/gm)) open = open < 0 ? fence.index : -1;
+    if (open >= 0) from = open;
+  }
+  if (to < text.length) {
+    const cut = text.indexOf("\n\n", to);
+    to = cut < 0 ? text.length : cut;
+  }
+  return { from, to };
+}
+
+//: Scrolling out of the window re-runs the pass once the view settles.
+function docProseScrolled() {
+  if (!docProse.win) return;
+  clearTimeout(docProse.timer);
+  docProse.timer = setTimeout(() => {
+    const ranges = docCmView ? docCmView.visibleRanges : [];
+    if (!ranges.length || !docProse.win) return;
+    const seen = ranges[0].from < docProse.win.from || ranges[ranges.length - 1].to > docProse.win.to;
+    if (seen) renderDocProse();
+  }, 250);
+}
 
 function renderDocProse() {
   const chip = $("doc-prose");
@@ -17853,16 +18227,32 @@ function renderDocProse() {
   const text = docText();
   //: And Check with AI's findings (`docAiFindings`), located afresh in the
   //: text as it is now, so an applied or edited-away one simply goes.
-  docProseFound = isCode
-    ? docCodeSpellFindings(text)
-    : docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  //: A long document is checked a window at a time (audit 1028 D7): the pass
+  //: walks every rule and word, and at 100k characters that was a visible
+  //: pause on each 150ms stop. The window follows the view (`docProseScrolled`).
+  const win = isCode ? null : docProseWindow(text);
+  docProse.win = win;
+  if (isCode) docProseFound = docCodeSpellFindings(text);
+  else if (win) {
+    const part = text.slice(win.from, win.to);
+    const near = docProseExtras(part, docProseFindings(part));
+    for (const finding of near) {
+      finding.start += win.from;
+      finding.end += win.from;
+    }
+    docProseFound = near.concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  } else {
+    docProseFound = docProseExtras(text, docProseFindings(text)).concat(docAiFindings(text)).sort((a, b) => a.start - b.start);
+  }
   if (docProse.hidden) docProseFound = [];
   chip.hidden = isCode;
   count.textContent = docProse.hidden
     ? "Suggestions hidden"
     : docProseFound.length
-      ? `${docProseFound.length} suggestion${docProseFound.length === 1 ? "" : "s"}`
-      : "No suggestions";
+      ? `${nounCount(docProseFound.length, "suggestion")}${win ? " nearby" : ""}`
+      : win
+        ? "No suggestions nearby"
+        : "No suggestions";
   chip.classList.toggle("has-findings", docProseFound.length > 0);
   docFocusSyncProse();
   //: A fresh set of findings means a fresh set of marks. The engine is told
@@ -17944,7 +18334,7 @@ function docProseHeader() {
   const count = document.createElement("span");
   count.className = "doc-prose-count";
   count.textContent = n ? String(n) : "";
-  count.title = `${n} suggestion${n === 1 ? "" : "s"} in this document`;
+  count.title = `${nounCount(n, "suggestion")} in this document`;
   title.appendChild(count);
   head.appendChild(title);
 
@@ -18106,7 +18496,7 @@ function docFocusSyncProse() {
   const button = $("doc-focus-prose");
   if (!button) return;
   const n = docProseFound.length;
-  const words = n ? `${n} suggestion${n === 1 ? "" : "s"}` : "Suggestions";
+  const words = n ? nounCount(n, "suggestion") : "Suggestions";
   const label = $("doc-focus-prose-count");
   if (label) label.textContent = words;
   button.hidden = Boolean($("doc-prose")?.hidden);
@@ -18821,6 +19211,8 @@ function docAutocorrectAt(box) {
   const upto = line.text.slice(0, caret - line.from);
   const match = /([A-Za-z']+)([\s.,;:!?)\]]+)$/.exec(upto);
   if (!match) return false;
+  //: Never the tail of a word with an accented letter ("ve" of naïve; D8).
+  if (/\p{L}/u.test(upto[match.index - 1] || "")) return false;
   const lower = match[1].toLowerCase();
   //: A word the reader has accepted is never rewritten, whatever the typo list
   //: says. The dictionary is the reader's answer to this feature, and an
@@ -20246,7 +20638,7 @@ function docFindingLabel(finding) {
   const text = finding.text || "";
   if (text.trim()) return text.replace(/\s+/g, " ").slice(0, 48);
   if (/^\n+$/.test(text)) return `${text.length} blank line${text.length === 1 ? "" : "s"}`;
-  return `${text.length} space${text.length === 1 ? "" : "s"}`;
+  return nounCount(text.length, "space");
 }
 
 function docSuggestAlternatives(finding) {
@@ -21013,7 +21405,7 @@ function docAiCheckStatus() {
   wrap.className = "doc-prose-ai";
   wrap.setAttribute("role", "status");
   const n = docAiCheck.items.length;
-  const found = `${n} finding${n === 1 ? "" : "s"}`;
+  const found = nounCount(n, "finding");
   if (docAiCheck.state === "offline") {
     const notice = document.createElement("p");
     notice.className = "notice notice-warn doc-prose-ai-notice";
@@ -21100,7 +21492,7 @@ function renderDocDictionary() {
   const shown = query ? words.filter((word) => word.includes(query)) : words;
   const count = $("doc-dictionary-count");
   if (count) {
-    count.textContent = words.length ? `${words.length} word${words.length === 1 ? "" : "s"}` : "";
+    count.textContent = words.length ? nounCount(words.length, "word") : "";
   }
   //: Add is offered only when there is something new to add: a word typed
   //: that is not already in the list.
@@ -21174,7 +21566,7 @@ async function docDictionaryImport(file) {
   renderDocDictionary();
   renderDocProse();
   toast(fresh.length
-    ? `Added ${fresh.length} word${fresh.length === 1 ? "" : "s"}${incoming.length > fresh.length ? `; ${incoming.length - fresh.length} were already here` : ""}.`
+    ? `Added ${nounCount(fresh.length, "word")}${incoming.length > fresh.length ? `; ${incoming.length - fresh.length} were already here` : ""}.`
     : "Every word in that file is already here.");
 }
 
@@ -21573,6 +21965,44 @@ function docListGuides(depth) {
     backgroundSize: "1px 100%",
     backgroundRepeat: "no-repeat",
   };
+}
+
+//: How many matches the find panel's query has, said in the panel (audit
+//: 1028 U9): the library's panel finds without ever saying how many. Counted
+//: only while the panel is open and only when the text or the query changed,
+//: and stopped at 1,000 so a one-letter query in a long file stays cheap.
+const DOC_SEARCH_COUNT_CAP = 1000;
+function docSearchCountText(state, CM) {
+  const query = CM.search.getSearchQuery(state);
+  if (!query.search || !query.valid) return "";
+  let n = 0;
+  for (const cursor = query.getCursor(state); n < DOC_SEARCH_COUNT_CAP && !cursor.next().done;) n += 1;
+  if (!n) return "No matches";
+  return n >= DOC_SEARCH_COUNT_CAP ? "1,000+ matches" : `${n} match${n === 1 ? "" : "es"}`;
+}
+
+function docCmSearchCount(CM) {
+  return CM.view.ViewPlugin.fromClass(class {
+    constructor(view) { this.query = null; this.update({ view, docChanged: true, state: view.state }); }
+    update(update) {
+      const { view } = update;
+      if (!CM.search.searchPanelOpen(view.state)) return void (this.query = null);
+      const query = CM.search.getSearchQuery(view.state);
+      if (!update.docChanged && this.query?.eq(query)) return;
+      const panel = view.dom.querySelector(".cm-search");
+      if (!panel) return;
+      this.query = query;
+      let out = panel.querySelector(".cm-search-count");
+      if (!out) {
+        out = Object.assign(document.createElement("span"), { className: "cm-search-count muted text-sm" });
+        out.setAttribute("role", "status");
+        const lineBreak = panel.querySelector("br");
+        if (lineBreak) lineBreak.before(out);
+        else panel.appendChild(out);
+      }
+      out.textContent = docSearchCountText(view.state, CM);
+    }
+  });
 }
 
 function docCmTheme(CM) {
@@ -22799,12 +23229,14 @@ function docCmKeymap(CM) {
     //: panel here and the app's own bar on the fallback, so this binding does
     //: not have to know which is on screen.
     { key: "Mod-f", run: () => { toggleDocFindBar(true); return true; } },
-    //: Ctrl+H is Replace in every word processor and editor; the panel is the
-    //: same, with the cursor in its Replace field.
     //: VS Code's Go to line. A code file only; CodeMirror's own binding for
     //: the key (find next) stays for prose and on F3.
     { key: "Mod-g", run: (view) => (docFileType().previewable ? false : CM.search.gotoLine(view)) },
-    { key: "Mod-h", run: () => { toggleDocFindBar(true); docCmView?.dom.querySelector(".cm-search input[name=replace]")?.focus(); return true; } },
+    //: Ctrl+H is Replace in every word processor and editor; the panel is the
+    //: same, with the cursor in its Replace field. Cmd+H hides the app on a
+    //: Mac, so Cmd+Option+F, VS Code's Mac chord, does the same (audit 1028 D31).
+    { key: "Mod-h", run: () => docOpenReplace() },
+    { key: "Mod-Alt-f", run: () => docOpenReplace() },
     //: Find in every document (INBOX 404), VS Code's search across files.
     { key: "Mod-Shift-f", run: () => docFindInDocuments() },
     //: The formatting toolbar, shown or hidden (INBOX 574).
@@ -22923,6 +23355,7 @@ function docCmExtensions(CM) {
     //: fallback. Its chrome is restyled in 09-editor.css onto this app's
     //: field and button recipe.
     CM.search.search({ top: true }),
+    docCmSearchCount(CM),
     CM.view.rectangularSelection(),
     CM.view.crosshairCursor(),
     docCmParts.wrap.of(docCmDrawFor(CM, type)),
@@ -23003,6 +23436,7 @@ function docCmSpellcheck(CM) {
 function docCmApplySpellcheck() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.spell) return;
+  if (!docCmChanged("spell", String(docWordlistReady() || !docFileType().previewable))) return;
   docCmView.dispatch({ effects: docCmParts.spell.reconfigure(docCmSpellcheck(CM)) });
 }
 
@@ -23087,7 +23521,7 @@ function docFindingsPlugin(CM) {
   const { Decoration, ViewPlugin } = CM.view;
 
   function build(view) {
-    const text = view.state.doc.toString();
+    const text = docStr(view.state.doc);
     const ranges = [];
     docProseFound.forEach((finding, index) => {
       if (DOC_FINDING_SKIP.has(finding.rule)) return;
@@ -23151,6 +23585,7 @@ function mountDocEditor(CM) {
     extensions: docCmExtensions(CM),
   });
   docCmView = new CM.view.EditorView({ state, parent: host });
+  docCmView.scrollDOM.addEventListener("scroll", docProseScrolled, { passive: true });
   //: The document-level pipeline, re-registered on the surface that exists
   //: now: the fallback's own `input` listener is on an element the engine has
   //: just taken out of the layout.
@@ -23285,13 +23720,12 @@ function docCmSyncFileType() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.language) return;
   const type = docFileType();
-  docCmView.dispatch({
-    effects: [
-      docCmParts.language.reconfigure(docCmViewLanguage(CM)),
-      docCmParts.wrap.reconfigure(docCmDrawFor(CM, type)),
-      ...(docCmParts.code ? [docCmParts.code.reconfigure(docCodeTools(CM))] : []),
-    ],
-  });
+  const effects = docCmLanguageEffects(CM);
+  if (docCmChanged("type", `${type.ext}|${docView === "plain"}`)) {
+    effects.push(docCmParts.wrap.reconfigure(docCmDrawFor(CM, type)));
+    if (docCmParts.code) effects.push(docCmParts.code.reconfigure(docCodeTools(CM)));
+  }
+  if (effects.length) docCmView.dispatch({ effects });
 }
 
 //: **What Plain means, in one function.** The owner: "I want to be able to
@@ -23318,8 +23752,32 @@ function docCmViewLanguage(CM) {
 function docCmSyncLanguage() {
   const CM = window.CM6;
   if (!docCmView || !CM || !docCmParts.language) return;
-  docCmView.dispatch({ effects: docCmParts.language.reconfigure(docCmViewLanguage(CM)) });
+  const effects = docCmLanguageEffects(CM);
+  if (!effects.length) return;
+  docCmView.dispatch({ effects });
   docCmSyncCodeTools();
+}
+
+//: **A setting the view already has is not sent again** (lagfix-1031:
+//: `syncDocFileType` cost 26 to 364 ms on an open, and a CPU profile of twelve
+//: opens put 213 of its 367 ms in `docCmSyncFileType`, in CodeMirror reading the
+//: DOM selection after the dispatch). Every reconfigure is a transaction, so
+//: `setDocView`, `docCmSyncFileType` and `docCmApplySpellcheck` each sent
+//: theirs on every open, and opening a second Markdown file paid for changes
+//: that changed nothing. Each is a pure function of the view and a small key
+//: (extension and Plain, or the spellcheck answer), so that pair is the memo:
+//: a new view (the engine remounted) never matches the old one.
+const docCmApplied = new Map();
+function docCmChanged(name, key) {
+  const last = docCmApplied.get(name);
+  if (last && last.view === docCmView && last.key === key) return false;
+  docCmApplied.set(name, { view: docCmView, key });
+  return true;
+}
+
+function docCmLanguageEffects(CM) {
+  if (!docCmChanged("language", docView === "plain" ? "plain" : docFileType().ext)) return [];
+  return [docCmParts.language.reconfigure(docCmViewLanguage(CM))];
 }
 
 //: The line-number preference, applied to the engine. `applyDocGutter` still
@@ -23857,7 +24315,7 @@ function docHistoryRestore(id, text) {
     const CM = window.CM6;
     const field = CM?.commands?.historyField;
     if (!stored || !field || !docCmView || docHistoryOwner !== id || stored.doc !== text) return;
-    if (docCmView.state.doc.toString() !== text) return;
+    if (docStr(docCmView.state.doc) !== text) return;
     try {
       docCmView.setState(CM.state.EditorState.fromJSON(stored, { extensions: docCmExtensions(CM) }, { history: field }));
       docSetLiveDecorations(docView === "live");
@@ -23873,7 +24331,9 @@ function docHistoryPersist() {
   const field = CM?.commands?.historyField;
   if (typeof undoStorePut !== "function" || !field || !docCmView || docHistoryOwner == null) return;
   try {
-    undoStorePut(`doc:${docHistoryOwner}`, docCmView.state.toJSON({ history: field }));
+    //: Serialised at the store's pause, not per keystroke (audit 1028 D6).
+    const state = docCmView.state;
+    undoStorePut(`doc:${docHistoryOwner}`, () => state.toJSON({ history: field }));
   } catch {
     /* nothing to keep */
   }

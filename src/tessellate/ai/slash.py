@@ -107,7 +107,7 @@ def _made(session: Session, arg: str, now: datetime) -> str:
         from tessellate.ai import composer
 
         first, last = session.execute(select(func.min(entry.created_at), func.max(entry.created_at)).where(*visible)).one()
-        return composer.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg)
+        return composer.empty_window(phrase, first.date() if first else None, last.date() if last else None, seed=arg, today=now.date())
     from tessellate.ai import composer
 
     lead = f"You wrote {realise.count_noun(len(rows), 'note')} {composer.window_said(phrase)}:"
@@ -175,12 +175,27 @@ def parse(text: str) -> tuple[str, str] | None:
 #: note" and "my oldest friend" are not commands. The first group, when it
 #: holds digits, is the argument.
 _ASKING = r"^(?:which|what|whats|show|list|give|any|do|are|find|pick|pull|surprise)\b"
+#: A pick asked for loosely (INBOX 1496): "errm a random ahh note", "any note
+#: will do", "pick a note for me". The word "random" with up to two filler
+#: words before "note", or a bare "a note" after a picking word and nothing
+#: after it. Never one that names a subject ("a random note about cooking")
+#: or an act on it ("delete a random note").
+_PICK_ACTS = r"(?:delete|remove|archive|edit|rename|pin|unpin|move|merge|tag|add|write|create|make|append|share|export)"
+_VAGUE_PICK = re.compile(
+    rf"^(?!.*\b{_PICK_ACTS}\b)(?!(?:\S+\s+){{10}})(?!(?:what|who|when|why|how|where)\b.*\b(?:is|are|does|do|mean|means)\b)(?:"
+    r".*(?<!the )(?<!my )(?<!about )(?<!on )(?<!this )(?<!that )\b(?:random|rando?m|randomly)\b(?:\s+(?!(?:about|on|of|from|with|in|for|the|my|and)\b)[a-z']{2,8}){0,2}?\s+notes?\b(?!\s+(?:about|on|from|with|tagged|in|for(?! me)|that|where|of(?! mine)|i)\b)"
+    r"|.*\b(?:pick|choose|surprise|give|show|get|pull)\b(?:\s+\w+){0,2}\s+(?:a|an|any|one|some) notes?(?: for me| please| at random)?\W*$"
+    r"|.*\bany notes?(?: will do| is fine| works)?\W*$"
+    r")",
+    re.I,
+)
 _INFERRED = (
     ("untagged", re.compile(_ASKING + r".*\b(?:untagged|no tags?|without (?:any )?tags?|not tagged|haven'?t tagged)\b", re.I)),
     ("pinned", re.compile(_ASKING + r".*\bpinn?ed\b.*\bnotes?\b|" + _ASKING + r".*\bnotes?\b.*\bpinn?ed\b", re.I)),
     ("oldest", re.compile(_ASKING + r".*?\b(?:(\d+) )?oldest notes?\b", re.I)),
     ("todo", re.compile(_ASKING + r".*\b(?:open|unchecked|outstanding)\s+(?:to-?dos?|check ?boxes|tick ?boxes)\b", re.I)),
     ("random", re.compile(_ASKING + r".*\b(?:a|one) (?:random|rando?m) notes?\b", re.I)),
+    ("random", _VAGUE_PICK),
 )
 
 
@@ -219,6 +234,21 @@ def answer(session: Session, text: str, now: datetime, *, typed_only: bool = Fal
     if command is None:
         return _help(session, name, now)
     return command.run(session, arg, now)
+
+
+def timeline(session: Session, name: str, arg: str, now: datetime) -> dict | None:
+    """The timeline strip under /recent, /today, /yesterday and /made (INBOX 1333 b): the
+    span of the notes listed, or the day or span asked; when that holds no
+    note, where the notes run up to today."""
+    today = now.date()
+    if name == "recent":
+        entry, visible = _notes()
+        days = [d.date() for d in session.scalars(select(entry.created_at).where(*visible).order_by(entry.created_at.desc(), entry.id.desc()).limit(slash_more.count_arg(arg)))]
+        return slash_more.timeline_panel(session, min(days), max(days), today) if days else None
+    span = _window(name if name in ("today", "yesterday") else arg, today) if name in ("today", "yesterday", "made") and (arg or name != "made") else None
+    if span is None:
+        return None
+    return slash_more.timeline_panel(session, span[0], span[1], today) or slash_more.empty_timeline(session, today)
 
 
 def catalogue() -> list[dict]:

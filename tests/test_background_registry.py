@@ -48,6 +48,7 @@ ai/janitor.py::_chat_within_deadline::thread::1
 ai/tools/__init__.py::prefetch_web::executor::1
 api/app.py::_start_searxng_if_asked::thread::1
 api/routes_backups.py::export_bundle::request-task::1
+api/routes_chat.py::_stop_when_gone::task::1
 api/routes_import.py::export_notebook_folder::request-task::1
 api/routes_settings.py::export_backup::request-task::1
 api/routes_settings.py::restart_app::request-task::1
@@ -77,6 +78,14 @@ core/lanserve.py::_route::executor::1
 core/lanserve.py::serve::executor::1
 core/lanserve.py::serve::task::1
 core/lanserve.py::serve::task::2
+""".strip().splitlines()
+) | frozenset(
+    #: Registered 2026-10-29 (audit 1029 H3, H4): one route deadline's timer
+    #: and its closed-browser watcher, both owned by the request and cancelled
+    #: in the guard's `finally`, like `routes_chat._stop_when_gone`.
+    """
+core/deadline.py::guard::timer::1
+core/deadline.py::guard::task::1
 """.strip().splitlines()
 )
 

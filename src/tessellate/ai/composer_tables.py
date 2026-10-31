@@ -105,7 +105,7 @@ _FAMILIES: dict[str, dict[str, list[str]]] = {
         "professional": ["In a separate entry", "Elsewhere in your notes", "In a further entry"],
     },
     "another_note": {
-        "natural": ["Changing tack", "Moving on", "On a different note"],
+        "natural": ["On a different note"],
         "professional": ["Turning to another matter", "On a different matter", "As for a different entry"],
     },
     "later_on": {
@@ -336,16 +336,16 @@ PAIRED = {
 #: straight by the quote). The dropped ones are listed in the triage notes.
 _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['From your notes: ',
                             'According to your notes: ',
-                            'Looking at your notes: ',
+                            'Your notes say: ',
                             "Based on what you've saved: ",
                             "Here's what I found in your notebook: ",
-                            'Checking your entries: ',
+                            'From your entries: ',
                             "From what you've written: ",
                             'Your notes have this to say: ',
-                            'Gathering from your records: ',
+                            'From your records: ',
                             'Based on your notebook: ',
-                            'Diving into your notes: ',
-                            'Scanning through your notes: ',
+                            'In your notebook: ',
+                            'In your notes: ',
                             'Here is what your records show: '],
                 'professional': ['A review of your records indicates: ',
                                  'The documentation shows: ',
@@ -493,15 +493,8 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                             'Elsewhere',
                             'In another place',
                             'In a different note',
-                            'On another topic',
-                            'Changing gears',
-                            'Meanwhile',
-                            'In a totally different entry',
-                            'Pivoting slightly',
-                            'Shifting focus',
-                            'In unrelated notes',
-                            'Off to the side',
-                            'On a different track'],
+'Meanwhile',
+],
                 'professional': ['In a separate context',
                                  'Independently',
                                  'Separately noted',
@@ -516,12 +509,9 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                            'In other notes',
                            'Across your other entries',
                            'In a different spot',
-                           'Looking somewhere else',
-                           'In another corner of your notebook',
-                           'Somewhere else entirely',
-                           'In another part of your records',
-                           'Looking at other entries',
-                           'In completely different notes'],
+'In another corner of your notebook',
+'In another part of your records',
+],
                'professional': ['In another location',
                                 'Documented elsewhere',
                                 'In a distinct file',
@@ -529,12 +519,9 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
  'another_note': {'natural': ['On another note',
                               'In another entry',
                               'From a different note',
-                              'Looking at a separate note',
-                              'Switching to another note',
-                              'In a completely different entry',
-                              'According to another record',
-                              'Turning to another note',
-                              'As captured in another note'],
+'Switching to another note',
+'According to another record',
+'As captured in another note'],
                   'professional': ['Addressing a distinct topic',
                                    'Transitioning to a separate point',
                                    'With regard to another note',
@@ -642,29 +629,29 @@ _FAMILIES_ADDED: dict[str, dict[str, list[str]]] = {'open_notes': {'natural': ['
                                      'The final documented point: ',
                                      'The most recent update available: ',
                                      'The latest recorded observation: ']},
- 'of_found': {'natural': ['Out of the notes I looked at, ',
-                          'From the notes I could find, ',
-                          'Of the ones retrieved, ',
-                          'Taking these notes, ',
-                          'Looking through this batch, ',
-                          'Of the relevant notes, '],
-              'professional': ['From the compiled entries, ',
-                               'Reviewing the retrieved documentation, ',
-                               'Of the pertinent records, ',
-                               'Considering the recovered entries, ',
-                               'Within the retrieved entries, ',
-                               'Based on the entries found, ',
+ 'of_found': {'natural': ['Of these notes, ',
+                          'Among these notes, ',
+                          'Between these notes, ',
+                          'Of the notes here, ',
+                          'Going by these notes, ',
+                          'In these notes, '],
+              'professional': ['Of these entries, ',
+                               'Between these entries, ',
+                               'Based on these entries, ',
+                               'In these entries, ',
+                               'Within these entries, ',
                                'Among the matching entries, ',
-                               'Per the entries retrieved, ']},
+                               'Of the pertinent records, ',
+                               'Per these entries, ']},
  'across_found': {'natural': ['If we look at all these notes, ',
                               'Across the board in these notes, ',
-                              'Combining what I found, ',
-                              'Taking everything retrieved into account, ',
-                              'In summary of the found notes, ',
-                              'Across all the results, '],
-                  'professional': ['Aggregating the retrieved records, ',
+                              'Taken together, ',
+                              'Putting them together, ',
+                              'All told, ',
+                              'Across all of them, '],
+                  'professional': ['Aggregating these records, ',
                                    'Consolidating the data from the entries, ',
-                                   'In aggregate, the documentation shows ',
+                                   'In aggregate, these records show ',
                                    'Evaluating the records collectively, ']},
  'disagree_lead': {'natural': ['Your notes may disagree here. ',
                                'There seems to be a conflict in your notes. ',
@@ -882,7 +869,7 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("baby", "infant", "newborn"),
     ("grandma", "granny", "gran", "nan", "nana", "grandmother"),
     ("grandpa", "grandad", "granddad", "grandfather"),
-    ("party", "celebration", "gathering", "get-together"),
+    ("party", "celebration", "celebrate", "gathering", "get-together"),
     # Feelings.
     ("happy", "glad", "pleased", "delighted", "cheerful"),
     ("sad", "unhappy", "upset", "gloomy", "miserable"),
@@ -911,6 +898,8 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
     ("restaurant", "cafe", "diner", "bistro", "eatery"),
     ("pub", "tavern"),
     ("shop", "store"),
+    #: "What do I need from the shops" is the grocery list (2026-10-30 sweep).
+    ("shops", "groceries", "grocery", "supermarket"),
     ("museum", "gallery"),
     ("cinema", "theater", "theatre"),
     ("address", "location", "street"),
@@ -931,29 +920,40 @@ EXTRA_SYNONYM_GROUPS: tuple[tuple[str, ...], ...] = (
 
 _MORE = (
     ("better|worse|cheaper|faster|slower|bigger|smaller|larger|longer|shorter|easier|harder|safer|nearer|closer|"
-    "nicer|quicker|lighter|heavier|(?:more|less) [a-z]+")
+    "nicer|quicker|lighter|heavier|pricier|costlier|cheapest|soonest|oldest|newest|sooner|earlier|later|older|newer|(?:more|less) [a-z]+")
 )
+
+#: "which note", "which one", "which of the two": the same ask as "which".
+_WHICH = r"which(?: (?:one|note|entry|of (?:the|these|those|my) (?:two|notes)|of them|(?!(?:is|are|was|were)\b)[a-z]+))?"
 
 #: Two-sided comparison patterns, tried after the originals in
 #: `composer._COMPARE_SIDES`: each needs both sides in the question.
 EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
-    re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(rf"^(?:(?:is|are|was|were|does|do|did)\s+)?(?P<a>.+?)(?<!\s)\s+(?:(?:is|are|was|were)\s+)?(?:{_MORE}) than (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
-    re.compile(rf"^which (?:is|are|was|were) (?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    #: "which comes first, the dentist or the trip".
+    re.compile(r"^which(?: one)? (?:comes|came|is|was) first[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
+    re.compile(rf"^(?P<a>[\w' ,-]+?) or (?P<b>[\w' ,-]+?),? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})[?.!]*$", re.I),
     re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:the )?comparison (?:of|between) (?P<a>.+?) (?:and|with|to|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"\b(?:similarities|contrast) between (?P<a>.+?) and (?P<b>.+?)[?.!]*$", re.I),
+    #: "how are Deep Work and The Overstory different" (audit 1029 C36).
+    re.compile(r"^(?:how|in what ways?) (?:are|were|do|did) (?P<a>.+?) and (?P<b>.+?) (?:different|differ|alike|similar|the same)[?.!]*$", re.I),
 )
 
 #: The comparison triggers added to the "compare" shape rule: all two-sided,
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
+    r"^which(?: one)? (?:comes|came|is|was) first\b.+? or |"
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
-    rf"^which (?:is|are|was|were) (?:{_MORE})\b.+? or |\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
-    r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b"
+    rf"^{_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\b.+? or |^[\w' ,-]+? or [\w' ,-]+?,? {_WHICH} (?:is|are|was|were) (?:the )?(?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
+    r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
+    r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$"
 )
 
 #: Comparison words are asking words: dropped from the subject, so "is Lisbon
@@ -962,7 +962,7 @@ COMPARE_SHAPE_EXTRA = (
 EXTRA_ASKING_WORDS = frozenset(
     """compared comparison versus better worse cheaper faster slower bigger smaller larger longer shorter
     easier harder safer pros cons advantages disadvantages drawbacks upsides downsides differ differs
-    different than similarities contrast""".split()
+    different than similarities contrast sooner soonest later pricier costlier dearer cheapest older oldest newer nearer closer""".split()
 )
 
 # --- wrappers, trailers and contractions ------------------------------------------
@@ -1211,6 +1211,29 @@ EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + tuple(tuple(g) for g in [['laptop'
  ['help', 'assist', 'support', 'aid', 'guide', 'advice', 'advise'],
  ['change', 'modify', 'alter', 'adjust', 'adapt', 'transform', 'update'],
  ['use', 'utilize', 'employ', 'apply', 'operate', 'consume']])
+
+#: The verb a person asks with and the noun a note is written with ("when do I
+#: fly" is the "Flight to Lisbon" note; audit 1029 C21). `fly` and `flight`,
+#: `travel` and `trip`, `depart` and `departure`, `arrive` and `arrival`,
+#: `exercise` and `workout` already sit in groups above (a word is in one
+#: group only); the pairs below are the ones that did not.
+VERB_NOUN_PAIRS: tuple[tuple[str, ...], ...] = (
+    ("decide", "decision"),
+    ("invite", "invitation"),
+    ("marry", "marriage", "wedding"),
+    ("graduate", "graduation"),
+    ("retire", "retirement"),
+    ("register", "registration", "enrol", "enrolment"),
+    ("subscribe", "subscription"),
+    ("submit", "submission"),
+    ("deliver", "delivery"),
+    ("renew", "renewal"),
+    ("invest", "investment"),
+    ("donate", "donation"),
+    ("complain", "complaint"),
+    ("vote", "ballot", "election"),
+)
+EXTRA_SYNONYM_GROUPS = EXTRA_SYNONYM_GROUPS + VERB_NOUN_PAIRS
 EXTRA_ASKING_WORDS = EXTRA_ASKING_WORDS | frozenset(['af',
  'asf',
  'bestie',
@@ -1531,7 +1554,7 @@ for _kind, _lines in {
 INSIGHT_TEMPLATES: dict[str, str] = {
     "recurrence": "You have written about {subject} {count} times since {since}{after}; {hedge}.",
     "streak": "You have written about {subject} {weeks} weeks running.",
-    "drift": "Since {since}, no later note picks up this plan: {plan}. It may be still open.",
+    "drift": "Since {since}, no later note picks up this plan: {plan}. It may still be open.",
     "contrast": "On {first} you wrote {before}; on {last}, {after_said}. You may have changed your mind.",
     "load": "The week of {week} had {count} notes against a usual {usual}; a busy week.",
 }
@@ -1554,3 +1577,13 @@ INSIGHT_SLOTS: dict[str, str] = {
 #: `composer.SOCIAL`): the unnamed lines added for these two kinds are retired.
 for _retired in ("who", "about_app"):
     SOCIAL_NATURAL_EXTRA.pop(_retired, None)
+
+
+#: Words a note says by its shape rather than by name: "does Jake owe me
+#: money" is answered by "$40", "what did I rate the ramen" by "8/10". A
+#: quoted sentence of that shape (`recognise.says_shape`) means the word is
+#: not missing (2026-10-30 sweep).
+SHAPE_WORDS: dict[str, str] = {
+    **dict.fromkeys(("money", "cost", "costs", "price", "paid", "pay", "spend", "spent", "amount", "cash"), "money"),
+    **dict.fromkeys(("rate", "rated", "rating", "score", "scored", "stars", "mark"), "score"),
+}

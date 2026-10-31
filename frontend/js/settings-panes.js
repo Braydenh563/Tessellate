@@ -485,77 +485,7 @@ function watchOverlays() {
 
 // --- account & security ------------------------------------------------------------
 
-async function renderAccount() {
-  const facts = $("account-facts");
-  facts.replaceChildren();
-  showSkeletons(facts, 3, "li");
-  const info = await apiJson("/auth/account").catch(() => null);
-  clearSkeletons(facts);
-  if (!info) {
-    const li = document.createElement("li");
-    li.className = "muted";
-    li.textContent = "Couldn't read the account state.";
-    facts.appendChild(li);
-    return;
-  }
-  const rows = [
-    ["Password", info.configured ? "Set" : "Not set yet"],
-    [
-      "Created",
-      info.created_at ? new Date(info.created_at).toLocaleDateString() : "Unknown",
-    ],
-    [
-      "Private notes",
-      info.vault_exists
-        ? info.vault_open
-          ? "Encryption key loaded: private notes are readable"
-          : "Locked: unlock to read private notes"
-        : "No encrypted notes yet",
-    ],
-    ["Open sessions", String(info.active_sessions)],
-    //: INBOX 663: the recovery key's row and its one button, drawn by
-    //: account-recovery.js (lazy: the boot scripts' total cap).
-    await recoveryAccountRow(info),
-  ];
-  if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
-  $("account-password-on-open").checked = info.password_on_open !== false;
-  renderPinSettings(info.pin);
-  renderLanAccess().catch(() => {});
-  for (const [label, value] of rows) {
-    //: A label column and a value column (`.account-facts`), not "Label: value"
-    //: in bold run-in: four facts read as a table, so they are laid out as one.
-    const li = document.createElement("li");
-    const name = document.createElement("span");
-    name.className = "account-fact-label";
-    name.textContent = label;
-    const text = document.createElement("span");
-    text.textContent = value;
-    li.append(name, text);
-    facts.appendChild(li);
-  }
-}
 
-//: "PIN for this computer" (owner, 2026-10-12): the fields show only where a
-//: PIN can be set, which is this computer with an OS protected store; the
-//: line under the heading says why when it cannot.
-function renderPinSettings(pin) {
-  const state = $("account-pin-state");
-  if (!state || !pin) return;
-  const usable = pin.available && pin.here;
-  $("account-pin-fields").classList.toggle("hidden", !usable);
-  $("account-pin-set").classList.toggle("hidden", !usable);
-  $("account-pin-set").textContent = pin.set ? "Change PIN" : "Set up a PIN for this computer";
-  $("account-pin-forget").classList.toggle("hidden", !(pin.set && pin.here));
-  if (!pin.here) {
-    state.textContent = "A PIN can be set up only on the computer this notebook runs on.";
-  } else if (!pin.available) {
-    state.textContent = "This computer has no protected store for a PIN, so the password is the only way in here.";
-  } else {
-    state.textContent = pin.set
-      ? "A PIN is set: the lock screen takes it or your password, on this computer only."
-      : "Unlock on this computer with a few digits instead of your password.";
-  }
-}
 
 // --- Account & security: other devices (LAN mode) -----------------------------
 //
@@ -691,11 +621,12 @@ async function renderPrefs() {
   prefsCache = await apiJson("/preferences");
   $("pref-display-name").value = prefsCache.display_name || "";
   $("pref-semantic-auto-install").checked = prefsCache.semantic_auto_install ?? false;
-  //: The saved look, and its controls (avatars.js).
-  if (typeof setOwnNameMarkStyle === "function") {
-    setOwnNameMarkStyle(prefsCache.avatar_style || {});
+  //: The saved look, and its controls (avatars.js, once it is in).
+  const savedLook = prefsCache.avatar_style || {};
+  afterCharacters(() => {
+    setOwnNameMarkStyle(savedLook);
     mountProfileLook();
-  }
+  });
   $("pref-bin-days").value = prefsCache.recycle_bin_days;
   $("pref-chat-retention").value = prefsCache.conversation_retention_days ?? 0;
   $("pref-search-min-sim").value = prefsCache.search_min_similarity;
@@ -725,10 +656,10 @@ async function renderPrefs() {
   markPrefsSaved();
 }
 
-// --- Settings → Web search ------------------------------------------------------
+// --- Settings, Web search ------------------------------------------------------
 //
 // Its own screen, and its own save. Web search used to be four controls inside
-// Preferences, which is why every error message that said "Settings → Web
+// Preferences, which is why every error message that said "Settings, Web
 // search" pointed at a screen that did not exist.
 //
 // The engine list comes from the server rather than being written out here:
@@ -739,7 +670,7 @@ async function renderPrefs() {
 // them the moment *that* section opens, not only as a side effect of opening
 // Web search. They used to be filled in exclusively by `renderWebSearch`
 // despite living in `#settings-tasks`, a different section entirely, open
-// Settings → Background tasks directly in a fresh session (never having
+// Settings, Background tasks directly in a fresh session (never having
 // visited Web search) and every checkbox here read its raw HTML default
 // (unchecked) instead of what was actually saved. Toggling one of them then
 // called `savePrefs()`, which rebuilds the *entire* preferences object from
@@ -1024,7 +955,7 @@ function wirePrefsDirtyMarks() {
   //: marks wait for the save, since that is when the name is real.
   $("pref-display-name")?.addEventListener("input", (e) => {
     const typed = e.target.value.trim();
-    $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56));
+    afterCharacters(() => $("profile-avatar")?.replaceChildren(nameMark(typed || "You", 56)));
     const head = $("profile-head-name");
     if (head) head.textContent = typed || "Your profile";
   });
@@ -1172,55 +1103,6 @@ document.addEventListener(
   true
 );
 
-//: Kept at boot, not in reveal-targets.js: settings.js and settings-find.js ring a
-//: Settings control with it on a plain deep link, with no catalogue row involved.
-const revealTimers = new WeakMap();
-
-//: The ring, on what the person can see. An enhanced `<select>` is a 1x1
-//: clipped box behind its opener (`enhanceSelect`, and openSettingsModal's
-//: own comment on the deep link that ringed nothing because of it), and a
-//: checkbox is a square whose meaning is in the label beside it, so both ring
-//: their visible representative.
-function flashRevealed(target) {
-  if (!target) return null;
-  const shown =
-    target.closest(".select-shell") ||
-    (target.matches('input[type="checkbox"], input[type="radio"], input[type="color"], input[type="range"]')
-      ? target.closest("label, .setting-row, .row")
-      : null) ||
-    target;
-  //: Scrolled only when it is not already in the window: a scroll moves the
-  //: page under a resting pointer, and the hover that follows closed a menu
-  //: group the reveal had just opened (measured on the phone's note sheet).
-  const box = shown.getBoundingClientRect();
-  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
-  //: Inside an open menu only the menu's own list scrolls: a scroll of the
-  //: page closes every open menu (`closeActionMenusOnScroll`), which took the
-  //: document's Export group away the moment it was ringed on a phone.
-  const menu = shown.closest(".action-menu, .dock-menu-list, .doc-dock-menu-list, [role='menu'], .sheet-card");
-  if (!inView && menu) {
-    for (let box = shown.parentElement; box && menu.contains(box); box = box.parentElement) {
-      if (box.scrollHeight > box.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(box).overflowY)) {
-        const offset = shown.getBoundingClientRect().top - box.getBoundingClientRect().top;
-        box.scrollTop += offset - box.clientHeight / 2 + shown.offsetHeight / 2;
-        break;
-      }
-    }
-  } else if (!inView) {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    shown.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center", inline: "nearest" });
-  }
-  shown.classList.remove("feature-reveal");
-  void shown.offsetWidth;
-  shown.classList.add("feature-reveal");
-  //: Taken off again, reduced motion included: under that setting the ring is
-  //: static rather than animated, and a class nothing removes is a ring that
-  //: stays for good (the Search relevance report, openSettingsModal).
-  clearTimeout(revealTimers.get(shown));
-  revealTimers.set(shown, setTimeout(() => shown.classList.remove("feature-reveal"), 2700));
-  return shown;
-}
-
 //: A row's declaration, turned into the `run` the three lists call.
 function catalogueRun(row) {
   if (typeof row.run === "function") return row;
@@ -1272,6 +1154,13 @@ const POPUP_TOOLS = [
   },
 ];
 
+//: What the palette caught from the field it was opened over (`paletteCaught`,
+//: app-palette.js, lazy): nothing yet when that file is not in, so a caller
+//: other than the palette (Tools and features, audit 1031 Z17) cannot throw.
+function paletteCaughtNow() {
+  return typeof paletteCaught === "undefined" ? { target: null, selection: "", start: null, end: null, range: null } : paletteCaught;
+}
+
 function paletteCommands() {
   //: **The documents editor's own commands, at the top, while one is open**
   //: (DOCUMENTS_PLAN Phase 4 item 4). The plan named `Ctrl+K` for an editor
@@ -1295,6 +1184,7 @@ function paletteCommands() {
     ...editor,
     ...board,
     { label: "ph:clipboard Go to Dashboard", tab: "dashboard", about: "Today at a glance: recent notes, reminders and widgets." },
+    { label: "ph:clipboard-text Copy diagnostics", about: "Lag and errors as text. No note text.", act: () => ensureModule("diagnostics").then(() => diagCopy()) },
     { label: "ph:magnifying-glass-plus Zoom in", about: "Make everything in the app a step larger.", act: () => nudgeZoom(1) },
     { label: "ph:magnifying-glass-minus Zoom out", about: "Make everything in the app a step smaller.", act: () => nudgeZoom(-1) },
     { label: "ph:arrow-counter-clockwise Reset zoom to 100%", about: "Back to the size the app was drawn at.", act: () => { setZoom(100); hud("Zoom 100%"); } },
@@ -1341,8 +1231,10 @@ function paletteCommands() {
     { label: "ph:lightning Quick note", about: "A note saved without leaving this page.", chord: "quickNote", act: () => openQuickNote() },
     { label: "ph:clipboard-text Paste as a note", about: "What you copied, saved as a new note.", chord: "pasteNote", act: () => pasteClipboardAsNote() },
     { label: "ph:file-text New document", reveal: "doc-new", chord: "newDocument" },
+    { label: "ph:code New code file", act: () => LIBRARY_CREATE_BY_KIND.code.run() },
     { label: "ph:sparkle Write a note from rough thoughts", reveal: "writing-room" },
     { label: "ph:sparkle New chat", reveal: "chat-new", chord: "newChat" },
+    { label: "ph:ghost Private chat", reveal: "chat-private", about: "A chat that is not saved or remembered." },
     // The popup agent (Ctrl+Shift+A) has real capability, it's the same
     // tool-calling agent as Chat's agent mode, just reachable from anywhere
     //, but was reachable only by already knowing that chord. This palette
@@ -1478,19 +1370,19 @@ function paletteCommands() {
       reveal: "notes-filter-help",
       about: "The words the notes filter understands, like is:favourite.",
     },
-    { label: "ph:gear Settings → Models", reveal: "settings:models", about: "Which local model answers, and where it runs." },
-    { label: "ph:mask-happy Settings → Personas", reveal: "settings:personas" },
-    { label: "ph:lightning Settings → Skills", reveal: "settings:skills" },
-    { label: "ph:toolbox Settings → Tools it can use", reveal: "settings:tools" },
-    { label: "ph:palette Settings → Appearance", reveal: "settings:appearance", keywords: "theme colour color accent font text size look", about: "The look, the accent colour, the glass and the text size." },
-    { label: "ph:user-circle Settings → Profile", reveal: "settings:preferences", about: "Your name, and what the app knows to call you." },
-    { label: "ph:sliders Settings → General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
-    { label: "ph:floppy-disk Settings → Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
-    { label: "ph:brain Settings → What it remembers", reveal: "settings:memory" },
-    { label: "ph:note-blank Settings → Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
-    { label: "ph:shield-check Settings → Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
-    { label: "ph:globe-hemisphere-west Settings → Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
-    { label: "ph:list-checks Settings → Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
+    { label: "ph:gear Settings, Models", reveal: "settings:models", about: "Which local model answers, and where it runs." },
+    { label: "ph:mask-happy Settings, Personas", reveal: "settings:personas" },
+    { label: "ph:lightning Settings, Skills", reveal: "settings:skills" },
+    { label: "ph:toolbox Settings, Tools it can use", reveal: "settings:tools" },
+    { label: "ph:palette Settings, Appearance", reveal: "settings:appearance", keywords: "theme colour color accent font text size look", about: "The look, the accent colour, the glass and the text size." },
+    { label: "ph:user-circle Settings, Profile", reveal: "settings:preferences", about: "Your name, and what the app knows to call you." },
+    { label: "ph:sliders Settings, General", reveal: "settings:general", keywords: "recycle bin auto-clear chat history notifications", chord: "settings" },
+    { label: "ph:floppy-disk Settings, Import & export", reveal: "settings:data", keywords: "backup backups restore import export data", about: "Bring notes in, take everything out, and back up." },
+    { label: "ph:brain Settings, What it remembers", reveal: "settings:memory" },
+    { label: "ph:note-blank Settings, Templates", reveal: "settings:templates", about: "The shapes a new note or document can start from." },
+    { label: "ph:shield-check Settings, Account & security", reveal: "settings:account", about: "The password, the lock and when it asks for it." },
+    { label: "ph:globe-hemisphere-west Settings, Privacy", reveal: "settings:privacy", about: "The two things that can go online, both off by default." },
+    { label: "ph:list-checks Settings, Background tasks", reveal: "settings:tasks", about: "What the app is working on while you write." },
     { label: "ph:heartbeat Health", reveal: "settings:about", keywords: "integrity check last backup last error data folder size status storage disk space files", about: "How the notebook is: last backup, last error, what is running, size, integrity." },
     { label: "ph:chart-bar Statistics", quick: "statistics", keywords: "stats numbers counts usage week review growth", about: "Your notebook, reminders and usage, counted, with this week against last.", act: () => openStatistics() },
     { label: "ph:book-open-text Open the manual", reveal: "manual" },
@@ -1499,16 +1391,17 @@ function paletteCommands() {
     //: from the words (`utilityPaletteRows`, app-palette.js).
     ...POPUP_TOOLS.map((t) => ({ label: `${t.icon} ${t.name}`, keywords: t.keywords, about: t.about, keys: t.keys, act: t.open })),
     { label: "ph:closed-captioning Live captions", quick: "captions", keywords: "live captions subtitles transcribe speech microphone listen real time stop", about: "Write what the microphone hears as you go, on this computer. Run it again to stop and save a note.", act: () => toggleLiveCaptions() },
-    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaught)) },
-    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaught }; ensureModule("translate").then(() => translateCaught(caught)); } },
+    { label: "ph:text-aa Count words", keywords: "word count characters letters reading time selection length", about: "Words, characters and reading time of the selected text, or of the editor.", act: () => ensureModule("utilities").then(() => countSelection(paletteCaughtNow())) },
+    { label: "ph:translate Translate this", keywords: "translate translation spanish language offline selection passage", about: "The selected passage into Spanish, offline (a package).", act: () => { const caught = { ...paletteCaughtNow() }; ensureModule("translate").then(() => translateCaught(caught)); } },
     { label: "ph:activity Activity", keywords: "running jobs stop background model unload memory agent runs", about: "Every job running now, with Stop, and the agent's runs.", act: () => openActivity("running") },
     { label: "ph:stop-circle Stop the model", keywords: "unload free memory model stop generating", about: "Stop any answer and unload the model from memory.", act: () => ensureModule("activity").then(() => window.stopActivityModel()) },
-    { label: "ph:package Settings → Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
-    { label: "ph:tree-evergreen Settings → Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
-    { label: "ph:question Settings → Help", reveal: "settings:help", about: "How the app works, a section at a time." },
-    { label: "ph:info Settings → About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
+    { label: "ph:package Settings, Packages", reveal: "settings:extras", about: "Optional parts: speech, reading pages, better search." },
+    { label: "ph:tree-evergreen Settings, Logs", reveal: "settings:logs", about: "What happened, for when something did not work." },
+    { label: "ph:question Settings, Help", reveal: "settings:help", about: "How the app works, a section at a time." },
+    { label: "ph:info Settings, About", reveal: "settings:about", about: "The version you have and whether a newer one exists." },
     { label: "ph:archive Back up now", keywords: "backup snapshot save a copy", about: "Save a copy of the whole notebook, now.", act: () => { openSettingsModal("data"); backupNow(); } },
     { label: "ph:export Export markdown", about: "Every note as a Markdown file, in one download.", act: () => downloadExport("markdown") },
+    { label: "ph:palette Appearance panel", keywords: "pop out theme colour text font layout background art motion peek look panel", about: "Every look setting in a panel beside the app.", act: () => openAppearancePanel() },
     { label: "ph:circle-half Toggle light/dark", keywords: "theme dark mode light mode night", chord: "toggleTheme", act: toggleTheme },
     //: INBOX 430: also in Find anything, which lists these same commands;
     //: the row says which it will do, since this list is built per query.
@@ -1519,6 +1412,8 @@ function paletteCommands() {
     { label: "ph:arrow-left Go back", about: "To the page or view you were on before.", chord: "navigateBack", act: () => stepTabHistory(-1) },
     { label: "ph:arrow-right Go forward", about: "Forward again, after going back.", chord: "navigateForward", act: () => stepTabHistory(1) },
     { label: "ph:arrows-clockwise Reload the app", about: "Clears cached files first, so the newest version loads.", chord: "forceReload", act: () => forceReloadApp() },
+    //: The one way in to private notes was a chip on a card (audit 1031 N49).
+    { label: "ph:lock-key Unlock private notes", keywords: "unlock private notes vault password open", about: "Enter your password to read your private notes.", act: () => unlockPrivateNotes() },
     { label: "ph:lock Lock Tessellate", about: "Close the notebook until the password is typed again.", act: lockNow },
     //: The top bar's other controls, so each is in the palette too (ledger 1410).
     { label: "ph:gear Open Settings", chord: "settings", act: () => openSettingsModal() },

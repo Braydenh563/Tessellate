@@ -109,6 +109,17 @@
   stroke: none;
 }
 
+.reply-timeline .reply-spark {
+  height: calc(var(--space-9) * 1.5);
+}
+
+.reply-timeline-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+
 .reply-meter,
 .reply-compare-bar {
   display: block;

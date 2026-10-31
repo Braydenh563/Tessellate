@@ -64,7 +64,11 @@ _READERS: tuple[tuple[str, re.Pattern, Callable[[re.Match], tuple[str, str]]], .
      lambda m: (f"your {m.group(1)} is {m.group(2)}", f"{m.group(1)}={m.group(2)}")),
     ("person", re.compile(r"\b([A-Z][a-z]+),? my (" + _REL + r")\b"),
      lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
-    ("learning", re.compile(r"\b(?:I'm|I am|started|been|now|currently) learning ([A-Za-z]+(?: [a-z]+)?)(?= on| at| with|" + _STOP[3:], re.I),
+    ("person", re.compile(r"\b([A-Z][a-z]+) (?:is|was) my (" + _REL + r")\b"),
+     lambda m: (f"your {m.group(2)} is {m.group(1)}", f"{m.group(2)}={m.group(1)}")),
+    #: "I'm learning Spanish", and a note's own "Learning Spanish with
+    #: Duolingo." with its "I" dropped (audit 1030 Z59).
+    ("learning", re.compile(r"(?:\b(?:I'm|I am|started|been|now|currently) |^\s*)learning ([A-Za-z]+(?: [a-z]+)?)(?= on| at| with|" + _STOP[3:], re.I),
      lambda m: (f"you're learning {m.group(1)}", m.group(1))),
 )
 
@@ -131,7 +135,9 @@ _ASKS: tuple[tuple[str, re.Pattern], ...] = (
     ("person", re.compile(r"^(?:what(?:'s| is) my (" + _REL + r")(?:'s|s)? name|who(?:'s| is) my (" + _REL + r")|"
                           r"what(?:'s| is) my (" + _REL + r") called|what do i call my (" + _REL + r"))\b")),
     ("pets", re.compile(r"^(?:do i have (?:a |any )?(?:pets?|dogs?|cats?)|what pets do i have)\b")),
-    ("learning", re.compile(r"^what (?:\w+ )?am i (?:learning|studying)\b")),
+    #: Every learn question one verb stem: "what am I learning", "what have I
+    #: been studying", "what do I want to learn" (audit 1030 Z59).
+    ("learning", re.compile(r"^what (?:\w+ )?(?:am i|have i been|do i want to|i'?m) (?:learn|study)(?:ing)?\b")),
     ("profile", re.compile(r"^(?:what do you know about me|do you (?:remember|know) me|tell me about (?:me|myself)|who am i|"
                            r"what have i told you about (?:me|myself))\b")),
     ("advice", re.compile(r"^(?:what|which) should i (eat|watch|listen to|read|cook)\b")),
@@ -146,7 +152,7 @@ def _clean(question: str) -> str:
 
     #: "wat do u know abt me" read as typed would be no question at all.
     q = question_noise.repair(question_noise.tidy(question or ""))
-    q = re.sub(r"[?!.]+$", "", q.strip().lower())
+    q = q.strip().lower().rstrip("?!.")
     q = re.sub(r"\b(?:ur|youre)\b", "your", q)
     q = re.sub(r"\bfav\b", "favourite", re.sub(r"\bfavorite\b", "favourite", q))
     return re.sub(r"\s+", " ", re.sub(r"^(?:so|ok|okay|hey|um|and|but)[, ]+", "", q)).replace("whats", "what's")
@@ -182,9 +188,10 @@ def _day(fact: Fact, today: date) -> str:
     written = _written(fact.note)
     if written is None:
         return ""
-    from tessellate.ai import composer_digest
-
-    return composer_digest._day(written, today)
+    #: Said here, not borrowed from composer_digest: help_chat reads this
+    #: module, so that import closed a cycle back through the composer.
+    month = realise._MONTHS[written.month - 1]
+    return f"{written.day} {month}" if written.year == today.year else f"{written.day} {month} {written.year}"
 
 
 def _written(note: dict) -> date | None:
@@ -294,11 +301,12 @@ def _profile(_what: str, held: list[Fact], today: date) -> tuple:
     return ["\n".join(lines)], rows
 
 
-def _advice(what: str, held: list[Fact], today: date) -> tuple:
+def _advice(what: str, held: list[Fact], today: date) -> tuple | None:
     topic = _ADVICE.get(what, "")
     hit = next((f for f in held if f.key == "favourite" and f.value.split("=")[0].rstrip("s") == topic), None)
     if not hit:
-        return ["That's your call: I only know what your notes say, and none of them points either way."], []
+        #: No favourite to go by: the notes may still say ("Next up is Past Lives"), so the search answers.
+        return None
     value = hit.value.split("=", 1)[1]
     line = f"Your call, but your favourite {topic} is {value}, going by your note of {_day(hit, today)}."
     return [line], [_row(hit, line)]
@@ -340,7 +348,8 @@ _SELF: tuple[tuple[re.Pattern, str], ...] = (
      "I'm Atlas, the part of Tessellate that answers from your notes. Tessellate runs on this computer, and no one else sees what you ask."),
     (re.compile(r"\bhow old are you\b|\bwhen were you (?:made|born)\b"),
      "Old enough to read your notes, young enough to have no birthday. I'm Atlas, and I live on this computer."),
-    (re.compile(r"\bare you (?:a )?(?:real|human|person|robot|bot|ai)\b|\bare you real\b"),
+    #: "are u an ai??", "r u a real person" (INBOX 1485).
+    (re.compile(r"\b(?:are|r) you (?:even |actually |really |just )?(?:an? )?(?:real |actual )?(?:real|human|person|robot|bot|ai|machine|program|computer|chatbot)\b"),
      "I'm a program, not a person: Atlas, reading your notes on this computer."),
     (re.compile(r"\bwhat(?:'s| is) your fav(?:ou?rite)? (\w+)"),
      "I don't have one; I'm a program. I'm happiest when a question finds the right note."),
@@ -368,6 +377,9 @@ def about_me(question: str) -> str | None:
 
 
 _GENERAL = re.compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| was| were| did| does| do| many| much| far| long| big)?\b")
+#: "what about knitting", "how about sourdough": a topic put forward (the notes
+#: are looked in and the thing named), not a question about the world.
+_TOPIC_NUDGE = re.compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
 _PERSONAL = re.compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
 #: "Who is Sam": a bare name is someone the notes may name, not the world's
 #: (the engine probe's P1 says "I found nothing about “Sam”").
@@ -378,7 +390,7 @@ def general(question: str) -> bool:
     """A question about the world, not the person or their notes ("what's
     the capital of France"): with nothing found it is said as such."""
     q = _clean(question)
-    if _WHO_NAME.match(q):
+    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q):
         return False
     return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 
@@ -395,6 +407,9 @@ _OWN_NOTES = re.compile(
     r"|\b(?:notes?|entries|documents?|docs?|boards?|maps?|things?) (?:i|we) (?:did|edited|deleted|created|worked on|added|changed)\b"
     r"|\b(?:what|which|where) (?:did|have) (?:i|we) (?:do|done|make|made|write|written|edit|edited|delete|deleted|create|created|work on|worked on|add|added|change|changed)\b"
     r"|\bmy (?:history|activity)\b|\bmy (?:day|week|month) so far\b"
+    #: "How much money have I recorded I've spent": what the person kept a
+    #: record of is in the notes, and the web has no copy.
+    r"|\bi(?:'ve| have|ve)? (?:recorded|logged|tracked|written down|noted down|jotted down)\b"
 )
 
 
@@ -404,8 +419,36 @@ def about_own_notes(question: str) -> bool:
     return bool(_OWN_NOTES.search(_clean(question)))
 
 
-def general_reply(web_on: bool) -> str:
+#: Possessives name the person's own record ("who is my sister", "my wifi
+#: password"); "I" names it only with a verb that reports a fact about them
+#: ("how much do I owe", "how far did I run", "have I been sleeping"). A bare
+#: "how do I install Python" is a how-to the web can answer, so it is not here.
+_OWN_RECORD = re.compile(
+    r"\b(?:my|mine|myself|our|ours)\b"
+    r"|\b(?:did|have|had|was|am) (?:i|we)\b"
+    r"|\bdo (?:i|we) (?:owe|own|weigh|earn|spend|pay|have)\b"
+    r"|\bi(?:'ve| have| had| am|'m| was| spent| owe| paid| weigh| ran| felt| feel| earn| own| got)\b"
+)
+
+
+def about_own_record(question: str) -> bool:
+    """A first-person question about the person's own facts: the notes hold
+    the answer or nothing does, and the web has no copy. Never sent to a
+    search service, and never offered the web tools (audit 1030 A1 to A3)."""
+    return bool(_OWN_RECORD.search(_clean(question)))
+
+
+def general_reply(web_on: bool, *, web_pref: bool = False, by_choice: bool = False) -> str:
+    """A question about the world with nothing in the notes. `web_on`: the web
+    could run this turn and found nothing. `web_pref`: Settings has web on but
+    this mode cannot search (Ask, or Chat without Agent), so the reply names
+    the mode, never "turn it on". `by_choice`: the model is up but the person
+    chose to answer from notes only (audit 1030 A6, A7)."""
     if web_on:
         return "That's general knowledge rather than something in your notes, and the web search found nothing to go on."
-    return ("That's general knowledge, and with no model running I only know what your notes say, and none of them covers it. "
+    if web_pref:
+        return ("That's general knowledge rather than something in your notes. Web search is on, but it runs in Agent mode in Chat, "
+                "not in Ask, so this answer comes from your notes only.")
+    why = "you chose to answer from your notes only" if by_choice else "with no model running I only know what your notes say"
+    return (f"That's general knowledge, and {why}, and none of them covers it. "
             "Turn on web search in [Settings](#/settings/websearch) to look it up.")

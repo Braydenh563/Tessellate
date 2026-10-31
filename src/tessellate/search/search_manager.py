@@ -19,15 +19,16 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, time, timezone
 
-from sqlalchemy import or_, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
-from tessellate.ai import variants
+from tessellate.ai import recognise, variants
 from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
 )
-from tessellate.core.database import EmbeddingRecord, Entry, link_strength
+from tessellate.core import cjk
+from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import query as query_understanding
 
 # **No `TYPE_CHECKING: import numpy as np` here**, for the reason janitor.py
@@ -159,6 +160,8 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
         Entry.is_private == False,  # noqa: E712
         Entry.is_board == False,  # noqa: E712
     )
+    if any(cjk.has(term) for term in terms):
+        return _substring_entries(session, terms, base, limit)
 
     def matching(require_all: bool, words: list[str] | None = None) -> dict[int, float]:
         # `terms` are pre-filtered to \W-stripped words by `_meaningful_terms`,
@@ -191,7 +194,7 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
     phrase_terms = terms
     scores = matching(require_all=True)
     if not scores:
-        prefixed = [f"{t}*" if len(t) >= PREFIX_MIN_LEN else t for t in terms]
+        prefixed = [f"{t}*" if len(t) >= PREFIX_MIN_LEN and not is_exact_term(t) else t for t in terms]
         if prefixed != terms:
             scores = matching(require_all=True, words=prefixed)
     if not scores:
@@ -214,6 +217,17 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
 
     entries.sort(key=sort_key)
     return entries[:limit]
+
+
+def _substring_entries(session: Session, terms: list[str], base: tuple, limit: int) -> list[Entry]:
+    """Notes holding every term as a substring, newest first: the way a word of
+    Japanese or Chinese is found, since the tokenizer reads a whole run of it as
+    one word (notes audit 1031 N2). No index to grow; one scan of the notes."""
+    wanted = [
+        or_(func.instr(func.lower(Entry.content), term.lower()) > 0, func.instr(func.lower(Entry.tags), term.lower()) > 0)
+        for term in terms
+    ]
+    return list(session.scalars(select(Entry).where(*base, *wanted).order_by(Entry.id.desc()).limit(limit)))
 
 
 # A query word this long or longer is also tried as a prefix when nothing
@@ -245,6 +259,13 @@ CORRECT_MIN_LEN = 4
 CORRECT_CUTOFF = 0.8
 
 
+def is_exact_term(term: str) -> bool:
+    """A word with a digit in it is a number, a code or a date: "4471" is not
+    a misspelling of "447" and does not begin "44710" (audit 1029 N5), so it
+    is matched as typed, never prefix-expanded and never typo-corrected."""
+    return any(char.isdigit() for char in term)
+
+
 def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     """Each term replaced by the closest word the FTS index holds, when it
     holds no such word itself. Terms already in the vocabulary, and short
@@ -257,7 +278,7 @@ def _corrected_terms(session: Session, terms: list[str]) -> list[str]:
     text rather than inventing a match."""
     corrected: list[str] = []
     for term in terms:
-        if len(term) < CORRECT_MIN_LEN:
+        if len(term) < CORRECT_MIN_LEN or is_exact_term(term):
             corrected.append(term)
             continue
         first = term[0]
@@ -406,7 +427,7 @@ def _load_later(embeddings: EmbeddingService) -> None:
 
     from tessellate.core import jobs
 
-    jobs.enqueue("warm", load, name="warm the search model", dedupe_key="search-warm")
+    jobs.enqueue("warm", load, name="the search model", dedupe_key="search-warm")
 
 
 def warm(session: Session, query: str, embeddings: EmbeddingService) -> bool:
@@ -604,7 +625,7 @@ def _score_from_table(session: Session, query_vector, query_norm: float, backend
     # Only over the rows whose vector is the same width as the query, though.
     # `model_version` narrows this to one backend, and a backend is not a
     # dimension: swapping the embedding *model* inside the same backend (which
-    # Settings → Embedding models offers as a button) leaves the old rows in
+    # Settings, Embedding models offers as a button) leaves the old rows in
     # place at their old width. Stacking those into one array raises on the
     # ragged list and took the whole search down with it, every query
     # returning nothing, until a reindex that the error gave no hint to run.
@@ -903,12 +924,45 @@ def _written_at(entry: Entry):
     return written or datetime.min
 
 
-def _within(entry: Entry, since, until) -> bool:
+_WEEKDAY = recognise.WEEKDAY_WORD
+
+
+def day_mentions(session: Session, since, until, phrase: str = "") -> set[int]:  # noqa: ANN001
+    """Ids of the notes that *mention* the one day asked about, whenever they
+    were written (E6): "what do I have on 3 November" is the Dentist note that
+    says "3 November at 2pm", written weeks before, and "how much did I lift on
+    friday" is the log that says "Friday deadlift 100kg". A mention is a stored
+    date landing on the day, or, for a weekday asked by name, the weekday's
+    name in the text. Empty for a window of more than one day."""
+    if since is None or until is None or since != until:
+        return set()
+    day = since
+    #: Month and day only, whatever the year: "the 3rd of November" read
+    #: without a year lands on last year's, and the note says this year's.
+    found = {
+        row[0]
+        for row in session.execute(
+            select(EntryDate.entry_id).where(func.strftime("%m-%d", EntryDate.at) == f"{day.month:02d}-{day.day:02d}")
+        )
+    }
+    named = _WEEKDAY.search(phrase or "")
+    if named:
+        like = f"%{like_escape(named.group(1).lower())}%"
+        found |= set(session.scalars(select(Entry.id).where(Entry.content.ilike(like, escape=LIKE_ESCAPE))))
+    if not found:
+        return found
+    visible = select(Entry.id).where(
+        Entry.id.in_(found), Entry.is_deleted == False, Entry.is_private == False, Entry.is_board == False  # noqa: E712
+    )
+    return set(session.scalars(visible))
+
+
+def _within(entry: Entry, since, until, mentioned=()) -> bool:  # noqa: ANN001
     """Was this note written in the range? Notes with no timestamp are kept, 
     dropping a note because its date is missing would be filtering on an
     absence rather than on a fact."""
     written = getattr(entry, "created_at", None)
-    if written is None:
+    if written is None or getattr(entry, "id", None) in mentioned:
         return True
     day = written.date() if hasattr(written, "date") else written
     if since is not None and day < since:
@@ -946,10 +1000,14 @@ class Retrieval:
     #: entries. Best-effort: an id with no entry here matched by whatever
     #: `mode` alone already says (`dated`, `recent`, `attached`, …).
     match_info: dict = None
+    #: Ids that mention the one day asked about (`day_mentions`).
+    mentioned: set = None
 
     def __post_init__(self) -> None:
         if self.match_info is None:
             self.match_info = {}
+        if self.mentioned is None:
+            self.mentioned = set()
 
 
 def retrieve_detailed(
@@ -977,6 +1035,7 @@ def retrieve_detailed(
         when_phrase=found.get("when_phrase", ""),
         category=found.get("category", ""),
         match_info=found.get("match_info", {}),
+        mentioned=found.get("mentioned", set()),
     )
 
 
@@ -1163,7 +1222,7 @@ def _category_notes(session: Session, category_id: int, limit: int) -> list[Entr
     )
 
 
-def _early_answer(session: Session, query: str, asked, limit: int):  # noqa: ANN001
+def _early_answer(session: Session, query: str, asked, limit: int, mentioned=()):  # noqa: ANN001
     """The two questions that are an order or a range, not a subject, or None."""
     #: **"My last note" is an order, not a subject** (the owner at release,
     #: wrapup-0927 10 n: "Show me my last entry" answered with an older
@@ -1179,6 +1238,9 @@ def _early_answer(session: Session, query: str, asked, limit: int):  # noqa: ANN
         # week" is *the notes from last week*, in order. An empty week falls
         # through so the caller still gets recent notes.
         dated = in_range(session, asked.since, asked.until)
+        if mentioned:
+            seen = {e.id for e in dated}
+            dated += [e for e in session.scalars(select(Entry).where(Entry.id.in_(set(mentioned) - seen)))]
         if dated:
             return _without_private(dated)[: max(limit, 10)], "dated"
     return None
@@ -1200,7 +1262,7 @@ def _candidates(session: Session, subject: str, embeddings: EmbeddingService, sc
     return semantic, keyword
 
 
-def _narrow_to_range(semantic, keyword, asked):  # noqa: ANN001
+def _narrow_to_range(semantic, keyword, asked, mentioned=()):  # noqa: ANN001
     """A range alongside a subject narrows the candidates before they are
     ranked, so "the allotment, last week" cannot be answered with a note from
     March that happens to be a better match.
@@ -1212,8 +1274,8 @@ def _narrow_to_range(semantic, keyword, asked):  # noqa: ANN001
     (newest first) and labels; it does not exclude."""
     if asked.has_range and not asked.soft:
         if semantic is not None:
-            semantic = [(entry, score) for entry, score in semantic if _within(entry, asked.since, asked.until)]
-        keyword = [e for e in keyword if _within(e, asked.since, asked.until)]
+            semantic = [(entry, score) for entry, score in semantic if _within(entry, asked.since, asked.until, mentioned)]
+        keyword = [e for e in keyword if _within(e, asked.since, asked.until, mentioned)]
     elif asked.soft:
         # Recency as a tiebreak rather than a gate: of the notes that match the
         # subject, the newer ones come first, which is the whole of what the
@@ -1313,6 +1375,65 @@ def _append_connected(session: Session, entries: list[Entry], match_info: dict, 
             match_info[neighbour.id] = info
 
 
+def _category_scope(session: Session, query: str, limit: int, found: dict):  # noqa: ANN202
+    """The category the question names (or None) and, when it asks for the
+    whole category, the listing that answers it (else None)."""
+    scoped = _named_category(session, query)
+    if scoped is None:
+        return None, None
+    scope, rest = scoped
+    found["category"] = scope.name
+    if _category_only(rest):
+        return scope, (_without_private(_category_notes(session, scope.id, max(limit, 10))), "category")
+    return scope, None
+
+
+def _dated_candidates(session: Session, mentioned: set, limit: int) -> list[Entry]:
+    """The notes that say the day the person gave, newest first."""
+    #: The day is the anchor the person gave; their word for the thing
+    #: ("lift" for "deadlift") may not be the note's. The notes that say
+    #: the day are the candidates.
+    return list(session.scalars(select(Entry).where(Entry.id.in_(mentioned)).order_by(Entry.created_at.desc(), Entry.id.desc()).limit(limit)))
+
+
+def _latest_about(session: Session, query: str, embeddings: EmbeddingService, limit: int, found: dict, locale: str | None):  # noqa: ANN202
+    """"The latest notes about running", "the last three notes": the subject
+    filters first, then the newest of what it left (audit 1029 C31); the
+    newest notes of the whole notebook were the answer to a subject never
+    searched. None when the query is no such request."""
+    from tessellate.ai import note_recency
+
+    #: A find's topic keeps no noun ("latest", "last three"): short, it is read bare.
+    bare = len(query.split()) <= 3
+    rec = note_recency.recency(query, bare=bare)
+    if rec is None:
+        #: "What's the latest on uni": every note on the subject, so the answer
+        #: can lead with the newest one (it is not the search's first).
+        about = note_recency.status_subject(query)
+        return _retrieve(session, about, embeddings, max(limit, 20), False, found, locale) if about else None
+    if not rec.subject:
+        return (_without_private(recent_entries(session, limit=rec.count)), "recent") if (rec.said_count or bare) and not rec.oldest else None
+    entries, mode = _retrieve(session, rec.subject, embeddings, max(limit, 20), False, found, locale)
+    terms = _meaningful_terms(rec.subject)
+    #: A tag is the subject too: "my 2 latest baking notes" are the notes tagged #baking.
+    held = [e for e in entries if mode != "recent" and any(t in f"{e.content or ''} {e.tags or ''}".lower() for t in terms)]
+    held.sort(key=lambda e: (e.created_at, e.id), reverse=not rec.oldest)
+    return _without_private(held[: rec.count]), mode if held else "keyword"
+
+
+def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set, scope, semantic, any_time, limit: int, found: dict, subject: str):  # noqa: ANN001, ANN202
+    """What stands in for an empty ranking: the notes written on a day the
+    question mentions, else what `_nothing_matched` offers; None when there
+    were entries (or nothing stands in)."""
+    if entries:
+        return None
+    if mentioned:
+        dated = _dated_candidates(session, mentioned, limit)
+        if dated:
+            return _without_private(dated), "dated"
+    return _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1332,20 +1453,21 @@ def _retrieve(
     found["until"] = asked.until
     found["when_phrase"] = asked.when_phrase
     found["connected"] = set()
-    early = _early_answer(session, query, asked, limit)
+    mentioned = day_mentions(session, asked.since, asked.until, asked.when_phrase) if asked.has_range else set()
+    found["mentioned"] = mentioned
+    latest = _latest_about(session, query, embeddings, limit, found, locale)
+    if latest is not None:
+        return latest
+    early = _early_answer(session, query, asked, limit, mentioned)
     if early is not None:
         return early
 
     #: **A named category is a scope** (`_named_category`). A question that
     #: asks for the whole category lists it; one with a subject searches
     #: inside it, and lists it when nothing inside matches.
-    scoped = _named_category(session, query)
-    scope = None
-    if scoped is not None:
-        scope, rest = scoped
-        found["category"] = scope.name
-        if _category_only(rest):
-            return _without_private(_category_notes(session, scope.id, max(limit, 10))), "category"
+    scope, listed = _category_scope(session, query, limit, found)
+    if listed is not None:
+        return listed
 
     # Falls back to the whole question when stripping left nothing to search for.
     subject = asked.subject or query
@@ -1359,13 +1481,12 @@ def _retrieve(
     # changes their score, so looking these up by id later stays correct.
     sem_scores = {entry.id: score for entry, score in semantic} if semantic is not None else {}
     kw_terms = _meaningful_terms(subject)
-    semantic, keyword = _narrow_to_range(semantic, keyword, asked)
+    semantic, keyword = _narrow_to_range(semantic, keyword, asked, mentioned)
 
     entries, mode = _rank(semantic, keyword, limit)
-    if not entries:
-        miss = _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
-        if miss is not None:
-            return miss
+    miss = _when_nothing_ranked(session, entries, asked, mentioned, scope, semantic, any_time, limit, found, subject)
+    if miss is not None:
+        return miss
 
     entries = _without_private(entries)
     match_info = _match_info(entries, sem_scores, kw_terms)

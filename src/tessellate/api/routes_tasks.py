@@ -1,6 +1,6 @@
 """What is running in the background, in one place.
 
-Settings → Background tasks used to build its own list in `app.js` out of the
+Settings, Background tasks used to build its own list in `app.js` out of the
 two jobs that happened to be in `/models/status`, a re-index and a model
 download. Everything else the app does on a worker thread was invisible
 there: the embedding model loading at startup (~90 MB on first use), and the
@@ -253,7 +253,7 @@ def _searxng_start_rows() -> list[dict]:
 
 
 def _embed_download_rows() -> list[dict]:
-    # Downloading an embedding model (Settings → Extras, the "Search by
+    # Downloading an embedding model (Settings, Extras, the "Search by
     # meaning" models list). Its own `DownloadState` docstring already says
     # "for /tasks and the panel", the panel half was built, this half never
     # was, so a multi-hundred-MB download with its own dropped-connection
@@ -303,7 +303,7 @@ def _bulk_extra_row(bulk: dict, pip) -> dict:  # noqa: ANN001
 
 
 def _extra_rows() -> list[dict]:
-    # Installing an optional extra (Settings → Extras). Here rather than on its
+    # Installing an optional extra (Settings, Extras). Here rather than on its
     # own screen for the reason this module exists: anything long enough to
     # need a background thread belongs in one list, and the status bar and the
     # Tasks panel then show it without learning anything new.
@@ -756,7 +756,7 @@ def cancel_task(body: CancelTaskBody) -> dict:
             stopped, detail = _stop_filing()
         except Exception:  # noqa: BLE001 - a failed stop is a message, not a 500
             logging.getLogger(__name__).warning("couldn't stop filing", exc_info=True)
-            stopped, detail = False, "Couldn't stop filing, see Settings → Logs."
+            stopped, detail = False, "Couldn't stop filing, see Settings, Logs."
         return {"status": "ok", "stopped": stopped, "detail": detail}
     stopped, detail = bgtasks.cancel(body.kind.strip(), body.name.strip())
     return {"status": "ok", "stopped": stopped, "detail": detail}
@@ -921,8 +921,11 @@ def _model_state() -> dict:
         model = deps.get_model_manager().chat_model()
     except Exception:  # noqa: BLE001  # no backend configured is a state, not a 500
         return {"model": "", "loaded": None, "stoppable": False}
-    loaded_fn = getattr(provider, "loaded_models", None)
-    loaded = loaded_fn() if callable(loaded_fn) else None
+    from tessellate.api import routes_models
+
+    #: The bounded snapshot, not a live `/api/ps`: this route is polled, and a
+    #: busy runner held a worker for 2 s a poll (audit 1029 H5).
+    loaded = routes_models.loaded_snapshot() if callable(getattr(provider, "loaded_models", None)) else None
     is_loaded = None if loaded is None else any(name == model or name.split(":")[0] == model.split(":")[0] for name in loaded)
     return {"model": model, "loaded": is_loaded, "stoppable": loaded is not None}
 

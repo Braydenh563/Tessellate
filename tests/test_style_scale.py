@@ -170,7 +170,7 @@ PX = re.compile(r"(?<![\w.-])([0-9]+)px\b")
 
 
 def test_no_corner_is_hard_coded_in_pixels():
-    """Corners have to follow the slider in Settings → Appearance.
+    """Corners have to follow the slider in Settings, Appearance.
 
     Everything rounded used to be one of twelve hard-coded pixel values, none
     of which moved when that slider did, so choosing square corners squared
@@ -362,7 +362,14 @@ def test_the_shell_is_declared_once_and_responsively():
 #: `stroke` attribute because a stylesheet declaration beats an attribute and
 #: the attribute version was dead markup, which is what
 #: `tests/test_svg_paint_attributes.py` now catches.
+#:
+#: --dock-push-left and --dock-push-right (INBOX 1474) are written on the root
+#: by `panelPushSync` (panel-movable.js) only while a panel is docked to a
+#: side; the 0px fallback is the whole app when none is, and declaring them
+#: would take two of the token budget for a value no stylesheet owns.
 FALLBACK_ALLOWED = {
+    "--dock-push-left",
+    "--dock-push-right",
     "--mono",
     "--ui-font",
     "--bg-art-opacity",

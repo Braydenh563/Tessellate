@@ -293,8 +293,10 @@ _TIME_FIRST = ("on ", "at ", "this ", "next ", "tomorrow", "today", "tonight", "
 
 
 _REMINDER_HEADS = (
-    "remind me", "set me a reminder", "set a reminder", "make a reminder", "add a reminder",
+    "remind me", "remember to", "set me a reminder", "set a reminder", "make a reminder", "add a reminder",
     "create a reminder", "new reminder", "reminder", "don't let me forget", "dont let me forget", "do not let me forget",
+    "schedule a reminder", "make me a reminder", "give me a reminder", "i need a reminder", "i want a reminder",
+    "ping me", "alert me",
 )
 
 
@@ -307,4 +309,94 @@ def reminder_head(text: str) -> tuple[str, str | None]:
         text = f"{text[cut + 1:]} {text[:cut]}"
         low = text.lower()
     head = next((w for w in _REMINDER_HEADS if low == w or low.startswith((w + " ", w + ":"))), None)
+    if head is None and (said := in_passing(text)):
+        return said, "remind me"
     return text, head
+
+
+# --- a reminder wished for in passing (INBOX 1459) ------------------------------
+#
+# "right, I need to do my tax return, should probs set a reminder" was searched
+# for as notes. Read as "remind me to do my tax return": the wish can come
+# anywhere in the sentence, and its task is either said after it ("set a
+# reminder to renew my passport") or named in the clause before ("I need to
+# call the bank, remind me"). Every pattern runs on single-spaced text of at
+# most a few hundred characters and holds no nested repeat.
+
+_SLANG = {"probs": "probably", "prolly": "probably", "probly": "probably", "prob": "probably",
+          "gotta": "got to", "gonna": "going to", "wanna": "want to", "dont": "don't", "pls": "please"}
+_SLANG_WORD = re.compile(r"\b(?:probs|prolly|probly|prob|gotta|gonna|wanna|dont|pls)\b", re.I)
+_WISH = re.compile(
+    r"\b(?:(?P<set>(?:set|make|add|create|get|schedule) (?:me |myself )?(?:a |an )?reminder|remember to)"
+    r"|(?P<ask>remind me|(?:don't|do not) let me forget|(?:need|want) a reminder))\b",
+    re.I,
+)
+#: Said before "set a reminder" or "remember to", these make it a wish, not a
+#: report ("I set a reminder to call mum" is done; "I should" is not yet).
+_MODAL = re.compile(
+    r"\b(?:should|must|need to|have to|got to|ought to|better|want to|going to|will|can you|could you|would you|please|let's|lets)\b"
+    r"|'ll\b",
+    re.I,
+)
+_NOT = re.compile(r"\b(?:don't|do not|didn't|did not|no need|never|won't|not)\b", re.I)
+_ASKED = re.compile(r"^(?:what|who|where|when|how|why|which|did|do|does|have|has|is|are|was|were|whether|if)\b", re.I)
+_CLAUSE = re.compile(r"[,;.] ?| (?:and|so|but|then) ")
+_OPENER = re.compile(r"^(?:right|ok|okay|so|um|uh|well|hmm|oh|alright|anyway|yeah|yep)\b,? ?", re.I)
+_INTENDS = re.compile(
+    r"^(?:i|we) (?:really |probably |definitely |just )?(?:need to|have to|got to|'ve got to|must|should|ought to|want to|"
+    r"am going to|'m going to|are going to|'re going to|will|'ll) (?:probably |really )?",
+    re.I,
+)
+#: Only whether a time is said is read against it, never the time itself.
+_ANY_DAY = datetime(2026, 1, 1, 9, 0)
+_TASK_LEAD = re.compile(r"^(?:me )?(?:to|that|about|of) ", re.I)
+
+
+def _unslanged(text: str) -> str:
+    said = " ".join(text.replace("\u2019", "'").split())
+    return _SLANG_WORD.sub(lambda m: _SLANG[m.group(0).lower()], said)
+
+
+def _task_before(clauses: list[str]) -> str:
+    """The task an earlier clause names ("I need to do my tax return" is "do
+    my tax return"), the nearest first; "" when none says one."""
+    for clause in reversed(clauses):
+        clause = _OPENER.sub("", clause.strip())
+        found = _INTENDS.match(clause)
+        if found and clause[found.end():].strip():
+            return clause[found.end():].strip()
+    return ""
+
+
+def _wished(said: str, wish: re.Match) -> bool:
+    """Whether the clause holding the wish asks for it: not negated, and for
+    "set a reminder" or "remember to", said with a should or as a request."""
+    clause = _CLAUSE.split(said[: wish.start()])[-1]
+    if _NOT.search(clause) and not wish.group(0).lower().startswith(("don't", "do not")):
+        return False
+    return bool(wish.group("ask")) or not _OPENER.sub("", clause).strip() or bool(_MODAL.search(clause))
+
+
+def in_passing(text: str) -> str | None:
+    """"remind me to <task>[ <when>]" for a sentence that wishes for a
+    reminder in passing, else None (a question, a report, a refusal, or a
+    wish with no task named anywhere in it)."""
+    said = _unslanged(text)
+    wish = _WISH.search(said)
+    if not wish or wish.start() == 0 or said.endswith("?") or _ASKED.match(_OPENER.sub("", said)) or not _wished(said, wish):
+        return None
+    after = said[wish.end():].strip(" ,.;:")
+    if after and _ASKED.match(after):
+        return None
+    if after and wish.group(0).lower() == "remember to":
+        #: "I need to remember to water the plants on Thursday" is a dated
+        #: nudge to oneself, offered by the chip (`reminder_suggest`, audit
+        #: 1029); with no time said, it is a reminder to ask the time of.
+        return None if read_by_rule(after, _ANY_DAY) else f"remind me to {after}"
+    if _TASK_LEAD.match(after):
+        return unhedged(f"remind me to {_TASK_LEAD.sub('', after)}")
+    task = _task_before(_CLAUSE.split(said[: wish.start()])[:-1])
+    if not task:
+        return None
+    when_said = re.sub(r"^(?:for|on) ", "", after, flags=re.I)
+    return unhedged(f"remind me to {task} {when_said}".strip())

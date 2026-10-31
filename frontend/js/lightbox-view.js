@@ -715,7 +715,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     lead.className = "muted text-sm lightbox-pages-lead";
     lead.textContent = docPagesRead.size
       ? `${docPagesRead.size} of ${docPageCount} pages read`
-      : `${docPageCount} page${docPageCount === 1 ? "" : "s"} · none read yet`;
+      : `${nounCount(docPageCount, "page")} · none read yet`;
     infoPages.appendChild(lead);
     for (let i = 0; i < docPageCount; i++) {
       const chip = document.createElement("button");
@@ -2191,7 +2191,7 @@ function openLightbox(items, startIndex = 0, opts = {}) {
     //: is meaningless for one, `docPageCount` is 0 for anything that is not a
     //: rendered PDF, so an image is unaffected.
     if (docPageCount) {
-      facts.push(`${docPageCount} page${docPageCount === 1 ? "" : "s"}`);
+      facts.push(nounCount(docPageCount, "page"));
       facts.push(
         docPagesRead.size
           ? `${docPagesRead.size} read`

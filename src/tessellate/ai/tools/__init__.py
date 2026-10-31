@@ -23,13 +23,13 @@ from datetime import timedelta
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import librarian, skills, toolrank, toolwords
+from tessellate.ai import librarian, note_rank, personal, skills, toolrank, toolwords
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.ai.provider import set_write_tools
-from tessellate.core import activity, deps, events
+from tessellate.core import activity, deps, events, private_turn
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, Reminder, like_escape
 from tessellate.core.logbuffer import safe_value
-from tessellate.entry import manager, paths
+from tessellate.entry import link_wording, manager, paths
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.search import search_manager
 
@@ -66,7 +66,13 @@ from ._common import (  # noqa: F401
 
 # --- handlers (session, args) -> result dict -----------------------------------
 # Results always include a human "label" on success; the UI shows it
-# inline in the chat ("Created note #12 in Shopping").
+# inline in the chat ("Created “Milk and eggs” in Shopping").
+
+
+def _named(entry: Entry) -> str:
+    """A note as a tool label says it: its title in quotes, never its id
+    (audit 1029 C47: "Done: added to Favourites: note #29")."""
+    return f"“{link_wording.title(entry.content or '', limit=48) or 'Untitled note'}”"
 
 
 def _search_notes(session: Session, args: dict) -> dict:
@@ -87,7 +93,9 @@ def _search_notes(session: Session, args: dict) -> dict:
         session, str(args["query"]), deps.get_embeddings(), limit=limit
     )
     notes = []
-    for entry in found.entries:
+    #: The same order Ask lists in (audit 1029 C20), unless the search gave the newest.
+    entries = found.entries if found.mode == "recent" else note_rank.lead(found.entries, str(args["query"]))
+    for entry in entries:
         summary = _note_summary(session, entry)
         if entry.id in found.connected_ids:
             # **Why this note is here.** It did not match the search, it is
@@ -124,7 +132,7 @@ def _get_note_tool(session: Session, args: dict) -> dict:
     result["links"] = [
         other.id for _link, other in manager.links_for_entry(session, entry)
     ]
-    result["label"] = f"ph:file-text Read note #{entry.id} in full"
+    result["label"] = f"ph:file-text Read {_named(entry)} in full"
     return result
 
 
@@ -938,7 +946,7 @@ def _tool_group(name: str) -> str:
     if name in ("web_search", "read_url"):
         return "online"
     spec = TOOLS[name]
-    return "confirm" if spec.destructive else "write" if name in WRITE_TOOLS else "read"
+    return "confirm" if spec.destructive or name in CHANGE_TOOLS else "write" if name in WRITE_TOOLS else "read"
 
 
 def _list_tools(session: Session, args: dict) -> dict:
@@ -1418,7 +1426,7 @@ def _create_note(session: Session, args: dict) -> dict:
         )
     deps.store_quietly(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:pencil-simple Created note #{entry.id} in {result['category']}"
+    result["label"] = f"ph:pencil-simple Created {_named(entry)} in {result['category']}"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -1464,7 +1472,7 @@ def _edit_note(session: Session, args: dict) -> dict:
         parts.append("text rewritten")
     if "category" not in changed:
         parts.append(f"still in {after_category}")
-    result["label"] = f"ph:note-pencil Updated note #{entry.id}: {'; '.join(parts)}"
+    result["label"] = f"ph:note-pencil Updated {_named(entry)}: {'; '.join(parts)}"
     result["undo"] = undo
     return result
 
@@ -1567,7 +1575,7 @@ def _pin_note(session: Session, args: dict) -> dict:
         session.commit()
     result = _note_summary(session, entry)
     verb = "Added to Favourites" if pinned else "Removed from Favourites"
-    result["label"] = f"ph:star {verb}: note #{entry.id}"
+    result["label"] = f"ph:star {verb}: {_named(entry)}"
     result["undo"] = {
         "tool": "pin_note",
         "arguments": {"note_id": entry.id, "pinned": not pinned},
@@ -1662,7 +1670,7 @@ def _link_notes(session: Session, args: dict) -> dict:
     return {
         "linked": [source.id] + linked,
         "label": (
-            f"ph:link Linked note #{source.id} to {len(linked)} other note(s): "
+            f"ph:link Linked {_named(source)} to {len(linked)} other note(s): "
             f"{', '.join(map(str, linked))}"
         ),
     }
@@ -1708,7 +1716,7 @@ def _unlink_notes(session: Session, args: dict) -> dict:
             "tool": "link_notes",
             "arguments": {"note_id": source.id, "other_note_id": target.id},
         },
-        "label": f"ph:scissors Unlinked note #{source.id} from note #{target.id}",
+        "label": f"ph:scissors Unlinked {_named(source)} from {_named(target)}",
     }
 
 
@@ -1719,7 +1727,7 @@ def _delete_note(session: Session, args: dict) -> dict:
         "deleted": entry.id,
         "recoverable": True,
         "undo": {"tool": "restore_note", "arguments": {"note_id": entry.id}},
-        "label": f"ph:trash Moved note #{entry.id} to the recycle bin",
+        "label": f"ph:trash Moved {_named(entry)} to the recycle bin",
     }
 
 
@@ -1742,7 +1750,7 @@ def _restore_note(session: Session, args: dict) -> dict:
     if entry.is_deleted:
         manager.restore_entry(session, entry)
     result = _note_summary(session, entry)
-    result["label"] = f"ph:recycle Restored note #{entry.id} from the recycle bin"
+    result["label"] = f"ph:recycle Restored {_named(entry)} from the recycle bin"
     result["undo"] = {"tool": "delete_note", "arguments": {"note_id": entry.id}}
     return result
 
@@ -1904,7 +1912,7 @@ def _web_search(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     # Read through the same helper the HTTP route uses, so the engine the
     # user picked is the engine the agent uses. Two readers is how a tool
     # ends up quietly ignoring a setting the rest of the app honours.
@@ -1980,7 +1988,7 @@ def _read_url(session: Session, args: dict) -> dict:
 
     config = deps.get_config()
     if not config.get_preference("web_search_enabled", False):
-        raise ToolError("Web search is disabled in Settings → Web search")
+        raise ToolError("Web search is disabled in Settings, Web search")
     url = str(args.get("url") or "").strip()
     if not url:
         raise ToolError("No URL was given")
@@ -2518,6 +2526,10 @@ def _save_user_preference(session: Session, args: dict) -> dict:
     """
     from tessellate.core.database import UserPreference
 
+    if private_turn.active():
+        #: The agent is not offered this tool in a private chat; this is the
+        #: write's own refusal, for a path that offers the whole registry.
+        raise ToolError("Nothing is saved from a private chat.")
     pref = str(args.get("preference") or "").strip()
     if not pref:
         raise ToolError("Must provide 'preference'.")
@@ -3976,6 +3988,67 @@ WRITE_TOOLS = {
 }
 set_write_tools(WRITE_TOOLS)
 
+#: **Writes are in one of three classes** (audit 1029 H2; table in
+#: `docs/roadmap/agent-remaining/audit-1029-harness.md`). The Agent tip says it
+#: asks before it changes or removes something, so the gate is in code:
+#:
+#: - destructive (`ToolSpec.destructive`): removes content; always parks.
+#: - CHANGE_TOOLS: overwrites or detaches what the person already wrote;
+#:   parks the same way, so a Confirm card names it before it happens.
+#: - ADD_TOOLS: only adds (or flips state with an Undo); runs, and its result
+#:   card carries the Undo. `tag_note` is here, but `remove` makes it a change
+#:   (`needs_confirm`).
+#:
+#: `tests/test_write_gate_h2.py` fails when a write tool is in none of them.
+CHANGE_TOOLS = frozenset({
+    "edit_note",
+    "unlink_notes",
+    "rename_tag",
+    "rename_category",
+    "save_skill",
+    "audit_link_reasons",
+})
+ADD_TOOLS = frozenset({
+    "create_note",
+    "tag_note",
+    "pin_note",
+    "link_notes",
+    "restore_note",
+    "set_reminder",
+    "complete_reminder",
+    "create_document",
+    "add_whiteboard_card",
+    "add_whiteboard_link",
+    "generate_diagram",
+    "create_mindmap",
+    "map_from_note",
+    "add_map_node",
+    "link_map_nodes",
+    "restore_board_item",
+    "add_board_shape",
+    "place_library_item",
+    "create_category",
+})
+
+
+def needs_confirm(name: str, arguments: dict | None = None, approved: bool = False) -> bool:
+    """Whether this call parks for a Confirm card whatever else is true of the turn.
+
+    `approved` is a run the person already started with the writes listed (a
+    plan's "Run the plan", a skill they ran): their click was the confirm for
+    changes, so only a removal still parks.
+    """
+    spec = TOOLS.get(name)
+    if spec is None:
+        return False
+    if spec.destructive:
+        return True
+    if approved:
+        return False
+    if name in CHANGE_TOOLS:
+        return True
+    return name == "tag_note" and bool((arguments or {}).get("remove"))
+
 
 # --- which tools a turn is offered (roadmap §11a) --------------------------------
 #
@@ -4360,8 +4433,17 @@ def focus_detail(question: str, recent: str = "") -> toolwords.Focus:
     )
 
 
+def web_barred(question: str) -> set[str]:
+    """The web tools a first-person question must not be offered: "who is my
+    sister" is in the notes, and a model holding `web_search` sends it out
+    (audit 1030 A3). An explicit "search the web for" keeps them."""
+    if personal.about_own_record(question or "") and not toolwords.asks_web(question or ""):
+        return {"web_search", "read_url"}
+    return set()
+
+
 def tool_enabled(name: str) -> bool:
-    """A tool is offered unless the user turned it off in Settings → Tools.
+    """A tool is offered unless the user turned it off in Settings, Tools.
     web_search additionally requires the online opt-in."""
     # Listing the tools must not start the app: without settings the defaults
     # hold (web off, nothing disabled), which is what a fresh notebook has.
@@ -4465,7 +4547,7 @@ def ollama_tools(allowed: list[str] | None = None, session: Session | None = Non
     roadmap §11a in one line: 28 schemas are ~77% of the fixed per-round
     overhead, and a skill that needs three of them should pay for three. The
     user's own switches still win, a skill cannot re-enable something turned
-    off in Settings → Tools.
+    off in Settings, Tools.
     """
     wanted = set(allowed) if allowed else None
     offered = [
@@ -4754,12 +4836,12 @@ COUNTING_TOOLS = ("count_notes", "list_notes")
 
 
 def tool_catalog() -> list[dict]:
-    """Metadata for the Settings → Tools toggles."""
+    """Metadata for the Settings, Tools toggles."""
     return [
         {
             "name": spec.name,
             "description": spec.description,
-            "destructive": spec.destructive,
+            "destructive": spec.destructive or spec.name in CHANGE_TOOLS,
             "enabled": tool_enabled(spec.name),
             "online": spec.name in ("web_search", "read_url"),
             "counts": spec.name in COUNTING_TOOLS,
@@ -4770,7 +4852,7 @@ def tool_catalog() -> list[dict]:
                 "online"
                 if spec.name in ("web_search", "read_url")
                 else "confirm"
-                if spec.destructive
+                if spec.destructive or spec.name in CHANGE_TOOLS
                 else "write"
                 if spec.name in WRITE_TOOLS
                 else "read"
@@ -4806,8 +4888,25 @@ _CONFIRM_LABELS = {
 }
 
 
-def confirm_label(name: str, arguments: dict) -> str:
+#: The confirm sentences that name one note, said with its title when the
+#: note can be read (audit 1029 C47: "Move note #12 to the recycle bin").
+_CONFIRM_NAMED = {
+    "delete_note": "Move {note} to the recycle bin",
+    "edit_note": "Change {note}",
+}
+
+
+def confirm_label(name: str, arguments: dict, session: Session | None = None) -> str:
     """Human sentence for the UI's confirm button (destructive tools)."""
+    if session is not None and name in _CONFIRM_NAMED:
+        try:
+            note = _named(_require_note(session, arguments))
+        #: AttributeError: a session that cannot look notes up (a stub) gets
+        #: the plain label; a label never stops the call.
+        except (ToolError, KeyError, TypeError, ValueError, AttributeError):
+            note = None
+        if note:
+            return _CONFIRM_NAMED[name].format(note=note)
     label = _CONFIRM_LABELS.get(name)
     if label:
         return label(arguments)
@@ -5064,7 +5163,7 @@ def execute_tool(
         return {"error": f"Unknown tool '{name}'"}
     deps.get_config()  # a call runs inside the app: the user's settings, never the defaults
     if not tool_enabled(name):
-        return {"error": f"The '{name}' tool is turned off in Settings → Tools it can use"}
+        return {"error": f"The '{name}' tool is turned off in Settings, Tools it can use"}
     #: Stop landed while the model call that chose this write was in flight:
     #: the write is discarded, not done late (the stream only sees Stop between
     #: yields, `activity.bind`). Reads are harmless and still run.
@@ -5072,7 +5171,7 @@ def execute_tool(
         return {"error": "You stopped this run before this step ran, so nothing was changed."}
     args, problem = check_arguments(name, dict(arguments or {}))
     if problem:
-        # Logged like a handler's argument failure, so Settings → Logs shows
+        # Logged like a handler's argument failure, so Settings, Logs shows
         # what the model sent; the text is the app's own, safe to hand back.
         logging.getLogger("tessellate.tools").warning("tool %s refused: %s", safe_value(name, 40), safe_value(problem, 200))
         return {"error": problem}

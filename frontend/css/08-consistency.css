@@ -227,7 +227,6 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
-.action-menu .menu-item.has-submenu,
 .doc-dock-menu-list .menu-item.has-submenu {
   justify-content: space-between;
 }
@@ -793,7 +792,7 @@ details[open] > .about-whats-new::before,
      risks. */
   min-width: min-content;
 }
-[data-dock-name="notes"] .dock-arrange .select-shell {
+[data-dock-name="notes"] .dock-arrange:not(.dock-arrange-folded) .select-shell {
   max-width: 9rem;
 }
 /* Tidy's count (INBOX 691) on the broom's corner, the phone More's run count
@@ -1743,10 +1742,6 @@ summary > .ph-lead,
 [data-doc-dock-submenu] .doc-dock-menu-check > span {
   flex: 1 1 auto;
   min-width: 0;
-}
-.doc-dock-menu-list #doc-file-type {
-  width: 100%;
-  max-width: none;
 }
 /* INBOX 18: the pinned group at the end of a formatting strip had square
    corners and was opaque only on the note form. It is not pinned any more
@@ -2909,7 +2904,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
    segmented control say "you are here". Classic and the colour looks keep
    their filled tabs exactly (the owner's "the current look" option). */
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) #tab-bar button.active,
-:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .seg button.active,
+:root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .seg button:is(.active, [aria-pressed="true"]),
 :root:is([data-palette="utilitarian"], [data-palette="paper"], [data-palette="mono"]) .library-chip.active {
   border-color: transparent;
   background: color-mix(in srgb, var(--ink) 11%, transparent);
@@ -3265,6 +3260,13 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
 #entry-list .entry-links {
   gap: var(--space-2);
 }
+/* A finger's pill is `--target-min` tall (the chip's and the menu's overhang),
+   so wrapped rows keep that much apart, as the graph's filter chips do. */
+@media (pointer: coarse) {
+  #entry-list .entry-links {
+    row-gap: calc(var(--target-min) - 1.5rem);
+  }
+}
 #entry-list .link-connection {
   gap: 0;
   border: 1px solid var(--border);
@@ -3276,7 +3278,7 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
   background: transparent;
   min-width: 0;
   white-space: nowrap;
-  overflow: hidden;
+  overflow: clip visible;
 }
 /* One line, cut with an ellipsis, as Ask's results already were (below): at
    390 a note card's connection pills wrapped their words to two 12px lines
@@ -3617,7 +3619,7 @@ body .chip.item-label,
    together: 4px between them, the card's inset one step in, and the
    actions laid over the inset instead of growing the line they sit on.
    Personas share the row, so they get the same. */
-.entry-list > li:has(> :is(.skill-row, .persona-row)) {
+.entry-list > li:where(:not(.row-shell)):has(> :is(.skill-row, .persona-row)) {
   padding-block: var(--space-3);
   margin-bottom: var(--space-2);
 }
@@ -3638,7 +3640,7 @@ body .chip.item-label,
    and they are always shown: Edit is this list's main verb, not a hover
    extra. The label is one line of 11px type in a hairline box (19px), not
    a 24px box beside a 24px title. */
-.entry-list > li:has(> :is(.skill-row, .persona-row)) {
+.entry-list > li:where(:not(.row-shell)):has(> :is(.skill-row, .persona-row)) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -4094,7 +4096,7 @@ body .chip.item-label,
   display: none;
 }
 @media (max-width: 599.98px) {
-  .tab-page:has(#library-view-documents.hidden) > #library-new-doc.dock-fab {
+  .tab-page:has(> #library-view-documents.hidden) > #library-new-doc.dock-fab {
     display: none;
   }
 }
@@ -4914,23 +4916,6 @@ body .chip.item-label,
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.msg.user :is(.msg-attachment-image, .msg-attachment-note, .msg-attachment-doc) {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-image figcaption,
-.msg.user .msg-attachment-missing p {
-  color: var(--muted);
-}
-.msg.user .msg-attachment-actions button {
-  border-color: var(--border);
-  background: var(--card);
-  color: var(--ink);
-}
-.msg.user .msg-attachment-actions button:is(:hover, :focus-visible) {
-  background: var(--surface-2);
-}
 /* --- Two floating buttons that sit over content: opaque, readable hover --- */
 /* The owner: "the back to top hover state is too transparent" and "when I
    hover over the jump to latest button in the chat, it flickers for a
@@ -4978,7 +4963,7 @@ body .chip.item-label,
 }
 /* --- a generated face that moves (the owner: "can they be animated as a
    togglable option??") ----------------------------------------------------
-   Settings > Appearance > Avatar animation: always (the default; only the
+   Settings, Appearance, Avatar animation: always (the default; only the
    faces on screen, which `watchNameMark` marks), on hover, or off. Reduce motion wins over both, and so does the system's own
    setting. "On hover" means the row the face stands for (a persona's list
    item, a chat message, the picker), not any ancestor: every container up
@@ -8850,7 +8835,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    the Chat tab, where the bottom is the composer (Send and the microphone,
    the reason the top was chosen in the first place): there it stays up. */
 @media (max-width: 599.98px) {
-  body:not(:has(#tab-chat:not(.hidden))) #toast-box {
+  body:not([data-tab=chat]) #toast-box {
     top: auto;
     bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px) + var(--space-2));
   }
@@ -8864,7 +8849,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    the composer and its mode switch (the reason the band went to the top),
    it stays up. */
 @media (min-width: 600px) and (max-width: 1099.98px) {
-  body:not(:has(#tab-chat:not(.hidden))) #toast-box {
+  body:not([data-tab=chat]) #toast-box {
     top: auto;
     left: auto;
     right: var(--space-4);
@@ -9834,17 +9819,22 @@ aside[data-resizable].sidebar-collapsed > :not(.sidebar-collapse-toggle):not(.si
    13 of 14 switches, which is the flash that read as a glitch. From 0.4 the
    new page is there on the first frame and settles in over `--motion-base`;
    0 blank frames. */
-/* Over `--ui-fast` (the motion pass, 2026-10-05). A sub-tab's panel does
+/* Over `--ui-base`, and it settles up from `--space-1` (INBOX 1462: "slightly
+   smoother ... not confronting"): `translate` is the compositor's, and the page
+   is at rest, `none`, after it, so nothing inside it is ever left with a
+   containing block (no `position: fixed` lives in a page: measured on all
+   seven tabs). A sub-tab's panel does
    not fade with it: `@starting-style` cannot tell a section switch from its
    page arriving, so the section faded inside the page's own fade (0.4 of
    0.4, two layers), measured as the frames the switch missed; the sub-tab's
    sliding line is its motion. */
 .tab-page:not(.hidden) {
-  transition: opacity var(--ui-fast) var(--ease-out);
+  transition: opacity var(--ui-base) var(--ease-out), translate var(--ui-base) var(--ease-out);
 }
 @starting-style {
   .tab-page:not(.hidden) {
     opacity: 0.4;
+    translate: 0 var(--space-1);
   }
 }
 /* --- motion: a heavy page's first visit (INBOX 580) ------------------------
@@ -10819,4 +10809,89 @@ header#top-bar button.space-switcher-btn:focus-visible {
    The chip itself is in library-lazy.css (2026-10-27). */
 .library-image-tile .library-image-actions {
   opacity: 1;
+}
+
+/* **The Notes tab's capture bar** (INBOX 1479): one line above the list that
+   opens in place into the card (capture-card-lazy.css) while `.is-open`. */
+.capture-bar {
+  margin-bottom: var(--space-4);
+}
+.capture-bar-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+.capture-bar-modes {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-bottom: 0;
+}
+.capture-bar-row .capture-bar-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  min-height: var(--control-h-lg);
+  margin: 0;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-lg);
+}
+.capture-bar-picture {
+  flex: 0 0 auto;
+  align-self: center;
+}
+.capture-bar.is-open .capture-bar-row {
+  display: none;
+}
+
+/* A note's own colour (INBOX 1479): a tenth of the swatch over the card and a
+   coloured top edge (a left edge in rows). `entryItem` sets `--swatch`, the swatch the pickers draw. */
+#entry-list li[data-colour] {
+  background: color-mix(in srgb, var(--swatch) 10%, var(--surface-2));
+  box-shadow: inset 0 3px 0 var(--swatch);
+}
+#entry-list.is-rows li[data-colour] {
+  box-shadow: inset 3px 0 0 var(--swatch);
+}
+/* **A sticky head is bare until it sticks** (INBOX 1489, "faint box behind the
+   header of the notes page"). The card is the surface; a head painting
+   `--card` again inside it stacked two translucent washes. A head needs a
+   ground only while rows pass under it: none at rest, the opaque modal ground
+   once stuck, per head (scroll-state container), as a `::before` so a hover
+   tint stays above it. Without scroll-state queries the old ground stays.
+   `tests/test_nested_surfaces_1489.py` holds the list. */
+@supports (container-type: scroll-state) {
+  #sidebar > .sidebar-head,
+  .contents-heading,
+  .timeline-bucket-head,
+  .note-edit-foot,
+  #capture .capture-commit-row {
+    container-type: scroll-state;
+  }
+  @container scroll-state(stuck: top) or scroll-state(stuck: bottom) {
+    #sidebar > .sidebar-head::before,
+    .contents-heading::before,
+    .timeline-bucket-head::before,
+    .note-edit-foot::before,
+    #capture .capture-commit-row::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: var(--modal-bg-opaque);
+    }
+    .contents-heading:is(:hover, :focus-visible)::before {
+      background-image: linear-gradient(var(--row-hover-bg), var(--row-hover-bg));
+    }
+  }
+}
+@supports not (container-type: scroll-state) {
+  #sidebar > .sidebar-head,
+  .contents-heading,
+  .timeline-bucket-head,
+  .note-edit-foot,
+  #capture .capture-commit-row {
+    background: var(--card);
+  }
 }

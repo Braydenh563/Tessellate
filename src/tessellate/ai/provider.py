@@ -350,7 +350,7 @@ class Provider:
     MAX_REQUESTED_CONTEXT = MAX_REQUESTED_CONTEXT
     DEFAULT_MAX_OUTPUT_TOKENS = DEFAULT_MAX_OUTPUT_TOKENS
 
-    #: Shown in Settings → Models and in the support bundle.
+    #: Shown in Settings, Models and in the support bundle.
     name = "provider"
 
     def __init_subclass__(cls, **kwargs: object) -> None:
@@ -411,7 +411,7 @@ class Provider:
     #:
     #: Asked for directly (INBOX 77): "the window itself should be manageable
     #: by the user and auto when set ... a `num_ctx` preference per model in
-    #: Settings > Models with Auto (the model file's value) or a number, sent
+    #: Settings, Models with Auto (the model file's value) or a number, sent
     #: on every request; the badge shows 'used / window'".
     #:
     #: **Per model and not one global number**, which is what
@@ -650,7 +650,7 @@ class Provider:
         return None
 
     def model_spec(self, model: str) -> dict:
-        """The model's own specification, flat, for Settings → Models.
+        """The model's own specification, flat, for Settings, Models.
 
         The app knew a context length and nothing else, so the screen could not
         say how big a model was, how it was quantised, or whether it could use

@@ -106,7 +106,7 @@ def test_the_week_review_is_this_week_against_last(client):
     assert (week["last"]["notes"], week["last"]["words"], week["last"]["reminders_done"]) == (2, 3, 1)
 
 
-def test_private_and_binned_notes_are_not_counted(client):
+def test_binned_notes_are_not_counted_and_private_words_are_not_read(client):
     with _session() as session:
         _note(session, "seen")
         hidden = _note(session, "private words here")
@@ -115,7 +115,8 @@ def test_private_and_binned_notes_are_not_counted(client):
         gone.deleted_at = NOW
         session.commit()
         book = notebook_stats.page(session, NOW, {})["notebook"]
-    assert (book["notes"], book["words"]) == (1, 1)
+    # INBOX 1439: a private note is a note (one count everywhere); its words are not counted.
+    assert (book["notes"], book["words"]) == (2, 1)
 
 
 def test_a_link_to_a_binned_or_private_note_is_not_a_link_on_the_page(client):
@@ -137,7 +138,7 @@ def test_a_link_to_a_binned_or_private_note_is_not_a_link_on_the_page(client):
         )
         session.commit()
         book = notebook_stats.page(session, NOW, {})["notebook"]
-    assert (book["notes"], book["links"], book["orphans"]) == (2, 1, 0)
+    assert (book["notes"], book["links"], book["orphans"]) == (3, 1, 0)
 
 
 def test_the_route_answers_in_one_call_with_the_usage_rows(client):

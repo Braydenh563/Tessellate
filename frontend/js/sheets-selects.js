@@ -142,7 +142,7 @@ window.addEventListener("resize", () => {
   clearTimeout(sidebarRefitTimer);
   sidebarRefitTimer = setTimeout(() => {
     for (const id of ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]) {
-      const aside = document.getElementById(id);
+      const aside = $(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -161,7 +161,7 @@ for (const query of [STACKED_LAYOUT, SIDEBAR_TABLET_BAND]) {
   window.matchMedia(query).addEventListener("change", () => {
     applySidebarSheetMode(layoutIsStacked());
     for (const id of SIDEBAR_IDS) {
-      const aside = document.getElementById(id);
+      const aside = $(id);
       if (aside?.dataset.resizable) {
         applySidebarWidth(aside, sidebarWidth(id, sidebarDefault(id)), { remember: false });
       }
@@ -195,7 +195,7 @@ const SIDEBAR_IDS = ["sidebar", "chat-sidebar", "doc-sidebar", "skills-sidebar"]
 
 function eachSidebar(fn) {
   for (const id of SIDEBAR_IDS) {
-    const aside = document.getElementById(id);
+    const aside = $(id);
     if (aside) fn(aside, id);
   }
 }
@@ -460,10 +460,10 @@ function makeSidebarResizable(aside) {
 
 function initResizableSidebars() {
   for (const id of SIDEBAR_IDS) {
-    const aside = document.getElementById(id);
+    const aside = $(id);
     if (aside) makeSidebarResizable(aside);
   }
-  makeWebPanelResizable(document.getElementById("web-panel"));
+  makeWebPanelResizable($("web-panel"));
   applySidebarSheetMode(layoutIsStacked());
   initSidebarSheetDismissal();
 }
@@ -534,7 +534,7 @@ function resetWebPanelWidth(panel) {
 }
 
 window.matchMedia(WEB_PANEL_NARROW).addEventListener("change", () => {
-  const panel = document.getElementById("web-panel");
+  const panel = $("web-panel");
   if (!panel?.dataset.resizable) return;
   const saved = Number(prefs.get("webPanelWidth", null));
   if (Number.isFinite(saved) && saved >= WEB_PANEL_MIN && !webPanelIsNarrow()) {
@@ -701,6 +701,21 @@ function labelledMenu(label, items, ariaLabel, openerClass = "ghost small") {
 // rather than trusting a one-time build.
 const SELECT_ENHANCED = "data-enhanced-select";
 
+//: **A row may draw a shorter face on a phone** (`data-face-narrow`, blind test
+//: 1031: the boards picker read "Min..." at 390 because every row opens with
+//: its kind and ends with its count). The menu still lists the whole row; only
+//: the closed button changes, and it follows the window across the breakpoint.
+const NARROW_FACE = window.matchMedia("(max-width: 599.98px)");
+const narrowFaceWatched = new WeakSet();
+function selectFaceText(option, resync) {
+  const short = option.dataset.faceNarrow;
+  if (short && !narrowFaceWatched.has(resync)) {
+    narrowFaceWatched.add(resync);
+    NARROW_FACE.addEventListener("change", resync);
+  }
+  return short && NARROW_FACE.matches ? short : option.textContent.trim();
+}
+
 function enhanceSelect(select) {
   if (!select || select.hasAttribute(SELECT_ENHANCED)) return;
   // A multi-select is a different control with different semantics, and
@@ -709,6 +724,7 @@ function enhanceSelect(select) {
   if (select.multiple || select.size > 1) return;
   if (select.closest("[data-no-select-enhance]")) return;
   select.setAttribute(SELECT_ENHANCED, "1");
+  const rich = select.classList.contains("feature-model-select");
 
   const shell = document.createElement("span");
   shell.className = "select-shell";
@@ -774,21 +790,25 @@ function enhanceSelect(select) {
   //: Settings, Account's idle-lock select and the Graph's colour select.
   const labelledBy = (select.getAttribute("aria-labelledby") || "")
     .split(/\s+/)
-    .map((id) => id && document.getElementById(id)?.textContent.trim())
+    .map((id) => id && $(id)?.textContent.trim())
     .filter(Boolean)
     .join(" ");
-  const label =
-    select.getAttribute("aria-label") ||
-    labelledBy ||
-    select.labels?.[0]?.textContent.trim().replace(/\s+/g, " ") ||
-    select.title ||
-    "Choose an option";
+  //: A `<label>` that wraps the select would otherwise lend its options too.
+  //: Only a select nothing has named reads its label: `labels` walks the tree and the clone copies a whole row, the hot line of 117 selects at boot.
+  const named = select.getAttribute("aria-label") || labelledBy;
+  const wrapper = named ? null : select.labels?.[0]?.cloneNode(true);
+  wrapper?.querySelectorAll("select, .select-shell").forEach((part) => part.remove());
+  const label = named || wrapper?.textContent.trim().replace(/\s+/g, " ") || select.title || "Choose an option";
   opener.setAttribute("aria-label", label);
   opener.title = select.title || label;
 
   const syncValue = () => {
     const chosen = select.options[select.selectedIndex];
-    valueText.textContent = chosen ? chosen.textContent.trim() : "";
+    valueText.textContent = chosen ? selectFaceText(chosen, syncValue) : "";
+    //: A face cut down for a phone keeps the whole row in the tooltip.
+    opener.title = chosen?.dataset.faceNarrow && NARROW_FACE.matches
+      ? chosen.textContent.trim()
+      : select.title || label;
     //: **The name contains what is written on the button** (WCAG 2.5.3, Label
     //: in Name; axe `label-content-name-mismatch`, 22 findings in 2026-10-10's
     //: sweep, every sort and model picker). "Sort notes" was the whole name
@@ -877,6 +897,8 @@ function enhanceSelect(select) {
         menu.appendChild(buildOptionRow(node));
       }
     }
+    //: A model picker is drawn in the picker's own shape (model-menu.js, lazy, INBOX 1477).
+    if (rich) enhanceSelect.richMenu?.(menu, select, opener);
     syncValue();
   };
 
@@ -884,6 +906,7 @@ function enhanceSelect(select) {
     event.stopPropagation();
     if (select.disabled) return;
     if (menu.classList.contains("hidden")) {
+      if (rich && !enhanceSelect.richMenu) ensureModule("modelMenu").then(() => menu.classList.contains("hidden") || rebuild());
       rebuild();
       openActionMenu(menu, opener);
       focusMenuItem(menu.querySelector(".is-chosen"), menu);
@@ -893,14 +916,17 @@ function enhanceSelect(select) {
   });
 
   select.addEventListener("change", syncValue);
-  new MutationObserver(rebuild).observe(select, { childList: true, subtree: true });
+  //: A closed menu is not rebuilt for an option that changed (OPEN 813): the
+  //: opener's click rebuilds on every open, and the board picker's "N topics"
+  //: text, rewritten on every render, rebuilt a row per board each time.
+  new MutationObserver(() => (menu.classList.contains("hidden") ? syncValue() : rebuild())).observe(select, { childList: true, subtree: true });
 
   // **A `<select>` that has been hidden must take its stand-in with it.**
   // Measured, not reasoned: on Library → Images the native
   // `#library-media-read` was 0x0 (`setLibraryMediaKind` adds `hidden`, since a
   // read filter is a Files idea) while the shell this function wraps it in
   // still rendered a 124x36 dropdown reading "Read or not", on a tab where
-  // "read" means nothing. `#update-version-select` in Settings → About is
+  // "read" means nothing. `#update-version-select` in Settings, About is
   // toggled the same way and had the same hole.
   //
   // This is the shape CLAUDE.md names: the value was set correctly on the
@@ -954,7 +980,7 @@ function enhanceSelect(select) {
   }
 
   wireMenuKeyboard(menu, opener);
-  rebuild();
+  syncValue();
 }
 
 // **Double-click any slider to put it back to its default.** Asked for
@@ -1149,11 +1175,10 @@ function openKebabSheet(menu, opener, label) {
   const home = menu.parentElement;
   let closeSheet = null;
   let sheetCard = null;
-  // A group's row opens its group in place (below 720 a submenu is an
-  // accordion, `buildMenuGroupButton`), so it leaves the sheet open.
+  // A group's row and a level's back row move inside the sheet (`buildMenuGroupButton`), so they leave it open.
   const onRow = (event) => {
     const row = event.target.closest(".menu-item");
-    if (row && !row.classList.contains("has-submenu") && closeSheet) closeSheet();
+    if (row && !row.matches(".has-submenu, .menu-back") && closeSheet) closeSheet();
   };
   closeSheet = openSheet({
     label,
@@ -1327,6 +1352,7 @@ function kebabMenu(items, ariaLabel, { vertical = false } = {}) {
   menu.setAttribute("role", "menu");
 
   const opener = smallButton(vertical ? "ph:dots-three-vertical" : "ph:dots-three", ariaLabel, () => {
+    window.objKebabRows?.(menu);
     if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
       openKebabSheet(menu, opener, ariaLabel);
       return;
@@ -1615,7 +1641,7 @@ document.addEventListener(
 //: form): three segments of which only the last identifies the model, and
 //: the first two eat the width a badge has. The org is kept off too: two
 //: models from the same org differ in their last segment, never their first.
-//: Settings → Models is deliberately *not* a caller: choosing a model to pull
+//: Settings, Models is deliberately *not* a caller: choosing a model to pull
 //: needs the id you would actually type.
 //:
 //: Only prefixes that are registry addresses are stripped. `llama3.2:3b` and
@@ -1728,12 +1754,12 @@ function relativeTime(iso) {
   if (hours < 24) return `${Math.round(hours)}h ago`;
   const days = Math.round(hours / 24);
   if (days === 1) return "yesterday";
-  if (days < 7) return `${days} days ago`;
+  if (days < 7) return `${nounCount(days, "day")} ago`;
   // Screenshotted as "1 weeks ago". Rounding 8 days gives 1, and the plural
   // was hard-coded: the only branch here that forgot to agree with its own
   // number.
   const weeks = Math.round(days / 7);
-  if (days < 30) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
+  if (days < 30) return `${nounCount(weeks, "week")} ago`;
   return then.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
@@ -1769,11 +1795,11 @@ async function loadConversationList() {
   const list = $("conversation-list");
   showSkeletons(list, 4, "li");
   if (!list.children.length || list.querySelector(".skeleton")) $("conv-empty")?.classList.add("hidden");
-  const conversations = sortConversations(
-    await apiJson("/conversations").catch(() => []),
-    $("chat-sidebar-sort")?.value || "recent"
-  ).slice(0, RECENT_CHATS_SHOWN);
+  //: A failed read says so with Try again; "No saved chats yet" is for a list that came back empty.
+  const loaded = await loadSurface($("conv-empty"), "your chats", () => apiJson("/conversations"));
   clearSkeletons(list);
+  if (!loaded) return list.replaceChildren();
+  const conversations = sortConversations(loaded, $("chat-sidebar-sort")?.value || "recent").slice(0, RECENT_CHATS_SHOWN);
   list.replaceChildren();
   const empty = $("conv-empty");
   empty.classList.toggle("hidden", conversations.length > 0);
@@ -1818,6 +1844,15 @@ async function loadConversationList() {
     const title = document.createElement("span");
     title.className = "conv-title";
     title.title = "Open this chat";
+    //: The row opened on a click only (audit 1028 E36): the title is the
+    //: keyboard's way in, Enter or Space, beside the row's own ⋯ button.
+    title.tabIndex = 0;
+    title.setAttribute("role", "button");
+    title.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openConversation(conversation.id);
+    });
 
     const name = document.createElement("span");
     name.className = "conv-name";
@@ -1860,14 +1895,14 @@ async function loadConversationList() {
     );
     items.push(
       makeMenuItem("ph:pencil-simple Rename", "Rename this chat", async () => {
-        const next = await promptDialog("Rename this chat:", conversation.title);
-        if (!next || !next.trim()) return;
+        const next = await promptTitle("Rename this chat", conversation.title);
+        if (!next) return;
         await apiJson(`/conversations/${conversation.id}`, {
           method: "PUT",
-          body: JSON.stringify({ title: next.trim() }),
+          body: JSON.stringify({ title: next }),
         });
-        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next.trim());
-        if (chatConv.id === conversation.id) $("chat-title").textContent = next.trim();
+        chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, next);
+        if (chatConv.id === conversation.id) $("chat-title").textContent = next;
         loadConversationList();
       })
     );
@@ -1884,16 +1919,9 @@ async function loadConversationList() {
           return null;
         });
         if (!named) return;
-        if (named.title !== conversation.title) chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title);
         if (chatConv.id === conversation.id) $("chat-title").textContent = named.title;
-        toast(named.ai_named ? `Named “${named.title}”.` : "Kept the first question as the title.");
-        //: The AI naming a conversation is activity, not something the user
-        //: did: so it obeys the same "pop up, or only in the centre" choice
-        //: as every other thing the AI does on its own.
-        agentActivityNotice(
-          named.ai_named ? `Renamed to “${named.title}”.` : "Used the first question as the title.",
-          { kind: "run" }
-        );
+        if (named.title === conversation.title) toast("Kept the first question as the title.");
+        else chatWriteRecord("chatTitleUndo", conversation.id, conversation.title, named.title, named.ai_named ? `Named “${named.title}”.` : "Used the first question as the title.");
         loadConversationList();
       })
     );
@@ -1907,7 +1935,6 @@ async function loadConversationList() {
         await apiJson(`/conversations/${conversation.id}/archive`, { method: "PUT" });
         chatWriteRecord("chatArchiveUndo", conversation.id, conversation.title);
         if (chatConv.id === conversation.id) newChatConversation();
-        toast("Archived.");
         loadConversationList();
       })
     );
@@ -1939,6 +1966,7 @@ function editedMarker() {
 }
 
 async function openConversation(id) {
+  if (chatLeaveHeld(() => openConversation(id))) return;
   const full = await apiJson(`/conversations/${id}`).catch(() => null);
   if (!full) return;
   // Before the pane is rebuilt, not after: this reads the composer state that
@@ -1949,6 +1977,7 @@ async function openConversation(id) {
   // call sites (the sidebar, the Library) so neither has to remember to.
   recordTabVisit("chat", `conv:${full.id}`, full.title || "");
   chatConv = { id: full.id, turns: [] };
+  syncChatPrivate();
   chatAwaitingAgentAnswer = false; // a saved thread's own pending ask, if any, isn't answerable live
   // Not carried across conversations, and not persisted: re-deriving it is one
   // click, and a summary restored against the wrong thread would be worse than
@@ -2059,6 +2088,7 @@ async function openConversation(id) {
         },
         toolEvents: message.tools || [],
         touched: (message.tools || []).flatMap((t) => t.touched || []),
+        sentences: message.sentence_grounding,
       };
       //: The panel's order, built once and handed to the citation pass below
       //: as the live path does (chat-attach.js, `turnSources`). Reopening
@@ -2157,6 +2187,7 @@ async function openConversation(id) {
     renderChatEmptyState();
   }
   if (lastQuestionText) lastChatQuestion = lastQuestionText;
+  renderChatTurnCount();
   lazyScript("/js/chat-time.js").then(() => stampChatTimes(full.messages));
   loadConversationList();
   //: Where it was left, not always its end (Placed 2026-09-09 item 99 (b)).
@@ -2350,14 +2381,6 @@ function builtinPersonas() {
 }
 
 let personaEditing = null; // name currently in inline-edit mode
-
-
-//: The names the pickers offer, from what is already in memory.
-function personaNamesNow() {
-  const custom = ((prefsCache && prefsCache.personas) || []).map((p) => p.name);
-  return [...new Set([...Object.keys(builtinPersonas()), ...custom])];
-}
-
 
 //: "Same as Chat" follows Chat's picker, so its face does too.
 document.addEventListener("change", (event) => {

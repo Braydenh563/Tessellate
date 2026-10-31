@@ -197,6 +197,9 @@ _MONTHS = {
 #: or a weekday (`ai/fact_check.py`), so no second table of them exists.
 MONTH_NAMES = frozenset(_MONTHS)
 WEEKDAY_NAMES = frozenset(_WEEKDAYS) | {"thur"}
+#: A weekday named in full, plural too ("Mondays"), for the readers that
+#: find a day a note says (`composer`, `search_manager`).
+WEEKDAY_WORD = re.compile(r"\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b", re.I)
 #: A span's unit in minutes, for checking a stated span against the facts
 #: (`ai/fact_check.py`): kept here as the one table of time units.
 SPAN_MINUTES = {
@@ -242,6 +245,20 @@ _COMPUTED = re.compile(
 
 def asks_computed(question: str) -> bool:
     return bool(_COMPUTED.search(question))
+
+
+#: A question about time (INBOX 1441): only then does an answer say a date.
+_ASKS_TIME = re.compile(
+    r"\b(?:when|what time|dates?|dated|days?|weeks?|weekend|months?|years?|yesterday|today|tonight|tomorrow|"
+    r"recent(?:ly)?|latest|newest|oldest|earliest|last|first|since|ago|before|after|until|timeline|history|"
+    r"how long|how often|going|progress\w*|improv\w*|chang\w*|monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|"
+    r"april|may|june|july|august|september|october|november|december|\d{1,2}(?:st|nd|rd|th)?)\b", re.I)
+
+
+def asks_time(question: str) -> bool:
+    """Whether a question's words are about time: a when, a day, a week or
+    a month, a change over time (composer.asks_time adds "when did I write")."""
+    return bool(_ASKS_TIME.search(question))
 
 
 _WD_WORD = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
@@ -875,7 +892,7 @@ def _reminder_words(text: str, spans: list) -> tuple[str, str]:
     return (rest or text.strip() or "Reminder"), priority
 
 
-_CLOCK_TAIL = re.compile(r"\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
+_CLOCK_TAIL = re.compile(r"(?<!\s)\s+(?:(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)|at\s+\d{1,2}(?::\d{2})?|\d{1,2}:\d{2})\Z", re.I)
 
 
 def _keep_due_day(rest: str, cut_words: list[str]) -> str:
@@ -2033,7 +2050,7 @@ def _window_words() -> re.Pattern[str]:
                                  _QUARTER, _PREVIOUS_UNIT)) + r"|(?:the\s+)?(?:last|this|next|past|previous|coming)\s+(?:few\s+|couple\s+of\s+|\d{1,3}\s+|two\s+|three\s+|four\s+|five\s+|six\s+|seven\s+|eight\s+|nine\s+|ten\s+|eleven\s+|twelve\s+)?"
             r"(?:days?|weeks?|weekend|months?|years?|night|morning|evening|monday|tuesday|wednesday|thursday|friday|saturday|sunday)"
             r"|(?:the\s+)?week\s+before\s+last|(?:\d{1,3}|a|an|one|two|three|four|five|six)\s+(?:days?|weeks?|months?|years?)\s+ago"
-            r"|(?:since|in|during)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
+            r"|(?:since|in|during|from)\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)" + _NOT_A_DAY + r"(?: (?:of )?(?:last|this|next) year)?)\b",
             re.I,
         )
     return _WINDOW_WORDS
@@ -2056,6 +2073,127 @@ def without_windows(text: str) -> str:
 
 def looks_dated(text: str) -> bool:
     return bool(_DATED.search(text or ""))
+
+
+#: A time phrase that names a day or a month by name ("3 March", "Friday",
+#: "tomorrow", "in June"); a bare "May" is the verb as often as the month.
+_NAMES_DAY = re.compile(r"\d|january|february|march|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today", re.I)
+
+
+def names_a_day(phrase: str) -> bool:
+    """Whether a phrase `find` returned names a day: what a when-slot answer
+    can say (composer_slots, audit 1029 C21), not "next week" or "lately"."""
+    return bool(_NAMES_DAY.search(phrase or ""))
+
+
+#: A time phrase that already carries its preposition, or needs none
+#: ("since 3 October", "last week", "today", "3 days ago").
+_ADVERB_LEAD = re.compile(r"^(?:in|on|at|since|during|between|from|before|after|by|until|till|over|within|for)\b", re.I)
+_ADVERB_BARE = re.compile(
+    r"^(?:today|tonight|yesterday|tomorrow|this|last|next|previous|coming|recently|lately|"
+    r"the (?:day|week|weekend|rest|next|last|past|previous|first|end)\b)|\bago\b", re.I)
+#: "the last 7 days", "past week": a rolling window is "in" it; "last week" and
+#: "last month" are calendar spans and read without.
+_ROLLING_SAID = re.compile(r"^(?P<the>the )?(?P<which>past|last|previous) (?P<n>(?:[\w-]+(?: of)? )?)?(?:days?|weeks?|months?|years?)$", re.I)
+
+
+def _rolling_said(text: str) -> str:
+    """"in the last 7 days" for a rolling window, "" for anything else."""
+    rolling = _ROLLING_SAID.match(text)
+    if rolling and (rolling.group("n") or rolling.group("the") or rolling.group("which").lower() == "past"):
+        return f"in {text if rolling.group('the') else 'the ' + text}"
+    return ""
+
+
+def _dated_said(text: str, low: str) -> str:
+    """The preposition a named day, month or year takes, "" when none."""
+    month = re.search(r"\b" + _MONTH_RE + r"\b", low)
+    if re.fullmatch(_WEEKDAY_RE + "s?", low) or re.fullmatch(r"(?:the )?\d{1,2}(?:st|nd|rd|th)", low):
+        return "on " + text
+    if month and re.search(r"\b\d{1,2}(?:st|nd|rd|th)?\b(?!\s*\d{2}\b)", re.sub(r"\b(?:19|20)\d{2}\b", "", low)):
+        return ("from " if re.search(r"\bto\b|\d\s*-\s*\d", low) else "on ") + text
+    if month or re.fullmatch(r"(?:19|20)\d{2}", low):
+        return "in " + text
+    return ""
+
+
+#: A time phrase that points at "now" or counts back from it: a window of
+#: when notes were written. Any other ("Christmas", "October", "the weekend")
+#: is a thing the notes may talk about.
+_DEICTIC_PHRASE = re.compile(
+    r"^(?:in |on |from |during |for )?(?:today|yesterday|tomorrow|tonight|now|(?:this|last|next|past|previous|coming)\b.*|\d+ (?:days?|weeks?|months?|years?) ago)$",
+    re.I,
+)
+_ABOUT_PHRASE = r"\b(?:about|regarding|concerning)\s+(?:the |my |our )?{}\s*[?.!]*$"
+PHRASE_FILLER = frozenset("in on at from during for the a an of".split())
+_TOPIC_HOLIDAYS = frozenset(
+    "christmas xmas easter halloween thanksgiving diwali eid ramadan hanukkah passover valentines boxing new year new years".split()
+)
+#: A question that asks what was done or written is about when.
+_WHEN_ASK = re.compile(r"\b(?:did|have|had|was) (?:i|we)\b|\bwhat happened\b|\b(?:wrote|written|made|jotted|noted|added|captured)\b", re.I)
+
+
+def a_topic_phrase(question: str, phrase: str, *, holiday: bool = True) -> bool:
+    """Whether the time phrase is what the question is about, not when notes
+    were written (audit 1031 C3): "what do I know about Christmas", "who is
+    coming for Christmas". A holiday needs a "what did I do" to be a window;
+    a holiday, month or weekend after "about" is searched for. The search
+    (`search/query.py`) and the composer's plan both read it."""
+    bare = re.sub(r"^(?:in|on|from|during|for|at|the)\s+", "", phrase.strip(), flags=re.I)
+    if not bare or _DEICTIC_PHRASE.match(phrase.strip()):
+        return False
+    if re.search(_ABOUT_PHRASE.format(re.escape(bare)), question or "", re.I):
+        return True
+    return holiday and bare.lower().replace("'", "") in _TOPIC_HOLIDAYS and not _WHEN_ASK.search(question or "")
+
+
+#: The preposition a holiday or a bare weekend takes (audit 1031 C3: "nothing
+#: went into your notes Christmas" had none).
+_HOLIDAY_PREP = {
+    "christmas": "at Christmas", "xmas": "at Christmas", "easter": "at Easter", "new year": "at New Year",
+    "new year's": "at New Year", "halloween": "on Halloween", "thanksgiving": "at Thanksgiving",
+    "boxing day": "on Boxing Day", "valentine's day": "on Valentine's Day", "new year's day": "on New Year's Day",
+    "new year's eve": "on New Year's Eve", "christmas eve": "on Christmas Eve", "christmas day": "on Christmas Day",
+    "the weekend": "over the weekend", "weekend": "over the weekend",
+}
+
+
+def _holiday_said(low: str) -> str:
+    return _HOLIDAY_PREP.get(low.removeprefix("on ").removeprefix("at ").removeprefix("for ").strip(), "")
+
+
+def adverbial(phrase: str) -> str:
+    """A time phrase as it follows a verb or a count, carrying the
+    preposition it needs (audit 1029 C10): "20 October" is "on 20 October",
+    "friday" is "on friday", "october" and "2025" are "in" them, a rolling
+    window is "in the last 7 days"; "last week", "today", "3 days ago" and
+    "since 3 October" stand as they are. A range of days is "from" the first."""
+    text = " ".join(str(phrase or "").split())
+    low = text.lower()
+    if text and (said := _holiday_said(low)):
+        return said
+    if not text or _ADVERB_LEAD.match(low):
+        return text
+    if said := _rolling_said(text):
+        return said
+    if _ADVERB_BARE.search(low):
+        return text
+    return _dated_said(text, low) or (f"in {text}" if low.startswith(("a ", "an ")) else text)
+
+
+def proper_days(text: str) -> str:
+    """A month or a weekday typed small is said with its capital: "in
+    october" is "in October" in an answer (audit 1030 Z45)."""
+    return re.sub(r"\b[a-z]+\b", lambda m: m.group(0).capitalize() if m.group(0) in MONTH_NAMES or m.group(0) in WEEKDAY_NAMES else m.group(0), text)
+
+
+_DEICTIC_LEAD = re.compile(r"^(?:Today|Tomorrow|Yesterday|Tonight)\b")
+
+
+def mid_sentence(span: str) -> str:
+    """A span that opens with a day word ("Tomorrow, Friday 30 October") with
+    that word lowered, for a frame that puts it mid-sentence."""
+    return span[0].lower() + span[1:] if _DEICTIC_LEAD.match(span) else span
 
 
 def find(text: str) -> list[tuple[int, int, str]]:
@@ -2492,6 +2630,33 @@ _DATED_WIDE = re.compile(
     r"(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?|\d{1,2}(?:st|nd|rd|th)\b(?: of)?(?: (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*)?|"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.? \d{1,2}|\d{1,2} (?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|"
     r"\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?|\d{4}-\d{2}-\d{2}|by (?:the )?end of|before (?:we|i) (?:go|leave)|deadline|due)\b", re.I)
+
+
+#: A verb that says a thing happened: an irregular past, or a regular one.
+_PAST_VERB = re.compile(
+    r"\b(?:was|were|had|did|went|slept|ate|felt|saw|met|ran|got|came|left|took|made|spent|lost|won|"
+    r"[a-z]{3,}ed)\b", re.I)
+#: Words that set a thing up for later, so the day they name is ahead:
+#: "booked for", "moved to", "due", "will", "next".
+_ARRANGED = re.compile(
+    r"\b(?:booked|scheduled|planned|moved|arranged|organised|organized|confirmed|registered|signed up|set|"
+    r"rescheduled|postponed|pushed|due|will|going to|gonna|next|upcoming|deadline|need|needs|have to|has to)\b", re.I)
+
+
+def set_for_later(sentence: str) -> bool:
+    """Whether a sentence sets a thing up for its day ("Booked for 14
+    November", "moved to Friday", "due Friday"): the day it names is ahead of
+    the note, and it is not a thing that happened. A day must be named:
+    "I've just booked flights" is the booking itself, done that day."""
+    return bool(_ARRANGED.search(sentence or "")) and dated_sentence(sentence)
+
+
+def told_as_past(sentence: str) -> bool:
+    """Whether a sentence tells of something that happened ("Slept badly on
+    Tuesday.", "Went to the gym on Monday"), not a thing set for its day
+    ("Dentist booked for Thursday", "The essay is due Friday"): its day is
+    behind the writer, never one ahead (audit 1030 Z26)."""
+    return bool(_PAST_VERB.search(sentence or "")) and not _ARRANGED.search(sentence or "")
 
 
 def dated_sentence(text: str) -> bool:
@@ -3553,3 +3718,52 @@ def as_of_then(text: str) -> str:
     for pattern, repl in _DAY_SHIFT:
         text = pattern.sub(repl, text)
     return text
+
+
+#: Money and scores, for an answer that sums amounts or finds a word a note
+#: says by its shape ("money" by "$40", "rate" by "8/10"; 2026-10-30 sweep).
+_AMOUNT = re.compile(r"([$£€¥])\s?(\d[\d,]*(?:\.\d{1,2})?)(k\b)?")
+_MONEY = re.compile(r"[$£€¥]\s?\d|\b\d[\d,.]*\s?(?:dollars|pounds|euros|quid|bucks|usd|gbp|eur)\b", re.I)
+_SCORE = re.compile(r"\b\d+(?:\.\d+)?\s?(?:/\s?(?:5|10|20|100)\b|out of \d+|stars?\b)", re.I)
+
+
+def says_shape(shape: str, text: str) -> bool:
+    """Whether `text` holds a "money" amount or a "score" ("8/10", "4 stars")."""
+    pattern = {"money": _MONEY, "score": _SCORE}.get(shape)
+    return bool(pattern and pattern.search(text or ""))
+
+
+class Measure(tuple):
+    """(dimension, value, unit, offset), and `end` (where the figure and its
+    unit stop), so a caller can read the words after it."""
+
+    end: int
+
+    @property
+    def at(self) -> int:
+        return self[3]
+
+    def __new__(cls, dimension: str, value: float, unit: str, at: int, end: int) -> "Measure":
+        made = super().__new__(cls, (dimension, value, unit, at))
+        made.end = end
+        return made
+
+
+def measures(text: str) -> list[Measure]:
+    """Each measured amount, temperature aside: (dimension, value in the
+    dimension's base unit, the unit as written, offset). "5 km" and "800 m"
+    add up because both are metres here (CHAT_PLAN, placed 2026-10-30).
+    Money is a dimension too ("money"), its base unit the currency, so "$86"
+    is (money, 86.0, "$", offset) and "$1.5k" is 1500."""
+    raw = text or ""
+    found = []
+    for m in _AMOUNT.finditer(raw):
+        found.append(Measure("money", float(m.group(2).replace(",", "")) * (1000 if m.group(3) else 1), m.group(1), m.start(), m.end()))
+    for m in _rx("quantity").finditer(raw.lower()):
+        name, glued, written = m.group(3), not m.group(2), raw[m.start(3):m.end(3)]
+        if name in _NOT_IN_TEXT or name in CURRENCY_NAMES or (name in _GLUED_ONLY and not glued and written not in _SPACED_CAPITALS):
+            continue
+        dimension, size, _said = UNITS[name]
+        if dimension != "temperature" and raw[m.start() - 1:m.start()] not in ("$", "£", "€", "¥"):
+            found.append(Measure(dimension, _figure(m.group(1)) * size, name, m.start(), m.end()))
+    return sorted(found, key=lambda x: x[3])

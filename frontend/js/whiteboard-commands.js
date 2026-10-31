@@ -60,6 +60,8 @@ const wbCommandNeeds = {
   tree: () => wbTidyEdges(wbSelectionEntries()).length > 0,
   swappable: () => Boolean(wbSwapTarget()),
   joinable: () => wbJoinableEntries().length >= 2,
+  voteable: () => wbVoteTargets().length > 0,
+  measurable: () => wbJoinableEntries().length >= 2 || wbCommandTextTarget()?.kind === "link",
   linkable: () => wbMultiSelection.size <= 1 && Boolean(wbSelectedItem) && wbTakesLink(wbSelectedItem.kind, wbFindItem(wbSelectedItem.kind, wbSelectedItem.id)),
   two: () => wbCommandSelectionCount() >= 2,
   three: () => wbCommandSelectionCount() >= 3,
@@ -168,6 +170,7 @@ const WB_COMMANDS = [
   { id: "fold-level-2", group: "View", icon: "ph:list-dashes", label: "Show two levels", keys: "Alt+2", surface: "map", run: () => wbMapFoldToLevel(2) },
   { id: "fold-level-3", group: "View", icon: "ph:list-dashes", label: "Show three levels", keys: "Alt+3", surface: "map", run: () => wbMapFoldToLevel(3) },
   { id: "insert-parent", group: "Item", icon: "ph:arrow-elbow-left-up", label: "Insert a parent topic", keys: "Ctrl+Enter", surface: "map", needs: "topic", run: () => wbMapInsertParent(wbSelectedMapNode()?.id) },
+  { id: "move-under", group: "Item", icon: "ph:arrow-bend-right-down", label: "Move under…", keys: "M", surface: "map", needs: "topic", run: () => wbMapMoveUnder(wbSelectedMapNode()?.id) },
   { id: "sort-az", group: "Item", icon: "ph:sort-ascending", label: "Sort branches A to Z", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, 1) },
   { id: "sort-za", group: "Item", icon: "ph:sort-descending", label: "Sort branches Z to A", keys: "", surface: "map", needs: "topic", run: () => wbMapSortChildren(wbSelectedMapNode()?.id, -1) },
   { id: "dim-branch", group: "View", icon: "ph:circle-half", label: "Dim all but the selected branch", keys: "", surface: "map", run: () => wbMapSetDim(!wbMapDim.on) },
@@ -197,8 +200,13 @@ const WB_COMMANDS = [
   { id: "tidy-right", group: "Arrange", icon: "ph:tree-view", label: "Tidy as a tree, left to right", menu: "Left to right", keys: "", surface: "board", needs: "tree", run: () => wbTidySelection("right") },
   { id: "join-chain", group: "Arrange", icon: "ph:arrow-elbow-down-right", label: "Connect the selected in a line, one to the next", menu: "In a line", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("chain") },
   { id: "join-fan", group: "Arrange", icon: "ph:share-network", label: "Connect the selected to the first one picked", menu: "All to the first picked", keys: "", surface: "board", needs: "joinable", run: () => wbJoinSelection("fan") },
+  { id: "measure", group: "Arrange", icon: "ph:ruler", label: "Measure: a dimension line with its length", menu: "Measure with a dimension line", keys: "", surface: "board", needs: "measurable", run: () => wbMeasureSelection() },
   { id: "change-shape", group: "Arrange", icon: "ph:shapes", label: "Change the shape to another kind…", menu: "Change the shape…", keys: "", surface: "board", needs: "swappable", run: () => wbOpenShapeSwapMenu() },
   { id: "text-fit", group: "Edit", icon: "ph:arrows-in-simple", label: "Shrink the text to fit the shape (on or off)", keys: "", surface: "board", needs: "swappable", run: () => wbToggleLabelFit() },
+  { id: "vote", group: "Edit", icon: "ph:circle", label: "Add a vote dot to the selected items", menu: "Add a vote dot", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(1) },
+  { id: "unvote", group: "Edit", icon: "ph:circle-dashed", label: "Take a vote dot off the selected items", menu: "Take a vote dot off", keys: "", surface: "board", needs: "voteable", run: () => wbVoteSelection(-1) },
+  { id: "clear-votes", group: "Edit", icon: "ph:eraser", label: "Clear every vote dot on this board", menu: "Clear all vote dots", keys: "", surface: "board", run: () => wbClearVotes() },
+  { id: "timer", group: "Edit", icon: "ph:timer", label: "Start a workshop timer…", menu: "Workshop timer…", keys: "", surface: "board", run: () => wbOpenTimerMenu() },
   { id: "item-link", group: "Edit", icon: "ph:link-simple", label: "Link to a note or a web page…", menu: "Link…", keys: "", surface: "board", needs: "linkable", run: () => wbEditItemLink() },
   { id: "group", group: "Arrange", icon: "ph:link", label: "Group", keys: "Ctrl+G", surface: "board", needs: "groupable", run: () => wbGroupSelection() },
   { id: "ungroup", group: "Arrange", icon: "ph:link-break", label: "Ungroup", keys: "Ctrl+Shift+G", surface: "board", needs: "ungroupable", run: () => wbUngroupSelection() },
@@ -220,6 +228,7 @@ const WB_COMMANDS = [
   { id: "insert-frame", group: "Insert", icon: "ph:frame-corners", label: "Frame", keys: "F", surface: "board", run: wbTool("frame") },
   //: canvasdepth2: draw.io's table, rows and columns of text cells.
   { id: "insert-table", group: "Insert", icon: "ph:table", label: "Table", keys: "", surface: "board", run: () => wbInsertTable() },
+  { id: "insert-diagram", group: "Insert", icon: "ph:graph", label: "Mermaid diagram, live", menu: "Mermaid diagram…", keys: "", surface: "board", run: () => wbOpenDiagramDialog() },
   //: draw.io's Edit data (Ctrl+M): the Format panel's Data tab.
   { id: "edit-data", group: "Edit", icon: "ph:database", label: "Edit data", keys: "", surface: "board", needs: "selection", run: () => wbFormatOpen("data") },
   { id: "insert-image", group: "Insert", icon: "ph:image", label: "Image from a file", keys: "I", surface: "board", run: wbClickId("wb-add-image") },
@@ -316,6 +325,8 @@ function wbRunCommand(id) {
       tree: "Select two or more shapes and the connectors between them first.",
       swappable: "Select one closed shape first.",
       joinable: "Select two or more shapes, text boxes or notes first.",
+      voteable: "Select a note, text box, picture or frame first.",
+      measurable: "Select two or more shapes, or one connector, first.",
       linkable: "Select one shape, text box or picture first.",
       shape: "Select one closed shape or one connector first.",
       link: "Select one connector first.",
@@ -614,6 +625,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:plus", label: "Add a child, a topic beside it", keys: ["Tab", "Enter"] },
     { icon: "ph:arrow-left", label: "Outdent a branch", keys: ["Shift+Tab"] },
     { cmd: "insert-parent" },
+    { cmd: "move-under" },
     { icon: "ph:arrows-out-cardinal", label: "Walk the tree", keys: ["arrows"] },
     { icon: "ph:pencil-simple", label: "Rename a topic", keys: ["F2", "double-click"] },
     { icon: "ph:trash", label: "Delete the topic and its branch", keys: ["Delete"] },
@@ -631,8 +643,12 @@ const WB_HELP_SECTIONS = [
     { cmd: "tool-diamond" }, { cmd: "insert-text" }, { cmd: "insert-sticky" }, { cmd: "insert-frame" },
     { cmd: "insert-image" }, { cmd: "tool-connector" }, { cmd: "tool-connector-curved" }, { cmd: "tool-delete" },
   ] },
+  { title: "Pan and box select", surface: "both", rows: [
+    { icon: "ph:hand", label: "Pan", keys: ["right drag", "two-finger scroll", "one finger on a touch screen"] },
+    { icon: "ph:selection", label: "Box select", keys: ["drag empty canvas", "Shift+drag adds"] },
+  ] },
   { title: "Move around", surface: "both", rows: [
-    { icon: "ph:hand", label: "Pan", keys: ["H then drag", "middle drag", "two-finger scroll"] },
+    { icon: "ph:hand", label: "Pan from anywhere", keys: ["H then drag", "middle drag", "two-finger scroll"] },
     { icon: "ph:arrows-horizontal", label: "Pan sideways", keys: ["Shift+wheel"] },
     { icon: "ph:hand-grabbing", label: "Pan with any tool", keys: ["Space+drag"] },
     { icon: "ph:magnifying-glass-plus", label: "Zoom", keys: ["wheel", "pinch"] },
@@ -672,7 +688,7 @@ const WB_HELP_SECTIONS = [
     { icon: "ph:text-aa", label: "Label a line", keys: ["select it, Enter"] },
   ] },
   { title: "View", surface: "both", rows: [
-    { icon: "ph:presentation", label: "Present frames (View menu): next, end", keys: ["arrows", "Esc"] },
+    { icon: "ph:presentation", label: "Present frames (View menu): next, end, page list in the bar", keys: ["arrows", "Esc"] },
     { icon: "ph:keyboard", label: "This sheet", keys: ["?"] },
     { icon: "ph:command", label: "Find any action by name", keys: ["Ctrl+K"] },
   ] },
@@ -864,7 +880,48 @@ async function wbJoinSelection(mode) {
     }
   });
   wbScheduleRender();
-  wbAnnounce(`Joined ${plan.length} pair${plan.length === 1 ? "" : "s"}.`);
+  wbAnnounce(`Joined ${nounCount(plan.length, "pair")}.`);
+}
+
+//: **A dimension line** (draw.io's; INBOX 1313 row 7): a connector with an
+//: arrow at each end and `%length%` for its label, so it reads its own drawn
+//: length and keeps it right as either end moves. Two or more shapes selected:
+//: one is drawn across each gap, in reading order. One connector selected: it
+//: becomes one. The label is plain text a person can retype.
+const WB_MEASURE_LABEL = "%length%";
+
+async function wbMeasureSelection() {
+  const own = wbCommandTextTarget();
+  if (own?.kind === "link") {
+    await wbRecordGesture(() => wbSaveSketchProps(own.sketch, { label: WB_MEASURE_LABEL, startCap: "arrow", endCap: "arrow" }));
+    wbScheduleRender();
+    wbAnnounce("This connector now shows its length.");
+    return;
+  }
+  const entries = wbJoinableEntries();
+  if (entries.length < 2) {
+    toast("Select two or more shapes, or one connector, to measure.");
+    return;
+  }
+  const plan = wbJoinPlan(entries, "chain");
+  const color = window.currentStrokeColor || "#888888";
+  await wbRecordGesture(async () => {
+    for (const [a, b] of plan) {
+      const data = {
+        type: "link-straight", color, width: 2, startCap: "arrow", endCap: "arrow", label: WB_MEASURE_LABEL,
+        sourceId: a.id, targetId: b.id, ...wbFacingAnchors(a, b),
+      };
+      if (a.kind !== "node") data.sourceKind = a.kind;
+      if (b.kind !== "node") data.targetKind = b.kind;
+      const link = await apiJson("/whiteboard/sketches", {
+        method: "POST",
+        body: JSON.stringify({ data: JSON.stringify(data), x: 0, y: 0, z: wbStackNewZ("sketch"), board_id: window.currentBoardId ?? null }),
+      });
+      wbState.sketches.push(link);
+    }
+  });
+  wbScheduleRender();
+  wbAnnounce(`Measured ${nounCount(plan.length, "gap")}.`);
 }
 
 // --- Pasting onto a board or a map, and Paste special (wbpaste-1026) ---

@@ -52,15 +52,6 @@ function highlighterWidth(penWidth) {
   );
 }
 
-// `backdropIsDark` is about what the stroke composites *against*, which is
-// not the same question as which theme is on. The pad's strokes land in their
-// own transparent canvas stacked over a separate paper canvas, so the
-// backdrop a canvas blend sees is the other strokes and never the paper: the
-// pad passes false in both themes. The board's paths blend against the board
-// itself, so it passes the resolved mode.
-function highlighterBlend(backdropIsDark) {
-  return backdropIsDark ? HIGHLIGHTER_STYLE.blendOnDark : HIGHLIGHTER_STYLE.blendOnLight;
-}
 
 // --- Quick sketch: the app's half ---------------------------------------------------
 //
@@ -78,6 +69,7 @@ function sketchHost() {
     title: "Quick sketch",
     save: saveSketch,
     toast: (message, isError = false) => toast(message, isError),
+    toastAction: (message, label, run) => toastAction(message, label, run),
     confirm: (message, options) => confirmDialog(message, options),
     prefs: {
       get: (key, fallback) => prefs.json(`sketch-pad-${key}`, fallback),
@@ -94,6 +86,8 @@ function sketchHost() {
 
 //: `options.image` (a Blob) goes under the ink and `options.caption` into
 //: the caption: the Annotate action on a picture (attachment-actions.js).
+//: `options.host` stands in for the app's host: the capture card draws a
+//: picture for the note it is writing (capture-card-more.js).
 async function openSketch(options = {}) {
   overlayReturnFocus = document.activeElement;
   const loaded = await Promise.all([lazyScript("/css/sketch-pad.css"), lazyScript("/js/sketch-pad.js")]);
@@ -102,7 +96,7 @@ async function openSketch(options = {}) {
     return;
   }
   $("sketch-overlay").classList.remove("hidden");
-  window.SketchPad.open($("sketch-card"), sketchHost(), options);
+  window.SketchPad.open($("sketch-card"), options.host || sketchHost(), options);
 }
 
 //: Asks the pad first: a drawing not yet saved is confirmed before it goes.
@@ -153,8 +147,8 @@ async function saveSketch(blob, caption) {
     }),
   });
   if (!entry?.id) throw new Error("Couldn't save the sketch note.");
-  pushEntryCreateUndo(entry, "Saved a sketch");
-  toast("Sketch saved to your notebook.");
+  // The pad closes right after this returns (`overlayReturnFocus` is still its opener); `focusOpener` waits for that.
+  announceSavedNote(entry, "", { message: "Sketch saved to your notebook.", undoLabel: "Saved a sketch", opener: overlayReturnFocus });
   loadEntries().catch(() => {});
 }
 

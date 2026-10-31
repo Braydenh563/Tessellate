@@ -20,6 +20,8 @@ and left in that one, which has no latency budget at all.
 from __future__ import annotations
 
 import os
+import threading
+import time
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
@@ -28,7 +30,7 @@ from sqlalchemy.orm import Session
 
 from tessellate import __version__
 from tessellate.api import routes_tasks
-from tessellate.core import deps, logbuffer, taskhistory
+from tessellate.core import deps, jobs, logbuffer, taskhistory
 from tessellate.core.database import Attachment, Document, Entry, MediaUpload, Reminder
 from tessellate.core.deps import get_session
 
@@ -76,6 +78,22 @@ def _db_name(config) -> str:  # noqa: ANN001
         return Path(config.db_path).name
 
 
+def db_footprint(db_path: Path) -> dict:
+    """What the database takes on disk: the file, plus the write-ahead log and
+    its shared-memory index beside it. The log holds recent writes until a
+    checkpoint, so the main file alone read 4 KB beside a 2.9 MB log (audit
+    1029 X17). A file that is not there counts as 0."""
+    def size(path: Path) -> int:
+        try:
+            return path.stat().st_size
+        except OSError:
+            return 0
+
+    main = size(db_path)
+    wal = sum(size(db_path.with_name(db_path.name + suffix)) for suffix in ("-wal", "-shm"))
+    return {"main_bytes": main, "wal_bytes": wal, "size_bytes": main + wal}
+
+
 @router.get("/health")
 def debug_health(session: Session = Depends(get_session)) -> dict:
     """One page's worth of "is this notebook okay", Settings › About reads
@@ -83,12 +101,9 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
     bug report too: nothing here is note content, nothing here writes.
     """
     config = deps.get_config()
-    try:
-        db_size_bytes = config.db_path.stat().st_size
-    except OSError:
-        # A brand new notebook, or a data dir moved out from under the
-        # process: 0 is the honest answer, not a 500 over a stat() call.
-        db_size_bytes = 0
+    # A brand new notebook, or a data dir moved out from under the process,
+    # is 0 bytes: the honest answer, not a 500 over a stat() call.
+    footprint = db_footprint(Path(config.db_path))
 
     live = Entry.is_deleted == False  # noqa: E712
     counts = {
@@ -132,7 +147,7 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
     return {
         "app_version": __version__,
         "data_dir": shown_path(config.data_dir),
-        "db": {"path": _db_name(config), "size_bytes": db_size_bytes},
+        "db": {"path": _db_name(config), **footprint},
         "counts": counts,
         # A "more queued" row (`jobs.pending`) stands for that many jobs.
         "jobs": {
@@ -150,15 +165,83 @@ def debug_health(session: Session = Depends(get_session)) -> dict:
 _last_integrity: dict = {"at": None, "ok": None, "result": "", "index": {}}
 
 
-def _dir_bytes(path: Path) -> int:
+def _dir_bytes(path: Path, deadline: float | None = None) -> tuple[int, bool]:
+    """`(bytes, complete)`: the folder's size, stopping at `deadline` (a
+    `time.monotonic()` value) with what was counted so far."""
     total = 0
     for root, _dirs, files in os.walk(path):
+        if deadline is not None and time.monotonic() > deadline:
+            return total, False
         for name in files:
             try:
                 total += (Path(root) / name).stat().st_size
             except OSError:
                 continue
-    return total
+    return total, True
+
+
+#: **The folder's size is measured once in a while, not on every read**
+#: (INBOX 1426 L1: `/debug/health` took 10.9s the moment Settings opened). It
+#: walks every file under the data folder, which on Windows with thousands of
+#: uploads and caches, each stat checked by the virus scanner, is seconds.
+#: A figure under `DIR_BYTES_TTL` old is served as it is; an older one is
+#: served too, and measured again on a thread of the pool; the very first ask
+#: walks for at most `DIR_BYTES_FIRST_BUDGET`, then answers with what it
+#: counted and `data_dir_bytes_partial`, the walk finishing behind it.
+DIR_BYTES_TTL = 120.0
+DIR_BYTES_FIRST_BUDGET = 1.0
+_dir_cache: dict = {"bytes": None, "at": 0.0, "walking": False, "partial": False, "path": ""}
+_dir_lock = threading.Lock()
+
+
+def _measure_dir_in_background(path: Path) -> None:
+    try:
+        total, _ = _dir_bytes(path)
+        with _dir_lock:
+            _dir_cache.update({"bytes": total, "at": time.monotonic(), "partial": False, "path": str(path)})
+    finally:
+        with _dir_lock:
+            _dir_cache["walking"] = False
+
+
+def _data_dir_size(path: Path) -> tuple[int, bool]:
+    """`(bytes, partial)` for the Health page; see `DIR_BYTES_TTL`."""
+    now = time.monotonic()
+    with _dir_lock:
+        same = _dir_cache["path"] == str(path)
+        known = _dir_cache["bytes"] if same else None
+        partial = bool(_dir_cache["partial"]) if same else False
+        if known is not None and not partial and now - _dir_cache["at"] < DIR_BYTES_TTL:
+            return known, False
+        start = not _dir_cache["walking"]
+        if start:
+            _dir_cache["walking"] = True
+    if known is not None:
+        # Stale, or a first partial count still being finished: serve it.
+        if start:
+            _queue_dir_walk(path)
+        return known, partial
+    if not start:
+        return 0, True  # another ask is walking it for the first time
+    # Nothing measured yet: walk here, briefly, so a small notebook still
+    # answers with its real size on the first ask.
+    total, complete = _dir_bytes(path, deadline=time.monotonic() + DIR_BYTES_FIRST_BUDGET)
+    if complete:
+        with _dir_lock:
+            _dir_cache.update({"bytes": total, "at": time.monotonic(), "partial": False, "path": str(path), "walking": False})
+        return total, False
+    with _dir_lock:
+        _dir_cache.update({"bytes": total, "partial": True, "path": str(path), "at": 0.0})
+    _queue_dir_walk(path)
+    return total, True
+
+
+def _queue_dir_walk(path: Path) -> None:
+    try:
+        jobs.enqueue("maintenance", _measure_dir_in_background, path, name="measure the notebook folder")
+    except Exception:  # noqa: BLE001  # the figure stays as it was; the next ask tries again
+        with _dir_lock:
+            _dir_cache["walking"] = False
 
 
 def _trust(config, error_lines: list[dict]) -> dict:  # noqa: ANN001
@@ -173,12 +256,14 @@ def _trust(config, error_lines: list[dict]) -> dict:  # noqa: ANN001
     except OSError:
         newest = None
     last_error = error_lines[-1] if error_lines else None
+    data_dir_bytes, data_dir_partial = _data_dir_size(Path(config.data_dir))
     return {
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "last_backup": {"at": newest["created_at"], "name": newest["name"]} if newest else {"at": None, "name": ""},
         "last_error": {"at": last_error.get("time"), "line": str(last_error.get("message", ""))[:300]} if last_error else {"at": None, "line": ""},
         "running": routes_tasks.activity_rows(),
-        "data_dir_bytes": _dir_bytes(Path(config.data_dir)),
+        "data_dir_bytes": data_dir_bytes,
+        "data_dir_bytes_partial": data_dir_partial,
         "integrity": dict(_last_integrity),
     }
 

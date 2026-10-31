@@ -125,7 +125,8 @@ def test_fixed_phrases_come_in_variants(ask):
         line
         for q in ("what is the harbor launch plan", "when is the dentist", "what is hydration", "what are the three gates", "what is the Lisbon trip", "what is the Porto trip")
         for line in ask(q).splitlines()
-        if "only note" in line or "only one" in line
+        #: Case-blind: the words-only wording opens "Only one note" (blind test 1031).
+        if "only note" in line.lower() or "only one" in line.lower()
     }
     assert len(said) >= 2, said
 
@@ -172,6 +173,8 @@ def test_a_note_opening_on_its_own_day_is_dated_once_and_reported():
     work not have"."""
     from tessellate.ai import composer_digest
 
+    #: A dated line is said only for a question about time (INBOX 1441).
+    composer_digest._set_timing("what did I write on 21 September?")
     said, _ = composer_digest._dated_line(
         "on 21 September, you have work. You need to finish your IT assignment, which is due on Friday.",
         "21 September", 1,

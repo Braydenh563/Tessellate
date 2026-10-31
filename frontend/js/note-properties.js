@@ -357,7 +357,7 @@ function openQueryTable(ids) {
   const columns = [...counts.keys()].sort((a, b) => (a === "type" ? -1 : b === "type" ? 1 : counts.get(b) - counts.get(a) || a.localeCompare(b))).slice(0, 8);
   openSheet({
     label: "Query table",
-    sub: `${rows.length} note${rows.length === 1 ? "" : "s"} · ${noteSearch}`,
+    sub: `${nounCount(rows.length, "note")} · ${noteSearch}`,
     name: "query-table",
     build: (card, close) => {
       card.classList.add("inbox-card");
@@ -492,5 +492,5 @@ async function showQueryOnGraph(ids) {
   if (typeof applyGraphHighlight !== "function") return;
   graphHighlightIds = new Set(ids);
   applyGraphHighlight();
-  toast(`${ids.length} note${ids.length === 1 ? "" : "s"} lit. Clear highlight puts the map back.`);
+  toast(`${nounCount(ids.length, "note")} lit. Clear highlight puts the map back.`);
 }

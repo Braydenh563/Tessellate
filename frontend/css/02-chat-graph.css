@@ -2014,6 +2014,7 @@ kbd {
   font-size: var(--text-base);
   font-weight: 600;
   background: none;
+  box-shadow: none;
   color: var(--accent-text);
   border: 1px solid transparent;
   flex: 0 0 auto;
@@ -2032,6 +2033,7 @@ kbd {
   padding: 0.1rem;
   border: none;
   background: none;
+  box-shadow: none;
   color: inherit;
   opacity: 0.6;
   cursor: pointer;
@@ -2136,7 +2138,7 @@ kbd {
    the setting, because everything else is decoration. A new progress
    animation has to be added here, and that is the intended cost: the
    alternative is a rule that quietly exempts things nobody meant to exempt.
-   Governed by `progress-motion` (Settings → Appearance), which defaults to
+   Governed by `progress-motion` (Settings, Appearance), which defaults to
    "always", see APPEARANCE_DEFAULTS in settings.js for why a spinner is not
    chrome. Choosing "Still" removes the attribute's value from this selector
    and the blanket takes over again, which is what that option means.
@@ -2781,11 +2783,7 @@ kbd {
 .menu-item.menu-item-unavailable:focus-visible {
   background: none;
 }
-/* Grouped submenus in the note card's ⋯ menu, asked for directly: a side
-   flyout for related actions instead of one long flat list. */
-.menu-group {
-  position: relative;
-}
+/* Grouped submenus: a side flyout for related actions. */
 .menu-item.has-submenu {
   display: flex;
   align-items: center;
@@ -2796,10 +2794,7 @@ kbd {
 .menu-submenu-arrow {
   opacity: 0.6;
 }
-/* menus.js's openActionMenu() adds this when the menu would spill past the
-   nearest scrolling ancestor if opened downward (00-tokens-shell.css and
-   04-chat-dock-appearance.css's `.menu-wrap` variants are exactly that
-   case) - opens upward from the button instead. */
+/* Opens upward when the menu would spill past its scrolling ancestor. */
 .action-menu.action-menu-flip {
   top: auto;
   bottom: calc(100% + 4px);
@@ -2810,28 +2805,22 @@ kbd {
   right: auto;
   margin-left: var(--space-2);
 }
-/* Flipped when the default side would run off the right edge of the
-   viewport: the same "which side has room" check the graph/timeline
-   popups already do, applied here instead of guessing a fixed side. */
-.action-menu.submenu.submenu-left {
-  left: auto;
-  right: 100%;
-  margin-left: 0;
-  margin-right: var(--space-2);
-}
-/* Below phone width there is nowhere for a side flyout to go without
-   running off-screen: asked for directly ("compatible for small screen
-   sizes like iPhones"). Drops the flyout positioning entirely and expands
-   the group in place instead, indented to still read as nested. */
-@media (max-width: 819.98px) {
+/* Where a side flyout has nowhere to go (a narrow window, or a touch screen
+   with no hover: `SUBMENU_STACK` in menus.js) the group is a nested level of
+   the same menu: its rows replace the menu's, under a back row. */
+@media (max-width: 819.98px), (hover: none) {
   .action-menu.submenu {
     position: static;
-    min-width: 0;
+    min-width: 100%;
     margin: 0;
-    padding: 0 0 0 var(--space-6);
-    border: none;
+    padding: 0;
+    border: 0;
     box-shadow: none;
     background: none;
+  }
+  .action-menu.menu-nested > :not(.menu-group-open),
+  .menu-group-open > .menu-item:first-child {
+    display: none;
   }
 }
 /* Type polish: a touch more base size + calmer headings. */
@@ -3269,6 +3258,14 @@ mark.lightbox-hit {
 .msg-attachment {
   margin: 0;
 }
+/* Above the user's bubble, on its side (INBOX 1460). */
+#chat-messages > .msg-attachments {
+  align-self: flex-end;
+  justify-content: flex-end;
+  max-width: min(82%, 54rem);
+  /* Not the list's actions-row gap: only a space-3 to its own bubble. */
+  margin: 0 0 calc((var(--space-9) + var(--space-3)) * -1 + var(--space-3));
+}
 .msg-attachment-image {
   display: flex;
   flex-direction: column;
@@ -3328,44 +3325,6 @@ mark.lightbox-hit {
 }
 .msg-attachment-missing {
   border-style: dashed;
-}
-/* A note clipped to the question, and a document: the same card, because
-   they are the same statement, "the answer was given this to read, click to
-   open it". */
-.msg-attachment-note,
-.msg-attachment-doc {
-  cursor: pointer;
-  max-width: 16rem;
-  /* Aligned with the image card beside it rather than floating as a bare
-     chip: two attachments on one message are one row of cards, and a chip
-     with no box next to a boxed thumbnail read as an unrelated stray. */
-  align-self: flex-start;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  background: var(--chip-bg);
-  /* A long filename must not stretch the chip past the bubble. */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* **On the user's own bubble, which is a solid accent fill.** Measured in a
-   screenshot before this existed: `--chip-bg` over accent is very nearly the
-   accent itself, and `--muted` caption text on it was grey-on-blue, the card
-   was there and could not be read. The tokens are page-surface tokens and
-   there is no page surface here, so the whole strip switches to the same
-   translucent-white treatment the lightbox uses over a photograph, which
-   works against any accent the user has picked rather than against one. */
-.msg.user .msg-attachment-image,
-.msg.user .msg-attachment-note,
-.msg.user .msg-attachment-doc {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-.msg.user .msg-attachment-actions button:hover,
-.msg.user .msg-attachment-actions button:focus-visible {
-  background: rgba(255, 255, 255, 0.26);
 }
 .lightbox-info {
   /* Reported directly: hovering this panel still showed the zoom-out cursor
@@ -4768,9 +4727,16 @@ mark.lightbox-hit {
    the formatting strip's menus, and for the same reason: where it should go
    depends on where the badge has ended up, which CSS here cannot know. The
    `top`/`left` below are only the pre-measurement seed. */
+/* The floating panels the app stays usable behind share one layer: level
+   with the top bar, over every bar the page pins below it (the notes dock at
+   19 drew over the Appearance panel at 2, INBOX 1453), under every menu,
+   dialog and toast. Later in the page, a panel wins the tie with the bar. */
+.chat-model-panel,
+.appearance-panel {
+  z-index: 40;
+}
 .chat-model-panel {
   position: fixed;
-  z-index: 40;
   top: 0;
   left: 0;
   margin-top: var(--space-2);
@@ -5148,7 +5114,9 @@ button.ghost.danger:is(:focus-visible, :has(:focus-visible)) {
   border: none;
   border-radius: 0;
 }
-/* The minimap's top corners clear the floating dock. The bottom corners are
+/* The minimap's top corners clear the floating dock and, while Trace is open,
+   its strips (`initGraphRailToken` writes the extra into `--graph-chrome-top`
+   on the card, audit 1029 G24: 8,861 px² of overlap at 1440x900). The bottom corners are
    left where they are: bottom left is the legend's, which is a collision the
    corner setting exists to let someone step out of, and the default (top
    left) is now the corner nothing else claims. */

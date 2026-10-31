@@ -106,13 +106,16 @@ REACHED_AFTER_LOAD = {
     #: === "function"`; the mind's first tick fetches the bundle, and until
     #: it is here a far move walks.
     "popupToolEquation": "POPUP_TOOLS' open, which waits on ensureModule('appPalette') before the call",
+    "renderShortcutList": "settings.js asks for it in the .then of ensureModule('reveal'); settings-wiring's resetShortcuts and captureShortcutKey run only once a list built by this bundle is on screen",
     "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
     "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",
+    "imageLayout": "appendInlineRun (notes-list.js), called as window.imageLayout?.(): a picture drawn before the library bundle arrives is plain, and image-layout.js lays out what is already on the page when it loads (its sweep), so nothing is lost",
     "mdRunNode": "appendInlineRun, behind a typeof check: a run (INBOX 1403) is written only in a board text box, which is the library bundle; read in a note before that bundle arrives, its words draw plain and are not lost (the grammar and the preview are at boot)",
     "wbSelectionBarFit": "selectionBarShow on a board box, which exists only once whiteboard.js (library bundle) has drawn the board; elsewhere there is nothing to fit",
     "mermaidDrawBlock": "mermaidSoon (navigation.js), inside the then of ensureModule('mermaid'): it runs only once the bundle has loaded",
     "findSettings":"settingsUi, called by filterSettings only when renderSettingResults (same bundle) returned a count",
+    "linkCancel": "settings-wiring's Escape handler, only while `linkSource !== null`, which beginOrCompleteLink (the same notePanels bundle) alone sets",
     "companionPathPlan": "companionMenu, fetched with the mind at the first tick; a far move walks until then (typeof check)",
     "nameMarkBuddyThrow": "companionThrow, fetched on the carry's first move; the release checks typeof and drops otherwise",
     "companionThrowPlan": "companionThrow, called by the release only when `thrown`, which is false unless typeof nameMarkBuddyThrow (same bundle) is a function",
@@ -170,6 +173,7 @@ REACHED_AFTER_LOAD = {
     #: reader (Tools and features, Quick access, startApp's recovered recordings)
     #: awaits `lazyScript` / `ensureModule` before it reads or calls.
     "featureCatalog": "appPalette, the palette's bundle names it; openFeatures and renderQuickLinks await lazyScript('/js/app-features.js') first",
+    "featureCommandRows": "renderFeatures, which runs after openFeatures awaits lazyScript('/js/app-features.js'); the search box only types once the dialog is open",
     "noteRecoveredRecordings": "meetings, called in the .then of ensureModule('meetings') in dashboard.js's startApp hook",
     #: INBOX 784: the Notes column's rows are drawn by connections.js;
     #: renderNotesRail awaits lazyScript('/js/connections.js') before any of them.
@@ -263,7 +267,7 @@ REACHED_AFTER_LOAD = {
     #: and the arrow keys, and these index and result extras are simply not
     #: drawn, which is the intended degradation.
     "settingsIndexWatchSection": "settingsUi, awaited by openSettingsModal before a section is shown",
-    "renderHelpTopics": "settingsUi, awaited by openSettingsModal on the line before the call",
+    "renderHelpTopics": "settingsUi, called when Help is shown or Settings is first searched, both inside the open dialog that awaited the bundle",
     "renderCredits": "settingsUi, awaited by openSettingsModal two lines before the call",
     "renderSettingResults": "settingsUi, called from the search field inside the open dialog",
     "settingQueryAlts": "settingsUi, called from filterSettings, the search field inside the open dialog (an empty query returns before it)",

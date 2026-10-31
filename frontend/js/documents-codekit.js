@@ -731,7 +731,7 @@ const docAssistModelOff = () => Boolean(modelStatus && modelStatus.ollama_runnin
 function docAssistTarget() {
   const state = docCmView.state;
   const sel = state.selection.main;
-  if (sel.empty) return { from: 0, to: state.doc.length, text: state.doc.toString(), whole: true };
+  if (sel.empty) return { from: 0, to: state.doc.length, text: docStr(state.doc), whole: true };
   const from = state.doc.lineAt(sel.from).from;
   const to = state.doc.lineAt(sel.to).to;
   return { from, to, text: state.sliceDoc(from, to), whole: false };
@@ -958,7 +958,7 @@ function docAssistTool(tool, args = {}, { keep = false } = {}) {
 }
 
 function docAssistCaretTo(name) {
-  const text = docCmView.state.doc.toString();
+  const text = docStr(docCmView.state.doc);
   const match = new RegExp(`\\b${name.replace(/[^\w$]/g, "")}\\b`).exec(text);
   if (match) docCmView.dispatch({ selection: { anchor: match.index }, scrollIntoView: true });
 }

@@ -40,6 +40,11 @@ function wireLongPress(target, handler, { selector = null } = {}) {
       };
       const timer = setTimeout(() => {
         cancel();
+        //: A card the hold has lifted (obj-drag.js) and moved is a drag; one held still is this menu.
+        if (typeof objDragNow !== "undefined" && objDragNow?.live) {
+          if (objDragNow.moved) return;
+          objDragFinish(true);
+        }
         //: **The lift-off is swallowed.** A hold ends like every other touch,
         //: with a click, and the element under it is the element the hold was
         //: about: measured on the graph at 390, holding a node opened its menu
@@ -269,6 +274,13 @@ document.addEventListener("change", (event) => {
   if (!list) return;
   const anchor = rangeAnchor;
   rangeAnchor = tick;
+  //: The Notes list is windowed (notes-list.js): the rows between two ticks
+  //: may not be built, so its range runs over the rows' ids.
+  if (list.id === "entry-list") {
+    const from = anchor?.closest("li[data-id]")?.dataset.id;
+    if (rangeShiftHeld && from) selectNoteRange(list, from, tick.closest("li[data-id]")?.dataset.id, tick.checked);
+    return;
+  }
   if (!rangeShiftHeld || !anchor || !anchor.isConnected || anchor.closest(RANGE_LISTS) !== list) return;
   //: In the order the rows are drawn, not the DOM's: the Library's columns
   //: put its cards in column order.
@@ -311,7 +323,7 @@ function openSelectionScope() {
       clear: () => bar.querySelector('[id$="-clear-selection"]')?.click(),
       selectAll: () => {
         const listId = bar.querySelector("[data-select-all-for]")?.dataset.selectAllFor;
-        const list = listId ? document.getElementById(listId) : bar.parentElement;
+        const list = listId ? $(listId) : bar.parentElement;
         const ticks = list ? [...list.querySelectorAll(RANGE_TICKS)] : [];
         if (ticks.some((t) => !t.checked)) bar.querySelector("[data-select-all-for]")?.click();
       },
@@ -809,10 +821,15 @@ const TABS = ["dashboard", "notes", "chat", "graph", "library", "timeline", "rem
 // exists: see revealTab("dashboard")'s module-level call below, and why
 // it's this instead of a full switchTab().
 function revealTab(name) {
+  //: One attribute on body is what the stylesheets key page-level rules on
+  //: (toast placement). They used `body:has(#tab-x:not(.hidden))`, which made
+  //: the engine re-match that rule against every tab flip (lag-1029.md).
+  document.body.dataset.tab = name;
   for (const tab of TABS) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
   scheduleUndoBar();
+  if (name === "notes" && $("entry-list").dataset.stale) renderEntries();
   // `documents` is a sub-view of Library, there is no `data-tab="documents"`
   // button in the tab bar, so the name that determines which button is active
   // must be "library" whenever we are showing the documents pane. Without
@@ -825,7 +842,7 @@ function revealTab(name) {
   // leaving them inside a catch-all view called "Documents" that showed
   // everything. Worth the note so the next session does not re-derive it.
   //: The companion finds its perch on the tab it is now on (avatars.js).
-  if (typeof nameMarkBuddyTabChanged === "function") nameMarkBuddyTabChanged();
+  window.nameMarkBuddyTabChanged?.();
   const activeTabName = name === "documents" ? "library" : name;
   for (const button of document.querySelectorAll("#tab-bar button")) {
     const active = button.dataset.tab === activeTabName;
@@ -1185,11 +1202,15 @@ async function openHistoryEntry(entry) {
       //: `library-view-media:files`: the view and, for the media view, its
       //: kind (library.js records both).
       const [target, kind] = (entry.section || "library-view-documents").split(":");
-      document
-        .querySelector(
-          `#library-subtabs button[data-target="${target}"]${kind ? `[data-media-kind="${kind}"]` : ""}`
-        )
-        ?.click();
+      //: The bin is a view of All, not a sub-tab of its own (`#/library/bin`).
+      if (target === "library-bin") await revealFeature("library-bin");
+      else {
+        document
+          .querySelector(
+            `#library-subtabs button[data-target="${target}"]${kind ? `[data-media-kind="${kind}"]` : ""}`
+          )
+          ?.click();
+      }
     }
   } else if (entry.tab === "chat" && entry.section) {
     if (entry.section.startsWith("conv:")) {
@@ -1241,49 +1262,7 @@ async function openHistoryEntry(entry) {
 //: announced every time a filter clears.
 const _surfaceFailedContents = new WeakMap();
 
-function surfaceFailed(el, what, retry) {
-  if (!el) return;
-  //: Saved once. A second failure while already failed must not capture the
-  //: failure message as "the original contents", which would make the real
-  //: empty state unrecoverable for the rest of the session.
-  if (!_surfaceFailedContents.has(el)) {
-    _surfaceFailedContents.set(el, { nodes: [...el.childNodes], display: el.style.display });
-  }
-  el.classList.add("is-failed");
-  el.classList.remove("hidden");
-  //: **And any inline `display` it is carrying.** The graph's empty state is
-  //: hidden with `style.display = "none"` rather than the class, deliberately
-  //: ("inline display beats every stylesheet rule", graph.js), so removing
-  //: `hidden` left the failure message in the document at 0 by 0 pixels:
-  //: present to every assertion and invisible to every reader. Measured, and
-  //: exactly the kind of fix that reports itself as working.
-  el.style.display = "";
-  el.replaceChildren();
-  const icon = document.createElement("i");
-  icon.className = "ph ph-warning-circle empty-icon";
-  icon.setAttribute("aria-hidden", "true");
-  const title = document.createElement("p");
-  title.className = "empty-title";
-  title.textContent = `Could not load your ${what}`;
-  const body = document.createElement("p");
-  //: Says what is and is not true, because the first thing a person fears
-  //: here is that the notes are gone.
-  body.textContent =
-    "Nothing has been lost: the app could not read its own data just now.";
-  el.append(icon, title, body);
-  if (typeof retry === "function") {
-    const again = document.createElement("button");
-    again.type = "button";
-    again.className = "ghost small";
-    setLabel(again, "ph:arrow-clockwise Try again");
-    again.addEventListener("click", () => {
-      surfaceRecovered(el);
-      retry();
-    });
-    el.appendChild(again);
-  }
-  el.setAttribute("role", "alert");
-}
+//: `surfaceFailed(el, what, retry)` is load-failed.js's (fetched a few seconds after boot).
 
 //: The other half, and the reason the contents are saved rather than rebuilt:
 //: an empty state's markup is written in index.html, per surface, with its own
@@ -1595,7 +1574,7 @@ function menuOfOpener(opener) {
   }
   if (opener.getAttribute("aria-expanded") !== "true") return null;
   const id = opener.getAttribute("aria-controls");
-  return id ? document.getElementById(id) : null;
+  return id ? $(id) : null;
 }
 
 document.addEventListener("keydown", (event) => {
@@ -1751,8 +1730,17 @@ function chatMidStream() {
   return typeof chatStreaming !== "undefined" && !!chatStreaming;
 }
 
+//: A recording in hand, live or paused, is lost by a reload or a close (its
+//: audio is only kept as far as it was sent). Not in `hasUnsavedWork`: a tab
+//: switch leaves it running in the dock. `typeof`: meetings.js loads lazily.
+function recordingLive() {
+  return typeof meetingRecorder !== "undefined" && !!meetingRecorder && meetingRecorder.state !== "inactive";
+}
+
 window.addEventListener("beforeunload", (event) => {
-  if (!hasUnsavedWork() && !chatMidStream()) return;
+  //: A private chat is gone with its tab (chat-private.js, lazy: `typeof`).
+  const privateChat = typeof chatConv !== "undefined" && chatConv.private && chatConv.turns.length;
+  if (!hasUnsavedWork() && !chatMidStream() && !recordingLive() && !privateChat) return;
   event.preventDefault();
   event.returnValue = "";
 });
@@ -1887,7 +1875,7 @@ async function switchTab(name) {
     // The canvas renderer's simulation is in a Worker, so there is no
     // `graphSimulation` to stop: the same "a cooling layout must not go on
     // running in a tab nobody is looking at" rule needs its own message.
-    if (typeof gcStop === "function") gcStop();
+    window.gcStop?.();
     // Full screen is a state of the map, not of the app, and it now hides the
     // top bar and the status bar with it. Leaving the tab while it is on (the
     // command palette and the keyboard shortcuts still work with the chrome
@@ -1989,13 +1977,13 @@ async function switchTab(name) {
     // Same for what the colours mean: a saved setting the control does not
     // show is a control that lies about the map beside it.
     const savedColour = prefs.get("graph-colour", null);
-    const colourSelect = document.getElementById("graph-colour");
+    const colourSelect = $("graph-colour");
     if (savedColour && colourSelect && [...colourSelect.options].some((o) => o.value === savedColour)) {
       colourSelect.value = savedColour;
     }
     //: And what the sizes mean (INBOX 430), the same way.
     const savedSize = prefs.get("graph-size", null);
-    const sizeSelect = document.getElementById("graph-size");
+    const sizeSelect = $("graph-size");
     if (savedSize && sizeSelect && [...sizeSelect.options].some((o) => o.value === savedSize)) {
       sizeSelect.value = savedSize;
     }
@@ -2180,7 +2168,7 @@ function tabPlaceholder(page, on) {
 // outright rather than matching opening/closing pairs, which handles a
 // truncated run the same way as a complete one.
 function stripMarkdownPreview(text) {
-  return text
+  return previewBlocks(text)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/^>\s?/gm, "")
     .replace(/^[-*+]\s+/gm, "")
@@ -2190,7 +2178,7 @@ function stripMarkdownPreview(text) {
     .replace(/__/g, "")
     .replace(/~~/g, "")
     .replace(/[*_](?=\S)|(?<=\S)[*_]/g, "")
-    .replace(/!?\[([^[\]\n]*)\]\([^()\n]*\)?/g, "$1");
+    .replace(/!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g, "$1");
 }
 
 // Layout picker (§9). Stored, because which shape suits a notebook is a
@@ -2285,7 +2273,7 @@ function resetNavigationToDefaults() {
   if (allTab && !allTab.classList.contains("active")) allTab.click();
   // If the Notes strip is already built, put it back on its front page now;
   // on a cold load it has not been built yet and will read the cleared key.
-  if (document.getElementById("notes-subtabs")?.dataset.ready) {
+  if ($("notes-subtabs")?.dataset.ready) {
     showNotesSection("browse");
   }
 }
@@ -2326,7 +2314,7 @@ function showNotesSection(name, { focus = false } = {}) {
     recordTabVisit("notes", wanted);
   }
   for (const id of NOTES_SECTIONS) {
-    const card = document.getElementById(id);
+    const card = $(id);
     if (card) card.classList.toggle("hidden", id !== wanted);
   }
   for (const button of document.querySelectorAll("#notes-subtabs button")) {
@@ -2351,7 +2339,7 @@ function showNotesSection(name, { focus = false } = {}) {
 }
 
 function initNotesSubtabs() {
-  const strip = document.getElementById("notes-subtabs");
+  const strip = $("notes-subtabs");
   if (!strip || strip.dataset.ready) return;
   strip.dataset.ready = "1";
   strip.addEventListener("click", (event) => {
@@ -2437,7 +2425,7 @@ const NESTED_SCROLL_TABS = {
 let scrollTopUpdate = null;
 
 function chatMessagesEl() {
-  return document.getElementById("chat-messages");
+  return $("chat-messages");
 }
 
 function scrollTopTargetEl() {
@@ -2458,15 +2446,24 @@ function scrollTopTargetEl() {
 // and positioned by its own CSS instead), clamped so the button can never
 // end up outside the visible viewport no matter how tall the panel's box
 // actually is.
-function positionScrollTopForNested(button, tab) {
-  if (tab === "chat") {
-    // Reparented into .chat-dock by the MutationObserver below and
-    // positioned by that container's own CSS instead, inline right/bottom
-    // here would fight it rather than help it.
-    button.style.right = "";
-    button.style.bottom = "";
-    return;
+//: On a phone the page's floating New button (`.dock-fab`, z 44) is fixed over
+//: the list's foot, at the same right edge, and sat on the half of this button
+//: that the panel's own bottom left under it (measured at 390 on Notes: the
+//: arrow at y 710 to 754, the fab at 730 to 774, `elementFromPoint` at its
+//: centre answered the fab). The button goes one step above the fab instead.
+const DOCK_FABS = document.getElementsByClassName("dock-fab");
+function aboveDockFab() {
+  if (!window.matchMedia("(max-width: 599.98px)").matches) return 0;
+  for (const fab of DOCK_FABS) {
+    const r = fab.getBoundingClientRect();
+    if (r.width && r.height) return window.innerHeight - r.top + spacingPx("--space-3", 8);
   }
+  return 0;
+}
+
+function positionScrollTopForNested(button, tab) {
+  // Chat reparents it into .chat-dock (the MutationObserver below), where that
+  // container's CSS positions it: inline right/bottom would fight that.
   // Anchoring to the actual scrolling content panel, not the viewport,
   // for every tab: not just Library and Notes. A flat `right`/`bottom`
   // offset from the *window* edge is correct only when the panel happens to
@@ -2478,9 +2475,9 @@ function positionScrollTopForNested(button, tab) {
   // Notes' "Your notes" and "Ask" sub-tabs): and every tab shares the same
   // scroll container shape (`scrollTopTargetEl()`), so the fix has to be
   // general rather than three more special cases in `NESTED_SCROLL_TABS`.
-  const panel = scrollTopTargetEl();
+  const panel = tab === "chat" ? null : scrollTopTargetEl();
   const rect = panel?.getBoundingClientRect();
-  if (!panel || !rect) {
+  if (!rect) {
     button.style.right = "";
     button.style.bottom = "";
     return;
@@ -2499,18 +2496,11 @@ function positionScrollTopForNested(button, tab) {
   // rather than beside it. Notes' sidebar is on the *left*, so it never
   // needs this branch; most panels don't have one at all.
   const rightPanel = document.querySelector("#library-view-skills:not(.hidden) #skills-sidebar");
-  if (rightPanel) {
-    const rightPanelRect = rightPanel.getBoundingClientRect();
-    const right = `${Math.max(margin, window.innerWidth - rightPanelRect.left + margin + scrollbarClearance)}px`;
-    if (button.style.right !== right) button.style.right = right;
-  } else {
-    const right = `${Math.max(margin, window.innerWidth - rect.right + margin + scrollbarClearance)}px`;
-    if (button.style.right !== right) button.style.right = right;
-  }
+  const edge = rightPanel ? rightPanel.getBoundingClientRect().left : rect.right;
+  const right = `${Math.max(margin, window.innerWidth - edge + margin + scrollbarClearance)}px`;
+  if (button.style.right !== right) button.style.right = right;
 
-  // **Bottom**: a panel shorter than the viewport must not leave the button
-  // floating below its own content.
-  const bottom = `${Math.max(margin, window.innerHeight - Math.min(rect.bottom, window.innerHeight) + margin)}px`;
+  const bottom = `${Math.max(margin, window.innerHeight - Math.min(rect.bottom, window.innerHeight) + margin, aboveDockFab())}px`;
   //: Only when it moved: an inline-style write invalidates style even when
   //: the value is the same, and this runs on every scroll frame.
   if (button.style.bottom !== bottom) button.style.bottom = bottom;
@@ -2561,7 +2551,7 @@ function formPrimaryButtons() {
   const take = (scope) => {
     if (scope && scope.getClientRects().length) out.push(...scope.querySelectorAll(FORM_PRIMARY_BUTTON));
   };
-  for (const id of FORM_PRIMARY_SCOPE_IDS) take(document.getElementById(id));
+  for (const id of FORM_PRIMARY_SCOPE_IDS) take($(id));
   for (const list of FORM_PRIMARY_SCOPE_CLASSES) for (const scope of list) take(scope);
   return out;
 }
@@ -2705,21 +2695,31 @@ function initScrollTopButton() {
   //: and each ran this in full, layout reads included: traced at the desktop
   //: window, 77ms on the dashboard, 194ms on Notes and 267ms on the Library
   //: over a 30-step scroll.
+  //: **After the frame's own layout, not before it** (the owner's lag log:
+  //: 8 to 10 runs a second at 35 to 65ms on Notes). Run inside the frame
+  //: callback, its first read of the scroller settled the layout the list's
+  //: own scroll work had just dirtied, and the frame laid it out again; one
+  //: timer later the layout is clean and the same reads cost nothing.
   let updateFrame = 0;
   const scheduleUpdate = () => {
     if (updateFrame) return;
-    updateFrame = requestAnimationFrame(() => {
-      updateFrame = 0;
-      update();
-    });
+    updateFrame = requestAnimationFrame(() =>
+      setTimeout(() => {
+        updateFrame = 0;
+        update();
+      })
+    );
   };
-  document.addEventListener("scroll", scheduleUpdate, { passive: true, capture: true });
+  //: Only the scroller this button follows (INBOX 1465: 28 runs a second): a
+  //: capture listener hears every scroller in the page, and a list, a rail or
+  //: the timeline scrolling inside the tab has no bearing on the button.
+  document.addEventListener("scroll", (e) => e.target === scrollTopTargetEl() && scheduleUpdate(), { passive: true, capture: true });
   window.addEventListener("resize", scheduleUpdate, { passive: true });
   update();
   return update;
 }
 
-const chatTabNode = document.getElementById("tab-chat");
+const chatTabNode = $("tab-chat");
 if (chatTabNode) {
   new MutationObserver(() => {
     const btn = document.querySelector(".scroll-top");

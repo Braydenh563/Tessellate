@@ -329,7 +329,9 @@ function buildModelCard(model, state) {
 
   const head = document.createElement("div");
   head.className = "model-card-head";
-  const name = document.createElement("h5");
+  //: One level under whatever heads the list: the installed list's `h3`, or a
+  //: suggested group's `h4` (a skipped level is axe's heading-order, 1029 row 62).
+  const name = document.createElement(model.listed === "installed" ? "h4" : "h5");
   name.className = "model-card-name";
   name.textContent = model.label || modelDisplayName(model.name);
   name.title = model.name;
@@ -636,7 +638,7 @@ function modelHardwareSentence(hw) {
   else parts.push("no graphics card with memory of its own");
   if (hw.cpu_cores) parts.push(`${hw.cpu_cores} processor core${hw.cpu_cores === 1 ? "" : "s"}`);
   const here = hw.models_installed
-    ? ` ${hw.models_installed} model${hw.models_installed === 1 ? "" : "s"} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
+    ? ` ${nounCount(hw.models_installed, "model")} installed${hw.models_loaded ? `, ${hw.models_loaded} loaded now` : ""}.`
     : "";
   const fixed = hw.override ? " You corrected these numbers." : "";
   return `This computer: ${parts.join(", ")}.${here}${fixed} Each card says whether a model fits.`;

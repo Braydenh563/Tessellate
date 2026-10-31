@@ -1,0 +1,198 @@
+/* panelMovable (INBOX 1427, DESIGN.md recipe index). Loaded with
+   js/panel-movable.js. Only on a fine pointer at 600px or wider: a phone's
+   sheet keeps its edge and has no grip. */
+.panel-grip {
+  display: none;
+}
+@media (min-width: 600px) and (pointer: fine) {
+  /* A card that eases `all` would trail the pointer (measured: 65px of a
+     100px drag after the button went up). */
+  .panel-movable-on {
+    transition: none;
+  }
+  /* A sized or docked panel keeps its width inside a padded overlay (measured:
+     a maximised Settings shrank by the overlay's 48px of padding). */
+  .panel-movable-on[style*="width"] {
+    flex-shrink: 0;
+  }
+  .panel-movable-on .panel-drag-head {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+  .panel-moving,
+  .panel-moving .panel-drag-head {
+    cursor: grabbing;
+    user-select: none;
+  }
+  /* **The grip has its own corner and never sits on a control** (INBOX 1454,
+     the owner: "that resize 3 corner lines partially covers that button").
+     It was zero net height, pulled over the foot's last 28px, so a foot's
+     right-hand button lost its corner to it (measured at 1440 by 900: 23 of
+     35 panels had a control under the grip). Now it is the last row of the
+     card: a full target-min square whose bottom 16px or so is the card's own
+     bottom padding (`panelGripRoom` reads the padding once when the panel is
+     adopted and writes the grip's margins and `bottom` with the CSSOM, so
+     there is no token to keep), so only the rest is new height, and it hangs
+     into the right padding.
+     Sticky keeps it in view while the card scrolls (the card is the scroll
+     box); sticky measures from the content box, so `bottom` is minus the
+     bottom padding (measured: the grip's bottom edge is the content box's bottom
+     less `bottom`). */
+  /* `button` in the selector: a panel inside `.header-controls` (the
+     notifications panel) met `.header-controls button:not(.ai-status)` and
+     got its height, display and margin (measured: 36px tall, 22px margin). */
+  .panel-movable-on > button.panel-grip {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    align-self: flex-end;
+    flex: none;
+    width: var(--target-min);
+    height: var(--target-min);
+    min-height: 0;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, transparent 62%, var(--muted) 62%, var(--muted) 70%, transparent 70%, transparent 82%, var(--muted) 82%, var(--muted) 90%, transparent 90%);
+    opacity: 0.55;
+    cursor: nwse-resize;
+    touch-action: none;
+    z-index: 2;
+  }
+  .panel-grip:hover,
+  .panel-grip:focus-visible {
+    opacity: 1;
+  }
+}
+/* The dock preview (INBOX 1434): one element, in the top layer, click-through.
+   Its padding is the inset `panel-movable.js` reads; no blur, so it is not on
+   the glass-off list. */
+.panel-snap-preview {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: var(--space-3);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+}
+.panel-reset[hidden] {
+  display: none;
+}
+@media not ((min-width: 600px) and (pointer: fine)) {
+  .panel-reset,
+  .panel-push,
+  .panel-min {
+    display: none;
+  }
+}
+
+/* A moved panel's scrim is clear (INBOX 1450: dark only at the default
+   place); `panelScrimLift` sets the attribute. Still modal, so the layer
+   stays to take the outside press. The scrims carry no blur to lift. */
+[data-panel-moved]:is(.modal-overlay, [id$="-overlay"]) {
+  background: transparent;
+}
+dialog[data-panel-moved]::backdrop {
+  background: transparent;
+}
+
+/* Split screen (INBOX 1474): a panel docked to a side pushes the app aside.
+   `panel-movable.js` writes the two lengths on the root; the pages' side margins
+   (the top bar and the status bar keep the full width, which the status bar
+   needs: its two fixed zones are 801px wide) read them, eased with the motion token (instant with interface animations
+   off, `--ui-base` is 0s there) and not at all under reduced motion. */
+@media (min-width: 600px) and (pointer: fine) {
+  #app-main > * {
+    margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px);
+    /* A page's edge really is a box changing size with its content in it:
+       a transform would slide the page under the docked panel instead of
+       making room, and it moves only on a dock, never during a drag. */
+    transition: margin-inline var(--ui-base) var(--ease-out);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-main > * {
+    transition: none;
+  }
+}
+
+/* Minimise (INBOX 1475): the hidden panel keeps its state; the pills sit in a
+   row above the composer at the content's bottom left (`panelMinPlace` writes
+   the left and bottom with the CSSOM). A dark raised pill, a hairline border,
+   the panel's glyph, its name and a small x. */
+[data-panel-min] {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* A manual popover: the top layer puts the pills above the page without a
+   z-index, and it is shown only while there is a pill. */
+#panel-min-tray {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  max-width: calc(100vw - var(--space-6) * 2);
+  pointer-events: none;
+}
+#panel-min-tray:popover-open {
+  display: flex;
+}
+.minimised-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: calc(var(--control-h-lg) + var(--space-4));
+  padding: 0 var(--space-2) 0 var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+}
+.minimised-pill button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  /* The pill is the one surface: no glow round the label (INBOX 1489). */
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.minimised-pill-open span {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.minimised-pill-x {
+  justify-content: center;
+  width: var(--target-min);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+}
+.minimised-pill-x:hover,
+.minimised-pill-x:focus-visible {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.minimised-pill button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

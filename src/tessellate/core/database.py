@@ -17,6 +17,7 @@ import importlib
 import json
 import logging
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -399,6 +400,10 @@ class Entry(Base, WorkspaceMixin):
     )
     # Pinned entries float to the top of lists and the dashboard.
     pinned: Mapped[bool] = mapped_column(Boolean, default=False)
+    #: The colour a person gave this note (INBOX 1479): a swatch key such as
+    #: "teal" (`schemas.NOTE_COLOURS`), never a hex, so the theme picks the
+    #: shade. Null is no colour. Additive scalar: old rows read as null.
+    colour: Mapped[str | None] = mapped_column(String(16), default=None)
     # True when the USER chose the category (guided mode or a manual
     # move): the janitor then keeps its hands off during re-filing.
     user_filed: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -588,6 +593,20 @@ class EntityMention(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+#: Markdown a model puts in a link reason ("The packing list is for the
+#: **Lisbon trip**"): a reason is read as plain text everywhere it shows.
+_REASON_LINK = re.compile(r"\[([^\]\n]{1,200})\]\([^)\n]{0,300}\)")
+_REASON_MARKS = re.compile(r"\*\*|__|`|\[\[|\]\]|(?<!\w)#(?=\w)|^#+[ \t]+")
+
+
+def plain_reason(text: str | None) -> str | None:
+    """`text` with its markdown marks off: bold, code, a [[wiki link]], a
+    [text](url) link and a #tag read as the words (audit 1030 Z42)."""
+    if not text:
+        return text
+    return _REASON_MARKS.sub("", _REASON_LINK.sub(r"\1", text)).replace("[", "").replace("]", "")
+
+
 class LinkReason(TypeDecorator):
     """`entry_links.reason`: plain text, or ciphertext on a link touching a
     private note, read back as plain text while the vault is open.
@@ -610,18 +629,29 @@ class LinkReason(TypeDecorator):
     #: Until then no vault can be open, and no key is exactly what it says.
     key_source = staticmethod(lambda: None)
 
+    def process_bind_param(self, value, dialect):
+        """Store what is read: a plain reason is written as `plain_reason`
+        reads it, so what a caller wrote and what the row holds compare equal
+        (Tidy's undo checks the stored reason against the one it wrote).
+        Ciphertext goes in untouched."""
+        if not value:
+            return value
+        from tessellate.core import crypto
+
+        return value if crypto.is_encrypted(value) else plain_reason(value)
+
     def process_result_value(self, value, dialect):
         if not value:
             return value
         from tessellate.core import crypto
 
         if not crypto.is_encrypted(value):
-            return value
+            return plain_reason(value)
         key = LinkReason.key_source()
         if key is None:
             return None
         try:
-            return crypto.decrypt(key, value)
+            return plain_reason(crypto.decrypt(key, value))
         except crypto.DecryptionError:
             return None
 
@@ -2322,6 +2352,7 @@ class DatabaseManager:
         self._add_missing_columns()
         self._rebuild_categories_unique_constraint()
         self._backfill_inherited_workspaces()
+        self._drop_orphan_links()
         self._ensure_fts5()
         self._ensure_indexes()
         self._ensure_readings_view()
@@ -2379,7 +2410,7 @@ class DatabaseManager:
         with self.session() as session:
             if session.query(Space).first() is None:
                 defaults = [
-                    Space(id="default", name="Default Space", icon="ph-house"),
+                    Space(id="default", name="Default space", icon="ph-house"),
                     Space(id="work", name="Work", icon="ph-briefcase"),
                     Space(id="personal", name="Personal", icon="ph-user"),
                     Space(id="projects", name="Projects", icon="ph-kanban")
@@ -2892,6 +2923,28 @@ class DatabaseManager:
                     f"              AND p.workspace_id <> 'default')"
                 )
 
+    def _drop_orphan_links(self) -> None:
+        """Remove link rows whose source or target note no longer exists.
+
+        Every purge clears a note's links (`manager._hard_delete`), so a row
+        pointing at a missing note came from a path that did not (a database
+        written with foreign keys off, an interrupted import). Left in place
+        it inflates the link count (diagnostics showed 4,234 links on 37
+        notes) and every walk of the link table. Idempotent: a clean table
+        matches nothing. A note in the bin still exists, so its links stay.
+        """
+        with self.engine.begin() as connection:
+            tables = {
+                row[0]
+                for row in connection.exec_driver_sql("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+            }
+            if not {"entries", "entry_links"} <= tables:
+                return
+            connection.exec_driver_sql(
+                "DELETE FROM entry_links WHERE source_entry_id NOT IN (SELECT id FROM entries)"
+                " OR target_entry_id NOT IN (SELECT id FROM entries)"
+            )
+
     def _add_missing_columns(self) -> None:
         """Additive auto-migration for existing databases.
 
@@ -2922,10 +2975,23 @@ class DatabaseManager:
                         if isinstance(value, bool):
                             value = int(value)
                         if isinstance(value, str):
-                            ddl += f" DEFAULT '{value}'"
+                            # A quote in the default doubled (audit 1028 K21):
+                            # left as it was, one apostrophe broke every start.
+                            quoted = value.replace("'", "''")
+                            ddl += f" DEFAULT '{quoted}'"
                         else:
                             ddl += f" DEFAULT {value}"
                     connection.exec_driver_sql(ddl)
+
+    def optimize(self) -> None:
+        """`PRAGMA optimize` at a clean quit (audit 1028 K37), as SQLite advises:
+        it gathers the statistics the planner lacks, only for tables the
+        launch's queries used, so plans keep up as a notebook grows."""
+        try:
+            with self.engine.connect() as connection:
+                connection.exec_driver_sql("PRAGMA optimize")
+        except Exception as exc:  # noqa: BLE001  # a quit must not fail over statistics
+            logging.getLogger(__name__).info("PRAGMA optimize skipped: %s", exc)
 
     def session(self) -> Session:
         """A fresh session; caller is responsible for closing it."""

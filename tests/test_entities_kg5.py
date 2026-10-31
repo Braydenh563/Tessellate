@@ -131,3 +131,21 @@ def test_two_entities_named_together_twice_are_joined_on_the_graph(client, sessi
     assert frozenset((f"entity:{priya}", f"entity:{once}")) not in pairs
     kinds = {n["id"]: n.get("entity_kind") for n in graph["nodes"] if n.get("type") == "entity"}
     assert f"entity:{sam}" in kinds
+
+
+def test_the_list_counts_notes_not_mention_rows_and_leaves_out_the_bin(client, session):
+    """Audit 1028 K31: the list is counted in SQL now. A note that names an
+    entity twice is one note; a binned note is not counted; the limit keeps
+    the most named and the header still says how many there are."""
+    a = _note(client, "Ada Park, then Ada Park again")
+    b = _note(client, "Ada Park in the bin")
+    c = _note(client, "Lin Wu once")
+    ada = _entity(session, "Ada Park", a["id"], a["id"], b["id"])
+    lin = _entity(session, "Lin Wu", c["id"])
+    session.get(Entry, b["id"]).is_deleted = True
+    session.commit()
+    got = client.get("/entities?limit=1")
+    assert [(r["id"], r["notes"]) for r in got.json()] == [(ada, 1)], "a tie goes by name"
+    assert got.headers["X-Total-Count"] == "2"
+    every = client.get("/entities").json()
+    assert {r["id"]: r["notes"] for r in every} == {ada: 1, lin: 1}

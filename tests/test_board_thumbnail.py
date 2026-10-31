@@ -122,3 +122,16 @@ def test_thumb_survives_a_card_note_write_that_leaves_its_title(client):
     renamed = client.put(f"/entries/{note['id']}", json={"content": "# Beta\nsecond body"})
     assert renamed.status_code == 200, renamed.text
     assert default_row()["thumb_v"] is None
+
+
+def test_the_upload_keeps_its_disk_and_database_work_off_the_event_loop():
+    """Audit 1028 K18: the async route looked the board up and wrote the file
+    on the event loop, and grew the body by `bytes +=`."""
+    import inspect
+
+    from tessellate.api import routes_whiteboard
+
+    source = inspect.getsource(routes_whiteboard.put_thumbnail)
+    assert "await run_in_threadpool(_thumb_board, db, board_id)" in source
+    assert "await run_in_threadpool(board_thumbs.save," in source
+    assert "data = bytearray()" in source

@@ -74,6 +74,11 @@
      "source": "https://mermaid.js.org"
     },
     {
+     "name": "MathLive",
+     "licence": "MIT",
+     "source": "https://github.com/arnog/mathlive"
+    },
+    {
      "name": "Mammoth",
      "licence": "BSD-2-Clause",
      "source": "https://github.com/mwilliamson/mammoth.js"

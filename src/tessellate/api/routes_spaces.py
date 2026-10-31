@@ -8,6 +8,7 @@ from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
 from tessellate.core import deps
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
 from tessellate.core.deps import get_session, impersonate_workspace
+from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select as sa_select
 from sqlalchemy import update as sa_update
@@ -25,7 +26,6 @@ RESERVED_SPACE_IDS = {"all", "default"}
 _ICON_RE = re.compile(r"^ph-[a-z0-9-]{1,40}$")
 
 _MAX_NAME_LEN = 60
-
 
 def _slugify(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
@@ -54,13 +54,29 @@ def _validate_icon(icon: str) -> str:
     return icon
 
 
-def _validate_name(name: str) -> str:
-    name = name.strip()
-    if not name:
+_RESERVED_NAMES = frozenset({"all", "all spaces", "everything"})
+
+
+def _validate_name(name: str, *, restoring: bool = False) -> str:
+    name = clean_name(name)
+    if is_blank(name):
         raise HTTPException(400, "A space needs a name.")
     if len(name) > _MAX_NAME_LEN:
         raise HTTPException(400, f"A space name can be at most {_MAX_NAME_LEN} characters.")
+    #: "All" and "All spaces" are the switcher's everything-view: a space of
+    #: that name sat beside it, reading the same (audit 1030 Y8).
+    if not restoring and " ".join(name.casefold().split()) in _RESERVED_NAMES:
+        raise HTTPException(400, f"\u201c{name}\u201d is the name of the view of every space. Pick another name.")
     return name
+
+
+def _refuse_duplicate_name(session: Session, name: str, own_id: str | None = None) -> None:
+    """Two spaces with the same name (case and spacing aside) cannot be told
+    apart in the picker or the "In <space>" chips (sweep 1028b W12)."""
+    wanted = name_key(name)
+    for other in session.query(Space).all():
+        if other.id != own_id and name_key(other.name) == wanted:
+            raise HTTPException(409, f"A space called \u201c{other.name}\u201d already exists.")
 
 
 @router.get("/spaces", response_model=list[SpaceResponse])
@@ -68,11 +84,26 @@ def get_spaces(session: Session = Depends(get_session)):
     return session.query(Space).all()
 
 
+@router.get("/spaces/{space_id}/counts")
+def space_counts(space_id: str, session: Session = Depends(get_session)):
+    """What deleting this space would take with it, for the confirm dialog."""
+    from sqlalchemy import func
+
+    from tessellate.core.database import Document
+
+    deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    with impersonate_workspace(session, "all"):
+        notes = session.query(func.count(Entry.id)).filter(Entry.workspace_id == space_id).scalar() or 0
+        documents = session.query(func.count(Document.id)).filter(Document.workspace_id == space_id).scalar() or 0
+    return {"notes": notes, "documents": documents}
+
+
 @router.post("/spaces", response_model=SpaceResponse)
 def create_space(space_in: SpaceCreate, session: Session = Depends(get_session)):
     # space_in.id is intentionally never read, see SpaceCreate.id's docstring.
     name = _validate_name(space_in.name)
     icon = _validate_icon(space_in.icon)
+    _refuse_duplicate_name(session, name)
     space_id = _generate_space_id(name, session)
     space = Space(id=space_id, name=name, icon=icon)
     session.add(space)
@@ -89,6 +120,7 @@ def update_space(space_id: str, space_in: SpaceUpdate, session: Session = Depend
     provided = space_in.model_dump(exclude_unset=True)
     if "name" in provided:
         space.name = _validate_name(provided["name"])
+        _refuse_duplicate_name(session, space.name, space.id)
     if "icon" in provided:
         space.icon = _validate_icon(provided["icon"])
     if "hidden_from_all" in provided:
@@ -191,7 +223,9 @@ def restore_space(body: SpaceRestore, session: Session = Depends(get_session)):
         raise HTTPException(400, "The default spaces cannot be made again.")
     if session.get(Space, sid) is not None:
         raise HTTPException(409, "A space with that id already exists.")
-    name = _validate_name(body.space.name)
+    #: Checked, but stored as it was: an undo never renames the space.
+    _validate_name(body.space.name, restoring=True)
+    name = body.space.name
     icon = _validate_icon(body.space.icon)
     session.add(Space(id=sid, name=name, icon=icon, hidden_from_all=bool(body.space.hidden_from_all)))
     session.flush()
@@ -292,165 +326,163 @@ def _delete_space_moving(session: Session, space: Space, move_to: str) -> SpaceD
     )
 
 
-@router.delete("/spaces/{space_id}", response_model=SpaceDeleted)
-def delete_space(
-    space_id: str,
-    move_to: str | None = None,
-    session: Session = Depends(get_session),
-):
-    """Delete a space and everything in it, or, with `move_to`, move
-    everything in it to that space first (owner, 0.3.31: "the option to
-    delete all its contents, and the other to move its contents to a
-    different space")."""
-    if space_id in RESERVED_SPACE_IDS:
-        raise HTTPException(400, "The default spaces cannot be deleted.")
-    space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
-    if move_to:
-        return _delete_space_moving(session, space, move_to)
+def _space_rows(session: Session, model, space_id: str):  # noqa: ANN001
+    return session.query(model).filter_by(workspace_id=space_id)
 
+
+def _purge_ids(session: Session, model, column, ids: list) -> None:  # noqa: ANN001
+    if ids:
+        session.query(model).filter(column.in_(ids)).delete(synchronize_session=False)
+
+
+def _purge_collect(session: Session, space_id: str) -> tuple[dict[str, list], list]:
+    """The ids of what a purge takes, and the files on disk it unlinks after
+    the commit. Read with the space's bin included: a binned document or
+    reminder is hidden from every ordinary read."""
+    from tessellate.core.database import (
+        Attachment, Bookmark, Document, MediaUpload, Reminder,
+    )
+
+    config = deps.get_config()
+    attachments = _space_rows(session, Attachment, space_id).all()
+    uploads = _space_rows(session, MediaUpload, space_id).all()
+    files = [config.uploads_dir / a.stored_name for a in attachments]
+    files += [config.data_dir / "media" / u.filename for u in uploads]
+
+    def ids_of(model):  # noqa: ANN001
+        return [row.id for row in _space_rows(session, model, space_id).all()]
+
+    return {
+        "attachment": [a.id for a in attachments],
+        "upload": [u.id for u in uploads],
+        "document": ids_of(Document),
+        "entry": ids_of(Entry),
+        "bookmark": ids_of(Bookmark),
+        "reminder": ids_of(Reminder),
+        "category": ids_of(Category),
+    }, files
+
+
+def _purge_forget_index(session: Session, ids: dict[str, list]) -> None:
+    """Every delete below is a query-level statement, which the search index's
+    flush hook never sees; without this the space's notes, documents and
+    reminders stayed findable from All spaces after the space itself was gone
+    (measured, tests/test_search_engine.py)."""
+    from tessellate.core.database import (
+        Attachment, Bookmark, Document, MediaUpload, Reminder,
+    )
+    from tessellate.search import index as search_index
+
+    for model, key in (
+        (Attachment, "attachment"), (MediaUpload, "upload"), (Document, "document"),
+        (Entry, "entry"), (Bookmark, "bookmark"), (Reminder, "reminder"),
+    ):
+        search_index.forget(session, model, ids[key])
+
+
+def _purge_side_tables(session: Session, ids: dict[str, list]) -> None:
+    """The unscoped side tables: no workspace column of their own, only a
+    foreign key into a row that is about to go. Each is the table a plain
+    DELETE of its parent tripped over (real FKs, enforced)."""
+    from tessellate.core.database import (
+        DocumentAiEdit, DocumentBookmark, DocumentLink, DocumentRevision, EmbeddingRecord,
+        EntityMention, EntryBookmark, EntryDate, EntryOpen, EntryProperty, EntryRevision, PageRead,
+    )
+
+    for model, column in (
+        (EntityMention, EntityMention.entry_id),
+        (EmbeddingRecord, EmbeddingRecord.entry_id),
+        (EntryRevision, EntryRevision.entry_id),
+        (EntryDate, EntryDate.entry_id),
+        (EntryProperty, EntryProperty.entry_id),
+        (EntryOpen, EntryOpen.entry_id),
+        (EntryBookmark, EntryBookmark.entry_id),
+        (DocumentLink, DocumentLink.entry_id),
+    ):
+        _purge_ids(session, model, column, ids["entry"])
+    for model, column in (
+        (DocumentBookmark, DocumentBookmark.document_id),
+        (DocumentLink, DocumentLink.document_id),
+        (DocumentAiEdit, DocumentAiEdit.document_id),
+        (DocumentRevision, DocumentRevision.document_id),
+    ):
+        _purge_ids(session, model, column, ids["document"])
+    _purge_ids(session, EntryBookmark, EntryBookmark.bookmark_id, ids["bookmark"])
+    _purge_ids(session, DocumentBookmark, DocumentBookmark.bookmark_id, ids["bookmark"])
+    for kind, key in (("attachment", "attachment"), ("media", "upload")):
+        if ids[key]:
+            session.query(PageRead).filter(
+                PageRead.kind == kind, PageRead.source_id.in_(ids[key])
+            ).delete(synchronize_session=False)
+
+
+def _purge_rows(session: Session, space_id: str, category_ids: list) -> None:
+    """The space's own rows, parents after dependents.
+
+    A note in *another* space can point at one of this space's categories
+    (the reason the old reassign code merged categories by name). Those notes
+    are not ours to delete; they just lose the pointer, the same as if the
+    category had been deleted on its own.
+
+    **Every reference into a doomed row is found from the schema, not a
+    list.** The owner's delete of a space still failed on `DELETE FROM
+    entries` with "FOREIGN KEY constraint failed" (0.3.31), from a table that
+    points at notes and was on no list. Whatever the schema says points at a
+    row about to go is cleared first: a nullable pointer is emptied, a
+    required one takes its row with it."""
+    from tessellate.core.database import (
+        Attachment, AskTurn, Bookmark, Conversation, Document, EntryLink, MediaUpload,
+        Reminder, WhiteboardNode, WhiteboardObject, WhiteboardSketch,
+    )
+
+    if category_ids:
+        session.query(Entry).filter(Entry.category_id.in_(category_ids)).update(
+            {"category_id": None}, synchronize_session=False
+        )
+    doomed_models = (
+        EntryLink, Attachment, AskTurn, Conversation, Reminder, Bookmark,
+        WhiteboardSketch, WhiteboardObject, WhiteboardNode, Document,
+        Entry, Category, MediaUpload,
+    )
+    for model in (*doomed_models, *workspace_scoped_models()):
+        rows = _space_rows(session, model, space_id)
+        ids = [row_id for (row_id,) in rows.with_entities(model.id).all()] if hasattr(model, "id") else []
+        _detach_references(session, model.__table__, ids)
+    for model in doomed_models:
+        _space_rows(session, model, space_id).delete(synchronize_session=False)
+    # Anything with WorkspaceMixin that the ordered list above does not name:
+    # a model added later must not survive its space.
+    for model in workspace_scoped_models():
+        _space_rows(session, model, space_id).delete(synchronize_session=False)
+
+
+def _purge_space(session: Session, space: Space) -> SpaceDeleted:
+    """**Deleting a space deletes what was in it** (owner: "make sure that if
+    a specific space is deleted too, that all the content including notes
+    files and images etc originating in that specific space get deleted with
+    it as well"). Only on request (`purge=1`, audit 1031 Z20).
+
+    impersonate_workspace(..., "all") disables the session's ambient workspace
+    filter for this block: a request carrying X-Workspace-ID for some *other*
+    space would otherwise AND that id into every DELETE, so deleting
+    "personal" while browsing "work" would remove nothing. Files on disk are
+    unlinked after the commit: a row that is gone and a file that is still
+    there is recoverable; the reverse is not."""
+    from tessellate.entry import bin as other_bin
+
+    space_id = space.id
     # Capture the response body before deleting: reading attributes off an
-    # instance after session.delete()+commit() raises ObjectDeletedError,
-    # since SQLAlchemy expires it and then finds no row to refresh from.
-    response = SpaceResponse.model_validate(space)
+    # instance after session.delete()+commit() raises ObjectDeletedError.
+    body = SpaceResponse.model_validate(space).model_dump()
     # An empty space has nothing to lose, so its delete can be undone; one
     # with contents deletes them for good (files on disk included).
     restorable = not _space_has_rows(session, space_id)
-    response = SpaceDeleted(
-        **response.model_dump(),
-        restore={"space": response.model_dump()} if restorable else None,
-    )
-
-    # **Deleting a space deletes what was in it.** Asked for directly: "make
-    # sure that if a specific space is deleted too, that all the content
-    # including notes files and images etc originating in that specific
-    # space get deleted with it as well." This used to *reassign* every row
-    # to "default", which is the opposite of what the word means, the notes
-    # did not go away, they turned up in another space.
-    #
-    # impersonate_workspace(..., "all") disables the session's ambient
-    # workspace filter for this block: a request carrying X-Workspace-ID for
-    # some *other* space would otherwise AND that id into every DELETE, so
-    # deleting "personal" while browsing "work" would remove nothing.
-    #
-    # Dependents before their parents, because the foreign keys are real
-    # (a document delete once failed outright on its revisions). Files on
-    # disk are unlinked after the commit: a row that is gone and a file that
-    # is still there is recoverable; the reverse is not.
-    from pathlib import Path
-
-    from tessellate.core.database import (
-        AskTurn, Attachment, Bookmark, Conversation, Document, DocumentAiEdit,
-        DocumentBookmark, DocumentLink, DocumentRevision, EmbeddingRecord,
-        EntityMention, EntryBookmark, EntryDate, EntryLink, EntryOpen, EntryProperty, EntryRevision, MediaUpload,
-        PageRead, Reminder, WhiteboardNode, WhiteboardObject, WhiteboardSketch,
-    )
-
-    from tessellate.entry import bin as other_bin
-
-    config = deps.get_config()
-    to_unlink: list[Path] = []
-    #: The space's bin goes with it: a binned document or reminder is hidden
-    #: from every ordinary read, so this block reads them on purpose.
+    response = SpaceDeleted(**body, restore={"space": body} if restorable else None)
     with impersonate_workspace(session, "all"), other_bin.including_binned(session):
-        def rows(model):
-            return session.query(model).filter_by(workspace_id=space_id)
-
-        attachment_ids = [a.id for a in rows(Attachment).all()]
-        to_unlink += [config.uploads_dir / a.stored_name for a in rows(Attachment).all()]
-        upload_ids = [u.id for u in rows(MediaUpload).all()]
-        to_unlink += [config.data_dir / "media" / u.filename for u in rows(MediaUpload).all()]
-        document_ids = [d.id for d in rows(Document).all()]
-        entry_ids = [e.id for e in rows(Entry).all()]
-        bookmark_ids = [b.id for b in rows(Bookmark).all()]
-        reminder_ids = [r.id for r in rows(Reminder).all()]
-
-        # Every delete below is a query-level statement, which the search
-        # index's flush hook never sees; without this the space's notes,
-        # documents and reminders stayed findable from All spaces after the
-        # space itself was gone (measured, tests/test_search_engine.py).
-        from tessellate.search import index as search_index
-
-        for model, ids in (
-            (Attachment, attachment_ids), (MediaUpload, upload_ids),
-            (Document, document_ids), (Entry, entry_ids),
-            (Bookmark, bookmark_ids), (Reminder, reminder_ids),
-        ):
-            search_index.forget(session, model, ids)
-
-        # The unscoped side tables: no workspace column of their own, only a
-        # foreign key into a row that is about to go. Each is the table a
-        # plain DELETE of its parent tripped over (real FKs, enforced).
-        def purge(model, column, ids):
-            if ids:
-                session.query(model).filter(column.in_(ids)).delete(synchronize_session=False)
-
-        for model, column in (
-            (EntityMention, EntityMention.entry_id),
-            (EmbeddingRecord, EmbeddingRecord.entry_id),
-            (EntryRevision, EntryRevision.entry_id),
-            (EntryDate, EntryDate.entry_id),
-            (EntryProperty, EntryProperty.entry_id),
-            (EntryOpen, EntryOpen.entry_id),
-            (EntryBookmark, EntryBookmark.entry_id),
-            (DocumentLink, DocumentLink.entry_id),
-        ):
-            purge(model, column, entry_ids)
-        for model, column in (
-            (DocumentBookmark, DocumentBookmark.document_id),
-            (DocumentLink, DocumentLink.document_id),
-            (DocumentAiEdit, DocumentAiEdit.document_id),
-        ):
-            purge(model, column, document_ids)
-        purge(EntryBookmark, EntryBookmark.bookmark_id, bookmark_ids)
-        purge(DocumentBookmark, DocumentBookmark.bookmark_id, bookmark_ids)
-
-        # A note in *another* space can point at one of this space's
-        # categories (the reason the old reassign code merged categories by
-        # name). Those notes are not ours to delete; they just lose the
-        # pointer, the same as if the category had been deleted on its own.
-        category_ids = [c.id for c in rows(Category).all()]
-        if category_ids:
-            session.query(Entry).filter(Entry.category_id.in_(category_ids)).update(
-                {"category_id": None}, synchronize_session=False
-            )
-
-        if attachment_ids:
-            session.query(PageRead).filter(
-                PageRead.kind == "attachment", PageRead.source_id.in_(attachment_ids)
-            ).delete(synchronize_session=False)
-        if upload_ids:
-            session.query(PageRead).filter(
-                PageRead.kind == "media", PageRead.source_id.in_(upload_ids)
-            ).delete(synchronize_session=False)
-        if document_ids:
-            session.query(DocumentRevision).filter(
-                DocumentRevision.document_id.in_(document_ids)
-            ).delete(synchronize_session=False)
-
-        # **Every reference into a doomed row, found from the schema, not a
-        # list.** The list above is the tables someone remembered; the
-        # owner's delete of a space still failed on `DELETE FROM entries`
-        # with "FOREIGN KEY constraint failed" (0.3.31), from a table that
-        # points at notes and was on no list. Whatever the schema says
-        # points at a row about to go is cleared first: a nullable pointer
-        # is emptied, a required one takes its row with it.
-        doomed_models = (
-            EntryLink, Attachment, AskTurn, Conversation, Reminder, Bookmark,
-            WhiteboardSketch, WhiteboardObject, WhiteboardNode, Document,
-            Entry, Category, MediaUpload,
-        )
-        for model in (*doomed_models, *workspace_scoped_models()):
-            ids = [row_id for (row_id,) in rows(model).with_entities(model.id).all()] if hasattr(model, "id") else []
-            _detach_references(session, model.__table__, ids)
-
-        for model in doomed_models:
-            rows(model).delete(synchronize_session=False)
-
-        # Anything with WorkspaceMixin that the ordered list above does not
-        # name: a model added later must not survive its space.
-        for model in workspace_scoped_models():
-            rows(model).delete(synchronize_session=False)
-
+        ids, to_unlink = _purge_collect(session, space_id)
+        _purge_forget_index(session, ids)
+        _purge_side_tables(session, ids)
+        _purge_rows(session, space_id, ids["category"])
     session.delete(space)
     session.commit()
     for path in to_unlink:
@@ -459,6 +491,28 @@ def delete_space(
         except OSError:
             pass  # the row is gone; a stray file is the recoverable failure
     return response
+
+
+@router.delete("/spaces/{space_id}", response_model=SpaceDeleted)
+def delete_space(
+    space_id: str,
+    move_to: str | None = None,
+    purge: bool = False,
+    session: Session = Depends(get_session),
+):
+    """Delete a space and move everything in it to `move_to` (the default
+    space when it is not given), or, with `purge=1`, delete everything in it
+    for good (owner, 0.3.31: "the option to delete all its contents, and the
+    other to move its contents to a different space"). The purge is explicit
+    (audit 1031 Z20): a client that forgets the parameter cannot destroy."""
+    if space_id in RESERVED_SPACE_IDS:
+        raise HTTPException(400, "The default spaces cannot be deleted.")
+    space = deps.get_or_404(session, Space, space_id, "That space could not be found.")
+    if purge and move_to:
+        raise HTTPException(400, "Choose either moving the contents or deleting them, not both.")
+    if purge:
+        return _purge_space(session, space)
+    return _delete_space_moving(session, space, move_to or "default")
 
 
 class MoveNotesBody(BaseModel):

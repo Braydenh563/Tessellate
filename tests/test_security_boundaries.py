@@ -16,8 +16,9 @@ import time
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.datastructures import Headers
 
-from tessellate.api import routes_auth
+from tessellate.api import bounds, routes_auth
 from tessellate.core import security, vault
 from tests._app_js import FRONTEND_DIR, frontend_text
 
@@ -241,7 +242,7 @@ def test_custom_css_does_not_inject_a_style_tag():
     """The one feature the strict policy broke, and the only thing that found
     it was a browser, 757 green tests said nothing.
 
-    Settings → Appearance lets the user write their own CSS. It was applied by
+    Settings, Appearance lets the user write their own CSS. It was applied by
     creating a <style> element, which is exactly what style-src 'self' refuses,
     so the feature silently stopped working while every test stayed green. It
     now adopts a constructed stylesheet, which CSP does not treat as inline
@@ -804,6 +805,27 @@ def test_a_signed_in_upload_keeps_its_room(client):
 
 
 @pytest.mark.usefixtures("_auth_hardening_clean")
+def test_a_signed_in_json_body_has_the_json_cap(client):
+    """Audit 1028 K4: a signed-in device could POST a 300 MB JSON body to any
+    pydantic route and the server held it in memory. A body FastAPI would
+    parse whole (JSON, or no type at all) is held to the JSON cap; an upload
+    keeps the large one, and so does a file's text sent to `/files/`."""
+    local = _local(client)
+    token = local.post("/auth/setup", json={"password": PASSWORD}).json()["token"].encode()
+    over = security.JSON_BODY_BYTES + 1
+    for kind in (b"application/json", b"text/plain", None):
+        typed = [(b"content-type", kind)] if kind else []
+        status, pulled = _asgi_post(
+            client.app, "/entries", [b"{}"],
+            [(b"x-auth-token", token), *typed, (b"content-length", str(over).encode())],
+        )
+        assert (status, pulled) == (413, 0), kind
+    for path, kind in (("/entries/1/files", b"multipart/form-data; boundary=x"), ("/files/1/text", b"application/json")):
+        assert security._body_limit(path, Headers(raw=[(b"x-auth-token", token), (b"content-type", kind)])) == security.LARGE_BODY_BYTES, path
+    assert security.JSON_BODY_BYTES >= 4 * bounds.TURN_TEXT_MAX * bounds.HISTORY_MAX_TURNS
+
+
+@pytest.mark.usefixtures("_auth_hardening_clean")
 def test_a_restore_across_a_key_rotation_strands_nothing(client):
     """SEC-07: a backup from before a vault-key rotation, restored, left the
     post-rotation key in memory: the restored private notes read as "couldn't
@@ -953,3 +975,9 @@ def test_origin_null_is_cross_site_for_the_auth_routes(client):
     refused = local.post("/auth/setup", json={"password": PASSWORD}, headers={"Origin": "null"})
     assert refused.status_code == 403
     assert local.get("/auth/status").json()["setup_required"] is True
+
+
+def test_api_json_is_never_stored_by_a_cache(client):
+    """Audit 1028 K12: note JSON must not outlive a lock in a browser or proxy cache."""
+    reply = client.get("/entries?limit=1")
+    assert reply.headers.get("cache-control") == "no-store"

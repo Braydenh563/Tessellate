@@ -137,7 +137,7 @@ ABOUT_APP_BRIEF = (
     "of their actual notes."
 )
 
-# Built-in personas. Users add their own in Settings → Personas.
+# Built-in personas. Users add their own in Settings, Personas.
 #: The built-in librarian is Atlas (INBOX 237: "the librarian persona hasnt
 #: been adjusted to be atlas acting as the librarian"). A preference saved
 #: under the old name still resolves through `PERSONA_ALIASES`.
@@ -211,7 +211,7 @@ STYLE_HINTS = {
 }
 
 
-#: **The local profile's share of the system prompt, capped.** Settings > Your
+#: **The local profile's share of the system prompt, capped.** Settings, Your
 #: profile holds a display name and a short "About me", and both reach the
 #: model through `profile_context` below, in the system message beside the
 #: persona and the tools guide. That message is resent on every round of every
@@ -474,6 +474,17 @@ def build_facts_messages(
     return messages
 
 
+#: The names a note in no category carries: no label for the model (audit
+#: 1030 Z70: "[Uncategorised]" opened every note and told it nothing).
+_NO_CATEGORY = frozenset({"", "none", "uncategorised", "uncategorized"})
+
+
+def category_hint(note: dict) -> str:
+    """" [Health]", or "" for a note in no category."""
+    name = str(note.get("category") or "").strip()
+    return "" if name.lower() in _NO_CATEGORY else f" [{name}]"
+
+
 def _written_hint(note: dict) -> str:
     """" (written Tuesday 22 September 2026)", or "" when the caller did not
     date the note. See the comment where `build_messages` uses it."""
@@ -728,7 +739,7 @@ def build_messages(
         # opposite reason: it did not match, and an answer that presents it as
         # though it did is telling the user their search found something it
         # did not.
-        f"{i}. [{note['category']}]"
+        f"{i}.{category_hint(note)}"
         # The day the note was written, when the caller knows it matters: a
         # note that says "tonight" means the night it was written, and a
         # model that cannot see that date reads it as tonight (the weekly

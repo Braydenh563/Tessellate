@@ -25,6 +25,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from tessellate.ai import librarian
+from tessellate.core import private_turn
 
 #: How much of the memory stream may ride along with the persona.
 #:
@@ -56,6 +57,9 @@ def persona_with_memory(session: Session, persona_prompt: str | None) -> str:
     the user their preferences on that turn, never the turn itself.
     """
     base = (persona_prompt or librarian.DEFAULT_PERSONA).strip()
+    if private_turn.active():
+        #: A private chat reads nothing it was taught (INBOX 1481).
+        return base
     try:
         from sqlalchemy import select
 

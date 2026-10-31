@@ -53,6 +53,7 @@ import hashlib
 import logging
 import re
 from collections import Counter
+from types import SimpleNamespace
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -60,8 +61,9 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tessellate.ai import question_cues
 from tessellate.core import jobruns, model_gate, undo_bin
-from tessellate.core.database import DerivedFact, Entry, utcnow
+from tessellate.core.database import DerivedFact, Entry, EntryLink, utcnow
 from tessellate.core.logbuffer import safe_value
 
 logger = logging.getLogger("tessellate.ai.facts")
@@ -322,6 +324,39 @@ def own_question(content: str, start: int, end: int) -> bool:
     return True
 
 
+def kept_question(content: str, start: int, end: int) -> bool:
+    """`own_question`, less the kinds it does not see: a rhetorical question,
+    one on a quoted line, one pasted from a page (`question_cues.not_asked`)."""
+    return own_question(content, start, end) and not question_cues.not_asked(content, start, end)
+
+
+#: A question in this many notes or more came from a template ("What am I
+#: grateful for today?" in every journal page), not from a person asking.
+TEMPLATE_NOTES = 3
+
+
+def _template_questions(session: Session) -> set[str]:
+    """The questions, in `question_cues.normal` form, that `TEMPLATE_NOTES`
+    or more notes ask word for word."""
+    seen: Counter[str] = Counter()
+    for content in session.scalars(
+        select(Entry.content).where(Entry.is_deleted.is_(False), Entry.is_private.is_(False))
+    ):
+        if content and ("?" in content or question_cues.cue(content)):
+            seen.update({question_cues.normal(text) for text, _s, _e in sentences(content) if question_cues.asks(text)})
+    return {text for text, notes in seen.items() if notes >= TEMPLATE_NOTES}
+
+
+def _proposed(content: str, questions_on: bool, templates: set[str]) -> list[Candidate]:
+    """A note's candidates, less its questions when the switch is off or a
+    template asked them."""
+    return [
+        item
+        for item in candidates(content)
+        if item.kind != "question" or (questions_on and question_cues.normal(item.text) not in templates)
+    ]
+
+
 def _qa_pairs(content: str) -> int:
     """How many lines end in a question answered by the line after."""
     pairs = 0
@@ -341,14 +376,15 @@ def candidates(content: str) -> list[Candidate]:
         if not (MIN_SENTENCE_CHARS <= len(text) <= MAX_SENTENCE_CHARS):
             continue
         words = {word.strip("'\"`").lower() for word in re.findall(r"[A-Za-z']+", text)}
-        if text.endswith("?"):
+        if question_cues.asks(text):
             # A question is the one kind the text states outright, which is
             # why it is checked first and scored highest: no judgement was
-            # needed and none should be claimed. Only the person's own
-            # (`own_question`); one that is not is neither a question nor a
-            # claim.
-            if own_question(content, start, end):
-                found.append(Candidate("question", text, start, end, 0.9))
+            # needed and none should be claimed. One asked without its "?"
+            # ("I wonder whether...", "need to find out...", INBOX 1466)
+            # scores lower. Only the person's own (`kept_question`); one that
+            # is not is neither a question nor a claim.
+            if kept_question(content, start, end):
+                found.append(Candidate("question", text, start, end, 0.9 if text.endswith("?") else 0.7))
         elif words & _STANCE:
             found.append(Candidate("claim", text, start, end, 0.6))
         if len(found) >= MAX_FACTS_PER_ENTRY:
@@ -357,12 +393,17 @@ def candidates(content: str) -> list[Candidate]:
 
 
 def _retire_not_own_questions(session: Session) -> int:
-    """Tombstone the stored questions `own_question` would not take now
+    """Tombstone the stored questions `kept_question` would not take now
     (INBOX 745 (b)): they leave the list at the next pass, and a tombstone is
     "already known", so a later read does not bring them back. A row whose
-    note no longer holds its text is left to the edit path."""
+    note no longer holds its text is left to the edit path. Only the rows the
+    rule pass wrote (`model == "local"`): a row a model decided on, or the
+    person edited, is not undone by a rule after the fact."""
     rows = list(session.scalars(
-        select(DerivedFact).where(DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None))
+        select(DerivedFact).where(
+            DerivedFact.kind == "question", DerivedFact.deleted_at.is_(None),
+            DerivedFact.model == "local", DerivedFact.edited_by_user.is_not(True),
+        )
     ).all())
     notes = {
         entry.id: entry.content or ""
@@ -371,7 +412,7 @@ def _retire_not_own_questions(session: Session) -> int:
     retired = 0
     for row in rows:
         content = notes.get(row.entry_id, "")
-        if content[row.span_start:row.span_end] == row.text and not own_question(content, row.span_start, row.span_end):
+        if content[row.span_start:row.span_end] == row.text and not kept_question(content, row.span_start, row.span_end):
             row.deleted_at = utcnow()
             retired += 1
     if retired:
@@ -541,6 +582,7 @@ def run(
 
     spent = 0
     scanned = 0
+    boards = 0
     derived = 0
     stopped = "done"
     try:
@@ -555,6 +597,7 @@ def run(
         for row in session.scalars(select(DerivedFact)).all():
             known_by_entry.setdefault(row.entry_id, set()).add(fingerprint_of(row))
         to_read = _entries_to_read(session, force)
+        templates = _template_questions(session)
         #: What the Background tasks row shows (INBOX 1006): notes read of the
         #: notes this run will reach, which the token budget may cut short.
         progress = jobruns.current("night-shift")
@@ -569,10 +612,11 @@ def run(
             content = entry.content or ""
             spent += TOKENS_PER_NOTE
             scanned += 1
+            boards += int(bool(entry.is_board))
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
-            proposed = [item for item in candidates(content) if questions_on or item.kind != "question"]
+            proposed = _proposed(content, questions_on, templates)
             if not proposed:
                 continue
 
@@ -636,6 +680,7 @@ def run(
                 counts=counts,
                 models_used=models_used,
                 questions_on=questions_on,
+                read=to_read[:scanned],
             )
             derived += paired
     except BaseException:
@@ -657,6 +702,7 @@ def run(
         "paused": False,
         "run_id": night.id,
         "scanned": scanned,
+        "boards": boards,
         "derived": derived,
         "tokens_spent": spent,
         "budget": budget,
@@ -947,6 +993,7 @@ def _pair_passes(
     counts: dict[str, int],
     models_used: set[str],
     questions_on: bool = True,
+    read: list[Entry] | None = None,
 ) -> tuple[int, int, str]:
     """Passes 4 and 5 over what pass 3 just found. Returns `(spent, derived,
     stopped)`; never raises past a single pair.
@@ -958,8 +1005,14 @@ def _pair_passes(
     claims, questions = _open_claims_and_questions(session)
     new_claims = [row for row in claims if row.run_id == night.id]
     new_questions = [row for row in questions if row.run_id == night.id] if questions_on else []
+    # With no model, a later sentence that states what a question asks
+    # answers it (INBOX 1466). Before the early return: a note read this run
+    # with no claim or question in it can still answer an older question.
+    by_rule = _answers_by_rule(
+        session, night, questions, read, questions_on=questions_on, provider=provider, model=model, counts=counts, models_used=models_used
+    )
     if not (new_claims or new_questions):
-        return spent, 0, "done"
+        return spent, by_rule, "done"
     progress = jobruns.current("night-shift")
     progress.say(
         f"Comparing {len(new_claims)} new claim{'' if len(new_claims) == 1 else 's'} "
@@ -968,7 +1021,7 @@ def _pair_passes(
     similar = _Similar(embeddings, claims)
     known = _known_pairs(session)
     written = _written(session, {row.entry_id for row in claims + questions})
-    derived = 0
+    derived = by_rule
 
     def charge(first: str, second: str) -> int:
         if provider is not None and model:
@@ -1011,15 +1064,16 @@ def _pair_passes(
                 counts["tension"] = counts.get("tension", 0) + 1
                 models_used.add(found[0])
 
-    # Pass 5: open questions against claims written later, in other notes.
+    # Pass 5: open questions against claims written later, in other notes,
+    # judged by the model (with none, `_answers_by_rule` did this above).
     answered = {
         int(json_payload_value(row.payload, "other_fact_id") or 0)
         for row in session.scalars(
             select(DerivedFact).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
         ).all()
     }
-    pending_questions = list(questions) if questions_on else []
-    progress.step(0, len(pending_questions), "Matching questions to answers")
+    pending_questions = _for_the_model(questions, questions_on, provider, model)
+    progress.step(0, len(pending_questions) or None, "Matching questions to answers")
     for question_index, question in enumerate(pending_questions):
         progress.step(question_index, len(pending_questions))
         if question.id in answered:
@@ -1046,15 +1100,10 @@ def _pair_passes(
                 return spent, derived, "budget"
             spent += cost
             known.add(pair)
-            found = None
-            if provider is not None and model:
-                _release(session)
-                model_gate.yield_to_interactive()
-                judged = _judge(provider, model, _JUDGE_ANSWER, question.text, claim.text)
-                if judged and judged[0] == "yes":
-                    found = (model, judged[1], 0.7)
-            elif _local_answer(question.text, claim.text):
-                found = ("local", "Says most of what the question asks about.", 0.4)
+            _release(session)
+            model_gate.yield_to_interactive()
+            judged = _judge(provider, model, _JUDGE_ANSWER, question.text, claim.text)
+            found = (model, judged[1], 0.7) if judged and judged[0] == "yes" else None
             if found:
                 session.add(_pair_fact("answered", claim, question, pair, found[1], found[0], found[2], night.id, score))
                 derived += 1
@@ -1064,6 +1113,126 @@ def _pair_passes(
                 break
     progress.say(f"Finished comparing: {derived} pairing{'' if derived == 1 else 's'} found.")
     return spent, derived, "done"
+
+
+#: The most later notes one rule pass reads for answers, newest first.
+ANSWER_NOTES = 300
+_RULE_REASON = "States what the question asks about, in a note written after it."
+
+
+def _answered_ids(session: Session) -> set[int]:
+    return {
+        int(json_payload_value(payload, "other_fact_id") or 0)
+        for payload in session.scalars(
+            select(DerivedFact.payload).where(DerivedFact.kind == "answered", DerivedFact.deleted_at.is_(None))
+        )
+    }
+
+
+def _heading(content: str, question: str) -> str:
+    """A note's first sentence, its title in effect, unless it is the
+    question itself."""
+    first = sentences(content.lstrip().split("\n", 1)[0].lstrip("# ")) if content.strip() else []
+    return first[0][0] if first and first[0][0] != question else ""
+
+
+def _rule_notes(session: Session, since: datetime) -> list[tuple[int, datetime, list[tuple[str, int, int]]]]:
+    """The newest `ANSWER_NOTES` readable notes written after `since`, each
+    with the sentences in it that can answer."""
+    rows = session.execute(
+        select(Entry.id, Entry.content, Entry.created_at)
+        .where(Entry.is_deleted.is_(False), Entry.is_private.is_(False), Entry.created_at > since)
+        .order_by(Entry.created_at.desc())
+        .limit(ANSWER_NOTES)
+    ).all()
+    return [(eid, at, question_cues.answer_sentences(sentences(content or ""))) for eid, content, at in rows]
+
+
+def _links(session: Session, entry_ids: set[int]) -> set[frozenset[int]]:
+    pairs = session.execute(
+        select(EntryLink.source_entry_id, EntryLink.target_entry_id).where(
+            EntryLink.source_entry_id.in_(entry_ids) | EntryLink.target_entry_id.in_(entry_ids)
+        )
+    ).all()
+    return {frozenset(pair) for pair in pairs}
+
+
+def _for_the_model(questions: list[DerivedFact], questions_on: bool, provider, model: str) -> list[DerivedFact]:  # noqa: ANN001
+    """The questions pass 5 asks the model about: none with no model, where
+    `_answers_by_rule` has matched them already."""
+    return list(questions) if questions_on and provider is not None and model else []
+
+
+def _due_questions(session: Session, night, questions: list[DerivedFact], read_ids: set[int]) -> list[DerivedFact]:  # noqa: ANN001
+    """The open questions worth comparing this run: new ones, or every one
+    when a note was read that might answer it."""
+    answered = _answered_ids(session)
+    return [q for q in questions if q.id not in answered and (q.run_id == night.id or read_ids)]
+
+
+def _asked_notes(session: Session, due: list[DerivedFact]) -> dict[int, tuple[str, datetime]]:
+    if not due:
+        return {}
+    rows = session.execute(
+        select(Entry.id, Entry.content, Entry.created_at).where(Entry.id.in_({q.entry_id for q in due}))
+    ).all()
+    return {eid: (content or "", at) for eid, content, at in rows if at is not None}
+
+
+def _rule_answer(question: DerivedFact, asked: tuple[str, datetime], notes, links: set[frozenset[int]], read_ids: set[int], run_id: int):  # noqa: ANN001, ANN202
+    """The best later sentence for one question, from `_rule_notes`."""
+    content, at = asked
+    fresh = question.run_id == run_id
+    later = [
+        (eid, frozenset((eid, question.entry_id)) in links, said)
+        for eid, written, said in notes
+        if eid != question.entry_id and written > at and (fresh or eid in read_ids)
+    ]
+    return question_cues.best_answer(question_cues.subject(question.text, _heading(content, question.text)), later)
+
+
+def _answers_by_rule(
+    session: Session,
+    night,  # noqa: ANN001  # NightRun
+    questions: list[DerivedFact],
+    read: list[Entry] | None,
+    *,
+    questions_on: bool,
+    provider,  # noqa: ANN001
+    model: str,
+    counts: dict[str, int],
+    models_used: set[str],
+) -> int:
+    """Pass 5 with no model (INBOX 1466): each open question against the
+    sentences of notes written after it, stored as the same `answered` row
+    the model's pass writes. Only a question new this run, or a note read
+    this run, is compared, so a run with nothing new compares nothing."""
+    if not questions_on or (provider is not None and model):
+        return 0
+    read_ids = {entry.id for entry in read or []}
+    due = _due_questions(session, night, questions, read_ids)
+    asked = _asked_notes(session, due)
+    due = [q for q in due if q.entry_id in asked]
+    if not due:
+        return 0
+    notes = _rule_notes(session, min(asked[q.entry_id][1] for q in due))
+    links = _links(session, set(asked))
+    known = _known_pairs(session)
+    found = 0
+    for question in due:
+        best = _rule_answer(question, asked[question.entry_id], notes, links, read_ids, night.id)
+        pair = f"answered:{question.id}:s{best[1]}:{best[3]}" if best else ""
+        if not best or pair in known:
+            continue
+        value, eid, text, start, end = best
+        sentence = SimpleNamespace(id=None, entry_id=eid, text=text, span_start=start, span_end=end)
+        session.add(_pair_fact("answered", sentence, question, pair, _RULE_REASON, "local", 0.4, night.id, value))
+        known.add(pair)
+        found += 1
+    if found:
+        counts["answered"] = counts.get("answered", 0) + found
+        models_used.add("local")
+    return found
 
 
 def json_payload_value(payload: str | None, key: str):  # noqa: ANN201

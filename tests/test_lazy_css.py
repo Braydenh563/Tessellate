@@ -21,9 +21,12 @@ ROOT = Path(__file__).resolve().parents[1]
 FRONTEND = ROOT / "frontend"
 
 
-def _linked() -> set[str]:
-    html = re.sub(r"<!--.*?-->", "", (FRONTEND / "index.html").read_text(encoding="utf-8"), flags=re.S)
-    return set(re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="/css/([^"?]+)', html))
+def _linked(pages: tuple[str, ...] = ("index.html",)) -> set[str]:
+    found = set()
+    for page in pages:
+        html = re.sub(r"<!--.*?-->", "", (FRONTEND / page).read_text(encoding="utf-8"), flags=re.S)
+        found |= set(re.findall(r'<link[^>]*rel="stylesheet"[^>]*href="/css/([^"?]+)', html))
+    return found
 
 
 def _lazy() -> set[str]:
@@ -36,15 +39,18 @@ def _lazy() -> set[str]:
         text = path.read_text(encoding="utf-8")
         loaded |= set(re.findall(r'lazyScript\("/css/([A-Za-z0-9_.-]+\.css)"\)', text))
         #: Or a list of files handed to it: `["/css/x.css", "/js/x.js"].forEach(lazyScript)`
-        #: (settings-wiring.js's file-drop stub).
-        for files in re.findall(r"\[([^\]]*)\]\.forEach\(lazyScript\)", text):
+        #: (settings-wiring.js's file-drop stub), or `.map(lazyScript)` inside a
+        #: `Promise.all` when the caller waits for them (notes-list.js's capture card,
+        #: 54c94d1: the same loader, so the stylesheet is loaded, not orphaned).
+        for files in re.findall(r"\[([^\]]*)\]\.(?:forEach|map)\(lazyScript\)", text):
             loaded |= set(re.findall(r'"/css/([A-Za-z0-9_.-]+\.css)"', files))
     return listed | loaded
 
 
 def test_every_stylesheet_is_linked_or_loaded_by_a_bundle():
     on_disk = {p.name for p in (FRONTEND / "css").glob("*.css")}
-    orphans = on_disk - _linked() - _lazy()
+    #: The desktop companion (INBOX 1464) is a page of its own with its own sheet.
+    orphans = on_disk - _linked(("index.html", "desktop-companion.html")) - _lazy()
     assert not orphans, f"stylesheets nothing loads: {sorted(orphans)}"
 
 

@@ -298,6 +298,322 @@ AUTONOMOUS_STAGES = [
 ]
 
 
+def _stage_entities(config) -> None:  # noqa: ANN001
+    # ROADMAP.md item 34, run separately from the agent pass below,
+    # a plain per-note completion call (like suggest_tags), not a tool-
+    # calling agent turn, and gated by its own preference so it isn't
+    # silently skipped whenever tag/link/dedupe are all switched off.
+    if not config.get_preference("auto_entities_enabled", False):
+        return
+    try:
+        from tessellate.ai.entities import extract_entities_pass
+
+        db = deps.get_db()
+        with db.session() as session:
+            processed = extract_entities_pass(
+                session, deps.get_model_manager(), deps.get_ollama()
+            )
+        if processed:
+            logger.info("entity extraction: scanned %d note(s)", processed)
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("entity extraction failed: %s", exc, exc_info=True)
+
+
+def _stage_link_audit(config) -> None:  # noqa: ANN001
+    # Its own preference, deliberately separate from `auto_link_enabled`:
+    # that toggle is "should the agent create/remove links at all", and
+    # this one is "should already-existing links get their vague reason
+    # rewritten", someone who wants the agent to stop making new
+    # judgement calls about their links but is happy for existing vague
+    # reasons to keep improving (or vice versa) can't say that with one
+    # shared flag. Defaults to True, matching every other auto_* toggle
+    # here: opt-out, not opt-in.
+    if not config.get_preference("auto_link_reason_audit", True):
+        return
+    try:
+        from tessellate.ai.links import audit_vague_links
+        db = deps.get_db()
+        with db.session() as session:
+            # A small, fixed batch per tick, this runs on every
+            # interval for as long as the server is up, so an
+            # unbounded pass over a big notebook would mean one tick
+            # never finishes before the next is due. `AUDIT_BATCH_SIZE`
+            # keeps each tick short; a large backlog is worked through
+            # a bit at a time, one interval per batch.
+            updated = audit_vague_links(
+                session, deps.get_model_manager(), deps.get_ollama(),
+                limit=AUDIT_BATCH_SIZE,
+            )
+        if updated:
+            logger.info("link reason audit: updated %d link(s)", updated)
+    except Exception as exc:
+        logger.error("link reason audit failed: %s", exc, exc_info=True)
+
+
+def _stage_capture(config) -> None:  # noqa: ANN001
+    # ANALYSIS.md §60 item 2. Its own preference and its own pass, not
+    # part of the agent turn below: this reads *conversations*, not
+    # notes, and the agent's job list is written in terms of notes.
+    if not config.get_preference("auto_capture_enabled", False):
+        return
+    try:
+        from tessellate.ai.passive_capture import capture_pass
+
+        db = deps.get_db()
+        with db.session() as session:
+            captured = capture_pass(
+                session,
+                deps.get_model_manager(),
+                deps.get_ollama(),
+                config,
+            )
+        if captured:
+            logger.info("passive capture: wrote %d draft(s)", captured)
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("passive capture failed: %s", exc, exc_info=True)
+
+
+def _stage_stale(config) -> None:  # noqa: ANN001
+    # ROADMAP.md item 31: "acting on stale/orphaned notes (nothing
+    # currently reviews a note nobody has touched in months)". Arithmetic
+    # like the link-reason audit above, not an agent turn, staleness and
+    # connectedness are both plain columns and joins, see
+    # `entry/staleness.py`'s own docstring for why that's deliberate.
+    # Tagging rather than archiving or deleting: there's nobody here to
+    # confirm a change to a note's visibility, but a tag is the same kind
+    # of low-stakes, reversible mark `_tag_note` already makes for a
+    # person who asks for one directly.
+    if not config.get_preference("auto_stale_review_enabled", False):
+        return
+    try:
+        from tessellate.entry import manager as entry_manager
+        from tessellate.entry import staleness
+
+        db = deps.get_db()
+        tagged = 0
+        with db.session() as session:
+            candidates = staleness.find_stale_orphaned_notes(session)
+            for entry in candidates[:STALE_REVIEW_BATCH_SIZE]:
+                tags = entry_manager.entry_tags(entry)
+                if "stale" in tags:
+                    continue
+                entry_manager.update_entry(session, entry, tags=[*tags, "stale"])
+                tagged += 1
+        if tagged:
+            logger.info("stale/orphaned review: tagged %d note(s)", tagged)
+    except Exception as exc:
+        logger.error("stale/orphaned review failed: %s", exc, exc_info=True)
+
+
+def _stage_words_review() -> None:
+    # A second opinion on the notes filed by the notebook's own words
+    # while no model was available (BACKLOG 76). Not its own switch: the
+    # pass already runs only when the person turned the background
+    # librarian on, and these notes are exactly what it is for. A fixed
+    # batch per tick, like the audits above; `review_words_filed` never
+    # touches a note the person filed, a private note or a binned one.
+    try:
+        from tessellate.ai import janitor
+
+        db = deps.get_db()
+        with db.session() as session:
+            reviewed = janitor.review_words_filed(
+                session,
+                deps.get_embeddings(),
+                deps.get_model_manager(),
+                deps.get_ollama(),
+                limit=WORDS_REVIEW_BATCH_SIZE,
+            )
+        if reviewed["looked"]:
+            logger.info(
+                "words-filed review: %d looked at, %d moved, %d confirmed",
+                reviewed["looked"], reviewed["moved"], reviewed["confirmed"],
+            )
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("words-filed review failed: %s", exc, exc_info=True)
+
+
+def _stage_night_shift(config, run: "jobruns.Run") -> None:  # noqa: ANN001
+    # The night shift's derived facts (WORLD_CLASS_PLAN 15, I1 and I9).
+    # A fourth task here rather than a second scheduler: this module
+    # already owns the interval, the battery guard above, the cancel and
+    # snooze protocol and the `system:librarian` attribution, and every
+    # one of those would need a second answer beside it otherwise.
+    # Its own switch is `learn.night_shift.enabled` (read by `facts.run`),
+    # which is what Settings shows; getting this far already means
+    # `autonomous_tasks_enabled` is on, so nothing here runs unattended
+    # unless the person said it could.
+    try:
+        from tessellate.ai import facts
+
+        db = deps.get_db()
+        run.step(5)
+        run.say("Running the night shift: reading notes for facts and open questions.")
+        with db.session() as session, jobruns.job_run("night-shift") as night:
+            outcome = facts.run(
+                session,
+                budget=int(config.get_preference("night_shift_budget_tokens", 20_000) or 20_000),
+                provider=deps.get_ollama(),
+                model=deps.get_model_manager().utility_model(),
+                config=config,
+                trigger="scheduled",
+                embeddings=deps.get_embeddings(),
+            )
+            session.commit()
+            jobruns.describe_night_pass(night, outcome)
+        if outcome.get("derived"):
+            logger.info(
+                "night shift: %d fact(s) from %d note(s), stopped: %s",
+                outcome["derived"],
+                outcome["scanned"],
+                outcome["stopped_reason"],
+            )
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("night shift failed: %s", exc, exc_info=True)
+
+
+def _stopped_before(what: str, run: "jobruns.Run") -> bool:
+    """True, with the run marked cancelled, when someone quit this pass."""
+    if not _cancel.is_set():
+        return False
+    logger.info("stopped before %s, someone quit this pass", what)
+    run.cancel("Stopped before it finished.")
+    return True
+
+
+def _agent_persona(config, task_str: str) -> str:  # noqa: ANN001
+    persona = (
+        "You are an autonomous background process optimizing the user's "
+        "knowledge base. You are running without user interaction. "
+        f"Your task is to {task_str} using your tools. Do not ask questions "
+        "or expect user replies. When you are finished making improvements, "
+        "stop your turn."
+    )
+    if not config.get_preference("auto_tag_enabled", True):
+        persona += " Do NOT change or add tags."
+    if not config.get_preference("auto_link_enabled", True):
+        persona += " Do NOT link notes."
+    else:
+        persona += (
+            " When you link two notes, pass a reason if the connection "
+            "isn't obvious from the titles alone (e.g. 'both about "
+            "scheduling'), it's shown on the graph and explains the "
+            "link to the person who wrote the notes."
+        )
+    return persona
+
+
+def _event_stops_pass(event: dict) -> tuple[str, str] | None:
+    """The (outcome, detail) an agent event ends the pass with, or None."""
+    if event.get("offline"):
+        #: The agent answered once, offline, and did no work:
+        #: say so, rather than "Finished analysing and linking
+        #: notes." over a pass that never reached a model.
+        logger.info("autonomous pass: no model is running")
+        return "completed", NO_MODEL_DETAIL
+    if event.get("type") == "confirm":
+        logger.info(
+            "paused for confirmation on %s with nobody to ask, abandoning run",
+            event.get("name"),
+        )
+        return "failed", f"Stopped: {event.get('name')} needs confirmation."
+    return None
+
+
+def _say_tool_event(event: dict, run: "jobruns.Run") -> None:
+    if event.get("type") == "tool" and not event.get("ok"):
+        logger.warning("tool error: %s", event.get("error"))
+        run.say("One tool step did not work and was skipped.")
+    elif event.get("type") == "tool" and event.get("name"):
+        run.say(f"Used {str(event['name']).replace('_', ' ')}.")
+
+
+def _drive_agent(session, task_str: str, persona: str, run: "jobruns.Run", changes: list[dict]) -> tuple[str, str]:  # noqa: ANN001
+    """Run the agent turn; its (outcome, detail), with each change it made
+    appended to `changes` as it goes."""
+    outcome, detail = "completed", "Finished analysing and linking notes."
+    try:
+        events = agent.run_agent(
+            session=session,
+            question=(
+                f"Analyze recent or isolated notes and {task_str}. Use "
+                "find_similar_notes to traverse the graph conceptually. "
+                "Stop when done."
+            ),
+            notes=[],
+            model_manager=deps.get_model_manager(),
+            ollama=deps.get_ollama(),
+            persona_prompt=persona,
+            # Nothing here can be confirmed and nothing here should be
+            # deleted: there is no user in the loop to ask.
+            blocked_tools=frozenset({"ask_user", "delete_note"}) | agent.tools.CHANGE_TOOLS,
+            max_rounds=MAX_ROUNDS,
+            mode="autonomous",
+            use_utility_model=True,
+        )
+        for event in events:
+            if _cancel.is_set():
+                # Abandoning the generator rather than killing a
+                # thread: the round that is already in flight finishes
+                # and nothing further is asked of the model. Whatever
+                # it changed up to here is real, was recorded, and is
+                # in the review list like any other pass's changes.
+                logger.info("stopped mid-pass: someone quit this job")
+                outcome, detail = "cancelled", "Stopped part-way through."
+                break
+            stop = _event_stops_pass(event)
+            if stop:
+                outcome, detail = stop
+                break
+            _say_tool_event(event, run)
+            # The agent hangs a `change` off every successful write,
+            # carrying the call that would put the note back. Collected
+            # here so the pass can be read and reversed afterwards,
+            # see `_last_pass`.
+            change = event.get("change")
+            if change and len(changes) < MAX_RECORDED_CHANGES:
+                changes.append(change)
+    except Exception as exc:  # noqa: BLE001  # top of a worker thread
+        logger.error("autonomous execution failed: %s", exc, exc_info=True)
+        # Recording "completed" here regardless of what happened is
+        # what the first version did, and it made the task history
+        # actively misleading: every failure showed up as a success.
+        outcome, detail = "failed", str(exc)
+    return outcome, detail
+
+
+def _agent_pass(config, tasks: list[str], started: float, run: "jobruns.Run") -> None:  # noqa: ANN001
+    run.step(6)
+    run.say(f"Asking the librarian to work on: {', '.join(tasks)}.")
+    task_str = ", ".join(tasks)
+    persona = _agent_persona(config, task_str)
+
+    changes: list[dict] = []
+    db = deps.get_db()
+    with db.session() as session:
+        outcome, detail = _drive_agent(session, task_str, persona, run, changes)
+
+    from tessellate.core import taskhistory
+
+    detail = _settled_detail(outcome, detail, changes)
+    _remember_pass(outcome, changes)
+    if outcome == "failed":
+        run.fail(detail)
+    elif outcome == "cancelled":
+        run.cancel(detail)
+    else:
+        run.result = detail
+    taskhistory.record(
+        "autonomous",
+        "Autonomous knowledge base optimisation",
+        outcome,
+        detail,
+        name=deps.get_model_manager().utility_model(),
+        duration_ms=(time.monotonic() - started) * 1000,
+    )
+    logger.info("autonomous optimisation %s, %d change(s)", outcome, len(changes))
+
+
 def _optimization_pass(started: float, run: "jobruns.Run") -> None:
     """The body of one pass, split out so the actor above wraps all of it.
 
@@ -315,192 +631,39 @@ def _optimization_pass(started: float, run: "jobruns.Run") -> None:
             run.result = "Skipped: battery efficient mode is on."
             return
 
-        # ROADMAP.md item 34, run separately from the agent pass below, 
-        # a plain per-note completion call (like suggest_tags), not a tool-
-        # calling agent turn, and gated by its own preference so it isn't
-        # silently skipped whenever tag/link/dedupe are all switched off.
         run.step(0)
         if config.get_preference("auto_entities_enabled", False):
             run.say("Finding people, places and things in your notes.")
-            try:
-                from tessellate.ai.entities import extract_entities_pass
+        _stage_entities(config)
 
-                db = deps.get_db()
-                with db.session() as session:
-                    processed = extract_entities_pass(
-                        session, deps.get_model_manager(), deps.get_ollama()
-                    )
-                if processed:
-                    logger.info("entity extraction: scanned %d note(s)", processed)
-            except Exception as exc:  # noqa: BLE001  # top of a worker thread
-                logger.error("entity extraction failed: %s", exc, exc_info=True)
-
-        # Its own preference, deliberately separate from `auto_link_enabled`:
-        # that toggle is "should the agent create/remove links at all", and
-        # this one is "should already-existing links get their vague reason
-        # rewritten", someone who wants the agent to stop making new
-        # judgement calls about their links but is happy for existing vague
-        # reasons to keep improving (or vice versa) can't say that with one
-        # shared flag. Defaults to True, matching every other auto_* toggle
-        # here: opt-out, not opt-in.
-        if _cancel.is_set():
-            logger.info("stopped before link reason audit, someone quit this pass")
-            run.cancel("Stopped before it finished.")
+        if _stopped_before("link reason audit", run):
             return
-
         run.step(1)
         if config.get_preference("auto_link_reason_audit", True):
             run.say("Naming vague link reasons.")
-            try:
-                from tessellate.ai.links import audit_vague_links
-                db = deps.get_db()
-                with db.session() as session:
-                    # A small, fixed batch per tick, this runs on every
-                    # interval for as long as the server is up, so an
-                    # unbounded pass over a big notebook would mean one tick
-                    # never finishes before the next is due. `AUDIT_BATCH_SIZE`
-                    # keeps each tick short; a large backlog is worked through
-                    # a bit at a time, one interval per batch.
-                    updated = audit_vague_links(
-                        session, deps.get_model_manager(), deps.get_ollama(),
-                        limit=AUDIT_BATCH_SIZE,
-                    )
-                if updated:
-                    logger.info("link reason audit: updated %d link(s)", updated)
-            except Exception as exc:
-                logger.error("link reason audit failed: %s", exc, exc_info=True)
+        _stage_link_audit(config)
 
-        # ROADMAP.md item 31: "acting on stale/orphaned notes (nothing
-        # currently reviews a note nobody has touched in months)". Arithmetic
-        # like the link-reason audit above, not an agent turn, staleness and
-        # connectedness are both plain columns and joins, see
-        # `entry/staleness.py`'s own docstring for why that's deliberate.
-        # Tagging rather than archiving or deleting: there's nobody here to
-        # confirm a change to a note's visibility, but a tag is the same kind
-        # of low-stakes, reversible mark `_tag_note` already makes for a
-        # person who asks for one directly.
-        # ANALYSIS.md §60 item 2. Its own preference and its own pass, not
-        # part of the agent turn below: this reads *conversations*, not
-        # notes, and the agent's job list is written in terms of notes.
-        if _cancel.is_set():
-            logger.info("stopped before passive capture, someone quit this pass")
-            run.cancel("Stopped before it finished.")
+        if _stopped_before("passive capture", run):
             return
-
         run.step(2)
         if config.get_preference("auto_capture_enabled", False):
             run.say("Looking through conversations for things worth keeping.")
-            try:
-                from tessellate.ai.passive_capture import capture_pass
+        _stage_capture(config)
 
-                db = deps.get_db()
-                with db.session() as session:
-                    captured = capture_pass(
-                        session,
-                        deps.get_model_manager(),
-                        deps.get_ollama(),
-                        config,
-                    )
-                if captured:
-                    logger.info("passive capture: wrote %d draft(s)", captured)
-            except Exception as exc:  # noqa: BLE001  # top of a worker thread
-                logger.error("passive capture failed: %s", exc, exc_info=True)
-
-        if _cancel.is_set():
-            logger.info("stopped before stale/orphaned review, someone quit this pass")
-            run.cancel("Stopped before it finished.")
+        if _stopped_before("stale/orphaned review", run):
             return
-
         run.step(3)
         if config.get_preference("auto_stale_review_enabled", False):
             run.say("Looking for stale, unconnected notes.")
-            try:
-                from tessellate.entry import manager as entry_manager
-                from tessellate.entry import staleness
+        _stage_stale(config)
 
-                db = deps.get_db()
-                tagged = 0
-                with db.session() as session:
-                    candidates = staleness.find_stale_orphaned_notes(session)
-                    for entry in candidates[:STALE_REVIEW_BATCH_SIZE]:
-                        tags = entry_manager.entry_tags(entry)
-                        if "stale" in tags:
-                            continue
-                        entry_manager.update_entry(session, entry, tags=[*tags, "stale"])
-                        tagged += 1
-                if tagged:
-                    logger.info("stale/orphaned review: tagged %d note(s)", tagged)
-            except Exception as exc:
-                logger.error("stale/orphaned review failed: %s", exc, exc_info=True)
-
-        # A second opinion on the notes filed by the notebook's own words
-        # while no model was available (BACKLOG 76). Not its own switch: the
-        # pass already runs only when the person turned the background
-        # librarian on, and these notes are exactly what it is for. A fixed
-        # batch per tick, like the audits above; `review_words_filed` never
-        # touches a note the person filed, a private note or a binned one.
         run.step(4)
         run.say("Double-checking notes that were filed by their words.")
-        try:
-            from tessellate.ai import janitor
+        _stage_words_review()
 
-            db = deps.get_db()
-            with db.session() as session:
-                reviewed = janitor.review_words_filed(
-                    session,
-                    deps.get_embeddings(),
-                    deps.get_model_manager(),
-                    deps.get_ollama(),
-                    limit=WORDS_REVIEW_BATCH_SIZE,
-                )
-            if reviewed["looked"]:
-                logger.info(
-                    "words-filed review: %d looked at, %d moved, %d confirmed",
-                    reviewed["looked"], reviewed["moved"], reviewed["confirmed"],
-                )
-        except Exception as exc:  # noqa: BLE001  # top of a worker thread
-            logger.error("words-filed review failed: %s", exc, exc_info=True)
+        _stage_night_shift(config, run)
 
-        # The night shift's derived facts (WORLD_CLASS_PLAN 15, I1 and I9).
-        # A fourth task here rather than a second scheduler: this module
-        # already owns the interval, the battery guard above, the cancel and
-        # snooze protocol and the `system:librarian` attribution, and every
-        # one of those would need a second answer beside it otherwise.
-        # Its own switch is `learn.night_shift.enabled` (read by `facts.run`),
-        # which is what Settings shows; getting this far already means
-        # `autonomous_tasks_enabled` is on, so nothing here runs unattended
-        # unless the person said it could.
-        try:
-            from tessellate.ai import facts
-
-            db = deps.get_db()
-            run.step(5)
-            run.say("Running the night shift: reading notes for facts and open questions.")
-            with db.session() as session, jobruns.job_run("night-shift") as night:
-                outcome = facts.run(
-                    session,
-                    budget=int(config.get_preference("night_shift_budget_tokens", 20_000) or 20_000),
-                    provider=deps.get_ollama(),
-                    model=deps.get_model_manager().utility_model(),
-                    config=config,
-                    trigger="scheduled",
-                    embeddings=deps.get_embeddings(),
-                )
-                session.commit()
-                jobruns.describe_night_pass(night, outcome)
-            if outcome.get("derived"):
-                logger.info(
-                    "night shift: %d fact(s) from %d note(s), stopped: %s",
-                    outcome["derived"],
-                    outcome["scanned"],
-                    outcome["stopped_reason"],
-                )
-        except Exception as exc:  # noqa: BLE001  # top of a worker thread
-            logger.error("night shift failed: %s", exc, exc_info=True)
-
-        if _cancel.is_set():
-            logger.info("stopped before the agent pass, someone quit this pass")
-            run.cancel("Stopped before it finished.")
+        if _stopped_before("the agent pass", run):
             return
 
         tasks = _enabled_tasks(config)
@@ -508,117 +671,7 @@ def _optimization_pass(started: float, run: "jobruns.Run") -> None:
             logger.info("skipped: every autonomous task is switched off in Settings")
             run.result = "Skipped: every autonomous task is switched off."
             return
-
-        run.step(6)
-        run.say(f"Asking the librarian to work on: {', '.join(tasks)}.")
-        task_str = ", ".join(tasks)
-        persona = (
-            "You are an autonomous background process optimizing the user's "
-            "knowledge base. You are running without user interaction. "
-            f"Your task is to {task_str} using your tools. Do not ask questions "
-            "or expect user replies. When you are finished making improvements, "
-            "stop your turn."
-        )
-        if not config.get_preference("auto_tag_enabled", True):
-            persona += " Do NOT change or add tags."
-        if not config.get_preference("auto_link_enabled", True):
-            persona += " Do NOT link notes."
-        else:
-            persona += (
-                " When you link two notes, pass a reason if the connection "
-                "isn't obvious from the titles alone (e.g. 'both about "
-                "scheduling'), it's shown on the graph and explains the "
-                "link to the person who wrote the notes."
-            )
-
-        outcome, detail = "completed", "Finished analysing and linking notes."
-        changes: list[dict] = []
-        db = deps.get_db()
-        with db.session() as session:
-            try:
-                events = agent.run_agent(
-                    session=session,
-                    question=(
-                        f"Analyze recent or isolated notes and {task_str}. Use "
-                        "find_similar_notes to traverse the graph conceptually. "
-                        "Stop when done."
-                    ),
-                    notes=[],
-                    model_manager=deps.get_model_manager(),
-                    ollama=deps.get_ollama(),
-                    persona_prompt=persona,
-                    # Nothing here can be confirmed and nothing here should be
-                    # deleted: there is no user in the loop to ask.
-                    blocked_tools=frozenset({"ask_user", "delete_note"}),
-                    max_rounds=MAX_ROUNDS,
-                    mode="autonomous",
-                    use_utility_model=True,
-                )
-                for event in events:
-                    if _cancel.is_set():
-                        # Abandoning the generator rather than killing a
-                        # thread: the round that is already in flight finishes
-                        # and nothing further is asked of the model. Whatever
-                        # it changed up to here is real, was recorded, and is
-                        # in the review list like any other pass's changes.
-                        logger.info("stopped mid-pass: someone quit this job")
-                        outcome, detail = "cancelled", "Stopped part-way through."
-                        break
-                    if event.get("offline"):
-                        #: The agent answered once, offline, and did no work:
-                        #: say so, rather than "Finished analysing and linking
-                        #: notes." over a pass that never reached a model.
-                        logger.info("autonomous pass: no model is running")
-                        outcome, detail = "completed", NO_MODEL_DETAIL
-                        break
-                    if event.get("type") == "confirm":
-                        logger.info(
-                            "paused for confirmation on %s with nobody to ask, abandoning run",
-                            event.get("name"),
-                        )
-                        outcome, detail = (
-                            "failed",
-                            f"Stopped: {event.get('name')} needs confirmation.",
-                        )
-                        break
-                    if event.get("type") == "tool" and not event.get("ok"):
-                        logger.warning("tool error: %s", event.get("error"))
-                        run.say("One tool step did not work and was skipped.")
-                    elif event.get("type") == "tool" and event.get("name"):
-                        run.say(f"Used {str(event['name']).replace('_', ' ')}.")
-                    # The agent hangs a `change` off every successful write,
-                    # carrying the call that would put the note back. Collected
-                    # here so the pass can be read and reversed afterwards, 
-                    # see `_last_pass`.
-                    change = event.get("change")
-                    if change and len(changes) < MAX_RECORDED_CHANGES:
-                        changes.append(change)
-            except Exception as exc:  # noqa: BLE001  # top of a worker thread
-                logger.error("autonomous execution failed: %s", exc, exc_info=True)
-                # Recording "completed" here regardless of what happened is
-                # what the first version did, and it made the task history
-                # actively misleading: every failure showed up as a success.
-                outcome, detail = "failed", str(exc)
-
-        from tessellate.core import taskhistory
-
-        detail = _settled_detail(outcome, detail, changes)
-        _remember_pass(outcome, changes)
-        if outcome == "failed":
-            run.fail(detail)
-        elif outcome == "cancelled":
-            run.cancel(detail)
-        else:
-            run.result = detail
-        taskhistory.record(
-            "autonomous",
-            "Autonomous knowledge base optimisation",
-            outcome,
-            detail,
-            name=deps.get_model_manager().utility_model(),
-            duration_ms=(time.monotonic() - started) * 1000,
-        )
-        logger.info("autonomous optimisation %s, %d change(s)", outcome, len(changes))
+        _agent_pass(config, tasks, started, run)
     finally:
         _working.clear()
 

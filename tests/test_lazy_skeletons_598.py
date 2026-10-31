@@ -80,11 +80,12 @@ def test_a_return_to_the_dashboard_refreshes_in_place():
 SETTINGS_LISTS = (
     ("settings-packages.js", "async function renderExtras(", "extras-list"),
     ("skills.js", "async function renderSkillSettings(", "skill-list"),
-    ("skills.js", "async function renderToolSettings(", "tool-list"),
+    #: Moved to the lazy Settings bundle with an entry point (boot JS cap, 2026-10-31).
+    ("settings-controls.js", "async function renderToolSettings(", "tool-list"),
     ("sheets-selects.js", "async function renderPersonas(", "persona-list"),
     ("settings-data.js", "async function renderBackups(", "backup-list"),
     ("settings-data.js", "async function renderPrivacyReceipt(", "privacy-switches"),
-    ("settings-panes.js", "async function renderAccount(", "account-facts"),
+    ("settings-controls.js", "async function renderAccount(", "account-facts"),
 )
 
 

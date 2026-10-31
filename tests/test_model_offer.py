@@ -12,7 +12,8 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STATUS = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+#: status-panels.js holds the popover since it left the boot scripts (gzip budget).
+STATUS = "\n".join((ROOT / "frontend" / "js" / name).read_text(encoding="utf-8") for name in ("status.js", "status-panels.js"))
 INDEX = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
 
 
@@ -22,7 +23,9 @@ def _body(name: str) -> str:
 
 
 def test_the_documents_ai_controls_answer_rather_than_refuse():
-    for control in ("doc-ai", "doc-ai-run", "draft-compose", "draft-refine", "chat-plan", "template-draft"):
+    #: Draft and Refine left this list with INBOX 1466: they work with no
+    #: model now (tests/test_k3_no_model_1026.py, WORK_WITHOUT_A_MODEL).
+    for control in ("doc-ai", "doc-ai-run", "chat-plan", "template-draft"):
         tag = re.search(rf'<button id="{control}"[^>]*>', INDEX).group(0)
         assert "data-needs-model=" in tag and 'data-model-offer="' in tag, control
 

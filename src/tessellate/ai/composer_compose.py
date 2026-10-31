@@ -35,6 +35,7 @@ import string
 from dataclasses import dataclass, field
 
 from tessellate.ai import composer_lines as lines
+from tessellate.ai import recognise
 
 #: Voice names the rest of the app uses (the `composer_voice` preference and
 #: the composer's two registers) mapped onto the four voices written here.
@@ -146,7 +147,9 @@ def _score(cand: lines.Cand, slot: str, mood: Mood) -> float:
     if cand.voices:
         score += 3.0 if mood.voice in cand.voices else -6.0
     if cand.emotions:
-        score += 2.0 if mood.emotion in cand.emotions else -3.0
+        #: A line written for a stressed or upset person is not said to a neutral
+        #: one (audit 1030 Z51: "how are you" got "Tell me what is most pressing").
+        score += 2.0 if mood.emotion in cand.emotions else -9.0
     if cand.keys:
         score += sum(1.0 for k in cand.keys if any(w.startswith(k) for w in mood.words))
     return score
@@ -220,8 +223,18 @@ def frame(ability: str, mood: Mood, **facts: object) -> str:
     pool = tuple(c for c in lines.FRAMES[ability] if have <= _fields(c.text) and _fields(c.text) <= facts.keys())
     if not pool:
         raise KeyError(f"no frame of {ability!r} holds {sorted(have)}")
-    chosen = pick(pool, f"frame:{ability}", mood, lambda t: t.format(**facts))
-    return (chosen or pool[0]).text.format(**facts)
+    chosen = pick(pool, f"frame:{ability}", mood, lambda t: _fill(t, facts))
+    return _fill((chosen or pool[0]).text, facts)
+
+
+def _fill(text: str, facts: dict) -> str:
+    """`text` with `facts` in it. A day word a span opens with ("Tomorrow,
+    Friday 30 October") is capital only where the frame starts with it
+    (audit 1029 C10: "dated for Tomorrow")."""
+    span = facts.get("span")
+    if isinstance(span, str) and not text.startswith("{span"):
+        facts = {**facts, "span": recognise.mid_sentence(span)}
+    return text.format(**facts)
 
 
 #: Abilities whose frames carry their own greeting or are clauses of one:
@@ -273,7 +286,10 @@ def head(ability: str, mood: Mood, **facts: object) -> str:
     opener (when this turn takes one) and the frame."""
     lead = opener(mood, ability)
     body = frame(ability, mood, **facts)
-    return f"{lead} {body}".strip() if lead else body
+    #: No opener before a frame that opens on its slot ("{span}, laid out"):
+    #: "Let us lay it out. this weekend" (audit 1030 Z57), and a capital would
+    #: change the fact the slot holds.
+    return f"{lead} {body}" if lead and not body[:1].islower() else body
 
 
 def tail(ability: str, mood: Mood) -> str:
@@ -287,10 +303,10 @@ def say(ability: str, mood: Mood, **facts: object) -> str:
 
 
 def span_phrase(span: str) -> str:
-    """A time span as an adverbial phrase: "the last 7 days" takes "in",
-    "this week", "yesterday" and "in october" stand as they are."""
-    span = span.strip()
-    return f"in {span}" if span.lower().startswith(("the ", "a ", "an ")) else span
+    """A time span as an adverbial phrase, carrying its preposition: "the last
+    7 days" takes "in", "20 October" takes "on", "this week", "yesterday" and
+    "in october" stand as they are (`recognise.adverbial`)."""
+    return recognise.adverbial(span)
 
 
 def sentence_case(text: str) -> str:
@@ -311,22 +327,35 @@ def time_of_day(hour: int) -> str:
     return "morning" if 5 <= hour < 12 else "afternoon" if 12 <= hour < 17 else "evening" if 17 <= hour < 22 else "night"
 
 
-def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1) -> str:
+_GREETED = re.compile(r"^\W*(morning|afternoon|evening)\b|\bgood\s+(morning|afternoon|evening)\b", re.I)
+
+
+def greeted_as(question: str, hour: int) -> str:
+    """The part of the day to greet in: the one the person greeted in ("good
+    morning" is answered in the morning, whatever the clock says, audit 1029
+    C14), else the clock's."""
+    said = _GREETED.search(question or "")
+    return (said.group(1) or said.group(2)).lower() if said else time_of_day(hour)
+
+
+def welcome(mood: Mood, *, hour: int = 9, due: int | None = None, last: str = "", streak: int = 0, notes: int = 1, question: str = "", last_href: str = "") -> str:
     """A greeting built from what the app knows: the time of day, what is due
-    today (`due`, None when unknown), the title of the last note (`last`) and
-    the streak in days. No note yet is the empty welcome. Each known fact is
-    one clause; which come, in what order and joined how is the mood's."""
+    today (`due`, None when unknown), the title of the last note (`last`, a
+    link to `last_href` when given) and the streak in days. No note yet is
+    the empty welcome. Each known fact is one clause; which come, in what
+    order and joined how is the mood's."""
     if notes <= 0:
         new = frame("welcome_new", mood)
-        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=time_of_day(hour))} {new}"
-    parts = [frame("hello", mood, tod=time_of_day(hour))]
+        return new if _stable(mood.seed, "tod") < 0.5 else f"{frame('hello', mood, tod=greeted_as(question, hour))} {new}"
+    parts = [frame("hello", mood, tod=greeted_as(question, hour))]
     clauses: list[tuple[str, str]] = []
     if due:
         clauses.append(("due", frame("w_due", mood, due=f"{due} reminder{'s' if due != 1 else ''}")))
     elif due == 0:
         clauses.append(("due", frame("w_quiet", mood)))
     if last:
-        clauses.append(("last", frame("w_last", mood, last=f"“{last}”")))
+        named = f"[{last.replace('[', '(').replace(']', ')')}]({last_href})" if last_href else f"“{last}”"
+        clauses.append(("last", frame("w_last", mood, last=named)))
     if streak >= 2:
         clauses.append(("streak", frame("w_streak", mood, streak=f"{streak} days")))
     clauses.sort(key=lambda kv: _stable(mood.seed, "order", kv[0]))

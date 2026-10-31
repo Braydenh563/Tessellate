@@ -26,8 +26,10 @@ import hashlib
 import re
 import sys
 from datetime import date, datetime
+from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise
+from tessellate.core import cjk
 from tessellate.ai import when as when_words
 
 # --- units -----------------------------------------------------------------------
@@ -236,7 +238,12 @@ def _dates(text: str, now: datetime) -> list[tuple] | None:
 
 
 def now_day() -> date:
-    return date.today()
+    """Today on the user's own clock, not the server's (audit 1028 K22).
+    The settings as loaded, never `get_config()`, which would start the app
+    from a unit test; with none, `user_now` is the server's zone."""
+    from tessellate.core.config import loaded_user_now
+
+    return loaded_user_now().date()
 
 
 def until_subject(question: str) -> tuple[str, str] | None:
@@ -690,74 +697,98 @@ def _web_capability(text: str) -> bool:
 _CLOCK_READ = ("computed", "\nRead as the date and time on this computer's clock.")
 
 
+class _Ask(NamedTuple):
+    """One utility question as `answer` has cleaned it, for the per-kind answerers."""
+
+    question: str
+    text: str
+    now: datetime
+    salt: str
+    rates: dict | None
+    rates_date: date | None
+
+
+def _answer_sum(ask: _Ask) -> list[tuple]:
+    expr = _sum_of(ask.question, ask.text)
+    value = arithmetic.spoken(arithmetic.evaluate(expr))
+    read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").split())
+    said = [("computed", f"{expr.strip()} is {value}.")]
+    #: A sum typed in symbols is its own reading; one said in words is shown as read.
+    return said if arithmetic.sum_in(ask.question) or arithmetic.sum_in(ask.text) else [*said, ("computed", f"\nRead as {read}.")]
+
+
+def _answer_root(ask: _Ask) -> list[tuple] | None:
+    which, raw = _ROOT.match(ask.text).groups()
+    number = float(raw)
+    if which.lower() == "square" and number < 0:
+        return None
+    value = abs(number) ** (1 / 2 if which.lower() == "square" else 1 / 3) * (-1 if number < 0 else 1)
+    return [("computed", f"The {which.lower()} root of {raw} is {_said(value)}."), ("computed", f"\nRead as the {which.lower()} root of {raw}.")]
+
+
+def _answer_age(ask: _Ask) -> list[tuple] | None:
+    now = ask.now
+    year = int(_BORN.match(ask.text).group("year"))
+    if not 1900 <= year <= now.year:
+        return None
+    age = now.year - year
+    return [("computed", f"{age} this year, or {age - 1} until their birthday."), ("computed", f"\nRead as the years from {year} to {now.year}.")]
+
+
+def _answer_percent(ask: _Ask) -> list[tuple]:
+    share, whole = _PERCENT.match(ask.text).groups()
+    worked = arithmetic.evaluate(f"{share} / 100 * {whole.replace(',', '')}")
+    return [("computed", f"{share}% of {whole} is {arithmetic.spoken(worked)}."),
+            ("computed", f"\nRead as {share} hundredths of {whole}.")]
+
+
+def _answer_chance(ask: _Ask) -> list[tuple] | None:
+    text, salt = ask.text, ask.salt
+    match = _PICK.match(text)
+    if match:
+        low, high = sorted((int(match.group(1)), int(match.group(2))))
+        return [("computed", f"{_salted(salt, text, low, high)}."), ("computed", f"\nRead as a whole number from {low} to {high}, picked at random.")]
+    if _COIN.match(text):
+        return [("computed", f"{'Heads' if _salted(salt, text, 0, 1) else 'Tails'}."), ("computed", "\nRead as one coin toss, picked at random.")]
+    match = _DIE.match(text)
+    count = int(match.group(1) or 1) if match.group(2) else 1
+    sides = int(match.group(2) or 6)
+    if not (1 <= count <= 10 and 2 <= sides <= 100):
+        return None
+    rolls = [_salted(f"{salt}:{i}", text, 1, sides) for i in range(count)]
+    said = f"You rolled {rolls[0]}." if count == 1 else f"You rolled {', '.join(map(str, rolls))}: {sum(rolls)} in all."
+    dice = "one roll" if count == 1 else f"{count} rolls"
+    return [("computed", said), ("computed", f"\nRead as {dice} of a {sides}-sided die, picked at random.")]
+
+
+#: Each utility kind to what answers it; a kind not listed is the weather.
+_ANSWERERS = {
+    "sum": _answer_sum,
+    "list": lambda ask: _list_answer(*_list_of(ask.text)),
+    "root": _answer_root,
+    "month_days": lambda ask: _month_days(_MONTH_DAYS.match(ask.text), ask.now),
+    "age": _answer_age,
+    "clock_swap": lambda ask: _swap_answer(*_clock_swap(ask.text), ask.now),
+    "percent": _answer_percent,
+    "clock": lambda ask: _clock(ask.text, ask.now),
+    "units": lambda ask: _convert(ask.text),
+    "currency": lambda ask: _currency(ask.text, ask.rates or RATES, ask.rates_date or RATES_DATE),
+    "dates": lambda ask: _dates(ask.text, ask.now),
+    "chance": _answer_chance,
+    "translate": lambda ask: [("phrase", "utility_translate")],
+    "web": lambda ask: [("phrase", "utility_web_on" if web_on() else "utility_web_off")],
+}
+
+
 def answer(question: str, now: datetime | None = None, salt: str = "", rates: dict | None = None, rates_date: date | None = None) -> list[tuple] | None:
     """The parts of a utility answer to `question`, or None."""
     question = _heard(question)
     kind = _kind_of(question)
     if kind is None or kind == "until_note":
         return None
-    now = now or datetime.now()
-    text = _clean(question)
-    if kind == "sum":
-        expr = _sum_of(question, text)
-        value = arithmetic.spoken(arithmetic.evaluate(expr))
-        read = " ".join(expr.replace("*", " × ").replace("/", " ÷ ").replace("^", " to the power of ").split())
-        said = [("computed", f"{expr.strip()} is {value}.")]
-        #: A sum typed in symbols is its own reading; one said in words is shown as read.
-        return said if arithmetic.sum_in(question) or arithmetic.sum_in(text) else [*said, ("computed", f"\nRead as {read}.")]
-    if kind == "list":
-        return _list_answer(*_list_of(text))
-    if kind == "root":
-        which, raw = _ROOT.match(text).groups()
-        number = float(raw)
-        if which.lower() == "square" and number < 0:
-            return None
-        value = abs(number) ** (1 / 2 if which.lower() == "square" else 1 / 3) * (-1 if number < 0 else 1)
-        return [("computed", f"The {which.lower()} root of {raw} is {_said(value)}."), ("computed", f"\nRead as the {which.lower()} root of {raw}.")]
-    if kind == "month_days":
-        return _month_days(_MONTH_DAYS.match(text), now)
-    if kind == "age":
-        year = int(_BORN.match(text).group("year"))
-        if not 1900 <= year <= now.year:
-            return None
-        age = now.year - year
-        return [("computed", f"{age} this year, or {age - 1} until their birthday."), ("computed", f"\nRead as the years from {year} to {now.year}.")]
-    if kind == "clock_swap":
-        return _swap_answer(*_clock_swap(text), now)
-    if kind == "percent":
-        share, whole = _PERCENT.match(text).groups()
-        worked = arithmetic.evaluate(f"{share} / 100 * {whole.replace(',', '')}")
-        return [("computed", f"{share}% of {whole} is {arithmetic.spoken(worked)}."),
-                ("computed", f"\nRead as {share} hundredths of {whole}.")]
-    if kind == "clock":
-        return _clock(text, now)
-    if kind == "units":
-        return _convert(text)
-    if kind == "currency":
-        return _currency(text, rates or RATES, rates_date or RATES_DATE)
-    if kind == "dates":
-        return _dates(text, now)
-    if kind == "chance":
-        match = _PICK.match(text)
-        if match:
-            low, high = sorted((int(match.group(1)), int(match.group(2))))
-            return [("computed", f"{_salted(salt, text, low, high)}."), ("computed", f"\nRead as a whole number from {low} to {high}, picked at random.")]
-        if _COIN.match(text):
-            return [("computed", f"{'Heads' if _salted(salt, text, 0, 1) else 'Tails'}."), ("computed", "\nRead as one coin toss, picked at random.")]
-        match = _DIE.match(text)
-        count = int(match.group(1) or 1) if match.group(2) else 1
-        sides = int(match.group(2) or 6)
-        if not (1 <= count <= 10 and 2 <= sides <= 100):
-            return None
-        rolls = [_salted(f"{salt}:{i}", text, 1, sides) for i in range(count)]
-        said = f"You rolled {rolls[0]}." if count == 1 else f"You rolled {', '.join(map(str, rolls))}: {sum(rolls)} in all."
-        dice = "one roll" if count == 1 else f"{count} rolls"
-        return [("computed", said), ("computed", f"\nRead as {dice} of a {sides}-sided die, picked at random.")]
-    if kind == "translate":
-        return [("phrase", "utility_translate")]
-    if kind == "web":
-        return [("phrase", "utility_web_on" if web_on() else "utility_web_off")]
-    return [("phrase", "utility_weather")]
+    ask = _Ask(question, _clean(question), now or datetime.now(), salt, rates, rates_date)
+    answerer = _ANSWERERS.get(kind)
+    return answerer(ask) if answerer else [("phrase", "utility_weather")]
 
 
 def _list_answer(what: str, values: list[float]) -> list[tuple]:
@@ -828,7 +859,7 @@ def counts(text: str) -> dict:
     (a word is a run of non-space, a character a code point, a line a
     newline), and the reading time in minutes."""
     text = str(text or "")
-    words = len(text.split())
+    words = cjk.word_count(text)
     return {
         "words": words,
         "chars": len(text),

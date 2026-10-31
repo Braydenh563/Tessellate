@@ -34,7 +34,10 @@ JS = Path(__file__).resolve().parents[1] / "frontend" / "js"
 #: LAZY_ENTRY_POINTS stand-in, always defined) came out, and four documents.js
 #: lets became fields of two consts (the word list's loading and failed flags,
 #: the dim and typewriter reading modes).
-GUARDS_CAP = 276
+#: 2026-10-31, S3 (avatars.js and atlas.js left the boot): the boot files that
+#: drew faces now wait with `afterCharacters` or a stand-in, so six guards
+#: (276 to 270) came out.
+GUARDS_CAP = 270
 TOP_LEVEL_LETS_CAP = 699
 
 

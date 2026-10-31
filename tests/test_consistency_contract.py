@@ -178,6 +178,9 @@ class _Primaries(HTMLParser):
             return
         if any(
             "seg" in f["classes"] or "segmented-control" in f["classes"] or f["role"] == "tablist"
+            #: A glyph tab row that jumps within a pane (`pane-tabs`, INBOX 1478) is a
+            #: `nav` of jump buttons, not a tablist: still navigation, never the action.
+            or "tabs-line" in f["classes"]
             for f in self.stack[:-1]
         ):
             return

@@ -62,7 +62,8 @@ def test_a_numbered_heading_said_twice_is_one_lecture_not_sections():
 
 
 def test_the_lead_names_the_category_as_typed():
-    assert _social()["text"].split("\n\n")[0] == "You have five notes about social connections, 22 July to 4 October."
+    #: No span: the question is not about time (INBOX 1441, the owner, 2026-10-29).
+    assert _social()["text"].split("\n\n")[0] == "You have five notes about social connections."
 
 
 def test_a_reminder_is_offered_only_for_a_stated_task():
@@ -118,10 +119,11 @@ def test_the_overview_never_makes_a_theme_of_an_ordinary_word():
 def test_a_note_not_opening_in_you_is_still_said_as_prose_not_a_label_line():
     """The owner's 2026-10-11 rule: no "**9 August:** ..." label lines; a
     day's note that does not open in the person's own "you" is dated in a
-    clause too."""
+    clause too. Since INBOX 1441 (the owner, 2026-10-29) the day is said
+    only when the question is about time, so the clause opens on the note."""
     text = _social()["text"]
     assert not re.search(r"^\*\*\d{1,2} [A-Z][a-z]+(?: \d{4})?:\*\*", text, re.M)
-    assert re.search(r"[Oo]n 9 August, at Mia's barbecue", text)
+    assert re.search(r"^(?:You \w+(?: down)? )?[Aa]t Mia's barbecue", text, re.M), text
     assert not re.search(r"[Oo]n \d+ \w+, on \d+", text)
 
 

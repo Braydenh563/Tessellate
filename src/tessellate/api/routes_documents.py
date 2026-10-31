@@ -19,13 +19,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
@@ -186,7 +187,7 @@ def _summary(document: Document) -> dict:
         "id": document.id,
         "title": document.title,
         "updated_at": document.updated_at.isoformat(),
-        "words": len(document.content.split()),
+        "words": cjk.word_count(document.content),
         "preview": _preview(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
@@ -526,6 +527,10 @@ MAX_IMPORT_BYTES = 50 * 1024 * 1024
 class ContentItem(BaseModel):
     id: int
     content: str = Field(max_length=MAX_CONTENT)
+    #: The `content_hash` of the text this item was worked out from (audit
+    #: 1028 D11): an undo of a replace wrote the old text back over any edit
+    #: made since. One stale item refuses the batch, which lands whole.
+    base_hash: str | None = Field(default=None, max_length=64)
 
 
 class ContentBatch(BaseModel):
@@ -553,7 +558,10 @@ def read_contents(
         query = query.where(Document.file_type == filetypes.normalise(file_type))
     rows = session.scalars(query.order_by(Document.updated_at.desc(), Document.id.desc()).limit(CONTENTS_READ_MAX))
     return [
-        {"id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type), "content": d.content or ""}
+        {
+            "id": d.id, "title": d.title, "file_type": filetypes.normalise(d.file_type),
+            "content": d.content or "", "content_hash": content_hash(d.content),
+        }
         for d in rows
     ]
 
@@ -569,6 +577,7 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     if len(set(ids)) != len(ids):
         raise HTTPException(status_code=422, detail="A document is listed twice.")
     documents = {doc.id: doc for doc in (_existing(session, doc_id) for doc_id in ids)}
+    _refuse_unwritable(body.documents, documents)
     updated = []
     for item in body.documents:
         document = documents[item.id]
@@ -581,7 +590,29 @@ def write_contents(body: ContentBatch, session: Session = Depends(get_session)) 
     if updated:
         log_action(session, "edited", "document", updated[0], f"{len(updated)} documents in one replace")
     session.commit()
-    return {"updated": updated}
+    #: The hook a save runs (audit 1028 D13): a replace that adds a picture
+    #: reference is a committed save of it.
+    for doc_id in updated:
+        _process_committed_media(session, documents[doc_id].content)
+    return {"updated": updated, "hashes": {str(doc_id): content_hash(doc.content) for doc_id, doc in documents.items()}}
+
+
+def _refuse_unwritable(items: list[ContentItem], documents: dict[int, Document]) -> None:
+    """Nothing is written when one item cannot be: an archived document is
+    read-only until it is restored, and a stale `base_hash` means the text
+    changed after the batch was worked out."""
+    if any(doc.archived_at for doc in documents.values()):
+        raise HTTPException(status_code=409, detail="An archived document can't be changed. Restore it first.")
+    stale = [
+        item.id for item in items
+        if item.base_hash and item.content != documents[item.id].content
+        and content_hash(documents[item.id].content) != item.base_hash
+    ]
+    if stale:
+        raise HTTPException(
+            status_code=409,
+            detail=f"{len(stale)} of these documents changed since; nothing was written.",
+        )
 
 
 @router.post("/import", status_code=201)
@@ -873,13 +904,6 @@ def unarchive_document(document_id: int, session: Session = Depends(get_session)
     return _summary(document)
 
 
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands."""
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "document"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
-
-
 class LinkBody(BaseModel):
     entry_id: int
 
@@ -1055,11 +1079,7 @@ def export_markdown(
     return Response(
         content=body,
         media_type=media_type,
-        headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, kind.ext)}"'
-            )
-        },
+        headers=attachment_headers(safe_filename(document.title, kind.ext, "document")),
     )
 
 
@@ -1096,9 +1116,7 @@ def export_bundle(
         content=data,
         media_type="application/zip",
         headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, "zip")}"'
-            ),
+            **attachment_headers(safe_filename(document.title, "zip", "document")),
             #: What travelled, for the frontend's own message and for a test
             #: that wants the answer without opening the archive.
             "X-Assets": str(len(carried)),
@@ -1319,9 +1337,9 @@ def document_revisions(
     #: Newest first, and each row is compared with the version that *came
     #: after* it: for the newest revision that is the document as it stands
     #: now, which is why this walks with `newer` seeded from the document.
-    newer_words = len((document.content or "").split())
+    newer_words = cjk.word_count(document.content)
     for row in rows:
-        words = len((row.content or "").split())
+        words = cjk.word_count(row.content)
         out.append(
             DocumentRevisionOut(
                 id=row.id,

@@ -221,7 +221,7 @@ function pushWikiRenameUndo(entryId, old, done) {
   if (!notes.length) return null;
   const settle = () => refreshEntries(notes.map((note) => note.id)).catch(() => {});
   return pushUndo(
-    `Renamed [[${old}]] in ${notes.length} note${notes.length === 1 ? "" : "s"}`,
+    `Renamed [[${old}]] in ${nounCount(notes.length, "note")}`,
     async () => {
       for (const note of notes) await api(`/entries/${note.id}/history/${note.revision_id}/restore`, { method: "POST" });
       await settle();

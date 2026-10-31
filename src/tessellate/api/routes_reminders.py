@@ -11,7 +11,9 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from tessellate.api import paging
-from pydantic import BaseModel, Field
+from tessellate.api.downloads import attachment_headers
+from tessellate.api.schemas import not_blank
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from typing import Annotated, Literal
@@ -60,6 +62,14 @@ class ReminderCreate(BaseModel):
     restore: bool = False
     done: bool = False
 
+    @model_validator(mode="after")
+    def _text_is_not_blank(self) -> "ReminderCreate":
+        #: Undo brings a reminder back as it was, a blank one made before the
+        #: rule included; only a new one is held to it.
+        if not self.restore:
+            not_blank(self.text, "reminder")
+        return self
+
 
 class MagicAddBody(BaseModel):
     text: str = Field(min_length=1, max_length=300)
@@ -84,6 +94,11 @@ class ReminderUpdate(BaseModel):
     #: back to is the old one, which is usually already past (an overdue
     #: reminder is what gets snoozed), so the past-date rule must not refuse it.
     restore: bool = False
+
+    @field_validator("text")
+    @classmethod
+    def _text_is_not_blank(cls, text: str | None) -> str | None:
+        return not_blank(text, "reminder")
 
 
 def _reject_if_in_the_past(due_at: datetime) -> None:
@@ -360,7 +375,7 @@ def _ics_response(session: Session, reminders: list[Reminder], filename: str) ->
     return Response(
         content=body.encode("utf-8"),
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers=attachment_headers(filename),
     )
 
 
@@ -451,14 +466,17 @@ def _import_one(session: Session, event: ics_import.IcsReminder) -> tuple[str, R
     return verb, reminder
 
 
+#: A plain `def`, run in the threadpool: the parse and one row per event ran
+#: on the event loop and froze every request and stream for the length of a
+#: big calendar (audit 1028 K17).
 @router.post("/import.ics")
-async def import_ics(
+def import_ics(
     file: UploadFile = File(...),
     tz_offset_minutes: int = Form(default=0, ge=-840, le=840),
     session: Session = Depends(get_session),
 ) -> dict:
     """Reminders from a calendar file, with what was skipped and why."""
-    raw = await file.read(ics_import.MAX_BYTES + 1)
+    raw = file.file.read(ics_import.MAX_BYTES + 1)
     if len(raw) > ics_import.MAX_BYTES:
         raise HTTPException(status_code=413, detail="That calendar file is over 2 MB. Export only the reminders and try again.")
     text = raw.decode("utf-8", errors="replace")
@@ -703,6 +721,14 @@ def _naive_utc(moment: datetime) -> datetime:
     return moment
 
 
+def _is_its_own_time(new: datetime, current: datetime) -> bool:
+    """The time a reminder already has, as the edit form hands it back: its
+    datetime field is cut to the minute, so "unchanged" is the same minute.
+    An overdue reminder saved with its own past time is not a new past date
+    (INBOX 1468: it was refused, so no overdue reminder could be edited)."""
+    return abs(_naive_utc(new) - _naive_utc(current)) < timedelta(minutes=1)
+
+
 @router.put("/{reminder_id}")
 def update_reminder(
     reminder_id: int, body: ReminderUpdate, session: Session = Depends(get_session)
@@ -710,7 +736,9 @@ def update_reminder(
     reminder = _existing(session, reminder_id)
     if body.text is not None:
         reminder.text = body.text
-    if body.due_at is not None:
+    #: Its own time handed back (the edit form's minute) changes nothing, so a
+    #: rule's chosen day (`repeat_day`) and its seconds stay.
+    if body.due_at is not None and (body.restore or not _is_its_own_time(body.due_at, reminder.due_at)):
         if not body.restore:
             _reject_if_in_the_past(body.due_at)
         if _naive_utc(body.due_at) != _naive_utc(reminder.due_at):

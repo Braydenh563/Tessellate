@@ -109,7 +109,7 @@ EXPECTED = {
         '"There is nothing to ask about yet. Read the page first."',
         '"There is nothing to copy yet."',
         '"There is nothing to save yet."',
-        'updated.message || (image._isImage ? "No description was written. Is a vision model running in Settings > Models?" : "No description was written. Check a model is running in Settings > Models.")',
+        'updated.message || (image._isImage ? "No description was written. Check that a vision model is running in Settings, Models." : "No description was written. Check a model is running in Settings, Models.")',
         '"A bookmark needs a URL."',
     ],
     'lightbox-actions.js': [
@@ -160,9 +160,6 @@ EXPECTED = {
     'gesture-kit.js': [
         '"An empty answer isn\'t a correction: delete the message instead."',
     ],
-    'shell-reminders.js': [
-        '"A reminder needs text and a time."',
-    ],
     'skills.js': [
         '`“${skill.name}” needs ${item.label || item.name}.`',
         '"Tick some notes first."',
@@ -188,7 +185,7 @@ EXPECTED = {
         '"That topic\'s link is not a web address."',
         '"A topic\'s link has to be an http, https or mailto address."',
         '"That file is not a picture."',
-        '`That branch has ${subtree.length} topics: copying stops at ${WB_MAP_COPY_MAX}.`',
+        '`That branch has ${nounCount(subtree.length, "topic")}: copying stops at ${WB_MAP_COPY_MAX}.`',
         '`"${wbMapLabel(source)}" is already under "${wbMapLabel(target)}": turn the cross-link around first.`',
         '"A summary covers topics side by side under one parent."',
         '"That day has gone: pick a later due date for a reminder."',
@@ -216,6 +213,9 @@ for _name, _messages in EXPECTED_RULE4.items():
 #: fault. Anything that passes `true` and is not a failed request's own
 #: `.message` has to appear here.
 FAULTS = {
+    'entity-page.js': {
+        '"Could not load the people and things in your notes. Try again."': 'the entities request failed',
+    },
     'media.js': {
         '"Couldn\'t open the sketch pad."': 'the pad\'s lazy script or stylesheet failed to load: a broken asset',
     },
@@ -238,6 +238,7 @@ FAULTS = {
     'documents.js': {
         '"The Word writer could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
         '"Couldn\'t open that version."': 'fetching a saved version failed',
+        '"Could not upload that picture. Add its address by hand."': 'the picture upload to the media store failed (audit 1028 U10)',
         '"The code panel could not be loaded."': 'the lazy script failed to load: a file missing from the install or a broken fetch',
     },
     'graph-canvas.js': {
@@ -246,12 +247,12 @@ FAULTS = {
     },
     'library.js': {
         '`The topic was not renamed: ${e?.message || e}.`': 'the rename request failed: the name shown is not the name kept',
-        '`${failed} item${failed === 1 ? "" : "s"} couldn\'t be restored.`': 'a bulk restore partly failed',
-        '`${failed} item${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
-        '`${failed} document${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "item")} couldn\'t be restored.`': 'a bulk restore partly failed',
+        '`${nounCount(failed, "item")} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "document")} couldn\'t be deleted.`': 'a bulk delete partly failed',
         '"That region couldn\'t be cut out of the page."': 'cutting the region out of the page image failed',
-        '`${failed} board${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
-        '`${failed} bookmark${failed === 1 ? "" : "s"} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "board")} couldn\'t be deleted.`': 'a bulk delete partly failed',
+        '`${nounCount(failed, "bookmark")} couldn\'t be deleted.`': 'a bulk delete partly failed',
     },
     'lightbox-view.js': {
         '"Couldn\'t save that file."': 'saving the file failed',
@@ -278,15 +279,17 @@ FAULTS = {
         '"Couldn\'t reset those settings."': 'resetting settings failed',
     },
     'shell-reminders.js': {
+        '"Could not load your reminders. Try again."': 'the reminders request failed before clearing the done ones',
         "`Couldn't delete ${left.length} of the reminders.`": 'a bulk delete partly failed',
         "`Couldn't bring back ${left.length} of the reminders.`": 'a bulk restore partly failed',
     },
     'update-dialogs.js': {
-        'progress.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
+        'text.textContent || "Couldn\'t apply the update."': "the update step failed; the text is the step's own error",
     },
     'whiteboard.js': {
         'voiceLine("failed", { what: "undo that" })': 'undo threw an exception',
         'voiceLine("failed", { what: "redo that" })': 'redo threw an exception',
+        'voiceLine("failed", { what: "delete that" })': 'the delete request failed (it offers Try again)',
         'voiceLine("failed", { what: "read that file" })': 'reading the chosen file threw',
         'voiceLine("failed", { what: "add that note to the board", why: why })': 'creating the node on the server failed',
     },

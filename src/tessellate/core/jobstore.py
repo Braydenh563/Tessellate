@@ -384,7 +384,7 @@ def cancel(job_id: int, db=None) -> tuple[bool, str]:  # noqa: ANN001
         return True, "Stopped before it started."
     except Exception:  # noqa: BLE001
         logger.warning("could not cancel a job", exc_info=True)
-        return False, "Couldn't stop that job, see Settings → Logs."
+        return False, "Couldn't stop that job, see Settings, Logs."
 
 
 def cancel_queued(kind: str, name: str = "", db=None) -> int:  # noqa: ANN001

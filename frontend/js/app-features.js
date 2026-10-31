@@ -172,6 +172,8 @@ function featureCatalog() {
       { name: "Accessibility", desc: "High-contrast mode and reduce-motion.", reveal: "set-contrast" },
       { name: "Custom CSS", desc: "For tinkerers: your own style overrides.", reveal: "set-custom-css" },
       { name: "Zoom the whole app", desc: "Ctrl with plus or minus scales every surface, and Ctrl+0 puts it back.", act: () => nudgeZoom(1) },
+      { name: "Tray", desc: "Hold a few cards (notes, documents, boards, pictures) while you change page, then paste or drag them out.", act: () => $("status-tray")?.click() },
+      { name: "Your own order", desc: "Drag a card, or press Alt+Up or Alt+Down on it, to set Custom order in Notes and the Library; Ctrl+C copies a card.", reveal: "notes-order" },
       { name: "Dashboard layout", desc: "Show, hide, reorder and widen widgets.", reveal: "dash-layout" },
       // Workspaces are the top-left control every tab is filtered by, and
       // nothing in either list said they existed.
@@ -210,6 +212,42 @@ function featureCatalog() {
     groups.find((group) => group.group === tool.group)?.items.push({ name: tool.name, desc: `${tool.about} Keys: ${tool.keys}.`, act: tool.open });
   }
   return groups.map((group) => ({ ...group, items: group.items.map(catalogueRun) }));
+}
+
+//: **Every palette row is in the catalogue** (audit 1031 Z3): "Count words",
+//: "Translate this", "Private chat", "Open the bin" and about fifty more were
+//: in the palette and not in "Tools and features", which is the answer to
+//: "where is". The rows the hand-written groups above have no line for (by
+//: name, or by the place they reveal) join one derived group, so a command
+//: added to `paletteCommands` is listed with no second edit.
+function featureCommandRows(groups) {
+  const names = new Set();
+  const places = new Map();
+  for (const group of groups) {
+    for (const item of group.items) {
+      names.add(item.name.toLowerCase());
+      if (item.reveal) places.set(`${item.reveal}:${item.arg ?? ""}`, item);
+    }
+  }
+  const items = [];
+  //: The open document's, map's and board's own commands carry a `group`; the rows
+  //: that are always there do not.
+  for (const row of paletteCommands().filter((r) => !r.group)) {
+    const name = richPickerSplitLabel(row.label).text;
+    const place = row.reveal ? `${row.reveal}:${row.arg ?? ""}` : "";
+    if (names.has(name.toLowerCase())) continue;
+    //: A row the list already has under another name is found by the
+    //: palette's words too ("Dictate a note" finds Dictation): `also` is
+    //: read by the search and not drawn.
+    const held = places.get(place);
+    if (held) {
+      held.also = `${held.also || ""} ${name} ${row.keywords || ""}`;
+      continue;
+    }
+    names.add(name.toLowerCase());
+    items.push({ name, desc: row.about || "A command in the palette.", run: row.run });
+  }
+  return { group: "More commands", items };
 }
 
 //: The popup tools (settings-panes.js `POPUP_TOOLS`): Equation over the box the palette was opened from, else Capture; and the shortcuts dialog's Tools list.

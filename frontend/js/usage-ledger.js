@@ -46,8 +46,8 @@ async function renderUsage() {
   most.textContent = top.length ? `Most used: ${top.join(" · ")}` : "Nothing counted yet.";
   const names = summary.unused.map((n) => labels[n] || n);
   unused.textContent = names.length
-    ? `Not used in ${summary.unused_days} days (${names.length}): ${names.slice(0, 12).join(", ")}${names.length > 12 ? ", and more" : ""}.`
-    : `Everything here was used in the last ${summary.unused_days} days.`;
+    ? `Not used in ${nounCount(summary.unused_days, "day")} (${names.length}): ${names.slice(0, 12).join(", ")}${names.length > 12 ? ", and more" : ""}.`
+    : `Everything here was used in the last ${nounCount(summary.unused_days, "day")}.`;
 }
 
 function applySimpleMode(on) {

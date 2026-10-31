@@ -51,7 +51,9 @@ def test_the_card_offers_both_paths_and_the_command():
         'id="lock-recovery-confirm"',
         "python -m tessellate --reset-password",
         'id="lock-reset-copy"',
-        "type RESET to confirm",
+        "Type RESET to confirm",
+        'id="lock-reset-send"',
+        'id="lock-reset-code"',
         'id="lock-reset-submit" type="button" class="danger lock-forgot-action" disabled',
         "sealed backup still opens",
         'data-help-for="lock-forgot-help"',
@@ -72,7 +74,8 @@ def test_setup_offers_a_key_and_the_reset_goes_to_setup():
     assert 'if (mode === "setup") offerRecoveryKey(password);' in _function(app_js_text(), "submitLockForm")
     reset = _function(RECOVERY_JS, "submitPasswordReset")
     assert 'prefs.remove("token")' in reset and "showLockScreen(true)" in reset
-    assert '"/auth/reset"' in reset
+    assert '"/auth/reset"' in reset and 'code }' in reset
+    assert '"/auth/reset-code"' in _function(RECOVERY_JS, "requestResetCode")
     recover = _function(RECOVERY_JS, "submitRecovery")
     assert '"/auth/recover"' in recover and "ownsAuthErrors: true" in recover
     assert "showRecoveryKey(body.recovery_key" in recover

@@ -41,7 +41,7 @@ async function importFromApp(spec) {
     //: below shows them.
     const response = await api.upload(`/import/app?source=${spec.source}`, form);
     const body = await response.json().catch(() => ({}));
-    const parts = [`Imported ${body.imported} note${body.imported === 1 ? "" : "s"} from ${spec.label}.`];
+    const parts = [`Imported ${nounCount(body.imported, "note")} from ${spec.label}.`];
     if (body.already) parts.push(`${body.already} ${body.already === 1 ? "was" : "were"} already here.`);
     if (body.skipped && body.skipped.length) parts.push(`Left out ${body.skipped.length}: ${body.skipped.slice(0, 2).join("; ")}.`);
     if (!body.found) parts.splice(0, parts.length, `No ${spec.label} notes in what you chose.`);
@@ -63,6 +63,10 @@ for (const spec of APP_IMPORTS) {
     $(spec.input).click();
   });
   $(spec.input)?.addEventListener("change", () => importFromApp(spec));
+  //: This file loads lazily when the Data pane opens, so a file chosen before
+  //: it arrived fired its `change` with no listener and was dropped without a
+  //: word. Whatever is already chosen is imported now.
+  if ($(spec.input)?.files?.length) importFromApp(spec);
 }
 
 // --- The import report (WORLD_CLASS 25b) ------------------------------------

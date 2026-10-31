@@ -171,7 +171,7 @@ def test_a_phrase_outranks_a_bare_word():
 
 
 def test_the_reasoning_is_available_for_the_log():
-    """"Why was delete_tag offered?" has to be answerable from Settings → Logs
+    """"Why was delete_tag offered?" has to be answerable from Settings, Logs
     rather than by re-deriving the match by hand."""
     detail = tools.focus_detail("tag all my gym notes", "")
     assert "tag" in detail.cues

@@ -12,12 +12,7 @@
 // window draws them. What is hidden is stored, and applied here.
 
 function hiddenStatusSlots() {
-  // `prefsCache`, not `window.prefsCache`. It is declared with `let` at the
-  // top level of a classic script, which puts it in the *global lexical*
-  // scope, shared with every other script here, so a bare reference works , 
-  // and explicitly NOT on `window`. Two existing call sites in this file get
-  // that wrong and silently read `undefined` forever; this one measured as a
-  // toggle that ticked and did nothing.
+  // `prefsCache` is a global `let`, not on `window`: read it bare.
   const stored = typeof prefsCache === "object" && prefsCache ? prefsCache.status_bar_hidden : null;
   return new Set(Array.isArray(stored) ? stored : []);
 }
@@ -25,9 +20,6 @@ function hiddenStatusSlots() {
 function applyStatusBarSlots() {
   const hidden = hiddenStatusSlots();
   for (const element of document.querySelectorAll("[data-status-slot]")) {
-    // `.hidden` rather than a style: everything else in this app that shows
-    // and hides uses the class, and one of these slots (`status-task`) is
-    // already driven by it from another code path.
     element.classList.toggle("status-slot-off", hidden.has(element.dataset.statusSlot));
   }
 }
@@ -76,6 +68,7 @@ let statusClockDetailTimer = null;
 let statusClockDetailPinned = false;
 
 function paintStatusClockDetail() {
+  if (document.hidden) return; // the next tick after the tab is back repaints
   const now = new Date();
   const dateEl = $("status-clock-detail-date");
   const timeEl = $("status-clock-detail-time");
@@ -222,6 +215,9 @@ function setActiveSpace(id) {
   // count, graph and sidebar in the app is scoped by the header, so a partial
   // refresh would leave whichever one we forgot showing the old space, and a
   // space that is half-switched is worse than one that took a second.
+  // What the reload costs, said once (audit 1031 Z1): the Undo stack is
+  // emptied (the delete-space dialog says so); the tray survives it, being
+  // kept in sessionStorage for the whole notebook (obj-tray.js).
   window.location.reload();
 }
 
@@ -247,15 +243,20 @@ function spaceIconPicker(container, hiddenInput) {
   }
 }
 
+//: A menu of spaces (audit 1029 X4): `role="menu"`, each row a wrapper holding
+//: the space (`menuitemradio`) and, as its SIBLINGS, the row's actions
+//: (`menuitem`), so nothing interactive sits inside another. The arrows
+//: walk every item (the delegated menu keys in navigation.js).
 function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
+  const row = document.createElement("div");
+  row.className = "space-option";
+  row.setAttribute("role", "none");
   const option = document.createElement("button");
   option.type = "button";
-  option.className = "space-option";
-  option.setAttribute("role", "option");
+  option.className = "space-option-main";
+  option.setAttribute("role", "menuitemradio");
   option.dataset.spaceId = id;
-  option.setAttribute("aria-selected", String(id === activeSpaceId()));
-  // .space-option-name ellipsises with no other escape hatch for a long
-  // board name.
+  option.setAttribute("aria-checked", String(id === activeSpaceId()));
   option.title = name;
 
   const glyph = document.createElement("i");
@@ -268,61 +269,43 @@ function spaceMenuOption({ id, name, icon, deletable, hiddenFromAll }) {
 
   option.append(glyph, label);
   option.addEventListener("click", () => setActiveSpace(id));
+  row.appendChild(option);
 
   if (deletable) {
     const actions = document.createElement("span");
     actions.className = "space-option-actions";
-
-    // Nested <button> is invalid HTML, so these are spans with a button role.
-    // The click handlers stop propagation: without it, "rename" would also
-    // trip the row's own switch-to-this-space handler and reload the page out
-    // from under the dialog that was about to open.
+    actions.setAttribute("role", "none");
+    //: Hide from All spaces (the glyph carries the state, the title says what
+    //: pressing does), rename, delete, each naming its space (audit 1030 Y4).
+    //: They close the menu before they run.
     for (const [glyphName, title, run] of [
-      // Keep this space out of "All spaces", or put it back. Asked for
-      // directly: "how do I hide a specific space's notes and
-      // images/documents etc, all the content from the 'all spaces' space if
-      // I wish??" It lives on the space's own row because that is where a
-      // person is when they think it, not buried in Settings, which is the
-      // other place it could have gone and a worse one.
-      //
-      // The glyph carries the state (an open eye means visible, a struck-out
-      // one means hidden), and the title says what pressing it will do,
-      // which is the pair every other toggle in this app uses.
       [
         hiddenFromAll ? "ph-eye-slash" : "ph-eye",
-        hiddenFromAll
-          ? "Hidden from All spaces, show it there again"
-          : "Hide this space's contents from All spaces",
+        hiddenFromAll ? `${name} is hidden from All spaces, show it there again` : `Hide ${name} from All spaces`,
         () => toggleSpaceHidden(id, !hiddenFromAll),
       ],
-      ["ph-pencil-simple", "Rename this space", () => openSpaceEdit(id, name, icon)],
-      ["ph-trash", "Delete this space", () => openSpaceDelete(id)],
+      ["ph-pencil-simple", `Rename ${name}`, () => openSpaceEdit(id, name, icon)],
+      ["ph-trash", `Delete ${name}`, () => rmSpace(id)],
     ]) {
-      const action = document.createElement("span");
+      const action = document.createElement("button");
+      action.type = "button";
       action.className = "ghost small";
-      action.setAttribute("role", "button");
-      action.tabIndex = 0;
+      action.setAttribute("role", "menuitem");
       action.title = title;
       action.setAttribute("aria-label", title);
       const actionIcon = document.createElement("i");
       actionIcon.className = `ph ${glyphName}`;
       actionIcon.setAttribute("aria-hidden", "true");
       action.appendChild(actionIcon);
-      const fire = (event) => {
-        event.stopPropagation();
-        event.preventDefault();
+      action.addEventListener("click", () => {
         closeSpaceMenu();
         run();
-      };
-      action.addEventListener("click", fire);
-      action.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") fire(event);
       });
       actions.appendChild(action);
     }
-    option.appendChild(actions);
+    row.appendChild(actions);
   }
-  return option;
+  return row;
 }
 
 // Flip a space in or out of the everything-view. A view filter, not a
@@ -390,7 +373,8 @@ function renderSpaceMenu() {
 
   const create = document.createElement("button");
   create.type = "button";
-  create.className = "space-option";
+  create.className = "space-option-main";
+  create.setAttribute("role", "menuitem");
   create.id = "space-create-open";
   const plus = document.createElement("i");
   plus.className = "ph ph-plus";
@@ -403,7 +387,11 @@ function renderSpaceMenu() {
     closeSpaceMenu();
     openSpaceCreate();
   });
-  menu.appendChild(create);
+  const createRow = document.createElement("div");
+  createRow.className = "space-option";
+  createRow.setAttribute("role", "none");
+  createRow.appendChild(create);
+  menu.appendChild(createRow);
 
   // The button's own label follows whatever is selected.
   const current = spacesCache.find((space) => space.id === activeSpaceId());
@@ -415,13 +403,15 @@ function renderSpaceMenu() {
   }
   if (iconEl) iconEl.className = `ph ${current ? current.icon : "ph-circles-four"}`;
   //: Past twelve spaces the menu is typed to (row 1643, `listFilter`).
-  listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(#space-create-open)" })?.refresh();
+  listFilter(menu, { label: "Filter spaces", inside: true, rows: ":scope > .space-option:not(:has(#space-create-open))" })?.refresh();
 }
 
 function closeSpaceMenu() {
   //: The same hand-back as `closeNavHistoryMenu`: Escape in the list left
   //: the focus on `body`.
-  const held = $("space-menu")?.contains(document.activeElement);
+  //: Also when the focus was on <body> under an open menu: a delete rebuilds the rows beneath the focused one (audit 1029 X23).
+  const open = !$("space-menu")?.classList.contains("hidden");
+  const held = $("space-menu")?.contains(document.activeElement) || (open && document.activeElement === document.body);
   $("space-menu")?.classList.add("hidden");
   $("space-switcher-btn")?.setAttribute("aria-expanded", "false");
   if (held) $("space-switcher-btn")?.focus({ preventScroll: true });
@@ -447,33 +437,6 @@ function openSpaceEdit(id, name, icon) {
   $("space-edit-name").focus();
 }
 
-function openSpaceDelete(id) {
-  $("space-delete-id").value = id;
-  $("space-delete-error").textContent = "";
-  //: Delete everything, or move it all to another space first (owner,
-  //: 0.3.31). Deleting is the first option because it is what the button
-  //: has always done; every other space is offered as a move.
-  const fate = $("space-delete-fate");
-  fate.replaceChildren();
-  const wipe = document.createElement("option");
-  wipe.value = "";
-  wipe.textContent = "Delete everything in it";
-  fate.appendChild(wipe);
-  for (const space of spacesCache) {
-    if (space.id === id || space.id === "all") continue;
-    const option = document.createElement("option");
-    option.value = space.id;
-    option.textContent = `Move everything to ${space.name}`;
-    fate.appendChild(option);
-  }
-  const sync = () => {
-    $("space-delete-submit").textContent = fate.value ? "Move and delete space" : "Delete space and contents";
-  };
-  fate.onchange = sync;
-  sync();
-  $("space-delete-dialog").showModal();
-}
-
 async function loadSpaces() {
   if (!$("space-switcher-btn")) return;
   const wasEmpty = !spacesCache.length;
@@ -492,7 +455,7 @@ async function loadSpaces() {
   //: when there is something on screen to re-render and the cache actually has
   //: something in it, so this costs a fresh notebook nothing and cannot loop
   //: (nothing in `renderEntries` calls back into here).
-  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntries();
+  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntriesWhenShown();
 }
 
 //: INBOX 1a/38: says which space the capture form actually files into,
@@ -509,7 +472,7 @@ function updateCaptureSpaceLabel() {
   const active = activeSpaceId();
   const filingId = active === SPACE_ALL ? "default" : active;
   const space = spacesCache.find((s) => s.id === filingId);
-  const name = space ? space.name : "Default Space";
+  const name = space ? space.name : "Default space";
   label.textContent =
     active === SPACE_ALL
       ? `Filing into ${name} (pick a space above to file there instead).`
@@ -543,12 +506,19 @@ function initSpaceSwitcher() {
     });
   }
 
+  //: The forms are empty shells that give Enter something to submit; the click handlers below do the work.
+  for (const id of ["space-create-form", "space-edit-form"]) $(id)?.addEventListener("submit", (event) => event.preventDefault());
+
   $("space-create-submit")?.addEventListener("click", async () => {
     const name = $("space-create-name").value.trim();
     const error = $("space-create-error");
+    //: The lock card's failure helper: said under the field, the field marked
+    //: and described by it (audit 1030 Y14).
+    const fail = (message) => lockFail(message, $("space-create-name"), error);
     error.textContent = "";
+    $("space-create-name").removeAttribute("aria-invalid");
     if (!name) {
-      error.textContent = "Give the space a name.";
+      fail("Give the space a name.");
       return;
     }
     try {
@@ -577,7 +547,7 @@ function initSpaceSwitcher() {
       await loadSpaces();
       toastAction(`Made the space “${name}”.`, "Open it", () => setActiveSpace(live.id));
     } catch (err) {
-      error.textContent = err.message;
+      fail(err.message);
     }
   });
 
@@ -585,9 +555,11 @@ function initSpaceSwitcher() {
     const id = $("space-edit-id").value;
     const name = $("space-edit-name").value.trim();
     const error = $("space-edit-error");
+    const fail = (message) => lockFail(message, $("space-edit-name"), error);
     error.textContent = "";
+    $("space-edit-name").removeAttribute("aria-invalid");
     if (!name) {
-      error.textContent = "Give the space a name.";
+      fail("Give the space a name.");
       return;
     }
     try {
@@ -601,51 +573,7 @@ function initSpaceSwitcher() {
       await loadSpaces();
       toast(`Renamed to “${name}”.`);
     } catch (err) {
-      error.textContent = err.message;
-    }
-  });
-
-  $("space-delete-submit")?.addEventListener("click", async () => {
-    const id = $("space-delete-id").value;
-    const error = $("space-delete-error");
-    error.textContent = "";
-    try {
-      const moveTo = $("space-delete-fate").value;
-      const query = moveTo ? `?move_to=${encodeURIComponent(moveTo)}` : "";
-      const wasOpen = activeSpaceId() === id;
-      const gone = await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
-      //: The moved notes by id (`refreshEntries` reads the notebook whole
-      //: if it cannot patch them in safely).
-      if (moveTo) await refreshEntries(gone?.restore?.moved?.entries || []);
-      $("space-delete-dialog").close();
-      // Standing in the space you just deleted has to move you somewhere real,
-      // and reload() alone would leave the header naming a space that is gone.
-      if (activeSpaceId() === id) setActiveSpace("default");
-      else await loadSpaces();
-      //: Undo (undo-1005) when the delete lost nothing: an empty space, or one
-      //: whose contents moved, which go back row by row. A delete that took
-      //: the contents with it has no Undo (`restore` is null): its files are
-      //: gone from the disk, which is why the dialog asks first. Deleting the
-      //: open space reloads the page, which empties the stack, so none then.
-      let restore = wasOpen ? null : gone?.restore;
-      if (restore) {
-        const remake = async () => {
-          await apiJson("/spaces/restore", { method: "POST", body: JSON.stringify(restore) });
-          await loadSpaces();
-          if (moveTo) await refreshEntries(restore.moved?.entries || []);
-        };
-        const action = pushUndo(`Deleted the space “${gone.name}”`, remake, async () => {
-          restore = (await apiJson(`/spaces/${encodeURIComponent(id)}${query}`, { method: "DELETE" })).restore || restore;
-          await loadSpaces();
-          if (moveTo) await refreshEntries(restore.moved?.entries || []);
-        });
-        toastAction(`Deleted “${gone.name}”.`, "Undo", async () => {
-          settleUndoFromToast(action);
-          await remake().catch((e) => toast(e.message, true));
-        });
-      }
-    } catch (err) {
-      error.textContent = err.message;
+      fail(err.message);
     }
   });
 
@@ -817,4 +745,6 @@ $("notif-mark-all-read")?.addEventListener("click", () => {
 //: them in the old order is declarations and listeners, none of which read
 //: what they set up.
 initNotesSubtabs();
+//: A timer left running across a reload: load the module that restores it.
+if (prefs.has("utility-clocks")) ensureModule("utilities");
 initAuth();

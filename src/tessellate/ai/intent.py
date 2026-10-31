@@ -53,6 +53,16 @@ _SMALLTALK_PATTERNS = (
     r"are you (?:there|awake|ok|okay|alive|real|human|(?:an )?ai|a (?:robot|bot|person|real person))",
     r"nice to meet you|glad to meet you",
     r"(?:tell|say) (?:me )?(?:a joke|something funny)|make me laugh|know any jokes",
+    #: Closers and reactions that are whole turns (stress run 2026-10-30:
+    #: "That helped, thank you", "bye for now", "Sorry, wrong chat" were
+    #: searched for and answered with a note).
+    r"that (?:helped|helps|works|worked|did it|was (?:helpful|useful|great|perfect)|is (?:helpful|useful|great|perfect))",
+    r"(?:that'?s|thats|that is) (?:all|it|great|perfect|helpful|fine|good|enough|fair)(?: for now| thanks?)?",
+    r"(?:you'?re|ur|you are) (?:a |an |the )?(?:lifesaver|life saver|legend|star|gem|hero|best|amazing|awesome|great|brilliant)",
+    r"(?:let'?s|lets) (?:leave it|stop|call it a day|wrap up|end)(?: (?:there|here|for now|for today))?",
+    r"(?:bye|done|all done|all good|got it|fair enough|makes sense|perfect|lmao|for now|wrong chat|never ?mind|nvm)",
+    r"(?:can|could) you keep (?:things|it|answers|replies) (?:brief|short)|keep it (?:brief|short)",
+    r"(?:please )?use (?:normal |plain )?sentence case",
 )
 
 # "What can you do?", questions about the assistant rather than the notebook.
@@ -63,7 +73,7 @@ _ABOUT_APP_PATTERNS = (
     r"what are you able to do|how can you help(?: me)?",
     r"how (?:do|does) (?:this|the app|tessellate|memorymap|you) work",
     r"(?:show|list|tell) me (?:your|the|what) (?:tools|features|commands|skills|capabilities)",
-    r"what (?:should|can) i (?:ask|tell you|say)",
+    r"what (?:should|can) i (?:ask|tell you|say)(?: you)?",
     r"(?:help me|how to) get started|how do i (?:start|use this|navigate)",
     r"what are you(?: for)?|why do you exist|what is your purpose",
     r"who made you|who created you",
@@ -75,9 +85,14 @@ _ABOUT_APP_PATTERNS = (
     r"recovery key|notifications?|phone|another computer|data)\b",
     r"where (?:is|are|do i find|can i find) (?:the |my )?.{0,40}\b(?:button|setting|settings|menu|tab|panel|option|toggle|switch)\b",
     r"what(?:'s| is) (?:tessellate|memorymap|memory map|this app|atlas)",
-    r"(?:can|could) you help(?: me)?",
+    r"(?:can|could) you help(?: me)?(?: with)?",
+    r"what (?:kinds?|sorts?|types?) of (?:stuff|things|questions|tasks|jobs) (?:can|could|do|will) you (?:help(?: me)? with|do|answer|handle)",
     r"help",
     r"what(?:'s| is) new(?: in (?:the app|tessellate|memorymap|this version))?",
+    #: A hosted model asked about by name (audit 1028 E32): the Models help,
+    #: not a search of the notes for "use ChatGPT".
+    r"(?:can|could|do|does|will) (?:i|you|it|this|tessellate|the app) (?:use|connect(?: to)?|work with|run|support|talk to|plug into) "
+    r"(?:a |an |my |the )?(?:chatgpt|openai|gpt[\w.-]*|claude|gemini|copilot|(?:hosted|cloud|online|different|other|another|bigger) (?:ai|model|llm))\b.{0,30}",
 )
 
 # Words that mean the message really is about the notebook, even when it is
@@ -101,7 +116,10 @@ _MASH = re.compile(r"asdf|sdfg|dfgh|fghj|ghjk|hjkl|qwer|wert|erty|rtyu|tyui|yuio
 
 def _normalise(text: str) -> str:
     """Lowercase, strip punctuation and filler, collapse whitespace."""
-    cleaned = (text or "").strip().lower()
+    from tessellate.ai import question_noise
+
+    #: "yooooo" is "yo" before anything is matched (INBOX 1459).
+    cleaned = question_noise.destretch((text or "").strip()).lower()
     cleaned = re.sub(r"[^\w\s']", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     # Leading filler ("so hey", "um hi") shouldn't stop a greeting matching.
@@ -113,6 +131,16 @@ def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     trailing name or address ("hey there", "hi mate")."""
     tail = r"(?:\s+(?:there|mate|buddy|friend|again|assistant|tessellate|memorymap|bot))*"
     return any(re.fullmatch(rf"{pattern}{tail}", text) for pattern in patterns)
+
+
+def _social_run(text: str) -> bool:
+    """True when the whole message is two or three pleasantries in a row
+    ("that helped thank you", "sweet that's all", "sorry wrong chat")."""
+    words = text.split()
+    if len(words) > 8:
+        return False
+    one = "(?:" + "|".join(_SMALLTALK_PATTERNS) + ")"
+    return bool(re.fullmatch(rf"{one}(?:\s+(?:and\s+)?{one}){{1,2}}(?:\s+(?:mate|lol|haha))?", text))
 
 
 #: How to use the app, asked with a note word in it ("how do i export my
@@ -145,17 +173,46 @@ def classify(message: str) -> str:
     you do" and then answered with note citations). Only those two routes are
     taken from the repaired text, so a misspelt name never leaves the notes.
     """
+    from tessellate.ai import question_noise
+
+    #: "errrmmm. hi" is "hi": filler is read past, never searched (INBOX 1485).
+    message = question_noise.drop_filler(message)
     routed = _classify(message)
     if routed != NOTES:
         return routed
-    from tessellate.ai import question_noise
-
     fixed = question_noise.repair(question_noise.tidy(message))
     if fixed != message:
         again = _classify(fixed)
         if again in (ABOUT_APP, SMALLTALK):
             return again
     return routed
+
+
+def _is_act(message: str) -> bool:
+    from datetime import datetime
+
+    from tessellate.ai import act_registry
+
+    # `commands` registers the typed reader when it loads, and the chat route
+    # loads it (through the agent) before any question is classified. Naming it
+    # here would make intent, agent and commands one import cycle.
+    act = act_registry.typed_reader(message, datetime.now())
+    return bool((act and act["intent"] != "summarise") or act_registry.app_verb(message))
+
+
+#: Words that may follow a question about the app without making it about
+#: something else ("how does this work exactly").
+_APP_TAIL = r"(?:\s+(?:there|mate|buddy|friend|again|assistant|tessellate|memorymap|bot|exactly|then|please|now|here|for me|today))*"
+
+
+def _reads_as_app_question(text: str) -> bool:
+    """The whole message, or its end after a greeting ("hey, what can you
+    do"). Never a phrase inside a notes question: "how can I help Jake move"
+    and "did Sam help with the garden" are about Jake and Sam (2026-10-30
+    sweep), and "what should I ask the dentist" about the dentist."""
+    return _matches_any(text, _ABOUT_APP_PATTERNS) or any(
+        re.search(rf"\b(?:{pattern}){_APP_TAIL}$", text) for pattern in _ABOUT_APP_PATTERNS
+    )
 
 
 def _classify(message: str) -> str:
@@ -181,15 +238,7 @@ def _classify(message: str) -> str:
     if kind and kind != "until_note":
         return UTILITY
 
-    from datetime import datetime
-
-    from tessellate.ai import act_registry
-
-    # `commands` registers the typed reader when it loads, and the chat route
-    # loads it (through the agent) before any question is classified. Naming it
-    # here would make intent, agent and commands one import cycle.
-    act = act_registry.typed_reader(message, datetime.now())
-    if act and act["intent"] != "summarise":
+    if _is_act(message):
         return ACT
 
     #: A key-mash ("asdfgh"): asked what was meant, never searched for.
@@ -200,12 +249,10 @@ def _classify(message: str) -> str:
     if _NOTE_WORDS.search(text):
         return NOTES
 
-    if _matches_any(text, _ABOUT_APP_PATTERNS) or any(
-        re.search(pattern, text) for pattern in _ABOUT_APP_PATTERNS
-    ):
+    if _reads_as_app_question(text):
         return ABOUT_APP
 
-    if _matches_any(text, _SMALLTALK_PATTERNS):
+    if _matches_any(text, _SMALLTALK_PATTERNS) or _social_run(text):
         return SMALLTALK
 
     return NOTES
@@ -273,9 +320,21 @@ _TEST = re.compile(
 )
 
 
+#: What may come before a ping without making it a question: "hi test
+#: test", "hey, is this working", "ok just testing" (INBOX 1485).
+_PING_LEAD = re.compile(r"^(?:(?:hi|hey|hello|hiya|yo|sup|ok|okay|so|just|only|again|another|quick|a) )+")
+
+
 def is_test(message: str) -> bool:
-    text = _normalise(message)
-    return bool(text) and len(text) <= 40 and bool(_TEST.fullmatch(text))
+    """A message sent to see whether the app answers (`_TEST`), after any
+    filler ("errrmmm") and greeting ("hi test test"): a ping, never a
+    search for "test" (INBOX 1485)."""
+    from tessellate.ai import question_noise
+
+    text = _normalise(question_noise.drop_filler(message or ""))
+    if not text or len(text) > 40:
+        return False
+    return bool(_TEST.fullmatch(text) or _TEST.fullmatch(_PING_LEAD.sub("", text)))
 
 
 def needs_retrieval(intent: str) -> bool:

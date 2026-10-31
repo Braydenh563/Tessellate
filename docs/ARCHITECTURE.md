@@ -65,41 +65,70 @@ These are the constraints that shaped every decision. When in doubt, they win.
 
 ## 3. The big picture
 
+GitHub and the docs site draw these fences; any mermaid viewer does too.
+
+```mermaid
+flowchart TB
+  subgraph Browser["Browser: frontend/, vanilla JS, no build step"]
+    Shell["27 classic scripts, one global scope<br/>index.html order: app, status, library, chat ..."]
+    Lazy["Lazy modules<br/>LAZY_MODULES + ensureModule:<br/>board, graph, docs, code, meetings, mermaid"]
+    SW["sw.js: offline cache, hash-stamped assets"]
+    Shell -- "first use" --> Lazy
+  end
+
+  subgraph API["FastAPI: src/tessellate/api/, about 60 route files"]
+    Gate["Unlock gate, session, CSP and origin checks"]
+    Routes["routes_entries, routes_chat, routes_search,<br/>routes_boards, routes_tasks, routes_settings ..."]
+    Events["/events stream: job progress, toasts, live updates"]
+    Gate --> Routes
+  end
+
+  subgraph Domain["Domain packages"]
+    Entry["entry/: notes manager, import, links,<br/>bin, tidy, redate, meetings"]
+    AI["ai/: janitor, librarian, agent and tools,<br/>composer family, acts, slash, skills"]
+    Search["search/: keyword index, meaning search,<br/>web search through SearXNG"]
+  end
+
+  subgraph Core["core/"]
+    Deps["deps: config and singletons"]
+    Jobs["jobs, bgtasks, events, activity"]
+    Gatekeep["model_gate, egress, crypto, backup"]
+  end
+
+  subgraph Data["data/ folder, gitignored"]
+    DB[("memorymap.db<br/>SQLite: notes, links, embeddings, audit")]
+    Files["uploads, backups, logs,<br/>preferences.json"]
+  end
+
+  subgraph Models["Local model servers, optional"]
+    Ollama["Ollama"]
+    OAI["OpenAI-compatible:<br/>llama.cpp, LM Studio, Jan, vLLM"]
+  end
+
+  MCP["mcp_server.py<br/>notes as MCP tools for other apps"]
+
+  Shell -- "same-origin HTTP" --> Gate
+  Lazy --> Gate
+  Events -. "server-sent events" .-> Shell
+  Routes --> Entry
+  Routes --> AI
+  Routes --> Search
+  AI --> Search
+  AI --> Entry
+  AI -- "provider: ollama_client or openai_client" --> Models
+  Entry --> DB
+  Search --> DB
+  AI --> Deps
+  Routes --> Jobs
+  Jobs --> Events
+  Entry --> Files
+  Gatekeep --> Files
+  MCP --> Entry
+  MCP --> Search
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Browser (frontend/: vanilla HTML/CSS/JS, no framework)      │
-│   capture · ask · graph · chat · settings · voice · PWA      │
-└───────────────────────────┬─────────────────────────────────┘
-                            │ HTTP (same origin, no CORS needed)
-┌───────────────────────────▼─────────────────────────────────┐
-│  FastAPI app (src/tessellate/api/)                            │
-│   routes_* → everything behind a single-user unlock gate     │
-└───────┬───────────────────┬───────────────────┬─────────────┘
-        │                   │                   │
-┌───────▼──────┐   ┌────────▼────────┐   ┌──────▼──────────────┐
-│  entry/      │   │  ai/            │   │  search/            │
-│  create/read │   │  janitor        │   │  keyword + semantic │
-│  + audit log │   │  librarian      │   │  (falls back safely)│
-│              │   │  agent + tools  │   │                     │
-│              │   │  embeddings     │   └─────────────────────┘
-│              │   │  voice          │
-└───────┬──────┘   └────────┬────────┘
-        │                   │
-        │          ┌────────▼────────┐        ┌───────────────┐
-        │          │ provider        │───────▶│  Ollama       │
-        │          │  ├ ollama_client│        │  (localhost)  │
-        │          │  └ openai_client│───────▶│  LM Studio /  │
-        │          │ (local REST)    │        │  llama.cpp /  │
-        │          └─────────────────┘        │  Jan / vLLM   │
-        │                                     └───────────────┘
-        │
-┌───────▼──────────────────────────────────────────────────────┐
-│  core/: config · database (SQLite) · deps (singletons) ·      │
-│          backup · logbuffer                                   │
-│  data/ (gitignored): memorymap.db · preferences.json ·        │
-│                       uploads/ · backups/ · logs/             │
-└───────────────────────────────────────────────────────────────┘
-```
+
+Every arrow into `Models` is optional: with no model the composer (section 4)
+answers from the notes alone, and the janitor files by meaning or keywords.
 
 ## 4. Request lifecycle (two examples)
 
@@ -114,21 +143,116 @@ These are the constraints that shaped every decision. When in doubt, they win.
 5. The entry is written to SQLite, its embedding is stored, and the action is
    recorded in the audit log.
 
-**Asking a question** (`POST /chat/...`):
+**Asking a question** (`POST /chat/stream`, `api/routes_chat.py`):
 
-1. **Search** (`search/`) retrieves candidate notes, semantic when embeddings
-   are available, keyword otherwise.
-2. The **librarian** (`ai/librarian.py`, strictly read-only) feeds those notes
-   to the chat model with a grounding instruction: *answer only from the notes.*
-3. The user gets the conversational answer **and** the raw matched notes side by
-   side. If the model is offline, they still get the raw notes plus a friendly
-   note that the AI answer is unavailable.
+The route streams newline-delimited JSON events (`status`, `meta`, `token`,
+`answer`, `grounding`, `act`, `confirm`) so the chat shows progress at once.
+Exact answers win over guessed ones: a slash command or a skill needs no
+model, and facts the notebook can compute (a sum, a date, a count) are said
+before any model is asked.
 
-**Agentic chat** (`ai/agent.py`) is a superset of the above: the chat model is
-offered a tool registry (see §7) and can *act*: create, tag, pin, link notes,
-set reminders, looping tool-call → result → repeat until it produces a final
-answer. Destructive tools don't execute inline; they emit a `confirm` event to
-the UI.
+```mermaid
+flowchart TD
+  Q["POST /chat/stream<br/>chat_stream builds _StreamRequest"] --> Gone["_stop_when_gone: stops when the tab closes"]
+  Gone --> AL{"_answer_lines:<br/>a slash command?"}
+  AL -- yes --> Slash["_guarded_slash_lines<br/>ai/slash.answer, exact reply"]
+  AL -- no --> IL["_interactive_lines<br/>model_gate.interactive + activity.tracked_stream"]
+  IL --> LF{"_lines_for:<br/>a skill?"}
+  LF -- yes --> Skill["_skill_lines<br/>skill_composer, no model"]
+  LF -- no --> SL["_stream_lines"]
+
+  SL --> S1["status: searching"]
+  S1 --> Prep["_stream_prepare<br/>_follow_up, _app_first_events,<br/>_prepare: search, intent, notes"]
+  Prep --> Plan["_plan_turn<br/>model running? composing?<br/>an act goes to the agent in Agent mode"]
+  Plan --> Meta["meta event: matched notes"]
+  Meta --> CE{"_choose_events"}
+  CE -- "facts the notes compute" --> Facts["_fact_events"]
+  CE -- otherwise --> FE{"_first_events"}
+  FE -- "app-first: early_events" --> Early["the app's own answer"]
+  FE -- "intent ACT" --> Acts["_act_events → _act_planned_events<br/>acts.preview, acts.run,<br/>act_card / act_done frames"]
+  FE -- "a popup starter" --> Starter["_starter_events"]
+  FE -- otherwise --> PE{"_plain_events"}
+  PE -- "exact: sum, date, count" --> Exact["_exact_events"]
+  PE -- "small talk" --> Talk["_small_talk_events,<br/>else the model converses"]
+  PE -- "needs the notes" --> NM["_no_model_events"]
+  NM -- "None: a model will answer" --> Model["_model_stream_events<br/>grounded in the notes"]
+  CE -. "model or tools on, use_tools,<br/>needs retrieval, nothing composed" .-> Agent["_agent_events<br/>ai/agent.py tool loop;<br/>destructive tools emit confirm"]
+
+  NM --> Web{"no note answers<br/>and web allowed?"}
+  Web -- yes --> WebA["_web_answer<br/>or composer_web.search_down"]
+  Web -- "no notes at all" --> None["_no_notes_events"]
+  Web -- otherwise --> Comp["_composed_events<br/>the composer, section 4b"]
+
+  Facts --> Relay
+  Early --> Relay
+  Acts --> Relay
+  Starter --> Relay
+  Exact --> Relay
+  Talk --> Relay
+  Model --> Relay
+  Agent --> Relay
+  WebA --> Relay
+  None --> Relay
+  Comp --> Relay
+  Relay["_relay_events: tokens and answer"] --> Settle["_settle_turn<br/>trim, check model prose, grounding,<br/>save the Ask turn, why trail, done"]
+```
+
+`_web_allowed` needs web search on and tools on, and refuses any question
+about the user's own notes (`personal.about_own_notes`) or their spending
+(`composer_money.asks`): those are answered from the notebook or not at all.
+With a model on, the composer still answers what it can answer exactly, and
+the model never contradicts it (CHAT_PLAN decision 75).
+
+**Agentic chat** (`ai/agent.py`) is offered a tool registry (see §7) and can
+*act*: create, tag, pin, link notes, set reminders, looping tool-call →
+result → repeat until it produces a final answer. Destructive tools don't
+execute inline; they emit a `confirm` event to the UI.
+
+## 4b. The composer (answers with no model)
+
+The composer writes a grounded answer from the matched notes with no model
+at all: it reads each note into facts, picks the ones the question asks for,
+and says them in plain sentences with citations. `_composed_events` runs it;
+`composer_digest.answer` is the main shape and `composer.compose` the
+fallback for shapes the digest does not take.
+
+```mermaid
+flowchart TD
+  In["_composed_events<br/>question + matched notes"] --> CR{"_composed_result"}
+  CR -- "a note is open" --> Open["_open_note_answer<br/>composer_open"]
+  CR -- "a 'more' follow-on" --> More["composer_digest.all_said<br/>the rest of the last answer"]
+  CR -- otherwise --> DA["composer_digest.answer"]
+
+  subgraph Digest["composer_digest.answer"]
+    K["composer.what_is + _kind_if_mine<br/>overview, who, compare, likes,<br/>left, when, how many ..."] --> Scope["_scope: notes in reach,<br/>wants context?"]
+    Scope --> Early{"_early / _looked_up"}
+    Early -- "one lookup answers" --> Look["glossary: what X stands for<br/>composer_slots: did I, still on my list<br/>composer_money: totals<br/>computed kinds: dates, counts"]
+    Early -- "who / compare / this" --> WC["_who, _compared, _this"]
+    Early -- ordinary --> Pick["_chosen: _pick_members,<br/>_scored_members, _defining_first<br/>the defining note leads"]
+    Pick --> Facts["_facts: _sentence_facts,<br/>_labelled_list, _action_of,<br/>_pieces_of, _cue_for"]
+    Facts --> Body["_compose_body<br/>_overview for many notes,<br/>_narrate or _single / _best for one"]
+    Body --> Say["_say_fact / _lines<br/>realise + PHRASES, composer_lines,<br/>composer_tables for lists"]
+    Say --> Fin["_finish: _single_close,<br/>insight line, _offer next asks"]
+  end
+
+  DA --> K
+  DA -- "None: not this shape" --> CC["composer.compose<br/>frames, sums, times, commands"]
+
+  Open --> Missed
+  More --> Missed
+  Look --> Missed
+  WC --> Missed
+  Fin --> Missed
+  CC --> Missed
+  Missed{"anything found?"} -- no --> ME["_missed_events<br/>composer_suggest.unknown_action,<br/>or web when allowed"]
+  Missed -- yes --> Text["_composed_text<br/>personal.general_reply,<br/>composer_tone.fit to the user's voice,<br/>_with_next_step"]
+  Text --> Older["_with_older, _with_lapsed:<br/>older or lapsed notes said once"]
+  Older --> Out["answer event + grounding<br/>validate.report checks every claim<br/>against a cited note"]
+```
+
+Every sentence the composer says cites the note it came from; `validate.report`
+flags any line it cannot trace back, and tests pin each answer shape
+(`tests/test_composer_*.py`).
 
 ## 5. Directory map
 
@@ -1235,9 +1359,9 @@ A hundred and seven JavaScript files in `frontend/js/`, in five kinds (38 load a
 | --- | --- | --- |
 | Before first paint | `boot-guard.js`, `theme-boot.js` | in `<head>`, so the theme and the boot-failure guard apply before anything draws |
 | The app's own code | `app.js`, `prefs.js`, `store.js`, `note-cards.js`, `menus.js`, `lightbox.js`, `selection.js`, `notes-list.js`, `capture-ask.js`, `chat.js`, `chat-agent.js`, `chat-attach.js`, `sheets-selects.js`, `skills.js`, `shell-reminders.js`, `markdown.js`, `navigation.js`, `router.js`, `settings-panes.js`, `media.js`, `status.js`, `ai-tools.js`, `phone-shell.js`, `wiring.js`, `settings-wiring.js`, `spaces-find.js`, `agent-activity.js` | at the end of `<body>`, in this order |
-| The boot surfaces | `avatars.js`, `atlas.js`, `rich-picker.js`, `editor.js`, `dashboard.js`, `timeline.js`, `palette.js`, `bg-art.js`, `settings.js` | straight after, in this order |
+| The boot surfaces | `rich-picker.js`, `editor.js`, `dashboard.js`, `timeline.js`, `palette.js`, `bg-art.js`, `settings.js` | straight after, in this order |
 | Lazy bundles | `graph.js` and `graph-canvas.js` (the Graph tab); `undo-store.js`, `documents-code.js`, `documents-prose.js`, `documents.js`, `margin-reader.js`, `whiteboard-map.js`, `whiteboard.js`, `whiteboard-commands.js`, `whiteboard-library.js`, `whiteboard-format.js`, `whiteboard-interchange.js`, `library.js` (Library and Documents) | on the first visit to the tab, by `ensureModule` from `LAZY_MODULES` in `app.js` |
-| Lazy pieces | one entry each in `LAZY_MODULES`: `lightbox-view.js`, `edit-conflict.js`, `categories-panel.js`, `tag-manager.js`, `chip-menus.js`, `note-history.js`, `ask-history.js`, `settings-data.js`, `settings-find.js` + `settings-models.js` (`settingsUi`), `tag-suggest.js`, `attachment-actions.js`, `ocr-engine.js`, `quick-note.js`, `field-clear.js`, `assistant-avatar.js`, `quick-access.js`, `notes-rail-spy.js`, `dash-boards.js`, `suggestions-inbox.js` + `entity-page.js` + `link-types.js` + `note-properties.js` (`inbox`), `model-bench.js`, `web-clip.js`, `app-import.js`, `usage-ledger.js`, and (2026-10-05) `reveal-targets.js`, `onboarding.js`, `update-dialogs.js`, `app-palette.js`, `note-panels.js` + `note-edit-panels.js` (`notePanels`), `attach-to.js`, `settings-controls.js` (no entry points: `openSettingsModal` awaits it on the first open), and, from the boot-budget moves, `tour.js` (the guided tour, when one starts or Settings, Help opens), `icon-picker.js` (the one emoji and icon picker), `nav-history.js` (the Back and Forward list's rows), `settings-packages.js`, `help-chat.js` (the Guide), `chord-guide.js`, `batch-space.js`, `note-templates.js`, `companion-menu.js`, `vault-unlock.js`, `pick-row.js`, `drag-edge.js`, `atlas-life.js` and `atlas-motion.js`, `ask-chart.js` (with `ask-history.js`), and `whiteboard-history.js` (with the boards) | on first use through `LAZY_ENTRY_POINTS`, to keep the boot scripts under their gzip budget; `quick-note.js` is fetched a few seconds after boot, because its outbox is for the moment the server is gone and a script cannot be fetched then |
+| Lazy pieces | one entry each in `LAZY_MODULES`: `panel-movable.js` (`panelMovable`, with `panel-movable-lazy.css`), `lightbox-view.js`, `edit-conflict.js`, `categories-panel.js`, `tag-manager.js`, `chip-menus.js`, `note-history.js`, `ask-history.js`, `settings-data.js`, `settings-find.js` + `settings-models.js` (`settingsUi`), `tag-suggest.js`, `attachment-actions.js`, `ocr-engine.js`, `quick-note.js`, `field-clear.js`, `assistant-avatar.js`, `quick-access.js`, `notes-rail-spy.js`, `dash-boards.js`, `suggestions-inbox.js` + `entity-page.js` + `link-types.js` + `note-properties.js` (`inbox`), `model-bench.js`, `web-clip.js`, `app-import.js`, `usage-ledger.js`, and (2026-10-05) `reveal-targets.js`, `onboarding.js`, `update-dialogs.js`, `app-palette.js`, `note-panels.js` + `note-edit-panels.js` (`notePanels`), `attach-to.js`, `settings-controls.js` (no entry points: `openSettingsModal` awaits it on the first open), and, from the boot-budget moves, `tour.js` (the guided tour, when one starts or Settings, Help opens), `icon-picker.js` (the one emoji and icon picker), `nav-history.js` (the Back and Forward list's rows), `settings-packages.js`, `help-chat.js` (the Guide), `chord-guide.js`, `batch-space.js`, `note-templates.js`, `companion-menu.js`, `avatars.js` + `atlas.js` + `characters-ready.js` (`characters`: the faces, the companion and Atlas, fetched once the app is open and idle; `afterCharacters` and the stand-ins in `lazy-entries.js` carry what the boot files ask of them meanwhile), `vault-unlock.js`, `pick-row.js`, `drag-edge.js`, `atlas-life.js` and `atlas-motion.js`, `ask-chart.js` (with `ask-history.js`), and `whiteboard-history.js` (with the boards) | on first use through `LAZY_ENTRY_POINTS`, to keep the boot scripts under their gzip budget; `quick-note.js` is fetched a few seconds after boot, because its outbox is for the moment the server is gone and a script cannot be fetched then |
 
 Plus five that are not scripts of the main page: `sw.js` (the service worker),
 `graph-worker.js` and `harper-worker.js` (web workers for the graph's layout
@@ -1393,7 +1517,7 @@ style, optional AI profile, …) live in `data/preferences.json`, managed by
 
 ## 12. Testing & CI
 
-- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 12,400+ tests,
+- **Run locally:** `PYTHONPATH=src pytest -n auto` (about 1,400 files, 14,300+ tests,
   under nine minutes on four cores and about 25 serially). Uses a throwaway database and fakes every AI call
   (`tests/fakes.py` + `tests/conftest.py`), so it is fully offline. The
   routine local gate is `bash scripts/gate.sh --changed` (the lint set,

@@ -18,7 +18,7 @@ const fixture = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
 const optionsArg = process.argv[4] || "{}";
 const options = JSON.parse(optionsArg.startsWith("@") ? fs.readFileSync(optionsArg.slice(1), "utf8") : optionsArg);
 
-const SOURCES = ["documents.js", "documents-prose.js"].map((name) =>
+const SOURCES = ["documents.js", "documents-prose.js", "prefs.js"].map((name) =>
   fs.readFileSync(path.join(root, "frontend", "js", name), "utf8")
 );
 
@@ -51,6 +51,7 @@ const NAMES = options.names || [
   "docProseRemap", "docProseExtras", "DOC_FINDING_SKIP", "docCheckLinkText", "DOC_PROSE_SKIP_LINK_TEXT",
   "docSpellNameKind", "docSpellTransposed","DOC_STRUCTURAL_LINE", "docStructuralMask", "docStructuralBlank",
   "DOC_GRAMMAR_SENTENCE_KINDS", "DOC_GRAMMAR_ABBREVIATION", "docGrammarKeeps",
+  "nounCount",
   ...(options.extraNames || []),
 ];
 const body = NAMES.map(declaration).join("\n\n");

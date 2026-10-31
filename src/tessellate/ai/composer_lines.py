@@ -32,8 +32,8 @@ def c(text: str, v: str = "", e: str = "", k: str = "") -> Cand:
 
 
 OPENERS: tuple[Cand, ...] = (
-    c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Let me see.", "w"),
-    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Let me check.", "wf"),
+    c("Sure.", "wt"), c("Of course.", "wf"), c("Happy to.", "w"), c("Right, here you go.", "w"), c("Here is what I have.", "w"),
+    c("Okay.", "wt"), c("Gladly.", "wf"), c("Here you are.", "w"), c("Right away.", "wf"),
     c("Okay, steady. Let us take this one step at a time.", "w", "S"), c("Take a breath, this is manageable.", "w", "S"),
     c("No rush. We will go through it together.", "w", "S"), c("Okay, steady.", "t", "S"), c("One thing at a time.", "t", "S"),
     c("Sorry about that.", "wt", "U"), c("That sounds frustrating, so let me help.", "w", "U"), c("Fair enough, let me put it right.", "w", "U"),
@@ -43,8 +43,8 @@ OPENERS: tuple[Cand, ...] = (
     c("I will keep this orderly, and take it in turn.", "f", "S"), c("Let us proceed in order.", "f", "S"),
     c("My apologies for the difficulty.", "f", "U"), c("I understand the frustration.", "f", "U"),
     c("Pleased to help.", "f", "H"), c("A pleasure.", "f", "H"),
-    c("On it, notebook open.", "p"), c("Let me rummage through the notebook.", "p"), c("Consider it handled.", "p"),
-    c("One moment, flipping pages.", "p"), c("Right, sleeves rolled up.", "p"), c("Notebook is open.", "p"),
+    c("On it, here you go.", "p"), c("Right, here is what the notebook says.", "p"), c("Consider it handled.", "p"),
+    c("Right, here it is.", "p"), c("Right, sleeves rolled up.", "p"), c("Here it is, from the notebook.", "p"),
     c("Deep breath, we have got this.", "p", "S"), c("Easy does it, one page at a time.", "p", "S"),
     c("Ugh, fair. Let me fix that.", "p", "U"), c("That is annoying. Let me try again.", "p", "U"),
     c("Love the energy.", "p", "H"), c("That is a fun one.", "p", "H"),
@@ -72,7 +72,7 @@ BRIDGES: tuple[Cand, ...] = (
 )
 
 ABILITY_OPENERS: dict[str, tuple[Cand, ...]] = {
-    "due": (c("Looking at the calendar.", "wf"), c("Checking what is dated.", "wt"), c("Calendar open.", "tp")),
+    "due": (c("Here is what is dated.", "wf"), c("What is dated:", "wt"), c("Your calendar:", "tp")),
     "plan": (c("Let us lay it out.", "w"), c("Here is a shape for it.", "wf"), c("Planning mode.", "tp")),
     "study": (c("Study time.", "tp"), c("Let us get you ready.", "w"), c("Right, to the books.", "p")),
 }
@@ -93,7 +93,7 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("{span}, {topic} comes up in {count}:", "w"), c("Here is what you saved on {topic} {span}, {count} in all:", "w"),
         c("{topic}, {span}: {count}.", "t"), c("{topic}: {count} {span}.", "t"), c("{count} on {topic}, {span}.", "t"), c("Found {count} on {topic} {span}.", "t"),
         c("{topic} is recorded in {count} {span}. Here they are:", "f"), c("You recorded {topic} in {count} {span}:", "f"),
-        c("The notes on {topic} {span} number {count}:", "f"), c("For {span}, {topic} appears in {count}:", "f"),
+        c("The notes on {topic} {span} number {count}:", "f"), c("{topic} appears in {count} {span}:", "f"),
         c("{topic} turned up in {count} {span}, newest on top:", "p"), c("I dug up {count} on {topic} {span}:", "p"),
         c("{span}, {topic} cropped up in {count}:", "p"), c("The notebook has {count} on {topic} {span}:", "p"),
     ),
@@ -101,9 +101,9 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("You wrote {count} {span}:", "w"), c("{count} {span}, newest first:", "w"), c("Here are your {count} {span}:", "w"),
         c("Your notebook grew by {count} {span}:", "w"),
         c("{span}: {count}.", "t"), c("{count} {span}.", "t"), c("Newest first, {count} {span}:", "t"), c("{count}, {span}:", "t"),
-        c("You recorded {count} {span}:", "f"), c("{span} produced {count}, listed newest first:", "f"), c("The notebook holds {count} {span}:", "f"),
-        c("For {span}, there are {count}:", "f"),
-        c("{span} brought {count} to the pile:", "p"), c("Fresh off the press, {count} {span}:", "p"), c("The scribbling tally for {span} is {count}:", "p"),
+        c("You recorded {count} {span}:", "f"), c("{count} {span}, listed newest first:", "f"), c("The notebook holds {count} {span}:", "f"),
+        c("There are {count} {span}:", "f"),
+        c("{count} joined the pile {span}:", "p"), c("Fresh off the press, {count} {span}:", "p"), c("The scribbling tally {span} is {count}:", "p"),
         c("Look at you, {count} {span}:", "p"),
     ),
     "recent_none": (
@@ -118,22 +118,22 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
     "due": (
         c("Coming up, {span}: {count}.", "w"), c("Here is what is due or dated for {span}, {count} in all:", "w"), c("{count} for {span}:", "w"),
         c("For {span} you have {count}:", "w"),
-        c("{span}: {count}.", "t"), c("Due {span}: {count}.", "t"), c("{count}, {span}:", "t"), c("{count} dated, {span}.", "t"),
-        c("You have {count} dated {span}:", "f"), c("The calendar for {span} lists {count}:", "f"), c("{span} holds {count}, set out below:", "f"),
+        c("{span}: {count}.", "t"), c("Due {span}: {count}.", "t"), c("{count}, {span}:", "t"), c("Dated {span}: {count}.", "t"),
+        c("You have {count} for {span}:", "f"), c("The calendar for {span} lists {count}:", "f"), c("{span} holds {count}, set out below:", "f"),
         c("For {span}, {count} are due or dated:", "f"),
         c("{span} is carrying {count}:", "p"), c("The calendar says {count} for {span}:", "p"), c("{span} has {count} waiting in the wings:", "p"),
         c("On the horizon for {span}: {count}.", "p"),
     ),
     "due_overdue": (
         c("Nothing new is dated for {span}, but something is overdue.", "w"), c("{span} is clear of new dates, though something has slipped past.", "w"),
-        c("Nothing new {span}. Something is overdue.", "t"), c("{span}: nothing new, one overdue.", "t"),
-        c("No new dates fall in {span}; an earlier item is overdue.", "f"), c("{span} carries no new dates, but an item is overdue.", "f"),
-        c("{span} is quiet, but an old date is waving at you.", "p"), c("No new dates {span}, yet something is past due.", "p"),
+        c("Nothing new for {span}. Something is overdue.", "t"), c("{span}: nothing new, one overdue.", "t"),
+        c("No new dates for {span}; an earlier item is overdue.", "f"), c("{span} carries no new dates, but an item is overdue.", "f"),
+        c("{span} is quiet, but an old date is waving at you.", "p"), c("No new dates for {span}, yet something is past due.", "p"),
     ),
     "due_none": (
         c("Nothing is dated for {span}.", "w"), c("{span} is clear: no reminder and no dated note.", "w"), c("You have nothing dated for {span}.", "w"),
-        c("Nothing {span}.", "t"), c("{span}: clear.", "t"), c("No dates for {span}.", "t"),
-        c("No reminder or dated note falls on {span}.", "f"), c("The calendar holds nothing for {span}.", "f"),
+        c("Nothing for {span}.", "t"), c("{span}: clear.", "t"), c("No dates for {span}.", "t"),
+        c("No reminder or dated note is set for {span}.", "f"), c("The calendar holds nothing for {span}.", "f"),
         c("{span} is wide open, not a date in sight.", "p"), c("Not a thing is dated for {span}. Enjoy the quiet.", "p"),
     ),
     "plan": (
@@ -271,22 +271,25 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
         c("{due} fall due today.", "f"), c("Today you have {due} due.", "f"),
         c("{due} are on today's list.", "p"), c("Today's list holds {due}.", "p"),
     ),
+    #: A note is written, never a place one was in (INBOX 1485).
     "w_last": (
-        c("Your last note was {last}.", "w"), c("You last wrote {last}.", "w"), c("Last time you were in {last}.", "w"),
+        c("Your last note was {last}.", "w"), c("You last wrote {last}.", "w"), c("Most recently you wrote {last}.", "w"),
         c("Last note: {last}.", "t"), c("Latest: {last}.", "t"),
         c("The most recent entry is {last}.", "f"), c("Your latest note is {last}.", "f"),
-        c("The last page you filled was {last}.", "p"), c("You left off at {last}.", "p"),
+        c("The last page you filled was {last}.", "p"), c("You left off with {last}.", "p"),
     ),
     "w_streak": (
-        c("That makes {streak} in a row.", "w"), c("You have written {streak} running.", "w"),
+        c("That is {streak} of writing in a row.", "w"), c("You have written {streak} running.", "w"),
         c("Streak: {streak}.", "t"), c("{streak} straight.", "t"),
         c("You have kept a streak of {streak}.", "f"), c("Notes have been written for {streak} consecutively.", "f"),
         c("{streak} running, nicely done.", "p"), c("The streak stands at {streak}.", "p"),
     ),
+    #: Said of the reminders, the one thing counted: "waiting on you" claimed
+    #: open items did not exist (audit 1030 Z51).
     "w_quiet": (
-        c("Nothing is due today.", "w"), c("Nothing is waiting on you today.", "w"), c("Today is clear.", "wt"), c("No dates today.", "t"),
-        c("No items fall due today.", "f"), c("Nothing is scheduled for today.", "f"),
-        c("Today has no deadlines, which is a gift.", "p"), c("An empty day on the calendar.", "p"),
+        c("No reminders are due today.", "w"), c("Nothing is due today.", "w"), c("No reminders today.", "t"), c("No dates today.", "t"),
+        c("No items fall due today.", "f"), c("No reminder is scheduled for today.", "f"),
+        c("Nothing is due today, so the day is yours.", "p"), c("No reminders today, so the day is clear.", "p"),
     ),
     # ---- quiz feedback (graded against the note; {a} is the note's own answer) ----
     "quiz_right": (
@@ -383,26 +386,29 @@ FRAMES: dict[str, tuple[Cand, ...]] = {
     #: A card's own label said back ("remind you on Friday at 9: call the dentist").
     #: The line after an answer that points at the next step (`composer_tone.closing`).
     "close_next": (
-        c("I can see you've been working on “{t}”. Ask me what is left on it, or when it is due.", "w"),
+        #: Never "I can see you've been working on ..." or "Since you've been in
+        #: ...": that is the screen-aware closing's (`composer_aware`, only with a
+        #: screen), and a note's line is never a place (composer-1031).
+        c("“{t}” is your newest note. Ask me “what is left in {t}” or “when is {t} due”.", "w"),
         c("Your latest note is “{t}”. Want a summary of it, or what is left to do?", "w"),
-        c("Since you've been in “{t}” lately, I can list what is still open there.", "w"),
+        c("I can list what is still open in “{t}”, your newest note.", "w"),
         c("Next, I can open “{t}” or pull out its dates.", "w"),
-        c("If it helps, ask me who is involved in “{t}”, your newest note.", "w"),
+        c("If it helps, ask me “who is involved in {t}”, your newest note.", "w"),
         c("Most recently you wrote “{t}”. Say the word and I will go through it with you.", "w"),
-        c("Next: “{t}”, your newest note. Summary, dates or what is left?", "t"), c("Latest note: “{t}”. Ask for what is open on it.", "t"),
+        c("Next: “{t}”, your newest note. Summary, dates or what is left?", "t"), c("Latest note: “{t}”. Ask “what is left in {t}”.", "t"),
         c("“{t}” is your newest. Dates or tasks?", "t"), c("Want “{t}” opened?", "t"),
         c("Your most recent note is “{t}”. I can summarise it, list its dates or show what remains open.", "f"),
         c("Should you wish to continue with “{t}”, your newest note, I can list what is outstanding.", "f"),
         c("The latest entry is “{t}”; I can retrieve its dates or its open items.", "f"),
         c("“{t}” is where you left off. Shall I dig out its open items or dates?", "p"), c("Fresh off your keyboard: “{t}”. Want the dates or what is left?", "p"),
-        c("Your newest page, “{t}”, is still warm. Ask what is left on it.", "p"),
+        c("Your newest page, “{t}”, is still warm. Ask “what is left in {t}”.", "p"),
     ),
     #: The same next step for a note the answer cited that is not the newest
     #: one: no "latest" or "newest" (INBOX 1357, class K: "Your latest note is
     #: Hello" under a gym answer, Hello being the oldest note).
     "close_cited": (
         c("Want me to open “{t}”, or pull out its dates?", "w"), c("Next, I can open “{t}” or pull out its dates.", "w"),
-        c("If it helps, ask me what is still open in “{t}”.", "w"), c("Say the word and I will go through “{t}” with you.", "w"),
+        c("If it helps, ask me “what is still open in {t}”.", "w"), c("Say the word and I will go through “{t}” with you.", "w"),
         c("I can summarise “{t}” or list what is left in it.", "w"),
         c("Open “{t}”? Dates or tasks?", "t"), c("“{t}”: summary, dates or what is left?", "t"),
         c("I can retrieve the dates or the open items in “{t}”.", "f"), c("Should you wish, I can summarise “{t}”.", "f"),

@@ -41,6 +41,11 @@ const EDITOR_SURFACES = {
   //: toolbar and no selection bar. One id, because `editingId` allows exactly
   //: one open edit form at a time.
   "entry-edit-content": "note",
+  //: The capture bar's card and the quick note (audit 1031 N9, N50): the two
+  //: other boxes a note is typed into had no `[[` picker, no "/" menu and a
+  //: placeholder that promised neither. A saved `[[Harbor launch` was literal.
+  "capture-card-body": "note",
+  "quick-note-text": "note",
   "doc-content": "document",
   //: The chat composer. Asked for as part of "the chat interface needs
   //: bugfixing and more utility and features" -- "/" did nothing there, the
@@ -965,7 +970,7 @@ function editorBlockRows(context) {
     add({ id: "annotate", group: "Advanced", icon: "ph:chat-circle", label: "Comment on this", about: "A remark on these words, listed in the sidebar", keys: "==text== %%", keywords: ["comment", "annotate", "remark", "review", "feedback", "margin"], run: (t) => editorApplyNamed(t, "annotate") });
   }
   const now = new Date();
-  const date = now.toLocaleDateString();
+  const date = stampDate(now);
   const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   add({ id: "stamp-date", group: "Advanced", icon: "ph:calendar-blank", label: "Today's date", about: date, keys: "", keywords: ["date", "today", "stamp", "day"], run: (t) => editorApplyAction(t, { insert: date }) });
   add({ id: "stamp-time", group: "Advanced", icon: "ph:clock", label: "Time now", about: time, keys: "", keywords: ["time", "now", "stamp", "clock"], run: (t) => editorApplyAction(t, { insert: time }) });
@@ -1111,7 +1116,16 @@ function editorCaretPoint(textarea) {
 //: corner, which is the menu "at the top of the screen". The caret is
 //: scrolled into view and the menu placed on the next frame; a caret that is
 //: still not drawn after that closes the menu rather than parking it.
+//: The menu lives in the open dialog its box sits in, and goes home to the
+//: page when it closes (audit 1031 N9): a modal dialog is in the top layer, so
+//: a menu in `body` opened under the quick note, where nothing could press it.
+function editorHomeMenu(box) {
+  const host = (box?.el || box)?.closest?.("dialog[open]") || document.body;
+  $("editor-menu").parentElement !== host && host.appendChild($("editor-menu"));
+}
+
 function editorPositionMenu(textarea, retried = false) {
+  editorHomeMenu(textarea);
   const menu = $("editor-menu");
   const { top, left, lineHeight, offscreen } = editorCaretPoint(textarea);
   if (offscreen) {
@@ -1157,6 +1171,7 @@ function editorCloseMenu(reason = "") {
   editorMenuState.textarea = null;
   editorMenuState.items = [];
   $("editor-menu")?.classList.add("hidden");
+  editorHomeMenu(null);
   //: **A code fence is never left open.** The language step starts from a
   //: written "```", and an unclosed fence turns the rest of the page into
   //: code in every view. Closed any way but by choosing (Escape, a click
@@ -1252,10 +1267,15 @@ function editorLinkMatches(needle) {
       // then find the INNER brackets and resolve to the wrong note.
       value: (entry.content || "")
         .split("\n")[0]
+        //: Without the heading marker (audit 1031 N34): `[[# Very long title]]`
+        //: put a hash in the text and resolved only by prefix luck; the resolver
+        //: strips the marker from the note, so the title alone finds it.
+        .replace(/^\s*#{1,6}\s+/, "")
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        //: The whole title, up to what a link can hold (the card's and the document's pattern take 120): a cut at 60 left `[[Atlas project line 183: remember to follow up about Atlas pr]]` in the note (audit 1029 N19).
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1270,7 +1290,7 @@ function editorLinkMatches(needle) {
       icon: "ph:file-text",
       label: doc.title || "Untitled",
       hint: "document",
-      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 60),
+      value: (doc.title || "").replace(/\[\[|\]\]/g, "").trim().slice(0, 120),
     }))
     .filter((item) => item.value);
 
@@ -1326,7 +1346,7 @@ function editorLinkMatches(needle) {
         .replace(/\[\[|\]\]/g, "")
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 60),
+        .slice(0, 120),
     }))
     .filter((item) => item.value);
 

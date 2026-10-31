@@ -342,21 +342,14 @@ supported sentences carry a mark to the right note (fixtures name the
 note); a skill run cites the notes it read; hover highlights the passage;
 "I don't know" appears on the two unanswerable fixtures.
 
-**Built, all four gate lines and the replay tail, 2026-09-20 to 2026-09-23.**
-Moved to HISTORY.md ("Moved from the plans, 2026-09-23", CHAT_PLAN.md): the
-fixtures, the passage-scored attribution, the low-support notice and its
-replay on a reopened turn, with every measurement.
+**Built, all four gate lines and the replay tail, 2026-09-20 to 2026-09-23:** HISTORY.md "Moved from the plans, 2026-09-23".
 
 ### Phase 2: one composer, bubbles, streaming: **built 2026-09-13**; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 3: Ask unified, popup agent: **built 2026-09-13**, decisions 8, 9, 11 and 12; see HISTORY.md "Moved from the plans, 2026-09-13".
 
 ### Phase 4: skills that finish (one session; Brief 13)
-Decisions 10 and 10a to 10h. Built, 2026-09-12: see HISTORY.md, "Moved from
-the plans", Brief 13. The harness items that were left with it are closed as
-of 2026-09-20 (the `verify` control in the editor, the two audit skills that
-had no check, `count_notes`'s filters, and the page-cap question, now decision
-10h): see HISTORY.md, "Moved from the plans, 2026-09-20".
+Decisions 10 and 10a to 10h. Built 2026-09-12 (HISTORY.md "Moved from the plans", Brief 13); its leftovers closed 2026-09-20 (HISTORY.md "Moved from the plans, 2026-09-20").
 
 **The `evals` marker and its fixture set: built 2026-10-05**
 (`tests/test_skill_evals.py`, the seventy-note loose-ends fixture with eight
@@ -581,14 +574,6 @@ session that builds the phase should confirm it in the product first.
   `skill_runner` today is paging inside the step.
 
 ## Placed from INBOX, 2026-09-09
-
-172 (part). **Web links the AI writes, "better and more modern cool".**
-Decided and built in Phase 3: decision 12 below. Both forms, chosen by where
-the link sits.
-
-The owner's reports this plan owns, moved whole from INBOX.md with their numbers (never reused). Each becomes a phase row when its phase is written; until then this list is the phase.
-
-~~45. The Ask sub-tab.~~ **Folded into 63 and closed with it, 2026-10-05.**
 
 ### Found by an agent while measuring something else (2026-09-08, graph)
 
@@ -1859,6 +1844,7 @@ more"; volunteered insight "should be togglable and also dynamic".
 78. **A list of notes by date leaves archived notes out, as a count does (composer classes 1026e, the owner's standing "fix the class", INBOX 1357).** "Notes from 24 to 30 September" and "what did I write last week" list live notes only unless the question says "archived" (then only those): `search_manager.entries_between(archived=...)` for the recall list, `composer_notes._matching` for the "grew by" list, both through `question_noise.asks_archived`; entries_between has one caller, so the filter lives in the function. A month said with "last year", "this year" or "next year" is read whole by `ai/recognise.py`; a window still ahead with no subject answers "nothing yet", with a subject it is dropped. A note that is one "Label: value" line and no heading is listed as Untitled with its line, never named by the label.
 79. **A reminder is offered, never made, wherever it is said (the owner, 2026-10-27, INBOX: "give the option to make a part of a meeting note a reminder, and also maybe suggest it if something similar appears in the chat ... Alerts + Google/Outlook buttons, Meeting actions become reminders").** A chat message that reads as a dated intention to come ("I need to call the dentist on Friday", "don't forget to ... tomorrow at 9am") gets a "Make this a reminder: <words>, <when>" chip under the reply, prefilled by `ai/reminder_suggest.py` through `POST /reminders/suggest`; one press creates it with Undo. Rules only, so the chip is the same with a model up or down (decision 75: the model is never asked); never auto-created; nothing for a question, a past-tense statement, an intention with no day, or words the chat already acts on ("remind me to ..."). The same arrival: a selection in a note is "Set a reminder" linked to that note (`entry_id` on `/reminders/parse`); a meeting's action items already had Remind me (`routes_meetings.remind_action`); a reminder's menu gains Add to Google Calendar and Add to Outlook (`GET /reminders/{id}/calendar-links`, opened by the press, a private note's words never in the address) beside Add to calendar (.ics), whose events all carry a VALARM at the due time or the early alert.
 80. **Seasons follow the locale (the owner, 2026-10-27).** "Summer", "last winter" and "summer 2025" read as December to February in the southern hemisphere (en-AU, en-NZ, en-ZA and the other southern regions `recognise.hemisphere_of` knows) and June to August elsewhere. Settings, General, Seasons overrides it (automatic, northern, southern; `season_hemisphere`), automatic follows the browser's reported locale (`season_locale`) or the call's own; a season with a year starts in that year, so southern "summer 2025" is Dec 2025 to Feb 2026. Tests: `tests/test_season_hemisphere_1027.py` on the fixed clock.
+81. **"Show me my X notes" is one rule: the verb decides, never the notebook (the owner's standing "fix the class", composer4 leftover 3, 2026-10-31).** "Show", "give", "get", "pull up", "bring up", "find" or no verb at all ("show me my university notes", "my uni notes") is the notes on a subject said whole, the overview of decision 64, in Ask, whether or not a tag or category has that name; only "list my X notes", "notes tagged X" and "notes in X" are the listing (probe P12). Read once, by `filed_name.shows_the_lot`; `composer_lists.list_target` and `routes_chat._filed_said` step aside for it (Chat keeps its tool listing); "my pinned notes", "my recent notes" and the other words of `_NOT_FILED` are no subject. Before this, "show me my university notes" listed when the tag existed and "pull up my uni notes" gave the overview.
 
 | # | Idea | Gate |
 | --- | --- | --- |
@@ -1895,3 +1881,11 @@ and B30 to B32; later rows join its remaining list and the queue.
 
 1353. **The owner, 2026-10-26, verbatim.** "can you improve and expand on more and more aspects of the composer?? integrate it better into everything, all aspects of the app where it can fit, make it really really good at what it does in those place, make sure all preformed responses have an insane amount of variations but I want the responses to be composed, not just selecting from large preformed responses, each ability should have at least like 20 variations and the best ones should be picked based on context, meaning, user detected emotion, keywords and more. that shoukd happen for all composer responses. the composer bust be insanely good, the welcom messages need improvement, is it possible to make it like the avatar generation where it actually generates language in a different way or speaks in a different way based on the used persona idk. but also needle use needs to be refined a lot more and the composer needs to control needle and be good at using it."
     Placed: agent `composer6-1026`: (1) a composition layer (clause grammar: opener, body frame, connective, closer, each slot chosen by context, intent, detected emotion, keywords and the persona's voice) so every composer reply is built, not picked, with at least 20 measured distinct surfaces per ability; (2) persona voices that change wording and rhythm the way avatar generation changes the picture; (3) welcome messages rebuilt on it; (4) needle under the composer's control (the composer picks the tool call, needle extracts slots, the composer writes the prose); (5) composer reach into surfaces that still show fixed text. The board half of the same message is WHITEBOARD_PLAN 1354.
+
+## Placed from the owner, 2026-10-30 (quantities and real phrasings)
+
+The owner: "composer_money seems very specific, what if the user asks about other things, like distances, measurements, status of things ... go with your recommendation", and the phrasing datasets "if they are useful". Measured first: pint is not vendored, but `recognise.UNITS` (line 2181) is a unit table `ai/utilities.py` already converts with; the quantulum3 wheel is 10.6 MB, 20 MB of it an sklearn model, and it needs inflect and num2words.
+
+1. **One quantity engine replaces `composer_money`.** Built: sums, money as a dimension, status words of any quantity, differences (HISTORY, 2026-10-30 measures and quantity engine). No pint: it would duplicate `recognise.UNITS`. quantulum3 only if the UNITS reader misses a measured class, then without its classifier. Open: "X compared to Y" and "X versus Y" asks are taken by `composer.compare_sides` before the digest (`composer_digest._kind_if_mine`); a goal with no doing in the ask ("my 10k goal") sums every distance instead of taking the doing from the goal note; a difference whose dimension no unit, doing or comparative names (data-driven choice).
+2. **Nouns weigh above verbs in retrieval.** Built: `composer.COMMON_VERBS` counts as a timing word does (HISTORY, 2026-10-30 measures). Open: vendor simplemma (MIT, English data only) only if a stress run shows the list short.
+3. **Phrasing tests from real conversations, not training data:** CLINC150 (CC BY 3.0) out-of-scope and small talk; Schema-Guided Dialogue (CC BY-SA 4.0) reminder and calendar acts; WildChat (ODC-BY, gated) "how many / did I / when is" questions. The raw sets stay out of the repo; generated fixtures carry attribution in `tests/fixtures/composer/SOURCES.md`.

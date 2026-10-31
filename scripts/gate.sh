@@ -89,6 +89,11 @@ LINTS=(tests/test_style_scale.py tests/test_ui_signatures.py tests/test_css_brac
   # The gzip boot budget: a few hundred bytes from the cap, and a merge that
   # passed every other lint here went over it on CI (2026-10-03).
   tests/test_static_compression.py
+  # The cross-file guard and top-level let caps, and the wake-source seed:
+  # each counts over every frontend file, so a merge of two agents (or a
+  # deletion that must lower a seed) broke them after push (2026-10-29, the
+  # guard cap at 277 and the graph.js raf seed; the gzip cap on 2026-10-27b).
+  tests/test_global_scope_ratchet.py tests/test_frontend_wake_sources.py
   # The whole boot (every script and stylesheet index.html loads, gzipped as
   # served), the breakpoint set, and "fully local" (no other host in what is
   # served): each reads every frontend file at once, so no one file's name

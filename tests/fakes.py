@@ -62,7 +62,7 @@ class FakeOllama:
     def __init__(self, running: bool = True) -> None:
         self.running = running
         # Every provider reports where it is and whether it can fetch a model,
-        # because Settings → Models shows both (§6). The fake stands in for the
+        # because Settings, Models shows both (§6). The fake stands in for the
         # Ollama one, so it answers as Ollama does.
         self.base_url = "http://localhost:11434"
         self.chat_calls: list[list[dict]] = []

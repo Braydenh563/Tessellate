@@ -254,28 +254,37 @@ header#top-bar[data-scrolled="1"],
 }
 .action-menu:not(.hidden),
 .dock-menu[open] > .dock-menu-list,
-.help-popover {
+.help-popover,
+:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
+  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup, .selection-popup,
+  .doc-suggest-menu, .ocr-region-popover):not(.hidden) {
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);
   animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
 }
 /* Flipped upward, so it grows out of the bottom of the button instead. */
-.action-menu.action-menu-flip:not(.hidden) {
+.action-menu.action-menu-flip:not(.hidden),
+.help-popover.help-popover-above,
+:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
   --menu-origin-y: 100%;
 }
 /* A dock's `<details>` menu and a select's list hang under their opener's
    left edge; a help popover from its caret, above or below. */
 .dock-menu[open] > .dock-menu-list,
-.action-menu.action-menu-start {
+.action-menu.action-menu-start,
+:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu, .doc-suggest-menu):not(.hidden) {
   --menu-origin-x: 0%;
 }
 .help-popover {
   --menu-origin-x: var(--help-caret-x);
 }
-.help-popover.help-popover-above {
-  --menu-origin-y: 100%;
-}
+/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
+   Panels that hang off an opener and show by `.hidden` took no part in the
+   fade and grow (audit: `animation: none`), so they take the same two rules.
+   In-flow panels are not here: a fade does not cure the shift. The text
+   selection popup, the spelling menu and the OCR region popover arrive
+   the same way (INBOX 1462); they leave at once. */
 /* **The way out** (perfpolish: "menus leave instantly though they enter
    with a reveal"; the motion pass gave it the grow's path back). Every close
    path (the opener again, Escape, a press outside, `closeActionMenus`) is
@@ -295,23 +304,6 @@ header#top-bar[data-scrolled="1"],
   pointer-events: none;
   transition: opacity var(--ui-exit) var(--ease-out), scale var(--ui-exit) var(--ease-out),
     display var(--ui-exit) linear allow-discrete;
-}
-/* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
-   Panels that hang off an opener and show by `.hidden` took no part in the
-   fade and grow (audit: `animation: none`), so they take the same two rules.
-   In-flow panels are not here: a fade does not cure the shift. */
-:is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
-  .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup):not(.hidden) {
-  --menu-origin-x: 100%;
-  --menu-origin-y: 0%;
-  transform-origin: var(--menu-origin-x) var(--menu-origin-y);
-  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
-}
-:is(.space-menu, .note-picker-panel, .chat-skills-panel, .nav-history-menu):not(.hidden) {
-  --menu-origin-x: 0%;
-}
-:is(.note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .nav-history-menu, #status-clock-detail):not(.hidden) {
-  --menu-origin-y: 100%;
 }
 :is(.space-menu, .notif-panel, #status-clock-detail, .nav-history-menu, .chat-model-panel, .global-find-bar,
   .note-picker-panel, .chat-skills-panel, .chat-dock-more-panel, .graph-popup).hidden {
@@ -786,7 +778,7 @@ header#top-bar[data-scrolled="1"],
      and the status bar at the end of a page). Its reservation stays put, for
      the reason above, so it is moved rather than resized: a transform, which
      changes nothing the scroll that receded the bar can see. */
-  :root:has(#phone-tab-dock[data-receded]) #status-bar {
+  :root #phone-tab-dock[data-receded] ~ #status-bar {
     transform: translateY(calc(var(--bottom-tabs-h) - var(--target-min)));
   }
   #phone-tab-dock[data-receded] #tab-bar button .tab-label,
@@ -848,6 +840,7 @@ header#top-bar[data-scrolled="1"],
    sat 4.8px above its X (sheetheads.js: New reminder, a category split). */
 .sheet-head > .sheet-title,
 .sheet-title {
+  flex: 1 1 auto;
   margin: 0;
 }
 /* One line under the title that says the current state (the model picker's
@@ -875,12 +868,13 @@ header#top-bar[data-scrolled="1"],
   }
 }
 /* The title row: the name on the left, the one visible way out on the right
-   (INBOX 204). The X is the app's own icon-only ghost button at the shared
+   (INBOX 204). The title takes the slack, never `space-between`: with
+   minimise and close the free space was split and minimise sat mid-head
+   (INBOX 1491). The X is the app's own icon-only ghost button at the shared
    control height, so it reads as the same close every dialog head has. */
 .sheet-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
 }
 .sheet-close {
@@ -1270,10 +1264,16 @@ header#top-bar[data-scrolled="1"],
   #status-bar [data-status-zone] > :not(#status-task, #status-timer, #offline-indicator, #power-saver-indicator) {
     display: none;
   }
-  :root:not(:has(#status-task:not(.hidden, .status-slot-off), #status-timer:not(.hidden), #offline-indicator:not(.hidden), #power-saver-indicator:not(.hidden))) {
+  /* `status-bar-idle` is put on the root by `watchStatusBarIdle`
+     (phone-shell.js) while none of the four shows. It was `:root:not(:has(
+     #status-task:not(.hidden, ...), ...))`, a `:has()` on the root, which the
+     browser re-asks after every element added or removed anywhere on the
+     page: 4 to 6ms of style work each time on a phone (OPEN 813, measured
+     with the rule deleted: 11ms to 6.8ms for one empty div appended). */
+  :root.status-bar-idle {
     --status-bar-h: 0px;
   }
-  :root:not(:has(#status-task:not(.hidden, .status-slot-off), #status-timer:not(.hidden), #offline-indicator:not(.hidden), #power-saver-indicator:not(.hidden))) #status-bar {
+  :root.status-bar-idle #status-bar {
     visibility: hidden;
     overflow: hidden;
     padding-block: 0;
@@ -1590,6 +1590,12 @@ header#top-bar[data-scrolled="1"],
        it back out). */
     padding-right: var(--ring-room);
   }
+  /* The list ends above the floating New note, 53.6px of back-to-top
+     clearance being less than the fab's own height, offset and a step. Only
+     while scrolled (the clearance rule's own condition). */
+  body.scroll-top-visible #tab-notes .layout > .tab-main {
+    padding-bottom: max(var(--scroll-top-clearance), calc(var(--target-min) + var(--space-5) + var(--space-3)));
+  }
 }
 /* --- Phase 11 item 12: a dock's head is one row on a phone --------------------
    A phone's navigation bar is one row: the way back or the drawer at the
@@ -1701,8 +1707,12 @@ header#top-bar[data-scrolled="1"],
      toast box stood on the tab bar (bottom 64px) and the New note button's
      centre (y 752) answered the toast. The page's own fab sets the line:
      its offset (07-whiteboard-misc.css's `.dock-fab`), its height, a step. */
-  body:not(:has(#tab-chat:not(.hidden))):has(.tab-page:not(.hidden) > .dock-fab) #toast-box {
-    bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+  /* The five pages that own a floating button; it floats only at 421px tall
+     and up (phone-shell.js PHONE_FAB), hence the height query. */
+  @media (min-height: 421px) {
+    body:is([data-tab=notes],[data-tab=graph],[data-tab=library],[data-tab=timeline],[data-tab=reminders]) #toast-box {
+      bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + var(--space-5) + env(safe-area-inset-bottom, 0px) + var(--target-min) + var(--space-2));
+    }
   }
   .agent-monitor {
     bottom: calc(var(--status-bar-h) + var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
@@ -1732,7 +1742,7 @@ header#top-bar[data-scrolled="1"],
    604px canvas); a desktop board takes the same row for itself now. The
    map's gesture hint names two keys a phone does not have; there the +
    handles on a selected node are the gesture, and they are already 44px. */
-#tab-library:has(#library-view-whiteboard:not(.hidden) #wb-canvas-view:not(.hidden)) #library-subtabs {
+#tab-library:has(> #library-view-whiteboard:not(.hidden) > #wb-canvas-view:not(.hidden)) #library-subtabs {
   display: none;
 }
 @media (max-width: 599.98px) and (pointer: coarse) {
@@ -2308,20 +2318,7 @@ header#top-bar[data-scrolled="1"],
     padding-inline: var(--space-1) var(--space-2);
   }
   #tab-documents .doc-statusbar {
-    flex-wrap: nowrap;
     overflow: hidden;
-  }
-  #tab-documents .doc-statusbar > * {
-    flex: 0 0 auto;
-  }
-  /* The counts give way, with an ellipsis, so the two controls keep their
-     words and their targets. */
-  #tab-documents #doc-counts {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   /* A phone's formatting is the bar at the thumb (below), always there in
      Edit, so the dock's way back to the desktop strip (INBOX 574) would be a
@@ -2509,13 +2506,13 @@ header#top-bar[data-scrolled="1"],
     display: contents;
   }
   /* New note floats over the edit form's Save otherwise (INBOX 606). */
-  .tab-page:has(.note-edit-surface) > .dock-fab {
+  .tab-page:where(#tab-notes):has(.note-edit-surface) > .dock-fab {
     display: none;
   }
   /* The same for the graph's node panel and its new-note panel: the fab sits
      at z-index 44, above the panel's 40, and floated over the sheet's own
      bottom-right control (the ⋯ in the action row, INBOX 883). */
-  .tab-page:has(#graph-popup:not(.hidden), #graph-new:not(.hidden)) > .dock-fab {
+  .tab-page:has(> #graph-card > #graph-box > :is(#graph-popup, #graph-new):not(.hidden)) > .dock-fab {
     display: none;
   }
   /* An icon picker since INBOX 599: its square, not a stretched field. */

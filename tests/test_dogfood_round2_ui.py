@@ -67,7 +67,9 @@ def test_a_leading_hash_is_not_part_of_a_tag():
 
 def test_chat_with_no_model_does_not_name_one_or_send_you_to_notes_ask():
     # 17: "Inherited: llama3.2 (not connected)" and "Try in Notes, Ask:".
-    assert '"No model connected"' in (JS / "ai-tools.js").read_text()
+    # The label moved to "Default (off)" with audit 1030 Y18 (the banner beside
+    # it says no model is connected); still no model named.
+    assert '"Default (off)"' in (JS / "ai-tools.js").read_text()
     assert "(not connected)`" not in (JS / "ai-tools.js").read_text()
     assert '"Try in Ask:"' in (JS / "sheets-selects.js").read_text()
 

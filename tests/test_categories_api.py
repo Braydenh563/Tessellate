@@ -65,18 +65,20 @@ def test_rename_category(client):
 
 
 def test_renaming_onto_an_existing_category_merges_them(client):
-    """"work" and "Work" as separate categories is the mess this fixes."""
-    _make(client, "note one", "work")
+    """A misspelt category merging into the right one is what rename is for. The
+    case-only pair no longer exists to merge (audit 1031 N6: the note routes
+    now reuse "Work" for "work"), so the test uses a typo."""
+    _make(client, "note one", "wrok")
     _make(client, "note two", "Work")
     _make(client, "note three", "Work")
 
     cats = _categories(client)
-    result = client.put(f"/categories/{cats['work']['id']}", json={"name": "Work"}).json()
+    result = client.put(f"/categories/{cats['wrok']['id']}", json={"name": "Work"}).json()
     assert result["merged"] is True
     assert result["moved"] == 1
 
     cats = _categories(client)
-    assert "work" not in cats
+    assert "wrok" not in cats
     assert cats["Work"]["count"] == 3  # nothing was lost in the merge
 
 

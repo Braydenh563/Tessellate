@@ -56,7 +56,7 @@ function wbFmtKind(entry) {
   if (entry.kind === "object") {
     const k = entry.item.kind;
     if (WB_MAP_KINDS.has(k)) return "topic";
-    return k === "text" || k === "image" || k === "frame" || k === "table" ? k : null;
+    return k === "text" || k === "image" || k === "frame" || k === "table" || k === "diagram" ? k : null;
   }
   let parsed = null;
   try {
@@ -77,25 +77,46 @@ function wbFmtKind(entry) {
 
 //: The fields each kind takes, by the `data-fmt` names in index.html.
 const WB_FMT_FIELDS = {
-  shape: ["stroke", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "gradient", "tip"],
-  line: ["stroke", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  shape: ["stroke", "strokealpha", "width", "dash", "fill", "alpha", "shadow", "shadowset", "rough", "text", "fit", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "fillstyle", "fillalpha", "gradient", "tip"],
+  line: ["stroke", "strokealpha", "width", "dash", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   //: A straight line or arrow: a line that takes ends.
-  arrow: ["stroke", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
+  arrow: ["stroke", "strokealpha", "width", "dash", "caps", "alpha", "shadow", "shadowset", "rough", "geometry", "flip", "style-lib", "props", "pattern", "round", "flow", "tip"],
   link: ["stroke", "width", "dash", "alpha", "rough", "route", "jumps", "caps", "label-t", "props", "pattern", "round", "flow", "jumpsize", "gapstart", "gapend", "tip"],
-  text: ["stroke", "fill", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
-  image: ["alpha", "shadow", "shadowset", "radii", "geometry", "angle", "props"],
+  text: ["stroke", "fill", "fillalpha", "alpha", "shadow", "shadowset", "radii", "pad", "fold", "text", "geometry", "angle", "style-lib", "props"],
+  image: ["alpha", "shadow", "shadowset", "radii", "crop", "geometry", "angle", "props"],
   frame: ["geometry", "props"],
   table: ["alpha", "shadow", "shadowset", "radii", "geometry", "props"],
   note: ["geometry", "angle"],
+  //: A Mermaid diagram object: the fill and the line it draws with (INBOX 1486).
+  diagram: ["fill", "fillalpha", "strokealpha"],
 };
 
-//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle): the
-//: line and the words keep theirs. The slider and its number, kept together.
-function wbFmtShowFillAlpha(isMixed, value) {
-  const slider = document.getElementById("wb-fmt-fillalpha");
-  const out = document.getElementById("wb-fmt-fillalpha-out");
+//: Where an item keeps the opacity of its fill and of its line: a drawn shape's
+//: own two numbers, a text box's and a diagram's `bg_alpha` and `line_alpha`.
+function wbFmtAlphaKeys(entry) {
+  return entry.kind === "sketch" ? { fill: "fillOpacity", line: "opacity" } : { fill: "bg_alpha", line: "line_alpha" };
+}
+
+//: What an item needs first so a fill opacity means something: a shape or a
+//: text box with no fill is given one; a diagram always has its accent.
+function wbFmtFillFirst(entry) {
+  const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
+  if (entry.kind === "sketch") return wbFmtSketch(entry).fill ? {} : { fill: colour };
+  const bg = entry.item.data?.bg;
+  return entry.item.kind === "diagram" || (bg && bg !== "transparent") ? {} : { bg: colour };
+}
+
+//: The fill's own opacity (draw.io's "Fill opacity", PaintZ's fill toggle) and
+//: the line's: each a slider with its number and the five presets, the preset
+//: that matches lit. The line and the words keep theirs.
+function wbFmtShowAlpha(name, isMixed, value) {
+  const slider = document.getElementById(`wb-fmt-${name}`);
+  const out = document.getElementById(`wb-fmt-${name}-out`);
   if (slider && document.activeElement !== slider) slider.value = value;
   if (out) out.textContent = isMixed ? "Mixed" : `${value}%`;
+  for (const button of document.querySelectorAll(`[data-alpha-for="${name}"]`)) {
+    button.setAttribute("aria-pressed", !isMixed && Number(button.dataset.alphaPreset) === value ? "true" : "false");
+  }
 }
 
 function wbFmtCanRound(entry) {
@@ -124,12 +145,13 @@ function wbFmtValue(entry, field) {
     case "dash": return s?.dash || "solid";
     case "pattern": return s?.dashPattern || "";
     case "round": return Number(s?.round) || 0;
+    case "crop": return o?.crop || "";
     case "flow": return Boolean(s?.flow);
     case "fillstyle": return WB_FILL_STYLES.includes(s?.fillStyle) ? s.fillStyle : "solid";
     case "gradient": return wbHexColour(s?.gradient?.to) || "#ffffff";
     case "gradient-dir": return s?.gradient && wbHexColour(s.gradient.to) && (s.gradient.dir === "radial" || wbGradientVector(s.gradient.dir)) ? s.gradient.dir : "none";
-    case "fill-on": return s ? Boolean(s.fill) : Boolean(o.bg && o.bg !== "transparent");
-    case "fill": return s ? s.fill || "#3355ff" : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
+    case "fill-on": return s ? Boolean(s.fill) : kind === "diagram" ? o.bg_alpha !== 0 : Boolean(o.bg && o.bg !== "transparent");
+    case "fill": return s ? s.fill || "#3355ff" : kind === "diagram" ? wbDiagramFillColour(o) : (o.bg && o.bg !== "transparent" ? o.bg : "#ffffff");
     case "alpha": return Math.round(((s ? s.alpha : o?.alpha) ?? 1) * 100);
     case "shadow": return Boolean(s ? s.shadow : o?.shadow);
     //: Empty (not 0) when the item set none, so the field shows the default as a placeholder.
@@ -166,7 +188,8 @@ function wbFmtValue(entry, field) {
     case "ink": return (kind === "shape" ? s.label_color : o.color) || "#1f2430";
     case "lh": return (kind === "shape" ? s.label_lh : o.line_height) || "";
     case "ls": return (kind === "shape" ? s.label_ls : o.letter_spacing) || "";
-    case "fillalpha": return Math.round((s?.fillOpacity ?? 1) * 100);
+    case "fillalpha": return Math.round((s ? s.fillOpacity ?? 1 : o?.bg_alpha ?? (kind === "diagram" ? wbDiagramFillShare() : 1)) * 100);
+    case "strokealpha": return Math.round(((s ? s.opacity : o?.line_alpha) ?? 1) * 100);
     default: return null;
   }
 }
@@ -565,7 +588,7 @@ function wbFormatSync() {
     ["wb-fmt-fill", "fill", "fill"], ["wb-fmt-route", "route", "route"], ["wb-fmt-jumps", "jumps", "jumps"], ["wb-fmt-startcap", "startcap", "caps"],
     ["wb-fmt-fillstyle", "fillstyle", "fillstyle"], ["wb-fmt-gradient-dir", "gradient-dir", "gradient"], ["wb-fmt-gradient", "gradient", "gradient"],
     ["wb-fmt-jumpsize", "jumpsize", "jumpsize"], ["wb-fmt-gapstart", "gapstart", "gapstart"], ["wb-fmt-gapend", "gapend", "gapend"], ["wb-fmt-tip", "tip", "tip"],
-    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
+    ["wb-fmt-pattern", "pattern", "pattern"], ["wb-fmt-round", "round", "round"], ["wb-fmt-crop", "crop", "crop"], ["wb-fmt-endcap", "endcap", "caps"], ["wb-fmt-startsize", "startsize", "caps"], ["wb-fmt-endsize", "endsize", "caps"], ["wb-fmt-label-t", "label-t", "label-t"], ["wb-fmt-size", "size", "text"],
     ["wb-fmt-shx", "shx", "shadowset"], ["wb-fmt-shy", "shy", "shadowset"], ["wb-fmt-shb", "shb", "shadowset"], ["wb-fmt-pad", "pad", "pad"],
     ["wb-fmt-r0", "r0", "radii"], ["wb-fmt-r1", "r1", "radii"], ["wb-fmt-r2", "r2", "radii"], ["wb-fmt-r3", "r3", "radii"],
     ["wb-fmt-ink", "ink", "text"], ["wb-fmt-alpha", "alpha", "alpha"], ["wb-fmt-lh", "lh", "text"], ["wb-fmt-ls", "ls", "text"],
@@ -596,7 +619,8 @@ function wbFormatSync() {
   if (sticky) set("wb-fmt-fold", wbStickyFolds(sticky.item), "checked");
   const alphaOut = document.getElementById("wb-fmt-alpha-out");
   if (alphaOut && takes.has("alpha")) alphaOut.textContent = mixed("alpha") ? "Mixed" : `${wbFmtValue(first, "alpha")}%`;
-  if (takes.has("fillstyle")) wbFmtShowFillAlpha(mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
+  if (takes.has("fillalpha")) wbFmtShowAlpha("fillalpha", mixed("fillalpha"), wbFmtValue(first, "fillalpha"));
+  if (takes.has("strokealpha")) wbFmtShowAlpha("strokealpha", mixed("strokealpha"), wbFmtValue(first, "strokealpha"));
   if (takes.has("text")) {
     const pressed = (field, value) => {
       const some = sharing.map((e) => wbFmtValue(e, field) === value);
@@ -846,6 +870,10 @@ onDomReady(() => {
     }
     wbFmtApply("pattern", () => ({ dashPattern: numbers ? numbers.join(" ") : undefined }), numbers ? "Custom dashes set." : "Custom dashes cleared.");
   });
+  on("wb-fmt-crop", "change", (e) => {
+    const crop = e.target.value;
+    wbFmtApply("crop", () => ({ crop: crop || undefined }), crop ? `Picture cropped to ${e.target.selectedOptions[0].textContent.toLowerCase()}.` : "Picture crop taken off.");
+  });
   on("wb-fmt-round", "change", (e) => {
     const radius = Math.max(0, Math.min(80, Math.round(Number(e.target.value) || 0)));
     wbFmtApply("round", () => ({ round: radius || undefined }), radius ? `Corners rounded by ${radius}.` : "Corners sharp.");
@@ -877,6 +905,7 @@ onDomReady(() => {
     const colour = document.getElementById("wb-fmt-fill")?.value || "#3355ff";
     wbFmtApply("fill", (entry) => (entry.kind === "sketch"
       ? { fill: e.target.checked ? colour : undefined, fillOpacity: e.target.checked ? 1 : undefined, ...(e.target.checked ? {} : { gradient: undefined, fillStyle: undefined }) }
+      : entry.item.kind === "diagram" ? { bg_alpha: e.target.checked ? undefined : 0 }
       : { bg: e.target.checked ? colour : "transparent" }), e.target.checked ? "Filled." : "Fill taken off.");
   });
   //: A gradient or a fill style needs a colour to start from, so choosing one
@@ -916,13 +945,25 @@ onDomReady(() => {
     const pct = Math.max(10, Math.min(100, Number(e.target.value) || 100));
     wbFmtApply("alpha", () => ({ alpha: pct >= 100 ? undefined : pct / 100 }), `Opacity ${pct}%.`);
   });
-  on("wb-fmt-fillalpha", "input", (e) => {
-    const out = document.getElementById("wb-fmt-fillalpha-out");
-    if (out) out.textContent = `${e.target.value}%`;
-  });
-  on("wb-fmt-fillalpha", "change", (e) => {
-    const pct = Math.max(5, Math.min(100, Number(e.target.value) || 100));
-    wbFmtApply("fillstyle", (entry) => (entry.kind === "sketch" && wbFmtSketch(entry).fill ? { fillOpacity: pct / 100 } : null), `Fill ${pct}% solid.`);
+  //: A fill's opacity on a shape with no fill yet fills it first, so the
+  //: slider and the presets always do what they say. 0 is a real answer.
+  const setFillAlpha = (pct) => wbFmtApply("fillalpha", (entry) => ({ ...wbFmtFillFirst(entry), [wbFmtAlphaKeys(entry).fill]: pct / 100 }), `Fill ${pct}% solid.`);
+  const setStrokeAlpha = (pct) => wbFmtApply("strokealpha", (entry) => {
+    const key = wbFmtAlphaKeys(entry).line;
+    return { [key]: key === "opacity" && pct >= 100 ? undefined : pct / 100 };
+  }, `Line ${pct}% solid.`);
+  const alphaSetters = { fillalpha: setFillAlpha, strokealpha: setStrokeAlpha };
+  const alphaPct = (value) => Math.max(0, Math.min(100, Number.isFinite(Number(value)) && value !== "" ? Number(value) : 100));
+  for (const name of Object.keys(alphaSetters)) {
+    on(`wb-fmt-${name}`, "input", (e) => {
+      const out = document.getElementById(`wb-fmt-${name}-out`);
+      if (out) out.textContent = `${e.target.value}%`;
+    });
+    on(`wb-fmt-${name}`, "change", (e) => alphaSetters[name](alphaPct(e.target.value)));
+  }
+  panel.addEventListener("click", (e) => {
+    const button = e.target.closest?.("[data-alpha-preset]");
+    if (button) alphaSetters[button.dataset.alphaFor]?.(alphaPct(button.dataset.alphaPreset));
   });
   on("wb-fmt-fold", "change", (e) => wbFmtApply("fold", (entry) => (entry.kind === "object" && wbIsSticky(entry.item) ? { fold: e.target.checked } : null), e.target.checked ? "Corner folded." : "Corner flat."));
   on("wb-fmt-shadow", "change", (e) => wbFmtApply("shadow", () => ({ shadow: e.target.checked || undefined }), e.target.checked ? "Shadow on." : "Shadow off."));
@@ -1444,7 +1485,7 @@ function wbSvgBoxRadii(el, data, w, h) {
 }
 
 function wbSvgBoxBackdrop(el, data, w, h) {
-  const paper = data?.bg && data.bg !== "transparent" ? data.bg : "none";
+  const paper = data?.bg && data.bg !== "transparent" ? (wbExportColour(wbPaperPaint(data)) || data.bg) : "none";
   const paint = el ? wbExportPaint(el) : { fill: paper, edge: data?.border_color || null };
   //: A sticky's paper can be a gradient, which has no background colour to read.
   const fill = paint.fill !== "none" ? paint.fill : paper;

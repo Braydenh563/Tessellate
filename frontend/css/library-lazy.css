@@ -622,7 +622,6 @@ textarea.has-gutter {
   bottom: 0;
   z-index: 2;
   padding-block: var(--space-2);
-  background: var(--card);
 }
 
 /* The chrome above the box (toolbar, fields, wrapped rows at 700) can still
@@ -632,7 +631,6 @@ textarea.has-gutter {
   position: sticky;
   bottom: 0;
   z-index: 2;
-  background: var(--card);
   padding-block: var(--space-2);
 }
 
@@ -2255,7 +2253,11 @@ body.printing-doc #doc-preview p,
   position: absolute;
   right: calc(var(--space-6) * -1);
   top: 50%;
-  transform: translateY(-50%);
+  /* The offset is `translate` so the scale below stays one rule. 24px floor
+     on screen at any zoom (audit U5: 21.7px at fit, 10px on a phone), the
+     normal 28 from 100% up; 44 under touch, below. */
+  translate: 0 -50%;
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, calc(1.25 * var(--wb-inv-zoom))));
   /* Above the corner grip (5): at phone width the map is zoomed out until a
      topic is 28px tall, and the grip's 24px corner button reached the
      chevron's middle (measured 390x844, mapnarrow.js: a press on the chevron
@@ -2266,8 +2268,17 @@ body.printing-doc #doc-preview p,
 /* How much a collapsed branch is holding. On the node, in the branch's own
    colour, because the count belongs to the branch that is folded away rather
    than to the node it is folded into. */
+@media (pointer: coarse) {
+  .wb-map-collapse {
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+  }
+}
+
 .wb-map-count {
   position: absolute;
+  /* One size to the hand: 24px or more on screen at any zoom (audit U5). */
+  transform: scale(max(1, var(--wb-inv-zoom)));
+  transform-origin: 50% 100%;
   /* A button now (§12.1 item 7: it reopens the branch on click), so it has to
      be told not to look like one: the app's button ramp would give a 20px
      counter a hairline, a lift and a hover fill, and it is a count, not a
@@ -2284,13 +2295,13 @@ body.printing-doc #doc-preview p,
      belongs to the fold, not to the node. */
   right: calc(var(--space-6) * -1);
   top: calc(var(--space-8) * -1);
-  min-width: 1.25rem;
+  min-width: 1.5rem;
   padding: 0 var(--space-1);
   border-radius: var(--radius-md);
   background: var(--wb-branch);
   color: var(--card);
   font-size: var(--text-xs);
-  line-height: 1.25rem;
+  line-height: 1.5rem;
   text-align: center;
   z-index: 5;
 }
@@ -2559,7 +2570,7 @@ body.printing-doc #doc-preview p,
    the topic landed on the next sibling at every zoom and a row beside it on
    the parent (measured, mapactions.js). */
 .wb-map-actions {
-  transform: scale(clamp(calc(20 / 28 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+  transform: scale(clamp(calc(24 / 28 * var(--wb-inv-zoom)), 1, calc(1.25 * var(--wb-inv-zoom))));
   transform-origin: 100% 50%;
   flex-direction: column;
   left: auto;
@@ -2572,7 +2583,7 @@ body.printing-doc #doc-preview p,
 }
 @media (pointer: coarse) {
   .wb-map-actions {
-    transform: scale(clamp(calc(20 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
+    transform: scale(clamp(calc(24 / 44 * var(--wb-inv-zoom)), 1, var(--wb-inv-zoom)));
   }
 }
 /* **Away while the topic's text is edited** (INBOX 817): the + and link
@@ -2586,6 +2597,17 @@ body.printing-doc #doc-preview p,
 /* Below half zoom only the + stays: two buttons of 20px are wider than the
    topic they hang from. `wbPublishInvZoom` sets the attribute. */
 #whiteboard-container[data-wb-zoom-far] .wb-map-ref {
+  display: none;
+}
+/* **The controls follow the zoom, within bounds** (INBOX 1450, the owner:
+   "buttons get oversized at zoom, they should adjust in size but only so
+   much"). On screen the fold chevron and the topic's buttons are 28px at
+   100%, grow with the board to 35px (125%) and shrink with it to a 24px
+   floor, the smallest target WCAG 2.5.8 allows; under touch 44 down to 24.
+   Below half zoom a 24px chevron is wider than the topic it sits on (30%:
+   a topic 17px tall carried one on every branch), so it waits for the zoom
+   or for the topic to be selected. */
+#whiteboard-container[data-wb-zoom-far] .wb-map-node:not(.wb-selected) .wb-map-collapse {
   display: none;
 }
 
@@ -2921,8 +2943,8 @@ body.printing-doc #doc-preview p,
   cursor: text;
 }
 
-/* The hover lock (decision 28): a quiet lock at a locked item's top right
-   while the pointer is on it, one size at any zoom like the comment mark
+/* The lock badge (decision 28, audit 1028 B20): a quiet lock at a locked
+   item's top right, always shown, one size at any zoom like the comment mark
    beside it. It takes no pointer: the item lets the pointer through, and so
    does its mark. */
 .wb-lock-pin {
@@ -2932,6 +2954,10 @@ body.printing-doc #doc-preview p,
   transform-origin: 0 0;
   transform: scale(var(--wb-inv-zoom));
   pointer-events: none;
+}
+
+#library-view-whiteboard.wb-presenting #wb-lock-marks {
+  display: none;
 }
 
 .wb-lock-mark {
@@ -3293,26 +3319,53 @@ body.printing-doc #doc-preview p,
   width: 100%;
 }
 
+/* The hit area is the touch floor (24px, WCAG 2.5.8) on every pointer; the
+   box the eye sees is the ::before, 12px with a pointer and 24px on a finger. */
 .cm-md-image-grip {
   position: absolute;
-  right: -5px;
-  bottom: -5px;
-  width: 12px;
-  height: 12px;
-  box-sizing: border-box;
-  border: 2px solid var(--card);
-  border-radius: var(--radius-sm);
-  background: var(--accent);
+  right: -11px;
+  bottom: -11px;
+  width: 24px;
+  height: 24px;
   cursor: nwse-resize;
   touch-action: none;
   opacity: 0;
 }
 
+.cm-md-image-grip::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  box-sizing: border-box;
+  border: 2px solid var(--card);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+}
+
+.cm-md-image-grip:focus-visible {
+  outline: none;
+}
+
+.cm-md-image-grip:focus-visible::before {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Over a picture the button has to carry its own ground: a transparent glyph
+   in the muted ink was 1.3:1 on a blue picture (WCAG 1.4.11). The remove
+   button on a thumbnail has its disc; this is the same disc. */
 .cm-md-image-align {
   position: absolute;
   top: var(--space-1);
   right: var(--space-1);
   opacity: 0;
+}
+
+:is(.cm-md-image-frame, .thumb-wrap) > button.cm-md-image-align.ghost.icon-only:not(.active):not([aria-pressed="true"]):not([aria-expanded="true"]) {
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
 }
 
 .cm-md-image-frame:hover > .cm-md-image-grip,
@@ -3323,13 +3376,49 @@ body.printing-doc #doc-preview p,
   opacity: 1;
 }
 
+/* The same frame round a note's picture where it is read (image-layout.js:
+   a card, the timeline's note view, chat, a board card). A block that is only
+   as wide as the picture, so a plain picture stacks as it always did; a
+   figure's alignment moves the block, not the text inside it. */
+.md-picture {
+  display: block;
+  width: fit-content;
+  margin: var(--space-3) 0;
+}
+
+.md-picture > .entry-inline-image {
+  margin: 0;
+}
+
+.cm-md-figure.cm-md-figure-center > :is(.md-picture, .thumb-wrap) {
+  margin-inline: auto;
+}
+
+.cm-md-figure.cm-md-figure-right > :is(.md-picture, .thumb-wrap) {
+  margin-inline-start: auto;
+}
+
+/* A thumbnail has its remove button at the top right; the align button waits
+   at the top left. */
+.thumb-wrap > .cm-md-image-align.ghost.icon-only {
+  right: auto;
+  left: var(--space-1);
+}
+
+.thumb-wrap:hover > .cm-md-image-align,
+.thumb-wrap:focus-within > .cm-md-image-align {
+  opacity: 1;
+}
+
 @media (pointer: coarse) {
   .cm-md-image-grip {
-    width: 24px;
-    height: 24px;
     right: -12px;
     bottom: -12px;
     opacity: 1;
+  }
+
+  .cm-md-image-grip::before {
+    inset: 0;
   }
 
   .cm-md-image-align {
@@ -6104,12 +6193,38 @@ button.ghost.doc-template-choice.wb-template-choice {
   background: color-mix(in srgb, var(--wb-branch) 18%, var(--card));
 }
 
+/* A stamp is a toggle per person and has a menu (INBOX 1493): the chip, then
+   the shared ⋯ (`kebabMenu`), squared to the chip's own height. Yours is the
+   filled chip. */
+.wb-map-stamp-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.wb-map-stamp[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--wb-branch) 24%, var(--card));
+}
+
+.wb-map-stamp-wrap .menu-wrap {
+  display: inline-flex;
+}
+
+.wb-map-stamp-wrap .kebab-opener {
+  width: 1.6em;
+  min-width: 0;
+  height: 1.6em;
+  min-height: 0;
+  padding: 0;
+  font-size: 0.75em;
+}
+
 .wb-map-stamp .ph {
   color: var(--wb-branch-edge);
 }
 
 @media (pointer: coarse) {
-  .wb-map-stamp {
+  .wb-map-stamp,
+  .wb-map-stamp-wrap .kebab-opener {
     min-height: var(--target-min);
     min-width: var(--target-min);
   }
@@ -6922,6 +7037,11 @@ input[type="color"].wb-mixed {
 .doc-statusbar-link {
   cursor: pointer;
   border-radius: var(--radius-sm);
+  /* A press target of its own, 16.8px high before (audit 1028 U35, WCAG
+     2.5.8). The line box carries the height, not a flex box, so the phone's
+     ellipsis on the counts still applies. */
+  min-height: var(--target-min);
+  line-height: var(--target-min);
 }
 .doc-statusbar-link:hover {
   color: var(--text);
@@ -7063,6 +7183,48 @@ input[type="color"].wb-mixed {
   }
 }
 
+/* **The waypoint handle on a line** (MINDMAP_PLAN.md §12.1 item 5's third).
+   The same control `.wb-link-bend-handle` is for a link sketch, on a tree edge
+   instead: a round grip on the line, dragged to bend it and double-clicked to
+   put it back. So it takes that rule's shape exactly, one size to the hand at
+   every zoom (the grip block near the end of this file) and coloured by the
+   branch rather than by the accent, because on a map the line's colour is what
+   says which branch you are holding.
+   **Invisible and inert until the topic at one end of the line is selected**
+   (`wbSyncMapEdgeHandles`). Both halves matter: a grab dot on every line would
+   be two hundred of them on a real map, and a dot that was invisible but still
+   took the pointer would swallow the press meant for the line underneath,
+   which is the bug the mid-line `+` already had once against the link ring. */
+.wb-map-edge-handle {
+  /* The line's own colour inside, the card outside: the same arrangement
+     `.wb-link-bend-handle` uses for the other drag-to-bend control in this
+     app, which reads as "this curve's own control" rather than as an endpoint.
+     The colour is the branch's, so the grip belongs to the branch it reshapes,
+     and `--accent` is what a line with no branch colour of its own draws in,
+     exactly as the line itself does. */
+  fill: var(--wb-map-edge-colour, var(--accent));
+  stroke: var(--card);
+  stroke-width: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+/* Two ways of opening, and the first is the one that always works: pointing
+   at the line, anywhere along it, reveals the handle on it. The whole edge is
+   one `<g>` (stroke, target twin and handle), so there is no gap to cross
+   between the line and its own control. `.is-shown` is the selection route,
+   and `.is-dragging` holds it open for a drag that has already left the line
+   behind. */
+.wb-map-edge-group:hover .wb-map-edge-handle,
+.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-handle,
+.wb-map-edge-handle.is-shown,
+.wb-map-edge-handle.is-dragging {
+  opacity: 1;
+  pointer-events: auto;
+  /* `move`, the cursor the link's own bend grip already uses: this drags a
+     point in two directions, which is not the one-axis pull `grab` promises. */
+  cursor: move;
+}
 /* --- a map line's end grips and the topic shapes (K31) ---------------------
    The owner: "I want to be able to have more say in which sides the
    connections come from and to" and "more shape designs for the core idea
@@ -7081,8 +7243,9 @@ input[type="color"].wb-mixed {
   transform: scale(var(--wb-inv-zoom));
 }
 
-.wb-map-edge-group:is(:hover, :focus-visible) .wb-map-edge-end,
-.wb-map-edge-group:has(.wb-map-edge-handle.is-shown) .wb-map-edge-end,
+.wb-map-edge-group:hover .wb-map-edge-end,
+.wb-map-edge-group:is(:focus-visible, :has(:focus-visible)) .wb-map-edge-end,
+.wb-map-edge-group.is-shown .wb-map-edge-end,
 .wb-map-edge-end.is-dragging {
   opacity: 1;
   pointer-events: auto;
@@ -7336,4 +7499,255 @@ input[type="color"].wb-mixed {
 .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only.active,
 .library-image-tile .library-image-actions > .menu-wrap > button.ghost.icon-only[aria-pressed="true"] {
   background: color-mix(in srgb, var(--accent) 22%, var(--modal-bg-opaque));
+}
+
+/* Find and replace, restyled onto the app's own field recipe rather than
+   left with the library's defaults (DOCUMENTS_PLAN Phase 2 decision 7; lazy since audit 1028, fields on the md radius like every other input). The
+   panel is CodeMirror's own DOM, so this is layout and chrome only: the input
+   and button *shapes* come from the app's existing rules by reusing their
+   selectors here rather than by re-describing them. */
+.doc-editor .cm-panels {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.doc-editor .cm-panels.cm-panels-top {
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-editor .cm-panels.cm-panels-bottom {
+  border-top: 1px solid var(--border);
+}
+
+.doc-editor .cm-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.doc-editor .cm-search .cm-textfield {
+  background: var(--input-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  min-width: 12ch;
+}
+
+.doc-editor .cm-search .cm-textfield:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.doc-editor .cm-search .cm-button {
+  background: var(--ghost-btn-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  font: inherit;
+  cursor: pointer;
+}
+
+.doc-editor .cm-search .cm-button:hover,
+.doc-editor .cm-search .cm-button:is(:focus-visible, :has(:focus-visible)) {
+  background: var(--ghost-btn-bg-hover);
+}
+
+.doc-editor .cm-search label {
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.doc-editor .cm-search button[name="close"] {
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--space-1);
+  min-width: 24px;
+  min-block-size: 24px;
+}
+
+@media (pointer: coarse) {
+  .doc-editor .cm-search button[name="close"] {
+    min-width: 44px;
+    min-block-size: 44px;
+  }
+}
+
+/* A code file is monospace (audit 1028 U7: the editor drew 14.72px system-ui
+   in .cm-content and the gutter). `--mono` is not a defined token, every other
+   use of it carries the stack as its fallback, so this does too. Outranks the
+   theme's adopted `.cm-scroller` face by specificity. */
+.doc-editor .cm-editor.doc-content-code :is(.cm-content, .cm-gutters) {
+  font-family: var(--mono, ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace);
+}
+/* A live diagram (INBOX 1451): its drawing fills its box at its own shape,
+   or the parser's one line while the source has a mistake in it. The
+   dialog's preview is the same image. */
+.wb-object-diagram > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.wb-diagram-note {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.wb-diagram-preview {
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--control-h-lg) * 4);
+  max-height: 40vh;
+  margin: var(--space-2) 0;
+  overflow: auto;
+}
+.wb-diagram-preview > img {
+  max-width: 100%;
+  max-height: 38vh;
+}
+
+/* Voting dots and the workshop timer (INBOX 1313 row 14; DESIGN.md recipe index).
+   The tally is a pill on an item's top-right corner, never a pointer target; the
+   timer is the presenting bar's own floating panel (glass-off with the rest),
+   centred on the board's top edge and kept in view while presenting. */
+.wb-votes {
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  right: calc(-1 * var(--space-3));
+  z-index: 2;
+  min-width: var(--space-6);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: var(--space-6);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.wb-timer-bar {
+  left: 50%;
+  top: var(--space-5);
+  transform: translateX(-50%);
+  border-radius: var(--radius-pill);
+}
+.wb-timer-time {
+  min-width: 4ch;
+  text-align: center;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.wb-timer-bar.wb-timer-done .wb-timer-time {
+  color: var(--error);
+}
+#library-view-whiteboard.wb-presenting .whiteboard-floating-panel.wb-timer-bar:not(.hidden) {
+  display: flex;
+}
+
+/* --- the board picker's face on a phone (polish5-1031) -------------------------
+   A long map name read "Quarterly roadmap for ..." at 90px of text, and a touch
+   screen never shows the tooltip that holds the whole row. The face gives back
+   its side padding and may run to two lines; the bar's height is the opener's
+   own 44px, so it does not grow. --- */
+@media (max-width: 599.98px) {
+  .wb-topbar .select-shell > .select-opener {
+    padding-inline: var(--space-2);
+    gap: var(--space-1);
+  }
+  .wb-topbar .select-shell .select-value {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* A fill's or line's opacity in the Format panel: the slider over its five presets (INBOX 1486). */
+.wb-fmt-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.wb-fmt-presets {
+  flex-wrap: nowrap;
+}
+.wb-fmt-presets button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-1);
+}
+
+/* A shape shows a pointer under Select only; every other tool's cursor holds over it (INBOX 1486). */
+#whiteboard-container[data-current-tool="select"] .sketch-group {
+  cursor: pointer;
+}
+
+/* --- the file type picker (INBOX 1482) ------------------------------------
+   A `kebabMenu` of the file types with a heading over each group and
+   `listFilter`'s field at its head (`docTypeMenu`, documents.js). The field
+   sticks while the rows scroll under it; a row the filter rules out is
+   `hidden`, and the menu's `display: flex` rows would otherwise ignore the
+   attribute. */
+.action-menu:has(> .list-filter),
+.sheet-list:has(> .list-filter) {
+  overflow-y: auto;
+}
+.action-menu > .list-filter,
+.sheet-list > .list-filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: none;
+  margin: var(--space-1) var(--space-1) var(--space-2);
+  background: var(--modal-bg);
+}
+.action-menu > .menu-heading,
+.sheet-list > .menu-heading {
+  flex: none;
+  padding: var(--space-3) var(--space-5) var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.action-menu > .menu-item[hidden],
+.action-menu > .menu-heading[hidden],
+.sheet-list > .menu-item[hidden],
+.sheet-list > .menu-heading[hidden] {
+  display: none;
+}
+.doc-type-slot {
+  display: inline-flex;
+}
+.doc-type-button {
+  white-space: nowrap;
+}
+/* The picker's current row names itself with the trailing check. */
+.menu-item .doc-type-check {
+  margin-inline-start: auto;
+}
+/* New's split button gives up its plus glyph: with the caret and the template
+   button beside it the sidebar head (240px) squeezed "Recent" to "Rec...". */
+.doc-new-split #doc-new .ph-lead {
+  display: none;
 }

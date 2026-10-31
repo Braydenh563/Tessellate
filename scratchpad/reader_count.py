@@ -33,6 +33,8 @@ ALLOWED = {"src/tessellate/ai/recognise.py", "src/tessellate/entry/timewords.py"
 # Hand verdicts, 2026-10-10 (Brief 64), for the files the scan finds. A new file
 # in the scan with no verdict prints "unjudged": judge it, then add it here.
 VERDICT = {
+    "src/tessellate/ai/note_recency.py": "not a reader: `_TIME_AFTER` is a mask so 'last week' is not taken as 'the last N notes'; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/act_registry.py": "not a reader: `_WHEN` is a lookahead mask telling 'due' as a time from 'due diligence'; it turns no word into a value, recognise reads the window",
     "src/tessellate/ai/when.py": "reader: words to a date or window (resolve, parse_reminder_text, _AGO)",
     "src/tessellate/ai/reminder_parser.py": "reader: parse_relative, 'in 30 mins' to a datetime",
     "src/tessellate/search/query.py": "reader: today, yesterday, this/last week|month|year, 'N units back' to a date range",
@@ -51,10 +53,15 @@ VERDICT = {
     "src/tessellate/core/config.py": "not a reader: _WEEK_CHOICES, the week_start setting's first-day names to weekday numbers",
     # 2026-10-18 (C06): the answer panel's calculator.
     "frontend/js/reply-kit.js": "not a reader: REPLY_CALC_PAIRS, the unit pair each converter kind opens on; the sum is read by the server",
-    "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); windows and units read by recognise",
+    "src/tessellate/ai/composer_digest.py": "not a reader: weekday names for writing a date (the digest's day-of-week phrasing); its cue patterns (_AGO, _CASUAL, _ECHO_WORDS, _WEEK_SAID, _SHORTHAND) are masks that pick a phrasing or say the person's own words back, they turn no word into a date, window or quantity; windows and units read by recognise",
+    "src/tessellate/ai/composer_frame.py": "not a reader: `_WHEN_WORDS` is a mask that keeps a time word out of a name; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/composer_unplaced.py": "not a reader: `_NOTEBOOK_THINGS` is a mask that tells a question about the notebook's own lists and due items from a lookup; it turns no word into a value, recognise reads the window",
+    "src/tessellate/ai/composer_write.py": "not a reader: weekday names for writing a day heading (`_day_heading`); no word becomes a date",
     # 2026-10-26 (grammar K4b): a mask, not a reader. The browser cannot call
     # the recogniser, and nothing here becomes a date, window or quantity.
     "frontend/js/documents.js": "not a reader: the spellcheck's unit mask, which skips the unit straight after a number (10 min, 5 km) so it is not marked as a misspelling",
+    # 2026-10-30 (audit 1029 C21): the slot answerer's day and unit names.
+    "src/tessellate/ai/composer_slots.py": "not a reader: _WEEKDAYS matches a question's day to a note's written weekday and _UNITS lists a unit's spellings so the note's figure is quoted as written; days are found and judged by recognise (find, names_a_day)",
     "src/tessellate/ai/commands.py": "not a reader: _TIME_FIRST, the words that open a reminder's time part (weekday words included), to split it from the task; the date is read by when, which delegates to recognise",
 }
 

@@ -13,7 +13,7 @@ titles and 2 ms to scan a long page, measured when the row was written).
 - A one-word name must be written as the name is, with its capital
   ("Tessellate", not "tessellate"). A note called "Work" or "Budget" would
   otherwise be offered on every sentence that uses the word.
-- A name under four characters is never searched for (`MENTION_MIN_TITLE_CHARS`,
+- A name under four characters is never searched for (`OFFER_MIN_NAME_CHARS`,
   the same bar the unlinked-mentions panel uses), and one with a square
   bracket cannot be written as a `[[link]]` at all.
 - Never inside code, an existing link, a markdown link or an address, and not
@@ -42,7 +42,6 @@ from sqlalchemy.orm import Session
 from tessellate.core import filetypes
 from tessellate.core.database import Document, Entry
 from tessellate.entry.manager import WIKI_LINK, wiki_target
-from tessellate.entry.mentions import MENTION_MIN_TITLE_CHARS
 from tessellate.entry.properties import strip as strip_properties
 from tessellate.vendor.flashtext import KeywordProcessor
 
@@ -54,6 +53,9 @@ TEXT_MAX = 400_000
 #: A name longer than this in words is a sentence, not a title, and would
 #: never recur verbatim.
 NAME_MAX_WORDS = 8
+#: Offers are stricter than the backlinks floor (`MENTION_MIN_TITLE_CHARS`):
+#: an offer interrupts typing, so a three letter name is not worth it.
+OFFER_MIN_NAME_CHARS = 4
 NAME_MAX_CHARS = 80
 #: The opening of a note read for its name: a note's properties block can
 #: come first, so the first line is not at byte zero.
@@ -90,7 +92,7 @@ _cache: dict[str, _Index | None] = {"index": None}
 
 
 def _usable(name: str) -> bool:
-    if len(name) < MENTION_MIN_TITLE_CHARS or len(name) > NAME_MAX_CHARS:
+    if len(name) < OFFER_MIN_NAME_CHARS or len(name) > NAME_MAX_CHARS:
         return False
     if len(name.split()) > NAME_MAX_WORDS or _BRACKET.search(name):
         return False

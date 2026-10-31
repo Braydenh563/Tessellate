@@ -18,6 +18,10 @@ function offerJumpToNewNote(saved, status) {
   jump.title = "Open this note in your list";
   jump.addEventListener("click", () => flashEntry(saved.id));
   status.append(" ", jump);
+  //: The way back to writing, on Capture itself: the Notes dock (and its
+  //: New note) is hidden while Capture shows, so the line offers the box
+  //: (blind test 2026-10-31, item 9). The same small button as "Go to it".
+  status.append(" ", smallButton("ph:pencil-simple Write another", "Back to the box for the next note", focusCaptureBox));
   //: A notebook's first note: the first steps' third, asking, offered here (25c).
   if (allEntries.length === 1) status.append(" ", smallButton("ph:chat-circle Ask about it", "Ask your notebook; the answer comes from your notes", openAskFromDashboard));
 }
@@ -278,14 +282,14 @@ async function loadCaptureDocuments() {
   //: under *any* document, and a document past the server's page would be
   //: invisible with nothing on screen saying so (`archive/agent-remaining/
   //: list-paging.md`). `apiPagedList` is one request at any realistic size.
-  const documents = await apiPagedList("/documents", 200).catch(() => []);
-  renderCaptureDocuments(documents);
+  //: A failed read keeps the list already held (null) rather than emptying the picker.
+  renderCaptureDocuments(await apiPagedList("/documents", 200).catch(() => null));
 }
 
 // Ask for a title and start an empty document. Shared by the capture box and
 // the note card's "Add to a document", so both offer the same thing.
 async function createDocumentNamed(suggestion = "") {
-  const asking = promptDialog("Title for the new document:", suggestion, { confirmLabel: "Create" });
+  const asking = promptDialog("Title for the new document", suggestion, { confirmLabel: "Create" });
   //: Create with nothing typed closed the dialog and said nothing (dog2 item
   //: 15); `required` makes it say so (promptDialog checks the field's validity).
   document.querySelector(".prompt-card input").required = true;
@@ -387,10 +391,14 @@ function renderCaptureDocumentAdder() {
 //: clipboard as a placeholder rather than reading it before anything is chosen.
 const NOTE_TEMPLATE_CURSOR = "{{cursor}}";
 
+//: The date a template or the "/" menu writes (audit 1031 N24): the words the
+//: app uses everywhere else ("Oct 31, 2026"), not the numeric "10/31/2026".
+const stampDate = (when) => when.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+
 function noteTemplateText(raw, clipboard = "[clipboard]") {
   const now = new Date();
   return String(raw || "")
-    .replace(/\{\{?date\}\}?/g, now.toLocaleDateString())
+    .replace(/\{\{?date\}\}?/g, stampDate(now))
     .replace(/\{\{?time\}\}?/g, now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
     .replaceAll("{{clipboard}}", clipboard);
 }
@@ -903,7 +911,7 @@ function flashEntry(id) {
   // A draft target needs the Drafts filter ON now that drafts are excluded
   // from every other view (user-reported): otherwise jumping to one from
   // Library's "Open" button would find nothing.
-  draftsOnly = allEntries.some((e) => e.id === id && e.is_draft);
+  draftsOnly = Boolean(opened?.is_draft);
   // Same reason as the line above and the search reset below: a note that is
   // not pinned is filtered out of Favourites, so jumping to one while that
   // filter is on would scroll to nothing.
@@ -913,30 +921,42 @@ function flashEntry(id) {
   noteSearch = "";
   const searchBox = $("note-search");
   if (searchBox) searchBox.value = "";
-  // **BACKLOG §77 item 2, the page half of "jump to a note."** Everything
-  // above already resets category/drafts/search to whatever view actually
-  // contains the target (the design question that item scoped: a jump
-  // always lands in that reset default view, never in whatever filter the
-  // *origin*, Chat, the graph, a document, happened to have active,
-  // since most origins have no Notes-tab filter state to preserve at all).
-  // With that view now fixed, `resolveNotePage` answers the one thing that
-  // reset alone didn't: which *page* of it. Set before `renderEntries()` so
-  // the list paints the right page the first time, not the first page
-  // followed by a jump.
+  // The reset above fixes the view, so `resolveNotePage` can name the target's page.
   const targetPage = resolveNotePage(id);
   if (targetPage) notesCurrentPage = targetPage;
+  //: Opening is the whole note, not a clipped row (blind test 2026-10-31).
+  expandedRows.add(id);
   renderSidebar();
+  noteEngine.jumpId = id; // paint through the target: later rows only exist after a scroll
   renderEntries();
+  noteEngine.jumpId = null;
   requestAnimationFrame(() => {
     const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
-    if (!card) return;
+    if (!card) {
+      //: Not a note after all (audit 1031 N48): the address goes back to the list rather than naming a dead id, and the last "Showing note" line leaves the live region.
+      recordTabVisit("notes", "browse", "", { refine: true });
+      announce("");
+      return toast("No such note.");
+    }
+    //: A long way is a jump, not a glide: the Notes list is windowed
+    //: (notes-list.js), and every row built on the way draws at its own
+    //: height, so a smooth scroll aimed at the card's first place ended
+    //: thousands of pixels short on a phone. Then it is centred again once
+    //: the rows round it are built.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    const far = Math.abs(card.getBoundingClientRect().top) > 2 * window.innerHeight;
+    card.scrollIntoView({ behavior: reduced || far ? "auto" : "smooth", block: "center" });
+    if (far) requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelector(`#entry-list li[data-id="${id}"]`)?.scrollIntoView({ block: "center" });
+    }));
     // Restart the animation even when the same note is jumped to twice in a
     // row: without the reflow the class is already there and nothing replays.
     card.classList.remove("flash");
     void card.offsetWidth;
     card.classList.add("flash");
+    //: Focus lands on the note as a click leaves it (it was left on <body>), so
+    //: the arrows, Enter and the Connections column read from it at once.
+    card.focus({ preventScroll: true });
     // Announce it too: a colour change alone tells a screen-reader user
     // nothing about where they've just been sent.
     // Just the note's own text: card.textContent would drag in the category
@@ -1061,19 +1081,26 @@ function clickableResult(entry) {
 //   recomputed: two loops that agree today disagree after the next edit.
 //   A note the panel did not list (it caps its rows) still gets a number,
 //   after the listed ones.
+//: **Keyed by kind and id** (`citeKey`): a document's id is another table's,
+//: so note 7 and document 7 cited in one answer took one number between them
+//: (INBOX 1357). A board or a map is an entry, so it keys as a note.
+function citeKey(kind, id) {
+  return `${kind === "document" ? "document" : "note"}:${id}`;
+}
+
 function citationNumbers(sentences, orderedSources = null) {
   const numberFor = new Map();
   if (orderedSources && orderedSources.length) {
     orderedSources.forEach((source, index) => {
-      if (source && source.kind === "note") numberFor.set(source.id, index + 1);
+      if (source && (source.kind === "note" || source.kind === "document")) numberFor.set(citeKey(source.kind, source.id), index + 1);
     });
     let next = orderedSources.length + 1;
     for (const g of sentences || []) {
-      if (!numberFor.has(g.note_id)) numberFor.set(g.note_id, next++);
+      if (!numberFor.has(citeKey(g.kind, g.note_id))) numberFor.set(citeKey(g.kind, g.note_id), next++);
     }
   } else {
     for (const g of sentences || []) {
-      if (!numberFor.has(g.note_id)) numberFor.set(g.note_id, numberFor.size + 1);
+      if (!numberFor.has(citeKey(g.kind, g.note_id))) numberFor.set(citeKey(g.kind, g.note_id), numberFor.size + 1);
     }
   }
   return numberFor;
@@ -1198,7 +1225,7 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     //: fragment that could match anywhere, and the backend never grounds one.
     if (key.length < 12 && !g.anchor) continue;
     if (!bySentence.has(key)) bySentence.set(key, []);
-    if (!bySentence.get(key).some((row) => row.note_id === g.note_id)) bySentence.get(key).push(g);
+    if (!bySentence.get(key).some((row) => citeKey(row.kind, row.note_id) === citeKey(g.kind, g.note_id))) bySentence.get(key).push(g);
   }
   //: Longest first, and a claimed stretch is never reused by a different
   //: sentence: when one grounded sentence is contained in another, the short
@@ -1216,7 +1243,7 @@ function addInlineCitations(answerEl, sentences, rawResults, orderedSources = nu
     claimed.push([start, start + key.length]);
     const [node, offset] = index.at[start + key.length - 1];
     const { parent, before } = citationInsertionPoint(node, offset, targets);
-    rows.sort((a, b) => (numberFor.get(a.note_id) || 0) - (numberFor.get(b.note_id) || 0));
+    rows.sort((a, b) => (numberFor.get(citeKey(a.kind, a.note_id)) || 0) - (numberFor.get(citeKey(b.kind, b.note_id)) || 0));
     for (const g of rows) parent.insertBefore(citationMarker(g, byId, numberFor), before);
   }
   collapseCitationRuns(targets);
@@ -1243,7 +1270,7 @@ function collapseCitationRuns(targets) {
     const groups = [];
     for (const marker of target.querySelectorAll(".answer-citation")) {
       const prev = marker.previousSibling;
-      const last = groups[groups.length - 1];
+      const last = groups.at(-1);
       if (last && prev === last.markers[last.markers.length - 1]) {
         last.markers.push(marker);
       } else {
@@ -1263,6 +1290,16 @@ function collapseCitationRuns(targets) {
   }
 }
 
+//: What a mark is called aloud (audit 1029 C9): the first line as words, never its list markup.
+function citationName(content, length = 40) {
+  const first = stripFrontmatter(content || "").split("\n").map((line) => line.trim()).find(Boolean) || "";
+  const text = plainText(first.replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s*)?/, ""));
+  if (text.length <= length) return text || "(empty note)";
+  const cut = text.slice(0, length - 1);
+  const word = text[length - 1] === " " ? cut : cut.replace(/\s+\S*$/, "") || cut;
+  return `${word.replace(/[\s,;:-]+$/, "")}…`;
+}
+
 function citationMarker(g, byId, numberFor) {
   const marker = document.createElement("sup");
   marker.className = "answer-citation";
@@ -1277,14 +1314,15 @@ function citationMarker(g, byId, numberFor) {
   const link = document.createElement("button");
   link.type = "button";
   link.className = "answer-citation-link";
-  const entry = byId.get(g.note_id);
+  const entry = g.kind === "document" ? undefined : byId.get(g.note_id);
+  const number = numberFor.get(citeKey(g.kind, g.note_id));
   // A note a tool read mid-turn is not in `rawResults`; the backend
   // sends its opening words on the entry itself for exactly this case.
-  const name = noteLabel({ content: entry?.content || g.label || "" }, 40);
-  link.textContent = String(numberFor.get(g.note_id));
+  const name = citationName(entry?.content || g.label || "");
+  link.textContent = String(number);
   //: No `title`: the peek below is what a hover shows now, and a native
   //: tooltip would draw a second, plainer box over it a moment later.
-  link.setAttribute("aria-label", `Source ${numberFor.get(g.note_id)}: ${name}`);
+  link.setAttribute("aria-label", `Source ${number}: ${name}`);
   link.setAttribute("aria-haspopup", "dialog");
   link.setAttribute("aria-expanded", "false");
   //: **A mark previews its note where it is; going there is a second,
@@ -1299,7 +1337,7 @@ function citationMarker(g, byId, numberFor) {
   const start = own.length ? Math.min(...own.map((part) => part.start)) : g.start;
   const end = own.length ? Math.max(...own.map((part) => part.end)) : g.end;
   const describe = () => ({
-    noteId: g.note_id, number: numberFor.get(g.note_id), entry, label: g.label, start, end,
+    noteId: g.note_id, number, entry, label: g.label, start, end,
     signals: g.signals, verdict: g.verdict, terms: g.terms, line: g.sentence, parts: g.parts,
   });
   link.addEventListener("click", (event) => {
@@ -1475,6 +1513,7 @@ function openCitationPeek(link, source, { pinned }) {
   panel.setAttribute("aria-label", `Source ${source.number}`);
   const go = () => {
     closeCitationPeek();
+    if (source.open) return source.open();
     openNoteAtPassage(source.noteId, citationPeekText(source.entry?.content, source.start, source.end).passage);
   };
   //: The whole preview is the way in (INBOX 80: "clicking the preview panel
@@ -1490,7 +1529,7 @@ function openCitationPeek(link, source, { pinned }) {
   number.textContent = String(source.number);
   const title = document.createElement("span");
   title.className = "citation-peek-title";
-  title.textContent = noteLabel({ content }, 80);
+  title.textContent = source.title || noteLabel({ content }, 80);
   head.append(number, title);
   const body = document.createElement("span");
   body.className = "citation-peek-body";
@@ -1517,7 +1556,7 @@ function openCitationPeek(link, source, { pinned }) {
   meta.className = "library-file-meta citation-peek-meta";
   const facts = [entry?.category, entry?.created_at ? relativeTime(entry.created_at) : ""].filter(Boolean);
   meta.textContent = facts.join(" · ");
-  foot.append(meta, smallButton("ph:arrow-square-out Open note", "Open this note in Notes", go));
+  foot.append(meta, smallButton(`ph:arrow-square-out Open ${source.what || "note"}`, source.what ? `Open this ${source.what}` : "Open this note in Notes", go));
   panel.append(preview, foot);
   ensureModule("askCompose").then(() => {
     const verdictRow = citationVerdictRow(source, content);
@@ -1667,7 +1706,7 @@ function numberMatchingRecords(target, numberFor) {
   if (!list) return;
   for (const li of list.querySelectorAll("li[data-id]")) {
     li.querySelector(":scope > .record-index")?.remove();
-    const n = numberFor.get(Number(li.dataset.id)) ?? numberFor.get(li.dataset.id);
+    const n = numberFor.get(citeKey("note", li.dataset.id));
     if (!n) {
       li.classList.remove("is-numbered");
       continue;
@@ -1802,12 +1841,13 @@ function renderAnswerGrounding(
     return;
   }
   const byId = new Map((rawResults || []).map((entry) => [entry.id, entry]));
-  const byNote = new Map(); // note_id -> sentences[]
-  const labelFor = new Map(); // note_id -> backend label, for touched notes
+  const byNote = new Map(); // citeKey -> { noteId, kind, said: sentences[] }
+  const labelFor = new Map(); // citeKey -> backend label, for touched notes
   for (const g of sentences) {
-    if (!byNote.has(g.note_id)) byNote.set(g.note_id, []);
-    byNote.get(g.note_id).push(g.sentence);
-    if (g.label && !labelFor.has(g.note_id)) labelFor.set(g.note_id, g.label);
+    const key = citeKey(g.kind, g.note_id);
+    if (!byNote.has(key)) byNote.set(key, { noteId: g.note_id, kind: g.kind, said: [] });
+    byNote.get(key).said.push(g.sentence);
+    if (g.label && !labelFor.has(key)) labelFor.set(key, g.label);
   }
   ensureModule("replyKit");
   const fold = target.appendChild(document.createElement("details"));
@@ -1827,13 +1867,13 @@ function renderAnswerGrounding(
   const chips = [...byNote.entries()].sort(
     (a, b) => (numberFor.get(a[0]) || 0) - (numberFor.get(b[0]) || 0)
   );
-  for (const [noteId, forSentences] of chips) {
-    const entry = byId.get(noteId);
-    const n = numberFor.get(noteId) || 0;
+  for (const [key, { noteId, kind, said: forSentences }] of chips) {
+    const entry = kind === "document" ? undefined : byId.get(noteId);
+    const n = numberFor.get(key) || 0;
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip result-reason-chip result-reason-connected answer-grounding-chip";
-    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(noteId) || "", 30);
+    setNoteLabel(chip, `ph:file-text ${n}`, entry?.content || labelFor.get(key) || "", 30);
     // A tooltip prints characters: `plainText` (chat-attach.js, run at render).
     chip.title = plainText(forSentences.join(" "));
     chip.addEventListener("click", () => {
@@ -1961,12 +2001,12 @@ function renderEvidenceView(view, sentences, support, rawResults, answerEl, numb
       sources.append(evidenceSpan("muted answer-evidence-none", "No note says this", "p"));
     }
     for (const g of row.sources) {
-      const entry = byId.get(g.note_id) || allEntries.find((e) => e.id === g.note_id) || null;
+      const entry = g.kind === "document" ? null : byId.get(g.note_id) || allEntries.find((e) => e.id === g.note_id) || null;
       const content = entry?.content || g.label || "";
       const card = evidenceSpan("answer-evidence-card", "", "button");
       card.type = "button";
       const head = evidenceSpan("citation-peek-head");
-      const number = String(numberFor.get(g.note_id) || "");
+      const number = String(numberFor.get(citeKey(g.kind, g.note_id)) || "");
       const title = noteLabel({ content }, 60);
       head.append(evidenceSpan("citation-peek-number", number), evidenceSpan("citation-peek-title", title));
       const quote = evidenceSpan("citation-peek-body answer-evidence-quote");
@@ -2128,7 +2168,7 @@ function answerObject({
     //: The same builder the Chat tab's bubble uses, so the two surfaces cannot
     //: disagree about what counts as a source or about the order they are
     //: numbered in.
-    sources: chatSourcesFrom({ meta, toolEvents, touched }),
+    sources: chatSourcesFrom({ meta, toolEvents, touched, sentences: grounding }),
     related: related || [],
     next: next || [],
     stats: stats || null,
@@ -2164,6 +2204,19 @@ function clearAskAnswerFoot() {
     strip.replaceChildren();
     strip.classList.add("hidden");
   }
+}
+
+//: **The answer and its foot are said aloud** (UX review 1031, M11): the box
+//: has no live region, so nothing told a screen reader an answer, its related
+//: notes, sources or follow-ups had arrived. Counts are of what is showing.
+function announceAskFoot() {
+  const shown = (selector) => [...document.querySelectorAll(selector)].filter((el) => !el.closest(".hidden")).length;
+  const parts = [
+    ["related note", shown("#ask-answer-related .answer-related-chip")],
+    ["source", shown("#ask-answer-sources .chat-source-card")],
+    ["follow-up question", shown("#ask-followups .chip-interactive")],
+  ].filter(([, count]) => count);
+  announce(["Answer ready.", ...parts.map(([noun, count]) => `${nounCount(count, noun)}.`)].join(" "));
 }
 
 function renderAskAnswerFoot(object, meta) {
@@ -2476,7 +2529,8 @@ function streamChat(options) {
   return streamChatEvents({
     ...options,
     onStatus: (event) => {
-      phase("reading");
+      if (event.said) phase("tool", event.said);
+      else phase("reading");
       return options.onStatus?.(event);
     },
     onMeta: (meta) => {
@@ -2563,12 +2617,14 @@ async function streamChatEvents({
   onOffer,
   peek,
   attempt,
+  isPrivate,
 }) {
   //: Fetched now, so a composed reply's reveal (`finishReply`) never waits on it.
   ensureModule("replyKit").catch(() => {});
   const body = { question, history: history || [], locale: navigator.language };
   //: "Try again" (CHAT_PLAN decision 34): an answer from the notes reworded.
   if (attempt) body.attempt = attempt;
+  if (isPrivate) body.private = true;
   if (persona) body.persona = persona;
   // Per-turn, not a setting: one quick answer shouldn't change the default
   // for every answer after it.
@@ -2692,7 +2748,7 @@ async function streamChatEvents({
         throw new Error(
           "The model stopped responding. It may still be loading a large " +
             "model, or Ollama may have stalled, try again, or check " +
-            "Settings → Models."
+            "Settings, Models."
         );
       }
       throw err;
@@ -2802,6 +2858,7 @@ function liveMarkdownRenderer(box, afterPaint = null) {
   let timer = null;
   let lastRun = 0;
 
+  let gap = LIVE_RENDER_INTERVAL_MS;
   const flush = () => {
     timer = null;
     lastRun = performance.now();
@@ -2809,12 +2866,13 @@ function liveMarkdownRenderer(box, afterPaint = null) {
     rendered = latest;
     renderMarkdown(box, holdPictureTokens(latest));
     afterPaint?.();
+    gap = Math.max(LIVE_RENDER_INTERVAL_MS, (performance.now() - lastRun) * 4);
   };
 
   const render = (text) => {
     latest = text;
     if (timer) return;
-    const wait = Math.max(0, LIVE_RENDER_INTERVAL_MS - (performance.now() - lastRun));
+    const wait = Math.max(0, gap - (performance.now() - lastRun));
     timer = setTimeout(flush, wait);
   };
   //: **The last paint has to be cancellable, or it lands after the turn is
@@ -2992,9 +3050,7 @@ async function askQuestion(preset) {
   if (chartHost) {
     chartHost.replaceChildren();
     chartHost.classList.add("hidden");
-    ensureModule("askHistory")
-      .then(() => renderAskChart(question, chartHost, () => lastQuestion === question))
-      .catch(() => {});
+    if (question.length <= 500) ensureModule("askHistory").then(() => renderAskChart(question, chartHost, () => lastQuestion === question)).catch(() => {});
   }
   //: After the reset, not before it: the progress line lives inside the
   //: answer box now, so creating it first would only have it wiped.
@@ -3149,7 +3205,7 @@ async function askQuestion(preset) {
       },
       onGroundingLive: (event) => {
         groundedSentences = event.sentences || [];
-        liveSources ??= chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [] });
+        liveSources = chatSourcesFrom({ meta: answerMeta, toolEvents: [], touched: [], sentences: groundedSentences });
         numberMatchingRecords(
           $("ai-answer-grounding"),
           citationNumbers(groundedSentences, liveSources)
@@ -3215,7 +3271,9 @@ async function askQuestion(preset) {
     //: render is what makes the answer readable as it arrives and the markers
     //: simply have to be the last thing written, against the finished text.
     if (!hinted) {
-      conversation.push({ question, answer: answerRaw });
+      //: The notes this answer cited ride with the turn, as Chat's do, so
+      //: "how much does it cost" after an Ask answer names what "it" was.
+      conversation.push({ question, answer: answerRaw, objects: chatTurnObjects(liveSources) });
       show("retry-btn", "copy-btn", "speak-btn", "new-chat-btn");
       //: What the ⋯ keeps (B12): the answer as written, and the notes it cites.
       askKept = {
@@ -3269,7 +3327,7 @@ async function askQuestion(preset) {
       //: answer composed from the notes brings its own (INBOX 725), built
       //: from what it found and did not say, and asks no model for them.
       const followups = () => renderAskFollowups(question, answerRaw, answerMeta?.composed ? composedNext : null);
-      ensureModule("askCompose").then(followups).catch(() => {});
+      ensureModule("askCompose").then(followups).catch(() => {}).then(announceAskFoot);
     }
     askStatusText("");
     // Asking changes both quick-access lists, and, for a real (non-hint)
@@ -3344,11 +3402,16 @@ async function loadSuggestions() {
 // this is read, search, pin, delete and "reopen" only. ---------------------
 
 let askHistoryOpen = false;
+//: The badge's last answer, kept so Get started (first-run.js) reads it instead of
+//: asking again: at boot both asked within half a second, and a POST between them
+//: (`/recordings/recover`) emptied the GET cache. `null` until the badge has read.
+let askBadgeTotal = null;
 
 async function loadAskHistoryBadge() {
   const badge = $("ask-history-badge");
   if (!badge) return;
   const stats = await apiJson("/ask-history/stats").catch(() => null);
+  if (stats) askBadgeTotal = stats.total || 0;
   if (!stats || !stats.total) {
     badge.classList.add("hidden");
     return;

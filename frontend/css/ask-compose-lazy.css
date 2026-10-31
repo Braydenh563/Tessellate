@@ -240,3 +240,19 @@
   background: var(--accent-soft);
   color: var(--accent-text);
 }
+
+/* The Ask answer's foot chips keep their hit area (UX review 1031, M12): the
+   related chip's `overflow: hidden` clipped the `.chip-interactive::after`
+   overhang (23px target), and wrapped rows stole it from each other. Its words
+   already ellipsise inside, so the chip itself need not clip. A finger's rows
+   keep `--target-min` apart, as the Notes list's links do. */
+.answer-related-chip {
+  overflow: visible;
+}
+
+@media (pointer: coarse) {
+  .answer-related,
+  .ask-followups {
+    row-gap: calc(var(--target-min) - 1.5rem);
+  }
+}

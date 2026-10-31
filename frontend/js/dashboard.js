@@ -246,13 +246,17 @@ function fallbackGreetingPhrase(now = new Date()) {
   return options[daySlot % options.length];
 }
 
+//: A name longer than this is cut at a word with an ellipsis in the greeting (X25).
+const GREETING_NAME_MAX = 40;
+
 // The name always comes from preferences, never from the model, so it can't
 // be mangled or hallucinated, and editing it takes effect immediately. The
 // terminal mark goes on last so the result reads as a proper sentence:
 // "Rise and shine" + ", Sam" + "." → "Rise and shine, Sam." A cached "!" from
 // before the server stopped sending one reads as a full stop (INBOX 472).
 function withDisplayName(phrase, punctuation = ".", appendName = true) {
-  const name = ((prefsCache && prefsCache.display_name) || "").trim();
+  const full = ((prefsCache && prefsCache.display_name) || "").trim();
+  const name = clipText(full, GREETING_NAME_MAX);
   const mark = punctuation === "?" ? "?" : ".";
   // Also sentence-cased here, so an older cached greeting written by the model
   // in lowercase corrects itself on the next render.
@@ -262,7 +266,7 @@ function withDisplayName(phrase, punctuation = ".", appendName = true) {
   // text check is a belt-and-braces guard against a stale cache.
   const already =
     !appendName ||
-    (name && new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(opener));
+    (full && new RegExp(`\\b${full.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(opener));
   if (!name || already) return `${opener}${mark}`;
   return `${opener}, ${name}${mark}`;
 }
@@ -279,7 +283,11 @@ function greetingCacheSlot(now = new Date()) {
   // too: renaming yourself in Settings invalidates the cached greeting so the
   // AI writes a fresh one addressed to the new name.
   const name = ((prefsCache && prefsCache.display_name) || "").trim();
-  return `${now.toDateString()}|${now.getHours()}|${name}`;
+  //: And how much of a notebook there is (none, a few, many): a line composed
+  //: for an empty one ("Your first note is waiting") was kept for the hour
+  //: after three notes were written (blind test 2026-10-31).
+  const notes = typeof allEntries === "undefined" ? 0 : Math.min(allEntries.length, 3);
+  return `${now.toDateString()}|${now.getHours()}|${name}|${notes}`;
 }
 
 function cachedGreetingPhrase(now = new Date()) {
@@ -492,15 +500,15 @@ async function renderDashSubmessage() {
   if (composed) bits.push(["notes", composed]);
   else if (stats) {
     const n = stats.total_entries;
-    bits.push(["notes", n === 0 ? "No notes yet" : `You have ${n} note${n === 1 ? "" : "s"}`]);
+    bits.push(["notes", n === 0 ? "No notes yet" : `You have ${nounCount(n, "note")}`]);
   }
   const due = (reminders || []).filter(
     (r) => !r.done && new Date(r.due_at) <= new Date()
   ).length;
-  if (due) bits.push(["reminders", `${due} reminder${due === 1 ? "" : "s"} due`]);
+  if (due) bits.push(["reminders", `${nounCount(due, "reminder")} due`]);
   else {
     const open = (reminders || []).filter((r) => !r.done).length;
-    if (open) bits.push(["reminders", `${open} reminder${open === 1 ? "" : "s"} coming up`]);
+    if (open) bits.push(["reminders", `${nounCount(open, "reminder")} coming up`]);
   }
   if (stats && stats.per_day) {
     const streak = dashStreak(stats.per_day);
@@ -622,7 +630,7 @@ function dashGlanceFacts({ reminders = [], stats = null, entries = [], now = new
     id: "meetings",
     icon: "ph:users-three",
     count: n,
-    label: n ? `${n} meeting${n === 1 ? "" : "s"} today` : "No meetings today",
+    label: n ? `${nounCount(n, "meeting")} today` : "No meetings today",
     hint: !n
       ? "Nothing on the calendar"
       : upcoming.when >= now
@@ -797,7 +805,11 @@ function sizeDashWidgetSpan(card, height, rowUnit, gap) {
 
 function sizeDashWidgets() {
   const grid = $("dash-grid");
-  if (!grid) return;
+  //: **Never while the tab is hidden** (dashcls-1031): the observer also fires
+  //: as the grid goes `display: none`, every card measured 0px and was given
+  //: `span 1`, and the next visit painted them stacked until it re-measured
+  //: (layout shift 0.34). The grid's own fire on showing it measures it right.
+  if (!grid || (grid.checkVisibility && !grid.checkVisibility())) return;
   const styles = getComputedStyle(grid);
   const rowUnit = Number.parseFloat(styles.getPropertyValue("grid-auto-rows")) || 8;
   const gap = Number.parseFloat(styles.rowGap) || 16;
@@ -1124,6 +1136,36 @@ const DASH_EMBLEM_SIZE = { full: 46, compact: 30, focused: 0 };
 //: shouldnt dissappear permanently").
 let dashEmblemDrawn = false;
 
+//: The dashboard's mark, when Appearance swaps the logo for a face: yours,
+//: or the persona the greeting speaks as (the chat's own when it matches
+//: Chat). Null keeps the logo. Here, not in avatars.js: the dashboard asks at
+//: boot, before that file is in.
+function dashboardMarkSeed() {
+  const choice = appearancePref("dash-mark", "logo");
+  if (choice === "me") return userMarkSeed();
+  //: Atlas by name, whoever the greeting speaks as (the owner: "the
+  //: dashboard mark should have atlas as an option as well"). "Greeting
+  //: persona" only shows Atlas while Atlas is that persona.
+  if (choice === "atlas") return "Atlas";
+  if (choice === "persona") {
+    return prefsCache?.dashboard_persona || document.getElementById("persona-select")?.value || "Atlas";
+  }
+  return null;
+}
+
+function paintDashFace(holder, face, size) {
+  //: The logo's sketch stops first: a p5 loop on a canvas that is no
+  //: longer in the page still draws every frame.
+  const sketch = typeof emblemInstances !== "undefined" ? emblemInstances.get(holder) : null;
+  if (sketch) {
+    sketch.remove();
+    emblemInstances.delete(holder);
+    emblemObservers?.get(holder)?.disconnect();
+    emblemObservers?.delete(holder);
+  }
+  holder.replaceChildren(nameMarkLive(face, size));
+}
+
 function paintDashEmblem() {
   const holder = $("dash-hero-emblem");
   if (!holder) return;
@@ -1137,19 +1179,11 @@ function paintDashEmblem() {
     holder.replaceChildren();
     return;
   }
-  //: A face instead of the logo when Appearance asks (avatars.js).
+  //: A face instead of the logo when Appearance asks (avatars.js, which may
+  //: not be in yet: the face is drawn when it is).
   const face = dashboardMarkSeed();
   if (face) {
-    //: The logo's sketch stops first: a p5 loop on a canvas that is no
-    //: longer in the page still draws every frame.
-    const sketch = typeof emblemInstances !== "undefined" ? emblemInstances.get(holder) : null;
-    if (sketch) {
-      sketch.remove();
-      emblemInstances.delete(holder);
-      emblemObservers?.get(holder)?.disconnect();
-      emblemObservers?.delete(holder);
-    }
-    holder.replaceChildren(nameMarkLive(face, size));
+    afterCharacters(() => paintDashFace(holder, face, size));
     return;
   }
   holder.querySelector(".nm-live")?.remove();
@@ -1558,11 +1592,70 @@ function closeFeatures() {
   overlayReturnFocus = null;
 }
 
+//: **The first rows, then the rest as the list is scrolled to its end** (audit
+//: 1031 Z11): drawing every row (212, 647 nodes) cost 76 ms of layout at 4x CPU
+//: on each open and each keystroke; forty rows cost a fifth of that. The count
+//: in the heading and the search still read the whole catalogue.
+const FEATURES_FIRST_ROWS = 40;
+
+function featureRow(item) {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.className = "feature-row";
+  const name = document.createElement("span");
+  name.className = "feature-name";
+  setLabel(name, item.name);
+  const desc = document.createElement("span");
+  desc.className = "feature-desc muted";
+  setLabel(desc, item.desc);
+  row.append(name, desc);
+  row.addEventListener("click", () => {
+    closeFeatures();
+    item.run();
+  });
+  return row;
+}
+
+function featuresPaint(list, steps) {
+  list.moreObserver?.disconnect();
+  let at = 0;
+  const sentinel = document.createElement("div");
+  sentinel.setAttribute("aria-hidden", "true");
+  list.appendChild(sentinel);
+  const observer = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && draw(FEATURES_FIRST_ROWS), { root: list, rootMargin: "400px 0px" });
+  list.moreObserver = observer;
+  const draw = (count) => {
+    const part = document.createDocumentFragment();
+    for (let rows = 0; at < steps.length && rows < count; at++) {
+      const { heading, item } = steps[at];
+      if (item) rows += 1;
+      if (item) part.appendChild(featureRow(item));
+      else {
+        const h3 = document.createElement("h3");
+        h3.className = "features-group";
+        h3.textContent = heading;
+        part.appendChild(h3);
+      }
+    }
+    list.insertBefore(part, sentinel);
+    if (at >= steps.length) {
+      observer.disconnect();
+      sentinel.remove();
+    } else {
+      //: Observed again, so a list still short of the sentinel asks for more.
+      observer.unobserve(sentinel);
+      observer.observe(sentinel);
+    }
+  };
+  draw(FEATURES_FIRST_ROWS);
+}
+
 function renderFeatures(query) {
   const list = $("features-list");
   list.replaceChildren();
   const q = (query || "").trim().toLowerCase();
   const groups = featureCatalog();
+  groups.push(featureCommandRows(groups));
   // The AI's own tools, straight from the backend registry.
   if (featureAiTools && featureAiTools.length) {
     groups.push({
@@ -1578,40 +1671,23 @@ function renderFeatures(query) {
   }
 
   let shown = 0;
+  const steps = [];
   for (const group of groups) {
     const matches = group.items.filter(
       (item) =>
         !q ||
         item.name.toLowerCase().includes(q) ||
         item.desc.toLowerCase().includes(q) ||
+        (item.also || "").toLowerCase().includes(q) ||
         group.group.toLowerCase().includes(q)
     );
     if (!matches.length) continue;
     shown += matches.length;
 
-    const heading = document.createElement("h3");
-    heading.className = "features-group";
-    heading.textContent = group.group;
-    list.appendChild(heading);
-
-    for (const item of matches) {
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "feature-row";
-      const name = document.createElement("span");
-      name.className = "feature-name";
-      setLabel(name, item.name);
-      const desc = document.createElement("span");
-      desc.className = "feature-desc muted";
-      setLabel(desc, item.desc);
-      row.append(name, desc);
-      row.addEventListener("click", () => {
-        closeFeatures();
-        item.run();
-      });
-      list.appendChild(row);
-    }
+    steps.push({ heading: group.group });
+    for (const item of matches) steps.push({ item });
   }
+  featuresPaint(list, steps);
 
   $("features-count").textContent = q
     ? `${shown} match${shown === 1 ? "" : "es"}`
@@ -2581,6 +2657,8 @@ async function startArt(holder) {
     let glide = null;
     //: The quick cross-fade's picture of the old sky, and when it began.
     let fade = null;
+    //: When the card left the view (`sight` below), 0 while it is in view.
+    let hiddenSince = 0;
     //: The wash's hue and gradient, made once: the accent and the height do not
     //: change for the life of a sketch (a theme change rebuilds it).
     let washHue = null;
@@ -2746,6 +2824,10 @@ async function startArt(holder) {
     //: `frameCount * 0.005` at sixty frames a second advanced `t` by 0.3 a
     //: second, and `millis() * 0.0003` advances it by 0.3 a second full stop.
     p.draw = () => {
+      if (hiddenSince) {
+        p.noLoop();
+        return;
+      }
       //: **Rests when nobody is there**: after the background art's two idle
       //: minutes (bg-art.js stamps every input), and goes on at the next
       //: one. Traced idle on the Dashboard: 600 p5 frames and 204ms of
@@ -2783,9 +2865,12 @@ async function startArt(holder) {
     // catches both a real window resize *and* the Edit-layout "Wide" toggle
     // (which changes the card's width with no window resize event at all), 
     // `p.windowResized` alone would have missed the second one entirely.
-    const resync = () => {
+    //: The width comes from the observer's own entry: it reports after layout,
+    //: so reading `clientWidth` here forced another one when a keystroke or a
+    //: late widget had dirtied the page (INBOX 1465: 64 to 89 ms).
+    const resync = (entries) => {
       if (!holder.isConnected) return;
-      const next = holder.clientWidth;
+      const next = Math.round(entries?.[0]?.contentRect.width ?? holder.clientWidth);
       // Guarded the same reason `holder.clientWidth || 300` is in setup: a
       // transient 0 mid-reflow must not shrink the canvas to nothing.
       if (!next || next === width) return;
@@ -2796,8 +2881,25 @@ async function startArt(holder) {
     };
     const observer = new ResizeObserver(resync);
     observer.observe(holder);
+    //: **Rests while scrolled out of view** (audit 1029 row 38: on a long
+    //: Dashboard this scene was 185 ms of every 3 s at 1x with the card off
+    //: screen). The clock moves on by the time away, as after the idle rest,
+    //: so the drift picks up where it was last drawn.
+    const sight = new IntersectionObserver(([entry]) => {
+      if (reduceMotion) return;
+      if (!entry.isIntersecting) {
+        hiddenSince ||= performance.now();
+        return;
+      }
+      if (!hiddenSince) return;
+      artClock.epoch += performance.now() - hiddenSince;
+      hiddenSince = 0;
+      if (!p.rested) p.loop();
+    });
+    sight.observe(holder);
     p.remove = ((original) => () => {
       observer.disconnect();
+      sight.disconnect();
       original.call(p);
     })(p.remove);
   };
@@ -2875,7 +2977,7 @@ async function renderStreakWidget(body) {
     //: A streak kept alive by yesterday says what keeps it going.
     const today = perDay.length ? perDay[perDay.length - 1] : 0;
     sub.textContent =
-      `You've captured ${current} day${current === 1 ? "" : "s"} running` +
+      `You've captured ${nounCount(current, "day")} running` +
       (today ? "" : ". Save a note today to keep it") +
       (longest > current ? ` · best in the last fortnight: ${longest}` : "");
   } else {
@@ -2888,7 +2990,7 @@ async function renderStatsWidget(body) {
   const stats = await fetchDashStats();
   const total = document.createElement("p");
   total.className = "dash-big";
-  total.textContent = `${stats.total_entries} note${stats.total_entries === 1 ? "" : "s"}`;
+  total.textContent = nounCount(stats.total_entries, "note");
   body.appendChild(total);
 
   // Last-14-days activity strip (theme colours, height = volume).
@@ -2900,7 +3002,7 @@ async function renderStatsWidget(body) {
     const bar = document.createElement("span");
     bar.style.height = `${Math.max(8, (count / peak) * 34)}px`;
     bar.classList.toggle("empty", count === 0);
-    bar.title = `${count} note${count === 1 ? "" : "s"}`;
+    bar.title = nounCount(count, "note");
     strip.appendChild(bar);
   }
   body.appendChild(strip);
@@ -2947,7 +3049,8 @@ function firstNoteImage(content) {
 //: all, in every widget, forever.
 function noteRowImage(entry) {
   const embedded = firstNoteImage((entry.content || "").replace(/\[\[([^[\]]{1,120})\]\]/g, "$1"));
-  if (embedded) return embedded;
+  //: A picture at another address is never requested (audit 1029 N7), here as in the card.
+  if (embedded && !isRemoteImage(embedded.url)) return embedded;
   const attached = (entry.attachments || []).find((file) => file.is_image);
   return attached ? { alt: attached.filename || "", url: `/files/${attached.id}` } : null;
 }
@@ -2973,6 +3076,7 @@ function miniEntryList(body, entries, emptyText, emptyAction = null) {
   ul.className = "dash-list";
   for (const entry of entries) {
     const li = document.createElement("li");
+    li.dataset.obj = `note:${entry.id}`;
     // The wiki-link unwrap notePreviewText also did, renderInlineMarkdown
     // itself doesn't know `[[...]]`, only the full note-body renderer does.
     //: A `---` properties block is never the note's words (stripFrontmatter).
@@ -3073,7 +3177,7 @@ async function renderReviewWidget(body) {
   }
   const line = document.createElement("p");
   line.className = "dash-review-count";
-  line.textContent = `${queue.count} note${queue.count === 1 ? "" : "s"} to check`;
+  line.textContent = `${nounCount(queue.count, "note")} to check`;
   const open = smallButton("ph:checks Review them", "Show them in Notes, filtered to is:review", async () => {
     await switchTab("notes");
     showNotesSection("browse");
@@ -3254,7 +3358,10 @@ async function renderDigestWidget(outer) {
   const dayBox = document.createElement("div");
   const body = document.createElement("div");
   outer.replaceChildren(dayBox, body);
-  renderDayDigest(dayBox);
+  //: Awaited at the end, not dropped (dashcls-1031): the widget counted as
+  //: drawn while the day's lines were still in flight, so a revisit swapped in
+  //: a 119px body that grew to 259px a fetch later and pushed every card below.
+  const dayDrawn = renderDayDigest(dayBox);
   const showDigest = (text) => {
     const out = document.createElement("div");
     renderMarkdown(out, text);
@@ -3317,6 +3424,7 @@ async function renderDigestWidget(outer) {
     const generate = smallButton("Generate this week's digest", "", runGeneration, false);
     body.append(generate);
   }
+  await dayDrawn;
 }
 
 async function renderQuickCaptureWidget(body) {
@@ -3438,7 +3546,7 @@ async function renderHeatmapWidget(body) {
   //: in one sentence. This is a graphic drawn out of divs, so it announces
   //: as one, and the tab stop Chromium gives it still scrolls with arrows.
   grid.setAttribute("role", "img");
-  grid.setAttribute("aria-label", `Activity over the last year, ${data.total} notes`);
+  grid.setAttribute("aria-label", `Activity over the last year, ${nounCount(data.total, "note")}`);
   //: axe `scrollable-region-focusable` (serious): the grid scrolls sideways
   //: and nothing in it takes focus. An explicit stop, with a ring below
   //: (`.heatmap:focus-visible`), so the arrow keys reach the older weeks.
@@ -3480,7 +3588,7 @@ async function renderHeatmapWidget(body) {
       cell.className = `heat-cell heat-${level}`;
       const day = new Date(start);
       day.setDate(day.getDate() + index);
-      cell.title = `${day.toLocaleDateString()}, ${count} note${count === 1 ? "" : "s"}`;
+      cell.title = `${day.toLocaleDateString()}, ${nounCount(count, "note")}`;
       grid.appendChild(cell);
     });
     // The grid runs oldest → newest, so the interesting end is the right
@@ -3513,7 +3621,12 @@ async function renderHeatmapWidget(body) {
 
   const summary = document.createElement("p");
   summary.className = "muted";
-  summary.textContent = `${data.total} notes in the last year · busiest day ${data.busiest}`;
+  //: The busiest day is a date with its count ("10 March, 4 notes"), not a bare
+  //: number that reads as a number of days (sweep 1028b W15).
+  const top = new Date(`${data.start}T12:00:00`);
+  top.setDate(top.getDate() + data.counts.indexOf(data.busiest));
+  const busiest = data.busiest ? ` · busiest day ${top.toLocaleDateString(undefined, { day: "numeric", month: "long" })} (${nounCount(data.busiest, "note")})` : "";
+  summary.textContent = `${nounCount(data.total, "note")} in the last year${busiest}`;
   //: Brief 89 (statistics row 1): the page is one click from here, the
   //: grid itself and the button below, where it was three (Settings,
   //: General, What you use).
@@ -3575,7 +3688,7 @@ async function renderCategoriesWidget(body) {
   if (!waiting) return;
   const line = document.createElement("p");
   line.className = "muted night-questions";
-  line.textContent = `${waiting} note${waiting === 1 ? "" : "s"} to check where ${waiting === 1 ? "it was" : "they were"} filed.`;
+  line.textContent = `${nounCount(waiting, "note")} to check where ${waiting === 1 ? "it was" : "they were"} filed.`;
   const open = smallButton("ph:check-square Review filings", "The Notes list, filtered to the filings to check", () => showNotesFilter("is:review"));
   const review = document.createElement("div");
   //: The night widget's question line is the same shape: one recipe, no new rule.
@@ -3691,7 +3804,8 @@ function paintFadedNotes(body, items) {
 }
 
 async function renderRandomShuffle(body) {
-  const entries = await dashEntries().catch(() => []);
+  const entries = await loadSurface(body, "your notes", dashEntries);
+  if (!entries) return;
   if (!entries.length) {
     dashEmpty(body, "Save some notes and one will resurface here.", { label: "ph:plus New note", run: "capture" });
     return;
@@ -3794,7 +3908,8 @@ async function renderRandomShuffle(body) {
 // --- weighted tag cloud ------------------------------------------------------
 
 async function renderTagCloudWidget(body) {
-  const tags = await apiJson("/insights/tag-cloud").catch(() => []);
+  const tags = await loadSurface(body, "your tag cloud", () => apiJson("/insights/tag-cloud"));
+  if (!tags) return;
   if (!tags.length) {
     dashEmpty(body, "Tag some notes and your cloud grows here.", { label: "ph:tag Show untagged notes", run: "untagged" });
     return;
@@ -3808,7 +3923,7 @@ async function renderTagCloudWidget(body) {
     const item = chip(tag, "tag", () => filterNotesByTag(tag));
     item.style.fontSize = `${(0.8 + weight * 0.9).toFixed(2)}rem`;
     item.style.opacity = String(0.55 + weight * 0.45);
-    item.title = `${count} note${count === 1 ? "" : "s"} tagged “${tag}”`;
+    item.title = `${nounCount(count, "note")} tagged “${tag}”`;
     cloud.appendChild(item);
   }
   body.appendChild(cloud);
@@ -4103,6 +4218,10 @@ $("dash-edit").addEventListener("click", async () => {
   //: has rebuilt that menu (it replaces the opener).
   await renderDashboard();
   if (leaving) $("dash-more")?.querySelector("button")?.focus();
+  //: The edit line is plain text (audit 1031 N28: a hidden `role=status` is read
+  //: out when it later shows, and 25 such regions exist at once); the one
+  //: status region says what began.
+  else announce("Editing layout. Drag a card to move it, make it wide or narrow, or remove it. Done ends it.");
 });
 
 // Widget picker modal (roadmap §26): a dedicated surface alongside "Edit
@@ -4127,8 +4246,9 @@ wireBackdropClose($("features-overlay"), () => closeFeatures());
 // "no data".
 
 /** A row that opens something other than a note, styled like `.dash-list`. */
-function dashActionRow(ul, { title, meta, onOpen, hint, thumb, chip = null }) {
+function dashActionRow(ul, { title, meta, onOpen, hint, thumb, chip = null, obj = "" }) {
   const li = document.createElement("li");
+  if (obj) li.dataset.obj = obj;
   if (thumb) {
     li.classList.add("dash-has-thumb");
     li.appendChild(thumb);
@@ -4262,7 +4382,7 @@ async function renderActivityWidget(body) {
   try {
     items = await dashActivityItems();
   } catch {
-    surfaceFailed(body, "recent activity", () => renderActivityWidget(body));
+    surfaceFailed(body, "your recent activity", () => renderActivityWidget(body));
     return;
   }
   if (!items.length) {
@@ -4282,7 +4402,7 @@ async function renderActivityWidget(body) {
     //: `snapshot` count says how many it stands for).
     const run = item.snapshot ? ` (${item.snapshot} edits)` : "";
     const who = historyActorLabel(item.actor);
-    const meta = [who, dashRelativeTime(item.created_at)].filter(Boolean).join(" · ");
+    const meta = [who, relativeTime(item.created_at)].filter(Boolean).join(" · ");
     const open = entry && !entry.is_deleted
       ? () => flashEntry(entry.id)
       : item.entity_type === "document" && item.action !== "deleted"
@@ -4383,7 +4503,7 @@ async function undoActorFrom(actor, since, byId, rerender) {
       method: "POST",
       body: JSON.stringify({ actor, since, dry_run: false }),
     });
-    toast(`Put back ${done.undone} note${done.undone === 1 ? "" : "s"}.`);
+    toast(`Put back ${nounCount(done.undone, "note")}.`);
     await loadEntries().catch(() => {});
     rerender();
   } catch (error) {
@@ -4456,7 +4576,8 @@ async function renderDocumentsWidget(body) {
     const words = doc.words ? `${doc.words.toLocaleString()} word${doc.words === 1 ? "" : "s"}` : "Empty";
     dashActionRow(ul, {
       title: doc.title || "Untitled document",
-      meta: `${words} · ${dashRelativeTime(doc.updated_at)}`,
+      obj: `document:${doc.id}`,
+      meta: `${words} · ${relativeTime(doc.updated_at)}`,
       hint: "Open this document",
       onOpen: () => {
         switchTab("documents");
@@ -4489,31 +4610,12 @@ async function renderBookmarksWidget(body) {
   for (const bookmark of bookmarks.slice(0, 6)) {
     dashActionRow(ul, {
       title: bookmark.title || bookmark.url,
-      meta: dashRelativeTime(bookmark.created_at),
+      meta: relativeTime(bookmark.created_at),
       hint: `Open ${bookmark.url}`,
       onOpen: () => window.open(safeHref(bookmark.url), "_blank", "noopener,noreferrer"),
     });
   }
   body.appendChild(ul);
-}
-
-/** "3 days ago" from an ISO timestamp, with a plain date once it is old. */
-//: Read through `parseServerTime` (audit 2026-10-05, FE-16): a timestamp
-//: with no zone is the server's UTC, and `new Date` reads it as local time,
-//: so "3 hours ago" was off by the offset. The Library and the reminders
-//: read times the same way now.
-function dashRelativeTime(iso) {
-  const when = parseServerTime(iso);
-  if (!when) return "";
-  const seconds = Math.max(0, (Date.now() - when.getTime()) / 1000);
-  if (seconds < 90) return "just now";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  const days = Math.round(hours / 24);
-  if (days <= 30) return `${days} day${days === 1 ? "" : "s"} ago`;
-  return when.toLocaleDateString();
 }
 
 //: A markdown task line: `- [ ]` / `* [x]` / `1. [ ]`, with the loose leading
@@ -4587,9 +4689,9 @@ async function renderTensionsWidget(body) {
   blurb.className = "muted";
   const linked = accepted ? `${accepted} linked as contradicting` : "";
   blurb.textContent = counts.open
-    ? [`${counts.open} disagreement${counts.open === 1 ? "" : "s"} to look at`, linked].filter(Boolean).join(", ") + "."
+    ? [`${nounCount(counts.open, "disagreement")} to look at`, linked].filter(Boolean).join(", ") + "."
     : accepted
-      ? `${accepted} place${accepted === 1 ? "" : "s"} where your notes contradict each other.`
+      ? `${nounCount(accepted, "place")} where your notes contradict each other.`
       : "Nothing here can tell you where you changed your mind, until you look.";
   body.appendChild(blurb);
 
@@ -4646,7 +4748,7 @@ function dashTensionRow(tension, onGone) {
   const meta = document.createElement("span");
   meta.className = "dash-list-preview";
   const who = tension.model === "local" ? "Found without a model" : tension.model === "person" ? "Linked by you" : `Found by ${tension.model}`;
-  meta.textContent = [who, tension.computed_at ? dashRelativeTime(tension.computed_at) : ""].filter(Boolean).join(" · ");
+  meta.textContent = [who, tension.computed_at ? relativeTime(tension.computed_at) : ""].filter(Boolean).join(" · ");
   text.append(title, why, meta);
   const actions = document.createElement("span");
   actions.className = "night-fact-actions";
@@ -4724,7 +4826,7 @@ function renderOnThisDayWidget(body) {
     //: one place from the note written on this very date (Brief 85).
     const months = (thisYear - at.getFullYear()) * 12 + month - at.getMonth();
     const years = months / 12;
-    const when = Number.isInteger(years) ? `${years} year${years === 1 ? "" : "s"} ago` : `${months} month${months === 1 ? "" : "s"} ago`;
+    const when = Number.isInteger(years) ? `${nounCount(years, "year")} ago` : `${nounCount(months, "month")} ago`;
     if (seen.has(when)) continue;
     seen.add(when);
     shown.push({ entry, when });
@@ -4781,7 +4883,7 @@ function renderPaceWidget(body) {
     if (Number.isNaN(at.getTime()) || at.getTime() < first) continue;
     const index = Math.floor((at.setHours(0, 0, 0, 0) - first) / 86400000);
     if (index < 0 || index >= days.length) continue;
-    days[index].words += (String(entry.content || "").match(/\S+/g) || []).length;
+    days[index].words += wordCount(entry.content);
   }
   const total = days.reduce((sum, day) => sum + day.words, 0);
   if (!total) {

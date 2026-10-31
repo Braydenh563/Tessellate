@@ -22,6 +22,7 @@ async function renderTasks(payload) {
   const jobs = (body && body.tasks) || [];
   list.replaceChildren();
   $("tasks-empty").classList.toggle("hidden", jobs.length > 0);
+  $("tasks-count").textContent = String(jobs.length);
   for (const job of jobs) {
     const li = document.createElement("li");
     // The heading row is the job and its Quit button; everything else stacks
@@ -165,6 +166,22 @@ function paintLiveRunLines(body) {
   }
 }
 
+//: Upkeep the app runs by itself (warming a model, re-indexing) is listed in
+//: Settings, Tasks; the bell hears only when it fails (blind test 2026-10-31:
+//: "Warming up: the search model" ten times over). `QUIET_TASK_KINDS` is
+//: status.js's, keyed `job-<kind>` for the pool's jobs.
+function taskEndingIsUpkeep(item) {
+  const kind = item.kind || "";
+  return item.outcome !== "failed" && (QUIET_TASK_KINDS.has(kind) || QUIET_TASK_KINDS.has(`job-${kind}`));
+}
+
+//: The rest of the app's own jobs (model info, resurfacing, a picture read
+//: after a save): a finished one is listed in Settings, Tasks, and the bell
+//: hears it only when it failed or a person started it (audit 1031 Z4).
+function taskEndingIsAppsOwn(item) {
+  return item.outcome !== "failed" && item.origin !== "you";
+}
+
 function renderTaskHistory(history) {
   const box = $("task-history-box");
   const list = $("task-history");
@@ -179,10 +196,12 @@ function renderTaskHistory(history) {
     //: the list below, not announced: one notification per question asked
     //: would bury the ones that matter.
     if (item.origin === "you" && WATCHED_RUN_KINDS.has(item.kind)) continue;
+    if (taskEndingIsUpkeep(item)) continue;
     const key = `task:${item.kind || item.label}:${item.at}`;
     //: Its "Started:" row becomes the ending (INBOX 811 item 4): one row
     //: per run, never a stale "Started" left behind.
     if (settleStartedNotification(item, key)) continue;
+    if (taskEndingIsAppsOwn(item)) continue;
     recordNotification({
       kind: item.outcome === "failed" ? "error" : "task",
       title: item.label,

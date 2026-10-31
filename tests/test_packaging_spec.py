@@ -125,7 +125,11 @@ def test_every_file_the_page_loads_is_committed_and_bundled():
     for spec in (SPEC_PATH, LINUX_SPEC_PATH):
         assert '(str(FRONTEND_DIR), "frontend")' in spec.read_text(encoding="utf-8"), spec
     tracked = _tracked_frontend_files()
-    missing = sorted(ref for ref in _page_references() if ref not in tracked)
+    #: A reference may name a folder (MathLive's `fontsDirectory`); it counts
+    #: only when committed files sit under it.
+    folders = {t.rsplit("/", 1)[0] for t in tracked if "/" in t}
+    folders |= {f.rsplit("/", 1)[0] for f in folders if "/" in f}
+    missing = sorted(ref for ref in _page_references() if ref not in tracked and ref not in folders)
     assert not missing, f"referenced by the page but not committed under frontend/: {missing}"
 
 
@@ -150,7 +154,7 @@ def test_the_windows_build_carries_the_time_zone_database():
 # --- the build installs what the app imports ---------------------------------
 
 #: In requirements.txt and deliberately not in a packaged build: search by
-#: meaning's engine (an optional install Settings > Packages fetches; it was
+#: meaning's engine (an optional install Settings, Packages fetches; it was
 #: sentence-transformers and torch until 2026-10-27) and the test tools.
 NOT_BUNDLED = {"fastembed", "pytest", "httpx", "pytest-xdist"}
 

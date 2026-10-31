@@ -67,7 +67,7 @@ def test_the_bundle_loads_the_table_after_the_board() -> None:
 
 def test_the_palette_and_the_sheet_read_the_table() -> None:
     panes = (ROOT / "frontend" / "js" / "settings-panes.js").read_text(encoding="utf-8")
-    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    wiring = (ROOT / "frontend" / "js" / "reveal-targets.js").read_text(encoding="utf-8")
     assert "wbPaletteCommands()" in panes
     assert "renderWbShortcutSheet(" in wiring
     assert 'id="shortcut-list-whiteboard"' in INDEX

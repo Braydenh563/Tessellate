@@ -89,8 +89,12 @@ async function renderSkillToolPicker(selected = []) {
   const box = $("skill-tool-list");
   if (!box) return;
   const chosen = new Set(selected);
-  const catalog = await apiJson("/chat/tools").catch(() => []);
+  const catalog = await apiJson("/chat/tools").catch(() => null);
   box.replaceChildren();
+  if (!catalog) {
+    box.textContent = "Could not load the tools a skill can use. Close this and open it again.";
+    return;
+  }
   for (const tool of catalog) {
     const label = document.createElement("label");
     label.className = "check-row";
@@ -770,7 +774,7 @@ function skillRow(skill) {
     row.appendChild(larger);
   }
   if ((skill.steps || []).length) {
-    row.appendChild(chip(`${skill.steps.length} steps`, "item-fact"));
+    row.appendChild(chip(nounCount(skill.steps.length, "step"), "item-fact"));
   }
   if ((skill.tools || []).length) {
     row.appendChild(chip(`${skill.tools.length} tools`, "item-fact"));
@@ -814,6 +818,7 @@ async function renderSkillSettings() {
   }
   list.replaceChildren();
   for (const skill of allSkills()) list.appendChild(skillRow(skill));
+  $("skills-count").textContent = String(allSkills().length);
   renderSkillFolderLine();
   if (!$("skill-tool-list").children.length) renderSkillToolPicker([]);
   if (!$("skill-verify-tool").children.length) renderSkillVerifyPicker(null);
@@ -833,220 +838,6 @@ function renderSkillFolderLine() {
     item.className = "skill-folder-problem";
     item.textContent = problem.file ? `${problem.file}: ${problem.message}.` : `${problem.message}.`;
     line.append(document.createElement("br"), item);
-  }
-}
-
-// --- Wave O: agent-tools toggles ----------------------------------------------------
-
-// How many tool descriptions each message carries (§11a). Saved on change
-// rather than behind an Apply button, the search-engine picker taught us
-// that a control which saves nothing until later reads as broken, because
-// the next status poll paints the old value back over it.
-function renderToolFocus(current) {
-  for (const radio of document.querySelectorAll('input[name="tool-focus"]')) {
-    radio.checked = radio.value === current;
-    radio.onchange = async () => {
-      if (!radio.checked) return;
-      const status = $("tool-focus-status");
-      status.textContent = "Saving…";
-      prefsCache = await apiJson("/preferences", {
-        method: "PUT",
-        body: JSON.stringify({ tool_focus: radio.value }),
-      });
-      status.textContent =
-        radio.value === "auto"
-          ? "Each message is offered the tools it needs."
-          : "Every message is offered every tool.";
-    };
-  }
-}
-
-//: **The Phase B setting, given the control it never had.** `small_model_mode`
-//: has been on GET/PUT /preferences since the skills reform's backend half,
-//: read by the chat route on every run, with nothing anywhere in the app that
-//: could change it, so every notebook ran on `auto` whatever its owner wanted.
-//: Saved on change for the same reason the tool-focus radios above are: a
-//: control that waits for an Apply button reads as broken here, because the
-//: next preferences render paints the old value back over it.
-function renderSmallModelMode(current) {
-  const select = $("small-model-mode");
-  if (!select) return;
-  select.value = current || "auto";
-  renderSmallModelAuto();
-}
-
-//: **The run budget** (Brief 13), the same shape as the two controls above:
-//: saved on change, because a control that waits for an Apply button reads as
-//: broken here, the next preferences render paints the old value back over it.
-//: Both fields together in one request, so a person who edits one and then the
-//: other does not race two writes of the same preferences file.
-function renderRunBudget(prefs) {
-  const tokens = $("run-budget-tokens");
-  const seconds = $("run-budget-seconds");
-  if (tokens) tokens.value = String(prefs.run_budget_tokens ?? 20000);
-  if (seconds) seconds.value = String(prefs.run_budget_seconds ?? 90);
-}
-
-//: One tool's switch, saved. A refused save puts the switch back and says why:
-//: the handler used to `await` with nothing to catch it, so a 422 was an
-//: unhandled rejection and the switch stayed where the server disagreed (found
-//: by the deepflows sweep, which turned all the tools off).
-async function saveToolSwitch(check, name) {
-  const next = new Set(prefsCache.disabled_tools || []);
-  if (check.checked) next.delete(name);
-  else next.add(name);
-  try {
-    prefsCache = await apiJson("/preferences", {
-      method: "PUT",
-      body: JSON.stringify({ disabled_tools: [...next] }),
-    });
-  } catch (error) {
-    check.checked = !check.checked;
-    toast(error.message || "Couldn't save that. Try again.", true);
-    return;
-  }
-  // The "N of 51 on" count is only true until someone flips one.
-  applyToolFilter();
-}
-
-async function renderToolSettings() {
-  renderMcpSnippet();
-  const list = $("tool-list");
-  showSkeletons(list, 4, "li");
-  const [catalog, prefs] = await Promise.all([
-    apiJson("/chat/tools").catch(() => []),
-    apiJson("/preferences").catch(() => ({ disabled_tools: [] })),
-  ]);
-  clearSkeletons(list);
-  prefsCache = prefs;
-  renderToolFocus(prefs.tool_focus || "auto");
-  renderSmallModelMode(prefs.small_model_mode || "auto");
-  renderRunBudget(prefs);
-  const disabled = new Set(prefs.disabled_tools || []);
-  list.replaceChildren();
-  //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
-  //: grouped table (read, write, destructive)"), each group under an
-  //: `h4.setting-subhead` (DESIGN.md: a subdivision inside a group) that
-  //: spans both columns. Within a group, the catalog's own order.
-  for (const [key, title] of TOOL_GROUPS) {
-    const members = catalog.filter((t) => (t.group || "read") === key);
-    if (!members.length) continue;
-    const head = document.createElement("li");
-    head.className = "tool-group-head";
-    head.dataset.group = key;
-    const h4 = document.createElement("h4");
-    h4.className = "setting-subhead";
-    h4.textContent = title;
-    head.append(h4);
-    list.append(head);
-    for (const tool of members) appendToolRow(list, tool, disabled, key);
-  }
-  applyToolFilter();
-}
-
-//: The four groups, in the order a person scanning for risk reads them.
-const TOOL_GROUPS = [
-  ["read", "Reads your notebook"],
-  ["write", "Changes your notebook"],
-  ["confirm", "Asks you first"],
-  ["online", "Reaches the web"],
-];
-
-function appendToolRow(list, tool, disabled, group) {
-  const li = document.createElement("li");
-  li.dataset.group = group;
-  //: What a Tools and features row for this tool lands on (`ai-tool` in
-  //: REVEAL_TARGETS).
-  li.dataset.tool = tool.name;
-  const label = document.createElement("label");
-  label.className = "tool-row setting-check";
-  const check = document.createElement("input");
-  check.type = "checkbox";
-  check.checked = !disabled.has(tool.name);
-  // web_search is gated by the separate online opt-in, show why it's off.
-  if (tool.online && !tool.enabled && !disabled.has(tool.name)) {
-    check.checked = false;
-    check.disabled = true;
-    check.title = "Enable web search in Preferences first";
-  }
-  check.addEventListener("change", () => saveToolSwitch(check, tool.name));
-  const text = document.createElement("span");
-  const name = document.createElement("strong");
-  name.textContent = tool.name.replace(/_/g, " ");
-  text.append(name);
-  // The chips sit on their own line under the name, not after it on the
-  // same one: the switch is centred on the name's line (the grid in
-  // 03-dashboard-widgets.css), and a chip that wrapped would have made
-  // that line two lines tall and pulled the switch off the name again.
-  if (tool.destructive || tool.online) {
-    const tags = document.createElement("span");
-    tags.className = "tool-tags";
-    if (tool.destructive) tags.append(chip("confirms first", "item-label is-warn"));
-    if (tool.online) tags.append(chip("online", "item-label"));
-    text.append(tags);
-  }
-  const desc = document.createElement("span");
-  desc.className = "muted tool-desc";
-  desc.textContent = tool.description;
-  desc.title = tool.description || ""; // clamped to two lines; the whole of it on hover
-  // The description goes *inside* the label's text column, not beside the
-  // label in the <li>. That is what lets this row be `.setting-check`'s
-  // grid, name and description stacked in column one, switch hard right , 
-  // instead of a flex row whose switch tracked the length of each name.
-  // It also makes the description part of the control's own hit area, the
-  // way the hint under every other setting already is.
-  text.append(desc);
-  label.append(check, text);
-  li.append(label);
-  // Matched against by the filter below. Stored on the row rather than
-  // re-read from the DOM on every keystroke, and lower-cased once here
-  // instead of once per row per keystroke.
-  li.dataset.search = `${tool.name} ${tool.description || ""}`.toLowerCase().replace(/_/g, " ");
-  list.appendChild(li);
-}
-
-//: Narrow a fifty-one item list, and say how many are on.
-//:
-//: The first audit of Settings measured this section at **5,708px**, by some
-//: way the longest scroll in the app, with every tool a name plus a
-//: paragraph of description. Finding one meant scrolling past fifty others,
-//: and nothing anywhere answered the question the list actually raises: how
-//: many of these are switched on?
-//:
-//: Filtering hides rows rather than re-rendering them, so a checkbox keeps
-//: its state and its listener while you type. Re-rendering would also lose
-//: focus from the filter field on every keystroke.
-function applyToolFilter() {
-  const list = $("tool-list");
-  const box = $("tool-filter");
-  const count = $("tool-count");
-  const empty = $("tool-filter-empty");
-  if (!list) return;
-  const needle = (box?.value || "").trim().toLowerCase();
-  const rows = [...list.querySelectorAll(":scope > li[data-tool]")];
-  let shown = 0;
-  const groupsShown = new Set();
-  for (const row of rows) {
-    const hit = !needle || (row.dataset.search || "").includes(needle);
-    row.classList.toggle("hidden", !hit);
-    if (hit) {
-      shown++;
-      groupsShown.add(row.dataset.group);
-    }
-  }
-  //: A group's head goes with its last matching row.
-  for (const head of list.querySelectorAll(":scope > li.tool-group-head")) {
-    head.classList.toggle("hidden", !groupsShown.has(head.dataset.group));
-  }
-  empty?.classList.toggle("hidden", shown > 0 || !rows.length);
-  if (count) {
-    // Two different questions, so two different answers: with no filter the
-    // useful number is how many are enabled; while filtering it is how many
-    // the search actually found.
-    const on = rows.filter((r) => r.querySelector("input[type=checkbox]")?.checked).length;
-    count.textContent = needle
-      ? `${shown} of ${rows.length}`
-      : `${on} of ${rows.length} on`;
   }
 }
 
@@ -1153,14 +944,19 @@ function blobToBase64(blob) {
 //: file (tests/test_locked_downloads.py). The server's own
 //: `Content-Disposition` names the file when it sends one, since it knows the
 //: real extension; `fallbackName` covers a route that does not.
-async function downloadFromApi(path, fallbackName) {
+async function downloadFromApi(path, fallbackName, unlocked = false) {
   try {
     const response = await api(path);
     const disposition = response.headers.get("Content-Disposition") || "";
     const named = /filename="([^"]+)"/i.exec(disposition);
     await saveFile(named ? named[1] : fallbackName, await response.blob());
   } catch (error) {
-    if (!error?.isLockout) toast(error.message || "Couldn't download that.", true);
+    //: A locked private note answers 409 "Unlock first." (INBOX 1437): ask for
+    //: the password through the usual prompt, then download once.
+    if (!unlocked && error?.detail === "Unlock first." && (await ensureVaultOpen())) {
+      return downloadFromApi(path, fallbackName, true);
+    }
+    if (!error?.isLockout && error?.detail !== "Unlock first.") toast(error.message || "Couldn't download that.", true);
   }
 }
 
@@ -1282,7 +1078,7 @@ function fillBatchCategories(hostId = "batch-category-host") {
   );
   items.push(
     makeMenuItem("ph:plus New category…", "Move them to a category you name now", async () => {
-      const category = await promptDialog("New category name:", "", { confirmLabel: "Move" });
+      const category = await promptDialog("New category name", "", { confirmLabel: "Move" });
       if (category) await batchMove(category);
     })
   );
@@ -1316,6 +1112,8 @@ function enterSelectMode() {
 
 function exitSelectMode() {
   selectMode = false;
+  //: The batch bar was where the keyboard was; the Select control (or, when it is folded away, the first row) takes it (audit 1031 N11).
+  restoreFocusTo(() => ($("select-btn").offsetParent ? $("select-btn") : document.querySelector("#entry-list > li")));
   selectedIds.clear();
   hide("batch-bar");
   setActiveChoice($("select-btn"), false);
@@ -1376,7 +1174,7 @@ function batchPut(body) {
 }
 
 function batchNoun(ids) {
-  return `${ids.length} note${ids.length === 1 ? "" : "s"}`;
+  return nounCount(ids.length, "note");
 }
 
 async function batchFavourite(on) {
@@ -1448,7 +1246,7 @@ async function batchDelete() {
     for (const id of ids) await api(`/entries/${id}`, { method: "DELETE" });
     await loadEntries();
   };
-  const action = pushUndo(`Moved ${ids.length} note${ids.length === 1 ? "" : "s"} to the bin`, restoreAll, binAll);
+  const action = pushUndo(`Moved ${nounCount(ids.length, "note")} to the bin`, restoreAll, binAll);
   toastAction(`Moved ${ids.length} to the bin.`, "Undo", async () => {
     settleUndoFromToast(action);
     await restoreAll();

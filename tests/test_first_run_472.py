@@ -25,7 +25,7 @@ def test_no_ai_is_a_calm_off_state_not_a_warning():
     """The supported no-AI state drew an amber "!" (a 44px amber circle in
     the phone's top bar, the loudest thing on the first screen). It is
     level "off" now: the neutral chip colours and a drawn ring, the same
-    "not running" mark Settings > Models uses, and the popup names where a
+    "not running" mark Settings, Models uses, and the popup names where a
     model is connected."""
     js = frontend_text("status.js")
     # UX-17 (audit 2026-10-05): "Everything works" beside "AI off" read as a

@@ -1,4 +1,4 @@
-"""In-memory ring buffer of log records for the Settings → Logs viewer.
+"""In-memory ring buffer of log records for the Settings, Logs viewer.
 
 Keeps the last few hundred records from the app AND uvicorn so the user
 can see what the server is doing without hunting for a terminal. Memory
@@ -94,7 +94,7 @@ def sanitise(text: str) -> str:
 def safe_value(value: object, limit: int = MAX_VALUE_CHARS) -> str:
     """Make one untrusted value safe to interpolate into a log message.
 
-    `sanitise` runs at the ring buffer, which protects the Settings → Logs
+    `sanitise` runs at the ring buffer, which protects the Settings, Logs
     viewer and nothing else: the terminal, and any handler a user attaches, see
     the raw record. Anything the user typed or the internet said therefore has
     to be cleaned at the *call site*, this is that call.

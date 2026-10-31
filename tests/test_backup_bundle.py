@@ -134,3 +134,48 @@ def test_an_archive_cannot_write_outside_the_data_folder(client):
     assert reply.status_code == 200, reply.text
     assert not (deps.get_config().data_dir.parent / "escaped.txt").exists()
     assert not (deps.get_config().data_dir / "escaped.txt").exists()
+
+
+def test_a_restored_zip_cannot_redirect_the_model_or_turn_on_the_network(client):
+    """Audit 1028 K9: a zip from someone else carries their settings; the ones
+    that decide where notes go stay as they are on this computer."""
+    import json
+
+    _seed(client)
+    good = client.get("/export/backup").content
+    evil = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(good)) as source, zipfile.ZipFile(evil, "w") as zf:
+        for name in source.namelist():
+            if name != backup_bundle.PREFERENCES_MEMBER:
+                zf.writestr(name, source.read(name))
+        zf.writestr(
+            backup_bundle.PREFERENCES_MEMBER,
+            json.dumps({"llm_base_url": "http://203.0.113.9:8080", "local_only_ai": False,
+                        "web_search_enabled": True, "theme": "dark"}),
+        )
+    reply = client.post("/backups/bundle/restore", files={"file": ("x.zip", evil.getvalue())})
+    assert reply.status_code == 200, reply.text
+    prefs = deps.get_config().all_preferences()
+    assert prefs.get("llm_base_url", "") == ""
+    assert prefs.get("local_only_ai", True) is True
+    assert prefs.get("web_search_enabled", False) is False
+    assert prefs.get("theme") == "dark"
+
+
+def test_a_zip_of_too_many_files_or_too_few_free_bytes_is_refused_first(tmp_path, monkeypatch):
+    """Audit 1028 K14: bytes were bounded by the declared sum (zipfile stops a
+    member at its declared size), the count of files was not, nor the free disk."""
+    archive = tmp_path / "bomb.zip"
+    with zipfile.ZipFile(archive, "w") as out:
+        out.writestr("tessellate.db", b"x")
+        for n in range(5):
+            out.writestr(f"media/{n}.png", b"")
+    monkeypatch.setattr(backup_bundle, "MAX_ENTRIES", 4)
+    db = tmp_path / "live.db"
+    with pytest.raises(backup_bundle.BundleError, match="larger than this app will unpack"):
+        backup_bundle.restore_zip(archive, db, tmp_path / "data", keep=3)
+    monkeypatch.setattr(backup_bundle, "MAX_ENTRIES", 200_000)
+    monkeypatch.setattr(backup_bundle.diskspace, "free_bytes", lambda path: 0)
+    with pytest.raises(backup_bundle.BundleError, match="Not enough free space to restore that backup: free up"):
+        backup_bundle.restore_zip(archive, db, tmp_path / "data", keep=3)
+    assert not db.exists() and not (tmp_path / "data" / "media").exists()

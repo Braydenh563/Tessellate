@@ -49,7 +49,8 @@ SEEDS = {
 }
 #: Whole acts that do their write and put the step on the stack themselves, so
 #: a caller that hands them the work is covered.
-WRAPPERS = {"toastEntityMerge", "graphRemoveLink", "wbBoardMadeStep", "graphPinStep", "wbBoardPutStep", "wbLibPairStep"}
+#: `announceSavedNote` pushes the made note's Undo itself (quick-note.js).
+WRAPPERS = {"announceSavedNote", "toastEntityMerge", "graphRemoveLink", "wbBoardMadeStep", "graphPinStep", "wbBoardPutStep", "wbLibPairStep"}
 #: Closures that are the inverse of an act, named for it. They take the
 #: coverage of the function that owns them.
 INVERSE_NAMES = {
@@ -446,6 +447,9 @@ def uncovered() -> dict[str, list[int]]:
 
 
 EXEMPT: dict[str, str] = {
+    "capture-card-more.js:askCaptureSuggestions": "read: asks for tag suggestions for the capture card's words (/entries/suggest-tags); writes nothing",
+    "capture-card-more.js:uploadCapturePictures": "send: part of saving the capture card; stores the pictures the new note links; the note's own Undo (announceSavedNote) takes the note back",
+    "quick-note.js:createNoteSafely": "inverse: the one door for saving a new note; each caller offers the saved note's Undo (announceSavedNote, pushEntryCreateUndo, the paste toast's Bin); a held note is not on the server yet",
     "chat-attach.js:offerReminder": "read: reads a reminder out of the message (/reminders/suggest); the chip that makes one pushes Undo",
     "lightbox-view.js:openLightbox": "auth: a two-minute link to one file for the system browser; no user data",
     "statistics.js:ask": "read: a counted answer to a question about the notebook (readOnly); nothing is written",
@@ -512,6 +516,8 @@ EXEMPT: dict[str, str] = {
     "tidy.js:tidyRunLinkReasons": "job: starts a background pass",
     "meetings.js:nameRecordingSpeakers": "read: asks the model to name speakers, shown for review",
     "library.js:ocrRunRegion": "read: reads a region of a picture, shows the text for review",
+    "chat-edit.js:chatTooLong": "send: saves an over-long message as a note on the person's own click so it can be asked about; deleting it in Notes is the way back",
+    "chat-edit.js:regenerateFrom": "send: cuts the turns after the question it re-asks, as Regenerate always replaced them; asks first when an answer wrote",
     "chat.js:compressChatContext": "read: asks the model to shorten the chat's context; writes nothing",
     "graph.js:graphPinSave": "inverse: the one door for pin writes; each caller pushes its pin step (graphPinStep) and graphSetPin replays it for Undo and Redo",
     "whiteboard.js:wbRestoreLinks": "inverse: draws a deleted item's links again for the board history's own Undo",
@@ -522,10 +528,13 @@ EXEMPT: dict[str, str] = {
     "chat-undo.js:chatPut": "inverse: the chat undo helpers' own PUT",
     "batch-space.js:batchSpaceRequest": "inverse: the move request itself; batchMoveToSpace pushes the step with the answer's old places",
     "settings-controls.js:restoreFullBackup": "job: a confirmed restore that snapshots the current notebook first; the snapshot is the way back",
-    "meetings.js:meetingTakeAppend": "job: uploads the audio chunks of a take in progress; Discard is the take's own undo",
+    "meetings.js:meetingTakeFlush": "job: uploads the audio chunks of a take in progress; Discard is the take's own undo",
     "media.js:toggleDictation": "read: transcribes speech into the box being typed in",
+    "documents.js:docImageUpload": "send: uploads the picked image; the embed it writes is in the document's own undo (Ctrl+Z takes it out)",
     "documents.js:docAiReview": "read: asks the model to check a document, shows a result",
     "capture-ask.js:streamChatEvents": "send: streams the Ask box's answer; the question is kept in Ask history",
+    "account-recovery.js:openResetLogs": "auth: sign-in, recovery or lock; no user data",
+    "account-recovery.js:requestResetCode": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:onMake": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:saveRecoveryKeyFile": "auth: sign-in, recovery or lock; no user data",
     "account-recovery.js:submit": "auth: sign-in, recovery or lock; no user data",
@@ -561,7 +570,6 @@ EXEMPT: dict[str, str] = {
     "chat-attach.js:offerFollowups": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:openExtractPreview": "read: reads or asks the model; shows a result, writes nothing",
     "chat-attach.js:saveFollowups": "telemetry: stores suggested follow-up chips",
-    "chat-attach.js:chatSendTurn": "send: a chat message, kept by the chat's own turn history (was sendChatMessage, INBOX 1321)",
     "chat-attach.js:writeCheckpoint": "send: a chat message, kept by the chat's own turn history",
     "chat.js:setResponseMode": "settings: a setting with its own Reset or the settings history",
     "chat.js:setWebSearxngRunning": "job: starts or stops work or a model; deletes no user data",
@@ -583,7 +591,7 @@ EXEMPT: dict[str, str] = {
     "documents.js:ensureDocumentExists": "board: creates the document being typed into; the editor's history starts there",
     "documents.js:openDocAiHistory": "inverse: reverts an AI edit from its log, which is itself the undo",
     "documents.js:runDocAiEdit": "read: asks the model for a revision shown for review; accepting it pushes pushDocAiUndo",
-    "documents.js:saveDocument": "board: the document editor's autosave; typing is the editor's own docUndo history",
+    "documents.js:docSaveOnce": "board: the document editor's autosave; typing is the editor's own docUndo history",
     "editor.js:inlineAiSubmit": "read: asks the model for a revision shown for review; accepting it is an editor change with the document's own history",
     "embed-choices.js:embedChoiceInstall": "job: starts or stops work or a model; deletes no user data",
     "embed-choices.js:embedChoiceUninstall": "job: starts or stops work or a model; deletes no user data",
@@ -603,6 +611,7 @@ EXEMPT: dict[str, str] = {
     "lightbox.js:renderInlineAction": "read: asks the model about a note",
     "margin-reader.js:marginAsk": "read: reads or asks the model; shows a result, writes nothing",
     "meetings.js:meetingSummarise": "read: asks the model for a summary",
+    "meetings.js:meetingTakeFinish": "send: closes the take started by meetingTakeBegin; the finished recording is the step (Undo bins it)",
     "meetings.js:meetingTakeBegin": "job: opens the recording's object when a take starts; the finished recording is the step (Undo bins it)",
     "model-bench.js:benchRow": "settings: a setting with its own Reset or the settings history",
     "model-bench.js:runModelBench": "job: starts or stops work or a model; deletes no user data",
@@ -667,10 +676,10 @@ EXEMPT: dict[str, str] = {
     "personas-pane.js:renderPersonas": "read: reads or asks the model; shows a result, writes nothing",
     "personas-pane.js:savePersonaList": "settings: a setting with its own Reset or the settings history",
     "shell-reminders.js:refreshMediaSession": "auth: sign-in, recovery or lock; no user data",
-    "skills.js:onchange": "settings: a setting with its own Reset or the settings history",
+    "settings-controls.js:onchange": "settings: a setting with its own Reset or the settings history",
     "skills.js:saveFile": "job: writes an export the person asked for to the exports folder, as a download does; it deletes nothing",
     "skills.js:saveSkillList": "settings: a setting with its own Reset or the settings history",
-    "skills.js:saveToolSwitch": "settings: a setting with its own Reset or the settings history",
+    "settings-controls.js:saveToolSwitch": "settings: a setting with its own Reset or the settings history",
     "spaces-find.js:saveTemplateList": "settings: a setting with its own Reset or the settings history",
     "status.js:insightSend": "settings: a verdict on an insight, either way reversible by the other verdict",
     "status.js:setChatMode": "settings: a setting with its own Reset or the settings history",

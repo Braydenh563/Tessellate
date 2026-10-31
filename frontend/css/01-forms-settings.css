@@ -304,10 +304,11 @@ input[type="datetime-local"] {
   resize: none;
 }
 /* The placeholder was inheriting the body colour at full strength in some
-   themes, so an empty box read as a filled one. */
+   themes, so an empty box read as a filled one. `--muted` whole: dimmed it was
+   3.68:1 on the dock's search field (audit 1029 G21). */
 ::placeholder {
   color: var(--muted);
-  opacity: 0.85;
+  opacity: 1;
 }
 /* A one-row box that grows with what is typed (`rows="1"`: chat, the
    palette's agent line, magic add) keeps its hint on that one row: the
@@ -876,26 +877,6 @@ input[type="range"] {
 .checkbox-label input[type="checkbox"].sr-only {
   min-width: 0;
   min-height: 0;
-}
-/* The update-available dialog's "View release" is a real <a>, not a button
-   with a navigate-on-click handler (right-click/middle-click/Ctrl-click all
-   need to keep working), so it can't pick up `button`/`button.small`'s own
-   rules above: this is that same look, on an element those selectors
-   don't reach. */
-.update-dialog-link {
-  display: inline-block;
-  padding: 0.25rem 0.8rem;
-  border-radius: var(--radius-lg);
-  background: var(--accent-surface);
-  color: var(--on-accent);
-  font-size: var(--text-md);
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: var(--shadow-accent-glow);
-}
-.update-dialog-link:hover,
-.update-dialog-link:is(:focus-visible, :has(:focus-visible)) {
-  background: var(--accent-surface-hover);
 }
 .row {
   display: flex;
@@ -1874,13 +1855,17 @@ input.md-task-inline:disabled,
    The switches' pattern (DESIGN.md, Hit targets): a transparent overhang,
    centred, so the row of pills keeps its density and a click 2px above or
    below still lands. Never shorter than the chip itself. */
-.chip-interactive::after {
+.chip-interactive::after,
+.entry-more::after,
+#entry-list .menu-wrap > button::after {
   content: "";
   position: absolute;
-  inset-inline: 0;
   /* No transform: a later rule resets pseudo-element transforms, and the
-     overhang must not depend on it. Half the shortfall, never negative. */
+     overhang must not depend on it. Half the shortfall, never negative, on
+     both axes: the same pattern serves a link pill's menu button (21px with
+     a mouse) and "Show more" (14px high), both measured under the floor. */
   inset-block: min(0px, calc(50% - var(--target-min) / 2));
+  inset-inline: min(0px, calc(50% - var(--target-min) / 2));
 }
 .chip-interactive:hover {
   background-image: linear-gradient(var(--hover-veil), var(--hover-veil));
@@ -2526,21 +2511,13 @@ button:not(.ghost) > .spinner {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--card);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
+  /* Bare at rest, opaque only while stuck (08-consistency.css, INBOX 1489). */
+  background: none;
 }
-/* `.card button` switches a control's blur off (03-dashboard-widgets.css);
-   this heading is a sticky strip, the one blurred element on the page. */
-.card .contents-heading {
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-}
-/* The hover tint over the card's ground, never the tint alone: the heading is
-   sticky, and a 7% wash on its own turns into a window when rows scroll by. */
+/* The hover tint; while stuck it sits over the opaque ground (08-consistency.css). */
 .contents-heading:hover,
 .contents-heading:focus-visible {
-  background: linear-gradient(var(--row-hover-bg), var(--row-hover-bg)), var(--card);
+  background: var(--row-hover-bg);
 }
 .contents-heading-name {
   flex: 0 1 auto;
@@ -3576,10 +3553,15 @@ mark.global-find-hit.global-find-current {
   white-space: nowrap;
 }
 .theme-swatch {
+  display: flex;
+  align-items: center;
+  /* The eye is the tile's corner (settings-controls-lazy.css), so the dots stay left of it. */
+  justify-content: flex-start;
+  padding-inline-start: var(--space-2);
   height: 38px;
   /* Concentric: a surface inside its theme card (DESIGN.md rule 3, op4-1005). */
   border-radius: var(--radius-inner);
-  border: 1px solid var(--border);
+  background: var(--field-inset);
   box-sizing: border-box;
 }
 /* Scroll lock: while any overlay is open the page behind must not move.
@@ -4487,7 +4469,7 @@ html.modal-open body {
   margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
 }
-/* Advanced response settings (Settings → Models). One row per sampling knob:
+/* Advanced response settings (Settings, Models). One row per sampling knob:
    a label with a badge saying where the value came from, the plain-language
    help, then the slider, its readout and a per-row reset. */
 .sampling-row {
@@ -4852,7 +4834,7 @@ html.modal-open body {
 select {
   font-size: var(--text-md);
 }
-/* The "worth rebuilding now" line in Settings → Search index. An accent
+/* The "worth rebuilding now" line in Settings, Search index. An accent
    ground rather than a warning colour: nothing is broken, there is simply
    something useful to do. See `renderReindex` in ai-tools.js. */
 /* The box itself is `.notice.notice-warn` now (08-consistency.css, the recipe
@@ -5630,7 +5612,7 @@ select {
 #learned-switches .learned-master {
   margin-bottom: var(--space-3);
 }
-/* --- a model per feature (Settings → Models) ---------------------------------
+/* --- a model per feature (Settings, Models) ---------------------------------
    One row per feature: what it is, then what it runs on, then the way back to
    the default. Three columns rather than a `.row` of loose controls because
    the whole point of the list is comparison down the column: which of these is
@@ -6277,12 +6259,7 @@ select {
    section is shown by dropping `.hidden`, so the animation restarts each time.
    CSS only; Interface animations off and reduced motion zero it globally. */
 #settings-modal .settings-section:not(.hidden) {
-  animation: settings-pane-in var(--motion-slow) var(--ease-out);
-}
-@keyframes settings-pane-in {
-  from {
-    opacity: 0;
-  }
+  animation: ui-fade var(--ui-base) var(--ease-out);
 }
 
 /* A finished job's Logs button stays top right on one line (BACKLOG). */

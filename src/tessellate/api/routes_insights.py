@@ -7,7 +7,9 @@ import json
 import random
 import re
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from concurrent.futures import Future
+from concurrent.futures import TimeoutError as FutureTimeout
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -15,10 +17,10 @@ from sqlalchemy import func, select
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from tessellate.ai import greeting_compose, librarian
+from tessellate.ai import backend_hint, greeting_compose, librarian
 from tessellate.ai.answer_trim import trim_assistant_padding
 from tessellate.ai.ollama_client import OllamaError
-from tessellate.core import deps
+from tessellate.core import background, deps
 from tessellate.core.config import days_from_today, user_now
 from tessellate.core.database import Category, Entry, utcnow
 from tessellate.core.deps import get_session
@@ -187,9 +189,44 @@ def greeting(block: str = "morning", session: Session = Depends(get_session)) ->
     }
 
     ollama = deps.get_ollama()
-    if not ollama.is_running():
+    if not backend_hint.running(ollama):
         return fallback
+    return _greeting_within(config, ollama, block, fallback)
 
+
+#: How long the banner waits for the model's greeting before it shows the
+#: composed one (audit 1030 A39: a hung model held the route 4,005 ms).
+GREETING_WAIT = 0.5
+_GREETING_FLIGHT: dict[str, Future] = {}
+
+
+def _greeting_within(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
+    """The model's greeting if it comes within `GREETING_WAIT`, else the
+    composed one now. A call that runs late is not cancelled: the next
+    request takes its result, and while one is still running no second is
+    started, so a hung model costs one thread and no wait."""
+    flight = _GREETING_FLIGHT.get(block)
+    if flight is not None:
+        if not flight.done():
+            return fallback
+        _GREETING_FLIGHT.pop(block, None)
+        try:
+            return flight.result()
+        except Exception:  # noqa: BLE001  # a failed late call is the composed greeting
+            return fallback
+    flight = background.future("greeting", _ai_greeting, config, ollama, block, fallback)
+    _GREETING_FLIGHT[block] = flight
+    try:
+        result = flight.result(timeout=GREETING_WAIT)
+    except FutureTimeout:
+        return fallback
+    except Exception:  # noqa: BLE001  # any model failure degrades to the composed greeting
+        result = fallback
+    _GREETING_FLIGHT.pop(block, None)
+    return result
+
+
+def _ai_greeting(config, ollama, block: str, fallback: dict) -> dict:  # noqa: ANN001
     # The name is read from preferences here rather than trusted from the
     # client, so there is exactly one source of truth for it.
     name = str(config.get_preference("display_name", "") or "").strip()
@@ -423,23 +460,29 @@ def today_line(seed: int = 0, session: Session = Depends(get_session)) -> dict:
     from tessellate.ai import composer_voice
 
     cats = {c.id: c.name for c in session.scalars(select(Category)).all()}
-    rows = session.scalars(
-        select(Entry)
-        .where(Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
-        .order_by(Entry.created_at.desc())
-        .limit(120)
-    ).all()
+    shown = (Entry.is_deleted == False, Entry.is_private == False, Entry.is_draft == False, Entry.is_board == False)  # noqa: E712
+    rows = session.scalars(select(Entry).where(*shown).order_by(Entry.created_at.desc()).limit(120)).all()
+    #: The 120 rows are the sample the line names notes from; how many were
+    #: written today and yesterday is counted in SQL, so a bulk import is not
+    #: capped at the sample's size (audit 1028 S8).
+    today = user_now(deps.get_config()).date()
+    day = func.date(Entry.created_at)
+    asked = [today.isoformat(), (today - timedelta(days=1)).isoformat()]
+    counts = {
+        date.fromisoformat(d): n
+        for d, n in session.execute(select(day, func.count()).where(*shown, day.in_(asked)).group_by(day)).all()
+    }
     notes = [
         {
             "id": e.id,
             "content": e.content or "",
             "created_at": e.created_at.date().isoformat() if e.created_at else "",
-            "tags": manager.entry_tags(e),
+            "tags": manager.shown_tags(e),
             "category": "" if cats.get(e.category_id, "").lower().startswith("uncategori") else cats.get(e.category_id, ""),
         }
         for e in rows
     ]
-    line = composer_voice.today_line(notes, today=user_now(deps.get_config()).date(), seed=seed)
+    line = composer_voice.today_line(notes, today=today, seed=seed, counts=counts)
     if not line:
         #: An empty notebook is welcomed in words (CHAT_PLAN 1353), not left blank.
         from tessellate.api import chat_extra
@@ -467,7 +510,7 @@ class InsightVerdict(BaseModel):
 @router.post("/confirm", status_code=201)
 def confirm_insight(body: InsightVerdict, session: Session = Depends(get_session)) -> dict:
     """Confirm: the insight is written as a fact the person vouched for,
-    "confirmed by you, <date>", and said that way from the next turn on."""
+    "..., as you told me on <date>.", and said that way from the next turn on."""
     from tessellate.ai import insights
 
     try:

@@ -69,3 +69,56 @@ def test_only_an_unnamed_empty_document_counts_as_untouched():
     script = source() + f"\nprocess.stdout.write(JSON.stringify({json.dumps(cases)}.map(([t, x]) => docIsUntouched(t, x))));"
     out = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
     assert json.loads(out) == [True, True, False, False, True, True, True, False]
+
+
+def test_an_emptied_title_waits_for_the_field_to_be_left():
+    """D17 (audit 1028): clearing the title to retype it used to autosave the
+    document as "Untitled document N" while the field stayed blank, so the
+    list and the field disagreed. The autosave keeps the stored title; leaving
+    the field, or a save by hand, fills it."""
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    start = text.index("function docFillBlankTitle()")
+    fill = text[start:text.index("\n}\n", start) + 3]
+    save = text[text.index("async function docSaveOnce(silent)"):]
+    save = save[:save.index("const content = docText();")]
+    assert "if (!silent) docFillBlankTitle();" in save
+    assert "currentDoc.title || docNextName()" in save
+    assert 'addEventListener("blur", () => { if (docFillBlankTitle()) markDocDirty(); })' in text
+    script = source() + fill + """
+const field = { value: "" };
+const $ = () => field;
+let docs = [{ title: "Untitled document" }, { title: "Trip" }];
+const docNextName = () => docUntitledName(docs.map((d) => d.title));
+const out = [];
+let currentDoc = { title: "Trip" };
+out.push([docFillBlankTitle(), field.value]);
+currentDoc = { title: "Untitled document 4" }; field.value = "  ";
+out.push([docFillBlankTitle(), field.value]);
+field.value = "Kept";
+out.push([docFillBlankTitle(), field.value]);
+process.stdout.write(JSON.stringify(out));
+"""
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    assert json.loads(got) == [[True, "Untitled document 2"], [True, "Untitled document 4"], [False, "Kept"]]
+
+
+def test_a_failed_drop_puts_the_document_back_in_the_list():
+    """D36 (audit 1028): a refused DELETE left the row on the server while
+    the list forgot it."""
+    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    start = text.index("async function docDropIfUntouched(")
+    body = text[start: text.index("\n}\n", start)]
+    assert '.catch(() => { docs = [doc, ...docs]; })' in body
+    assert body.index("docs = [doc, ...docs]") < body.index("renderDocList()")
+
+
+def test_a_failed_save_says_so_once_with_try_again():
+    """D34 (audit 1028): a failed save was two words in the status bar."""
+    text = DOCUMENTS_JS.read_text(encoding="utf-8")
+    start = text.index("async function docSaveOnce(silent)")
+    body = text[start: text.index("\n}\n", start)]
+    assert "if (!docSaveFailedSaid) {" in body and 'action: ["Try again", () => saveDocument({ silent: false })]' in body
+    assert body.index("docSaveFailedSaid = false;") < body.index('$("doc-saved").textContent = "Saved";')

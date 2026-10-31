@@ -27,6 +27,8 @@ import re
 from collections.abc import Callable
 from datetime import date, datetime
 
+from tessellate.ai import note_recency, recognise
+from tessellate.ai.composer_frame import note_title
 from tessellate.ai.realise import count_noun, cut_title, join_items, named_lead
 
 #: An app address for each kind of thing a tool names (router.js
@@ -67,14 +69,9 @@ def link(label: str, address: str) -> str:
     return f"[{words}]({address})"
 
 
-def _title(content: object, size: int = 60) -> str:
-    lines = [ln.strip() for ln in str(content or "").splitlines() if ln.strip()]
-    if not lines:
-        return "Untitled"
-    #: A title written with inline Markdown ("**Plan**") is shown as words:
-    #: the link text is not rendered a second time.
-    plain = re.sub(r"(\*\*|__|~~|\*|`)(.+?)\1", r"\2", lines[0].lstrip("#").strip())
-    return cut_title(plain.strip("*_`~ ") or "Untitled", size)
+def _name(content: object) -> str:
+    """A note's name in a row ("Untitled" for one with no words): the one reader's."""
+    return note_title(content, size=60) or "Untitled"
 
 
 def _gist(text: object, size: int = 90) -> str:
@@ -96,7 +93,7 @@ def _note_row(note: dict, extra: str = "") -> str:
     where = f": {gist}" if gist else ""
     where += f" · {filed}" if filed else ""
     where += f" · {', '.join('#' + t for t in tags[:3])}" if tags else ""
-    return f"- {link(_title(text), note_at(note.get('id') or note.get('note_id')))}{where}{extra}"
+    return f"- {link(_name(text), note_at(note.get('id') or note.get('note_id')))}{where}{extra}"
 
 
 def _table(headers: list[str], rows: list[list[str]]) -> str:
@@ -228,6 +225,20 @@ def _list_notes(result: dict, args: dict) -> Said:
     return _found_notes(lead, notes, total, "You have no notes that fit yet.")
 
 
+def matched(result: dict) -> int:
+    """The notes a `search_notes` result matched: not the ones only connected
+    to a match (`why`), and none when the search fell back to the newest."""
+    if result.get("search_mode") == "recent":
+        return 0
+    rows = [n for n in result.get("notes") or [] if isinstance(n, dict)]
+    return max(len([n for n in rows if not n.get("why")]), int(result.get("found") or 0) - len([n for n in rows if n.get("why")]))
+
+
+def _total(result: dict, notes: list[dict]) -> int:
+    """The count a search says: the notes that matched, or the newest it fell back to."""
+    return int(result.get("found") or len(notes)) if result.get("search_mode") == "recent" else matched(result)
+
+
 def _search_notes(result: dict, args: dict) -> Said:
     notes = [n for n in result.get("notes") or [] if isinstance(n, dict) and not n.get("why")]
     #: The words searched for: the call's own, else its label's quote
@@ -235,10 +246,15 @@ def _search_notes(result: dict, args: dict) -> Said:
     said = re.search(r"“([^”]+)”", str(result.get("label") or ""))
     query = str(args.get("query") or (said.group(1) if said else "")).strip()
     about = f" about “{query}”" if query else ""
-    total = int(result.get("found") or len(notes))
+    total = _total(result, notes)
     if result.get("search_mode") == "recent":
+        #: The count said is the count shown: "ten newest, here are the first
+        #: eight" was two sentences for one fact (audit 1030 Z35).
+        notes, total = notes[:8], min(total, 8)
         newest = f"your {count_word_of(len(notes))} newest notes" if len(notes) > 1 else "your newest note"
-        lead = f"Nothing matched “{query}”, so here are {newest} instead." if query else f"Here are {newest}."
+        #: "latest" and "last three" ask for the newest notes: nothing failed to match.
+        asked_newest = not query or note_recency.recency(query, bare=True) is not None
+        lead = (f"Here are {newest}." if len(notes) > 1 else f"Here is {newest}.") if asked_newest else f"Nothing matched “{query}”; here are {newest}."
         return _found_notes(lead, notes, total, f"I found no notes{about}.")
     return _found_notes(f"I found {count_noun(total, 'note')}{about}.", notes, total, f"I found no notes{about}. Try other words, or browse them in Notes.")
 
@@ -251,7 +267,7 @@ def _filed_where(result: dict) -> str:
 
 
 def _get_note(result: dict, args: dict) -> Said:
-    title = _title(result.get("content"))
+    title = _name(result.get("content"))
     where = _filed_where(result)
     one_line = len([ln for ln in str(result.get("content") or "").splitlines() if ln.strip()]) <= 1
     lead = ("Here is the note." if one_line else f"Here is {link(title, note_at(result.get('id')))}.") + (where + "." if where else "")
@@ -287,7 +303,7 @@ def _path(result: dict, args: dict) -> Said:
         return "Those two notes are not connected, not even through other notes.", "", _chips(("Open the graph", GRAPH))
     hops = int(result.get("hops") or len(steps) - 1)
     lead = "Those two notes are linked directly." if hops == 1 else f"Those two notes connect in {count_noun(hops, 'step')}."
-    body = "\n".join(f"{i}. {link(_title(s.get('preview')), note_at(s.get('id')))}" for i, s in enumerate(steps, 1))
+    body = "\n".join(f"{i}. {link(_name(s.get('preview')), note_at(s.get('id')))}" for i, s in enumerate(steps, 1))
     return lead, body, _chips(("See it on the graph", f"#/graph/focus/{int(steps[0]['id'])}" if _number(steps[0].get("id")) else GRAPH))
 
 
@@ -414,7 +430,7 @@ def _window_said(phrase: str) -> str:
         return f"for {phrase}"
     if phrase.startswith("the day"):
         return f"on {phrase}"
-    return phrase
+    return recognise.adverbial(phrase)
 
 
 def _due_day(value: object):  # noqa: ANN202
@@ -612,7 +628,7 @@ def _created_note(result: dict, args: dict) -> Said:
     filed = result.get("category")
     tags = [str(t) for t in result.get("tags") or []]
     where = (f" in {filed}" if filed else "") + (f", tagged {join_items(['#' + t for t in tags])}" if tags else "")
-    return f"Saved a new note{where}: {link(_title(result.get('content')), at)}.", "", _chips(("Open it", at))
+    return f"Saved a new note{where}: {link(_name(result.get('content')), at)}.", "", _chips(("Open it", at))
 
 
 def _edited_note(result: dict, args: dict) -> Said:
@@ -627,7 +643,7 @@ def _edited_note(result: dict, args: dict) -> Said:
     if "content" in changed:
         said.append("its text is updated")
     detail = f": {join_items(said)}" if said else ""
-    return f"Updated {link(_title(result.get('content')), at)}{detail}.", "", _chips(("Open it", at))
+    return f"Updated {link(_name(result.get('content')), at)}{detail}.", "", _chips(("Open it", at))
 
 
 def _tagged(result: dict, args: dict) -> Said:
@@ -648,7 +664,7 @@ def _pinned(result: dict, args: dict) -> Said:
         return _sentence(_plain(result["label"])), "", ""
     at = note_at(result.get("id") or args.get("note_id"))
     on = result.get("pinned", args.get("pinned", True))
-    lead = f"{'Added' if on else 'Took'} {link(_title(result.get('content')), at)} {'to' if on else 'out of'} Favourites."
+    lead = f"{'Added' if on else 'Took'} {link(_name(result.get('content')), at)} {'to' if on else 'out of'} Favourites."
     return lead, "", _chips(("Open it", at))
 
 
@@ -780,7 +796,7 @@ def _note_deleted(result: dict, args: dict) -> Said:
 
 def _note_restored(result: dict, args: dict) -> Said:
     at = note_at(result.get("id") or args.get("note_id"))
-    return f"Restored {link(_title(result.get('content')), at)} from the bin.", "", _chips(("Open it", at))
+    return f"Restored {link(_name(result.get('content')), at)} from the bin.", "", _chips(("Open it", at))
 
 
 def _preference(result: dict, args: dict) -> Said:

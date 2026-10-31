@@ -12,8 +12,11 @@
 //: the Statistics page's own call), and the way into that page.
 //: "calculator": a sum's or a conversion's way into the calculator, with the
 //: question already in it.
+//: "timeline": the strip under /today, /recent and a day with nothing in it
+//: (INBOX 1333): notes over the span, the Statistics card's spark line.
 const REPLY_PANELS = {
   statistics: () => replyStatsPanel(),
+  timeline: (event) => replyTimelinePanel(event),
   calculator: (event) => replyCalcPanel(event),
 };
 
@@ -70,7 +73,7 @@ function renderRelatedElsewhere(target, items) {
   label.className = "muted answer-grounding-label";
   label.textContent = "Elsewhere in your notebook:";
   row.appendChild(label);
-  const icons = { document: "ph:file-text", chat: "ph:chat-circle", reminder: "ph:bell" };
+  const icons = { document: "ph:file-text", chat: "ph:chat-circle", reminder: "ph:bell", note: "ph:note" };
   for (const item of items) {
     const button = document.createElement("button");
     button.type = "button";
@@ -86,7 +89,7 @@ function renderRelatedElsewhere(target, items) {
         openConversation?.(item.id);
       } else if (item.kind === "reminder") {
         switchTab("reminders");
-      }
+      } else if (item.kind === "note") flashEntry(item.id);
     });
     row.appendChild(button);
   }
@@ -281,6 +284,23 @@ function replyStatsPanel() {
       grid.replaceChildren(line);
       grid.removeAttribute("aria-busy");
     });
+  return panel;
+}
+
+//: The strip's points arrive counted (`slash_more.timeline_panel`); the spark
+//: line is the Statistics card's, its two ends named under it.
+function replyTimelinePanel(event) {
+  const { panel } = replyPanelShell("reply-timeline", event.title || "Notes over time", "ph:chart-line");
+  const points = (event.points || []).map((n) => Number(n) || 0);
+  panel.appendChild(replySpark(points, `${event.title}, ${event.from} to ${event.to}: ${points.join(", ")}`));
+  const ends = document.createElement("div");
+  ends.className = "muted reply-timeline-ends";
+  for (const text of [event.from, event.to]) {
+    const end = document.createElement("span");
+    end.textContent = text || "";
+    ends.appendChild(end);
+  }
+  panel.appendChild(ends);
   return panel;
 }
 
@@ -869,7 +889,7 @@ function replyFoldLong(answer) {
     if (!block.matches("p, pre, blockquote")) continue;
     const text = block.textContent.trim();
     if (text.length < REPLY_FOLD_CHARS) continue;
-    const words = text.split(/\s+/).length;
+    const words = wordCount(text);
     const fold = document.createElement("details");
     fold.className = "agent-step long-fold";
     const summary = document.createElement("summary");
@@ -979,7 +999,7 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? plainText(content).split(/\s+/).filter(Boolean).length : 0;
+  const words = content ? wordCount(plainText(content)) : 0;
   facts.textContent = [
     "Note",
     entry?.category,

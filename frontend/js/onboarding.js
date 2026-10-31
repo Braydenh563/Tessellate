@@ -63,7 +63,7 @@ const onboardingRun = { index: 0, diagnosticsToken: 0 };
 
 // §27's first-run diagnostics: Ollama reachability and where the notebook
 // actually lives, both already computed for other UI (the AI-status pill,
-// Settings → Data) and just not surfaced before a first capture could fail
+// Settings, Data) and just not surfaced before a first capture could fail
 // silently into Uncategorised.
 async function loadOnboardingDiagnostics(forSlide) {
   const token = ++onboardingRun.diagnosticsToken;
@@ -110,7 +110,7 @@ async function loadOnboardingDiagnostics(forSlide) {
       lines.push(
         "That folder isn't writable right now, so new notes and edits won't " +
           "save. Check its permissions, or move the notebook somewhere " +
-          "Tessellate can write to (Settings → Account & security)."
+          "Tessellate can write to (Settings, Account & security)."
       );
     }
   } else {
@@ -245,7 +245,7 @@ function renderOnboardingSlide() {
   //: pleased and always moving, with one line in its own voice; the later
   //: cards keep the app's logo, so a new person meets both.
   const atlas = $("onboarding-atlas");
-  const greet = onboardingRun.index === 0 && typeof atlasMark === "function";
+  const greet = onboardingRun.index === 0;
   atlas.classList.toggle("hidden", !greet);
   $("onboarding-emblem").classList.toggle("hidden", greet);
   //: One mark per card (INBOX 472).
@@ -295,7 +295,6 @@ function renderOnboardingSlide() {
   skip.title = last
     ? "Go straight to the app. You can start the tour any time from Settings, Help."
     : "Close the welcome and go straight to the app";
-  skip.setAttribute("aria-label", skip.title);
 }
 
 //: **First run: one thing at a time** (the owner, 2026-10-10: "popups and

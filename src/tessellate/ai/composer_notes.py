@@ -13,6 +13,7 @@ import re
 from datetime import date, datetime
 
 from tessellate.ai import question_noise, study
+from tessellate.core import cjk
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
@@ -273,7 +274,7 @@ def outline(ctx: Ctx) -> Reply | None:
         first = study.sentences(study.clean(content))[:1]
         return Reply(pick(ctx.seed, "ol-none", PHRASES["outline_none"]).format(link=_link(note), first=(first[0] if first else study.title_of(content))))
     lines = _outline_lines(ctx, note, heads)
-    lines += ["", pick(ctx.seed, "ol-tail", PHRASES["outline_tail"]).format(words=len(study.clean(content).split()))]
+    lines += ["", pick(ctx.seed, "ol-tail", PHRASES["outline_tail"]).format(words=cjk.word_count(study.clean(content)))]
     return Reply("\n".join(lines), asks=[f"Quiz me on {study.title_of(content)}"])
 
 

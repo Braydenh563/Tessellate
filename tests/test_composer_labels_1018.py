@@ -20,11 +20,19 @@ def test_who_says_days_as_clauses_and_keeps_names_capitalised():
         {"id": i, "content": f"# T{i}\n\nPriya moved to Leeds in spring.", "tags": [], "category": "x", "created_at": f"2026-09-0{i}T10:00:00"}
         for i in (1, 2, 3)
     ]
+    #: Asked about time, each day is a clause (INBOX 1441: a day is said
+    #: only then); not asked, the same line is said once, undated.
+    composer_digest._set_timing("when did Priya come up?")
     out = composer_digest._Out()
     assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
     text = "\n".join(out.lines)
     assert not LABEL_OPENER.search(text), text
-    assert "On 2 September, Priya moved to Leeds in spring." in text, text
+    #: Composer5-1031 (INBOX 1483: "when did" says the date, then how far back): was "On 2 September, Priya moved ...".
+    assert "On 2 September, about a month ago, Priya moved to Leeds in spring." in text, text
+    composer_digest._set_timing("who is Priya?")
+    out = composer_digest._Out()
+    assert composer_digest._who(out, "priya", _views(notes), set(), date(2026, 10, 11))
+    assert out.lines[1:] == ["Priya moved to Leeds in spring."], out.lines
 
 
 def test_still_open_extra_is_a_sentence():

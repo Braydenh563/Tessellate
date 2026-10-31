@@ -276,7 +276,7 @@ function chatAttachmentStrip(attachments) {
       //: list already uses, so the same fact reads the same way everywhere it
       //: appears.
       if (item.text) {
-        const words = item.text.trim().split(/\s+/).length;
+        const words = wordCount(item.text);
         const badge = document.createElement("button");
         badge.type = "button";
         badge.className = "chip msg-attachment-read-badge";
@@ -314,67 +314,57 @@ function chatAttachmentStrip(attachments) {
       continue;
     }
 
-    if (item.kind === "note") {
-      // A note: the chip carries its first line and opens it in Notes. Same
-      // shape as the document chip below and for the same reason, the note's
-      // full text is already one click away and repeating it in the bubble
-      // would bury the question that was asked about it.
-      const noteChip = document.createElement("button");
-      noteChip.type = "button";
-      noteChip.className = "chip msg-attachment msg-attachment-note";
-      setLabel(noteChip, `ph:paperclip ${item.name}`);
-      noteChip.title = `Open this note (#${item.id})`;
-      // `flashEntry` is the app's one "take me to this note" path: it also
-      // switches sub-tab, clears the filters that would hide the card, and
-      // announces the jump. Re-implementing three of those here is how they
-      // drift apart.
-      noteChip.addEventListener("click", () => flashEntry(item.id));
-      strip.appendChild(noteChip);
-      continue;
-    }
-
-    if (item.kind === "map") {
-      // A mind map attached to the question (MINDMAP_PLAN.md §5 item 11).
-      // `mapChip` is the app's one map chip, so a map in a sent bubble reads
-      // exactly as it does in a note, on the timeline and in a dashboard row
-      //, the whole point of §5 item 12. `msg-attachment` on top of it so it
-      // sits in the strip like every other kind.
-      const board = mapBoardById(item.id) || { id: item.id, title: item.name, type: "map" };
-      const chipEl = mapChip(board);
-      chipEl.classList.add("msg-attachment");
-      strip.appendChild(chipEl);
-      continue;
-    }
-
-    if (item.kind === "file") {
-      // A Library file. Same shape as the document chip below, and the same
-      // reason -- its text may be a hundred pages -- but it opens in the
-      // Library's Files sub-tab rather than in the Documents editor, because
-      // that is where an Attachment row actually lives.
-      const fileChip = document.createElement("button");
-      fileChip.type = "button";
-      fileChip.className = "chip msg-attachment msg-attachment-doc";
-      setLabel(fileChip, `ph:paperclip ${item.name}`);
-      fileChip.title = `Find “${item.name}” in your library`;
-      fileChip.addEventListener("click", () => focusLibraryFile(item.name, `/files/${item.id}`));
-      strip.appendChild(fileChip);
-      continue;
-    }
-
-    // A document: there is nothing to preview inline (its text may be a
-    // hundred pages), so the chip is the navigation.
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "chip msg-attachment msg-attachment-doc";
-    setLabel(chip, `ph:file-text ${item.name}`);
-    chip.title = `Open “${item.name}” in Documents`;
-    chip.addEventListener("click", () => {
-      switchTab("documents");
-      openDocument(item.id);
-    });
-    strip.appendChild(chip);
+    strip.appendChild(notebookCard(item));
   }
   return strip;
+}
+
+//: **What the notebook gave a message, as one card** (INBOX 1460, DESIGN.md
+//: "A notebook item on a message"). A note, document, mind map or library
+//: file is the staged file card (`attachmentChip`) with its kind's glyph and
+//: one muted line (a note's: "Note · 3 days ago"), in the composer with a
+//: remove x and above the sent question without. A press previews it
+//: (`attachmentPeek`, the citation peek with an Open button); `open` is the
+//: card's own door, the one the preview's Open button takes. The name is the
+//: note's first line as words, cut at its end only by the card's ellipsis.
+const NOTEBOOK_KINDS = {
+  note: { icon: "ph-note", word: "Note", open: (i) => flashEntry(i.id) },
+  map: { icon: "ph-tree-structure", word: "Mind map", open: (i) => openWhiteboardBoard(i.id) },
+  file: { icon: "", word: "File", open: (i) => focusLibraryFile(i.name, `/files/${i.id}`) },
+  document: {
+    icon: "ph-file-text",
+    word: "Document",
+    open: (i) => {
+      switchTab("documents");
+      openDocument(i.id);
+    },
+  },
+};
+
+function notebookCard(item, extra = {}) {
+  const kind = NOTEBOOK_KINDS[item.kind] || NOTEBOOK_KINDS.document;
+  const entry = item.kind === "note" ? allEntries.find((e) => e.id === item.id) : null;
+  const board = item.kind === "map" ? mapBoardById(item.id) : null;
+  const name = (item.kind === "note" ? noteNamePlain(entry?.content ?? item.name, 160) || "Untitled note" : item.name) || kind.word;
+  const facts = [kind.word, entry?.created_at ? relativeTime(entry.created_at) : "", board ? mapCountLabel(board) : ""].filter(Boolean).join(" · ");
+  //: Sent, a note shows its next words (two lines) in place of the kind line;
+  //: staged, the card stays the file card's height.
+  const rest = !extra.onRemove && entry ? plainText(stripFrontmatter(entry.content).trim().split("\n").slice(1).join("\n")).slice(0, 160) : "";
+  const card = attachmentChip({
+    name,
+    icon: kind.icon || undefined,
+    facts: item.kind === "file" ? undefined : rest || facts,
+    title: `Preview ${kind.word.toLowerCase()} “${name}”`,
+    onOpen: (event) => {
+      const door = event.currentTarget;
+      const keyboard = event.detail === 0;
+      Promise.all(["/css/reply-kit-lazy.css", "/js/attachment-peek.js"].map(lazyScript)).then(() => attachmentPeek({ ...item, name, entry, facts }, door, () => kind.open(item), keyboard));
+    },
+    ...extra,
+  });
+  card.dataset.kind = item.kind;
+  if (rest) card.querySelector(".att-chip-facts").classList.add("att-chip-lines");
+  return card;
 }
 
 //: The seed for the person's own mark: their profile name, or "You".
@@ -391,15 +381,18 @@ function userMarkSeed() {
 //: can never show two different people.
 function paintUserMarks() {
   const seed = userMarkSeed();
-  for (const holder of document.querySelectorAll("[data-user-mark]")) {
-    holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
-  }
+  //: The faces come after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => {
+    for (const holder of document.querySelectorAll("[data-user-mark]")) {
+      holder.replaceChildren(nameMark(seed, Number(holder.dataset.userMark) || 18));
+    }
+  });
   const head = $("profile-head-name");
   if (head) head.textContent = ((prefsCache && prefsCache.display_name) || "").trim() || "Your profile";
   //: The companion, when it is you (INBOX 426 d, the owner: "I changed my
   //: name but the companion which was me didnt update"): it redraws when
   //: the name it is drawn from has changed, and does nothing otherwise.
-  if (typeof syncNameMarkBuddy === "function") syncNameMarkBuddy();
+  syncNameMarkBuddy();
 }
 
 function userMarkEl() {
@@ -407,7 +400,7 @@ function userMarkEl() {
   mark.className = "msg-user-mark";
   mark.setAttribute("aria-hidden", "true");
   mark.dataset.userMark = "18";
-  mark.appendChild(nameMark(userMarkSeed(), 18));
+  afterCharacters(() => mark.appendChild(nameMark(userMarkSeed(), 18)), () => plainHead(mark, userMarkSeed()));
   return mark;
 }
 
@@ -445,8 +438,11 @@ function addBubble(role, text, attachments = null) {
   //: padding and text are exactly what they were (chatmarks.js measures
   //: that): the label row that used to hold an avatar is hidden on purpose.
   if (role === "user") bubble.appendChild(userMarkEl());
+  //: **Above the bubble, on its side** (INBOX 1460, the hub's decision: the
+  //: way chat apps show what was attached). The strip is the bubble's
+  //: previous sibling, not a child, because the bubble's fill is the bubble;
+  //: `dropChatBubble` removes it when the bubble goes.
   const strip = chatAttachmentStrip(attachments);
-  if (strip) bubble.appendChild(strip);
 
   if (role === "user") {
     bubble.appendChild(
@@ -457,11 +453,21 @@ function addBubble(role, text, attachments = null) {
       ])
     );
   }
+  if (strip) {
+    $("chat-messages").appendChild(strip);
+    bubble.cards = strip;
+  }
   $("chat-messages").appendChild(bubble);
   chatScrollToEnd();
   return bubble;
 }
 
+//: A user bubble and the cards above it go together (every place a turn is
+//: deleted, edited away or regenerated calls this).
+function dropChatBubble(node) {
+  node.cards?.remove();
+  node.remove();
+}
 //: **The one Thinking fold** (INBOX 457), on every surface that shows
 //: reasoning; `tests/test_ui_recipes.py` holds it to this builder.
 function thinkingFold(open = true) {
@@ -1062,16 +1068,15 @@ function paintPersonaAvatar(holder, persona, size = 20) {
     paintAssistantAvatar(holder, size);
     return;
   }
+  //: The faces come after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => paintNamedHead(holder, name, size), () => plainHead(holder, name));
+}
+
+function paintNamedHead(holder, name, size) {
   const key = chatHeadKey(name, size);
   const source = chatHeadSources.get(key);
   if (source) {
     holder.replaceChildren(source.cloneNode(true));
-    return;
-  }
-  //: Nothing to draw a face with yet (the faces script failing to load):
-  //: the persona's own fallback, never an empty box.
-  if (typeof nameMark !== "function") {
-    fillPersonaMark(holder, name, size);
     return;
   }
   const face = nameMark(name, size);
@@ -1092,11 +1097,9 @@ function paintPersonaAvatar(holder, persona, size = 20) {
 //: crop it, 218 nodes a reply: 32,700 nodes in a 150-turn chat, and the first
 //: paint went from 580 to 981ms (chatheads.js). The emblem is the app's
 //: mark as a few SVG layers (assistant-avatar.js, lazy; `emblemArt`), about
-//: 20 nodes a head. No Atlas to draw (the faces script failing to
-//: load): the emblem, never an empty box.
+//: 20 nodes a head. Called only once the faces are in (`paintAssistantAvatar`).
 function assistantAvatar(size = 20) {
-  const emblem = typeof atlasAvatar !== "function" || (typeof appearancePref === "function" && appearancePref("assistant-avatar", "atlas") === "emblem");
-  if (emblem) {
+  if (appearancePref("assistant-avatar", "atlas") === "emblem") {
     const box = document.createElement("span");
     box.className = "assistant-emblem";
     box.setAttribute("aria-hidden", "true");
@@ -1117,7 +1120,9 @@ function assistantAvatar(size = 20) {
 //: where it stands (`repaintAssistantAvatars`) rather than at the next reply.
 function paintAssistantAvatar(holder, size = 20) {
   holder.dataset.assistantAvatar = String(size);
-  holder.replaceChildren(assistantAvatar(size));
+  //: After the faces (`afterCharacters`, lazy-entries.js): the first heads are
+  //: asked for while the scripts load, before `appearancePref` exists.
+  afterCharacters(() => holder.replaceChildren(assistantAvatar(size)), () => emblemHead(holder, size));
 }
 
 function repaintAssistantAvatars(emblemsOnly = false) {
@@ -1290,7 +1295,7 @@ function changeDiff(diff) {
       viewer.appendChild(el);
     }
   }
-  if (diff.more) viewer.append(`${diff.more} more lines changed`);
+  if (diff.more) viewer.append(`${nounCount(diff.more, "more line", "more lines")} changed`);
   return viewer;
 }
 
@@ -1348,7 +1353,7 @@ function planProposalCard(holder, event, run) {
   row.className = "row";
   row.append(
     smallButton("Run the plan", "Run every step; each one's writes are listed above and can be undone", () => {
-      card.replaceWith(toolChip(`ph:play Running ${event.steps.length} steps`));
+      card.replaceWith(toolChip(`ph:play Running ${nounCount(event.steps.length, "step")}`));
       run();
     }, false),
     smallButton("Not now", "Run nothing", () => card.replaceWith(toolChip("ph:x Not run: nothing was changed.")))
@@ -1765,6 +1770,11 @@ function toolChip(label, ok = true, event = null) {
   return markToolStep(item, step);
 }
 
+//: A card that waits on the person is output, never a step: prose folds the
+//: step group shut (`closeGroup`) and the Confirm goes with it (audit 1029
+//: H1). Every such card is drawn by this, into `recordsHolder`; `tests/test_waiting_cards.py` checks.
+const showWaiting = (holder, render, ...args) => render(holder, ...args);
+
 // A destructive tool call parked for approval (Wave G). Nothing has
 // happened yet: Confirm actually runs it via /chat/tools/execute.
 function renderToolConfirm(holder, event) {
@@ -2067,10 +2077,20 @@ function deactivateControls(root) {
   }
 }
 
+//: A note's lines as a card reads them: the picture block the app appends and
+//: the lines that are only an image dropped (a picture has its thumbnail).
+function sourceLines(content) {
+  return stripFrontmatter(String(content || ""))
+    .replace(/\n*\[Pictures in this note[\s\S]*$/, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !/^!\[[^\]]*\]\([^)]*\)$/.test(line));
+}
+
 //: `grounded`: a composed answer's own note ids. The search hands the composer
 //: every hit, but the answer quotes one or two; "Sources: 4 notes" under "your
 //: only note" contradicted it (dog3-1026 row 10), so only those count.
-function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
+function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
   const seen = new Set();
   const sources = [];
   const add = (source) => {
@@ -2087,19 +2107,21 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
   };
   for (const entry of meta?.raw_results || []) {
     if (grounded?.size && !grounded.has(entry.id)) continue;
-    const label = noteLabel(entry, 60);
-    //: A note has no title, so its label *is* its opening words, which means
-    //: the preview has to start where the label stopped, or the card prints
-    //: the same sentence twice (measured: it did).
-    const flat = String(entry.content || "").replace(/\s+/g, " ").trim();
+    //: The card's title is the note's first line and its preview what follows
+    //: it, the picture block the app adds and an image-only line left out
+    //: (INBOX 1496: the title said twice, then the body again).
+    const lines = sourceLines(entry.content);
+    const label = lines.length ? noteLabel({ content: lines[0] }, 60) : noteLabel(entry, 60);
+    const flat = notePreviewText(lines.join("\n")).replace(/\s+/g, " ").trim();
     const head = label.replace(/…$/, "");
     //: The label is elided at 60 characters, which usually lands mid-word, so
     //: the remainder starts mid-word too, and the card read "ling and why it
     //: matters for gradients." (measured, in a screenshot). Dropping the
     //: partial first word costs nothing and is the difference between a
-    //: preview and a typo.
-    const rest = flat.startsWith(head)
-      ? flat.slice(head.length).replace(/^\S*\s+/, "")
+    //: preview and a typo. Only after an elided label: a whole title ends
+    //: at a word.
+    const rest = flat.toLowerCase().startsWith(head.toLowerCase())
+      ? flat.slice(head.length).replace(label.endsWith("…") ? /^\S*\s+/ : /^\s+/, "")
       : flat;
     //: A board or a mind map is a row of `raw_results` too (INBOX 744: "whiteboard
     //: shows as a note and clicking it takes me to the notes page").
@@ -2116,7 +2138,10 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
       open: board ? () => openWhiteboardBoard(entry.id) : (event) => openNoteAtPassage(entry.id, event?.currentTarget),
     });
   }
-  for (const item of touched || []) {
+  //: A document the composed answer quoted is a source too (INBOX 1466): the
+  //: notes are the column's, a document is in no list but this panel.
+  const quoted = (sentences || []).filter((g) => g.kind === "document").map((g) => ({ kind: "document", id: g.note_id, label: g.title }));
+  for (const item of [...(touched || []), ...quoted]) {
     const opener = TOUCHED_KINDS[item.kind] || TOUCHED_KINDS.note;
     //: A touched row carries an id and a label and nothing else, but the note
     //: behind it is already loaded, so the card need not be the poorer for it.
@@ -2172,7 +2197,31 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded }) {
   //: Web pages first (the owner, 2026-10-10): a page the turn went out to
   //: read is the newest thing in it. One order, so the numbers in the answer
   //: and on the cards stay the same.
-  return [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")];
+  return sourcesByFirstMention(
+    [...sources.filter((s) => s.kind === "web"), ...sources.filter((s) => s.kind !== "web")],
+    sentences
+  );
+}
+
+//: Numbered by first mention (audit 1029 rank 49): the cited notes take the
+//: note places in the order the answer cites them, the rest follow; a web page
+//: or file keeps its place. One order here, so every marker and card agrees.
+function sourcesByFirstMention(sources, sentences) {
+  const rank = new Map();
+  for (const g of sentences || []) if (!rank.has(citeKey(g.kind, g.note_id))) rank.set(citeKey(g.kind, g.note_id), rank.size);
+  if (!rank.size) return sources;
+  const places = [];
+  const notes = [];
+  sources.forEach((source, at) => {
+    if (source.kind !== "note") return;
+    places.push(at);
+    notes.push(source);
+  });
+  const key = (n) => citeKey(n.kind, n.id);
+  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
+  const out = sources.slice();
+  [...cited, ...notes.filter((n) => !rank.has(key(n)))].forEach((n, k) => (out[places[k]] = n));
+  return out;
 }
 
 //: The address a card shows under its title, the host, not the whole URL.
@@ -2353,11 +2402,14 @@ function chatSourcesPanel(input) {
       }
       card.appendChild(strip);
     }
-    const foot = document.createElement("span");
-    foot.className = "chat-source-foot muted";
-    const group = CHAT_SOURCE_GROUPS.find((g) => g.key === source.kind);
-    foot.textContent = source.url ? sourceHost(source.url) || "the web" : group?.one || source.kind;
-    card.appendChild(foot);
+    //: A web card says where it is from; a note's kind is its icon already, and
+    //: the bare word "note" under it was a line of its own (INBOX 1496).
+    if (source.url) {
+      const foot = document.createElement("span");
+      foot.className = "chat-source-foot muted";
+      foot.textContent = sourceHost(source.url) || "the web";
+      card.appendChild(foot);
+    }
     grid.appendChild(card);
   });
   body.appendChild(grid);
@@ -2496,23 +2548,6 @@ function restoreDraftLocally() {
   }
 }
 
-//: **The five asks the free-text instruction was being used for**, written
-//: down once. A chip sets what to write and, where it helps, a first line in
-//: the thoughts box; nothing runs until Draft is pressed, so a chip is a
-//: starting point rather than a button that spends a minute of a local
-//: model's time on a guess.
-const DRAFT_QUICKSTARTS = [
-  { label: "Write up my notes", icon: "ph:note-pencil", kind: "note", title: "Turn what is in the box into one organised note" },
-  { label: "Carry on writing", icon: "ph:pencil-line", kind: "continue", title: "Keep writing from where the draft stops, in the same voice" },
-  { label: "Say it plainly", icon: "ph:chat-text", kind: "rewrite", tone: "plain", title: "The same draft in plain words" },
-  { label: "Bullets to prose", icon: "ph:text-align-left", kind: "expand", title: "Open the bullet points out into paragraphs" },
-  { label: "Prose to bullets", icon: "ph:list-bullets", kind: "bullets", title: "Close the writing back up into bullet points" },
-  //: The language is the last one chosen in the kind menu's "Translate into"
-  //: group, Spanish until one has been; the menu shows which, and changing
-  //: it there is how another language is picked.
-  { label: "Translate", icon: "ph:translate", kind: "translate", title: "Translate what is in the box, into the language chosen in the menu" },
-];
-
 //: **Translate a note from where it is read** (INBOX 405). Writing room
 //: already translates; this takes the note there, loaded and set to the last
 //: language picked, rather than asking the reader to copy it across. Nothing
@@ -2543,43 +2578,6 @@ function draftTranslateKind() {
   return `translate-${code}`;
 }
 
-function renderDraftQuickstarts() {
-  const host = $("draft-quickstarts");
-  if (!host) return;
-  host.replaceChildren();
-  for (const start of DRAFT_QUICKSTARTS) {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "library-chip";
-    chip.title = start.title;
-    setLabel(chip, `${start.icon} ${start.label}`);
-    chip.addEventListener("click", () => {
-      $("draft-kind").value = start.kind === "translate" ? draftTranslateKind() : start.kind;
-      if (start.tone) $("draft-tone").value = start.tone;
-      markDraftQuickstart(start.kind);
-      saveDraftLocally();
-      $("draft-thoughts").focus();
-    });
-    host.appendChild(chip);
-  }
-  markDraftQuickstart($("draft-kind").value);
-}
-
-//: The chip and the select say the same thing, so picking either marks the
-//: other: two controls that disagree about what the next pass will do is the
-//: defect this feature is full of everywhere else it has been tried.
-function markDraftQuickstart(kind) {
-  const host = $("draft-quickstarts");
-  if (!host) return;
-  [...host.children].forEach((chip, index) => {
-    const own = DRAFT_QUICKSTARTS[index]?.kind;
-    chip.classList.toggle(
-      "active",
-      own === kind || (own === "translate" && String(kind).startsWith("translate-"))
-    );
-  });
-}
-
 function renderDraftSources() {
   const host = $("draft-sources");
   const count = $("draft-sources-count");
@@ -2587,7 +2585,7 @@ function renderDraftSources() {
   host.replaceChildren();
   host.classList.toggle("hidden", draftSources.length === 0);
   count.textContent = draftSources.length
-    ? `${draftSources.length} note${draftSources.length === 1 ? "" : "s"} to write from`
+    ? `${nounCount(draftSources.length, "note")} to write from`
     : "";
   for (const source of draftSources) {
     const chip = document.createElement("span");
@@ -2626,7 +2624,7 @@ function renderDraftVersions() {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = `library-chip${version.text === $("draft-text").value ? " active" : ""}`;
-    chip.title = `${version.words} words, ${version.at}`;
+    chip.title = `${nounCount(version.words, "word")}, ${version.at}`;
     chip.textContent = `v${index + 1}`;
     chip.addEventListener("click", () => {
       pushDraftUndo();
@@ -2647,7 +2645,7 @@ function rememberDraftVersion(text) {
   if (draftVersions.length && draftVersions[draftVersions.length - 1].text === trimmed) return;
   draftVersions.push({
     text: trimmed,
-    words: trimmed.split(/\s+/).length,
+    words: wordCount(trimmed),
     at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   });
   if (draftVersions.length > MAX_DRAFT_VERSIONS) draftVersions.shift();
@@ -2692,8 +2690,8 @@ function setDraftStatus(text, isError = false) {
 //: one function so every place that changes either box keeps both honest.
 function paneWordCount(id) {
   const text = ($(id)?.value || "").trim();
-  const words = text ? text.split(/\s+/).length : 0;
-  return words ? `${words} word${words === 1 ? "" : "s"}` : "";
+  const words = wordCount(text);
+  return words ? nounCount(words, "word") : "";
 }
 
 function updateDraftCount() {

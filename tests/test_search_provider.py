@@ -1,4 +1,4 @@
-"""Settings → Web search: which engine answers is the user's choice.
+"""Settings, Web search: which engine answers is the user's choice.
 
 Before this, the engine was inferred from whether a SearXNG address happened
 to be filled in, and a SearXNG that failed silently sent the query to

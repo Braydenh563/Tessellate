@@ -15,6 +15,17 @@
 .theme-card-cell > .theme-card {
   flex: 1 1 auto;
 }
+/* Four dots that overlap (INBOX 1478): each ringed in the tile's own ground so
+   the one beside it reads as a separate colour. */
+.theme-dot {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 2px var(--inner), inset 0 0 0 1px var(--border);
+}
+.theme-dot + .theme-dot {
+  margin-inline-start: -0.5rem;
+}
 .theme-eye {
   position: absolute;
   top: var(--space-2);
@@ -119,3 +130,17 @@
 
 /* An Extras skeleton is about a package row's height (K21). */
 .extras-list > .skeleton { height: calc(var(--control-h-lg) * 5.5); }
+
+/* A switch with its "?" on one row (the desktop companion). The switch's
+   label does not shrink by default, so its text made the row 524.7px wide in
+   a 263.6px one at 390 and pushed the "?" onto its own line; it gives way
+   to the "?" instead and its words wrap. */
+#settings-modal .help-head > .check-row {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+#settings-modal .help-head > .check-row > span {
+  overflow: visible;
+  text-overflow: clip;
+}

@@ -139,6 +139,7 @@ UTILITIES = {
     "launcher logs": ("settings-controls.js", 'apiJson("/system/open-logs-folder"', "Settings, About, Maintenance, Open the launcher logs", "maintenance"),
     "desktop shortcut": ("settings-controls.js", 'apiJson("/system/desktop-shortcut"', "Settings, About, Maintenance, Make a desktop shortcut", "maintenance"),
     "uninstall steps": ("settings-controls.js", "function openUninstallSteps()", "Settings, About, Maintenance, Uninstall", "maintenance"),
+    "private chat": ("chat-private.js", "function chatPrivateToggle()", "Chat, the gear under the message box, Private chat", "chat-private"),
     "insert template": ("app-palette.js", "label: `ph:note-blank Insert template: ${template.name}`,", "the palette's insert template", "insert-template"),
 }
 
@@ -249,3 +250,16 @@ def test_every_graph_options_section_has_a_question_mark_and_the_guide_says_so()
         assert f'data-help-for="graph-{help_id}-help"' in html, f"Options has no '?' for {help_id}"
     body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph-options-help"))
     assert "beside its name" in body and "Minimap" in body
+
+
+def test_the_graph_search_count_and_keys_are_in_the_guide() -> None:
+    """Audit 1029 G11: the dock says "N matches", Enter and Shift+Enter walk
+    them and Esc clears; the Guide's graph topic says so, and a reader can find
+    it by asking."""
+    from tessellate.ai.help_chat import HELP_TOPICS
+
+    body = str(next(t["body"] for t in HELP_TOPICS if t["id"] == "graph"))
+    assert "how many notes match" in body
+    assert "Enter jumps to the next match" in body and "Shift and Enter" in body and "Esc clears the search" in body
+    html = (FRONTEND / "index.html").read_text(encoding="utf-8")
+    assert 'id="graph-search-count"' in html

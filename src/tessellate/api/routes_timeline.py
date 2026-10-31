@@ -26,11 +26,13 @@ import base64
 import binascii
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from functools import partial
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, String, and_, func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
+from tessellate.core import cjk
 from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Reminder, Space, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -244,7 +246,7 @@ def _place_notes(
                 "phrase": mention.phrase if mention else "",
                 "written_at": entry.created_at.isoformat(),
                 "category": categories.get(entry.category_id, manager.UNCATEGORISED),
-                "tags": manager.entry_tags(entry),
+                "tags": manager.shown_tags(entry),
                 # Only read by `_thread_bands` (group=thread): carried for
                 # every note regardless of the chosen group so switching to
                 # "Thread" never needs a second fetch.
@@ -258,7 +260,7 @@ def _place_notes(
                 # A word count, not a character count: it is the number people
                 # think in, and `_clip` has already thrown the characters away.
                 "words": len(text.split()),
-                "links": len(links.get(entry.id, [])),
+                "links": links.get(entry.id, 0),
                 "preview": _clip(text),
             }
         )
@@ -339,7 +341,7 @@ def _place_documents(documents_found: list, placed: list[dict], scale: str, spac
             "parent_id": None,
             "pinned": False,
             "space": spaces.get(document.workspace_id, document.workspace_id),
-            "words": len((document.content or "").split()),
+            "words": cjk.word_count(document.content),
             "links": 0,
             "preview": _clip(_first_line(document.content or "")),
             "title": document.title or "Untitled",
@@ -428,17 +430,7 @@ def timeline(
     feed holds.
     """
     kinds = _requested_kinds(kind)
-    if scale not in SCALES:
-        raise HTTPException(
-            status_code=422, detail=f"Pick one of: {', '.join(SCALES)}."
-        )
-    if group not in ("category", "tag", "thread", "none"):
-        raise HTTPException(
-            status_code=422, detail="Pick one of: category, tag, thread, none."
-        )
-
-    if limit < 1 or limit > MAX_PAGE:
-        raise HTTPException(status_code=422, detail=f"Ask for between 1 and {MAX_PAGE} items at a time.")
+    _check_params(scale, group, limit)
 
     query = select(Entry).where(
         Entry.is_deleted == False,  # noqa: E712
@@ -450,46 +442,32 @@ def timeline(
         query = query.where(Entry.is_board == False)  # noqa: E712
     elif "board" in kinds and "note" not in kinds:
         query = query.where(Entry.is_board == True)  # noqa: E712
-    #: **The range, once, applied to each source's own column.** The three
-    #: tables the feed reads are dated by three different columns, so a window
-    #: expressed as an `Entry` clause cannot be reused: it is computed here and
-    #: handed to each query.
-    since: datetime | None = None
-    until: datetime | None = None
-    if start and end:
-        try:
-            since = datetime.fromisoformat(start)
-            until = datetime.fromisoformat(end)
-        except ValueError:
-            raise HTTPException(status_code=422, detail="Write the start and end as dates, like 2026-10-04.")
-    elif days > 0:
-        since = utcnow() - timedelta(days=days)
+    since, until = _window(start, end, days)
 
     shift = f"{tz:+d} minutes"
     today_here = (utcnow() + timedelta(minutes=tz)).date().isoformat()
+    in_range = partial(_in_range, since=since, until=until, on=on, shift=shift, today_here=today_here)
 
-    def in_range(statement: Select, column) -> Select:
-        if since is not None:
-            statement = statement.where(column >= since)
-        if until is not None:
-            statement = statement.where(column <= until)
-        if on:
-            #: The stored instant moved into the reader's day, then compared
-            #: by month and day; today's own rows are not a memory.
-            statement = statement.where(
-                func.strftime("%m-%d", column, shift) == on,
-                func.strftime("%Y-%m-%d", column, shift) != today_here,
-            )
-        return statement
-
-    query = _ranged_entries(query, in_range, (start, end, on), since, until, tz, also)
+    #: Where each note sits is read once per note, by a join, and not by a
+    #: correlated subquery that the window clauses and the density each ran
+    #: again for every one of the notebook's notes (`_with_placement`).
+    query, mention_at, own_date = _with_placement(query)
+    query = _ranged_entries(
+        query, in_range, (start, end, on), since, until, tz, also, func.coalesce(own_date, mention_at)
+    )
 
     # The density strip is the whole range, however little of it this page
     # holds: it is the overview a reader drags to get somewhere, so a strip
     # drawn from one page would be a map of the part you can already see. Two
     # columns and no content, so it stays cheap as the notebook grows.
+    #: **Only on the first page.** The strip is drawn once, from the answer with no
+    #: cursor; a later page's `density` was read by nobody (timeline.js `timelineLoadMore`
+    #: and the calendar's fetch both drop it), yet cost the whole range's grouped count
+    #: and the document and reminder scans again on every page.
     density = (
-        _density(session, query) if ("note" in kinds or "board" in kinds) else {}
+        _density(session, query, mention_at)
+        if not cursor and ("note" in kinds or "board" in kinds)
+        else {}
     )
 
     #: **Where the last page stopped**, one mark per source rather than an
@@ -503,122 +481,13 @@ def timeline(
         except (ValueError, binascii.Error, TypeError):
             raise HTTPException(status_code=422, detail="That page marker is not valid. Reload the timeline and try again.")
 
-    def page_of(statement: Select, column, id_column, source: str) -> list:
-        """One source's next `limit + 1` rows, oldest mark honoured.
+    found = _source_pages(session, kinds, query, in_range, marks, limit)
+    entries_found, documents_found, reminders_found = found
+    if not cursor:
+        _add_source_density(session, kinds, in_range, density)
 
-        One more than the page, which is how the answer knows whether there is
-        a page after this one without a second count query. Taking `limit + 1`
-        from *each* source is also what makes the merge below correct: the
-        newest `limit + 1` rows overall are always inside the union of the
-        newest `limit + 1` of each.
-        """
-        clause = _older_than(column, id_column, marks.get(source))
-        if clause is not None:
-            statement = statement.where(clause)
-        return list(
-            session.scalars(statement.order_by(column.desc(), id_column.desc()).limit(limit + 1))
-        )
-
-    entries_found: list[Entry] = []
-    if "note" in kinds or "board" in kinds:
-        entries_found = page_of(query, Entry.created_at, Entry.id, "entry")
-
-    documents_found: list[Document] = []
-    if "document" in kinds:
-        documents_found = page_of(
-            #: An archived document is "kept, out of the way" (its own model
-            #: says so), which is the one thing a journal of what you were
-            #: doing should not put back in front of you.
-            in_range(
-                select(Document).where(Document.archived_at.is_(None)), Document.created_at
-            ),
-            Document.created_at,
-            Document.id,
-            "document",
-        )
-
-    reminders_found: list[Reminder] = []
-    if "reminder" in kinds:
-        #: Placed by `due_at`, not by when it was typed: a reminder is *about*
-        #: the day it is due, which is the same claim a note makes when it
-        #: mentions a date, and the row says so the same way (`placed_by`).
-        reminders_found = page_of(
-            in_range(select(Reminder), Reminder.due_at), Reminder.due_at, Reminder.id, "reminder"
-        )
-
-    #: The scrubber answers "how much was going on then", so it counts every
-    #: kind the feed is showing rather than only the notes: a week spent
-    #: writing one long document would otherwise read as an empty week.
-    #: Date-only queries, no content, the same shape `_density` itself uses.
-    if "document" in kinds:
-        for (created,) in session.execute(
-            in_range(
-                select(Document.created_at).where(Document.archived_at.is_(None)),
-                Document.created_at,
-            )
-        ).all():
-            day = created.date().isoformat()
-            density[day] = density.get(day, 0) + 1
-    if "reminder" in kinds:
-        for (due,) in session.execute(
-            in_range(select(Reminder.due_at), Reminder.due_at)
-        ).all():
-            day = due.date().isoformat()
-            density[day] = density.get(day, 0) + 1
-
-    entries = entries_found
-
-    # What each note is *about*, where it said so. One query rather than one
-    # per note: a timeline over a year of notes would otherwise be hundreds.
-    resolved: dict[int, EntryDate] = {}
-    every: dict[int, list[str]] = {}
-    if entries:
-        rows = session.scalars(
-            select(EntryDate)
-            .where(EntryDate.entry_id.in_([entry.id for entry in entries]))
-            .order_by(EntryDate.id)
-        )
-        for row in rows:
-            resolved.setdefault(row.entry_id, row)
-            every.setdefault(row.entry_id, []).append(row.at.date().isoformat())
-
-    meetings = _meeting_dates(session, [entry.id for entry in entries])
-
-    categories = manager.bulk_category_names(session, entries)
-
-    # The table view's columns (TIMELINE_PLAN decision 6): which space a note
-    # is in, how long it is and how many notes it is joined to. All three are
-    # one query each for the whole page rather than one per row, the same
-    # batching `resolved` above uses: a timeline over a year of writing is
-    # hundreds of rows and this endpoint is drawn on every visit to the tab.
-    spaces = {space.id: space.name for space in session.scalars(select(Space))}
-    links = manager.links_for_entries_bulk(session, [entry.id for entry in entries])
-
-    placed = []
-    _place_notes(entries, placed, scale, resolved, categories, spaces, links, meetings, every)
-
-    _place_documents(documents_found, placed, scale, spaces)
-    _place_reminders(reminders_found, placed, scale, spaces)
-
-    #: **The merge.** Three sources, each already in order, cut to one page
-    #: here rather than in SQL: a UNION over three tables with three different
-    #: date columns is a query no index helps and one nobody can read.
-    placed.sort(key=lambda row: (row["_at"], row["id"]), reverse=True)
-    more_in_a_source = (
-        len(entries_found) > limit or len(documents_found) > limit or len(reminders_found) > limit
-    )
-    has_more = more_in_a_source or len(placed) > limit
-    placed = placed[:limit]
-
-    #: Each source continues from the oldest row of its own that made it into
-    #: this page. A source with nothing in the page keeps the mark it came in
-    #: with, so it is asked the same question again rather than skipped.
-    next_marks = dict(marks)
-    for row in placed:
-        next_marks[_SOURCE_OF[row["kind"]]] = (row["_at"], row["id"])
-    next_cursor = _encode_marks(next_marks) if has_more and next_marks else None
-    for row in placed:
-        row.pop("_at", None)
+    placed = _placed_rows(session, entries_found, documents_found, reminders_found, scale)
+    placed, has_more, next_cursor = _cut_page(placed, found, marks, limit)
 
     return {
         "scale": scale,
@@ -644,6 +513,179 @@ def timeline(
     }
 
 
+def _check_params(scale: str, group: str, limit: int) -> None:
+    if scale not in SCALES:
+        raise HTTPException(
+            status_code=422, detail=f"Pick one of: {', '.join(SCALES)}."
+        )
+    if group not in ("category", "tag", "thread", "none"):
+        raise HTTPException(
+            status_code=422, detail="Pick one of: category, tag, thread, none."
+        )
+
+    if limit < 1 or limit > MAX_PAGE:
+        raise HTTPException(status_code=422, detail=f"Ask for between 1 and {MAX_PAGE} items at a time.")
+
+
+def _window(start: str | None, end: str | None, days: int) -> tuple[datetime | None, datetime | None]:
+    """**The range, once, applied to each source's own column.** The three
+    tables the feed reads are dated by three different columns, so a window
+    expressed as an `Entry` clause cannot be reused: it is computed here and
+    handed to each query."""
+    since: datetime | None = None
+    until: datetime | None = None
+    if start and end:
+        try:
+            since = datetime.fromisoformat(start)
+            until = datetime.fromisoformat(end)
+        except ValueError:
+            raise HTTPException(status_code=422, detail="Write the start and end as dates, like 2026-10-04.")
+    elif days > 0:
+        since = utcnow() - timedelta(days=days)
+    return since, until
+
+
+def _in_range(statement: Select, column, since, until, on, shift: str, today_here: str) -> Select:  # noqa: ANN001
+    if since is not None:
+        statement = statement.where(column >= since)
+    if until is not None:
+        statement = statement.where(column <= until)
+    if on:
+        #: The stored instant moved into the reader's day, then compared
+        #: by month and day; today's own rows are not a memory.
+        statement = statement.where(
+            func.strftime("%m-%d", column, shift) == on,
+            func.strftime("%Y-%m-%d", column, shift) != today_here,
+        )
+    return statement
+
+
+def _page_of(session: Session, statement: Select, column, id_column, marks: dict, source: str, limit: int) -> list:  # noqa: ANN001
+    """One source's next `limit + 1` rows, oldest mark honoured.
+
+    One more than the page, which is how the answer knows whether there is
+    a page after this one without a second count query. Taking `limit + 1`
+    from *each* source is also what makes the merge correct: the
+    newest `limit + 1` rows overall are always inside the union of the
+    newest `limit + 1` of each.
+    """
+    clause = _older_than(column, id_column, marks.get(source))
+    if clause is not None:
+        statement = statement.where(clause)
+    return list(
+        session.scalars(statement.order_by(column.desc(), id_column.desc()).limit(limit + 1))
+    )
+
+
+def _document_scan(in_range, *columns):  # noqa: ANN001
+    """Live documents in range: an archived document is "kept, out of the
+    way" (its own model says so), which is the one thing a journal of what
+    you were doing should not put back in front of you."""
+    return in_range(select(*columns).where(Document.archived_at.is_(None)), Document.created_at)
+
+
+def _source_pages(session: Session, kinds, query: Select, in_range, marks: dict, limit: int) -> tuple[list, list, list]:  # noqa: ANN001
+    entries_found: list[Entry] = []
+    if "note" in kinds or "board" in kinds:
+        entries_found = _page_of(session, query, Entry.created_at, Entry.id, marks, "entry", limit)
+
+    documents_found: list[Document] = []
+    if "document" in kinds:
+        documents_found = _page_of(
+            session, _document_scan(in_range, Document), Document.created_at, Document.id, marks, "document", limit
+        )
+
+    reminders_found: list[Reminder] = []
+    if "reminder" in kinds:
+        #: Placed by `due_at`, not by when it was typed: a reminder is *about*
+        #: the day it is due, which is the same claim a note makes when it
+        #: mentions a date, and the row says so the same way (`placed_by`).
+        reminders_found = _page_of(
+            session, in_range(select(Reminder), Reminder.due_at), Reminder.due_at, Reminder.id, marks, "reminder", limit
+        )
+    return entries_found, documents_found, reminders_found
+
+
+def _add_source_density(session: Session, kinds, in_range, density: dict[str, int]) -> None:  # noqa: ANN001
+    """The scrubber answers "how much was going on then", so it counts every
+    kind the feed is showing rather than only the notes: a week spent
+    writing one long document would otherwise read as an empty week.
+    Date-only queries, no content, the same shape `_density` itself uses."""
+    if "document" in kinds:
+        for (created,) in session.execute(_document_scan(in_range, Document.created_at)).all():
+            day = created.date().isoformat()
+            density[day] = density.get(day, 0) + 1
+    if "reminder" in kinds:
+        for (due,) in session.execute(
+            in_range(select(Reminder.due_at), Reminder.due_at)
+        ).all():
+            day = due.date().isoformat()
+            density[day] = density.get(day, 0) + 1
+
+
+def _dates_of(session: Session, entries: list) -> tuple[dict[int, EntryDate], dict[int, list[str]]]:
+    """What each note is *about*, where it said so. One query rather than one
+    per note: a timeline over a year of notes would otherwise be hundreds."""
+    resolved: dict[int, EntryDate] = {}
+    every: dict[int, list[str]] = {}
+    if entries:
+        rows = session.scalars(
+            select(EntryDate)
+            .where(EntryDate.entry_id.in_([entry.id for entry in entries]))
+            .order_by(EntryDate.id)
+        )
+        for row in rows:
+            resolved.setdefault(row.entry_id, row)
+            every.setdefault(row.entry_id, []).append(row.at.date().isoformat())
+    return resolved, every
+
+
+def _placed_rows(session: Session, entries: list, documents_found: list, reminders_found: list, scale: str) -> list[dict]:
+    resolved, every = _dates_of(session, entries)
+
+    meetings = _meeting_dates(session, [entry.id for entry in entries])
+
+    categories = manager.bulk_category_names(session, entries)
+
+    # The table view's columns (TIMELINE_PLAN decision 6): which space a note
+    # is in, how long it is and how many notes it is joined to. All three are
+    # one query each for the whole page rather than one per row, the same
+    # batching `resolved` above uses: a timeline over a year of writing is
+    # hundreds of rows and this endpoint is drawn on every visit to the tab.
+    spaces = {space.id: space.name for space in session.scalars(select(Space))}
+    links = manager.links_count_bulk(session, [entry.id for entry in entries])
+
+    placed: list[dict] = []
+    _place_notes(entries, placed, scale, resolved, categories, spaces, links, meetings, every)
+
+    _place_documents(documents_found, placed, scale, spaces)
+    _place_reminders(reminders_found, placed, scale, spaces)
+    return placed
+
+
+def _cut_page(
+    placed: list[dict], found: tuple[list, list, list], marks: dict, limit: int
+) -> tuple[list[dict], bool, str | None]:
+    """**The merge.** Three sources, each already in order, cut to one page
+    here rather than in SQL: a UNION over three tables with three different
+    date columns is a query no index helps and one nobody can read."""
+    placed.sort(key=lambda row: (row["_at"], row["id"]), reverse=True)
+    more_in_a_source = any(len(rows) > limit for rows in found)
+    has_more = more_in_a_source or len(placed) > limit
+    placed = placed[:limit]
+
+    #: Each source continues from the oldest row of its own that made it into
+    #: this page. A source with nothing in the page keeps the mark it came in
+    #: with, so it is asked the same question again rather than skipped.
+    next_marks = dict(marks)
+    for row in placed:
+        next_marks[_SOURCE_OF[row["kind"]]] = (row["_at"], row["id"])
+    next_cursor = _encode_marks(next_marks) if has_more and next_marks else None
+    for row in placed:
+        row.pop("_at", None)
+    return placed, has_more, next_cursor
+
+
 def _first_line(text: str) -> str:
     """The opening line of a document, as its one-line preview: its title is
     already the row's title, so repeating the heading under it would be the
@@ -663,41 +705,43 @@ def _naive(at: datetime) -> datetime:
     return at.astimezone(timezone.utc).replace(tzinfo=None) if at.tzinfo else at
 
 
-def _first_mentioned():
-    """A note's first mentioned date (lowest id), the one its row sits on."""
-    return (
-        select(EntryDate.at)
-        .where(EntryDate.entry_id == Entry.id)
-        .order_by(EntryDate.id)
-        .limit(1)
-        .correlate(Entry)
-        .scalar_subquery()
+def _with_placement(query: Select) -> tuple[Select, object, object]:
+    """`query` with each note's placement columns joined on.
+
+    Returns the query, a note's first mentioned date (lowest id, the one its row
+    sits on) and a meeting's own `date:`, which beats any mention
+    (`_meeting_dates`). Both are the lowest-id row of their table for the note,
+    found once for the whole notebook as a grouped subquery and joined, so the
+    window, the density and the page read a plain column. As correlated
+    subqueries they ran per note for every use: the window repeats the
+    placement four times, so a 5,000-note range read 40 ms of SQL on this
+    alone and the cost grew with the notebook, not the page.
+    """
+    first_pick = (
+        select(EntryDate.entry_id.label("entry_id"), func.min(EntryDate.id).label("pick"))
+        .group_by(EntryDate.entry_id)
+        .subquery("first_mention")
     )
-
-
-def _meeting_date():
-    """A meeting's own `date:`, which beats any mention (`_meeting_dates`)."""
-    typed = (
-        select(EntryProperty.id)
-        .where(
-            EntryProperty.entry_id == Entry.id,
-            EntryProperty.key == "type",
-            func.lower(EntryProperty.value) == "meeting",
-        )
-        .correlate(Entry)
-        .exists()
+    meetings = select(EntryProperty.entry_id).where(
+        EntryProperty.key == "type", func.lower(EntryProperty.value) == "meeting"
     )
-    return (
-        select(EntryProperty.date)
-        .where(EntryProperty.entry_id == Entry.id, EntryProperty.key == "date", EntryProperty.date.is_not(None), typed)
-        .order_by(EntryProperty.id)
-        .limit(1)
-        .correlate(Entry)
-        .scalar_subquery()
+    own_pick = (
+        select(EntryProperty.entry_id.label("entry_id"), func.min(EntryProperty.id).label("pick"))
+        .where(EntryProperty.key == "date", EntryProperty.date.is_not(None), EntryProperty.entry_id.in_(meetings))
+        .group_by(EntryProperty.entry_id)
+        .subquery("own_date")
     )
+    mention, own = aliased(EntryDate), aliased(EntryProperty)
+    joined = (
+        query.outerjoin(first_pick, first_pick.c.entry_id == Entry.id)
+        .outerjoin(mention, mention.id == first_pick.c.pick)
+        .outerjoin(own_pick, own_pick.c.entry_id == Entry.id)
+        .outerjoin(own, own.id == own_pick.c.pick)
+    )
+    return joined, mention.at, own.date
 
 
-def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int, also: bool = False) -> Select:
+def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int, also: bool, first) -> Select:
     """The notes in range, by where they *sit*: a meeting's own date, else the
     date the note mentions, else when it was written. An explicit window
     (`start` and `end`) and the feed's "last N days" are the same rule, so a
@@ -707,10 +751,10 @@ def _ranged_entries(query: Select, in_range, asked: tuple, since, until, tz: int
     start, end, on = asked
     if on or (since is None and until is None):
         return in_range(query, Entry.created_at)
-    return _entries_in_window(query, since, until, tz, also)
+    return _entries_in_window(query, since, until, tz, also, first)
 
 
-def _entries_in_window(query: Select, since: datetime | None, until: datetime | None, tz: int, also: bool = False) -> Select:
+def _entries_in_window(query: Select, since: datetime | None, until: datetime | None, tz: int, also: bool, first) -> Select:
     """Notes that *sit* in a window (TIMELINE_PLAN section 9).
 
     A note is in it by the day its row is placed on: a meeting's own date, else
@@ -724,7 +768,6 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     `also`: a note that names a date in the window as a later date counts too
     (its row still sits on the first, so the feed never asks for this).
     """
-    first = func.coalesce(_meeting_date(), _first_mentioned())
     wall = timedelta(minutes=tz)
     written = [Entry.created_at >= since] if since is not None else []
     written += [Entry.created_at <= until] if until is not None else []
@@ -739,7 +782,7 @@ def _entries_in_window(query: Select, since: datetime | None, until: datetime | 
     return query.where(or_(*clauses))
 
 
-def _density(session: Session, ranged: Select) -> dict[str, int]:
+def _density(session: Session, ranged: Select, mention_at) -> dict[str, int]:
     """How much was written on each day of the range, whatever page is loaded.
 
     It resolves placement the same way the rows do, a note sits on the date it
@@ -754,10 +797,9 @@ def _density(session: Session, ranged: Select) -> dict[str, int]:
     #: date (lowest id, as before) is a correlated read served by the
     #: `entry_id` index; dates are stored as naive UTC text, so the day is its
     #: first ten characters, which is what `.date()` gave on the row.
-    first_mentioned = _first_mentioned()
-    day = func.substr(func.coalesce(first_mentioned, Entry.created_at), 1, 10, type_=String)
+    day = func.substr(func.coalesce(mention_at, Entry.created_at), 1, 10, type_=String)
     rows = session.execute(
-        ranged.with_only_columns(day.label("day"), func.count()).order_by(None).group_by("day")
+        ranged.with_only_columns(day.label("day"), func.count()).select_from(Entry).order_by(None).group_by("day")
     ).all()
     return {str(when): int(count) for when, count in rows if when}
 

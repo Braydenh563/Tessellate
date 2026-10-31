@@ -19,7 +19,7 @@ def test_the_reminder_watch_is_wired_once():
     start = text.index("function startReminderWatch(")
     body = text[start : text.index("\n}\n", start)]
     guard = body.index("if (reminderWatchStarted) return;")
-    assert guard < body.index("setInterval(")
+    assert guard < body.index("startMinuteTicker(")  # the shared minute tick (S38), once an interval
     assert guard < body.index('addEventListener("focus"')
     assert guard < body.index('addEventListener("visibilitychange"')
     # An unlock still checks at once: the guard comes after the first check.

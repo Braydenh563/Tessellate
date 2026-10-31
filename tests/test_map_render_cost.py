@@ -125,8 +125,13 @@ def test_a_line_is_keyed_by_its_two_ends_and_updated_in_place() -> None:
     # lines whose ends are no longer joined go, and the order stays the
     # tree's (SVG paints in document order, and mapstrip.js pairs the first
     # line with the first mid-line plus).
-    assert "held.wrap.remove();" in body
+    #: (OPEN 813: the stale lines are dropped by `wbMapDropStale`, and before
+    #: any line is placed, or one new topic moved every later line.)
+    assert "wbMapDropStale(cache" in body
+    assert "held.wrap || held).remove();" in _code("wbMapDropStale")
     assert "group.insertBefore(wrap" in body
+    assert body.index("wbMapDropStale(cache") < body.index("group.insertBefore(wrap")
+    assert body.index("wbMapDropStale(cache") < body.index("wbMapEdgeApply(")
 
 
 def test_an_edge_compares_before_it_writes() -> None:
@@ -146,7 +151,10 @@ def test_the_link_sketches_are_parsed_once_per_capture() -> None:
     assert "wbLinkSketchIndex()" in body
     assert "wbLinkedSketchesFor(id, kind, linkIndex)" in body
     # One parse per sketch in the index, and the lookup is a lookup.
-    assert _code("wbLinkSketchIndex").count("JSON.parse") == 1
+    # (audit 1028 B17: through `wbParsedLink`, which holds the one parse and
+    # remembers it per version of the sketch's data.)
+    assert "wbParsedLink(sketch)" in _code("wbLinkSketchIndex")
+    assert _code("wbParsedLink").count("JSON.parse") == 1
     assert "if (index) return index.get(" in _code("wbLinkedSketchesFor")
 
 
@@ -193,3 +201,48 @@ def test_the_fit_reads_the_boxes_the_render_just_measured() -> None:
     cache_at = body.index("wbMapNodeSizeCache")
     query_at = body.index('wbItemElement("object"')
     assert cache_at < query_at, "the cache has to be consulted before the DOM"
+
+
+def test_the_plus_buttons_drop_the_stale_ones_before_placing_any() -> None:
+    """OPEN 813: a new topic's provisional id is replaced by the server's, so
+    the first render after the create has one stale button (and one stale
+    line) in the slot the new one takes. Left until after the placing loop it
+    made every later button look out of place and each was moved: 172 style
+    invalidations and 84 nodes removed from layout on a 20-topic map."""
+    body = _code("wbRenderMapEdgePluses")
+    assert body.index("wbMapDropStale(cache") < body.index("layer.insertBefore(button")
+    assert "wbRenderMapEdgePluses(edges, layout, only)" in _code("wbRenderMapEdges")
+    assert "wbMapVisibleEdges(index, hidden)" in _code("wbRenderMapEdges")
+
+
+def test_the_undo_bar_is_painted_once_a_frame_and_reads_before_it_writes() -> None:
+    """OPEN 813: `wbPushUndo` repainted the status bar's undo pair inline, and
+    the pair asked `boardHistoryActive` (a layout read) for the redo door after
+    the undo door's writes: two layout flushes inside the add-child press, 59ms
+    of 85 at 390px."""
+    code = _code("wbUpdateUndoRedoButtons")
+    assert "scheduleUndoBar()" in code
+    assert "renderUndoBar()" not in code, "an inline repaint on the press is the flush this removed"
+    status = (ROOT / "frontend" / "js" / "status.js").read_text(encoding="utf-8")
+    body = status[status.index("function renderUndoBar()") :][:2200]
+    assert body.index('surfaceHistory("redo")') < body.index("paintUndoDoor(undoBtn")
+
+
+def test_a_closed_select_menu_is_not_rebuilt_for_an_option_that_changed() -> None:
+    """OPEN 813: the board picker's option text ("N topics") is rewritten on
+    every board render, and the observer rebuilt a row per board each time for
+    a menu nobody had open. The opener's click rebuilds on every open."""
+    src = (ROOT / "frontend" / "js" / "sheets-selects.js").read_text(encoding="utf-8")
+    assert "new MutationObserver(rebuild)" not in src
+    assert 'menu.classList.contains("hidden") ? syncValue() : rebuild()' in src
+    assert "      rebuild();\n      openActionMenu(menu, opener);" in src
+
+
+def test_the_render_after_the_servers_answer_redraws_only_the_new_topics_lines() -> None:
+    """OPEN 813: the answer to an add changes one topic's id and nothing's
+    place, and the render that followed it drew every line's geometry again
+    (22ms of 49 on a 200-topic map, 31ms on 200 topics' ribbons)."""
+    assert "wbRenderMapEdges({ only: new Set([made.id]) });" in WB
+    body = _code("wbRenderMapEdges")
+    assert body.index("only.has(parent.id)") < body.index("wbMapEdgeGeometry(")
+    assert "only.has(parent.id)" in _code("wbRenderMapEdgePluses")

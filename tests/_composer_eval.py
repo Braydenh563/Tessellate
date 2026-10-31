@@ -148,7 +148,9 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
             from tessellate.ai import help_chat
 
             body = next((t["body"] for t in help_chat.HELP_TOPICS if t["id"] == part[2]), "")
-            if text not in body:
+            #: A long sentence is cut to its best clause, which ends in a stop of
+            #: its own where the topic goes on after a ";" or ",".
+            if text.rstrip(".;,: ") not in body:
                 failures.append(f"not in Help topic {part[2]}: {text!r}")
         elif kind == "shifted":
             problem = shifted_failure(part, by_id[part[2]]["content"], on)
@@ -193,8 +195,8 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
                 failures.append(f"not how the question reads: {text!r}")
         elif kind == "confirmed":
             #: The person's own word on an insight (decision 60): its source
-            #: is in the line, "confirmed by you, <date>".
-            if "(confirmed by you, " not in text:
+            #: is in the line, ", as you told me on <date>." (INBOX 1483).
+            if ", as you told me on " not in text:
                 failures.append(f"a confirmed line with no source: {text!r}")
         elif kind == "computed":
             #: Worked out from the question alone (CHAT_PLAN decision 41): the

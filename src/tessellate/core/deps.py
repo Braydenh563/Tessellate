@@ -274,7 +274,7 @@ def _reset_app_state() -> None:
 def reload_llm_client() -> None:
     """Rebuild the chat backend after the provider or its URL changed.
 
-    Settings → Models can switch between Ollama and an OpenAI-compatible
+    Settings, Models can switch between Ollama and an OpenAI-compatible
     server, and the whole point of doing it there is not having to restart the
     app. The embedding service holds the same client, so it is rebuilt too, 
     otherwise switching backend would leave embeddings still talking to the old

@@ -10,17 +10,20 @@ saved preferences and falls back to the defaults.
 from __future__ import annotations
 
 import logging
+import os
 import re
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlsplit
 
 from sqlalchemy import delete, select
 
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core.config import ConfigManager
-from tessellate.core import jobruns, taskhistory
+from tessellate.core import diskspace, jobruns, taskhistory
 from tessellate.core.database import DatabaseManager, EmbeddingRecord, Entry
 from tessellate.core.logbuffer import safe_value
 from tessellate.entry.manager import log_action
@@ -134,7 +137,7 @@ SUGGESTED_MODELS: dict[str, list[dict]] = {
         {"name": "bge-m3", "size": "~1.2 GB", "purpose": "Better on long notes and mixed languages"},
     ],
     # Any of these can be picked as the explicit vision-model override in
-    # Settings → Models (ModelManager.vision_model()), for chat image
+    # Settings, Models (ModelManager.vision_model()), for chat image
     # captions (ai/captioning.py) and image-carrying chat turns
     # (routes_chat._chat_model_sees_images). Asked for directly.
     #
@@ -1111,6 +1114,20 @@ def pull_model(name: str) -> None:
     _run_pull(APP_GETTERS["ollama"](), name, job)
 
 
+def _ollama_models_dir() -> Path:
+    return Path(os.environ.get("OLLAMA_MODELS") or Path.home() / ".ollama" / "models")
+
+
+def _check_room(client: OllamaClient, wanted: int) -> None:
+    """A multi-GB layer that cannot fit stops before it fills the disk (audit
+    1028 E39). Only for an Ollama on this computer: a remote one's disk is not ours."""
+    if urlsplit(client.base_url).hostname not in ("localhost", "127.0.0.1", "::1"):
+        return
+    short = diskspace.shortfall(_ollama_models_dir(), wanted)
+    if short:
+        raise OllamaError(f"Not enough free space: free up {diskspace.human_bytes(short)} and try again.")
+
+
 def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
     started = time.monotonic()
     try:
@@ -1129,6 +1146,8 @@ def _run_pull(client: OllamaClient, name: str, job: Job) -> None:
             if update.get("error"):
                 raise OllamaError(update["error"])
             if update.get("total"):
+                if int(update["total"]) != job.total:
+                    _check_room(client, int(update["total"]) - int(update.get("completed") or 0))
                 job.total = int(update["total"])
                 job.done = int(update.get("completed", job.done))
         job.status = "success"

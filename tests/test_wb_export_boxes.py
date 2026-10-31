@@ -49,7 +49,8 @@ def test_a_radius_cannot_pass_half_the_short_side():
 
 
 def test_a_filled_box_with_no_element_draws_its_data_paper():
-    out = _run('wbSvgBoxBackdrop(null, { bg: "#fde68a", radii: [8, 8, 8, 8] }, 200, 100)')
+    prelude = "const wbExportColour = (c) => c;" + _slice(WB, "function wbPaperPaint(", "function wbExportPaint(")
+    out = _run('wbSvgBoxBackdrop(null, { bg: "#fde68a", radii: [8, 8, 8, 8] }, 200, 100)', prelude)
     assert 'fill="#fde68a"' in out and "<path" in out
 
 

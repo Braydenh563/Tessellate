@@ -25,6 +25,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
+from tessellate.api import bounds
+from tessellate.core import cjk
 from tessellate.core import deps
 from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
@@ -45,7 +47,10 @@ def _age_days(created_at, now) -> int:  # noqa: ANN001  # datetime, kept off the
 
 
 def _tags_of(entry: Entry) -> list[str]:
-    """The note's tags as a list, whatever shape the column holds."""
+    """The note's tags as a list, whatever shape the column holds. Empty for a
+    private note while the vault is locked: they are as private as its text."""
+    if manager.note_is_sealed(entry.is_private):
+        return []
     try:
         tags = json.loads(entry.tags or "[]")
     except (TypeError, ValueError):
@@ -148,6 +153,25 @@ def reset_graph_cache() -> None:
 _text_memo: dict[tuple[str, int], tuple] = {}
 
 
+#: What a private note is called on the map while the vault is locked.
+SEALED_LABEL = "Private note"
+
+
+def _label(entry: Entry, length: int = 40) -> str:
+    """A node's one-line label through the vault gate: the node stays on the
+    map, its words do not (INBOX 1437)."""
+    if manager.note_is_sealed(entry.is_private):
+        return SEALED_LABEL
+    return _preview(manager.readable_content(entry), length)
+
+
+def _words(entry: Entry) -> int:
+    """A node's length in words; nothing to count while the note is sealed."""
+    if manager.note_is_sealed(entry.is_private):
+        return 0
+    return _word_count(manager.readable_content(entry))
+
+
 def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
     """{id: (preview, words)} for these notes, reading only what changed."""
     notebook = str(deps.get_config().data_dir)
@@ -161,8 +185,11 @@ def _note_texts(entries: list) -> dict[int, tuple[str, int]]:
         if hit is not None and hit[0] == e.updated_at and not e.is_private:
             out[e.id] = hit[1]
         else:
-            text = manager.readable_content(e)
-            out[e.id] = (_preview(text), _word_count(text))
+            if manager.note_is_sealed(e.is_private):
+                out[e.id] = (SEALED_LABEL, 0)
+            else:  # one read for both numbers
+                text = manager.readable_content(e)
+                out[e.id] = (_preview(text), _word_count(text))
             if not e.is_private:
                 fresh[key] = (e.updated_at, out[e.id])
                 continue
@@ -211,7 +238,7 @@ def _preview(text: str, length: int = 40) -> str:
     from tessellate.entry.properties import strip as strip_properties
 
     #: KG4: a note's properties block is never its label.
-    for line in strip_properties(text).splitlines():
+    for line in manager.strip_bidi(strip_properties(text)).splitlines():
         words = _preview_line(line)
         if words:
             return words if len(words) <= length else words[: length - 1] + "…"
@@ -640,7 +667,7 @@ def _add_attachment_nodes(
 
 def _word_count(text: str | None) -> int:
     """Words in a note's text, for the map's size-by-length rule."""
-    return len((text or "").split())
+    return cjk.word_count(text)
 
 
 #: What `/graph` reads of a note: the node's fields, the label's text (the
@@ -783,17 +810,7 @@ def _iso_or_none(value):  # noqa: ANN001
     return value.isoformat() if value else None
 
 
-def _build_graph(
-    similarity: bool = False,
-    include_entities: bool = False,
-    include_documents: bool = False,
-    include_maps: bool = False,
-    include_tags: bool = False,
-    include_unresolved: bool = False,
-    include_attachments: bool = False,
-    session: Session | None = None,
-    slim: bool = False,
-) -> JSONResponse:
+def _graph_entries(session: Session, include_maps: bool) -> list:
     # A draft is unfinished by definition, and the Notes tab already keeps
     # every draft out of the notebook it draws from, the graph is a map of
     # your notes and their connections, not a staging area, and a half-typed
@@ -807,10 +824,7 @@ def _build_graph(
     #: same way, so every helper below takes it unchanged.
     entries = list(
         session.execute(
-            select(*_GRAPH_COLUMNS).where(
-                Entry.is_deleted == False,  # noqa: E712
-                Entry.is_draft == False,  # noqa: E712
-            )
+            manager.note_filter(select(*_GRAPH_COLUMNS), boards=manager.BOARDS_INCLUDE)
         )
     )
     #: **A board is an `Entry`, so "off" has to mean "not on the map at all".**
@@ -830,13 +844,10 @@ def _build_graph(
     #: or the path index either.
     if not include_maps:
         entries = [e for e in entries if not getattr(e, "is_board", False)]
-    node_ids = {e.id for e in entries}
-    category_names = manager.bulk_category_names(session, entries)
-    # GRAPH_PLAN Phase 3: "colour by" is a rule picker (category, cluster,
-    # kind, age, space, tag, has a file), so every note carries the fields
-    # each rule reads. One query for the file rule rather than a join per
-    # node; tags are the column's JSON list, never the raw string.
-    with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
+    return entries
+
+
+def _maps_of(session: Session) -> dict[int, list[int]]:
     # GRAPH_PLAN Phase 5: which mind maps a note is on, from the map nodes'
     # own data (a note node stores `ref_id`), one query for the whole
     # payload. `map_ids` is what "has a map" colours by and what the local
@@ -855,9 +866,10 @@ def _build_graph(
             continue
         if isinstance(ref_id, int) and board_id is not None:
             maps_of.setdefault(ref_id, []).append(board_id)
-    now = datetime.now(timezone.utc)
-    #: Each note's label and word count, read once per version (`_note_texts`).
-    labels = _note_texts(entries)
+    return maps_of
+
+
+def _note_types_of(session: Session, node_ids: set[int]) -> dict[int, str]:
     #: WORLD_CLASS_PLAN row 10 (D5): a note's type, for the "Note type" colour
     #: rule, read from the properties index KG4 keeps (one query, the `type`
     #: key's first value per note), never by parsing every note's block. A
@@ -865,12 +877,9 @@ def _build_graph(
     #: A note may spell its type in its own case ("type: book"); the node
     #: carries the type's own name when Note types has it, so "book" and
     #: "Book" are one colour and one legend row, not two.
-    type_colours: dict[str, str] = {}
     canonical: dict[str, str] = {}
-    for name, colour in session.execute(select(NoteType.name, NoteType.colour)):
+    for name in session.scalars(select(NoteType.name)):
         canonical[name.casefold()] = name
-        if colour:
-            type_colours[name] = colour
     type_of: dict[int, str] = {}
     for entry_id, value in session.execute(
         select(EntryProperty.entry_id, EntryProperty.value)
@@ -879,7 +888,22 @@ def _build_graph(
     ):
         if entry_id in node_ids and value:
             type_of.setdefault(entry_id, canonical.get(value.casefold(), value))
-    nodes = [
+    return type_of
+
+
+def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dict]:
+    category_names = manager.bulk_category_names(session, entries)
+    # GRAPH_PLAN Phase 3: "colour by" is a rule picker (category, cluster,
+    # kind, age, space, tag, has a file), so every note carries the fields
+    # each rule reads. One query for the file rule rather than a join per
+    # node; tags are the column's JSON list, never the raw string.
+    with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
+    maps_of = _maps_of(session)
+    now = datetime.now(timezone.utc)
+    #: Each note's label and word count, read once per version (`_note_texts`).
+    labels = _note_texts(entries)
+    type_of = _note_types_of(session, node_ids)
+    return [
         {
             "id": e.id,
             "kind": "note",
@@ -940,9 +964,9 @@ def _build_graph(
         for e in entries
     ]
 
-    edges: list[dict] = []
-    taken: set[frozenset[int]] = set()  # pairs already connected
 
+def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
+    edges: list[dict] = []
     types = manager.relation_types(session)
     for link in session.execute(
         select(
@@ -994,23 +1018,22 @@ def _build_graph(
                 if kind:
                     edges[-1]["type_name"] = kind["name"]
                     edges[-1]["type_inverse"] = kind["inverse"]
+    return edges
 
+
+def _thread_edges(entries: list, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
+    edges: list[dict] = []
     for e in entries:
         if e.parent_id is not None and e.parent_id in node_ids:
             pair = frozenset((e.parent_id, e.id))
             if pair not in taken:
                 taken.add(pair)
                 edges.append({"source": e.parent_id, "target": e.id, "kind": "thread"})
+    return edges
 
-    config = deps.get_config()
-    with_similarity = similarity and not config.get_preference("battery_efficient_mode")
-    if with_similarity:
-        edges.extend(_similarity_edges(session, node_ids, taken))
 
-    #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
-    #: no longer builds an index at all.
-    centrality_scores = _centrality(session, similarity, include_maps)
-
+def _add_degree(nodes: list[dict], edges: list[dict], centrality_scores: dict) -> list[str]:
+    """Stamp each node's degree and centrality; return the stable category order."""
     # Stable category order so the frontend assigns stable colours.
     # Phase 5: degree per node, from the edges this payload carries, so a
     # client never has to count them itself (the colour rule, the label
@@ -1022,17 +1045,28 @@ def _build_graph(
     for node in nodes:
         node["degree"] = degree.get(node["id"], 0)
     categories = sorted({n["category"] for n in nodes})
-    
+
     # Attach PageRank centrality to nodes for dynamic sizing
     for n in nodes:
         n["centrality"] = centrality_scores.get(n["id"], 0)
+    return categories
 
+
+def _add_optional_layers(
+    session: Session,
+    entries: list,
+    nodes: list[dict],
+    edges: list[dict],
+    node_ids: set[int],
+    taken: set[frozenset[int]],
+    flags: dict[str, bool],
+) -> None:
     # ROADMAP.md item 34: off by default (the frontend has to ask for it),
     # since every existing consumer of this endpoint assumes every node id
     # is an Entry id. An entity node's id is prefixed ("entity:5") so it can
     # never collide with one; the frontend's own node-shape code is what
     # tells the two apart, not a numeric range.
-    if include_entities:
+    if flags["entities"]:
         _add_entity_nodes(session, nodes, edges, node_ids)
 
     # Tier 2 item 16: "documents in the graph", off by default, same reason
@@ -1049,7 +1083,7 @@ def _build_graph(
     # around Entry, and extending either to a second node type is a
     # materially bigger, separate change from making a document visible and
     # connected in the first place.
-    if include_documents:
+    if flags["documents"]:
         _add_document_nodes(session, nodes, edges, node_ids)
     #: **A mind map, and the notes it is made of** (MINDMAP_PLAN.md §5 item
     #: 13). This is the "decide once" call §3.3 makes and §5 item 13 restates:
@@ -1071,16 +1105,54 @@ def _build_graph(
     #: assumes every edge joins two notes it retrieved is not wrong, and a map
     #: with forty notes on it would add forty edges to a picture nobody asked
     #: to change.
-    if include_maps:
+    if flags["maps"]:
         _add_map_edges(session, entries, nodes, edges, node_ids, taken)
     # GRAPH_PLAN 514: opt-in, prefixed ids, outside centrality, as above.
-    if include_tags:
+    if flags["tags"]:
         _add_tag_nodes(nodes, edges)
-    if include_unresolved:
+    if flags["unresolved"]:
         _add_unresolved_nodes(session, entries, nodes, edges)
-    if include_attachments:
+    if flags["attachments"]:
         _add_attachment_nodes(session, nodes, edges, node_ids)
 
+
+def _build_graph(
+    similarity: bool = False,
+    include_entities: bool = False,
+    include_documents: bool = False,
+    include_maps: bool = False,
+    include_tags: bool = False,
+    include_unresolved: bool = False,
+    include_attachments: bool = False,
+    session: Session | None = None,
+    slim: bool = False,
+) -> JSONResponse:
+    entries = _graph_entries(session, include_maps)
+    node_ids = {e.id for e in entries}
+    nodes = _note_nodes(session, entries, node_ids)
+
+    taken: set[frozenset[int]] = set()  # pairs already connected
+    edges = _link_edges(session, node_ids, taken)
+    edges.extend(_thread_edges(entries, node_ids, taken))
+
+    config = deps.get_config()
+    with_similarity = similarity and not config.get_preference("battery_efficient_mode")
+    if with_similarity:
+        edges.extend(_similarity_edges(session, node_ids, taken))
+
+    #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
+    #: no longer builds an index at all.
+    centrality_scores = _centrality(session, similarity, include_maps)
+    categories = _add_degree(nodes, edges, centrality_scores)
+    flags = {
+        "entities": include_entities,
+        "documents": include_documents,
+        "maps": include_maps,
+        "tags": include_tags,
+        "unresolved": include_unresolved,
+        "attachments": include_attachments,
+    }
+    _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
     type_colours = {row.name: row.colour for row in session.scalars(select(NoteType)) if row.colour}
@@ -1232,7 +1304,7 @@ def graph_local(
     index, directed, _with_similarity = _local_topology(session, similarity)
 
     if entry_id not in index.entries:
-        return {"nodes": [], "edges": [], "categories": []}
+        raise HTTPException(status_code=404, detail="No such note.")
 
     def oriented(a: int, b: int, kind: str) -> tuple[int, int]:
         if kind not in ("link", "thread"):
@@ -1289,7 +1361,7 @@ def graph_local(
     nodes = [
         {
             "id": e_id,
-            "preview": _preview(manager.readable_content(drawn[e_id])),
+            "preview": _label(drawn[e_id]),
             "category": category_names.get(drawn[e_id].category_id, manager.UNCATEGORISED),
             "access_count": drawn[e_id].access_count,
             "pinned": drawn[e_id].pinned,
@@ -1306,7 +1378,7 @@ def graph_local(
             # unparseable double-suffixed string in JavaScript.
             "created_at": drawn[e_id].created_at.isoformat(),
             # The size rule's numbers, as on the whole map (see `graph`).
-            "words": _word_count(manager.readable_content(drawn[e_id])),
+            "words": _words(drawn[e_id]),
             "updated_at": (drawn[e_id].updated_at or drawn[e_id].created_at).isoformat(),
         }
         for e_id in visited
@@ -1328,7 +1400,7 @@ def _path_node(entry: Entry, category_names: dict[int | None, str]) -> dict:
     enough text to read a chain as a sentence when the graph is not on screen."""
     return {
         "id": entry.id,
-        "preview": _preview(manager.readable_content(entry), 60),
+        "preview": _label(entry, 60),
         "category": category_names.get(entry.category_id, manager.UNCATEGORISED),
     }
 
@@ -1772,8 +1844,8 @@ class PinBody(BaseModel):
     # already scoped to the graph by its own path.
     #: No NaN or infinity: SQLite keeps an infinity, and the graph's response
     #: then cannot be encoded, so one bad pin broke the whole tab.
-    x: float | None = Field(default=None, allow_inf_nan=False)
-    y: float | None = Field(default=None, allow_inf_nan=False)
+    x: bounds.PinCoord | None = None
+    y: bounds.PinCoord | None = None
 
 
 def _pin_target(node_id: object) -> tuple[str, int] | None:
@@ -1835,8 +1907,8 @@ class PinRow(BaseModel):
     #: A note's number, or `document:N` for a document node (B78); the topic
     #: "Document" is a ring of them, so a drag of it carries both kinds.
     id: int | str
-    x: float = Field(allow_inf_nan=False)
-    y: float = Field(allow_inf_nan=False)
+    x: bounds.PinCoord
+    y: bounds.PinCoord
 
 
 class PinsBody(BaseModel):

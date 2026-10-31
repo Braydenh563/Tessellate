@@ -39,16 +39,11 @@
 // An Obsidian-style force-directed map. D3 is vendored locally
 // (frontend/vendor): the offline rule allows no CDN.
 
-let graphSimulation = null; // stopped before every rebuild
 let graphHiddenCategories = new Set(); // legend toggles (Wave M)
-let graphNodeSelection = null; // live d3 selections, for search-highlight
-let graphEdgeSelection = null;
-let graphLabelSelection = null; // the label layer's per-node <g> wrappers
 // Refs kept so the on-screen zoom buttons can drive the same behaviour as
 // scroll-zoom, and hover-highlight can look up a node's neighbours.
 let graphSvg = null;
 let graphZoom = null;
-let graphCanvas = null;
 let graphNodesRef = null;
 
 //: **A pin as a step on the undo stack** (INBOX 898). `before` and `after` are
@@ -120,21 +115,17 @@ function graphPinStep(label, changes) {
 }
 // A saved view's node positions (GRAPH_PLAN Phase 5, INBOX 275's neighbour
 // row), one render's worth. `graphApplyView` stashes `view.positions` here;
-// the next `renderGraphCanvas()` (graph-canvas.js, the default renderer)
+// the next `renderGraphCanvas()` (graph-canvas.js)
 // its own `set()` calls trigger reads and clears it, and every render after
 // that (the same `graphApplyView` call fires several more, one per control
 // it restores: layout, colour, physics, entities...) just inherits the
 // seeded positions forward through `prior`, the same as any other re-render
 // already does. See that function's node-build step for the decision this
 // exists to carry out: a restored arrangement holds, it does not re-settle.
-// Not read by the legacy `renderGraphSvg()` (graph.js): that path is a
-// dev-only fallback (`localStorage["graph-renderer"] = "svg"`, no UI
-// control) slated for deletion once the canvas renderer passes the gate.
 let graphPendingViewPositions = null;
 let graphMinimapTick = 0; // throttles minimap repaints during a cooling layout
-//: Set by the renderer each time the map is built. Repositions the label
-//: layer after it has been skipped while invisible, see the tick handler.
-//: A no-op before the first render, so every caller can call it blind.
+//: A no-op kept for the label tickbox's handler (wiring.js): the canvas draws
+//: its names in the frame, so there is no label layer to catch up.
 let graphCatchUpLabels = () => {};
 let graphDims = { w: 0, h: 0 };
 // Set once the camera has auto-framed the map for the tab's current visit,
@@ -143,28 +134,8 @@ let graphDims = { w: 0, h: 0 };
 // tab" from "a filter checkbox changed" apart; the caller has to say which.
 let graphAutoFitDone = false;
 let graphHoveredId = null; // node the pointer is over (spotlight its links)
-let graphIsPanning = false; // an active pan/zoom drag, see zoomBehavior below
 let graphAdjacency = null; // Map<id, Set<neighbourId>>
-// The traced path is drawn in its own layer, above the edges and the nodes: a
-// step can be a shared tag, which the map draws no edge for, so highlighting
-// the existing lines would show a chain with holes in it (§9).
-let graphTraceLayer = null;
 
-//: The largest a node can get, from `graphNodeRadius` below: its 9px base
-//: plus the 12px ceiling on the centrality bonus (the access bonus caps
-//: lower, and `Math.max` takes one or the other, never both). Named because
-//: the world-size calculation needs to reserve room for the worst case
-//: rather than the average, and a literal there would drift the moment
-//: either cap below changed.
-const GRAPH_NODE_MAX_RADIUS = 21;
-
-//: How far a hovered node grows, in the same world units as its radius. Half
-//: the distance out to its own halo (which is drawn at `r + 6`): the whole
-//: distance was the first version and was shown to the owner, who called the
-//: growth "a bit visually jarring". `GC_HOVER_GROW` in graph-canvas.js is the
-//: same number for the other renderer, and the two must not drift apart: a
-//: reader switching renderers would see the same map behave differently.
-const GRAPH_HOVER_GROW = 3;
 
 function graphNodeRadius(node) {
   //: The canvas renderer sizes a node by its *degree* (GRAPH_PLAN.md §5 Phase
@@ -312,7 +283,6 @@ const RADIAL_GAP = 82;
 // written straight down the same spoke. That is why an intermediate note is
 // labelled shorter than a leaf (RADIAL_STEM below): the step has to clear it.
 const REPLY_RING = 78;
-const RADIAL_STEM = 10; // characters, for a label written down a shared spoke
 
 // The arc layout (§9's third hierarchy view, beside tree and radial): every
 // node, category, note and reply alike, sits on one baseline, in the same
@@ -323,20 +293,7 @@ const RADIAL_STEM = 10; // characters, for a label written down a shared spoke
 // notebook's filing has and how deep any one of them runs, in the width of a
 // single row rather than the height of a tree or the footprint of a circle.
 const ARC_STEP = 58; // horizontal spacing per node
-// Reported directly, with a screenshot: a label's text was long enough, at a
-// 46px step and a 40° tilt, to run its own end into the *next* node's slot: 
-// read as "the label is attached to the wrong node". At ARC_STEP's old value,
-// 20 chars * ~6.5px/char * cos(40°) was ~100px of horizontal travel, more
-// than two node-steps. Shortened here, and the step above widened and the
-// tilt below steepened, so a label's horizontal reach stays under one step.
-const ARC_LABEL_LIMIT = 12; // characters: diagonal labels have less room before they cross the next node's arc
 
-// Labels on the left half of the circle would read upside down, so they are
-// turned around: which swaps which way "outward" is for everything after.
-function radialFlip(node) {
-  const degrees = ((node.angle || 0) * 180) / Math.PI - 90;
-  return degrees > 90 || degrees < -90;
-}
 
 // Where each ring goes. Every constraint here is a thing that was measured
 // going wrong: categories too tight to name, notes too tight to label, the
@@ -597,7 +554,7 @@ function arcRise(links, fallback) {
 // rows of text become illegible. Fit the *width*, never magnify past 1:1, and
 // start at the top, the panel pans, and a readable tree you scroll beats a
 // complete one you can't read.
-function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc = false, instant = false) {
+function frameTree(svg, zoomBehavior, nodes, width, height, radial, arc = false, instant = false) {
   //: In the part of the map the overlays and open panels leave (INBOX 792,
   //: `gcFitInsets`), as the force layout's fit is.
   const ins = typeof gcTab !== "undefined" && gcTab.svg === svg ? gcFitInsets(gcTab) : null;
@@ -607,29 +564,17 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
     width = Math.max(1, width - ins.left - ins.right);
     height = Math.max(1, height - ins.top - ins.bottom);
   }
-  // Labels stick out past the node they belong to: to the right in a tree, in
-  // every direction on a radial, and by however much the longest one happens
-  // to be. Guessing that with a padding constant left label tips off the edge
-  // of the panel; the drawing is already in the DOM, so ask it. `getBBox` is
-  // in the canvas's own coordinates, the zoom transform is not applied yet , 
-  // and covers the rotated labels' real corners.
-  // `getBBox` is an SVG method: on the canvas renderer there is no element to
-  // ask, and `canvas` arrives null. The zero-width fallback below is the same
-  // path a hidden panel already took, so both cases are handled by the code
-  // that was already here rather than by a second branch.
-  const drawn =
-    canvas && canvas.node() && canvas.node().getBBox ? canvas.node().getBBox() : { width: 0 };
   const xs = nodes.map((n) => n.x);
   const ys = nodes.map((n) => n.y);
-  // A hidden panel measures zero, so fall back to the node positions.
-  let box = drawn.width
-    ? drawn
-    : {
-        x: Math.min(...xs) - 40,
-        y: Math.min(...ys) - 30,
-        width: Math.max(...xs) - Math.min(...xs) + 200,
-        height: Math.max(...ys) - Math.min(...ys) + 60,
-      };
+  // Labels stick out past the node they belong to: to the right in a tree, in
+  // every direction on a radial. The canvas has no element to measure, so the
+  // box is the node positions plus a margin for them.
+  let box = {
+    x: Math.min(...xs) - 40,
+    y: Math.min(...ys) - 30,
+    width: Math.max(...xs) - Math.min(...xs) + 200,
+    height: Math.max(...ys) - Math.min(...ys) + 60,
+  };
   //: **An arc's arcs are part of it** (INBOX 544, the owner: it "starts a
   //: little too close and too high up"). The canvas renderer has nothing to
   //: `getBBox`, so the box above was the baseline alone, ±30px: the arcs
@@ -641,7 +586,7 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
   //: and right. The tree's +200 to the right only, kept above for the
   //: labels a tree draws beside its dots, put the ring 60px left of the
   //: view's centre (the owner, 2026-10-10: "it put me on a random corner").
-  if (radial && !drawn.width) {
+  if (radial) {
     box = {
       x: Math.min(...xs) - 90,
       y: Math.min(...ys) - 30,
@@ -661,7 +606,7 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
       height: Math.max(...ys) - Math.min(...ys),
     };
   }
-  if (arc && !drawn.width) {
+  if (arc) {
     const spanXs = Math.max(...xs) - Math.min(...xs);
     const spanYs = Math.max(...ys) - Math.min(...ys);
     const rise = arcRise(typeof gcTab !== "undefined" ? gcTab.tree?.links : null, 0.3 * spanXs);
@@ -738,9 +683,6 @@ function frameTree(svg, zoomBehavior, canvas, nodes, width, height, radial, arc 
 //: The traced path, or null. `{ ids: [...], steps: [...] }`, ids in order, so
 //: the drawing can look up consecutive pairs without re-deriving them.
 let graphTrace = null;
-//: The overlay lines, kept so the force simulation's tick can move them with
-//: the nodes they join.
-let graphTraceLines = null;
 
 //: **Every route between the two notes, best first, and which one is showing.**
 //: Asked for directly: "allow for multiple paths to be displayed if they
@@ -929,17 +871,7 @@ function renderTraceState() {
 // Kept for the note context menu, which offers "trace from here".
 function setTraceEnd(which, noteId) {
   setTracePanelOpen(true);
-  //: **`graphNodesRef`, not the d3 selection.** `graphNodeSelection` is the
-  //: SVG renderer's own `<g>` join and is null on the canvas renderer, so this
-  //: found nothing there and every Trace started from the node popup answered
-  //: "that note isn't on the map right now" whatever was on the map. Found by
-  //: `graph.js`'s own sweep once it got far enough to reach the check.
-  //: `graphNodesRef` is the live node array on both renderers, which is the
-  //: whole reason it exists, and the selection stays as the fallback for a
-  //: moment when the array has not been built yet.
-  const node =
-    (graphNodesRef || []).find((n) => String(n.id) === String(noteId)) ||
-    graphNodeSelection?.data().find((n) => String(n.id) === String(noteId));
+  const node = (graphNodesRef || []).find((n) => String(n.id) === String(noteId));
   if (!node) {
     showTraceMessage("That note isn't on the map right now, clear filters and try again.");
     return;
@@ -1173,7 +1105,7 @@ function renderTraceReadout(result) {
   header.className = "graph-trace-header";
   const summary = document.createElement("span");
   summary.className = "graph-trace-step";
-  summary.textContent = `${result.hops} step${result.hops === 1 ? "" : "s"}`;
+  summary.textContent = nounCount(result.hops, "step");
   header.appendChild(summary);
 
   const path = document.createElement("div");
@@ -1227,7 +1159,7 @@ function renderTraceReadout(result) {
       swatch.setAttribute("aria-hidden", "true");
       const label = document.createElement("span");
       const hops = route.steps.length;
-      label.textContent = `Route ${index + 1} · ${hops} step${hops === 1 ? "" : "s"}`;
+      label.textContent = `Route ${index + 1} · ${nounCount(hops, "step")}`;
       chip.append(swatch, label);
       chip.title =
         index === 0
@@ -1320,100 +1252,15 @@ function tracePath(a, b) {
   return `M${a.x},${a.y}A${rx},${ry} 0 0,${sweep} ${b.x},${b.y}`;
 }
 
-// Position the overlay from the nodes it joins. Called once for a laid-out
-// tree, and on every tick of the force simulation, which is why it is a
-// function of the current node objects rather than of stored coordinates.
-function positionTraceLines() {
-  if (!graphTraceLines) return;
-  if (graphLayout() === "arc") {
-    graphTraceLines.attr("d", (d) => tracePath(d.from, d.to));
-  } else {
-    graphTraceLines
-      .attr("x1", (d) => d.from.x)
-      .attr("y1", (d) => d.from.y)
-      .attr("x2", (d) => d.to.x)
-      .attr("y2", (d) => d.to.y);
-  }
-}
-
 // (Re)draw the overlay for the current trace. Segments whose notes are not on
 // the map are dropped rather than drawn to nowhere, the readout above still
 // names them.
 function drawTrace() {
-  // On the canvas renderer the overlay is painted from `graphTrace` /
-  // `graphTraceRoutes` inside the frame (see `gcDrawTrace`), so redrawing it is
-  // a redraw request. Everything above this line, running the search, filling
-  // the readout, the route chips, is renderer-agnostic and unchanged.
-  if (graphRenderer() === "canvas") {
-    gcRequestDraw();
-    return;
-  }
-  if (!graphTraceLayer) return;
-  const byId = new Map((graphNodesRef || []).map((n) => [n.id, n]));
-  //: **Every route is drawn, not just the selected one.** The question a
-  //: second route answers is "is that the only way these connect?", and that
-  //: is a question about the picture: switching between routes one at a time
-  //: would never show you that there are three. The selected one is solid, the
-  //: rest are ghosted (see `.graph-path-route-*` and `.is-dimmed` in the
-  //: stylesheet), and the colour index matches the route chip's swatch, so a
-  //: line and its chip are the same route without a click.
-  //:
-  //: A segment shared by two routes is drawn twice, deliberately: the second
-  //: draw sits on top, so a shared spine reads in the selected route's colour
-  //: rather than in whichever route happened to be rendered last.
-  const routes = graphTraceRoutes.length
-    ? graphTraceRoutes
-    : graphTrace
-      ? [{ steps: graphTrace.steps }]
-      : [];
-  const segments = [];
-  routes.forEach((route, index) => {
-    if (index === graphTraceIndex) return; // drawn last, so it wins the overlap
-    for (const step of route.steps || []) {
-      const from = byId.get(step.source);
-      const to = byId.get(step.target);
-      if (from && to) segments.push({ from, to, kind: step.kind, route: index, dim: true });
-    }
-  });
-  for (const step of routes[graphTraceIndex]?.steps || []) {
-    const from = byId.get(step.source);
-    const to = byId.get(step.target);
-    if (from && to) {
-      segments.push({ from, to, kind: step.kind, route: graphTraceIndex, dim: false });
-    }
-  }
-  // Arc draws the overlay as a <path> (see `tracePath`); every other layout
-  // draws it as a <line>. Switching layout while a trace is active must not
-  // leave the previous shape's elements behind: `.selectAll(tag)` only ever
-  // sees its own tag, so the other one is removed by hand first.
-  const isArc = graphLayout() === "arc";
-  graphTraceLayer.selectAll(isArc ? "line" : "path").remove();
-  graphTraceLines = graphTraceLayer
-    .selectAll(isArc ? "path" : "line")
-    .data(segments)
-    .join(isArc ? "path" : "line")
-    // `.graph-path-line` already sets `fill: none`, needed for the <path>
-    // case, harmless on a <line>.
-    .attr(
-      "class",
-      (d) =>
-        `graph-path-line graph-path-${d.kind} graph-path-route-${d.route % 3}` +
-        (d.dim ? " is-dimmed" : "")
-    );
-  positionTraceLines();
-  if (graphNodeSelection) {
-    //: Only the *selected* route's notes are marked "on path". The other
-    //: routes are visible as lines; lighting up their notes too would make
-    //: half the map look traced and undo the point of highlighting anything.
-    const onPath = new Set(graphTrace ? graphTrace.ids : []);
-    graphNodeSelection.classed("graph-on-path", (d) => onPath.has(d.id));
-    graphNodeSelection.classed(
-      "graph-path-end",
-      (d) =>
-        graphTrace != null &&
-        (d.id === graphTrace.ids[0] || d.id === graphTrace.ids[graphTrace.ids.length - 1])
-    );
-  }
+  // The overlay is painted from `graphTrace` / `graphTraceRoutes` inside the
+  // frame (see `gcDrawTrace`), so redrawing it is a redraw request. Everything
+  // above this line, running the search, filling the readout, the route chips,
+  // is unchanged.
+  gcRequestDraw();
 }
 
 // --- drag one note onto another to link them (§9) ----------------------------
@@ -1440,16 +1287,7 @@ function drawTrace() {
 //: nearest neighbour, so a drop in open space still links nothing.
 const DROP_SLOP = 14;
 
-//: The note the current drag is hovering over, remembered from the last
-//: `drag` event so the drop can use it. See the `end` handler for why a fresh
-//: hit test at release finds nothing.
-let graphDropTarget = null;
 
-//: The nodes a drag pinned so they would hold still while it aimed. Kept as a
-//: list rather than inferred at release, because "was pinned by this drag" and
-//: "was held by the user" are the same `fx != null` afterwards, and releasing
-//: the second kind would silently undo a double-click hold.
-let graphDragPinned = [];
 
 function graphNodeUnder(dragged, event) {
   for (const other of graphNodesRef || []) {
@@ -1863,19 +1701,6 @@ function graphSyncFocusChip() {
   }
 }
 
-//: Which renderer draws the map, GRAPH_PLAN.md §5 Phase 1.
-//:
-//: The canvas renderer (graph-canvas.js) replaces the SVG one below; while
-//: both exist, `localStorage["graph-renderer"] = "svg"` puts the old one back.
-//: That switch is not a preference and has no control in the UI, it exists so
-//: the gate's before/after frame numbers could be measured on one build,
-//: against one fixture, rather than compared across two checkouts. The SVG
-//: path is deleted in one commit once the canvas one passes the gate, and this
-//: function goes with it.
-function graphRenderer() {
-  return prefs.get("graph-renderer", null) === "svg" ? "svg" : "canvas";
-}
-
 //: **The map's category colours.** Its own ordinal scale supplies the
 //: automatic colour (a category's place in the sorted list, so the same
 //: notebook always draws the same), and `categoryColour` (notes-list.js) puts the one
@@ -1911,32 +1736,23 @@ document.addEventListener("categorycolours", () => {
 
 async function renderGraph() {
   closeGraphLinkPeek();
-  const svg = document.getElementById("graph-svg");
   const canvas = document.getElementById("graph-canvas");
-  // `typeof` rather than a bare name: graph-canvas.js is a separate <script>,
-  // and a load failure there must degrade to the old renderer rather than
-  // throw a ReferenceError out of every control that calls this.
-  const useCanvas =
-    graphRenderer() === "canvas" && canvas;
-  if (svg) svg.classList.toggle("hidden", Boolean(useCanvas));
-  if (canvas) canvas.classList.toggle("hidden", !useCanvas);
-  if (useCanvas) {
-    //: The first draw of a visit fades in once the layout has taken its first
-    //: frames, instead of showing the nodes mid-shuffle (owner, 2026-10-12:
-    //: "so it isnt so in your face"). A later redraw (a switch, a filter)
-    //: keeps what is on screen.
-    const first = !canvas.dataset.revealed;
-    if (first) canvas.classList.add("graph-entering");
-    try {
-      return await renderGraphCanvas();
-    } finally {
-      if (first) {
-        canvas.dataset.revealed = "1";
-        setTimeout(() => canvas.classList.remove("graph-entering"), 60);
-      }
+  if (!canvas) return;
+  canvas.classList.remove("hidden");
+  //: The first draw of a visit fades in once the layout has taken its first
+  //: frames, instead of showing the nodes mid-shuffle (owner, 2026-10-12:
+  //: "so it isnt so in your face"). A later redraw (a switch, a filter)
+  //: keeps what is on screen.
+  const first = !canvas.dataset.revealed;
+  if (first) canvas.classList.add("graph-entering");
+  try {
+    return await renderGraphCanvas();
+  } finally {
+    if (first) {
+      canvas.dataset.revealed = "1";
+      setTimeout(() => canvas.classList.remove("graph-entering"), 60);
     }
   }
-  return renderGraphSvg();
 }
 
 //: The local graph's query (GRAPH_PLAN 514 (1)): depth and the three
@@ -2000,1266 +1816,6 @@ function graphFill(data) {
   return data;
 }
 
-async function renderGraphSvg() {
-  const wantSimilarity = $("graph-similarity").checked;
-  // ROADMAP.md item 34: off by default and only on the top-level graph, not
-  // the local/focus view: entities are membership edges to *notes*, and
-  // /graph/local's own depth-limited walk has no equivalent concept yet.
-  const wantEntities = $("graph-entities")?.checked;
-  // Tier 2 item 16, same "top-level graph only" scope as entities just
-  // above: a document's edge is a link to a *note*, and /graph/local's own
-  // depth-limited BFS has no equivalent concept yet.
-  const wantDocuments = $("graph-documents")?.checked;
-  // MINDMAP_PLAN.md §5 item 13, same "top-level graph only" scope as the two
-  // above, and for the same reason: a map's edge is membership of a *note*,
-  // and /graph/local's depth-limited BFS has no equivalent concept yet.
-  const wantMaps = $("graph-maps")?.checked;
-  void wantEntities, wantDocuments, wantMaps;
-  graphSyncFocusChip();
-  const endpoint = graphEndpoint();
-    
-  //: A failed read is not an empty graph. Reported class of bug: the map
-  //: drew "Nothing to map yet" over a notebook full of linked notes because
-  //: the only thing distinguishing the two was a null this returned silently.
-  //: See `surfaceFailed` in navigation.js.
-  const data = await apiJson(endpoint).then(graphFill).catch(() => null);
-  if (!data) {
-    surfaceFailed(document.getElementById("graph-empty"), "map", renderGraph);
-    //: And the overview goes with the map it summarises, exactly as it does
-    //: when there is nothing to map.
-    graphMinimapShown(false);
-    return;
-  }
-  surfaceRecovered(document.getElementById("graph-empty"));
-
-  if (graphSimulation) graphSimulation.stop();
-  const svg = d3.select("#graph-svg");
-  svg.on(".zoom", null); // Prevent memory leak from duplicate zoom listeners
-  svg.selectAll("*").remove();
-
-  // Premium UI: Orb gradient definitions for tactile nodes
-  const defs = svg.append("defs");
-  const orbGrad = defs.append("radialGradient")
-    .attr("id", "orb-shine")
-    .attr("cx", "35%")
-    .attr("cy", "30%")
-    .attr("r", "65%");
-  orbGrad.append("stop").attr("offset", "0%").attr("stop-color", "white").attr("stop-opacity", "0.65");
-  orbGrad.append("stop").attr("offset", "100%").attr("stop-color", "white").attr("stop-opacity", "0");
-
-  // Inline display beats every stylesheet rule, the overlay can never
-  // float over a populated graph again (user-reported, Wave O).
-  const empty = $("graph-empty");
-  empty.style.display = data.nodes.length > 0 ? "none" : "grid";
-  empty.classList.toggle("hidden", data.nodes.length > 0);
-  //: The minimap goes with it. Measured: on an empty graph the render path
-  //: returns before `graphMinimapPaint` is ever reached, so the guard inside
-  //: the paint could not fire and the empty box stayed on screen under the
-  //: top bar. This line is the one place that already knows, authoritatively,
-  //: whether there is a map at all.
-  graphMinimapShown(data.nodes.length > 0);
-
-  // Colour legend: one dot per category, same scale as the nodes.
-  const color = graphCategoryScale(data.categories);
-  const clusterColour = d3.scaleOrdinal(graphCalmScheme());
-  const colourMode = graphColourMode();
-  // The structure is only fetched when something is going to show it. It is a
-  // traversal of the whole notebook, and an ordinary look at the map should
-  // not pay for an answer nobody asked for.
-  graphStructure =
-    colourMode === "cluster" || colourMode === "topic"
-      ? await apiJson(`/graph/structure${colourMode === "topic" ? "?topics=1" : ""}`).catch(() => null)
-      : null;
-  // What a node's colour means. Category headings in a tree layout keep their
-  // category colour in both modes: they are filing by definition, and a
-  // heading is not a note that can belong to a cluster.
-  const nodeColour = (d) => {
-    if (colourMode === "category" || !graphStructure || d.isGroup) {
-      return color(d.category);
-    }
-    const cluster = (colourMode === "topic" ? graphStructure.topic_of || {} : graphStructure.cluster_of)[String(d.id)];
-    // Connected to nothing: deliberately not a colour of its own. An orphan is
-    // the absence of structure, and giving it a bright twelfth hue would make
-    // the thing that is missing look like another kind of group.
-    return cluster === undefined ? "var(--muted)" : clusterColour(String(cluster));
-  };
-
-  const legend = $("graph-legend");
-  legend.replaceChildren();
-  if (colourMode === "cluster" && graphStructure) {
-    // In cluster mode the legend describes clusters, because a legend whose
-    // dots do not match the colours on screen is worse than no legend. Its
-    // entries highlight rather than filter, a cluster is something you want
-    // to *find*, where a category is something you want to get out of the way.
-    graphStructure.clusters.forEach((cluster, position) => {
-      const item = document.createElement("button");
-      item.className = "legend-item legend-toggle";
-      item.title =
-        `${cluster.size} notes, around "${cluster.core.preview}"` +
-        (cluster.categories.length ? ` · ${cluster.categories.join(", ")}` : "");
-      const dot = document.createElement("span");
-      dot.className = "legend-dot";
-      dot.style.background = clusterColour(String(position));
-      item.append(
-        dot,
-        document.createTextNode(`${cluster.core.preview} (${cluster.size})`)
-      );
-      item.addEventListener("click", () => {
-        graphHighlightIds = new Set(cluster.ids);
-        applyGraphHighlight();
-      });
-      legend.appendChild(item);
-    });
-    if (graphStructure.orphan_count) {
-      const item = document.createElement("button");
-      item.className = "legend-item legend-toggle";
-      item.title = "Notes with no link, no reply and no shared tag";
-      const dot = document.createElement("span");
-      dot.className = "legend-dot";
-      dot.style.background = "var(--muted)";
-      item.append(
-        dot,
-        document.createTextNode(`unconnected (${graphStructure.orphan_count})`)
-      );
-      item.addEventListener("click", () => {
-        graphHighlightIds = new Set(graphStructure.orphans.map((n) => n.id));
-        applyGraphHighlight();
-      });
-      legend.appendChild(item);
-    }
-    if (graphHiddenCategories.size) {
-      // The category filters still apply, they just have no controls in this
-      // mode. Saying so beats a map quietly missing notes.
-      const note = document.createElement("span");
-      note.className = "legend-item";
-      note.textContent = `${graphHiddenCategories.size} category filter${
-        graphHiddenCategories.size === 1 ? "" : "s"
-      } still on: switch to “By category” to change them`;
-      legend.appendChild(note);
-    }
-  } else {
-    for (const category of data.categories) {
-      // Legend entries double as filters (Wave M): click to hide/show.
-      const item = document.createElement("button");
-      item.className = "legend-item legend-toggle";
-      item.classList.toggle("legend-off", graphHiddenCategories.has(category));
-      item.title = graphHiddenCategories.has(category)
-        ? `Show ${category} again`
-        : `Hide ${category} from the map`;
-      item.setAttribute("aria-pressed", String(!graphHiddenCategories.has(category)));
-      const dot = document.createElement("span");
-      dot.className = "legend-dot";
-      dot.style.background = color(category);
-      item.append(dot, document.createTextNode(category));
-      item.addEventListener("click", () => {
-        if (graphHiddenCategories.has(category)) graphHiddenCategories.delete(category);
-        else graphHiddenCategories.add(category);
-        renderGraph();
-      });
-      legend.appendChild(item);
-    }
-  }
-
-  // Apply the legend filter: drop hidden categories and their edges.
-  let visibleNodes = data.nodes.filter(
-    (n) => !graphHiddenCategories.has(n.category)
-  );
-  const keptIds = new Set(visibleNodes.map((n) => n.id));
-  const visibleEdges = data.edges.filter(
-    (e) => keptIds.has(e.source) && keptIds.has(e.target) && !(gcLinkKindHidden(e))
-  );
-  // "Hide unlinked" (declutter): keep only notes that appear in an edge.
-  if ($("graph-hide-orphans") && $("graph-hide-orphans").checked) {
-    const connected = new Set();
-    for (const e of visibleEdges) {
-      connected.add(e.source);
-      connected.add(e.target);
-    }
-    visibleNodes = visibleNodes.filter((n) => connected.has(n.id));
-  }
-  if (!visibleNodes.length) {
-    empty.style.display = "grid";
-    empty.classList.remove("hidden");
-    return;
-  }
-
-  const box = $("graph-box");
-  //: **Whether those two fallbacks below are load-bearing this run.** A box
-  //: inside a tab that has not been laid out yet reports `clientWidth` 0, so
-  //: the `|| 800` is not a safety net, it is a guess that then gets used as
-  //: the frame for a whole layout. The tree layouts are the ones where that
-  //: shows: reported as "I loaded up the tree graph and it looked like this
-  //: but when I went onto another graph view and came back it was fine",
-  //: which is the second render finding a real width. Recorded here and
-  //: acted on where the tree is framed.
-  const boxMeasured = box.clientWidth > 0 && box.clientHeight > 0;
-  const width = box.clientWidth || 800;
-  const height = box.clientHeight || 540;
-  svg.attr("viewBox", [0, 0, width, height]);
-
-  // One zoomable/pannable group holds everything.
-  const canvas = svg.append("g");
-  const zoomBehavior = d3
-    .zoom()
-    .scaleExtent([0.05, 5])
-    // Reported: dragging on empty canvas "sometimes highlights an unrelated
-    // note". A pan drag translates the whole canvas under a stationary
-    // cursor, so whatever node happens to slide past it fires a real
-    // `mouseenter`, and clearing hover only at the start/end of the
-    // gesture left a race: a `mouseenter` mid-pan (the node passing under
-    // the cursor) could re-set it *after* "start" cleared it, and nothing
-    // cleared it again until the next real hover. `graphIsPanning` mutes
-    // hover updates for the gesture's whole duration instead, so a node
-    // sliding past during a pan never lights up at all, only a real,
-    // stationary hover once the drag is over does.
-    .on("start", () => {
-      graphIsPanning = true;
-      graphHoveredId = null;
-      applyGraphHighlight();
-      // Profiled directly (120 notes, Chromium CDP metrics): a pan drag cost
-      // noticeably more main-thread recalc-style time than an idle baseline,
-      // even though `graphIsPanning` above already mutes the *application's*
-      // hover logic. The gap is the browser's own `:hover` pseudo-class: 
-      // every node the cursor physically sweeps under during the drag still
-      // matches `.graph-node:hover`, which re-triggers CSS transitions
-      // (`.graph-core`'s `stroke`/`stroke-width`, `.graph-halo`'s `opacity`)
-      // per node, invisible to any JS mute. `pointer-events: none` for the
-      // gesture's duration removes that hit-testing entirely; node drags
-      // never reach here (their own `mousedown` already calls
-      // `stopPropagation()` before the zoom behaviour's `start` fires), so
-      // this cannot affect them.
-      canvas.classed("graph-panning", true);
-    })
-    .on("end", () => {
-      graphIsPanning = false;
-      graphHoveredId = null;
-      applyGraphHighlight();
-      canvas.classed("graph-panning", false);
-    })
-    .on("zoom", (event) => {
-      canvas.attr("transform", event.transform);
-      graphMinimapFrame(); // the viewport rectangle follows the real transform
-      // Semantic Zoom logic
-      const isZoomedOut = event.transform.k < 0.45;
-      if (canvas.classed("semantic-zoom-out") !== isZoomedOut) {
-        canvas.classed("semantic-zoom-out", isZoomedOut);
-        const duration = 250;
-        
-        // Use try/catch or typeof since these are initialized after zoom setup
-        if (typeof nodeGroups !== "undefined") {
-          nodeGroups.transition().duration(duration).style("opacity", isZoomedOut ? 0 : 1).style("pointer-events", isZoomedOut ? "none" : "all");
-          if (typeof labelLayer !== "undefined") {
-            labelLayer.transition().duration(duration).style("opacity", isZoomedOut ? 0 : 1);
-            // Zooming back in is the other way the layer becomes visible.
-            // The transition sets opacity asynchronously, so the catch-up
-            // has to run after it or `labelsOnScreen()` still reads "0".
-            if (!isZoomedOut) setTimeout(graphCatchUpLabels, duration + 20);
-          }
-          if (typeof edgeLayer !== "undefined") edgeLayer.transition().duration(duration).style("opacity", isZoomedOut ? 0 : 1);
-          if (typeof graphTraceLayer !== "undefined" && graphTraceLayer) graphTraceLayer.transition().duration(duration).style("opacity", isZoomedOut ? 0 : 1);
-          if (typeof clusterLayer !== "undefined" && clusterLayer) clusterLayer.transition().duration(duration).style("opacity", isZoomedOut ? 1 : 0).style("pointer-events", isZoomedOut ? "all" : "none");
-        }
-      }
-    });
-  svg.call(zoomBehavior).on("dblclick.zoom", null); // dblclick pins, not zooms
-
-  // Keep refs so the +/−/fit buttons drive this same zoom behaviour.
-  graphSvg = svg;
-  graphZoom = zoomBehavior;
-  graphCanvas = canvas;
-  graphDims = { w: width, h: height };
-  initGraphMinimap();
-  initGraphDockHeightToken();
-  initGraphToastClearance();
-  initGraphViews();
-
-  // D3 mutates these (x/y/vx/vy), so work on copies.
-  const layoutKind = graphLayout();
-  const tree = layoutKind === "force" ? null : layoutHierarchy(
-    visibleNodes.map((n) => ({ ...n })), layoutKind, width, height
-  );
-  // In a tree the drawn edges *are* the hierarchy: the note links are a
-  // different structure, and overlaying them turns the tree back into the
-  // web it exists to be an alternative to.
-  //
-  // A force-layout note that was already on screen keeps the spot it had
-  // settled into: read from `graphNodesRef` before it's overwritten below
-  //, instead of every render restarting the whole map's "explode outward
-  // from the centre" animation from scratch. Before this, toggling a single
-  // legend filter or dragging a physics slider replayed that same
-  // full-notebook animation, which read as the map never actually being at
-  // rest. A genuinely new node (nothing to inherit) still gets D3's normal
-  // spiral placement: only existing notes are pinned in place at start.
-  const priorPositions = new Map(
-    (graphNodesRef || []).map((n) => [n.id, { x: n.x, y: n.y, vx: n.vx, vy: n.vy }])
-  );
-  const nodes = tree
-    ? tree.nodes
-    : visibleNodes.map((n) => {
-        const prior = priorPositions.get(n.id);
-        const built = prior ? { ...n, ...prior } : { ...n };
-        // Restore a persisted double-click pin. Deliberately re-applied on
-        // every render, not just a fresh load: `prior` above only carries
-        // x/y/vx/vy, never fx/fy, so without this a pin held this same
-        // session was silently dropped by the next legend-filter toggle or
-        // physics-slider change: the reload case ROADMAP §87.1 named was
-        // one symptom of the same "fx/fy never survives a rebuild" gap.
-        if (built.graph_pin_x != null && built.graph_pin_y != null) {
-          built.fx = built.graph_pin_x;
-          built.fy = built.graph_pin_y;
-        }
-        return built;
-      });
-  const edges = tree ? tree.links : visibleEdges.map((e) => ({ ...e }));
-  graphNodesRef = nodes;
-  // Adjacency for hover-highlight: which notes each note is linked to.
-  graphAdjacency = new Map(nodes.map((n) => [n.id, new Set()]));
-  for (const e of edges) {
-    const from = tree ? e.source.id : e.source;
-    const to = tree ? e.target.id : e.target;
-    graphAdjacency.get(from)?.add(to);
-    graphAdjacency.get(to)?.add(from);
-  }
-
-  // Physics sliders (0–100, default 50) scale the tuned defaults so the
-  // out-of-the-box layout is unchanged at 50.
-  const gravity = prefs.number("graph-gravity", 50, { min: 0, max: 100 });
-  const spread = prefs.number("graph-spread", 50, { min: 0, max: 100 });
-  const spreadScale = 0.5 + spread / 50; // 0.5×–2.5× the base link distance
-  const gravityScale = 0.4 + gravity / 41.7; // stronger pull → tighter clusters
-  //: **Gravity moves the whole layout, not the repulsion alone.** At 100 the
-  //: slider only ever weakened the charge, and the centring pull and the
-  //: collide padding stayed at their defaults, so the map at maximum
-  //: gravity still sat as far apart as those two let it (the owner:
-  //: "maximum gravity still seems quite spread apart"). `pull` is 1 at the
-  //: default of 50, so the out-of-the-box layout is unchanged; above it the
-  //: centring strengthens and the padding between nodes narrows, below it
-  //: the reverse, within bounds that keep labels legible.
-  const pull = gravityScale / 1.6;
-  const collidePad = Math.max(12, Math.min(48, 24 / pull));
-  //: **Link length by similarity** (View menu, on by default): a similarity
-  //: line carries its score and a deduced link its confidence, and a strong
-  //: relation should read as a short one. 1.3x the base length at 0, 0.7x at
-  //: 1; a link with no score keeps the base length.
-  const lengthByScore = prefs.get("graph-length-score", null) !== "0";
-  const linkLength = (d) => {
-    const base = (d.kind === "similar" ? 130 : 80) * spreadScale;
-    const score = lengthByScore ? d.score ?? d.reason_confidence : null;
-    if (typeof score !== "number" || Number.isNaN(score)) return base;
-    return base * (1.3 - 0.6 * Math.max(0, Math.min(1, score)));
-  };
-
-  graphSimulation = tree
-    ? null
-    : d3
-    .forceSimulation(nodes)
-    // Profiled directly (120 notes, Chromium CDP metrics under 6x CPU
-    // throttling: the standard proxy for lower-end hardware): a pan/drag
-    // *while the simulation is still cooling* cost 80% main-thread busy
-    // time; the same gesture after it had settled cost 57%. The tick
-    // handler updates every node/edge/label position on every tick, so it
-    // directly competes with whatever the user is doing, and the default
-    // decay (0.0228) takes ~300 ticks, which under real throttling is many
-    // seconds, squarely covering "pan right after the graph opens", the
-    // single most likely first action. A faster decay does not change
-    // where the layout settles (the forces above decide that), only how
-    // many ticks it takes to get there, which is the actual jank window.
-    .alphaDecay(0.05)
-    .force(
-      "link",
-      d3
-        .forceLink(edges)
-        .id((d) => d.id)
-        .distance(linkLength)
-    )
-    // More repulsion + a mild centring pull → notes spread out and fill
-    // the space instead of clumping in the middle (Wave N polish).
-    .force("charge", d3.forceManyBody().strength(-340 / gravityScale))
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("x", d3.forceX(width / 2).strength(0.04 * pull))
-    .force("y", d3.forceY(height / 2).strength(0.06 * pull))
-    .force("collide", d3.forceCollide().radius((d) => graphNodeRadius(d) + collidePad));
-  // How much larger than the visible frame the simulation may spread. 1.8 is
-  // not arbitrary: the clamp below has to be loose enough that the repulsion
-  // and collide forces, not the walls, decide where a node ends up, at 1.0
-  // (the frame itself) they packed into a lattice, and tight enough that the
-  // drift the clamp exists to stop is still bounded. Zoom-to-fit means a
-  // larger world is only ever a smaller starting zoom, never lost notes.
-  const GRAPH_WORLD_SCALE = 1.8;
-  // **The world is sized by how many notes there are, not by the shape of
-  // the window.** Reported again after the 1.8x-the-frame version above:
-  // "the graph nodes seem to be stuck in an invisible rectangular box", with
-  // a screenshot showing them packed against a straight edge.
-  //
-  // Multiplying the frame was the right idea and the wrong axis. A graph box
-  // is wide and short, so `height * 1.8` on a full-screen map is a few
-  // hundred pixels of vertical room, and every node claims a collide radius
-  // of roughly 50px plus 24 of padding. Past about twenty notes the walls,
-  // not the forces, are what the layout settles against, and what settles
-  // between outward repulsion and a wall is a rectangle. The frame's aspect
-  // ratio has nothing to do with how much room a given number of notes
-  // needs, which is why tying the two kept reproducing this.
-  //
-  // So: a **square** world whose side grows with sqrt(count): area scales
-  // linearly with the number of notes, which is the honest relationship, 
-  // floored at the old frame-derived size so a small notebook is unchanged.
-  // Square, because a circular blob is what these forces actually produce
-  // and a square is the smallest box that never squashes one.
-  //
-  // A bigger world costs nothing on screen: zoom-to-fit frames whatever the
-  // nodes end up occupying, so this only ever changes their arrangement.
-  const perNode = 2 * (GRAPH_NODE_MAX_RADIUS + 28);
-  const roomy = Math.sqrt(Math.max(nodes.length, 1)) * perNode * 1.6;
-  const worldSide = Math.max(roomy, width * GRAPH_WORLD_SCALE, height * GRAPH_WORLD_SCALE);
-  const worldW = worldSide;
-  const worldH = worldSide;
-  const worldLeft = (width - worldW) / 2;
-  const worldTop = (height - worldH) / 2;
-  const worldRight = worldLeft + worldW;
-  const worldBottom = worldTop + worldH;
-  if (tree) graphSimulation = null;
-
-  // A tree's edges are curves between fixed points; the web's are lines that
-  // move on every tick. Different elements, so each can be what it needs.
-  const edgeLayer = canvas.append("g");
-  const edgePathD = (d) => (tree.arc ? arcPath(d) : hierarchyPath(d, tree.radial));
-  const edgeLines = tree
-    ? edgeLayer
-        .selectAll("path.graph-edge")
-        .data(edges)
-        .join("path")
-        .attr("class", (d) => `graph-edge graph-edge-${d.kind}`)
-        .attr("fill", "none")
-        .attr("d", edgePathD)
-    : edgeLayer
-        .selectAll("line.graph-edge")
-        .data(edges)
-        .join("line")
-        .attr("class", (d) => `graph-edge graph-edge-${d.kind}`);
-
-  // Reported directly: the actual visible line (1.6px, thinner once dimmed)
-  // is a hard target to click precisely. A second, invisible, much wider
-  // stroke on the same path/line is the standard SVG way to grow a click
-  // target without also growing what's drawn: the same shape as the
-  // whiteboard's own `.sketch-hitbox` this session already added for the
-  // identical reason. Drawn *under* the visible line's join below so the
-  // tooltip/click listener attach to this wider element, not the thin one.
-  const edgeHitLines = tree
-    ? edgeLayer
-        .selectAll("path.graph-edge-hit")
-        .data(edges)
-        .join("path")
-        .attr("class", (d) => `graph-edge-hit graph-edge-${d.kind}`)
-        .attr("fill", "none")
-        .attr("d", edgePathD)
-    : edgeLayer
-        .selectAll("line.graph-edge-hit")
-        .data(edges)
-        .join("line")
-        .attr("class", (d) => `graph-edge-hit graph-edge-${d.kind}`);
-
-  // A link's own reason ("why are these connected?", asked for directly),
-  // as a native SVG tooltip. `<title>` is the SVG way to get a hover
-  // tooltip on a shape; there's no HTML `title` attribute equivalent for
-  // `<line>`/`<path>`. Re-added after every join rather than left stale, so
-  // a link edited or re-drawn on refresh doesn't keep showing an old reason.
-  edgeHitLines.each(function (d) {
-    const el = d3.select(this);
-    el.selectAll("title").remove();
-    if (d.reason) {
-      // A deduced reason carries a confidence score (0..1); one a person or
-      // the AI typed doesn't, so this only ever shows up on the guessed kind.
-      const text =
-        d.reason_confidence != null
-          ? `${d.reason} (deduced, ${deducedStrength(d.reason_confidence)})`
-          : d.reason;
-      el.append("title").text(text);
-    }
-  });
-  // A reason was hover-only before this, discoverable only by finding the
-  // one edge you already suspected and holding still over it. Asked for
-  // directly: "a visual way to see the reasons... and a way to manage/add/
-  // remove/edit them." A distinct edge style makes "this connection has a
-  // documented reason" visible at a glance, not just on hover; a click
-  // opens the real management panel below. The class also drives
-  // `.graph-edge-reasoned`'s stronger colour on the *visible* thin line, 
-  // toggled on both selections so hover/reason styling and the click
-  // target agree on which edges are which.
-  edgeLines.classed("graph-edge-reasoned", (d) => d.kind === "link" && !!d.reason);
-  // **A disagreement should not look like every other line on the map.**
-  // `contradicts` is the one link type that says the two notes are at odds
-  // rather than together (see `core/database.py`'s LINK_TYPES), and the
-  // Tensions review now produces them, but the graph drew them exactly like
-  // a "related" edge, so the payoff of finding one was invisible here.
-  edgeLines.classed("graph-edge-contradicts", (d) => d.link_type === "contradicts");
-  edgeHitLines
-    .classed("graph-edge-manageable", (d) => d.kind === "link")
-    .on("click", (event, d) => {
-      if (d.kind !== "link") return;
-      event.stopPropagation();
-      openGraphLinkPanel(d, nodes);
-    });
-
-  // Semantic Zoom: Clustering super-nodes
-  const categoryGroups = d3.group(nodes, d => d.category || "Uncategorized");
-  const clustersData = Array.from(categoryGroups, ([key, values]) => ({ id: key, category: key, nodes: values }));
-  
-  const clusterLayer = canvas.append("g")
-    .attr("class", "graph-clusters-layer")
-    .style("opacity", 0) // Hidden by default (zoomed in)
-    .style("pointer-events", "none");
-    
-  const clusterGroups = clusterLayer
-    .selectAll("g")
-    .data(clustersData)
-    .join("g")
-    .attr("class", "graph-cluster");
-    
-  clusterGroups.append("circle")
-    .attr("r", d => 25 + Math.sqrt(d.nodes.length) * 12)
-    .attr("fill", d => clusterColour(d.category))
-    .attr("fill-opacity", 0.6)
-    .attr("stroke", d => d3.color(clusterColour(d.category)).darker(1))
-    .attr("stroke-width", 2);
-    
-  clusterGroups.append("text")
-    .text(d => d.category)
-    .attr("text-anchor", "middle")
-    .attr("dy", "0.3em")
-    .style("font-size", "16px")
-    .style("font-weight", "bold")
-    .style("fill", "var(--text-main)")
-    .style("paint-order", "stroke")
-    .style("stroke", "var(--bg-main)")
-    .style("stroke-width", "4px")
-    .style("stroke-linecap", "round")
-    .style("stroke-linejoin", "round");
-
-  const nodeGroups = canvas
-    .append("g")
-    .selectAll("g")
-    .data(nodes)
-    .join("g")
-    .attr("class", "graph-node")
-    //: **The hover scale, per node, because every node is a different size.**
-    //: Asked for: "can you make graph nodes temporarily expand to fill their
-    //: glow bubble when I hover over them or smth?? I feel like the graph
-    //: nodes could look slightly nicer, cooler, more professional and more
-    //: modern."
-    //:
-    //: The halo is drawn at `graphNodeRadius(d) + 6`, so the factor that takes
-    //: the core exactly out to it is `(r + 6) / r`, and that is a different
-    //: number for every node: 1.67 on a 9px leaf, 1.30 on a 20px hub. A single
-    //: hard-coded scale in the stylesheet would overshoot the small nodes and
-    //: barely move the large ones, which is the opposite of the effect. CSS
-    //: cannot compute it either (`r` is an attribute, not a value CSS can read
-    //: back), so the arithmetic is done here, where the radius is known, and
-    //: handed to the stylesheet as a custom property.
-    //:
-    //: `.style()` and not a `style=` attribute: the CSP refuses inline style
-    //: attributes, and d3's `.style` goes through `setProperty` on the
-    //: element, which it allows.
-    .style("--graph-hover-scale", (d) => {
-      const r = graphNodeRadius(d);
-      return r > 0 ? (r + GRAPH_HOVER_GROW) / r : 1;
-    })
-    // A pin restored above (fx/fy set from graph_pin_x/graph_pin_y) needs
-    // the same held-look the dblclick handler gives a pin made live, 
-    // otherwise a reload shows the node correctly *held in place* with no
-    // visual sign it's pinned at all.
-    .classed("graph-held", (d) => !graphLayoutIsComputed() && d.fx != null)
-    .call(
-      d3
-        .drag()
-        //: A drag never starts in a computed layout. `filter` rather than a
-        //: guard inside `start`: d3-drag's own filter is what decides whether
-        //: the gesture exists at all, so the pointer keeps its normal
-        //: behaviour (the zoom behaviour's pan) instead of being captured by
-        //: a drag that then declines to do anything.
-        .filter((event) => !graphLayoutIsComputed() && !event.button && !event.ctrlKey)
-        .on("start", (event, d) => {
-          if (!event.active) graphSimulation?.alphaTarget(0.3).restart();
-          // Real bug, found live while testing the pin-persistence feature
-          // below: **an ordinary click is a zero-distance drag**, d3-drag
-          // fires start/end on any mousedown+mouseup, moved or not, and
-          // this handler used to set/clear `d.fx` on *every* click
-          // unconditionally, node-being-dragged included. A double-click's
-          // own two constituent clicks each ran a full drag start/end
-          // cycle *before* the dblclick handler ever saw `d.fx`, which
-          // cleared a pre-existing pin both times, so the dblclick
-          // handler always found `d.fx === null` and could only ever pin,
-          // never unpin, no matter what the node's real state was.
-          // Remembered here and restored at "end" below, the same care
-          // `graphDragPinned` already gives every *other* node.
-          d.wasPinnedBeforeThisDrag = d.fx != null;
-          //: Shift is the pin (INBOX 96). Read at the start of the gesture,
-          //: not at its end, so a modifier pressed or released mid-drag
-          //: cannot change what the gesture meant halfway through.
-          d.dragShift = Boolean(event.sourceEvent && event.sourceEvent.shiftKey);
-          // Where this gesture began, so "end" can tell a placement from a
-          // bare click: see its own comment.
-          d.dragStartX = d.x;
-          d.dragStartY = d.y;
-          d.fx = d.x;
-          d.fy = d.y;
-          // **Everything else stands still for the length of the drag.**
-          // Reported: "how does the drag to connect work if the nodes are
-          // constantly pushed away from each other?" It didn't, and that is
-          // the honest answer: reheating the simulation set every *other*
-          // note moving at exactly the moment you were trying to aim at one.
-          // The code below already carried a workaround for the symptom
-          // (remembering the lit target rather than hit-testing at release,
-          // because the target moved out from under the pointer); this
-          // removes the cause. Aiming at a moving target is not a gesture, it
-          // is a reflex test.
-          //
-          // Pinned by hand here rather than by stopping the simulation,
-          // because the ticks are what keep the edges attached to the node
-          // you *are* dragging. And only the nodes this pins are released, 
-          // a note double-clicked to hold its place stays held, which is the
-          // whole point of that gesture.
-          graphDragPinned = [];
-          for (const other of nodes) {
-            if (other === d || other.fx != null) continue;
-            other.fx = other.x;
-            other.fy = other.y;
-            graphDragPinned.push(other);
-          }
-        })
-        .on("drag", (event, d) => {
-          d.fx = event.x;
-          d.fy = event.y;
-          // Drag-to-link (§9): light up whatever this note is currently over,
-          // so the gesture says what it will do *before* it does it. Without
-          // this, dropping is a guess and every miss is an accidental link.
-          graphDropTarget = graphNodeUnder(d, event);
-          nodeGroups.classed("graph-drop-target", (other) => other === graphDropTarget);
-        })
-        // A regular function, not an arrow: `d3.select(this)` below needs the
-        // dragged node's own element, and d3 supplies it as `this`. An arrow
-        // would silently close over the module scope instead and the
-        // held-look would be applied to nothing.
-        .on("end", function (event, d) {
-          if (!event.active) graphSimulation?.alphaTarget(0);
-          // **The note that was lit, not the one under the cursor now.**
-          // Dragging reheats the simulation, so every other node is still
-          // drifting: between the last mousemove and the mouse-up the target
-          // moves out from under the pointer, and a fresh hit test at release
-          // finds nothing. Driven in a browser: the highlight appeared and the
-          // link was never made, every time.
-          //
-          // Using the remembered target also matches what the person saw. The
-          // node lit up; releasing links *that* one. A gesture that can light
-          // one note and link another would be worse than one that missed.
-          const over = graphDropTarget;
-          graphDropTarget = null;
-          nodeGroups.classed("graph-drop-target", false);
-          if (over) linkByDrop(d, over);
-          // Let the layout breathe again, but only the nodes this drag
-          // pinned. A node the user held with a double-click keeps its place.
-          for (const other of graphDragPinned) {
-            other.fx = null;
-            other.fy = null;
-          }
-          graphDragPinned = [];
-          if (tree) return; // a laid-out tree keeps its shape
-
-          // **Dragging a note places it, and it stays placed.** Reported
-          // directly: "the way connections are made feels more annoying and
-          // manual", "the main graph view, while cool to look at, is soooooo
-          // annoying to use", "the gravity and separation in the main graph
-          // view are annoying".
-          //
-          // This line used to be `d.fx = null; d.fy = null`, the node you
-          // had just dragged somewhere was handed straight back to the
-          // simulation, which pulled it off to wherever the forces wanted it.
-          // Holding a note where you put it required a *double-click*, a
-          // gesture nothing on screen mentions. So the honest description of
-          // the old behaviour is: the one obvious way to arrange the map did
-          // not arrange it, and the way that did was invisible.
-          //
-          // A drag is an intentional placement, the most deliberate gesture
-          // in the whole view, so it is treated as one. Double-click keeps
-          // its meaning and becomes the *inverse*: hand this note back to
-          // the layout. That is a better pairing than the old one anyway,
-          // because "let go of this" is the rarer action and the one worth
-          // hiding behind a second gesture.
-          //
-          // A drag that never moved is not a placement. d3-drag fires
-          // start/end on a bare click (the bug the "start" handler above
-          // documents at length), and pinning every note anyone clicked on
-          // would freeze the map by accident.
-          const movedFar =
-            Math.abs(d.x - d.dragStartX) > 2 || Math.abs(d.y - d.dragStartY) > 2;
-          //: **A plain drag places a note; Shift pins it.** This block used
-          //: to pin on any drag over 2px, and the long comment above records
-          //: why: before it, a released note was handed straight back to the
-          //: simulation and pulled off to wherever the forces wanted, so
-          //: arranging the map was impossible.
-          //:
-          //: The owner has now asked for the other end of that (INBOX 96):
-          //: "I move a node a little and then I have to unpin it and there's
-          //: got to be a better way." Both complaints are satisfied by the
-          //: same rule, and the reason is that releasing is not the same as
-          //: snapping back: the simulation's alpha is already decaying at
-          //: this point, so a released node settles *from where it was
-          //: dropped*, with its neighbours, instead of being yanked to a
-          //: fresh solution. Placement without permanence is what the map
-          //: wanted all along; a pin, for the notes that must not move, is
-          //: Shift and drag, or the node menu.
-          const pinning = d.dragShift || d.wasPinnedBeforeThisDrag;
-          if (!pinning) {
-            d.fx = null;
-            d.fy = null;
-          } else if (movedFar && !d.isGroup) {
-            // Same persistence the double-click pin has always used, so a
-            // map you arranged is still arranged after a reload, which is
-            // most of what "make my own thought process map" means.
-            d3.select(this).classed("graph-held", true);
-            d.graph_pin_x = d.fx;
-            d.graph_pin_y = d.fy;
-            graphPinStep("Moved a pinned note", [{
-              id: d.id,
-              before: d.wasPinnedBeforeThisDrag ? { x: d.dragStartX, y: d.dragStartY } : null,
-              after: { x: d.fx, y: d.fy },
-            }]);
-            graphPinSave(d.id, d.graph_pin_x, d.graph_pin_y).catch(() => {
-              // Best-effort, exactly as the double-click path already is: the
-              // in-memory placement above has already taken effect, so a
-              // failed save costs the reload and nothing else.
-            });
-          }
-          delete d.wasPinnedBeforeThisDrag;
-          delete d.dragShift;
-        })
-    )
-    .on("click", (event, d) => {
-      // Same treatment as an entity node: view-only for this first pass, 
-      // opening a document from here would need the Library's own
-      // document-editor navigation, not a note's, and that's a separate
-      // change from making the node visible and connected in the first
-      // place.
-      if (d.isGroup || d.type === "entity" || d.type === "document") return;
-      // Trace is a *mode*: while it is on, clicking the map picks the two ends
-      // rather than opening notes. This branch is the whole reason Trace was
-      // unusable: `traceModeActive` was set and then consulted nowhere, so
-      // the map stayed inert and the only way to choose a note was two
-      // select boxes listing every note in the notebook by its first words.
-      if (traceModeActive) {
-        event.stopPropagation();
-        pickTraceEnd(d);
-        return;
-      }
-      // Same gap Trace had before the branch above: the popup's own "Link"
-      // button sets `linkSource` and its toast says "click another note on
-      // the map to link them", but nothing here ever read `linkSource` -
-      // so that click just opened the second note's popup instead of
-      // completing the link. Reported directly ("doesn't properly function
-      // when I try to click on another note to link it").
-      if (linkSource !== null) {
-        event.stopPropagation();
-        beginOrCompleteLink(d);
-        return;
-      }
-      openGraphPopup(event, d);
-    })
-    // Double-click pins a node where it is; again releases it (Wave M).
-    // Persisted server-side (PUT /graph/pin/{id}) so the pin survives a
-    // reload, not just this session, ROADMAP §87.1's own audit named the
-    // in-memory-only version as the gap. Group nodes (tree/radial layout's
-    // synthetic category rows) have no backing note to persist against, so
-    // they keep the old in-memory-only behaviour.
-    .on("dblclick", function (event, d) {
-      event.stopPropagation(); // don't also zoom
-      //: In a tree, a ring or an arc every node is already held at a computed
-      //: position, so "unpin" would release it into a simulation that then
-      //: re-solves the whole board: the reported "I test double clicked on a
-      //: node and it broke them all out of position".
-      if (graphLayoutIsComputed()) return;
-      const wasPinned = d.fx != null;
-      if (wasPinned) {
-        d.fx = null;
-        d.fy = null;
-        d3.select(this).classed("graph-held", false);
-      } else {
-        d.fx = d.x;
-        d.fy = d.y;
-        d3.select(this).classed("graph-held", true);
-      }
-      if (d.isGroup) return;
-      d.graph_pin_x = wasPinned ? null : d.fx;
-      d.graph_pin_y = wasPinned ? null : d.fy;
-      const was = wasPinned ? { x: d.fx ?? d.x, y: d.fy ?? d.y } : null;
-      graphPinStep(wasPinned ? "Unpinned a note" : "Pinned a note", [{ id: d.id, before: was, after: d.graph_pin_x == null ? null : { x: d.graph_pin_x, y: d.graph_pin_y } }]);
-      graphPinSave(d.id, d.graph_pin_x, d.graph_pin_y).catch(() => {
-        // Best-effort: a failed save leaves the pin working for this
-        // session (the in-memory fx/fy above already took effect) and
-        // simply not surviving a reload, the same degraded-but-working
-        // shape this feature had before persistence existed at all.
-      });
-    });
-
-  // A soft outer halo behind each node, gives the map more depth and makes
-  // busy hub notes read as brighter (visual polish, user request).
-  nodeGroups
-    .append("circle")
-    .attr("class", "graph-halo")
-    .attr("r", (d) => graphNodeRadius(d) + 6)
-    .attr("fill", nodeColour);
-
-  nodeGroups
-    .append("circle")
-    .attr("class", "graph-core")
-    .classed("graph-group", (d) => Boolean(d.isGroup))
-    // A differently-shaped node was the roadmap's own suggestion (item 34)
-    // for telling an entity apart from a note at a glance; a dashed ring is
-    // the version that doesn't need a second SVG shape (a <rect> sized and
-    // centred to match graphNodeRadius) for one node kind.
-    .classed("graph-node-entity", (d) => d.type === "entity")
-    .classed("graph-node-document", (d) => d.type === "document")
-    .attr("r", graphNodeRadius)
-    .attr("fill", nodeColour)
-    .classed("graph-pinned", (d) => d.pinned)
-    // Well-connected notes get a highlighted ring so the "hubs" of your
-    // notebook stand out at a glance.
-    .classed("graph-hub", (d) => (graphAdjacency.get(d.id)?.size || 0) >= 3);
-
-  // Apply the premium orb shine over the core for a 3D tactile aesthetic
-  nodeGroups
-    .append("circle")
-    .attr("class", "graph-orb-shine")
-    .attr("r", graphNodeRadius)
-    .attr("fill", "url(#orb-shine)")
-    .attr("pointer-events", "none");
-  // A star badge, so favourites are identifiable at a glance. Said as
-  // "Favourite" rather than "Pinned" for the reason the popup's own note
-  // below records: one flag, one name, everywhere.
-  nodeGroups
-    .filter((d) => d.pinned)
-    .append("text")
-    .attr("class", "graph-pin-badge")
-    .attr("dy", (d) => -graphNodeRadius(d) - 4)
-    .text("Favourite");
-  // Native tooltip: full preview + category + how connected it is.
-  nodeGroups.append("title").text((d) => {
-    const links = graphAdjacency.get(d.id)?.size || 0;
-    return (
-      `${d.preview}\n[${d.category}] · ${links} connection${links === 1 ? "" : "s"}` +
-      `${d.access_count ? ` · used ${d.access_count}×` : ""}`
-    );
-  });
-  // Where the label goes is the difference between a readable tree and a
-  // pile of overlapping text. Under the node is right for the web, where
-  // nodes are spread in two dimensions; in a tree the rows are only
-  // TREE_ROW apart, so it has to sit *beside* the node instead.
-  const labelLayer = canvas.append("g").attr("class", "graph-label-layer");
-  const labelGroups = labelLayer.selectAll("g").data(nodes).join("g");
-  const labels = labelGroups
-    .append("text")
-    .attr(
-      "class",
-      (d) =>
-        `graph-label${tree ? " graph-label-tree" : ""}` +
-        `${tree && d.isGroup ? " graph-label-group" : ""}`
-    )
-    .text((d) => {
-      // A radial's labels stick out of every side, so their length is what
-      // decides how far the view has to zoom out; a tree's only extend
-      // right, into space the columns already reserve.
-      // Radial labels are what decide how far the view has to zoom out, and
-      // the two written down a *shared* spoke, a category's, and a note that
-      // has a reply hanging off it, are the ones that have to stay short.
-      const limit = !tree
-        ? 22
-        : tree.arc
-          ? ARC_LABEL_LIMIT
-          : !tree.radial
-            ? 30
-            : d.isGroup || d.shared
-              ? RADIAL_STEM
-              : 16;
-      return d.preview.length > limit ? d.preview.slice(0, limit - 1) + "…" : d.preview;
-    });
-  if (!tree) {
-    labels.attr("dy", (d) => graphNodeRadius(d) + 13);
-  } else if (tree.arc) {
-    // Every node sits on one baseline, so a label straight above or below it
-    // would collide with its neighbours within a single ARC_STEP. Tilted and
-    // pivoted on its own anchor point (not the origin), it reads outward from
-    // the node instead of overlapping the one next to it.
-    //
-    // Reported directly, with a screenshot: tilted *upward* (the original
-    // `rotate(-40, ...)`), every label sat in exactly the space `arcPath`'s
-    // connection lines curve through above the baseline, the labels and
-    // the arcs they were meant to sit beside were fighting for the same
-    // strip of the map. Measured before touching anything: 60 of 61 labels
-    // had a bounding box overlapping a `.graph-edge`. Flipping the tilt to
-    // point *down* moves every label into the empty half of the row, the
-    // arcs never dip below the baseline, while keeping the same
-    // anti-collision shape (still angled and reading outward, not stacked
-    // straight down onto the next node).
-    labels
-      .attr("x", (d) => graphNodeRadius(d) + 6)
-      .attr("y", 0)
-      .attr("dy", "0.31em")
-      // Steeper than the original 40°, more vertical, less horizontal reach
-      // per character: so a label's own end lands closer to underneath its
-      // node instead of drifting into the next node's slot (see ARC_STEP above).
-      .attr("transform", (d) => `rotate(58, ${graphNodeRadius(d) + 6}, 0)`)
-      .style("text-anchor", "start");
-  } else if (tree.radial) {
-    // Rotated to its own radius and flipped on the left half, or every label
-    // past the halfway point reads upside down. The hub is the exception: it
-    // has no meaningful direction to point in, and radiating from radius 0
-    // put it straight through whichever category shared its angle.
-    labels
-      .attr("dy", (d) => (d.depth ? "0.31em" : graphNodeRadius(d) + 13))
-      .attr("transform", (d) => {
-        if (!d.depth) return null;
-        const degrees = ((d.angle || 0) * 180) / Math.PI - 90;
-        return `rotate(${degrees})${radialFlip(d) ? " rotate(180)" : ""}`;
-      })
-      // The offset is an `x` *inside* the flipped frame, not a translate
-      // outside it: translating by −out and then rotating 180° sends the
-      // label back across the node towards the centre, which is how the hub's
-      // name ended up printed over a category's.
-      .attr("x", (d) => {
-        if (!d.depth) return 0;
-        const out = graphNodeRadius(d) + 6;
-        return radialFlip(d) ? -out : out;
-      })
-      // A style, not an attribute: `.graph-node text` sets `text-anchor:
-      // middle` in the stylesheet, and a rule always beats a presentation
-      // attribute: set as an attr, every one of these silently stayed
-      // centred and the labels overlapped the ring.
-      .style("text-anchor", (d) => (!d.depth ? "middle" : radialFlip(d) ? "end" : "start"));
-  } else {
-    labels
-      // A node with children has edges leaving it rightwards, along the line
-      // its own label would sit on, and where the child is a lone reply that
-      // edge runs the label's whole length. A halo hides a thin line between
-      // glyphs but not between words, so it read as struck through. Every
-      // branch point is labelled above its row instead; leaves, which nothing
-      // leaves from, keep the label beside them.
-      .attr("dy", (d) => (d.isLeaf ? "0.31em" : -graphNodeRadius(d) - 5))
-      .attr("x", (d) => graphNodeRadius(d) + 7)
-      .style("text-anchor", "start");
-  }
-
-  // The traced path sits above both the edges and the nodes, because it is an
-  // answer drawn over the picture rather than another connection in it.
-  graphTraceLayer = canvas.append("g").attr("class", "graph-trace-layer");
-
-  // Labels toggle: when off, labels only appear on hover (declutters a big
-  // map). Driven by a class so toggling never rebuilds the simulation.
-  $("graph-box").classList.toggle("graph-labels-hidden", !$("graph-labels").checked);
-  graphRestoreSwitches();
-  graphCatchUpLabels();
-
-  // A plain-language readout of what's on screen, so the map isn't a
-  // mystery: how many notes and what kinds of connections link them.
-  const counts = { link: 0, thread: 0, similar: 0, filing: 0, map: 0 };
-  for (const e of edges) counts[e.kind] = (counts[e.kind] || 0) + 1;
-  const noteCount = nodes.filter((n) => !n.isGroup).length;
-  const parts = [`${noteCount} note${noteCount === 1 ? "" : "s"}`];
-  if (counts.link) parts.push(`${counts.link} link${counts.link === 1 ? "" : "s"}`);
-  if (counts.thread) parts.push(`${counts.thread} thread${counts.thread === 1 ? "" : "s"}`);
-  if (counts.similar) parts.push(`${counts.similar} similarity line${counts.similar === 1 ? "" : "s"}`);
-  if (counts.filing) parts.push(`${counts.filing} filed under a category`);
-  // "on a mind map", not "map link": the edge means this note is a node on
-  // that map, and naming the relationship is the whole reason this line
-  // exists rather than a legend of colours.
-  if (counts.map) parts.push(`${counts.map} on a mind map`);
-  // In cluster mode the structural facts replace the "bigger notes are the
-  // ones you use most" hint, because they are what the colours are now saying.
-  const shape =
-    colourMode === "cluster" && graphStructure
-      ? `, ${graphStructure.clusters.length} cluster` +
-        `${graphStructure.clusters.length === 1 ? "" : "s"}` +
-        (graphStructure.small_clusters
-          ? ` + ${graphStructure.small_clusters} pair${
-              graphStructure.small_clusters === 1 ? "" : "s"
-            }`
-          : "") +
-        `, ${graphStructure.orphan_count} connected to nothing.`
-      : layoutKind === "tree"
-        ? ", filed left to right; replies branch off the note they answer."
-        : layoutKind === "radial"
-          ? ", categories around the centre; replies branch off the note they answer."
-          : layoutKind === "arc"
-            ? ", one line, filed left to right; arcs below show what answers what."
-            : layoutKind === "treemap"
-              ? ", each category's area in proportion to its notes."
-              : "";
-  // The shape sentence is an *explanation*, and it was costing a full row
-  // above the canvas on every layout, reported as the graph "feeling
-  // squashed on my screen due to the top dock". Counts stay on the line
-  // because they are facts about this notebook that change; the sentence
-  // that describes how a layout works is the same every time you read it,
-  // so it moves to the line's own tooltip, next to the "?" that already
-  // exists for exactly this kind of thing.
-  $("graph-stats").textContent = parts.join(" · ");
-  $("graph-stats").title = shape ? shape.replace(/^\s*: \s*/, "") : "";
-  graphSyncLayoutChip(layoutKind);
-
-  // Hover-highlight (spotlight a note's connections). Uses the same dimming
-  // pipeline as search so the two never fight each other.
-  nodeGroups
-    .on("mouseenter", (_event, d) => {
-      if (graphIsPanning) return; // a node sliding past mid-pan isn't a hover
-      graphHoveredId = d.id;
-      applyGraphHighlight();
-    })
-    .on("mouseleave", () => {
-      if (graphIsPanning) return;
-      graphHoveredId = null;
-      applyGraphHighlight();
-    });
-
-  if (tree) {
-    // Laid out, not simulated: the paths are already drawn, so this only has
-    // to place the nodes and frame the result. Same guard as the force
-    // layout's own fit-on-settle below, a fresh tab visit frames the tree,
-    // a legend-filter or physics-slider re-render doesn't recentre a camera
-    // the user may have already zoomed in with on purpose.
-    nodeGroups.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    labelGroups.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    if (!graphAutoFitDone) {
-      //: Only commit the one auto-fit this view gets if the box it is being
-      //: fitted to was real. On a first visit it often is not (see
-      //: `boxMeasured` above), and framing a tree against the 800x540
-      //: fallback is what the owner saw: a tree drawn to the wrong frame
-      //: that came good only after a trip through another layout. Out of a
-      //: real measurement the fit waits one frame for layout rather than
-      //: spending `graphAutoFitDone` on a guess. The flag is re-checked
-      //: inside, because a render that arrives in between has a better
-      //: claim on the camera than this retry does.
-      if (boxMeasured) {
-        graphAutoFitDone = true;
-        frameTree(svg, zoomBehavior, canvas, nodes, width, height, tree.radial, tree.arc);
-      } else {
-        requestAnimationFrame(() => {
-          const realWidth = box.clientWidth;
-          const realHeight = box.clientHeight;
-          if (graphAutoFitDone || !realWidth || !realHeight) return;
-          graphAutoFitDone = true;
-          //: The viewBox was written from the same guess, so it is corrected
-          //: here too: framing against a real size inside a fake viewBox
-          //: would just move the error rather than fix it.
-          svg.attr("viewBox", [0, 0, realWidth, realHeight]);
-          frameTree(svg, zoomBehavior, canvas, nodes, realWidth, realHeight, tree.radial, tree.arc);
-        });
-      }
-    }
-  }
-
-  let fitted = false;
-  // Hoisted out of the tick: `$()` is a getElementById call, and looking the
-  // same element up 300 times to read one class is measurable next to the work
-  // the tick is actually for.
-  const graphBox = $("graph-box");
-
-  // Labels are the expensive half of the per-tick DOM work and are often not
-  // visible: the layer fades to opacity 0 when zoomed out and the Labels
-  // tickbox hides it outright. `catchUpLabels` is the other half of skipping
-  // them: whatever makes them visible again calls it, so they are never left
-  // stale on a settled simulation that has no further ticks to come.
-  const labelsOnScreen = () =>
-    labelLayer.style("opacity") !== "0"
-    && !graphBox.classList.contains("graph-labels-hidden");
-  let labelsStale = false;
-  graphCatchUpLabels = () => {
-    if (!labelsStale || !labelsOnScreen()) return;
-    labelGroups.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    labelsStale = false;
-  };
-
-  graphSimulation?.on("tick", () => {
-    // Keep the layout inside its own frame. Reported as "the graph ui is out
-    // of bounds", and the mechanism is that the view is framed exactly *once*
-    //, the first time the simulation settles, while the simulation itself
-    // never stops for good: every drag reheats it (`alphaTarget(0.3)`), and a
-    // reheated repulsion force pushes the outermost notes a little further out
-    // each time. Nothing ever pulls them back, and after a few drags the notes
-    // at the edge of the map are off the edge of the box, with no way to know
-    // they are there.
-    //
-    // A clamp rather than a repeated re-fit, because a re-fit would zoom the
-    // map out from under someone who had just zoomed in on purpose. This bounds
-    // the world instead, so the one framing stays correct for as long as the
-    // map is open. The padding is the node radius plus room for its label,
-    // which is drawn below the circle, a node clamped exactly to the edge
-    // would have its own name outside the frame.
-    //
-    // **The box is the world, not the viewport**, and that distinction was
-    // the second bug. Clamping to `width`/`height` meant the simulation was
-    // solving inside the visible rectangle, and a graph box is wide and short
-    //, so a notebook of seventeen notes, each with a collide radius of about
-    // 50px, had nowhere to go but a lattice. Reported exactly as it looked:
-    // *"the graph nodes are like locked into a box"*. They were: repulsion
-    // pushed everything outwards, the walls pushed back, and what settles
-    // between those two is a grid.
-    //
-    // The world is a generous multiple of the frame instead, so the forces
-    // decide the shape and the clamp only stops the endless outward drift it
-    // was written for. Zoom-to-fit frames whatever they end up occupying, so
-    // a bigger world costs nothing on screen.
-    for (const node of nodes) {
-      const pad = graphNodeRadius(node) + 28;
-      node.x = Math.max(worldLeft + pad, Math.min(worldRight - pad, node.x));
-      node.y = Math.max(worldTop + pad, Math.min(worldBottom - pad, node.y));
-    }
-    edgeLines
-      .attr("x1", (d) => d.source.x)
-      .attr("y1", (d) => d.source.y)
-      .attr("x2", (d) => d.target.x)
-      .attr("y2", (d) => d.target.y);
-    edgeHitLines
-      .attr("x1", (d) => d.source.x)
-      .attr("y1", (d) => d.source.y)
-      .attr("x2", (d) => d.target.x)
-      .attr("y2", (d) => d.target.y);
-    // The traced path joins the same nodes, so it moves with them. Cheap: it
-    // is a handful of lines beside every edge in the notebook.
-    positionTraceLines();
-    nodeGroups.attr("transform", (d) => `translate(${d.x},${d.y})`);
-    // Labels are the other half of the per-tick DOM cost, one <g> per note,
-    // same as the nodes, and they are frequently not on screen: the layer
-    // fades to opacity 0 when zoomed out (see the zoom handler) and the
-    // Labels tickbox hides it outright. Moving something invisible is work
-    // nobody can see, ~300 times per settle, on every note in the notebook.
-    //
-    // Their positions are restored on the next visible tick, and the
-    // simulation is still running whenever the layer is turned back on
-    // (a drag or a filter reheats it), so nothing can be left stale in a
-    // way the user sees.
-    if (labelsOnScreen()) {
-      labelGroups.attr("transform", (d) => `translate(${d.x},${d.y})`);
-      labelsStale = false;
-    } else {
-      // Remember that they are now behind the nodes, so turning them back on
-      // repositions them immediately rather than waiting for the next tick.
-      // Without this the labels can be left permanently where they were when
-      // the layer was hidden: the simulation stops when it settles, so if
-      // nothing reheats it there is no next tick to fix them, and the names
-      // sit detached from their notes until something else redraws the map.
-      labelsStale = true;
-    }
-    clusterGroups.attr("transform", (d) => {
-      // One pass, not two. `d3.mean` walks the whole member list, and calling
-      // it twice per cluster per tick walks every clustered note twice on
-      // every one of the ~300 ticks a settle takes.
-      let sx = 0;
-      let sy = 0;
-      for (const n of d.nodes) {
-        sx += n.x;
-        sy += n.y;
-      }
-      const count = d.nodes.length || 1;
-      return `translate(${sx / count},${sy / count})`;
-    });
-    // Once the layout settles, frame all the notes so nothing sits off
-    // the edge (Wave N: the old view often had nodes half-cropped). Only
-    // for a fresh visit to the tab, though (graphAutoFitDone, set by
-    // switchTab() below): every render used to re-fit unconditionally, so
-    // toggling a legend filter or dragging a physics slider while looking
-    // at a note you'd zoomed in on would silently recentre and rescale the
-    // camera out from under you. Panning and zooming after that point is
-    // the user's business; the dedicated Fit button (graph-zoom-fit) is
-    // still there for "put it back".
-    if (!fitted && !graphAutoFitDone && graphSimulation.alpha() < 0.08) {
-      fitted = true;
-      graphAutoFitDone = true;
-      fitGraphToView(svg, canvas, zoomBehavior, nodes, width, height);
-    }
-    // Repaint the minimap as the layout settles, but not on every one of the
-    // ~300 ticks a cooling simulation fires, the dots barely move between
-    // frames and a full rebuild each time would cost more than the map it is
-    // summarising.
-    if (graphMinimapTick++ % 8 === 0) graphMinimapQueuePaint();
-  });
-
-  // Search-highlight (Wave M): remember the selections and re-apply any
-  // query that's already typed.
-  graphNodeSelection = nodeGroups;
-  graphEdgeSelection = edgeLines;
-  graphLabelSelection = labelGroups;
-  // The pickers describe the map, so they are refilled with it, and the trace
-  // is redrawn, because a refresh (a new note, a new link, a layout change)
-  // must not silently drop the answer on screen.
-  fillTracePickers(nodes);
-  drawTrace();
-  applyGraphHighlight();
-  //: A full paint, because this is the moment the dots are wrong: a different
-  //: set of notes, at different places. A pan only moves the rectangle now
-  //: (`graphMinimapFrame`), so nothing else on this path repaints them.
-  graphMinimapPaint();
-
-  // Set up temporal filter slider bounds based on data.
-  //
-  // Bounds used to be computed once, on the first render that had any notes,
-  // behind a `window.graphSliderInitialized` flag that never reset. Every
-  // later render, a new note, a refresh, a re-filed entry, kept the first
-  // render's `max` forever, so any note created after that point sat beyond
-  // the slider's own "all time" end and stayed permanently hidden the moment
-  // the filter had ever run once. Recomputed every render now; the guard
-  // below preserves what the user was actually doing with it (parked at "all
-  // time", or deliberately looking at an earlier cut-off) instead of
-  // snapping back to the far right on every refresh.
-  const timeLabel = $("graph-time-label");
-  const slider = $("graph-time-slider");
-  if (data.nodes.length > 0 && slider) {
-    const timestamps = data.nodes
-      .map(n => new Date(n.created_at || Date.now()).getTime())
-      .filter(Number.isFinite);
-    const minTime = timestamps.length ? Math.min(...timestamps) : Date.now();
-    const maxTime = timestamps.length ? Math.max(...timestamps) : Date.now();
-    const previousMax = Number(slider.max);
-    // "At the end" before this render's bounds change: i.e. no filter was
-    // actually applied: is the case to keep snapped to the new end rather
-    // than freeze at whatever timestamp used to be the newest note.
-    const wasAtEnd = !slider.dataset.graphInit || Number(slider.value) >= previousMax;
-    slider.min = minTime;
-    slider.max = maxTime;
-    slider.step = (maxTime - minTime) / 100 || 1;
-    slider.value = wasAtEnd ? maxTime : Math.min(Number(slider.value), maxTime);
-    slider.dataset.graphInit = "1";
-
-    const renderTimeLabel = (val) => {
-      if (!timeLabel) return;
-      timeLabel.textContent = val >= maxTime ? "All time" : `Up to ${new Date(val).toLocaleDateString()}`;
-    };
-
-    // Tree/Radial/Arc draw category-heading and root nodes alongside real
-    // notes (Force never does: it only ever has real notes/links). Those
-    // headings have no `created_at` at all, so `d.created_at || Date.now()`
-    // read them as "created this instant", always later than any cutoff
-    // short of "All time", which hid the heading *and* every edge touching
-    // it the moment the slider moved at all. A heading is organising
-    // furniture, not a dated note; it and its edges should never be subject
-    // to the time filter.
-    const timeVisible = (d, val) =>
-      d.isGroup || new Date(d.created_at || Date.now()).getTime() <= val;
-    const applyTimeFilter = (val) => {
-      renderTimeLabel(val);
-      // Apply temporal filter without rebuilding simulation
-      nodeGroups.style("visibility", d => timeVisible(d, val) ? "visible" : "hidden");
-      labelGroups.style("visibility", d => timeVisible(d, val) ? "visible" : "hidden");
-      edgeLines.style("visibility", d =>
-        timeVisible(d.source, val) && timeVisible(d.target, val) ? "visible" : "hidden"
-      );
-    };
-
-    slider.oninput = (e) => applyTimeFilter(Number(e.target.value));
-    renderTimeLabel(Number(slider.value));
-    // Re-apply the (possibly re-clamped) filter so a note added since the
-    // last render obeys whatever cut-off the user had actually set.
-    if (Number(slider.value) < maxTime) applyTimeFilter(Number(slider.value));
-  }
-
-  initGraphKeyboard();
-}
-
 // --- driving the graph from the keyboard ------------------------------------------
 // The graph was the one tab that failed a keyboard-first test outright: every
 // way of reaching a note was a mouse gesture, so the whole map, and the notes
@@ -3307,9 +1863,6 @@ function focusGraphNode(node, { announceIt = true } = {}) {
   // thing here, and two highlight systems would fight each other.
   graphHoveredId = node.id;
   applyGraphHighlight();
-  if (graphNodeSelection) {
-    graphNodeSelection.classed("graph-keyfocus", (d) => d.id === node.id);
-  }
   // The canvas renderer rings `graphKeyboardId` in the same pass as the hover
   // ring, so moving the keyboard focus is one more frame.
   gcRequestDraw();
@@ -3317,7 +1870,7 @@ function focusGraphNode(node, { announceIt = true } = {}) {
     const links = graphAdjacency?.get(node.id)?.size || 0;
     announce(
       `${node.preview}. ${node.category}. ` +
-        `${links} connection${links === 1 ? "" : "s"}. Press Enter to open.`
+        `${nounCount(links, "connection")}. Press Enter to open.`
     );
   }
 }
@@ -3380,7 +1933,6 @@ function initGraphKeyboard() {
     focusGraphNode(current);
   });
   box.addEventListener("blur", () => {
-    if (graphNodeSelection) graphNodeSelection.classed("graph-keyfocus", false);
     graphHoveredId = null;
     applyGraphHighlight();
   });
@@ -3418,7 +1970,7 @@ function initGraphKeyboard() {
     }
     if (event.key === "0" && graphNodesRef.length) {
       event.preventDefault();
-      fitGraphToView(graphSvg, graphCanvas, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
+      fitGraphToView(graphSvg, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
       announce("Fitted the whole map to view.");
       return;
     }
@@ -3458,10 +2010,8 @@ function initGraphKeyboard() {
     }
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openGraphPopup(
-        { ...graphNodeScreenPoint(current), stopPropagation() {} },
-        current
-      );
+      if (graphPopupShows(current)) closeGraphPopup(true);
+      else openGraphPopup({ ...graphNodeScreenPoint(current), stopPropagation() {} }, current);
       return;
     }
     // Step through this note's own connections: the relationship the map is
@@ -3536,7 +2086,7 @@ function graphFitFrame(box, width, height, insets = null, over = null) {
 }
 
 // Zoom/pan so every node fits with a margin (Wave N).
-function fitGraphToView(svg, canvas, zoomBehavior, nodes, width, height, instant = false) {
+function fitGraphToView(svg, zoomBehavior, nodes, width, height, instant = false) {
   if (!nodes.length) return;
   // Reported: fit-to-view "zooms out like crazy so you only see the generic
   // cluster blobs". It bounded only the node *centres*, and its scale had no
@@ -3617,96 +2167,195 @@ let graphHighlightIds = null;
 //: (`GET /read/filter`, ai/filters.py; this file reads no words itself). The
 //: words left over still match the preview. A box with no filter in it
 //: (`ids` null) is the plain search it always was.
-const graphPhrase = { q: "", ids: null, rest: "" };
+const graphPhrase = { q: "", ids: null, rest: "", waiting: false, timer: 0 };
 
+//: The server is asked after a pause, not per key: the plain words are matched
+//: in the page at once, and a phrase that is a filter replaces them when the
+//: answer comes. `waiting` is true from the first key to the answer, so the
+//: count does not say "No matches" for the half-typed filter it is about to read.
 function graphReadPhrase(query) {
   if (graphPhrase.q === query) return;
   graphPhrase.q = query;
   graphPhrase.ids = null;
+  clearTimeout(graphPhrase.timer);
+  graphPhrase.waiting = Boolean(query);
   if (!query) return;
-  apiJson("/read/filter?q=" + encodeURIComponent(query) + `&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true })
-    .then((got) => {
-      if (graphPhrase.q !== query || !got.ids) return;
-      graphPhrase.ids = new Set(got.ids);
-      graphPhrase.rest = (got.rest || "").toLowerCase();
-      applyGraphHighlight();
-    })
-    .catch(() => {});
+  graphPhrase.timer = setTimeout(() => {
+    apiJson("/read/filter?q=" + encodeURIComponent(query) + `&tz_offset_minutes=${-new Date().getTimezoneOffset()}`, { silent: true })
+      .then((got) => {
+        if (graphPhrase.q !== query) return;
+        graphPhrase.waiting = false;
+        if (got.ids) {
+          graphPhrase.ids = new Set(got.ids);
+          graphPhrase.rest = (got.rest || "").toLowerCase();
+        }
+        applyGraphHighlight(true);
+      })
+      .catch(() => {
+        if (graphPhrase.q === query) graphPhrase.waiting = false;
+      });
+  }, 150);
 }
 
-function graphQueryMatch(id, preview, query) {
-  if (graphPhrase.ids && graphPhrase.q === query) {
-    return graphPhrase.ids.has(id) && (!graphPhrase.rest || preview.toLowerCase().includes(graphPhrase.rest));
+//: **The search's matches, found once per change** (audit 1029 G10). The
+//: canvas used to lowercase a note's preview every time it asked "does this
+//: one match?": several times a note, and once per line end, every frame. Now
+//: it asks a set. The key is the node array, the query and what the server
+//: said about a phrase, so a hover or a pan reuses the last answer untouched.
+const graphSearch = { nodes: null, size: 0, query: "", phrase: null, rest: "", ids: null, list: [], at: -1, current: null };
+
+//: A note's lowercase name, kept on the node and made again only when the
+//: preview itself changed (an edit, a rename): the label index.
+function graphPreviewLower(node) {
+  if (node._lcOf !== node.preview) {
+    node._lcOf = node.preview;
+    node._lc = String(node.preview || "").toLowerCase();
   }
-  return !query || preview.toLowerCase().includes(query);
+  return node._lc;
 }
 
-function applyGraphHighlight() {
+function graphNodeMatches(node, query) {
+  if (graphPhrase.ids && graphPhrase.q === query) {
+    return graphPhrase.ids.has(node.id) && (!graphPhrase.rest || graphPreviewLower(node).includes(graphPhrase.rest));
+  }
+  return !query || graphPreviewLower(node).includes(query);
+}
+
+//: The notes `query` lights: `list` newest first (the order Enter walks them
+//: in) and `ids` as a set, null for an empty box. A group is a heading over
+//: notes, not a note, so it is never one. A new answer starts the walk again.
+function graphSearchFor(nodes, query) {
+  const g = graphSearch;
+  const phrase = graphPhrase.q === query ? graphPhrase.ids : null;
+  if (g.nodes === nodes && g.size === nodes.length && g.query === query && g.phrase === phrase && g.rest === graphPhrase.rest) return g;
+  Object.assign(g, { nodes, size: nodes.length, query, phrase, rest: graphPhrase.rest, at: -1, current: null });
+  g.list = query ? nodes.filter((n) => !n.isGroup && graphNodeMatches(n, query)) : [];
+  g.list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")) || a.id - b.id);
+  g.ids = query ? new Set(g.list.map((n) => n.id)) : null;
+  return g;
+}
+
+function graphSearchNodes() {
+  return (typeof gcTab !== "undefined" && gcTab.nodes) || graphNodesRef || [];
+}
+
+//: "No matches", "1 match", "134 matches": the count beside the box (G11).
+function graphSearchCountText(n) {
+  return n ? nounCount(n, "match", "matches") : "No matches";
+}
+
+//: The set for what is in the box now, and the count said beside it. The count
+//: stays empty while a phrase that may be a filter is still being read.
+function graphSearchRefresh(query) {
+  const found = graphSearchFor(graphSearchNodes(), query);
+  const box = $("graph-search-count");
+  const text = !query || (graphPhrase.waiting && !found.list.length) ? "" : graphSearchCountText(found.list.length);
+  if (box && box.textContent !== text) box.textContent = text;
+  return found;
+}
+
+//: `cheap` is a change of the query alone: the scene the canvas painted is
+//: still right, so the frame is composed from it (`gcDrawComposed`). Anything
+//: else that lands here may have changed what the scene shows.
+function applyGraphHighlight(cheap) {
   const query = $("graph-search").value.trim().toLowerCase();
   if (query) graphHighlightIds = null; // typing takes over the spotlight
   graphReadPhrase(query);
+  graphSearchRefresh(query);
   // Reported: no way to cancel the "≈ Similar" highlight - it only ever
   // reset as a side effect of something else (typing over it, or a full
   // refresh). Same shape as #graph-focus-clear: shown exactly while there's
   // something to clear, synced here since this is the one function every
   // path that sets or resets graphHighlightIds already runs through.
   $("graph-highlight-clear")?.classList.toggle("hidden", !graphHighlightIds);
-  // The canvas renderer computes the same four-way spotlight (search, the
-  // "similar notes" set, a traced path, the hover neighbourhood) inside its own
-  // draw, from this same state, see `gcHighlight`. There are no selections to
-  // classed() there, so all this has to do is ask for a frame.
-  if (graphRenderer() === "canvas") {
-    gcRequestDraw();
+  // The four-way spotlight (search, the "similar notes" set, a traced path,
+  // the hover neighbourhood) is computed inside the canvas draw, from this
+  // same state, see `gcHighlight`, so all this has to do is ask for a frame.
+  gcRequestDraw(gcTab, cheap === true);
+}
+
+//: Typing re-reads the matches at once (about 0.6 ms at 2,000 notes) and asks
+//: for a frame; `gcRequestDraw` keeps one frame queued, so a burst of keys is
+//: one redraw. The pause that used to sit here made the first letters wait for
+//: nothing: what is slow is the repaint, not the match (audit 1029 G10).
+$("graph-search").addEventListener("input", () => applyGraphHighlight(true));
+
+//: **Walking the matches** (audit 1029 G11). Enter goes to the next match and
+//: pans to it, Shift+Enter to the one before, both wrapping; the match is ringed
+//: and named whatever else is dimmed (`gcHighlight`'s `current`), and said in
+//: the page's polite region. Escape clears the search and the "similar notes"
+//: highlight; on an empty box it is left alone, for whatever else listens.
+function graphSearchStepIndex(at, dir, n) {
+  if (!n) return -1;
+  if (at < 0) return dir < 0 ? n - 1 : 0;
+  return (at + dir + n) % n;
+}
+
+function graphPanToNode(node) {
+  if (!graphSvg || !graphZoom || !graphMinimapFinite(graphDims.w, graphDims.h, node.x, node.y)) return;
+  const k = d3.zoomTransform(graphSvg.node()).k;
+  const target = d3.zoomIdentity.translate(graphDims.w / 2, graphDims.h / 2).scale(k).translate(-node.x, -node.y);
+  //: Moved by hand as far as the settle fit is concerned (INBOX 792).
+  if (typeof gcTab !== "undefined" && gcTab.svg === graphSvg) gcTab.userZoomed = true;
+  graphSvg.transition().duration(graphGlideMs(300)).call(graphZoom.transform, target);
+}
+
+function graphSearchGo(dir) {
+  const box = $("graph-search");
+  const found = graphSearchRefresh(box.value.trim().toLowerCase());
+  const at = graphSearchStepIndex(found.at, dir, found.list.length);
+  if (at < 0) {
+    announce("No matches.");
     return;
   }
-  if (!graphNodeSelection) return;
-  // A traced path is the strongest spotlight there is: it is the answer to a
-  // question that was just asked, so it outranks a search box someone typed in
-  // earlier. Everything not on the chain dims, which is what makes a six-note
-  // route legible on a map of three hundred.
-  const onPath = graphTrace ? new Set(graphTrace.ids) : null;
-  const searchOk = (d) =>
-    onPath
-      ? onPath.has(d.id)
-      : graphHighlightIds
-        ? graphHighlightIds.has(d.id)
-        : graphQueryMatch(d.id, d.preview, query);
-
-  const neighbours =
-    graphHoveredId != null && graphAdjacency
-      ? graphAdjacency.get(graphHoveredId)
-      : null;
-  const hoverOk = (id) =>
-    neighbours == null || id === graphHoveredId || neighbours.has(id);
-  // After forceLink binds, edge.source/target are node objects, not ids.
-  const idOf = (end) => (end && end.id != null ? end.id : end);
-
-  const isSearchActive = !!(query || graphHighlightIds || onPath);
-  graphNodeSelection.classed(
-    "graph-dim",
-    (d) => !(searchOk(d) && hoverOk(d.id))
-  );
-  graphNodeSelection.classed(
-    "graph-match",
-    (d) => isSearchActive && searchOk(d)
-  );
-  graphNodeSelection.classed("graph-focus", (d) => d.id === graphHoveredId);
-  // Labels live in their own layer, a sibling of the node circles rather
-  // than nested inside them (graphNodeSelection above), so a hovered node
-  // can't reveal its label through a CSS descendant selector, it has to
-  // be told directly which label is its own.
-  graphLabelSelection.classed("graph-focus", (d) => d.id === graphHoveredId);
-  graphEdgeSelection.classed("graph-dim", (d) => {
-    const s = idOf(d.source);
-    const t = idOf(d.target);
-    const bySearch =
-      !(query || graphHighlightIds || onPath) ||
-      (searchOk(d.source) && searchOk(d.target));
-    const byHover =
-      neighbours == null || s === graphHoveredId || t === graphHoveredId;
-    return !(bySearch && byHover);
-  });
+  const node = found.list[at];
+  found.at = at;
+  found.current = node.id;
+  //: The suggestions list sits over the map's left side; a jump is the end of typing.
+  if (typeof searchSuggest !== "undefined" && searchSuggest?.input === box) {
+    searchSuggest.quiet = true;
+    fillSearchSuggest();
+  }
+  announce(`Match ${at + 1} of ${found.list.length}: ${node.preview}`);
+  graphPanToNode(node);
+  gcRequestDraw(gcTab, true);
 }
+
+function graphSearchClear() {
+  //: A spotlight is part of the scene the canvas painted, so lifting one is a
+  //: whole frame; a search alone is not.
+  const spotlit = Boolean(graphHighlightIds);
+  $("graph-search").value = "";
+  graphHighlightIds = null;
+  applyGraphHighlight(!spotlit);
+  announce("Search cleared.");
+}
+
+function graphSearchKey(event) {
+  if (event.isComposing) return;
+  const box = $("graph-search");
+  if (event.key === "Enter" && box.value.trim()) {
+    event.preventDefault();
+    graphSearchGo(event.shiftKey ? -1 : 1);
+  } else if (event.key === "Escape" && (box.value || graphHighlightIds)) {
+    event.preventDefault();
+    event.stopPropagation();
+    graphSearchClear();
+  }
+}
+$("graph-search").addEventListener("keydown", graphSearchKey);
+//: Focusing the box paints the dimmed layer the search is drawn over, in an
+//: idle moment, so the first key costs what the others do (about 250 ms at
+//: 2,000 notes, once, otherwise paid inside the first keystroke).
+$("graph-search").addEventListener("focus", () => {
+  if (typeof gcTab === "undefined") return;
+  const warm = () => {
+    gcTab.warmDim = true;
+    gcRequestDraw(gcTab, true);
+  };
+  if (window.requestIdleCallback) requestIdleCallback(warm, { timeout: 400 });
+  else setTimeout(warm, 0);
+});
 
 // --- graph node popup: edit a note without leaving the map -------------------
 
@@ -3754,8 +2403,15 @@ function renderGraphPopupHeader(entry, node) {
   if (name) setLabel(category, `ph:folders ${name}`);
 }
 
+//: INBOX 1471: the same note's second click closes its panel (a click on
+//: another note still switches it; Esc and the empty canvas close as before).
+function graphPopupShows(node) {
+  return graphPopupId === node.id && !$("graph-popup").classList.contains("hidden");
+}
+
 async function openGraphPopup(event, node) {
   event.stopPropagation();
+  if (graphPopupId !== node.id) keepGraphPopupEdit();
   graphPopupId = node.id;
   graphLate.popupDragged = false;
   //: The open note wears the focus ring (graph-canvas.js `openId`).
@@ -3789,7 +2445,7 @@ async function openGraphPopup(event, node) {
   graphPopupAnchor = { x: event.clientX, y: event.clientY };
   placeGraphPopup();
 
-  const entry = await apiJson(`/entries/${node.id}`).catch(() => null);
+  const entry = await apiJson(`/entries/${node.id}?open=1`).catch(() => null);
   if (!entry || graphPopupId !== node.id) {
     if (graphPopupId === node.id) {
       $("graph-popup-content").value = "";
@@ -4296,6 +2952,17 @@ function watchGraphPopupSize(popup, place) {
 
 // Clamp the popup inside the graph box. Called on open and again once the
 // note has loaded, since the popup is taller by then.
+//: **The popup keeps room to follow its node in y** (audit 1029 G25). A long
+//: note took the map's whole height less 16 (517 of 533 at 1280x640), so its
+//: slide was 16px: the node moved 280px and the popup 0, which read as
+//: following in x only. An undragged popup is held to 60% of the room (never
+//: under 280px; the body scrolls inside it and the dock stays pinned); one the
+//: head has moved stays where put and keeps the whole room.
+function graphPopupCap(room, dragged) {
+  const full = Math.max(120, room - 16);
+  return dragged ? full : Math.min(full, Math.max(280, Math.round(room * 0.6)));
+}
+
 function placeGraphPopup() {
   const popup = $("graph-popup");
   watchGraphPopupSize(popup, placeGraphPopup);
@@ -4329,7 +2996,7 @@ function placeGraphPopup() {
   popup.classList.remove("graph-popup-sheet");
   // Never taller than the room it has, beyond that its body scrolls inside
   // it and the action dock stays pinned at its foot (the CSS's sticky row).
-  popup.style.maxHeight = `${Math.max(120, room - 16)}px`;
+  popup.style.maxHeight = `${graphPopupCap(room, graphLate.popupDragged)}px`;
   const size = popup.getBoundingClientRect();
   const maxLeft = Math.max(8, box.width - size.width - 8);
   const maxTop = Math.max(8, room - size.height - 8);
@@ -4495,8 +3162,8 @@ async function renderGraphPopupTopic(entry) {
     topic = row?.topics?.[String(entry.id)] || null;
   }
   if (!topic || graphPopupId !== entry.id) return;
-  const mark = chip(`ph:circles-three ${topic.name}`, "tag", () => showTopicInGraph(entry.id));
-  mark.title = `In the topic ${topic.name}, ${topic.size} notes. Show it on the map`;
+  const mark = chip(`ph:circles-three ${topic.name}`, "topic", () => showTopicInGraph(entry.id));
+  mark.title = `In the topic ${topic.name}, ${nounCount(topic.size, "note")}. Show it on the map`;
   //: `members=1` above: a rename is stored by the topic's notes.
   const rename = smallButton("ph:pencil-simple", "Rename the topic", () => gcRenameTopicInline(topic, mark, rename));
   rename.classList.add("icon-only");
@@ -4535,7 +3202,7 @@ async function showTopicInGraph(entryId) {
   closeGraphPopup();
   gcOpenTopic(topic);
   const members = gcTopicMembers(topic);
-  if (members.length) fitGraphToView(gcTab.svg, null, gcTab.zoom, members, gcTab.dims.w, gcTab.dims.h);
+  if (members.length) fitGraphToView(gcTab.svg, gcTab.zoom, members, gcTab.dims.w, gcTab.dims.h);
 }
 
 //: **A note's properties, in its panel** (the owner, 2026-10-10: "is it
@@ -4559,7 +3226,7 @@ function renderGraphPopupProps(entry) {
         if (!row) return;
         graphHighlightIds = new Set(row.ids || []);
         applyGraphHighlight();
-        toast(`${graphHighlightIds.size} note${graphHighlightIds.size === 1 ? "" : "s"} with ${key} ${shown}, lit on the map.`, "info");
+        toast(`${nounCount(graphHighlightIds.size, "note")} with ${key} ${shown}, lit on the map.`, "info");
       });
       light.title = `Light the notes whose ${key} is ${shown}`;
       dd.append(light, " ");
@@ -4596,8 +3263,8 @@ function renderGraphPopupInfo(entry) {
   const views = entry.access_count || 0;
   const parts = [
     new Date(entry.created_at).toLocaleDateString(),
-    `${links} link${links === 1 ? "" : "s"}`,
-    `${views} view${views === 1 ? "" : "s"}`,
+    nounCount(links, "link"),
+    nounCount(views, "view"),
   ];
   //: When a person last changed it (INBOX 1300 C11, "see their values and
   //: dates"), as the hover card says it: `edited_at`, which the app's own
@@ -4682,7 +3349,7 @@ function graphPopupActionList(entry) {
       run: async () => {
         const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
         if (!related.length) {
-          toast("No similar notes found.");
+          toast(meaningEngineMissing() ? "No similar notes found: the meaning engine is not ready. Set it up in Settings, Models." : "No similar notes found.");
           return;
         }
         // Reuse the existing highlight pass by searching for these ids.
@@ -4882,13 +3549,17 @@ try {
   /* matchMedia is absent in some test shells; the row is drawn on open. */
 }
 
-function closeGraphPopup() {
+//: The keyboard stays on the map: Esc, or Close from inside the popup, used to leave focus on <body> (audit 1029 G19).
+function closeGraphPopup(returnFocus = false) {
+  keepGraphPopupEdit();
+  const held = returnFocus || $("graph-popup").contains(document.activeElement);
   graphPopupId = null;
   graphLate.popupDragged = false;
   if (typeof gcTab !== "undefined" && gcTab.canvas) gcRequestDraw(gcTab);
   $("graph-popup").classList.add("hidden");
   $("graph-popup").classList.remove("graph-popup-away");
   clearGraphKeyboardFocus();
+  if (held) $("graph-box")?.focus({ preventScroll: true });
 }
 
 //: **Keyboard focus ends when the keyboard leaves.** `focusGraphNode` is
@@ -4913,35 +3584,69 @@ $("graph-box")?.addEventListener("pointerdown", () => {
   if (graphKeyboardId !== null) clearGraphKeyboardFocus();
 });
 
-async function saveGraphPopup() {
+//: **One guard for every way out of the popup** (audit G2: Escape, the X, a
+//: click on the map and a click on another note all dropped unsaved typing).
+//: `closeGraphPopup` and `openGraphPopup` (another note) both call this first.
+//: A dirty popup is saved on the way out, as the document editor autosaves, and
+//: Ctrl+Z undoes it (`pushEntryPutUndo`); a save that fails hands the text back
+//: on the clipboard instead of dropping it.
+function graphPopupIsDirty() {
+  if (graphPopupId === null || $("graph-popup").classList.contains("hidden")) return false;
+  if (graphPopupClean.content === "Loading…") return false;
+  return (
+    $("graph-popup-content").value !== graphPopupClean.content || $("graph-popup-tags").value !== graphPopupClean.tags
+  );
+}
+
+function keepGraphPopupEdit() {
+  if (!graphPopupIsDirty()) return;
+  saveGraphPopup({ leaving: true });
+}
+
+async function saveGraphPopup({ leaving = false } = {}) {
   if (graphPopupId === null) return;
+  const id = graphPopupId;
   const status = $("graph-popup-status");
-  const tags = $("graph-popup-tags")
-    .value.split(",")
+  const content = $("graph-popup-content").value;
+  const tagsText = $("graph-popup-tags").value;
+  const was = graphPopupClean;
+  const tags = tagsText
+    .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
   status.classList.remove("error");
   status.textContent = "Saving…";
   try {
-    const wasTags = String(graphPopupClean.tags || "").split(",").map((t) => t.trim()).filter(Boolean);
-    const saved = await apiJson(`/entries/${graphPopupId}`, {
+    const wasTags = String(was.tags || "").split(",").map((t) => t.trim()).filter(Boolean);
+    const saved = await apiJson(`/entries/${id}`, {
       method: "PUT",
-      body: JSON.stringify({ content: $("graph-popup-content").value, tags }),
+      body: JSON.stringify({ content, tags }),
     });
-    pushEntryPutUndo(graphPopupId, "Edited a note on the map", { content: graphPopupClean.content, tags: wasTags }, { content: $("graph-popup-content").value, tags });
-    status.textContent = "Saved.";
-    if (typeof offerWikiRename === "function") offerWikiRename(graphPopupId, saved);
-    //: What was just written is the new clean state, so the button puts
-    //: itself away for the 600ms the panel is still open.
-    graphPopupClean = {
-      content: $("graph-popup-content").value,
-      tags: $("graph-popup-tags").value,
-    };
-    syncGraphPopupSave();
+    pushEntryPutUndo(id, "Edited a note on the map", { content: was.content, tags: wasTags }, { content, tags });
+    if (typeof offerWikiRename === "function") offerWikiRename(id, saved);
+    if (leaving) toast("Saved your edit to the note.");
+    //: The popup may have moved on to another note while the request ran.
+    if (graphPopupId === id) {
+      status.textContent = "Saved.";
+      //: What was just written is the new clean state, so the button puts
+      //: itself away for the 600ms the panel is still open.
+      graphPopupClean = { content, tags: tagsText };
+      syncGraphPopupSave();
+    }
     await loadEntries().catch(() => {});
     renderGraph(); // content/tags may change what the map shows
-    setTimeout(closeGraphPopup, 600);
+    if (!leaving) {
+      setTimeout(() => {
+        if (graphPopupId === id) closeGraphPopup();
+      }, 600);
+    }
   } catch (error) {
+    if (leaving) {
+      toastAction(`Couldn't save your edit: ${error.message}`, "Copy text", () => {
+        navigator.clipboard?.writeText(content).catch(() => {});
+      });
+      return;
+    }
     status.textContent = error.message;
     status.classList.add("error");
   }
@@ -5047,150 +3752,43 @@ async function saveGraphNewNote() {
 }
 
 // --- export as PNG (ROADMAP.md gap 3) --------------------------------------
-//
-// Captures exactly what's on screen right now, the live SVG's own viewBox
-// plus whatever pan/zoom transform the canvas <g> currently carries: rather
-// than trying to fit the whole graph into frame, matching the whiteboard's
-// own "what's on screen now" export option (whiteboard.js's wbExportPng).
-//
-// The exported SVG is rasterized via a detached <img>, completely outside
-// the page's own stylesheets and :root custom properties, so anything
-// this app relies on a CSS class or a var(--token) for (node fill, edge
-// stroke, label font) would silently vanish. Inlining the resolved
-// (already var()-substituted) computed style onto every cloned element is
-// what survives that isolation; embedding the stylesheet text instead would
-// still leave every var(--accent)-style colour unresolved.
-const GRAPH_EXPORT_STYLE_PROPS = [
-  "fill", "stroke", "stroke-width", "stroke-opacity", "stroke-dasharray",
-  "fill-opacity", "opacity", "font-family", "font-size", "font-weight",
-];
-
-//: **As presentation attributes, never a `style` attribute.** Every property in
-//: the list above is also an SVG presentation attribute (`fill="..."`), which
-//: the rasteriser reads exactly as it would read the declaration, since the
-//: detached image has no stylesheet for either to lose to. A `style` attribute
-//: written with `setAttribute` is an inline style to the page's CSP, which
-//: refuses it and logs a violation per element: measured, hundreds of console
-//: errors for one export of a large map (`scratchpad/ui-sweeps/graphexportcsp.js`),
-//: while the attribute itself was kept, so the picture came out right and the
-//: console said otherwise. An existing inline style on a live element (d3's
-//: `.style()` writes through the CSSOM) is cloned as it was and still wins.
-function graphInlineComputedStyle(liveEl, cloneEl) {
-  const computed = getComputedStyle(liveEl);
-  for (const prop of GRAPH_EXPORT_STYLE_PROPS) {
-    const value = computed.getPropertyValue(prop);
-    if (value) cloneEl.setAttribute(prop, value);
-  }
-  for (let i = 0; i < liveEl.children.length; i++) {
-    graphInlineComputedStyle(liveEl.children[i], cloneEl.children[i]);
-  }
-}
-
-function graphRasterizeSvg(svgString, width, height) {
-  return new Promise((resolve, reject) => {
-    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(width));
-      canvas.height = Math.max(1, Math.round(height));
-      const ctx = canvas.getContext("2d");
-      // A transparent PNG over a dark page reads as "half my graph is
-      // missing" the moment it's opened anywhere else, paint a background
-      // first, same reasoning as the whiteboard's own PNG export.
-      //
-      // Neither `body` nor `.card` has a plain colour to read here: `body`
-      // has none at all (the page's real background is a gradient painted on
-      // `<html>`, `00-tokens-shell.css`), and `.card`/`--card` is
-      // deliberately translucent (the app's glass look, `color-mix(...,
-      // transparent)`), so both resolve to something that isn't a flat fill
-      //, found by actually checking, not assumed: the first draft read
-      // `body`'s background and got the same `rgba(0,0,0,0)` in both themes,
-      // silently painting nothing (a transparent PNG that a viewer renders
-      // as white, which happened to look right only in light mode by
-      // coincidence). A flat approximation tied to the resolved theme is a
-      // deliberately simpler choice than reproducing the gradient exactly, 
-      // the export just needs to not look broken, not to be a pixel match.
-      ctx.fillStyle = resolvedTheme() === "dark" ? "#12141c" : "#eef1f5";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(
-        (result) => (result ? resolve(result) : reject(new Error("Couldn't rasterize the graph."))),
-        "image/png"
-      );
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Couldn't rasterize the graph."));
-    };
-    img.src = url;
-  });
-}
 
 async function exportGraphPng() {
-  // **The canvas renderer exports the canvas**, which is what §4 meant by
-  // "keeps the export path (`canvas.toBlob`) trivial": no clone, no inlining
-  // of every computed style, no SVG-to-image round trip. The one thing it
-  // still has to do by hand is the background, a transparent PNG over a dark
-  // page reads as "half my graph is missing" the moment it is opened
-  // anywhere else, so the frame is repainted onto an opaque copy.
+  // The canvas is exported as it is: no clone, no inlining of every computed
+  // style (`canvas.toBlob`). The one thing it still has to do by hand is the
+  // background, a transparent PNG over a dark page reads as "half my graph is
+  // missing" the moment it is opened anywhere else, so the frame is repainted
+  // onto an opaque copy.
   const liveCanvas = document.getElementById("graph-canvas");
-  if (liveCanvas && !liveCanvas.classList.contains("hidden")) {
-    if (!graphNodesRef || !graphNodesRef.length) {
-      toast("Nothing to export yet.", "info");
-      return;
-    }
-    // GRAPH_PLAN Phase 4: exactly the visible frame, re-rendered at 2x with
-    // the legend and a caption painted on (gcExportPng); the live bitmap is
-    // the fallback if the renderer is not wired yet.
-    const out =
-      (gcExportPng(2)) ||
-      (() => {
-        const fallback = document.createElement("canvas");
-        fallback.width = liveCanvas.width;
-        fallback.height = liveCanvas.height;
-        const ctx = fallback.getContext("2d");
-        ctx.fillStyle = resolvedTheme() === "dark" ? "#12141c" : "#eef1f5";
-        ctx.fillRect(0, 0, fallback.width, fallback.height);
-        ctx.drawImage(liveCanvas, 0, 0);
-        return fallback;
-      })();
-    try {
-      const blob = await new Promise((resolve, reject) =>
-        out.toBlob((result) => (result ? resolve(result) : reject(new Error("Couldn't export the graph."))), "image/png")
-      );
-      await saveFile("graph.png", blob);
-      toast("Graph exported as PNG.");
-    } catch (error) {
-      toast(error.message || "Couldn't export the graph.", true);
-    }
-    return;
-  }
-  const liveSvg = document.getElementById("graph-svg");
-  if (!liveSvg || !liveSvg.querySelector("circle")) {
+  if (!liveCanvas || liveCanvas.classList.contains("hidden") || !graphNodesRef || !graphNodesRef.length) {
     toast("Nothing to export yet.", "info");
     return;
   }
-  const clone = liveSvg.cloneNode(true);
-  graphInlineComputedStyle(liveSvg, clone);
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  const viewBox = liveSvg.viewBox.baseVal;
-  const width = viewBox && viewBox.width ? viewBox.width : liveSvg.clientWidth;
-  const height = viewBox && viewBox.height ? viewBox.height : liveSvg.clientHeight;
-  clone.setAttribute("width", width);
-  clone.setAttribute("height", height);
-  const svgString = new XMLSerializer().serializeToString(clone);
+  // GRAPH_PLAN Phase 4: exactly the visible frame, re-rendered at 2x with
+  // the legend and a caption painted on (gcExportPng); the live bitmap is
+  // the fallback if the renderer is not wired yet.
+  const out =
+    gcExportPng(2) ||
+    (() => {
+      const fallback = document.createElement("canvas");
+      fallback.width = liveCanvas.width;
+      fallback.height = liveCanvas.height;
+      const ctx = fallback.getContext("2d");
+      ctx.fillStyle = resolvedTheme() === "dark" ? "#12141c" : "#eef1f5";
+      ctx.fillRect(0, 0, fallback.width, fallback.height);
+      ctx.drawImage(liveCanvas, 0, 0);
+      return fallback;
+    })();
   try {
-    const blob = await graphRasterizeSvg(svgString, width, height);
+    const blob = await new Promise((resolve, reject) =>
+      out.toBlob((result) => (result ? resolve(result) : reject(new Error("Couldn't export the graph."))), "image/png")
+    );
     await saveFile("graph.png", blob);
     toast("Graph exported as PNG.");
   } catch (error) {
     toast(error.message || "Couldn't export the graph.", true);
   }
 }
-
 
 // --- minimap + saved views (ROADMAP §85.4 items 7) ---------------------------
 
@@ -5620,16 +4218,54 @@ function initGraphDockHeightToken() {
   if (!card || !dock || typeof ResizeObserver === "undefined") return;
   if (dock._heightWired) return;
   dock._heightWired = true;
-  const write = () => {
-    const h = Math.round(dock.getBoundingClientRect().height);
+  const write = (e) => {
+    //: The entry has the box; a rect read forced a style pass on tab flips.
+    //: One observer serves the rail too (`initGraphRailToken`): its strips'
+    //: entries come here, and only the dock's own entry sizes this token.
+    card._railWrite?.();
+    const own = e ? e.find((x) => x.target === dock) : null;
+    if (e && !own) return;
+    const h = Math.round(own ? own.borderBoxSize[0].blockSize : dock.getBoundingClientRect().height);
     // Zero while the tab is not on screen (the card is display:none until
     // then), and a zero here would stack the minimap and the selection bar
     // on top of the dock at the next paint. The stylesheet's own calc stands
     // until there is a real measurement to replace it with.
     if (h > 0) card.style.setProperty("--graph-dock-h", `${h}px`);
   };
-  new ResizeObserver(write).observe(dock);
-  write();
+  card._chromeWatch = new ResizeObserver(write);
+  //: No direct `write()` here: observing delivers the first entry before the first paint, and a
+  //: read at parse time forced a layout (11ms on 2,000 notes) for a number the entry carries.
+  card._chromeWatch.observe(dock);
+}
+
+//: **The rail the map's furniture hangs from** (audit 1029 G24, 1306 residue).
+//: The Trace strip and its result sit in the overlay column, full width, under
+//: the dock; the minimap's top corners were placed from the dock alone and sat
+//: under them (8,861 px² of overlap at 1440x900). The offset is how far the
+//: lowest shown strip reaches below the dock, 0 while none is shown (a hidden
+//: strip has no box), and `--graph-chrome-top` grows by it on the card.
+function graphRailOffset(strips, dockBottom) {
+  const shown = strips.filter((s) => s.bottom > s.top);
+  return shown.length ? Math.max(0, Math.round(Math.max(...shown.map((s) => s.bottom)) - dockBottom)) : 0;
+}
+
+function initGraphRailToken() {
+  const card = document.getElementById("graph-card");
+  const dock = card?.querySelector('.dock[data-dock-name="graph"]');
+  const strips = card ? [...card.querySelectorAll(".graph-overlay > .graph-trace, .graph-overlay > .graph-trace-result")] : [];
+  //: Rides the dock's ResizeObserver (`initGraphDockHeightToken`, run first), no second observer.
+  if (!dock || !strips.length || !card._chromeWatch || typeof ResizeObserver === "undefined" || card._railWired) return;
+  card._railWired = true;
+  const write = () => {
+    const boxes = strips.map((el) => el.getBoundingClientRect());
+    const offset = graphRailOffset(boxes, dock.getBoundingClientRect().bottom);
+    //: The existing token plus the rail, so no second property is declared
+    //: (the stylesheet's custom-property count only falls); cleared at 0.
+    if (offset) card.style.setProperty("--graph-chrome-top", `calc(var(--space-3) * 2 + var(--graph-dock-h) + ${offset}px)`);
+    else card.style.removeProperty("--graph-chrome-top");
+  };
+  card._railWrite = write;
+  for (const el of strips) card._chromeWatch.observe(el);
 }
 
 //: **A toast over the map stands above the legend** (INBOX 1400: it met the
@@ -5870,7 +4506,7 @@ function graphCaptureView() {
     // recomputed deterministically on restore and never reads this back,
     // see `graphApplyView`/`renderGraphCanvas`, but capturing it uniformly
     // costs nothing and keeps this function from having to know the
-    // layout). `graphNodesRef` is the live node array either renderer
+    // layout). `graphNodesRef` is the live node array the canvas
     // draws from, so this is "what is actually on screen", not a stale copy.
     positions: Object.fromEntries(
       (graphNodesRef || [])
@@ -6017,6 +4653,7 @@ function initGraphViews() {
 // calls are idempotent (`_heightWired`), and the observer's first callback
 // arrives with a real height as soon as the card stops being display:none.
 initGraphDockHeightToken();
+initGraphRailToken();
 initGraphToastClearance();
 
 //: The remembered on-by-default switches, restored when graph.js loads: the
@@ -6130,7 +4767,7 @@ $("graph-zoom-in").addEventListener("click", () => graphZoomBy(1.3));
 $("graph-zoom-out").addEventListener("click", () => graphZoomBy(1 / 1.3));
 $("graph-zoom-fit").addEventListener("click", () => {
   if (graphNodesRef && graphNodesRef.length) {
-    fitGraphToView(graphSvg, graphCanvas, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
+    fitGraphToView(graphSvg, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
   }
 });
 
@@ -6163,27 +4800,15 @@ function toggleGraphFullscreen() {
       const icon = fsBtn.querySelector("i");
       if (icon) icon.className = isFull ? "ph ph-arrows-in" : "ph ph-frame-corners";
     }
-    // Trigger a resize event to ensure D3 SVG rescales properly
     window.dispatchEvent(new Event('resize'));
     if (graphNodesRef && graphNodesRef.length) {
       setTimeout(() => {
         const box = $("graph-box");
         graphDims.w = box.clientWidth || 800;
         graphDims.h = box.clientHeight || 540;
-        // Only the SVG renderer has a viewBox; `graphSvg` points at the
-        // <canvas> on the other one, and a `viewBox` attribute on a <canvas>
-        // means nothing. The canvas resizes itself from its ResizeObserver.
-        if (graphSvg && graphSvg.node() && graphSvg.node().tagName === "svg") {
-          graphSvg.attr("viewBox", [0, 0, graphDims.w, graphDims.h]);
-        }
-        if (graphSimulation) {
-          graphSimulation.force("center", d3.forceCenter(graphDims.w / 2, graphDims.h / 2));
-          graphSimulation.force("x", d3.forceX(graphDims.w / 2).strength(0.04));
-          graphSimulation.force("y", d3.forceY(graphDims.h / 2).strength(0.06));
-          graphSimulation.alpha(0.3).restart();
-        }
+        // The canvas resizes itself from its ResizeObserver; only the camera is refitted.
         if (isFull) {
-          fitGraphToView(graphSvg, graphCanvas, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
+          fitGraphToView(graphSvg, graphZoom, graphNodesRef, graphDims.w, graphDims.h);
         }
       }, 50);
     }
@@ -6452,7 +5077,7 @@ for (const id of ["graph-unpin-all", "graph-unpin-all-menu"]) document.getElemen
     if (!count) return toast("Nothing was pinned.");
     offerUndo(
       "Unpinned every note",
-      `${count} note${count === 1 ? "" : "s"} released: the layout can move freely again.`,
+      `${nounCount(count, "note")} released: the layout can move freely again.`,
       () => graphRestorePins(rows),
       () => graphUnpinAllNow()
     );

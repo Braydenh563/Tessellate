@@ -448,6 +448,11 @@ $("update-apply-now").addEventListener("click", async () => {
   }
 });
 
+$("pref-update-bar").addEventListener("change", (e) => {
+  if (!e.target.checked) document.querySelector(".update-bar")?.remove();
+  return setPreference("show_update_bar", e.target.checked);
+});
+
 $("pref-auto-update").addEventListener("change", (e) =>
   setPreference("auto_update_enabled", e.target.checked)
 );
@@ -591,6 +596,12 @@ $("pref-close-to-tray")?.addEventListener("change", (e) => {
   );
 });
 
+$("pref-desktop-companion")?.addEventListener("change", (e) => {
+  const checked = e.target.checked;
+  setPreference("desktop_companion", checked);
+  toast(checked ? "Your companion will sit in the corner while the window is in the tray." : "The desktop companion is off.");
+});
+
 $("exports-refresh")?.addEventListener("click", renderExportsList);
 
 $("open-exports-folder").addEventListener("click", async () => {
@@ -639,10 +650,10 @@ $("pref-season-hemisphere").addEventListener("change", (e) => setPreference("sea
 //: The voice's live sample (CHAT_PLAN decision 72): the same three lines
 //: `composer_digest.sample` writes, kept equal by tests/test_answer_voice.py.
 const VOICE_SAMPLES = {
-  natural: "You have four notes about uni, 17 July to 4 August. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
-  professional: "Your notebook holds four notes on uni, 17 July to 4 August. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
-  playful: "Found four notes about uni, 17 July to 4 August. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
-  plain: "Four notes about uni, 17 July to 4 August. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
+  natural: "You have four notes about uni. Nothing yet on assessments or due dates. Remind you to ask the tutor on Thursday?",
+  professional: "Your notebook holds four notes on uni. The notes do not yet cover assessments or due dates. Set a reminder to ask the tutor on Thursday?",
+  playful: "Found four notes about uni. No word yet on assessments or due dates. Want a nudge to ask the tutor on Thursday?",
+  plain: "Four notes about uni. Not in your notes: assessments or due dates. Remind you to ask the tutor on Thursday?",
 };
 function showVoiceSample(voice) {
   $("pref-voice-sample").textContent = VOICE_SAMPLES[voice] || VOICE_SAMPLES.natural;
@@ -1046,7 +1057,7 @@ $("settings-nav-back")?.addEventListener("click", () => stepTabHistory(-1));
 $("settings-nav-forward")?.addEventListener("click", () => stepTabHistory(1));
 
 // Two buttons, two behaviours, each the one its own words name. Settings →
-// Help has "Replay the welcome" and Settings → About has "Take tour again";
+// Help has "Replay the welcome" and Settings, About has "Take tour again";
 // only the first was ever wired, so the About one was a button that did
 // nothing at all (found by listing every id in index.html that no JS file and
 // no stylesheet mentions), and wiring both to the same call then made the
@@ -1726,7 +1737,7 @@ async function findDuplicates() {
     const body = await apiJson(`/duplicates?threshold=${threshold}`);
     renderDuplicateGroups(body.groups);
     status.textContent = body.groups.length
-      ? `${body.groups.length} group${body.groups.length === 1 ? "" : "s"} of similar notes.`
+      ? `${nounCount(body.groups.length, "group")} of similar notes.`
       : "No duplicates at that similarity, try lowering the slider.";
   } catch (error) {
     status.classList.add("error");
@@ -1802,7 +1813,7 @@ function renderDuplicateGroups(groups) {
 
     const head = document.createElement("p");
     head.className = "muted";
-    head.textContent = `${group.entries.length} notes · ${Math.round(group.similarity * 100)}% alike`;
+    head.textContent = `${nounCount(group.entries.length, "note")} · ${Math.round(group.similarity * 100)}% alike`;
     card.appendChild(head);
 
     // Every note ticked by default: the whole point is merging the group.
@@ -1875,7 +1886,7 @@ async function mergeDuplicateGroup(ids, card) {
   status.textContent = "";
 
   const ok = (await confirmDialog(
-    `Merge ${ids.length} notes into one?\n\n` +
+    `Merge ${nounCount(ids.length, "note")} into one?\n\n` +
       `The merged note will read:\n\n${preview.merged.slice(0, 400)}` +
       `${preview.merged.length > 400 ? "…" : ""}\n\n` +
       `The other ${ids.length - 1} go to the bin, so this is undoable.`
@@ -1897,8 +1908,8 @@ async function mergeDuplicateGroup(ids, card) {
       for (const id of binned) await api(back ? `/entries/${id}/restore` : `/entries/${id}`, { method: back ? "POST" : "DELETE" });
       await refreshEntries([result.id, ...binned]);
     };
-    const action = pushUndo(`Merged ${result.merged_count} notes`, swap(true), swap(false));
-    toastAction(`Merged ${result.merged_count} notes${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
+    const action = pushUndo(`Merged ${nounCount(result.merged_count, "note")}`, swap(true), swap(false));
+    toastAction(`Merged ${nounCount(result.merged_count, "note")}${result.used_ai ? " with Atlas" : ""}.`, "Undo", async () => {
       settleUndoFromToast(action);
       await swap(true)();
     });
@@ -2118,6 +2129,12 @@ const STATUS_SLOTS = [
     key: "find",
     label: "Find anything",
     hint: "Search your notes, documents, files and the app itself",
+  },
+  //: INBOX 1467. A few cards held while you go to another page.
+  {
+    key: "tray",
+    label: "Tray",
+    hint: "Hold cards to paste or drag somewhere else",
   },
   //: INBOX 896. Shown on this computer only; another device never sees it.
   {
@@ -3106,9 +3123,11 @@ function renderAutoChoices() {
   const still = reducedMotionWanted();
   word("progress-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
   word("bg-motion", still ? "still now" : "moving now", "Follows reduced motion: your system's, or this app's own");
-  const { look, reason } = atlasLookReason();
-  const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
-  word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  afterCharacters(() => {
+    const { look, reason } = atlasLookReason();
+    const from = { "face-looks": "from Face looks", "your-look": "from your own look", default: "main look" }[reason] || "";
+    word("atlas-look", from ? `${look}, ${from}` : look, "Matches Face looks when it is one look, otherwise the look you chose for your own face");
+  });
 }
 
 //: B56: Auto names what it resolved to for the model in use. The server's
@@ -3139,6 +3158,7 @@ settingsReadouts.smallModel = renderSmallModelAuto;
 //: capture phase and the label follows folds opened by hand too.
 function ensureSettingsFoldAll(box) {
   if (!box) return;
+  ensurePaneTabs(box);
   const folds = () => [...box.querySelectorAll("details")].filter((d) => !d.parentElement.closest("details"));
   const bar = box.querySelector(":scope > .settings-pane-title");
   if (!bar || folds().length < 2) return;
@@ -3169,7 +3189,56 @@ function ensureSettingsFoldAll(box) {
     actions.insertBefore(button, actions.querySelector(".icon-only"));
     box.addEventListener("toggle", paint, true);
   }
+  if (box.id === "settings-appearance") ensureAppearancePopOut(box);
   paint();
+}
+
+//: **A pane's glyph tab row** (INBOX 1478, DESIGN.md "A popup's anatomy"): a
+//: `.pane-tabs` nav in the markup whose buttons name a section by
+//: `data-target`. A press opens the section's fold and goes to it (the pane is
+//: one scroll, so nothing is hidden and Find, "On this page" and Expand all
+//: still reach everything); a fold opened by anything else marks its tab.
+function ensurePaneTabs(box) {
+  const nav = box?.querySelector(":scope > .pane-tabs");
+  if (!nav || nav.dataset.wired) return;
+  nav.dataset.wired = "1";
+  ensureModule("popupAnatomy");
+  const tabs = [...nav.querySelectorAll("button[data-target]")];
+  const aim = (tab) => box.querySelector(tab.dataset.target);
+  const mark = (on) => tabs.forEach((tab) => {
+    tab.classList.toggle("active", tab === on);
+    tab.setAttribute("aria-current", String(tab === on));
+  });
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => {
+      const el = aim(tab);
+      if (!el) return;
+      if (el.matches("details")) el.open = true;
+      mark(tab);
+      el.scrollIntoView({ block: "start", behavior: reducedMotionWanted() ? "auto" : "smooth" });
+      if (tab.dataset.focus) $(tab.dataset.focus)?.focus({ preventScroll: true });
+    });
+  }
+  box.addEventListener("toggle", (event) => {
+    const hit = tabs.find((tab) => aim(tab) === event.target);
+    if (hit && event.target.open) mark(hit);
+  }, true);
+  mark(tabs[0]);
+}
+
+//: The Pop out button at the top of Settings, Appearance: the same controls in
+//: a panel beside the app (appearance-panel.js, INBOX 1435).
+function ensureAppearancePopOut(box) {
+  const actions = box.querySelector(":scope > .settings-pane-title .dock-actions");
+  if (!actions || actions.querySelector("[data-pop-out]")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "ghost small";
+  button.dataset.popOut = "appearance";
+  button.title = "Open Appearance in a panel beside the app, so you see each change without closing Settings";
+  setLabel(button, "ph:arrow-square-out Pop out");
+  button.addEventListener("click", () => openAppearancePanel());
+  actions.insertBefore(button, actions.firstChild);
 }
 
 //: **A model per feature, the list in Settings, Models** (moved here from
@@ -3272,3 +3341,317 @@ function renderFeatureModelRows(status) {
 //: This file arrives after the first Appearance render, so label once now.
 renderAutoChoices();
 renderSmallModelAuto();
+
+async function renderAccount() {
+  const facts = $("account-facts");
+  facts.replaceChildren();
+  showSkeletons(facts, 3, "li");
+  const info = await apiJson("/auth/account").catch(() => null);
+  clearSkeletons(facts);
+  if (!info) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "Couldn't read the account state.";
+    facts.appendChild(li);
+    return;
+  }
+  const rows = [
+    ["Password", info.configured ? "Set" : "Not set yet"],
+    [
+      "Created",
+      info.created_at ? new Date(info.created_at).toLocaleDateString() : "Unknown",
+    ],
+    [
+      "Private notes",
+      info.vault_exists
+        ? info.vault_open
+          ? "Encryption key loaded: private notes are readable"
+          : "Locked: unlock to read private notes"
+        : "No encrypted notes yet",
+    ],
+    ["Open sessions", String(info.active_sessions)],
+    //: INBOX 663: the recovery key's row and its one button, drawn by
+    //: account-recovery.js (lazy: the boot scripts' total cap).
+    await recoveryAccountRow(info),
+  ];
+  if (typeof info.vault_open === "boolean") vaultOpen = info.vault_open;
+  $("account-password-on-open").checked = info.password_on_open !== false;
+  renderPinSettings(info.pin);
+  renderLanAccess().catch(() => {});
+  for (const [label, value] of rows) {
+    //: A label column and a value column (`.account-facts`), not "Label: value"
+    //: in bold run-in: four facts read as a table, so they are laid out as one.
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.className = "account-fact-label";
+    name.textContent = label;
+    const text = document.createElement("span");
+    text.textContent = value;
+    li.append(name, text);
+    facts.appendChild(li);
+  }
+}
+
+//: "PIN for this computer" (owner, 2026-10-12): the fields show only where a
+//: PIN can be set, which is this computer with an OS protected store; the
+//: line under the heading says why when it cannot.
+function renderPinSettings(pin) {
+  const state = $("account-pin-state");
+  if (!state || !pin) return;
+  const usable = pin.available && pin.here;
+  $("account-pin-fields").classList.toggle("hidden", !usable);
+  $("account-pin-set").classList.toggle("hidden", !usable);
+  $("account-pin-set").textContent = pin.set ? "Change PIN" : "Set up a PIN for this computer";
+  $("account-pin-forget").classList.toggle("hidden", !(pin.set && pin.here));
+  if (!pin.here) {
+    state.textContent = "A PIN can be set up only on the computer this notebook runs on.";
+  } else if (!pin.available) {
+    state.textContent = "This computer has no protected store for a PIN, so the password is the only way in here.";
+  } else {
+    state.textContent = pin.set
+      ? "A PIN is set: the lock screen takes it or your password, on this computer only."
+      : "Unlock on this computer with a few digits instead of your password.";
+  }
+}
+
+// The review panel for the background librarian (ROADMAP §40 item 2).
+//
+// A true dry-run is not available here, the agent picks each call from the
+// result of the last one, so a pass with the writes stubbed out stops
+// resembling the pass that would really run, and a preview that lies is worse
+// than no preview. What is available is honest and nearly as useful: every
+// write already captured the call that reverses it, so the pass can be read
+// back and undone one item at a time. `changeRow` is the same renderer the
+// chat uses for a skill's result, so Undo here goes through exactly the path
+// the chat's own Undo buttons do.
+async function renderAutonomousReview() {
+  const box = $("autonomous-review");
+  const list = $("autonomous-review-list");
+  if (!box || !list) return;
+
+  const pass = await apiJson("/tasks/autonomous/last").catch(() => null);
+  const changes = pass?.changes || [];
+  box.classList.toggle("hidden", changes.length === 0);
+  if (!changes.length) return;
+
+  const when = pass.finished_at ? whenText(pass.finished_at) : "";
+  $("autonomous-review-title").textContent =
+    `What the last run changed, ${changes.length} thing(s)` + (when ? `, ${when}` : "");
+  list.replaceChildren(...changes.map((change) => changeRow(change)));
+}
+
+async function renderToolSettings() {
+  renderMcpSnippet();
+  const list = $("tool-list");
+  showSkeletons(list, 4, "li");
+  const [catalog, prefs] = await Promise.all([
+    apiJson("/chat/tools").catch(() => []),
+    apiJson("/preferences").catch(() => ({ disabled_tools: [] })),
+  ]);
+  clearSkeletons(list);
+  prefsCache = prefs;
+  renderToolFocus(prefs.tool_focus || "auto");
+  renderSmallModelMode(prefs.small_model_mode || "auto");
+  renderRunBudget(prefs);
+  const disabled = new Set(prefs.disabled_tools || []);
+  list.replaceChildren();
+  //: Grouped by what a tool does to the notebook (CHAT_PLAN, INBOX 71: "a
+  //: grouped table (read, write, destructive)"), each group under an
+  //: `h4.setting-subhead` (DESIGN.md: a subdivision inside a group) that
+  //: spans both columns. Within a group, the catalog's own order.
+  for (const [key, title] of TOOL_GROUPS) {
+    const members = catalog.filter((t) => (t.group || "read") === key);
+    if (!members.length) continue;
+    const head = document.createElement("li");
+    head.className = "tool-group-head";
+    head.dataset.group = key;
+    const h4 = document.createElement("h4");
+    h4.className = "setting-subhead";
+    h4.textContent = title;
+    head.append(h4);
+    list.append(head);
+    for (const tool of members) appendToolRow(list, tool, disabled, key);
+  }
+  applyToolFilter();
+}
+
+//: Moved here from skills.js (audit 1031, the boot gzip budget): Tools and features is
+//: the only caller of every function below.
+// --- Wave O: agent-tools toggles ----------------------------------------------------
+
+// How many tool descriptions each message carries (§11a). Saved on change
+// rather than behind an Apply button, the search-engine picker taught us
+// that a control which saves nothing until later reads as broken, because
+// the next status poll paints the old value back over it.
+function renderToolFocus(current) {
+  for (const radio of document.querySelectorAll('input[name="tool-focus"]')) {
+    radio.checked = radio.value === current;
+    radio.onchange = async () => {
+      if (!radio.checked) return;
+      const status = $("tool-focus-status");
+      status.textContent = "Saving…";
+      prefsCache = await apiJson("/preferences", {
+        method: "PUT",
+        body: JSON.stringify({ tool_focus: radio.value }),
+      });
+      status.textContent =
+        radio.value === "auto"
+          ? "Each message is offered the tools it needs."
+          : "Every message is offered every tool.";
+    };
+  }
+}
+
+//: **The Phase B setting, given the control it never had.** `small_model_mode`
+//: has been on GET/PUT /preferences since the skills reform's backend half,
+//: read by the chat route on every run, with nothing anywhere in the app that
+//: could change it, so every notebook ran on `auto` whatever its owner wanted.
+//: Saved on change for the same reason the tool-focus radios above are: a
+//: control that waits for an Apply button reads as broken here, because the
+//: next preferences render paints the old value back over it.
+function renderSmallModelMode(current) {
+  const select = $("small-model-mode");
+  if (!select) return;
+  select.value = current || "auto";
+  renderSmallModelAuto();
+}
+
+//: **The run budget** (Brief 13), the same shape as the two controls above:
+//: saved on change, because a control that waits for an Apply button reads as
+//: broken here, the next preferences render paints the old value back over it.
+//: Both fields together in one request, so a person who edits one and then the
+//: other does not race two writes of the same preferences file.
+function renderRunBudget(prefs) {
+  const tokens = $("run-budget-tokens");
+  const seconds = $("run-budget-seconds");
+  if (tokens) tokens.value = String(prefs.run_budget_tokens ?? 20000);
+  if (seconds) seconds.value = String(prefs.run_budget_seconds ?? 90);
+}
+
+//: One tool's switch, saved. A refused save puts the switch back and says why:
+//: the handler used to `await` with nothing to catch it, so a 422 was an
+//: unhandled rejection and the switch stayed where the server disagreed (found
+//: by the deepflows sweep, which turned all the tools off).
+async function saveToolSwitch(check, name) {
+  const next = new Set(prefsCache.disabled_tools || []);
+  if (check.checked) next.delete(name);
+  else next.add(name);
+  try {
+    prefsCache = await apiJson("/preferences", {
+      method: "PUT",
+      body: JSON.stringify({ disabled_tools: [...next] }),
+    });
+  } catch (error) {
+    check.checked = !check.checked;
+    toast(error.message || "Couldn't save that. Try again.", true);
+    return;
+  }
+  // The "N of 51 on" count is only true until someone flips one.
+  applyToolFilter();
+}
+
+//: The four groups, in the order a person scanning for risk reads them.
+const TOOL_GROUPS = [
+  ["read", "Reads your notebook"],
+  ["write", "Changes your notebook"],
+  ["confirm", "Asks you first"],
+  ["online", "Reaches the web"],
+];
+
+function appendToolRow(list, tool, disabled, group) {
+  const li = document.createElement("li");
+  li.dataset.group = group;
+  //: What a Tools and features row for this tool lands on (`ai-tool` in
+  //: REVEAL_TARGETS).
+  li.dataset.tool = tool.name;
+  const label = document.createElement("label");
+  label.className = "tool-row setting-check";
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.checked = !disabled.has(tool.name);
+  // web_search is gated by the separate online opt-in, show why it's off.
+  if (tool.online && !tool.enabled && !disabled.has(tool.name)) {
+    check.checked = false;
+    check.disabled = true;
+    check.title = "Enable web search in Preferences first";
+  }
+  check.addEventListener("change", () => saveToolSwitch(check, tool.name));
+  const text = document.createElement("span");
+  const name = document.createElement("strong");
+  name.textContent = tool.name.replace(/_/g, " ");
+  text.append(name);
+  // The chips sit on their own line under the name, not after it on the
+  // same one: the switch is centred on the name's line (the grid in
+  // 03-dashboard-widgets.css), and a chip that wrapped would have made
+  // that line two lines tall and pulled the switch off the name again.
+  if (tool.destructive || tool.online) {
+    const tags = document.createElement("span");
+    tags.className = "tool-tags";
+    if (tool.destructive) tags.append(chip("confirms first", "item-label is-warn"));
+    if (tool.online) tags.append(chip("online", "item-label"));
+    text.append(tags);
+  }
+  const desc = document.createElement("span");
+  desc.className = "muted tool-desc";
+  desc.textContent = tool.description;
+  desc.title = tool.description || ""; // clamped to two lines; the whole of it on hover
+  // The description goes *inside* the label's text column, not beside the
+  // label in the <li>. That is what lets this row be `.setting-check`'s
+  // grid, name and description stacked in column one, switch hard right , 
+  // instead of a flex row whose switch tracked the length of each name.
+  // It also makes the description part of the control's own hit area, the
+  // way the hint under every other setting already is.
+  text.append(desc);
+  label.append(check, text);
+  li.append(label);
+  // Matched against by the filter below. Stored on the row rather than
+  // re-read from the DOM on every keystroke, and lower-cased once here
+  // instead of once per row per keystroke.
+  li.dataset.search = `${tool.name} ${tool.description || ""}`.toLowerCase().replace(/_/g, " ");
+  list.appendChild(li);
+}
+
+//: Narrow a fifty-one item list, and say how many are on.
+//:
+//: The first audit of Settings measured this section at **5,708px**, by some
+//: way the longest scroll in the app, with every tool a name plus a
+//: paragraph of description. Finding one meant scrolling past fifty others,
+//: and nothing anywhere answered the question the list actually raises: how
+//: many of these are switched on?
+//:
+//: Filtering hides rows rather than re-rendering them, so a checkbox keeps
+//: its state and its listener while you type. Re-rendering would also lose
+//: focus from the filter field on every keystroke.
+function applyToolFilter() {
+  const list = $("tool-list");
+  const box = $("tool-filter");
+  const count = $("tool-count");
+  const empty = $("tool-filter-empty");
+  if (!list) return;
+  const needle = (box?.value || "").trim().toLowerCase();
+  const rows = [...list.querySelectorAll(":scope > li[data-tool]")];
+  let shown = 0;
+  const groupsShown = new Set();
+  for (const row of rows) {
+    const hit = !needle || (row.dataset.search || "").includes(needle);
+    row.classList.toggle("hidden", !hit);
+    if (hit) {
+      shown++;
+      groupsShown.add(row.dataset.group);
+    }
+  }
+  //: A group's head goes with its last matching row.
+  for (const head of list.querySelectorAll(":scope > li.tool-group-head")) {
+    head.classList.toggle("hidden", !groupsShown.has(head.dataset.group));
+  }
+  empty?.classList.toggle("hidden", shown > 0 || !rows.length);
+  if (count) {
+    // Two different questions, so two different answers: with no filter the
+    // useful number is how many are enabled; while filtering it is how many
+    // the search actually found.
+    const on = rows.filter((r) => r.querySelector("input[type=checkbox]")?.checked).length;
+    count.textContent = needle
+      ? `${shown} of ${rows.length}`
+      : `${on} of ${rows.length} on`;
+  }
+}

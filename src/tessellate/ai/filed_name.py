@@ -50,3 +50,23 @@ def filed_listing(text: str) -> str | None:
     name = (found.group("a") or found.group("b") or "").strip()
     name = re.sub(r"^(?:all|every|my|the) ", "", name, flags=re.I)
     return name if name and name.split()[0].lower() not in _NOT_FILED else None
+
+
+#: "show me my study notes", "pull up my uni notes", "get my university notes",
+#: "my uni notes": a subject's notes asked for with a verb that opens or shows
+#: them, or with none (a topic, as decision 64's "games notes"). In Ask
+#: that is the overview whether or not a tag or category has the name (the
+#: verb decides, never the notebook, CHAT_PLAN decision 81); "list my X notes"
+#: and "notes tagged X" are the listing.
+SHOW_NOTES = (
+    r"^\s*(?:please )?(?:(?:show|give|get|bring up|pull up|find)(?: me)? )?(?:all )?(?:of )?(?:my|the) "
+    r"(?!(?:last|latest|newest|recent|first|oldest|next)\b)(?P<name>[\w&'-]+(?: [\w&'-]+)?)\s+(?:notes|entries)\s*[.?!]*$"
+)
+_SHOW_NOTES = re.compile(SHOW_NOTES, re.I)
+
+
+def shows_the_lot(question: str) -> bool:
+    """Whether `question` asks to be shown a subject's notes ("show me all of
+    my university notes"); "my pinned notes" and the like are no subject."""
+    found = _SHOW_NOTES.match(" ".join((question or "").split()))
+    return bool(found) and found.group("name").split()[0].lower() not in _NOT_FILED

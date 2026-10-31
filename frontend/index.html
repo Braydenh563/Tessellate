@@ -139,13 +139,13 @@
          (the icon carries it) so it never competes with the tabs for room. -->
     <div class="space-switcher">
       <button id="space-switcher-btn" class="ghost small space-switcher-btn" type="button"
-        aria-haspopup="listbox" aria-expanded="false" aria-controls="space-menu"
+        aria-haspopup="menu" aria-expanded="false" aria-controls="space-menu"
         title="Switch space">
         <i id="space-current-icon" class="ph ph-circles-four" aria-hidden="true"></i>
         <span id="space-current-name" class="space-switcher-name">All spaces</span>
         <i class="ph ph-caret-down space-switcher-caret" aria-hidden="true"></i>
       </button>
-      <div id="space-menu" class="space-menu glass hidden" role="listbox"
+      <div id="space-menu" class="space-menu glass hidden" role="menu"
         aria-label="Spaces" tabindex="-1"></div>
     </div>
     <nav id="tab-bar" role="tablist" aria-label="App sections">
@@ -164,7 +164,7 @@
            depth of the click. So the fix landed in the Library's own sub-tabs
            instead, where Documents now has a section of its own. `documents`
            is still in TABS and still switchable-to; see revealTab on why the
-           Library button lights up while it is showing. -->
+           Sidebar button lights up while it is showing. -->
       <button role="tab" id="tab-btn-library" data-tab="library"
         aria-selected="false" aria-controls="tab-library" tabindex="-1" aria-label="Library"><i class="ph ph-books tab-icon" aria-hidden="true"></i><span class="tab-label">Library</span></button>
       <button role="tab" id="tab-btn-timeline" data-tab="timeline"
@@ -228,7 +228,7 @@
                icon-only toggles every panel in this app ends with. -->
           <div class="notif-head dialog-head">
             <span class="notif-heading dialog-head-title">
-              <strong>Notifications</strong>
+              <i class="ph ph-bell pop-glyph" aria-hidden="true"></i><strong>Notifications</strong>
               <span id="notif-unread" class="notif-unread-chip hidden"></span>
             </span>
             <span class="notif-head-actions dialog-head-actions">
@@ -320,13 +320,13 @@
 
   <!-- Unlock / first-run setup gate -->
   <div id="lock-overlay" class="lock-overlay hidden">
-    <div class="card lock-card" id="lock-card">
+    <div class="card lock-card" id="lock-card" role="dialog" aria-modal="true" aria-labelledby="lock-title">
       <div id="lock-emblem" class="emblem emblem-lock" aria-hidden="true"></div>
       <h2 id="lock-title">Unlock Tessellate</h2>
       <p id="lock-message" class="muted"></p>
       <div class="lock-password-wrap">
         <input id="lock-password" type="password" placeholder="Password"
-          aria-label="Password" autocomplete="current-password">
+          aria-label="Password" aria-describedby="lock-error" autocomplete="current-password">
         <button type="button" id="lock-password-show" class="ghost icon-only lock-password-show" aria-pressed="false"
           aria-label="Show password" title="Show password"><i class="ph ph-eye" aria-hidden="true"></i></button>
       </div>
@@ -402,7 +402,7 @@
          (`reset_here` from /auth/status). Wired in account-recovery.js. -->
     <div id="lock-forgot-card" class="card lock-forgot-card hidden" role="region" aria-labelledby="lock-forgot-title">
       <div class="dialog-head">
-        <h2 class="dialog-head-title" id="lock-forgot-title">Forgot your password?</h2>
+        <h2 class="dialog-head-title" id="lock-forgot-title"><i class="ph ph-key pop-glyph" aria-hidden="true"></i>Forgot your password?</h2>
         <button type="button" class="icon-only ghost small graph-help-toggle"
           data-help-for="lock-forgot-help" aria-controls="lock-forgot-help" aria-expanded="false"
           title="About resetting your password" aria-label="About resetting your password">
@@ -427,11 +427,12 @@
         <p>
           Without it, a reset clears the password so you can set a new one.
           Private notes stay sealed for good; a sealed backup still opens
-          with its own password. "Allow other devices on this network" is
+          with its own password. You need a six-digit code that Tessellate
+          prints in the terminal it runs in (or its log file, when there is no terminal), valid for ten minutes, one use. "Allow other devices on this network" is
           turned off. Either way it can only be done on this computer.
         </p>
       </div>
-      <p id="lock-forgot-remote" class="notice hidden" role="status">
+      <p id="lock-forgot-remote" class="notice hidden">
         <i class="ph ph-desktop" aria-hidden="true"></i>
         <span>Reset your password on the computer this notebook lives on. Another device can't do it.</span>
       </p>
@@ -455,8 +456,9 @@
         </div>
         <div id="lock-forgot-reset-pane" class="lock-forgot-pane hidden">
           <p class="muted">
-            A reset keeps notes, documents, boards and settings. Private notes stay
-            sealed; a sealed backup keeps its own password.
+            A reset keeps notes, documents, boards and settings. Private notes are
+            lost for good, because only your password or recovery key opens them;
+            a sealed backup keeps its own password.
           </p>
           <p class="muted">In a terminal, in the app's folder:</p>
           <div class="row lock-forgot-command">
@@ -464,7 +466,14 @@
             <button type="button" id="lock-reset-copy" class="ghost small"
               title="Copy the command" aria-label="Copy the command"><i class="ph ph-copy ph-lead" aria-hidden="true"></i> Copy</button>
           </div>
-          <label class="stacked-label" for="lock-reset-confirm">Or reset here: type RESET to confirm</label>
+          <p class="muted">Or reset here. A six-digit code is printed in the terminal where Tessellate is running, or in its log file if it has no terminal, so only someone at this computer can reset.</p>
+          <button id="lock-reset-send" type="button" class="ghost lock-forgot-action">Print a code</button>
+          <p id="lock-reset-where" class="muted hidden" role="status"></p>
+          <button id="lock-reset-open-logs" type="button" class="ghost small hidden">Open the logs folder</button>
+          <label class="stacked-label" for="lock-reset-code">Code that was printed</label>
+          <input id="lock-reset-code" type="text" inputmode="numeric" autocomplete="off" spellcheck="false"
+            maxlength="6" pattern="[0-9]{6}" placeholder="000000">
+          <label class="stacked-label" for="lock-reset-confirm">Type RESET to confirm</label>
           <input id="lock-reset-confirm" type="text" autocomplete="off" spellcheck="false"
             autocapitalize="characters" maxlength="32" placeholder="RESET">
           <button id="lock-reset-submit" type="button" class="danger lock-forgot-action" disabled>Reset password</button>
@@ -482,7 +491,7 @@
        Wired in account-recovery.js. -->
   <dialog id="recovery-key-dialog" class="card space-dialog recovery-key-dialog" aria-labelledby="recovery-key-title">
     <div class="dialog-head">
-      <h2 class="dialog-head-title" id="recovery-key-title">Your recovery key</h2>
+      <h2 class="dialog-head-title" id="recovery-key-title"><i class="ph ph-shield-check pop-glyph" aria-hidden="true"></i>Your recovery key</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle"
         data-help-for="recovery-key-dialog-help" aria-controls="recovery-key-dialog-help" aria-expanded="false"
         title="What a recovery key does" aria-label="What a recovery key does">
@@ -642,7 +651,7 @@
           <!-- The head wears Atlas's own face (atlas.js, `atlasDressMarks`);
                the icon is what shows until it is drawn. -->
           <span class="atlas-mark atlas-mark-agent" data-atlas-avatar="28" aria-hidden="true"><i class="ph ph-strategy" aria-hidden="true"></i></span>
-          <h3 class="dialog-head-title">Agent</h3>
+          <h3 class="dialog-head-title"><i class="ph ph-strategy pop-glyph" aria-hidden="true"></i>Agent</h3>
           <!-- The one line of description this panel is allowed (standing
                order 6) is the paragraph below; everything longer lives behind
                this '?', which is the app's `data-help-for` recipe. Added with
@@ -793,7 +802,7 @@
     <div class="card glass finder-card">
       <div class="row space-between finder-head dialog-head">
         <div class="row help-head">
-          <h3 class="dialog-head-title">Find anything</h3>
+          <h3 class="dialog-head-title"><i class="ph ph-magnifying-glass pop-glyph" aria-hidden="true"></i>Find anything</h3>
           <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
             data-help-for="finder-help" aria-controls="finder-help"
             aria-expanded="false" title="How this searches"
@@ -824,9 +833,10 @@
           <li><code>kind:chat</code> one kind: note, document, board, map, file, bookmark, reminder, chat or recording</li>
           <li><code>before:2026-01</code> and <code>after:2025-06-30</code> by the day it was written</li>
           <li><code>has:image</code> with an image, a file, a link, a reminder or a highlight</li>
-          <li><code>is:pinned</code> pinned, archived, done, open or a draft</li>
+          <li><code>is:pinned</code> pinned, archived, done, open or a draft; <code>is:deleted</code> looks in the bin, which is otherwise left out</li>
+          <li><code>title:budget</code> only titles that say it</li>
           <li><code>"exact phrase"</code> those words in that order</li>
-          <li><code>-word</code> leaves out anything that says it</li>
+          <li><code>-word</code> leaves out anything that says it; <code>-tag:work</code>, <code>-kind:</code>, <code>-is:</code> or <code>-title:</code> leave out what matches</li>
         </ul>
         <p>
           Up and Down walk the results, Enter opens one, Escape closes.
@@ -889,7 +899,7 @@
          widths and two baselines in one row, which is what the owner called
          "not aligned and unprofessional" (2026-09-23). -->
     <h3 class="panel-head monitor-header dialog-head">
-      <span class="monitor-title dialog-head-title"><i class="ph ph-activity ph-lead" aria-hidden="true"></i> Activity</span>
+      <span class="monitor-title dialog-head-title"><i class="ph ph-activity pop-glyph" aria-hidden="true"></i> Activity</span>
       <span class="row monitor-header-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn graph-help-toggle"
           data-help-for="activity-help" aria-controls="activity-help" aria-expanded="false"
@@ -913,28 +923,43 @@
         them. Under it, what finished in the last half hour says how it ended,
         how long it took and when, with its lines. Stop the model, in the menu,
         ends any answer and lets the model leave memory. Agent runs lists each
-        run this session with its steps; the log is in the menu.
+        run this session with its steps; the log is in the menu. The two tabs
+        show how many each holds, and each part is a card.
       </p>
     </div>
     <!-- Two tabs, one panel (WORLD_CLASS_PLAN decision 70): the jobs list
          and the agent's run list. The popup kind strip recipe. -->
     <div class="tabs-line popup-kinds activity-tabs" id="activity-tabs" role="tablist" aria-label="Activity">
-      <button type="button" role="tab" id="activity-tab-running" data-value="running" aria-selected="true" aria-controls="activity-running">Running</button>
-      <button type="button" role="tab" id="activity-tab-runs" data-value="runs" aria-selected="false" aria-controls="activity-runs" tabindex="-1">Agent runs</button>
+      <button type="button" role="tab" id="activity-tab-running" data-value="running" aria-selected="true" aria-controls="activity-running"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="activity-count-running">0</span></button>
+      <button type="button" role="tab" id="activity-tab-runs" data-value="runs" aria-selected="false" aria-controls="activity-runs" tabindex="-1"><i class="ph ph-strategy pop-tab-glyph ph-lead" aria-hidden="true"></i>Agent runs<span class="pop-count" id="activity-count-runs">0</span></button>
     </div>
     <div id="activity-running" role="tabpanel" aria-labelledby="activity-tab-running" class="activity-running">
-      <p id="activity-model" class="status activity-model"></p>
-      <ul id="activity-list" class="entry-list"></ul>
-      <p id="activity-empty" class="muted empty-line">Nothing running right now.</p>
+      <section class="pop-card">
+        <div class="pop-card-head"><i class="ph ph-activity pop-glyph" aria-hidden="true"></i><h3 class="pop-card-title">Running now</h3></div>
+        <div class="pop-card-body">
+          <p id="activity-model" class="status activity-model"></p>
+          <ul id="activity-list" class="entry-list"></ul>
+          <p id="activity-empty" class="muted empty-line">Nothing running right now.</p>
+        </div>
+      </section>
       <!-- What ended in the last half hour, each with its outcome, length
            and lines (INBOX 805), and an import's report: activity-panel.js. -->
-      <p id="activity-finished-head" class="eyebrow hidden">Finished in the last half hour</p>
-      <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
+      <section class="pop-card hidden" id="activity-finished-card">
+        <div class="pop-card-head"><i class="ph ph-check-circle pop-glyph" aria-hidden="true"></i><h3 id="activity-finished-head" class="pop-card-title">Finished in the last half hour</h3></div>
+        <div class="pop-card-body">
+          <ul id="activity-finished" class="entry-list" aria-labelledby="activity-finished-head"></ul>
+        </div>
+      </section>
     </div>
     <div id="activity-runs" role="tabpanel" aria-labelledby="activity-tab-runs" class="hidden">
-      <div id="agent-monitor-runs" class="monitor-runs"></div>
-      <p id="agent-monitor-empty" class="muted empty-line">Nothing has run yet this session.</p>
-      <div id="agent-monitor-logs" class="monitor-logs hidden"></div>
+      <section class="pop-card">
+        <div class="pop-card-head"><i class="ph ph-strategy pop-glyph" aria-hidden="true"></i><h3 class="pop-card-title">This session</h3></div>
+        <div class="pop-card-body">
+          <div id="agent-monitor-runs" class="monitor-runs"></div>
+          <p id="agent-monitor-empty" class="muted empty-line">Nothing has run yet this session.</p>
+          <div id="agent-monitor-logs" class="monitor-logs hidden"></div>
+        </div>
+      </section>
     </div>
   </aside>
 
@@ -948,57 +973,66 @@
        markup. Every handler is bound in app.js now. -->
   <dialog id="space-create-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">New space</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>New space</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-create-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
     <p class="muted">A space keeps a set of notes, tags and chats apart from the rest. Your settings, models and skills stay shared.</p>
+    <!-- Enter in the name field creates the space: the controls belong to this form by `form=`, so the dialog's layout is untouched. -->
+    <form id="space-create-form" class="hidden"></form>
     <label for="space-create-name">Name</label>
-    <input type="text" id="space-create-name" placeholder="e.g. Work" maxlength="60" autocomplete="off">
-    <label for="space-create-icon">Icon</label>
-    <div id="space-create-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-create-icon"></div>
+    <input type="text" id="space-create-name" form="space-create-form" placeholder="e.g. Work" maxlength="60" autocomplete="off">
+    <label id="space-create-icon-label">Icon</label>
+    <div id="space-create-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-create-icon-label"></div>
     <input type="hidden" id="space-create-icon" value="ph-folder">
     <p id="space-create-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-create-dialog">Cancel</button>
-      <button type="button" class="accent small" id="space-create-submit">Create space</button>
+      <button type="submit" form="space-create-form" class="accent small" id="space-create-submit">Create space</button>
     </div>
   </dialog>
 
   <dialog id="space-edit-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Rename space</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-pencil-simple pop-glyph" aria-hidden="true"></i>Rename space</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-edit-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
     <input type="hidden" id="space-edit-id">
+    <form id="space-edit-form" class="hidden"></form>
     <label for="space-edit-name">Name</label>
-    <input type="text" id="space-edit-name" maxlength="60" autocomplete="off">
-    <label for="space-edit-icon">Icon</label>
-    <div id="space-edit-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-edit-icon"></div>
+    <input type="text" id="space-edit-name" form="space-edit-form" maxlength="60" autocomplete="off">
+    <label id="space-edit-icon-label">Icon</label>
+    <div id="space-edit-icon-picker" class="space-icon-picker" role="radiogroup" aria-labelledby="space-edit-icon-label"></div>
     <input type="hidden" id="space-edit-icon">
     <p id="space-edit-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-edit-dialog">Cancel</button>
-      <button type="button" class="accent small" id="space-edit-submit">Save</button>
+      <button type="submit" form="space-edit-form" class="accent small" id="space-edit-submit">Save</button>
     </div>
   </dialog>
 
   <dialog id="space-delete-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Delete this space?</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-trash pop-glyph" aria-hidden="true"></i>Delete this space?</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="space-delete-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
     <p>Choose what happens to its notes, documents, files and chats.</p>
+    <p id="space-delete-count" class="muted small" aria-live="polite"></p>
     <label for="space-delete-fate" class="form-label">Its contents</label>
     <select id="space-delete-fate" class="wide">
       <option value="">Delete everything in it</option>
     </select>
     <input type="hidden" id="space-delete-id">
+    <div id="space-delete-purge" hidden>
+      <p class="status error">This skips the bin and cannot be undone.</p>
+      <label for="space-delete-confirm" class="form-label" id="space-delete-confirm-label">Type the space's name to confirm</label>
+      <input type="text" id="space-delete-confirm" class="wide" autocomplete="off" spellcheck="false">
+    </div>
     <p id="space-delete-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-delete-dialog">Cancel</button>
@@ -1012,7 +1046,7 @@
        so the sidebar height goes back to the list. -->
   <dialog id="doc-storage-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Where are my documents kept?</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-folder-open pop-glyph" aria-hidden="true"></i>Where are my documents kept?</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-storage-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1038,7 +1072,7 @@
        dialogs above. -->
   <dialog id="doc-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">New from a template</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-file-plus pop-glyph" aria-hidden="true"></i>New from a template</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1069,7 +1103,7 @@
   <dialog id="note-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="note-template-title">
     <div class="dialog-head">
-      <h2 id="note-template-title" class="dialog-head-title">Start from a template</h2>
+      <h2 id="note-template-title" class="dialog-head-title"><i class="ph ph-note-pencil pop-glyph" aria-hidden="true"></i>Start from a template</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="note-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1092,7 +1126,7 @@
   <!-- Insert, Mermaid, draw.io or board SVG (W5; whiteboard-interchange.js). -->
   <dialog id="wb-import-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-import-title">
     <div class="dialog-head">
-      <h2 id="wb-import-title" class="dialog-head-title">Bring in a diagram</h2>
+      <h2 id="wb-import-title" class="dialog-head-title"><i class="ph ph-tree-structure pop-glyph" aria-hidden="true"></i>Bring in a diagram</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-import-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1107,10 +1141,28 @@
     </div>
   </dialog>
 
+  <!-- A live Mermaid diagram on the board (INBOX 1451; whiteboard-interchange.js). -->
+  <dialog id="wb-diagram-dialog" class="card space-dialog wb-import-dialog" aria-labelledby="wb-diagram-title">
+    <div class="dialog-head">
+      <h2 id="wb-diagram-title" class="dialog-head-title"><i class="ph ph-flow-arrow pop-glyph" aria-hidden="true"></i>Mermaid diagram</h2>
+      <span class="dialog-head-actions">
+        <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-diagram-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+      </span>
+    </div>
+    <p class="muted wb-import-about" id="wb-diagram-about">Write any Mermaid diagram. It stays live: double-click it on the board to change it.</p>
+    <textarea id="wb-diagram-text" class="wb-import-text" rows="8" spellcheck="false" aria-label="Mermaid source" aria-describedby="wb-diagram-about"></textarea>
+    <div id="wb-diagram-preview" class="wb-diagram-preview" aria-live="polite"></div>
+    <div class="row right space-dialog-actions">
+      <button type="button" class="ghost small" id="wb-diagram-shapes" title="Replace it with shapes and connectors you can move one by one (flowchart, state, class and sequence diagrams)">Turn into shapes</button>
+      <button type="button" class="ghost small" data-close-dialog="wb-diagram-dialog">Cancel</button>
+      <button type="button" class="accent small" id="wb-diagram-save">Add to board</button>
+    </div>
+  </dialog>
+
   <dialog id="wb-template-dialog" class="card space-dialog doc-ai-history-dialog doc-template-dialog"
     aria-labelledby="wb-template-title">
     <div class="dialog-head">
-      <h2 id="wb-template-title" class="dialog-head-title">New board</h2>
+      <h2 id="wb-template-title" class="dialog-head-title"><i class="ph ph-chalkboard-teacher pop-glyph" aria-hidden="true"></i>New board</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="wb-template-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1140,7 +1192,7 @@
        leaving it. Alt+N or the palette; the head is the dialog-head recipe. -->
   <dialog id="quick-note" class="card space-dialog quick-note-dialog" aria-labelledby="quick-note-title">
     <div class="dialog-head">
-      <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning ph-lead" aria-hidden="true"></i> Quick note</h2>
+      <h2 id="quick-note-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i> Quick note</h2>
       <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
         data-help-for="quick-note-help" aria-controls="quick-note-help"
         aria-expanded="false" title="About quick notes" aria-label="About quick notes">
@@ -1155,7 +1207,8 @@
       <p>Alt+N opens this from any tab, and the note is saved without leaving
         the page you are on. Ctrl+Enter saves; <code>#word</code> anywhere in
         the text tags the note, and shows as a chip under the box with any day
-        or time it read; press a day's chip to add a reminder on the note
+        or time it read; <code>[[</code> links to another note and <code>/</code>
+        opens the block menu, as in Capture; press a day's chip to add a reminder on the note
         (on already when the note starts "remind me"). It is filed in the background, by Atlas when a
         model is running and from your own notes when not. Escape closes it and
         keeps what you wrote for next time. If the server is not answering, the
@@ -1197,7 +1250,7 @@
          should not be two different-looking things. -->
     <dialog id="doc-history-dialog" class="card space-dialog doc-ai-history-dialog">
       <div class="dialog-head">
-      <h2 class="dialog-head-title">Document history</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-clock-counter-clockwise pop-glyph" aria-hidden="true"></i>Document history</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-history-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1230,7 +1283,7 @@
     </dialog>
     <dialog id="doc-ai-history-dialog" class="card space-dialog doc-ai-history-dialog">
       <div class="dialog-head">
-      <h2 class="dialog-head-title">AI edit history</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-sparkle pop-glyph" aria-hidden="true"></i>AI edit history</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-ai-history-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1246,7 +1299,7 @@
        replace across files, as one undo step. Rows by `renderDocReplace`. -->
   <dialog id="doc-replace-dialog" class="card space-dialog doc-ai-history-dialog doc-replace-dialog" aria-labelledby="doc-replace-title">
     <div class="dialog-head">
-      <h2 class="dialog-head-title" id="doc-replace-title">Replace in every document</h2>
+      <h2 class="dialog-head-title" id="doc-replace-title"><i class="ph ph-swap pop-glyph" aria-hidden="true"></i>Replace in every document</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-replace-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1259,6 +1312,7 @@
     <div class="row">
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-regex"> <span>Regular expression</span></label>
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-case"> <span>Match case</span></label>
+      <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-word"> <span>Whole word</span></label>
     </div>
     <p id="doc-replace-summary" class="muted text-sm" role="status"></p>
     <ul id="doc-replace-list" class="doc-ai-history-list"></ul>
@@ -1270,7 +1324,7 @@
 
   <dialog id="doc-stats-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Document statistics</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-chart-bar pop-glyph" aria-hidden="true"></i>Document statistics</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-stats-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1281,7 +1335,7 @@
 
   <dialog id="doc-word-goal-dialog" class="card space-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Word-count goal</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-target pop-glyph" aria-hidden="true"></i>Word-count goal</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="doc-word-goal-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
@@ -1303,13 +1357,13 @@
        Rows are built by renderDashWidgetsList() in app.js. -->
   <dialog id="dash-widgets-dialog" class="card space-dialog dash-widgets-dialog">
     <div class="dialog-head">
-      <h2 class="dialog-head-title">Widgets</h2>
+      <h2 class="dialog-head-title"><i class="ph ph-squares-four pop-glyph" aria-hidden="true"></i>Widgets</h2>
       <span class="dialog-head-actions">
         <button type="button" class="icon-only ghost small dialog-head-btn" data-close-dialog="dash-widgets-dialog" title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
       </span>
     </div>
     <p class="muted">Add, remove or widen any dashboard widget. Changes save right away.</p>
-    <input type="search" id="dash-widgets-search" placeholder="Filter widgets…" autocomplete="off">
+    <input type="search" id="dash-widgets-search" aria-label="Filter widgets" placeholder="Filter widgets…" autocomplete="off">
     <div id="dash-widgets-list" class="dash-widgets-list"></div>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="dash-widgets-dialog">Done</button>
@@ -1419,7 +1473,7 @@
          carries, then the two things the mode needs: adding a widget and the
          way out. Shown only while editing; the menu's Edit layout opens it. -->
     <div class="dash-editbar hidden" id="dash-editbar">
-      <span class="dash-hint" id="dash-hint" role="status">
+      <span class="dash-hint" id="dash-hint">
         <span class="dash-hint-badge">Editing layout</span>
         <span class="dash-hint-item"><i class="ph ph-dots-six-vertical ph-lead" aria-hidden="true"></i>Drag a card to move it</span>
         <span class="dash-hint-item"><i class="ph ph-arrows-out-line-horizontal ph-lead" aria-hidden="true"></i>Wide or narrow</span>
@@ -1594,11 +1648,11 @@
                 opens the blocks menu</strong> (also <code>Ctrl</code>+<code>/</code>);
                 pressing <code>/</code> anywhere you are <em>not</em> typing
                 jumps to the search box.</li>
-              <li>Headings beyond the first line, lists, tables, fenced
-                code and <code>&gt; [!tip]</code> callouts are stored
-                faithfully but are <em>not</em> rendered on a note card, 
-                a note list rendered that way gets very tall very fast.
-                They do render in the document editor.</li>
+              <li>A note card draws tables, fenced code, quotes
+                (<code>&gt;</code>), <code>&gt; [!tip]</code> callouts and
+                tasks. Headings beyond the first line show as plain text
+                and lists as bullets there, because a list drawn in full
+                gets very tall very fast; the document editor draws all of it.</li>
             </ul>
           </div>
           <!-- **One writing surface, not four stacked boxes.** The title
@@ -1798,9 +1852,9 @@ Link to another note with [[its first few words]]."></textarea>
                  reasoning the other three draft-creating paths already use, 
                  none of them file a category either. -->
             <button id="save-draft-btn" class="ghost"
-              title="Save without filing it yet, find it later under Drafts in the sidebar"
+              title="Keep it as a draft: nothing is filed, and it waits under Drafts in the sidebar. Save files it by category and tags."
               aria-label="Save as draft">Save as draft</button>
-            <button id="save-btn" data-shortcut="save"><i class="ph ph-check ph-lead" aria-hidden="true"></i> Save</button>
+            <button id="save-btn" data-shortcut="save" title="Save the note and file it by category and tags. Save as draft keeps it unfiled instead."><i class="ph ph-check ph-lead" aria-hidden="true"></i> Save</button>
           </div>
           <p><span id="save-status" class="status" role="status"></span></p>
         </section>
@@ -1877,7 +1931,7 @@ Link to another note with [[its first few words]]."></textarea>
                     title="Clear the desk: the thoughts, the draft and its earlier versions"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> Discard this draft</button>
                 </div>
               </details>
-              <button id="draft-compose" data-needs-model="Drafting needs a model connected" data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
+              <button id="draft-compose"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Draft</button>
             </div>
           </div>
           <div class="help-body hidden" id="draft-help-body" role="dialog" aria-label="What is this?">
@@ -1888,9 +1942,12 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Your own words stay in the box: nothing here overwrites what
               you typed, Undo steps back through every pass, and every draft
               Atlas produced is kept under the box so you can go back to one.
-              Drafting and Refine need a model connected: with none, pressing
-              them says so and offers Set up a model, and everything else on
-              this tab still works. Suggest a title takes the title from your
+              Carry on and Translate need a model connected: with none they are
+              left off and the notice above offers Connect a model. Every other
+              mode writes by plain rule, marked From your words, and Refine
+              takes shorter, add a summary, as bullets, as a list, as prose,
+              plain, formal, tidy up or a diagram.
+              Suggest a title takes the title from your
               own words, and Split into notes cuts the text at its headings
               and paragraphs.</p>
           </div>
@@ -1945,14 +2002,23 @@ Link to another note with [[its first few words]]."></textarea>
                 <select id="draft-kind" class="small-select" aria-label="What to write"
                   title="What Atlas does with what is in the box">
                   <option value="note">Draft a note</option>
-                  <option value="continue">Continue the draft</option>
-                  <option value="rewrite">Rewrite the draft</option>
+                  <!-- `data-gate` (INBOX 1488, writing-desk.js `syncDraftGate`):
+                       "model" is offered only with a model connected, "rule"
+                       only without one, for what the composer does by plain
+                       rule. The rule-only ones start `hidden` so a desk with a
+                       model never shows them while the script loads. -->
+                  <option value="tidy" data-gate="rule" hidden>Tidy and spellcheck</option>
+                  <option value="continue" data-gate="model">Continue the draft</option>
+                  <option value="rewrite" data-gate="model">Rewrite the draft</option>
+                  <option value="plain" data-gate="rule" hidden>Say it plainly</option>
+                  <option value="formal" data-gate="rule" hidden>Make it formal</option>
                   <option value="expand">Bullets to prose</option>
                   <option value="bullets">Prose to bullets</option>
+                  <option value="diagram">Make a diagram</option>
                   <!-- Translation through the same model (INBOX 405); the
                        codes are drafter.TRANSLATE_LANGUAGES', which drops any
                        other. -->
-                  <optgroup label="Translate into">
+                  <optgroup label="Translate into" data-gate="model">
                     <option value="translate-en">English</option>
                     <option value="translate-es">Spanish</option>
                     <option value="translate-fr">French</option>
@@ -1978,15 +2044,15 @@ Link to another note with [[its first few words]]."></textarea>
                   title="The voice to write in">
                   <option value="mine">My voice</option>
                   <option value="plain">Plain</option>
-                  <option value="friendly">Friendly</option>
+                  <option value="friendly" data-gate="model">Friendly</option>
                   <option value="formal">Formal</option>
-                  <option value="punchy">Punchy</option>
+                  <option value="punchy" data-gate="model">Punchy</option>
                 </select>
                 <select id="draft-length" class="small-select" aria-label="Length"
                   title="How long the draft should be">
                   <option value="short">Short</option>
                   <option value="medium" selected>Medium</option>
-                  <option value="long">Long</option>
+                  <option value="long" data-gate="model">Long</option>
                 </select>
                 <button id="draft-add-source" class="ghost small" type="button"
                   title="Write from notes you already have, up to six of them"><i class="ph ph-note ph-lead" aria-hidden="true"></i> Use notes</button>
@@ -1996,6 +2062,9 @@ Link to another note with [[its first few words]]."></textarea>
                    the fact back. -->
               <div class="row draft-sources hidden" id="draft-sources"
                 aria-label="Notes this draft is written from"></div>
+              <!-- One line on what the writer does with no model, shown only
+                   then (writing-desk.js `syncDraftGate`). -->
+              <p id="draft-rule-line" class="muted draft-rule-line hidden">With no model the writer works by rule: tidy, notes by date, bullets and prose, plain or formal, diagrams.</p>
               <p id="draft-status" class="status" role="status"></p>
             </div>
             <div class="draft-column">
@@ -2010,6 +2079,10 @@ Link to another note with [[its first few words]]."></textarea>
                   <!-- Which note this draft goes back to, when it came from
                        one. A fact about the draft, so a chip. -->
                   <span id="draft-target" class="chip hidden"></span>
+                  <!-- With no model a pass is composed by rule (INBOX 1466), and
+                       says so the way a composed answer does (`#answered-by`). -->
+                  <span id="draft-by" class="chip item-label answer-model hidden"
+                    title="Written by plain rule with no model: your words tidied, regrouped or reshaped, every word yours or a joining word">From your words</span>
                   <span id="draft-count" class="muted"></span>
                 </span>
               </div>
@@ -2028,6 +2101,10 @@ Link to another note with [[its first few words]]."></textarea>
                    `.library-chip` recipe. Undo steps back one pass; these are
                    the way back to any of them, which is what a desk full of
                    crossed-out pages gives you and a single undo does not. -->
+              <!-- A diagram pass is drawn here as a picture (`drawDraftDiagram`,
+                   the vendored Mermaid like a document's); the box above keeps
+                   the source, which is what a save keeps. -->
+              <div id="draft-diagram" class="draft-diagram hidden" role="img" aria-label="Diagram preview"></div>
               <div class="row draft-versions hidden" id="draft-versions"
                 aria-label="Earlier drafts"></div>
               <!-- The refine field and the button that reads it are one
@@ -2037,10 +2114,9 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row draft-controls draft-refine-row ask-composer">
                 <input id="draft-instruction" type="text" maxlength="300"
                   placeholder="Refine: “make it shorter”, “add a summary”…"
+                  data-offline-placeholder="Refine: “shorter”, “add a summary”, “as bullets”, “formal”, “tidy it up”"
                   aria-label="An instruction for the next pass">
-                <button id="draft-refine" data-needs-model="Refining needs a model connected"
-                  data-model-offer="Writing, Suggest a title, Split into notes and Save as a note work without one."
-                  class="ghost" type="button"
+                <button id="draft-refine" class="ghost" type="button"
                   title="Run this instruction over the draft"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Refine</button>
               </div>
               <!-- Out of the action row and onto a labelled row of its own, so
@@ -2195,7 +2271,7 @@ Link to another note with [[its first few words]]."></textarea>
               title="Answer from your notes as they were on a day you pick"
               aria-label="Answer as of a date" aria-pressed="false" aria-controls="ask-as-of-row"><i class="ph ph-clock-counter-clockwise" aria-hidden="true"></i></button>
             <button type="button" id="ask-search-tune" class="ghost small icon-only"
-              title="Tune how strict semantic search is (Settings → Search and index)"
+              title="Tune how strict semantic search is (Settings, Search and index)"
               aria-label="Tune search sensitivity"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></button>
             <button id="ask-btn">Ask</button>
             <button id="stop-btn" data-shortcut="stopAI" class="ghost danger hidden" title="Stop the answer"><i class="ph ph-stop ph-lead" aria-hidden="true"></i> Stop</button>
@@ -2433,7 +2509,7 @@ Link to another note with [[its first few words]]."></textarea>
                   aria-describedby="search-help-hint">
               </div>
               <details class="doc-dock-menu dock-menu" id="notes-filter-menu">
-                <summary class="ghost small doc-dock-menu-btn" title="Match by meaning, save this filter"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
+                <summary class="ghost small doc-dock-menu-btn" title="Filter options: match notes by meaning, or keep this search to come back to"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
                 <div class="doc-dock-menu-list dock-menu-list">
                   <label class="dock-menu-check semantic-toggle" title="Search by concept instead of exact keywords">
                     <input type="checkbox" id="semantic-search-toggle"> <i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Semantic: match by meaning
@@ -2456,6 +2532,7 @@ Link to another note with [[its first few words]]."></textarea>
                      two places deciding what "forgotten" means is two answers
                      that drift. -->
                 <option value="forgotten">Forgotten first</option>
+                <option value="custom">Custom order</option>
               </select>
               <div class="seg notes-view-toggle" role="group" aria-label="How to show notes">
                 <button type="button" id="notes-view-rows" class="active icon-only"
@@ -2572,6 +2649,23 @@ Link to another note with [[its first few words]]."></textarea>
               <li><code>-picnic</code>, notes that do <em>not</em> mention it</li>
               <li><code>type:meeting</code>, <code>prop:status=open</code>, <code>prop:effort&gt;2</code>, a note's properties; <code>links:[[Kiln plan]]</code>, <code>rel:supports</code>, <code>entity:"Sam Lee"</code>, its links and the people and things it names (a <code>-</code> before any leaves those out). A bar then offers the same notes as a Table or on the graph</li>
             </ul>
+            <p class="muted">Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
+          </div>
+          <!-- **The capture bar** (INBOX 1479, the owner's reference Notes panel):
+               one line that opens in place into a card (title, body, Close and
+               Save). Only the line is here; the card is the lazy
+               capture-card.js, fetched on the first focus of the field below
+               (notes-list.js), so the boot scripts do not carry it. -->
+          <div id="capture-bar" class="capture-bar" role="group" aria-label="Add a note">
+            <div id="capture-bar-row" class="capture-bar-row">
+              <div class="seg capture-bar-modes" role="group" aria-label="Kind of note">
+                <button type="button" data-mode="note" aria-pressed="true" title="Write a note">Note</button>
+                <button type="button" data-mode="todo" aria-pressed="false" title="Write a to-do list">To-do</button>
+              </div>
+              <input id="capture-bar-input" class="capture-bar-input" type="text" autocomplete="off"
+                placeholder="Add a note…" aria-label="Add a note: opens the note card">
+      <button type="button" id="capture-bar-picture" class="ghost icon-only capture-bar-picture" title="Add pictures" aria-label="Add pictures to a new note"><i class="ph ph-image" aria-hidden="true"></i></button>
+            </div>
           </div>
           <ul id="entry-list" class="entry-list"></ul>
           <div id="notes-pagination" class="row notes-pagination hidden" role="navigation" aria-label="Notes pages">
@@ -2628,6 +2722,10 @@ Link to another note with [[its first few words]]."></textarea>
           <p>
             Hidden, it comes back from the notes list's More menu. In a
             narrow window it is the Connections item on a note's own menu.
+          </p>
+          <p>
+            Drag its left edge to change its width, or focus the edge and use
+            the arrow keys (16 pixels a press); Home puts it back.
           </p>
         </div>
         <p class="notes-rail-subject" id="notes-rail-subject"></p>
@@ -2752,10 +2850,11 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- **Editable in place.** Renaming a conversation used to mean
                    leaving the tab, finding it in the Library and using its ⋯
                    menu: for a property whose only purpose is to help you
-                   recognise this thread, while you are looking at it. A button
-                   rather than a bare heading so it is reachable by keyboard
-                   and announces that pressing it does something. -->
-              <h2 id="chat-title" class="chat-title" role="button" tabindex="0"
+                   recognise this thread, while you are looking at it. Still a
+                   heading (a heading may not take `role="button"`), focusable
+                   so the keyboard can rename it; its title says what a press
+                   does. -->
+              <h2 id="chat-title" class="chat-title" tabindex="0"
                 title="Click to rename this conversation">New chat</h2>
               <span class="chat-subline">
                 <!-- A button, not a `<span>`. Its own tooltip already read
@@ -2774,6 +2873,9 @@ Link to another note with [[its first few words]]."></textarea>
                      are the fact people actually reason about when deciding
                      whether to compress or fork; the token count says how
                      heavy it has become, and neither means much alone. -->
+                <!-- A private chat (INBOX 1481): a quiet mark while it is on. -->
+                <span id="chat-private-mark" class="chat-usage chat-private-mark" hidden
+                  title="Private chat: nothing here is saved or remembered"><i class="ph ph-ghost" aria-hidden="true"></i> Private</span>
                 <span id="chat-turns" class="chat-usage" hidden
                   title="How many exchanges are in this conversation"></span>
                 <!-- **How full the model's window is, for the thread rather
@@ -2882,7 +2984,7 @@ Link to another note with [[its first few words]]."></textarea>
                 data-help-for="chat-help" aria-controls="chat-help" aria-expanded="false"
                 title="About this chat" aria-label="About this chat"><i class="ph ph-question" aria-hidden="true"></i></button>
               <div class="help-body hidden" id="chat-help" role="dialog" aria-label="About this chat">
-                <p id="chat-help-text">Atlas answers from your saved notes and shows the notes behind each answer. In Agent mode it can also create, tag, link and organise notes for you, and asks before anything it cannot undo.</p>
+                <p id="chat-help-text">Atlas answers from your saved notes and shows the notes behind each answer. In Agent mode it can also create, tag, link and organise notes for you, and asks before changing a note.</p>
               </div>
               <span id="chat-actions-menu" class="chat-actions-menu dock-more"></span>
             </div>
@@ -3041,7 +3143,7 @@ Link to another note with [[its first few words]]."></textarea>
                      neither a name nor a way out of its own, only Escape,
                      click-away, or Done three controls later. -->
                 <div class="dialog-head">
-                  <h2 class="dialog-head-title"><i class="ph ph-note ph-lead" aria-hidden="true"></i> Attach</h2>
+                  <h2 class="dialog-head-title"><i class="ph ph-note pop-glyph" aria-hidden="true"></i> Attach</h2>
                   <button type="button" class="icon-only ghost small dialog-head-btn"
                     data-help-for="note-picker-help" aria-controls="note-picker-help"
                     aria-expanded="false" title="About attaching" aria-label="About attaching">
@@ -3058,6 +3160,8 @@ Link to another note with [[its first few words]]."></textarea>
                     button uploads something new instead.</p>
                   <p>Keys: the arrows move, Space or Enter ticks, Enter in the search box is Done and Escape closes.
                     Each tab's count says how many of its kind are attached.</p>
+                  <p>What you tick shows as a card above the box, with an x to take it off. Press a card for a preview with Open.
+                    Once sent, the cards sit above your message.</p>
                 </div>
                 <!-- Asked for directly: "I want to be able to attach not just
                      existing notes to a chat for context, but also already
@@ -3101,7 +3205,7 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <!-- Vision-capable models: attach a photo for a model that
-                 declares the "vision" capability (Settings → Models shows
+                 declares the "vision" capability (Settings, Models shows
                  which do). A hidden file input behind a button, same shape
                  as the note picker beside it. -->
             <!-- Any file, not just an image. Asked for directly: images land
@@ -3282,6 +3386,9 @@ Link to another note with [[its first few words]]."></textarea>
                         data-needs-model="A persona is a prompt for a model, so it changes nothing until one is connected"></select>
                     </span>
                   </label>
+                  <!-- A chat that is not kept (INBOX 1481): chat-private.js. -->
+                  <button id="chat-private-toggle" class="ghost small" type="button" aria-pressed="false"
+                    title="A private chat is not saved, and nothing in it is remembered or learned. The answers still come from your notes."><i class="ph ph-ghost ph-lead" aria-hidden="true"></i> Private chat</button>
                   <!-- You could pick a persona but never see what it actually
                        told the model to do. -->
                   <button id="persona-peek" class="ghost small" type="button"
@@ -3867,6 +3974,8 @@ Link to another note with [[its first few words]]."></textarea>
               <input id="graph-search" data-search-scope="notes" class="search-field-input" type="search" placeholder="Highlight notes…"
                 aria-label="Highlight matching notes in the graph">
             </div>
+            <!-- Said in words and politely (audit 1029 G11); Enter and Shift+Enter walk the matches, Esc clears. -->
+            <span id="graph-search-count" class="graph-search-count muted text-xs" role="status" aria-live="polite"></span>
             <button id="graph-highlight-clear" class="ghost small hidden" title="Clear the similar-notes highlight"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Clear highlight</button>
             <button id="graph-focus-clear" class="ghost small hidden" title="Exit focus mode and return to the global map"><i class="ph ph-x ph-lead" aria-hidden="true"></i> Exit focus</button>
           </div>
@@ -3958,40 +4067,30 @@ Link to another note with [[its first few words]]."></textarea>
           <button id="graph-selection-clear" class="ghost small icon-only" type="button" title="Clear the selection" aria-label="Clear the selection"><i class="ph ph-x" aria-hidden="true"></i></button>
         </div>
         <div id="graph-help-panel" class="help-body hidden" role="dialog" aria-label="How to use this map">
-          <!-- Rewritten to lead with placement. The old copy buried "drag to
-               arrange" mid-sentence and then said "double-click to pin it in
-               place", which was the only gesture that actually held a note
-               still, and the one nothing on screen pointed at. Now a drag
-               places, so the sentence people read first is the one that
-               describes what they are about to try. -->
+          <!-- Short lines, not three paragraphs (audit 1029 G23: 1,296 characters
+               scrolled inside the panel). The Options sections carry their own
+               '?' for the rest. -->
           <p class="muted">
-            <strong>Drag a note to move it.</strong> Let go and it settles near
-            where you put it. Double-click a note to pin it in place (a pinned
-            note keeps its place when you come back); double-click it again to
-            let it go.
+            <strong>Drag a note to move it.</strong> Double-click to pin it in
+            place, and again to let it go.
           </p>
-          <p class="muted">
-            <strong>This map is built for you</strong> from what your notes
-            already say. If you want to draw one yourself, your own cards, your
-            own links, your own arrangement, that is a
-            <strong>mind map</strong>, and the button in the toolbar opens
-            them.
-          </p>
-          <p class="muted">
-            Solid lines are links you made, dashed lines are trains of thought,
-            dotted lines are notes that mean similar things. Hover a note to
-            spotlight its connections and see its card (dates, links, views,
-            properties and tags; the arrow keys show it too), scroll or use the buttons to zoom, click a
-            note to edit it right here (Open, Focus, Pin and Link at its foot, the rest under <i class="ph ph-dots-three" aria-hidden="true"></i>), and click a legend colour to hide that
-            category. Double-click empty space to add a note there. Gravity and
-            Spread reshape whatever you have not placed yourself. A Tree,
-            Radial, Arc or Treemap layout stays still and is named in the
-            toolbar; click its name to change it. Treemap sizes each category
-            by how many notes it holds. A bigger dot has more links; Size in
-            the options changes what size means, and the legend says which.
-            <strong>Drop one note onto another to link them</strong>, and use
-            <strong>Trace</strong> to see how any two notes connect.
-          </p>
+          <ul class="muted">
+            <li><strong>Hover a note</strong> to see its dates, links and tags;
+              click it to edit it here.</li>
+            <li><strong>Hold Alt and drop one note onto another</strong> to link them.
+              Double-click empty space to add a note there.</li>
+            <li><strong>Trace</strong> shows how any two notes connect.</li>
+            <li>Solid lines are links you made, dashed lines are trains of
+              thought, dotted lines are notes that mean similar things.</li>
+            <li>A bigger dot has more links; Size in the options changes that,
+              and the legend says which. Click a legend colour to hide that
+              category.</li>
+            <li>A Tree, Radial, Arc or Treemap layout stays still; click its
+              name in the toolbar to change it. Treemap sizes each category by
+              how many notes it holds.</li>
+            <li>This map is built from your notes. To draw one yourself, open
+              the <strong>mind map</strong> button in the toolbar.</li>
+          </ul>
         </div>
         <!-- The display options, on the dock-menu recipe (INBOX 41: "the
              options panel needs a redesign"). It was one wrapping strip of
@@ -4569,13 +4668,12 @@ Link to another note with [[its first few words]]."></textarea>
                 x="0" y="0" width="0" height="0"></rect>
             </svg>
           </div>
-        <!-- Two surfaces, one at a time: the Canvas 2D renderer
-             (graph-canvas.js, GRAPH_PLAN.md §5 Phase 1) and the SVG one it
-             replaces. `renderGraph()` in graph.js shows whichever is drawing
-             and hides the other, so nothing else on the page has to know which
-             it is looking at. The SVG element goes when the SVG path does. -->
+        <!-- The map is the Canvas 2D renderer (graph-canvas.js, GRAPH_PLAN.md
+             section 5 Phase 1). The empty SVG below is what the removed SVG
+             renderer drew into; it stays hidden until its click handlers,
+             styles and lock-list entries go (audit 1029 row 60 follow-up). -->
         <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
-        <svg id="graph-svg"></svg>
+        <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
           aria-label="Edit note">
@@ -4586,7 +4684,7 @@ Link to another note with [[its first few words]]."></textarea>
                (GRAPH_PLAN Phase 6, INBOX 59). -->
           <div class="row space-between graph-popup-head dialog-head">
             <span class="graph-popup-ident">
-              <strong id="graph-popup-title" class="dialog-head-title">Note</strong>
+              <i class="ph ph-note pop-glyph" aria-hidden="true"></i><strong id="graph-popup-title" class="dialog-head-title">Note</strong>
               <span id="graph-popup-confidence" class="graph-popup-confidence hidden"></span>
               <span id="graph-popup-category" class="chip tag hidden"></span>
             </span>
@@ -4628,7 +4726,7 @@ Link to another note with [[its first few words]]."></textarea>
         <div id="graph-new" class="graph-popup hidden" role="dialog"
           aria-label="Add a note to the map">
           <div class="row space-between dialog-head">
-            <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> New note</strong>
+            <strong id="graph-new-title" class="dialog-head-title"><i class="ph ph-plus pop-glyph" aria-hidden="true"></i> New note</strong>
             <button id="graph-new-close" class="icon-only ghost small dialog-head-btn" type="button" aria-label="Close" title="Close (Esc)"><i class="ph ph-x" aria-hidden="true"></i></button>
           </div>
           <p class="muted" id="graph-new-hint"></p>
@@ -4684,7 +4782,7 @@ Link to another note with [[its first few words]]."></textarea>
        note is a captured thought, a document is something you sit down and
        write, and mixing them would put every half-finished draft into search
        results and the graph. -->
-  <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-labelledby="tab-btn-documents" tabindex="-1">
+  <div class="tab-page hidden" id="tab-documents" role="tabpanel" aria-label="Documents" tabindex="-1">
     <!-- **Focus mode's own dock** (INBOX 425 i). Everything else on the
          page is gone while the mode is on, so this is what is left of it:
          which document this is, whether it is saved, full screen when the
@@ -4752,8 +4850,14 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="icon-only ghost small graph-help-toggle"
                 data-help-for="doc-list-help" aria-controls="doc-list-help" aria-expanded="false"
                 title="About this list" aria-label="About this list"><i class="ph ph-question" aria-hidden="true"></i></button>
-              <button id="doc-new" class="small" type="button" title="Start a new document"
-                aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
+              <!-- A split button (INBOX 1482): New starts a markdown page, the
+                   caret is the type picker (`docTypeMenu`) and starts a blank
+                   file of the type chosen. -->
+              <div class="split-button doc-new-split">
+                <button id="doc-new" class="small split-button-main" type="button" title="Start a new document"
+                  aria-label="Start a new document"><i class="ph ph-plus ph-lead" aria-hidden="true"></i>New</button>
+                <span id="doc-new-type-slot" class="split-button-slot"></span>
+              </div>
               <!-- New from a template, asked for as part of "the documents
                    editor just doesn't feel up to par": every professional
                    editor opens with a starting shape (meeting, plan, lecture,
@@ -4770,7 +4874,8 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="help-body hidden" id="doc-list-help" role="dialog" aria-label="About the documents list">
             <p>Recent lists the latest eight documents you changed. Press one to
               open it; its ⋯ menu renames, archives or deletes it.</p>
-            <p>New starts an empty document. The layout button beside it starts one
+            <p>New starts an empty document, and the arrow on it starts an empty file of
+              another type (Documents, Data or Code). The layout button beside it starts one
               from a template (a meeting, a plan, a lecture and more, or a code
               file). All in Library opens every document, where you can search,
               sort and manage them.</p>
@@ -4925,8 +5030,8 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- What kind of file this document is. Asked for directly: the
                  editor should handle code as well as prose, the type should
                  be changeable, and a new document should be creatable "of any
-                 filetype though it should default to md". The options are
-                 filled from GET /documents/file-types, one table, on the
+                 filetype though it should default to md". The picker is built
+                 from GET /documents/file-types (`docTypeMenu`), one table, on the
                  server, because Ctrl+/ and Tab act on keystrokes and cannot
                  wait for a round trip, and a second copy here would be a
                  second thing to update. -->
@@ -4961,8 +5066,9 @@ Link to another note with [[its first few words]]."></textarea>
                  and left the other implied, and there are four now, so it
                  could not have said which you were in at all.
                  · Live is the Obsidian/Typora model: the document renders as
-                   you write, and the block the caret is in shows its raw
-                   markdown so you can edit the syntax you are looking at.
+                   you write, and the formatted phrase the caret is in or
+                   next to shows its raw markdown (a heading or list, its
+                   line), so you can edit the syntax you are looking at.
                  · Source is the plain textarea, and the only mode for a code
                    file (a "rendered" .py is a wall of escaped source).
                  · Split is source and a rendered pane side by side, scrolling
@@ -4990,7 +5096,7 @@ Link to another note with [[its first few words]]."></textarea>
                 title="Rendered as you write, the markdown itself, or both side by side"><i class="ph ph-caret-down" aria-hidden="true"></i></summary>
               <div class="doc-dock-menu-list">
                 <button type="button" class="doc-dock-menu-item" data-doc-view="live"
-                  title="Render as you write; the paragraph you're in shows its markdown"><i class="ph ph-article ph-lead" aria-hidden="true"></i> Live</button>
+                  title="Render as you write; the phrase you're in shows its markdown"><i class="ph ph-article ph-lead" aria-hidden="true"></i> Live</button>
                 <button type="button" class="doc-dock-menu-item" data-doc-view="source"
                   title="The markdown itself, unrendered"><i class="ph ph-code ph-lead" aria-hidden="true"></i> Source</button>
                 <button type="button" class="doc-dock-menu-item" data-doc-view="split"
@@ -5085,7 +5191,7 @@ Link to another note with [[its first few words]]."></textarea>
                 Go to line (Ctrl+G), Assistant and Snippets; on a phone the bar at
                 the foot holds Tab, Undo and the brackets instead of the writing buttons. Beside prose, Snippets reads Sections.
                 Focus hides everything but the page (F11).</p>
-              <p>The ⋯ menu holds the file type, Connections, History, Replace in
+              <p>The type button in the foot (Markdown, Python and so on) opens the list of file types, Documents, Data and Code, with a filter field; Markdown is the rich text editor. The ⋯ menu holds Connections, History, Replace in
                 every document, Copy app link, Paste special, Model for this feature, Extract
                 notes and Map the headings; the downloads (.md, .html, with images,
                 .docx, PDF); the page width, text size, line spacing, toolbar row and code switches (wrap,
@@ -5103,11 +5209,6 @@ Link to another note with [[its first few words]]."></textarea>
                 title="More actions for this document"
                 aria-label="More actions for this document"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
               <div class="doc-dock-menu-list">
-                <div class="dock-menu-section">
-                  <span class="muted dock-menu-label" id="doc-file-type-label">File type</span>
-                  <select id="doc-file-type" class="small-select doc-file-type"
-                    aria-labelledby="doc-file-type-label" title="What kind of file this document is"></select>
-                </div>
                 <button id="doc-format-toggle" class="menu-item doc-dock-menu-item" type="button" aria-pressed="false"
                   title="Show the formatting toolbar above the editor (Ctrl+Shift+X)"><i class="ph ph-text-aa ph-lead" aria-hidden="true"></i> <span id="doc-format-toggle-label">Show formatting toolbar</span></button>
 
@@ -5356,6 +5457,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="doc-dock-menu-item" data-md="codeblock" title="Code block"><i class="ph ph-code-block ph-lead" aria-hidden="true"></i> Code block</button>
               <button type="button" class="doc-dock-menu-item" data-md="table" title="Table"><i class="ph ph-table ph-lead" aria-hidden="true"></i> Table</button>
               <button type="button" class="doc-dock-menu-item" data-md="hr" title="Divider"><i class="ph ph-minus ph-lead" aria-hidden="true"></i> Divider</button>
+              <button type="button" class="doc-dock-menu-item" data-md="ol" title="Numbered list (Ctrl+Shift+7)"><i class="ph ph-list-numbers ph-lead" aria-hidden="true"></i> Numbered list</button>
               <button type="button" class="doc-dock-menu-item" data-md="emoji" title="Emoji or icon"><i class="ph ph-smiley ph-lead" aria-hidden="true"></i> Emoji or icon…</button>
               <button type="button" class="doc-dock-menu-item" data-md="equation" title="Equation (Alt+=)"><i class="ph ph-function ph-lead" aria-hidden="true"></i> Equation…</button>
             </div>
@@ -5627,6 +5729,9 @@ Link to another note with [[its first few words]]."></textarea>
           <span class="doc-statusbar-spacer"></span>
           <span id="doc-caret" class="doc-statusbar-item doc-statusbar-fact"
             title="Where the caret is, and what is selected">Ln 1, Col 1</span>
+          <!-- The file type, where VS Code puts the language: a button that
+               opens the grouped picker (`docTypeMenu`, INBOX 1482). -->
+          <span id="doc-type-slot" class="doc-type-slot"></span>
           <!-- The Autocorrect and Suggestions switches used to sit here, and
                they have moved into the document's own ⋯ menu (DOCUMENTS_PLAN
                Phase 0 item 3). A status bar states; it does not configure.
@@ -5689,7 +5794,7 @@ Link to another note with [[its first few words]]."></textarea>
              left; History and Close are the same 28px quiet icon button on
              the right, History's words in its tooltip and its label. -->
         <div class="dialog-head">
-          <h2 id="doc-ai-title" class="dialog-head-title">AI assistant</h2>
+          <h2 id="doc-ai-title" class="dialog-head-title"><i class="ph ph-sparkle pop-glyph" aria-hidden="true"></i>AI assistant</h2>
           <!-- One line of description under the verbs, the rest behind the
                '?' (DESIGN.md's help recipe): what each of the three does to
                the document is three sentences, and three sentences above a
@@ -5844,6 +5949,7 @@ Link to another note with [[its first few words]]."></textarea>
         </select>
         <button id="reminder-add"><i class="ph ph-plus ph-lead" aria-hidden="true"></i> Add</button>
       </div>
+      <p id="reminder-form-error" class="status error hidden" role="alert"></p>
       <!-- Quick set covers the times people actually pick, so the
            datetime-local field is a fallback rather than the only way in.
            Each button shows the time it resolves to once pressed. -->
@@ -6095,7 +6201,7 @@ Link to another note with [[its first few words]]."></textarea>
                   aria-label="Search the library">
               </div>
               <details class="doc-dock-menu dock-menu" id="library-filter-menu">
-                <summary class="ghost small doc-dock-menu-btn" title="Match by meaning, include the bin"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
+                <summary class="ghost small doc-dock-menu-btn" title="Filter options: match by meaning, or include the bin"><i class="ph ph-funnel-simple ph-lead" aria-hidden="true"></i> <span class="dock-word">Filter</span> <i class="ph ph-caret-down dock-menu-caret" aria-hidden="true"></i></summary>
                 <div class="doc-dock-menu-list dock-menu-list">
                   <label class="dock-menu-check"
                     title="Also match notes by meaning, not just the words you typed. Documents, chats and images still match on their words.">
@@ -6264,6 +6370,7 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="az">Title A → Z</option>
               <option value="za">Title Z → A</option>
               <option value="longest">Longest first</option>
+              <option value="custom">Custom order</option>
             </select>
           </div>
           <div class="dock-actions">
@@ -6274,6 +6381,7 @@ Link to another note with [[its first few words]]."></textarea>
               title="About documents" aria-label="About documents"><i class="ph ph-question" aria-hidden="true"></i></button>
             <div class="help-body hidden" id="library-docs-help" role="dialog" aria-label="About documents">
               <p>A document is a longer piece of writing with its own editor, outline and history. Open one to keep writing. Import a file, in the more menu, turns a Word file, PDF, spreadsheet, Markdown or code file into a document you can edit. The property menu narrows the list to documents that carry a given front matter value, and the more menu sets how many show per page.</p>
+              <p>Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
             </div>
             <details class="doc-dock-menu dock-menu dock-more" id="library-docs-more-menu">
               <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -6525,6 +6633,7 @@ Link to another note with [[its first few words]]."></textarea>
               <option value="az">Title A → Z</option>
               <option value="za">Title Z → A</option>
               <option value="fullest">Most on it</option>
+              <option value="custom">Custom order</option>
             </select>
             <!-- The same Cards/Rows switch the All sub-tab has, on the same
                  stored preference: asked for: "I think cards are overly used
@@ -6617,6 +6726,7 @@ Link to another note with [[its first few words]]."></textarea>
         </div>
         <div class="help-body hidden" id="wb-boards-intro" role="dialog" aria-label="What is this?">
 <p>Every board and mind map you have made. They are the same kind of thing, so a map you build here can be drawn on, and a board can be branched with Tab. Pick one to open it, or start a whiteboard or a map from <strong>New</strong> above.</p>
+<p>Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
 </div>
         <!-- Maps / Boards / All (MINDMAP_PLAN.md §5 item 10, the user's own
              stated preference: maps live in Boards & maps behind a filter
@@ -6847,6 +6957,7 @@ Link to another note with [[its first few words]]."></textarea>
               <button type="button" class="wb-menu-item" data-wb-insert="text"><i class="ph ph-text-t ph-lead" aria-hidden="true"></i><span>Text box</span><kbd>T</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-insert="frame" data-wb-surface="board"><i class="ph ph-frame-corners ph-lead" aria-hidden="true"></i><span>Frame</span><kbd>F</kbd></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="insert-table" data-wb-surface="board"><i class="ph ph-table ph-lead" aria-hidden="true"></i><span>Table</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="insert-diagram" data-wb-surface="board"><i class="ph ph-graph ph-lead" aria-hidden="true"></i><span>Mermaid diagram…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="image"><i class="ph ph-image ph-lead" aria-hidden="true"></i><span>Image from a file…</span></button>
               <button type="button" class="wb-menu-item" data-wb-insert="note"><i class="ph ph-note-pencil ph-lead" aria-hidden="true"></i><span>A note from the library</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="open-library"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span>Shapes, icons and frames…</span></button>
@@ -6929,6 +7040,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span class="wb-panel-group-label">Connect the selected</span>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-chain"><i class="ph ph-arrow-elbow-down-right ph-lead" aria-hidden="true"></i><span>In a line</span></button>
               <button type="button" class="wb-menu-item" data-wb-cmd="join-fan"><i class="ph ph-share-network ph-lead" aria-hidden="true"></i><span>All to the first picked</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="measure"><i class="ph ph-ruler ph-lead" aria-hidden="true"></i><span>Measure with a dimension line</span></button>
             </div>
             <div class="wb-menu-section">
               <span class="wb-panel-group-label">Order</span>
@@ -7060,6 +7172,11 @@ Link to another note with [[its first few words]]."></textarea>
               <button id="wb-rename-board" type="button" class="wb-menu-item" title="Rename this board"><i class="ph ph-pencil-simple ph-lead" aria-hidden="true"></i><span>Rename this board</span></button>
               <button id="wb-new-board" type="button" class="wb-menu-item" title="Create a new board"><i class="ph ph-plus ph-lead" aria-hidden="true"></i><span>New board</span></button>
             </div>
+            <div class="wb-menu-section" role="group" aria-label="Workshop" data-wb-surface="board">
+              <button type="button" class="wb-menu-item" data-wb-cmd="vote"><i class="ph ph-circle ph-lead" aria-hidden="true"></i><span>Add a vote dot</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="clear-votes"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i><span>Clear all vote dots</span></button>
+              <button type="button" class="wb-menu-item" data-wb-cmd="timer"><i class="ph ph-timer ph-lead" aria-hidden="true"></i><span>Workshop timer…</span></button>
+            </div>
             <!-- **Plain icon rows, never a label with an action beside it**
                  (INBOX 793, the owner: the Board menu "needs a bit of a
                  redesign"). Export, Clear, Add to a note, Copy app link and
@@ -7120,7 +7237,7 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
         </div>
         <span class="wb-topbar-divider" aria-hidden="true"></span>
-        <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Library</span></button>
+        <button id="wb-add-note" class="ghost small wb-panel-primary" title="The sidebar: shapes, icons and frames, your notes, and the layers" aria-controls="wb-sidebar-panel"><i class="ph ph-shapes ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Sidebar</span></button>
         <button id="wb-format-btn" type="button" class="ghost small wb-panel-primary" aria-pressed="false" aria-controls="wb-format" title="Format panel: style, text, arrange and data for what is selected (Ctrl+Shift+P)"><i class="ph ph-sliders-horizontal ph-lead" aria-hidden="true"></i><span class="wb-menu-label"> Format</span></button>
         <button id="wb-fullscreen" class="ghost small icon-button" title="Full screen (Esc to leave)" aria-label="Toggle full screen"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
       </div>
@@ -7532,7 +7649,7 @@ Link to another note with [[its first few words]]."></textarea>
     </div>
     <div id="wb-present-bar" class="whiteboard-floating-panel wb-present-bar card glass hidden" role="toolbar" aria-label="Presentation">
       <button type="button" id="wb-present-prev" class="ghost small icon-only" title="Previous frame (Left arrow)" aria-label="Previous frame"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
-      <span id="wb-present-count" class="wb-present-count" aria-live="polite"></span>
+      <span id="wb-present-count" class="wb-present-count wb-present-pick-slot" aria-live="polite"></span>
       <button type="button" id="wb-present-next" class="ghost small icon-only" title="Next frame (Right arrow or Space)" aria-label="Next frame"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
       <button type="button" id="wb-study-show" class="accent small hidden" title="Draw what is under this branch (Enter)">Show</button>
       <button type="button" id="wb-study-knew" class="ghost small hidden" title="You recalled it: on to the next branch">Knew it</button>
@@ -8266,7 +8383,10 @@ Link to another note with [[its first few words]]."></textarea>
           <div class="wb-fmt-row" data-fmt="fill"><span class="wb-fmt-label">Fill</span>
             <span class="wb-fmt-buttons"><label class="wb-snap-label" title="Filled"><input type="checkbox" id="wb-fmt-fill-on" aria-label="Filled"></label><input type="color" id="wb-fmt-fill" class="wb-color-picker" aria-label="Fill colour" title="Fill colour"></span>
           </div>
-          <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill opacity</span><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="5" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span></label>
+          <div class="wb-fmt-row" data-fmt="fillalpha" role="group" aria-label="Fill opacity"><span class="wb-fmt-label">Fill opacity</span>
+            <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-fillalpha" min="0" max="100" step="5" aria-label="Fill opacity" title="How solid the fill is; the line keeps its own"><output id="wb-fmt-fillalpha-out" for="wb-fmt-fillalpha" class="wb-fmt-out">100%</output></span>
+            <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="0" aria-label="Fill opacity 0%" title="Fill opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="25" aria-label="Fill opacity 25%" title="Fill opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="50" aria-label="Fill opacity 50%" title="Fill opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="75" aria-label="Fill opacity 75%" title="Fill opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="fillalpha" data-alpha-preset="100" aria-label="Fill opacity 100%" title="Fill opacity 100%">100</button></span></span>
+          </div>
           <label class="wb-fmt-row" data-fmt="fillstyle"><span class="wb-fmt-label">Fill style</span>
             <select id="wb-fmt-fillstyle" aria-label="Fill style" title="Fill the shape with lines or dots in its colour instead of a solid">
               <option value="solid">Solid</option>
@@ -8288,6 +8408,10 @@ Link to another note with [[its first few words]]."></textarea>
             </select></span>
           </div>
           <label class="wb-fmt-row" data-fmt="stroke"><span class="wb-fmt-label" id="wb-fmt-stroke-word">Line</span><input type="color" id="wb-fmt-stroke" class="wb-color-picker" aria-label="Line colour" title="Line colour"></label>
+          <div class="wb-fmt-row" data-fmt="strokealpha" role="group" aria-label="Line opacity"><span class="wb-fmt-label">Line opacity</span>
+            <span class="wb-fmt-stack"><span class="wb-fmt-buttons"><input type="range" id="wb-fmt-strokealpha" min="0" max="100" step="5" aria-label="Line opacity" title="How solid the line is; the fill keeps its own"><output id="wb-fmt-strokealpha-out" for="wb-fmt-strokealpha" class="wb-fmt-out">100%</output></span>
+            <span class="wb-fmt-buttons wb-fmt-presets"><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="0" aria-label="Line opacity 0%" title="Line opacity 0%">0</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="25" aria-label="Line opacity 25%" title="Line opacity 25%">25</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="50" aria-label="Line opacity 50%" title="Line opacity 50%">50</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="75" aria-label="Line opacity 75%" title="Line opacity 75%">75</button><button type="button" class="ghost small" data-alpha-for="strokealpha" data-alpha-preset="100" aria-label="Line opacity 100%" title="Line opacity 100%">100</button></span></span>
+          </div>
           <label class="wb-fmt-row" data-fmt="width"><span class="wb-fmt-label">Width</span><input type="number" id="wb-fmt-width" min="1" max="40" step="1" aria-label="Line width" title="Line width"></label>
           <label class="wb-fmt-row" data-fmt="dash"><span class="wb-fmt-label">Pattern</span>
             <select id="wb-fmt-dash" aria-label="Line pattern" title="Line pattern">
@@ -8311,6 +8435,15 @@ Link to another note with [[its first few words]]."></textarea>
               <label class="wb-fmt-num"><span class="wb-fmt-label">Blur</span><input type="number" id="wb-fmt-shb" min="0" max="60" step="1" placeholder="4" aria-label="Shadow blur, in pixels" title="How soft the shadow's edge is; 0 is sharp"></label>
             </span>
           </div>
+          <label class="wb-fmt-row" data-fmt="crop"><span class="wb-fmt-label">Crop to</span>
+            <select id="wb-fmt-crop" aria-label="Crop the picture to a shape" title="Crop the picture to a shape; a square picture cropped to an ellipse is a circle">
+              <option value="">Rectangle</option>
+              <option value="ellipse">Ellipse</option>
+              <option value="diamond">Diamond</option>
+              <option value="hexagon">Hexagon</option>
+              <option value="triangle">Triangle</option>
+            </select>
+          </label>
           <div class="wb-fmt-row" data-fmt="radii"><span class="wb-fmt-label">Corner radii</span>
             <span class="wb-fmt-quad">
               <label class="wb-fmt-num"><span class="wb-fmt-label">TL</span><input type="number" id="wb-fmt-r0" min="0" max="200" step="1" placeholder="Auto" aria-label="Top left corner radius" title="Top left corner radius in pixels; all four empty is the default"></label>
@@ -8514,6 +8647,7 @@ Link to another note with [[its first few words]]."></textarea>
             <option value="az">Name A → Z</option>
             <option value="za">Name Z → A</option>
             <option value="largest">Largest first</option>
+            <option value="custom">Custom order</option>
           </select>
           <!-- Asked for directly: "make it togglable to change between filetype
                and previews". A preview tells four similarly-named PDFs apart; a
@@ -8551,6 +8685,7 @@ Link to another note with [[its first few words]]."></textarea>
       </div>
       <div class="help-body hidden" id="library-images-intro" role="dialog" aria-label="What is this?">
 <p>Every image pasted, dropped, or uploaded, in a note, a document, or on a whiteboard, or added directly here, then attachable to any note from its own "Attach from Library" action.</p>
+<p>Drag a card, or press Alt+Up or Alt+Down on it, to put this list in your own order. Ctrl+C copies a card. The Tray in the status bar holds cards while you change page.</p>
 </div>
       <!-- Multi-select, the same shape the Documents sub-tab already has, 
            asked for directly: "in many of the library subtabs like for imges,
@@ -8729,11 +8864,11 @@ Link to another note with [[its first few words]]."></textarea>
             data-help-for="recordings-help" aria-controls="recordings-help" aria-expanded="false"
             title="About recordings" aria-label="About recordings"><i class="ph ph-question" aria-hidden="true"></i></button>
           <div class="help-body hidden" id="recordings-help" role="dialog" aria-label="About recordings">
-            <p>Everything recorded in the app: meetings, lectures and voice notes. Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
+            <p>Everything recorded in the app: meetings, lectures and voice notes. Captions, beside this, writes what the microphone hears as it is said; it is shown once a captions helper is set up (Settings, Packages). Search finds a recording by its name or by what was said in it; a hit shows the line, and pressing it plays from there. The audio is saved every 10 seconds while it records, so closing the tab keeps all but the last few seconds, and the next start says "Recording recovered".</p>
             <p>Play at 0.5 to 2x; press or drag the waveform to jump, the line on it and the time beside it say where you are. Press M or the pin to mark the playhead with an optional comment (M or Marker while recording marks the moment too); each mark under the player plays from its time and opens the transcript at that line. Download audio in the ⋯ saves the file. Trim keeps a part as a new recording; the original stays until you empty the bin. Delete puts a recording in the bin. Transcribe in the ⋯ runs in the background: the card shows how far it is with a Stop, and a notification says when it is done. Once transcribed, Transcript lists its lines with their times: press one to play from that moment, and the ⋯ menu downloads them as subtitles (SRT or VTT). With the local AI on, each turn is labelled with who spoke, read from what was said (Name the speakers does it again). Kept as the browser recorded it (webm or ogg), or wav after a trim.</p>
           </div>
-          <button id="recordings-record" class="small" type="button" title="Record a voice note">
-            <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Record</button>
+          <button id="recordings-record" class="small" type="button" title="Open the recorder for a voice note">
+            <i class="ph ph-microphone ph-lead" aria-hidden="true"></i> Open recorder</button>
         </div>
       </div>
       <p class="muted library-lede">Meetings, lectures and voice notes, kept as audio.</p>
@@ -9021,6 +9156,14 @@ Link to another note with [[its first few words]]."></textarea>
            was worse than invisible: the engine behind it had no doorway at all.
            Its own slot key so it can be hidden on its own from Settings. -->
       <button id="status-find" class="status-item" type="button" data-status-slot="find"></button>
+      <!-- The tray (INBOX 1467): a few cards held while you go to another page.
+           A card is dropped on it, or added from its menu; obj-tray.js fills
+           the count and the panel below. -->
+      <button id="status-tray" class="status-item icon-only" type="button" data-status-slot="tray"
+        aria-haspopup="dialog" aria-expanded="false" aria-controls="obj-tray"
+        aria-label="Tray, empty" title="Tray: hold cards to paste or drag somewhere else">
+        <i class="ph ph-tray" aria-hidden="true"></i><span class="status-tray-count hidden" aria-hidden="true"></span>
+      </button>
       <!-- Other devices (INBOX 896, the owner: "a lan icon in the bottom status
            bar"): whether a phone on this network can open the app right now,
            its colour the answer (open, closed on this network, off), and a
@@ -9100,6 +9243,8 @@ Link to another note with [[its first few words]]."></textarea>
   <!-- The status bar's Other devices panel (INBOX 896), a help popover by
        recipe (`wireHelpPopover`, lan-watch.js draws it) and a sheet on a
        phone. Outside the footer for the reason the menu above gives. -->
+  <div id="obj-tray" class="obj-tray hidden" role="dialog" aria-label="Tray"></div>
+
   <div id="lan-popover" class="lan-panel hidden" role="dialog" aria-label="Other devices" data-this-computer="hide"></div>
 
   <!-- The undo stack, made visible. Same shape, same placement rules and the
@@ -9137,7 +9282,7 @@ Link to another note with [[its first few words]]."></textarea>
        Nothing here invents structure the extractor does not have: regions are
        Tesseract's own blocks, and the only label beyond "text" is "heading",
        computed from box height. See core/ocr.py's `extract_regions`. -->
-  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog"
+  <div id="ocr-workspace" class="modal-overlay ocr-workspace hidden" role="dialog" data-panel-layout="2"
     aria-modal="true" aria-label="OCR workspace: read text from images and documents">
     <div class="card modal-card ocr-card">
       <!-- **Two rows: the dialog head, then one row of tools** (INBOX 717).
@@ -9154,7 +9299,7 @@ Link to another note with [[its first few words]]."></textarea>
                  not just reading text on the page but truly make it an all
                  encompassing text and image ocr workspace, dont limit the
                  feature."* -->
-            <h2 class="dialog-head-title">OCR workspace</h2>
+            <h2 class="dialog-head-title"><i class="ph ph-scan pop-glyph" aria-hidden="true"></i>OCR workspace</h2>
             <!-- Which file. The workspace can be reached from four places and
                  opened on a document you last touched an hour ago. -->
             <span id="ocr-file" class="ocr-file" hidden></span>
@@ -9524,7 +9669,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-labelledby="doc-dictionary-title">
     <div class="row space-between doc-dictionary-head dialog-head">
       <div class="row help-head">
-        <h2 id="doc-dictionary-title" class="dialog-head-title">Dictionary</h2>
+        <h2 id="doc-dictionary-title" class="dialog-head-title"><i class="ph ph-book-open-text pop-glyph" aria-hidden="true"></i>Dictionary</h2>
         <button type="button" class="icon-only ghost small graph-help-toggle dialog-head-btn"
           data-help-for="doc-dictionary-help" aria-controls="doc-dictionary-help"
           aria-expanded="false" title="About the writing suggestions"
@@ -9632,7 +9777,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Extract notes">
     <div class="card modal-card extract-card">
       <div class="row space-between dialog-head">
-        <h2 class="dialog-head-title">Extract notes</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-list-checks pop-glyph" aria-hidden="true"></i>Extract notes</h2>
         <span class="dialog-head-actions">
           <button id="extract-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -9657,7 +9802,7 @@ Link to another note with [[its first few words]]."></textarea>
       <!-- The dialog head every popup wears (DESIGN.md, "A dialog's head";
            INBOX 479): its utilities were 28px beside a 32px Close. -->
       <div class="row space-between dialog-head">
-        <h2 class="dialog-head-title">Settings</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-gear pop-glyph" aria-hidden="true"></i>Settings</h2>
         <div class="row">
           <!-- The status bar's own back/forward pair (footer, `#status-back`/
                `#status-forward`) sit at a lower z-index than every modal on
@@ -9905,7 +10050,7 @@ Link to another note with [[its first few words]]."></textarea>
               <!-- The context window, per model, set by hand. Asked for
                    directly (INBOX 77): "the window itself should be manageable
                    by the user and auto when set ... a num_ctx preference per
-                   model in Settings > Models with Auto (the model file's
+                   model in Settings, Models with Auto (the model file's
                    value) or a number, sent on every request".
 
                    Beside the spec list rather than in a list of its own,
@@ -10325,7 +10470,7 @@ Link to another note with [[its first few words]]."></textarea>
                   Tessellate itself stays near 100 MB.
                 </p>
               </div>
-              <!-- Same treatment as the tool-focus group in Settings → Tools:
+              <!-- Same treatment as the tool-focus group in Settings, Tools:
                    one control with one answer, rather than two loose dots
                    (§35L). `.check-row` is where that lives. -->
               <label class="check-row">
@@ -10670,6 +10815,13 @@ Link to another note with [[its first few words]]."></textarea>
               </div>
             </div>
             <p class="muted">A skill is a job you can run with one click from the Chat tab.</p>
+            <!-- The pane's glyph tab row (INBOX 1478): a press opens the section and
+                 goes to it (`ensurePaneTabs`, settings-controls.js). -->
+            <nav class="tabs-line popup-kinds pane-tabs" id="skills-tabs" aria-label="Skills sections">
+              <button type="button" data-target='[data-fold-key="skills-list"]'><i class="ph ph-lightning pop-tab-glyph ph-lead" aria-hidden="true"></i>Your skills<span class="pop-count" id="skills-count">0</span></button>
+              <button type="button" data-target="#skill-add-fold" data-focus="skill-name"><i class="ph ph-plus-circle pop-tab-glyph ph-lead" aria-hidden="true"></i>Add</button>
+              <button type="button" data-target="#skill-share"><i class="ph ph-export pop-tab-glyph ph-lead" aria-hidden="true"></i>Share</button>
+            </nav>
             <div class="help-body hidden" id="settings-skills-help" role="dialog" aria-label="About skills">
               <p>
                 A skill is a job you can run with one click from the Chat
@@ -10802,7 +10954,7 @@ Link to another note with [[its first few words]]."></textarea>
               <span id="skill-status" class="status"></span>
             </div>
             </details>
-            <div class="settings-group">
+            <div class="settings-group" id="skill-share">
             <h3>Share</h3>
             <div class="row">
               <button id="skill-export" class="ghost small">Export JSON</button>
@@ -10898,7 +11050,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- Adding one by hand. The tool covers "tell it in conversation";
                  this covers "I already know what I want it to always do". -->
             <div class="row memory-add">
-              <input id="memory-new" type="text" maxlength="200"
+              <input id="memory-new" type="text" maxlength="200" aria-label="Something to always do in answers"
                 placeholder="e.g. Always answer in British English">
               <button id="memory-add" class="small">Remember this</button>
             </div>
@@ -11228,7 +11380,9 @@ Link to another note with [[its first few words]]."></textarea>
                   a theme and still choose your own accent colour. Press the eye
                   in a theme's corner to see it on the whole app, then Apply or
                   Cancel; leaving Appearance or Settings cancels it. Surprise me
-                  picks one at random.
+                  picks one at random. Pop out, at the top of this page, opens
+                  all of Appearance in a panel beside the app, so you see each
+                  change without closing Settings.
                 </p>
               </div>
               <div id="theme-presets" class="theme-presets"></div>
@@ -11687,6 +11841,22 @@ Link to another note with [[its first few words]]."></textarea>
                 </span>
               </label>
 
+              <label class="setting-check" id="panel-push-row">
+                <input type="checkbox" id="panel-push-toggle" checked>
+                <span>
+                  Move the app aside for a docked panel
+                  <small class="muted">On: a panel docked to the left or right half pushes the rest of the app into the space beside it. The button in the panel's head turns it off for now. Corner docks and floating panels never push.</small>
+                </span>
+              </label>
+
+              <label class="setting-check" id="panel-restore-row">
+                <input type="checkbox" id="panel-restore-toggle" checked>
+                <span>
+                  Panels open where you left them
+                  <small class="muted">Off: every panel opens in the middle. Drag a panel's head to a screen edge to dock it; the reset button in its head puts it back, and a double-click on the corner mark puts back the size.</small>
+                </span>
+              </label>
+
             </details>
             </div>
 
@@ -11783,6 +11953,16 @@ Link to another note with [[its first few words]]."></textarea>
                   <option value="fades">Minimal: fades only</option>
                 </select>
               </div>
+              <!-- How it comes in on a new page (INBOX 1463): a short fade or
+                   a few steps by default; the glide, walk on, tumble, fall
+                   and starlight only when chosen (`mountBuddyShowy`). -->
+              <label class="setting-check" id="avatar-buddy-showy-row">
+                <input type="checkbox" id="avatar-buddy-showy">
+                <span>
+                  Showy entrances
+                  <small class="muted">Off: on a new page it fades in where it rests. On: it may glide, walk on, tumble or drop in.</small>
+                </span>
+              </label>
               <!-- Each thing it does on its own, one switch a row (the owner,
                    2026-09-27: "Every companion feature must be togglable in
                    Settings"): built by `mountBuddyActivities`, avatars.js,
@@ -12713,6 +12893,11 @@ Link to another note with [[its first few words]]."></textarea>
 
           <!-- Tasks: see and quit background jobs -->
           <section class="settings-section hidden" id="settings-tasks">
+            <nav class="tabs-line popup-kinds pane-tabs" id="tasks-tabs" aria-label="Tasks sections">
+              <button type="button" data-target="#tasks-live-group"><i class="ph ph-activity pop-tab-glyph ph-lead" aria-hidden="true"></i>Running<span class="pop-count" id="tasks-count">0</span></button>
+              <button type="button" data-target="#job-runs-group"><i class="ph ph-clock-counter-clockwise pop-tab-glyph ph-lead" aria-hidden="true"></i>Last runs</button>
+              <button type="button" data-target="#tasks-ai-group"><i class="ph ph-sliders-horizontal pop-tab-glyph ph-lead" aria-hidden="true"></i>Background AI</button>
+            </nav>
             <!-- Boxed like the settings-groups below it (§ reported: a live
                  task card visually blended into "Autonomous Background AI"
                  underneath, with nothing to show where one ended and the
@@ -12789,7 +12974,7 @@ Link to another note with [[its first few words]]."></textarea>
               <ul id="job-runs-list" class="entry-list"></ul>
             </div>
 
-            <div class="settings-group">
+            <div class="settings-group" id="tasks-ai-group">
               <div class="row help-head">
                 <h3>Autonomous background AI</h3>
                 <button type="button" class="icon-only ghost small graph-help-toggle"
@@ -14130,7 +14315,7 @@ Link to another note with [[its first few words]]."></textarea>
                   data-help-for="logs-help" aria-controls="logs-help" aria-expanded="false"
                   title="About the log" aria-label="About the log"><i class="ph ph-question" aria-hidden="true"></i></button>
                 <div class="help-body hidden" id="logs-help" role="dialog" aria-label="About the log">
-                  <p>The app's own log, updating live. Filter the records by text, switch between a list and a terminal view, and use the three dots to narrow by which log and how serious. Support bundle saves a zip of the log, your settings and the app's status, for a bug report.</p>
+                  <p>The app's own log, updating live. Filter the records by text, switch between a list and a terminal view, and use the three dots to narrow by which log and how serious. Support bundle saves a zip of the log, your settings and the app's status, for a bug report. To send us what is slow or broken, open the three dots and press Copy diagnostics: one plain-text report (lag, errors, slow routes, how big your notebook is, no note text) to paste into a message, or Save diagnostics as file.</p>
                 </div>
                 <details class="doc-dock-menu dock-menu dock-more" id="logs-more-menu">
                   <summary class="ghost small icon-only doc-dock-menu-btn" title="More" aria-label="More"><i class="ph ph-dots-three" aria-hidden="true"></i></summary>
@@ -14185,6 +14370,14 @@ Link to another note with [[its first few words]]."></textarea>
                          door is one row below it here. -->
                     <button id="logs-email-bundle" class="doc-dock-menu-item" type="button"
                       title="Save the bundle, then open your mail app with the report addressed to the developer"><i class="ph ph-envelope-simple ph-lead" aria-hidden="true"></i> Email the support bundle</button>
+                    <button id="logs-diag-copy" class="doc-dock-menu-item" type="button"
+                      title="One plain-text report of lag, errors and slow routes, with no note text, to paste into a message"><i class="ph ph-clipboard-text ph-lead" aria-hidden="true"></i> Copy diagnostics</button>
+                    <button id="logs-diag-save" class="doc-dock-menu-item" type="button"
+                      title="The same report as a text file"><i class="ph ph-file-text ph-lead" aria-hidden="true"></i> Save diagnostics as file</button>
+                    <label class="dock-menu-check"
+                      title="Times the animation loops by script so the report can name a costly one. Off, the report has no animation figures.">
+                      <input type="checkbox" id="logs-sampler" checked> <i class="ph ph-gauge ph-lead" aria-hidden="true"></i> Time animation loops
+                    </label>
                     <button id="logs-copy" class="doc-dock-menu-item" type="button"></button>
                     <button id="logs-clear" class="doc-dock-menu-item" type="button"><i class="ph ph-eraser ph-lead" aria-hidden="true"></i> Clear</button>
                   </div>
@@ -14470,7 +14663,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="setting-row setting-row-stack">
                 <div class="setting-label">
                   <span>Last error</span>
-                  <small class="muted">The most recent warning or error in the app log, the full log is in Settings → Logs.</small>
+                  <small class="muted">The most recent warning or error in the app log, the full log is in Settings, Logs.</small>
                 </div>
                 <span class="setting-control muted" id="health-last-error">, </span>
               </div>
@@ -14548,6 +14741,10 @@ Link to another note with [[its first few words]]."></textarea>
                 <input type="checkbox" id="pref-update-check">
                 <span>Check GitHub for a newer version</span>
               </label>
+              <label class="check-row" data-this-computer>
+                <input type="checkbox" id="pref-update-bar">
+                <span>Show the update bar</span>
+              </label>
               <div class="row button-row setting-dependent" id="update-check-row">
                 <button id="update-check-now" class="ghost small" type="button">Check for updates</button>
                 <!-- Shown only once a check finds a newer version this app can
@@ -14556,7 +14753,7 @@ Link to another note with [[its first few words]]."></textarea>
                      apiJson('/update/apply') call): asked for directly: a
                      manual fallback for whoever dismissed the popup, or
                      started this check from here in the first place. -->
-                <button id="update-apply-now" class="small hidden" type="button">Update automatically</button>
+                <button id="update-apply-now" class="small hidden" type="button">Update now</button>
                 <span class="muted" id="update-check-status"></span>
               </div>
               <!-- Separate from "Check GitHub for a newer version" above on
@@ -14567,10 +14764,10 @@ Link to another note with [[its first few words]]."></textarea>
                    someone can want to know a release exists (Settings shows
                    it, the popup mentions it) without ever wanting this app
                    to run an installer by itself. -->
-              <h4 class="setting-subhead">Installing them</h4>
+              <h4 class="setting-subhead">Launcher copies</h4>
               <label class="check-row" data-this-computer>
                 <input type="checkbox" id="pref-auto-update">
-                <span>Update automatically when a new version is found</span>
+                <span>Pull the latest code when start.sh or start.bat runs</span>
               </label>
               <!-- "Maybe they can have the option to select the specific
                    versions they wish to switch to??", asked for directly.
@@ -14696,6 +14893,31 @@ Link to another note with [[its first few words]]."></textarea>
                 stops any background work). With it off, closing the window
                 quits.
               </p>
+              <!-- The desktop companion (BACKLOG 16, INBOX 1464): the chosen
+                   companion in a small window at the screen's corner while the
+                   app window is in the tray. Off until turned on; the tray's
+                   "Show desktop companion" is the same switch. -->
+              <div class="row help-head hidden" id="desktop-companion-row">
+                <label class="check-row">
+                  <input type="checkbox" id="pref-desktop-companion">
+                  <span>Show the companion on the desktop while the window is in the tray</span>
+                </label>
+                <button type="button" class="icon-only ghost small graph-help-toggle"
+                  data-help-for="desktop-companion-help" aria-controls="desktop-companion-help"
+                  aria-expanded="false" title="About the desktop companion"
+                  aria-label="About the desktop companion">
+                  <i class="ph ph-question" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="help-body hidden" id="desktop-companion-help" role="dialog" aria-label="About the desktop companion">
+                <p>
+                  Your companion (Appearance picks who; Atlas if none) waits in the
+                  bottom-right corner while the window is in the tray, and goes away when
+                  the window is open. Click it for Quick note, Quick search or Open
+                  Tessellate; right-click for Settings or Hide. Drag it to move it.
+                  While Tessellate is locked it shows the companion and Open only.
+                </p>
+              </div>
               <!-- The owner's decision: one running copy per notebook, and a
                    second launch brings its window forward. This switch is the
                    one exception, and only for windows: on, each launch opens
@@ -14787,7 +15009,9 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="palette-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Command palette">
     <div class="card" id="palette-card">
       <input id="palette-input" type="text" placeholder="Run a command or go to a place…"
-        autocomplete="off" aria-label="Command or place" aria-controls="palette-list">
+        autocomplete="off" aria-label="Command or place" aria-controls="palette-list"
+        role="combobox" aria-expanded="true" aria-haspopup="listbox" aria-autocomplete="list">
+      <div id="palette-count" class="visually-hidden" role="status" aria-live="polite"></div>
       <div class="palette-body">
         <ul id="palette-list" class="rich-picker-list" role="listbox" aria-label="Commands and results"></ul>
         <div id="palette-preview" class="rich-picker-preview hidden" aria-hidden="true"></div>
@@ -14807,9 +15031,10 @@ Link to another note with [[its first few words]]."></textarea>
     <div class="help-body hidden" id="palette-help" role="dialog" aria-label="About these commands">
       <p>Type to find a command, a setting or a note. A few rows are small tools that run right here.</p>
       <ul>
-        <li><strong>Timer.</strong> Type timer 10 minutes (or 90s timer, countdown 2h) and press Enter. The time runs on the status bar; press that chip to stop it.</li>
+        <li><strong>Timer.</strong> Type timer 10 minutes (or 90s timer, countdown 2h) and press Enter. The time runs on the status bar; press that chip to stop it, and Undo brings it back.</li>
         <li><strong>Stopwatch.</strong> Start a stopwatch counts up on the status bar; press it to stop.</li>
         <li><strong>Count words.</strong> Words, characters and reading time of the selected text, or of the editor.</li>
+        <li><strong>A question.</strong> A line that ends in a question mark, or starts like one (how do I, where is, can I), is offered to Atlas first, with the commands that matched underneath.</li>
       </ul>
     </div>
   </div>
@@ -14821,7 +15046,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Note history">
     <div class="card modal-card" id="history-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-clock ph-lead" aria-hidden="true"></i> Earlier versions</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-clock pop-glyph" aria-hidden="true"></i> Earlier versions</h2>
         <span class="dialog-head-actions">
           <button id="history-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -14849,7 +15074,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-labelledby="connections-title">
     <div class="card modal-card" id="connections-card">
       <div class="dialog-head">
-        <h2 id="connections-title" class="dialog-head-title"><i class="ph ph-graph ph-lead" aria-hidden="true"></i> Connections</h2>
+        <h2 id="connections-title" class="dialog-head-title"><i class="ph ph-graph pop-glyph" aria-hidden="true"></i> Connections</h2>
         <span class="dialog-head-actions">
           <button id="connections-dock" class="icon-only ghost small dialog-head-btn hidden" type="button"
             title="Open in the sidebar" aria-label="Open in the sidebar"><i class="ph ph-sidebar-simple" aria-hidden="true"></i></button>
@@ -14879,7 +15104,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="A note in the bin">
     <div class="card modal-card" id="binned-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-trash ph-lead" aria-hidden="true"></i> In the bin</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-trash pop-glyph" aria-hidden="true"></i> In the bin</h2>
         <span class="dialog-head-actions">
           <button id="binned-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -14901,7 +15126,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Run a skill">
     <div class="card modal-card" id="skill-run-card">
       <div class="row space-between dialog-head">
-        <h2 id="skill-run-title" class="dialog-head-title">Run a skill</h2>
+        <h2 id="skill-run-title" class="dialog-head-title"><i class="ph ph-lightning pop-glyph" aria-hidden="true"></i>Run a skill</h2>
         <span class="dialog-head-actions">
           <button id="skill-run-cancel" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -14919,7 +15144,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Keyboard shortcuts">
     <div class="card modal-card" id="shortcuts-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Keyboard shortcuts</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keyboard shortcuts</h2>
         <span class="dialog-head-actions">
           <button id="shortcuts-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -14954,6 +15179,8 @@ Link to another note with [[its first few words]]."></textarea>
         <li><span class="shortcut-keys"><kbd>←</kbd> <kbd>→</kbd></span><span>Move between a formatting toolbar's buttons (Tab reaches the toolbar once)</span></li>
         <li><span class="shortcut-keys"><kbd>Enter</kbd></span><span>Send a chat message, or run the selected command</span></li>
         <li><span class="shortcut-keys"><kbd>Tab</kbd></span><span>Move focus; cycles inside an open dialog</span></li>
+        <li><span class="shortcut-keys"><kbd>Alt</kbd> <kbd>↑</kbd> <kbd>↓</kbd></span><span>Move the focused card one place up or down in its list</span></li>
+        <li><span class="shortcut-keys"><kbd>Ctrl</kbd> <kbd>C</kbd></span><span>Copy the focused card; Ctrl+V then attaches it in the chat box or places it on a board</span></li>
         <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>d</kbd>/<kbd>n</kbd>/<kbd>c</kbd>/<kbd>g</kbd>/<kbd>l</kbd>/<kbd>i</kbd>/<kbd>r</kbd></span><span>Jump to Dashboard / Notes / Chat / Graph / Library / Timeline / Reminders</span></li>
         <li><span class="shortcut-keys"><kbd>t</kbd> then <kbd>s</kbd>/<kbd>q</kbd>/<kbd>v</kbd></span><span>Open settings / a quick sketch / record a meeting</span></li>
       </ul>
@@ -15000,7 +15227,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-labelledby="wb-help-title">
     <div class="card modal-card wb-help-card" id="wb-help-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title" id="wb-help-title"><i class="ph ph-keyboard ph-lead" aria-hidden="true"></i> Keys and controls</h2>
+        <h2 class="dialog-head-title" id="wb-help-title"><i class="ph ph-keyboard pop-glyph" aria-hidden="true"></i> Keys and controls</h2>
         <span class="dialog-head-actions">
           <button type="button" class="icon-only ghost small dialog-head-btn graph-help-toggle"
             data-help-for="wb-help-about" aria-controls="wb-help-about" aria-expanded="false"
@@ -15030,7 +15257,7 @@ Link to another note with [[its first few words]]."></textarea>
   <div id="improve-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Improve writing">
     <div class="card" id="improve-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title">Improve writing</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-pencil-line pop-glyph" aria-hidden="true"></i>Improve writing</h2>
         <span class="dialog-head-actions">
           <button id="improve-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15043,7 +15270,7 @@ Link to another note with [[its first few words]]."></textarea>
         <button class="ghost small improve-mode" data-mode="custom">Custom…</button>
       </div>
       <div class="row hidden" id="improve-custom-row">
-        <input id="improve-custom-input" type="text" maxlength="200"
+        <input id="improve-custom-input" type="text" maxlength="200" aria-label="How to change the text"
           placeholder="e.g. make it sound more formal, or translate to French">
         <button id="improve-custom-go" class="small">Go</button>
       </div>
@@ -15096,7 +15323,7 @@ Link to another note with [[its first few words]]."></textarea>
       <div class="dialog-head">
         <!-- Two heads, one shown: `.voice-note` (Voice note, `openVoiceNote`;
              WORLD_CLASS_PLAN 28.5 row 3) shows the second. -->
-        <h2 class="dialog-head-title"><i class="ph ph-microphone ph-lead" aria-hidden="true"></i> <span class="meeting-kind-meeting">Meeting notes</span><span class="meeting-kind-voice">Voice note</span></h2>
+        <h2 class="dialog-head-title"><i class="ph ph-microphone pop-glyph" aria-hidden="true"></i> <span class="meeting-kind-meeting">Meeting notes</span><span class="meeting-kind-voice">Voice note</span></h2>
         <button type="button" class="icon-only ghost small dialog-head-btn"
           data-help-for="meeting-help" aria-controls="meeting-help" aria-expanded="false"
           title="About meeting notes" aria-label="About meeting notes">
@@ -15125,7 +15352,8 @@ Link to another note with [[its first few words]]."></textarea>
           transcript is saved. With the captions helper the words appear under
           the level line as you speak; the full transcript replaces them after.
           Live captions, before you record, writes what is said without
-          recording it. Close this while recording and it keeps recording in a small bar at
+          recording it; the button is not shown until a captions helper is set up
+          (Settings, Packages). Close this while recording and it keeps recording in a small bar at
           the bottom with the clock, Pause, Stop and Open; Discard throws the
           take away. Transcribing runs in the background: close this and a
           notification says when it is done, with Open; Stop transcribing ends
@@ -15243,7 +15471,7 @@ Link to another note with [[its first few words]]."></textarea>
     aria-modal="true" aria-label="Tools and features">
     <div class="card modal-card" id="features-card">
       <div class="dialog-head">
-        <h2 class="dialog-head-title"><i class="ph ph-toolbox ph-lead" aria-hidden="true"></i> Tools &amp; features</h2>
+        <h2 class="dialog-head-title"><i class="ph ph-toolbox pop-glyph" aria-hidden="true"></i> Tools &amp; features</h2>
         <span class="dialog-head-actions">
           <button id="features-close" class="icon-only ghost small dialog-head-btn" type="button"
             title="Close (Esc)" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
@@ -15262,7 +15490,7 @@ Link to another note with [[its first few words]]."></textarea>
     </div>
   </div>
 
-  <!-- First-run welcome tour (learnability). Re-runnable from Settings → Help. -->
+  <!-- First-run welcome tour (learnability). Re-runnable from Settings, Help. -->
   <div id="onboarding-overlay" class="modal-overlay hidden" role="dialog"
     aria-modal="true" aria-label="Welcome to Tessellate">
     <div class="card modal-card" id="onboarding-card">
@@ -15420,14 +15648,10 @@ Link to another note with [[its first few words]]."></textarea>
   <script src="/js/settings-wiring.js?v=0.6.2"></script>
   <script src="/js/spaces-find.js?v=0.6.2"></script>
   <script src="/js/agent-activity.js?v=0.6.2"></script>
-  <!-- Generated faces (`nameMood`, `nameMark`): split out of app.js on
-       2026-09-24 when they took the gzipped app.js over its size bound. Only
-       declarations at top level, and it must load before any boot file that
-       paints a face, so it sits straight after app.js. -->
-  <script src="/js/avatars.js?v=0.6.2"></script>
-  <!-- Atlas, the assistant's own character (`atlasDraw`, its moods): after
-       avatars.js, whose `registerCharacter` it answers through. -->
-  <script src="/js/atlas.js?v=0.6.2"></script>
+  <!-- avatars.js (the generated faces, `nameMood`, `nameMark`, and the
+       companion) and atlas.js (Atlas, `atlasDraw`) are not boot scripts: they
+       are the lazy `characters` bundle, fetched once the app is open and idle
+       (audit 1028 S3; lazy-entries.js says how the boot files wait for them). -->
   <!-- The editor layer: the "/" command menu, the block frames it inserts, and
        the caret-anchored popup the document editor's [[ autocomplete uses.
        Loaded after app.js, and it stays at boot: every cross-file call it

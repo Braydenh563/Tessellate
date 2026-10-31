@@ -122,3 +122,55 @@ def test_no_has_is_keyed_only_on_a_class_everything_wears():
                 if classes and classes <= UBIQUITOUS and "#" not in keyed:
                     found.append(f"{path.name}: {selector}")
     assert not found, "\n".join(found)
+
+
+def test_no_has_looks_for_a_contenteditable_attribute():
+    """OPEN 813: `#entry-list > li:not(:has(textarea, details[open],
+    [contenteditable="true"]))` made turning a map topic's text editable
+    restyle the board twice over: an attribute named inside a `:has()` is
+    checked against every `contenteditable` write on the page, and the board's
+    topic editor writes one on every add. Measured at 390px on a 20-topic map,
+    the write plus the focus cost 22ms of style work with it and 12ms without
+    (the note editor's CodeMirror root is `.cm-editor`, which says the same
+    thing by class)."""
+    found = []
+    for path in CSS:
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for prelude in re.findall(r"([^{}]+)\{", text):
+            for has in re.findall(r":has\(([^()]*(?:\([^()]*\)[^()]*)*)\)", prelude):
+                if "contenteditable" in has:
+                    found.append(f"{path.name}: {' '.join(prelude.split())}")
+    assert not found, "\n".join(found)
+
+
+def test_a_tab_anchored_has_names_its_child_not_a_search_of_the_tab():
+    """OPEN 813: `.tab-page:has(#library-view-whiteboard:not(.hidden))` and
+    its three siblings searched the whole tab for the id on every restyle of
+    the dock button they hide. The Library tab holds the open board's two
+    thousand elements, so the three of them cost 38ms (selector stats, one
+    add at 390px on 200 topics). A `:has(> child)` looks at the tab's own
+    children and nothing else. A rule for one tab names it (`:where(#tab-notes)`)
+    so the search stays inside a tab that is small."""
+    found = []
+    for path in CSS:
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for prelude in re.findall(r"([^{}]+)\{", text):
+            for selector in _split_top(prelude, ","):
+                selector = " ".join(selector.split())
+                if re.search(r"(?:\.tab-page|#tab-library):has\((?!>)", selector):
+                    found.append(f"{path.name}: {selector}")
+    assert not found, "\n".join(found)
+
+
+def test_a_line_shows_its_ends_by_a_class_on_its_own_group():
+    """OPEN 813: `.wb-map-edge-group:has(.wb-map-edge-handle.is-shown)` and a
+    `:has(:focus-visible)` on the same group were re-matched for every line on
+    the board by every class write, 8ms of 15 in the add's focus flush at 200
+    topics. The group carries `is-shown` beside its handle instead."""
+    lazy = (ROOT / "frontend" / "css" / "library-lazy.css").read_text(encoding="utf-8")
+    assert ".wb-map-edge-group.is-shown .wb-map-edge-end" in lazy
+    assert ":has(.wb-map-edge-handle" not in lazy
+    misc = (ROOT / "frontend" / "css" / "07-whiteboard-misc.css").read_text(encoding="utf-8")
+    assert ".wb-map-edge-group:is(:focus-visible, :has(:focus-visible))" not in misc
+    js = (ROOT / "frontend" / "js" / "whiteboard-map.js").read_text(encoding="utf-8")
+    assert 'handle.parentNode.classList.toggle("is-shown", on)' in js

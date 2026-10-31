@@ -287,6 +287,7 @@ function wbBoardThumbSpec(element, opts = {}) {
       }
       if (data.noStroke) a.stroke = "none";
       else {
+        if (data.opacity != null && data.opacity < 1) a["stroke-opacity"] = String(data.opacity);
         const width = placed && data.width > 0 ? data.width : strokeW;
         a.stroke = ink;
         a["stroke-width"] = R(width);
@@ -316,6 +317,7 @@ function wbBoardThumbSpec(element, opts = {}) {
     const a = { x, y, width: w, height: h, rx: R(strokeW * 2) };
     if (d.bg) {
       a.fill = d.bg;
+      if (d.bg_alpha != null && d.bg_alpha < 1) a["fill-opacity"] = String(Math.max(0, d.bg_alpha));
       a.stroke = d.border_color || "none";
     } else {
       a.fill = "none";
@@ -653,7 +655,21 @@ async function wbApplyMapTemplate(entry) {
   if (!entry || !wbIsMap()) return;
   await wbRecordGesture(async () => {
     await wbLibPlace(entry);
-    if (entry.layout && entry.layout !== wbMapLayout()) await wbMapSetLayout(entry.layout);
+    if (entry.layout && entry.layout !== wbMapLayout()) await wbMapSetLayout(entry.layout, { quiet: true });
   });
   wbDismissMapTemplates();
+  wbMapEditRootAfterTemplate();
+}
+
+//: **The centre topic takes the keyboard when a template is placed** (blind
+//: test 1031: the pressed tile was hidden with the offer, focus fell to BODY,
+//: and typing the map's name met the global chords). Named and typed over,
+//: which is what a new map's first minute is for. Not on a touch screen, where
+//: the keyboard that opens would cover the map just placed.
+function wbMapEditRootAfterTemplate() {
+  if (!window.matchMedia?.("(pointer: fine)").matches) return;
+  const root = wbMapIndex().roots[0];
+  if (!root) return;
+  selectWbItem("object", root.id);
+  wbMapEditNode(root.id);
 }

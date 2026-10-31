@@ -114,52 +114,15 @@ function chatMessageActions(actions) {
 //:
 //: The order is Odysseus's footer order, with this app's own capture actions
 //: after it: what you do to the *answer* first, what you do with it second.
-//: **Copy copies the whole turn, not the last paragraph of it.** The owner:
-//: "when I copy text from a chat or assistant message bubble, it only shows
-//: the last agent section of the message, I want it to capture everything
-//: in the whole chat and assistant messages, including thinking processes
-//: (if toggled), tool calls, and everything in the chat." The bubble is
-//: walked in document order: a thinking step is included only while it is
-//: open (the toggle is the person's say on whether it is part of the
-//: message), a plan step as its text, each tool chip as one "Tool:" line
-//: with its arguments and result when they are shown, and every answer body
-//: as its text. `text` is the raw Markdown of the final answer, used in
-//: place of the last body's rendered text so headings and links survive.
-function chatTurnTranscript(bubble, text) {
-  const parts = [];
-  const seen = new Set();
-  const nodes = bubble
-    ? [...bubble.querySelectorAll(".agent-step, .tool-chip, .msg-body")]
-    : [];
-  const bodies = nodes.filter((n) => n.classList.contains("msg-body"));
-  for (const node of nodes) {
-    if ([...seen].some((s) => s.contains(node))) continue;
-    seen.add(node);
-    if (node.classList.contains("thinking-fold")) {
-      if (!node.open) continue;
-      const body = node.querySelector(".thinking")?.innerText.trim();
-      if (body) parts.push(`Thinking:\n${body}`);
-    } else if (node.classList.contains("step-plan")) {
-      const body = node.innerText.replace(/^\s*Plan\s*/i, "").trim();
-      if (body) parts.push(`Plan:\n${body}`);
-    } else if (node.classList.contains("tool-chip")) {
-      const label = node.querySelector("summary")?.innerText.trim() || node.innerText.trim();
-      const args = node.querySelector(".tool-chip-args")?.textContent.trim();
-      const result = node.querySelector(".tool-chip-result")?.textContent.trim();
-      let line = `Tool: ${label}`;
-      if (args) line += `\n${args}`;
-      if (result) line += `\nResult: ${result}`;
-      parts.push(line);
-    } else if (node.classList.contains("msg-body")) {
-      const last = node === bodies[bodies.length - 1];
-      const body = last && text ? text : node.innerText.trim();
-      if (body) parts.push(body);
-    } else {
-      const body = node.innerText.trim();
-      if (body) parts.push(body);
-    }
+function bodyTextWithCitations(node) {
+  const links = [...node.querySelectorAll(".answer-citation-link")];
+  const digits = links.map((l) => l.textContent);
+  links.forEach((l) => { l.textContent = `[${l.textContent}]`; l.before(" "); });
+  try {
+    return node.innerText.trim();
+  } finally {
+    links.forEach((l, i) => { l.previousSibling.remove(); l.textContent = digits[i]; });
   }
-  return parts.length ? parts.join("\n\n") : text || "";
 }
 
 function assistantMessageActions({ bubble, text, question, onEdit }) {
@@ -168,7 +131,11 @@ function assistantMessageActions({ bubble, text, question, onEdit }) {
     {
       label: "ph:copy",
       title: "Copy message",
-      onClick: (e) => copyToClipboard(chatTurnTranscript(bubble, text), e.currentTarget),
+      onClick: async (e) => {
+        const button = e.currentTarget;
+        await ensureModule("gestureKit"); // chatTurnTranscript lives there, off the boot scripts
+        copyToClipboard(chatTurnTranscript(bubble, text), button);
+      },
     },
     {
       label: "ph:arrow-clockwise",
@@ -584,20 +551,7 @@ async function copyToClipboard(text, button) {
 // Re-run the most recent question and REPLACE the previous answer in place
 // (user request: a redo shouldn't stack a second answer below the old one).
 // The original "you" bubble stays; only the assistant bubble is swapped.
-//: **The question a bubble is the answer to.** Walks back through the
-//: transcript rather than trusting an index: bubbles are deleted, edited and
-//: re-ordered, and any stored position goes stale the first time somebody uses
-//: the ⋯ on a message in the middle.
-function questionForBubble(bubble) {
-  let node = bubble;
-  while (node) {
-    node = node.previousElementSibling;
-    if (node && node.classList.contains("msg") && node.classList.contains("user")) {
-      return { bubble: node, text: (node.querySelector(".msg-body")?.textContent || "").trim() };
-    }
-  }
-  return null;
-}
+//: `questionForBubble` is chat-edit.js, its one caller (boot gzip ratchet).
 
 //: **Regenerate from *this* answer, not just the last one.**
 //:
@@ -606,17 +560,7 @@ function questionForBubble(bubble) {
 //: newest. Everything after the question is removed first, an answer
 //: regenerated in the middle of a thread that keeps the turns built on the old
 //: one is a transcript that contradicts itself.
-function regenerateFromBubble(bubble) {
-  if (chatController) return toast("Wait for the current answer to finish.");
-  const asked = questionForBubble(bubble);
-  if (!asked) return toast("There is no question above this answer to re-ask.");
-  const host = $("chat-messages");
-  const kept = [...host.children];
-  const from = kept.indexOf(asked.bubble);
-  //: The question stays; everything after it goes, including this answer.
-  for (const node of kept.slice(from + 1)) node.remove();
-  sendChatMessage(asked.text, { skipUserBubble: true, replaceLast: true });
-}
+const regenerateFromBubble = (bubble) => lazyScript("/js/chat-edit.js").then(() => regenerateFrom(bubble));
 
 //: **Rewrite the last answer under a standing instruction**, Odysseus's
 //: "shorter" and "simpler" footer actions.
@@ -661,21 +605,7 @@ async function forkFromBubble(bubble) {
 //: How many times the last question has been asked again (`retries`, kept on
 //: the function, not a top-level let): sent as `attempt`, so an answer
 //: composed from the notes is worded anew (CHAT_PLAN decision 34).
-function regenerateLastAnswer() {
-  if (!lastChatQuestion || chatController) return;
-  regenerateLastAnswer.retries = (regenerateLastAnswer.retries || 0) + 1;
-  const assistantBubbles = $("chat-messages").querySelectorAll(".msg.assistant");
-  const lastAssistant = assistantBubbles[assistantBubbles.length - 1];
-  if (lastAssistant) lastAssistant.remove(); // clear the old answer first
-  sendChatMessage(lastChatQuestion, {
-    skipUserBubble: true,
-    replaceLast: true,
-    noteIds: lastChatAttachments,
-    imageMediaIds: lastChatImageAttachments.map((img) => img.id),
-    documentIds: lastChatDocumentAttachments.map((d) => d.id),
-    attempt: regenerateLastAnswer.retries,
-  });
-}
+const regenerateLastAnswer = () => lazyScript("/js/chat-edit.js").then(() => regenerateLast());
 
 //: One line offering Atlas a question, for the empty states that are a person
 //: looking at a surface they have not used yet. Built here rather than written
@@ -716,6 +646,7 @@ function chatEmptySettle(empty) {
 function renderChatEmptyState() {
   const box = $("chat-messages");
   if (box.querySelector(".msg") || box.querySelector(".chat-empty")) return;
+  if (chatConv.private) return chatPrivateEmpty(box);
   const empty = document.createElement("div");
   empty.className = "chat-empty";
   const emblem = document.createElement("div");
@@ -764,7 +695,7 @@ function renderChatEmptyState() {
     helpText.textContent =
       `${aiName} answers from your saved notes and shows the notes behind each ` +
       "answer. In Agent mode it can also create, tag, link and organise notes " +
-      "for you, and asks before anything it cannot undo.";
+      "for you, and asks before changing a note.";
   }
   empty.append(emblem, title, blurb);
   //: One line about the other assistant (INBOX 224). The empty chat is where
@@ -804,7 +735,7 @@ function renderChatEmptyState() {
   }
   box.appendChild(empty);
   // Animated like the ai-mark: a new chat is the AI waiting, and the slow
-  // turn says so. Stills itself under Settings → Appearance → reduced motion.
+  // turn says so. Stills itself under Settings, Appearance → reduced motion.
   renderEmblem(emblem, 52, { animate: true }); // after insertion: see addAssistantBubble
   fitChatEmpty();
   //: **Watched, but never from inside the observer's own callback** (the
@@ -818,7 +749,7 @@ function renderChatEmptyState() {
     let last = { w: 0, h: 0 };
     let queued = false;
     new ResizeObserver((entries) => {
-      const rect = entries[entries.length - 1].contentRect;
+      const rect = entries.at(-1).contentRect;
       if (Math.abs(rect.width - last.w) < 2 && Math.abs(rect.height - last.h) < 2) return;
       last = { w: rect.width, h: rect.height };
       if (queued) return;
@@ -935,7 +866,7 @@ function toggleWebPanel(force) {
       const link = document.createElement("button");
       link.type = "button";
       link.className = "link-button";
-      link.textContent = "Settings → Web search";
+      link.textContent = "Settings, Web search";
       link.addEventListener("click", () => {
         toggleWebPanel(false);
         openSettingsModal("websearch");
@@ -965,7 +896,7 @@ function toggleWebPanel(force) {
 
 // Feedforward for whether the private, local SearXNG instance is actually
 // running: not just the after-the-fact "answered by SearXNG" a result
-// already carries. Deliberately far lighter than Settings → Web search's
+// already carries. Deliberately far lighter than Settings, Web search's
 // full management UI (install progress, port diagnostics, reinstall): only
 // "is it on", as a dot in the head, and "turn it on or off", in the kebab
 // beside it.
@@ -1019,7 +950,7 @@ function renderWebPanelMenu(engine) {
     if (engine.state === "installing") {
       items.push({
         label: "ph:hourglass Installing SearXNG",
-        title: "SearXNG is installing; Settings → Web search shows its progress",
+        title: "SearXNG is installing; Settings, Web search shows its progress",
         disabled: true,
         run: () => openSettingsModal("websearch"),
       });
@@ -1430,7 +1361,7 @@ async function runWebSearch() {
   status.replaceChildren();
   const summary = document.createElement("span");
   summary.textContent = results.length
-    ? `${results.length} result${results.length === 1 ? "" : "s"} via ${answered.label}`
+    ? `${nounCount(results.length, "result")} via ${answered.label}`
     : `No results from ${answered.label}: try different words.`;
   status.appendChild(summary);
   if (answered.detail) {
@@ -1562,26 +1493,20 @@ function renderWebPageAttachment() {
   box.replaceChildren();
   box.classList.toggle("hidden", !attachedWebPage);
   if (!attachedWebPage) return;
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip";
-  chipEl.title = attachedWebPage.url;
-  const label = document.createElement("span");
-  const title = attachedWebPage.title;
-  const shown = title.length > 48 ? `${title.slice(0, 47)}…` : title;
-  setLabel(label, `ph:globe ${shown}${attachedWebPage.domain ? ` · ${attachedWebPage.domain}` : ""}`);
-  const remove = document.createElement("button");
-  remove.className = "attachment-remove";
-  remove.type = "button";
-  setLabel(remove, "ph:x");
-  remove.title = "Don't send this page with your message";
-  remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => {
-    attachedWebPage = null;
-    renderWebPageAttachment();
-    announce("Page removed.");
-  });
-  chipEl.append(label, remove);
-  box.appendChild(chipEl);
+  box.appendChild(
+    attachmentChip({
+      name: attachedWebPage.title,
+      icon: "ph-globe",
+      facts: attachedWebPage.domain || "Page",
+      title: `${attachedWebPage.title} (${attachedWebPage.url})`,
+      removeTitle: "Don't send this page with your message",
+      onRemove: () => {
+        attachedWebPage = null;
+        renderWebPageAttachment();
+        announce("Page removed.");
+      },
+    }),
+  );
 }
 
 //: What the model is told: where the page is from, and its text, fenced so a
@@ -1603,7 +1528,7 @@ function webPageContextBlock(page) {
 //: **The context window, per model, set by hand.**
 //:
 //: Asked for (INBOX 77): "the window itself should be manageable by the user
-//: and auto when set ... a `num_ctx` preference per model in Settings > Models
+//: and auto when set ... a `num_ctx` preference per model in Settings, Models
 //: with Auto (the model file's value) or a number, sent on every request; the
 //: badge shows 'used / window'". The badge half shipped first; this is the
 //: window half.
@@ -1808,11 +1733,10 @@ async function setResponseMode(chosen) {
 //: cannot draw one persona two ways.
 function fillPersonaMark(holder, name, size = 20) {
   if (!holder) return;
-  //: Nothing to draw a face from (no name yet, or the faces script not
-  //: loaded): the app's own animated mark, never an empty box (the owner:
-  //: "the default for no avatar selected should be the animated app logo
-  //: everywhere").
-  if (!name || typeof nameMark !== "function") {
+  //: Nothing to draw a face from (no name yet): the app's own animated mark,
+  //: never an empty box (the owner: "the default for no avatar selected
+  //: should be the animated app logo everywhere").
+  if (!name) {
     renderEmblem(holder, size, { animate: true });
     return;
   }
@@ -1820,7 +1744,8 @@ function fillPersonaMark(holder, name, size = 20) {
   //: ring of linked notes orbiting a globe in the accent colour. `nameMark`
   //: draws it for the assistant's name. The chat's reply label keeps the
   //: live logo, so the app's mark and Atlas's face both stay in the app.
-  holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size));
+  //: The faces arrive after the page (`afterCharacters`, lazy-entries.js).
+  afterCharacters(() => holder.replaceChildren(nameMark(name === aiNameNow() ? "Atlas" : name, size)), () => plainHead(holder, name));
 }
 
 function personaOptions() {
@@ -1926,11 +1851,7 @@ function renderChatContextMeter(stats) {
 }
 
 
-//: How long the thread is, beside what it has cost. Asked for with the header
-//: redesign ("the metadata, model used, chat functions, token usage data and
-//: more"), and it is the fact the two controls next to it are actually about:
-//: Compress and Fork are both answers to "this conversation has got long", and
-//: a token count alone does not say that in a unit anyone thinks in.
+//: How long the thread is, beside what it has cost: Compress and Fork both answer "this has got long", which a token count does not say in a unit anyone thinks in.
 function renderChatTurnCount() {
   const el = $("chat-turns");
   if (!el) return;
@@ -1962,6 +1883,7 @@ function mountChatActionsMenu() {
         //: it kept somewhere, and the one that ends it. Eight rows read as one
         //: list before (menus.js).
         { label: "ph:pencil-simple Rename this chat", group: "chat", run: () => renameCurrentConversation() },
+        { label: "ph:ghost Private chat", group: "chat", run: () => chatPrivateToggle() },
         { label: "ph:git-branch Fork this chat", group: "chat", title: $("chat-fork")?.title, run: click("chat-fork") },
         {
           label: "ph:arrows-in Compress the earlier messages",
@@ -2009,7 +1931,7 @@ function chatTranscriptText() {
   for (const msg of $("chat-messages")?.querySelectorAll(".msg") || []) {
     const who = msg.classList.contains("user") ? "You" : msg.dataset.persona || aiNameNow();
     const body = msg.querySelector(".msg-body, .bubble-answer");
-    const text = (body?.innerText || "").trim();
+    const text = body ? bodyTextWithCitations(body) : "";
     if (text) parts.push(`**${who}:** ${text}`);
   }
   return parts.join("\n\n");
@@ -2046,9 +1968,15 @@ async function compressChatContext() {
       body: JSON.stringify({ history: chatConv.turns.slice(0, covered) }),
     });
     showCompressReview(result, covered);
+  } catch (error) {
+    toast(error?.message || "Couldn't summarise this conversation.");
   } finally {
     setBusy(button, false);
   }
+}
+
+function compressSizeText(n) {
+  return n < 1000 ? `${Math.round(n)} characters` : `${Math.round(n / 10) / 100}k characters`;
 }
 
 // The summary, before it is used, editable, because a summary you cannot
@@ -2059,8 +1987,8 @@ function showCompressReview(result, covered) {
   const box = $("chat-compress-text");
   box.value = result.summary;
   $("chat-compress-stats").textContent =
-    `${covered} messages → ${Math.round(result.chars_after / 10) / 100}k characters ` +
-    `(was ${Math.round(result.chars_before / 10) / 100}k). Edit it if it missed something.`;
+    `${covered} messages → ${compressSizeText(result.chars_after)} ` +
+    `(was ${compressSizeText(result.chars_before)}). Edit it if it missed something.`;
   panel.classList.remove("hidden");
   panel.dataset.covered = String(covered);
   box.focus();
@@ -2520,7 +2448,7 @@ const PROGRESS_MUSINGS = [
   "Searching uses meaning and keywords together, then merges the two rankings.",
   "A note you never tagged is still findable, the links between notes count too.",
   "Private notes are held back from Atlas, even when it asks for them.",
-  "Ask mode reads. Agent mode can change things, and says so before it does.",
+  "Ask mode reads. Agent mode asks before changing a note.",
   "Long answers are slower on a small model, not stuck.",
   "Every tool call Atlas makes is listed under the answer, with what it touched.",
   "Type [[ in any note to link to another one.",

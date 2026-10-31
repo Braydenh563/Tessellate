@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai import speakers, voice
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers
 from tessellate.core import activity, background, deps, recordings, transcript
 from tessellate.core.database import LIKE_ESCAPE, Entry, Recording, like_escape, utcnow
 from tessellate.core.deps import get_session
@@ -156,27 +157,47 @@ def create_recording(body: RecordingCreate, session: Session = Depends(get_sessi
     return recordings.as_dict(row)
 
 
+def _append(path, data: bytes, size: int) -> None:  # noqa: ANN001
+    """Append, or leave the file as it was: a write cut short (a full disk)
+    is cut back, so the retry starts where the saved audio ends. The error
+    goes on to the app's handler, which answers a full disk with 507."""
+    try:
+        with path.open("ab") as out:
+            out.write(data)
+    except OSError:
+        with path.open("ab") as out:
+            out.truncate(size)
+        raise
+
+
 @router.post("/recordings/{recording_id}/chunk")
 def append_chunk(
     recording_id: int,
     file: UploadFile,
     duration_ms: int = Form(0),
+    at: int = Form(-1),
     session: Session = Depends(get_session),
 ) -> dict:
     """One slice of a recording in progress, appended to its file. The first
-    must open with the container's own header (the type check)."""
+    must open with the container's own header (the type check). `at` is the
+    size the sender thinks the file has: a retried slice that already landed
+    is answered, not written twice, and one out of step is refused (audit
+    1030 Y1)."""
     row = _get(session, recording_id)
     if row.state != "recording":
         raise HTTPException(status_code=409, detail="That recording is already finished.")
     room = recordings.MAX_RECORDING_BYTES - row.size_bytes
     data = file.file.read(room + 1)
+    if at >= 0 and at != row.size_bytes:
+        if at + len(data) == row.size_bytes:
+            return {"id": row.id, "size_bytes": row.size_bytes, "duration_ms": row.duration_ms}
+        raise HTTPException(status_code=409, detail="That slice is out of step with the saved recording.")
     if len(data) > room:
         raise HTTPException(status_code=413, detail="That recording is larger than 300 MB.")
     if not row.size_bytes and data and not recordings.matches(row.mime, data[:16]):
         raise HTTPException(status_code=415, detail="That audio isn't the type it says it is.")
     if data:
-        with recordings.path_of(row).open("ab") as out:
-            out.write(data)
+        _append(recordings.path_of(row), data, row.size_bytes)
         row.size_bytes += len(data)
     row.duration_ms = max(row.duration_ms, min(int(duration_ms), 24 * 3600 * 1000))
     row.updated_at = utcnow()
@@ -444,11 +465,12 @@ def rename_speaker(recording_id: int, body: RenameSpeakerBody, session: Session 
 def _subtitles(session: Session, recording_id: int, ext: str) -> Response:
     row, segments = _segments_of(session, recording_id)
     body = transcript.to_srt(segments) if ext == "srt" else transcript.to_vtt(segments)
-    name = re.sub(r"[^A-Za-z0-9._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    stem = re.sub(r"[^\w._ -]", "_", row.title or "").strip(". ")[:80] or f"recording-{row.id}"
+    name = f"{stem}.{ext}"
     return Response(
         content=body.encode("utf-8"),
         media_type="application/x-subrip" if ext == "srt" else "text/vtt",
-        headers={"Content-Disposition": f'attachment; filename="{name}.{ext}"'},
+        headers=attachment_headers(name),
     )
 
 

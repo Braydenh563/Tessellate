@@ -38,7 +38,7 @@ from tessellate.ai import recognise
 #: the dict rather than `.get()` it. Named here rather than inline because
 #: `search/engine.py` iterates the same list to decide which filters it knows
 #: how to apply, and two copies of this list would drift.
-FILTER_KEYS = ("tag", "kind", "space", "has", "is")
+FILTER_KEYS = ("tag", "kind", "space", "has", "is", "title")
 
 
 def _empty_filters() -> dict[str, list[str]]:
@@ -90,6 +90,20 @@ class Understood:
     #: Words after a leading `-`. A hit containing any of these is dropped,
     #: which is the whole of what the operator promises.
     excluded: list[str] = field(default_factory=list)
+    #: Operators after a leading `-` (`-tag:work`, `-kind:document`): a hit
+    #: carrying any of these is dropped, as `excluded` drops a word. Same
+    #: keys as `filters`, always present (shell audit S50 left them out).
+    without: dict[str, list[str]] = field(default_factory=_empty_filters)
+    #: Sentences about what the query asked for that nothing answers: a flag
+    #: or `has:` word the search does not know, or `name:` that is no
+    #: operator. Reported beside the results rather than swallowed (audit
+    #: 1029 N16: `has:attachment` matched nothing and said nothing).
+    notices: list[str] = field(default_factory=list)
+    #: `cat:Work` and `category:"Home office"`, the notes filed under any of
+    #: these (audit 1031 N1: the Notes filter box always read them; the finder
+    #: treated `cat:` as a word). Not in `filters` because the index has no
+    #: category column: the engine checks them against the notes themselves.
+    categories: list[str] = field(default_factory=list)
 
     @property
     def has_range(self) -> bool:
@@ -101,6 +115,8 @@ class Understood:
             any(self.filters.values())
             or bool(self.phrases)
             or bool(self.excluded)
+            or any(self.without.values())
+            or bool(self.categories)
         )
 
 
@@ -119,7 +135,7 @@ RECENT_DAYS = recognise.RECENT_DAYS
 _SCAFFOLD = re.compile(
     r"^\s*(?:"
     r"what(?:'s| is| are| did| have| was| were)?|"
-    r"which|show me|find( me)?|list|tell me( about)?|remind me( about)?|"
+    r"which|show me|pull up|bring up|find( me)?|list|tell me( about)?|remind me( about)?|"
     r"can you (?:show|find|tell|list)( me)?|do i have|did i (?:write|save|note|say)|"
     r"have i (?:written|saved|noted|said)|i (?:wrote|saved|noted|write|save|note)|"
     r"any(?:thing)?|all (?:my|the)|my|the|about|any notes|notes|note|"
@@ -249,7 +265,30 @@ _OPERATOR_NAMES = {
     "space": "space",
     "has": "has",
     "is": "is",
+    "title": "title",
 }
+
+#: The words `is:` and `has:` are answered from the index row's flags and the
+#: attachment, link and reminder tables (`search/engine.py`). Aliases are what
+#: the app calls things elsewhere ("Favourites" is the pin; a file is an
+#: attachment), so the name a person reads in the app works as typed.
+IS_VALUES = ("pinned", "archived", "done", "open", "urgent", "draft", "clipped", "deleted")
+HAS_VALUES = ("file", "image", "link", "reminder", "highlight")
+_VALUE_ALIASES = {
+    "is": {
+        "favourite": "pinned", "favorite": "pinned", "favourites": "pinned", "starred": "pinned",
+        "bin": "deleted", "binned": "deleted", "trashed": "deleted",
+    },
+    "has": {
+        "attachment": "file", "attachments": "file", "files": "file", "images": "image",
+        "picture": "image", "photo": "image", "links": "link", "reminders": "reminder",
+        "highlights": "highlight",
+    },
+}
+_KNOWN_VALUES = {"is": IS_VALUES, "has": HAS_VALUES}
+#: Prefixes that look like `name:value` and are not filters.
+_NOT_OPERATORS = frozenset({"http", "https", "mailto", "ftp", "file", "www", "tel", "sms", "re", "fwd"})
+_UNKNOWN_OPERATOR = re.compile(r'(?<!\S)([A-Za-z][A-Za-z-]{1,24}):(?=[A-Za-z0-9"])\S*')
 
 #: `before:` and `after:` are dates rather than filters: see `Understood.filters`.
 _DATE_OPERATORS = ("before", "after", "since", "until")
@@ -272,6 +311,42 @@ _PHRASE = re.compile(r'"([^"]+)"')
 #: A word the person does not want. Leading `-`, and only at the start of a
 #: token, so "state-of-the-art" and a negative number keep their hyphens.
 _EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
+
+#: `-tag:work`: an operator the person does not want. Read before the
+#: positive operators and before `_EXCLUDED`, which would otherwise take
+#: `-tag` as an unwanted word and leave `:work` behind as text.
+_NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+
+
+_CATEGORY = re.compile(r'(?<!\S)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+
+
+def _take_categories(text: str) -> tuple[str, list[str]]:
+    """Lift `cat:` and `category:` out of a query: the rest and the names."""
+    names: list[str] = []
+
+    def take(match: re.Match) -> str:
+        raw = match.group(1) if match.group(1) is not None else match.group(2)
+        names.extend(name for name in _split_values(raw) if name not in names)
+        return " "
+
+    return _CATEGORY.sub(take, text), names
+
+
+def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
+    """Lift `-name:value` operators out of a query: the rest and what to drop."""
+    without = _empty_filters()
+
+    def take(match: re.Match) -> str:
+        key = _OPERATOR_NAMES[match.group(1).lower()]
+        raw = match.group(2) if match.group(2) is not None else (match.group(3) or "")
+        for value in _split_values(raw):
+            value = _VALUE_ALIASES.get(key, {}).get(value.lower(), value)
+            if value not in without[key]:
+                without[key].append(value)
+        return " "
+
+    return _NEGATED.sub(take, text), without
 
 
 def _parse_date_operator(value: str) -> date | None:
@@ -336,6 +411,7 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
             return " "
         key = _OPERATOR_NAMES[name]
         for value_part in _split_values(value):
+            value_part = _VALUE_ALIASES.get(key, {}).get(value_part.lower(), value_part)
             if value_part not in filters[key]:
                 filters[key].append(value_part)
         return " "
@@ -350,6 +426,30 @@ def _parse_operators(text: str) -> tuple[str, dict[str, list[str]], list[str], l
     remainder = _EXCLUDED.sub(" ", remainder)
 
     return remainder, filters, phrases, excluded, since, until
+
+
+def operator_notices(remainder: str, filters: dict[str, list[str]]) -> list[str]:
+    """What the query asked for that no filter answers, in words.
+
+    `remainder` is the text with the known operators already taken out, so a
+    `name:` still in it is one the parser does not know. Reported, and left in
+    the text as words, which is what searching it always did.
+    """
+    import difflib
+
+    notices: list[str] = []
+    for key, known in _KNOWN_VALUES.items():
+        for value in filters.get(key, []):
+            if value.lower() in known:
+                continue
+            near = difflib.get_close_matches(value.lower(), known, n=1)
+            hint = f"Did you mean {key}:{near[0]}?" if near else f"Try {', '.join(f'{key}:{word}' for word in known[:4])}."
+            notices.append(f"No filter called {key}:{value}. {hint}")
+    for match in _UNKNOWN_OPERATOR.finditer(remainder):
+        name = match.group(1).lower()
+        if name not in _NOT_OPERATORS:
+            notices.append(f"No filter called {name}:, so it was searched as words. Filters: tag, kind, in, cat, is, has, title, before, after.")
+    return notices
 
 
 def _read_window(remainder: str, today: date, locale: str | None, operator_dates: bool, since: date | None, until: date | None) -> tuple:
@@ -396,9 +496,16 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.
+    text, without = _take_negated(text)
+    text, categories = _take_categories(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
     operator_dates = since is not None or until is not None
+    kept = remainder
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
+    if phrase and recognise.a_topic_phrase(text, phrase):
+        #: "what do I know about Christmas": the holiday is what the notes
+        #: talk about, so it is searched for, not read as a day of writing.
+        remainder, since, until, phrase, soft = kept, None, None, "", False
 
     subject = _strip_scaffolding(remainder)
     #: **A window that has not happened yet filters nothing**: no note was
@@ -416,11 +523,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # range: `kind:document before:2026-01-01` has a constraint to apply, and
     # answering it with "every note in the window" would drop the one thing
     # the person actually typed.
-    time_only = (
-        since is not None
-        and not _has_content(subject)
-        and not (any(filters.values()) or phrases or excluded)
-    )
+    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories)
     return Understood(
         subject=subject if _has_content(subject) else "",
         since=since,
@@ -431,6 +534,9 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         filters=filters,
         phrases=phrases,
         excluded=excluded,
+        without=without,
+        notices=operator_notices(remainder, filters),
+        categories=categories,
     )
 
 
@@ -441,6 +547,11 @@ _FILLER = frozenset(
     something stuff things thing about down i me my have has had did do does
     was were been get got all any show find list tell""".split()
 )
+
+
+def _constrained(filters: dict, without: dict, phrases: list, excluded: list, categories: list) -> bool:
+    """Whether the query named any operator, phrase or unwanted word."""
+    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded) or bool(categories)
 
 
 def _has_content(subject: str) -> bool:
@@ -470,6 +581,31 @@ STOPWORDS = frozenset(
     will with would you your""".split()
 )
 
+#: Words that join a sentence and name nothing, beyond `STOPWORDS` (which
+#: search needs to stay narrow: "about" still matches a note that says it).
+#: A word the composer offers as what a note or a question was ABOUT is never
+#: one of these ("touched on about"); every topic taken from text goes through
+#: `is_topic_word`, so a new caller cannot forget the list.
+FUNCTION_WORDS = frozenset(
+    """about above across after again against all along also although always among another any around
+    because before behind below beside besides between beyond both during each either else enough even
+    ever every few further here however indeed instead just least less like maybe might more most much
+    must neither never none nor not now off often once only onto other others otherwise ought over own
+    perhaps quite rather really same several shall should since some somehow someone something sometimes
+    still such than though through throughout thus too toward towards under unless until upon very via
+    whenever whereas whether whichever while whom whose within without yet""".split()
+)
+
+
+def is_topic_word(term: str) -> bool:
+    """Whether `term` can be what something is about: not a stop word and not
+    a function word."""
+    word = (term or "").lower()
+    return bool(word) and word not in STOPWORDS and word not in FUNCTION_WORDS
+
+
+_LEADING_COMMAND = re.compile(r"^\s*(?:please\s+)?(?:pull|bring)\s+up\b")
+
 
 def search_terms(text: str) -> list[str]:
     """The words worth matching on, in the order they were typed.
@@ -479,5 +615,11 @@ def search_terms(text: str) -> list[str]:
     all-stopword query ("how do I") has no keywords in it, and inventing some
     from the raw words is how a search box answers with the whole notebook.
     """
-    words = [w for w in re.split(r"\W+", (text or "").lower()) if w]
-    return [w for w in words if len(w) > 1 and w not in STOPWORDS]
+    #: "pull up my uni notes": the command is not a word to find ("up" is in a
+    #: dozen notes); only at the start, so "look up" inside a subject stays.
+    words = [w for w in re.split(r"\W+", _LEADING_COMMAND.sub("", (text or "").lower())) if w]
+    terms = [w for w in words if len(w) > 1 and w not in STOPWORDS]
+    #: "what do I know about Lisbon": "about" introduces the subject and is not
+    #: part of it, so it matched every note that merely says "about" (audit
+    #: 1030 Z41). Alone, it is still a word to look for.
+    return [w for w in terms if w != "about"] if len(terms) > 1 and "about" in terms else terms

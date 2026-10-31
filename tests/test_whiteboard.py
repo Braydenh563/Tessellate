@@ -393,6 +393,9 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
     assert state["objects"][0]["data"] == {
         "content": "Meeting notes", "color": "#ffcc00", "font_size": 18, "url": None,
         "bg": None, "border_color": None,
+        # Added with the Format panel's fill and line transparency; None until set.
+        "bg_alpha": None,
+        "line_alpha": None,
         # Added with the Format panel's line and letter spacing (wb3, INBOX 1355).
         "line_height": None,
         "letter_spacing": None,
@@ -454,7 +457,7 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         # And labels under a topic (canvasdepth2).
         "labels": None,
         # And reaction stamps and votes on a topic (canvasdepth2).
-        "stamps": None,
+        "stamps": None, "stamped": None,
         "spine": None,
         # And with a topic's fill (one topic, or its whole branch).
         "fill": None,
@@ -467,6 +470,8 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "edge_bend": None,
         "edge_slide": None,
         "image": None,
+        # And with the live Mermaid diagram object (INBOX 1451).
+        "mermaid": None,
         # And with a topic's place among its siblings (INBOX 445).
         "order": None,
         # And with a board item held in place (WHITEBOARD_PLAN decision 15).
@@ -510,6 +515,12 @@ def test_a_text_object_round_trips_with_its_own_style(board_client):
         "fold": None,
         # Added with the reference node caption (INBOX 904 B38); None until set.
         "caption": None,
+        # Added with a picture's or text box's own keep-proportions switch (INBOX 1313, plan row 5).
+        "keep_ratio": None,
+        # And with a picture's crop to a shape (INBOX 1313, plan row 13).
+        "crop": None,
+        # And with a board item's voting dots (INBOX 1313, plan row 14).
+        "votes": None,
     }
 
     moved = board_client.put(
@@ -1154,3 +1165,33 @@ def test_a_comment_keeps_its_edit_its_resolve_and_its_reply(board_client, sessio
     assert next(o for o in state["objects"] if o["id"] == made["id"])["data"]["comments"] == thread
     bad = [{"id": "c1", "text": "x", "at": "", "reply_to": "y" * 41}]
     assert board_client.put(url, json={"entry_id": note.id, "comments": bad}).status_code == 422
+
+
+def test_an_objects_keep_proportions_switch_is_kept(board_client):
+    """It was dropped silently by the schema for every object kind (INBOX 1313):
+    the switch flipped, the save succeeded, and it came back missing."""
+    made = board_client.post(
+        "/whiteboard/objects",
+        json={"kind": "image", "data": {"url": "/media/abc123.png", "keep_ratio": True}},
+    )
+    assert made.status_code == 201, made.text
+    assert made.json()["data"]["keep_ratio"] is True
+    state = board_client.get("/whiteboard/").json()
+    assert state["objects"][0]["data"]["keep_ratio"] is True
+
+
+def test_a_pictures_crop_shape_is_kept_and_only_a_known_one(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "hexagon"}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["crop"] == "hexagon"
+    refused = board_client.post("/whiteboard/objects", json={"kind": "image", "data": {"url": "/media/abc123.png", "crop": "url(x)"}})
+    assert refused.status_code == 422
+
+
+def test_a_board_items_votes_are_kept_and_bounded(board_client):
+    made = board_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "idea", "votes": 3}})
+    assert made.status_code == 201, made.text
+    assert board_client.get("/whiteboard/").json()["objects"][0]["data"]["votes"] == 3
+    for bad in (0, 100, -1):
+        refused = board_client.post("/whiteboard/objects", json={"kind": "text", "data": {"content": "idea", "votes": bad}})
+        assert refused.status_code == 422, bad

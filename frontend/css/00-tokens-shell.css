@@ -321,7 +321,7 @@ select optgroup {
   --accent-soft: rgba(79, 109, 245, 0.14);
   /* Syntax highlighting in the file viewer (REDESIGN.md §R7.1 item 3). Its
      own token rather than `--accent`, and that is not a style preference: the
-     accent is *user-chosen* (Settings → Appearance writes any hex onto
+     accent is *user-chosen* (Settings, Appearance writes any hex onto
      `--accent`), so a keyword painted with it can be set to a colour with no
      contrast against the code behind it. Measured on a profile whose accent
      was `#cdd5e0`, which is what caught this. Strings, numbers and comments
@@ -406,7 +406,7 @@ select optgroup {
   --field-inset: rgba(31, 36, 48, 0.1);
   /* ============ SURFACE TIERS, and the border budget ========================
      Three depths, and a rule about which of them may draw a line. Measured
-     before this existed (Settings → Tools it can use): the modal drew a
+     before this existed (Settings, Tools it can use): the modal drew a
      hairline, the group inside it drew a hairline, and all 54 rows inside
      the group drew one more -- three nested boxes, each saying "this is a
      thing" with the same 1px line, so none of them said anything. Every
@@ -429,7 +429,7 @@ select optgroup {
   /* The specular top edge that reads as light catching the lip of a glass
      panel. Kept low in the light theme for the reason the sheen gradient
      below already records: white on near-white adds nothing. */
-  /* User-tunable in Settings → Appearance (set inline on <html> by JS). */
+  /* User-tunable in Settings, Appearance (set inline on <html> by JS). */
   /* --- the type scale (§35L) ------------------------------------------------
      Ten steps, extracted the same way the spacing scale was. This file had
      thirty-seven distinct font sizes, nine of them between 0.74rem and
@@ -1303,7 +1303,7 @@ header#top-bar {
 header#top-bar h1 {
   margin: 0;
   font-size: var(--text-h3);
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
   white-space: nowrap;
   /* Never shrinks. `flex: 0 1 auto` with `min-width: 0` let the box get
      narrower than the text while `white-space: nowrap` kept the text at full
@@ -1632,7 +1632,7 @@ header#top-bar.tabs-wrapped #tab-bar {
      the header on a phone it hangs over the tab's own head, so the next
      control Tab reached sat under an invisible popup that took its clicks. */
   pointer-events: none;
-  transition: opacity var(--motion-fast) var(--ease-out), visibility var(--motion-fast) var(--ease-out);
+  transition: opacity var(--ui-fast) var(--ease-out), visibility var(--ui-fast) var(--ease-out);
 }
 .ai-status-wrap:hover .ai-status-popup,
 .ai-status:focus-visible+.ai-status-popup,
@@ -3170,7 +3170,7 @@ header#top-bar.tabs-wrapped #tab-bar {
    child: nothing overlaps the page, no tab needs padding reserved for it, and
    a change to the bar's height cannot desynchronise from a padding constant
    somewhere else. A fixed bar would need all three. */
-/* A status-bar slot the user has switched off (Settings → Appearance →
+/* A status-bar slot the user has switched off (Settings, Appearance →
    Status bar). Its own class rather than `.hidden`, because one of these
    slots (`#status-task`) is already shown and hidden by `.hidden` from a
    different code path: sharing the class would mean a running job could
@@ -3883,7 +3883,7 @@ header#top-bar.tabs-wrapped #tab-bar {
    glass itself is off, `[data-glass="off"]`'s own fallback rule already
    overrides `.card`'s background/box-shadow wholesale, and this must never
    fight that back on, and off by default even while glass is on, toggled
-   separately in Settings → Appearance (`#glass-sheen-toggle`), auto-enabled
+   separately in Settings, Appearance (`#glass-sheen-toggle`), auto-enabled
    the moment glass itself is switched on from off, so turning glassmorphism
    on gets the full look without a second trip to a checkbox, while still
    leaving that checkbox able to turn just the sheen back off on its own.

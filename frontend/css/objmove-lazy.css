@@ -1,0 +1,123 @@
+/* objmove-lazy.css: the drag ghost, the reorder gap, drop outlines and the
+   tray (INBOX 1467). Lazy with obj-ref.js. Motion is on the --ui-* tokens, so
+   the Interface animations switch is the only thing that stills it. */
+
+.obj-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: min(16rem, 60vw);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--modal-bg-opaque);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  pointer-events: none;
+  will-change: transform;
+}
+.obj-ghost span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The slot a dragged card would land in: the card's own size, dashed. */
+.obj-gap {
+  box-sizing: border-box;
+  min-height: var(--space-6);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  list-style: none;
+}
+/* A notes list's own `#entry-list li` rule outranks the class, so the gap there
+   is the same dashed slot as in every other list. */
+#entry-list > li.obj-gap {
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+}
+/* The hold before a drag is over: the card can be taken now. */
+.obj-armed,
+.obj-armed * {
+  cursor: grab;
+}
+/* The card being moved is hidden by the script (an inline display), so no rule
+   here has to out-shout the list's own. */
+
+html.obj-dragging body * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* A place that would take the card being carried. */
+html.obj-dragging .obj-target {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* The tray: a count on the status bar's control, and its panel. */
+#status-tray.has-count {
+  aspect-ratio: auto;
+}
+#status-tray .status-tray-count {
+  margin-inline-start: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.obj-tray {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 16rem;
+  max-width: min(24rem, 90vw);
+}
+.obj-tray.hidden {
+  display: none;
+}
+.obj-tray-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.obj-tray-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-block-size: 20rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.obj-tray-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.obj-tray-use {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.obj-tray-empty {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* The one line over a list in Custom order: how to arrange it. */
+.obj-order-hint {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+}

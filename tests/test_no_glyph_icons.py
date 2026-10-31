@@ -19,7 +19,7 @@ Seven download buttons said "⬇ Download" while the rest of the app said
 fails the build if either comes back.
 
 **What is not banned, and why the list is short.** An arrow in a sentence
-("Settings → Models") is a breadcrumb, which is typography; an arrow key in
+("Settings, Models") is a breadcrumb, which is typography; an arrow key in
 a shortcut list is the key's own name. Both stay. What is banned is a glyph
 that stands where an icon belongs, so the test looks only at strings that are
 *labels*: a string that is nothing but glyphs and spaces, or one whose first

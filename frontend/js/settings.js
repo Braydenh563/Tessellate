@@ -120,6 +120,10 @@ function showSettingsSection(name) {
   if (name === "appearance") nameMarkBuddyHint(true);
   //: Help's tour buttons are drawn by tour.js, a lazy bundle.
   if (name === "help") renderTourReplay();
+  //: Help's topics (about 2,100 nodes, from the Guide's own table, settings-find.js) are
+  //: drawn when Help is shown or Settings is searched (filterSettings), not on every open.
+  //: settings-find.js is awaited by openSettingsModal; `?.` covers a bundle that failed to load.
+  if (name === "help") window.renderHelpTopics?.();
   //: Reported: reopening Settings lands on Models "but the scroll doesn't
   //: reset", so the first section opened halfway down. The section's own
   //: scrolling ancestor goes back to the top whenever the section changes.
@@ -304,6 +308,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
   $("pref-update-check").checked = Boolean(prefsCache?.update_check_enabled);
   $("pref-auto-update").checked = Boolean(prefsCache?.auto_update_enabled);
+  $("pref-update-bar").checked = prefsCache?.show_update_bar !== false;
   $("pref-update-channel-main").checked = prefsCache?.update_channel === "main";
   $("pref-update-beta").checked = prefsCache?.update_beta === true;
   $("update-check-status").textContent = "";
@@ -318,6 +323,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   $("desktop-tray-row")?.classList.toggle("hidden", !isDesktop);
   $("desktop-tray-hint")?.classList.toggle("hidden", !isDesktop);
   $("desktop-advanced-fold")?.classList.toggle("hidden", !isDesktop);
+  $("desktop-companion-row")?.classList.toggle("hidden", !isDesktop);
   // Same reasoning as the tray/console rows above: /system/restart can only
   // ever do something in the packaged desktop app on Windows specifically
   // (the one platform _spawn_desktop knows how to relaunch), not desktop in
@@ -342,6 +348,8 @@ async function openSettingsModal(section = "models", scrollToId = null) {
     $("pref-close-to-tray").checked = prefsCache?.close_to_tray ?? true;
     //: Off unless chosen: a second launch brings the open window forward.
     $("pref-new-window-on-launch").checked = Boolean(prefsCache?.new_window_on_launch);
+    //: Off unless chosen: the corner companion only shows once it is turned on.
+    $("pref-desktop-companion").checked = Boolean(prefsCache?.desktop_companion);
   }
   // Rebuilt each open rather than once at startup: the list reflects saved
   // preferences, and those can change from another window or a restore.
@@ -350,8 +358,6 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   //: cards arrive with the first open (app.js `LAZY_MODULES.settingsUi`);
   //: every call into them is behind a `typeof` guard.
   await ensureModule("settingsUi");
-  //: Settings, Help's topics, from the Guide's own table (settings-find.js).
-  if (typeof renderHelpTopics === "function") renderHelpTopics();
   if (typeof renderCredits === "function") renderCredits();
   showSettingsSection(section);
   // Re-read every open, not cached: the panel shows what the *currently
@@ -431,7 +437,7 @@ async function openSettingsModal(section = "models", scrollToId = null) {
   }
 }
 
-// CHANGELOG.md, rendered in Settings → About (§36E). Loaded once per session
+// CHANGELOG.md, rendered in Settings, About (§36E). Loaded once per session
 // and only when the settings panel is opened, it is several thousand words
 // and nobody is waiting for it at startup.
 let changelogLoaded = false;
@@ -592,6 +598,12 @@ function filterSettings(term) {
     return;
   }
 
+  //: The topics are findable settings too: draw them on the first query, then ask again.
+  if ($("help-topics")?.hasAttribute("aria-busy")) {
+    window.renderHelpTopics?.()?.then(() => {
+      if ($("settings-search").value.trim().toLowerCase() === query) filterSettings(query);
+    });
+  }
   let matches = 0;
   //: Each word, or a word meaning the same thing (settings-find.js
   //: `settingQueryAlts`, once that file has loaded): "night" keeps the
@@ -621,9 +633,9 @@ function filterSettings(term) {
   //: The settings themselves, under the field (settings-find.js).
   const settingsFound = typeof renderSettingResults === "function" ? renderSettingResults(query) : 0;
   count.textContent = settingsFound
-    ? `${settingsFound} setting${settingsFound === 1 ? "" : "s"} in ${matches} section${matches === 1 ? "" : "s"}`
+    ? `${nounCount(settingsFound, "setting")} in ${nounCount(matches, "section")}`
     : matches
-      ? `${matches} section${matches === 1 ? "" : "s"}`
+      ? nounCount(matches, "section")
       : "Nothing matches that";
   // The first match is shown rather than leaving the pane on what it was
   // (dog2 item 18: "phone" listed results over the Models pane).
@@ -1002,7 +1014,7 @@ function renderLogErrorBadge() {
     link.appendChild(badge);
   }
   badge.textContent = logErrorsSinceOpened > 99 ? "99+" : String(logErrorsSinceOpened);
-  badge.title = `${logErrorsSinceOpened} error${logErrorsSinceOpened === 1 ? "" : "s"} since you last looked at the logs, click to show just those`;
+  badge.title = `${nounCount(logErrorsSinceOpened, "error")} since you last looked at the logs, click to show just those`;
 }
 
 // NDJSON over fetch rather than an EventSource, for one blunt reason:
@@ -1088,12 +1100,18 @@ async function renderLogs() {
   //: its rows already there and `showSkeletons` leaves them alone.
   showSkeletons($("log-list"), 4, "li");
   const [records, stats] = await Promise.all([
-    apiJson("/logs?limit=500").catch(() => []),
+    apiJson("/logs?limit=500").catch(() => null),
     apiJson("/logs/stats?limit=500").catch(() => null),
   ]);
   clearSkeletons($("log-list"));
-  logStreamCursor = records.length ? records[records.length - 1].seq || 0 : 0;
-  logRecords = [...records.map(serverLogRecord), ...browserLogRecords()];
+  if (!records) {
+    const note = $("logs-dropped");
+    note.textContent = "Could not load the server log. The records from this browser are shown.";
+    note.classList.remove("hidden");
+  }
+  const served = records || [];
+  logStreamCursor = served.length ? served[served.length - 1].seq || 0 : 0;
+  logRecords = [...served.map(serverLogRecord), ...browserLogRecords()];
   sortLogRecords();
   renderLogGap(stats);
   renderActiveLogView();
@@ -1122,7 +1140,7 @@ async function copyLogs() {
   }
   const text = shown.map(logRecordText).join("\n");
   if (await copyToClipboard(text)) {
-    toast(`Copied ${shown.length} record${shown.length === 1 ? "" : "s"}.`);
+    toast(`Copied ${nounCount(shown.length, "record")}.`);
   }
 }
 
@@ -1493,7 +1511,7 @@ const APPEARANCE_DEFAULTS = {
   // from whether it's on at all.
   "glass-sheen-strength": "100",
   zoom: "100", // §37E: interface-wide scale, percent: multiplies the root font-size
-  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium
+  "bg-style": "aurora", // aurora | constellation | waves | bubbles | mesh | microbes | mycelium | dusk | ripples | fireflies | rain | wander | drift
   palette: "default", // which curated colour set; themes select one
   // No accent by default: the palette supplies the colour until you pick one
   // yourself. Named here so appearancePref("accent") has a defined answer
@@ -1630,14 +1648,15 @@ const THEME_PRESETS = {
   },
 };
 
-// The two colours a theme card shows: the page it sits on and the accent it
-// picks out. Read from the palette itself so a palette tweak can never leave
-// the theme cards advertising a colour the app no longer uses.
+// The four colours a theme tile shows as overlapping dots (INBOX 1478): the
+// page, its card, the accent and the ink. Read from the palette itself so a
+// palette tweak can never leave the tiles advertising a colour the app no
+// longer uses; the ink is the one neutral a palette does not carry.
 function themeSwatch(preset) {
   const palette = PALETTES.find((p) => p.id === preset.values.palette) || PALETTES[0];
   const isDark = document.documentElement.dataset.mode === "dark";
   const set = isDark ? palette.dark : palette.light;
-  return [set.page, set.accent];
+  return [set.page, set.card, set.accent, isDark ? "#ecebe8" : "#1c1c1a"];
 }
 
 //: A theme under the pointer in Settings (settings-controls.js previewTheme):
@@ -2448,10 +2467,12 @@ function applyThemeChoice(choice, remember = true) {
   repaintThemeAtOnce(() => {
     if (choice === "system") delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = choice;
-    // Clear any custom background colour when explicitly switching themes,
-    // otherwise the user thinks the theme toggle is broken because the custom
-    // colour is overriding the new theme's native background.
-    if (remember) {
+    // A single hand-picked background is one colour in both modes, so it is
+    // cleared when switching themes: it would override the new theme's native
+    // background and the toggle would look broken. A scheme (`page-bg-dark`
+    // set) is a pair made for both modes and stays: `applyResolvedMode`
+    // picks the one for the mode now showing (audit 1028 S10).
+    if (remember && !prefs.get("page-bg-dark", null)) {
       prefs.remove("page-bg");
       prefs.remove("page-bg-dark");
       applyPageBackground(null);
@@ -2487,10 +2508,13 @@ function renderThemePresets() {
     button.setAttribute("aria-pressed", String(name === active));
     const swatch = document.createElement("span");
     swatch.className = "theme-swatch";
-    // Two bands: the page it sits on and the accent it picks out.
-    const [page, accent] = themeSwatch(preset);
-    swatch.style.background = page;
-    swatch.style.borderBottom = `6px solid ${accent}`;
+    // Four overlapping dots: page, card, accent, ink.
+    for (const colour of themeSwatch(preset)) {
+      const dot = document.createElement("i");
+      dot.className = "theme-dot";
+      dot.style.background = colour;
+      swatch.appendChild(dot);
+    }
     const caption = document.createElement("span");
     caption.className = "theme-card-name";
     caption.textContent = preset.label;
@@ -2516,7 +2540,7 @@ function renderThemePresets() {
     note.textContent = `${THEME_PRESETS[active].label} is showing exactly as designed.`;
   } else {
     note.textContent =
-      `${overrides.length} setting${overrides.length === 1 ? "" : "s"} you changed ` +
+      `${nounCount(overrides.length, "setting")} you changed ` +
       `(${overrides.join(", ")}) ${overrides.length === 1 ? "is" : "are"} on top of ` +
       (active ? `the ${THEME_PRESETS[active].label} theme.` : "the default look.");
   }
@@ -2527,8 +2551,13 @@ function renderThemePresets() {
 //: The accent the theme wears with no accent chosen: read with the choice
 //: (the data-accent rule, an inline custom colour) lifted for one
 //: synchronous style read, so nothing paints in between.
+//: Kept for as long as nothing on the root but the accent itself, and the
+//: custom CSS, has changed: lifting the choice and putting it back is two
+//: whole-page style recalculations, once per Appearance open (the lag log).
 function themeDefaultAccent() {
   const root = document.documentElement;
+  const key = [...root.attributes].filter((a) => a.name !== "data-accent").map((a) => `${a.name}=${a.value.replace(/--accent:[^;]*;?/g, "")}`).join("|") + prefs.get("custom-css", "");
+  if (themeDefaultAccent.kept?.key === key) return themeDefaultAccent.kept.value;
   const chosen = root.dataset.accent;
   const inline = root.style.getPropertyValue("--accent");
   const priority = root.style.getPropertyPriority("--accent");
@@ -2537,6 +2566,7 @@ function themeDefaultAccent() {
   const value = getComputedStyle(root).getPropertyValue("--accent").trim();
   if (chosen !== undefined) root.dataset.accent = chosen;
   if (inline) root.style.setProperty("--accent", inline, priority);
+  themeDefaultAccent.kept = { key, value };
   return value;
 }
 
@@ -2567,10 +2597,13 @@ function renderAppearance() {
   // Seed the harmony picker from whatever accent is showing, so "Apply" on an
   // untouched picker keeps the colour you already have rather than jumping to
   // an arbitrary default.
-  const showing = getComputedStyle(document.documentElement)
-    .getPropertyValue("--accent")
-    .trim();
-  if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  //: Seeded a timer past the frame: the read settles the style of a page the
+  //: press has just rewritten, and was the press's largest cost (the lag
+  //: log: 295ms of a 376ms press, forced).
+  afterFrames(() => setTimeout(() => {
+    const showing = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+    if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
+  }), 1);
   $("contrast-toggle").checked = contrastOn();
   $("reduce-motion-toggle").checked = appearancePref("motion") === "reduced";
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
@@ -2583,7 +2616,8 @@ function renderAppearance() {
   $("avatar-buddy").value = appearancePref("avatar-buddy");
   mountBuddyCustom();
   mountBuddyActivities();
-  mountBuddyPresets();
+  //: The menu's file reaches into the faces at load, so it waits for them.
+  afterCharacters(mountBuddyPresets);
   try {
     $("avatar-buddy-motion").value = prefs.get("avatar-buddy-motion", null) || "follow";
   } catch (e) {
@@ -2922,7 +2956,7 @@ function stopBgArt() {
 
 // Which generative background to paint. Persisted like the other
 // appearance prefs (user asked for more variety of art).
-const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain"];
+const BG_ART_STYLES = ["aurora", "constellation", "waves", "bubbles", "mesh", "microbes", "mycelium", "dusk", "ripples", "fireflies", "rain", "wander", "drift"];
 //: The cards (Brief 95): a name and one line each, shown lightest first by
 //: their measured cost (`BG_ART_COST`, bg-art.js).
 const BG_ART_INFO = {
@@ -2937,6 +2971,8 @@ const BG_ART_INFO = {
   ripples: ["Ripples", "Rings on still water"],
   fireflies: ["Fireflies", "Soft lights wandering"],
   rain: ["Rain", "Fine streaks falling"],
+  wander: ["Wander", "Pen strokes that walk"],
+  drift: ["Drift", "Slow colour noise"],
 };
 
 //: Built once, then only marked; the previews are drawn when the cards are
@@ -3103,6 +3139,7 @@ function toggleBgArt(on) {
 }
 
 $("theme-btn").addEventListener("click", toggleTheme);
+$("theme-btn").addEventListener("contextmenu", (e) => { e.preventDefault(); openAppearancePanel(); });
 //: The one switch for every box's suggestions (Brief 86, CHAT_PLAN decision
 //: 69), kept on this device: absent reads as on.
 $("pref-search-suggest")?.addEventListener("change", (event) => {
@@ -3981,7 +4018,7 @@ async function renderLearnedSwitches() {
   if (banner) {
     banner.classList.toggle("hidden", !paused);
     banner.textContent = paused
-      ? `Paused. ${learnedTotal} thing${learnedTotal === 1 ? "" : "s"} already worked out are kept and stay editable below.`
+      ? `Paused. ${nounCount(learnedTotal, "thing")} already worked out are kept and stay editable below.`
       : "";
   }
 }
@@ -4310,8 +4347,8 @@ async function learnedRunNow() {
       const stopped = result.stopped_reason === "budget" ? ", stopped at this run's budget" : "";
       if (note) {
         note.textContent = derived
-          ? `Read ${scanned} note${scanned === 1 ? "" : "s"}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
-          : `Read ${scanned} note${scanned === 1 ? "" : "s"}, nothing new${stopped}.`;
+          ? `Read ${nounCount(scanned, "note")}, worked out ${derived} new thing${derived === 1 ? "" : "s"}${stopped}.`
+          : `Read ${nounCount(scanned, "note")}, nothing new${stopped}.`;
       }
       if (derived) renderLearnedList();
     }
@@ -4373,9 +4410,9 @@ function wireLearnedSection() {
 function learnedFromYouText(sum) {
   if (!sum || (!sum.corrections && !sum.notes)) return "";
   const n = Number(sum.corrections) || 0;
-  const head = `Learned from you: ${n} correction${n === 1 ? "" : "s"}.`;
+  const head = `Learned from you: ${nounCount(n, "correction")}.`;
   if (!sum.notes || sum.accuracy == null) return `${head} No notes filed by Atlas yet.`;
-  const over = `over the last ${sum.notes} note${sum.notes === 1 ? "" : "s"} it filed`;
+  const over = `over the last ${nounCount(sum.notes, "note")} it filed`;
   if (sum.earlier != null && sum.later != null) {
     return `${head} Filing accuracy ${sum.earlier}% to ${sum.later}% ${over}.`;
   }
@@ -4595,7 +4632,7 @@ async function refreshJobRuns() {
   if (running && authToken()) jobRunsTimer = setTimeout(refreshJobRuns, 2000);
 }
 
-// Settings → Background tasks → Background jobs: every kind in one column,
+// Settings, Background tasks, Background jobs: every kind in one column,
 // the ones that have never run included, so the absence of a job reads as
 // "not run yet" rather than "this app cannot do that".
 function renderJobOverview() {

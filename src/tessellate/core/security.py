@@ -33,7 +33,7 @@ from starlette.responses import JSONResponse
 # "localhost:8000" and a desktop shell that loaded "127.0.0.1:8000" are the
 # same user on the same notebook, and neither should be told they are
 # cross-origin.
-_LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 
 # Methods a browser will send cross-origin without a preflight, and which
 # therefore reach the app before CORS has any say. GET and HEAD are here too
@@ -72,7 +72,7 @@ def _is_same_site(candidate: str, host_header: str | None, scheme: str) -> bool:
         return True
     # Loopback aliases of each other on the same port: 127.0.0.1 and localhost
     # are one machine, and which one appears depends on what the user typed.
-    if mine is not None and host in _LOOPBACK_HOSTS and mine[1] in _LOOPBACK_HOSTS:
+    if mine is not None and host in LOOPBACK_HOSTS and mine[1] in LOOPBACK_HOSTS:
         return port == mine[2]
     #: Behind a reverse proxy that ends TLS the app sees http and the page's
     #: Origin is https on 443: the same name the operator listed in
@@ -185,6 +185,15 @@ class HostCheckMiddleware:
 #: the routes' own limits stay the ones a person meets.
 SMALL_BODY_BYTES = 1024 * 1024
 LARGE_BODY_BYTES = 320 * 1024 * 1024
+#: **A body a route parses whole gets the JSON cap** (audit 1028 K4: any
+#: signed-in device could POST 300 MB of JSON and the server held all of it).
+#: FastAPI reads a JSON body, or one with no type or a wrong one, into memory
+#: before validation, so only an upload's types keep the large cap, and a
+#: file's text sent to `/files/` as base64 (`bounds.FILE_BASE64_MAX`). The
+#: largest other JSON is a chat turn's history, 40 turns of 50,000 characters.
+JSON_BODY_BYTES = 16 * 1024 * 1024
+_UPLOAD_TYPES = ("multipart/form-data", "application/octet-stream", "image/", "audio/", "video/")
+_FILE_TEXT_PATHS = "/files/"
 #: Open to everyone, so always the small cap, whatever token is sent.
 _ALWAYS_SMALL = ("/auth/", "/logs/client")
 
@@ -273,11 +282,18 @@ def _body_limit(path: str, headers: Headers) -> int:
         return SMALL_BODY_BYTES
     token = headers.get("x-auth-token")
     if token and _session_is_live(token):
-        return LARGE_BODY_BYTES
+        return _signed_in_limit(path, headers)
     # No session shown. Before a password exists there is nothing to sign in
     # with and every route is open on this computer (`require_unlock`), so the
-    # large cap; after, the small one.
-    return SMALL_BODY_BYTES if _notebook_has_password() else LARGE_BODY_BYTES
+    # signed-in caps; after, the small one.
+    return SMALL_BODY_BYTES if _notebook_has_password() else _signed_in_limit(path, headers)
+
+
+def _signed_in_limit(path: str, headers: Headers) -> int:
+    kind = (headers.get("content-type") or "").lower()
+    if kind.startswith(_UPLOAD_TYPES) or path.startswith(_FILE_TEXT_PATHS):
+        return LARGE_BODY_BYTES
+    return JSON_BODY_BYTES
 
 
 #: The unlock gate's two answers, registered by `api/routes_auth.py` when it
@@ -645,6 +661,11 @@ class SecurityHeadersMiddleware:
                 if scope.get("scheme") == "https":
                     headers.setdefault("Strict-Transport-Security", "max-age=15552000")
                 headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+                # API answers hold note text: a shared phone's back/forward
+                # cache or a proxy must not keep them after lock (audit 1028
+                # K12). Assets are hash-stamped and keep their own caching.
+                if headers.get("content-type", "").startswith("application/json"):
+                    headers.setdefault("Cache-Control", "no-store")
             await send(message)
 
         await self.app(scope, receive, stamped)
@@ -733,7 +754,7 @@ def _backend_addresses(host: str) -> list:
     # times a second, to be told what it means on every machine, is a round
     # trip for nothing: and on a host with a slow or misconfigured resolver it
     # is a round trip for nothing that takes seconds.
-    if host.lower() in _LOOPBACK_HOSTS:
+    if host.lower() in LOOPBACK_HOSTS:
         return [ipaddress.ip_address("127.0.0.1")]
 
     # A **daemon thread**, not a ThreadPoolExecutor, and the difference is the
@@ -840,7 +861,7 @@ def check_backend_url(url: str, local_only: bool = False) -> tuple[bool, str, bo
         # the normal order. Treated as non-local, which is the safe direction:
         # under the lock an unverifiable name is refused rather than trusted,
         # and without it the honest warning is the one that shows.
-        unresolved_local = host in _LOOPBACK_HOSTS
+        unresolved_local = host in LOOPBACK_HOSTS
         if local_only and not unresolved_local:
             return False, _LOCKED_REASON.format(host=host), False
         return True, "", unresolved_local

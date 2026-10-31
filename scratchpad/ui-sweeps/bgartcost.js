@@ -40,7 +40,7 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 
 const PW = 'testpassword123';
 const BASE = process.env.BASE || 'http://127.0.0.1:8797';
-const STYLES = (process.env.STYLES || 'aurora,constellation,waves,bubbles,mesh,microbes,mycelium').split(',');
+const STYLES = (process.env.STYLES || 'aurora,constellation,waves,bubbles,mesh,microbes,mycelium,dusk,ripples,fireflies,rain').split(',');
 const THEMES = (process.env.THEMES || 'light,dark').split(',');
 const SECONDS = Number(process.env.SECONDS || 5);
 const ALLOC_SECONDS = Number(process.env.ALLOC_SECONDS ?? 10);
@@ -53,6 +53,9 @@ async function boot(browser, prefs) {
   await ctx.addInitScript((p) => {
     try {
       localStorage.setItem('onboardingDone', '1');
+      // A marked browser keeps its own values over the notebook's copy
+      // (seedUiStateFromServer), so a fresh data dir does not reset the style.
+      localStorage.setItem('ui-synced', '{}');
       // CPU=1: the art's canvas is CPU-backed, so the raster is timed on
       // this thread as a machine without GPU canvas would do it, instead
       // of timing a GPU readback (which is what the one-pixel read costs
@@ -213,6 +216,67 @@ async function browserCpu(page, pid, secs) {
   return Math.round(((b - a) * 10) / secs); // 100 ticks a second
 }
 
+// Resident memory of every process under `root` together, in MB.
+function treeRss(root) {
+  const fs = require('fs');
+  const kids = new Map();
+  for (const d of fs.readdirSync('/proc')) {
+    if (!/^\d+$/.test(d)) continue;
+    try {
+      const st = fs.readFileSync(`/proc/${d}/stat`, 'utf8');
+      const f = st.slice(st.lastIndexOf(')') + 2).split(' ');
+      kids.set(Number(d), { ppid: Number(f[1]), pages: Number(f[21]) });
+    } catch (e) { /* gone */ }
+  }
+  let total = 0;
+  const walk = (pid) => {
+    const me = kids.get(pid);
+    if (me && pid !== root) total += me.pages;
+    for (const [k, v] of kids) if (v.ppid === pid) walk(k);
+  };
+  walk(root);
+  return Math.round((total * 4096) / 1048576);
+}
+
+// PAUSE=1 (INBOX 1436): what a paused style costs. A hidden tab, read at
+// once, three seconds in and after PAUSE_WAIT seconds (default 24, past the
+// 20 s at which the canvas becomes a picture): canvases and pictures in the
+// DOM, art rAF callbacks in two seconds, JS heap, browser RSS, then the
+// resume. `STYLES`, `THEMES` and `CPU` apply as above.
+async function pauseRun(browser, theme, style) {
+  const { ctx, page, errors } = await boot(browser, {
+    theme, bgArt: 'on', 'bg-style': style, 'bg-motion': 'moving', 'bg-intensity': INTENSITY,
+    __cpu: process.env.CPU === '1',
+  });
+  const pid = process.pid;
+  const snap = async () => ({
+    ...(await page.evaluate(() => ({
+      canvases: document.querySelectorAll('canvas.bg-art-canvas').length,
+      stills: document.querySelectorAll('.bg-art-still').length,
+      heap: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null,
+    }))),
+    raf: (await rafCount(page)).split(' ')[0],
+    rss: treeRss(pid),
+  });
+  const hide = (h) => page.evaluate((v) => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => v });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, h);
+  const fmt = (o) => `canvas ${o.canvases} still ${o.stills} rAF ${o.raf}/2s heap ${o.heap}MB rss ${o.rss}MB`;
+  const moving = await snap();
+  await hide(true);
+  await page.waitForTimeout(1500);
+  const early = await snap();
+  await page.waitForTimeout(Number(process.env.PAUSE_WAIT || 24) * 1000);
+  const long = await snap();
+  await hide(false);
+  await page.waitForTimeout(1500);
+  const back = await snap();
+  console.log(`${theme.padEnd(5)} ${style.padEnd(13)} moving: ${fmt(moving)} | paused 3s: ${fmt(early)} | paused long: ${fmt(long)} | resumed: ${fmt(back)}`
+    + (errors.length ? '  ERRORS: ' + errors.join(' | ') : ''));
+  await ctx.close();
+}
+
 async function throttle(page) {
   const rate = Number(process.env.THROTTLE || 1);
   if (rate <= 1) return;
@@ -232,6 +296,11 @@ async function rafCount(page) {
   // Playwright spawns the browser from this process, so the browser's
   // processes are this one's descendants (this one's own ticks excluded).
   const pid = process.pid;
+  if (process.env.PAUSE === '1') {
+    for (const theme of THEMES) for (const style of STYLES) await pauseRun(browser, theme, style);
+    await browser.close();
+    return;
+  }
   if (STILL) {
     // The baseline: the app on its own still requests animation frames and
     // allocates (the header emblem is a p5 sketch too, which is why p5's

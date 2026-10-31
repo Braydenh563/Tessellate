@@ -201,12 +201,18 @@ const REVEAL_TARGETS = {
   "notes-questions": { tab: "notes", open: () => showNotesSection("questions"), el: "questions", flash: false },
   "library-bin": {
     tab: "library",
+    //: The bin itself, not the Library home with a box ticked (audit 1031
+    //: N49): the Bin kind is chosen, and the address says so (`#/library/bin`).
     open: () => {
       const box = $("library-show-binned");
       if (box && !box.checked) {
         box.checked = true;
         box.dispatchEvent(new Event("change", { bubbles: true }));
       }
+      libraryKind = "archived";
+      renderLibraryFilters();
+      renderLibrary();
+      recordTabVisit("library", "library-bin");
     },
     el: "library-filter-menu",
   },
@@ -292,6 +298,7 @@ const REVEAL_TARGETS = {
   "chat-answers": { tab: "chat", el: "chat-input", focus: true, flash: false },
   "finder": { open: () => openFinder(), el: "finder-input", focus: true, flash: false },
   "chat-new": { tab: "chat", open: () => newChatConversation(), el: "chat-input", focus: true, flash: false },
+  "chat-private": { tab: "chat", open: () => chatPrivateStart(), el: "chat-input", focus: true, flash: false },
   "chat-attach": { tab: "chat", open: () => $("attach-note").click(), el: "note-picker-panel" },
   "chat-conversations": { tab: "chat", el: "conversation-list", fallback: "chat-sidebar" },
   "chat-agent-mode": { tab: "chat", sel: '#chat-mode-seg [data-chat-mode="agent"]', built: "switchTab" },
@@ -468,6 +475,7 @@ const REVEAL_TARGETS = {
   "tidy-links": { tab: "notes", open: () => openTidySheet("link-reasons"), sel: "#tidy-review", built: "openTidySheet", flash: false },
   "tidy-duplicates": { tab: "notes", open: () => openTidySheet("duplicates"), sel: "#tidy-review", built: "openTidySheet", flash: false },
   "tag-manager": { open: () => openTagsSheet(), sel: '[data-sheet="tags"] .sheet-card', built: "openTagsSheet", flash: false },
+  "notes-order": { tab: "notes", el: "entry-list" },
   "notes-review": { tab: "notes", open: () => showNotesFilter("is:review"), el: "note-search" },
 
   // Plan and focus: the dashboard's widgets
@@ -509,7 +517,7 @@ const REVEAL_TARGETS = {
   "set-updates": { settings: "about", el: "update-check-now", fallback: "settings-about" },
   //: One row per tool the agent can call, built from the backend's own list
   //: when the features browser opens (`renderFeatures`): the tool's own row
-  //: in Settings → Tools it can use, where it is switched on or off.
+  //: in Settings, Tools it can use, where it is switched on or off.
   "ai-tool": { settings: "tools", sel: '#tool-list [data-tool="{arg}"]', built: "renderToolSettings", fallback: "settings-tools" },
   // One package's row in Settings, Packages (`extra-row-<id>`, settings-packages.js):
   // the OCR workspace's "RapidOCR, not installed" Install (INBOX 717).
@@ -680,4 +688,159 @@ function packagesNoticeTarget(message) {
 function packagesNoticeOpen(message) {
   const id = packagesNoticeTarget(message);
   return id ? revealFeature("extra-row", id) : revealFeature("settings:extras");
+}
+
+//: Moved here from settings-wiring.js and spaces-find.js (the boot gzip budget): the
+//: shortcut sheet and the New space dialog open only by a click or a chord, through
+//: stand-ins (lazy-entries.js) and the rows above.
+function renderShortcutList() {
+  for (const listId of SHORTCUT_LIST_IDS) {
+    const list = $(listId);
+    if (list) buildShortcutList(list);
+  }
+}
+
+//: **The key chip is the button** (INBOX 810, Row actions): a column of
+//: thirty-one bordered "Change" buttons was the heaviest thing in the pane,
+//: louder than the keys it changes. Pressing the keys starts the rebind and
+//: pressing them again cancels it; its title says which ("Change" or
+//: "Cancel"), and the back-to-default is a quiet icon after the words.
+function buildShortcutList(list) {
+  list.replaceChildren();
+  for (const [id, def] of Object.entries(shortcuts)) {
+    const li = document.createElement("li");
+    const capturing = capturingShortcut === id;
+    const change = document.createElement("button");
+    change.className = "ghost small quiet shortcut-key";
+    change.type = "button";
+    const combo = document.createElement("kbd");
+    combo.textContent = capturing ? "Press keys…" : def.keys;
+    if (capturing) combo.classList.add("capturing");
+    //: A pencil says the keys are the way to change them (INBOX 1300 C22).
+    const pen = document.createElement("i");
+    pen.className = `ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`;
+    pen.setAttribute("aria-hidden", "true");
+    change.append(combo, pen);
+    change.title = capturing ? "Cancel" : "Change";
+    change.setAttribute(
+      "aria-label",
+      capturing ? `Cancel changing the shortcut for: ${def.label}` : `Change the shortcut for: ${def.label}, now ${def.keys}`
+    );
+    change.addEventListener("click", () => {
+      capturingShortcut = capturingShortcut === id ? null : id;
+      setShortcutStatus(
+        capturingShortcut ? "Press the keys you want, or Escape to cancel." : ""
+      );
+      renderShortcutList();
+      //: The list was redrawn: the focus goes back to the same row's keys.
+      list.querySelector(`[data-shortcut="${id}"] .shortcut-key`)?.focus();
+    });
+
+    const label = document.createElement("span");
+    label.textContent = def.label;
+    li.dataset.shortcut = id;
+    li.append(change, label);
+
+    // Only offer "default" when it isn't already the default.
+    const changed = def.keys !== DEFAULT_SHORTCUTS[id].keys;
+    if (changed) {
+      const revert = document.createElement("button");
+      revert.className = "ghost small quiet icon-only";
+      revert.type = "button";
+      setLabel(revert, "ph:arrow-counter-clockwise");
+      revert.title = `Back to ${DEFAULT_SHORTCUTS[id].keys}`;
+      revert.setAttribute("aria-label", revert.title);
+      revert.addEventListener("click", () => {
+        shortcuts[id].keys = DEFAULT_SHORTCUTS[id].keys;
+        saveShortcutOverrides();
+        renderShortcutList();
+      });
+      li.appendChild(revert);
+    }
+    list.appendChild(li);
+  }
+  //: Thirty-one rows: typed to (row 1643, `listFilter`).
+  listFilter(list, { label: "Filter shortcuts" })?.refresh();
+}
+
+function openShortcuts() {
+  capturingShortcut = null;
+  setShortcutStatus("");
+  renderShortcutList();
+  //: **The editor's rows come from the editor's own table**
+  //: (DOCUMENTS_PLAN Phase 4 item 4: "a `?` shortcut sheet generated from the
+  //: same table so the two cannot disagree"). documents.js is lazily loaded,
+  //: so the section says where its contents are rather than sitting empty
+  //: when this dialog is opened before that bundle has ever been fetched.
+  ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
+  const editorList = $("shortcut-list-documents");
+  const editorNote = $("shortcut-list-documents-note");
+  if (editorList && typeof renderDocShortcutSheet === "function") {
+    renderDocShortcutSheet(editorList);
+    editorNote?.classList.add("hidden");
+  } else if (editorNote) {
+    editorNote.classList.remove("hidden");
+  }
+  //: The board's rows, from the board's own table (whiteboard-commands.js),
+  //: and the section scrolled into view when "?" was pressed on a board.
+  const boardList = $("shortcut-list-whiteboard");
+  const boardNote = $("shortcut-list-whiteboard-note");
+  const onBoard = typeof wbCommandsLive === "function" && wbCommandsLive();
+  if (boardList && typeof renderWbShortcutSheet === "function") {
+    renderWbShortcutSheet(boardList);
+    boardNote?.classList.add("hidden");
+  } else if (boardNote) {
+    boardNote.classList.remove("hidden");
+  }
+  $("shortcuts-overlay").classList.remove("hidden");
+  if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
+  $("shortcuts-close").focus();
+}
+
+//: Moved from settings-panes.js; the boot keeps a stand-in that loads this file.
+const revealTimers = new WeakMap();
+
+//: The ring, on what the person can see. An enhanced `<select>` is a 1x1
+//: clipped box behind its opener (`enhanceSelect`, and openSettingsModal's
+//: own comment on the deep link that ringed nothing because of it), and a
+//: checkbox is a square whose meaning is in the label beside it, so both ring
+//: their visible representative.
+function flashRevealed(target) {
+  if (!target) return null;
+  const shown =
+    target.closest(".select-shell") ||
+    (target.matches('input[type="checkbox"], input[type="radio"], input[type="color"], input[type="range"]')
+      ? target.closest("label, .setting-row, .row")
+      : null) ||
+    target;
+  //: Scrolled only when it is not already in the window: a scroll moves the
+  //: page under a resting pointer, and the hover that follows closed a menu
+  //: group the reveal had just opened (measured on the phone's note sheet).
+  const box = shown.getBoundingClientRect();
+  const inView = box.top >= 0 && box.left >= 0 && box.bottom <= window.innerHeight && box.right <= window.innerWidth;
+  //: Inside an open menu only the menu's own list scrolls: a scroll of the
+  //: page closes every open menu (`closeActionMenusOnScroll`), which took the
+  //: document's Export group away the moment it was ringed on a phone.
+  const menu = shown.closest(".action-menu, .dock-menu-list, .doc-dock-menu-list, [role='menu'], .sheet-card");
+  if (!inView && menu) {
+    for (let box = shown.parentElement; box && menu.contains(box); box = box.parentElement) {
+      if (box.scrollHeight > box.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(box).overflowY)) {
+        const offset = shown.getBoundingClientRect().top - box.getBoundingClientRect().top;
+        box.scrollTop += offset - box.clientHeight / 2 + shown.offsetHeight / 2;
+        break;
+      }
+    }
+  } else if (!inView) {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    shown.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center", inline: "nearest" });
+  }
+  shown.classList.remove("feature-reveal");
+  void shown.offsetWidth;
+  shown.classList.add("feature-reveal");
+  //: Taken off again, reduced motion included: under that setting the ring is
+  //: static rather than animated, and a class nothing removes is a ring that
+  //: stays for good (the Search relevance report, openSettingsModal).
+  clearTimeout(revealTimers.get(shown));
+  revealTimers.set(shown, setTimeout(() => shown.classList.remove("feature-reveal"), 2700));
+  return shown;
 }

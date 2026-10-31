@@ -74,6 +74,9 @@ function closeActionMenus() {
     //: can continue from.
     const held = menu.contains(document.activeElement);
     menu.classList.add("hidden");
+    //: A menu closed inside a nested level opens at its top rows next time.
+    menu.classList.remove("menu-nested");
+    for (const open of menu.querySelectorAll(".menu-group-open")) open.classList.remove("menu-group-open");
     restoreEscapedMenuAfterExit(menu);
     // `menu._escapedOpener` (set by wireEscapedActionMenu) wins when
     // present: a menu reparented to <body> has no useful `.parentElement`
@@ -256,16 +259,24 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") return;
+  if (event.key !== "Escape" || !openHelpPopovers.size) return;
   //: Marked so a handler further down this same press can tell it was spent
   //: closing a popover (the Graph's full-screen exit: one Escape closes the
   //: '?' and the map stays full screen, as the hand-wired Graph help did).
-  if (openHelpPopovers.size) event.helpPopoverSpent = true;
+  event.helpPopoverSpent = true;
   //: A "?" open inside a modal takes this Escape for itself: without the
   //: default, the press also asked the dialog to close, and the Quick note
   //: went with its help (INBOX 667). The next Escape closes the dialog.
   if ([...openHelpPopovers].some((entry) => entry.panel.closest("dialog[open]"))) event.preventDefault();
+  //: **This press is the popover's alone, in every dialog** (dashcls-1031:
+  //: Escape in Settings' '?' closed the whole Settings). The overlays close on
+  //: their own document listeners, loaded after this one, and only some read
+  //: `helpPopoverSpent`; stopping the press here is the one place that covers
+  //: them all. Focus goes back to the '?' so the next Escape has a home.
+  event.stopImmediatePropagation();
+  const opener = [...openHelpPopovers].pop()?.trigger;
   closeHelpPopovers();
+  if (opener?.isConnected) opener.focus({ preventScroll: true });
 });
 window.addEventListener("resize", () => {
   for (const entry of openHelpPopovers) placeHelpPopover(entry.panel, entry.trigger);
@@ -1337,9 +1348,10 @@ function wireMenuKeyboard(menu, opener) {
 function buildMenuItemButton(item) {
   const button = document.createElement("button");
   button.setAttribute("role", "menuitem");
-  button.className = "menu-item" + (item.danger ? " menu-danger" : "");
+  button.className = "menu-item" + (item.danger ? " menu-danger" : "") + (item.disabled ? " menu-item-unavailable" : "");
   setLabel(button, item.label);
   if (item.title) button.title = item.title;
+  if (item.disabled) button.setAttribute("aria-disabled", "true");
   button.addEventListener("click", () => {
     closeActionMenus();
     item.run();
@@ -1356,14 +1368,16 @@ function buildMenuItemButton(item) {
 // `buildMenuGroupButton`'s own note).
 let openGroupSubmenu = null;
 
-// A grouped trigger ("AI AI actions ›") that opens a side flyout of its own
-// items: asked for directly, to cut a 15-item flat list down to something
-// scannable. Hover opens it on a device that has hover; click/tap opens it
-// everywhere, which is the only way in on a touchscreen. Below
-// `--menu-submenu-stack-width` (phone-width) there is nowhere for a flyout
-// to go without running off-screen, so it drops the side-popup positioning
-// entirely and expands in place instead, an accordion, not a flyout, which
-// is what "compatible with small screens like iPhones" actually means here.
+//: Where a flyout has nowhere to go: a narrow window or a touch screen, which
+//: has no hover (the same query as 02-chat-graph.css's submenu rules). The
+//: group then opens as a level of its own in the same menu, with a back row.
+const SUBMENU_STACK = "(max-width: 819.98px), (hover: none)";
+
+// A grouped trigger ("AI actions ›") that opens a side flyout of its own items,
+// to cut a 15-item flat list down to something scannable. Hover (150 ms), a
+// click, Right arrow or Enter opens it; Left arrow or Escape closes it back to
+// the row. Where `SUBMENU_STACK` matches it is a nested level instead (the
+// group's rows replace the menu's, under a back row).
 function buildMenuGroupButton(label, subItems) {
   let openedByHoverAt = 0;
   const groupWrap = document.createElement("div");
@@ -1375,9 +1389,7 @@ function buildMenuGroupButton(label, subItems) {
   trigger.setAttribute("aria-expanded", "false");
   trigger.className = "menu-item has-submenu";
   const labelSpan = document.createElement("span");
-  // setLabel, not textContent: these three group triggers ("AI actions",
-  // "Connect", "Add") were the one label sink the sweep missed, so the note
-  // kebab menu rendered the literal text "ph:sparkle AI actions".
+  // setLabel, not textContent: a label carries its icon as "ph:name text".
   setLabel(labelSpan, label);
   labelSpan.className = "menu-item-words";
   const arrow = document.createElement("span");
@@ -1389,35 +1401,16 @@ function buildMenuGroupButton(label, subItems) {
   const submenu = document.createElement("div");
   submenu.className = "action-menu submenu hidden";
   submenu.setAttribute("role", "menu");
-  //: **An entry may be a button that already exists**, not only a descriptor
-  //: to build one from. The document editor's ⋯ is static markup whose rows
-  //: carry ids that `documents.js` binds handlers to (`doc-export-md` and
-  //: four more), so folding them into a group has to *move* those buttons
-  //: rather than rebuild them: a rebuilt row is a row with no handler and an
-  //: id that two lints watch. Everything else about the group is identical,
-  //: which is the point of reusing this recipe rather than writing a second
-  //: flyout for one menu.
+  submenu.setAttribute("aria-label", label.replace(/^ph:\S+ /, ""));
+  //: An entry may be a button that already exists: the document editor's ⋯
+  //: rows carry ids `documents.js` binds, so a group *moves* them, never rebuilds.
   for (const item of subItems) {
     submenu.appendChild(item instanceof HTMLElement ? item : buildMenuItemButton(item));
   }
 
-  // **Reparented to `<body>` while open, like `escapeMenuIfClipped` does for
-  // the top-level kebab.** Reported: a submenu opened from a kebab near the
-  // bottom or right of the viewport (a note card low in the list, or the
-  // last card in a row) drew past the window edge with nothing but a
-  // scrollbar to show for it. `.action-menu.submenu` was `position:
-  // absolute` against its own `.menu-group`, which only ever checked the
-  // *horizontal* edge (`submenu-left`, below); there was no vertical check
-  // at all, and once the parent kebab is itself escaped (also `position:
-  // fixed`, also reparented to `<body>`) the submenu's containing block
-  // moves with it, so a flyout that fit its note card could still miss the
-  // actual browser window. Reusing `.action-menu-escaped` (`position:
-  // fixed`, the same z-index tier) plus this menu's own placement, computed
-  // from the trigger's rect and clamped on both axes, fixes both at once:
-  // this is why `openSubmenu`/`closeSubmenuState` below write the same
-  // `_escapedHome`/`_escapedOpener` fields `restoreEscapedMenu` already
-  // knows how to put back, rather than inventing a second bookkeeping
-  // scheme `closeActionMenus`' own document-wide sweep would not see.
+  //: A flyout (not a nested level) is reparented to `<body>` while open, like
+  //: `escapeMenuIfClipped`, and clamped on both axes from the trigger's rect;
+  //: `restoreEscapedMenu` puts it back.
   const placeSubmenu = () => {
     const margin = 8;
     const anchor = trigger.getBoundingClientRect();
@@ -1441,18 +1434,34 @@ function buildMenuGroupButton(label, subItems) {
     submenu.classList.toggle("submenu-left", onLeft);
   };
 
+  const stacked = () => window.matchMedia(SUBMENU_STACK).matches;
+  //: A nested level: the menu shows only this group, under a back row built
+  //: on the first open (CSS hides the menu's other rows and the trigger).
+  const backRow = () => {
+    if (submenu.querySelector(":scope > .menu-back")) return;
+    const back = document.createElement("button");
+    back.className = "menu-item menu-back";
+    back.setAttribute("role", "menuitem");
+    setLabel(back, `ph:caret-left ${label.replace(/^ph:\S+ /, "")}`);
+    back.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeSubmenu();
+      trigger.focus();
+    });
+    submenu.prepend(back);
+  };
   const openSubmenu = () => {
-    // Only one flyout open at a time, at this level or any sibling group;
-    // a DOM search under `groupWrap.parentElement` cannot find a sibling's
-    // flyout once it may live at `<body>`, so this is tracked directly.
+    // One flyout at a time; tracked directly, as a sibling's may live at `<body>`.
     if (openGroupSubmenu && openGroupSubmenu !== submenu) closeSubmenuState(openGroupSubmenu);
     submenu.classList.remove("hidden");
     trigger.setAttribute("aria-expanded", "true");
     submenu.classList.remove("submenu-left");
-    // Below phone-width the flyout positioning is dropped for an in-place
-    // accordion (CSS media query); escaping it there would strand it at a
-    // fixed viewport position while its own trigger scrolls underneath.
-    if (window.innerWidth > 720) {
+    if (stacked()) {
+      backRow();
+      groupWrap.classList.add("menu-group-open");
+      groupWrap.closest(".action-menu")?.classList.add("menu-nested");
+      submenu.firstElementChild.focus();
+    } else {
       submenu._escapedHome = { parent: submenu.parentElement, next: submenu.nextSibling };
       submenu._escapedOpener = trigger;
       document.body.appendChild(submenu);
@@ -1467,6 +1476,10 @@ function buildMenuGroupButton(label, subItems) {
     restoreEscapedMenu(target);
     target.style.marginLeft = "";
     target.classList.remove("submenu-left");
+    const wrap = target.closest(".menu-group-open");
+    wrap?.classList.remove("menu-group-open");
+    wrap?.closest(".action-menu")?.classList.remove("menu-nested");
+    wrap?.firstElementChild.setAttribute("aria-expanded", "false");
     if (openGroupSubmenu === target) openGroupSubmenu = null;
   }
   const closeSubmenu = () => closeSubmenuState(submenu);
@@ -1474,30 +1487,27 @@ function buildMenuGroupButton(label, subItems) {
   let hoverTimer = null;
   groupWrap.addEventListener("mouseenter", () => {
     clearTimeout(hoverTimer);
+    if (stacked()) return;
     hoverTimer = setTimeout(() => {
       openSubmenu();
       openedByHoverAt = Date.now();
-    }, 120); // brief delay: a mouse crossing the item isn't a request to open it
+    }, 150); // brief delay: a mouse crossing the item isn't a request to open it
   });
   groupWrap.addEventListener("mouseleave", () => {
     clearTimeout(hoverTimer);
+    if (stacked()) return;
     hoverTimer = setTimeout(closeSubmenu, 200); // outlives the diagonal move from the trigger into the flyout
   });
-  // Once escaped, the submenu is a sibling of `groupWrap` at `<body>`, not
-  // its descendant, so `groupWrap`'s own `mouseleave` above fires the
-  // instant the pointer crosses onto the (still open) flyout: measured
-  // live, the submenu closed under the cursor before a hovering mouse user
-  // could ever reach a second-level item. These two mirror the pair above
-  // so hovering the flyout itself also keeps it open.
+  // Escaped to `<body>`, the flyout is no longer inside `groupWrap`, whose
+  // `mouseleave` would close it under the cursor: these two keep it open.
   submenu.addEventListener("mouseenter", () => clearTimeout(hoverTimer));
   submenu.addEventListener("mouseleave", () => {
+    if (stacked()) return;
     hoverTimer = setTimeout(closeSubmenu, 200);
   });
   trigger.addEventListener("click", (event) => {
     event.stopPropagation();
-    //: A click that lands just after the hover opened the flyout is the same
-    //: request, not a second one: toggling there closed what the person had
-    //: just reached for (measured on the map node menu).
+    //: A click just after the hover opened it is the same request, not a toggle.
     if (submenu.classList.contains("hidden")) openSubmenu();
     else if (Date.now() - openedByHoverAt > 600) closeSubmenu();
   });
@@ -1521,7 +1531,7 @@ function buildMenuGroupButton(label, subItems) {
     if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       openSubmenu();
-      submenu.querySelector('[role="menuitem"]')?.focus();
+      submenu.querySelector('[role="menuitem"]:not(.menu-back)')?.focus();
     }
   });
 
@@ -1552,17 +1562,16 @@ function entryOverflowMenu(entry) {
   //: using the same icon as the other builder fixes the centring and the
   //: drift in one go.
   const opener = smallButton("ph:dots-three", "More actions", () => {
+    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
+    fillMenu();
+    window.objKebabRows?.(menu);
     // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
     if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      fillMenu();
       openKebabSheet(menu, opener, "Note actions");
       return;
     }
-    const willOpen = menu.classList.contains("hidden");
-    if (willOpen) {
-      fillMenu();
-      openActionMenu(menu, opener);
-    } else closeActionMenus();
+    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
+    else closeActionMenus();
   });
   opener.classList.add("icon-only");
   opener.setAttribute("aria-haspopup", "menu");
@@ -1600,6 +1609,40 @@ function entryOverflowMenu(entry) {
           selectedIds.add(entry.id);
           updateBatchCount();
           renderEntries();
+        },
+      },
+      //: Beside Select, not inside the Add flyout (audit 1028 S12): a copy of
+      //: the note is an action on it, found where the note's other actions are.
+      {
+        label: "ph:copy Duplicate",
+        title: "Make a copy of this note, opens ready to edit",
+        run: async () => {
+          closeActionMenus();
+          try {
+            const copy = await apiJson("/entries", {
+              method: "POST",
+              body: JSON.stringify({
+                //: The copy's title is its first "# " line: the API takes no
+                //: `title`, so the "(Copy)" this sent was dropped and the two
+                //: notes were indistinguishable (INBOX 432).
+                content: /^#\s+\S/.test(entry.content || "")
+                  ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
+                  : entry.content,
+                category: entry.category,
+                tags: entry.tags || [],
+              }),
+            });
+            await loadEntries();
+            pushEntryCreateUndo(copy, "Duplicated a note");
+            // Open the new note in edit mode straight away.
+            if (copy && copy.id) {
+              flashEntry(copy.id);
+              await openNoteEditor(copy.id);
+            }
+            toast("Note duplicated.");
+          } catch (err) {
+            toast(err.message || "Couldn't duplicate note.", true);
+          }
         },
       },
       //: The one correction a notebook that files for you is asked for most
@@ -1774,46 +1817,15 @@ function entryOverflowMenu(entry) {
         title: "Start a chat about this note and what it connects to",
         run: () => askAtlasAboutNote(entry),
       },
-      {
+      //: Left off with no model: translating needs one (INBOX 1488).
+      ...(aiIsOff() ? [] : [{
         label: "ph:translate Translate",
         title: "Open this note in the Writing room, set to translate",
         run: () => translateNoteInDesk(entry),
-      },
+      }]),
     ];
 
     const addItems = [
-      {
-        label: "ph:copy Duplicate",
-        title: "Make a copy of this note, opens ready to edit",
-        run: async () => {
-          closeActionMenus();
-          try {
-            const copy = await apiJson("/entries", {
-              method: "POST",
-              body: JSON.stringify({
-                //: The copy's title is its first "# " line: the API takes no
-                //: `title`, so the "(Copy)" this sent was dropped and the two
-                //: notes were indistinguishable (INBOX 432).
-                content: /^#\s+\S/.test(entry.content || "")
-                  ? entry.content.replace(/^#\s+[^\n]*/, (line) => `${line.trimEnd()} (copy)`)
-                  : entry.content,
-                category: entry.category,
-                tags: entry.tags || [],
-              }),
-            });
-            await loadEntries();
-            pushEntryCreateUndo(copy, "Duplicated a note");
-            // Open the new note in edit mode straight away.
-            if (copy && copy.id) {
-              flashEntry(copy.id);
-              await openNoteEditor(copy.id);
-            }
-            toast("Note duplicated.");
-          } catch (err) {
-            toast(err.message || "Couldn't duplicate note.", true);
-          }
-        },
-      },
       //: OPEN row 566: the note's headings and lists as a mind map, the same
       //: build as the agent's `map_from_note`, so no model is needed.
       ...(entry.is_private ? [] : [{
@@ -1931,13 +1943,17 @@ function entryOverflowMenu(entry) {
       sep.setAttribute("role", "separator");
       return sep;
     };
+    //: History and Download .md are the two rarest rows: one flyout; Connections joins Connect (INBOX 1469).
+    const keep = topLevel.splice(-2);
+    const connections = topLevel.pop();
     for (const item of topLevel) menu.appendChild(buildMenuItemButton(item));
+    menu.appendChild(buildMenuGroupButton("ph:clock-counter-clockwise History and export", keep));
     menu.appendChild(rule());
     //: A private note never goes to a model: the server refuses retitling
     //: and re-filing one, so the menu does not offer what would only toast
     //: a refusal (sweep 1004).
     if (!entry.is_private) menu.appendChild(buildMenuGroupButton("ph:sparkle AI actions", aiItems));
-    menu.appendChild(buildMenuGroupButton("ph:link Connect", connectItems));
+    menu.appendChild(buildMenuGroupButton("ph:link Connect", [connections, ...connectItems]));
     menu.appendChild(buildMenuGroupButton("ph:plus Add", addItems));
     menu.appendChild(rule());
     menu.appendChild(buildMenuItemButton(archive));

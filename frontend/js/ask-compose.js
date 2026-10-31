@@ -111,7 +111,7 @@ function linkCitedTitles(targets, sentences, byId, numberFor) {
       name.setAttribute("aria-label", `Open the ${kind === "map" ? "mind map" : kind} ${g.title}`);
       name.style.cursor = "pointer";
       const describe = () => ({
-        noteId: g.note_id, number: numberFor.get(g.note_id), entry: byId.get(g.note_id), label: g.label,
+        noteId: g.note_id, number: numberFor.get(citeKey(g.kind, g.note_id)), entry: g.kind === "document" ? undefined : byId.get(g.note_id), label: g.label,
         start: g.start, end: g.end, signals: g.signals, verdict: g.verdict, terms: g.terms,
       });
       name.addEventListener("mouseenter", () => scheduleCitationPeek(name, describe));
@@ -528,8 +528,26 @@ function digestOffer(answerEl, offer) {
         else if (offer.surface === "statistics") openStatistics();
         else if (offer.surface === "ask-history") { if (!askHistoryOpen) toggleAskHistoryPanel(); }
         else if (offer.surface.startsWith("settings:")) openSettingsModal(offer.surface.slice("settings:".length));
+        else if (offer.surface === "web-panel") toggleWebPanel(true);
         else actNavigate(offer.surface);
         button.disabled = false;
+        return;
+      }
+      if (offer.kind === "searxng-start") {
+        //: The search service a web search needed (INBOX 1490): started
+        //: through the door Settings uses, which also points web search at it.
+        //: The line says what happened; the buttons beside it stay.
+        line.textContent = "Starting SearXNG… the first run downloads it, so give it a minute.";
+        try {
+          const body = await apiJson("/websearch/searxng/start", { method: "POST" });
+          if (typeof prefsCache !== "undefined") prefsCache = await apiJson("/preferences").catch(() => prefsCache);
+          line.textContent = `SearXNG is running at ${body.url}. Ask again and web search will use it.`;
+          line.classList.add("muted");
+        } catch (error) {
+          line.replaceChildren(button);
+          button.disabled = false;
+          toast(error.message, true);
+        }
         return;
       }
       if (offer.kind === "reminder") {
@@ -684,7 +702,7 @@ async function askKeepAsMap() {
     () => api(`/entries/${board.id}/restore`, { method: "POST" })
   );
   toastAction(
-    `Mind map \u201c${name}\u201d made from ${ids.length} note${ids.length === 1 ? "" : "s"}.`,
+    `Mind map \u201c${name}\u201d made from ${nounCount(ids.length, "note")}.`,
     "Open",
     async () => {
       await openWhiteboardBoard(board.id);

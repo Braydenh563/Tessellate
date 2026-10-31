@@ -385,13 +385,16 @@
    selected one legible), so the fix is the missing feedback, not a resting
    fill: the surface appears under the pointer, and the label goes to full
    --ink so the hovered option looks as real as the selected one. */
-.seg button:not(.active):hover,
-.seg button:not(.active):is(:focus-visible, :has(:focus-visible)) {
+.seg button:not(.active, [aria-pressed="true"]):hover,
+.seg button:not(.active, [aria-pressed="true"]):is(:focus-visible, :has(:focus-visible)) {
   background: var(--ghost-btn-bg);
   color: var(--ink);
 }
 
-.seg button.active {
+/* A segment says it is chosen by `.active` or by `aria-pressed` (the note
+   capture's Note / To-do switch, INBOX 1494): either one paints it, so a
+   switch that only sets the attribute is never left with no chosen look. */
+.seg button:is(.active, [aria-pressed="true"]) {
   background: var(--accent-surface);
   color: var(--on-accent);
 }
@@ -636,7 +639,6 @@ header#top-bar select,
    button were the only blurred surfaces left on a machine asking for none. */
 :root[data-glass="off"] .notes-subtabs,
 :root[data-glass="off"] .library-subtabs,
-:root[data-glass="off"] .contents-heading,
 :root[data-glass="off"] .graph-zoom,
 :root[data-glass="off"] .scroll-top,
 :root[data-glass="off"] .toast,
@@ -697,7 +699,6 @@ header#top-bar select,
 #backup-list li .entry-actions {
   opacity: 1;
 }
-
 
 /* Full width, on its own line: inline after the label it ran off the right
    edge of the card as soon as the job name got long. */
@@ -2050,8 +2051,8 @@ header#top-bar select,
 }
 
 @media (hover: hover) {
-  #entry-list li:hover,
-  #entry-list li:is(:focus-visible, :has(:focus-visible)) {
+  #entry-list li:where(:not(.row-shell)):hover,
+  #entry-list li:where(:not(.row-shell)):is(:focus-visible, :has(:focus-visible)) {
     border-color: var(--accent);
     box-shadow: var(--shadow-sm);
   }
@@ -2659,7 +2660,6 @@ button.answer-figure-open {
 .result-reason-why {
   min-width: 0;
 }
-
 
 .result-reason-connected {
   background: var(--accent-soft);
@@ -3460,7 +3460,6 @@ button.answer-figure-open {
   opacity: 1;
 }
 
-
 .chat-empty {
   padding: 1.5rem 1rem;
 }
@@ -3472,7 +3471,6 @@ button.answer-figure-open {
     radial-gradient(120% 90% at 50% 0%, var(--accent-soft), transparent 60%),
     var(--inner);
 }
-
 
 /* Zoom controls as one floating pill. */
 .graph-zoom {
@@ -3654,7 +3652,6 @@ button.answer-figure-open {
   color: var(--on-accent);
   background: var(--accent-surface);
 }
-
 
 .timeline-custom-range {
   gap: var(--space-1);
@@ -4005,7 +4002,6 @@ button.answer-figure-open {
   display: none;
 }
 
-
 #graph-help-toggle {
   position: static;
   margin-left: 0;
@@ -4046,7 +4042,6 @@ button.answer-figure-open {
    this head is a `.dock` now, and the dock recipe owns its gap, its one
    control height and the width search grows to. */
 
-
 /* ---------------------------------------------------------------------------
    Placed at the end of this file on purpose. A panel keeps its original class
    (`.help-body`, `.setting-hint`) when `wireHelpPopover` promotes it,
@@ -4085,7 +4080,6 @@ button.answer-figure-open {
   /* Arrives from its '?': the menus' grow (10-responsive.css, "a menu or
      popover grows from what opened it"). */
 }
-
 
 /* The caret. Two squares rotated 45°, the back one carries the border, the
    front one covers the join so the panel's own edge reads as continuous. */

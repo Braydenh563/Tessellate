@@ -282,9 +282,7 @@ async function saveWebPageAsNote() {
       method: "POST",
       body: JSON.stringify({ content, tags: ["web"], defer_filing: true }),
     });
-    pushEntryCreateUndo(made, "Saved a web page as a note");
-    toast("Saved as a note.");
-    refreshEntries([made.id]).catch(() => {});
+    announceSavedNote(made, "", { message: "Saved as a note.", undoLabel: "Saved a web page as a note" });
   } catch (error) {
     toast(error.message, true);
   }

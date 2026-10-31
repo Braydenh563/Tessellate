@@ -3,8 +3,9 @@
    `LAZY_MODULES.mathEditor`), never at boot.
 
    The shell is the help popover's, as the icon picker's is, so this file only
-   lays out what is inside it: the mode, the TeX box, the preview, the search,
-   the palette scroller and the foot, in one column that fits a phone. */
+   lays out what is inside it: the mode, the equation field (math-field-lazy.css
+   draws it), the search, the palette scroller and the foot, in one column that
+   fits a phone. */
 
 .math-editor.help-popover {
   display: flex;
@@ -32,26 +33,16 @@
   align-self: stretch;
 }
 
-.math-editor-input {
-  width: 100%;
-  min-height: calc(var(--control-h) * 1.6);
-  resize: vertical;
-  font-family: var(--mono, ui-monospace, monospace);
-  font-size: var(--text-sm);
+/* The line under the head: the hint, and the LaTeX button that shows the TeX. */
+.math-editor-lede-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
-/* The live preview: the renderer's own MathML, centred, scrolling sideways
-   inside itself when a long formula would push the panel wider. */
-.math-editor-preview {
-  display: grid;
-  place-items: center;
-  min-height: calc(var(--control-h) * 1.6);
-  padding: var(--space-2) var(--space-3);
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-inner);
-  color: var(--text);
-  font-size: var(--text-lg);
+.math-editor-lede-row .math-editor-lede {
+  min-width: 0;
 }
 
 .math-editor-list {

@@ -290,7 +290,10 @@ def test_ask_opens_notes_by_name(ask):
 def test_start_it_after_the_search_service_is_down(ask):
     down = "I tried to search the web, but the search service is not answering. Start it or pick another provider in Settings, Web search."
     said = ask("start it", [{"question": "who won the 1998 world cup", "answer": down}])
-    assert "docker run" in said and "Auto-detect" in said and "not start it for you" in said
+    #: The intent moved with INBOX 1490 (the owner: buttons, not a pasted docker
+    #: command): "start it" answers with the same buttons a failed search shows,
+    #: and the words no longer say the app cannot start it.
+    assert "docker" not in said.lower() and "Set it up in Settings" in said and "Use another provider" in said
 
 
 def test_start_it_without_a_search_context_is_left_alone(ask):

@@ -90,7 +90,7 @@ def test_less_motion_does_not_ask_for_the_playback():
 
 def test_the_frame_is_fitted_before_the_playback_and_the_fits_wait_for_it():
     body = CANVAS[CANVAS.index("\nfunction gcFrameIntro(") : CANVAS.index("\n}\n", CANVAS.index("\nfunction gcFrameIntro("))]
-    assert 'fitGraphToView(s.svg, null, s.zoom, target, s.dims.w, s.dims.h, s.canvas?.style.opacity === "0");' in body
+    assert 'fitGraphToView(s.svg, s.zoom, target, s.dims.w, s.dims.h, s.canvas?.style.opacity === "0");' in body
     assert "gcReveal(s);" in body
     assert "if (!gcAutoFitDone(s) && s.nodes.length && !s.intro) {" in CANVAS
     # Balancing on dots still on their way would undo the frame.

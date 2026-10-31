@@ -30,7 +30,7 @@ Three kinds of file, three ways in:
 - **Text already** (.md, .txt, .csv, .json, code): read and decoded here.
   No dependency, always available.
 - **A converted document** (.docx, .pdf, .pptx, .xlsx): `entry/importer.py`'s
-  markitdown, which the app can already install from Settings → Optional
+  markitdown, which the app can already install from Settings, Optional
   extras. Absent, this reports that rather than failing in a way that looks
   broken: the same contract `importer` itself keeps.
 - **A scanned page with no text layer**: the vision model's transcription,

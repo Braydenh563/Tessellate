@@ -207,6 +207,10 @@ function paletteEditorMatches(needle) {
     .map((r) => r.c);
 }
 
+//: A line that opens like a question ("how do I", "where is", "can I") is one
+//: without its mark (audit 1028 S43: help is a typed question away).
+const PALETTE_ASKS = /^(?:how (?:do|does|can|to|should)|where (?:is|are|do|can)|what (?:is|are|does)|why (?:is|does|do)|can i|is there a way)\b/i;
+
 function paletteMatches(query) {
   const lowered = query.trim().toLowerCase();
   if (lowered.startsWith(">")) return paletteEditorMatches(lowered.slice(1).trim());
@@ -239,7 +243,7 @@ function paletteMatches(query) {
   //: nothing in it and the box goes empty, which reads as "this app has no
   //: answer". A line ending in a question mark is offered to Atlas instead,
   //: first, with everything the palette did find underneath.
-  if (query.trim().endsWith("?")) {
+  if (query.trim().endsWith("?") || PALETTE_ASKS.test(query.trim())) {
     commands.unshift({
       label: `Ask Atlas: ${query.trim()}`,
       mark: "atlas",
@@ -273,7 +277,9 @@ function paletteMatches(query) {
   //: commands (guesses by the search model) would only sit above it.
   const noteRows = paletteNoteRows(typed);
   const shownCommands = noteRows.length ? commands.filter((row) => row.group !== "Close in meaning") : commands;
-  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...shownCommands, ...noteRows, handoff];
+  //: Three words or more is a note's opening, not a command's name: its notes lead (audit 1031 N13).
+  const sentence = noteRows.length && typed.split(/\s+/).length > 2;
+  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...(sentence ? noteRows : []), ...shownCommands, ...(sentence ? [] : noteRows), handoff];
 }
 
 //: "timer 10 minutes", "25 min timer", "countdown 90s": a length read from
@@ -465,9 +471,13 @@ function paletteSettingRows(query) {
     });
   }
   if (!paletteGen.settings) return [];
+  //: A Guide topic (`settingRowIsTopic`: the Help pane's entries) is its own group and
+  //: marked `help`: it explains a feature, so it ranks after the row that
+  //: opens one (`paletteRanked`, INBOX 1449).
   return findSettings(query, 4).map((row) => ({
-    group: "Settings",
-    label: `ph:gear ${row.text}`,
+    group: settingRowIsTopic(row) ? "Guide" : "Settings",
+    help: settingRowIsTopic(row),
+    label: `ph:${settingRowIsTopic(row) ? "book-open-text" : "gear"} ${row.text}`,
     about: `In Settings, ${row.sectionLabel}${row.where ? `, under ${row.where}` : ""}.`,
     keywords: row.haystack,
     run: paletteLater(async () => {
@@ -516,6 +526,18 @@ function paletteVocab(rows) {
   return out;
 }
 
+//: **A row that opens a feature ranks above a Guide topic about it**, for
+//: every feature (INBOX 1449, the owner: "when I used the find everything
+//: search to open the ocr workspace, the help guide section came up before the
+//: actual link to open it"). Both scored 4 for "ocr workspace", and the tie
+//: went to the Guide topic's place in the list. 0: a row that names the thing
+//: (a score of 2 or more), 1: a row that only mentions it, 2: a Guide topic.
+//: Only what the person chose for these words (`picked`) goes first of all.
+function paletteTier(row, score) {
+  if (row.help) return 2;
+  return score >= 2 ? 0 : 1;
+}
+
 //: The matching rows, best first, each group's heading once: groups in the
 //: order of their best row, rows within a group by score, then by use.
 //: Rows found only by their line of what they do are three at most: "note"
@@ -533,9 +555,9 @@ function paletteRanked(rows, lowered) {
     //: Between rows of one score, the one nearer the words typed (meaning.js):
     //: "change password" is the password row before the lock.
     const near = 2 * meaningCloseness(things, paletteText(row.label)) + meaningCloseness(things, paletteText(row.keywords));
-    scored.push({ row, score, index, near, picked: picks[name] || 0, used: paletteUsage.get(name) || 0 });
+    scored.push({ row, score, index, near, tier: paletteTier(row, score), picked: picks[name] || 0, used: paletteUsage.get(name) || 0 });
   });
-  scored.sort((a, b) => b.picked - a.picked || b.score - a.score || b.near - a.near || b.used - a.used || a.index - b.index);
+  scored.sort((a, b) => b.picked - a.picked || a.tier - b.tier || b.score - a.score || b.near - a.near || b.used - a.used || a.index - b.index);
   const groups = [...new Set(scored.map((s) => s.row.group))];
   return groups.flatMap((g) => scored.filter((s) => s.row.group === g).map((s) => ({ ...s.row, why: paletteWhy(s, lowered) })));
 }
@@ -710,6 +732,10 @@ function renderPalette(query) {
     li.textContent = "Run a command or go to a place. Type to see matches.";
     list.appendChild(li);
   }
+  //: Only when it changes: arrowing re-renders the list and must not re-announce.
+  const count = $("palette-count");
+  const said = matches.length === 1 ? "1 result" : `${matches.length} results`;
+  if (count.textContent !== said) count.textContent = said;
   paletteLight(rows, matches, abouts);
 }
 

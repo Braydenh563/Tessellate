@@ -25,6 +25,12 @@
 //: Opt-in by zone, not for every scroller: a code editor, a canvas and a
 //: textarea each scroll themselves. Mouse only: a touch selection scrolls by
 //: its own handles.
+//: **It also brings the object-move scripts** (obj-ref.js, INBOX 1467: drag to
+//: reorder, copy and paste an object, the drag ghost, the tray). They are the
+//: same kind of late pointer code, and a row of their own in `LAZY_MODULES`
+//: would not fit the boot script's gzip cap; this file is already preloaded.
+["/css/objmove-lazy.css", "/js/obj-ref.js"].forEach(lazyScript);
+
 const DRAG_EDGE = { x: 0, y: 0, el: null, frame: 0 };
 function dragEdgeTick() {
   const d = DRAG_EDGE;
@@ -81,4 +87,7 @@ function initDragSelectEdgeScroll() {
 //: the late bundles three seconds after boot, which is when the watcher
 //: should start; its observers are buffered, so boot's own stalls still count.
 lazyScript("/js/lag-watch.js");
+//: Movable panels (INBOX 1427) ride along with this late bundle (row in lazy-entries.js).
+ensureModule("panelMovable");
+ensureModule("popupAnatomy");
 initDragSelectEdgeScroll();

@@ -238,7 +238,7 @@ def test_link_map_nodes_refuses_a_node_linked_to_itself(session):
 
 
 def test_the_map_tools_are_registered_and_gated_like_the_board_tools(session):
-    """Registered in `TOOLS` (which is what puts them in Settings → Tools and
+    """Registered in `TOOLS` (which is what puts them in Settings, Tools and
     in `/chat/tools`), and in the whiteboard cue group, a question about a
     map that was offered the board tools and not these answers by placing
     cards on a canvas."""

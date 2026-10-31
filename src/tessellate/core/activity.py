@@ -28,10 +28,13 @@ from __future__ import annotations
 
 import itertools
 import json
+import logging
 import threading
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager, nullcontext
+
+from tessellate.core import private_turn
 
 _lock = threading.Lock()
 _ids = itertools.count(1)
@@ -41,6 +44,44 @@ _jobs: dict[str, Job] = {}
 _recent: list[dict] = []
 RECENT_KEEP = 5
 RECENT_SECONDS = 30 * 60
+
+
+class StopEvent(threading.Event):
+    """A stop flag that can also wake a call blocked on the network.
+
+    `set()` runs the registered hooks, so a model request waiting for its first
+    token (prefill, when no chunk arrives to check the flag against) is cut the
+    moment Stop or a closed browser tab sets it, not when the model finishes."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._hooks: list[Callable[[], object]] = []
+        self._hook_lock = threading.Lock()
+
+    def set(self) -> None:
+        super().set()
+        with self._hook_lock:
+            hooks, self._hooks = self._hooks, []
+        for hook in hooks:
+            try:
+                hook()
+            except Exception as exc:  # noqa: BLE001 - a failed close must not stop the others
+                logging.getLogger("tessellate.activity").debug("stop: a close hook failed: %s", exc)
+
+    def add_hook(self, hook: Callable[[], object]) -> Callable[[], None]:
+        """Run `hook` when set (now, if already set); returns the remover."""
+        if self.is_set():
+            hook()
+            return lambda: None
+        with self._hook_lock:
+            self._hooks.append(hook)
+
+        def remove() -> None:
+            with self._hook_lock:
+                if hook in self._hooks:
+                    self._hooks.remove(hook)
+
+        return remove
 
 
 class Job:
@@ -65,7 +106,7 @@ class Job:
         self.stoppable = stoppable or on_stop is not None
         #: Shared with the work it tracks when that work must see Stop mid-call
         #: (a skill run's budget, `ai/budget.py`), not only at its next yield.
-        self._stop = stop_event or threading.Event()
+        self._stop = stop_event or StopEvent()
         #: A job run somewhere else (a code run in the browser's sandbox)
         #: holds a lease it renews with `touch`; one not renewed in time is
         #: gone, so a closed tab does not leave a row that never ends.
@@ -244,6 +285,54 @@ def bind(job: Job) -> Iterator[None]:
         _bound.job = previous
 
 
+def stop_aware(response, items: Iterator) -> Iterator:  # noqa: ANN001
+    """`items`, read from the streamed HTTP `response`, ended when the job this
+    thread is advancing is stopped (Stop pressed, or the browser went away).
+
+    The check runs between chunks; the hook closes the connection so a read
+    blocked before the first token ends too, and the upstream model stops
+    generating instead of finishing a turn nobody is waiting for."""
+    job = getattr(_bound, "job", None)
+    event = getattr(job, "_stop", None)
+    if event is None:
+        yield from items
+        return
+
+    def cut() -> None:
+        sock = None
+        try:
+            sock = response.raw._fp.fp.raw._sock  # the live socket, if this is a plain one
+        except AttributeError:
+            pass  # not a plain socket: close() below is all there is
+        if sock is not None:
+            try:
+                sock.shutdown(2)
+            except OSError:
+                pass  # already closed by the other side: nothing left to cut
+        response.close()
+
+    remove = event.add_hook(cut) if hasattr(event, "add_hook") else (lambda: None)
+    try:
+        for item in items:
+            if event.is_set():
+                break
+            yield item
+    except Exception:
+        if not event.is_set():
+            raise
+    finally:
+        remove()
+        if event.is_set():
+            response.close()
+
+
+def current_stop_event() -> StopEvent | None:
+    """The stop flag of the job this thread is advancing, if it has one that
+    can wake a blocked call (`StopEvent`)."""
+    event = getattr(getattr(_bound, "job", None), "_stop", None)
+    return event if isinstance(event, StopEvent) else None
+
+
 def current_stopped() -> bool:
     """Whether the job this thread is advancing has been asked to stop."""
     job = getattr(_bound, "job", None)
@@ -343,7 +432,8 @@ class StreamNarrator:
         return "Searching your notes." if stage == "searching" else stage.replace("_", " ").capitalize()
 
     def _text_line(self, event: dict) -> str:
-        return str(event.get("text") or "")
+        #: A plan's steps are written from the person's own words.
+        return "" if private_turn.active() else str(event.get("text") or "")
 
     def _web_line(self, event: dict) -> str:
         pages = len(event.get("sources") or [])
@@ -365,10 +455,12 @@ class StreamNarrator:
     def _tool_line(self, event: dict) -> str:
         self.tools += 1
         name = event.get("tool") or _no_icon(event.get("label")) or "a tool"
+        #: A private chat's log names the tool and never what it was asked or
+        #: why it failed: both quote the question's words.
         if event.get("ok") is False:
             self.failed += 1
-            return f"{name} did not run: {event.get('error') or 'no reason given'}."
-        return f"Called {name}: {tool_arguments_in_words(event.get('arguments'))}."
+            return f"{name} did not run." if private_turn.active() else f"{name} did not run: {event.get('error') or 'no reason given'}."
+        return f"Called {name}." if private_turn.active() else f"Called {name}: {tool_arguments_in_words(event.get('arguments'))}."
 
     def _thinking_line(self, event: dict) -> str:
         first = not self.thought
@@ -376,7 +468,7 @@ class StreamNarrator:
         return "Thinking." if first else ""
 
     def _item_line(self, event: dict) -> str:
-        reason = " ".join(str(event.get("reason") or "").split())[:_ARG_CHARS].rstrip(".")
+        reason = "" if private_turn.active() else " ".join(str(event.get("reason") or "").split())[:_ARG_CHARS].rstrip(".")
         return f"Suggested a change: {reason}." if reason else "Suggested a change."
 
     def _answer_line(self, event: dict) -> str:

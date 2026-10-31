@@ -73,8 +73,10 @@ def test_no_move_is_a_fade_to_somewhere_else() -> None:
     assert "distance > 700" not in move
     # The two fades left: Reduce motion's, in place of the travel, and
     # being carried asleep (a sleeper is not woken to walk). Each is a
-    # crossfade now (INBOX 443), never a fade to nothing and back.
-    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel()) {" in move
+    # crossfade now (INBOX 443), never a fade to nothing and back. The
+    # first also takes a far move a new view asked for (INBOX 1463, the
+    # owner: no more coming "across the screen ... on a new page").
+    assert move.count("nameMarkBuddyCrossfade(buddy, dx, dy,") == 2 and "if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {" in move
     assert "if (nameMarkBuddyAsleep(buddy)) {" in move
 
 
@@ -521,7 +523,8 @@ def test_the_companion_shows_and_hides_from_anywhere() -> None:
 def test_it_gets_out_of_a_popups_way() -> None:
     # INBOX 430: "the notifications panel was blocked by it". A popup is an
     # obstacle as a whole box; over one it fades at once and steps aside.
-    assert '"#notif-panel:not(.hidden)' in AV
+    # Found by id since INBOX 1465 (`NMB_POPUP_IDS`), hidden ones skipped.
+    assert re.search(r'^const NMB_POPUP_IDS = \["notif-panel", ', AV, re.M)
     assert "const boxes = nameMarkBuddyPopups();" in _fn("nameMarkBuddyObstacles")
     dodge = _fn("nameMarkBuddyDodge")
     assert 'buddy.classList.toggle("nmb-dodge", over)' in dodge
@@ -533,7 +536,7 @@ def test_it_keeps_out_of_the_tours_ring() -> None:
     # INBOX 430: "Atlas spills out of its ring in the tour". The tour's ring
     # and card are popups it gets out of the way of, looked at again once a
     # step has settled, measured by the drawn figure's box.
-    assert "#tour-spot:not(.hidden), #tour-card:not(.hidden)" in AV
+    assert '"tour-spot", "tour-card"' in re.search(r"^const NMB_POPUP_IDS = \[(.*)\];$", AV, re.M).group(1)
     assert "nmbDodgeLate = setTimeout(nameMarkBuddyDodge, 700);" in AV
     assert 'buddy.querySelector(".nm-figure")' in _fn("nameMarkBuddyDodge")
 
@@ -693,7 +696,9 @@ def test_every_change_of_place_is_travelled_by_its_body() -> None:
     # frame, speed changing at most 5.5px a frame, every move ending on its
     # place.
     go = _fn("nameMarkBuddyGo") + _fn("nameMarkBuddyRoute")
-    for way in ("if (nameMarkBuddyNoTravel()) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
+    # Reduce motion's crossfade also takes a far move a new view asked for
+    # (INBOX 1463: never "across the screen ... on a new page").
+    for way in ("if (nameMarkBuddyNoTravel() || (nmb.quiet && distance > size * NMB_FAR_SIZES)) {", "nameMarkBuddyPoof(buddy, dx, dy, seenFrom)",
                 "if (route === \"float\") {", "if (d < size * NMB_HOP_SIZES && !poseChanged)",
                 'nameMarkBuddyBlend(buddy, () => buddy.classList.add("nmb-walking"), NMB_BLEND_IN_MS);'):
         assert way in go, way
@@ -1104,7 +1109,7 @@ def test_the_lab_keeps_what_you_pick_and_no_cap_is_worn_upright() -> None:
 
 
 def test_faces_in_round_holders_stay_inside_their_circle() -> None:
-    # The owner: "in Settings > Personas, the Atlas avatar spills outside its
+    # The owner: "in Settings, Personas, the Atlas avatar spills outside its
     # black circle". Measured (personaclip.js): every persona and profile
     # face in Settings clipped to circle(50%).
     css01 = (ROOT / "frontend" / "css" / "01-forms-settings.css").read_text(encoding="utf-8")
@@ -1133,7 +1138,7 @@ def test_companions_can_be_saved_applied_renamed_and_deleted() -> None:
     for key in ('"avatar-buddy"', '"atlas-look"', '"avatar-buddy-custom"', '"avatar-buddy-size"', '"avatar-buddy-acts-off"', '"avatar-buddy-motion"'):
         assert key in AV[AV.index("const NMB_PRESET_KEYS = [") :][:400], key
     assert "p.name !== nmbPresetRenaming" in _fn("nameMarkBuddySavePreset")
-    assert "mountBuddyPresets()" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
+    assert "afterCharacters(mountBuddyPresets)" in (ROOT / "frontend" / "js" / "settings.js").read_text(encoding="utf-8")
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="needs node")
@@ -1795,9 +1800,11 @@ def test_the_companion_steps_off_a_dock_more_menu():
     way". A dock's "more" menu is an open `<details>`, which the popup list
     missed (measured: the figure now ends clear of the open menu's box)."""
     js = (Path(__file__).resolve().parent.parent / "frontend" / "js" / "avatars.js").read_text(encoding="utf-8")
-    popups = re.search(r"const NMB_POPUPS = \"(.*)\";", js).group(1)
-    assert 'details[open][class*=\\"menu\\"] > :not(summary)' in popups
-    assert '[role=\\"menu\\"]:not(.hidden)' in popups
+    # Found by tag and role since INBOX 1465 (one selector over the whole document cost 15 to 50ms a look).
+    popups = js[js.index("function nameMarkBuddyPopupEls("):].split("\n}\n", 1)[0]
+    assert 'getElementsByTagName("details")' in popups and "d.open && /menu/.test(d.className)" in popups and 'c.tagName !== "SUMMARY"' in popups
+    assert '"action-menu"' in re.search(r"^const NMB_POPUP_CLASSES = \[(.*)\];$", js, re.M).group(1)
+    assert 'el.classList.contains("hidden")' in js[js.index("function nameMarkBuddyPopups("):].split("\n}\n", 1)[0]
 
 
 # The companion's words check counts only drawn text (INBOX 812).

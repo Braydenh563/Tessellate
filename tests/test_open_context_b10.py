@@ -38,15 +38,17 @@ def notebook(session):
 
 def test_summarise_this_sums_up_the_open_note_point_by_point(client, notebook):
     text = _turn(client, "Summarise this", open_note_id=notebook["trip"], open_category="Travel")
-    assert text.startswith("Your trip planning note of ")
-    assert "in Travel, in three points:" in text
+    #: INBOX 1441 moved the day out: "Summarise this" does not ask about
+    #: time, so the note is named by its label and says no "of <date>".
+    assert text.startswith("Your trip planning note, in Travel, in three points:"), text
     assert "- Flights to Lisbon on 3 May, 240 pounds.\n- Hotel near Alfama" in text
     assert "Packing" not in text and "squats" not in text
 
 
 def test_a_one_point_note_is_one_sentence(client, notebook):
     text = _turn(client, "tl;dr", open_note_id=notebook["gym"])
-    assert "Your gym note of " in text and ", in Health, says one thing: squats at 80 kg." in text
+    #: No "of <date>" for an untimed question (INBOX 1441).
+    assert text.startswith("Your gym note, in Health, says one thing: squats at 80 kg."), text
 
 
 def test_with_no_note_open_the_open_category_is_summed_up(client, notebook):

@@ -48,6 +48,10 @@ logger = logging.getLogger(__name__)
 
 DDG_URL = "https://html.duckduckgo.com/html/"
 REQUEST_TIMEOUT = 10
+#: Opening a page: connect in 4 s, then 8 s between bytes. A dead host used to
+#: hold the reader on "Opening..." for the whole 10 s per hop (audit 1030 A10);
+#: the panel's Stop is beside it, and the failure says what happened.
+READER_TIMEOUT = (4, 8)
 
 # Phrases DuckDuckGo serves to clients it has decided are not browsers. When
 # one of these comes back the response is a 200 with no results in it, which
@@ -337,7 +341,7 @@ def search_web(
 ) -> list[dict]:
     """[{title, url, snippet, domain, engine}] for a query, best first.
 
-    `provider` is the user's choice from Settings → Web search, and "searxng"
+    `provider` is the user's choice from Settings, Web search, and "searxng"
     means it. The old behaviour: try SearXNG, silently fall back to
     DuckDuckGo: is still available as "auto" and is still the default, but it
     could not be turned off, and it is the wrong answer for somebody who runs
@@ -352,7 +356,7 @@ def search_web(
     if provider == "searxng" and not searxng_url:
         raise WebSearchError(
             "Web search is set to use SearXNG only, but no SearXNG address is "
-            "configured. Set one in Settings → Web search, or switch the "
+            "configured. Set one in Settings, Web search, or switch the "
             "engine to Automatic."
         )
 
@@ -734,7 +738,7 @@ def _get_external(url: str) -> requests.Response:
             response = session.get(
                 pinned,
                 headers={"Host": host_header},
-                timeout=REQUEST_TIMEOUT,
+                timeout=READER_TIMEOUT,
                 stream=True,
                 allow_redirects=False,
             )
@@ -805,17 +809,8 @@ def fetch_readable_cached(url: str) -> dict:
 
 
 @egress.labelled(lambda url, *a, **k: f"Reading a web page: {egress.short(url, 80)}")
-def fetch_readable(url: str) -> dict:
-    """Fetch a page and return its readable text.
-
-    This is what makes "open a result" useful without embedding a browser:
-    scripts, styles and chrome are stripped and only text comes back, so
-    nothing from the page can execute in the app.
-    """
-    # The link may have come from somewhere other than our own results
-    # (an agent, a pasted URL), so clean it here as well rather than trusting
-    # that it was cleaned upstream.
-    url = strip_tracking(url)
+def _fetch_page(url: str):  # noqa: ANN202
+    """(the response, its bytes) for a page, or a `WebSearchError` that says why not."""
     try:
         response = _get_external(url)
         content_type = response.headers.get("content-type", "")
@@ -838,11 +833,30 @@ def fetch_readable(url: str) -> dict:
         raise WebSearchError(
             f"Couldn't open that page: {domain_of(url)} answered with an error ({status})."
         ) from exc
+    except requests.Timeout as exc:
+        raise WebSearchError(
+            f"{domain_of(url)} took too long to answer. Try again, or open the link in your browser."
+        ) from exc
     except requests.RequestException as exc:
         logger.warning("Couldn't open a page for the reader (%s): %s", type(exc).__name__, safe_value(str(exc), 300))
         raise WebSearchError(
             "Couldn't open that page. Check the address and your internet connection."
         ) from exc
+    return response, raw
+
+
+def fetch_readable(url: str) -> dict:
+    """Fetch a page and return its readable text.
+
+    This is what makes "open a result" useful without embedding a browser:
+    scripts, styles and chrome are stripped and only text comes back, so
+    nothing from the page can execute in the app.
+    """
+    # The link may have come from somewhere other than our own results
+    # (an agent, a pasted URL), so clean it here as well rather than trusting
+    # that it was cleaned upstream.
+    url = strip_tracking(url)
+    response, raw = _fetch_page(url)
 
     # Relative links resolve against where the page actually came from
     # (redirects included): never against response.url, which is the

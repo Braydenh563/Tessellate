@@ -46,16 +46,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ink);
-  /* **Opaque base, then the card's own tint over it.** `--card` is glass (a
-     55% wash whose opacity is a setting), so a sticky header painted in it
-     alone has the rows sliding visibly through the text. DESIGN.md's rule for
-     a sticky row inside a tinted surface: composite the tint over something
-     opaque, which here is the page. */
-  /* One shorthand: `--bg` is a gradient in most themes, which
-     `background-color` cannot hold, so the old pair left the base
-     transparent and the rows showed through (INBOX 655). As the shorthand's
-     final layer it is valid whether a theme makes it a gradient or a colour. */
-  background: linear-gradient(var(--card), var(--card)), var(--bg);
+  /* Bare until it sticks (INBOX 1489); the stuck ground is in 08-consistency.css. */
   /* An accent underline rather than a grey rule: the headers are a scale, and
      a 2px grey border under each one reads as a spreadsheet. */
   border-bottom: 2px solid var(--accent-soft);
@@ -634,6 +625,7 @@
   padding: 0.1rem 0;
   margin-top: -0.25rem;
   cursor: pointer;
+  position: relative;
 }
 .entry-more:is(:hover, :focus-visible),
 .entry-more:is(:focus-visible, :has(:focus-visible)) {
@@ -769,7 +761,6 @@
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  opacity: 0.8;
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 .log-source-browser {
@@ -870,7 +861,7 @@
    real console rather than the app's own theme. Fixed dark colours on
    purpose, not theme tokens, the point is "what would have printed to a
    terminal window", and a terminal doesn't switch to light mode along with
-   the rest of the app just because Settings → Appearance does. Doubles as
+   the rest of the app just because Settings, Appearance does. Doubles as
    the answer to User view hiding the console entirely: this is where that
    output goes instead. */
 .log-terminal {
@@ -1360,7 +1351,7 @@
   top: 0;
   z-index: 2;
 }
-/* The changelog inside Settings → About (§36E). Capped and scrollable: it is
+/* The changelog inside Settings, About (§36E). Capped and scrollable: it is
    the whole project history, and letting it push the rest of the About panel
    off the screen would make the version number harder to find, not easier. */
 .changelog-body {

@@ -5,6 +5,10 @@
 // boot carries stand-ins (`LAZY_ENTRY_POINTS.companionMenu`, app.js) that
 // fetch this file on first use and then call the real function.
 
+//: Its far moves and small acts (companion-travel.js, INBOX 1429) and their sheet come with its mind.
+lazyScript("/css/companion-travel-lazy.css");
+lazyScript("/js/companion-travel.js");
+
 //: **The large view.** A click on a face that is not part of a control
 //: opens it big, animated, with what it was read as, so the joke can be
 //: seen at a size where it lands.
@@ -336,7 +340,7 @@ function nameMarkBuddyMenu(buddy, at = null) {
   //: In the enlarged view (`nmb.visit`) only who it is, its look and its
   //: size: a place on the page, Enlarge and Hide mean nothing inside the card.
   const shown = nmb.visit ? items.filter((item) => item.group === "who") : items;
-  openMenuAtPoint(shown, "Companion", at ? at[0] : box.left, at ? at[1] : box.top);
+  openMenuAtPoint(shown, "Companion", at ? at[0] : box.left, at ? at[1] : box.top, face); // Escape returns to the companion (A36)
   const menu = [...document.querySelectorAll(".pointer-menu-host .action-menu, .action-menu.action-menu-escaped")]
     .find((el) => !el.classList.contains("hidden") && el.getBoundingClientRect().width);
   nmb.menu = menu || null;
@@ -513,7 +517,7 @@ function nameMarkViewerBlinks(figure) {
 //: every setting that makes it who it is, kept under a name in this
 //: browser, applied in one press, renamed (its name back in the field, then
 //: saved) and deleted. At most twelve.
-const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion"];
+const NMB_PRESET_KEYS = ["avatar-buddy", "atlas-look", "face-look", "avatar-buddy-custom", "avatar-buddy-size", "avatar-buddy-actions", "avatar-buddy-acts-off", "avatar-buddy-motion", "avatar-buddy-entrances"];
 const NMB_PRESET_MAX = 12;
 let nmbPresetRenaming = "";
 function nameMarkBuddyPresets() {

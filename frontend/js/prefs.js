@@ -193,3 +193,9 @@ function shortcutTitle(base, action) {
   const hint = shortcutHint(action);
   return hint ? `${base} (${hint})` : base;
 }
+
+//: **The one plural helper** (sweep 1028b W14): "1 note", "3 notes", "2 categories".
+//: A count in words goes through this, never `${n} notes` (tests/test_plural_helper.py).
+function nounCount(n, one, many = `${one}s`) {
+  return `${n} ${n === 1 ? one : many}`;
+}

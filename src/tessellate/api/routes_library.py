@@ -28,6 +28,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import cjk
 from tessellate.core.database import (
     Attachment,
     AuditLog,
@@ -41,7 +42,7 @@ from tessellate.core.database import (
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
-from tessellate.entry.manager import extract_title, join_blocks, remove_title, strip_inline_markdown
+from tessellate.entry.manager import extract_title, join_blocks, remove_title, shown_tags, strip_inline_markdown
 from tessellate.entry.properties import strip as strip_properties
 
 router = APIRouter(tags=["library"])
@@ -235,7 +236,7 @@ def _documents(session: Session, q: str = "") -> list[dict]:
     rows = session.scalars(stmt.order_by(Document.updated_at.desc()).limit(PER_KIND_LIMIT))
     items = []
     for doc in rows:
-        words = len(doc.content.split())
+        words = cjk.word_count(doc.content)
         items.append(
             {
                 "kind": "document",
@@ -583,7 +584,7 @@ def _shelved(session: Session) -> list[dict]:
             "preview": _clip(doc.content),
             "updated_at": doc.archived_at.isoformat(),
             "detail": "archived",
-            "size": len(doc.content.split()),
+            "size": cjk.word_count(doc.content),
             "entry_id": None,
             "mime": None,
             "pinned": False,
@@ -696,7 +697,7 @@ def _notes(session: Session, q: str = "") -> list[dict]:
                 # than the earlier "Meeting Notes" sub-tab's `tag:meeting`
                 # in the search box, which matched nothing: this endpoint
                 # never sent tags at all, so it always showed an empty grid.
-                "tags": json.loads(entry.tags) if entry.tags else [],
+                "tags": shown_tags(entry),
                 # Never for a private note, hiding the text but showing a
                 # thumbnail of what it's a photo of would be the same
                 # encryption bypass showing the preview text would be.

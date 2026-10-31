@@ -117,17 +117,20 @@ def test_the_owners_grammar_and_dates(monkeypatch):
     assert "gym Routine" not in plain and "league of Legends" not in plain, plain
     #: A title is said as what was saved, never dropped in as a fragment.
     assert not re.search(r", Gym Routine Overview\.", plain), plain
-    assert "you saved your Gym Routine Overview" in plain, plain
+    #: A sentence of its own since its day is not said (INBOX 1441).
+    assert re.search(r"\b[Yy]ou saved your Gym Routine Overview", plain), plain
     #: A repeated schedule is said as its shape, each day once.
     assert "a Pull, Push, Legs split with rest days" in plain, plain
     assert "Pull, Push, Legs, Rest Day, Pull" not in plain and "Your pull note" not in plain.lower(), plain
     #: A label that only repeats the category is not a note's name.
     assert "hobbies note" not in plain.lower() and "note your" not in plain.lower(), plain
-    assert "you were thinking of buying" in plain, plain
-    #: Time openers vary, and a recent day is said as a person says it.
+    assert re.search(r"\b[Yy]ou were thinking of buying", plain), plain
+    #: Time openers vary. This is the question INBOX 1441 was raised on (the
+    #: owner, 2026-10-29: "I dont like how it refers to dates"): not about
+    #: time, so no day is said, the recent one included.
     openers = re.findall(r"(?:^|\n\n)((?:A|An|About|After|Two|Three|One)[^,]*?(?:later|on|after \w+ \w+)),", plain)
     assert len(openers) == len(set(o.split()[-1] for o in openers)), openers
-    assert "A week ago, on 12 October, you" in plain, plain
+    assert "12 October" not in plain and "A week ago" not in plain, plain
     assert "stunning, and the sound design was huge" in plain, plain
 
 

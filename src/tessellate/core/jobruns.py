@@ -671,12 +671,14 @@ def describe_night_pass(run: "Run", outcome: dict) -> None:
     if outcome.get("paused"):
         run.skip()
         return
-    scanned = int(outcome.get("scanned") or 0)
+    boards = int(outcome.get("boards") or 0)
+    notes = int(outcome.get("scanned") or 0) - boards
     derived = int(outcome.get("derived") or 0)
-    run.result = (
-        f"read {scanned} note{'' if scanned == 1 else 's'}, "
-        f"found {derived} fact{'' if derived == 1 else 's'}"
-    )
+    #: A count says what it counted: the pass reads boards as well as notes.
+    parts = [
+        f"{n} {word}{'' if n == 1 else 's'}" for n, word in ((notes, "note"), (boards, "board")) if n
+    ] or ["0 notes"]
+    run.result = f"read {' and '.join(parts)}, found {derived} fact{'' if derived == 1 else 's'}"
     if outcome.get("stopped_reason") == "budget":
         run.result += " (stopped at its budget)"
 

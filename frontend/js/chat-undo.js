@@ -14,21 +14,22 @@ function chatPut(path, body) {
   return apiJson(`/conversations/${path}`, { method: "PUT", ...(body ? { body: JSON.stringify(body) } : {}) });
 }
 
-function chatTitleUndo(id, before, after) {
+//: Rename, pin and archive toast with Undo, as delete does (A32); `said` replaces the default sentence.
+function chatTitleUndo(id, before, after, said) {
   const name = (title) => async () => {
     await chatPut(id, { title });
     if (chatConv?.id === id) $("chat-title").textContent = title;
   };
-  pushUndo(`Renamed the chat to “${after}”`, chatRepaint(name(before)), chatRepaint(name(after)));
+  offerUndo(`Renamed the chat to “${after}”`, said || `Renamed to “${after}”.`, chatRepaint(name(before)), chatRepaint(name(after)));
 }
 
 function chatPinUndo(id, pinned) {
   const pin = (to) => chatRepaint(() => chatPut(`${id}/pin`, { pinned: to }));
-  pushUndo(pinned ? "Pinned a chat" : "Unpinned a chat", pin(!pinned), pin(pinned));
+  offerUndo(pinned ? "Pinned a chat" : "Unpinned a chat", pinned ? "Pinned." : "Unpinned.", pin(!pinned), pin(pinned));
 }
 
 function chatArchiveUndo(id, title) {
-  pushUndo(`Archived “${title}”`, chatRepaint(() => chatPut(`${id}/unarchive`)), chatRepaint(() => chatPut(`${id}/archive`)));
+  offerUndo(`Archived “${title}”`, "Archived. Find it in Library, Archived.", chatRepaint(() => chatPut(`${id}/unarchive`)), chatRepaint(() => chatPut(`${id}/archive`)));
 }
 
 //: A fork is a new chat, so its undo deletes it and keeps the row the DELETE
@@ -117,4 +118,11 @@ function chatEditUndo(id, turnIndex, cut, newId) {
       }
     }
   );
+}
+
+//: A bare "undo" or "redo" typed in chat (audit 1028 E13), or the line that
+//: says there is nothing to take back.
+function chatHistoryTyped(undo) {
+  if (!surfaceHistory(undo ? "undo" : "redo") && !(undo ? undoStack : redoStack).length) toast(undo ? "Nothing to undo." : "Nothing to redo.");
+  else (undo ? performUndo : performRedo)();
 }

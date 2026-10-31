@@ -33,6 +33,8 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 
+from tessellate.search.snippet import clip_words
+
 _NUMBERS = ("no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve")
 _MONTHS = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 _WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -76,6 +78,12 @@ _PHRASES = (
     (r"\bWas I\b", "Were you"),
 )
 _PHRASE_RES = tuple((re.compile(p), r) for p, r in _PHRASES)
+#: A "was" that shares the writer's "I" across "and": "I walked and was 20
+#: minutes late" is "you walked and were" (INBOX 1420: "you walked and was").
+#: Up to four words between, none of them another subject.
+_AND_WAS = re.compile(
+    r"\bI((?: (?!(?:he|she|it|they|we|you|there|this|that)\b)[a-z']+){1,4},? (?:and|but|or|then)(?: then)?) was(n't)?\b"
+)
 #: "Sam and I", "Sam and me": the person first, as people say it of others.
 _AND_I = re.compile(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)?) and (?:I|me)\b")
 #: A sentence's opening word is not a person: "Then Sam and I" is Sam.
@@ -129,6 +137,7 @@ def _with_you(match: re.Match) -> str:
 
 def _shift_words(text: str) -> str:
     text = _AND_I.sub(_with_you, text)
+    text = _AND_WAS.sub(lambda m: f"I{m.group(1)} were{m.group(2) or ''}", text)
     for pattern, said in _PHRASE_RES:
         text = pattern.sub(said, text)
     return _WORD_RE.sub(lambda m: _case_like(m.group(1), _WORDS[m.group(1).lower()]), text)
@@ -270,17 +279,60 @@ def after_comma(text: str) -> str:
     return text[0].lower() + text[1:]
 
 
+#: Words a clipped name never ends on: "Dentist appointment on 4 November at…"
+#: says nothing, "Dentist appointment on 4 November…" does.
+_DANGLING = frozenset("a an the and or but nor of to in on at for with by from as is are was were my your our their its this that if so then".split())
+
+
+#: A run of Han or kana: a line in it has no spaces to cut at, and each of its
+#: characters says what a word does (INBOX 1495).
+_SPACELESS = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]{6}")
+_CLAUSE_MARK = re.compile(r"[：:、，,。！？!?（(]")
+
+
+def _clip_spaceless(flat: str, limit: int) -> str:
+    """A long line with no spaces, clipped at its first clause mark past a
+    short lead ("考え：仕事を済ませてから、..." as "考え：仕事を済ませてから…"),
+    else at `limit` characters."""
+    for mark in _CLAUSE_MARK.finditer(flat, 4):
+        if mark.start() <= limit:
+            return flat[: mark.start()].rstrip("：:、，,") + "…"
+        break
+    return flat[:limit].rstrip("：:、，,") + "…"
+
+
 def cut_title(title: str, limit: int) -> str:
-    """A title no longer than `limit` characters, cut at a word with an
-    ellipsis, never through one."""
-    title = " ".join((title or "").split())
-    if len(title) <= limit:
-        return title
-    cut = title[: max(1, limit - 1)]
-    space = cut.rfind(" ")
-    if space > 0:
-        cut = cut[:space]
-    return cut.rstrip(" ,;:-") + "…"
+    """The one clip for a name or a line said back (audit 1029 C9): at most
+    `limit` characters, cut at a word with an ellipsis, never through a word
+    and never after a word that cannot end a phrase. Text that fits is
+    returned whole, spaces folded."""
+    flat = " ".join((title or "").split())
+    if _SPACELESS.search(flat) and len(flat) > limit // 3:
+        return _clip_spaceless(flat, limit // 3)
+    clipped = clip_words(flat, limit)
+    if clipped == flat:
+        return flat
+    return " ".join(drop_dangling(clipped.removesuffix("…").split(" "))).rstrip(" ,;:-") + "…"
+
+
+def drop_dangling(words: list[str]) -> list[str]:
+    """`words` without the function words a cut would leave at its end."""
+    words = list(words)
+    while len(words) > 1 and words[-1].lower().strip(",;:") in _DANGLING:
+        words.pop()
+    return words
+
+
+_STOP_AFTER_STOP = re.compile(r"([?!])\.(?!\.)")
+_COMMA_AFTER_STOP = re.compile(r"([?!]),(\s+)(\w)")
+
+
+def mend_stops(text: str) -> str:
+    """`text` without the stop a frame adds after a quote that ends a
+    question or an exclamation: "theme?." is "theme?", and "next?, from your
+    note" is "next? From your note" (audit 1029 C13)."""
+    text = _STOP_AFTER_STOP.sub(r"\1", text)
+    return _COMMA_AFTER_STOP.sub(lambda m: f"{m.group(1)}{m.group(2)}{m.group(3).upper()}", text)
 
 
 # --- the variety floor (decision 51) ------------------------------------------------

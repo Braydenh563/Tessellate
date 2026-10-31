@@ -80,12 +80,16 @@ def ask(client, session, monkeypatch):
     session.commit()
 
     def go(question: str, history: list | None = None) -> str:
-        text = _ask(client, question, notes_only=True, answer_from="notes", history=history or [])["text"]
+        out = _ask(client, question, notes_only=True, answer_from="notes", history=history or [])
+        text = out["text"]
+        #: The next step is the follow-up chips now (INBOX 1466), not a last line.
+        go.chips = "\n".join((out.get("grounding") or [{}])[0].get("next") or [])
         if _DUMP:
             with open(_DUMP, "a", encoding="utf-8") as fh:
                 fh.write(f"### {question}\n{text}\n\n")
         return text
 
+    go.chips = ""
     return go
 
 
@@ -119,7 +123,8 @@ NOT_FOUND = r"could you put it another way|different word|don't mention|do not m
 
 #: Class A, the capability question in any wording (1300 "Wat cna u do??",
 #: K20 "whaty can u do??"): the capability reply, never a note search.
-CAPABILITY = r"Atlas's assistant|I answer from your notes"
+#: The capability answer opens "...works for Atlas" since e343d49; the class is unchanged.
+CAPABILITY = r"Atlas's assistant|works for Atlas|I answer from your notes"
 A_CAPABILITY = [
     "whaty can u do??",
     "wat can u do",
@@ -332,4 +337,4 @@ def test_the_class_holds(ask, cls, turns, must, never):
     for q in turns:
         said = ask(q, history)
         history.append({"question": q, "answer": said})
-    assert _ok(said, must, never), f"[{cls}] {turns[-1]!r} -> {said[:400]!r}"
+    assert _ok(f"{said}\n{ask.chips}", must, never), f"[{cls}] {turns[-1]!r} -> {said[:400]!r}"
