@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: "what's new with X", "news on X" and "where am I with X" are the latest-on-X ask, and a bare checklist item never leads it (audit 1031 C48); a "notes mentioning X" question is the same listing in Ask and Chat (C19)
 - Suggested questions are chips: a quoted "ask me ..." in the Guide, Chat or Ask is lifted by one helper into a one-click chip, and a lint holds every suggesting template to it (INBOX 1497); the Guide leads with the sentence that names the act asked (export, import, print, share, delete, restore, move, rename, attach, pin) from whichever matched topic holds it
 - Chat picks and cards: a vague "a random ahh note" or "pick a note for me" is answered as one of your notes; a caption naming its kind is said once; a source card says its title once with no bare kind word; filler such as "random ahh" is never a chip's subject (INBOX 1496)
 - Words and heads: one word count for every surface, each Han or kana character a word (so a Japanese line is never "1 word"); a long line with no spaces is named by a short clip; the chat head's dot is drawn only between shown chips (INBOX 1495)

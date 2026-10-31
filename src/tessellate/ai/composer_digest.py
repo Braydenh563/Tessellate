@@ -3224,7 +3224,9 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
 
 #: "What's the latest on uni", "the most recent thing about X", "when did I
 #: last ...": the newest note that fits, not the first the search ranked.
-_LATEST_ASK = re.compile(r"\b(?:latest|newest|most recent|recently|lately)\b|\bwhen did i last\b", re.I)
+_LATEST_ASK = re.compile(
+    r"\b(?:latest|newest|most recent|recently|lately)\b|\bwhen did i last\b|\bwhat(?:'s|s| is)\s+new\s+(?:with|on|about)\b"
+    r"|\bnews\s+(?:on|about|with)\b|\bwhere am i (?:at )?with\b", re.I)
 
 
 _PRONOUN_OPENERS = frozenset({"he", "she", "they", "his", "her", "their", "hes", "shes"})
@@ -3264,7 +3266,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: "when did I bake banana bread": the sentence that says the whole
         #: doing leads, whatever else the note holds (audit 1031 C16).
         acts = bool(did_ask and stems and all(composer._holds(st, set(f.sentence.words)) for st in stems))
-        return (acts, _cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: A bare list item ("Passport") is no news of a subject: prose leads a latest ask.
+        prose = not (latest and f.sentence.kind in {"item", "task"})
+        return (acts, _cued(cue, f.sentence.text), prose, id(f.view) not in old, _label_asked(f.label, question), hits, newest, own, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 

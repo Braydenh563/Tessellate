@@ -532,3 +532,56 @@ def test_a_source_card_says_its_title_once_and_no_bare_kind_word():
     assert "function sourceLines(content)" in text and "const lines = sourceLines(entry.content);" in text
     foot = text[text.index('foot.className = "chat-source-foot muted"') - 120 : text.index('foot.className = "chat-source-foot muted"') + 200]
     assert "if (source.url)" in foot and "group?.one" not in foot
+
+
+# C48. "What's new with X", "news on X" and "where am I with X" are the latest-on-X ask.
+
+@pytest.mark.parametrize("question, subject", [
+    ("what's new with uni", "uni"), ("whats new with uni", "uni"), ("what is new with the Lisbon trip", "lisbon trip"),
+    ("any news on Lisbon", "lisbon"), ("news about running", "running"), ("where am I with uni", "uni"),
+    ("where am I at with my taxes", "taxes"), ("what's the latest on Lisbon", "lisbon"), ("what is the newest on uni", "uni"),
+])
+def test_a_news_ask_reads_its_subject_as_a_latest_ask_does(question, subject):
+    from tessellate.ai import note_recency
+
+    assert note_recency.status_subject(question) == subject
+
+
+@pytest.mark.parametrize("question", ["what's new", "what is new with it", "I have a new note about cats", "what is new today", "where am I", "what's the latest"])
+def test_no_news_subject_is_read_where_none_is_named(question):
+    from tessellate.ai import note_recency
+
+    assert note_recency.status_subject(question) == ""
+
+
+@pytest.mark.parametrize("question", ["what's the latest on Lisbon", "what is new with the Lisbon trip", "any news on Lisbon", "where am I with Lisbon"])
+def test_a_status_ask_never_leads_with_a_bare_checklist_item(notebook, question):
+    said, _ = notebook(question)
+    assert not said.lstrip().startswith(("Passport", "Charger", "Sunscreen")), said
+
+
+@pytest.mark.parametrize("question", ["what's new with uni", "any news on uni", "where am I with uni"])
+def test_a_news_ask_on_uni_leads_with_the_newest_uni_note(notebook, question):
+    said, _ = notebook(question)
+    assert "Back in July" not in said, said
+
+
+# C19. "Notes mentioning X" asked as a question is the same listing in Ask and in Chat.
+
+@pytest.mark.parametrize("question", [
+    "what do my notes mentioning Lisbon say", "What do My notes mentioning lisbon saY??", "which notes mention Lisbon",
+    "what do my notes containing Lisbon say", "which of my notes mention Lisbon", "what notes mention Lisbon",
+])
+def test_a_word_notes_question_lists_the_same_notes_in_ask_and_in_chat(client, session, monkeypatch, question):
+    seed_c.seed(session)
+    ask_said, _ = seed_c.asker(client, monkeypatch)(question)
+    chat_said, _ = seed_c.asker(client, monkeypatch, chat=True)(question)
+    assert ask_said.count("](#/notes/") >= 2, ask_said
+    assert ask_said.count("](#/notes/") == chat_said.count("](#/notes/")
+
+
+@pytest.mark.parametrize("question", ["what is due for uni", "what exams do I have", "what tests do I have coming up", "what is due this week"])
+def test_a_due_ask_is_still_a_due_ask(question):
+    from tessellate.ai import composer_lists
+
+    assert composer_lists.computed_kind(question) in {"due_for", "dates"}, question
