@@ -775,7 +775,8 @@ function setDocView(mode, { persist = true } = {}) {
   // guard makes it a no-op and you land back at the top of a long document you
   // were halfway down.
   const editor = docSurface();
-  const editorRange = editor ? editor.scrollHeight - editor.clientHeight : 0;
+  //: Off the Documents tab the editor is hidden and reads 0: skipped, it forced a layout at load (27ms).
+  const editorRange = editor && prefs.get("activeTab", null) === "documents" ? editor.scrollHeight - editor.clientHeight : 0;
   const editorRatio = editorRange > 0 ? editor.scrollTop / editorRange : null;
 
   // The editor is on screen in every mode but Read; the preview is shown in

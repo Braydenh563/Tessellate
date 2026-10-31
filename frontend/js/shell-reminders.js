@@ -338,11 +338,13 @@ function glideStrip(strip) {
       const m = new DOMMatrix(getComputedStyle(strip, "::before").transform);
       from = { x: at.x + m.e, y: at.y + m.f, w: at.w * m.a, h: at.h * m.d };
     }
+    //: Read before the writes: after them the read paid a style pass (3 to 30ms at a tab switch).
+    const tokens = getComputedStyle(strip);
+    const ms = parseFloat(tokens.getPropertyValue("--ui-slow")) * 1000;
+    const ease = tokens.getPropertyValue("--ease-in-out").trim() || "ease-in-out";
     for (const k of ["x", "y", "w", "h"]) strip.style.setProperty(`--glide-${k}`, `${next[k]}px`);
     if (!strip.classList.contains("has-glide")) strip.classList.add("has-glide");
     at = next;
-    const tokens = getComputedStyle(strip);
-    const ms = parseFloat(tokens.getPropertyValue("--ui-slow")) * 1000;
     if (!from || !ms || !window.KeyframeEffect || !("pseudoElement" in KeyframeEffect.prototype)) return;
     for (const running of strip.getAnimations({ subtree: true })) {
       if (running.effect?.pseudoElement === "::before") running.cancel();
@@ -352,7 +354,7 @@ function glideStrip(strip) {
         { transform: `translate(${from.x - next.x}px, ${from.y - next.y}px) scale(${from.w / next.w}, ${from.h / next.h})` },
         { transform: "none" },
       ],
-      { duration: ms, easing: tokens.getPropertyValue("--ease-in-out").trim() || "ease-in-out", pseudoElement: "::before" }
+      { duration: ms, easing: ease, pseudoElement: "::before" }
     );
   };
   strip.glide = place;

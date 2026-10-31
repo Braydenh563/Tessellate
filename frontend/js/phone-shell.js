@@ -490,13 +490,16 @@ document.addEventListener("keydown", (e) => {
 //: Tab's starting point stays where a removed splash or lock screen sat, so
 //: the first Tab skipped "Skip to content" (INBOX 1326): focusing the body
 //: puts it back at the top, unless something real already has focus.
+//: After the frame, checked then (a field focused meanwhile keeps it): focus() here forced the layout, 38 to 47ms.
 function tabFromTop() {
-  const b = document.body, a = document.activeElement;
-  //: Focus inside a lock screen that is still open stays (sweep 1028b W9: the splash going away took it off the password field).
-  if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
-  b.tabIndex = -1;
-  b.focus({ preventScroll: true });
-  b.removeAttribute("tabindex");
+  afterFrames(() => setTimeout(() => {
+    const b = document.body, a = document.activeElement;
+    //: A focus inside an open lock screen stays (sweep 1028b W9).
+    if (a && a !== b && !($("lock-overlay").contains(a) && $("lock-overlay").classList.contains("hidden"))) return;
+    b.tabIndex = -1;
+    b.focus({ preventScroll: true });
+    b.removeAttribute("tabindex");
+  }), 1);
 }
 
 new MutationObserver((_, seen) => {
