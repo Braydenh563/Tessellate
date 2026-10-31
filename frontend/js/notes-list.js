@@ -2205,9 +2205,21 @@ $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
 $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
 $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
 //: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
+//: Offline the file is not there (and the failed fetch is forgotten, app.js `lazyScript`), so the bar says
+//: so once and points at the Capture section, whose box is in the page already.
+//: Fetched a few seconds after boot too, while the server answers: the service worker keeps only what
+//: the page has already asked for, so a card never opened before going offline would not be there.
+setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
+function captureCardNeedsConnection(event) {
+  if (event.type === "input") return;
+  lazyLoadFailed("The capture bar");
+}
 for (const type of ["focusin", "click", "input"]) {
   $("capture-bar-row")?.addEventListener(type, (event) => {
-    Promise.all(["/css/capture-card-lazy.css", "/js/capture-card.js"].map(lazyScript)).then(() => openCaptureCard(event.target, event.type));
+    ensureModule("captureCard").then((loaded) => {
+      if (loaded) openCaptureCard(event.target, event.type);
+      else captureCardNeedsConnection(event);
+    });
   });
 }
 

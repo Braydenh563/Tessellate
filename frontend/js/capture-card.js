@@ -297,7 +297,7 @@ function openCaptureCard(from, type) {
   if (captureCard.root.hidden) showCaptureCard(from);
   const pick = type === "click" && Boolean(from?.closest?.("#capture-bar-picture"));
   //: The colour dots, the bell, the pictures and the tag suggestions are the second lazy file.
-  lazyScript("/js/capture-card-more.js").then(() => mountCaptureExtras(pick));
+  lazyScript("/js/capture-card-more.js").then((ok) => ok && mountCaptureExtras(pick));
 }
 
 function showCaptureCard(from) {
