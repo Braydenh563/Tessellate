@@ -51580,3 +51580,5 @@ Fixed:
 
 1471. **The owner, 2026-10-31, verbatim:** "I think that if i click on a graph node and it shows the popup, if I click on the same one again the popup should   close". Agent snapgraph-1031.
 
+1468. **The owner, 2026-10-31, verbatim (screenshot: Reminders, Overdue 1, "Do my tax return when I get home" open for editing, 20/10/2026 08:00 PM, Normal, Once, No alert, Save sits flush under the fields):** "I cant save or edit an overdue reminder or possible regular reminders??also the save button has no vertical gap above". Agent remfix-1031.
+
