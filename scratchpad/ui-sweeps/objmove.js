@@ -21,7 +21,7 @@ async function center(page, sel, i) {
   return page.evaluate(([sel, i]) => { const r = [...document.querySelectorAll(sel)].filter((e) => e.offsetParent)[i].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; }, [sel, i]);
 }
 // A real press, hold, move in steps, optional release.
-async function drag(page, from, to, { hold = 220, release = true, steps = 14 } = {}) {
+async function drag(page, from, to, { hold = 320, release = true, steps = 14 } = {}) {
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
   await page.waitForTimeout(hold);

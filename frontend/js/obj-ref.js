@@ -121,7 +121,7 @@ const OBJ_STAGE = {
   image: (ref) => {
     if (attachedImages.some((row) => String(row.id) === String(ref.id))) return true;
     if (attachedImages.length >= 4) return false;
-    attachedImages.push({ id: ref.id, url: ref.url, name: ref.title });
+    attachedImages.push({ id: ref.id, url: ref.url, name: ref.title, key: `obj-${ref.id}` });
     renderImageAttachments();
     return true;
   },

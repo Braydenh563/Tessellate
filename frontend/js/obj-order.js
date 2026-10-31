@@ -11,7 +11,10 @@
 // keeps the place it had.
 
 //: Rank of keys the stored order has never seen. Below every listed key, so a
-//: new object appears at the top, where "newest first" would have put it.
+//: brand-new object appears at the top, where "newest first" would have put it.
+//: The first reorder of a list stores *every* object (`objReorderCommit`), so
+//: only what is made after that is unlisted, and never a note that was simply
+//: off the page.
 const OBJ_UNLISTED = -1;
 const OBJ_ORDER_LIMIT = 5000;
 
@@ -50,14 +53,16 @@ function objMoveKey(keys, from, to) {
   return out;
 }
 
-//: The stored order after a drop. `before` and `after` are the visible keys
-//: in screen order before and after the move (the same set). Items the stored
-//: order lacks are added where they were on screen, then the places the
-//: visible items hold are handed out again in the new order, so a slice's
-//: reorder leaves every item that was off screen exactly where it was.
+//: The stored order after a drop. `stored` is the whole list as it is shown
+//: now (the first time) or the order kept. `before` and `after` are the
+//: visible keys in screen order before and after the move (the same set).
+//: A visible item `stored` lacks goes first, as it ranks (`OBJ_UNLISTED`),
+//: then the places the visible items hold are handed out again in the new
+//: order, so a slice's reorder leaves every item that was off screen exactly
+//: where it was.
 function objMergeOrder(stored, before, after) {
   const seen = new Set(stored);
-  const full = stored.concat(before.filter((key) => !seen.has(key)));
+  const full = before.filter((key) => !seen.has(key)).concat(stored);
   const shown = new Set(after);
   const slots = [];
   full.forEach((key, index) => shown.has(key) && slots.push(index));

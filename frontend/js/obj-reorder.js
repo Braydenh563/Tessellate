@@ -10,12 +10,31 @@
 
 //: The lists that can be put in order. `list` holds the cards as direct
 //: children (`unit` says which); `select` is the sort control the list already
-//: has, which gains a "Custom order" option.
+//: has, which gains a "Custom order" option. `all()` names every object of the
+//: list (not only the page or the filter on screen) in the sort it has now: the
+//: first reorder stores that, so nothing off the page is left unplaced.
+//: `top()` is a test for the cards a sort keeps first whatever the order.
 const OBJ_SURFACES = [
-  { scope: "notes", list: "#entry-list", unit: "li[data-id]", select: "note-sort" },
-  { scope: "docs", list: "#library-docs-list", unit: "li", select: "library-docs-sort" },
-  { scope: "boards", list: "#library-boards-grid", unit: ".library-board-card", select: "library-boards-sort" },
-  { scope: "media", list: "#library-images-grid", unit: ".library-image-tile", select: "library-media-sort" },
+  {
+    scope: "notes", list: "#entry-list", unit: "li[data-id]", select: "note-sort",
+    all: () => sortEntries(allEntries).map((entry) => `note:${entry.id}`),
+    top: () => {
+      const pinned = new Set(allEntries.filter((entry) => entry.pinned).map((entry) => `note:${entry.id}`));
+      return (key) => pinned.has(key);
+    },
+  },
+  {
+    scope: "docs", list: "#library-docs-list", unit: "li", select: "library-docs-sort",
+    all: () => [...libraryDocsAll].sort(LIBRARY_DOC_SORTS[libraryDocSort()]).map((doc) => `document:${doc.id}`),
+  },
+  {
+    scope: "boards", list: "#library-boards-grid", unit: ".library-board-card", select: "library-boards-sort",
+    all: () => wbVisibleBoards(window.wbBoardsAll || [], "").filter((board) => board.id !== null).map((board) => `${board.type === "map" ? "map" : "board"}:${board.id}`),
+  },
+  {
+    scope: "media", list: "#library-images-grid", unit: ".library-image-tile", select: "library-media-sort",
+    all: () => [...libraryImagesCache].sort(LIBRARY_MEDIA_SORTS[libraryMediaSort()]).map((row) => `${row._isImage && !row._isAttachment ? "image" : "file"}:${row.id}`),
+  },
 ];
 
 //: A list item's reference: the item is the card, or wraps it (a document row's `li`).
@@ -51,18 +70,33 @@ function objSetSort(def, value) {
   select.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
+//: The visible keys in the order the list would show them under `order`.
+function objShownUnder(def, keys, order) {
+  const at = new Map(order.map((key, i) => [key, i]));
+  const top = def.top?.() || (() => false);
+  return keys.slice().sort((a, b) => Number(top(b)) - Number(top(a)) || at.get(a) - at.get(b));
+}
+
 //: The one place a new order is stored, the sort switched and Undo offered.
-//: `keys` are the visible cards' keys in screen order before the move.
-function objReorderCommit(def, ref, keys, from, to) {
+//: `keys` are the visible cards' keys in screen order before the move. False,
+//: and nothing at all changed, when the list would look the same afterwards (a
+//: drag round a pinned note: pinned notes stay on top in every order).
+function objReorderCommit(def, ref, keys, from, to, quiet = false) {
   const stored = objOrderLoad(def.scope);
-  const next = objMergeOrder(stored, keys, objMoveKey(keys, from, to));
+  const whole = def.all?.() || [];
+  const next = objMergeOrder(whole.length ? whole : stored, keys, objMoveKey(keys, from, to));
+  if (objShownUnder(def, keys, next).every((key, i) => key === keys[i])) return false;
   const was = $(def.select)?.value || "newest";
   const apply = (order, sort) => {
     objOrderSave(def.scope, order);
     objSetSort(def, sort);
+    objRefocus(def, objKey(ref), 90);
   };
   apply(next, "custom");
-  offerUndo(`Move ${ref.title}`, `Moved “${ref.title}”`, () => apply(stored, was), () => apply(next, "custom"));
+  //: A key press is announced and Ctrl+Z undoes it; a toast for each press piled up.
+  if (quiet) pushUndo(`Move ${ref.title}`, () => apply(stored, was), () => apply(next, "custom"));
+  else offerUndo(`Move ${ref.title}`, `Moved “${ref.title}”`, () => apply(stored, was), () => apply(next, "custom"));
+  return true;
 }
 
 //: --- The pointer mode ----------------------------------------------------------
@@ -133,18 +167,27 @@ OBJ_MODES.reorder = { grab: objReorderGrab, begin: objReorderBegin, update: objR
 function objReorderKey(event) {
   const dir = { ArrowUp: -1, ArrowDown: 1 }[event.key];
   if (!dir || !event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
+  //: A field's own Alt+Arrow (a rename box inside a card) is not a move.
+  if (event.target?.closest?.(OBJ_EDITABLE)) return;
   const hit = objSurfaceAt(document.activeElement);
-  const ref = hit && objUnitRef(hit.unit);
-  if (!ref) return;
+  if (!hit || !objUnitRef(hit.unit)) return;
   event.preventDefault();
   event.stopPropagation();
+  objReorderStep(hit, dir);
+}
+
+//: One place up or down: the keys' move and the card menu's Move up and Move
+//: down rows (a drag has to have a way that is not a drag). `hit` is
+//: `objSurfaceAt`'s. A key press is said and undone by Ctrl+Z; a menu click
+//: (a phone has no keys) gets the toast with Undo.
+function objReorderStep(hit, dir, byKey = true) {
+  const ref = objUnitRef(hit.unit);
   const keys = objUnitsOf(hit.list, hit.def).map(objUnitKey);
   const from = keys.indexOf(objKey(ref));
   const to = from + dir;
   if (to < 0 || to >= keys.length) return announce(`${ref.title} is already ${dir < 0 ? "first" : "last"}.`);
-  objReorderCommit(hit.def, ref, keys, from, to);
-  announce(`Moved ${ref.title} to place ${to + 1} of ${keys.length}.`);
-  objRefocus(hit.def, objKey(ref), 90);
+  if (!objReorderCommit(hit.def, ref, keys, from, to, byKey)) return announce(`${ref.title} cannot move there.`);
+  if (byKey) announce(`Moved ${ref.title} to place ${to + 1} of ${keys.length}. Ctrl+Z undoes it.`);
 }
 
 //: The list is drawn again after a move, sometimes twice (a document list

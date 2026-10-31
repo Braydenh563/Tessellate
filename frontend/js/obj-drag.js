@@ -1,8 +1,11 @@
 // obj-drag.js: the one pointer gesture for moving an object (INBOX 1467,
 // parts 2 and 4). Lazy, loaded by obj-ref.js. A press on a card arms it; the
-// gesture goes live only after the pointer has moved 5px and been held 150ms,
-// so a click, a double click, a scroll flick and a text selection are
-// untouched. While live a small ghost card follows the pointer and the
+// gesture goes live only when the pointer moves after a *still* hold of 250ms
+// (under 4px of travel meanwhile), or at once from a visible grip
+// (`OBJ_GRIP`). A move before the hold is over is a text selection or a swipe
+// and lets the press go, and a press that starts inside selected text is
+// never a drag, so a click, a double click, a scroll flick and a slow text
+// selection on a card are untouched. While live a small ghost card follows the pointer and the
 // current mode (`OBJ_MODES`: obj-reorder.js's `reorder`, obj-carry.js's
 // `carry`) decides what the pointer is over, and may hand the gesture to another
 // mode (`route`). Escape or a press of another
@@ -10,8 +13,12 @@
 // a scroll, and a long-press drag for touch is left for a device that can
 // check it.
 
-const OBJ_DRAG_PX = 5;
-const OBJ_DRAG_MS = 150;
+//: Travel that ends a still hold (and, after the hold, starts the drag).
+const OBJ_DRAG_PX = 4;
+//: How long a press must stay still before a move is a drag.
+const OBJ_DRAG_MS = 250;
+//: A visible handle on a card: a press on it is a drag from the first move.
+const OBJ_GRIP = "[data-obj-grip]";
 //: Where a press never starts a drag: the card's own controls.
 const OBJ_NO_GRAB = "input, select, textarea, [contenteditable='true'], button, a[href], summary, [draggable='true'], .chip-interactive, .menu-wrap, label";
 const OBJ_ICON = { note: "ph-note", document: "ph-file-text", board: "ph-squares-four", map: "ph-tree-structure", image: "ph-image", file: "ph-file" };
@@ -35,17 +42,32 @@ function objGhostMake(ref) {
   return ghost;
 }
 
+function objPressOnGrip(target) {
+  return Boolean(target?.closest?.(OBJ_GRIP));
+}
+
+//: Whether the press lands on words that are selected: it belongs to the
+//: selection (drag the words, or click to clear them), never to a card drag.
+function objPressInSelection(event) {
+  const selection = window.getSelection?.();
+  if (!selection || selection.isCollapsed || !selection.rangeCount) return false;
+  const { clientX: x, clientY: y } = event;
+  return [...selection.getRangeAt(0).getClientRects()].some((r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom);
+}
+
 //: Whether a press may arm a drag, and from which card: `{ card, ref }`.
 //: The modes' `grab(hit)` may add to it (the reorder mode's surface).
 function objDragSeed(event) {
   if (event.button !== 0 || event.pointerType === "touch" || event.defaultPrevented) return null;
+  const grip = objPressOnGrip(event.target);
   const control = event.target.closest?.(OBJ_NO_GRAB);
   //: A tray item is a button you click to paste and also drag out.
-  if (control && !control.matches(".obj-tray-use")) return null;
+  if (control && !control.matches(".obj-tray-use") && !grip) return null;
+  if (!grip && objPressInSelection(event)) return null;
   const hit = objCardAt(event.target);
   if (!hit) return null;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
-  return mode ? { ...hit, mode, ...OBJ_MODES[mode].grab(hit) } : null;
+  return mode ? { ...hit, mode, grip, ...OBJ_MODES[mode].grab(hit) } : null;
 }
 
 function objDragArm(event) {
@@ -53,6 +75,9 @@ function objDragArm(event) {
   if (!seed) return;
   objDragNow = { ...seed, id: event.pointerId, x0: event.clientX, y0: event.clientY, x: event.clientX, y: event.clientY, t0: event.timeStamp, live: false };
   objDragListen(true);
+  //: The hold is over: the cursor says the card can be taken now.
+  const g = objDragNow;
+  g.cue = setTimeout(() => g.card.classList.add("obj-armed"), g.grip ? 0 : OBJ_DRAG_MS);
 }
 
 function objDragListen(on) {
@@ -70,12 +95,13 @@ function objDragNoNative(event) {
   event.preventDefault();
 }
 
-//: Past the distance too early is a swipe or a selection, not a hold: the
-//: press is let go of. Held long enough and then moved is the drag.
+//: Moving before the hold is over is a swipe or a text selection, not a drag:
+//: the press is let go of. Held still long enough and then moved is the drag,
+//: and a grip needs no hold.
 function objDragVerdict(g, event) {
   const far = Math.hypot(event.clientX - g.x0, event.clientY - g.y0) >= OBJ_DRAG_PX;
   if (!far) return "wait";
-  return event.timeStamp - g.t0 >= OBJ_DRAG_MS ? "start" : "swipe";
+  return g.grip || event.timeStamp - g.t0 >= OBJ_DRAG_MS ? "start" : "swipe";
 }
 
 function objDragMove(event) {
@@ -161,6 +187,8 @@ function objDragFinish(cancel, event) {
   const g = objDragNow;
   objDragNow = null;
   objDragListen(false);
+  clearTimeout(g?.cue);
+  g?.card.classList.remove("obj-armed");
   if (!g?.live) return;
   cancelAnimationFrame(g.tick);
   OBJ_MODES[g.mode][cancel ? "cancel" : "drop"](g, event);

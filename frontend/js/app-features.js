@@ -172,6 +172,8 @@ function featureCatalog() {
       { name: "Accessibility", desc: "High-contrast mode and reduce-motion.", reveal: "set-contrast" },
       { name: "Custom CSS", desc: "For tinkerers: your own style overrides.", reveal: "set-custom-css" },
       { name: "Zoom the whole app", desc: "Ctrl with plus or minus scales every surface, and Ctrl+0 puts it back.", act: () => nudgeZoom(1) },
+      { name: "Tray", desc: "Hold a few cards (notes, documents, boards, pictures) while you change page, then paste or drag them out.", act: () => $("status-tray")?.click() },
+      { name: "Your own order", desc: "Drag a card, or press Alt+Up or Alt+Down on it, to set Custom order in Notes and the Library; Ctrl+C copies a card.", reveal: "notes-order" },
       { name: "Dashboard layout", desc: "Show, hide, reorder and widen widgets.", reveal: "dash-layout" },
       // Workspaces are the top-left control every tab is filtered by, and
       // nothing in either list said they existed.

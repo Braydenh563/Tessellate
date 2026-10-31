@@ -6376,7 +6376,7 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     ref = (js / "obj-ref.js").read_text(encoding="utf-8")
     assert "function objRefFromCard" in ref and "function objRender" in ref
     drag = (js / "obj-drag.js").read_text(encoding="utf-8")
-    assert "OBJ_DRAG_PX = 5" in drag and "OBJ_DRAG_MS = 150" in drag and '"Escape"' in drag
+    assert "OBJ_DRAG_PX = 4" in drag and "OBJ_DRAG_MS = 250" in drag and '"Escape"' in drag
     reorder = (js / "obj-reorder.js").read_text(encoding="utf-8")
     assert "offerUndo" in reorder and "altKey" in reorder
     css = (ROOT / "frontend" / "css" / "objmove-lazy.css").read_text(encoding="utf-8")

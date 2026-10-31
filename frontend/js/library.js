@@ -3079,6 +3079,7 @@ let libraryDocsCurrentPage = 1;
 //: anything: sorting a slice would reorder ten rows within a page and leave
 //: the pages themselves in the server's order, so "longest first" would show
 //: the longest of page two rather than the longest there is.
+let libraryDocsAll = [];
 const LIBRARY_DOC_SORTS = {
   newest: (a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")),
   oldest: (a, b) => String(a.updated_at || "").localeCompare(String(b.updated_at || "")),
@@ -3320,6 +3321,8 @@ async function renderLibraryDocuments() {
     clearSkeletons(list);
   }
   surfaceRecovered(empty);
+  //: Every document, before any filter or page: the first reorder stores this (obj-reorder.js).
+  if (!needle) libraryDocsAll = docs;
 
   //: The property filter's options come from what the *search* left, so the
   //: control offers the properties of the documents on screen rather than of

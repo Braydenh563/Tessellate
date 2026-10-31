@@ -38,7 +38,7 @@ def test_ctrl_c_on_a_focused_card_puts_the_link_on_both_clipboards() -> None:
     assert out["clip"] == {"kind": "note", "id": 5, "title": "Five", "url": ""}
     assert out["sent"] == {"text/plain": "[[Five]]"}
     assert out["prevented"] is True
-    assert out["toasts"] == ["Copied “Five”."]
+    assert out["toasts"] == ["Copied “Five”"]
 
 
 @needs_node

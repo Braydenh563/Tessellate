@@ -24505,6 +24505,7 @@ function drawLibraryBoardsGallery(listed) {
   if (!boards.length && window.currentBoardId == null) {
     for (const opt of $("wb-board-select")?.querySelectorAll('option[value=""]') || []) opt.remove();
   }
+  window.wbBoardsAll = boards;
   const inScope = window.wbBoardsOfTypeFilter(boards);
   const needle = ($("library-boards-search")?.value || "").trim().toLowerCase();
   const shown = window.wbVisibleBoards(inScope, needle);

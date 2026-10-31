@@ -1552,17 +1552,16 @@ function entryOverflowMenu(entry) {
   //: using the same icon as the other builder fixes the centring and the
   //: drift in one go.
   const opener = smallButton("ph:dots-three", "More actions", () => {
+    //: Built now, and given the card rows (Copy, Move, Add to tray) as `kebabMenu` gives them.
+    fillMenu();
+    window.objKebabRows?.(menu);
     // The phone's action sheet, as `kebabMenu` opens (`openKebabSheet`).
     if (window.matchMedia(PHONE_ACTION_SHEET).matches) {
-      fillMenu();
       openKebabSheet(menu, opener, "Note actions");
       return;
     }
-    const willOpen = menu.classList.contains("hidden");
-    if (willOpen) {
-      fillMenu();
-      openActionMenu(menu, opener);
-    } else closeActionMenus();
+    if (menu.classList.contains("hidden")) openActionMenu(menu, opener);
+    else closeActionMenus();
   });
   opener.classList.add("icon-only");
   opener.setAttribute("aria-haspopup", "menu");

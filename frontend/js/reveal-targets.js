@@ -468,6 +468,7 @@ const REVEAL_TARGETS = {
   "tidy-links": { tab: "notes", open: () => openTidySheet("link-reasons"), sel: "#tidy-review", built: "openTidySheet", flash: false },
   "tidy-duplicates": { tab: "notes", open: () => openTidySheet("duplicates"), sel: "#tidy-review", built: "openTidySheet", flash: false },
   "tag-manager": { open: () => openTagsSheet(), sel: '[data-sheet="tags"] .sheet-card', built: "openTagsSheet", flash: false },
+  "notes-order": { tab: "notes", el: "entry-list" },
   "notes-review": { tab: "notes", open: () => showNotesFilter("is:review"), el: "note-search" },
 
   // Plan and focus: the dashboard's widgets

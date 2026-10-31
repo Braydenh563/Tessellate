@@ -39,7 +39,11 @@ def test_a_slice_is_reordered_in_the_places_it_already_held() -> None:
 
 
 @needs_node
-def test_unlisted_objects_come_first_and_the_comparator_is_stable() -> None:
+def test_a_brand_new_object_comes_first_and_the_comparator_is_stable() -> None:
+    """Moved intent (review 1031): this test used to say "unlisted objects come
+    first" because the first reorder of a slice stored only the slice, so every
+    note off the page was unlisted and ranked above the ones just arranged. The
+    first reorder now stores the whole list, so unlisted means made since."""
     out = run(FILES, STUBS + """
       objOrderSave("docs", ["document:3", "document:1", "document:2"]);
       const items = [{ id: 2 }, { id: 9 }, { id: 1 }, { id: 8 }, { id: 3 }];
@@ -48,6 +52,15 @@ def test_unlisted_objects_come_first_and_the_comparator_is_stable() -> None:
     """)
     assert out["sorted"] == [9, 8, 3, 1, 2], "new ones first, in the order they came"
     assert out["rank"] == 1 and out["none"] == -1
+
+
+@needs_node
+def test_a_visible_item_the_order_lacks_is_placed_first_as_it_ranks() -> None:
+    out = run(FILES, STUBS + """__out([
+      // page one holds a new note on top; the stored order has the rest
+      objMergeOrder(["a","b","c","d"], ["n","a","b"], ["a","n","b"]),
+    ])""")
+    assert out[0] == ["a", "n", "b", "c", "d"]
 
 
 @needs_node
@@ -101,5 +114,5 @@ def test_a_drop_only_stores_when_the_place_is_new_and_goes_through_the_undo_cont
     assert "g.index !== g.start" in drop and "objReorderCommit" in drop
     assert "offerUndo(" in reorder, "the move is one Undo"
     drag = (JS / "obj-drag.js").read_text(encoding="utf-8")
-    assert "OBJ_DRAG_PX = 5" in drag and "OBJ_DRAG_MS = 150" in drag
+    assert "OBJ_DRAG_PX = 4" in drag and "OBJ_DRAG_MS = 250" in drag
     assert '"Escape"' in drag
