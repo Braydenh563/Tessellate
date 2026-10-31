@@ -37,14 +37,20 @@ def test_no_unanchored_link_strip_crosses_the_next_bracket():
 @pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
 def test_the_link_strips_finish_on_a_wall_of_brackets():
     script = r"""
-const rs = [/!\[([^[\]\n]*)\]\([^()\n]*\)/g, /\[([^[\]\n]*)\]\([^()\n]*\)/g, /!?\[([^[\]\n]*)\]\([^()\n]*\)?/g];
+const rs = [/!\[([^[\]\n]*)\]\([^()\n]*\)/g, /\[([^[\]\n]*)\]\([^()\n]*\)/g, /!?\[([^[\]\n]*)\]\([^()\n]*\)?/g,
+            /!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g];
 for (const s of ["[".repeat(40000), "[a](".repeat(20000)]) for (const r of rs) s.replace(r, "$1");
 const said = "see [the docs](https://x.y/z) and ![pic](a.png)".replace(rs[2], "$1");
 if (said !== "see the docs and pic") throw new Error(said);
+const aliased = "see [the docs|alias](https://x.y/z)".replace(rs[3], "$1");
+if (aliased !== "see the docs") throw new Error(aliased);
 """
     for path, needle in (
         ("documents-prose.js", r"/\[([^[\]\n]*)\]\([^()\n]*\)/g"),
-        ("navigation.js", r"/!?\[([^[\]\n]*)\]\([^()\n]*\)?/g"),
+        #: The alias after "|" is dropped (UX review 1031, a48d533) in a
+        #: separate group, so the two runs never overlap.
+        ("navigation.js", r"/!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g"),
+        ("desk-companion.js", r"/!?\[([^[\]\n|]*)(?:\|[^[\]\n]*)?\]\([^()\n]*\)?/g"),
     ):
         assert needle in (ROOT / "frontend" / "js" / path).read_text(encoding="utf-8"), path
     subprocess.run(["node", "-e", script], check=True, timeout=60)

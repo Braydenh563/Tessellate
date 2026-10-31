@@ -28,7 +28,9 @@ def test_a_reply_head_is_drawn_once_per_face_and_copied() -> None:
     later one is a deep copy, and no reply head starts a p5 sketch
     (chatheads.js: 0 canvases in 150 replies)."""
     app = app_js_text()
-    paint = _function(app, "paintPersonaAvatar") + _function(app, "assistantAvatar")
+    #: A persona's face is drawn in `paintNamedHead` once the faces are in
+    #: (bootlazy-1031, `afterCharacters`); the rule follows it there.
+    paint = _function(app, "paintPersonaAvatar") + _function(app, "paintNamedHead") + _function(app, "assistantAvatar")
     assert "renderEmblem" not in paint, "a reply head builds a p5 sketch again"
     assert "chatHeadSources.get(key)" in paint
     assert "source.cloneNode(true)" in paint or "face.cloneNode(true)" in paint
