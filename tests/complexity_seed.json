@@ -44,7 +44,6 @@
  "src/tessellate/ai/lexical_filing.py::_corpus_for": 26,
  "src/tessellate/ai/lexical_filing.py::_tally": 25,
  "src/tessellate/ai/lexical_filing.py::_with_proposal": 18,
- "src/tessellate/ai/margin.py::read": 39,
  "src/tessellate/ai/meeting_summary.py::parse_reply": 19,
  "src/tessellate/ai/notebook_stats.py::_top_subjects": 16,
  "src/tessellate/ai/notebook_stats.py::answer": 17,
