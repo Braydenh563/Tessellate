@@ -185,7 +185,9 @@ def test_a_submenu_is_a_menu_in_a_menu_with_a_nested_level_where_a_flyout_cannot
     close = app.split("function closeActionMenus(", 1)[1][:1500]
     assert "menu-nested" in close and "menu-group-open" in close, "a closed menu would reopen inside its nested level"
     lib = (ROOT / "frontend" / "js" / "library.js").read_text(encoding="utf-8")
-    assert "Text and description" in lib and "items: words" in lib, "the picture card's text rows are a flat list again"
+    #: The group's rows are filtered in place now (submenu-1031 compacted it
+    #: for the boot budget); the intent, one group holding the text rows, holds.
+    assert re.search(r'Text and description", items: (?:words|menuRows\.filter)', lib), "the picture card's text rows are a flat list again"
     clip = (ROOT / "frontend" / "js" / "obj-clip.js").read_text(encoding="utf-8")
     assert "OBJ_MENU_FOLD = 10" in clip and "buildMenuGroupButton(" in clip, "a card's own rows no longer fold past ten"
 

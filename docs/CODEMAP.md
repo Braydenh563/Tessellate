@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7034, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7773, test files 1661, tests 14379, plan headings 990.
+Counts: frontend functions 7033, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7773, test files 1661, tests 14379, plan headings 990.
 
-## Frontend functions (7034)
+## Frontend functions (7033)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -979,7 +979,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `routerPaintTitle` | frontend/js/router.js:161 |
 | `routerRestore` | frontend/js/router.js:240 |
 
-### frontend/js/settings-panes.js (39)
+### frontend/js/settings-panes.js (38)
 
 | Name | File:line |
 |---|---|
@@ -988,7 +988,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `autoGrowLimit` | frontend/js/settings-panes.js:32 |
 | `autoGrowStillFits` | frontend/js/settings-panes.js:170 |
 | `autoGrowVisible` | frontend/js/settings-panes.js:201 |
-| `catalogueRun` | frontend/js/settings-panes.js:1183 |
+| `catalogueRun` | frontend/js/settings-panes.js:1177 |
 | `chatDockReleaseRing` | frontend/js/settings-panes.js:348 |
 | `chatDockSuppressRing` | frontend/js/settings-panes.js:329 |
 | `checkForSourceUpdateNotice` | frontend/js/settings-panes.js:835 |
@@ -996,7 +996,6 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `downloadExport` | frontend/js/settings-panes.js:1053 |
 | `fitChatEmpty` | frontend/js/settings-panes.js:290 |
 | `fitComposerToDock` | frontend/js/settings-panes.js:244 |
-| `flashRevealed` | frontend/js/settings-panes.js:1178 |
 | `hud` | frontend/js/settings-panes.js:1124 |
 | `initAutoGrow` | frontend/js/settings-panes.js:441 |
 | `initComposerResize` | frontend/js/settings-panes.js:363 |
@@ -1004,10 +1003,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `markPrefsDirty` | frontend/js/settings-panes.js:982 |
 | `markPrefsSaved` | frontend/js/settings-panes.js:998 |
 | `nudgeZoom` | frontend/js/settings-panes.js:1145 |
-| `paletteAbouts` | frontend/js/settings-panes.js:1511 |
-| `paletteCommands` | frontend/js/settings-panes.js:1233 |
-| `paletteKeys` | frontend/js/settings-panes.js:1497 |
-| `paletteRowParts` | frontend/js/settings-panes.js:1522 |
+| `paletteAbouts` | frontend/js/settings-panes.js:1505 |
+| `paletteCommands` | frontend/js/settings-panes.js:1227 |
+| `paletteKeys` | frontend/js/settings-panes.js:1491 |
+| `paletteRowParts` | frontend/js/settings-panes.js:1516 |
 | `refitComposer` | frontend/js/settings-panes.js:269 |
 | `renderAccount` | frontend/js/settings-panes.js:488 |
 | `renderAutonomousSettings` | frontend/js/settings-panes.js:752 |
@@ -5756,7 +5755,7 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | Name | File:line |
 |---|---|
 | `buildShortcutList` | frontend/js/reveal-targets.js:701 |
-| `flashRevealedNow` | frontend/js/reveal-targets.js:801 |
+| `flashRevealed` | frontend/js/reveal-targets.js:801 |
 | `foldedText` | frontend/js/reveal-targets.js:625 |
 | `markNotePassage` | frontend/js/reveal-targets.js:654 |
 | `notePassageFor` | frontend/js/reveal-targets.js:613 |

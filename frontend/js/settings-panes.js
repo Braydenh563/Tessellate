@@ -1173,12 +1173,6 @@ document.addEventListener(
   true
 );
 
-//: settings.js, settings-find.js and help-chat.js ring a control on a plain
-//: deep link; the ring itself is in reveal-targets.js (`flashRevealedNow`).
-function flashRevealed(target) {
-  if (target) ensureModule("reveal").then(() => flashRevealedNow(target));
-}
-
 //: A row's declaration, turned into the `run` the three lists call.
 function catalogueRun(row) {
   if (typeof row.run === "function") return row;

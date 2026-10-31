@@ -45,7 +45,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
 - [x] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
 - [x] OPEN B45, B48 whiteboard rows (agent wbopen-1031): 13 built, .drawio export; 11 left in its remaining list
-- [!] Companion: Fable pass: waits on the owner typing "use Fable for the companion" (order 4: Fable only when named in a typed message for that task)
+- [ ] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only.
 - [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
 - [x] UI review of the 1031 merges (ux-auditor: 6 high, 6 medium, 6 low)
 - [x] Fix the UI review findings (agent uxfix-1031)
