@@ -83,7 +83,8 @@ def run(functions: list[str], body: str, calls: list) -> list:
     script = (
         CM_JS.read_text(encoding="utf-8")
         + "\nconst CM = CM6;\n"
-        + "\n".join(_function(f) for f in ["docCmLanguageFor", *functions])
+        + "\nconst docStrCache = new WeakMap();\n"
+        + "\n".join(_function(f) for f in ["docStr", "docCmLanguageFor", *functions])
         + _PRELUDE
         + body
         + f"\nconst calls = {json.dumps(calls)};\n"
