@@ -449,6 +449,175 @@ def _attachment_out(session: Session, attachment: Attachment) -> AttachmentGalle
     )
 
 
+def _store_typed_reading(session: Session, attachment: Attachment, body: AttachmentAnalyseBody) -> AttachmentGalleryOut:
+    """The reader typed a caption, an OCR reading or a vision reading by hand."""
+    stripped = (body.text or "").strip() or None
+    if body.kind == "caption":
+        attachment.caption = stripped
+        if stripped:
+            attachment.caption_edited = True
+        else:
+            attachment.caption_model = None
+            attachment.caption_edited = False
+    elif body.kind == "ocr":
+        attachment.ocr_text = stripped
+    else:
+        attachment.vision_ocr_text = stripped
+        if not stripped:
+            attachment.vision_ocr_model = None
+    session.commit()
+    if body.edited and body.kind in {"ocr", "vision"}:
+        _set_edited_reading(
+            _page_read_key(attachment.id, None),
+            stripped,
+            "tesseract" if body.kind == "ocr" else "vision",
+        )
+    else:
+        _forget_regions(_page_read_key(attachment.id, None))
+    return _attachment_out(session, attachment)
+
+
+def _read_locally(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, is_image: bool
+) -> AttachmentGalleryOut:
+    """The `ocr` kind: Tesseract for a picture; this app's own document
+    extractor for everything else: a .docx or a text-layer PDF has real text
+    in it that no OCR pass should be guessing at.
+
+    Registered with `filejobs` even though no model is involved: Tesseract on
+    a long scan is one of the slowest things this app does, and "is it
+    working or is it stuck" is the same question whether the work is a model
+    or a binary.
+    """
+    choice = _checked_engine(body.engine) if is_image else ""
+    if is_image and (reason := ocr.unavailable_reason(choice)):
+        raise HTTPException(status_code=409, detail=reason)
+    with filejobs.reading("ocr", attachment.id, attachment.filename):
+        if is_image:
+            text = _local_text(path, choice)
+        else:
+            # No `vision_reader` passed on purpose: this is the "read it
+            # locally, no model" path, and the vision kind is the one that
+            # costs a model round trip. A scan with no text layer comes back
+            # empty here, which is the honest answer and is exactly what
+            # sends the reader to "Read with AI".
+            text = docview.extract(path).text
+    attachment.ocr_text = (text or "").strip() or None
+    session.commit()
+    _forget_regions(_page_read_key(attachment.id, None))
+    return _attachment_out(session, attachment)
+
+
+def _describe_from_text(
+    session: Session, attachment: Attachment, path: Path, body: AttachmentAnalyseBody, suffix: str
+) -> AttachmentGalleryOut | None:
+    """**Describing a document needs no vision model, only its own text.**
+
+    Reported on 2026-09-09: "the describe with ai button in the files tab
+    doesnt work. it should be a button for generating a
+    description/summary of the file from the readable and/or extractable
+    content of the file." It refused with a 415 for everything that was not a
+    picture or a PDF, and even a PDF went to a vision model, which most
+    machines do not have installed.
+
+    This runs above the vision-model checks deliberately: a .md, a .docx, a
+    .csv or a text-layer PDF is described by the utility model that already
+    writes tag suggestions, on a machine with no vision model at all.
+    `ocr_text` first when it is there, since that is this file's reading as
+    the reader has it (corrections included) rather than a second extraction
+    that may disagree with what they can see.
+
+    **`vision_ocr_text` was missing from this chain entirely.** Reported
+    directly: a scan already read page by page with the AI document reader
+    (fourteen pages stored here) still had "Describe with AI" call a vision
+    model itself, on one raw page image, because this fallback only ever
+    checked the Tesseract field and a fresh local extraction, never the field
+    this exact reading is written to. Checked second, after `ocr_text`:
+    Tesseract's own reading, when both exist, is the one already corrected by
+    hand and shown as the file's own text; the AI reader's is the one likelier
+    to exist at all for a scan, since it needs no separate OCR binary.
+    `docview.extract` stays last of the three, since it is a *native* text
+    layer and only a text-layer PDF or a `.docx`/`.csv`/etc. has one at all.
+
+    A file whose text extraction comes back empty is a scan with nothing
+    already read either, and returns None here so the caller falls through to
+    the vision path, which rasterises its first page. A file whose text is
+    there but whose model had nothing to say stores nothing and says so:
+    those are different answers and must not share a branch.
+    """
+    if attachment.caption and not body.force:
+        return _attachment_out(session, attachment)
+    readable = (
+        (attachment.ocr_text or "").strip()
+        or (attachment.vision_ocr_text or "").strip()
+        or (docview.extract(path).text or "").strip()
+    )
+    if readable:
+        if not deps.get_ollama().is_running():
+            raise HTTPException(status_code=409, detail="The AI model isn't running.")
+        models = deps.get_model_manager()
+        with filejobs.reading("describe", attachment.id, attachment.filename, models.utility_model()):
+            described = captioning.describe_document(readable, models, deps.get_ollama())
+        attachment.caption = described or None
+        attachment.caption_model = models.utility_model() if described else None
+        attachment.caption_edited = False
+        session.commit()
+        return _attachment_out(session, attachment)
+    if suffix != ".pdf":
+        raise HTTPException(
+            status_code=415,
+            detail="There is no readable text in this file to describe.",
+        )
+    return None
+
+
+def _vision_model() -> str:
+    """The installed vision model, or the 409 that says there is none."""
+    if not deps.get_ollama().is_running():
+        raise HTTPException(status_code=409, detail="The AI model isn't running.")
+    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
+    if not model:
+        raise HTTPException(
+            status_code=409,
+            detail="No installed model can read images. Install or "
+            "pick one in Settings, Models.",
+        )
+    return model
+
+
+def _caption_with_vision(attachment: Attachment, path: Path, is_image: bool, model: str) -> None:
+    ollama = deps.get_ollama()
+    # `pdf_vision_reader` returns the reader callable itself (docview's
+    # `vision_reader` contract), not an object with a `.read`: calling
+    # `.read(path)` on it was the reported 500 on "generate a caption" for
+    # a PDF ("'function' object has no attribute 'read'").
+    with filejobs.reading("describe", attachment.id, attachment.filename, model):
+        text = (
+            captioning.caption_text(path, model, ollama)
+            if is_image
+            else vision_ocr.pdf_vision_reader(model, ollama)(path)
+        )
+    attachment.caption = (text or "").strip() or None
+    attachment.caption_model = model if attachment.caption else None
+    attachment.caption_edited = False
+
+
+def _read_with_vision(attachment: Attachment, path: Path, is_image: bool, model: str) -> None:
+    ollama = deps.get_ollama()
+    # A PDF is rasterised page by page (`pdf_vision_reader`), which is
+    # the whole point for a scan, where there is no text layer to read
+    # and Tesseract has already found nothing.
+    with filejobs.reading("vision", attachment.id, attachment.filename, model):
+        text = (
+            vision_ocr.vision_ocr_text(path, model, ollama)
+            if is_image
+            else vision_ocr.pdf_vision_reader(model, ollama)(path)
+        )
+    attachment.vision_ocr_text = (text or "").strip() or None
+    attachment.vision_ocr_model = model if attachment.vision_ocr_text else None
+    _forget_regions(_page_read_key(attachment.id, None), only_source="edited-")
+
+
 @router.post("/files/{attachment_id}/analyse", response_model=AttachmentGalleryOut)
 def analyse_attachment(
     attachment_id: int,
@@ -472,163 +641,26 @@ def analyse_attachment(
     is_image = suffix in captioning.CAPTION_SUFFIXES
 
     if body.text is not None:
-        stripped = body.text.strip() or None
-        if body.kind == "caption":
-            attachment.caption = stripped
-            if stripped:
-                attachment.caption_edited = True
-            else:
-                attachment.caption_model = None
-                attachment.caption_edited = False
-        elif body.kind == "ocr":
-            attachment.ocr_text = stripped
-        else:
-            attachment.vision_ocr_text = stripped
-            if not stripped:
-                attachment.vision_ocr_model = None
-        session.commit()
-        if body.edited and body.kind in {"ocr", "vision"}:
-            _set_edited_reading(
-                _page_read_key(attachment.id, None),
-                stripped,
-                "tesseract" if body.kind == "ocr" else "vision",
-            )
-        else:
-            _forget_regions(_page_read_key(attachment.id, None))
-        return _attachment_out(session, attachment)
-
+        return _store_typed_reading(session, attachment, body)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="That file is no longer on disk.")
-
     if body.kind == "ocr":
-        # Tesseract for a picture; this app's own document extractor for
-        # everything else: a .docx or a text-layer PDF has real text in it
-        # that no OCR pass should be guessing at.
-        # Registered even though no model is involved: Tesseract on a long
-        # scan is one of the slowest things this app does, and "is it working
-        # or is it stuck" is the same question whether the work is a model or
-        # a binary.
-        choice = _checked_engine(body.engine) if is_image else ""
-        if is_image and (reason := ocr.unavailable_reason(choice)):
-            raise HTTPException(status_code=409, detail=reason)
-        with filejobs.reading("ocr", attachment.id, attachment.filename):
-            if is_image:
-                text = _local_text(path, choice)
-            else:
-                # No `vision_reader` passed on purpose: this is the "read it
-                # locally, no model" path, and the vision kind below is the one
-                # that costs a model round trip. A scan with no text layer comes
-                # back empty here, which is the honest answer and is exactly what
-                # sends the reader to "Read with AI".
-                text = docview.extract(path).text
-        attachment.ocr_text = (text or "").strip() or None
-        session.commit()
-        _forget_regions(_page_read_key(attachment.id, None))
-        return _attachment_out(session, attachment)
-
-    #: **Describing a document needs no vision model, only its own text.**
-    #: Reported on 2026-09-09: "the describe with ai button in the files tab
-    #: doesnt work. it should be a button for generating a
-    #: description/summary of the file from the readable and/or extractable
-    #: content of the file." It refused with a 415 for everything that was
-    #: not a picture or a PDF, and even a PDF went to a vision model, which
-    #: most machines do not have installed.
-    #:
-    #: This branch sits above the vision-model checks deliberately: a .md, a
-    #: .docx, a .csv or a text-layer PDF is described by the utility model
-    #: that already writes tag suggestions, on a machine with no vision model
-    #: at all. `ocr_text` first when it is there, since that is this file's
-    #: reading as the reader has it (corrections included) rather than a
-    #: second extraction that may disagree with what they can see.
-    #:
-    #: **`vision_ocr_text` was missing from this chain entirely.** Reported
-    #: directly: a scan already read page by page with the AI document
-    #: reader (fourteen pages stored here) still had "Describe with AI" call
-    #: a vision model itself, on one raw page image, because this fallback
-    #: only ever checked the Tesseract field and a fresh local extraction,
-    #: never the field this exact reading is written to. Checked second,
-    #: after `ocr_text`: Tesseract's own reading, when both exist, is the
-    #: one already corrected by hand and shown as the file's own text; the
-    #: AI reader's is the one likelier to exist at all for a scan, since it
-    #: needs no separate OCR binary. `docview.extract` stays last of the
-    #: three, since it is a *native* text layer and only a text-layer PDF or
-    #: a `.docx`/`.csv`/etc. has one at all.
-    #:
-    #: A file whose text extraction comes back empty is a scan with nothing
-    #: already read either, and falls through to the vision path below,
-    #: which rasterises its first page. A file whose text is there but whose
-    #: model had nothing to say stores nothing and says so: those are
-    #: different answers and must not share a branch.
+        return _read_locally(session, attachment, path, body, is_image)
     if body.kind == "caption" and not is_image:
-        if attachment.caption and not body.force:
-            return _attachment_out(session, attachment)
-        readable = (
-            (attachment.ocr_text or "").strip()
-            or (attachment.vision_ocr_text or "").strip()
-            or (docview.extract(path).text or "").strip()
-        )
-        if readable:
-            if not deps.get_ollama().is_running():
-                raise HTTPException(status_code=409, detail="The AI model isn't running.")
-            models = deps.get_model_manager()
-            with filejobs.reading(
-                "describe", attachment.id, attachment.filename, models.utility_model()
-            ):
-                described = captioning.describe_document(readable, models, deps.get_ollama())
-            attachment.caption = described or None
-            attachment.caption_model = models.utility_model() if described else None
-            attachment.caption_edited = False
-            session.commit()
-            return _attachment_out(session, attachment)
-        if suffix != ".pdf":
-            raise HTTPException(
-                status_code=415,
-                detail="There is no readable text in this file to describe.",
-            )
+        done = _describe_from_text(session, attachment, path, body, suffix)
+        if done is not None:
+            return done
 
     # Both remaining kinds need a vision model.
-    if not deps.get_ollama().is_running():
-        raise HTTPException(status_code=409, detail="The AI model isn't running.")
-    model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
-    if not model:
-        raise HTTPException(
-            status_code=409,
-            detail="No installed model can read images. Install or "
-            "pick one in Settings, Models.",
-        )
-    ollama = deps.get_ollama()
-
+    model = _vision_model()
     if body.kind == "caption":
         if attachment.caption and not body.force:
             return _attachment_out(session, attachment)
-        # `pdf_vision_reader` returns the reader callable itself (docview's
-        # `vision_reader` contract), not an object with a `.read`: calling
-        # `.read(path)` on it was the reported 500 on "generate a caption" for
-        # a PDF ("'function' object has no attribute 'read'").
-        with filejobs.reading("describe", attachment.id, attachment.filename, model):
-            text = (
-                captioning.caption_text(path, model, ollama)
-                if is_image
-                else vision_ocr.pdf_vision_reader(model, ollama)(path)
-            )
-        attachment.caption = (text or "").strip() or None
-        attachment.caption_model = model if attachment.caption else None
-        attachment.caption_edited = False
+        _caption_with_vision(attachment, path, is_image, model)
     else:
         if attachment.vision_ocr_text and not body.force:
             return _attachment_out(session, attachment)
-        # A PDF is rasterised page by page (`pdf_vision_reader`), which is
-        # the whole point for a scan, where there is no text layer to read
-        # and Tesseract has already found nothing.
-        with filejobs.reading("vision", attachment.id, attachment.filename, model):
-            text = (
-                vision_ocr.vision_ocr_text(path, model, ollama)
-                if is_image
-                else vision_ocr.pdf_vision_reader(model, ollama)(path)
-            )
-        attachment.vision_ocr_text = (text or "").strip() or None
-        attachment.vision_ocr_model = model if attachment.vision_ocr_text else None
-        _forget_regions(_page_read_key(attachment.id, None), only_source="edited-")
+        _read_with_vision(attachment, path, is_image, model)
     session.commit()
     return _attachment_out(session, attachment)
 

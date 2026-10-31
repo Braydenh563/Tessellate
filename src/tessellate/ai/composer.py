@@ -3075,6 +3075,70 @@ def _broad_pool(out: _Answer, chosen: list[Sentence], terms: list[str]) -> list[
     return pool
 
 
+def _status_body(out: _Answer, chosen: list[Sentence], terms: list[str], question: str, skip: set[tuple]) -> Sentence:
+    ordered = sorted(chosen, key=lambda s: (out.views[s.note_id].written or date.min, s.score), reverse=True)
+    lead = ordered[0]
+    view = out.views[lead.note_id]
+    same = sorted(_with_context(out, [s for s in ordered if s.note_id == lead.note_id and s.kind == "prose"]), key=lambda s: s.order)
+    if view.written:
+        key = _pick(question, "lead", _unlike_before(out, ["latest_a", "latest_b", "latest_c"]))
+        _joined(out, [key], same or [lead], terms, view.written, colon=key == "latest_b")
+    else:
+        out.t("latest_undated")
+        _quotes(out, same or [lead], terms)
+    out.cite(view)
+    _earlier(out, [s for s in ordered if s.note_id != lead.note_id and s.key not in skip], terms)
+    return lead
+
+
+def _list_body(
+    out: _Answer, chosen: list[Sentence], terms: list[str], question: str, meaning: _Meaning, skip: set[tuple]
+) -> Sentence | None:
+    """A "which" or "list" question is best answered by a list the person
+    wrote: the best-placed chosen note that holds one leads. None when no
+    chosen note holds one."""
+    listed = [s for s in chosen if sum(1 for u in out.views[s.note_id].sentences if u.kind in ("item", "task")) >= 2]
+    if not listed:
+        return None
+    lead = listed[0]
+    view = out.views[lead.note_id]
+    items = [s for s in view.sentences if s.kind in ("item", "task")][:8]
+    _list_block(out, view, items, terms, "opening")
+    _others(out, meaning, lead, [s for s in chosen if s.note_id != lead.note_id and s.key not in skip], terms, question)
+    return lead
+
+
+def _broad_body(
+    out: _Answer, shape: str, chosen: list[Sentence], terms: list[str], question: str, meaning: _Meaning, skip: set[tuple]
+) -> Sentence:
+    firsts = _broad_pool(out, chosen, terms)
+    rank = centrality(firsts, meaning)
+    stems = {_stem(t) for t in terms}
+    #: The note named for the subject leads ("Sourdough log" for
+    #: sourdough); among the rest, the sentence the others lean towards.
+    lead = max(
+        firsts,
+        key=lambda s: (bool(stems) and stems <= out.views[s.note_id].title_words, rank.get(s.key, 0.0) * s.score, -s.rank),
+    )
+    if not _mentions(out, question, terms, list(out.views.values())):
+        _summary(out, question, terms, firsts)
+    _lead_block(out, shape, lead, [lead], terms, question)
+    _others(out, meaning, lead, [s for s in firsts if s.note_id != lead.note_id and s.key not in skip], terms, question)
+    return lead
+
+
+def _fact_rest(out: _Answer, lead: Sentence, rest: list[Sentence], shape: str) -> list[Sentence]:
+    #: A lead that holds every word asked and what the shape looks for
+    #: (a date for a "when") has answered: one more note at most, so a
+    #: one-fact question gets a one-fact answer.
+    #: A "when" keeps its timeline of the other dated mentions.
+    strong = shape != "when" and _cue(shape, lead.text) > 0 and out.subject and all(
+        _holds(t, set(lead.words) | out.views[lead.note_id].title_words) for t in out.subject
+    )
+    keep = list(dict.fromkeys(s.note_id for s in rest))[: 1 if strong else FACT_OTHERS]
+    return [s for s in rest if s.note_id in keep]
+
+
 def _body(
     out: _Answer,
     shape: str,
@@ -3089,58 +3153,18 @@ def _body(
     Returns the lead sentence. `skip` are the sentences a "may disagree"
     paragraph says at the end, left out of the body so nothing is said twice."""
     if shape == "status":
-        ordered = sorted(chosen, key=lambda s: (out.views[s.note_id].written or date.min, s.score), reverse=True)
-        lead = ordered[0]
-        view = out.views[lead.note_id]
-        same = sorted(_with_context(out, [s for s in ordered if s.note_id == lead.note_id and s.kind == "prose"]), key=lambda s: s.order)
-        if view.written:
-            key = _pick(question, "lead", _unlike_before(out, ["latest_a", "latest_b", "latest_c"]))
-            _joined(out, [key], same or [lead], terms, view.written, colon=key == "latest_b")
-        else:
-            out.t("latest_undated")
-            _quotes(out, same or [lead], terms)
-        out.cite(view)
-        _earlier(out, [s for s in ordered if s.note_id != lead.note_id and s.key not in skip], terms)
-        return lead
-    lead = chosen[0]
+        return _status_body(out, chosen, terms, question, skip)
     if shape == "list":
-        #: A "which" or "list" question is best answered by a list the person
-        #: wrote: the best-placed chosen note that holds one leads.
-        listed = [s for s in chosen if sum(1 for u in out.views[s.note_id].sentences if u.kind in ("item", "task")) >= 2]
-        if listed:
-            lead = listed[0]
-            view = out.views[lead.note_id]
-            items = [s for s in view.sentences if s.kind in ("item", "task")][:8]
-            _list_block(out, view, items, terms, "opening")
-            _others(out, meaning, lead, [s for s in chosen if s.note_id != lead.note_id and s.key not in skip], terms, question)
-            return lead
+        listed = _list_body(out, chosen, terms, question, meaning, skip)
+        if listed is not None:
+            return listed
     if broad:
-        firsts = _broad_pool(out, chosen, terms)
-        rank = centrality(firsts, meaning)
-        stems = {_stem(t) for t in terms}
-        #: The note named for the subject leads ("Sourdough log" for
-        #: sourdough); among the rest, the sentence the others lean towards.
-        lead = max(
-            firsts,
-            key=lambda s: (bool(stems) and stems <= out.views[s.note_id].title_words, rank.get(s.key, 0.0) * s.score, -s.rank),
-        )
-        if not _mentions(out, question, terms, list(out.views.values())):
-            _summary(out, question, terms, firsts)
-        _lead_block(out, shape, lead, [lead], terms, question)
-        _others(out, meaning, lead, [s for s in firsts if s.note_id != lead.note_id and s.key not in skip], terms, question)
-        return lead
+        return _broad_body(out, shape, chosen, terms, question, meaning, skip)
+    lead = chosen[0]
     _lead_block(out, shape, lead, chosen, terms, question)
     rest = [s for s in chosen if s.note_id != lead.note_id and s.key not in skip]
     if shape in FACT_SHAPES:
-        #: A lead that holds every word asked and what the shape looks for
-        #: (a date for a "when") has answered: one more note at most, so a
-        #: one-fact question gets a one-fact answer.
-        #: A "when" keeps its timeline of the other dated mentions.
-        strong = shape != "when" and _cue(shape, lead.text) > 0 and out.subject and all(
-            _holds(t, set(lead.words) | out.views[lead.note_id].title_words) for t in out.subject
-        )
-        keep = list(dict.fromkeys(s.note_id for s in rest))[: 1 if strong else FACT_OTHERS]
-        rest = [s for s in rest if s.note_id in keep]
+        rest = _fact_rest(out, lead, rest, shape)
     if shape == "when" and rest:
         _timeline(out, rest, terms)
         return lead
@@ -3364,17 +3388,7 @@ def _own_terms(terms: list[str]) -> list[str]:
     return [t for t in terms if t.lower() not in _NOTE_NOUNS]
 
 
-def _next_questions(question: str, shape: str, terms: list[str], views: list[NoteView], cited: set[int]) -> list[list[tuple]]:
-    """Two or three questions the answer opens up, built from what it found and
-    did not say (INBOX 725, 5): a tag of the notes it quoted that the question
-    did not name, a note it found and did not quote, and the latest on the
-    question's own subject. Each is a fixed question around the person's own
-    words, so a chip never offers what the notes cannot answer about."""
-    asked = {_stem(t) for t in terms} | {_stem(w) for w in query_understanding.search_terms(question)}
-    picks: list[list[tuple]] = []
-    #: A tag two or more of the notes found share, the question did not name:
-    #: a thread through them ("harbor" under a question about beta testers).
-    #: One note's tag alone ("admin" on the dentist note) is not a thread.
+def _tag_holders(views: list[NoteView], asked: set[str]) -> dict[str, list[NoteView]]:
     holders: dict[str, list[NoteView]] = {}
     for view in sorted(views, key=lambda v: v.rank):
         if view.note.get("connected"):
@@ -3382,12 +3396,24 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
         for tag in dict.fromkeys(str(t) for t in (view.note.get("tags") or [])):
             if re.fullmatch(r"\w[\w -]{1,30}", tag) and _words(tag) and not set(_words(tag)) & asked:
                 holders.setdefault(tag.lower(), []).append(view)
+    return holders
+
+
+def _shared_tag_pick(views: list[NoteView], asked: set[str], cited: set[int]) -> list[tuple] | None:
+    #: A tag two or more of the notes found share, the question did not name:
+    #: a thread through them ("harbor" under a question about beta testers).
+    #: One note's tag alone ("admin" on the dentist note) is not a thread.
+    holders = _tag_holders(views, asked)
     shared = [(tag, held) for tag, held in holders.items() if len(held) >= 2 and any(v.id in cited for v in held)]
-    if shared:
-        tag, held = max(shared, key=lambda pair: (len(pair[1]), -min(v.rank for v in pair[1])))
-        view = next(v for v in held if v.id in cited)
-        original = next(str(t) for t in view.note.get("tags") or [] if str(t).lower() == tag)
-        picks.append([("template", PHRASES["next_tag_a"]), ("filed", original, view.id), ("template", PHRASES["next_tag_b"])])
+    if not shared:
+        return None
+    tag, held = max(shared, key=lambda pair: (len(pair[1]), -min(v.rank for v in pair[1])))
+    view = next(v for v in held if v.id in cited)
+    original = next(str(t) for t in view.note.get("tags") or [] if str(t).lower() == tag)
+    return [("template", PHRASES["next_tag_a"]), ("filed", original, view.id), ("template", PHRASES["next_tag_b"])]
+
+
+def _unquoted_note_pick(views: list[NoteView], asked: set[str], cited: set[int]) -> list[tuple] | None:
     #: A note found and not quoted that has something to say about the
     #: question (a sentence of it scored at least half the best), by its name.
     best = max((s.score for v in views for s in v.sentences), default=0.0)
@@ -3396,15 +3422,34 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
             continue
         if (view.title_words and view.title_words <= asked) or not any(s.score >= best / 2 > 0 for s in view.sentences):
             continue
-        picks.append([("template", PHRASES["next_note_a"]), ("title", view.title, view.id), ("template", PHRASES["next_note_b"])])
-        break
+        return [("template", PHRASES["next_note_a"]), ("title", view.title, view.id), ("template", PHRASES["next_note_b"])]
+    return None
+
+
+def _subject_pick(question: str, shape: str, terms: list[str]) -> list[tuple] | None:
     #: The question's own subject, when it is a short name ("dentist
     #: check-up", "sourdough"), asked the other way round in time.
     own = _own_terms(terms)
     subject = _asked_span(question, own)
     if subject and len(subject.split()) == len(own) <= 3 and shape not in ("status", "recent", "compare"):
         prefix = "next_latest_a" if shape == "when" or _pick(question, "next", ["a", "b"]) == "a" else "next_when_a"
-        picks.append([("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])])
+        return [("template", PHRASES[prefix]), ("asked", subject), ("template", PHRASES["next_tag_b"])]
+    return None
+
+
+def _next_questions(question: str, shape: str, terms: list[str], views: list[NoteView], cited: set[int]) -> list[list[tuple]]:
+    """Two or three questions the answer opens up, built from what it found and
+    did not say (INBOX 725, 5): a tag of the notes it quoted that the question
+    did not name, a note it found and did not quote, and the latest on the
+    question's own subject. Each is a fixed question around the person's own
+    words, so a chip never offers what the notes cannot answer about."""
+    asked = {_stem(t) for t in terms} | {_stem(w) for w in query_understanding.search_terms(question)}
+    found = (
+        _shared_tag_pick(views, asked, cited),
+        _unquoted_note_pick(views, asked, cited),
+        _subject_pick(question, shape, terms),
+    )
+    picks = [pick for pick in found if pick]
     out = [p for p in picks if len("".join(part[1] for part in p)) <= NEXT_MAX_CHARS]
     return out[:3]
 
