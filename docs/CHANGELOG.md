@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Eight notes functions come off the complexity ratchet (`_with_meaning`, `_ids_for`, `_link_suggestions`, `create_entry`, `filing_status`, `update_entry`, `entry_connections`, `_corpus_for`), each split by its steps, and the validation sentence table is a lookup (audit 1031 AR5).
 - A lint freezes the model columns that no alembic revision names (33, a list that may only shrink), so a new column needs a revision (audit 1031 AR4).
 - The script counts in ARCHITECTURE, WORKING and CLAUDE.md now come from `scripts/codemap.py` (28 app scripts, 36 boot scripts) and a test holds every sentence (audit 1031 AR10).
 - Middleware and routers are tables in `api/app.py` (`MIDDLEWARE` with a reason per layer, `ROUTERS` with its gate); a test holds the order and that every router module is listed once (audit 1031 AR9).

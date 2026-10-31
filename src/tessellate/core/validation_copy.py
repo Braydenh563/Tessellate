@@ -52,30 +52,45 @@ def _bound(kind: str, ctx: dict) -> str | None:
     return "must be " + edge[1].format(_count(ctx[edge[0]]))
 
 
+def _length(kind: str, name: str, ctx: dict) -> str | None:
+    """The four length errors, for a string or a list; None for any other kind."""
+    if kind == "string_too_short" and ctx.get("min_length", 2) <= 1 and "min_length" in ctx:
+        return f"The {name} can't be empty."
+    rules = {
+        "string_too_long": ("max_length", "The {name} can be at most {n} characters."),
+        "string_too_short": ("min_length", "The {name} needs at least {n} characters."),
+        "too_long": ("max_length", "The {name} can hold at most {n} items."),
+        "too_short": ("min_length", "The {name} needs at least {n} items."),
+    }
+    rule = rules.get(kind)
+    if rule is None or rule[0] not in ctx:
+        return None
+    return rule[1].format(name=name, n=_count(ctx[rule[0]]))
+
+
+#: Error types with a fixed sentence, `{name}` filled in.
+_PLAIN = {
+    "missing": "The {name} is missing.",
+    "int_parsing": "The {name} must be a whole number.",
+    "int_from_float": "The {name} must be a whole number.",
+    "int_type": "The {name} must be a whole number.",
+}
+
+
 def sentence(kind: str, field: str, ctx: dict | None = None) -> str:
     """One validation error as a sentence; `kind` is pydantic's error type."""
     ctx = ctx or {}
     name = label(field)
-    cap = name[:1].upper() + name[1:]
-    if kind == "string_too_long" and "max_length" in ctx:
-        return f"The {name} can be at most {_count(ctx['max_length'])} characters."
-    if kind == "string_too_short" and "min_length" in ctx:
-        if ctx["min_length"] <= 1:
-            return f"The {name} can't be empty."
-        return f"The {name} needs at least {_count(ctx['min_length'])} characters."
-    if kind == "too_long" and "max_length" in ctx:
-        return f"The {name} can hold at most {_count(ctx['max_length'])} items."
-    if kind == "too_short" and "min_length" in ctx:
-        return f"The {name} needs at least {_count(ctx['min_length'])} items."
-    if kind == "missing":
-        return f"The {name} is missing."
-    if kind in ("int_parsing", "int_from_float", "int_type"):
-        return f"The {name} must be a whole number."
+    text = _length(kind, name, ctx)
+    if text:
+        return text
+    if kind in _PLAIN:
+        return _PLAIN[kind].format(name=name)
     if kind.startswith(("datetime_", "date_", "time_")) and "parsing" in kind:
         return f"The {name} isn't a date or time that can be read."
     bound = _bound(kind, ctx)
     if bound:
-        return f"{cap} {bound}."
+        return f"{name[:1].upper() + name[1:]} {bound}."
     return f"Check the {name} and try again."
 
 
