@@ -1994,6 +1994,25 @@ _WORD_RUN = re.compile(r"\S+")
 _FILLER_SHAPE = re.compile(r"([A-Za-z]+)[.,;:!…]*")
 
 
+def is_filler(word: str) -> bool:
+    """Whether `word` is a sound typed while thinking ("umm", "errm")."""
+    return bool(_FILLER.match(word))
+
+
+#: Words typed around a note, not naming one ("a random ahh note"): a chip
+#: about "random ahh" asks for nothing (INBOX 1496).
+_NO_SUBJECT = frozenset(
+    "random randomly ahh ahhh ahhhh lol lmao ngl tbh bruh idk whatever some any one thing things stuff something "
+    "anything like just really very kinda sorta old new little bit".split()
+)
+
+
+def filler_subject(text: str) -> bool:
+    """Whether every word of `text` is filler, so it names no subject."""
+    words = re.findall(r"[a-z']+", (text or "").lower())
+    return bool(words) and all(w in _NO_SUBJECT or is_filler(w) for w in words)
+
+
 def _without_filler(run: re.Match[str]) -> str:
     word = _FILLER_SHAPE.fullmatch(run.group(0))
     return "" if word and _FILLER.match(word.group(1)) else run.group(0)

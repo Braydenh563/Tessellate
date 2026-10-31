@@ -112,6 +112,8 @@ def _times_in(text: str, forms: frozenset[str]) -> int:
     return int(said) if said.isdigit() else _NUMBER_WORDS.get(said, 1)
 
 
+#: "This week I ran twice": a total over a stretch, not a doing on a day.
+_PERIOD = re.compile(r"\b(?:this|last|past|each|every|per|a) (?:week|month|year|fortnight)\b|\bso far\b|\b(?:weekly|monthly)\b", re.I)
 _CALENDAR_DAY = re.compile(r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:" + "|".join(m[:3] for m in _MONTHS) + r")[a-z]*\b|\b(?:" + "|".join(m[:3] for m in _MONTHS) + r")[a-z]*\s+\d{1,2}\b", re.I)
 
 
@@ -132,7 +134,7 @@ def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> l
         for s in view.sentences:
             words = set(re.findall(r"[a-z]+", s.text.lower()))
             #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
-            says = bool(forms & words) and (recognise.told_as_past(s.text) or _times_in(s.text, forms) > 1) and not _IDIOM.search(s.text)
+            says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
             #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
             logs = logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None
             if not (says or logs) or not _names(s.text, obj):

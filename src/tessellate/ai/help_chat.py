@@ -798,7 +798,9 @@ HELP_TOPICS: list[dict] = [
             "It is reachable from the status bar on every tab, from the head "
             "of every Settings pane, from the command palette (Ask the Guide), "
             "from the Help pane in Settings and, on a phone, from More. An answer's "
-            "open button lands on the control it is about, ringed."
+            "open button lands on the control it is about, ringed. A question "
+            "an answer suggests is a button under it: one press asks it, here "
+            "and in Chat and Ask."
         ),
         "badge": {"label": "Help", "section": "help"},
     },
@@ -3416,8 +3418,20 @@ def _stated_lead(question: str, topics: list[dict]) -> str:
     return " ".join(x for x in (state, lead) if x)
 
 
+def _lead_topic_first(question: str, topics: list[dict]) -> list[dict]:
+    """`topics` with the one whose sentence leads the answer first, so its
+    steps, place and related list follow the sentence (a question that names
+    an act is led by the topic that names it, not the best-ranked one)."""
+    line = act_registry.help_sentence(question, topics) if act_registry.help_sentence and len(topics) > 1 else None
+    if not line or line[1] == topics[0]["id"]:
+        return topics
+    lead = next((t for t in topics if t["id"] == line[1]), None)
+    return [lead, *(t for t in topics if t is not lead)] if lead else topics
+
+
 def composed_answer(question: str, topics: list[dict]) -> str:
     """The Guide's answer composed for `question` from the best topic."""
+    topics = _lead_topic_first(question, topics)
     first = topics[0]
     meta = TOPIC_META.get(first["id"], {})
     path = str(meta.get("path") or "").rstrip(".")
@@ -3449,7 +3463,18 @@ def _aware(reply: dict, question: str, tab: str | None, actions: list[str] | Non
     line = composer_aware.closing(
         composer_aware.build(tab=tab, actions=actions), seed=question.lower(), related=related, asked=question
     )
-    return {**reply, "content": f"{reply['content']}\n\n{line}"} if line else reply
+    return with_asks({**reply, "content": f"{reply['content']}\n\n{line}"}) if line else reply
+
+
+def with_asks(reply: dict) -> dict:
+    """`reply` with every question its text suggests as a chip that asks the
+    Guide (INBOX 1497: "if it suggests a follow up question, I want a button
+    to one click ask"). The sentence may stay; the chip is the action. A reply
+    that already carries its own asks (what to ask in Chat) is left alone."""
+    from tessellate.ai import ask_chips
+
+    lifted = [] if reply.get("asks") else ask_chips.lift(str(reply.get("content") or ""))
+    return {**reply, "asks": lifted, "asks_to": "guide"} if lifted else reply
 
 
 def offline_answer(
@@ -3498,12 +3523,12 @@ def offline_answer(
     #: composed answer is the content; `system` is the topic as written
     #: (INBOX 430's layout), which the client offers as "From the help".
     system = system_answer(topics)
-    return {
+    return with_asks({
         "content": f"{said}{composed_answer(question, topics)}",
         "badges": badges_for(topics),
         "sources": source_names(topics),
         "system": system,
-    }
+    })
 
 
 def _read_as(question: str) -> tuple[str, str]:
@@ -3579,7 +3604,7 @@ def answer_stream(
     content = "".join(pieces).strip()
     yield {
         "type": "done",
-        "content": content,
+        **with_asks({"content": content}),
         "badges": badges_for(topics),
         "sources": source_names(topics),
         "system": system_answer(topics),
@@ -3620,7 +3645,7 @@ def answer(
     reply = ollama.chat(model_manager.utility_model(), messages, mode=presets.GUIDE_MODE)
     content = reply["content"].strip()
     return {
-        "content": content,
+        **with_asks({"content": content}),
         "badges": badges_for(topics),
         "sources": source_names(topics),
         "system": system_answer(topics),

@@ -4879,7 +4879,7 @@ function renderPaceWidget(body) {
     if (Number.isNaN(at.getTime()) || at.getTime() < first) continue;
     const index = Math.floor((at.setHours(0, 0, 0, 0) - first) / 86400000);
     if (index < 0 || index >= days.length) continue;
-    days[index].words += (String(entry.content || "").match(/\S+/g) || []).length;
+    days[index].words += countWords(entry.content);
   }
   const total = days.reduce((sum, day) => sum + day.words, 0);
   if (!total) {

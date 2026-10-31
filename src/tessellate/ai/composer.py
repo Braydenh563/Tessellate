@@ -3482,6 +3482,9 @@ def _next_questions(question: str, shape: str, terms: list[str], views: list[Not
     question's own subject. Each is a fixed question around the person's own
     words, so a chip never offers what the notes cannot answer about."""
     asked = {_stem(t) for t in terms} | {_stem(w) for w in query_understanding.search_terms(question)}
+    #: "random ahh" names no subject: the chips about it would ask for nothing.
+    if question_noise.filler_subject(" ".join(terms)):
+        terms = []
     found = (
         _shared_tag_pick(views, asked, cited),
         _unquoted_note_pick(views, asked, cited),
@@ -4262,23 +4265,23 @@ _INVITE_KINDS = ("greeting", "morning", "test", "unclear")
 INVITES = {
     "natural": (
         "Your newest note mentions {subject}: ask “what did I write about {subject}” to pick up from there.",
-        "Lately you've been writing about {subject}; ask about it if you'd like to pick that back up.",
+        "Lately you've been writing about {subject}; ask me “what did I write about {subject}” to pick that back up.",
         "Your last note was about {subject}, so ask “what did I write about {subject}” to start there.",
         "Picking up where you left off: ask “what did I write about {subject}”.",
-        "The last thing you wrote touched on {subject}. Ask about it and I'll find the notes.",
-        "If it helps, “what did I write about {subject}” brings back your newest note.",
-        "Your notes most recently turned to {subject}; ask and I'll go through them with you.",
+        "The last thing you wrote touched on {subject}. Ask me “what did I write about {subject}” and I'll find the notes.",
+        "If it helps, ask me “what did I write about {subject}” and I will bring back your newest note.",
+        "Your notes most recently turned to {subject}; ask me “what did I write about {subject}” and I'll go through them with you.",
         "Carry on from your latest note: ask “what did I write about {subject}”.",
     ),
     "professional": (
         "The most recent note concerns {subject}; ask “what did I write about {subject}” to review it.",
-        "The latest entry mentions {subject}; ask about it to bring up the notes.",
-        "Your most recent entry refers to {subject}; ask to review it.",
+        "The latest entry mentions {subject}; ask “what did I write about {subject}” to bring up the notes.",
+        "Your most recent entry refers to {subject}; ask “what did I write about {subject}” to review it.",
         "To continue, ask “what did I write about {subject}”.",
-        "The newest note relates to {subject}; ask about it to return to it.",
-        "Recent entries mention {subject}; ask about it to retrieve them.",
+        "The newest note relates to {subject}; ask “what did I write about {subject}” to return to it.",
+        "Recent entries mention {subject}; ask “what did I write about {subject}” to retrieve them.",
         "To see the most recent entry, ask “what did I write about {subject}”.",
-        "The last entry recorded was about {subject}; ask to see it.",
+        "The last entry recorded was about {subject}; ask “what did I write about {subject}” to see it.",
     ),
 }
 
@@ -4790,6 +4793,68 @@ def _help_best(lines: list[str], ask: dict, doing: float = 0.0) -> str:
     return max(lines, key=lambda line: (score(line), -lines.index(line)))
 
 
+#: The acts a how-to can name, and the words that say each in a help sentence
+#: (the coordinator, 2026-10-31: "how do I export documents?" led with the
+#: editor's four views, a sentence that never says export). A question that
+#: names an act is answered by the sentence that names it, whichever matched
+#: topic holds it.
+_HELP_ACTS: dict[str, tuple[str, ...]] = {
+    "export": ("export", "download"),
+    "import": ("import", "bring"),
+    "print": ("print", "pdf"),
+    "share": ("share", "publish", "send"),
+    "delete": ("delete", "remove", "trash", "bin"),
+    "restore": ("restore", "recover", "undelete"),
+    "move": ("move", "drag", "reorder"),
+    "rename": ("rename", "retitle"),
+    "attach": ("attach", "upload"),
+    "pin": ("pin", "unpin", "star", "favourite", "favorite"),
+}
+_HELP_ACT_STEMS = {act: frozenset(_stem(w) for w in words) for act, words in _HELP_ACTS.items()}
+
+
+def _help_act(question: str) -> str:
+    """The act a how-to names (the first one typed), or ""."""
+    for word in re.findall(r"[a-z]+", (question or "").lower()):
+        stem = _stem(word)
+        for act, stems in _HELP_ACT_STEMS.items():
+            if stem in stems:
+                return act
+    return ""
+
+
+def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str] | None:
+    """The sentence naming `act` that says the most of the question, over every
+    matched topic (the first earns a little for coming first), with its
+    topic's id; None when no matched topic names the act."""
+    from tessellate.ai import help_chat
+
+    stems = _HELP_ACT_STEMS[act]
+    best: tuple[float, str, str] | None = None
+    for order, topic in enumerate(topics):
+        ask = _help_ask(question, topic)
+        for index, line in enumerate(help_chat.help_sentences(str(topic.get("body") or ""))):
+            words = [_stem(w) for w in re.findall(r"[a-z]+", line.lower())]
+            at = next((i for i, w in enumerate(words) if w in stems), None)
+            if at is None:
+                continue
+            #: A sentence that opens on the act is about it; one that mentions
+            #: it in passing ("in a print") is not.
+            #: The topic named for the act ("import-export") holds its sentence;
+            #: a wall of a sentence is a poor lead.
+            named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
+            score = _help_shared(line, ask) + named + (1.5 if at < 5 else 0.75 if at < 12 else 0.0) - (1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0) - 0.15 * order - 0.05 * index
+            if best is None or score > best[0]:
+                best = (score, line, str(topic.get("id", "")))
+    if best is None:
+        return None
+    lead = best[1]
+    if len(lead.split()) > _HELP_LEAD_WORDS:
+        clauses = [c for c in _clauses(lead) if stems & {_stem(w) for w in re.findall(r"[a-z]+", c.lower())}]
+        lead = max(clauses, key=lambda c: _help_shared(c, _help_ask(question, {"id": best[2]}))) if clauses else lead
+    return lead, best[2]
+
+
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     """The one sentence of the best topic that answers a how-to (its step
     sentence sharing the most of the question's words) and the topic's id:
@@ -4797,6 +4862,10 @@ def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
     so help and chat say it in one voice. None with no topic."""
     if not topics:
         return None
+    act = _help_act(question)
+    named = _act_sentence(question, topics, act) if act else None
+    if named is not None:
+        return named
     topic = topics[0]
     from tessellate.ai import help_chat
 

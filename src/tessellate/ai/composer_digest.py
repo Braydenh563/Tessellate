@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, realise, verdicts
+from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, question_noise, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -1264,6 +1264,12 @@ def _context_facts(view: composer.NoteView) -> list[Fact]:
     return [Fact(view, view.sentences[0], label, body.strip().rstrip("."), "")] if view.sentences else []
 
 
+_PICTURE_KIND = re.compile(
+    r"^(?:an?|the|this|one)?\s*(picture|photo|photograph|image|screenshot|drawing|sketch|diagram|illustration|painting|scan|snapshot|selfie)\s+(?:of|showing|that shows)\s+(?=\S)",
+    re.I,
+)
+
+
 def _picture_fact(view: composer.NoteView, shown: list, read: list) -> Fact:
     """A picture is one fact, what it shows and the words in it, the words
     quoted as read (INBOX 787: never run into the caption)."""
@@ -1272,6 +1278,13 @@ def _picture_fact(view: composer.NoteView, shown: list, read: list) -> Fact:
     mostly = sum(1 for s in view.sentences if s.kind not in ("picture", "picture_text")) <= 1
     what = shown[0].text.strip().rstrip(".") if shown else ""
     words = realise.join_items([f"“{r.text.strip()}”" for r in read[:3]]) if (_ASKS_WORDS.get() or not shown or mostly) else ""
+    #: A caption that names its own kind ("a photo of a hill") is said once, as
+    #: it is: never "a picture of a photo of a hill" (INBOX 1496).
+    kind = _PICTURE_KIND.match(what)
+    if kind:
+        noun = kind.group(1).lower()
+        body = f"{'an' if noun[0] in 'aeiou' else 'a'} {noun} of {_fragment(what[kind.end():], set())}" + (f" reading {words}" if words else "")
+        return Fact(view, (shown or read)[0], "", body, "")
     body = (f"a picture of {_fragment(what, set())}" if what else "a picture") + (f" reading {words}" if words else "")
     return Fact(view, (shown or read)[0], "", body, "")
 
@@ -4772,7 +4785,7 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     said = ["".join(part[1] for part in p) for p in picks]
     members = [v for v in views if v.id in cited]
     topic = _topic(question, members) if members else ""
-    if topic and topic != "this" and len(topic) <= 40:
+    if topic and topic != "this" and len(topic) <= 40 and not question_noise.filler_subject(topic):
         topic = _chip_subject(topic, question)
         said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
     seen = {_ask_key(question)}

@@ -1613,7 +1613,7 @@ function renderCaptureFiles() {
 const TEXT_READING_WPM = 220;
 function textCounts(text) {
   const value = String(text || "");
-  const words = (value.match(/\S+/g) || []).length;
+  const words = countWords(value);
   const minutes = words / TEXT_READING_WPM;
   const read = !words ? "" : minutes < 1 ? "under a min" : minutes < 60 ? `${Math.round(minutes)} min read` : `${(minutes / 60).toFixed(1)}h read`;
   let chars = 0;

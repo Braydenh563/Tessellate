@@ -853,12 +853,25 @@ _SETEXT = re.compile(r"^\s*(=+|-{2,})\s*$")
 _NOT_PARAGRAPH = re.compile(r"^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|\|)")
 
 
+#: Han, kana and the CJK extensions: text with no spaces between its words,
+#: so each character stands for a word (INBOX 1495: a Japanese line is never
+#: "1 word"). Hangul is spaced and counts by its spaces.
+CJK = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
+
+
+def word_count(text: str) -> int:
+    """The one word count (every surface that says "N words"): spaced words
+    as `wc -w` counts them, and each CJK character as a word."""
+    text = str(text or "")
+    return len(CJK.findall(text)) + len(CJK.sub(" ", text).split())
+
+
 def counts(text: str) -> dict:
     """Words, characters and lines as `wc -w`, `wc -m` and `wc -l` count them
     (a word is a run of non-space, a character a code point, a line a
     newline), and the reading time in minutes."""
     text = str(text or "")
-    words = len(text.split())
+    words = word_count(text)
     return {
         "words": words,
         "chars": len(text),

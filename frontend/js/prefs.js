@@ -194,6 +194,16 @@ function shortcutTitle(base, action) {
   return hint ? `${base} (${hint})` : base;
 }
 
+//: **The one word count** (INBOX 1495): spaced words as `wc -w` counts them,
+//: and each Han or kana character as a word, so a Japanese line is never "1
+//: word". Python's twin is `utilities.word_count`; every surface that says
+//: "N words" goes through one of the two.
+const CJK_CHARACTER = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g;
+function countWords(text) {
+  const value = String(text || "");
+  return (value.match(CJK_CHARACTER) || []).length + (value.replace(CJK_CHARACTER, " ").match(/\S+/g) || []).length;
+}
+
 //: **The one plural helper** (sweep 1028b W14): "1 note", "3 notes", "2 categories".
 //: A count in words goes through this, never `${n} notes` (tests/test_plural_helper.py).
 function nounCount(n, one, many = `${one}s`) {

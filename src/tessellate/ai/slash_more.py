@@ -20,7 +20,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import arithmetic, realise
+from tessellate.ai import arithmetic, realise, utilities
 from tessellate.ai.composer_frame import note_title
 
 #: How many rows a command shows; the sentence says how many there are.
@@ -291,7 +291,7 @@ def _stats(session: Session, arg: str, now: datetime) -> str:
     rows = session.execute(select(entry.content, entry.created_at, entry.tags).where(*visible)).all()
     if not rows:
         return "You have no notes yet."
-    words = sum(len((c or "").split()) for c, _, _ in rows)
+    words = sum(utilities.word_count(c) for c, _, _ in rows)
     days = {d.date() for _, d, _ in rows}
     tags = {t for _, _, raw in rows for t in _tags_of(raw)}
     newest = max(d for _, d, _ in rows)

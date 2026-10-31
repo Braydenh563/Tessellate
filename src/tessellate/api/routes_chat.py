@@ -38,6 +38,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
 from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_unplaced, note_language, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import ask_chips
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -3952,6 +3953,11 @@ def _composed_result(req: _StreamRequest, prepared: dict) -> tuple:
         result = composer_digest.all_said(follow.question, prepared["notes"], today=today, voice=_answer_voice()) or result
     if follow is None and result.get("grounding"):
         _remember_rows(req.question, current, today, result)
+    #: A question the answer itself suggests ("ask me “...”") is a chip too
+    #: (INBOX 1497): the sentence may stay, the chip is the action.
+    suggested = ask_chips.lift(str(result.get("text") or ""))
+    if suggested:
+        result["next"] = list(dict.fromkeys([*suggested, *(result.get("next") or [])]))
     if follow is None and result.get("next"):
         result["next"] = _answerable_chips(list(result["next"]), current, today)
     return result, follow, current, older
@@ -4191,13 +4197,18 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     text = _with_words_only(text, prepared, result)
     text = _with_lapsed(text, current, result, req)
     events: list = [{"type": "answer", "delta": text}, *(_web_chip(req) if missed else [])]
+    #: Every question the finished text suggests is a chip (INBOX 1497); one
+    #: the grounding event already carries is not said twice.
+    suggested = [q for q in ask_chips.lift(text) if q not in (result.get("next") or []) and q not in asks]
     if result["grounding"]:
         _name_documents(req.session, result["grounding"])
-        events.append(_composed_grounding_event(req, result, asks))
+        events.append(_composed_grounding_event(req, result, [*asks, *suggested]))
         #: The notes linked to the ones it cited: the related row (INBOX 1466).
         related = _linked_notes(req.session, result)
         if related:
             events.append({"type": "related", "items": related})
+    elif suggested or asks:
+        events.append({"type": "offer", "offer": {"kind": "ask", "label": "", "asks": [*asks, *suggested][:4]}})
     return events
 
 

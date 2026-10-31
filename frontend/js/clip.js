@@ -42,7 +42,7 @@
     $("clip-preview").classList.remove("hidden");
     if (!$("clip-title").value) $("clip-title").value = clip.title || clip.url;
     $("clip-source").textContent = clip.url;
-    const words = clip.selection ? clip.selection.split(/\s+/).filter(Boolean).length : 0;
+    const words = countWords(clip.selection);
     $("clip-what").textContent = clip.selection
       ? `The ${nounCount(words, "word")} you selected.`
       : clip.html

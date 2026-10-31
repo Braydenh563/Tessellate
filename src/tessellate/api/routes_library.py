@@ -38,6 +38,7 @@ from tessellate.core.database import (
     LIKE_ESCAPE,
     like_escape,
 )
+from tessellate.ai import utilities
 from tessellate.core import events, reading_bin, recordings
 from tessellate.core.deps import get_session
 from tessellate.entry import highlights as note_highlights
@@ -235,7 +236,7 @@ def _documents(session: Session, q: str = "") -> list[dict]:
     rows = session.scalars(stmt.order_by(Document.updated_at.desc()).limit(PER_KIND_LIMIT))
     items = []
     for doc in rows:
-        words = len(doc.content.split())
+        words = utilities.word_count(doc.content)
         items.append(
             {
                 "kind": "document",
@@ -583,7 +584,7 @@ def _shelved(session: Session) -> list[dict]:
             "preview": _clip(doc.content),
             "updated_at": doc.archived_at.isoformat(),
             "detail": "archived",
-            "size": len(doc.content.split()),
+            "size": utilities.word_count(doc.content),
             "entry_id": None,
             "mime": None,
             "pinned": False,

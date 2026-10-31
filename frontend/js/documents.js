@@ -13046,7 +13046,7 @@ $("doc-ai-result").addEventListener("input", () => {
 function syncDocAiPanel() {
   const verb = docAiVerb();
   const selection = ($("doc-ai-panel").dataset.selection || "").trim();
-  const wordCount = selection ? selection.split(/\s+/).length : 0;
+  const wordCount = countWords(selection);
 
   const runLabel = { edit: "Suggest an edit", write: "Write it", remove: "Remove it" }[verb];
   setLabel($("doc-ai-run"), `ph:sparkle ${runLabel}`);

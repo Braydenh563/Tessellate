@@ -422,3 +422,113 @@ def test_the_opening_count_and_the_times_line_agree(notebook, question):
     times = re.search(r"written about \w+ (\d+) times", said)
     if opening and times:
         assert words[opening.group(1).lower()] == int(times.group(1)), said
+
+
+# INBOX 1495. A Japanese line is never "1 word"; a long line is named by a short form; the head's dot.
+
+@pytest.mark.parametrize(("text", "words"), [
+    ("", 0), ("hello", 1), ("two words", 2), ("今日は雨", 4), ("考え：仕事を済ませてから、練習", 15),
+    ("buy 牛乳 and 卵", 5), ("  spaced   out  ", 2), ("カタカナ", 4), ("한국어 단어", 2),
+])
+def test_a_word_count_counts_cjk_by_character(text, words):
+    from tessellate.ai import utilities
+
+    assert utilities.word_count(text) == words
+    assert utilities.counts(text)["words"] == words
+
+
+@pytest.mark.parametrize("line", [
+    "考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）",
+    "今日は雨が降っていたので傘を持って出かけました、そして駅まで歩いた",
+    "メモ：明日の会議の資料を準備する必要がある、忘れないように",
+])
+def test_a_long_line_with_no_spaces_is_named_by_a_short_form(line):
+    from tessellate.ai import realise
+
+    short = realise.cut_title(line, 60)
+    assert short.endswith("…") and 4 <= len(short) <= 21, short
+    assert line.startswith(short.removesuffix("…"))
+
+
+def test_a_short_title_is_kept_whole():
+    from tessellate.ai import realise
+
+    assert realise.cut_title("Atlas retro meeting", 60) == "Atlas retro meeting"
+    assert realise.cut_title("買い物リスト", 60) == "買い物リスト"
+
+
+def test_the_greeting_names_a_japanese_note_by_a_short_form(client, session, monkeypatch):
+    from tessellate.core.database import Entry
+
+    session.add(Entry(content="考え：仕事を済ませてから、練習としてゴルフを数球打った（笑）", created_at=seed_c.NOW))
+    session.commit()
+    said = seed_c.asker(client, monkeypatch)("hey")[0]
+    assert "考え：仕事を済ませてから…" in said and "ゴルフ" not in said, said
+
+
+def test_no_surface_counts_words_by_its_own_split():
+    import re
+
+    from tests._app_js import app_js_text
+
+    text = app_js_text()
+    own = re.findall(r"[^\n]*(?:\.match\(/\\S\+/g\)|split\(/\\s\+/\))[^\n]*\.length[^\n]*word[^\n]*", text, re.I)
+    assert not own, own[:3]
+
+
+def test_the_head_dot_is_drawn_between_shown_chips_only():
+    from pathlib import Path
+
+    css = Path("frontend/css/04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    assert ".chat-subline > :not([hidden]) ~ :not([hidden])::before" in css
+    assert ".chat-subline > *+*::before" not in css
+
+
+# INBOX 1496. A vague pick is a pick; a caption is said once; no filler as a subject.
+
+@pytest.mark.parametrize("question", [
+    "errm a random ahh note", "a random note", "gimme a random ahh note lol", "give me any note", "pick a note for me",
+    "any note will do", "some random old note", "open a random note", "can you pick a random note for me", "random note please",
+])
+def test_a_vague_pick_is_answered_as_one_of_your_notes(notebook, question):
+    said, _ = notebook(question)
+    assert said.startswith("Here is one of your"), said
+    assert "nothing in your notes" not in said.lower()
+
+
+@pytest.mark.parametrize("question", [
+    "delete a random note", "a random note about cooking", "random thoughts about notes", "what is a random variable note",
+    "tell me a random fact", "give me a note about Lisbon",
+])
+def test_a_pick_with_a_subject_or_an_act_is_no_pick(question):
+    from tessellate.ai import slash
+
+    assert slash.infer(question) is None, question
+
+
+@pytest.mark.parametrize("caption", [
+    "a photo of a grassy hill with blue arrows", "The image shows a photo of a grassy hill with blue arrows",
+    "this picture of a grassy hill with blue arrows", "A photograph of a grassy hill with blue arrows",
+    "a screenshot of a grassy hill with blue arrows",
+])
+def test_a_caption_that_names_its_kind_is_said_once(caption):
+    import re
+    from datetime import date
+
+    from tessellate.ai import composer
+
+    note = {"id": 1, "created_at": "2026-10-20T10:00:00", "tags": [], "content": (
+        "Random ahh sketch\n\n![hill.png](/media/hill.png)\n\n"
+        f'[Pictures in this note, as this app read them:\n- hill.png: shows {caption}; text in it: "CRAZZYYYY 67"]')}
+    text = composer.compose("what is in my random ahh sketch note", [note], today=date(2026, 10, 31))["text"]
+    assert not re.search(r"\b(picture|photo|image|screenshot)\b of an? (picture|photo|image|screenshot)\b", text, re.I), text
+    assert "grassy hill" in text, text
+
+
+def test_a_source_card_says_its_title_once_and_no_bare_kind_word():
+    from tests._app_js import app_js_text
+
+    text = app_js_text()
+    assert "function sourceLines(content)" in text and "const lines = sourceLines(entry.content);" in text
+    foot = text[text.index('foot.className = "chat-source-foot muted"') - 120 : text.index('foot.className = "chat-source-foot muted"') + 200]
+    assert "if (source.url)" in foot and "group?.one" not in foot

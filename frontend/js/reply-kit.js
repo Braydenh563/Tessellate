@@ -999,7 +999,7 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? plainText(content).split(/\s+/).filter(Boolean).length : 0;
+  const words = content ? countWords(plainText(content)) : 0;
   facts.textContent = [
     "Note",
     entry?.category,

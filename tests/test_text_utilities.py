@@ -53,10 +53,23 @@ def test_the_counts_equal_wc_on_the_fixture():
 @pytest.mark.skipif(shutil.which("node") is None or shutil.which("wc") is None, reason="node or wc missing")
 def test_the_browser_counts_the_same():
     text = FIXTURE.read_text(encoding="utf-8")
-    fn = "const TEXT_READING_WPM = 220;\n" + _function(JS / "settings-wiring.js", "textCounts")
+    fn = _word_counter() + "const TEXT_READING_WPM = 220;\n" + _function(JS / "settings-wiring.js", "textCounts")
     got = _node(fn + f"\nconsole.log(JSON.stringify(textCounts({json.dumps(text)})));")
     assert {k: got[k] for k in ("words", "chars", "lines")} == _wc()
     assert got["read"] == utilities.counts(text)["read"]
+
+
+def _word_counter() -> str:
+    """`textCounts` counts words through the one helper in prefs.js."""
+    prefs = (JS / "prefs.js").read_text(encoding="utf-8")
+    return re.search(r"const CJK_CHARACTER = [^\n]+\n", prefs).group(0) + _function(JS / "prefs.js", "countWords") + "\n"
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
+@pytest.mark.parametrize("text", ["", "two words", "考え：仕事を済ませてから、練習", "buy 牛乳 and 卵", "한국어 단어", "  spaced   out  "])
+def test_the_browser_and_the_server_count_words_the_same_way(text):
+    got = _node(_word_counter() + f"\nconsole.log(JSON.stringify(countWords({json.dumps(text)})));")
+    assert got == utilities.word_count(text)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")

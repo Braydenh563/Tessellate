@@ -186,7 +186,7 @@ def _summary(document: Document) -> dict:
         "id": document.id,
         "title": document.title,
         "updated_at": document.updated_at.isoformat(),
-        "words": len(document.content.split()),
+        "words": utilities.word_count(document.content),
         "preview": _preview(document.content),
         # Normalised on the way out as well as in: a row written before this
         # column existed, or by a restore from an older backup, can hold
@@ -1349,9 +1349,9 @@ def document_revisions(
     #: Newest first, and each row is compared with the version that *came
     #: after* it: for the newest revision that is the document as it stands
     #: now, which is why this walks with `newer` seeded from the document.
-    newer_words = len((document.content or "").split())
+    newer_words = utilities.word_count(document.content)
     for row in rows:
-        words = len((row.content or "").split())
+        words = utilities.word_count(row.content)
         out.append(
             DocumentRevisionOut(
                 id=row.id,
