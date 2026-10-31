@@ -122,3 +122,15 @@ def app_css() -> str:
     from tests._css_paths import css_text
 
     return css_text()
+
+
+def test_the_open_button_is_named_by_its_verb_and_the_hover_keeps_the_facts_readable() -> None:
+    """UX review 1031 items 7 and 18: the name was "Weekly review Note · 2 min
+    ago" with "Preview" only on a tooltip; and the facts line was 4.1:1 on the
+    hovered card's grey (4.65 light and 5.11 dark on the quieter tone)."""
+    attach = _read("frontend", "js", "chat-attach.js")
+    builder = _between(attach, "function attachmentChip(", "\nfunction renderImageAttachments")
+    assert 'open.setAttribute("aria-label", `${title}, ${facts.textContent}`)' in builder
+    css = _read("frontend", "css", "04-chat-dock-appearance.css")
+    hover = _between(css, ".att-chip:has(> .att-chip-open:is(:hover, :focus-visible)) {", "}")
+    assert "background: var(--ghost-btn-bg);" in hover

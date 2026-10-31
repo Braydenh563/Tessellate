@@ -130,6 +130,8 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
     open.type = "button";
     open.className = "att-chip-open";
     open.setAttribute("aria-haspopup", "dialog");
+    //: The verb ("Preview note ...") is the button's name, not only a tooltip on its span.
+    if (title) open.setAttribute("aria-label", `${title}, ${facts.textContent}`);
     open.append(tile, body);
     open.addEventListener("click", onOpen);
     chipEl.append(open);
