@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7033, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7774, test files 1662, tests 14387, plan headings 990.
+Counts: frontend functions 7033, frontend ids 2596, CSS sections 507, backend routes 632, backend modules 7774, test files 1663, tests 14389, plan headings 990.
 
 ## Frontend functions (7033)
 
@@ -2810,13 +2810,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `companionTravelAt` | frontend/js/companion-travel.js:109 |
-| `companionTravelChoose` | frontend/js/companion-travel.js:57 |
-| `companionTravelEnd` | frontend/js/companion-travel.js:97 |
-| `companionTravelFx` | frontend/js/companion-travel.js:77 |
-| `companionTravelPlay` | frontend/js/companion-travel.js:247 |
-| `companionTravelSteps` | frontend/js/companion-travel.js:114 |
-| `companionTravelWeights` | frontend/js/companion-travel.js:40 |
+| `companionTravelAt` | frontend/js/companion-travel.js:105 |
+| `companionTravelChoose` | frontend/js/companion-travel.js:53 |
+| `companionTravelEnd` | frontend/js/companion-travel.js:93 |
+| `companionTravelFx` | frontend/js/companion-travel.js:73 |
+| `companionTravelPlay` | frontend/js/companion-travel.js:192 |
+| `companionTravelSteps` | frontend/js/companion-travel.js:110 |
+| `companionTravelWeights` | frontend/js/companion-travel.js:39 |
 
 ### frontend/js/connections.js (6)
 
@@ -21398,7 +21398,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14387)
+## Tests (14389)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21621,6 +21621,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_land_1402.py | 7 |
 | tests/test_companion_mind.py | 8 |
 | tests/test_companion_motion.py | 108 |
+| tests/test_companion_never_clipped_1463.py | 3 |
 | tests/test_companion_path.py | 9 |
 | tests/test_companion_peek_travel.py | 2 |
 | tests/test_companion_perch.py | 3 |
@@ -21631,7 +21632,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_companion_throw_fates.py | 15 |
 | tests/test_companion_throw_smooth.py | 16 |
 | tests/test_companion_toggle.py | 3 |
-| tests/test_companion_travel.py | 17 |
+| tests/test_companion_travel.py | 16 |
 | tests/test_companion_viewer_face.py | 1 |
 | tests/test_companion_viewer_sleep.py | 6 |
 | tests/test_complexity.py | 4 |
