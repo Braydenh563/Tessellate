@@ -99,3 +99,20 @@
 dialog[data-panel-moved]::backdrop {
   background: transparent;
 }
+
+/* Split screen (INBOX 1474): a panel docked to a side pushes the app aside.
+   `panel-movable.js` writes the two lengths on the root; the pages' side margins
+   (the top bar and the status bar keep the full width, which the status bar
+   needs: its two fixed zones are 801px wide) read them, eased with the motion token (instant with interface animations
+   off, `--ui-base` is 0s there) and not at all under reduced motion. */
+@media (min-width: 600px) and (pointer: fine) {
+  #app-main > * {
+    margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px);
+    transition: margin-inline var(--ui-base) var(--ease-out);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-main > * {
+    transition: none;
+  }
+}

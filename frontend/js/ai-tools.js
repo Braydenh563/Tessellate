@@ -865,6 +865,7 @@ const DEVICE_ONLY_KEYS = [
   "wb-panel-pos-tools",
   "wb-panel-pos-zoom",
   "panel-pos",
+  "panel-push",
 ];
 
 //: The keys worth surviving a restart. Explicit rather than "everything in

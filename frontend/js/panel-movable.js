@@ -42,6 +42,8 @@ const PANEL_STATE = new WeakMap();
 //: the last pixel column (`vw - 1`) made 23 on the right and bottom.
 const PANEL_EDGE = 48;
 const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
+//: INBOX 1474 (split screen): the narrowest the app may be squeezed to.
+const PANEL_PUSH_MIN = 640;
 
 //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
 //: **A panel stays inside the free area** (INBOX 1474, the owner: "I can drag
@@ -92,7 +94,7 @@ function panelZoneRect(zone, vw, vh, inset, safe) {
 //: The window minus the top bar, the status bar, a side tab rail, a sidebar
 //: and the panels docked to a side, read when a drag starts or a dock is
 //: fitted, never per move. `except` is the panel being placed.
-function panelSafe(vw, vh, except) {
+function panelSafe(vw, vh, except, ignore = "") {
   const safe = { left: 0, top: 0, right: vw, bottom: vh };
   const seen = (id) => {
     const el = document.getElementById(id);
@@ -103,7 +105,7 @@ function panelSafe(vw, vh, except) {
   const tabs = seen("tab-bar");
   if (bar) safe.top = Math.max(0, Math.round(bar.bottom));
   if (foot) safe.bottom = Math.min(vh, Math.round(foot.top));
-  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2) safe.left = Math.round(tabs.right);
+  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.round(tabs.right);
   const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
   const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
   for (const el of [...sides, ...docked]) {
@@ -111,10 +113,52 @@ function panelSafe(vw, vh, except) {
     const r = el.getBoundingClientRect();
     const zone = PANEL_STATE.get(el)?.dock || "";
     if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
-    if (r.left + r.width / 2 < vw / 2) safe.left = Math.max(safe.left, Math.round(r.right));
+    const west = r.left + r.width / 2 < vw / 2;
+    //: A side the app is about to be pushed away from is not an obstacle.
+    if (ignore === (west ? "left" : "right")) continue;
+    if (west) safe.left = Math.max(safe.left, Math.round(r.right));
     else safe.right = Math.min(safe.right, Math.round(r.left));
   }
   return safe;
+}
+//: **Split screen** (INBOX 1474, the owner: "there's no point in docking if it
+//: hides half the screen"). A panel docked to the left or right half pushes the
+//: app aside: `--dock-push-left/right` on the root, read by `body`'s padding
+//: (panel-movable-lazy.css, eased with `--ui-base`, instant with motion off).
+//: Corner docks, the bottom and the maximise never push, and a panel that is
+//: not fixed to the window (it would ride the push) does not either. One
+//: preference, Settings, Appearance, and the head's toggle both write it.
+function panelPushOn() {
+  return prefs.get("panel-push", "on") !== "off";
+}
+function panelPinned(panel) {
+  for (let el = panel; el && el !== document.body; el = el.parentElement) {
+    if (getComputedStyle(el).position === "fixed") return true;
+  }
+  return false;
+}
+function panelPushSide(panel, zone) {
+  return (zone === "left" || zone === "right") && panelMovableOn() && panelPinned(panel) ? zone : "";
+}
+function panelPushSync() {
+  const vw = window.innerWidth;
+  let l = 0;
+  let r = 0;
+  for (const el of document.querySelectorAll(".panel-movable-on")) {
+    const st = PANEL_STATE.get(el);
+    const side = st && el.getClientRects().length ? panelPushSide(el, st.dock) : "";
+    if (st && st.push) st.push.hidden = !side;
+    if (st && st.push) st.push.setAttribute("aria-pressed", String(panelPushOn()));
+    if (!side || !panelPushOn()) continue;
+    const b = el.getBoundingClientRect();
+    if (side === "left") l = Math.max(l, Math.round(b.right));
+    else r = Math.max(r, Math.round(vw - b.left));
+  }
+  if (vw - l - r < PANEL_PUSH_MIN) l = r = 0;
+  const root = document.documentElement;
+  root.style.setProperty("--dock-push-left", `${l}px`);
+  root.style.setProperty("--dock-push-right", `${r}px`);
+  root.toggleAttribute("data-dock-push", l + r > 0);
 }
 //: `data-panel-zones="left right max"` on a panel limits its zones.
 function panelZoneFor(panel, zone) {
@@ -209,7 +253,7 @@ function panelId(panel) {
 function panelSt(panel) {
   let st = PANEL_STATE.get(panel);
   if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, skip: false };
+    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, skip: false };
     PANEL_STATE.set(panel, st);
   }
   return st;
@@ -318,7 +362,7 @@ function panelShowZone(r) {
 //: Fill the dock zone: size first, then one rect read to learn where the
 //: centred layout put it, and translate the difference.
 function panelFit(panel, st) {
-  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel));
+  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : ""));
   if (!z) {
     st.dock = "";
     return;
@@ -330,6 +374,7 @@ function panelFit(panel, st) {
   st.x += z.left - r.left;
   st.y += z.top - r.top;
   panelApply(panel, st);
+  panelPushSync();
 }
 function panelDock(panel, st, zone) {
   if (!st.dock) st.pre = { w: st.w, h: st.h };
@@ -363,6 +408,7 @@ function panelWatchOpen(panel) {
       panelApply(en.target, st);
       panelSync(en.target);
     }
+    panelPushSync();
   });
   PANEL_LIVE.watch.observe(panel);
 }
@@ -379,6 +425,7 @@ function panelReset(panel) {
   panelApply(panel, st);
   if (st.id) panelStoreWrite(st.id, null);
   panelSync(panel);
+  panelPushSync();
 }
 //: The grip's double-click: the size goes back, the place stays (a docked
 //: panel is all size, so it goes back to the middle like the head's).
@@ -399,6 +446,7 @@ function panelSave(panel) {
   if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
   panelScrimLift(panel, st);
   panelSync(panel);
+  panelPushSync();
 }
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
 function panelAdopt(panel) {
@@ -443,6 +491,18 @@ function panelAdopt(panel) {
       btn.appendChild(icon);
       (actions || head).insertBefore(btn, actions ? actions.firstChild : null);
       st.reset = btn;
+      const push = document.createElement("button");
+      push.type = "button";
+      push.className = "icon-only ghost small dialog-head-btn panel-push";
+      push.setAttribute("aria-label", "Move the app aside while docked");
+      push.title = "Move the app aside while this panel is docked to a side";
+      push.hidden = true;
+      const pushIcon = document.createElement("i");
+      pushIcon.className = "ph ph-columns";
+      pushIcon.setAttribute("aria-hidden", "true");
+      push.appendChild(pushIcon);
+      (actions || head).insertBefore(push, btn);
+      st.push = push;
     }
   }
   panelSync(panel);
@@ -484,6 +544,10 @@ function panelHeadDown(e) {
   const hh = head.offsetHeight;
   const inset = panelInset();
   const safe = panelSafe(vw, vh, panel);
+  //: With the push on, a side dock is laid against the window's own edge: the
+  //: sidebar and the rail beside it are pushed over with the rest of the app.
+  const pushing = panelPushOn() && panelPinned(panel);
+  const sideSafe = { left: pushing ? panelSafe(vw, vh, panel, "left") : safe, right: pushing ? panelSafe(vw, vh, panel, "right") : safe };
   let moved = 0;
   let x0 = e.clientX;
   let y0 = e.clientY;
@@ -501,6 +565,7 @@ function panelHeadDown(e) {
       const fx = (x0 - rect.left) / rect.width;
       panelUnsnap(st);
       panelApply(panel, st);
+      panelPushSync();
       const r = panel.getBoundingClientRect();
       st.x += ev.clientX - fx * r.width - r.left;
       st.y += ev.clientY - (y0 - rect.top) - r.top;
@@ -523,7 +588,7 @@ function panelHeadDown(e) {
     const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (z !== zone) {
       zone = z;
-      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, safe) : null);
+      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || safe) : null);
     }
   };
   const done = (ev) => {
@@ -637,6 +702,17 @@ function panelGripKey(e) {
   panelApply(panel, st);
   panelSave(panel);
 }
+function panelPushToggle() {
+  const on = !panelPushOn();
+  prefs.set("panel-push", on ? "on" : "off");
+  const box = document.getElementById("panel-push-toggle");
+  if (box) box.checked = on;
+  document.querySelectorAll(".panel-movable-on").forEach((panel) => {
+    const st = panelSt(panel);
+    if (st.dock && panel.getClientRects().length) panelFit(panel, st);
+  });
+  panelPushSync();
+}
 let panelResizeTimer = 0;
 function panelWindowResized() {
   clearTimeout(panelResizeTimer);
@@ -676,6 +752,7 @@ if (typeof document !== "undefined" && document.addEventListener) {
     const btn = e.target instanceof Element && e.target.closest(".panel-reset");
     const panel = btn && panelOf(btn);
     if (panel) panelReset(panel);
+    if (e.target instanceof Element && e.target.closest(".panel-push")) panelPushToggle();
   }, true);
   document.addEventListener("dblclick", (e) => {
     if (!(e.target instanceof Element)) return;

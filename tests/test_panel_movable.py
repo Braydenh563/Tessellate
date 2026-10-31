@@ -254,3 +254,26 @@ def test_the_free_area_is_the_window_less_sidebars_the_status_bar_and_docked_pan
     body = js[js.index("function panelSafe(") : js.index("//: `data-panel-zones=")]
     assert 'aside.sidebar-panel' in body and "status-bar" in body and ".panel-movable-on" in body
     assert "panelClampMove(" in js[js.index("function panelClamp(") : js.index("function panelClamp(") + 900]
+
+
+def test_a_side_dock_pushes_the_app_aside_with_one_pref_and_two_controls() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
+    # only a left or right dock, only a panel fixed to the window, one pref
+    body = js[js.index("function panelPushSide(") : js.index("function panelPushSync(")]
+    assert 'zone === "left" || zone === "right"' in body and "panelPinned(panel)" in body
+    assert 'prefs.get("panel-push", "on") !== "off"' in js
+    assert "PANEL_PUSH_MIN" in js and "--dock-push-left" in js and "--dock-push-right" in js
+    # the pages take the margins, eased with the motion token, none under reduced motion
+    assert "#app-main > *" in css and "margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px)" in css
+    assert "transition: margin-inline var(--ui-base)" in css and "prefers-reduced-motion: reduce" in css
+    # the head button and the Settings row
+    assert 'push.className = "icon-only ghost small dialog-head-btn panel-push"' in js
+    assert 'push.setAttribute("aria-label", "Move the app aside while docked")' in js
+    assert 'id="panel-push-toggle"' in html
+    assert '{ key: "panel-push", id: "panel-push-toggle", on: "on", off: "off", base: "on" }' in rows
+    assert '["panel-push-toggle", "panel-push"]' in rows
+    # a side the app is pushed away from is not an obstacle to the dock itself
+    assert 'ignore === (west ? "left" : "right")' in js
