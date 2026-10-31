@@ -116,6 +116,11 @@ def list_target(question: str) -> tuple[str, str] | None:
     """`(name, how)` for "list my work notes" or "everything tagged launch":
     how is "tag", "category" or "either"; None when the question names no
     filing."""
+    #: One rule with the overview (CHAT_PLAN decision 81): "show me my X notes"
+    #: is the notes on X said whole, whether or not a tag has the name; the
+    #: listing is "list my X notes" and "notes tagged X".
+    if filed_name.shows_the_lot(question):
+        return None
     lead = _LIST_LEAD.match(_q(question))
     if not lead:
         bare = filed_name.filed_listing(_q(question))
@@ -329,11 +334,15 @@ def _until(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     if n == 0:
         line = f"{the} is today." if tense == "future" else f"{the} was today."
     elif n == 1:
-        line = f"{the} is tomorrow, {_day(day, today)}." if tense == "future" else f"{the} was yesterday, {_day(day, today)}."
+        line = f"{the} is tomorrow." if tense == "future" else f"{the} was yesterday."
+    #: The distance first, then the day, as every timed answer says it (INBOX
+    #: 1483): "was nine days ago, on 2 October", "is 23 days from today, on 3
+    #: November" (the words "how many days until" is answered in); the count asked
+    #: for stays exact.
     elif tense == "future":
-        line = f"{the} is on {_day(day, today)}, {n} days from today."
+        line = f"{the} is {realise.count_word(n)} days from today, on {_day(day, today)}."
     else:
-        line = f"{the} was on {_day(day, today)}, {n} days ago."
+        line = f"{the} was {realise.count_word(n)} days ago, on {_day(day, today)}."
     out.lines.append(line)
     _cite(out, view, sentence, line)
     return True

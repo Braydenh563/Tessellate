@@ -97,3 +97,28 @@ def recency(text: str, *, bare: bool = False) -> Recent | None:
     if not subject and not count and not bare:
         return None
     return Recent(count or (_DEFAULT_MANY if noun in _PLURAL else 1), subject, bool(count), words[at] in _OLDEST or words[at] == "first")
+
+
+#: "What's the latest on uni", "the newest about my flat", "most recent update
+#: on the sync rewrite": the latest on a subject, with no noun for a note.
+_LATEST_WORDS = frozenset({"latest", "newest", "recent"})
+_UPDATE_NOUNS = frozenset({"news", "update", "updates", "word", "info", "information", "development", "developments"})
+
+
+def status_subject(text: str) -> str:
+    """The subject of a "what's the latest on X" question; empty for any other.
+    Every note on X is the pool (the newest leads the answer), so the notes
+    the search happened to rank first never decide which is the latest."""
+    words = _WORD.findall((text or "").lower()[:300])[:60]
+    at = next((i for i, w in enumerate(words) if w in _LATEST_WORDS), -1)
+    if at < 0 or "most" in words[:at - 1]:
+        return ""
+    rest = words[at + 1:]
+    while rest and rest[0] in _UPDATE_NOUNS:
+        rest = rest[1:]
+    if not rest or rest[0] not in _MARKS or any(w in _NOUNS for w in rest[:1]) or (len(rest) > 1 and rest[1] in _TIME_AFTER):
+        return ""
+    subject = [w for w in rest[1:] if w not in {"the", "my", "a", "an", "all", "our"}]
+    if subject and subject[0] in {"last", "this", "next", "yesterday", "today"}:
+        return ""  # a time, not a subject
+    return " ".join(subject) if subject and not (subject[0] in _NOUNS and len(subject) == 1) else ""

@@ -50,7 +50,8 @@ def test_a_dated_line_reports_what_its_note_said_then():
     assert "by 9 August, you" in text and "that you had just recently begun playing League of Legends" in text, text
     assert "that you had started the new season and you were stuck in silver" in text, text
     #: A plain past is already the day's and stays as written.
-    assert "On 2 August, you bought a new headset" in text, text
+    #: Composer5-1031 (INBOX 1483, relative first): was "On 2 August, you bought a new headset".
+    assert "Back in August, you bought a new headset" in text, text
     assert "you have started" not in text and "you're stuck" not in text and "began playing" not in text
 
 

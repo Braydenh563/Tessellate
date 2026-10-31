@@ -37,7 +37,7 @@ from sqlalchemy import text as sql_text
 from sqlalchemy.orm import Session
 
 from tessellate.api import bounds
-from tessellate.ai import budget as run_budget, capability, fact_check, composer, composer_social, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
+from tessellate.ai import budget as run_budget, capability, fact_check, filed_name, composer, composer_social, composer_plan, composer_aware, composer_compose, composer_digest, composer_frame, composer_open, composer_suggest, composer_tone, composer_web, composer_lists, composer_money, composer_slots, composer_sum, composer_versus, find_it, glossary, list_pool, neighbours, note_rank, note_recency, personal, phrasing, realise, verdicts, toolwords, vocative, why
 from tessellate.ai import recognise
 from tessellate.ai import (
     acts,
@@ -2960,6 +2960,9 @@ def _filed_said(req: _StreamRequest, asked: str, now: datetime) -> tuple[str, st
     from tessellate.ai import tools as agent_tools
 
     filed = commands.filed_listing(asked)
+    #: In Ask "show me my X notes" is the overview, not this listing (decision 81).
+    if req.body.notes_only and filed_name.shows_the_lot(asked):
+        filed = None
     for key in ("category", "tag") if filed else ():
         args = {key: filed}
         result = agent_tools.execute_tool(req.session, "list_notes", args)

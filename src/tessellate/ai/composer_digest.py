@@ -43,7 +43,7 @@ from datetime import date, datetime, time, timedelta
 from functools import lru_cache, wraps
 from pathlib import Path
 
-from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, glossary, realise, verdicts
+from tessellate.ai import composer, composer_frame, composer_lists, composer_money, composer_slots, composer_sum, composer_tables, filed_name, glossary, realise, verdicts
 from tessellate.ai.composer_lists import clean
 from tessellate.ai import recognise as recogniser
 from tessellate.ai import when as when_words
@@ -397,6 +397,22 @@ def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
         on=on, rel=rel, month=month, weekday=weekday, on_weekday=f"on {name} {_day(start, today)}", about=about)
 
 
+def _said_day(day: date, today: date | None) -> str:
+    """A day as a lead says it, by the one rule table (`_when_gone`): "three
+    weeks ago, on 8 October", "back in July", "yesterday"; the bare "on 8
+    October" only for a day not yet gone or with no today to count from
+    (INBOX 1483, composer5: a timed answer never leads with a bare date)."""
+    on = f"on {_day(day, today or day)}"
+    return _when_gone(on, day, today) if today and day <= today else on
+
+
+def _lead_day(day: date | None, today: date | None, capital: bool = True) -> str:
+    """`_said_day` as the first words of a sentence (or, with no `capital`,
+    of a clause after another), comma and space after."""
+    said = _said_day(day, today) if day else "on an undated day"
+    return f"{said[:1].upper() if capital else said[:1]}{said[1:]}, "
+
+
 #: A phrase's date clause, marked ‹...› whole: kept when the question is
 #: about time, dropped with every word of it otherwise ("You have six notes
 #: about hobbies." says the count; "the last on {day}" never leaves "the last").
@@ -624,16 +640,10 @@ _ASKING = _stems(
 #: subject's missing word.
 _VERBS = _stems("spend spent buy get make do go like want need try see say use pay cost")
 
-#: "show me my study notes", "pull up my uni notes": the notes on a subject, said whole.
-_SHOW_NOTES = (
-    r"^\s*(?:please )?(?:show|give|get|bring up|pull up|find)(?: me)? (?:all )?(?:of )?(?:my|the) (?!(?:last|latest|newest|recent|first|oldest|next)\b)[\w&'-]+(?: [\w&'-]+)?\s+(?:notes|entries)\s*[.?!]*$"
-)
-
-
-def shows_the_lot(question: str) -> bool:
-    """Whether `question` asks to be shown a subject's notes ("show me all of
-    my university notes"): in Ask that is the overview, not a find."""
-    return re.match(_SHOW_NOTES, " ".join((question or "").split()), re.I) is not None
+#: "show me my study notes", "pull up my uni notes": the notes on a subject, said
+#: whole (`filed_name.shows_the_lot`, the one rule: the verb decides, CHAT_PLAN decision 81).
+_SHOW_NOTES = filed_name.SHOW_NOTES
+shows_the_lot = filed_name.shows_the_lot
 
 
 _ASKS = {
@@ -781,7 +791,7 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
         #: one of your notes" read as a tail on the person's own words).
         return f"{fact}."
     #: Not again when the fact already says the day it was written.
-    when = f", written on {_day(view.written, today)}" if _TIMED.get() and f"on {_day(view.written, today)}" not in fact else ""
+    when = f", written {_said_day(view.written, today)}" if _TIMED.get() and f"on {_day(view.written, today)}".lower() not in fact.lower() else ""
     if not getattr(view, "titled", False):
         return f"{fact}{when}."
     return PHRASES["from_note"].format(fact=fact, name=_your_note(view), when=when)
@@ -1677,7 +1687,9 @@ def _dated_lead(label: str, i: int, by_day: date | None, written: date | None, b
     #: The time since the line before reads first; a run's first line, or
     #: one the same days as the last, says a recent day as a person would.
     recent = _recent(written, by_day) if not gap or (by_day and written and (by_day - written).days <= 7) else ""
-    return recent or (_gap_on(gap, label) if gap >= 2 else f"on {label}, ")
+    if recent or gap >= 2:
+        return recent or _gap_on(gap, label)
+    return _lead_day(written, by_day, capital=False) if written and by_day else f"on {label}, "
 
 
 def _cleaned_body(line_body: str, label: str) -> str:
@@ -1765,7 +1777,7 @@ def _heading_line(label: str, held: list[Fact], bodies: list[str], i: int, by_da
     written = held[0].view.written
     #: A note told by its day after an earlier one says the time
     #: between (gold Q2: "a week later, you tried the Viper").
-    on_day = f"On {_day(written, by_day or written)}, " if written and _TIMED.get() else ""
+    on_day = _lead_day(written, by_day or written) if written and _TIMED.get() else ""
     if on_day and before and (written - before).days >= 2 and line_body.startswith(on_day):
         lead = _gap_on((written - before).days, _day(written, by_day or written))
         line_body = lead[0].upper() + lead[1:] + _reported(line_body[len(on_day):], i)
@@ -2161,7 +2173,7 @@ def _noted_section(head: str, items: str, view, today: date | None) -> str:  # n
     """A title-less note that is one labelled thought: "On 22 October, you noted an idea: ..."."""
     article = "" if head.endswith("s") or head[:1].isupper() else ("an " if head[:1] in "aeiou" else "a ")
     written = view.written
-    lead = _recent(written, today) or (f"on {_day(written, today or written)}, " if written and _TIMED.get() else "")
+    lead = _recent(written, today) or (_lead_day(written, today, capital=False) if written and _TIMED.get() else "")
     return f"{lead}you noted {article}{head}: {items}"
 
 
@@ -2201,7 +2213,7 @@ def _prose(label: str, held: list, bodies: list[str], i: int, today: date | None
     if frame in ("planned", "noted") and re.match(r"you\b", clauses[0]):
         #: The person's own doing needs no heading: its day says when.
         recent = _recent(written, today).rstrip(", ")
-        opening = (recent[:1].upper() + recent[1:] + "," if recent else f"On {_day(written, today or written)},") if written else f"In your {named} note,"
+        opening = (recent[:1].upper() + recent[1:] + "," if recent else _lead_day(written, today).rstrip()) if written else f"In your {named} note,"
         if written and not _TIMED.get():
             opening = ""
     line = f"{opening} {clauses[0]}".lstrip()
@@ -3097,6 +3109,11 @@ def _gone_quiet(members: list[composer.NoteView]) -> str:
     return ""
 
 
+#: "What's the latest on uni", "the most recent thing about X", "when did I
+#: last ...": the newest note that fits, not the first the search ranked.
+_LATEST_ASK = re.compile(r"\b(?:latest|newest|most recent|recently|lately)\b|\bwhen did i last\b", re.I)
+
+
 def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fact | None:
     #: Without the asking words: "what day did I run 8 km" is not about a "day".
     stems = set(_subject(question))
@@ -3112,6 +3129,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
 
     figures = composer.figures_of(question)
     asks_feeling = bool(_FEELING_ASK.search(question))
+    latest = bool(_LATEST_ASK.search(question))
 
     def rank(f: Fact) -> tuple:
         words = set(f.sentence.words)
@@ -3119,7 +3137,9 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
         #: The amount asked about ("8 km") beats a sentence that only shares the verb.
         same_figure = bool(figures & composer.figures_of(f.sentence.text)) if figures else False
         #: Between sources that say it equally well, the one the search ranked first.
-        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
+        #: Of the notes that fit the subject equally, the newest one for a "latest" ask.
+        newest = (f.view.written or date.min) if latest else date.min
+        return (_cued(cue, f.sentence.text), id(f.view) not in old, _label_asked(f.label, question), hits, newest, asks_feeling and _feeling(f.sentence.text), same_figure, -f.view.rank, -f.sentence.order)
 
     return max(facts, key=rank) if facts else None
 
@@ -3127,7 +3147,7 @@ def _best(facts: list[Fact], question: str, cue: re.Pattern | None = None) -> Fa
 def _say_list(out: _Out, lead: Fact, items: list[str], today: date) -> None:
     """"Hobbies I want to try: bouldering, film photography, ukulele": asked
     what the hobbies are, the answer is the count and the list."""
-    day = f", written on {_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
+    day = f", written {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
     name = f"your note “{lead.label}”" if _label_names(lead.label, lead.view) else _your_note(lead.view)
     out.lines.append(f"{realise.count_word(len(items)).capitalize()}, from {name}{day}: {realise.join_items(items)}.")
     others = [v for v in _VIEWS.get() if v.id != lead.view.id]
@@ -3144,7 +3164,7 @@ def _say_fact(out: _Out, lead: Fact, today: date, question: str) -> None:
         #: A heading the note gives itself ("Psych lecture") names the note;
         #: a label the answer gave the fact ("How it went") does not.
         name = f"your {_fragment(lead.label, _NAMES.get())} note" if _label_names(lead.label, lead.view) else _your_note(lead.view)
-        day = f", {_day(lead.view.written, today)}" if _TIMED.get() else ""
+        day = f", {_said_day(lead.view.written, today)}" if _TIMED.get() and lead.view.written else ""
         out.lines.append(f"From {name}{day}: {body}.")
     else:
         out.lines.append(_from_source(lead.view, body[0].upper() + body[1:], today))
@@ -3486,7 +3506,7 @@ def _who_many(out: _Out, name: str, found: list, today: date) -> None:
         if v.title and re.match(rf"{re.escape(name)}\s*:", body, re.I) and not _defines(v, name.split()):
             body = f"your {v.title} note has {body}"
         body = re.sub(r"^(You|Your)\b", lambda m: m.group().lower(), body)
-        out.lines.append(f"On {_day(v.written, today)}, {body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
+        out.lines.append(f"{_lead_day(v.written, today)}{body}." if _TIMED.get() else f"{body[:1].upper() + body[1:]}.")
         #: Each line cites its own note (second eye F2: one row, for the lead,
         #: stood behind sentences taken from several notes).
         out.rows.append({"sentence": body, "note_id": v.note.get("source_id", v.id), "source": s2.text, "start": s2.start, "end": s2.end, "score": 1.0, "digest": True})

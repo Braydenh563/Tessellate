@@ -421,5 +421,6 @@ def test_a_day_line_is_prose_not_a_date_label():
         text = composer_digest.answer(question, NOTES, today=TODAY)["text"]
         assert not re.search(r"^\*\*\d{1,2} [A-Z][a-z]+:\*\*", text, re.M), text
     gym = composer_digest.answer("how's the gym going?", NOTES, today=TODAY)["text"]
-    assert "On 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
+    #: Composer5-1031 (INBOX 1483, the owner's one date table: relative first, then the date): was "On 8 September, you squatted ...".
+    assert "Four weeks ago, on 8 September, you squatted 80 kg for 5 and benched 60 kg for 5, going on Mondays, Wednesdays and Fridays." in gym
     assert "by 2 October, your squat was up to 90 kg for 5, and your knee felt fine." in gym or "on 2 October, your squat" in gym
