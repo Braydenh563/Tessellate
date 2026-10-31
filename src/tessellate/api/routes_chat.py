@@ -4079,7 +4079,7 @@ def _composed_events(req: _StreamRequest, prepared: dict, ollama_running: bool) 
     #: A note's own day is an answer with no quote to ground (`composer._written_when`).
     missed = not result["grounding"] and not said_none and not result.get("answered")
     if missed:
-        redirected = _missed_events(req, follow, ollama_running)
+        redirected = _missed_events(req, follow, ollama_running, result)
         if redirected is not None:
             return redirected
     text, asks = _composed_text(req, prepared, result, follow, missed=missed, said_none=said_none)
@@ -4125,12 +4125,12 @@ def _composed_text(req: _StreamRequest, prepared: dict, result: dict, follow, *,
     return text, asks
 
 
-def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | None:  # noqa: ANN001
+def _missed_events(req: _StreamRequest, follow, ollama_running: bool, result: dict) -> list | None:  # noqa: ANN001
     """The composer found nothing: ask what was meant (an unknown action, or a
     message nothing placed), or turn to the web when it is on and was asked
     for or the question is about the world; None leaves the composer's own words."""
     if not follow and not ollama_running and not req.images_raw:
-        asked = _asked_back_events(req)
+        asked = _asked_back_events(req, result)
         if asked is not None:
             return asked
     if ollama_running or not _web_allowed(req):
@@ -4138,14 +4138,17 @@ def _missed_events(req: _StreamRequest, follow, ollama_running: bool) -> list | 
     return _web_events_or_down(req, follow.question if follow else req.question) if follow or composer_unplaced.worthy(req.question or "") else None
 
 
-def _asked_back_events(req: _StreamRequest) -> list | None:
+def _asked_back_events(req: _StreamRequest, result: dict) -> list | None:
     """What an instruction nothing understood asks back (`composer_suggest`),
     or the question for banter and bare words (`_unplaced_events`)."""
     unknown = composer_suggest.unknown_action(
         req.question or "", _newest_titles(req.session), embed=_composer_embed(), seed=_reply_seed(req)[1])
     if unknown is not None:
         return _suggest_events(unknown)
-    return _unplaced_events(req) if composer_unplaced.unplaced(req.question or "") else None
+    #: A feature word the composer answered ("timer": one of the app's own tools)
+    #: is its answer, not a message nothing placed.
+    placed = result.get("shape") == "help"
+    return _unplaced_events(req) if not placed and composer_unplaced.unplaced(req.question or "") else None
 
 
 def _web_events_or_down(req: _StreamRequest, question: str) -> list | None:
