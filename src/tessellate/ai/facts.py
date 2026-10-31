@@ -582,6 +582,7 @@ def run(
 
     spent = 0
     scanned = 0
+    boards = 0
     derived = 0
     stopped = "done"
     try:
@@ -611,6 +612,7 @@ def run(
             content = entry.content or ""
             spent += TOKENS_PER_NOTE
             scanned += 1
+            boards += int(bool(entry.is_board))
             progress.step(scanned, reachable)
             if scanned % 25 == 0:
                 progress.say(f"Read {scanned} of {reachable} notes, {derived} fact{'' if derived == 1 else 's'} found so far.")
@@ -700,6 +702,7 @@ def run(
         "paused": False,
         "run_id": night.id,
         "scanned": scanned,
+        "boards": boards,
         "derived": derived,
         "tokens_spent": spent,
         "budget": budget,
