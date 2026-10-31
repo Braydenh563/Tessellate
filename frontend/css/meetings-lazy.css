@@ -403,10 +403,8 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .recording-dock-dot {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .recording-dock-dot {
+  animation: none;
 }
 
 /* A background transcription on its card: the bar and a quiet Stop. */

@@ -950,10 +950,8 @@ textarea.drag-over {
    for less motion gets it in place instead, with everything it says intact,
    which is DESIGN.md's rule for motion: stop the movement, keep what it was
    telling you. Nothing else about the panel is animated. */
-@media (prefers-reduced-motion: reduce) {
-  .agent-monitor {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .agent-monitor {
+  animation: none;
 }
 @media (max-width: 599.98px) {
   .agent-monitor {
@@ -6143,10 +6141,8 @@ button.connection-row:is(:hover, :focus-visible) {
 }
 /* Not the polish set: an idle fade of a whole bar, which keeps reduced
    motion (DESIGN.md, the whole-window mode). */
-@media (prefers-reduced-motion: reduce) {
-  #tab-documents.doc-focus > .doc-focus-bar {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) #tab-documents.doc-focus > .doc-focus-bar {
+  transition: none;
 }
 .doc-focus-title {
   min-width: 0;

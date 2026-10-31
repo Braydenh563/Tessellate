@@ -351,10 +351,7 @@ function gcMs(value) {
 //: (`data-motion`, settings.js). The canvas read only the first, so the app's
 //: switch left the map easing while the rest of the page stood still.
 function gcStill() {
-  return Boolean(
-    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ||
-      document.documentElement?.dataset?.motion === "reduced"
-  );
+  return reducedMotionWanted();
 }
 
 //: The edge recipes, transcribed from `.graph-edge*` in
@@ -2777,8 +2774,7 @@ function gcDraw(s = gcTab) {
   const drifting =
     arrows &&
     s.hoveredId != null &&
-    !gcStill() &&
-    document.documentElement.dataset.motion !== "reduced";
+    !gcStill();
   const drift = [];
   //: The glow and core only while few sparks are in view (the last frame's
   //: count): a dense view gets the spark and the taper, inside the +0.5 ms

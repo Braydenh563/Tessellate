@@ -1976,7 +1976,7 @@ function wbDashArray(style, width, pattern = null) {
 function wbSetFlowAnimation(path, period) {
   if (!path) return;
   const root = document.documentElement;
-  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || root.dataset.motion === "reduced" || root.dataset.uiMotion === "off";
+  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
   const want = period > 0 && !still && typeof path.animate === "function" ? period : 0;
   if (path.__wbFlowPeriod === want) return;
   path.__wbFlowAnim?.cancel();
@@ -6688,7 +6688,7 @@ function wbWalkItems(dir) {
     const right = box.maxX * t.k + t.x;
     const bottom = box.maxY * t.k + t.y;
     if (left < 0 || top < 0 || right > view.width || bottom > view.height) {
-      wbCenterOn(box, { animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
+      wbCenterOn(box, { animate: !reducedMotionWanted() });
     }
   }
   //: Name and place only (1031 BD9: "Text box: Card 3, 4 of 362, selected" said
@@ -12684,7 +12684,7 @@ async function wbFrameFit(frame, edges = "nesw") {
   frame.width = nextRight - nextLeft;
   frame.height = nextBottom - nextTop;
   const el = document.querySelector(`.wb-object[data-id="${frame.id}"]`);
-  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const still = reducedMotionWanted();
   if (el && !still) {
     el.style.transition = "transform 150ms ease-out, width 150ms ease-out, height 150ms ease-out";
     el.style.transform = wbItemTransform(frame);
@@ -25320,7 +25320,7 @@ function wbPresentShow(index) {
   const k = Math.max(0.1, Math.min(4, (rect.width - pad * 2) / w, room / h));
   const cx = box.x + w / 2, cy = box.y + h / 2;
   const target = d3.zoomIdentity.translate(rect.width / 2 - k * cx, pad + room / 2 - k * cy).scale(k);
-  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const reduce = reducedMotionWanted();
   const sel = d3.select(container);
   (reduce ? sel : sel.transition().duration(320)).call(wbZoom.transform, target);
 }

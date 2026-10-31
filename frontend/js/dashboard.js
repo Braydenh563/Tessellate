@@ -2403,7 +2403,7 @@ function refreshArtForTheme() {
   }
   const holder = artHolder;
   const old = holder.querySelector("canvas:not(.art-veil)");
-  const still = reducedMotionWanted() || window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.uiMotion === "off";
+  const still = reducedMotionWanted() || document.documentElement.dataset.uiMotion === "off";
   holder.querySelector(".art-veil")?.remove();
   if (old && !still) {
     const veil = document.createElement("canvas");
@@ -2646,7 +2646,6 @@ async function startArt(holder) {
   //: A setting with "battery" in its name that leaves a canvas drawing is a
   //: setting people read as broken, whatever its help text says.
   const reduceMotion =
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
     reducedMotionWanted() ||
     (typeof perfModeOn === "function" && perfModeOn()) ||
     batteryModeOn();

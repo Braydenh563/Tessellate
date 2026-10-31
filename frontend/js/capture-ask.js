@@ -943,7 +943,7 @@ function flashEntry(id) {
     //: height, so a smooth scroll aimed at the card's first place ended
     //: thousands of pixels short on a phone. Then it is centred again once
     //: the rows round it are built.
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = reducedMotionWanted();
     const far = Math.abs(card.getBoundingClientRect().top) > 2 * window.innerHeight;
     card.scrollIntoView({ behavior: reduced || far ? "auto" : "smooth", block: "center" });
     if (far) requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -997,7 +997,7 @@ async function flashReminder(id) {
   requestAnimationFrame(() => {
     const item = document.querySelector(`#reminder-groups li[data-id="${id}"]`);
     if (!item) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = reducedMotionWanted();
     item.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
     item.classList.remove("flash");
     void item.offsetWidth;

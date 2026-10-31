@@ -2307,10 +2307,8 @@ summary > .ph-lead,
   --just-saved-rest: 0 0 #0000;
   animation: just-saved-ring var(--motion-slow) ease-out;
 }
-@media (prefers-reduced-motion: reduce) {
-  .just-saved {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .just-saved {
+  animation: none;
 }
 /* ==========================================================================
    THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS
@@ -3205,10 +3203,8 @@ li:focus-within > .entry-meta .entry-actions > button.ghost,
     opacity: 1;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #settings-modal .status.is-checking::before {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) #settings-modal .status.is-checking::before {
+  animation: none;
 }
 #settings-modal .status.ok::before {
   content: "";
@@ -5253,9 +5249,7 @@ body .chip.item-label,
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-r { transform: rotate(46deg); }
 #nm-buddy.nmb-act-clasp .atl-figure .nmb-arm-l { transform: rotate(-46deg); }
 :root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy.nmb-act-sway .atl-figure-box { animation: atl-stance-sway 7s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  #nm-buddy.nmb-act-sway .atl-figure-box { animation: none; }
-}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-act-sway .atl-figure-box { animation: none; }
 @keyframes atl-stance-sway {
   0%, 100% { transform: rotate(-1.6deg); }
   50% { transform: rotate(1.6deg); }
@@ -5678,9 +5672,7 @@ body .chip.item-label,
 /* INBOX 591: under the system's reduced-motion hint the large view holds
    still but for its blink (the face's own reduce rules keep that), and the
    pointer is not followed there (avatars.js attaches nothing). */
-@media (prefers-reduced-motion: reduce) {
-  .nm-viewer-figure > .nm-figure :is(.nm-char, .nm-buddy-head, .nmb-arm-l, .nmb-arm-r) { animation: none !important; }
-}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-viewer-figure > .nm-figure :is(.nm-char, .nm-buddy-head, .nmb-arm-l, .nmb-arm-r) { animation: none !important; }
 @keyframes nmv-shift {
   from { transform: rotate(-1.1deg); }
   to { transform: rotate(1.1deg); }
@@ -6366,13 +6358,11 @@ body .chip.item-label,
    above, whose selectors out-rank this one; the app-wide kill in
    02-chat-graph.css used to hide that by freezing everything first, and
    now leaves faces and the companion to this block. */
-@media (prefers-reduced-motion: reduce) {
-  #nm-buddy :is(.nm-buddy-char, .nm-figure, .nm-buddy-head, .nmp-lantern-glow, .nmb-leg-l, .nmb-leg-r, .nmb-arm-l, .nmb-arm-r, .nmb-hold-l, .nmb-hold-r, .nm-buddy-think i, .nm-buddy-z, .nm-buddy-z i) {
-    animation-duration: 6s !important;
-  }
-  /* A prop's own motion holds still (INBOX 623): the bell's ring too. */
-  #nm-buddy .nmp-bell { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy :is(.nm-buddy-char, .nm-figure, .nm-buddy-head, .nmp-lantern-glow, .nmb-leg-l, .nmb-leg-r, .nmb-arm-l, .nmb-arm-r, .nmb-hold-l, .nmb-hold-r, .nm-buddy-think i, .nm-buddy-z, .nm-buddy-z i) {
+  animation-duration: 6s !important;
 }
+/* A prop's own motion holds still (INBOX 623): the bell's ring too. */
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy .nmp-bell { animation: none !important; }
 @keyframes nmb-stir {
   0%, 100% { transform: none; }
   20% { transform: rotate(-3deg) scale(1.02, 0.98); }
@@ -6602,11 +6592,9 @@ body .chip.item-label,
    above, whose selectors out-rank this one; the app-wide kill in
    02-chat-graph.css used to hide that by freezing everything first, and
    now leaves faces and the companion to this block. */
-@media (prefers-reduced-motion: reduce) {
-  .name-mark :is(.nm-body, .nm-blinks, .nm-tear, .nm-sweat, .nm-z, .nm-spark, .nm-vein, .nm-heart, .nm-q, .nm-bulb, .nm-halo, .nm-pupil, .nm-wave, .nm-steam, .nm-table, .nm-balloon, .nm-wing-l, .nm-wing-r, .nm-tentacle, .nm-foot-l, .nm-foot-r, .nm-earring, .nm-tails, .nm-bow, .nm-pompom, .nm-gem, .nm-flame, .nm-tail, .nm-starfield, .nm-aura) {
-    /* Calmer, not still: every loop takes six seconds. */
-    animation-duration: 6s !important;
-  }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .name-mark :is(.nm-body, .nm-blinks, .nm-tear, .nm-sweat, .nm-z, .nm-spark, .nm-vein, .nm-heart, .nm-q, .nm-bulb, .nm-halo, .nm-pupil, .nm-wave, .nm-steam, .nm-table, .nm-balloon, .nm-wing-l, .nm-wing-r, .nm-tentacle, .nm-foot-l, .nm-foot-r, .nm-earring, .nm-tails, .nm-bow, .nm-pompom, .nm-gem, .nm-flame, .nm-tail, .nm-starfield, .nm-aura) {
+  /* Calmer, not still: every loop takes six seconds. */
+  animation-duration: 6s !important;
 }
 @keyframes nm-breathe { 50% { transform: translateY(-0.6px) scale(1.015); } }
 @keyframes nm-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
@@ -6999,9 +6987,7 @@ body .chip.item-label,
   & .atl-orbiter { animation: atl-orbit-back var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite, atl-orbit-depth var(--atl-orbit-t) linear calc(var(--atl-at) * var(--atl-orbit-t) * -1) infinite; }
 }
 .atl-figure-box.atl-off .atl-orbits *, :root[data-atlas-hidden] .atl-orbits * { animation-play-state: paused !important; }
-@media (prefers-reduced-motion: reduce) {
-  .nm-live > .atl-orbits :is(.atl-orbit-arm, .atl-orbiter) { animation: none !important; }
-}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live > .atl-orbits :is(.atl-orbit-arm, .atl-orbiter) { animation: none !important; }
 @keyframes atl-orbit { from { rotate: 0deg; } to { rotate: 360deg; } }
 @keyframes atl-orbit-back { from { rotate: 0deg; } to { rotate: -360deg; } }
 /* The turn's angle is the keyframe's offset: 25% is the front (nearest),
@@ -7044,9 +7030,7 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .nm-atlas .nmb-arm.atl-rigged { transition: opacity var(--motion-base) var(--ease-out) !important; animation-name: none !important; }
 .nm-atlas .atl-arm-probe { transition: none !important; }
 :root:is([data-avatar-motion="off"], [data-motion="reduced"]) #nm-buddy :is(.nmb-leg, .nmb-arm, .nmb-hold, .atl-lower) { transition: opacity var(--motion-base) var(--ease-out); }
-@media (prefers-reduced-motion: reduce) {
-  #nm-buddy :is(.nmb-leg, .nmb-arm, .nmb-hold, .atl-lower) { transition: opacity var(--motion-base) var(--ease-out); }
-}
+
 /* Round 9: the chin hand is a variant's choice (`--atl-chin`, below):
    thinking's first and third, laughing's second (a hand to the mouth). */
 .nm-atlas.atl-full .atl-chin-hand,
@@ -7724,11 +7708,9 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
    and it is what says the companion answered: so the loops are named (a
    walk, a carry, the float), not "anything but an act". `!important`
    because the loops' motion gates out-rank this selector. */
-@media (prefers-reduced-motion: reduce) {
-  #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower,
-  #nm-buddy.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"],
-  #nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
-}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:is(.nmb-walking, .nm-buddy-dragging) .nm-live .nm-atlas.atl-layer-lower,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy.nmb-walking .nm-live .nm-atlas.atl-layer-lower[data-atlas-look="masculine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy:has(.atl-figure):is(.nmb-walking, [data-pose="float"]) .nm-buddy-char { animation: none !important; }
 /* A slow turn and lift about her middle, the compositor's (a box). */
 @keyframes atl-float {
   from { translate: 0 0.5px; }
@@ -8268,32 +8250,36 @@ svg.atl-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
     &[data-atlas-mood="confused"] { animation: atl-ponder 2.6s ease-in-out infinite; }
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #nm-buddy .atl-classic-box { animation: none !important; }
-  .nm-live.atl-figure-box {
-    &[data-atlas-mood="delighted"], &[data-atlas-mood="laughing"], &[data-atlas-mood="sleepy"], &[data-atlas-mood="love"], &[data-atlas-mood="confused"] { animation: none !important; }
-  }
-  .nm-atlas :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-tail-swish, .atl-juggle-0, .atl-juggle-1, .atl-juggle-2, .atl-star, .atl-ring-drift, .atl-ring-glint, .atl-core-glow, .nm-buddy-head, .atl-prop-note, .atl-aura, .atl-core, .atl-mood, .atl-node-dot, .atl-dot, .atl-sparkle, .atl-float, .atl-fall, .atl-fx-q) {
-    animation: none !important;
-  }
-  /* The layered figure's loops (atlas.js, `atlasDrawFigure`) stop the same way. */
-  .atl-lw-body[data-atlas-look="masculine"] { animation: none !important; }
-  .atl-lw-body[data-atlas-look="feminine"] { animation: none !important; }
-  .atl-lw-breathe { animation: none !important; }
-  .atl-lw-hair[data-atlas-look="masculine"], .atl-lw-hair[data-atlas-look="feminine"], .atl-lw-tip { animation: none !important; }
-  .atl-lw-tail { animation: none !important; }
-  .atl-lw-neb, .atl-lw-neb-front, .atl-lw-wisps { animation: none !important; }
-  :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back), .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
-  .atl-lw-lower[data-atlas-look="feminine"], .atl-lw-lower[data-atlas-look="masculine"] { animation: none !important; }
-  .nm-live {
-    &.atl-figure-box[data-atlas-look="feminine"]:not([data-atlas-mood="delighted"], [data-atlas-mood="laughing"], [data-atlas-mood="sleepy"], [data-atlas-mood="love"], [data-atlas-mood="confused"]) { animation: none !important; }
-  }
-  .nm-atlas {
-    &.atl-layer-tail, &.atl-layer-lids, &.atl-layer-front, &[data-atlas-mood="laughing"].atl-layer-tail { animation: none !important; }
-    &.atl-layer-lower { animation: none !important; }
-    &:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, & .atl-zf, &[data-atlas-mood="sleepy"].atl-layer-fx-1, &[data-atlas-mood="sleepy"].atl-layer-fx-2 { animation: none !important; }
-    &[data-atlas-mood="love"].atl-layer-fx-1, &[data-atlas-mood="love"].atl-layer-fx-2 { animation: none !important; }
-  }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) #nm-buddy .atl-classic-box { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live.atl-figure-box {
+  &[data-atlas-mood="delighted"], &[data-atlas-mood="laughing"], &[data-atlas-mood="sleepy"], &[data-atlas-mood="love"], &[data-atlas-mood="confused"] { animation: none !important; }
+}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas :is(.atl-rig, .atl-blink.nm-blinks, .atl-blink.nm-blinks .atl-lid, .atl-blink.nm-blinks > :is(.atl-lashes,.atl-liner:not(.atl-liner-low)), .atl-sway, .atl-tail-swish, .atl-juggle-0, .atl-juggle-1, .atl-juggle-2, .atl-star, .atl-ring-drift, .atl-ring-glint, .atl-core-glow, .nm-buddy-head, .atl-prop-note, .atl-aura, .atl-core, .atl-mood, .atl-node-dot, .atl-dot, .atl-sparkle, .atl-float, .atl-fall, .atl-fx-q) {
+  animation: none !important;
+}
+/* The layered figure's loops (atlas.js, `atlasDrawFigure`) stop the same way. */
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-body[data-atlas-look="masculine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-body[data-atlas-look="feminine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-breathe { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-hair[data-atlas-look="masculine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-hair[data-atlas-look="feminine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-tip { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-tail { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-neb,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-neb-front,
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-wisps { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) :is(.atl-lw-glint-a, .atl-lw-glint-b, .atl-lw-wisps-back),
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas:is(.atl-layer-glint-a, .atl-layer-glint-b) { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="feminine"],
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .atl-lw-lower[data-atlas-look="masculine"] { animation: none !important; }
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-live {
+  &.atl-figure-box[data-atlas-look="feminine"]:not([data-atlas-mood="delighted"], [data-atlas-mood="laughing"], [data-atlas-mood="sleepy"], [data-atlas-mood="love"], [data-atlas-mood="confused"]) { animation: none !important; }
+}
+:where(:root[data-motion="reduced"]:not([data-buddy-motion="full"])) .nm-atlas {
+  &.atl-layer-tail, &.atl-layer-lids, &.atl-layer-front, &[data-atlas-mood="laughing"].atl-layer-tail { animation: none !important; }
+  &.atl-layer-lower { animation: none !important; }
+  &:is(.atl-layer-neb, .atl-layer-neb-front), & .atl-mane, & .atl-zf, &[data-atlas-mood="sleepy"].atl-layer-fx-1, &[data-atlas-mood="sleepy"].atl-layer-fx-2 { animation: none !important; }
+  &[data-atlas-mood="love"].atl-layer-fx-1, &[data-atlas-mood="love"].atl-layer-fx-2 { animation: none !important; }
 }
 @keyframes atl-breathe { 50% { transform: scale(0.99, 1.018); } }
 @keyframes atl-breathe-rise { 50% { transform: translateY(-0.45px) scale(1.006, 1); } }

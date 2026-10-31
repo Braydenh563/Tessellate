@@ -3306,8 +3306,8 @@ def test_a_whole_window_mode_leaves_one_fading_dock_with_a_way_out() -> None:
             if "doc-focus-idle" in selector and "doc-focus-bar" in selector:
                 idle.append(body)
         stripped = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-        for block in re.finditer(r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", stripped, flags=re.S):
-            if "doc-focus-bar" in block.group(1) and "transition: none" in block.group(1):
+        for rule in re.finditer(r'\[data-motion="reduced"\]\)[^{}]*doc-focus-bar[^{}]*\{([^{}]*)\}', stripped):
+            if "transition: none" in rule.group(1):
                 reduced = True
     assert idle, "no idle rule for the floating dock"
     for body in idle:
@@ -5082,6 +5082,7 @@ SEG_IN_POPUPS = {
     "theme-seg": "Settings: a value",
     "fontsize-seg": "Settings: a value",
     "border-style-seg": "Settings: a value",
+    "motion-seg": "Settings: a value (Follow the system, Always on, Off; INBOX 1506)",
     "privacy-range": "Settings: a value",
     "log-view-toggle": "Settings: a view of one log",
 }
@@ -6079,7 +6080,7 @@ def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
     lazy = (ROOT / "frontend" / "css" / "lightbox-lazy.css").read_text(encoding="utf-8")
     for rule in (".lightbox .lightbox-topbar {", ".lightbox-bottom {", ".lightbox .lightbox-filmstrip {", ".lightbox.lightbox-idle .lightbox-topbar,"):
         assert rule in lazy, rule
-    assert re.search(r"prefers-reduced-motion: reduce\)\s*\{\s*\.lightbox \.lightbox-glide \{\s*transition: none", lazy)
+    assert re.search(r'\[data-motion="reduced"\]\) \.lightbox \.lightbox-glide \{\s*transition: none', lazy)
     for boot in ("00-tokens-shell", "02-chat-graph", "07-whiteboard-misc", "08-consistency"):
         text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
         for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):

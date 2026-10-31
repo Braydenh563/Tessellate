@@ -85,19 +85,19 @@ def test_the_dashboard_sky_does_not_parse_a_p5_colour_per_shape():
 
 FRONTEND = JS.parent
 MOTION_SHEET = "motion-still.css"
-CALM = "(prefers-reduced-motion: reduce)"
+CALM = "not all"
 
 
 def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_is_on():
     """Every tab entry restyles hundreds of elements, and the reduced-motion
-    blankets (the OS hint's, `:root[data-motion="reduced"] *:where(:not(...))`
-    with 7 selectors, and the three of `[data-ui-motion="off"]`) were tried
+    blankets (`:root[data-motion="reduced"] *:where(:not(...))` with 7
+    selectors, and the three of `[data-ui-motion="off"]`) were tried
     against each of them while no switch was on: the subject is
     `*:where(:not(:is(...) *))`, so each element walked its ancestors before
     the cheap `:root[...]` test on the far end could reject it. Deleting the
     four rules of the manual pair took the Library's reveal from 22.6 to 13.3
     ms of style at 1x on 2,611 styled elements (about 40%). They live in a
-    sheet whose `media` is the OS hint until `data-motion="reduced"` or
+    sheet whose `media` is `not all` until `data-motion="reduced"` or
     `data-ui-motion="off"` is set (theme-boot.js before first paint, then
     `applyAppearance`), so the default state matches none of them."""
     index = (FRONTEND / "index.html").read_text(encoding="utf-8")
@@ -105,7 +105,7 @@ def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_i
         r'<link rel="stylesheet" href="/css/%s\?v=[^"]+" media="%s" id="motion-still-sheet">' % (MOTION_SHEET, re.escape(CALM)),
         index,
     )
-    assert link, "the still-motion sheet is not linked with the OS hint as its media"
+    assert link, "the still-motion sheet is not linked with `not all` as its media"
     chat = '<link rel="stylesheet" href="/css/02-chat-graph.css'
     assert index.index(chat) < link.start() < index.index('<link rel="stylesheet" href="/css/03-dashboard-widgets.css')
     base = (FRONTEND / "css" / "02-chat-graph.css").read_text(encoding="utf-8")
@@ -113,12 +113,14 @@ def test_the_still_motion_blankets_are_a_sheet_that_exists_only_while_a_switch_i
     for selector in (
         ':root[data-motion="reduced"] *',
         ':root[data-ui-motion="off"] *',
-        "@media (prefers-reduced-motion: reduce) {\n  *:where(:not(:is(#nm-buddy",
     ):
         assert selector in sheet and selector not in base, selector
-    for source in ((JS / "theme-boot.js").read_text(encoding="utf-8"), (JS / "settings.js").read_text(encoding="utf-8")):
-        assert 'getElementById("motion-still-sheet")' in source
-        assert re.search(r'\.media = [^;]*"reduced"[^;]*"off"[^;]*"all" : "%s"' % re.escape(CALM), source)
+    #: One place sets the sheet's media: `MOTION.apply`, which boot and
+    #: `applyAppearance` both call.
+    boot = (JS / "theme-boot.js").read_text(encoding="utf-8")
+    assert 'getElementById("motion-still-sheet")' in boot
+    assert re.search(r'\.media = [^;]*cause[^;]*"off"[^;]*"all" : "%s"' % re.escape(CALM), boot)
+    assert "MOTION.apply(" in (JS / "settings.js").read_text(encoding="utf-8")
 
 
 def _has_with_universal_descendant(selector: str) -> bool:

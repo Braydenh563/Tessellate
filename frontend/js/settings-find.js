@@ -370,7 +370,7 @@ function settingsIndexGo(name, head) {
     scroller._indexUnpin = () => { scroller._indexPinned = null; };
     for (const type of ["wheel", "touchstart", "keydown"]) scroller.addEventListener(type, scroller._indexUnpin, { passive: true });
   }
-  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: typeof reducedMotionWanted === "function" && reducedMotionWanted() ? "auto" : "smooth" });
+  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: reducedMotionWanted() ? "auto" : "smooth" });
   settingsIndexMark(name);
   head.tabIndex = -1;
   head.focus({ preventScroll: true });
@@ -403,7 +403,7 @@ function settingsNavFollow(link) {
   const delta = at.top < have.top + pad ? at.top - have.top - pad : at.bottom > have.bottom - pad ? at.bottom - have.bottom + pad : 0;
   if (!delta) return;
   const root = document.documentElement;
-  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || root.dataset.motion === "reduced" || root.dataset.uiMotion === "off";
+  const still = reducedMotionWanted() || root.dataset.uiMotion === "off";
   box._followAt = performance.now();
   box.scrollTo({ top: box.scrollTop + delta, behavior: still ? "auto" : "smooth" });
 }

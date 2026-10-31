@@ -82,10 +82,10 @@ def test_without_intro_nothing_is_played_back():
 
 
 def test_less_motion_does_not_ask_for_the_playback():
-    # Brief 100: `gcStill` asks the system and the app's own Reduce motion.
+    # Brief 100: `gcStill` asks the one resolved Motion value (INBOX 1506).
     assert "intro: !gcStill() && !restoring," in CANVAS, "a saved view restored plays no intro (claim #238)"
     still = CANVAS[CANVAS.index("\nfunction gcStill(") : CANVAS.index("\n}\n", CANVAS.index("\nfunction gcStill("))]
-    assert "prefers-reduced-motion: reduce" in still and 'dataset?.motion === "reduced"' in still
+    assert "reducedMotionWanted()" in still and "matchMedia" not in still
 
 
 def test_the_frame_is_fitted_before_the_playback_and_the_fits_wait_for_it():
@@ -182,7 +182,7 @@ TWEEN = "\n".join(
         GRAPH[GRAPH.index("\nfunction graphGlideMs(") : GRAPH.index("\n}\n", GRAPH.index("\nfunction graphGlideMs(")) + 3],
         """
 let still = false;
-const window = { matchMedia: () => ({ matches: still }) };
+const reducedMotionWanted = () => still;
 const document = { documentElement: { dataset: {} } };
 const performance = { now: () => 1000 };
 const run = (move) => {

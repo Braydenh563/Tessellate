@@ -765,10 +765,8 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
     opacity: 0.55;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .shortcut-list kbd.capturing {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .shortcut-list kbd.capturing {
+  animation: none;
 }
 /* --- [[wiki links]] ----------------------------------------------------------- */
 .wiki-link {

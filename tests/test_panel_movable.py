@@ -268,7 +268,7 @@ def test_a_side_dock_pushes_the_app_aside_with_one_pref_and_two_controls() -> No
     assert "PANEL_PUSH_MIN" in js and "--dock-push-left" in js and "--dock-push-right" in js
     # the pages take the margins, eased with the motion token, none under reduced motion
     assert "#app-main > *" in css and "margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px)" in css
-    assert "transition: margin-inline var(--ui-base)" in css and "prefers-reduced-motion: reduce" in css
+    assert "transition: margin-inline var(--ui-base)" in css and ':where(:root[data-motion="reduced"]) #app-main > *' in css
     # the head button and the Settings row
     assert 'push.className = "icon-only ghost small dialog-head-btn panel-push"' in js
     assert 'push.setAttribute("aria-label", "Move the app aside while docked")' in js

@@ -188,3 +188,17 @@
 .provider-option:is(:hover, :has(:focus-visible)) .provider-detail {
   color: var(--text);
 }
+
+/* Motion's three words ("Follow the system", "Always on", "Off") are the
+   longest well in Settings: at 390px they wrapped to a second line (INBOX 1506),
+   so on a phone the segments close up and hold one line. */
+@media (max-width: 599.98px) {
+  #motion-seg {
+    flex-wrap: nowrap;
+  }
+  #motion-seg button {
+    padding-inline: var(--space-2);
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+}

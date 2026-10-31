@@ -105,10 +105,6 @@ function atlasLowerState(buddy, box) {
   if (["sad", "sleepy", "worried"].includes(mood) || has("nmb-drowsy")) return "sad";
   return "idle";
 }
-//: One query, read every frame of the tail's loop: `matchMedia` made anew
-//: each frame was 43ms of 1.3s of Atlas's idle script in a 15s profile.
-//: Asked once, not per frame; `typeof matchMedia` for the node vm the shape tests run this file in.
-const ATLAS_REDUCE_QUERY = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 //: **Away is off** (audit AI1, 2026-10-31: the companion faded out on every
 //: tab but the one it lives on kept about 65 animations running, 540 ms of
 //: main thread per 5 s at 4x CPU): a companion that is away (`nmb-away`,
@@ -119,8 +115,8 @@ function atlasMotionOK(box) {
   const root = document.documentElement;
   if (root.dataset.avatarMotion === "off") return false;
   if (box.closest("#nm-buddy")?.classList.contains("nmb-away")) return false;
-  const reduced = root.dataset.motion === "reduced"
-    || !!(ATLAS_REDUCE_QUERY || matchMedia("(prefers-reduced-motion: reduce)")).matches;
+  //: One dataset read per frame of the tail loop; a query made anew each frame was 43ms of 1.3s of Atlas idle script.
+  const reduced = root.dataset.motion === "reduced";
   return !reduced || (root.dataset.buddyMotion === "full" && !!box.closest("#nm-buddy"));
 }
 function atlasRigAttach(box) {

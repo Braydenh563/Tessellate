@@ -138,7 +138,7 @@ def test_arrows_are_off_by_default_and_drawn_as_sparks():
     assert "gcQuadAt(a, c, b, 0.7)" in spark and "bucket.wide.quadraticCurveTo" in spark
     assert "bucket.glows.arc(" in spark and "bucket.sparks.quadraticCurveTo(" in spark
     drifting = canvas[canvas.index("const drifting =") :][:400]
-    # Both switches, the system's and the app's, through `gcStill` (Brief 100).
+    # One resolved value, through `gcStill` (Brief 100, INBOX 1506).
     still = canvas[canvas.index("function gcStill(") :][:400]
-    assert "!gcStill()" in drifting and 'dataset.motion !== "reduced"' in drifting
-    assert "prefers-reduced-motion: reduce" in still and 'dataset?.motion === "reduced"' in still
+    assert "!gcStill()" in drifting
+    assert "reducedMotionWanted()" in still and "matchMedia" not in still

@@ -243,7 +243,7 @@ def test_arrivals_ride_with_the_stack_and_a_card_leaves_in_place():
     # Reduced motion: the slide is the JS's alone, so it stops there; the fades
     # stay with Interface animations (test_motion_tokens).
     reduced = _stack_fn("toastReduced")
-    assert "prefers-reduced-motion: reduce" in reduced and 'dataset.motion === "reduced"' in reduced
+    assert "reducedMotionWanted()" in reduced and "matchMedia" not in reduced
 
 
 def test_the_stack_gap_is_a_spacing_token():

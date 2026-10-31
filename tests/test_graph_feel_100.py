@@ -113,8 +113,8 @@ def test_the_hover_eases_over_the_motion_tokens_and_cuts_with_less_motion():
             _fn("gcStill"),
             _fn("gcFadeStep"),
             """
-let reduce = false, appMotion = "auto";
-const window = { matchMedia: () => ({ matches: reduce }) };
+let reduce = false, appMotion = "full";
+const reducedMotionWanted = () => reduce || appMotion === "reduced";
 const document = { documentElement: { dataset: { get motion() { return appMotion; } } } };
 let gcTokens = { fadeMs: gcMs("0.2s") };
 let t = 1000;
@@ -125,7 +125,7 @@ t += 16.7;
 const step = gcFadeStep(s, gcStill());
 appMotion = "reduced";
 const appStill = gcStill();
-appMotion = "auto"; reduce = true;
+appMotion = "full"; reduce = true;
 const osStill = gcStill();
 reduce = false;
 gcTokens = { fadeMs: gcMs("0s") };
@@ -138,7 +138,7 @@ console.log(JSON.stringify({ ms: [gcMs("0.2s"), gcMs("120ms"), gcMs("0s"), gcMs(
     out = _node(script)
     assert out["ms"] == [200, 120, 0, 0]
     assert abs(out["step"] - 16.7 / 200) < 1e-9, "a frame moves a 200 ms fade by its share"
-    assert out["appStill"] is True and out["osStill"] is True, "the app's Reduce motion counts, not only the system's"
+    assert out["appStill"] is True and out["osStill"] is True, "either cause of reduced motion counts"
     assert out["off"] == 1, "interface animations off (a 0s token) lands the fade at once"
 
 
@@ -351,7 +351,6 @@ def test_the_constellation_keeps_its_room_and_fades_in_once():
     #: A theme change's sky, mounted after the veil that fades over it, starts opaque.
     assert ".art-holder > .art-veil ~ canvas {\n    opacity: 1;" in CSS_GRAPH[start : start + 200]
     tail = CSS_GRAPH[start : start + 900]
-    assert "@media (prefers-reduced-motion: reduce)" in tail
     assert ':root[data-motion="reduced"] .art-holder > canvas:not(.art-veil) {\n  transition: none;' in tail
 
 

@@ -3106,33 +3106,6 @@ button.answer-figure-open {
   animation-delay: 1.6s;
 }
 
-/* Half the lift, for the system's reduced-motion hint (below). */
-@keyframes emblem-lift-soft {
-  0% {
-    transform: none;
-    animation-timing-function: var(--ease-in-out);
-  }
-  15% {
-    transform: translateY(-2.5%);
-    animation-timing-function: var(--ease-in-out);
-  }
-  30%,
-  100% {
-    transform: none;
-  }
-}
-
-/* Under the system's reduced-motion hint the mark still moves (above), but
-   gently: the breath is slower and the lift half as high, so they keep
-   saying what they say with less movement. */
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art:not(.is-still) :is(.emblem-float, .emblem-shadow-breathe) {
-    animation-duration: 10s;
-  }
-  :root:not([data-motion="reduced"]):not([data-ui-motion="off"]) .emblem-art.is-busy:not(.is-still) .emblem-rise {
-    animation-name: emblem-lift-soft;
-  }
-}
 
 /* Off screen (`watchEmblemVisibility`) or two minutes idle (`nmbTick`, :root.is-idle), held where it is. Last, and as
    specific as the rules above, so it wins over their shorthand. */
@@ -4184,10 +4157,8 @@ button.answer-figure-open {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .msg.is-generating::before {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .msg.is-generating::before {
+  animation: none;
 }
 
 /* **The flickering bar under some widgets.**

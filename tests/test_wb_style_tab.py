@@ -54,8 +54,8 @@ def test_the_renderer_draws_them():
     assert "function wbSetFlowAnimation" in WB
     # A Web Animation on the path: paint only (dash offset), held still under both motion switches.
     flow = WB[WB.index("function wbSetFlowAnimation"):][:900]
-    assert "strokeDashoffset" in flow and "prefers-reduced-motion" in flow
-    assert 'dataset.motion === "reduced"' in flow and 'dataset.uiMotion === "off"' in flow
+    assert "strokeDashoffset" in flow and "reducedMotionWanted()" in flow
+    assert 'dataset.uiMotion === "off"' in flow
     assert "wb-flow-march" not in CSS and "--wb-flow-period" not in CSS
 
 

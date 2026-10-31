@@ -1438,7 +1438,9 @@ const APPEARANCE_DEFAULTS = {
   // rate, whatever the three settings below say, without rewriting them, so
   // turning it back off restores exactly the look that was chosen.
   perf: "auto", // auto | on | off
-  motion: "auto", // "auto" = follow the OS; "reduced" = force-still
+  //: Motion (INBOX 1506): "follow" the system's reduced-motion request, "on" whatever it says, "off".
+  //: Stored "auto" and "reduced" read as follow and off (`MOTION.choice`, theme-boot.js).
+  motion: "follow",
   // Interface animations (the polish set): on plays them whatever reduced
   // motion says; off makes them instant (00-tokens-shell.css, `--ui-*`).
   "ui-motion": "on",
@@ -2370,11 +2372,8 @@ function applyAppearance() {
   root.dataset.pageWash = appearancePref("page-wash");
   root.style.setProperty("--glass-sheen-strength", Number(appearancePref("glass-sheen-strength")) / 100);
   root.dataset.themePreset = activeThemePreset();
-  root.dataset.motion = perf ? "reduced" : appearancePref("motion");
   root.dataset.uiMotion = appearancePref("ui-motion");
-  //: The blankets for these two switches are a sheet that matches only while one is on (motion-still.css).
-  const stillSheet = document.getElementById("motion-still-sheet");
-  if (stillSheet) stillSheet.media = root.dataset.motion === "reduced" || root.dataset.uiMotion === "off" ? "all" : "(prefers-reduced-motion: reduce)";
+  MOTION.apply(appearancePref("motion"), perf);
   //: The Capture box holds its line-number column from first paint when this is on.
   root.dataset.noteGutter = prefs.get("doc-gutter", null) === "1" ? "on" : "off";
   root.dataset.progressMotion = appearancePref("progress-motion");
@@ -2622,7 +2621,8 @@ function renderAppearance() {
     if (/^#[0-9a-f]{6}$/i.test(showing)) $("harmony-base").value = showing;
   }), 1);
   $("contrast-toggle").checked = contrastOn();
-  $("reduce-motion-toggle").checked = appearancePref("motion") === "reduced";
+  _segActive("motion-seg", "motionChoice", MOTION.choice(appearancePref("motion")));
+  for (const b of document.querySelectorAll("#motion-seg button")) b.setAttribute("aria-pressed", String(b.classList.contains("active")));
   $("ui-motion-toggle").checked = appearancePref("ui-motion") !== "off";
   $("bg-art-toggle").checked = bgArtOn();
   $("bg-intensity-row").classList.toggle("hidden", !bgArtOn());
@@ -2657,7 +2657,6 @@ function renderAppearance() {
   $("perf-mode-hint").classList.toggle("hidden", !perfWhy);
   $("glass-toggle").checked = appearancePref("glass") === "on";
   $("glass-row").classList.toggle("disabled-row", perfModeOn());
-  $("reduce-motion-row").classList.toggle("disabled-row", perfModeOn());
   $("glass-sheen-toggle").checked = appearancePref("glass-sheen") === "on";
   $("glass-controls-toggle").checked = appearancePref("glass-controls") === "on";
   $("glass-controls-row").classList.toggle("disabled-row", appearancePref("glass") !== "on" || perfModeOn());
@@ -2715,11 +2714,10 @@ function renderAppearance() {
 function renderProgressMotionHint() {
   const hint = $("progress-motion-hint");
   if (!hint) return;
-  const osReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const choice = appearancePref("progress-motion");
   let text = "";
-  if (choice === "always" && osReduced) {
-    text = "Moving anyway: your system asks for reduced motion, and this setting overrides it. Choose Auto to follow the system instead.";
+  if (choice === "always" && reducedMotionWanted()) {
+    text = "Moving anyway: Motion asks for less movement, and this setting overrides it. Choose Auto to follow Motion instead.";
   } else if (choice === "still") {
     text = "Held still. The dots step through a colour once a second so you can still tell work is happening.";
   }
@@ -2753,13 +2751,11 @@ function renderBgMotionHint() {
   const hint = $("bg-motion-hint");
   if (!hint) return;
   const choice = appearancePref("bg-motion");
-  const osReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const appReduced = appearancePref("motion") === "reduced";
   let text = "";
-  if (choice === "auto" && (osReduced || appReduced)) {
-    text = osReduced
-      ? "Held still because your system asks for reduced motion. Choose Moving to override it here."
-      : "Held still because Reduce motion is on above. Choose Moving to override it just for the background.";
+  if (choice === "auto" && reducedMotionWanted()) {
+    text = MOTION.cause === "os"
+      ? "Held still because your system asks for reduced motion. Choose Moving here, or set Motion to Always on."
+      : "Held still because Motion is off above. Choose Moving to override it just for the background.";
   }
   hint.textContent = text;
   hint.classList.toggle("hidden", !text);
@@ -3233,27 +3229,36 @@ $("glass-sheen-strength").addEventListener("input", (e) => {
   $("glass-sheen-strength-value").textContent = `${e.target.value}%`;
   applyAppearance();
 });
-$("reduce-motion-toggle").addEventListener("change", (e) => {
-  prefs.set("motion", e.target.checked ? "reduced" : "auto");
-  // The background-art picker has its own "Moving" override so someone can
-  // ask for motion despite the OS-level reduced-motion hint (see
-  // startBgArt()'s comment: that fix was reported missing once already).
-  // But flipping the in-app reduce-motion toggle is a direct, explicit ask,
-  // and "Moving" silently surviving it read as the two settings being
-  // unrelated. Turning it on selects "Still"; turning it back off only
-  // clears that if we're the ones who set it, so an independent "Moving"
-  // choice made before or after isn't clobbered.
-  if (e.target.checked) {
-    prefs.set("bg-motion", "still");
-  } else if (appearancePref("bg-motion") === "still") {
-    prefs.set("bg-motion", "auto");
-  }
-  if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
-  renderBgMotionHint();
+for (const btn of document.querySelectorAll("#motion-seg button")) {
+  btn.addEventListener("click", () => {
+    const off = btn.dataset.motionChoice === "off";
+    prefs.set("motion", btn.dataset.motionChoice);
+    // The background-art picker has its own "Moving" override (see
+    // startBgArt()'s comment). Choosing Off here is a direct, explicit ask
+    // for stillness, and "Moving" silently surviving it read as the two
+    // settings being unrelated: Off selects "Still"; leaving Off only clears
+    // that if we set it, so an independent "Moving" choice isn't clobbered.
+    if (off) {
+      prefs.set("bg-motion", "still");
+    } else if (appearancePref("bg-motion") === "still") {
+      prefs.set("bg-motion", "auto");
+    }
+    if ($("bg-motion")) $("bg-motion").value = appearancePref("bg-motion");
+    applyAppearance();
+    renderAppearance();
+    if (reducedMotionWanted()) stopBgArt(); // a still UI shouldn't keep the art running
+    else if (bgArtOn()) startBgArt();
+    renderBrandLogo(); // start/stop the emblem's rotation to match
+  });
+}
+//: The system's request changed under an open page: repaint what reads it.
+document.addEventListener("motionchange", () => {
   applyAppearance();
-  if (e.target.checked) stopBgArt(); // a still UI shouldn't keep the art running
+  renderBgMotionHint();
+  renderProgressMotionHint();
+  if (reducedMotionWanted()) stopBgArt();
   else if (bgArtOn()) startBgArt();
-  renderBrandLogo(); // start/stop the emblem's rotation to match
+  renderBrandLogo();
 });
 $("ui-motion-toggle").addEventListener("change", (e) => {
   prefs.set("ui-motion", e.target.checked ? "on" : "off");

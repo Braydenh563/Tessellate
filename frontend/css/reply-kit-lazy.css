@@ -408,10 +408,8 @@ button.reply-by {
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grounding-fold > .fold-summary::before {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .grounding-fold > .fold-summary::before {
+  transition: none;
 }
 
 .grounding-body {

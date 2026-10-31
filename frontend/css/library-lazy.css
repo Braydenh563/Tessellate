@@ -4057,10 +4057,8 @@ button.ghost.doc-template-choice.wb-template-choice {
   50% { opacity: 0.35; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ocr-engine-dot.is-busy {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .ocr-engine-dot.is-busy {
+  animation: none;
 }
 
 /* The popover opens under its button and hangs left from its right edge: it
@@ -5719,10 +5717,8 @@ button.ghost.doc-template-choice.wb-template-choice {
     transform: scale(0.3);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .wb-laser-dot {
-    animation-duration: 0.15s;
-  }
+:where(:root[data-motion="reduced"]) .wb-laser-dot {
+  animation-duration: 0.15s;
 }
 
 /* The template gallery's group heads (INBOX 788, `openDocTemplateDialog`):

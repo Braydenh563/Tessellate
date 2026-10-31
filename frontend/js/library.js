@@ -810,8 +810,7 @@ function renderLibrary(options) {
   //: every switch to Library, a cross-fade of a page that was already
   //: changing because the tab changed.
   const typing = document.activeElement?.id === "library-search";
-  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ||
-    document.documentElement.dataset.motion === "reduced";
+  const still = reducedMotionWanted();
   if (!document.startViewTransition || typing || still || quiet) {
     updateDOM();
   } else {
@@ -1809,7 +1808,7 @@ async function flashLibraryItem(kind, id) {
     return null;
   })();
   if (!card) return;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = reducedMotionWanted();
   card.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
   // "flash" alone only draws on a note-list <li> or something already
   // carrying "flash-target" (01-forms-settings.css): a library card is

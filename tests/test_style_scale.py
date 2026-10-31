@@ -581,8 +581,28 @@ def test_the_hit_target_floor_is_declared_and_used():
         )
 
 
+def _reduced_rules(css: str) -> list[str]:
+    """The text of every rule whose selector names `data-motion="reduced"`,
+    nested rules included (a depth scan: a flat regex desyncs on `&` rules)."""
+    body = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    out: list[str] = []
+    for m in re.finditer(r'\[data-motion="reduced"\]', body):
+        start = max(body.rfind("}", 0, m.start()), body.rfind(";", 0, m.start())) + 1
+        brace = body.find("{", m.end())
+        depth, end = 1, brace + 1
+        while end < len(body) and depth:
+            depth += (body[end] == "{") - (body[end] == "}")
+            end += 1
+        out.append(body[start:end])
+    return out
+
+
 def test_every_indefinite_animation_answers_reduced_motion():
-    """An `infinite` animation has a `prefers-reduced-motion` branch.
+    """An `infinite` animation has a reduced-motion branch.
+
+    The branch is a rule under `data-motion="reduced"`, the one resolved Motion
+    value (theme-boot.js; it was an `@media (prefers-reduced-motion)` block
+    until INBOX 1506).
 
     DESIGN.md states the rule and why the branch must *keep the information*:
     stopping a spinner is right, removing the thing it was telling you is not.
@@ -593,9 +613,7 @@ def test_every_indefinite_animation_answers_reduced_motion():
     animated = set(re.findall(r"animation:[^;]*\binfinite\b[^;]*;", css))
     if not animated:
         return
-    reduced = re.findall(
-        r"@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{(.*?)\n\}", css, re.S
-    )
+    reduced = _reduced_rules(css)
     blob = "\n".join(reduced)
     # Every selector that declares an infinite animation should appear inside
     # at least one reduced-motion block. Matched on the selector rather than
@@ -611,7 +629,7 @@ def test_every_indefinite_animation_answers_reduced_motion():
         if head and head not in blob:
             offenders.append(selector)
     assert not offenders, (
-        "These run an indefinite animation with no prefers-reduced-motion "
+        "These run an indefinite animation with no reduced-motion "
         "branch:\n  " + "\n  ".join(offenders) + "\n\nSee DESIGN.md, 'Motion'."
     )
 

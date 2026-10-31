@@ -1061,8 +1061,8 @@ def test_performance_mode_alone_no_longer_holds_the_companion_still() -> None:
     # Performance mode on it walks, materialises or climbs in; with Motion
     # set to Reduce or the system asking, it fades; never a pop.
     motion = _fn("nameMarkBuddyMotion")
-    assert 'if (app === "reduced") return { mode: "fades", reason: "app" };' in motion
-    assert '"(prefers-reduced-motion: reduce)"' in motion and '"perf-ignored"' in motion
+    assert 'if (why === "off") return { mode: "fades", reason: "app" };' in motion
+    assert "MOTION.cause" in motion and "matchMedia" not in motion and '"perf-ignored"' in motion
     assert "return nameMarkBuddyMotion().mode !== \"full\";" in _fn("nameMarkBuddyNoTravel")
     assert 'root.dataset.buddyMotion = "full"' in _fn("nameMarkBuddyMotionApply")
     assert ':root:not([data-avatar-motion="off"]):is(:not([data-motion="reduced"]), [data-buddy-motion="full"]) #nm-buddy' in CSS08

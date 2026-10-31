@@ -4207,18 +4207,16 @@ summary.small.icon-button {
   animation: none;
   transform: scaleX(1);
 }
-@media (prefers-reduced-motion: reduce) {
-  .boot-splash-dots span {
-    animation: none;
-  }
-  .boot-splash {
-    transition: none;
-  }
-  .boot-splash-progress-fill {
-    animation: none;
-    transform: scaleX(0.9);
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .boot-splash-dots span {
+  animation: none;
+}
+:where(:root[data-motion="reduced"]) .boot-splash {
+  transition: none;
+}
+:where(:root[data-motion="reduced"]) .boot-splash-progress-fill {
+  animation: none;
+  transform: scaleX(0.9);
+  transition: none;
 }
 /* The one tip line. Muted and small: it is there for the second or two of
    a cold start, and it must never compete with the progress bar above it

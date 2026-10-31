@@ -858,8 +858,7 @@ function toastMark(note, key, { act = null, life = 0, text = "" } = {}) {
 //: fades, which are the polish set's and follow Interface animations, but
 //: never slides the stack (the owner 2026-10-11).
 function toastReduced() {
-  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)
-    || document.documentElement.dataset.motion === "reduced";
+  return reducedMotionWanted();
 }
 
 function toastStack(box, change) {

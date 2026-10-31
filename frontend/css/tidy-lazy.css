@@ -256,10 +256,8 @@ button.ghost.disclosure-row.tidy-history-head {
   rotate: -90deg;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tidy-history .contents-caret {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .tidy-history .contents-caret {
+  transition: none;
 }
 
 .tidy-history-list {

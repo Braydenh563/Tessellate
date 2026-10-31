@@ -2783,7 +2783,7 @@ function nameMarkIdleWake() {
 function nameMarkIdleQuiet() {
   const root = document.documentElement;
   return root.dataset.avatarMotion === "off" || root.dataset.motion === "reduced"
-    || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)
+    || reducedMotionWanted()
     || nameMarkBuddyActions() === "off";
 }
 function nameMarkIdleTick() {
@@ -3372,7 +3372,7 @@ function nameMarkBuddyEmote(kind) {
   const buddy = document.getElementById("nm-buddy");
   const el = buddy?.querySelector(`.nmb-emote-${kind}`);
   if (!el || typeof el.animate !== "function" || nameMarkBuddyStill() || nameMarkBuddyActOff("emote")) return;
-  if (isAtlasSeed(buddy.dataset.seed || "") || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+  if (isAtlasSeed(buddy.dataset.seed || "") || reducedMotionWanted()) return;
   el.animate([
     { opacity: 0, transform: "translate(0, 4px) scale(0.6)" },
     { opacity: 1, transform: "translate(0, 0) scale(1.1)", offset: 0.18 },
@@ -3521,22 +3521,24 @@ function nameMarkBuddyMotion() {
   }
   if (root.dataset.avatarMotion === "off") return { mode: "still", reason: "avatar" };
   if (choice === "fades") return { mode: "fades", reason: "setting" };
-  const app = typeof appearancePref === "function" ? appearancePref("motion", "auto") : "auto";
-  const os = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  //: Why motion is reduced, from the one resolved reading (`MOTION.cause`,
+  //: theme-boot.js): "off" is the Motion setting, "os" the system's request;
+  //: "perf" alone leaves the companion moving, as the comment above says.
+  const why = typeof MOTION === "object" ? MOTION.cause : "";
   //: Always: it moves, and the hint still says what it is overriding, so
-  //: a person who forgot choosing it knows why it walks under Reduce.
-  if (choice === "always") return { mode: "full", reason: app === "reduced" ? "app-ignored" : os ? "os-ignored" : root.dataset.perf === "on" ? "perf-ignored" : "" };
-  if (app === "reduced") return { mode: "fades", reason: "app" };
-  if (os) return { mode: "fades", reason: "os" };
+  //: a person who forgot choosing it knows why it walks under Off.
+  if (choice === "always") return { mode: "full", reason: why === "off" ? "app-ignored" : why === "os" ? "os-ignored" : root.dataset.perf === "on" ? "perf-ignored" : "" };
+  if (why === "off") return { mode: "fades", reason: "app" };
+  if (why === "os") return { mode: "fades", reason: "os" };
   return { mode: "full", reason: root.dataset.perf === "on" ? "perf-ignored" : "" };
 }
 const NMB_MOTION_WHY = {
   avatar: "Avatar animation is off, so it stays still.",
   setting: "Fades only, as chosen here.",
-  app: "Fades only: Motion is set to Reduce in Appearance.",
+  app: "Fades only: Motion is set to Off in Appearance.",
   os: "Fades only: your system asks for less motion.",
   "perf-ignored": "Performance mode is on, but the companion still moves: it costs very little.",
-  "app-ignored": "Always animates, although Motion is set to Reduce in Appearance.",
+  "app-ignored": "Always animates, although Motion is set to Off in Appearance.",
   "os-ignored": "Always animates, although your system asks for less motion.",
   "": "",
 };

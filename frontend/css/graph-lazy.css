@@ -180,12 +180,10 @@
   }
 }
 /* Less motion asked for: no breathing, and the glow goes with the map's cut. */
-@media (prefers-reduced-motion: reduce) {
-  #graph-box::after,
-  #graph-box.graph-arriving::after {
-    transition: none;
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) #graph-box::after,
+:where(:root[data-motion="reduced"]) #graph-box.graph-arriving::after {
+  transition: none;
+  animation: none;
 }
 :root[data-motion="reduced"] #graph-box::after {
   transition: none;
@@ -204,11 +202,9 @@
     background-position: 140% 100%;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #graph-stats[aria-busy="true"] {
-    animation: none;
-    background-position: 50% 100%;
-  }
+:where(:root[data-motion="reduced"]) #graph-stats[aria-busy="true"] {
+  animation: none;
+  background-position: 50% 100%;
 }
 :root[data-motion="reduced"] #graph-stats[aria-busy="true"] {
   animation: none;

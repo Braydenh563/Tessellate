@@ -310,9 +310,8 @@ a `background-image` or a background. `scratchpad/ui-sweeps/f2-hover.js` forces
 nothing: 101 of 571 with the filter gone, 0 after (the selected segment and
 tab excepted, which need none).
 
-**Not done, said plainly:** motion is a user setting (`prefers-reduced-motion`)
-that only some components still honour, each with its own `@media` block,
-see "What is not done yet" below. There is no gesture-driven motion anywhere
+**Not done, said plainly:** motion is a user setting, one resolved value
+(`data-motion`, see "What is not done yet" below). There is no gesture-driven motion anywhere
 in the app yet (drag/resize move the DOM directly; nothing hands off release
 velocity into a spring), so nothing here contradicts the apple-design skill's
 "avoid fixed-duration transitions for anything gesture-driven", that rule
@@ -472,13 +471,13 @@ the edge it lives on, and nothing moves to decorate.
   key in prefs.js), and the polish reads the `--ui-*` tokens
   (00-tokens-shell.css: `--ui-fast`, `--ui-base`, `--ui-slow`, `--ui-exit`,
   `--ui-step`), which are the `--motion-*` scale when on and `0s` when off;
-  the reduced-motion blankets in motion-still.css (a sheet that matches only while the OS hint or a switch is on) still the animations but
+  the reduced-motion blankets in motion-still.css (a sheet that matches only while `data-motion` is reduced or a switch is off) still the animations but
   leave transitions to the switch. **The large decorative motion keeps
   reduced motion and its own settings**: Atlas and the faces, the
   background art, the graph's simulation and the whiteboard (the blankets
   still zero their transitions under either reduced-motion switch). The
-  app's mark answers both: Reduce motion or Interface animations off holds
-  its final frame, and the system hint alone does not. Performance mode does not touch the switch: the
+  app's mark answers both: Motion reduced (off, or the system's request
+  under Follow the system) or Interface animations off holds its final frame. Performance mode does not touch the switch: the
   polish is the compositor's and cheap, which is the condition it was asked
   for on. `tests/test_motion_tokens.py` holds it (no reduced-motion block
   names a polish recipe, every `/* --- motion:` section reads `--ui-*`,
@@ -1612,10 +1611,17 @@ it is.
   `getComputedStyle` and `getBoundingClientRect`. A change to a surface is
   still driven in a real browser before it is called done. **Look at what you
   change; it costs a minute.**
-- **Reduced motion is honoured per component.** Density is a multiplier over
-  the spacing scale and duration is the `--motion-*` scale above, but
-  `prefers-reduced-motion` is still a set of `@media` blocks in the stylesheets
-  that need one, not a single rule.
+- **Reduced motion is one resolved value** (INBOX 1506). The Motion setting
+  (Follow the system, Always on, Off; stored in `motion`, the old `auto` and
+  `reduced` read as follow and off) is resolved with Performance mode and the
+  system's request into `data-motion="reduced|full"` on the root by
+  `MOTION.apply` (theme-boot.js, the only place the raw `prefers-reduced-motion`
+  query is written; `tests/test_motion_resolved.py`). A stylesheet asks
+  `:where(:root[data-motion="reduced"]) .thing` (zero extra specificity, so it
+  cascades as the old `@media` block did), a script asks `reducedMotionWanted()`;
+  neither writes the query. "Always on" beats Performance mode, being the
+  person's own word; a browser that asks for calm by default no longer decides
+  for someone who wants the animation.
 - **Documents has no tab of its own, on purpose.** It was a tab once and moved
   back: the complaint it answered was about being conflated with the Library's
   catch-all view, so Documents now has a view of its own inside the Library. The
@@ -1873,8 +1879,9 @@ steal each other's box. A search well's input stretches to the well
 
 Durations come from the `--motion-*` scale. Beyond that:
 
-> **Every indefinite animation needs a `prefers-reduced-motion` branch, and
-> the branch keeps the information.** Stopping a spinner is right; removing
+> **Every indefinite animation needs a reduced-motion branch (a rule under
+> `:where(:root[data-motion="reduced"])`), and the branch keeps the
+> information.** Stopping a spinner is right; removing
 > the thing it was telling you is not.
 
 Both animations added in this pass follow it: the working ring (`.spinner`)
