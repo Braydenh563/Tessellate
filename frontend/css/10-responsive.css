@@ -1588,6 +1588,12 @@ header#top-bar[data-scrolled="1"],
        it back out). */
     padding-right: var(--ring-room);
   }
+  /* The list ends above the floating New note, 53.6px of back-to-top
+     clearance being less than the fab's own height, offset and a step. Only
+     while scrolled (the clearance rule's own condition). */
+  body.scroll-top-visible #tab-notes .layout > .tab-main {
+    padding-bottom: max(var(--scroll-top-clearance), calc(var(--target-min) + var(--space-5) + var(--space-3)));
+  }
 }
 /* --- Phase 11 item 12: a dock's head is one row on a phone --------------------
    A phone's navigation bar is one row: the way back or the drawer at the
