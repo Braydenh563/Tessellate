@@ -94,6 +94,8 @@ function objTrayPaint() {
     const badge = button.querySelector(".status-tray-count");
     badge.textContent = count || "";
     badge.classList.toggle("hidden", !count);
+    //: Square while it holds only its icon (`icon-only`), as wide as its count when it has one.
+    button.classList.toggle("has-count", Boolean(count));
     button.setAttribute("aria-label", objTrayCountWords(count));
   }
   objTrayList();

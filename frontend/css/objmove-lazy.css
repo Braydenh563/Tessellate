@@ -63,6 +63,9 @@ html.obj-dragging .obj-target {
 }
 
 /* The tray: a count on the status bar's control, and its panel. */
+#status-tray.has-count {
+  aspect-ratio: auto;
+}
 #status-tray .status-tray-count {
   margin-inline-start: var(--space-1);
   font-size: var(--text-xs);
