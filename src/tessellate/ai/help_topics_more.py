@@ -2595,7 +2595,7 @@ HELP_GROUPS: list[tuple[str, tuple[str, ...]]] = [
         "tags-categories", "filing", "suggested-tags", "tag-manager", "manage-categories", "tidy",
     )),
     ("Asking Atlas", (
-        "ask-chat", "answers-from-notes", "chat-controls", "chat-attach-cards", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
+        "ask-chat", "answers-from-notes", "chat-controls", "chat-private", "chat-attach-cards", "wrap-lines", "slash-commands", "chat-acts", "tasks", "nicknames", "follow-up-trail", "why-this-answer", "line-verdicts", "answer-pictures", "time-and-recency", "notebook-questions", "studyhelp",
         "contradictions", "skills", "personas", "answer-style", "memory", "learned", "open-questions",
     )),
     ("Documents and code", (

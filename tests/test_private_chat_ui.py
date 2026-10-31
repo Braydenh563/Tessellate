@@ -60,7 +60,7 @@ def test_a_private_turn_writes_nothing_and_says_so_to_the_server():
     # the send-time row, the long turn's checkpoints and the finished turn's save
     assert "if (convRef.id === null && !convRef.private) checkpointTurn();" in send
     assert "if (checkpointInFlight || convRef.private) return checkpointRun;" in send
-    assert re.search(r"if \(convRef\.private\) \{\s*//:[^\n]*\n\s*\} else if \(convRef\.id === null\) \{\s*const created = await apiJson\(\"/conversations\"", send)
+    assert re.search(r"if \(convRef\.private\) \{\s*\} else if \(convRef\.id === null\) \{\s*const created = await apiJson\(\"/conversations\"", send)
     # and the flag goes on the wire
     assert "isPrivate: convRef.private," in send
     assert "if (isPrivate) body.private = true;" in js

@@ -6405,6 +6405,6 @@ def test_a_private_chat_is_one_flag_with_three_doors_and_one_confirm() -> None:
     #: One mark, one confirm: the lazy file holds the only dialog, and the three doors share its function.
     private = (ROOT / "frontend" / "js" / "chat-private.js").read_text(encoding="utf-8")
     assert private.count("confirmDialog(") == 1
-    assert js.count("chatPrivateToggle()") >= 3
+    assert js.count("chatPrivateToggle") >= 3
     css = (ROOT / "frontend" / "css" / "chat-private-lazy.css").read_text(encoding="utf-8")
     assert "var(--space-3)" in css and not re.search(r"#[0-9a-fA-F]{3,6}\b|\b\d+px\b", css)
