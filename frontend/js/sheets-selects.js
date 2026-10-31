@@ -893,7 +893,10 @@ function enhanceSelect(select) {
   });
 
   select.addEventListener("change", syncValue);
-  new MutationObserver(rebuild).observe(select, { childList: true, subtree: true });
+  //: A closed menu is not rebuilt for an option that changed (OPEN 813): the
+  //: opener's click rebuilds on every open, and the board picker's "N topics"
+  //: text, rewritten on every render, rebuilt a row per board each time.
+  new MutationObserver(() => (menu.classList.contains("hidden") ? syncValue() : rebuild())).observe(select, { childList: true, subtree: true });
 
   // **A `<select>` that has been hidden must take its stand-in with it.**
   // Measured, not reasoned: on Library → Images the native

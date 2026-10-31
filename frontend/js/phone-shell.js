@@ -755,6 +755,20 @@ function initPhoneHeaderMore() {
 
 initPhoneHeaderMore();
 
+//: The phone's status bar gives its height back while none of its four
+//: transient items shows (10-responsive.css, `:root.status-bar-idle`). Their
+//: own class changes are watched: a `:has()` on the root asked it after every
+//: element added anywhere, 4 to 6ms each time (OPEN 813).
+function watchStatusBarIdle() {
+  const bar = $("status-bar");
+  const live = ":is(#status-task,#status-timer,#offline-indicator,#power-saver-indicator):not(.hidden,.status-slot-off)";
+  const sync = () => document.documentElement.classList.toggle("status-bar-idle", !bar.querySelector(live));
+  new MutationObserver(sync).observe(bar, { subtree: true, attributeFilter: ["class"] });
+  sync();
+}
+
+watchStatusBarIdle();
+
 // The three status-bar controls that move into the phone header, and back
 // above 600. Moved, never copied: a marker holds each one's place in the bar,
 // as `floatPrimaryActions` does for the floating +. Back and Undo sit after

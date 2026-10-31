@@ -1672,9 +1672,12 @@ function renderUndoBar() {
   //: board's counts: a button that is lit when there is nothing behind it is
   //: the thing that makes people stop trusting it. Each button asks for its
   //: own history, since on a document the newer step decides (`appStackIsNewer`).
+  //: Both asked before either is painted: `boardHistoryActive` reads layout,
+  //: and a read after the first button's writes forced a second layout (OPEN 813).
   const surface = surfaceHistory();
+  const redoSurface = surfaceHistory("redo");
   paintUndoDoor(undoBtn, "undo", surface, undoStack);
-  paintUndoDoor(redoBtn, "redo", surfaceHistory("redo"), redoStack);
+  paintUndoDoor(redoBtn, "redo", redoSurface, redoStack);
 }
 
 function paintUndoDoor(button, verb, surface, stack) {

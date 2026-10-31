@@ -3953,6 +3953,30 @@ function wbUpdateMapEdges(edges) {
   }
 }
 
+//: Every tree line that is drawn, as its two topics and its key, in the
+//: tree's own order: the one walk the lines and the mid-line `+` buttons
+//: share, so their orders cannot disagree.
+function wbMapVisibleEdges(index, hidden) {
+  const edges = [];
+  for (const parent of index.nodes) {
+    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
+    for (const child of index.childrenOf.get(parent.id) || []) {
+      if (!hidden.has(child.id)) edges.push({ parent, child, key: `${parent.id}:${child.id}` });
+    }
+  }
+  return edges;
+}
+
+//: Take out of a keyed cache (`{ wrap }` or an element) every entry whose key
+//: is no longer wanted.
+function wbMapDropStale(cache, wanted) {
+  for (const [key, held] of cache) {
+    if (wanted.has(key)) continue;
+    (held.wrap || held).remove();
+    cache.delete(key);
+  }
+}
+
 //: The parent→child edges, drawn as cubic curves into their own group.
 //:
 //: A tree edge is deliberately **not** a link sketch. A sketch is a row in the
@@ -3964,7 +3988,7 @@ function wbUpdateMapEdges(edges) {
 //:
 //: The group is the first child of the zoom group so edges sit *under* every
 //: sketch and node, which is the only z-order a tree reads correctly in.
-function wbRenderMapEdges() {
+function wbRenderMapEdges({ only = null } = {}) {
   const zoomGroup = document.getElementById("wb-zoom-group");
   if (!zoomGroup) return;
   let group = zoomGroup.querySelector(".wb-map-edges");
@@ -3999,7 +4023,13 @@ function wbRenderMapEdges() {
   //: is not a map removes the group above, which takes the cache with it, so
   //: a stale element can never be handed to the next board.
   const cache = group._wbMapEdges instanceof Map ? group._wbMapEdges : (group._wbMapEdges = new Map());
-  const drawn = new Set();
+  const edges = wbMapVisibleEdges(index, hidden);
+  //: **Lines whose two ends are no longer joined go first** (OPEN 813): a
+  //: re-parent, a delete, a folded branch, and the line a new topic's
+  //: provisional id drew. Left until after the placing pass below, a stale
+  //: line kept its slot and every later line looked out of place and was
+  //: moved (84 nodes removed from layout on a 20-topic map).
+  wbMapDropStale(cache, new Set(edges.map((edge) => edge.key)));
   //: **The group stays in the tree's own order**, which is what rebuilding it
   //: gave for free. Two things read that order: SVG paints in document order,
   //: so it decides which of two overlapping lines is on top, and
@@ -4008,44 +4038,27 @@ function wbRenderMapEdges() {
   //: instead cost that sweep its insert check, which is the order saying out
   //: loud that it is load-bearing. Nothing moves while the tree is unchanged:
   //: this compares first and writes only when a line is out of place.
-  let slot = 0;
-  for (const parent of index.nodes) {
-    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
-    for (const child of index.childrenOf.get(parent.id) || []) {
-      if (hidden.has(child.id)) continue;
-      const key = `${parent.id}:${child.id}`;
-      drawn.add(key);
+  edges.forEach(({ parent, child, key }, slot) => {
+    let held = cache.get(key);
+    //: `isConnected`, because something else can take the element out from
+    //: under this cache: `group.remove()` above on a board that stopped
+    //: being a map, and an export that clones and replaces the layer.
+    const drawn = Boolean(held && held.wrap.isConnected);
+    //: **`only`: the topics whose lines are drawn again** (OPEN 813). The render
+    //: after the server's answer to an add changes one topic's id and nothing's
+    //: place; it drew every line again (22ms of 49 on 200 topics).
+    if (!(only && drawn && !only.has(parent.id) && !only.has(child.id))) {
       const geom = wbMapEdgeGeometry(parent, child, layout, colors);
-      const held = cache.get(key);
-      //: `isConnected`, because something else can take the element out from
-      //: under this cache: `group.remove()` above on a board that stopped
-      //: being a map, and an export that clones and replaces the layer.
-      let wrap;
-      if (held && held.wrap.isConnected) {
-        wrap = held.wrap;
-        if (held.paint !== geom.paint) {
-          wbMapEdgeApply(wrap, geom);
-          held.paint = geom.paint;
-        }
-      } else {
-        wrap = wbMapEdgeElement(parent.id, child.id);
-        wbMapEdgeApply(wrap, geom);
-        cache.set(key, { wrap, paint: geom.paint });
+      if (!drawn) cache.set(key, (held = { wrap: wbMapEdgeElement(parent.id, child.id), paint: null }));
+      if (held.paint !== geom.paint) {
+        wbMapEdgeApply(held.wrap, geom);
+        held.paint = geom.paint;
       }
-      if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
-      slot += 1;
     }
-  }
-  //: The lines whose two ends are no longer joined: a re-parent, a delete, a
-  //: branch folded away. This is the one thing a keyed update has to do that
-  //: rebuilding the group got for free, and leaving it out is how a keyed
-  //: render grows edges that point at nothing.
-  for (const [key, held] of cache) {
-    if (drawn.has(key)) continue;
-    held.wrap.remove();
-    cache.delete(key);
-  }
-  wbRenderMapEdgePluses(index, hidden, layout);
+    const wrap = held.wrap;
+    if (group.childNodes[slot] !== wrap) group.insertBefore(wrap, group.childNodes[slot] || null);
+  });
+  wbRenderMapEdgePluses(edges, layout, only);
   wbSyncMapEdgeHandles();
 }
 
@@ -4369,7 +4382,7 @@ function wbMapEdgePlusPoint(parent, child, layout) {
 //:
 //: Invisible until the pointer is on it (CSS), which is what keeps a map of
 //: two hundred lines from being a map of two hundred buttons.
-function wbRenderMapEdgePluses(index, hidden, layout) {
+function wbRenderMapEdgePluses(edges, layout, only = null) {
   const host = document.getElementById("wb-html-layer");
   if (!host) return;
   let layer = host.querySelector(".wb-map-plus-layer");
@@ -4392,33 +4405,18 @@ function wbRenderMapEdgePluses(index, hidden, layout) {
   //: the layer's disagree (`mapstrip.js` pairs the first line with the first
   //: `+`).
   const cache = layer._wbPluses instanceof Map ? layer._wbPluses : (layer._wbPluses = new Map());
-  const wanted = new Set();
-  let slot = 0;
-  for (const parent of index.nodes) {
-    if (hidden.has(parent.id) || parent.data?.collapsed) continue;
-    for (const child of index.childrenOf.get(parent.id) || []) {
-      if (hidden.has(child.id)) continue;
-      const key = `${parent.id}:${child.id}`;
-      wanted.add(key);
+  //: Stale buttons out first, for `wbRenderMapEdges`'s reason.
+  wbMapDropStale(cache, new Set(edges.map((edge) => edge.key)));
+  edges.forEach(({ parent, child, key }, slot) => {
+    let button = cache.get(key);
+    if (!(only && button && !only.has(parent.id) && !only.has(child.id))) {
       const middle = wbMapEdgePlusPoint(parent, child, layout);
-      const left = `${middle.x - 12}px`;
-      const top = `${middle.y - 12}px`;
-      let button = cache.get(key);
-      if (!button) {
-        button = wbMapEdgePlusButton(parent.id, child.id);
-        cache.set(key, button);
-      }
-      if (button.style.left !== left) button.style.left = left;
-      if (button.style.top !== top) button.style.top = top;
-      if (layer.childNodes[slot] !== button) layer.insertBefore(button, layer.childNodes[slot] || null);
-      slot += 1;
+      if (!button) cache.set(key, (button = wbMapEdgePlusButton(parent.id, child.id)));
+      button.style.left = `${middle.x - 12}px`;
+      button.style.top = `${middle.y - 12}px`;
     }
-  }
-  for (const [key, button] of cache) {
-    if (wanted.has(key)) continue;
-    button.remove();
-    cache.delete(key);
-  }
+    if (layer.childNodes[slot] !== button) layer.insertBefore(button, layer.childNodes[slot] || null);
+  });
 }
 
 //: One mid-line `+`, built once for the line between two topics.
@@ -5073,7 +5071,7 @@ async function wbMapAdoptProvisional(row, { expand = null, origin = null, order 
   //: mid-line `+` and its waypoint handle are drawn again under the new. Not
   //: a whole render (MINDMAP_PLAN 15, row 4: one render per act, not two);
   //: the topic itself took its new id on its element above.
-  wbRenderMapEdges();
+  wbRenderMapEdges({ only: new Set([made.id]) });
   return true;
 }
 

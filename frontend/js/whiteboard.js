@@ -10044,7 +10044,9 @@ function wbUpdateUndoRedoButtons() {
   //: The status bar's pair is the same pair, one floor down (`renderUndoBar`
   //: reads `wbCanUndo`/`wbCanRedo` while a board is open), so it is repainted
   //: with these rather than left showing the app stack's state.
-  if (typeof renderUndoBar === "function") renderUndoBar();
+  //: Once a frame, not on the press (OPEN 813): the repaint reads layout, and
+  //: run inline it made every add wait for a flush.
+  if (typeof scheduleUndoBar === "function") scheduleUndoBar();
 }
 
 function wbDropUndoEntry(entry) {

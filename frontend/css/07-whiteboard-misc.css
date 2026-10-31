@@ -748,7 +748,7 @@
    affected, they leave for `<body>` when they open (`wireEscapedActionMenu`).
    The `:has()` here is anchored on the row, so it only ever looks inside
    one row. */
-#entry-list > li:not(.list-window-sentinel, :focus-within):not(:has(textarea, details[open], [contenteditable="true"])) {
+#entry-list > li:not(.list-window-sentinel, :focus-within):not(:has(textarea, details[open], .cm-editor)) {
   content-visibility: auto;
   contain-intrinsic-size: auto 8.25rem;
 }

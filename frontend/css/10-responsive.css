@@ -778,7 +778,7 @@ header#top-bar[data-scrolled="1"],
      and the status bar at the end of a page). Its reservation stays put, for
      the reason above, so it is moved rather than resized: a transform, which
      changes nothing the scroll that receded the bar can see. */
-  :root:has(#phone-tab-dock[data-receded]) #status-bar {
+  :root #phone-tab-dock[data-receded] ~ #status-bar {
     transform: translateY(calc(var(--bottom-tabs-h) - var(--target-min)));
   }
   #phone-tab-dock[data-receded] #tab-bar button .tab-label,
@@ -1262,10 +1262,16 @@ header#top-bar[data-scrolled="1"],
   #status-bar [data-status-zone] > :not(#status-task, #status-timer, #offline-indicator, #power-saver-indicator) {
     display: none;
   }
-  :root:not(:has(#status-task:not(.hidden, .status-slot-off), #status-timer:not(.hidden), #offline-indicator:not(.hidden), #power-saver-indicator:not(.hidden))) {
+  /* `status-bar-idle` is put on the root by `watchStatusBarIdle`
+     (phone-shell.js) while none of the four shows. It was `:root:not(:has(
+     #status-task:not(.hidden, ...), ...))`, a `:has()` on the root, which the
+     browser re-asks after every element added or removed anywhere on the
+     page: 4 to 6ms of style work each time on a phone (OPEN 813, measured
+     with the rule deleted: 11ms to 6.8ms for one empty div appended). */
+  :root.status-bar-idle {
     --status-bar-h: 0px;
   }
-  :root:not(:has(#status-task:not(.hidden, .status-slot-off), #status-timer:not(.hidden), #offline-indicator:not(.hidden), #power-saver-indicator:not(.hidden))) #status-bar {
+  :root.status-bar-idle #status-bar {
     visibility: hidden;
     overflow: hidden;
     padding-block: 0;
