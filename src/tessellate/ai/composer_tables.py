@@ -933,6 +933,8 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
     re.compile(r"^(?:how|what) (?:does|do|did) (?P<a>.+?) (?:compare|stack up|measure up) (?:with|to|against) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?),? compare[sd]? (?:with|to) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})[,:]?\s+(?P<a>.+?) or (?P<b>.+?)[?.!]*$", re.I),
+    #: The same asked the other way round: "Lisbon or Tokyo, which is cheaper" (audit 1030 Z58).
+    re.compile(rf"^(?P<a>[\w' -]+?) or (?P<b>[\w' -]+?),? {_WHICH} (?:is|are|was|were) (?:{_MORE})[?.!]*$", re.I),
     re.compile(r"^(?:(?:what are|what is) )?(?:the )?(?:pros and cons|advantages and disadvantages|upsides and downsides|pros|cons) of (?P<a>.+?) (?:and|or|vs\.?|versus) (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?:how|what) (?:is|are) (?P<a>.+?) (?:different|difference|differs?) from (?P<b>.+?)[?.!]*$", re.I),
     re.compile(r"^(?P<a>.+?) (?:differs?|is different|is a difference) from (?P<b>.+?)[?.!]*$", re.I),
@@ -946,7 +948,7 @@ EXTRA_COMPARE_SIDES: tuple[re.Pattern[str], ...] = (
 #: so a question with one subject is never read as a comparison.
 COMPARE_SHAPE_EXTRA = (
     rf"\b(?:{_MORE}) than\b|\bcompare[sd]? (?:with|to)\b|\b(?:pros and cons|advantages and disadvantages) of .+? (?:and|or|vs\.?|versus) |"
-    rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})\b.+? or |\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
+    rf"^{_WHICH} (?:is|are|was|were) (?:{_MORE})\b.+? or |^[\w' -]+? or [\w' -]+?,? {_WHICH} (?:is|are|was|were) (?:{_MORE})\W*$|\b(?:differs?|different|difference) from\b|\bcomparison (?:of|between)\b|"
     r"\b(?:similarities|contrast) between\b|\bstack up against\b|\bmeasure up (?:to|against)\b|"
     r"^(?:how|in what ways?) (?:are|were|do|did) .+? and .+? (?:different|differ|alike|similar|the same)\W*$"
 )

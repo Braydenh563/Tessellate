@@ -66,9 +66,13 @@ def ask(client, session, monkeypatch):
 
 @pytest.mark.parametrize("question", ["atlas", "what is Atlas", "what's atlas"])
 def test_z50_a_name_a_note_holds_is_a_note_lookup(ask, question):
-    said = ask(question)[0]
+    said, events = ask(question)
     assert "reporting in" not in said and "assistant" not in said.lower(), said
-    assert "Atlas" in said and "Project Atlas" in said, said
+    #: The note is named in the answer or in its follow-up chips: since INBOX
+    #: 1466 the offer "Next, I can open “Project Atlas”" is the chip
+    #: "Open “Project Atlas”", not a closing line.
+    chips = [a for e in events if e.get("type") == "grounding" for a in e.get("next") or []]
+    assert "Atlas" in said and any("Project Atlas" in s for s in [said, *chips]), (said, chips)
 
 
 @pytest.mark.parametrize(("question", "line"), [

@@ -2780,6 +2780,19 @@ def _own_notes(own_stems: set[str], other_stems: set[str], views: list[NoteView]
     return whole or [v for v, words in titled if mine & words]
 
 
+def _kinds(notes: list[NoteView], side: set[str]) -> set[str]:
+    return {_stem(w) for v in notes for w in v.title_words} - side
+
+
+def _parallel(mine: list[NoteView], side: set[str], theirs: list[NoteView], other: set[str]) -> list[NoteView]:
+    """A side's notes of the same kind as the other side's: "Lisbon vs Tokyo"
+    is the Lisbon trip against the Tokyo trip, not the Lisbon packing list
+    (audit 1030 Z58). All of them when none is."""
+    kinds = _kinds(theirs, other)
+    same = [v for v in mine if _kinds([v], side) & kinds]
+    return same or mine
+
+
 def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
     """Each side's sentences as (terms, stems, own notes, picks); a note named
     for a side belongs to it even when its sentences never repeat the name
@@ -2790,6 +2803,7 @@ def _side_picks(sides: tuple[str, str], views: list[NoteView], meaning_for):  # 
     own = [_own_notes(stems[0], stems[1], views), _own_notes(stems[1], stems[0], views)]
     if set(map(id, own[0])) & set(map(id, own[1])):
         own = [[], []]
+    own = [_parallel(own[0], stems[0], own[1], stems[1]), _parallel(own[1], stems[1], own[0], stems[0])]
     picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in (0, 1)]
     #: A note the person named is read from its top, not by which of its
     #: sentences repeat the name.

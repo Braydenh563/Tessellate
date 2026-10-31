@@ -31,7 +31,10 @@ def ask(client, session, monkeypatch):
     monkeypatch.setattr(config, "user_now", lambda _c: NOW)
     monkeypatch.setattr(routes_chat, "user_now", lambda _c: NOW)
     for content in NOTES:
-        manager.create_entry(session, content)
+        entry = manager.create_entry(session, content)
+        #: Written on the test's own day, never the real clock's (it said
+        #: "Your note of 31 October" once the real date moved on).
+        entry.created_at = entry.updated_at = NOW.replace(hour=9)
     session.commit()
 
     def go(question: str) -> str:

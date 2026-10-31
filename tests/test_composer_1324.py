@@ -77,7 +77,7 @@ def test_a_subject_inside_a_window_keeps_the_window(client, session):
 def test_a_heading_is_named_without_its_hash():
     from tessellate.ai import composer_frame
 
-    assert composer_frame.short_name({"content": "# Trains\n\nLisbon to Porto, 2h50."}) == "the Trains"
+    assert composer_frame.short_name({"content": "# Trains\n\nLisbon to Porto, 2h50."}) == "Trains"  # no article before a title (composer-1031)
 
 
 #: "the Porto" was the recorded side until audit 1029 C36: a determiner is not

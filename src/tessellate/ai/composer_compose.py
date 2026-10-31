@@ -286,7 +286,10 @@ def head(ability: str, mood: Mood, **facts: object) -> str:
     opener (when this turn takes one) and the frame."""
     lead = opener(mood, ability)
     body = frame(ability, mood, **facts)
-    return f"{lead} {body}".strip() if lead else body
+    #: No opener before a frame that opens on its slot ("{span}, laid out"):
+    #: "Let us lay it out. this weekend" (audit 1030 Z57), and a capital would
+    #: change the fact the slot holds.
+    return f"{lead} {body}" if lead and not body[:1].islower() else body
 
 
 def tail(ability: str, mood: Mood) -> str:

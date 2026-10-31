@@ -3558,6 +3558,17 @@ def _related_sentence(related: list) -> str:
     )
 
 
+def _personal_unsearched(req: _StreamRequest, ollama_running: bool) -> str:
+    """What the notebook says of its writer ("what have I been studying
+    lately"), read from every note, when the search found none: "lately"
+    narrowed the search to recent notes, and the note that says it was
+    older (audit 1030 Z59). Only where the app answers itself."""
+    if ollama_running and not _composed(req, ollama_running):
+        return ""
+    own = personal.answer(req.question, lambda: personal.notes_of(req.session), user_now(deps.get_config()).date())
+    return str(own["text"]) if own else ""
+
+
 def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     # An attached image and "no matching notes" are unrelated: retrieval never
     # sees the image, so an empty search result must not stand in for "there's
@@ -3567,6 +3578,9 @@ def _no_notes_events(req: _StreamRequest, ollama_running: bool) -> list:
     if unknown is not None and not ollama_running:
         #: An instruction nothing understood is not a search for its words.
         return _suggest_events(unknown)
+    own = _personal_unsearched(req, ollama_running)
+    if own:
+        return [{"type": "answer", "delta": own}]
     events: list = [{"type": "answer", "delta": _no_notes_line(req, ollama_running)}]
     #: A day with nothing in it graphs where the notes run (INBOX 1333 b).
     if _asks_only_a_time(req.question) and not (ollama_running and not _composed(req, ollama_running)):
@@ -3602,7 +3616,9 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     try:
         return composer.offered(composer_digest.answer(
             follow.question if restated else req.question, current, today=today,
-            voice=_answer_voice(), turn=len(req.history or []),
+            #: A retry rewords the answer itself: since the closing offer became the
+            #: chips (INBOX 1466) the body is the only thing "Try again" can change.
+            voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
             insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
         ), req.question)
     except Exception:  # noqa: BLE001  # the composer's answer stands
@@ -5144,8 +5160,10 @@ def _ground_final(req: _StreamRequest, prepared: dict, t: _Turn) -> tuple:
 
 def _unsaid_greeting(req: _StreamRequest, prepared: dict, t: _Turn) -> Iterator[str]:
     """A model that answered small talk with nothing at all ("hello" under an
-    empty reply) leaves a blank bubble: the app's own reply stands in (Z71)."""
-    if t.conversational and t.ollama_running and not t.answer_text.strip():
+    empty reply) leaves a blank bubble: the app's own reply stands in (Z71).
+    A turn that already said what it is for (the Ask box's hint) asked no
+    model, so nothing is unsaid."""
+    if t.conversational and t.ollama_running and not t.answer_text.strip() and "hint" not in t.sent_kinds:
         t.answer_text = _social_reply(req, prepared)
         yield _event({"type": "answer", "delta": t.answer_text})
 
