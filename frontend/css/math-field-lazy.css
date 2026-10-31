@@ -23,7 +23,6 @@ math-field.math-field {
   --placeholder-opacity: 0.75;
   --smart-fence-color: var(--muted);
   --text-font-family: var(--font-sans, system-ui, sans-serif);
-  --keyboard-zindex: 2600;
 }
 
 math-field.math-field:focus-within {

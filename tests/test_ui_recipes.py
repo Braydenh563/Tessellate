@@ -6393,3 +6393,21 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
+
+
+def test_an_equation_field_has_one_door() -> None:
+    """INBOX 1473 a: a drawn or typed equation is edited in one MathLive field,
+    built in math-field.js and nowhere else (DESIGN.md's equation-field row).
+    A second hand-built `<math-field>` would bring back the policy refusals the
+    shim there exists for, and a second LaTeX box that drifts from the field.
+    """
+    for path in JS:
+        text = path.read_text(encoding="utf-8")
+        if path.name == "math-field.js":
+            continue
+        assert "new MathfieldElement" not in text, f"{path.name} builds a math field of its own"
+        assert 'createElement("math-field")' not in text, f"{path.name} builds a math field of its own"
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "mathFieldPane" in design and "openMathInPlace" in design
+    field = (ROOT / "frontend" / "js" / "math-field.js").read_text(encoding="utf-8")
+    assert 'setAttribute("style"' not in field and ".style.cssText" in field

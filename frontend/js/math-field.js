@@ -230,11 +230,12 @@ function closeMathInPlace(back = true) {
 //: the top of the window, out from under MathLive's keyboard.
 function mathFieldPlace(pop, rect) {
   const margin = 8;
-  const width = Math.min(window.innerWidth - margin * 2, Math.max(rect.width, 288));
+  const touch = mathFieldTouch();
+  const width = touch ? window.innerWidth - margin * 2 : Math.min(window.innerWidth - margin * 2, Math.max(rect.width, 288));
   pop.style.width = `${width}px`;
   const left = Math.min(Math.max(margin, rect.left), window.innerWidth - margin - width);
   pop.style.left = `${left}px`;
-  const top = mathFieldTouch() ? margin : Math.min(Math.max(margin, rect.top - 6), window.innerHeight - pop.offsetHeight - margin);
+  const top = touch ? margin : Math.min(Math.max(margin, rect.top - 6), window.innerHeight - pop.offsetHeight - margin);
   pop.style.top = `${Math.max(margin, top)}px`;
 }
 
