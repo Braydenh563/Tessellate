@@ -1,8 +1,10 @@
 /* math-field-lazy.css: the Word-style equation field (math-field.js; INBOX
    1473 a). Loaded with it (lazy-entries.js `LAZY_MODULES.mathField`), never at
    boot. MathLive draws inside a shadow root, so what reaches it from here is
-   its custom properties and its parts; the colours are the app's tokens, which
-   is what lets one field follow every look and the dark theme. */
+   its custom properties and its parts. Those properties are set from
+   math-field.js (`MATH_FIELD_LOOK`, app tokens as values, so one field follows
+   every look and the dark theme) because the stylesheet's custom-property
+   count only falls (tests/test_style_scale.py) and they are the library's. */
 
 math-field.math-field {
   display: block;
@@ -15,14 +17,6 @@ math-field.math-field {
   background: var(--input-bg, var(--bg));
   color: var(--text);
   font-size: var(--text-h1);
-  --hue: 215;
-  --caret-color: var(--accent);
-  --selection-background-color: color-mix(in srgb, var(--accent) 28%, transparent);
-  --selection-color: var(--text);
-  --placeholder-color: var(--accent);
-  --placeholder-opacity: 0.75;
-  --smart-fence-color: var(--muted);
-  --text-font-family: var(--font-sans, system-ui, sans-serif);
 }
 
 math-field.math-field:focus-within {

@@ -125,7 +125,11 @@ def test_every_file_the_page_loads_is_committed_and_bundled():
     for spec in (SPEC_PATH, LINUX_SPEC_PATH):
         assert '(str(FRONTEND_DIR), "frontend")' in spec.read_text(encoding="utf-8"), spec
     tracked = _tracked_frontend_files()
-    missing = sorted(ref for ref in _page_references() if ref not in tracked)
+    #: A reference may name a folder (MathLive's `fontsDirectory`); it counts
+    #: only when committed files sit under it.
+    folders = {t.rsplit("/", 1)[0] for t in tracked if "/" in t}
+    folders |= {f.rsplit("/", 1)[0] for f in folders if "/" in f}
+    missing = sorted(ref for ref in _page_references() if ref not in tracked and ref not in folders)
     assert not missing, f"referenced by the page but not committed under frontend/: {missing}"
 
 

@@ -5019,25 +5019,25 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `closeMathInPlace` | frontend/js/math-field.js:234 |
+| `closeMathInPlace` | frontend/js/math-field.js:247 |
 | `mathFieldAllowStyles` | frontend/js/math-field.js:102 |
 | `mathFieldBoxes` | frontend/js/math-field.js:66 |
 | `mathFieldChange` | frontend/js/math-field.js:74 |
 | `mathFieldConfigure` | frontend/js/math-field.js:123 |
-| `mathFieldCreate` | frontend/js/math-field.js:136 |
-| `mathFieldFoot` | frontend/js/math-field.js:252 |
+| `mathFieldCreate` | frontend/js/math-field.js:148 |
+| `mathFieldFoot` | frontend/js/math-field.js:265 |
 | `mathFieldGroupEnd` | frontend/js/math-field.js:26 |
-| `mathFieldKeys` | frontend/js/math-field.js:317 |
-| `mathFieldLatexBox` | frontend/js/math-field.js:157 |
-| `mathFieldOwns` | frontend/js/math-field.js:230 |
-| `mathFieldPane` | frontend/js/math-field.js:177 |
-| `mathFieldPlace` | frontend/js/math-field.js:240 |
-| `mathFieldRead` | frontend/js/math-field.js:148 |
+| `mathFieldKeys` | frontend/js/math-field.js:330 |
+| `mathFieldLatexBox` | frontend/js/math-field.js:170 |
+| `mathFieldOwns` | frontend/js/math-field.js:243 |
+| `mathFieldPane` | frontend/js/math-field.js:190 |
+| `mathFieldPlace` | frontend/js/math-field.js:253 |
+| `mathFieldRead` | frontend/js/math-field.js:161 |
 | `mathFieldStored` | frontend/js/math-field.js:60 |
 | `mathFieldTouch` | frontend/js/math-field.js:86 |
 | `mathFieldUnplace` | frontend/js/math-field.js:43 |
-| `mathFieldWrite` | frontend/js/math-field.js:152 |
-| `openMathInPlace` | frontend/js/math-field.js:269 |
+| `mathFieldWrite` | frontend/js/math-field.js:165 |
+| `openMathInPlace` | frontend/js/math-field.js:282 |
 
 ### frontend/js/meaning.js (18)
 
@@ -11157,7 +11157,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/lightbox-lazy.css | 427 |
 | frontend/css/manual-lazy.css | 161 |
 | frontend/css/math-editor-lazy.css | 99 |
-| frontend/css/math-field-lazy.css | 78 |
+| frontend/css/math-field-lazy.css | 72 |
 | frontend/css/meetings-lazy.css | 562 |
 | frontend/css/mermaid-lazy.css | 68 |
 | frontend/css/motion-still.css | 94 |

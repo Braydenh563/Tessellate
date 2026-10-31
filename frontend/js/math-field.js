@@ -133,10 +133,23 @@ function mathFieldConfigure() {
 
 //: One field. The virtual keyboard is offered on a touch screen only, and the
 //: menu is off: its colour and font styles are not TeX the renderer draws.
+//: MathLive's own custom properties, valued with the app's tokens.
+const MATH_FIELD_LOOK = {
+  "--hue": "215",
+  "--caret-color": "var(--accent)",
+  "--selection-background-color": "color-mix(in srgb, var(--accent) 28%, transparent)",
+  "--selection-color": "var(--text)",
+  "--placeholder-color": "var(--accent)",
+  "--placeholder-opacity": "0.75",
+  "--smart-fence-color": "var(--muted)",
+  "--text-font-family": "var(--font-sans, system-ui, sans-serif)",
+};
+
 function mathFieldCreate(label) {
   mathFieldConfigure();
   const field = new MathfieldElement();
   field.className = "math-field";
+  for (const [name, value] of Object.entries(MATH_FIELD_LOOK)) field.style.setProperty(name, value);
   field.setAttribute("aria-label", label);
   field.mathVirtualKeyboardPolicy = mathFieldTouch() ? "auto" : "manual";
   field.addEventListener("mount", () => {
