@@ -8575,6 +8575,30 @@ function docSetLiveDecorations(on) {
   });
 }
 
+//: **A span's marks show while a selection is in it or touching it**
+//: (INBOX 1473 b, the owner: "like obsidian where it does it per phrase,
+//: word, or whatever text string is formatted when clicked inside or next
+//: to"). Every range counts, not only the main one, so each cursor of a
+//: multi-cursor edit and every span a selection crosses reveal. Ends are
+//: inclusive: a caret just after the closing `**` is "next to" the span.
+function docLiveSpanTouched(ranges, from, to) {
+  for (const range of ranges) {
+    if (range.from <= to && range.to >= from) return true;
+  }
+  return false;
+}
+
+//: Whether a new selection reveals exactly what the last build revealed.
+//: `probes` is the flat `[from, to, revealed, ...]` list a build records for
+//: every reveal it decided; when none flips, a caret move changes no
+//: decoration and the plugin keeps the set it has.
+function docLiveRevealSame(probes, ranges) {
+  for (let i = 0; i < probes.length; i += 3) {
+    if (docLiveSpanTouched(ranges, probes[i], probes[i + 1]) !== Boolean(probes[i + 2])) return false;
+  }
+  return true;
+}
+
 //: Built once and reused: a `ViewPlugin` is a class, and reconfiguring a
 //: compartment with a *new* class every time would tear the plugin's state
 //: down and rebuild it on every view switch.
@@ -9072,10 +9096,15 @@ function docLivePlugin(CM) {
     }
   }
 
-  function build(view) {
+  //: `record` collects every reveal this build decided (`probes`, flat
+  //: `[from, to, revealed]`) and whether anything read the caret's exact
+  //: position rather than "touched or not" (`selFree`: a table's active cell
+  //: and its menu row do), which is what lets a caret move skip the rebuild.
+  function build(view, record = { probes: [], selFree: true }) {
     const state = view.state;
     const doc = state.doc;
     const sel = state.selection.main;
+    const selRanges = state.selection.ranges;
     const ranges = [];
     //: **Nothing is revealed while the editor is not focused.** A selection
     //: exists whether or not anyone is in the editor, and a document just
@@ -9086,41 +9115,46 @@ function docLivePlugin(CM) {
     //: that word or section", and an untouched document is the one case where
     //: nobody has clicked on anything at all.
     const focused = view.hasFocus;
-    const touched = (from, to) => focused && sel.from <= to && sel.to >= from;
+    const probe = (from, to) => {
+      const on = focused && docLiveSpanTouched(selRanges, from, to);
+      record.probes.push(from, to, on ? 1 : 0);
+      return on;
+    };
+    const touched = probe;
     const lineTouched = (pos) => {
       const line = doc.lineAt(pos);
       return touched(line.from, line.to);
     };
-    //: **A marker reveals when the caret is on its line, not when it is inside
-    //: its range**, and this is the fix for a measured defect rather than a
-    //: preference.
+    //: **Inline marks reveal per span, block marks per line** (INBOX 1473 b,
+    //: which remakes the line rule this file followed since the 28.4px note
+    //: below; DESIGN.md, "A markdown mark in Live view").
     //:
-    //: Revealing per range put four characters on screen immediately to the
-    //: left of the caret at the moment it crossed the range's edge, so the
-    //: caret moved *right* on a leftward keystroke. Measured with
-    //: `coordsAtPos` walking left through `A **bold** word here.`: x 560.3,
-    //: 554, 544.2, 531.1, and then **559.5** on the press that revealed the
-    //: markers, a 28.4px jump backwards. The document position was never
-    //: wrong (11 then 10, exactly one character); what moved was the text
-    //: under it.
+    //: A span (`**bold**`, `*em*`, `` `code` ``, `~~struck~~`, `==mark==`, a
+    //: link, a `[[wiki link]]`, an escape, a `$math$` range taken whole) shows
+    //: its marks while a selection is inside it or touching either end, and
+    //: every other span on the line stays rendered: Obsidian's rule, asked for
+    //: by name. Nested spans follow from containment: the caret inside `*b*`
+    //: in `**a *b* c**` is inside both, and in neither of their neighbours.
     //:
-    //: `EditorView.atomicRanges` is the usual answer to a caret and a hidden
-    //: range, and it is the wrong one here: it makes the arrow keys step
-    //: *over* the marker without revealing it, and the owner's sentence is
-    //: precisely about being able to "navigate with backspace, delete or
-    //: arrow keys etc to where those formatting markers are".
+    //: The cost the line rule was chosen to avoid comes back at a span's
+    //: right edge, and only there: ArrowLeft from just past `**bold** ` lands
+    //: touching the span, its marks appear to the caret's left, and the caret
+    //: is drawn one mark's width to the right of where it was (measured 28.4px
+    //: for `**` at the time). That is what Obsidian does, and what the owner
+    //: asked for; `cm-reveal.js` holds the rest of that walk to "never right".
+    //: A click is measured there too: the clicked character keeps its offset
+    //: and moves only by the opening mark's width, where the line rule moved
+    //: it by every mark before it on the line.
     //:
-    //: The line is what holds still. Horizontal movement within a line now
-    //: causes no reflow at all, because the line's markers are already up the
-    //: whole time the caret is on it; the one reflow left happens when the
-    //: caret *arrives* on the line, which is a click or a vertical move, and
-    //: both of those relocate the caret anyway so there is nothing to jar
-    //: against. It is also what `HeaderMark`, `QuoteMark` and `TaskMarker`
-    //: have always done here, so this makes the eight constructs agree
-    //: instead of splitting them into two behaviours.
-    //:
-    //: Both line ends, because a range can span a soft-wrapped link.
+    //: Block marks (`#`, a list's bullet or number, `>`, a task box, `---`, a
+    //: table's rule) keep the line rule, which is also Obsidian's: they sit at
+    //: the line's start, and revealing them as the caret crossed a word would
+    //: shift the whole line under it. Code fences and Mermaid keep their own
+    //: block rule (`blockRevealed`): the fence reveals while the caret is
+    //: anywhere in the block.
     const rangeRevealed = (from, to) =>
+      probe(from, to);
+    const blockRevealed = (from, to) =>
       touched(doc.lineAt(from).from, doc.lineAt(to).to);
     //: Whether the line numbers are showing, read once per build rather than
     //: per fenced block: the fence rows collapse only when they are off, see
@@ -9205,7 +9239,8 @@ function docLivePlugin(CM) {
             //: the three backticks were the one piece of syntax the live view
             //: still showed after you clicked off a code block (INBOX 198).
             //: Back the moment the caret is inside the block, like the rest.
-            if (!rangeRevealed(parent.from, parent.to)) hide(node.from, node.to);
+            const revealedBy = parent.name === "FencedCode" ? blockRevealed : rangeRevealed;
+            if (!revealedBy(parent.from, parent.to)) hide(node.from, node.to);
             return false;
           }
           if (name === "Link") {
@@ -9290,9 +9325,9 @@ function docLivePlugin(CM) {
           }
           //: `\*` is how a writer says "a star, not emphasis", and the
           //: backslash is syntax like every other marker here: hidden while
-          //: the caret is elsewhere, back when it is on the line.
+          //: the caret is elsewhere, back when it is in or beside the escape.
           if (name === "Escape") {
-            if (!lineTouched(node.from)) hide(node.from, node.from + 1);
+            if (!rangeRevealed(node.from, node.to)) hide(node.from, node.from + 1);
             return false;
           }
           if (name === "TaskMarker") {
@@ -9511,7 +9546,7 @@ function docLivePlugin(CM) {
             //: half-height row would clip the text that just came back, and
             //: the corner label would be saying the language a second time
             //: right next to where it is now written out.
-            const revealed = rangeRevealed(node.from, node.to);
+            const revealed = blockRevealed(node.from, node.to);
             for (let at = node.from; at <= node.to; ) {
               const line = doc.lineAt(at);
               const edge =
@@ -9799,6 +9834,7 @@ function docLivePlugin(CM) {
         const table = docTableParse(source(), line.from);
         if (!table) continue;
         for (const row of table.rows) tableSeen.add(doc.lineAt(row.from).number);
+        record.selFree = false;
         const inTable = focused && sel.from <= table.to && sel.to >= table.from;
         //: **An open menu holds its own opener on screen** (INBOX 290). The
         //: menu is drawn from `focused`, and pressing the kebab can take
@@ -10033,8 +10069,12 @@ function docLivePlugin(CM) {
   docLivePluginCache = ViewPlugin.fromClass(
     class {
       constructor(view) {
-        this.decorations = build(view);
+        this.rebuild(view);
         this.gutterOn = docFenceGutterOn();
+      }
+      rebuild(view) {
+        this.record = { probes: [], selFree: true };
+        this.decorations = build(view, this.record);
       }
       update(update) {
         //: Selection as well as document and viewport: the whole idea of this
@@ -10065,12 +10105,18 @@ function docLivePlugin(CM) {
         //: tree object, a pointer check, so a keystroke inside a stable tree
         //: costs nothing extra.
         const gutterOn = docFenceGutterOn();
-        if (update.docChanged || update.viewportChanged || update.selectionSet
-            || update.focusChanged || gutterOn !== this.gutterOn
-            || syntaxTree(update.startState) !== syntaxTree(update.state)) {
-          this.gutterOn = gutterOn;
-          this.decorations = build(update.view);
-        }
+        const other = update.docChanged || update.viewportChanged || update.focusChanged
+          || gutterOn !== this.gutterOn
+          || syntaxTree(update.startState) !== syntaxTree(update.state);
+        if (!other && !update.selectionSet) return;
+        //: **A caret move rebuilds only when it flips a reveal** (INBOX 1473
+        //: b). With marks per span, most moves stay inside one span or
+        //: between two, and the decorations they would rebuild are the ones
+        //: already drawn; a table reads the exact caret, so it always does.
+        if (!other && this.record.selFree && (!update.view.hasFocus
+            || docLiveRevealSame(this.record.probes, update.state.selection.ranges))) return;
+        this.gutterOn = gutterOn;
+        this.rebuild(update.view);
       }
     },
     {
