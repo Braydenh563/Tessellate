@@ -176,7 +176,7 @@ def _to_out(
             LinkOut(
                 link_id=link.id,
                 entry_id=other.id,
-                preview=_preview(manager.readable_content(other)),
+                preview=_connection_label(other, 60),
                 reason=link.reason,
                 reason_confidence=link.reason_confidence,
                 # The one fact the merged list could never carry. See
@@ -1224,7 +1224,7 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
         if other is not None:
             similar = {
                 "id": other.id,
-                "preview": _preview(manager.readable_content(other)),
+                "preview": _connection_label(other, 60),
             }
     state = getattr(entry, "filing_state", "done") or "done"
     category = manager.category_name_for(session, entry)
@@ -3838,7 +3838,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             # this: the *fact* of the connection is not secret, its content
             # is. Same rule as the Library's own file-usage chips.
             "preview": (
-                "Private note" if other.is_private else _connection_label(other)
+                _connection_label(other)
             ),
             "is_private": bool(other.is_private),
             **_connection_cue(session, other),
@@ -3887,7 +3887,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             incoming.append({
                 "link_id": None,
                 "id": other.id,
-                "preview": "Private note" if other.is_private else _connection_label(other),
+                "preview": _connection_label(other),
                 "is_private": bool(other.is_private),
                 **_connection_cue(session, other),
                 "reason": "Links to it" if row["how"] == "links to it" else "Mentions it",
@@ -3915,7 +3915,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
         outgoing.append({
             "link_id": None,
             "id": other.id,
-            "preview": "Private note" if other.is_private else _connection_label(other),
+            "preview": _connection_label(other),
             "is_private": bool(other.is_private),
             **_connection_cue(session, other),
             "reason": "Links to it",
@@ -3989,16 +3989,20 @@ def _wiki_link_targets_of(session: Session, entry: Entry) -> list[Entry]:
     return found
 
 
-def _connection_label(entry) -> str:  # noqa: ANN001
-    """What one note is called on another note's Connections list.
+def _connection_label(entry, length: int = 80) -> str:  # noqa: ANN001
+    """What one note is called on another note's Connections list, its link
+    chips and the near-duplicate line: the one place a note is named from
+    outside itself, so the private-note rule (`manager.PRIVATE_LABEL`) lives
+    here and nowhere else.
 
     A note's own leading `# Heading` is what it calls itself, so that is the
     label when it wrote one, `_preview` alone hands back "# Connections probe
     B\noven temperatures", which renders on a single-line row as the hash, the
     title and the first line of the body run together.
     """
-    text = manager.readable_content(entry)
-    return manager.plain_label(text, 80)
+    if entry.is_private:
+        return manager.PRIVATE_LABEL
+    return manager.plain_label(manager.readable_content(entry), length)
 
 
 def _connected_files(session: Session, text: str) -> list[dict]:

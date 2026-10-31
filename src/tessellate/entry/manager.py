@@ -149,6 +149,14 @@ def entry_space(entry: Entry) -> str:
 
 #: The longest a category name may be; `/categories` refuses more, and now
 #: every other writer clips to it instead of storing 300 characters.
+#: **The one private-note rule** (audit 1031 N3, N23, N40): a private note's
+#: words show in its own row and editor and nowhere else. Anything that points
+#: at it (a link chip, the Connections sheet, the near-duplicate line) calls it
+#: this, vault open or locked; the search never indexes it and the `[[` picker
+#: leaves it out.
+PRIVATE_LABEL = "Private note"
+
+
 MAX_CATEGORY_LENGTH = 100
 
 
@@ -301,9 +309,11 @@ def create_entry(
     in batches. `dates=False` leaves the date phrases to a caller that sets
     `created_at` first and calls `record_dates` itself (an import), so the
     note is not read for dates twice."""
+    from tessellate.entry.properties import lift_title
+
     category = get_or_create_category(session, category_name)
     entry = Entry(
-        content=content,
+        content=lift_title(content),
         category_id=category.id,
         # The schema normalises an HTTP write; this is every other writer
         # (the AI tools, imports, passive capture), held to the same rule.
@@ -686,8 +696,12 @@ def _update_entry_fields(
     tags: list[str] | None = None,
 ) -> Entry:
     """The edit itself. One write, one `edited` event; see `update_entry`."""
+    from tessellate.entry.properties import lift_title
+
     was = events.entry_state(entry)
     changed = []
+    if content is not None:
+        content = lift_title(content)
     if content is not None and entry.is_private:
         #: Whoever the caller is, a private note's text lands encrypted.
         stored = content_for_entry(entry, content)

@@ -1012,7 +1012,19 @@ def _explain_words(weight: float, row: dict, terms: list[str]) -> tuple[float, s
     tags = (row.get("tags") or "").lower()
     if tags and any(term in tags for term in terms):
         return weight, "matched a tag"
-    return weight, "matched your words"
+    return weight, _where_in_body(row.get("body") or "", terms)
+
+
+def _where_in_body(body: str, terms: list[str]) -> str:
+    """Which part of a longer note carried the words (audit 1031 N19): a
+    title-less note's opening line is what the list shows as its name, so a
+    hit there says so; a one-line note has no "where" to say."""
+    lines = [line.lower() for line in body.splitlines() if line.strip()]
+    if len(lines) < 2 or not terms:
+        return "matched your words"
+    if any(term in lines[0] for term in terms):
+        return "matched the first line"
+    return "matched the text" if any(term in " ".join(lines[1:]) for term in terms) else "matched your words"
 
 
 def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | None) -> list[str]:

@@ -2047,11 +2047,17 @@ function entryItem(entry, options = {}) {
     const clock = when.precision === "minute" && /^\d{2}:\d{2}$/.test(when.time || "")
       ? new Date(`${when.at}T${when.time}:00`).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
       : "";
+    //: A month or a year is shown as that, not as a day in it (audit 1031 N8:
+    //: "month of Nov 30" read as a date).
     const label = clock
       ? `${dayLabel}, ${clock}`
-      : when.precision === "day" || when.precision === "minute"
-        ? dayLabel
-        : `${when.precision} of ${dayLabel}`;
+      : when.precision === "month"
+        ? day.toLocaleDateString(undefined, { month: "short" })
+        : when.precision === "year"
+          ? String(day.getFullYear())
+          : when.precision === "week"
+            ? `week of ${dayLabel}`
+            : dayLabel;
     //: The date alone, the phrase on hover (owner, with a screenshot of
     //: "Tonight → 21 Sept on Friday → 25 Sept" in one meta line: "clean up
     //: the notes metadata and badges a bit more"). What a reader scans for is

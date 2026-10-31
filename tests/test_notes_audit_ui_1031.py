@@ -153,3 +153,39 @@ def test_a_template_date_is_written_in_words():
     assert "stampDate(now)" in ask and 'month: "short", day: "numeric", year: "numeric"' in ask
     assert "stampDate(now)" in (JS / "editor.js").read_text()
     assert "now.toLocaleDateString()" not in ask
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not available")
+@pytest.mark.parametrize(
+    "box,engine,unknown",
+    [
+        ("is:archived", ["is:archived"], None),
+        ("is:done has:image", ["is:done", "has:image"], None),
+        ("is:pinned is:draft", [], None),
+        ("is:starred", [], None),
+        ("is:wibble", [], "wibble"),
+        ("is:attachment", [], "attachment"),
+    ],
+)
+def test_unknown_is_flags_are_named_and_engine_ones_go_to_the_engine(box, engine, unknown):
+    """N18: `is:archived` is the engine's (the finder's grammar), `is:wibble`
+    is nobody's and an empty list says so."""
+    text = (JS / "notes-list.js").read_text()
+    regex = re.search(r"^const ENGINE_QUERY_RE = (.+);$", text, re.M).group(1)
+    flags = re.search(r"^const NOTE_FLAGS = (.+);$", text, re.M).group(1)
+    script = f"""
+const ENGINE_QUERY_RE = {regex}; const NOTE_FLAGS = {flags};
+const box = process.argv[1], found = [];
+box.replace(ENGINE_QUERY_RE, (_, lead, term) => found.push(term));
+const rest = box.replace(ENGINE_QUERY_RE, " ");
+const bad = rest.split(/\\s+/).filter((t) => t.startsWith("is:")).map((t) => t.slice(3)).find((f) => !NOTE_FLAGS.includes(f));
+console.log(JSON.stringify([found, bad || null]));
+"""
+    out = subprocess.run([NODE, "-e", script, box], capture_output=True, text=True, timeout=30)
+    assert json.loads(out.stdout) == [engine, unknown]
+
+
+def test_the_empty_list_names_an_unknown_filter():
+    text = (JS / "notes-list.js").read_text()
+    assert "noMatchHint(noMatch);" in text
+    assert "No filter named is:${bad}." in text

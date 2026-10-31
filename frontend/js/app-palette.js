@@ -277,7 +277,9 @@ function paletteMatches(query) {
   //: commands (guesses by the search model) would only sit above it.
   const noteRows = paletteNoteRows(typed);
   const shownCommands = noteRows.length ? commands.filter((row) => row.group !== "Close in meaning") : commands;
-  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...shownCommands, ...noteRows, handoff];
+  //: Three words or more is a note's opening, not a command's name: its notes lead (audit 1031 N13).
+  const sentence = noteRows.length && typed.split(/\s+/).length > 2;
+  return [...(act ? [act] : []), ...utilityPaletteRows(lowered), ...(sentence ? noteRows : []), ...shownCommands, ...(sentence ? [] : noteRows), handoff];
 }
 
 //: "timer 10 minutes", "25 min timer", "countdown 90s": a length read from

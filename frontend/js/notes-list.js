@@ -213,7 +213,7 @@ function liveQueryIds(q) {
 //: nothing), and `GET /search` (`search/query.py`) has all three. They are
 //: asked of the engine, the way `type:` and `prop:` are asked of
 //: `/entries/query`, and the list keeps its own order and its own look.
-const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space):(?:"[^"]{1,200}"|[^\s"]+))/gi;
+const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|urgent|clipped)(?:\s|$))):(?:"[^"]{1,200}"|[^\s"]+))/gi;
 //: One object for this file's engine state (the global-scope ratchet counts
 //: top-level `let`s): `ids` answers `q`, `pending` is the question in the air,
 //: `capped` says the engine's page (50) was full, `semanticFor` is the box text
@@ -274,6 +274,17 @@ function showNotesFilter(query) {
   search.value = query;
   search.dispatchEvent(new Event("input"));
   search.focus();
+}
+
+//: The `is:` words the filter knows (`matchesSearch` below). Any other is a typo or a
+//: filter that does not exist, and an empty list says so (audit 1031 N18).
+const NOTE_FLAGS = "pinned favourite favourites favorite starred private linked draft drafts untagged untitled review".split(" ");
+
+function noMatchHint(box) {
+  const line = box.querySelector(".muted");
+  const bad = noteSearch && parseNoteQuery(noteSearch).flags.find((flag) => !NOTE_FLAGS.includes(flag));
+  line.dataset.was ??= line.textContent;
+  line.textContent = bad ? `No filter named is:${bad}. Try is:favourite, is:private, is:linked, is:draft, is:untagged, is:untitled or is:review.` : line.dataset.was;
 }
 
 function parseNoteQuery(raw) {
@@ -454,7 +465,7 @@ function matchesSearch(entry) {
     //: kept because it is in this app's own help text, in saved filters people
     //: already have, and in muscle memory. Two spellings of one flag is a
     //: smaller cost than breaking a filter somebody saved.
-    if ((flag === "pinned" || flag === "favourite" || flag === "favourites") && !entry.pinned) {
+    if (/^(pinned|favou?rites?|starred)$/.test(flag) && !entry.pinned) {
       return false;
     }
     if (flag === "private" && !entry.is_private) return false;
@@ -462,6 +473,9 @@ function matchesSearch(entry) {
     if (flag === "linked" && !(entry.links || []).length && !/\[\[[^\]\n]{1,120}\]\]/.test(entry.content || "")) return false;
     if ((flag === "draft" || flag === "drafts") && !entry.is_draft) return false;
     if (flag === "untagged" && tags.length) return false;
+    if (flag === "untitled" && entry.title) return false;
+    //: A word that is no filter narrows to nothing, and the empty list says so (`noMatchHint`).
+    if (!NOTE_FLAGS.includes(flag)) return false;
     //: The review queue (section 17, row 1): unsure or Uncategorised filings
     //: nobody has decided on (`entryNeedsReview`, above).
     if (flag === "review" && !entryNeedsReview(entry)) return false;
@@ -2433,6 +2447,7 @@ function renderEntries(appendOnly = false) {
   const notebookEmpty = allEntries.length === 0;
   empty.classList.toggle("hidden", !notebookEmpty);
   noMatch.classList.toggle("hidden", notebookEmpty || visible.length > 0);
+  noMatchHint(noMatch);
 
   renderWindowed(
     list,
