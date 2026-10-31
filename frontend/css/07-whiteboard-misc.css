@@ -9143,47 +9143,7 @@ input[type="file"] {
 #wb-map-arrow path {
   fill: context-stroke;
 }
-/* **The waypoint handle on a line** (MINDMAP_PLAN.md §12.1 item 5's third).
-   The same control `.wb-link-bend-handle` is for a link sketch, on a tree edge
-   instead: a round grip on the line, dragged to bend it and double-clicked to
-   put it back. So it takes that rule's shape exactly, one size to the hand at
-   every zoom (the grip block near the end of this file) and coloured by the
-   branch rather than by the accent, because on a map the line's colour is what
-   says which branch you are holding.
-   **Invisible and inert until the topic at one end of the line is selected**
-   (`wbSyncMapEdgeHandles`). Both halves matter: a grab dot on every line would
-   be two hundred of them on a real map, and a dot that was invisible but still
-   took the pointer would swallow the press meant for the line underneath,
-   which is the bug the mid-line `+` already had once against the link ring. */
-.wb-map-edge-handle {
-  /* The line's own colour inside, the card outside: the same arrangement
-     `.wb-link-bend-handle` uses for the other drag-to-bend control in this
-     app, which reads as "this curve's own control" rather than as an endpoint.
-     The colour is the branch's, so the grip belongs to the branch it reshapes,
-     and `--accent` is what a line with no branch colour of its own draws in,
-     exactly as the line itself does. */
-  fill: var(--wb-map-edge-colour, var(--accent));
-  stroke: var(--card);
-  stroke-width: 2px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--motion-fast) var(--ease-out);
-}
-/* Two ways of opening, and the first is the one that always works: pointing
-   at the line, anywhere along it, reveals the handle on it. The whole edge is
-   one `<g>` (stroke, target twin and handle), so there is no gap to cross
-   between the line and its own control. `.is-shown` is the selection route,
-   and `.is-dragging` holds it open for a drag that has already left the line
-   behind. */
-.wb-map-edge-group:hover .wb-map-edge-handle,
-.wb-map-edge-handle.is-shown,
-.wb-map-edge-handle.is-dragging {
-  opacity: 1;
-  pointer-events: auto;
-  /* `move`, the cursor the link's own bend grip already uses: this drags a
-     point in two directions, which is not the one-axis pull `grab` promises. */
-  cursor: move;
-}
+/* The map line's waypoint grip (`.wb-map-edge-handle`, base and hover) moved to library-lazy.css beside its end grips, for the boot budget. */
 /* A cross-link is the edge `parent_id` cannot express: a connection between
    two branches. Dashed, which is the systems-map convention every serious
    mindmapper uses to say "related, but not part of the tree" (MINDMAP_PLAN.md
