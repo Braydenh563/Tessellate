@@ -215,6 +215,9 @@ function setActiveSpace(id) {
   // count, graph and sidebar in the app is scoped by the header, so a partial
   // refresh would leave whichever one we forgot showing the old space, and a
   // space that is half-switched is worse than one that took a second.
+  // What the reload costs, said once (audit 1031 Z1): the Undo stack is
+  // emptied (the delete-space dialog says so); the tray survives it, being
+  // kept in sessionStorage for the whole notebook (obj-tray.js).
   window.location.reload();
 }
 

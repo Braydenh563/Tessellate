@@ -1028,6 +1028,11 @@
       <option value="">Delete everything in it</option>
     </select>
     <input type="hidden" id="space-delete-id">
+    <div id="space-delete-purge" hidden>
+      <p class="status error">This skips the bin and cannot be undone.</p>
+      <label for="space-delete-confirm" class="form-label" id="space-delete-confirm-label">Type the space's name to confirm</label>
+      <input type="text" id="space-delete-confirm" class="wide" autocomplete="off" spellcheck="false">
+    </div>
     <p id="space-delete-error" class="status error" role="alert"></p>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="space-delete-dialog">Cancel</button>
