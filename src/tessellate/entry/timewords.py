@@ -152,7 +152,7 @@ _RULES: list[tuple[str, object]] = [
     (r"this week", lambda m, t: (_monday(t), WEEK)),
     #: "the 14th of next month": that day, not the month (audit 1031 N8).
     (r"the (\d{1,2})(?:st|nd|rd|th)(?: day)? of (last|next|this) month",
-     lambda m, t: _day_of_month(m, t)),
+     _day_of_month),
     (r"last month", lambda m, t: (_add_months(t, -1), MONTH)),
     (r"next month", lambda m, t: (_add_months(t, 1), MONTH)),
     (r"this month", lambda m, t: (t, MONTH)),
