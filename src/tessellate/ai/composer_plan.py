@@ -574,7 +574,10 @@ def _plan_window(text: str, said: str, today: date) -> tuple[date, date, str]:
     low = said.lower()
     if any(w in low for w in ("day", "today", "first", "focus", "start")):
         return today, today, "today"
-    return today, today + timedelta(days=6 - today.weekday()) if today.weekday() < 6 else today, "this week"
+    #: A weekend's "my week" is the coming seven days, as `window` reads "this
+    #: week" there (audit 1031 C50).
+    end = today + timedelta(days=6 - today.weekday())
+    return today, end if (end - today).days > 1 else today + timedelta(days=6), "this week"
 
 
 #: **One window for "what is due" with no time named** (audit 1030 Z27: "due

@@ -16,6 +16,7 @@ from tessellate.ai import question_noise, study
 from tessellate.core import cjk
 from tessellate.ai import when as when_words
 from tessellate.ai import composer_compose as compose
+from tessellate.ai import composer_frame
 from tessellate.ai.composer_study import Ctx, Reply, pick, topic_notes
 
 MAX_LISTED = 8
@@ -174,7 +175,9 @@ def _is_label_note(content: str) -> bool:
 def _item(note: dict, wanted: list[str]) -> str:
     content = str(note.get("content") or "")
     if _is_label_note(content):
-        return f"- {_day(_made(note))}, [Untitled](#/notes/{note['id']}): {content.strip()}"
+        #: Named the way every title-less note is (`composer_frame._clipped`),
+        #: never "Untitled" and never its line said twice (audit 1031 C31).
+        return f"- {_day(_made(note))}, [{composer_frame.clipped_name(note)}](#/notes/{note['id']})"
     line = re.sub(r"^#{1,6}\s+", "", _sentence_with(content, wanted) or "")
     title = study.title_of(content)
     #: The sentence read from a headed note starts with the heading ("Scope

@@ -78,7 +78,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_open, composer_parts, composer_replies, composer_sides, composer_tables, composer_tree, composer_versus, grounding, phrasing, question_noise, realise, spelling, utilities, variants
+from tessellate.ai import act_registry, composer_ack, composer_compose, composer_frame, composer_lines, composer_links, composer_open, composer_parts, composer_replies, composer_sides, composer_tables, composer_tree, composer_versus, grounding, phrasing, question_noise, realise, spelling, utilities, variants
 from tessellate.ai import recognise as rec
 from tessellate.ai import when as when_words
 from tessellate.core.docmeta import block_end
@@ -667,30 +667,40 @@ def _stem_plain(word: str) -> str:
     return _strip_suffix(w)
 
 
+def _suffix_fits(w: str, suffix: str, least: int) -> bool:
+    """`w` ends in `suffix` and keeps a stem of `least` letters (or is a
+    "baked", "liked", "named": a three-letter stem that lost a silent "e";
+    it ends in a consonant; "ahead" and "bread" do not qualify)."""
+    short_ed = suffix == "ed" and len(w) == 5 and w[2] not in "aeiou" + "y" and w[-3] not in _VOWELS and _one_syllable_cvc(w[:-2])
+    return w.endswith(suffix) and (len(w) - len(suffix) >= least or short_ed)
+
+
+def _after_suffix(w: str, suffix: str) -> str:
+    """"running" is "run" and "stopped" is "stop": the doubled last
+    consonant a suffix brought is taken off with it (INBOX 725, measured:
+    "what do my notes say about running" missed every note that says "run"
+    or is tagged it); "baked" gets its "e" back."""
+    if suffix not in ("ing", "ed"):
+        return w
+    if len(w) >= 3 and w[-1] == w[-2] and w[-1] not in "aeioulsz":
+        return w[:-1]
+    return w + "e" if _one_syllable_cvc(w) else w
+
+
 def _strip_suffix(w: str) -> str:
     for suffix, keep, least in (("ies", "y", 4), ("ing", "", 3), ("ed", "", 4), ("es", "", 3), ("s", "", 3)):
-        #: "baked", "liked", "named": a three-letter stem that lost a silent "e"
-        #: (it ends in a consonant; "ahead" and "bread" do not qualify).
-        short_ed = suffix == "ed" and len(w) == 5 and w[2] not in "aeiou" + "y" and w[-3] not in _VOWELS and _one_syllable_cvc(w[:-2])
-        if w.endswith(suffix) and (len(w) - len(suffix) >= least or short_ed):
-            if suffix == "s" and w.endswith(("ss", "us", "is")):
-                break
-            if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
-                continue
-            w = w[: len(w) - len(suffix)] + keep
-            #: A plural of an "-ing" or "-ed" word folds like the word: "meetings"
-            #: and "meeting" are one key (audit 1031 C8).
-            if suffix in ("s", "es") and w.endswith(("ing", "ed")):
-                return _strip_suffix(w)
-            #: "running" is "run" and "stopped" is "stop": the doubled last
-            #: consonant a suffix brought is taken off with it (INBOX 725,
-            #: measured: "what do my notes say about running" missed every
-            #: note that says "run" or is tagged it).
-            if suffix in ("ing", "ed") and len(w) >= 3 and w[-1] == w[-2] and w[-1] not in "aeioulsz":
-                w = w[:-1]
-            elif suffix in ("ing", "ed") and _one_syllable_cvc(w):
-                w += "e"
+        if not _suffix_fits(w, suffix, least):
+            continue
+        if suffix == "s" and w.endswith(("ss", "us", "is")):
             break
+        if suffix == "es" and not w.endswith(("ches", "shes", "sses", "xes", "zes")):
+            continue
+        w = w[: len(w) - len(suffix)] + keep
+        #: A plural of an "-ing" or "-ed" word folds like the word: "meetings"
+        #: and "meeting" are one key (audit 1031 C8).
+        if suffix in ("s", "es") and w.endswith(("ing", "ed")):
+            return _strip_suffix(w)
+        return _after_suffix(w, suffix)
     return w
 
 
@@ -1815,6 +1825,9 @@ class _Answer:
         #: The notes already named in this answer: a note is named once, at
         #: its first quote, and its later quotes go uncited (INBOX 741).
         self.named: set[int] = set()
+        #: Where each day-named citation starts, and whether a titled one was cited (`_one_cite_style`).
+        self._plain_cites: list[int] = []
+        self._titled_cite = False
         #: The question's subject, stemmed, for the openers that check a
         #: sentence holds all of it; and whether the next quote follows a
         #: joiner that ends in a comma, so its first letter is lowered.
@@ -1942,11 +1955,30 @@ class _Answer:
             self.t("bold")
             self.parts.append(("title", view.title, view.id))
             self.t("bold")
+            self._one_cite_style()
         elif view.written:
+            at = len(self.parts)
             self.t("your_note", "comma").m(self.day(view.written))
+            self._plain_cites.append(at)
+            self._one_cite_style(bold_now=True)
         else:
             self.t("one_of_your_notes")
         return self.t("cite_close")
+
+    def _one_cite_style(self, bold_now: bool = False) -> None:
+        """One bracket style in an answer (audit 1031 C40): "[**Tom**]" beside
+        "[your note, 24 July]" reads as two kinds of source, so once a titled
+        note is cited every day-named citation is bold too, earlier ones
+        included."""
+        if not bold_now:
+            self._titled_cite = True
+        if not self._titled_cite or not self._plain_cites:
+            return
+        for at in reversed(self._plain_cites):
+            #: ["your note", ", ", day] from `at`; the open is before it and the close follows.
+            self.parts.insert(at + 3, ("template", PHRASES["bold"]))
+            self.parts.insert(at, ("template", PHRASES["bold"]))
+        self._plain_cites.clear()
 
     def _shifted(self, s: Sentence, text: str) -> str | None:
         """The sentence said to the person who wrote it (decision 33): "I
@@ -3832,16 +3864,40 @@ def _follow_swap(text: str, previous: str, last: dict, turns: list[dict]) -> Any
 _PERSON_PRONOUN = re.compile(r"\b(?:her|him|she|he|hers|his)\b", re.I)
 
 
-def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+def _pronoun_kind(text: str) -> str:
+    """Which pronoun follow-on `text` is: "bare" (a pronoun and no subject),
+    "slot" ("how much does it cost"), "person" ("what should I get her"),
+    "total" (no subject of its own at all), or "" for none."""
     bare = _PRONOUN.search(text) and not [t for t in subject_terms(text) if not _PRONOUN.fullmatch(t)]
+    if bare:
+        return "bare"
     #: "how much does it cost", "when is it due": the slot word is not a subject.
-    leans = refers_back(text) and _SLOT_PRONOUN.search(text)
-    person = _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:])
+    if refers_back(text) and _SLOT_PRONOUN.search(text):
+        return "slot"
+    if _ASKS_SLOT.match(text.strip()) and _PERSON_PRONOUN.search(text) and not re.search(r"\b[A-Z][a-z]", text.strip()[1:]):
+        return "person"
     #: "what's the total", "how far in total": no subject of its own at all.
-    subjectless = bool(_TOTAL_ASK.search(text)) and not (bare or leans or person or _PRONOUN.search(text)) and not (
-        set(subject_terms(text)) - _TOTAL_WORDS
-    )
-    if not (bare or leans or person or subjectless):
+    if _TOTAL_ASK.search(text) and not _PRONOUN.search(text) and not set(subject_terms(text)) - _TOTAL_WORDS:
+        return "total"
+    return ""
+
+
+def _pronoun_swap(text: str, named: str, kind: str) -> str:
+    """`text` with its pronoun replaced by the subject's name."""
+    pattern = _PRONOUN if kind == "bare" else (_SLOT_PRONOUN if kind == "slot" else _PERSON_PRONOUN)
+
+    def said(match: re.Match) -> str:
+        #: "her birthday" is "Sara's birthday"; "get her" is "get Sara".
+        word = match.group(0).lower()
+        possessive = word in ("his", "hers") or (word == "her" and bool(text[match.end():].strip(" ?.!")))
+        return named + ("'s" if possessive and kind == "person" else "")
+
+    return pattern.sub(said, text, count=1)
+
+
+def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> Any:
+    kind = _pronoun_kind(text)
+    if not kind:
         return None
     subject = _asked_span(previous, subject_terms(previous))
     if not subject:
@@ -3849,17 +3905,10 @@ def _follow_pronoun(text: str, previous: str, last: dict, turns: list[dict]) -> 
     article = re.search(r"\b(?:the|my|our)\s+$", previous[: previous.lower().find(subject.lower())], re.I)
     #: A bare "that" keeps the old bare subject; the newer slot and person
     #: follow-ons read with the article ("how much does the Lisbon trip cost").
-    named = (article.group(0).strip() + " " if article and not bare else "") + subject
-    if subjectless:
+    named = (article.group(0).strip() + " " if article and kind != "bare" else "") + subject
+    if kind == "total":
         return FollowOn(f"{text.rstrip(' ?.!')} for {named}?", previous, "", "pronoun")
-    pattern = _PRONOUN if bare else (_SLOT_PRONOUN if leans else _PERSON_PRONOUN)
-
-    def said(match: re.Match) -> str:
-        #: "her birthday" is "Sara's birthday"; "get her" is "get Sara".
-        possessive = match.group(0).lower() in ("his", "hers") or (match.group(0).lower() == "her" and bool(text[match.end():].strip(" ?.!")))
-        return named + ("'s" if possessive and pattern is _PERSON_PRONOUN else "")
-
-    return FollowOn(pattern.sub(said, text, count=1), previous, "", "pronoun")
+    return FollowOn(_pronoun_swap(text, named, kind), previous, "", "pronoun")
 
 
 #: Tried in this order: a "more" is not a correction, and a correction is not a swap.
@@ -4594,16 +4643,19 @@ def _plan_window(question: str, terms: list[str], phrase: str, today: date) -> t
     span = when_words.span(phrase, today, "past") if phrase else None
     if span and span[0] > today and _subject_left(question, terms, phrase):
         return None, terms
-    if span:
-        #: "what did I write on Monday": the day is the window, not a subject
-        #: to search the notes for (the phrase's own words, "monday", go).
-        said = set(phrase.lower().split())
-        terms = [t for t in terms if t.lower() not in said]
-        if _RECALL.search(question or ""):
-            terms = [t for t in terms if t.lower() not in _RECALL_VERBS]
-        if question_noise.asks_archived(question):
-            terms = [t for t in terms if t.lower() != "archived"]  # a state of the notes, not a subject
-    return span, terms
+    return span, _without_window_words(question, terms, phrase) if span else terms
+
+
+def _without_window_words(question: str, terms: list[str], phrase: str) -> list[str]:
+    """"what did I write on Monday": the day is the window, not a subject to
+    search the notes for (the phrase's own words, "monday", go, and a recall
+    verb, and "archived", a state of the notes)."""
+    gone = set(phrase.lower().split())
+    if _RECALL.search(question or ""):
+        gone |= _RECALL_VERBS
+    if question_noise.asks_archived(question):
+        gone.add("archived")
+    return [t for t in terms if t.lower() not in gone]
 
 
 def plan(question: str, today: date | None = None, *, recent: bool = False, embed=None) -> Plan:  # noqa: ANN001
@@ -4858,6 +4910,26 @@ def _help_act(question: str) -> str:
     return ""
 
 
+def _act_score(line: str, at: int, ask: set, stems: set[str], topic: dict, place: tuple[int, int]) -> float:
+    """How well `line` leads for an act named at word `at`: shared words with
+    the question, an early act word (a sentence that opens on the act is about
+    it; one that mentions it in passing is not), the topic named for the act
+    ("import-export"), a wall of a sentence being a poor lead, and a little
+    for coming first (`place` is the topic's and the line's order)."""
+    named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
+    early = 1.5 if at < 5 else 0.75 if at < 12 else 0.0
+    long = 1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0
+    return _help_shared(line, ask) + named + early - long - 0.15 * place[0] - 0.05 * place[1]
+
+
+def _act_lead(lead: str, stems: set[str], question: str, topic_id: str) -> str:
+    """A long act sentence cut to its clause that names the act."""
+    if len(lead.split()) <= _HELP_LEAD_WORDS:
+        return lead
+    clauses = [c for c in _clauses(lead) if stems & {_stem(w) for w in re.findall(r"[a-z]+", c.lower())}]
+    return max(clauses, key=lambda c: _help_shared(c, _help_ask(question, {"id": topic_id}))) if clauses else lead
+
+
 def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str] | None:
     """The sentence naming `act` that says the most of the question, over every
     matched topic (the first earns a little for coming first), with its
@@ -4873,21 +4945,10 @@ def _act_sentence(question: str, topics: list[dict], act: str) -> tuple[str, str
             at = next((i for i, w in enumerate(words) if w in stems), None)
             if at is None:
                 continue
-            #: A sentence that opens on the act is about it; one that mentions
-            #: it in passing ("in a print") is not.
-            #: The topic named for the act ("import-export") holds its sentence;
-            #: a wall of a sentence is a poor lead.
-            named = 2.0 if stems & {_stem(w) for w in str(topic.get("id", "")).split("-")} else 0.0
-            score = _help_shared(line, ask) + named + (1.5 if at < 5 else 0.75 if at < 12 else 0.0) - (1.0 if len(line.split()) > _HELP_LEAD_WORDS else 0.0) - 0.15 * order - 0.05 * index
+            score = _act_score(line, at, ask, stems, topic, (order, index))
             if best is None or score > best[0]:
                 best = (score, line, str(topic.get("id", "")))
-    if best is None:
-        return None
-    lead = best[1]
-    if len(lead.split()) > _HELP_LEAD_WORDS:
-        clauses = [c for c in _clauses(lead) if stems & {_stem(w) for w in re.findall(r"[a-z]+", c.lower())}]
-        lead = max(clauses, key=lambda c: _help_shared(c, _help_ask(question, {"id": best[2]}))) if clauses else lead
-    return lead, best[2]
+    return None if best is None else (_act_lead(best[1], stems, question, best[2]), best[2])
 
 
 def help_line(question: str, topics: list[dict]) -> tuple[str, str] | None:
@@ -5090,7 +5151,10 @@ def _overview_answer(
     out.voice, out.question, out.subject = composer_tables.voice_of(voice), question, stems
     #: No joining words twice in a conversation (decision 25).
     out.used = set(dialogue.used) if dialogue is not None else set()
-    themes = [] if _PERSON.match(subject) else _overview().themes(found, stems, _stem, views)
+    #: A name from a body is no heading for notes that were filed under the
+    #: topic or matched it by meaning ("Atlas" under "courses & study", audit
+    #: 1031 C39): the filing is the grouping, the notes follow in one list.
+    themes = [] if _PERSON.match(subject) or filed else _overview().themes(found, stems, _stem, views)
     _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
@@ -5712,7 +5776,11 @@ def _acknowledged(result: dict, asked: str, *, voice: str, seed: str, history: l
 
 def _answer_turn(question: str, notes: list[dict], **kwargs) -> dict:
     """A topic asked about as a whole is an overview (INBOX 787); anything
-    else, or a topic with one note about it, is `_compose`'s."""
+    else, or a topic with one note about it, is `_compose`'s. A question
+    about a link is the link table's (audit 1031 C49)."""
+    linked = [] if kwargs["said"] else composer_links.answer_parts(question, notes)
+    if linked:
+        return {**_result(linked, "none"), "answered": True}
     return _overview_answer(
         question, notes, today=kwargs["today"] or user_today(), voice=kwargs["voice"], said=kwargs["said"],
         prefer=kwargs["prefer"], dialogue=kwargs["dialogue"],

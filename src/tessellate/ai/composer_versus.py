@@ -312,11 +312,16 @@ def which_one(question: str, views: list, today: date, stem) -> Versus | None:  
     return _versus(key, _ranked(kind, named, today, low))
 
 
+#: The most notes a newest-or-oldest lead names.
+_LEAD_SIDES = 3
+
+
 def _lead_rows(versus: Versus) -> list[Row]:
     """The rows the lead sentence names: all of them, except that the newest or
-    the oldest of a topic's notes is said against the runner-up only (the others
-    are the bullets under it; audit 1031 C37)."""
-    return versus.rows[:2] if versus.key in ("is_newest", "is_oldest") else versus.rows
+    the oldest of a topic's notes is said against the next two at most (a
+    fourth day is a run-on "and ... and ..."; the others are the bullets
+    under it; audit 1031 C37)."""
+    return versus.rows[:_LEAD_SIDES] if versus.key in ("is_newest", "is_oldest") else versus.rows
 
 
 def said(versus: Versus, name) -> str:  # noqa: ANN001

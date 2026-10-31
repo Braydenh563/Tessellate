@@ -1047,7 +1047,7 @@ def test_c33_a_looked_up_fact_has_no_dangling_footer(notebook, question):
 def test_c33_the_words_only_footer_is_one_sentence(notebook, question):
     said, _ = notebook(question)
     footers = [p for p in said.split("\n\n") if "search by meaning" in p]
-    assert footers in ([], ["Only one note has those words; search by meaning could find more."]), footers
+    assert footers in ([], ["Only one note has those words; search by meaning could find others."]), footers
 
 
 @pytest.mark.parametrize("question", [
@@ -1060,11 +1060,12 @@ def test_c34_a_list_or_a_count_has_no_opener_or_closer(notebook, question):
     assert "I am here if you need anything else" not in said, said
 
 
-def test_c37_the_newest_lead_names_two_sides_and_the_rest_are_bullets(notebook):
+def test_c37_the_newest_lead_names_three_sides_and_the_rest_are_bullets(notebook):
     for question in ("what is my latest note about running", "what is my newest note about running", "which is my newest running note"):
         said, _ = notebook(question)
         lead = said.split("\n", 1)[0]
-        assert lead.count(" against ") <= 1 and " and " not in lead.split(" against ", 1)[-1].split(" for ", 1)[0], lead
+        #: Three notes at most are named; a fourth is a bullet only.
+        assert lead.count(" against ") <= 1 and lead.count(" and ") <= 1, lead
 
 
 @pytest.mark.parametrize("question", ["what is my longest note", "which is my longest note", "what is my longest note?"])
@@ -1078,3 +1079,246 @@ def test_c44_a_ranked_list_that_is_promised_is_written(notebook, question):
 def test_c46_a_joke_is_the_one_you_saved(notebook, question):
     said, _ = notebook(question)
     assert "scarecrow" in said and "better finder" not in said, said
+
+
+# C31. A title-less note is named one way: its own words, never "Untitled", never said twice.
+
+@pytest.mark.parametrize("question", ["what did I write this week", "what did I write in the last 7 days", "what have I written this week"])
+def test_c31_a_one_line_label_note_in_a_list_is_never_untitled(notebook, question):
+    said, _ = notebook(question)
+    assert "Untitled" not in said, said
+    assert "[the note that starts “Idea: a podcast about local history”](#/notes/" in said, said
+    assert said.count("a podcast about local history") == 1, said
+
+
+@pytest.mark.parametrize("question", ["tell me the scarecrow joke", "what does the scarecrow joke say", "tell me a joke about the scarecrow"])
+def test_c31_a_note_is_not_named_by_the_words_it_then_says(notebook, question):
+    said, _ = notebook(question)
+    assert "From why did" not in said and said.lower().count("why did the scarecrow") == 1, said
+
+
+@pytest.mark.parametrize("question", ["who is Doug", "who's Doug", "tell me about Doug", "what do I know about Doug"])
+def test_c31_a_pronoun_line_names_the_note_it_was_about(notebook, question):
+    said, _ = notebook(question)
+    assert "Sourdough starter" in said and "Doug" in said, said
+    assert "Yours is called Doug" not in said, said
+
+
+# C32. A reporting frame wraps speech only: a list heading, a noun phrase and a present need are not.
+
+@pytest.mark.parametrize("question", ["what about social connections", "what do I know about social connections", "tell me about social connections"])
+def test_c32_a_list_says_whose_it_is_and_never_that_you_said_it(notebook, question):
+    said, _ = notebook(question)
+    assert not re.search(r"(?i)you (?:mentioned|noted|wrote|said)[^.\n]*questions to ask", said), said
+    assert "Your Ice Breakers note lists three questions to ask:" in said or "social" not in question, said
+
+
+@pytest.mark.parametrize("question", ["what do I know about the dentist", "tell me about the Lisbon trip", "what do I know about Lisbon", "what have I written about the dentist"])
+def test_c32_a_noun_phrase_is_not_a_speech_act(notebook, question):
+    said, _ = notebook(question)
+    assert not re.search(r"(?i)you (?:jotted|wrote) down (?:dentist|flying)", said), said
+
+
+@pytest.mark.parametrize("question", ["what do I know about Spanish", "what do I know about learning Spanish", "tell me about Spanish"])
+def test_c32_a_note_under_a_month_old_keeps_its_present_tense(notebook, question):
+    said, _ = notebook(question)
+    assert "learning Spanish with Duolingo" in said and "You were learning" not in said, said
+
+
+# C39. Notes filed under a topic are not regrouped under a name from a body; a non-Latin body is shown whole.
+
+@pytest.mark.parametrize("question", [
+    "what have I saved about courses & study?", "what have I saved about courses and study", "what do I have on courses & study",
+])
+def test_c39_a_filed_topic_is_not_grouped_by_a_proper_noun(notebook, question):
+    said, _ = notebook(question)
+    assert "**Atlas**" not in said and "There are one more" not in said, said
+    if "日本語の勉強" in said:
+        assert "ひらがなを練習した" in said, said
+
+
+# C40. One bracket style per answer: a titled citation beside a day-named one makes both bold.
+
+@pytest.mark.parametrize("question", ["what are the three gates", "what are the 3 gates", "what are the gates", "what do I know about three lectures"])
+def test_c40_citations_in_one_answer_share_a_style(notebook, question):
+    said, _ = notebook(question)
+    plain = re.findall(r" \[your note, [^\]]*\]", said)
+    bold = re.findall(r" \[\*\*[^\]]*\*\*\]", said)
+    assert not (plain and bold), said
+
+
+def test_c40_a_titled_citation_beside_a_day_named_one_makes_both_bold(notebook):
+    said, _ = notebook("what are the three gates")
+    assert re.search(r" \[\*\*[^\]]*\*\*\]", said) and not re.search(r" \[your note, [^\]]*\]", said), said
+
+
+# C41. Acts name things as the app does and say what they did not read.
+
+@pytest.fixture
+def chat_notebook(client, session, monkeypatch):
+    seed_c.seed(session)
+    return seed_c.asker(client, monkeypatch, chat=True)
+
+
+@pytest.mark.parametrize("question", ["pin the budget note", "pin the Budget note", "favourite the budget note"])
+def test_c41_a_pin_is_named_as_the_favourites_menu_names_it(chat_notebook, question):
+    said, events = chat_notebook(question)
+    labels = " ".join(str(e.get("label", "")) for e in events)
+    assert "Favourites" in said and "Add the note" in labels and "to Favourites" in labels, (said, labels)
+    assert "Pin the note" not in labels, labels
+
+
+def test_c41_an_unpin_takes_the_note_out_of_favourites(chat_notebook):
+    chat_notebook("pin the budget note")
+    said, events = chat_notebook("unpin the budget note")
+    labels = " ".join(str(e.get("label", "")) for e in events)
+    assert "out of Favourites" in labels, (said, labels)
+
+
+@pytest.mark.parametrize("question", ["tick off passport on the Lisbon packing list", "tick off the passport on my Lisbon packing list"])
+def test_c41_a_ticked_item_is_said_to_be_ticked_not_missing(chat_notebook, question):
+    said, _ = chat_notebook(question)
+    assert "already ticked" in said and "found no" not in said, said
+
+
+@pytest.mark.parametrize("question", ["tick off the charger", "mark charger done", "check off the charger"])
+def test_c41_a_second_tick_says_it_is_already_ticked(chat_notebook, question):
+    first, _ = chat_notebook(question)
+    assert "ticked off" in first, first
+    said, _ = chat_notebook(question)
+    assert "already ticked" in said and "found no" not in said, said
+
+
+@pytest.mark.parametrize("question", ["tick off the umbrella", "tick off the zebra crossing"])
+def test_c41_an_item_that_is_nowhere_is_still_not_found(chat_notebook, question):
+    said, _ = chat_notebook(question)
+    assert "already ticked" not in said, said
+
+
+@pytest.mark.parametrize("question", ["remind me to run on Tuesday", "remind me to stretch on Wednesday", "set a reminder for the dentist on 4 November"])
+def test_c41_a_clock_that_was_not_said_is_named_the_default(chat_notebook, question):
+    said, _ = chat_notebook(question)
+    assert "(the default)" in said, said
+
+
+@pytest.mark.parametrize("question", ["remind me to run on Tuesday at 9", "set a reminder for the dentist on 4 November at 9", "remind me in 2 hours to stretch", "remind me at 5pm to call mum"])
+def test_c41_a_clock_that_was_said_is_not_called_the_default(chat_notebook, question):
+    said, _ = chat_notebook(question)
+    assert "(the default)" not in said, said
+
+
+# C42. The same next-ask strip in both boxes, one phrasing per kind of ask.
+
+def _nexts(events):
+    return [n for e in events if e.get("type") == "grounding" for n in (e.get("next") or [])]
+
+
+def _frame(chip: str) -> str:
+    said = chip.lower().replace("what's", "what is")
+    return re.split(r"\s(?:about|on|in|with)\s|[“\"]", said)[0].strip()
+
+
+C42_QUESTIONS = [
+    "what do I know about social connections", "what do I know about sourdough", "what do I know about Lisbon",
+    "who is Tom", "what do my notes say about running", "what do I know about conversation",
+]
+
+
+@pytest.mark.parametrize("question", C42_QUESTIONS)
+def test_c42_a_kind_of_next_ask_is_offered_once(notebook, question):
+    _, events = notebook(question)
+    chips = _nexts(events)
+    frames = [_frame(c) for c in chips]
+    assert len(frames) == len(set(frames)), chips
+
+
+@pytest.mark.parametrize("question", C42_QUESTIONS)
+def test_c42_chat_and_ask_offer_the_same_next_asks(client, session, monkeypatch, question):
+    seed_c.seed(session)
+    ask_said, ask_events = seed_c.asker(client, monkeypatch)(question)
+    chat_said, chat_events = seed_c.asker(client, monkeypatch, chat=True)(question)
+    assert _nexts(chat_events) == _nexts(ask_events), (ask_said, chat_said)
+    assert [e.get("composed") for e in chat_events if e.get("type") == "meta"] == [True] or not _nexts(chat_events)
+
+
+# C49. A link's reason is said: a link question reads the link table, never the body.
+
+@pytest.mark.parametrize("question", [
+    "why did I link the packing list to the Lisbon trip", "why are the packing list and the Lisbon trip linked",
+    "how are the Lisbon notes connected", "what links the packing list and the Lisbon trip",
+    "how is the packing list connected to the Lisbon trip", "why is the packing list linked to the Lisbon trip?",
+])
+def test_c49_a_link_question_says_the_reason(notebook, question):
+    said, _ = notebook(question)
+    assert "for the Lisbon trip" in said and "You linked" in said, said
+    assert "do not talk about" not in said and "omit" not in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "what links Project Atlas and the meeting with Priya", "why did I link the Priya meeting to Project Atlas",
+    "how are Project Atlas and the meeting with Priya connected",
+])
+def test_c49_a_link_between_two_titled_notes_says_its_reason(notebook, question):
+    said, _ = notebook(question)
+    assert "Priya's meeting was about Project Atlas" in said, said
+
+
+@pytest.mark.parametrize("question", ["how do I link two notes", "how to connect notes", "what is the Lisbon trip", "tell me about Project Atlas"])
+def test_c49_other_questions_are_not_link_questions(notebook, question):
+    said, _ = notebook(question)
+    assert "You linked" not in said or "how" not in question, said
+
+
+def test_c49_a_group_line_gives_the_reason_of_the_link(notebook):
+    said, _ = notebook("what do I have about Lisbon")
+    if "You linked" in said:
+        assert "for the Lisbon trip" in said or ": " in said.split("You linked", 1)[1].split("\n", 1)[0], said
+
+
+# C50. "My week" from a weekend is the coming seven days; a titled side is that note, at any size.
+
+@pytest.mark.parametrize("question", ["plan my week", "help me plan my week", "can you plan my week", "plan my week please"])
+def test_c50_my_week_from_a_saturday_is_the_coming_seven_days(notebook, question):
+    said, _ = notebook(question)
+    assert "to Fri 6 Nov" in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "compare the dentist with the Lisbon trip in a table", "compare the dentist with the Lisbon trip",
+    "compare the dentist note with the Lisbon trip note", "dentist versus Lisbon trip",
+])
+def test_c50_a_side_named_by_a_title_is_that_note_at_207_notes(big_notebook, question):
+    said, _ = big_notebook(question)
+    assert "Invoice travel holiday" not in said, said
+    assert "Patel" in said or "9:30" in said or "Dentist" in said, said
+    assert "Hotel Alfama" in said or "14 November" in said or "Lisbon" in said, said
+
+
+# C36 (rest). A joiner between two quotes says nothing of time or of a switch of notes.
+
+def test_c36_no_joiner_says_meanwhile_or_switching():
+    from tessellate.ai import composer_tables
+
+    said = " ".join(
+        phrase for table in (composer_tables._FAMILIES, composer_tables._FAMILIES_ADDED)  # noqa: SLF001
+        for voices in table.values() for phrases in voices.values() for phrase in phrases
+    )
+    assert "Meanwhile" not in said and "Switching to another note" not in said
+
+
+@pytest.mark.parametrize("question", ["what do I know about the Lisbon trip", "what have I saved about the Lisbon trip", "tell me about the Lisbon trip"])
+def test_c36_a_typed_the_stays_in_the_count_line(notebook, question):
+    said, _ = notebook(question)
+    first = said.split("\n", 1)[0]
+    if re.search(r"\bnotes? about\b", first):
+        assert "about the Lisbon trip" in first, first
+
+
+@pytest.mark.parametrize("question", [
+    "what are the four phases in the social skills guide", "what is the complete social skills guide", "tell me about the social skills guide",
+    "how many phases does the social skills guide have", "what is in the complete social skills guide",
+])
+def test_c36_a_source_is_named_once_in_a_sentence(notebook, question):
+    said, _ = notebook(question)
+    for sentence in re.split(r"(?<=[.!?])\s+|\n", said):
+        assert sentence.lower().count("complete social skills guide") <= 1, sentence

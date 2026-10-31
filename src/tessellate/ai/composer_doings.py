@@ -123,6 +123,23 @@ def _kept_under(view, forms: frozenset[str]) -> bool:  # noqa: ANN001
     return bool(forms & head)
 
 
+def _reads_done(s, forms: frozenset[str], logged: bool) -> tuple[bool, bool]:  # noqa: ANN001
+    """(says, logs): the line tells the doing in the past, or is a dated log line of it."""
+    words = set(re.findall(r"[a-z]+", s.text.lower()))
+    #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
+    says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
+    #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
+    logs = bool(logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None)
+    return says, logs
+
+
+def _done_of(view, s, forms: frozenset[str], says: bool, logs: bool, day: date) -> Done:  # noqa: ANN001
+    """The doing a line says, on `day`."""
+    times = _times_in(s.text, forms) if says else 1
+    own = day != view.written or logs or bool(re.search(r"\b(?:today|yesterday|tonight|this morning)\b", s.text, re.I))
+    return Done(day, view, s, _km(s.text), times, own)
+
+
 def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> list[Done]:
     """Every line that says the doing was done, oldest first: a line told in
     the past that names the verb, and a dated line of a note kept as a log of
@@ -132,22 +149,16 @@ def doings(views: list, forms: frozenset[str], obj: list[str], today: date) -> l
     for view in views:
         logged = _kept_under(view, forms)
         for s in view.sentences:
-            words = set(re.findall(r"[a-z]+", s.text.lower()))
-            #: "Ran twice, prepared the beta and booked nothing": the count settles the tense.
-            says = bool(forms & words) and (recognise.told_as_past(s.text) or (_times_in(s.text, forms) > 1 and not _PERIOD.search(s.text))) and not _IDIOM.search(s.text)
-            #: A log's line needs a day of its own and a figure; a plan has neither or is ahead.
-            logs = logged and not says and _CALENDAR_DAY.search(s.text) and _km(s.text) is not None
+            says, logs = _reads_done(s, forms, logged)
             if not (says or logs) or not _names(s.text, obj):
                 continue
             day = _day_of(view, s, today)
             if day is None or day > today:
                 continue
-            times = _times_in(s.text, forms) if says else 1
-            own = day != view.written or bool(logs) or bool(re.search(r"\b(?:today|yesterday|tonight|this morning)\b", s.text, re.I))
-            key = (day, 0 if times == 1 else s.start)
-            if times == 1 and any(k[0] == day for k in found):
+            done = _done_of(view, s, forms, says, logs, day)
+            if done.times == 1 and any(k[0] == day for k in found):
                 continue
-            found[key] = Done(day, view, s, _km(s.text), times, own)
+            found[(day, 0 if done.times == 1 else s.start)] = done
     return sorted(found.values(), key=lambda d: d.day)
 
 

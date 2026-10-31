@@ -497,31 +497,39 @@ def _say_rates(out, rates: list[tuple[str, Item]], lead: str) -> bool:  # noqa: 
     return True
 
 
-def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
-    win = _window_asked(rest, today, views)
-    subject, said = _subject(_PERIOD_ASKED.sub(" ", rest))
-    every = _items(views, win, subject)
-    items = spent_only(every, today)
-    rates = [] if win else _rates(views, subject)
-    if every and not items:
+def _spent_nothing(out, every: list, rates: list, on: str, when: str) -> bool:  # noqa: ANN001
+    """No amount spent: only prices (nothing paid yet), a regular amount, or nothing."""
+    if every:
         return _only_priced(out, every) and (not rates or _say_rates(out, rates, "Your notes also give a regular amount:"))
-    when = f" {win.said}" if win else ""
-    on = f" on {said}" if said else ""
-    if not items and rates:
+    if rates:
         return _say_rates(out, rates, "Your notes give a regular amount:")
-    if not items:
-        out.lines.append(f"I found no amounts spent{on}{when} in your notes.")
-        return True
-    signs = list(dict.fromkeys(i.symbol for i in items))
-    if len(signs) == 1 and _one_of_several(items, views, win, subject):
-        return False
-    for sign in signs:
-        #: Each currency is said on its own, never dropped or added to another.
+    out.lines.append(f"I found no amounts spent{on}{when} in your notes.")
+    return True
+
+
+def _spent_by_sign(out, items: list, views: list, ask: tuple, on: str, when: str) -> None:  # noqa: ANN001
+    """Each currency said on its own, never dropped or added to another."""
+    win, subject = ask
+    for sign in dict.fromkeys(i.symbol for i in items):
         mine = [i for i in items if i.symbol == sign]
         line, total = _spent_line(mine, sign, on, when)
         out.lines.append(line)
         _cite_all(out, mine, line)
         _refunds_and_due(out, views, win, subject, "money", sign, total)
+
+
+def _spent(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
+    win = _window_asked(rest, today, views)
+    subject, said = _subject(_PERIOD_ASKED.sub(" ", rest))
+    every = _items(views, win, subject)
+    items = spent_only(every, today)
+    on = f" on {said}" if said else ""
+    when = f" {win.said}" if win else ""
+    if not items:
+        return _spent_nothing(out, every, [] if win else _rates(views, subject), on, when)
+    if len({i.symbol for i in items}) == 1 and _one_of_several(items, views, win, subject):
+        return False
+    _spent_by_sign(out, items, views, (win, subject), on, when)
     return True
 
 
@@ -711,6 +719,12 @@ def _totalled(q: str) -> str:
     return f"what is my total {found.group('noun') or 'time'}{found.group('rest') or ''}" if found else q
 
 
+def _asks_a_sum(m: re.Match, word: str, doer: re.Match | None, total: re.Match | None) -> bool:
+    """"How many days until..." and "how far is the station" are a day and a
+    fact, not a sum: a sum is asked of something done, or asked as a total."""
+    return bool(doer or m.group("noun") or total) and word not in _CALENDAR and not _one_day(m.group("rest"))
+
+
 def _measure_asked(q: str) -> _Measure | None:
     """The dimension, the unit asked, the doing verb and the rest, or None."""
     m = _MEASURE.match(_totalled(q))
@@ -722,9 +736,7 @@ def _measure_asked(q: str) -> _Measure | None:
         return None
     doer = _DOER.match(m.group("rest"))
     total = None if doer or m.group("noun") else _TOTAL_TAIL.fullmatch(m.group("rest").lstrip())
-    #: "How many days until..." and "how far is the station" are a day and a
-    #: fact, not a sum: a sum is asked of something done, or asked as a total.
-    if not (doer or m.group("noun") or total) or word in _CALENDAR or _one_day(m.group("rest")):
+    if not _asks_a_sum(m, word, doer, total):
         return None
     if total:
         return _Measure(dimension, word if named else "", "", total.group("after"))
