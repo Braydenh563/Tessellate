@@ -1919,6 +1919,24 @@ HELP_TOPICS.extend(
             "badge": {"label": "Library", "tab": "library"},
         },
         {
+            "id": "live-view-marks",
+            "keywords": (
+                "markdown marks", "formatting marks", "asterisks showing",
+                "markdown shows when i click", "live preview", "show the markdown",
+                "hide the markdown", "like obsidian",
+            ),
+            "body": (
+                "In a document's Live view (and a note's edit box), a formatted "
+                "phrase (bold, italic, code, strike through, a highlight, a link, "
+                "a wiki link, an equation) shows its markdown only while the caret "
+                "is in it or next to it, and the rest of the line stays rendered. "
+                "Every caret and selection counts. A heading, list or quote shows "
+                "its mark while the caret is on its line, and a code block while "
+                "the caret is in it. Source view shows all of it."
+            ),
+            "badge": {"label": "Library", "tab": "library"},
+        },
+        {
             "id": "documents-paste",
             "keywords": (
                 "paste special", "paste options", "paste as", "paste as plain text",

@@ -6419,3 +6419,24 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge
+
+
+def test_a_live_view_mark_reveals_per_span() -> None:
+    """INBOX 1473 b: Live view shows a span's marks while the caret is in or beside it.
+
+    One rule (`docLiveSpanTouched`), named in DESIGN.md's recipe index; the
+    line-wide reveal survives only as the code fence's block rule, and the
+    Guide says what the editor does.
+    """
+    design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
+    assert "| A markdown mark in Live view" in design and "`docLiveSpanTouched(ranges, from, to)`" in design
+    js = ROOT / "frontend" / "js"
+    defined = [p.name for p in js.glob("*.js") if "function docLiveSpanTouched(" in p.read_text(encoding="utf-8")]
+    assert defined == ["documents.js"], f"the span rule is defined in {defined}; one recipe, one place"
+    documents = (js / "documents.js").read_text(encoding="utf-8")
+    assert documents.count("touched(doc.lineAt(from).from, doc.lineAt(to).to)") == 1, (
+        "an inline span reveals by its line again; the line-wide rule is only `blockRevealed`"
+    )
+    topics = (ROOT / "src" / "tessellate" / "ai" / "help_chat.py").read_text(encoding="utf-8")
+    assert '"id": "live-view-marks"' in topics
+    assert "shows its markdown only while the caret" in topics
