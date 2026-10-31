@@ -2194,7 +2194,7 @@ function chatSourcesFrom({ meta, toolEvents, touched, grounded, sentences }) {
 //: or file keeps its place. One order here, so every marker and card agrees.
 function sourcesByFirstMention(sources, sentences) {
   const rank = new Map();
-  for (const g of sentences || []) if (!rank.has(g.note_id)) rank.set(g.note_id, rank.size);
+  for (const g of sentences || []) if (!rank.has(citeKey(g.kind, g.note_id))) rank.set(citeKey(g.kind, g.note_id), rank.size);
   if (!rank.size) return sources;
   const places = [];
   const notes = [];
@@ -2203,9 +2203,10 @@ function sourcesByFirstMention(sources, sentences) {
     places.push(at);
     notes.push(source);
   });
-  const cited = notes.filter((n) => rank.has(n.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+  const key = (n) => citeKey(n.kind, n.id);
+  const cited = notes.filter((n) => rank.has(key(n))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
   const out = sources.slice();
-  [...cited, ...notes.filter((n) => !rank.has(n.id))].forEach((n, k) => (out[places[k]] = n));
+  [...cited, ...notes.filter((n) => !rank.has(key(n)))].forEach((n, k) => (out[places[k]] = n));
   return out;
 }
 

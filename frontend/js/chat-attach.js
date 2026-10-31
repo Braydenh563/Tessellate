@@ -2269,7 +2269,7 @@ async function chatSendTurn(preset, opts = {}) {
     toolEvents,
     touched: [...touchedItems.values()],
     sentences: groundingSentences,
-    grounded: meta?.composed ? new Set((groundingSentences || []).map((row) => row.note_id).filter(Boolean)) : null,
+    grounded: meta?.composed ? new Set((groundingSentences || []).filter((row) => row.kind !== "document").map((row) => row.note_id).filter(Boolean)) : null,
   });
   //: The page this turn went out to read, for a follow-up about it
   //: (`webFollowUp`, web-clip.js).
