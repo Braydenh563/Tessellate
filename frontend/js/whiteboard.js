@@ -25469,3 +25469,13 @@ async function addBoardToNote(board) {
   });
   if (typeof loadMapBoardIndex === "function") loadMapBoardIndex(true);
 }
+
+// `backdropIsDark` is about what the stroke composites *against*, which is
+// not the same question as which theme is on. The pad's strokes land in their
+// own transparent canvas stacked over a separate paper canvas, so the
+// backdrop a canvas blend sees is the other strokes and never the paper: the
+// pad passes false in both themes. The board's paths blend against the board
+// itself, so it passes the resolved mode.
+function highlighterBlend(backdropIsDark) {
+  return backdropIsDark ? HIGHLIGHTER_STYLE.blendOnDark : HIGHLIGHTER_STYLE.blendOnLight;
+}

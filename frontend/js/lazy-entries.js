@@ -160,17 +160,6 @@ function runCharacterJob(fn, args = []) {
   }
 }
 
-//: A task of its own, so the files' parse and this are two long tasks, not one.
-function charactersArrived() {
-  setTimeout(() => {
-    charactersLoaded = true;
-    const waiting = [...characterWaiters];
-    characterWaiters.clear();
-    for (const fn of waiting) runCharacterJob(fn);
-    for (const [name, args] of characterBacklog) runCharacterJob(window[name], args);
-    characterBacklog.clear();
-  }, 0);
-}
 
 function loadCharactersIdle() {
   const load = () => ensureModule("characters").then((ok) => ok || charactersLost());
