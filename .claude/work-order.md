@@ -92,6 +92,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Composer leftovers round five: three-side comparisons, format tails, list vs overview, latest pick, day leads (agent composer5-1031)
 - [x] Tests red on the base: complexity, events driver, code format guard, input bounds, gold floor (agent basered-1031)
 - [ ] INBOX 1487 notes mentioning X, 1490 unplaced asks and web search (agent composer6-1031)
-- [ ] INBOX 1488 Writing room with no model (agent writing2-1031)
+- [x] INBOX 1488 Writing room with no model (agent writing2-1031)
 - [ ] INBOX 1489 nested faint surfaces (agent faint-1031, running)
 - [ ] Fable deep analysis, one Fable at a time (owner named it): extras, notes, composer, ai, harness, shell, board, docs, code, graph, backend, ux, perf, then architecture and the ranked file (agent/audit-1031)
+- [ ] Base red: test_composer_mermaid_1466 flowchart read as mind map; test_composer_classes_1357 knitting; test_composer_slots_1029b "Back in November 2025" (after composer6 merges)
