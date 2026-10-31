@@ -1314,8 +1314,8 @@
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-case"> <span>Match case</span></label>
       <label class="row align-center checkbox-label small"><input type="checkbox" id="doc-replace-word"> <span>Whole word</span></label>
     </div>
-    <p id="doc-replace-summary" class="muted text-sm" role="status"></p>
-    <ul id="doc-replace-list" class="doc-ai-history-list"></ul>
+    <p id="doc-replace-summary" data-holds-notebook class="muted text-sm" role="status"></p>
+    <ul id="doc-replace-list" data-holds-notebook class="doc-ai-history-list"></ul>
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="doc-replace-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-replace-run" disabled>Replace all</button>
@@ -1485,7 +1485,7 @@
     <!-- The first steps (first-run.js, WORLD_CLASS_PLAN 25c): filled while a
          new notebook is being set up, empty after. -->
     <div id="dash-first-steps" class="dash-first-steps"></div>
-    <div id="dash-grid"></div>
+    <div id="dash-grid" data-holds-notebook></div>
   </div>
 
   <!-- ======================= NOTES TAB (the current app) ================== -->
@@ -3236,7 +3236,7 @@ Link to another note with [[its first few words]]."></textarea>
             <!-- A textarea, not an input: a three-sentence question used to
                  scroll sideways inside one line. Enter still sends; Shift+Enter
                  is a newline, which an <input> could not offer at all. -->
-            <textarea id="chat-input" data-autocorrect rows="1" class="autogrow chat-input"
+            <textarea id="chat-input" data-holds-notebook data-autocorrect rows="1" class="autogrow chat-input"
               aria-label="Message" placeholder="Ask your notebook anything…"></textarea>
             <button type="button" id="chat-clear" class="ghost icon-only small field-clear hidden" title="Clear" aria-label="Clear"><i class="ph ph-eraser" aria-hidden="true"></i></button>
             <button id="mic-chat" class="ghost icon-only" title="Dictate your question (local Whisper)" aria-label="Dictate your question"><i class="ph ph-microphone" aria-hidden="true"></i></button>
@@ -4880,7 +4880,7 @@ Link to another note with [[its first few words]]."></textarea>
               file). All in Library opens every document, where you can search,
               sort and manage them.</p>
           </div>
-          <ul id="doc-list" class="doc-list"></ul>
+          <ul id="doc-list" data-holds-notebook class="doc-list"></ul>
           <p id="doc-empty" class="muted empty-line hidden">No documents yet: start typing on the right, or press ＋ New.</p>
           <button id="doc-browse-all" class="ghost small conv-browse-all" type="button"
             title="Search, sort and manage every document"><i class="ph ph-books ph-lead" aria-hidden="true"></i> All in Library <i class="ph ph-arrow-right ph-trail" aria-hidden="true"></i></button>
@@ -4924,10 +4924,10 @@ Link to another note with [[its first few words]]."></textarea>
                  reason the Library's property filter is not: a narrowing that
                  survives a reload is an outline with most of the document
                  missing and nothing saying why. -->
-            <input id="doc-outline-filter" type="search" class="doc-outline-filter hidden"
+            <input id="doc-outline-filter" data-holds-notebook type="search" class="doc-outline-filter hidden"
               placeholder="Filter headings…" aria-label="Filter the outline"
               autocomplete="off" spellcheck="false">
-            <ul id="doc-outline" class="doc-outline"></ul>
+            <ul id="doc-outline" data-holds-notebook class="doc-outline"></ul>
           </div>
 
           <!-- **Comments** (DOCUMENTS_PLAN Phase 5 item 1). Drawn from the
@@ -5565,7 +5565,7 @@ Link to another note with [[its first few words]]."></textarea>
              `tests/test_frontend_ids.py` is the rule that an id a handler looks
              up is an id a reader can find in this file. -->
         <nav id="doc-crumbs" class="doc-crumbs edge-fade hidden" aria-label="Breadcrumb">
-          <ol class="doc-crumbs-list"></ol>
+          <ol class="doc-crumbs-list" data-holds-notebook></ol>
         </nav>
         <div class="doc-panes" id="doc-panes">
           <!-- One editor, in every mode but Read. Live and Source are the
@@ -5692,7 +5692,7 @@ Link to another note with [[its first few words]]."></textarea>
               </section>
             </aside>
           </div>
-          <div id="doc-preview" class="doc-preview markdown-body hidden" aria-live="off"></div>
+          <div id="doc-preview" data-holds-notebook class="doc-preview markdown-body hidden" aria-live="off"></div>
         </div>
         <p id="doc-status" class="status doc-status" role="status"></p>
         <!-- **The strip VS Code and Word both have and this editor did not.**
@@ -5747,7 +5747,7 @@ Link to another note with [[its first few words]]."></textarea>
              except pressing the chip that opened it, which is a thing you have
              to remember rather than see. It is a real panel now, its own
              header, its own close, and room for the list it holds. -->
-        <div id="doc-prose-panel" class="doc-prose-panel hidden" role="region"
+        <div id="doc-prose-panel" data-holds-notebook class="doc-prose-panel hidden" role="region"
           aria-label="Writing suggestions"></div>
         <!-- The completion popup, positioned at the caret. Outside the panes so
              nothing clips it: the toolbar's own `overflow` trap is one storey
@@ -5844,13 +5844,13 @@ Link to another note with [[its first few words]]."></textarea>
             this. Cancel throws it away. History, at the top, lists every past AI
             edit to this document and undoes one.</p>
         </div>
-        <p class="muted doc-ai-scope" id="doc-ai-scope"></p>
+        <p class="muted doc-ai-scope" id="doc-ai-scope" data-holds-notebook></p>
         <!-- The instruction and the button that acts on it are one row, the
              same shape the reminders' magic add uses: a field on its own line
              above a button on its own line is two controls where there is one
              action, and 40px of dialog for nothing. -->
         <div class="row doc-ai-ask">
-          <input id="doc-ai-instruction" data-needs-model="Rewriting with Atlas needs a model" type="text" maxlength="500"
+          <input id="doc-ai-instruction" data-needs-model="Rewriting with Atlas needs a model" data-holds-notebook type="text" maxlength="500"
             placeholder="e.g. “tighten this”, “make it more formal”"
             aria-label="What should Atlas do?">
           <button id="doc-ai-run" data-needs-model="AI editing needs the local AI" data-model-offer="The writing check, find, outline, export and history work without one."><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Suggest an edit</button>
@@ -5875,11 +5875,11 @@ Link to another note with [[its first few words]]."></textarea>
                accepting would apply, so the two are one value seen twice
                rather than two things that can disagree. -->
           <div id="doc-ai-diff-block" class="doc-ai-diff-block hidden">
-            <p class="muted doc-ai-diff-head" id="doc-ai-diff-head"></p>
-            <div id="doc-ai-diff" class="doc-ai-diff"></div>
+            <p class="muted doc-ai-diff-head" id="doc-ai-diff-head" data-holds-notebook></p>
+            <div id="doc-ai-diff" data-holds-notebook class="doc-ai-diff"></div>
           </div>
           <label for="doc-ai-result" class="muted">Atlas's version, yours to edit before you accept it</label>
-          <textarea id="doc-ai-result" rows="10" aria-label="Atlas's suggested text"></textarea>
+          <textarea id="doc-ai-result" data-holds-notebook rows="10" aria-label="Atlas's suggested text"></textarea>
           <div class="row doc-ai-result-actions">
             <button id="doc-ai-cancel" class="ghost">Cancel</button>
             <button id="doc-ai-accept" class="ghost">Replace with this</button>

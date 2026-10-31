@@ -13,7 +13,7 @@ import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -158,19 +158,28 @@ RESTORE_JOB_WAIT_SECONDS = 20.0
 
 
 @contextlib.contextmanager
-def _jobs_held() -> Iterator[None]:
+def _jobs_held(request: Request) -> Iterator[None]:
     """The database file is swapped with no background job running (audit
     1028 K19: a filing or embedding job still writing went to the old file,
-    or failed on the disposed engine). Jobs queued meanwhile run on the
-    restored notebook. One still running after the wait refuses the restore,
-    and the live notebook is untouched."""
+    or failed on the disposed engine) and no request holding a session (audit
+    1031 BK5). Jobs queued meanwhile run on the restored notebook, requests
+    that arrive meanwhile wait. One still running after the wait refuses the
+    restore, and the live notebook is untouched."""
     with jobs.pool().held(deadline=RESTORE_JOB_WAIT_SECONDS) as idle:
         if not idle:
             raise HTTPException(
                 status_code=409,
                 detail="A background job is still running. Stop it in Tasks, or try again when it ends.",
             )
-        yield
+        #: Then the requests in flight (audit 1031 BK5): new ones wait at
+        #: `get_session`, and the file is swapped once the running ones are done.
+        with deps.drained(deadline=RESTORE_JOB_WAIT_SECONDS, own=request) as quiet:
+            if not quiet:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Another request is still running. Try the restore again in a moment.",
+                )
+            yield
 
 
 class RestoreBody(BaseModel):
@@ -178,11 +187,11 @@ class RestoreBody(BaseModel):
 
 
 @router.post("/backups/restore", dependencies=[Depends(this_computer_only)])
-def restore_backup(body: RestoreBody) -> dict:
+def restore_backup(body: RestoreBody, request: Request) -> dict:
     """Swap the live database for a backup. A safety snapshot of the
     current state is taken first, so a restore is itself undoable."""
     config = deps.get_config()
-    with _jobs_held():
+    with _jobs_held(request):
         # Every connection must be closed while the file is replaced.
         deps.get_db().engine.dispose()
         try:
@@ -280,7 +289,7 @@ def export_bundle(body: BundleBody, background_tasks: BackgroundTasks, session: 
 
 
 @router.post("/backups/bundle/restore", dependencies=[Depends(this_computer_only)])
-def restore_bundle(file: UploadFile = File(...), password: str = Form(default="")) -> dict:
+def restore_bundle(request: Request, file: UploadFile = File(...), password: str = Form(default="")) -> dict:
     """Replace the notebook with the one in an uploaded full backup, a zip or
     a `.mmenc` with its password. Everything is checked before the live
     notebook is touched; a safety snapshot is taken first, so this is itself
@@ -303,7 +312,7 @@ def restore_bundle(file: UploadFile = File(...), password: str = Form(default=""
                 archive = Path(zip_path)
             else:
                 archive = Path(upload_path)
-            with _jobs_held():
+            with _jobs_held(request):
                 # Every connection must be closed while the file is replaced.
                 deps.get_db().engine.dispose()
                 try:

@@ -227,6 +227,34 @@ $("ask-history-search").addEventListener("input", () => {
 });
 $("lock-btn").addEventListener("click", lockNow);
 
+//: Modal dialogs and popovers sit in the top layer, above the lock screen,
+//: and make it inert: a lock left them readable and the password field
+//: untypeable. They are put away while it shows and back, as they were,
+//: after it, so a half-written dialog loses nothing.
+//: Non-modal panels too (1031 DC2): the AI panel sat over Unlock (z 2100 v 50).
+//: They return only after a password prompt, never after a real lock.
+const lockStash = [];
+let lockReturn;
+new MutationObserver(() => {
+  if ($("lock-overlay").classList.contains("hidden")) {
+    lockReturn = lockReturn?.focus(); // focus() returns undefined: forgets it too
+    for (const el of lockStash) {
+      try { if (el.isConnected) el.popover ? el.showPopover() : el.showModal ? el.showModal() : el.classList.remove("hidden"); } catch { /* reopened meanwhile */ }
+    }
+    lockStash.length = 0;
+  } else {
+    lockReturn ||= document.activeElement;
+    const kept = $("lock-overlay").dataset.mode === "prompt";
+    for (const el of document.querySelectorAll("dialog:modal, :popover-open, .modal-overlay:not(.hidden), [role=dialog]:not(.hidden)")) {
+      if (el.closest("#lock-overlay")) continue;
+      if (kept || el.popover || el.close) lockStash.push(el);
+      el.popover ? el.hidePopover() : el.close ? el.close() : el.classList.add("hidden");
+    }
+    // Focus goes to the field here, after closing a dialog hands it back to its opener.
+    $("lock-password").focus();
+  }
+}).observe($("lock-overlay"), { attributes: true, attributeFilter: ["class"] });
+
 // **Locking has to reach every open tab, not just the one you clicked in.**
 //
 // The lock audit found this one by opening a second tab, which ROADMAP.md had
