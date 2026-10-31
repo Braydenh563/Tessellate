@@ -14,5 +14,5 @@
 }
 #chat-private-toggle[aria-pressed="true"] {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }

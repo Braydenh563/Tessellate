@@ -744,6 +744,32 @@ def _remember_delivery(key: str | None, entry) -> None:
         _DELIVERED.popitem(last=False)
 
 
+def _mark_new_entry(entry, body: EntryCreate, filed_by: str | None) -> None:  # noqa: ANN001
+    """The flags a new note carries from its request: who filed it, draft,
+    map topic, colour and the page it was clipped from."""
+    if filed_by == "user":
+        entry.user_filed = True
+    if body.is_draft:
+        entry.is_draft = True
+    if body.map_topic:
+        entry.map_topic = True
+    if body.colour:
+        entry.colour = body.colour
+    if body.source_url:
+        entry.source_url = body.source_url
+        entry.source_title = body.source_title
+
+
+def _apply_flags(session: Session, entry, body) -> None:  # noqa: ANN001
+    """Colour (null clears it) and draft from an edit, each saved when it moves."""
+    if "colour" in body.model_fields_set and body.colour != entry.colour:
+        entry.colour = body.colour
+        session.commit()
+    if body.is_draft is not None and body.is_draft != entry.is_draft:
+        entry.is_draft = body.is_draft
+        session.commit()
+
+
 @router.post("", response_model=EntryOut, status_code=201)
 def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> EntryOut:
     earlier = _already_delivered(session, body.client_key)
@@ -810,17 +836,7 @@ def create_entry(body: EntryCreate, session: Session = Depends(get_session)) -> 
         return _to_out(session, earlier, filed_by=None, similar=None)
     if parent is not None:
         entry.parent_id = parent.id
-    if filed_by == "user":
-        entry.user_filed = True
-    if body.is_draft:
-        entry.is_draft = True
-    if body.map_topic:
-        entry.map_topic = True
-    if body.colour:
-        entry.colour = body.colour
-    if body.source_url:
-        entry.source_url = body.source_url
-        entry.source_title = body.source_title
+    _mark_new_entry(entry, body, filed_by)
     if defer:
         entry.filing_state = "pending"
     elif janitor.settled_state(filed_by) != "done":
@@ -2906,12 +2922,7 @@ def update_entry(
             session, "edited", "entry", entry.id, "pinned" if body.pinned else "unpinned"
         )
         session.commit()
-    if "colour" in body.model_fields_set and body.colour != entry.colour:
-        entry.colour = body.colour
-        session.commit()
-    if body.is_draft is not None and body.is_draft != entry.is_draft:
-        entry.is_draft = body.is_draft
-        session.commit()
+    _apply_flags(session, entry, body)
     if content_changed:
         # The old vector describes the old text, refresh it, best effort.
         try:

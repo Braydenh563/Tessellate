@@ -2817,6 +2817,18 @@ def _parallel(mine: list[NoteView], side: set[str], theirs: list[NoteView], othe
     return same or mine
 
 
+def _sides_own(stems: list[set[str]], views: list[NoteView]) -> list[list[NoteView]]:
+    """The notes named for each side, of like kind; none when two sides
+    claim the same note."""
+    n = len(stems)
+    others = [set().union(*(st for j, st in enumerate(stems) if j != i)) for i in range(n)]
+    own = [_own_notes(stems[i], others[i], views) for i in range(n)]
+    ids = [set(map(id, mine)) for mine in own]
+    if any(ids[i] & ids[j] for i in range(n) for j in range(i)):
+        return [[] for _ in stems]
+    return [_parallel(own[i], stems[i], [v for j, o in enumerate(own) if j != i for v in o], others[i]) for i in range(n)]
+
+
 def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # noqa: ANN001, ANN202
     """Each side's sentences as (terms, stems, own notes, picks); a note named
     for a side belongs to it even when its sentences never repeat the name
@@ -2824,12 +2836,7 @@ def _side_picks(sides: tuple[str, ...], views: list[NoteView], meaning_for):  # 
     other sides' notes that mentions this side is still theirs."""
     terms = [subject_terms(label) for label in sides]
     stems = [{_stem(t) for t in ts} for ts in terms]
-    others = [set().union(*(st for j, st in enumerate(stems) if j != i)) for i in range(len(sides))]
-    own = [_own_notes(stems[i], others[i], views) for i in range(len(sides))]
-    ids = [set(map(id, mine)) for mine in own]
-    if any(ids[i] & ids[j] for i in range(len(sides)) for j in range(i)):
-        own = [[] for _ in sides]
-    own = [_parallel(own[i], stems[i], [v for j, o in enumerate(own) if j != i for v in o], others[i]) for i in range(len(sides))]
+    own = _sides_own(stems, views)
     picks = [select("compare", terms[i], own[i] or views, limit=6, meaning=meaning_for(terms[i])) for i in range(len(sides))]
     #: A note the person named is read from its top, not by which of its
     #: sentences repeat the name.

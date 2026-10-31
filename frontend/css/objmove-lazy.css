@@ -67,7 +67,7 @@ html.obj-dragging .obj-target {
   margin-inline-start: var(--space-1);
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .obj-tray {
   display: flex;

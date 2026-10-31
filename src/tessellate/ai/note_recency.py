@@ -113,12 +113,20 @@ def status_subject(text: str) -> str:
     at = next((i for i, w in enumerate(words) if w in _LATEST_WORDS), -1)
     if at < 0 or "most" in words[:at - 1]:
         return ""
-    rest = words[at + 1:]
+    return _status_rest(words[at + 1:])
+
+
+def _status_rest(rest: list[str]) -> str:
+    """The subject after "latest": past any "news" or "update", after its
+    "on" or "about", never a time or a lone note noun."""
     while rest and rest[0] in _UPDATE_NOUNS:
         rest = rest[1:]
     if not rest or rest[0] not in _MARKS or any(w in _NOUNS for w in rest[:1]) or (len(rest) > 1 and rest[1] in _TIME_AFTER):
         return ""
-    subject = [w for w in rest[1:] if w not in {"the", "my", "a", "an", "all", "our"}]
-    if subject and subject[0] in {"last", "this", "next", "yesterday", "today"}:
+    return _status_named([w for w in rest[1:] if w not in {"the", "my", "a", "an", "all", "our"}])
+
+
+def _status_named(subject: list[str]) -> str:
+    if not subject or subject[0] in {"last", "this", "next", "yesterday", "today"}:
         return ""  # a time, not a subject
-    return " ".join(subject) if subject and not (subject[0] in _NOUNS and len(subject) == 1) else ""
+    return "" if subject[0] in _NOUNS and len(subject) == 1 else " ".join(subject)
