@@ -5,7 +5,7 @@ Setup (replace NAME and PORT with the brief's values; BRANCH is the integration 
     cd /home/user/Tessellate && git worktree add <scratchpad>/wt-NAME -b agent/NAME-<mmdd> BRANCH
     cd <scratchpad>/wt-NAME && git merge --no-edit -q BRANCH && ln -s /home/user/Tessellate/.venv .venv
 
-- Python is `PYTHONPATH=src .venv/bin/python` (fastapi, pytest, ruff, numpy; no torch, no sentence-transformers). Commit with plain `git add <your paths>`, never `git add -A`; one commit per step; the orchestrator merges. Do NOT push, do not merge into the working branch, do not create plan documents; decisions in a plan's "Decisions made" are not remade.
+- Python is `PYTHONPATH=src .venv/bin/python` (fastapi, pytest, ruff, numpy; no torch, no sentence-transformers). Commit with plain `git add <your paths>`, never `git add -A`; one commit per step; the orchestrator merges. Do NOT push, do not merge into the working branch, do not create plan documents; decisions in a plan's "Decisions made" are not remade. Never `git stash`: the stash is shared by every worktree, and two agents swapped work through it (1031); commit a `WIP:` instead.
 - **Haiku for grunt work** (the owner, INBOX 1312): hand searches, cataloguing, repo exploring, log and test-output reading to Haiku subagents (Agent tool, `model: haiku`, one question each, evidence back, no edits); keep your own turns for implementation and judgement.
 - Commit trailers: the two lines the session supplies, last in every message. No model identifiers anywhere else.
 - Before each commit: `bash scripts/gate.sh --staged` plus the targeted tests for files you touched, serially or `-n 2` at most. Never the full suite. `node --check frontend/js/FILE.js` after any JS edit.
