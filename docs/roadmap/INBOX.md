@@ -35,6 +35,12 @@ with its owner named in the entry.
 ## Open items
 
 
+1502. **Agent rank3-1031, 2026-10-31 (audit 1031 AR6, row 35, not built):** jobs still have six homes (`core/jobs.py`, `jobstore.py`, `jobruns.py`, `bgtasks.py`, `background.py`, `filejobs.py`: 2,744 lines), and one `Job` type with lane, owner, cancel token and run record would replace them. Left because it is not safe in one pass: `jobruns.Run` is a process ledger, `jobstore` is the durable table that survives a restart, the pool's `_Job` is the in-memory queue with its dedupe keys, and 33 test files read all three through their own names. Recommendation taken: do it in three steps, each green on its own. (1) `jobruns.lane_of` (built, row 34) becomes the lane field on `_Job` and the `jobs` table. (2) `bgtasks` and `filejobs` become callers of `jobs.enqueue` with a `kind`, then are deleted. (3) `jobruns.Run` is the run record of a `_Job` and `background.py` goes. Opus designs the `Job` fields, Sonnet builds one step at a time.
+
+
+1501. **Agent rank3-1031, 2026-10-31 (audit 1031 PF9, row 54, measured):** the dashboard widgets are not what makes the first seconds slow. At 4x CPU with 150 notes the boot had 17 long frames, 2 of them 200 ms or more (273 ms at script load, 201 ms at 4 s), none from a dashboard widget; the dashboard is 843 of 11,975 nodes, while `#app-main` holds 6,758 and the settings modal 2,719. Recommendation taken: build the settings modal's body when it first opens (as Settings, Models already does for its fold cards), then measure the node count and the 4x boot again; a cached-stats first paint of the dashboard would not help.
+
+
 1500. **Agent rank1-1031, 2026-10-31 (audit 1031 BK6, owner step):** the in-app installer now refuses a download that does not match the SHA-256 GitHub lists for it, and refuses any release that lists none. A detached signature is built in but off: `core/update_verify.py` `PUBLIC_KEYS` is empty. Recommendation taken: the owner generates one Ed25519 key pair (private key in a repository secret, never in the repo), the release workflow signs the raw 32-byte SHA-256 of `Tessellate-Setup-<v>.exe` and attaches it as `Tessellate-Setup-<v>.exe.sig`, and the public key (64 hex characters) goes into `PUBLIC_KEYS`; from the next release the app then refuses an unsigned update. Not done here: it needs the private key and an edit to `release.yml`, which unattended runs do not touch.
 
 

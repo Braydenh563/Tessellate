@@ -47,11 +47,6 @@ const TASK_OUTCOMES = {
 };
 
 
-//: Run kinds a person starts and watches where they started them (an answer
-//: streaming in the chat): `routes_tasks.WATCHED_KINDS`.
-const WATCHED_RUN_KINDS = new Set(["generation", "transcription", "ocr", "run"]);
-
-
 // Model pickers (rewritten, Wave O). The old version let the status poll
 // (every ~3s while Settings is open) reset the dropdown to the SAVED
 // model, so a selection would "switch back after a few seconds".
