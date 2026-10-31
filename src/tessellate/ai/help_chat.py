@@ -1411,7 +1411,9 @@ HELP_TOPICS.extend(
                 "expand short words such as for, if, try, class, main or sout, and "
                 "Tab walks their stops. In Python, a standard library module the "
                 "file imports offers its names after the dot (math., os.path.), "
-                "each with its signature, and pointing at one shows it. In a p5.js "
+                "each with its signature, and pointing at one shows it. In "
+                "JavaScript, a dot after console, Math, JSON or an object the file "
+                "declares offers its members. In a p5.js "
                 "sketch (a file with setup or draw), p5's own names are offered "
                 "with their arguments."
             ),

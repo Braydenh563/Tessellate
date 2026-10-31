@@ -2383,6 +2383,7 @@ function renderGraphPopupHeader(entry, node) {
   //: reachable some other way: hover is the cheapest, and it is what every
   //: other truncated label in this app already does.
   titleEl.title = titleEl.textContent;
+  $("graph-popup")?.setAttribute("aria-label", `Note: ${titleEl.textContent}`);
 
   const confidence = $("graph-popup-confidence");
   //: `> 0`, not `typeof === "number"`: a note the AI never filed carries 0,
@@ -2429,6 +2430,7 @@ async function openGraphPopup(event, node) {
   const mapTitle = $("graph-popup-title");
   mapTitle.textContent = node.preview || node.category || "Note";
   mapTitle.title = mapTitle.textContent;
+  popup.setAttribute("aria-label", `Note: ${mapTitle.textContent}`);
   $("graph-popup-confidence").classList.add("hidden");
   $("graph-popup-category").classList.add("hidden");
   $("graph-popup-info").textContent = "";

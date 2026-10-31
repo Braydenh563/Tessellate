@@ -1505,6 +1505,13 @@ async function addReminder(text, dueValue, entryId = null, opts = {}) {
     toast(!text && !dueValue ? "A reminder needs text and a due time." : !text ? "Write what to be reminded of." : "Pick a due time for this reminder.");
     return false;
   }
+  //: **The time is checked before the request** (1031 SH13: a past time went
+  //: to the server and came back a 422 in the console). The server's own
+  //: minute of slack and its sentence; the callers already say what a thrown
+  //: error says.
+  if (new Date(dueValue).getTime() < Date.now() - 60000) {
+    throw new Error("That reminder's due time is in the past. Pick a time that hasn't happened yet.");
+  }
   const made = await apiJson("/reminders", {
     method: "POST",
     body: JSON.stringify({

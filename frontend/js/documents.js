@@ -89,6 +89,14 @@ async function loadDocFileTypes() {
   syncDocFileType();
 }
 
+//: How big a list row says a document is: a code file's lines, a prose
+//: document's words (1031 CE8: "19 words" for a script). Both lists use it.
+function docSizeText(doc, withKind = false) {
+  const kind = docFileTypes.find((t) => t.ext === doc.file_type);
+  if (kind && !kind.previewable && typeof doc.lines === "number") return withKind ? `${nounCount(doc.lines, "line")} · ${kind.label}` : nounCount(doc.lines, "line");
+  return typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+}
+
 //: The open document's type, never null. Falls back to markdown for a
 //: document saved before file types existed, for an unknown extension, and
 //: for the window between load and the fetch above landing.
@@ -1099,7 +1107,7 @@ function renderDocList() {
     type.textContent = `.${doc.file_type || "md"}`;
     meta.append(
       type,
-      ` · ${nounCount(doc.words, "word")} · ${relativeTime(doc.updated_at)}`
+      ` · ${docSizeText(doc)} · ${relativeTime(doc.updated_at)}`
     );
     button.append(title, meta);
     button.addEventListener("click", () => openDocument(doc.id));
@@ -22311,6 +22319,9 @@ function docCmTheme(CM) {
       ".cm-run-body": { flex: "1", minHeight: "0", display: "flex", flexDirection: "column" },
       ".cm-run-frame": { display: "none", border: "0", width: "100%", flex: "3", minHeight: "0" },
       ".cm-run-panel.is-page .cm-run-frame": { display: "block", borderBottom: "1px solid var(--border)" },
+      //: A page with nothing printed gives the frame the whole body, not 60
+      //: percent of it and a line saying nothing ran (1031 CE7: 166 px).
+      ".cm-run-panel.is-page .cm-run-log:empty": { display: "none" },
       ".cm-run-log": {
         flex: "2",
         minHeight: "0",
@@ -23202,7 +23213,10 @@ function docCmKeymap(CM) {
       key: "Shift-Tab",
       run: () => {
         if (docTakeTabEscape()) return false;
-        if (!docCanOutdent(surface())) return false;
+        //: A code file keeps Shift+Tab with nothing to outdent, as Tab keeps
+        //: its press (1031 CE5: it left for the dock mid-edit); Escape, then
+        //: Tab or Shift+Tab, is the way out. Prose still falls through.
+        if (!docCanOutdent(surface())) return !docFileType().previewable;
         indentDocSelection(surface(), true);
         return true;
       },

@@ -3311,6 +3311,9 @@ async function renderLibraryDocuments() {
 
   let docs = [];
   showSkeletons(list, 4, "li");
+  //: The type table names a code card's kind; the library can open before
+  //: the Documents tab has asked for it.
+  await loadDocFileTypes();
   try {
     // `q` searches title *and* content server-side (routes_documents.py): 
     // client-side filtering alone could only ever match a title, since a
@@ -3452,7 +3455,9 @@ async function renderLibraryDocuments() {
     meta.className = "muted doc-list-meta";
     // Words and when it was last touched, the two facts that tell you which
     // of five similarly-named drafts is the one you meant.
-    const words = typeof doc.words === "number" ? nounCount(doc.words, "word") : "";
+    //: A code file is its lines and its type ("6 lines · JavaScript"), not
+    //: its words (1031 CE8; `docSizeText` is the one rule).
+    const words = docSizeText(doc, true);
     const when = doc.updated_at ? relativeTime(doc.updated_at) : "";
     meta.textContent = [words, when].filter(Boolean).join(" · ");
     body.append(title, meta);

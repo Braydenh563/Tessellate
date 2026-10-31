@@ -1321,7 +1321,11 @@ function comboFromEvent(event) {
 // a user who binds "?" doesn't have to know that.
 function matchesShortcut(event, combo) {
   if (comboFromEvent(event) === combo) return true;
-  return combo.length === 1 && event.key === combo && !event.ctrlKey && !event.metaKey;
+  //: Shift with the slash key is "?" whatever key name the browser reports
+  //: for it (1031 SH10: it fired the "/" jump to search and landed in the
+  //: Library box), so it answers the shortcuts list and never the search.
+  const key = event.shiftKey && event.key === "/" ? "?" : event.key;
+  return combo.length === 1 && key === combo && !event.ctrlKey && !event.metaKey;
 }
 
 function runShortcut(id) {

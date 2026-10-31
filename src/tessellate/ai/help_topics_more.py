@@ -2329,7 +2329,7 @@ MORE_TOPICS.extend(
                 "greyed and the line beside it goes there), and input() reads its "
                 "lines from the panel's Input box. HTML, CSS (over a sample page), "
                 "SVG and a p5.js sketch (New from a template, p5.js sketch) show as "
-                "a page; Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
+                "a page, and a CSV or TSV as a read-only table (Run, the first 500 rows); Live in the panel refreshes it as you type (the panel's buttons are icons: point at one for its name). A file of "
                 "tests (describe, it and expect in JavaScript or TypeScript; "
                 "unittest or test_ functions in Python) runs its tests, each "
                 "listed with its time and a failure underlined on its line; Run "

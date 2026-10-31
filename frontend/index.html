@@ -4677,7 +4677,7 @@ Link to another note with [[its first few words]]."></textarea>
         <svg id="graph-svg" class="hidden"></svg>
         <!-- Click a node: edit it in place without leaving the map -->
         <div id="graph-popup" class="graph-popup hidden" role="dialog"
-          aria-label="Edit note">
+          aria-label="Note">
           <!-- The header carries the note's identity and nothing else: the
                title, the category as the one chip, and the AI's filing
                confidence as a small muted mark beside the title rather than a
@@ -15558,7 +15558,10 @@ Link to another note with [[its first few words]]."></textarea>
     <div id="tour-block-left" class="tour-block-panel"></div>
   </div>
   <div id="tour-spot" class="tour-spot hidden" aria-hidden="true"></div>
-  <div id="tour-card" class="card tour-card hidden" role="dialog" aria-modal="true"
+  <!-- `data-panel-fixed`: the card is placed by the tour beside the control it
+       names, so the panel chrome (move, dock, minimise) is not added to it: it
+       made eight buttons for a four-step tour (1031 SH17). -->
+  <div id="tour-card" class="card tour-card hidden" role="dialog" aria-modal="true" data-panel-fixed
     aria-labelledby="tour-title" aria-describedby="tour-text" tabindex="-1">
     <div class="tour-head dialog-head">
       <span id="tour-section" class="chip tour-section-chip"></span>
