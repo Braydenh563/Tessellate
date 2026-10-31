@@ -22,10 +22,17 @@
 .popup-kinds > button > .pop-tab-glyph {
   font-size: 1.1em;
 }
-/* A row wider than a phone scrolls inside itself (the strip never widens the page). */
-.popup-kinds {
+/* A row wider than a phone scrolls inside itself in a popup (the strip never
+   widens the page); in a Settings pane the jump row wraps instead, since
+   nothing in Settings scrolls sideways (`tests/test_settings_no_sideways.py`). */
+.activity-tabs,
+.wb-template-kind,
+.note-picker-sources {
   overflow-x: auto;
   scrollbar-width: none;
+}
+.pane-tabs {
+  flex-wrap: wrap;
 }
 .popup-kinds > button {
   display: inline-flex;
