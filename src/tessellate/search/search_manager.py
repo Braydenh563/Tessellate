@@ -1434,6 +1434,22 @@ def _when_nothing_ranked(session: Session, entries: list, asked, mentioned: set,
     return _nothing_matched(session, asked, scope, semantic, any_time, limit, found, subject)
 
 
+#: How much of a question the search reads (audit AI9, HR7): a 20,000-character
+#: chat question took 2,000 ms to search over 205 notes, and a 100,000-character
+#: tool query 1,612 ms. The rest of a long question is context for the model,
+#: which still gets all of it; a search over 300 words finds what 2,000 would.
+SEARCH_QUERY_WORDS = 300
+SEARCH_QUERY_CHARS = 4000
+
+
+def clip_query(query: str) -> str:
+    """The first `SEARCH_QUERY_WORDS` words of `query`, at most `SEARCH_QUERY_CHARS`."""
+    return _FIRST_WORDS.match(query).group(0)[:SEARCH_QUERY_CHARS]
+
+
+_FIRST_WORDS = re.compile(r"(?:\s*\S{1,%d}){0,%d}" % (SEARCH_QUERY_CHARS, SEARCH_QUERY_WORDS))
+
+
 def _retrieve(
     session: Session,
     query: str,
@@ -1448,6 +1464,7 @@ def _retrieve(
     # What the question is actually asking. A time phrase becomes a filter
     # instead of search terms, and the question's scaffolding comes off before
     # anything is embedded: see `search/query.py` for why both matter.
+    query = clip_query(query)
     asked = query_understanding.understand(query, _user_today(session), locale)
     found["since"] = asked.since
     found["until"] = asked.until

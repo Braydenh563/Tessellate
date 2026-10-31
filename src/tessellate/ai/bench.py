@@ -135,6 +135,10 @@ class Failure:
         }
 
 
+#: The mean score a model needs before the bench calls it recommended.
+RECOMMEND_FLOOR = 0.5
+
+
 @dataclass
 class ModelScore:
     model: str
@@ -385,7 +389,10 @@ def run(
         "models": rows,
         #: No recommendation from a run that did not finish: a model that
         #: was cut off after ten tasks has not been compared with the rest.
-        "recommended": rows[0]["model"] if rows and not stopped else None,
+        #: And none from a run where nothing scored: the first row of a table
+        #: of zeros is the model that failed first (audit HR8: "Recommended,
+        #: Filing 0%, Answers 0%, Tools 0%").
+        "recommended": rows[0]["model"] if rows and not stopped and rows[0]["score"] >= RECOMMEND_FLOOR else None,
         "items": len(items),
         "set": fingerprint(items),
         "stopped": stopped,

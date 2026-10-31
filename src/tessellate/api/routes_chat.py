@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import StreamingResponse
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, model_validator
@@ -455,7 +456,7 @@ class ChatRequest(BaseModel):
     # Notes the user attached by hand. These are always given to the model,
     # ahead of anything retrieval finds, "this note, specifically" is a
     # stronger signal than any similarity score.
-    note_ids: list[int] = Field(default_factory=list, max_length=20)
+    note_ids: list[Annotated[int, Field(ge=1, le=9_223_372_036_854_775_807)]] = Field(default_factory=list, max_length=20)
     # Documents attached by hand (§89.2): same idea as note_ids, a separate
     # field because Document is a separate table from Entry (see its own
     # docstring in core/database.py for why). The frontend has sent this
@@ -600,6 +601,26 @@ class ChatRequest(BaseModel):
     private: bool = False
     #: The screen and the last few actions (composer awareness, 2026-10-25).
     screen: ScreenBody | None = None
+
+
+def _check_refs(session: Session, body: ChatRequest) -> None:
+    """Refuse a turn that names a mode or a note that does not exist.
+
+    These were accepted in silence (audit AI18): an unknown mode ran as
+    `normal` and `note_ids: [999999, -1]` answered from unrelated notes as if
+    they had been attached. The shared error shape names the field. An unknown
+    persona still falls back to the default, by design (a persona deleted
+    while it was selected must not break the chat: test_chat_uses_selected_persona).
+    """
+    wrong: list[tuple[str, str]] = []
+    if body.mode and body.mode not in presets.MODES:
+        wrong.append(("mode", f"That mode is not one of {', '.join(presets.MODES)}."))
+    if body.note_ids:
+        have = set(session.scalars(select(Entry.id).where(Entry.id.in_(body.note_ids))))
+        if not have.issuperset(body.note_ids):
+            wrong.append(("note_ids", "One of the attached notes does not exist."))
+    if wrong:
+        raise RequestValidationError([{"loc": ("body", field), "msg": msg, "type": "value_error"} for field, msg in wrong])
 
 
 def _apply_scope(session: Session, body: ChatRequest) -> None:
@@ -2238,6 +2259,7 @@ def _prepare(
 @router.post("", response_model=ChatResponse)
 @private_turn.route
 def chat(body: ChatRequest, session: Session = Depends(get_session)) -> ChatResponse:
+    _check_refs(session, body)
     _apply_scope(session, body)
     _apply_open(session, body)
     prepared = _prepare(
@@ -5464,6 +5486,7 @@ def chat_stream(body: ChatRequest, session: Session = Depends(get_session)):
     {"type":"answer", "delta": "..."}     (one or more)
     {"type":"done"}
     """
+    _check_refs(session, body)
     if body.peek:
         body.answer_from = "notes"
     _apply_scope(session, body)

@@ -32,7 +32,7 @@ def test_the_filing_prompt_names_the_notes_that_read_like_this_one(app_state, se
     assert "payments worker" in prompt.split("Note:")[0]
     assert "is in Work" in prompt
     assert "sourdough" not in prompt
-    assert prompt.index("is in Work") < prompt.index("Note: another fix")
+    assert prompt.index("is in Work") < prompt.index("Note: <<<data note>>>\nanother fix")
 
 
 def test_a_private_note_never_reaches_the_prompt(app_state, session):

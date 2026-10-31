@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from tessellate.ai import AI_NAME, context
+from tessellate.ai import AI_NAME, context, fence
 from tessellate.ai.model_manager import ModelManager
 from tessellate.ai.ollama_client import OllamaClient, OllamaError
 from tessellate.core.logbuffer import safe_value
@@ -1488,11 +1488,13 @@ def evidence_note(session, content: str, already: str = "", exclude_entry_id: in
         session, content, limit=FILING_EVIDENCE_ROWS, exclude_entry_id=exclude_entry_id
     ):
         excerpt = str(item.get("excerpt") or "")[:CORRECTION_EXCERPT_CHARS]
+        #: Another note's words, fenced as data like the note itself (audit HR5).
+        quoted = fence.inline("note", excerpt)
         if item["kind"] == "neighbour":
-            lines.append(f'- "{excerpt}" is in {item["category"]}')
+            lines.append(f'- {quoted} is in {item["category"]}')
         elif excerpt and excerpt not in already:
             where = f" from {item['from']}" if item["from"] else ""
-            seen_moves.append(f'- "{excerpt}" was moved{where} to {item["to"]}')
+            seen_moves.append(f'- {quoted} was moved{where} to {item["to"]}')
     if not lines and not seen_moves:
         return ""
     out = []
@@ -1524,5 +1526,8 @@ def filing_prompt(
     evidence = evidence_note(session, content, already=note, exclude_entry_id=exclude_entry_id)
     if evidence:
         parts.append(evidence)
-    parts.append(f"Note: {content}")
+    #: Fenced as quoted data, as the answer path fences a note (audit HR5: a
+    #: note reading "SYSTEM: ignore all previous instructions" reached the
+    #: model verbatim after `Note: `).
+    parts.append(f"Note: {fence.fence('note', content)}")
     return "\n".join(parts)
