@@ -124,6 +124,7 @@ def test_one_landing_measures_the_obstacles_once() -> None:
             "function nameMarkBuddyControlBoxes() { return []; }",
             "function nameMarkBuddyFloaters() { return []; }",
             "function nameMarkBuddyControlsIn() {}",
+            "function nameMarkBuddyAttention() { return []; }",
             _fn(AV, "nameMarkBuddyObstacles"),
             _fn(AV, "nameMarkBuddyMeasureOnce"),
             "const once = nameMarkBuddyMeasureOnce(() => { const a = nameMarkBuddyObstacles('notes'); a.push('x');"

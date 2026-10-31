@@ -3698,7 +3698,7 @@ function nameMarkBuddyObstacles(tab) {
   //: notifications panel was blocked by it): it is where the reader is
   //: looking the moment it opens.
   const boxes = nameMarkBuddyPopups();
-  boxes.push(...nameMarkBuddyControlBoxes(tab));
+  boxes.push(...nameMarkBuddyControlBoxes(tab), ...nameMarkBuddyAttention());
   for (const root of nameMarkBuddyFloaters()) nameMarkBuddyControlsIn(root, boxes);
   //: **The chat's latest message is never covered** (INBOX 443): it is
   //: what the reader is reading, an answer still being written included.
@@ -3759,6 +3759,41 @@ function nameMarkBuddyFloaters() {
   for (const name of ["dock-fab", "chat-jump-latest"]) out.push(...document.getElementsByClassName(name));
   for (const el of document.getElementsByClassName("modal-overlay")) if (!el.classList.contains("hidden")) out.push(el);
   return out;
+}
+
+//: **Never over what you are working in** (INBOX 1463, the owner: "a non
+//: intrusive companion"). The focused control as a whole when it is small
+//: (a field, a button, a select: up to `NMB_FOCUS_AREA`), and in a page you
+//: write in, the line the caret is on with `NMB_CARET_PAD` either side: the
+//: editor itself is a control already, and when nothing clear is left (a
+//: page of text) the caret is the one place it may never be. Read live, two
+//: boxes, never kept: the caret moves with every key.
+const NMB_FOCUS_AREA = 120000;
+const NMB_CARET_PAD = 48;
+function nameMarkBuddyAttention() {
+  const boxes = [];
+  const el = document.activeElement;
+  if (el && el !== document.body && !el.closest("#nm-buddy, .nm-viewer")) {
+    const box = nameMarkBuddyShown(el);
+    if (box && box.width * box.height <= NMB_FOCUS_AREA) boxes.push(box);
+  }
+  const caret = nameMarkBuddyCaret();
+  if (caret) boxes.push(caret);
+  return boxes;
+}
+function nameMarkBuddyCaret() {
+  const sel = window.getSelection?.();
+  const node = sel?.rangeCount ? sel.focusNode : null;
+  const host = (node?.nodeType === 1 ? node : node?.parentElement)?.closest("[contenteditable='true'], .cm-content");
+  if (!host || host.closest("#nm-buddy")) return null;
+  const range = document.createRange();
+  range.setStart(node, Math.min(sel.focusOffset, node.nodeType === 3 ? node.length : node.childNodes.length));
+  let box = range.getBoundingClientRect();
+  //: An empty line has no box of its own: its block's first line stands in.
+  if (!box.height) box = (node.nodeType === 1 ? node : node.parentElement).getBoundingClientRect();
+  if (!box.height || box.bottom < 0 || box.top > innerHeight) return null;
+  const bottom = Math.min(box.bottom, box.top + 32);
+  return { left: box.left - NMB_CARET_PAD, right: box.right + NMB_CARET_PAD, top: box.top - 6, bottom: bottom + 6 };
 }
 
 //: One landing's worth of choosing (`fn`) on one measure of the page: a
@@ -3831,7 +3866,7 @@ function nameMarkBuddyDodge() {
   //: skirt hang below the button, and a tour ring under them was missed.
   const face = buddy.querySelector(".nm-figure") || buddy.querySelector(".nm-buddy-face") || buddy;
   const me = face.getBoundingClientRect();
-  const over = nameMarkBuddyPopups().some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
+  const over = [...nameMarkBuddyPopups(), ...nameMarkBuddyAttention()].some((b) => b.left < me.right && b.right > me.left && b.top < me.bottom && b.bottom > me.top);
   buddy.classList.toggle("nmb-dodge", over);
   if (!over) return;
   if (!nmb.pinned) queueNameMarkBuddyCheck();
@@ -5496,6 +5531,7 @@ const NMB_BOARD_WANDER = 0.1;
 //: One bored tick in this many wanders (it was 0.35: INBOX 1429, "a companion,
 //: not something that distracts"); the quiet acts fill the time instead.
 const NMB_WANDER_ODDS = 0.12;
+const NMB_WANDER_FAR_IDLE_MS = 60000;
 function nameMarkBuddyOnBoard() {
   return !!document.getElementById("wb-canvas-view")?.checkVisibility?.();
 }
@@ -5609,6 +5645,9 @@ function nameMarkBuddyMoveTo(buddy, spot, instant = false) {
   if (buddy.classList.contains("nmb-poofing") || buddy.classList.contains("nmb-walking")) nameMarkBuddyBlend(buddy, stop);
   nameMarkBuddyGo(buddy, dx, dy, spot, poseChanged, was, underway);
   nameMarkBuddyAloft();
+  nameMarkBuddyState(buddy);
+  const moving = nmb.anim;
+  moving?.finished.then(() => nmb.anim === moving && nameMarkBuddyState(buddy), () => {});
   if (buddy.dataset.legs !== (spot.legs || "")) {
     const end = Number(nmb.anim?.effect?.getComputedTiming?.().endTime);
     nmb.legsTimer = setTimeout(() => {
@@ -7433,6 +7472,7 @@ function nameMarkBuddyAct(act, ms) {
   nmb.mind?.start(buddy, act, ms || spec?.ms || 1200);
   nmb.act = act;
   nmb.lastAct = act;
+  nameMarkBuddyState(buddy);
   //: The idle pool's memory (Brief 34 step 5, ledger 678 and 679): the last
   //: five acts, so `nameMarkBuddyDecide` does not reach for one of them.
   nmb.recentActs = [act, ...(nmb.recentActs || []).filter((a) => a !== act)].slice(0, NMB_RECENT_ACTS);
@@ -7731,6 +7771,7 @@ function nameMarkBuddySchedule() {
   clearTimeout(nmb.timer);
   nmb.timer = 0;
   const buddy = document.getElementById("nm-buddy");
+  nameMarkBuddyState(buddy);
   if (!buddy || document.hidden || nameMarkBuddyStill() || buddy.classList.contains("nmb-sleep")) return;
   //: Calm (the owner: "fewer, longer, calmer behaviours at rest"):
   //: something every 20 to 60 seconds; between them it breathes and blinks
@@ -7739,6 +7780,68 @@ function nameMarkBuddySchedule() {
   //: statue"): it is being watched, and that is the place for it to play.
   //: Its mind (companion-menu.js, `NMB_MIND.nextIn`) places the wait in that range.
   nmb.timer = setTimeout(nameMarkBuddyTick, nmb.visit ? 2500 + Math.random() * 3500 : nmb.mind?.nextIn() || 20000 + Math.random() * 40000);
+}
+
+//: **One mind, a character each** (INBOX 1463, the owner: "one model for
+//: Atlas and the companions"). Every companion runs the same decisions
+//: (`nameMarkBuddyDecide`, `NMB_MIND`, the state below); what differs is a
+//: few traits: how near the pointer may come over a control before it makes
+//: room (`room`, px), how often it wanders when bored (`wander`, a factor on
+//: the odds) and how much it goes for the big gestures (`loud`, a factor on
+//: their weights). Atlas floats and watches, calm and a little reserved;
+//: the shy creatures give way early and keep still; the bold ones play.
+const NMB_TRAITS = {
+  atlas: { room: 56, wander: 0.7, loud: 0.8 },
+  shy: { room: 72, wander: 0.8, loud: 0.6 },
+  bold: { room: 32, wander: 1.3, loud: 1.2 },
+  "": { room: 44, wander: 1, loud: 1 },
+};
+const NMB_TRAIT_OF = { hedgehog: "shy", mouse: "shy", ghost: "shy", owl: "shy", cat: "shy", sloth: "shy", koala: "shy", monkey: "bold", bunny: "bold", frog: "bold", dog: "bold", fox: "bold" };
+function nameMarkBuddyTraits() {
+  if (isAtlasSeed(document.getElementById("nm-buddy")?.dataset.seed || "")) return NMB_TRAITS.atlas;
+  return NMB_TRAITS[NMB_TRAIT_OF[nmb.reading?.animal] || ""];
+}
+
+//: **One state at a time** (INBOX 1463, the owner: "decision making ai,
+//: behaviour, patterns, methods of moving or switching positions"). What it
+//: is doing, named: `sleeping`; `moving` (a move, a walk, a flight, carried);
+//: `reacting` (to you or the app: thinking along with an answer, a poke or a
+//: cue in the last `NMB_REACT_HOLD_MS`); `idling` (an act of its own); and
+//: `resting`. Worked out from what it already keeps, written on the host as
+//: `data-state` only when it changes, with the time (`nmb.stateAt`): the
+//: tick decides nothing while it moves or reacts, and the CSS and the
+//: settle (`nameMarkBuddySettleIn`) ease the change between two.
+const NMB_STATES = ["resting", "idling", "moving", "reacting", "sleeping"];
+const NMB_REACT_HOLD_MS = 3000;
+function nameMarkBuddyStateOf(buddy, now = Date.now()) {
+  if (buddy.classList.contains("nmb-sleep")) return "sleeping";
+  if (nmb.flight || buddy.classList.contains("nm-buddy-dragging") || buddy.classList.contains("nmb-walking")) return "moving";
+  if ([nmb.anim, nmb.glideAnim].some((a) => a?.playState === "running")) return "moving";
+  if (buddy.classList.contains("nmb-think") || now - Math.max(nmb.reactAt || 0, nmb.lastPoke || 0) < NMB_REACT_HOLD_MS) return "reacting";
+  return nmb.act && !NMB_RESTING_ACTS.has(nmb.act) ? "idling" : "resting";
+}
+function nameMarkBuddyState(buddy = document.getElementById("nm-buddy")) {
+  if (!buddy) return "";
+  const state = nameMarkBuddyStateOf(buddy);
+  const was = buddy.dataset.state || "";
+  if (was !== state) {
+    buddy.dataset.state = state;
+    nmb.stateAt = Date.now();
+    nameMarkBuddySettleIn(buddy, was, state);
+  }
+  //: A reaction ends by the clock, not by an event: looked at again when
+  //: its hold is up (stateprobe.js: it read "reacting" ten seconds on).
+  clearTimeout(nmb.stateTimer);
+  if (state === "reacting") nmb.stateTimer = setTimeout(() => nameMarkBuddyState(), NMB_REACT_HOLD_MS + 100);
+  return state;
+}
+
+//: Into a new state: arriving from a move it settles into its place (a
+//: small give, added to whatever the pose is doing). Nothing without motion.
+function nameMarkBuddySettleIn(buddy, from, to) {
+  const char = buddy.querySelector(".nm-buddy-char");
+  if (from !== "moving" || to === "sleeping" || !char || typeof char.animate !== "function" || nameMarkBuddyStill()) return;
+  char.animate([{ translate: "0 0" }, { translate: "0 1.5px", offset: 0.4 }, { translate: "0 0" }], { duration: 320, easing: "ease-out", composite: "add" });
 }
 
 //: The weighted pick: every behaviour that suits where it is and is off
@@ -7761,6 +7864,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
   nmb.atlasLook = document.querySelector("#nm-buddy svg.atl-layer")?.dataset.atlasLook || "";
   //: What you are doing (`NMB_MIND.drive`, companion-menu.js), once loaded.
   const drive = nmb.mind?.drive(now, idle) || {};
+  const { loud } = nameMarkBuddyTraits();
   const pool = [];
   let total = 0;
   for (const [act, spec] of Object.entries(NAME_MARK_BUDDY_ACTS)) {
@@ -7806,6 +7910,7 @@ function nameMarkBuddyDecide(now = Date.now(), hour = new Date().getHours()) {
     if (spec.atlas && !nmb.atlasLook) w = 0;
     if (!NMB_QUIET_ACTS.includes(act)) w *= { off: 0, fewer: nmb.visit ? 1 : 0.33, normal: 1 }[actions] ?? 0.33;
     w *= drive[act] ?? 1;
+    if (NMB_LOUD_ACTS.includes(act)) w *= loud;
     if (w > 0) {
       pool.push([act, w]);
       total += w;
@@ -7848,6 +7953,11 @@ function nameMarkBuddyTick() {
   }
   //: Its look for controls under it a frame on, when the layout is clean.
   queueNameMarkBuddyCheck();
+  const state = nameMarkBuddyState(buddy);
+  if (state === "moving" || state === "reacting") {
+    nameMarkBuddySchedule();
+    return;
+  }
   const idle = Date.now() - nmb.lastInput;
   nameMarkBuddyContext(buddy);
   nmb.onBoard = nameMarkBuddyOnBoard();
@@ -8627,7 +8737,7 @@ function nameMarkBuddyWander(now) {
   const { energy, sociability } = nmb.mood;
   //: Rarer on an open board (INBOX 1300 C20, the owner: "the companion
   //: jumping around my whiteboard a lot was a little annoying").
-  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > (nmb.onBoard ? NMB_BOARD_WANDER : NMB_WANDER_ODDS)) return false;
+  if (nameMarkBuddyBoredom(now - (nmb.perchAt || now), energy, sociability, nmb.reading?.mood || "") < 1 || Math.random() > (nmb.onBoard ? NMB_BOARD_WANDER : NMB_WANDER_ODDS) * nameMarkBuddyTraits().wander) return false;
   const tab = nameMarkBuddyTab();
   nameMarkBuddyIndexReset();
   const obstacles = nameMarkBuddyObstacles(tab);
@@ -8645,6 +8755,9 @@ function nameMarkBuddyWander(now) {
       return true;
     }
   }
+  //: **Off across the page only while you are away from it** (INBOX 1463):
+  //: with you at work it keeps to a few steps along its own edge.
+  if (now - nmb.lastInput < NMB_WANDER_FAR_IDLE_MS) return false;
   //: Somewhere a few of its own widths off, towards the middle of the
   //: window: asked near where it is, its own perch won every time.
   const off = NMB_W * Math.max(0.7, nmb.scale || 1) * 4 * (nmb.x > innerWidth / 2 ? -1 : 1);
@@ -9026,6 +9139,46 @@ function nameMarkBuddyPointer(now) {
   nmb.shyAt = now;
   nameMarkBuddyNotice(px, py, now);
   nameMarkBuddyShy(now);
+  nameMarkBuddyRoomSoon(px, py);
+}
+
+//: **Room for what you reach for** (INBOX 1463, the owner: "a non intrusive
+//: companion"). The pointer within its trait's `room` of it, not on it (on
+//: it is reaching for it: a pet, a drag), and resting there `NMB_ROOM_MS`:
+//: one hit test at the pointer, and if what is under it is a control the
+//: companion covers or touches, it steps aside along its edge, once in
+//: `NMB_ROOM_COOL_MS` at most. Nothing is read while the pointer moves: its
+//: own place is in `nmb`.
+const NMB_ROOM_MS = 350;
+const NMB_ROOM_COOL_MS = 6000;
+function nameMarkBuddyRoomSoon(px, py) {
+  clearTimeout(nmb.roomTimer);
+  if (!Number.isFinite(nmb.x) || nmb.pinned || nmb.away || nmb.visit) return;
+  const scale = nmb.scale || 1;
+  const dx = Math.max(nmb.x - px, 0, px - (nmb.x + NMB_W * scale));
+  const dy = Math.max(nmb.y - py, 0, py - (nmb.y + NMB_H * scale));
+  const d = Math.hypot(dx, dy);
+  if (d === 0 || d > nameMarkBuddyTraits().room) return;
+  nmb.roomTimer = setTimeout(() => nameMarkBuddyRoom(px, py), NMB_ROOM_MS);
+}
+function nameMarkBuddyRoom(px, py) {
+  const buddy = document.getElementById("nm-buddy");
+  const now = Date.now();
+  if (!buddy || now - (nmb.roomAt || 0) < NMB_ROOM_COOL_MS || nameMarkBuddyMenuOpen()) return;
+  if (["moving", "reacting"].includes(nameMarkBuddyState(buddy))) return;
+  const el = document.elementFromPoint(px, py);
+  const control = el && !el.closest("#nm-buddy-band, #nm-buddy") ? el.closest(NAME_MARK_BUDDY_NEVER_COVER) : null;
+  const box = control ? nameMarkBuddyShown(control) : null;
+  if (!box) return;
+  const reach = { left: box.left - 8, right: box.right + 8, top: box.top - 8, bottom: box.bottom + 8 };
+  if (!nameMarkBuddyHits(nmb.x, nmb.y, nmb.pose, [reach], nmb.legs)) return;
+  nmb.roomAt = now;
+  const here = { ...(nmb.spot || {}), x: nmb.x, y: nmb.y, pose: nmb.pose, legs: nmb.legs };
+  const aside = nameMarkBuddyStepAside(here, [...nameMarkBuddyObstacles(nameMarkBuddyTab()), reach]);
+  nmb.moves = (nmb.moves || 0) + 1;
+  nmb.moveWhy = "making room for the pointer";
+  if (aside.x !== here.x) nameMarkBuddyMoveTo(buddy, aside);
+  else nameMarkBuddyQueuePlace();
 }
 
 //: **Shy, with hysteresis** (the owner: "the peeking companion flashes in

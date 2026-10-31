@@ -70,10 +70,15 @@ MORE_TOPICS: list[dict] = [
             "companion sneezes", "companion grooms", "companion sighs",
             "companion tumbles across the screen", "companion falls from the top",
             "showy entrances", "companion entrance",
+            "companion in the way", "companion covers my text", "companion covers the button",
         ),
         "body": (
             "The corner companion travels rarely and never while you type or "
-            "carry it. When it has somewhere far to go it takes a calm way: it "
+            "carry it. It never sits on a menu, a popup, the field you are "
+            "typing in or the line your caret is on, and when the pointer rests "
+            "on a control beside it, it steps aside. Atlas and the animals "
+            "decide the same way: Atlas keeps more room and plays less, a cat "
+            "or an owl keeps its distance, a dog or a fox wanders more. When it has somewhere far to go it takes a calm way: it "
             "opens a portal and walks through, vanishes in a puff of smoke, walks "
             "off one side of the window and comes in at the other. Never the "
             "same way twice in a row. On a new page it fades in where it rests "
