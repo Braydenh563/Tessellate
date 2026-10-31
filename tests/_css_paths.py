@@ -90,6 +90,7 @@ CSS_FILES = [
     CSS_DIR / "timeline-calendar-lazy.css",
     #: Where another device opens the notebook (settings-controls.js, INBOX 867).
     CSS_DIR / "lan-lazy.css",
+    CSS_DIR / "objmove-lazy.css",
     #: The storage bar in Settings, About (settings-data.js, data-1011).
     CSS_DIR / "settings-data-lazy.css",
     #: Moved out of the boot sheets for the gzip budget (2026-10-12), each

@@ -81,6 +81,7 @@ function objReorderBegin(g) {
   Object.assign(g.gap.style, { height: `${box.height}px`, width: unit.tagName === "LI" ? "" : `${box.width}px` });
   unit.after(g.gap);
   unit.classList.add("obj-lifted");
+  unit.style.display = "none";
 }
 
 function objScrollerOf(el) {
@@ -108,6 +109,7 @@ function objReorderUpdate(g) {
 function objReorderRelease(g) {
   g.gap.remove();
   g.surface.unit.classList.remove("obj-lifted");
+  g.surface.unit.style.display = "";
 }
 
 function objReorderDrop(g) {

@@ -151,7 +151,8 @@ async function copy(page) {
   await page.evaluate(() => [...document.querySelectorAll('#library-boards-grid > .library-board-card')].find((c) => (c.dataset.obj || '').startsWith('board:')).click());
   await page.waitForTimeout(2500);
   const held = await page.evaluate(() => wbState.nodes.map((n) => n.entry_id));
-  await SURFACES.notes.tab(page); await page.waitForTimeout(1500);
+  await page.evaluate(async () => { await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: 'Copy sweep note ' + Date.now(), defer_filing: true }) }); await loadEntries(); });
+  await SURFACES.notes.tab(page); await page.waitForTimeout(2000);
   const free = await page.evaluate((held) => [...document.querySelectorAll('#entry-list > li[data-id]')].findIndex((li) => !held.includes(Number(li.dataset.id))), held);
   await focusCard(page, SURFACES.notes, free);
   await page.keyboard.press('Control+C');
@@ -200,6 +201,7 @@ async function carry(page) {
   const tray = await box(page, '#status-tray');
   await drag(page, first, tray, { release: false });
   say('carry to tray: mid-drag', await ghostState(page));
+  say('carry to tray: target outline, ghost z-index', await page.evaluate(() => [getComputedStyle(document.getElementById('status-tray')).outlineStyle + ' ' + getComputedStyle(document.getElementById('status-tray')).outlineWidth, getComputedStyle(document.querySelector('.obj-ghost')).zIndex]));
   await page.mouse.up(); await page.waitForTimeout(400);
   say('carry to tray: after drop', await trayState(page));
   say('carry to tray: ghost left behind', await ghostState(page));
@@ -271,8 +273,8 @@ async function board(page) {
   await page.evaluate(() => document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]').click()); await page.waitForTimeout(1500);
   await page.evaluate(() => [...document.querySelectorAll('#library-boards-grid > .library-board-card')].find((c) => (c.dataset.obj || '').startsWith('board:')).click());
   await page.waitForTimeout(2500);
-  //: A note the board does not hold yet, so the count moves.
-  await page.evaluate(() => { sessionStorage.removeItem('obj-tray'); objTray = []; const held = wbState.nodes.map((n) => n.entry_id); const free = allEntries.find((e) => !held.includes(e.id)); objTrayAdd(objRef('note', free.id, 'Tray note')); objTrayAdd(objRef('document', 4, 'Tray doc')); });
+  //: A new note, which the board cannot hold yet, so the count moves.
+  await page.evaluate(async () => { sessionStorage.removeItem('obj-tray'); objTray = []; const made = await apiJson('/entries', { method: 'POST', body: JSON.stringify({ content: 'Tray sweep note ' + Date.now(), defer_filing: true }) }); objTrayAdd(objRef('note', made.id, 'Tray note')); objTrayAdd(objRef('document', 4, 'Tray doc')); });
   const counts = () => page.evaluate(() => ({ nodes: wbState.nodes.length, objects: wbState.objects ? wbState.objects.length : -1 }));
   const b0 = await counts();
   await openTray(page);

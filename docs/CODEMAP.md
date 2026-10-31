@@ -5341,21 +5341,21 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objDragArm` | frontend/js/obj-drag.js:49 |
-| `objDragBegin` | frontend/js/obj-drag.js:93 |
-| `objDragFinish` | frontend/js/obj-drag.js:158 |
-| `objDragFrame` | frontend/js/obj-drag.js:109 |
-| `objDragKey` | frontend/js/obj-drag.js:143 |
-| `objDragListen` | frontend/js/obj-drag.js:56 |
-| `objDragMove` | frontend/js/obj-drag.js:79 |
-| `objDragNoNative` | frontend/js/obj-drag.js:67 |
-| `objDragRoute` | frontend/js/obj-drag.js:117 |
-| `objDragSchedule` | frontend/js/obj-drag.js:105 |
-| `objDragSeed` | frontend/js/obj-drag.js:38 |
-| `objDragSwallowClick` | frontend/js/obj-drag.js:152 |
-| `objDragTick` | frontend/js/obj-drag.js:128 |
-| `objDragUp` | frontend/js/obj-drag.js:139 |
-| `objDragVerdict` | frontend/js/obj-drag.js:73 |
+| `objDragArm` | frontend/js/obj-drag.js:51 |
+| `objDragBegin` | frontend/js/obj-drag.js:95 |
+| `objDragFinish` | frontend/js/obj-drag.js:160 |
+| `objDragFrame` | frontend/js/obj-drag.js:111 |
+| `objDragKey` | frontend/js/obj-drag.js:145 |
+| `objDragListen` | frontend/js/obj-drag.js:58 |
+| `objDragMove` | frontend/js/obj-drag.js:81 |
+| `objDragNoNative` | frontend/js/obj-drag.js:69 |
+| `objDragRoute` | frontend/js/obj-drag.js:119 |
+| `objDragSchedule` | frontend/js/obj-drag.js:107 |
+| `objDragSeed` | frontend/js/obj-drag.js:40 |
+| `objDragSwallowClick` | frontend/js/obj-drag.js:154 |
+| `objDragTick` | frontend/js/obj-drag.js:130 |
+| `objDragUp` | frontend/js/obj-drag.js:141 |
+| `objDragVerdict` | frontend/js/obj-drag.js:75 |
 | `objGhostMake` | frontend/js/obj-drag.js:24 |
 
 ### frontend/js/obj-order.js (10)
@@ -5394,17 +5394,17 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `objRefocus` | frontend/js/obj-reorder.js:151 |
+| `objRefocus` | frontend/js/obj-reorder.js:153 |
 | `objReorderBegin` | frontend/js/obj-reorder.js:74 |
 | `objReorderCommit` | frontend/js/obj-reorder.js:56 |
-| `objReorderDrop` | frontend/js/obj-reorder.js:113 |
+| `objReorderDrop` | frontend/js/obj-reorder.js:115 |
 | `objReorderGrab` | frontend/js/obj-reorder.js:69 |
-| `objReorderKey` | frontend/js/obj-reorder.js:131 |
-| `objReorderKick` | frontend/js/obj-reorder.js:172 |
-| `objReorderRelease` | frontend/js/obj-reorder.js:108 |
-| `objReorderRoute` | frontend/js/obj-reorder.js:121 |
-| `objReorderUpdate` | frontend/js/obj-reorder.js:93 |
-| `objScrollerOf` | frontend/js/obj-reorder.js:86 |
+| `objReorderKey` | frontend/js/obj-reorder.js:133 |
+| `objReorderKick` | frontend/js/obj-reorder.js:174 |
+| `objReorderRelease` | frontend/js/obj-reorder.js:109 |
+| `objReorderRoute` | frontend/js/obj-reorder.js:123 |
+| `objReorderUpdate` | frontend/js/obj-reorder.js:94 |
+| `objScrollerOf` | frontend/js/obj-reorder.js:87 |
 | `objSetSort` | frontend/js/obj-reorder.js:47 |
 | `objSurfaceAt` | frontend/js/obj-reorder.js:38 |
 | `objUnitKey` | frontend/js/obj-reorder.js:26 |
@@ -11101,7 +11101,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/mermaid-lazy.css | 68 |
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 169 |
-| frontend/css/objmove-lazy.css | 105 |
+| frontend/css/objmove-lazy.css | 102 |
 | frontend/css/offline-split-lazy.css | 71 |
 | frontend/css/panel-movable-lazy.css | 101 |
 | frontend/css/questions-lazy.css | 102 |

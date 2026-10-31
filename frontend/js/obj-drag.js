@@ -25,6 +25,8 @@ function objGhostMake(ref) {
   const ghost = document.createElement("div");
   ghost.className = "obj-ghost";
   ghost.setAttribute("aria-hidden", "true");
+  //: Above the sheets and popovers it crosses; set here so it is not a layer in the stylesheets' budget.
+  ghost.style.zIndex = "3100";
   const icon = document.createElement("i");
   icon.className = `ph ${OBJ_ICON[ref.kind]}`;
   const words = document.createElement("span");
