@@ -127,7 +127,6 @@
  "src/tessellate/api/routes_files.py::list_media": 18,
  "src/tessellate/api/routes_files.py::vision_ocr_media": 18,
  "src/tessellate/api/routes_graph.py::_add_map_edges": 18,
- "src/tessellate/api/routes_graph.py::_build_graph": 45,
  "src/tessellate/api/routes_graph.py::_hop_reasons": 19,
  "src/tessellate/api/routes_graph.py::_slim": 16,
  "src/tessellate/api/routes_graph.py::graph_local": 23,

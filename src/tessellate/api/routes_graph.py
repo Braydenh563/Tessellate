@@ -809,17 +809,7 @@ def _iso_or_none(value):  # noqa: ANN001
     return value.isoformat() if value else None
 
 
-def _build_graph(
-    similarity: bool = False,
-    include_entities: bool = False,
-    include_documents: bool = False,
-    include_maps: bool = False,
-    include_tags: bool = False,
-    include_unresolved: bool = False,
-    include_attachments: bool = False,
-    session: Session | None = None,
-    slim: bool = False,
-) -> JSONResponse:
+def _graph_entries(session: Session, include_maps: bool) -> list:
     # A draft is unfinished by definition, and the Notes tab already keeps
     # every draft out of the notebook it draws from, the graph is a map of
     # your notes and their connections, not a staging area, and a half-typed
@@ -853,13 +843,10 @@ def _build_graph(
     #: or the path index either.
     if not include_maps:
         entries = [e for e in entries if not getattr(e, "is_board", False)]
-    node_ids = {e.id for e in entries}
-    category_names = manager.bulk_category_names(session, entries)
-    # GRAPH_PLAN Phase 3: "colour by" is a rule picker (category, cluster,
-    # kind, age, space, tag, has a file), so every note carries the fields
-    # each rule reads. One query for the file rule rather than a join per
-    # node; tags are the column's JSON list, never the raw string.
-    with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
+    return entries
+
+
+def _maps_of(session: Session) -> dict[int, list[int]]:
     # GRAPH_PLAN Phase 5: which mind maps a note is on, from the map nodes'
     # own data (a note node stores `ref_id`), one query for the whole
     # payload. `map_ids` is what "has a map" colours by and what the local
@@ -878,9 +865,10 @@ def _build_graph(
             continue
         if isinstance(ref_id, int) and board_id is not None:
             maps_of.setdefault(ref_id, []).append(board_id)
-    now = datetime.now(timezone.utc)
-    #: Each note's label and word count, read once per version (`_note_texts`).
-    labels = _note_texts(entries)
+    return maps_of
+
+
+def _note_types_of(session: Session, node_ids: set[int]) -> dict[int, str]:
     #: WORLD_CLASS_PLAN row 10 (D5): a note's type, for the "Note type" colour
     #: rule, read from the properties index KG4 keeps (one query, the `type`
     #: key's first value per note), never by parsing every note's block. A
@@ -888,12 +876,9 @@ def _build_graph(
     #: A note may spell its type in its own case ("type: book"); the node
     #: carries the type's own name when Note types has it, so "book" and
     #: "Book" are one colour and one legend row, not two.
-    type_colours: dict[str, str] = {}
     canonical: dict[str, str] = {}
-    for name, colour in session.execute(select(NoteType.name, NoteType.colour)):
+    for name in session.scalars(select(NoteType.name)):
         canonical[name.casefold()] = name
-        if colour:
-            type_colours[name] = colour
     type_of: dict[int, str] = {}
     for entry_id, value in session.execute(
         select(EntryProperty.entry_id, EntryProperty.value)
@@ -902,7 +887,22 @@ def _build_graph(
     ):
         if entry_id in node_ids and value:
             type_of.setdefault(entry_id, canonical.get(value.casefold(), value))
-    nodes = [
+    return type_of
+
+
+def _note_nodes(session: Session, entries: list, node_ids: set[int]) -> list[dict]:
+    category_names = manager.bulk_category_names(session, entries)
+    # GRAPH_PLAN Phase 3: "colour by" is a rule picker (category, cluster,
+    # kind, age, space, tag, has a file), so every note carries the fields
+    # each rule reads. One query for the file rule rather than a join per
+    # node; tags are the column's JSON list, never the raw string.
+    with_files = set(session.scalars(select(Attachment.entry_id).distinct()))
+    maps_of = _maps_of(session)
+    now = datetime.now(timezone.utc)
+    #: Each note's label and word count, read once per version (`_note_texts`).
+    labels = _note_texts(entries)
+    type_of = _note_types_of(session, node_ids)
+    return [
         {
             "id": e.id,
             "kind": "note",
@@ -963,9 +963,9 @@ def _build_graph(
         for e in entries
     ]
 
-    edges: list[dict] = []
-    taken: set[frozenset[int]] = set()  # pairs already connected
 
+def _link_edges(session: Session, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
+    edges: list[dict] = []
     types = manager.relation_types(session)
     for link in session.execute(
         select(
@@ -1017,23 +1017,22 @@ def _build_graph(
                 if kind:
                     edges[-1]["type_name"] = kind["name"]
                     edges[-1]["type_inverse"] = kind["inverse"]
+    return edges
 
+
+def _thread_edges(entries: list, node_ids: set[int], taken: set[frozenset[int]]) -> list[dict]:
+    edges: list[dict] = []
     for e in entries:
         if e.parent_id is not None and e.parent_id in node_ids:
             pair = frozenset((e.parent_id, e.id))
             if pair not in taken:
                 taken.add(pair)
                 edges.append({"source": e.parent_id, "target": e.id, "kind": "thread"})
+    return edges
 
-    config = deps.get_config()
-    with_similarity = similarity and not config.get_preference("battery_efficient_mode")
-    if with_similarity:
-        edges.extend(_similarity_edges(session, node_ids, taken))
 
-    #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
-    #: no longer builds an index at all.
-    centrality_scores = _centrality(session, similarity, include_maps)
-
+def _add_degree(nodes: list[dict], edges: list[dict], centrality_scores: dict) -> list[str]:
+    """Stamp each node's degree and centrality; return the stable category order."""
     # Stable category order so the frontend assigns stable colours.
     # Phase 5: degree per node, from the edges this payload carries, so a
     # client never has to count them itself (the colour rule, the label
@@ -1045,17 +1044,28 @@ def _build_graph(
     for node in nodes:
         node["degree"] = degree.get(node["id"], 0)
     categories = sorted({n["category"] for n in nodes})
-    
+
     # Attach PageRank centrality to nodes for dynamic sizing
     for n in nodes:
         n["centrality"] = centrality_scores.get(n["id"], 0)
+    return categories
 
+
+def _add_optional_layers(
+    session: Session,
+    entries: list,
+    nodes: list[dict],
+    edges: list[dict],
+    node_ids: set[int],
+    taken: set[frozenset[int]],
+    flags: dict[str, bool],
+) -> None:
     # ROADMAP.md item 34: off by default (the frontend has to ask for it),
     # since every existing consumer of this endpoint assumes every node id
     # is an Entry id. An entity node's id is prefixed ("entity:5") so it can
     # never collide with one; the frontend's own node-shape code is what
     # tells the two apart, not a numeric range.
-    if include_entities:
+    if flags["entities"]:
         _add_entity_nodes(session, nodes, edges, node_ids)
 
     # Tier 2 item 16: "documents in the graph", off by default, same reason
@@ -1072,7 +1082,7 @@ def _build_graph(
     # around Entry, and extending either to a second node type is a
     # materially bigger, separate change from making a document visible and
     # connected in the first place.
-    if include_documents:
+    if flags["documents"]:
         _add_document_nodes(session, nodes, edges, node_ids)
     #: **A mind map, and the notes it is made of** (MINDMAP_PLAN.md §5 item
     #: 13). This is the "decide once" call §3.3 makes and §5 item 13 restates:
@@ -1094,16 +1104,54 @@ def _build_graph(
     #: assumes every edge joins two notes it retrieved is not wrong, and a map
     #: with forty notes on it would add forty edges to a picture nobody asked
     #: to change.
-    if include_maps:
+    if flags["maps"]:
         _add_map_edges(session, entries, nodes, edges, node_ids, taken)
     # GRAPH_PLAN 514: opt-in, prefixed ids, outside centrality, as above.
-    if include_tags:
+    if flags["tags"]:
         _add_tag_nodes(nodes, edges)
-    if include_unresolved:
+    if flags["unresolved"]:
         _add_unresolved_nodes(session, entries, nodes, edges)
-    if include_attachments:
+    if flags["attachments"]:
         _add_attachment_nodes(session, nodes, edges, node_ids)
 
+
+def _build_graph(
+    similarity: bool = False,
+    include_entities: bool = False,
+    include_documents: bool = False,
+    include_maps: bool = False,
+    include_tags: bool = False,
+    include_unresolved: bool = False,
+    include_attachments: bool = False,
+    session: Session | None = None,
+    slim: bool = False,
+) -> JSONResponse:
+    entries = _graph_entries(session, include_maps)
+    node_ids = {e.id for e in entries}
+    nodes = _note_nodes(session, entries, node_ids)
+
+    taken: set[frozenset[int]] = set()  # pairs already connected
+    edges = _link_edges(session, node_ids, taken)
+    edges.extend(_thread_edges(entries, node_ids, taken))
+
+    config = deps.get_config()
+    with_similarity = similarity and not config.get_preference("battery_efficient_mode")
+    if with_similarity:
+        edges.extend(_similarity_edges(session, node_ids, taken))
+
+    #: The map's PageRank, shared with focus mode (`_centrality`); a warm call
+    #: no longer builds an index at all.
+    centrality_scores = _centrality(session, similarity, include_maps)
+    categories = _add_degree(nodes, edges, centrality_scores)
+    flags = {
+        "entities": include_entities,
+        "documents": include_documents,
+        "maps": include_maps,
+        "tags": include_tags,
+        "unresolved": include_unresolved,
+        "attachments": include_attachments,
+    }
+    _add_optional_layers(session, entries, nodes, edges, node_ids, taken, flags)
     #: A type's own colour, so "Note type" paints a Person the colour the
     #: person gave Person rather than the next one in the scheme.
     type_colours = {row.name: row.colour for row in session.scalars(select(NoteType)) if row.colour}
