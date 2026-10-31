@@ -94,6 +94,19 @@ def test_filler_is_dropped_before_reading(said, left):
     assert question_noise.drop_filler(said) == left
 
 
+@pytest.mark.parametrize(("said", "left"), [
+    #: A line break is the message's own structure (a numbered list after a colon
+    #: is read as steps): kept when nothing is dropped, and kept between lines
+    #: when something is.
+    ("make this a flowchart:\n1. Unplug the router\n2. Wait thirty seconds\n3. Plug it in", "make this a flowchart:\n1. Unplug the router\n2. Wait thirty seconds\n3. Plug it in"),
+    ("hmm make this a flowchart:\n1. Unplug it\n2. Wait", "make this a flowchart:\n1. Unplug it\n2. Wait"),
+    ("umm,   hi\n\nthere", "hi\nthere"),
+    ("errrmmm.\nhi", "hi"),
+])
+def test_filler_keeps_the_line_breaks_of_what_is_left(said, left):
+    assert question_noise.drop_filler(said) == left
+
+
 @pytest.mark.parametrize("said", PINGS + PINGS_PLAIN)
 def test_a_ping_is_a_test(said):
     assert intent.is_test(said), said

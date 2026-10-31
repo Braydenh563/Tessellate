@@ -377,6 +377,9 @@ def about_me(question: str) -> str | None:
 
 
 _GENERAL = re.compile(r"^(?:what|who|where|when|why|how|which)(?:'s| is| are| was| were| did| does| do| many| much| far| long| big)?\b")
+#: "what about knitting", "how about sourdough": a topic put forward (the notes
+#: are looked in and the thing named), not a question about the world.
+_TOPIC_NUDGE = re.compile(r"^(?:(?:and|so|hmm+|um+|well|ok(?:ay)?) )*(?:what|how) about\b")
 _PERSONAL = re.compile(r"\b(?:i|i'm|im|i've|me|my|mine|myself|we|our|us)\b")
 #: "Who is Sam": a bare name is someone the notes may name, not the world's
 #: (the engine probe's P1 says "I found nothing about “Sam”").
@@ -387,7 +390,7 @@ def general(question: str) -> bool:
     """A question about the world, not the person or their notes ("what's
     the capital of France"): with nothing found it is said as such."""
     q = _clean(question)
-    if _WHO_NAME.match(q):
+    if _WHO_NAME.match(q) or _TOPIC_NUDGE.match(q):
         return False
     return bool(_GENERAL.match(q)) and not _PERSONAL.search(q) and not re.search(r"\b(?:you|your|note|notes)\b", q)
 

@@ -49,16 +49,16 @@ _SEARCH_DOWN = re.compile(r"searxng|web search|search service", re.I)
 
 
 def start_it(ctx: Ctx) -> Reply | None:
-    """"Start it" after a reply that said the search service is off: the one
-    Docker line to run and the setting that finds it. Never runs Docker."""
+    """"Start it" after a reply that said the search service is off: the same
+    buttons a failed search shows (Start SearXNG when the app can launch it,
+    Set it up in Settings, Open the web panel, Use another provider), not a
+    command to paste. Never runs anything itself; the button does."""
     if not _START_IT.match(" ".join((ctx.asked or ctx.question or "").split())):
         return None
     if not _SEARCH_DOWN.search(ctx.last_answer or "") and not re.search(r"searxng|web search", ctx.question, re.I):
         return None
-    return Reply(
-        "I can not start it for you, it runs outside this app. " + composer_web.START_STEPS + "\n\n" + composer_web.SETTINGS_LABEL,
-        offer={"kind": "open", "surface": "settings:websearch", "label": composer_web.SETTINGS_LABEL},
-    )
+    said = composer_web.start_reply(can_start=composer_web.can_start_here())
+    return Reply(said["text"], offer=said["offer"])
 
 
 def answer(ctx: Ctx) -> Reply | None:

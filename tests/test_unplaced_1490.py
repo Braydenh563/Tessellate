@@ -44,6 +44,27 @@ WORTHY = [
 #: Said about the person's own record: the notes first, never the web.
 OWN = ["my notes on golf", "japanese note", "the note in japanese", "notes about banana", "my japanese notes", "show me my banana notes"]
 
+#: Said about a thing the notebook holds (checklists, to-dos, reminders, tasks,
+#: what is due, lists): the app's own readers answer, "none" included, so it
+#: is never asked back and never searched (the 1029b "open checklist items").
+NOTEBOOK_THINGS = [
+    "open checklist items", "checklist items", "open items", "my to-dos", "to do items", "todo list", "overdue tasks", "open tasks", "tasks due today",
+    "what's due", "whats due tomorrow", "due this week", "open reminders", "reminders", "any reminders", "unfinished checklists", "pending to-dos",
+    "list items", "shopping list", "task list", "deadlines", "appointments", "checklists with open items", "done tasks", "completed to-do items",
+]
+
+#: First person ("I", "me", "we"): the person's own record, whose home is the
+#: notes; and an instruction aimed at what is on screen or in the app. Neither
+#: is banter, so neither is asked back.
+FIRST_PERSON = [
+    "how long since I called dad", "what did I buy for Mum", "I need milk", "i went running", "did we pay the rent", "remind me about dad",
+    "what should I get mum", "how much did I spend on mum", "I called mum", "we saw mum",
+]
+APP_VERBS = [
+    "summarise this", "summarize that", "open it", "delete that", "rewrite this", "translate this", "pin this", "read it back", "shorten it",
+    "explain this", "tag this", "rename it", "undo", "undo that", "redo", "retry", "do it again", "continue", "improve this", "proofread it",
+]
+
 _NOTES = (
     "# Golf practice\n\nHit a bucket of balls after work and fixed my grip.",
     "# Dentist\n\nCheck-up booked for the 21st.",
@@ -93,6 +114,37 @@ def test_banter_slang_and_single_words_are_unplaced(said):
 def test_a_question_about_the_world_or_a_web_ask_is_worthy(said):
     assert composer_unplaced.worthy(said), said
     assert not composer_unplaced.unplaced(said), said
+
+
+@pytest.mark.parametrize("said", NOTEBOOK_THINGS)
+def test_an_ask_naming_a_notebook_thing_is_never_unplaced(said):
+    assert not composer_unplaced.unplaced(said), said
+
+
+def test_a_notebook_word_in_a_worldly_lookup_leaves_it_worthy():
+    for said in ("list of countries in europe", "price of bitcoin", "what is the capital of France"):
+        assert composer_unplaced.worthy(said), said
+
+
+@pytest.mark.parametrize("tools", [False, True])
+def test_a_notebook_thing_with_nothing_to_show_is_answered_not_asked_back(client, notebook, web, tools):
+    for said in ("open checklist items", "overdue tasks", "my to-dos", "open reminders"):
+        out = _ask(client, said, use_tools=tools)
+        assert "did not catch" not in out["text"] and "Not sure what you mean" not in out["text"] and "stumped" not in out["text"], (said, out["text"])
+        assert not _asks(out) or all("Search the web for" not in a for a in _asks(out)), (said, _asks(out))
+    assert web == []
+
+
+@pytest.mark.parametrize("said", FIRST_PERSON + APP_VERBS)
+def test_the_persons_own_record_and_an_instruction_are_never_unplaced(said):
+    assert not composer_unplaced.unplaced(said), said
+
+
+@pytest.mark.parametrize("tools", [False, True])
+def test_a_feature_word_the_composer_answers_is_not_asked_back(client, notebook, web, tools):
+    out = _ask(client, "timer", use_tools=tools)
+    assert "one of the app's own tools" in out["text"], out["text"]
+    assert not _asks(out) and web == []
 
 
 @pytest.mark.parametrize("said", OWN)

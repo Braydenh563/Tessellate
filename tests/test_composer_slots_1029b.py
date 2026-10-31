@@ -178,6 +178,24 @@ def test_a_verb_finds_the_note_that_says_it_as_a_noun(notebook, noun, phrasing, 
     assert "milk" not in said.lower(), said
 
 
+@MODES
+@pytest.mark.parametrize("arranged", ["Booked for", "Planned for", "Scheduled for", "Moved to", "Set for", "Confirmed for", "Rescheduled to", "Due on"])
+def test_a_day_a_thing_is_set_for_is_said_as_that_day_not_a_year_back(notebook, arranged, chat):
+    #: A day and month with no year, in a note written 20 October, is the next
+    #: one by the note's own date: "when do I depart" is 14 November (2026), and
+    #: never "Back in November 2025", which a past-tense reading of "booked" gave.
+    notes = [(f"# Departure to Lisbon\n\n{arranged} 14 November, early morning.", D(2026, 10, 20, 9)), NOISE]
+    said = notebook(notes)("when do I depart", chat)
+    assert "14 November" in said and "2025" not in said and "Back in" not in said, said
+
+
+@MODES
+def test_a_thing_done_is_still_in_the_past_of_its_note(notebook, chat):
+    notes = [("# Garden\n\nPlanted tomatoes on 5 October and watered them well.", D(2026, 10, 30, 9)), NOISE]
+    said = notebook(notes)("when did I plant tomatoes", chat)
+    assert "5 October" in said and "2027" not in said, said
+
+
 def test_the_verb_noun_pairs_are_synonyms():
     from tessellate.ai import composer_tables
 

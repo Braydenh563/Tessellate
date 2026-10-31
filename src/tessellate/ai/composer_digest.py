@@ -3197,6 +3197,10 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     if lead.view.written is None:
         return False
     text = _unfilled(lead.sentence.text.strip().rstrip(".!"))
+    if recogniser.set_for_later(text):
+        #: "Booked for 14 November" is a day set, not a thing done: said as
+        #: the day itself, never read back a year ("Back in November 2025").
+        return False
     if re.match(r"(?:finally|then|eventually|also|at last)\s+\w+ed\b", text, re.I):
         #: "Finally finished the 5k": the writer did it.
         text = "I " + text[0].lower() + text[1:]

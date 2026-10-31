@@ -36,13 +36,19 @@ def _ask(client, question: str, **body) -> dict:
     return events
 
 
-def _seed(session) -> None:
-    manager.create_entry(
-        session,
-        "# Harbor launch plan\n\nShip the mobile app to the public on 14 November. "
-        "Three gates before then: beta feedback closed and the pricing page signed off.",
-    )
-    manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st. Ask about the night guard.")
+def _seed(session, written=None) -> None:
+    """The two notes; `written` dates them (a test that names the day pins it)."""
+    notes = [
+        manager.create_entry(
+            session,
+            "# Harbor launch plan\n\nShip the mobile app to the public on 14 November. "
+            "Three gates before then: beta feedback closed and the pricing page signed off.",
+        ),
+        manager.create_entry(session, "# Dentist\n\nCheck-up booked for the 21st. Ask about the night guard."),
+    ]
+    if written:
+        for entry in notes:
+            entry.created_at = entry.updated_at = written
     session.commit()
 
 
@@ -68,8 +74,20 @@ def test_from_your_notes_composes_even_with_a_model_running(ai_client, fake_olla
     assert out["grounding"][0]["support"]["low"] is False
 
 
-def test_the_composed_turn_is_saved_with_its_rows(ai_client, session):
-    _seed(session)
+def test_the_composed_turn_is_saved_with_its_rows(ai_client, session, monkeypatch):
+    # The clock is pinned and the note dated a fortnight before it. The test read
+    # the real clock: a note written the day the suite ran is "written today",
+    # not "written on <day>". The intent is that a saved turn keeps the answer
+    # with its source line and grounding row, which a fixed past date still shows.
+    from datetime import datetime
+
+    from tessellate.api import routes_chat
+    from tessellate.core import config
+
+    now = datetime(2026, 10, 31, 15, 45)
+    monkeypatch.setattr(config, "user_now", lambda _c: now)
+    monkeypatch.setattr(routes_chat, "user_now", lambda _c: now)
+    _seed(session, written=datetime(2026, 10, 17, 9))
     _ask(ai_client, "When is the dentist check-up?", notes_only=True, use_tools=False, answer_from="notes")
     turns = ai_client.get("/ask-history").json()["turns"]
     assert len(turns) == 1
@@ -317,3 +335,11 @@ def test_a_question_about_someone_else_is_not_personal():
     assert not personal.general("what did I write about france")
     assert personal.general("whats the capital of france")
     assert not personal.general("who is Sam") and personal.general("who is the president of france")
+
+
+def test_what_about_a_topic_is_a_nudge_to_the_notes_not_a_world_question():
+    #: "hmm what about knitting" (INBOX 1357 class H): a topic put forward, so the
+    #: notes are looked in and the thing is named, never "that's general knowledge".
+    for question in ("what about knitting", "hmm what about knitting", "how about sourdough", "what about tax returns", "and what about the dentist", "what about it"):
+        assert not personal.general(question), question
+    assert personal.general("what is knitting") and personal.general("how many people knit")
