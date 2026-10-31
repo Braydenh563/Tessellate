@@ -111,10 +111,8 @@ def _left_in_prose(out, stems: list[str], views: list) -> bool:  # noqa: ANN001
             continue
         todo = [s for s in view.sentences if s.kind == "prose" and _TO_DO.match(s.text)]
         if todo:
-            out.lines.append(f"There is no checklist for it, but {composer_lists._title(view)} has this to do:")  # noqa: SLF001
-            for s in todo[:6]:
-                out.lines.append(f"- {s.text.strip()}")
-                composer_lists._cite(out, view, s, s.text)  # noqa: SLF001
+            header = f"There is no checklist for it, but {composer_lists._title(view)} has this to do:"  # noqa: SLF001
+            composer_lists._block(out, header, [(s.text.strip(), view, s) for s in todo[:6]])  # noqa: SLF001
             return True
     return False
 
@@ -133,11 +131,8 @@ def _left(out, rest: str, views: list, today: date) -> bool:  # noqa: ANN001
     if not open_:
         out.lines.append(f"Nothing is left on {title}: all {len(done)} items are done.")
     else:
-        out.lines.append(f"{len(open_)} still to do on {title}:")
-        for v, task in open_[:12]:
-            text = re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip()
-            out.lines.append(f"- {text}")
-            composer_lists._cite(out, v, task, text)  # noqa: SLF001
+        items = [(re.sub(r"^\s*[-*]\s*\[ \]\s*", "", task.text).strip(), v, task) for v, task in open_[:12]]
+        composer_lists._block(out, f"{len(open_)} still to do on {title}:", items)  # noqa: SLF001
     _say_recorded(out, views, done, today)
     return True
 
@@ -251,10 +246,8 @@ def _ticked_so_far(out, views: list) -> bool:  # noqa: ANN001
     if not ticked:
         return False
     notes = len({id(v) for v, _s in ticked})
-    out.lines.append(f"You have ticked off {realise.count_word(len(ticked))} item{'s' if len(ticked) != 1 else ''} across {realise.count_word(notes)} note{'s' if notes != 1 else ''}:")
-    for v, s in ticked[:12]:
-        out.lines.append(f"- {_task_name(s)}, in {composer_lists._title(v)}")  # noqa: SLF001
-        composer_lists._cite(out, v, s, _task_name(s))  # noqa: SLF001
+    header = f"You have ticked off {realise.count_word(len(ticked))} item{'s' if len(ticked) != 1 else ''} across {realise.count_word(notes)} note{'s' if notes != 1 else ''}:"
+    composer_lists._block(out, header, [(f"{_task_name(s)}, in {composer_lists._title(v)}", v, s) for v, s in ticked[:12]])  # noqa: SLF001
     return True
 
 

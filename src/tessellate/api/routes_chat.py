@@ -3221,6 +3221,9 @@ def _social_reply(req: _StreamRequest, prepared: dict) -> str:
         return hello
     if kind == "repair":
         return _repair_reply(req, last, seed)
+    if kind == "joke" and (joke := chat_extra.saved_joke(req.session, req.question + seed)):
+        #: One you saved, said as it is written, before owning up to having none (audit 1031 C46).
+        return f"From your notes: {joke[1]}\n\n[Open the note](#/notes/{joke[0]})"
     said = composer.social(
         req.question,
         prepared["intent"],
@@ -3422,10 +3425,22 @@ def _late_panel(prepared: dict, question: str | None, answer_text: str, sent_kin
     return [panel] if panel is not None else []
 
 
+def _listed_below(stats: dict) -> str:
+    """The rows an answer says are "listed below", written under it (audit
+    1031 C44): "Your longest note is ... The top 10 are listed below." with
+    nothing below was a promise the stream never kept."""
+    rows = [f for f in stats.get("facts") or [] if isinstance(f, dict) and f.get("label") and f.get("id")]
+    if not rows or "listed below" not in str(stats.get("text") or ""):
+        return ""
+    def line(f: dict) -> str:
+        return f"- [{f['label']}](#/notes/{f['id']}), {realise.count_noun(int(f.get('count') or 0), 'word')}"
+    return "\n\n" + "\n".join(line(f) for f in rows)
+
+
 def _stats_events(stats: dict, question: str = "") -> list[dict]:
     """A counted answer, its chart, its panel, and its one acting offer
     (decision 70), drawn as a link on its line."""
-    out = [{"type": "answer", "delta": stats["text"]}]
+    out = [{"type": "answer", "delta": stats["text"] + _listed_below(stats)}]
     drawn = _stats_chart(stats)
     if drawn is not None:
         out.append({"type": "chart", "chart": drawn})
@@ -3621,8 +3636,10 @@ def _with_words_only(text: str, prepared: dict, result: dict) -> str:
     parts = text.split("\n\n")
     if not any(composer_digest.is_only_claim(part) for part in parts):
         return text
-    swapped = [composer_digest.only_words_line(part) if composer_digest.is_only_claim(part) else part for part in parts]
-    return "\n\n".join(swapped)
+    #: A looked-up fact (a password, a name) is no topic another note could add to: the claim goes and nothing replaces it.
+    said = [] if result.get("shape") == "digest:fact" else [composer_digest.ONLY_WORDS]
+    swapped = [part for part in parts if not composer_digest.is_only_claim(part)]
+    return "\n\n".join([*swapped, *said])
 
 
 def _with_lapsed(text: str, current: list, result: dict, req: _StreamRequest) -> str:
@@ -3721,7 +3738,7 @@ def _related_sentence(related: list) -> str:
     kinds = sorted({item["kind"] for item in related})
     return (
         f" There {'are' if plural else 'is'} {len(related)} other {'items' if plural else 'item'}"
-        f" that mention it, in your {' and '.join(f'{k}s' for k in kinds)}."
+        f" that {'mention' if plural else 'mentions'} it, in your {' and '.join(f'{k}s' for k in kinds)}."
     )
 
 

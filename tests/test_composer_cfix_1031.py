@@ -4,6 +4,8 @@ one class per test group, each over many phrasings. Notebook and fixed clock:
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
 import tests._seed_1031c as seed_c
@@ -1002,3 +1004,77 @@ def test_no_voice_of_the_compare_openers_claims_a_process():
     for key in ("of_found", "across_found"):
         for lead in composer.phrase_options(key):
             assert not any(p in lead.lower() for p in _PROCESS), lead
+
+
+# C33 to C44, the copy rows. Said in the notebook of `tests/_seed_1031c.py`, clock fixed.
+
+_SMALL_DAY = re.compile(r"\b(?:january|february|april|june|july|august|september|october|november|december|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b")
+
+
+@pytest.mark.parametrize("question", [
+    "what did I write in october", "what did i write in October", "what did I write last tuesday",
+    "how long until the dentist", "how many days until the Lisbon trip", "how long until Project Atlas",
+    "what did I write on 22 october",
+])
+def test_c35_a_month_or_weekday_keeps_its_capital(notebook, question):
+    said, _ = notebook(question)
+    head = said.split("\n\n", 1)[0]
+    assert not _SMALL_DAY.search(head), head
+
+
+@pytest.mark.parametrize("question", ["what did I write on 22 October", "what did I write on 22 oct", "what did I write on the 22nd of October"])
+def test_c38_a_full_width_stop_is_not_followed_by_a_latin_one(notebook, question):
+    said, _ = notebook(question)
+    assert "。" in said and "。." not in said and "！." not in said, said
+
+
+@pytest.mark.parametrize("question", [
+    "what is left on the Lisbon packing list", "what is left on the packing list", "what is left in the todo",
+    "what have I ticked off", "what do I still need to pack",
+])
+def test_c43_a_list_of_items_is_tight_bullets(notebook, question):
+    said, _ = notebook(question)
+    assert "\n\n- " not in said.split("\n\n", 1)[-1] or said.count("\n\n- ") <= 1, said
+
+
+@pytest.mark.parametrize("question", ["what is the wifi password", "what is the dentist note", "what is the passport number"])
+def test_c33_a_looked_up_fact_has_no_dangling_footer(notebook, question):
+    said, _ = notebook(question)
+    assert "search by meaning" not in said, said
+
+
+@pytest.mark.parametrize("question", ["what do I know about Spanish", "what do I know about Spanish learning", "tell me about Spanish"])
+def test_c33_the_words_only_footer_is_one_sentence(notebook, question):
+    said, _ = notebook(question)
+    footers = [p for p in said.split("\n\n") if "search by meaning" in p]
+    assert footers in ([], ["Only one note has those words; search by meaning could find more."]), footers
+
+
+@pytest.mark.parametrize("question", [
+    "what did I write this week", "what did I write in October", "what do I have today", "what do I have on 14 November",
+    "what did I write last tuesday", "how many days until Christmas", "how many days until the dentist", "plan my week",
+])
+def test_c34_a_list_or_a_count_has_no_opener_or_closer(notebook, question):
+    said, _ = notebook(question)
+    assert not re.match(r"(?:Here you are|Right, here you go|Sure|Of course|Okay|Here is what I have)\b", said), said
+    assert "I am here if you need anything else" not in said, said
+
+
+def test_c37_the_newest_lead_names_two_sides_and_the_rest_are_bullets(notebook):
+    for question in ("what is my latest note about running", "what is my newest note about running", "which is my newest running note"):
+        said, _ = notebook(question)
+        lead = said.split("\n", 1)[0]
+        assert lead.count(" against ") <= 1 and " and " not in lead.split(" against ", 1)[-1].split(" for ", 1)[0], lead
+
+
+@pytest.mark.parametrize("question", ["what is my longest note", "which is my longest note", "what is my longest note?"])
+def test_c44_a_ranked_list_that_is_promised_is_written(notebook, question):
+    said, _ = notebook(question)
+    if "listed below" in said:
+        assert said.count("](#/notes/") >= 3, said
+
+
+@pytest.mark.parametrize("question", ["tell me a joke", "make me laugh", "got any jokes", "say something funny"])
+def test_c46_a_joke_is_the_one_you_saved(notebook, question):
+    said, _ = notebook(question)
+    assert "scarecrow" in said and "better finder" not in said, said

@@ -1891,6 +1891,12 @@ class _Answer:
         return self
 
     def m(self, text: str) -> _Answer:
+        if text in _RELATIVE_DAYS and self.parts and self.parts[-1][0] == "template" and self.parts[-1][1].endswith(("on ", "On ")):
+            #: "on yesterday" is not English: the preposition goes, and a day that
+            #: opens the sentence gets its capital (audit 1031 C36).
+            before = self.parts[-1][1][:-3]
+            self.parts[-1] = ("template", before)
+            text = text.capitalize() if not before.strip() else text
         self.parts.append(("measure", text))
         return self
 
@@ -4939,8 +4945,12 @@ def _clauses(sentence: str) -> list[str]:
             out[-1] += "; " + part
         elif part:
             out.append(part)
-    ended = [c if c.endswith((".", "!", "?")) else c + "." for c in out]
+    ended = [c if c.endswith((".", "!", "?", "。", "！", "？")) else c + "." for c in out]
     return [c[:1].upper() + c[1:] for c in ended]
+
+
+_RELATIVE_DAYS = frozenset({"today", "yesterday", "tomorrow"})
+_JA_STOP = re.compile(r"([。！？])\.")
 
 
 def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next_parts: list | None = None) -> dict:
@@ -4949,7 +4959,8 @@ def _result(parts: list[tuple], shape: str, rows: list[dict] | None = None, next
     quotes = "\n\n".join(row["sentence"] for row in rows)
     next_parts = next_parts or []
     return {
-        "text": "".join(part[1] for part in parts),
+        #: A full-width stop already ends a sentence: no ASCII one follows it (audit 1031 C38).
+        "text": _JA_STOP.sub(r"\1", "".join(part[1] for part in parts)),
         "grounding": rows,
         "support": grounding.support(quotes, rows),
         "shape": shape,
@@ -5083,7 +5094,9 @@ def _overview_answer(
     _overview_lead(out, question, subject, found, themes, filed)
     shown = _overview_groups(out, found, themes, stems)
     _overview_links(out, found, themes, stems, views)
-    if len(found) > shown:
+    if len(found) - shown == 1:
+        out.t("para", "ov_one_more")
+    elif len(found) > shown:
         out.t("para", "ov_more_a").m(out.count(len(found) - shown)).t("ov_more_b")
     result = _result(out.parts, "overview", out.rows, _overview_next(question, subject, found, themes))
     result["broad"] = True

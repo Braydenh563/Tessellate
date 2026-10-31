@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Composer: a list or a count has no opener or closer, one footer replaces four, a month and weekday keep their capital, a full-width stop gets no Latin one, list bullets are tight, the longest-note list is written, a joke asks for the note you saved, and plural agreement follows the count (audit 1031 C33 to C38, C43, C44, C46)
 - Words: one word count in Python (`core/cjk.word_count`) and one in the browser (`wordCount`); the two parallel counts are gone, and full-width punctuation (the colon, comma, brackets) is not a word in either (INBOX 1495, notes audit N29)
 - Composer: a compare opens with "Of these notes," or "Going by these notes," instead of claiming a search ("the notes I looked at", "this batch"), and its side headings start with a capital (audit 1031 C24)
 - Composer: "summarise my social notes" summarises every note filed under "Social connections" (a category that opens on the words asked), and a summary no longer shows the note's own emphasis as asterisks (audit 1031 C23)

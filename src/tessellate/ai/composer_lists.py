@@ -281,6 +281,11 @@ def _day(d: date, today: date) -> str:
     return _h.day(d, today)
 
 
+def _more_on_the_right(n: int) -> str:
+    """"Three more are on the right." and "One more is on the right." (audit 1031 C36)."""
+    return f"{realise.count_word(n).capitalize()} more {'is' if n == 1 else 'are'} on the right."
+
+
 def _plural(n: int, word: str) -> str:
     return f"{n} {word}" if n == 1 else f"{n} {word}s"
 
@@ -411,7 +416,7 @@ def _ordered(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     which = "oldest" if oldest else "newest"
     _block(out, f"Your notes, {which} first:", lines)
     if len(members) > SHOWN:
-        out.lines.append(f"{'More' if len(members) >= POOL_LIMIT else realise.count_word(len(members) - SHOWN).capitalize() + ' more'} are on the right.")
+        out.lines.append("More are on the right." if len(members) >= POOL_LIMIT else _more_on_the_right(len(members) - SHOWN))
     return True
 
 
@@ -523,7 +528,7 @@ def _listed(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     lines = [(f"{_title(view)}, {_day(view.written, today)}" if view.written else _title(view), view, view.sentences[0]) for view in shown]
     _block(out, f"You have {_plural_words(len(members), 'note')} {where}, {span}:", lines)
     if len(members) > SHOWN:
-        out.lines.append(f"{realise.count_word(len(members) - SHOWN).capitalize()} more are on the right.")
+        out.lines.append(_more_on_the_right(len(members) - SHOWN))
     return True
 
 
@@ -658,7 +663,7 @@ def _say_due(out, inside: list, label: str, said: str, today: date) -> None:  # 
         lines.append((f"{_day(day, today)}: {text}" + (f" ({view.title})" if titled else ""), view, sentence))
     _block(out, header, lines)
     if len(inside) > SHOWN:
-        out.lines.append(f"{realise.count_word(len(inside) - SHOWN).capitalize()} more are on the right.")
+        out.lines.append(_more_on_the_right(len(inside) - SHOWN))
 
 
 # --- kind questions (audit 1029 C34) ---------------------------------------------------------
@@ -765,7 +770,7 @@ def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
         lines = [(f"{_TICK.sub('', s.text).strip()}, in {_title(v)}", v, s) for v, s in items[:SHOWN]]
         _block(out, header, lines)
         if len(items) > SHOWN:
-            out.lines.append(f"{realise.count_word(len(items) - SHOWN).capitalize()} more are on the right.")
+            out.lines.append(_more_on_the_right(len(items) - SHOWN))
         return True
     verb = "has" if len(hits) == 1 else "have"
     if mode == "count":
@@ -774,7 +779,7 @@ def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     lines = [(f"{_title(v)}, {_holding_detail(v, got, kind, today)}", v, got[0]) for v, got in hits[:SHOWN]]
     _block(out, f"{_plural_words(len(hits), 'note').capitalize()} {verb} {label}:", lines)
     if len(hits) > SHOWN:
-        out.lines.append(f"{realise.count_word(len(hits) - SHOWN).capitalize()} more are on the right.")
+        out.lines.append(_more_on_the_right(len(hits) - SHOWN))
     return True
 
 

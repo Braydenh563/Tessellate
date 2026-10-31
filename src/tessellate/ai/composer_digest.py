@@ -478,25 +478,10 @@ def only_note_lines() -> frozenset[str]:
 
 
 #: Said in place of the "only note" claim when only the words were searched
-#: (blind test 2026-10-31, item 3), worded in turn like the claim it replaces.
-#: Kept short: the line is beside an answer, not part of it (gold 11 lost
-#: six points to a twelve-word one).
-ONLY_WORDS = (
-    "Only one note uses those words; search by meaning finds others.",
-    "Only one note has those words; search by meaning finds the rest.",
-    "That is the only one with those words; search by meaning finds others.",
-    "Only one note matches those words; search by meaning finds the rest.",
-)
-
-
-def only_words_line(claim: str) -> str:
-    """The words-only line for an "only note" claim: the claim's own turn in
-    its tuple picks the wording, so a retry that reworded the claim rewords
-    this too."""
-    natural = VOICES["natural"]["only_note"]
-    claim = claim.strip()
-    turn = natural.index(claim) if claim in natural else sum(map(ord, claim))
-    return ONLY_WORDS[turn % len(ONLY_WORDS)]
+#: (blind test 2026-10-31, item 3): one sentence in every voice (audit 1031
+#: C33), short because it sits beside an answer (gold 11 lost six points to a
+#: twelve-word one), and not a promise: search by meaning "could" find more.
+ONLY_WORDS = "Only one note has those words; search by meaning could find more."
 
 
 #: What a review is of (`_reviewed_word`): the only nouns `only_kind` is said with.

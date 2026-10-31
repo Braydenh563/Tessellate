@@ -297,6 +297,8 @@ _OVERVIEW_PAIRS: dict[str, dict[str, list[str]]] = {
 }
 _FAMILIES.update({
     "ov_also": {"natural": ["Other notes", "The rest"], "professional": ["Other entries", "Remaining entries"]},
+    #: The one left over, said as one (never "There are one more besides": audit 1031 C36).
+    "ov_one_more": {"natural": ["There is one more besides.", "And one more not shown here."], "professional": ["One further entry is not shown.", "One entry is not shown here."]},
     "ov_reads": {"natural": [", which reads ", ", with the words "], "professional": [", reading ", ", which reads "]},
 })
 _PAIRS.update(_OVERVIEW_PAIRS)
@@ -314,6 +316,7 @@ OVERVIEW_PHRASES = {
     "ov_shared_end": " of these notes.",
     "ov_more_a": "Plus ",
     "ov_more_b": " more.",
+    "ov_one_more": "Plus one more.",
     "ov_filed": " are filed under it",
     "ov_filed_one": " is filed under it",
     "ov_also": "Also",

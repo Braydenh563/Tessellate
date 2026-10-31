@@ -401,8 +401,8 @@ def _due(ctx: Ctx, win: tuple[date, date, str]) -> Reply | None:
         # (tests/test_due_in_ask_1018.py). A window it does not know (a
         # weekday, "the next 7 days") has no such path, so it is said here.
         return None if recognise.ahead_window(said) else _nothing_due(ctx, end, span)
-    head = compose.head("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
-        else compose.head("due_overdue", ctx.mood, span=span)
+    head = compose.frame("due", ctx.mood, count=f"{len(found)} dated item{'s' if len(found) != 1 else ''}", span=span) if found \
+        else compose.frame("due_overdue", ctx.mood, span=span)
     head = compose.sentence_case(head)
     lines = [head, *_grouped(found, today)]
     if overdue:
@@ -522,7 +522,7 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
     load = {d: sum(1 for e in found if e.day == d) for d in days}
     span = _range_words(start, end, said, today)
-    lines = [compose.sentence_case(compose.head("plan", ctx.mood, span=span))]
+    lines = [compose.sentence_case(compose.frame("plan", ctx.mood, span=span))]
     lines += _grouped(found, today, limit=10) if found else ["", "Nothing is dated in that time."]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:4]]
@@ -561,8 +561,8 @@ def _until(ctx: Ctx, subject: str) -> Reply | None:
         return None
     days = (ev.day - today).days
     lead = pick(ctx.seed, "until", (
-        f"{subject.strip().capitalize()} is {_days_away(days)} away, on {_long(ev.day)}." if days > 1 else f"{subject.strip().capitalize()} is {_days_away(days)}, {_long(ev.day)}.",
-        f"{_long(ev.day).capitalize()} is when it falls, which is {_days_away(days)} from today." if days > 1 else f"That falls {_days_away(days)}: {_long(ev.day)}.",
+        f"{compose.sentence_case(subject.strip())} is {_days_away(days)} away, on {_long(ev.day)}." if days > 1 else f"{compose.sentence_case(subject.strip())} is {_days_away(days)}, {_long(ev.day)}.",
+        f"{_long(ev.day)} is when it falls, which is {_days_away(days)} from today." if days > 1 else f"That falls {_days_away(days)}: {_long(ev.day)}.",
     ))
     return Reply(f"{lead}{_until_source(ev)}\n\n“{ev.text}”")
 
@@ -654,7 +654,7 @@ def _left(ctx: Ctx) -> Reply | None:
         return Reply(compose.say("left_none", ctx.mood))
     r = f"{len(reminders)} reminder{'s' if len(reminders) != 1 else ''}"
     t = f"{len(tasks)} unticked checklist item{'s' if len(tasks) != 1 else ''}"
-    lines = [compose.head("left", ctx.mood, r=r, t=t)]
+    lines = [compose.frame("left", ctx.mood, r=r, t=t)]
     if reminders:
         lines += ["", "**Reminders**"] + [_reminder_line(x, today) for x in reminders[:MAX_ITEMS]]
     if tasks:

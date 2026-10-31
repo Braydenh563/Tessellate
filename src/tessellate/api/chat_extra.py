@@ -110,6 +110,27 @@ def language_events(session: Session, language: str, *, web_on: bool) -> list[di
     return [{"type": "answer", "delta": "\n\n".join(part for part in (lead, body, chips) if part)}]
 
 
+_JOKE_FILED = frozenset({"joke", "jokes", "funny", "humour", "humor"})
+
+
+def saved_joke(session: Session, seed: str = "") -> tuple[int, str] | None:
+    """`(note id, its text)` of a note the person filed as a joke, by tag or by
+    category (#jokes, Fun, Humour), newest first and the next one for each
+    `seed`; None when there is none: "tell me a joke" is answered from them
+    before the app owns up to having none (audit 1031 C46)."""
+    from tessellate.entry import manager
+
+    found = []
+    for entry in session.scalars(select(Entry).where(*_visible()).order_by(Entry.created_at.desc()).limit(500)):
+        filed = {t.lower() for t in manager.shown_tags(entry)} | {str(manager.category_name_for(session, entry) or "").lower()}
+        if filed & _JOKE_FILED or "fun" in filed:
+            found.append(entry)
+    if not found:
+        return None
+    entry = found[sum(map(ord, seed)) % len(found)]
+    return entry.id, str(entry.content or "").strip()
+
+
 def mentioning(session: Session, word: str) -> int:
     """How many notes the notes search finds for `word` ("test" finds
     "testing"), for a ping's one line (INBOX 1485). The search the listing

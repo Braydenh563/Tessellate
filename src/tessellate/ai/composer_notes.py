@@ -208,7 +208,7 @@ def _read_recent(ctx: Ctx) -> tuple[list[str], date, date, str, str] | None:
 def _nothing(ctx: Ctx, wanted: list[str], span: str, shown: str) -> Reply:
     seed = ctx.seed
     span = compose.span_phrase(span)
-    lines = [compose.sentence_case(compose.head("recent_none", ctx.mood, topic=shown, span=span))]
+    lines = [compose.sentence_case(compose.frame("recent_none", ctx.mood, topic=shown, span=span))]
     before = next((n for n in ctx.notes if _made(n) and all(w in str(n.get("content") or "").lower() for w in wanted)), None)
     if before is not None:
         lines.append(pick(seed, "nt-last", PHRASES["recent_last"]).format(link=_link(before), day=_day(_made(before))))
@@ -227,8 +227,8 @@ def recent(ctx: Ctx) -> Reply | None:
         return _nothing(ctx, wanted, span, shown) if wanted else None
     n = len(hits)
     count = f"{n} note{_plural(n)}"
-    head = compose.sentence_case(compose.head("recent", ctx.mood, count=count, span=span, topic=shown) if wanted
-                                 else compose.head("recent_any", ctx.mood, count=count, span=span))
+    head = compose.sentence_case(compose.frame("recent", ctx.mood, count=count, span=span, topic=shown) if wanted
+                                 else compose.frame("recent_any", ctx.mood, count=count, span=span))
     lines = [head, ""] + [_item(note, wanted) for note in hits[:MAX_LISTED]]
     if n > MAX_LISTED:
         lines += ["", pick(ctx.seed, "nt-more", PHRASES["recent_more"]).format(n=n - MAX_LISTED)]
