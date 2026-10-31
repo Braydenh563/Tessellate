@@ -6238,7 +6238,7 @@ button.ghost.doc-template-choice[aria-checked="true"] {
     z-index: 2;
     margin-top: calc(-1 * var(--card-pad-y));
     padding-block: var(--card-pad-y) var(--space-2);
-    background: var(--card);
+    /* Bare at rest (INBOX 1489); the ground comes when it sticks (08-consistency.css). */
   }
   #sidebar {
     scrollbar-width: thin;

@@ -10853,3 +10853,45 @@ header#top-bar button.space-switcher-btn:focus-visible {
 #entry-list.is-rows li[data-colour] {
   box-shadow: inset 3px 0 0 var(--swatch);
 }
+/* **A sticky head is bare until it sticks** (INBOX 1489, "faint box behind the
+   header of the notes page"). The card is the surface; a head painting
+   `--card` again inside it stacked two translucent washes. A head needs a
+   ground only while rows pass under it: none at rest, the opaque modal ground
+   once stuck, per head (scroll-state container), as a `::before` so a hover
+   tint stays above it. Without scroll-state queries the old ground stays.
+   `tests/test_nested_surfaces_1489.py` holds the list. */
+@supports (container-type: scroll-state) {
+  #sidebar > .sidebar-head,
+  .contents-heading,
+  .timeline-bucket-head,
+  .note-edit-foot,
+  #capture .capture-commit-row {
+    container-type: scroll-state;
+  }
+  @container scroll-state(stuck: top) or scroll-state(stuck: bottom) {
+    #sidebar > .sidebar-head::before,
+    .contents-heading::before,
+    .timeline-bucket-head::before,
+    .note-edit-foot::before,
+    #capture .capture-commit-row::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: var(--modal-bg-opaque);
+    }
+    .contents-heading:is(:hover, :focus-visible)::before {
+      background-image: linear-gradient(var(--row-hover-bg), var(--row-hover-bg));
+    }
+  }
+}
+@supports not (container-type: scroll-state) {
+  #sidebar > .sidebar-head,
+  .contents-heading,
+  .timeline-bucket-head,
+  .note-edit-foot,
+  #capture .capture-commit-row {
+    background: var(--card);
+  }
+}

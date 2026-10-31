@@ -169,6 +169,8 @@ dialog[data-panel-moved]::backdrop {
   padding: 0;
   border: 0;
   background: transparent;
+  /* The pill is the one surface: no glow round the label (INBOX 1489). */
+  box-shadow: none;
   color: inherit;
   font: inherit;
   cursor: pointer;

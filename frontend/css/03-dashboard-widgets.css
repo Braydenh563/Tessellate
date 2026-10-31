@@ -636,7 +636,6 @@ header#top-bar select,
    button were the only blurred surfaces left on a machine asking for none. */
 :root[data-glass="off"] .notes-subtabs,
 :root[data-glass="off"] .library-subtabs,
-:root[data-glass="off"] .contents-heading,
 :root[data-glass="off"] .graph-zoom,
 :root[data-glass="off"] .scroll-top,
 :root[data-glass="off"] .toast,

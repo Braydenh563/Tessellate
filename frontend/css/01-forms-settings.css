@@ -2511,21 +2511,13 @@ button:not(.ghost) > .spinner {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--card);
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
+  /* Bare at rest, opaque only while stuck (08-consistency.css, INBOX 1489). */
+  background: none;
 }
-/* `.card button` switches a control's blur off (03-dashboard-widgets.css);
-   this heading is a sticky strip, the one blurred element on the page. */
-.card .contents-heading {
-  backdrop-filter: var(--glass-filter);
-  -webkit-backdrop-filter: var(--glass-filter);
-}
-/* The hover tint over the card's ground, never the tint alone: the heading is
-   sticky, and a 7% wash on its own turns into a window when rows scroll by. */
+/* The hover tint; while stuck it sits over the opaque ground (08-consistency.css). */
 .contents-heading:hover,
 .contents-heading:focus-visible {
-  background: linear-gradient(var(--row-hover-bg), var(--row-hover-bg)), var(--card);
+  background: var(--row-hover-bg);
 }
 .contents-heading-name {
   flex: 0 1 auto;
