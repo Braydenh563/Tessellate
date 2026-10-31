@@ -96,3 +96,63 @@ function nudgeUntaggedNotes() {
     action: { tab: "notes", filter: "is:untagged" },
   });
 }
+
+//: (Moved here from notes-list.js to pay for the paint gate in the gzip budget.)
+// One call per settled query, not per keystroke: the caller debounces, and a
+// reply that arrives after the box has moved on is dropped rather than
+// painting reasons for a query nobody is looking at any more.
+async function refreshNoteSearchWhy() {
+  const asked = noteSearch;
+  if (!asked) {
+    noteSearchWhy.clear();
+    return;
+  }
+  // What the person is looking at, when that is unambiguous: one note opened
+  // out in the list is the app's own "open note", and it is what makes the
+  // third signal (distance over the links) mean anything. Two open rows, or
+  // none, is not a context, and passing a guess would put "linked to the open
+  // note" on a note linked to something nobody is reading.
+  const open =
+    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null);
+  let body;
+  try {
+    // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search
+    // box shows a page, not a notebook, and a note past the fiftieth best
+    // match simply carries no reason chip rather than a wrong one.
+    body = await apiJson(
+      `/search?q=${encodeURIComponent(asked)}&kind=note,board,map&limit=50` +
+        (open ? `&entry_id=${open}` : "")
+    );
+  } catch {
+    // The list is already rendered and already correct; the reasons are the
+    // only thing missing, so a failed call leaves the notes alone.
+    return;
+  }
+  if (noteSearch !== asked) return;
+  noteSearchWhy.clear();
+  for (const hit of body?.hits || []) noteSearchWhy.set(hit.id, hit);
+  noteSearchCorrection = body?.corrected
+    ? { asked, corrected: body.corrected, ids: new Set((body.hits || []).map((hit) => hit.id)) }
+    : null;
+  //: **In place when the reasons change nothing but themselves** (perf-1031
+  //: item 5). The list was rebuilt a second time per settled query only to
+  //: draw the reason lines (180 ms each at 4x, 2,000 notes). A correction
+  //: ("showing results for") lists other notes when nothing matched, or stops
+  //: doing so; only then does the list redraw.
+  const noRows = !$("entry-list").querySelector(":scope > li[data-id]");
+  if (noteSearchCorrectionShown || (noteSearchCorrection && noRows)) renderEntries();
+  else paintSearchWhy();
+}
+
+function paintSearchWhy() {
+  const byId = new Map(allEntries.map((entry) => [entry.id, entry]));
+  for (const li of $("entry-list").querySelectorAll(":scope > li[data-id]:not(.row-shell)")) {
+    li.querySelector(":scope > .entry-why")?.remove();
+    const badge = whyThisResultChip(byId.get(Number(li.dataset.id)) || {});
+    if (!badge) continue;
+    const line = document.createElement("div");
+    line.className = "entry-why";
+    line.append(badge);
+    li.querySelector(":scope > .entry-meta")?.after(line);
+  }
+}

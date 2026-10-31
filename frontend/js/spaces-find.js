@@ -452,7 +452,7 @@ async function loadSpaces() {
   //: when there is something on screen to re-render and the cache actually has
   //: something in it, so this costs a fresh notebook nothing and cannot loop
   //: (nothing in `renderEntries` calls back into here).
-  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntries();
+  if (wasEmpty && spacesCache.length && $("entry-list")?.children.length) renderEntriesWhenShown();
 }
 
 //: INBOX 1a/38: says which space the capture form actually files into,
