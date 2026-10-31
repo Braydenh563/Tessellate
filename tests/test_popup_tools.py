@@ -49,7 +49,7 @@ def test_every_surface_reads_the_registry():
     reads = {
         "settings-panes.js": ["...POPUP_TOOLS.map"],
         "app-features.js": ["of POPUP_TOOLS", "function renderToolShortcutList"],
-        "settings-wiring.js": ['renderToolShortcutList($("shortcut-list-tools"))'],
+        "reveal-targets.js": ['renderToolShortcutList($("shortcut-list-tools"))'],
         "editor.js": ["POPUP_TOOLS.filter", 'keys: "Alt+="'],
     }
     for name, needles in reads.items():

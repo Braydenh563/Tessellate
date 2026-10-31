@@ -202,7 +202,7 @@ function showSettingsSection(name) {
   }
   if (name === "appearance") renderAppearance();
   if (name === "shortcuts") {
-    renderShortcutList();
+    ensureModule("reveal").then(() => renderShortcutList());
     renderCaptureCommand();
   }
   if (name === "account") renderAccount().catch(() => {});

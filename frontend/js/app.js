@@ -2162,7 +2162,7 @@ const LAZY_ENTRY_POINTS = {
   semanticNotice: ["semanticOffer", "semanticOnboardingOffer"],
   questionsView: ["initQuestionsView", "loadQuestions"],
   //: 2026-10-05, the next six: async or unread, reached by a gesture.
-  reveal: ["revealFeature", "packagesNoticeOpen"],
+  reveal: ["revealFeature", "packagesNoticeOpen", "openShortcuts"],
   onboarding: ["openOnboarding", "maybeShowConsoleViewIntro"],
   tour: ["openTour", "renderTourReplay"],
   updates: ["checkForUpdate", "applyUpdateNow", "showSourceUpdatedDialog", "askUpdateChoiceOnce"],

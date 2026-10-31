@@ -1396,76 +1396,6 @@ function setShortcutStatusError(isError) {
   }
 }
 
-function renderShortcutList() {
-  for (const listId of SHORTCUT_LIST_IDS) {
-    const list = $(listId);
-    if (list) buildShortcutList(list);
-  }
-}
-
-//: **The key chip is the button** (INBOX 810, Row actions): a column of
-//: thirty-one bordered "Change" buttons was the heaviest thing in the pane,
-//: louder than the keys it changes. Pressing the keys starts the rebind and
-//: pressing them again cancels it; its title says which ("Change" or
-//: "Cancel"), and the back-to-default is a quiet icon after the words.
-function buildShortcutList(list) {
-  list.replaceChildren();
-  for (const [id, def] of Object.entries(shortcuts)) {
-    const li = document.createElement("li");
-    const capturing = capturingShortcut === id;
-    const change = document.createElement("button");
-    change.className = "ghost small quiet shortcut-key";
-    change.type = "button";
-    const combo = document.createElement("kbd");
-    combo.textContent = capturing ? "Press keys…" : def.keys;
-    if (capturing) combo.classList.add("capturing");
-    //: A pencil says the keys are the way to change them (INBOX 1300 C22).
-    const pen = document.createElement("i");
-    pen.className = `ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`;
-    pen.setAttribute("aria-hidden", "true");
-    change.append(combo, pen);
-    change.title = capturing ? "Cancel" : "Change";
-    change.setAttribute(
-      "aria-label",
-      capturing ? `Cancel changing the shortcut for: ${def.label}` : `Change the shortcut for: ${def.label}, now ${def.keys}`
-    );
-    change.addEventListener("click", () => {
-      capturingShortcut = capturingShortcut === id ? null : id;
-      setShortcutStatus(
-        capturingShortcut ? "Press the keys you want, or Escape to cancel." : ""
-      );
-      renderShortcutList();
-      //: The list was redrawn: the focus goes back to the same row's keys.
-      list.querySelector(`[data-shortcut="${id}"] .shortcut-key`)?.focus();
-    });
-
-    const label = document.createElement("span");
-    label.textContent = def.label;
-    li.dataset.shortcut = id;
-    li.append(change, label);
-
-    // Only offer "default" when it isn't already the default.
-    const changed = def.keys !== DEFAULT_SHORTCUTS[id].keys;
-    if (changed) {
-      const revert = document.createElement("button");
-      revert.className = "ghost small quiet icon-only";
-      revert.type = "button";
-      setLabel(revert, "ph:arrow-counter-clockwise");
-      revert.title = `Back to ${DEFAULT_SHORTCUTS[id].keys}`;
-      revert.setAttribute("aria-label", revert.title);
-      revert.addEventListener("click", () => {
-        shortcuts[id].keys = DEFAULT_SHORTCUTS[id].keys;
-        saveShortcutOverrides();
-        renderShortcutList();
-      });
-      li.appendChild(revert);
-    }
-    list.appendChild(li);
-  }
-  //: Thirty-one rows: typed to (row 1643, `listFilter`).
-  listFilter(list, { label: "Filter shortcuts" })?.refresh();
-}
-
 // While rebinding, this handler runs before everything else and swallows the
 // keypress: otherwise pressing Ctrl+K to rebind it would also open the
 // palette you're trying to move.
@@ -1499,39 +1429,6 @@ function captureShortcutKey(event) {
   return true;
 }
 
-function openShortcuts() {
-  capturingShortcut = null;
-  setShortcutStatus("");
-  renderShortcutList();
-  //: **The editor's rows come from the editor's own table**
-  //: (DOCUMENTS_PLAN Phase 4 item 4: "a `?` shortcut sheet generated from the
-  //: same table so the two cannot disagree"). documents.js is lazily loaded,
-  //: so the section says where its contents are rather than sitting empty
-  //: when this dialog is opened before that bundle has ever been fetched.
-  ensureModule("appPalette").then(() => renderToolShortcutList($("shortcut-list-tools")));
-  const editorList = $("shortcut-list-documents");
-  const editorNote = $("shortcut-list-documents-note");
-  if (editorList && typeof renderDocShortcutSheet === "function") {
-    renderDocShortcutSheet(editorList);
-    editorNote?.classList.add("hidden");
-  } else if (editorNote) {
-    editorNote.classList.remove("hidden");
-  }
-  //: The board's rows, from the board's own table (whiteboard-commands.js),
-  //: and the section scrolled into view when "?" was pressed on a board.
-  const boardList = $("shortcut-list-whiteboard");
-  const boardNote = $("shortcut-list-whiteboard-note");
-  const onBoard = typeof wbCommandsLive === "function" && wbCommandsLive();
-  if (boardList && typeof renderWbShortcutSheet === "function") {
-    renderWbShortcutSheet(boardList);
-    boardNote?.classList.add("hidden");
-  } else if (boardNote) {
-    boardNote.classList.remove("hidden");
-  }
-  $("shortcuts-overlay").classList.remove("hidden");
-  if (onBoard) $("shortcut-head-whiteboard")?.scrollIntoView({ block: "start" });
-  $("shortcuts-close").focus();
-}
 function closeShortcuts() {
   // Stop listening for a rebind. Without this, closing the dialog mid-capture
   // leaves the handler swallowing every keypress in the app, the shortcut you

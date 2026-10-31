@@ -106,6 +106,7 @@ REACHED_AFTER_LOAD = {
     #: === "function"`; the mind's first tick fetches the bundle, and until
     #: it is here a far move walks.
     "popupToolEquation": "POPUP_TOOLS' open, which waits on ensureModule('appPalette') before the call",
+    "renderShortcutList": "settings.js asks for it in the .then of ensureModule('reveal'); settings-wiring's resetShortcuts and captureShortcutKey run only once a list built by this bundle is on screen",
     "renderToolShortcutList": "openShortcuts, which waits on ensureModule('appPalette') before the call",
     "docDropIfUntouched": "confirmLeavingUnsavedWork, past its `typeof docDirty` return: docDirty is declared by the same library bundle, so the call is reached only once it has loaded",
     "docTurnIntoMenu": "the selection bar's Turn into button, which selectionBarShow hides until the library bundle defines it",

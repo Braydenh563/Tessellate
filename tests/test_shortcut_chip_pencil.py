@@ -16,7 +16,7 @@ ROOT = JS_DIR.parents[1]
 
 
 def test_the_chip_carries_a_pencil_and_an_x_while_capturing():
-    js = (JS_DIR / "settings-wiring.js").read_text(encoding="utf-8")
+    js = (JS_DIR / "reveal-targets.js").read_text(encoding="utf-8")
     body = js.split("function buildShortcutList", 1)[1].split("\nfunction ", 1)[0]
     assert '`ph ${capturing ? "ph-x" : "ph-pencil-simple"} shortcut-edit`' in body
     assert "change.append(combo, pen)" in body

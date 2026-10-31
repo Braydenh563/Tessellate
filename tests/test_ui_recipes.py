@@ -5676,7 +5676,7 @@ def test_a_rows_repeated_action_is_quiet_and_three_fold_into_its_menu() -> None:
 
 def test_a_shortcuts_keys_are_its_rebind_button() -> None:
     """The key chip is the button (title "Change"); no column of Change."""
-    body = _function_body((ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8"), "buildShortcutList")
+    body = _function_body((ROOT / "frontend" / "js" / "reveal-targets.js").read_text(encoding="utf-8"), "buildShortcutList")
     assert '"ghost small quiet shortcut-key"' in body and "change.append(combo, pen)" in body
     assert 'change.title = capturing ? "Cancel" : "Change"' in body
     assert "textContent = capturingShortcut === id ? \"Cancel\" : \"Change\"" not in body
@@ -5888,7 +5888,7 @@ def test_a_long_list_is_typed_to_through_the_one_recipe() -> None:
     body = selects.split("function listFilter(", 1)[1][:3000]
     assert 'field.className = "search-field list-filter hidden"' in body
     assert 'event.key === "Escape"' in body and "list-filter-empty" in body
-    wiring = (ROOT / "frontend" / "js" / "settings-wiring.js").read_text(encoding="utf-8")
+    wiring = (ROOT / "frontend" / "js" / "reveal-targets.js").read_text(encoding="utf-8")
     assert "listFilter(list, { label: \"Filter shortcuts\" })" in wiring.split("function buildShortcutList", 1)[1][:4000]
     spaces = (ROOT / "frontend" / "js" / "spaces-find.js").read_text(encoding="utf-8")
     assert "listFilter(menu," in spaces.split("function renderSpaceMenu", 1)[1][:3000]
