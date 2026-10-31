@@ -3306,8 +3306,8 @@ def test_a_whole_window_mode_leaves_one_fading_dock_with_a_way_out() -> None:
             if "doc-focus-idle" in selector and "doc-focus-bar" in selector:
                 idle.append(body)
         stripped = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-        for block in re.finditer(r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", stripped, flags=re.S):
-            if "doc-focus-bar" in block.group(1) and "transition: none" in block.group(1):
+        for rule in re.finditer(r'\[data-motion="reduced"\]\)[^{}]*doc-focus-bar[^{}]*\{([^{}]*)\}', stripped):
+            if "transition: none" in rule.group(1):
                 reduced = True
     assert idle, "no idle rule for the floating dock"
     for body in idle:
@@ -4400,7 +4400,7 @@ def test_floating_panels_open_and_close_on_the_menu_recipe() -> None:
     css = (ROOT / "frontend" / "css" / "10-responsive.css").read_text(encoding="utf-8")
     enter = css.index(":is(.space-menu, .notif-panel,")
     enter_block = css[enter : css.index("}", enter)]
-    assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;" in enter_block
+    assert "animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;" in enter_block
     assert ":not(.hidden)" in enter_block.split("{")[0]
     leave = css.index(").hidden {\n  opacity: 0;\n  scale: 0.96;", enter)
     head = css[css.rindex(":is(", 0, leave) : leave]
@@ -5082,6 +5082,7 @@ SEG_IN_POPUPS = {
     "theme-seg": "Settings: a value",
     "fontsize-seg": "Settings: a value",
     "border-style-seg": "Settings: a value",
+    "motion-seg": "Settings: a value (Follow the system, Always on, Off; INBOX 1506)",
     "privacy-range": "Settings: a value",
     "log-view-toggle": "Settings: a view of one log",
 }
@@ -6117,7 +6118,7 @@ def test_the_file_viewer_is_two_docks_and_a_filmstrip() -> None:
     lazy = (ROOT / "frontend" / "css" / "lightbox-lazy.css").read_text(encoding="utf-8")
     for rule in (".lightbox .lightbox-topbar {", ".lightbox-bottom {", ".lightbox .lightbox-filmstrip {", ".lightbox.lightbox-idle .lightbox-topbar,"):
         assert rule in lazy, rule
-    assert re.search(r"prefers-reduced-motion: reduce\)\s*\{\s*\.lightbox \.lightbox-glide \{\s*transition: none", lazy)
+    assert re.search(r'\[data-motion="reduced"\]\) \.lightbox \.lightbox-glide \{\s*transition: none', lazy)
     for boot in ("00-tokens-shell", "02-chat-graph", "07-whiteboard-misc", "08-consistency"):
         text = (ROOT / "frontend" / "css" / f"{boot}.css").read_text(encoding="utf-8")
         for name in ("lightbox-topbar", "lightbox-dock", "lightbox-filmstrip", "lightbox-thumb"):
@@ -6718,3 +6719,50 @@ def test_close_is_the_last_control_of_every_popup_head() -> None:
             fill = re.search(r"(?:^|;)\s*background(?:-color)?:\s*([^;]+)", body)
             if rest and fill and not re.fullmatch(r"none|transparent|inherit|initial|unset", fill.group(1).strip()):
                 raise AssertionError(f"{path.name}: {rest[0][:70]} fills a head button at rest ({fill.group(1).strip()[:40]})")
+
+
+def test_the_motion_vocabulary_is_one_set() -> None:
+    """INBOX 1506 B: one set of durations, one settling curve, one gentle
+    overshoot, and everything the vocabulary moves is a transform or opacity."""
+    css = {p.name: re.sub(r"/\*.*?\*/", "", p.read_text(encoding="utf-8"), flags=re.S) for p in CSS}
+    tokens = css["00-tokens-shell.css"]
+    for name, value in (("fast", "0.12s"), ("base", "0.18s"), ("slow", "0.24s")):
+        assert re.search(rf"--motion-{name}:\s*{re.escape(value)};", tokens), f"--motion-{name} is {value}"
+    # One overshoot: the curve is declared once and passes 1 by a little, not a lot.
+    springs = re.findall(r"--ease-spring:\s*cubic-bezier\(([^)]*)\)", tokens)
+    assert len(springs) == 1 and not re.search(r"--ease-(?:overshoot|pop|bounce)\b", "".join(css.values()))
+    y1 = float(springs[0].split(",")[1])
+    assert 1.1 <= y1 <= 1.4, f"the overshoot is gentle, not {y1}"
+
+    # A menu: grows on the spring, its first eight rows arrive a step apart, no more.
+    responsive = css["10-responsive.css"]
+    assert "ui-grow var(--ui-slow) var(--ease-spring) 1ms" in responsive
+    assert ".action-menu:not(.hidden) > :nth-child(-n + 8)" in responsive
+    delays = re.findall(r"\.action-menu:not\(\.hidden\) > :nth-child\((\d+)\)\{animation-delay:([^}]*)\}", responsive)
+    assert [int(n) for n, _ in delays] == list(range(2, 9)), "rows 2 to 8 each have a step of delay, and nothing past 8"
+    assert all("var(--ui-step)" in d for _, d in delays)
+    for frames in ("ui-grow", "ui-row"):
+        body = re.search(r"@keyframes " + frames + r"\s*\{(.*?)\n\}", responsive, re.S).group(1)
+        assert set(re.findall(r"([a-z-]+)\s*:", body)) <= {"opacity", "translate", "scale"}, f"{frames} moves a layout property"
+
+    # A plus becomes a minus: the lazy sheet draws it from transforms only, the
+    # still sheet removes the turn, and nothing in the frontend uses SMIL.
+    lazy = css["library-lazy.css"]
+    pm = [(s, b) for s, b in re.findall(r"([^{}]*\.ui-pm[^{}]*)\{([^{}]*)\}", lazy)]
+    assert len(pm) >= 4, "the .ui-pm recipe moved; point this lint at it"
+    for selector, body in pm:
+        for m in re.finditer(r"transition:\s*([^;]*);", body):
+            assert re.fullmatch(r"transform var\(--ui-(?:fast|base|slow)\) var\(--ease-(?:out|spring)\)", m.group(1).strip()), (
+                f".ui-pm transitions transform on a token and a curve, not {m.group(1)}"
+            )
+    assert '<span class="ui-pm' in (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    still = css["motion-still.css"]
+    assert re.search(r'data-motion="reduced"\] \.action-menu > \*\s*\{\s*animation: none !important', still)
+    # Pseudo-elements are not valid inside `:is()`, so each is its own selector.
+    assert re.search(
+        r'data-motion="reduced"\] \.ui-pm,\s*:root\[data-motion="reduced"\] \.ui-pm::before,'
+        r'\s*:root\[data-motion="reduced"\] \.ui-pm::after\s*\{\s*transition: none !important',
+        still,
+    )
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    assert not re.search(r"<(?:animate|animateTransform|animateMotion|set)\b", html), "no SMIL in the page"

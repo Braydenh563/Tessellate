@@ -765,10 +765,8 @@ mark.text-highlight-grey { background: rgba(148, 163, 184, 0.25); }
     opacity: 0.55;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .shortcut-list kbd.capturing {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .shortcut-list kbd.capturing {
+  animation: none;
 }
 /* --- [[wiki links]] ----------------------------------------------------------- */
 .wiki-link {
@@ -1346,7 +1344,7 @@ button.rich-picker-row:is(:hover, :focus-visible) .rich-picker-tile {
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 .callout-foldable[open] > .callout-head::after {
   transform: rotate(45deg);

@@ -268,9 +268,11 @@ Lint: `tests/test_style_scale.py`
 
 ```
 --motion-fast: 0.12s   hover/press feedback, checkbox/toggle state
---motion-base: 0.16s   the default: colour, background, border, opacity
---motion-slow: 0.2s    a bigger move, panel/sidebar open, card lift
+--motion-base: 0.18s   the default: a chevron's turn, a menu, colour, opacity
+--motion-slow: 0.24s   a bigger move, dialog, panel/sidebar open, card lift
 ```
+
+(120, 180 and 240 ms since INBOX 1506 B; the base was 160 and the slow 200.)
 
 Same extraction method as the spacing/type scales: ten distinct transition
 durations in the wild (0.08s-0.25s, one written as `120ms`) collapsed to the
@@ -293,8 +295,9 @@ motion does not. `scratchpad/ui-sweeps/kebabfirst.js` samples every frame.
 curves beside the three durations: `--ease-out` (`cubic-bezier(0.2, 0.8, 0.2,
 1)`, the default: a control that answers the pointer arrives at once and
 settles), `--ease-in-out` (a thing that travels between two resting places)
-and `--ease-spring` (one overshoot, for a knob or a pop, never a surface; the
-switches' knob uses it). Every `transition` names a duration token and a curve
+and `--ease-spring` (the one gentle overshoot, `cubic-bezier(0.34, 1.3, 0.64, 1)`,
+which was 1.56 until INBOX 1506 B; for a knob, a pop, a menu opening from its
+trigger and a plus turning to a minus, never a surface; the switches' knob uses it). Every `transition` names a duration token and a curve
 token, or `linear`; never `transition: all`; an item with no curve runs on
 `ease` and fails the lint too. `tests/test_motion_tokens.py`. Measured before:
 125 transitions on `ease`, eleven raw durations, four hand-written curves.
@@ -310,9 +313,8 @@ a `background-image` or a background. `scratchpad/ui-sweeps/f2-hover.js` forces
 nothing: 101 of 571 with the filter gone, 0 after (the selected segment and
 tab excepted, which need none).
 
-**Not done, said plainly:** motion is a user setting (`prefers-reduced-motion`)
-that only some components still honour, each with its own `@media` block,
-see "What is not done yet" below. There is no gesture-driven motion anywhere
+**Not done, said plainly:** motion is a user setting, one resolved value
+(`data-motion`, see "What is not done yet" below). There is no gesture-driven motion anywhere
 in the app yet (drag/resize move the DOM directly; nothing hands off release
 velocity into a spring), so nothing here contradicts the apple-design skill's
 "avoid fixed-duration transitions for anything gesture-driven", that rule
@@ -472,13 +474,13 @@ the edge it lives on, and nothing moves to decorate.
   key in prefs.js), and the polish reads the `--ui-*` tokens
   (00-tokens-shell.css: `--ui-fast`, `--ui-base`, `--ui-slow`, `--ui-exit`,
   `--ui-step`), which are the `--motion-*` scale when on and `0s` when off;
-  the reduced-motion blankets in motion-still.css (a sheet that matches only while the OS hint or a switch is on) still the animations but
+  the reduced-motion blankets in motion-still.css (a sheet that matches only while `data-motion` is reduced or a switch is off) still the animations but
   leave transitions to the switch. **The large decorative motion keeps
   reduced motion and its own settings**: Atlas and the faces, the
   background art, the graph's simulation and the whiteboard (the blankets
   still zero their transitions under either reduced-motion switch). The
-  app's mark answers both: Reduce motion or Interface animations off holds
-  its final frame, and the system hint alone does not. Performance mode does not touch the switch: the
+  app's mark answers both: Motion reduced (off, or the system's request
+  under Follow the system) or Interface animations off holds its final frame. Performance mode does not touch the switch: the
   polish is the compositor's and cheap, which is the condition it was asked
   for on. `tests/test_motion_tokens.py` holds it (no reduced-motion block
   names a polish recipe, every `/* --- motion:` section reads `--ui-*`,
@@ -823,7 +825,8 @@ this table and its lint in the same commit as the feature, never after.
 | Acting on a rendered block (change its kind, fold, edit, copy, delete) | the block bar (`docBlockBarShow`, documents.js): a solid `.doc-block-bar` of `smallButton`s at the block's top right while the pointer is on it, lifted to body and placed by `docPlaceFixed`; the callout's kind is its own tile opening `calloutMenuItems` through `openMenuAtPoint`, the same list the Live view's `.cm-md-callout-kindbtn` opens. Every change is written through the surface after checking the source line is the block, and a delete offers Undo in its toast | `scratchpad/ui-sweeps/blockbar.js` |
 | Spacing, type, radius, shadow, motion | the tokens above; a px in a stylesheet is a lint failure | `tests/test_style_scale.py` |
 | A transition, a hover | a `--ui-*` duration for anything of the interface (`--motion-*` only for the decorative surfaces: Atlas, the graph, the whiteboard, the progress indicators) and an `--ease-*` curve on every transition, never `all`, never `box-shadow`; a hover is a colour (`--accent-surface-hover` for a solid button, `--hover-veil` over any other ground), never a `filter` | `tests/test_motion_tokens.py`, `scratchpad/ui-sweeps/f2-hover.js` |
-| Motion (a selection that moves, a panel that opens) | **What moves is the compositor's**: `opacity`, `transform`/`translate`/`scale`, a colour, on the `--motion-*` tokens. **A selection** is the one indicator recipe (08-consistency.css, "motion: one sliding indicator for every strip"): the strip's `::before` placed on the chosen option by `glideStrip` (shell-reminders.js) and moved by a `transform` animation on `--ui-slow`; a strip gets it by being a `.seg`, a `.tabs-line` or joining `GLIDE_STRIPS`, and a family whose chosen option has its own corner or fill sets `--glide-radius`, `--glide-fill`, `--glide-ring` there. No inset moves anywhere. **A panel** keeps its column or placement instant and moves only its contents: `aside[data-resizable]`'s children by `opacity` and `transform` toward the rail, a fixed side panel by `@starting-style` from its edge. **A page** fades in from 0.4 and settles up one `--space-1` (`.tab-page`, `--ui-base`, `opacity` and `translate`; never from 0, which is a blank frame, and never a rise of more than a step) and leaves at once; a heavy page's first visit is one page-sized skeleton that fades as the page does (`tabPlaceholder`). **A popup** fades its scrim in (`--ui-base`) and rises its card a step from 0.985 (`--ui-slow`), one `:where()` recipe for every overlay, and leaves the same way over `--ui-exit`. **A menu or popover** fades and grows from 0.96 out of its opener's corner (`ui-fade`, `ui-grow` 1ms late so no placement measures a transform), closing back over `--ui-exit`. **A press** is `scale: 0.97` and a deeper ground; **a focus ring** eases its colour; **a hover** eases a colour, never a shadow; **a list** settles in where its skeleton was (`.ui-settle`); **a toast** arrives from its edge and the others slide (`toastStack`). **The opening** is one curtain lifted once over a drawn first tab (`curtainShell`), and nothing that arrives late may move what is drawn: a late line keeps its line box, a script-drawn mark its room, a part that comes after a fetch is waited for unseen. **Never** a width or height in motion, nothing on first paint. **Governed by Interface animations** (`data-ui-motion`, the `--ui-*` tokens), not by reduced motion: on, it plays under reduced motion; off, it is instant | `tests/test_motion_recipes.py`, `tests/test_cheap_animations.py`, `tests/test_smooth_boot.py`, `scratchpad/ui-sweeps/motion1005.js`, `sidemotion.js`, `smooth1005-boot.js`, `smooth1005-tabs.js` |
+| Motion (a selection that moves, a panel that opens) | **What moves is the compositor's**: `opacity`, `transform`/`translate`/`scale`, a colour, on the `--motion-*` tokens. **A selection** is the one indicator recipe (08-consistency.css, "motion: one sliding indicator for every strip"): the strip's `::before` placed on the chosen option by `glideStrip` (shell-reminders.js) and moved by a `transform` animation on `--ui-slow`; a strip gets it by being a `.seg`, a `.tabs-line` or joining `GLIDE_STRIPS`, and a family whose chosen option has its own corner or fill sets `--glide-radius`, `--glide-fill`, `--glide-ring` there. No inset moves anywhere. **A panel** keeps its column or placement instant and moves only its contents: `aside[data-resizable]`'s children by `opacity` and `transform` toward the rail, a fixed side panel by `@starting-style` from its edge. **A page** fades in from 0.4 and settles up one `--space-1` (`.tab-page`, `--ui-base`, `opacity` and `translate`; never from 0, which is a blank frame, and never a rise of more than a step) and leaves at once; a heavy page's first visit is one page-sized skeleton that fades as the page does (`tabPlaceholder`). **A popup** fades its scrim in (`--ui-base`) and rises its card a step from 0.985 (`--ui-slow`), one `:where()` recipe for every overlay, and leaves the same way over `--ui-exit`. **A menu or popover** fades over `--ui-base` and grows from 0.94 out of its opener's corner on `--ui-slow` and `--ease-spring`, a short spring (`ui-fade`, `ui-grow` 1ms late so no placement measures a transform), closing back over `--ui-exit`; **an action menu's first eight rows** arrive a `--ui-step` apart, each sliding a `--space-1` in from the left (`ui-row`, 10-responsive.css; the ninth and later come with the menu). **A chevron** turns on `--ui-base` and `--ease-out` (one zero-weight rule on `.ph-caret-down` and `.contents-caret`; a family that names its own transition keeps it); **a plus becomes a minus** as in the recipe below. **A press** is `scale: 0.97` and a deeper ground; **a focus ring** eases its colour; **a hover** eases a colour, never a shadow; **a list** settles in where its skeleton was (`.ui-settle`); **a toast** arrives from its edge and the others slide (`toastStack`). **The opening** is one curtain lifted once over a drawn first tab (`curtainShell`), and nothing that arrives late may move what is drawn: a late line keeps its line box, a script-drawn mark its room, a part that comes after a fetch is waited for unseen. **Never** a width or height in motion, nothing on first paint. **Governed by Interface animations** (`data-ui-motion`, the `--ui-*` tokens), not by reduced motion: on, it plays under reduced motion; off, it is instant | `tests/test_motion_recipes.py`, `tests/test_cheap_animations.py`, `tests/test_smooth_boot.py`, `scratchpad/ui-sweeps/motion1005.js`, `sidemotion.js`, `smooth1005-boot.js`, `smooth1005-tabs.js` |
+| A plus that becomes a minus (a toggle that adds or shows more: the documents editor's Insert menu, INBOX 1506 B) | **`<span class="ui-pm" aria-hidden="true"></span>`** in place of a `ph-plus` glyph inside the toggle (a `<button aria-expanded>` or a `<summary>` of a `<details>`; the `.ui-pm` is its direct child). Two bars drawn from `currentColor`, so the whole turn is a `transform`: open, the glyph makes a half turn on `--ui-base` and `--ease-spring` while the upright bar folds to nothing (`scaleX(0)`) on `--ease-out`, and what is left is a minus; closed, it is a plus again. Takes `.ph-lead` for the gap before a label. Never a glyph swap, never `clip-path` or a size in motion. Its CSS is in library-lazy.css (out of the boot budget; a boot surface that adopts it moves the block); the reduced-motion sheet (motion-still.css) removes the turn along with a menu's overshoot and rows | `tests/test_ui_recipes.py` (`test_the_motion_vocabulary_is_one_set`) |
 | A notification (toast) | `toast`, `toastAction` or `toastProgress` in status.js. **Two rows** (INBOX 584, 847: "notification buttons are still in line with the x close button"): the first is `.toast-msg` and the close, the second is `.toast-actions` (one wrapper from `toastActions(...buttons)`, never a button appended to the toast itself) under the message and left-aligned with its words, so the close is alone in its corner and no action's box shares its row at 1440 or 390. Each action is `toastActionButton`'s `small .toast-action`, **a quiet text action** (INBOX 811: `--accent-text`, weight 600, no edge and no face at rest, the ghost tint under the pointer or the keyboard; the error toast's Report this the same). Spaced only by the grid's gaps (no part carries its own margin; never a bare link after the words); every control is `--toast-ctl` (`--target-min`) tall and the message's first line is padded to centre on the close, so a wrapped message keeps the close beside its first line; up to 30rem wide, the message `text-wrap: pretty`, so a sentence and its Undo stay one line on a desktop and a wrap never leaves one word alone. **Every action is kept** (INBOX 585): `toastAction(text, label, fn, { go })` records a row in the bell with the same label; `go` is plain data (`{ open: "entry"|"conversation"|"doc"|"board"|"reminder"|"capture", id }`, `{ tab }`, `{ settings, focus }`) re-resolved by id when pressed, so an opener works after a reload; an action with no `go` is one-shot (Done once pressed, Expired after a reload; an Undo only while its `pushUndo` entry is on the stack, or five minutes); `{ record: false }` only for a notice already recorded. It arrives and leaves by fading with 4px of travel (`toast-in`, `toast-out`, on `translate`), and every way out goes through `dismissToast`, never `note.remove()`, so none of them vanishes between two frames. **A toast yields to the focused control it covers** (WCAG 2.4.11): status.js's `focusin` listener puts `is-yielding` on `#toast-box` when a toast overlaps the control Tab just reached, and `#toast-box.is-yielding > .toast` fades to 0.12 and takes no clicks until focus moves off it; the box itself takes no clicks beside a narrow toast below 1100px, only its toasts do | `scratchpad/ui-sweeps/f2-skel.js`, `scratchpad/ui-sweeps/zoom.js` | `scratchpad/ui-sweeps/f2-skel.js` |
 | A list whose first rows are on their way | `showSkeletons(list, n)` before the fetch and `clearSkeletons(list)` after it (app.js): the `.skeleton` placeholders at the height of the list's own rows, `aria-busy` while they show, only ever into an empty list; the list's own render replaces them. Never a spinner or a blank card where the shape of the content is known. A dashboard widget mounts with two (`mountWidgetBody`) and they go the moment it draws anything of its own; no body ever says "Loading…" (INBOX 596). A Settings pane's list that fills from a request does the same (Packages, Skills, Tools, Personas, Backups, Privacy, Account: `showSkeletons` before the await, `clearSkeletons` after it, so a failed request leaves nothing busy) | `scratchpad/ui-sweeps/f2-skel.js`, `scratchpad/ui-sweeps/skeletons.js`, `scratchpad/ui-sweeps/settings-skeletons.js`, `tests/test_lazy_skeletons_598.py` |
 | A surface whose code or data is on its way (a lazy tab's first visit: Graph, Library, Documents; the dashboard's grid while it fills unseen) | **Its own outline, then its name** (INBOX 598): a lazy tab gets an entry in `TAB_SKELETONS` (navigation.js), a page-shaped set of `.skeleton` pieces built by `tabSkeletonPiece` and `tabSkeletonBar` (a dock, then the graph's canvas and dots, the library's chips and tiles, the documents list and the open page), and past `TAB_SKELETON_NAME_MS` (400) a `role="status"` line with the ring in the dock's middle: "Opening the graph…". The placeholder is stretched over the page (`align-self: stretch`; centred, it shrank to a line across the middle). The dashboard's grid, hidden while it fills, has `dashFillingSkeleton` over its own box; a return to the dashboard keeps what is drawn and swaps each widget in when it has drawn again (`refreshDashWidgets`), never an empty frame. Never one page-sized box, never a word alone | `tests/test_lazy_skeletons_598.py` (a `TAB_MODULES` tab without an outline fails), `scratchpad/ui-sweeps/loading598.js` (4x CPU, held bundles) |
@@ -1612,10 +1615,17 @@ it is.
   `getComputedStyle` and `getBoundingClientRect`. A change to a surface is
   still driven in a real browser before it is called done. **Look at what you
   change; it costs a minute.**
-- **Reduced motion is honoured per component.** Density is a multiplier over
-  the spacing scale and duration is the `--motion-*` scale above, but
-  `prefers-reduced-motion` is still a set of `@media` blocks in the stylesheets
-  that need one, not a single rule.
+- **Reduced motion is one resolved value** (INBOX 1506). The Motion setting
+  (Follow the system, Always on, Off; stored in `motion`, the old `auto` and
+  `reduced` read as follow and off) is resolved with Performance mode and the
+  system's request into `data-motion="reduced|full"` on the root by
+  `MOTION.apply` (theme-boot.js, the only place the raw `prefers-reduced-motion`
+  query is written; `tests/test_motion_resolved.py`). A stylesheet asks
+  `:where(:root[data-motion="reduced"]) .thing` (zero extra specificity, so it
+  cascades as the old `@media` block did), a script asks `reducedMotionWanted()`;
+  neither writes the query. "Always on" beats Performance mode, being the
+  person's own word; a browser that asks for calm by default no longer decides
+  for someone who wants the animation.
 - **Documents has no tab of its own, on purpose.** It was a tab once and moved
   back: the complaint it answered was about being conflated with the Library's
   catch-all view, so Documents now has a view of its own inside the Library. The
@@ -1873,8 +1883,9 @@ steal each other's box. A search well's input stretches to the well
 
 Durations come from the `--motion-*` scale. Beyond that:
 
-> **Every indefinite animation needs a `prefers-reduced-motion` branch, and
-> the branch keeps the information.** Stopping a spinner is right; removing
+> **Every indefinite animation needs a reduced-motion branch (a rule under
+> `:where(:root[data-motion="reduced"])`), and the branch keeps the
+> information.** Stopping a spinner is right; removing
 > the thing it was telling you is not.
 
 Both animations added in this pass follow it: the working ring (`.spinner`)

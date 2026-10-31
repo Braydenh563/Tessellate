@@ -68,11 +68,9 @@
     max-width: none;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .first-steps-fill,
-  .first-steps-fold .ph {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .first-steps-fill,
+:where(:root[data-motion="reduced"]) .first-steps-fold .ph {
+  transition: none;
 }
 /* Step one is a name field in the tile: the tile, not a button. */
 .start-step-form {

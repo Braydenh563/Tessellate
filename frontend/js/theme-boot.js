@@ -7,6 +7,49 @@
 // end of the body, which is far too late to prevent the flash. The theme
 // VALUES are the only thing repeated; keep them in step with
 // THEME_PRESETS, or a themed reload will flicker.
+//: **The one reading of "should it move"** (INBOX 1506). The Motion setting
+//: has three choices, "follow" (the system's reduced-motion request, the
+//: default), "on" (animate whatever the system asks) and "off"; the stored
+//: words before this were "auto" and "reduced", read as follow and off.
+//: `MOTION.apply` resolves choice, Performance mode and the system's request
+//: to `data-motion` on the root, "reduced" or "full", and the stylesheets
+//: and scripts read only that (`reducedMotionWanted`). This file is the only
+//: place the raw `prefers-reduced-motion` query is written
+//: (`tests/test_motion_resolved.py`). `cause` says why it is reduced
+//: ("off", "os", "perf") for the companion's hint; "on" beats Performance
+//: mode, because "Always on" is the person's own word.
+const MOTION = {
+  query: window.matchMedia("(prefers-reduced-motion: reduce)"),
+  choice(raw) {
+    return raw === "on" || raw === "off" ? raw : raw === "reduced" ? "off" : "follow";
+  },
+  state: { choice: "follow", perf: false },
+  cause: "",
+  apply(choice, perf) {
+    const s = MOTION.state;
+    if (choice !== undefined) s.choice = MOTION.choice(choice);
+    if (perf !== undefined) s.perf = Boolean(perf);
+    MOTION.cause =
+      s.choice === "on" ? "" : s.choice === "off" ? "off" : MOTION.query.matches ? "os" : s.perf ? "perf" : "";
+    const root = document.documentElement;
+    root.dataset.motion = MOTION.cause ? "reduced" : "full";
+    //: The blankets are a sheet that matches only while one switch is on (motion-still.css).
+    const sheet = document.getElementById("motion-still-sheet");
+    if (sheet) sheet.media = MOTION.cause || root.dataset.uiMotion === "off" ? "all" : "not all";
+    return root.dataset.motion;
+  },
+};
+//: Every script asks this, never `matchMedia`; false until a page has booted.
+function reducedMotionWanted() {
+  return document.documentElement.dataset.motion === "reduced";
+}
+//: The system's request can change while the page is open; `motionchange` lets
+//: settings.js repaint what reads it (the companion, the hints).
+MOTION.query.addEventListener?.("change", () => {
+  MOTION.apply();
+  document.dispatchEvent(new Event("motionchange"));
+});
+
 (function () {
   const _r = document.documentElement;
   const THEMES = {
@@ -76,11 +119,8 @@
   const perf = perfPref === "on" || (perfPref === "auto" && (small || lessGlass));
   _r.dataset.perf = perf ? "on" : "off";
   _r.dataset.glass = perf ? "off" : pref("glass", "on");
-  _r.dataset.motion = perf ? "reduced" : pref("motion", "auto");
   _r.dataset.uiMotion = pref("ui-motion", "on");
-  // The blankets for these two switches are a sheet that matches only while one is on (motion-still.css).
-  const stillSheet = document.getElementById("motion-still-sheet");
-  if (stillSheet) stillSheet.media = _r.dataset.motion === "reduced" || _r.dataset.uiMotion === "off" ? "all" : "(prefers-reduced-motion: reduce)";
+  MOTION.apply(pref("motion", "follow"), perf);
   _r.dataset.themePreset = themePreset || "";
   _r.style.setProperty("--radius", pref("radius", "14") + "px");
   _r.style.setProperty("--glass-blur", pref("glass-blur", "14") + "px");

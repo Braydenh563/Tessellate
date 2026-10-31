@@ -181,7 +181,7 @@ def test_a_frame_fits_its_contents_from_a_handle_a_corner_and_its_menu():
     wb = frontend_text("whiteboard.js")
     fit = _body("whiteboard.js", "wbFrameFit")
     assert "WB_FRAME_FIT_MARGIN = 32" in wb and "wbPushUndo({ action: \"move\"" in fit
-    assert "holds nothing to fit" in fit and "prefers-reduced-motion" in fit and "150ms" in fit
+    assert "holds nothing to fit" in fit and "reducedMotionWanted()" in fit and "150ms" in fit
     assert "wbFrameFit(" in wb[wb.index('const handle = e.target.closest?.(".wb-resize-handle, .wb-map-resize-grip");'):][:900]
     assert 'id: "fit-frame"' in frontend_text("whiteboard-commands.js")
 

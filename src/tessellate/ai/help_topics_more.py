@@ -90,7 +90,7 @@ MORE_TOPICS: list[dict] = [
             "or drop in instead, turn on Showy entrances in Settings, "
             "Appearance, Atlas and faces. The rest of the time it sits, looks around, "
             "stretches, yawns, grooms, sniffs, sighs or shakes itself off. With "
-            "Reduce motion on, or Interface animations off, it only fades or "
+            "Motion off, or Interface animations off, it only fades or "
             "stays put. To keep it still, set Corner companion to Off in "
             "Settings, Appearance, Atlas and faces."
         ),
@@ -121,7 +121,7 @@ MORE_TOPICS: list[dict] = [
             "legs dangling or kicking, lying down, stretching, or swinging "
             "from the bar. Wherever it ends, it never covers a button: come "
             "down on one and it moves only to the nearest clear place. With "
-            "Reduce motion on, it simply appears where it lands."
+            "Motion off, it simply appears where it lands."
         ),
         "badge": {"label": "Corner companion", "section": "appearance", "target": "avatar-buddy-row"},
     },
@@ -158,7 +158,7 @@ MORE_TOPICS: list[dict] = [
             "chat's replies included. Assistant avatar, in the same place, swaps "
             "the face on the assistant's chat replies, the popup agent and the "
             "guide between Atlas and the app's animated emblem (it holds still "
-            "under Reduce motion or with Interface animations off); other "
+            "under Motion off or with Interface animations off); other "
             "personas keep their own faces. "
             "Atlas's face follows the app's mood: "
             "thinking while an answer runs, happy when it lands, worried at an "
@@ -187,7 +187,7 @@ MORE_TOPICS: list[dict] = [
             "Masculine, Feminine; never read from a name), and Dashboard mark "
             "swaps the dashboard's logo for a face. Your own face is in "
             "Settings, Profile, Your look: Shuffle redraws it, and Choose parts "
-            "yourself sets any part by hand. Reduce motion stops the animation."
+            "yourself sets any part by hand. Motion off stops the animation."
         ),
         "badge": {"label": "Atlas and faces", "section": "appearance", "target": "avatar-motion-row"},
     },
@@ -725,7 +725,7 @@ MORE_TOPICS: list[dict] = [
             "and carries on when you come back. Movement sets how much it moves and Intensity "
             "how strong it is. Page background in Theme & colour sets the "
             "colour under it. Performance mode and Battery-efficient mode both "
-            "stop it, and so does Reduce motion."
+            "stop it, and so does Motion off."
         ),
         "badge": {"label": "Animated background", "section": "appearance", "target": "bg-style-row"},
     },
@@ -749,10 +749,13 @@ MORE_TOPICS: list[dict] = [
             "are marked On this device: a phone and a computer each keep their "
             "own, while colours and fonts follow you). Effects & accessibility: "
             "Performance mode, the glass's sheen, blur and opacity, Progress "
-            "indicators, Reduce motion (stills Atlas, the background art, the "
-            "graph and the whiteboard) and Interface animations (on by default: "
-            "a button's press, menus and dialogs opening, a tab's sliding marker, "
-            "even with Reduce motion on; off makes them instant) with Reveal "
+            "indicators, Motion (Follow the system, Always on or Off: it stills "
+            "Atlas, the background art, the graph and the whiteboard when your "
+            "browser asks for reduced motion, and Always on keeps them moving "
+            "anyway) and Interface animations (on by default: "
+            "a button's press, menus and dialogs opening, a chevron turning, a "
+            "tab's sliding marker, even with Motion off bar a menu's spring and "
+            "its rows arriving in turn; off makes them instant) with Reveal "
             "replies under it (a reply no model wrote rises into place). Advanced has "
             "Custom CSS. Ctrl+Shift+L "
             "switches light and dark from anywhere."
@@ -2177,7 +2180,7 @@ MORE_TOPICS.extend(
                 "through, while the focused control is under it. For a screen "
                 "reader every tab has one main landmark, editors and panels have "
                 "names, and resize grips say how wide a panel is. Settings, "
-                "Appearance has High contrast, Reduce motion, Interface animations, "
+                "Appearance has High contrast, Motion, Interface animations, "
                 "Text size and Zoom."
             ),
             "badge": {"label": "Appearance", "section": "appearance"},

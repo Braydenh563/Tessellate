@@ -93,7 +93,7 @@ const LOOK_ROWS = [
   { key: "font", id: "font-seg" },
   { key: "density", id: "density-seg", ui: "auto" },
   { key: "contrast", id: "contrast-toggle", on: "on", base: "off" },
-  { key: "motion", id: "reduce-motion-toggle", on: "reduced", off: "auto" },
+  { key: "motion", id: "motion-seg", seg: "motionChoice" },
   { key: "ui-motion", id: "ui-motion-toggle", on: "on", off: "off" },
   { key: "reply-motion", id: "reply-motion-toggle", on: "on", off: "off", base: "on" },
   { key: "panel-pos", id: "panel-restore-toggle", on: "on", off: "off", base: "on" },

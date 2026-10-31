@@ -116,10 +116,8 @@ dialog[data-panel-moved]::backdrop {
     transition: margin-inline var(--ui-base) var(--ease-out);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #app-main > * {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) #app-main > * {
+  transition: none;
 }
 
 /* Minimise (INBOX 1475): the hidden panel keeps its state; the pills sit in a

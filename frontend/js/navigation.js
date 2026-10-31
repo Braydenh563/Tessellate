@@ -2614,7 +2614,7 @@ function initScrollTopButton() {
   button.title = "Back to top";
   button.setAttribute("aria-label", "Back to top");
   button.addEventListener("click", () => {
-    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const smooth = !reducedMotionWanted();
     const target = scrollTopTargetEl();
     //: **In a chat, the thing you have scrolled away from is the bottom.**
     //: Reported: *"the back to top button in the chat should be a back to

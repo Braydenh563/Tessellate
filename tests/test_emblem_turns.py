@@ -82,7 +82,7 @@ def _blankets() -> list[str]:
         text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
         for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", text):
             body = match.group(2)
-            if "animation-duration: 0.01ms !important" in body:
+            if "animation-duration: 0.001ms !important" in body:
                 found.append(match.group(1).strip())
     return found
 

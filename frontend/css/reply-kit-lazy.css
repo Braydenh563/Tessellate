@@ -401,17 +401,15 @@ button.reply-by {
   font-style: normal;
   line-height: 1;
   transform: rotate(-90deg);
-  transition: transform var(--ui-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .grounding-fold[open] > .fold-summary::before {
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .grounding-fold > .fold-summary::before {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .grounding-fold > .fold-summary::before {
+  transition: none;
 }
 
 .grounding-body {

@@ -212,8 +212,9 @@ Open a section for the detail.
   and corners. A drawn face for every person and persona, and an optional
   corner companion.
 - An Interface animations switch (Settings, Appearance, Effects & accessibility)
-  turns the short fades and slides off or on, apart from Reduce motion, which
-  stills the large movement. A Back and Forward list in the status bar shows
+  turns the short fades and slides off or on, apart from Motion (Follow the
+  system, Always on or Off), which governs the large movement and can ignore a
+  browser that asks for reduced motion by default. A Back and Forward list in the status bar shows
   where you have been, with an icon for each kind.
 - Keyboard and screen reader support: named controls, 4.5:1 contrast, a layout
   that holds at 400% zoom, and a switch for single-key shortcuts.

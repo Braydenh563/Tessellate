@@ -27,6 +27,9 @@ const PREFS_SCHEMA = {
   //: Interface animations: "on" (the default) or "off". Its absence must
   //: read as on, which theme-boot.js and every reader of the attribute rely on.
   "ui-motion": { default: "on", version: 1 },
+  //: Motion: "follow" (the default), "on" or "off" (INBOX 1506); version 2 turned
+  //: the stored "auto" and "reduced" into follow and off.
+  motion: { default: "follow", version: 2, migrate: (raw) => (raw === "reduced" ? "off" : raw === "auto" ? "follow" : raw) },
 };
 
 function prefsStore() {

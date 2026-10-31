@@ -2806,7 +2806,7 @@ body.printing-doc #doc-preview p,
 }
 
 .wb-lib-caret {
-  transition: transform var(--motion-fast) var(--ease-out);
+  transition: transform var(--ui-base) var(--ease-out);
 }
 
 .wb-lib-group:not([open]) .wb-lib-caret {
@@ -4057,10 +4057,8 @@ button.ghost.doc-template-choice.wb-template-choice {
   50% { opacity: 0.35; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ocr-engine-dot.is-busy {
-    animation: none;
-  }
+:where(:root[data-motion="reduced"]) .ocr-engine-dot.is-busy {
+  animation: none;
 }
 
 /* The popover opens under its button and hangs left from its right edge: it
@@ -5719,10 +5717,8 @@ button.ghost.doc-template-choice.wb-template-choice {
     transform: scale(0.3);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .wb-laser-dot {
-    animation-duration: 0.15s;
-  }
+:where(:root[data-motion="reduced"]) .wb-laser-dot {
+  animation-duration: 0.15s;
 }
 
 /* The template gallery's group heads (INBOX 788, `openDocTemplateDialog`):
@@ -7775,4 +7771,39 @@ input[type="color"].wb-mixed {
     margin: calc(var(--space-3) * -1);
     background-clip: padding-box;
   }
+}
+
+/* --- motion: an Insert menu's chevron turns open, as a select's does ------- */
+:is([aria-expanded="true"], [open] > summary) > :is(.doc-toolbar-menu-caret, .wb-menu-caret) {
+  transform: rotate(180deg);
+}
+/* --- motion: a plus becomes a minus (INBOX 1506 B; the vocabulary is in
+   08-consistency.css, "one vocabulary for what opens and folds") --------- */
+.ui-pm {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: calc(-0.12em + var(--ph-ink-dy));
+  transition: transform var(--ui-base) var(--ease-spring);
+}
+.ui-pm::before,
+.ui-pm::after {
+  content: "";
+  position: absolute;
+  inset-block: calc(50% - 1px);
+  inset-inline: 0.2em;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  transition: transform var(--ui-base) var(--ease-out);
+}
+.ui-pm::after {
+  transform: rotate(90deg);
+}
+:is([aria-expanded="true"], [open] > summary) > .ui-pm {
+  transform: rotate(180deg);
+}
+:is([aria-expanded="true"], [open] > summary) > .ui-pm::after {
+  transform: rotate(90deg) scaleX(0);
 }

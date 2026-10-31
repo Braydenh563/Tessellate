@@ -274,5 +274,5 @@ def test_reduced_motion_re_declares_rather_than_removes_the_transition() -> None
     back."""
     idx = CSS.index(".typing-thinking-word")
     reduced = CSS[idx : idx + 1200]
-    assert "@media (prefers-reduced-motion: reduce)" in reduced
+    assert ':where(:root[data-motion="reduced"]) .typing-thinking-word' in reduced
     assert reduced.count("transition:") >= 2

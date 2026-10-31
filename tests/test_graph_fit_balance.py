@@ -52,7 +52,7 @@ SCRIPT = "\n".join(
         """
 const document = { documentElement: { dataset: {} } };
 const gcFitInsets = () => null;
-const window = { matchMedia: () => ({ matches: false }) };
+const reducedMotionWanted = () => false;
 const gcVisibleAtTime = () => true;
 let got = null;
 const d3 = { zoomIdentity: { translate(x, y) { return { scale(k) { return { x, y, k }; } }; } } };

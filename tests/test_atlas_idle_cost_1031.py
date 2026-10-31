@@ -50,8 +50,6 @@ def test_an_away_companion_may_not_move() -> None:
         r"""
 const root = { dataset: {}, attrs: new Set(), hasAttribute(k) { return this.attrs.has(k); } };
 globalThis.document = { documentElement: root };
-globalThis.matchMedia = () => ({ matches: false });
-const ATLAS_REDUCE_QUERY = null;
 """
         + _fn(MOTION, "atlasMotionOK")
         + r"""

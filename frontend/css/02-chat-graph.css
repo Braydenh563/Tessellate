@@ -89,19 +89,17 @@
 }
 /* Reduced motion keeps the information and drops the movement, per DESIGN.md:
    the row still fades rather than jumping, it just does not travel. */
-@media (prefers-reduced-motion: reduce) {
-  .agent-steps > *,
-  .chat-sources > *,
-  .agent-step-group-body > * {
-    animation-name: step-fade;
+:where(:root[data-motion="reduced"]) .agent-steps > *,
+:where(:root[data-motion="reduced"]) .chat-sources > *,
+:where(:root[data-motion="reduced"]) .agent-step-group-body > * {
+  animation-name: step-fade;
+}
+@keyframes step-fade {
+  from {
+    opacity: 0;
   }
-  @keyframes step-fade {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  to {
+    opacity: 1;
   }
 }
 .agent-steps>* {
@@ -1354,12 +1352,10 @@ body.graph-fullscreen-on .sidebar-panel {
    the pointer is on it. Taking the scale away as well would leave a reader who
    has asked for less motion with no hover feedback on the graph at all beyond
    a slightly brighter halo. */
-@media (prefers-reduced-motion: reduce) {
-  .graph-node .graph-halo,
-  .graph-node .graph-core,
-  .graph-node .graph-orb-shine {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .graph-node .graph-halo,
+:where(:root[data-motion="reduced"]) .graph-node .graph-core,
+:where(:root[data-motion="reduced"]) .graph-node .graph-orb-shine {
+  transition: none;
 }
 .graph-node .graph-core.graph-pinned {
   stroke: var(--warn);
@@ -1649,23 +1645,21 @@ button.recording.live-level {
   transform-origin: bottom;
   transition: transform var(--motion-fast) linear;
 }
-@media (prefers-reduced-motion: reduce) {
-  /* The scrolling bars are motion, same as the pulse they replaced, fall
-     back to a fixed ring instead, same as reduced-motion already did. */
-  .mic-bars {
-    display: none;
-  }
-  /* Covers the gap before .live-level's own fixed-ring rule below applies, 
-     between "recording" and real mic signal arriving, which pulse-rec's
-     keyframe animation never respected on its own. */
-  button.recording:not(.live-level) {
-    animation: none;
-    box-shadow: 0 0 0 4px var(--recording-ring);
-  }
-  button.recording.live-level {
-    box-shadow: 0 0 0 4px var(--recording-ring);
-    transition: none;
-  }
+/* The scrolling bars are motion, same as the pulse they replaced, fall
+   back to a fixed ring instead, same as reduced-motion already did. */
+:where(:root[data-motion="reduced"]) .mic-bars {
+  display: none;
+}
+/* Covers the gap before .live-level's own fixed-ring rule below applies, 
+   between "recording" and real mic signal arriving, which pulse-rec's
+   keyframe animation never respected on its own. */
+:where(:root[data-motion="reduced"]) button.recording:not(.live-level) {
+  animation: none;
+  box-shadow: 0 0 0 4px var(--recording-ring);
+}
+:where(:root[data-motion="reduced"]) button.recording.live-level {
+  box-shadow: 0 0 0 4px var(--recording-ring);
+  transition: none;
 }
 /* --- meeting notes (§17) ---------------------------------------------------------- */
 /* The live waveform. Full width of the dialog and 5rem tall, which is the
@@ -1838,16 +1832,14 @@ button.recording.live-level {
    opacity, which moves nothing across the screen, so the placeholder still
    says "loading" rather than "empty" (DESIGN.md: the branch keeps the
    information). */
-@media (prefers-reduced-motion: reduce) {
-  .skeleton,
-  .entry-list li.skeleton {
-    animation: none;
-    background-position: 200% 0;
-  }
-  .skeleton::before,
-  .skeleton::after {
-    animation: skeleton-breathe 1.6s ease-in-out infinite alternate;
-  }
+:where(:root[data-motion="reduced"]) .skeleton,
+:where(:root[data-motion="reduced"]) .entry-list li.skeleton {
+  animation: none;
+  background-position: 200% 0;
+}
+:where(:root[data-motion="reduced"]) .skeleton::before,
+:where(:root[data-motion="reduced"]) .skeleton::after {
+  animation: skeleton-breathe 1.6s ease-in-out infinite alternate;
 }
 @keyframes skeleton-breathe {
   to {
@@ -1934,17 +1926,12 @@ kbd {
     opacity: 1;
   }
 }
+/* The wait keeps its ground, without the sheen. */
+:where(:root[data-motion="reduced"]) .art-holder:empty {
+  animation: none;
+}
 /* Less motion asked for, by the system or the app: the sky is cut in, as
    the sketch itself holds still (`startArt`). */
-@media (prefers-reduced-motion: reduce) {
-  .art-holder > canvas:not(.art-veil) {
-    transition: none;
-  }
-  /* The wait keeps its ground, without the sheen. */
-  .art-holder:empty {
-    animation: none;
-  }
-}
 :root[data-motion="reduced"] .art-holder > canvas:not(.art-veil) {
   transition: none;
 }
@@ -2203,11 +2190,10 @@ kbd {
 :root[data-progress-motion="always"] .msg.is-generating::before {
   animation: generating-sweep 2.6s linear infinite !important;
 }
-/* The spinner recipe's two overrides, in one place. The app's own Reduce
-   motion (`data-motion="reduced"`, the blanket above) would stop the ring
-   dead, so unless progress motion is "always" the ring breathes through it,
-   as it does under the OS setting (01-forms-settings.css); and "always"
-   turns it regardless, last, so it wins when both are set. */
+/* The spinner recipe's two overrides, in one place. Reduced motion
+   (`data-motion="reduced"`, the blanket in motion-still.css) would stop the
+   ring dead, so unless progress motion is "always" the ring breathes through
+   it; and "always" turns it regardless, last, so it wins when both are set. */
 :root[data-motion="reduced"]:not([data-progress-motion="always"]) .spinner {
   animation: spinner-pulse var(--spinner-pulse) ease-in-out infinite !important;
 }
@@ -2222,11 +2208,9 @@ kbd {
 :root[data-progress-chosen][data-progress-motion="always"] .entry-list li.skeleton {
   animation: shimmer 2s ease-in-out infinite !important;
 }
-@media not all and (prefers-reduced-motion: reduce) {
-  :root[data-progress-motion="always"] .skeleton,
-  :root[data-progress-motion="always"] .entry-list li.skeleton {
-    animation: shimmer 2s ease-in-out infinite !important;
-  }
+:root[data-progress-motion="always"]:not([data-motion="reduced"]) .skeleton,
+:root[data-progress-motion="always"]:not([data-motion="reduced"]) .entry-list li.skeleton {
+  animation: shimmer 2s ease-in-out infinite !important;
 }
 :root[data-progress-motion="always"] button.recording {
   animation: pulse-rec 1.2s ease-in-out infinite !important;
@@ -3670,10 +3654,8 @@ mark.lightbox-hit {
 }
 /* Someone who asked for less motion still gets the full-strength panel on
    hover: only the fade between the two states goes. */
-@media (prefers-reduced-motion: reduce) {
-  .graph-minimap > * {
-    transition: none;
-  }
+:where(:root[data-motion="reduced"]) .graph-minimap > * {
+  transition: none;
 }
 .graph-minimap.hidden {
   display: none;
@@ -4856,12 +4838,10 @@ button.recording.icon-btn {
   animation: pulse-rec 1.2s ease-in-out infinite;
   color: var(--warn);
 }
-@media (prefers-reduced-motion: reduce) {
-  button.recording.icon-only,
-  button.recording.icon-btn {
-    animation: none;
-    box-shadow: 0 0 0 4px var(--recording-ring);
-  }
+:where(:root[data-motion="reduced"]) button.recording.icon-only,
+:where(:root[data-motion="reduced"]) button.recording.icon-btn {
+  animation: none;
+  box-shadow: 0 0 0 4px var(--recording-ring);
 }
 /* **Stop is the one control you reach for in a hurry.** Reported: "the stop
    generating button needs aligning for its text and icon and needs

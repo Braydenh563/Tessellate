@@ -57,7 +57,7 @@ function $(id) { return (nodes[id] = nodes[id] || el()); }
 const document = { activeElement: null, documentElement: { dataset: {} },
   createElement: () => el(), createDocumentFragment: () => el(),
   startViewTransition(cb) { pending.push(cb); } };
-const window = { matchMedia: () => ({ matches: false }) };
+const reducedMotionWanted = () => false;
 let libraryItems = [], libraryKind = "all", libraryTruncated = {};
 let librarySemanticIds = null, libraryPageSize = "all", libraryCurrentPage = 1;
 let libraryColumnsShown = 1, librarySelection = new Set();

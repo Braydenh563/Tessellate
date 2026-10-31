@@ -249,7 +249,15 @@ header#top-bar[data-scrolled="1"],
 }
 @keyframes ui-grow {
   from {
-    scale: 0.96;
+    scale: 0.94;
+  }
+}
+/* A menu's rows arrive one after another (INBOX 1506 B): up to eight, a step
+   (`--ui-step`) apart, each sliding in a space-1 from the left. */
+@keyframes ui-row {
+  from {
+    opacity: 0;
+    translate: calc(var(--space-1) * -1) 0;
   }
 }
 .action-menu:not(.hidden),
@@ -261,7 +269,7 @@ header#top-bar[data-scrolled="1"],
   --menu-origin-x: 100%;
   --menu-origin-y: 0%;
   transform-origin: var(--menu-origin-x) var(--menu-origin-y);
-  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-base) var(--ease-out) 1ms;
+  animation: ui-fade var(--ui-base) var(--ease-out), ui-grow var(--ui-slow) var(--ease-spring) 1ms;
 }
 /* Flipped upward, so it grows out of the bottom of the button instead. */
 .action-menu.action-menu-flip:not(.hidden),
@@ -279,6 +287,16 @@ header#top-bar[data-scrolled="1"],
 .help-popover {
   --menu-origin-x: var(--help-caret-x);
 }
+.action-menu:not(.hidden) > :nth-child(-n + 8) {
+  animation: ui-row var(--ui-base) var(--ease-out) backwards;
+}
+.action-menu:not(.hidden) > :nth-child(2){animation-delay:var(--ui-step)}
+.action-menu:not(.hidden) > :nth-child(3){animation-delay:calc(var(--ui-step)*2)}
+.action-menu:not(.hidden) > :nth-child(4){animation-delay:calc(var(--ui-step)*3)}
+.action-menu:not(.hidden) > :nth-child(5){animation-delay:calc(var(--ui-step)*4)}
+.action-menu:not(.hidden) > :nth-child(6){animation-delay:calc(var(--ui-step)*5)}
+.action-menu:not(.hidden) > :nth-child(7){animation-delay:calc(var(--ui-step)*6)}
+.action-menu:not(.hidden) > :nth-child(8){animation-delay:calc(var(--ui-step)*7)}
 /* --- motion: the floating panels join the menu's recipe (INBOX 1415) -------
    Panels that hang off an opener and show by `.hidden` took no part in the
    fade and grow (audit: `animation: none`), so they take the same two rules.

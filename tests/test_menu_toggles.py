@@ -48,7 +48,7 @@ def test_settings_sidebar_follow_never_moves_focus_and_respects_motion():
     assert follow, "settingsNavFollow is gone"
     body = follow.group(1)
     assert ".focus(" not in body and "scrollIntoView" not in body
-    assert "uiMotion" in body and "prefers-reduced-motion" in body
+    assert "uiMotion" in body and "reducedMotionWanted()" in body
     assert ":hover" in body, "the sidebar must be left alone while the pointer is over it"
     assert "settingsNavFollow(link)" in src.split("function settingsIndexMark")[1]
 

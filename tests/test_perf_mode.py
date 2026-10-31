@@ -60,7 +60,9 @@ def test_performance_mode_is_wired_end_to_end() -> None:
         assert "dataset.perf" in src
     # On, it overrides glass and motion without rewriting the preferences.
     assert 'root.dataset.glass = perf ? "off" : appearancePref("glass")' in settings
-    assert 'root.dataset.motion = perf ? "reduced" : appearancePref("motion")' in settings
+    # (Motion's "Always on" is the person's own word and beats it; MOTION.apply.)
+    assert 'MOTION.apply(appearancePref("motion"), perf)' in settings
+    assert 'MOTION.apply(pref("motion", "follow"), perf)' in boot
     # The setting itself: three states, a hint that says why it is on.
     assert 'id="perf-mode"' in html and 'id="perf-mode-hint"' in html
     assert html.count('<option value="auto">Auto</option>') >= 1

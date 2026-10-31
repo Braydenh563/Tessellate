@@ -831,7 +831,7 @@ function flashRevealed(target) {
       }
     }
   } else if (!inView) {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = reducedMotionWanted();
     shown.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center", inline: "nearest" });
   }
   shown.classList.remove("feature-reveal");

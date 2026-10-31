@@ -34,10 +34,10 @@
   <link rel="stylesheet" href="/css/00-tokens-shell.css?v=0.6.2">
   <link rel="stylesheet" href="/css/01-forms-settings.css?v=0.6.2">
   <link rel="stylesheet" href="/css/02-chat-graph.css?v=0.6.2">
-  <!-- The reduced-motion blankets (the OS hint's, the manual switch's, Interface
-       animations off): matched against no element unless the OS asks for calm
-       or theme-boot.js / applyAppearance turn the media on (motion-still.css). -->
-  <link rel="stylesheet" href="/css/motion-still.css?v=0.6.2" media="(prefers-reduced-motion: reduce)" id="motion-still-sheet">
+  <!-- The reduced-motion blankets (the resolved Motion value's, Interface
+       animations off): matched against no element unless theme-boot.js
+       (`MOTION.apply`) turns the media on (motion-still.css). -->
+  <link rel="stylesheet" href="/css/motion-still.css?v=0.6.2" media="not all" id="motion-still-sheet">
   <link rel="stylesheet" href="/css/03-dashboard-widgets.css?v=0.6.2">
   <link rel="stylesheet" href="/css/04-chat-dock-appearance.css?v=0.6.2">
   <link rel="stylesheet" href="/css/05-sidebars-themes.css?v=0.6.2">
@@ -5452,7 +5452,7 @@ Link to another note with [[its first few words]]."></textarea>
           </details>
           <details class="doc-dock-menu doc-toolbar-menu" id="doc-toolbar-insert">
             <summary class="doc-dock-menu-btn doc-toolbar-menu-btn"
-              title="Insert a block" aria-label="Insert a block"><i class="ph ph-plus-square ph-lead" aria-hidden="true"></i> Insert <i class="ph ph-caret-down doc-toolbar-menu-caret" aria-hidden="true"></i></summary>
+              title="Insert a block" aria-label="Insert a block"><span class="ui-pm ph-lead" aria-hidden="true"></span> Insert <i class="ph ph-caret-down doc-toolbar-menu-caret" aria-hidden="true"></i></summary>
             <div class="doc-dock-menu-list">
               <button type="button" class="doc-dock-menu-item" data-md="quote" title="Quote"><i class="ph ph-quotes ph-lead" aria-hidden="true"></i> Quote</button>
               <button type="button" class="doc-dock-menu-item" data-md="codeblock" title="Code block"><i class="ph ph-code-block ph-lead" aria-hidden="true"></i> Code block</button>
@@ -11668,29 +11668,35 @@ Link to another note with [[its first few words]]."></textarea>
               </div></summary>
               <div class="help-body hidden" id="motion-help" role="dialog" aria-label="About motion">
                 <p>
-                  Two switches, two kinds of motion. Reduce motion stills the
-                  large movement: Atlas, the background art, the graph's
-                  layout and the whiteboard, and so does your system's
-                  reduced-motion setting.
+                  Motion has three choices. Follow the system (the default)
+                  stills the large movement, Atlas, the background art, the
+                  graph's layout and the whiteboard, when your browser or
+                  system asks for reduced motion. Always on keeps it moving
+                  whatever they ask, for a browser that asks for calm by
+                  default. Off stills it whatever they say.
                 </p>
                 <p>
                   Interface animations are the short ones that say what
                   happened: a button pressing in, a menu or dialog opening from
-                  where you clicked, a tab's marker sliding to the new tab, a
-                  list settling, a toast arriving. They are on by default and
-                  play even with Reduce motion on; turn them off and every one
-                  of them is instant.
+                  where you clicked, a chevron turning, a tab's marker sliding
+                  to the new tab, a list settling, a toast arriving. They are
+                  on by default and play even when Motion is off, except two
+                  flourishes that Motion off stills: a menu's small spring and
+                  its first rows arriving in turn, and a plus that turns into
+                  a minus. Turn Interface animations off and every one of them
+                  is instant.
                 </p>
                 <p>
                   The app's logo answers both: its top cell settles into place
                   once, then breathes slowly, and its cells lift in turn while
-                  Atlas works. Either switch off holds it still.
+                  Atlas works. Motion off, or Interface animations off, holds
+                  it still.
                 </p>
                 <p>
                   Reveal replies is one of them: a reply written with no model
                   (from your notes, or the Guide's own help) rises into place a
                   block at a time in Chat, Ask, the popup agent and the Guide.
-                  Reduce motion makes it a quick fade; off, it simply appears.
+                  Motion off makes it a quick fade; Reveal replies off, it simply appears.
                 </p>
               </div>
 
@@ -11782,10 +11788,10 @@ Link to another note with [[its first few words]]."></textarea>
                 </span>
               </label>
 
-              <!-- Progress sits directly under Reduce motion because it is the
+              <!-- Progress sits directly beside Motion because it is the
                    exception to it, and an exception is only learnable next to
                    the rule it excepts. Reported as a broken animation: with
-                   Reduce motion on, "Thinking…" froze into one italic word,
+                   Motion off, "Thinking…" froze into one italic word,
                    which is indistinguishable from an app that has hung. -->
               <div class="setting-row" id="progress-motion-row">
                 <div class="setting-label">
@@ -11794,14 +11800,14 @@ Link to another note with [[its first few words]]."></textarea>
                     The dots and the line beside them that says what Atlas is
                     doing (reaching, reading your notes, thinking, writing).
                     These are feedback rather than decoration, so they keep
-                    moving through Reduce motion below unless you say otherwise.
+                    moving through the Motion setting below unless you say otherwise.
                   </small>
                   <small class="muted hint-inline hidden" id="progress-motion-hint"></small>
                 </div>
                 <select id="progress-motion" class="small-select setting-control"
                   aria-label="Progress indicator movement">
                   <option value="always">Always move</option>
-                  <option value="auto">Auto: follow reduced motion</option>
+                  <option value="auto">Auto: follow Motion</option>
                   <option value="still">Still</option>
                 </select>
               </div>
@@ -11815,17 +11821,24 @@ Link to another note with [[its first few words]]."></textarea>
               </label>
               <p class="muted">A word beside the dots, like "Pondering" or "Sifting", that changes while it thinks. Set per persona in Personas.</p>
 
-              <label class="setting-check" id="reduce-motion-row">
-                <input type="checkbox" id="reduce-motion-toggle">
-                <span>
-                  Reduce motion
-                  <small class="muted">Stills the large movement: Atlas, the background art, the graph and the whiteboard.</small>
-                </span>
-              </label>
+              <!-- Motion is its own choice, apart from the browser's reduced-motion
+                   request (INBOX 1506): a browser can ask for calm by default
+                   and the person still want the animation. -->
+              <div class="setting-row" id="motion-row" data-synonyms="reduce reduced animation animations calm moving still">
+                <div class="setting-label">
+                  <span>Motion</span>
+                  <small class="muted">Atlas, the background art, the graph, the whiteboard and the short animations. Follow the system uses your browser's reduced-motion request.</small>
+                </div>
+                <div class="seg seg-compact" id="motion-seg" role="group" aria-label="Motion">
+                  <button data-motion-choice="follow">Follow the system</button>
+                  <button data-motion-choice="on">Always on</button>
+                  <button data-motion-choice="off">Off</button>
+                </div>
+              </div>
 
               <!-- The interface's own motion, a switch of its own (the owner,
                    2026-10-05): on by default, and on means it plays even with
-                   Reduce motion or the system's reduced-motion setting on. -->
+                   Motion off or the system's reduced-motion setting on. -->
               <label class="setting-check" id="ui-motion-row">
                 <input type="checkbox" id="ui-motion-toggle" checked>
                 <span>
@@ -11875,7 +11888,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="setting-row" id="avatar-motion-row">
                 <div class="setting-label">
                   <span>Avatar animation</span>
-                  <small class="muted">Generated faces blink and act out their mood. Reduce motion stops them.</small>
+                  <small class="muted">Generated faces blink and act out their mood. Motion off stops them.</small>
                 </div>
                 <select id="avatar-motion" class="small-select setting-control"
                   aria-label="Avatar animation">
@@ -12102,7 +12115,7 @@ Link to another note with [[its first few words]]."></textarea>
                 </div>
                 <select id="bg-motion" class="small-select setting-control"
                   aria-label="Background movement">
-                  <option value="auto">Auto: follow reduced motion</option>
+                  <option value="auto">Auto: follow Motion</option>
                   <option value="moving">Moving</option>
                   <option value="still">Still</option>
                 </select>
@@ -12119,7 +12132,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <span class="slider-value" id="bg-intensity-value">45%</span>
                 </div>
               </div>
-              <p class="muted">It automatically stays still if your system prefers reduced motion.</p>
+              <p class="muted">Auto holds it still when Motion is off, or when it follows a system that prefers reduced motion.</p>
             </details>
 
             <!-- ---------- Status bar ---------- -->

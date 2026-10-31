@@ -1724,13 +1724,6 @@ function batteryModeOn() {
   );
 }
 
-function reducedMotionWanted() {
-  return (
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-    document.documentElement.dataset.motion === "reduced"
-  );
-}
-
 // `label` is the reduced-motion fallback: with animations off the dots can't
 // convey "working", so a word has to. Callers that already print their own
 // sentence beside the indicator pass theirs in, the weekly digest used to
