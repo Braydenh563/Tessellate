@@ -2295,6 +2295,10 @@ _FOR_MONTH = re.compile(r"\b(?<![Bb]ack )(?:for|in|by|until) (" + "|".join(m.cap
 _PER = re.compile(r"(?:\ba|\bper|\beach|\bevery|/)\s*(day|week|month|year|hour|night)\b", re.I)
 #: A gap is the budget against what was spent, the ask against the offer:
 #: it needs one word of each side.
+#: Two things weighed against each other in one line ("The Logitech is about
+#: $230 and the Razer is $200"): each is named and priced, so the gap between
+#: them is true, which a budget and an unrelated amount are not.
+_RIVAL_PRICES = re.compile(r"\b[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d{1,9}[\d.,]{0,9} and (?:the )?[A-Z][\w-]{0,30}(?: [\w-]{1,30}){0,6} is (?:about )?\$\d")
 _PLANNED_PRICE = re.compile(r"\b(?:budget|limit|target|goal|estimate|quote|quoted|asking|listing|listed|planned)\b", re.I)
 _ACTUAL_PRICE = re.compile(r"\b(?:spent|spend|paid|cost|actual|offer|negotiated|saved|came to)\b", re.I)
 
@@ -2307,7 +2311,7 @@ def _price_gap(body: str) -> str:
     if len(prices) != 2 or prices[0] == prices[1]:
         return ""
     periods = {m.group(1).lower() for m in _PER.finditer(body)}
-    if len(periods) > 1 or (periods and len(_PER.findall(body)) == 1) or not (_PLANNED_PRICE.search(body) and _ACTUAL_PRICE.search(body)):
+    if len(periods) > 1 or (periods and len(_PER.findall(body)) == 1) or not ((_PLANNED_PRICE.search(body) and _ACTUAL_PRICE.search(body)) or _RIVAL_PRICES.search(body)):
         return ""
     gap = abs(float(prices[0]) - float(prices[1]))
     return PHRASES["price_gap"].format(gap=("about " if "about $" in body else "") + f"${gap:g}")
@@ -2330,11 +2334,17 @@ def _relate(body: str, today: date | None) -> str:
 
 
 _BE_PAST = frozenset({"was", "were", "had", "did"})
+#: Participles that look ahead ("a trip planned for May", "booked for June"):
+#: past in form, not in what they tell, so a month after them is still to come.
+_AHEAD_PARTICIPLES = frozenset({"planned", "scheduled", "booked", "arranged", "expected"})
 
 
 def _told_in_past(body: str) -> bool:
     """Whether `body` says something that happened ("you met", "finished")."""
-    return any((_did(w) or _past_verb(w)) and w.lower() not in _BE_PAST for w in re.findall(r"[A-Za-z']+", body))
+    return any(
+        (_did(w) or _past_verb(w)) and w.lower() not in _BE_PAST and w.lower() not in _AHEAD_PARTICIPLES
+        for w in re.findall(r"[A-Za-z']+", body)
+    )
 
 
 def _pattern(members: list[composer.NoteView], today: date) -> str:
