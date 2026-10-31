@@ -3,6 +3,7 @@ status: active
 max-continues: 400
 max-idle-minutes: 60
 finish-up: 98%
+note: owner 2026-10-31 (after the reset) "scaling back to the regular lean workflow ... once the current agents are finished": no new agents; status done after fablecomp, composer5, basered merge
 started: 2026-10-30 11:40Z
 ends: 2026-10-31 07:00Z (weekly reset)
 tier: max (three agents at once, one Opus or Fable); Fable only as the owner's named second-eye reviewer, one at a time
@@ -82,10 +83,11 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1485 social understanding (agent social-1031), 1486 board fill opacity, drag inside a selection, bucket cursor (agent boardfill-1031), complexity report F ranks (agent cplx-1031)
 - [!] Companion: Fable pass. The owner 2026-10-31 05:5xZ: "u can use fable but there are already like 10 agents running so maybe use it when there are less". Start once four or fewer agents run; one Fable only. Fable start refused by the lean-workflow guard (owner must name it again in a message); the owner's second choice, Opus, runs it (agent fablecomp-1031).
 - [ ] Companion NPC upgrade, INBOX 1463 open items 1 to 5 (agent fablecomp-1031, Opus)
-- [ ] Diagram, sticky, text and card fill opacity (agent boardfill2-1031)
-- [ ] INBOX 1482 grouped file type picker (agent typepick-1031)
-- [ ] INBOX 1479 capture card (agent capture-1031)
-- [ ] INBOX 1478 popup anatomy (agent popups-1031)
-- [ ] Perf leftovers: notes list append, statistics aggregate, graph cooling draws (agent perf3-1031)
-- [ ] Private chat leaks found by review: skill/plan runs, tool audit rows, narrator log lines, row cache (agent privfix-1031)
+- [x] Diagram, sticky, text and card fill opacity (agent boardfill2-1031)
+- [x] INBOX 1482 grouped file type picker (agent typepick-1031)
+- [x] INBOX 1479 capture card (agent capture-1031)
+- [x] INBOX 1478 popup anatomy (agent popups-1031)
+- [x] Perf leftovers: notes list append, statistics aggregate, graph cooling draws (agent perf3-1031)
+- [x] Private chat leaks found by review: skill/plan runs, tool audit rows, narrator log lines, row cache (agent privfix-1031)
 - [ ] Composer leftovers round five: three-side comparisons, format tails, list vs overview, latest pick, day leads (agent composer5-1031)
+- [ ] Tests red on the base: complexity, events driver, code format guard, input bounds, gold floor (agent basered-1031)
