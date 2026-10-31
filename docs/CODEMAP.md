@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7192, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7948, test files 1693, tests 14696, plan headings 990.
+Counts: frontend functions 7193, frontend ids 2618, CSS sections 513, backend routes 632, backend modules 7948, test files 1693, tests 14697, plan headings 990.
 
-## Frontend functions (7192)
+## Frontend functions (7193)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -5659,34 +5659,35 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `showOnboardingTurn` | frontend/js/onboarding.js:410 |
 | `whenFirstRunClear` | frontend/js/onboarding.js:341 |
 
-### frontend/js/panel-movable.js (56)
+### frontend/js/panel-movable.js (57)
 
 | Name | File:line |
 |---|---|
 | `panelAdopt` | frontend/js/panel-movable.js:455 |
 | `panelApply` | frontend/js/panel-movable.js:264 |
-| `panelChip` | frontend/js/panel-movable.js:790 |
+| `panelChip` | frontend/js/panel-movable.js:812 |
 | `panelClamp` | frontend/js/panel-movable.js:300 |
 | `panelClampMove` | frontend/js/panel-movable.js:53 |
 | `panelClampSize` | frontend/js/panel-movable.js:59 |
-| `panelCloseBtn` | frontend/js/panel-movable.js:748 |
+| `panelCloseBtn` | frontend/js/panel-movable.js:770 |
 | `panelDock` | frontend/js/panel-movable.js:382 |
 | `panelFit` | frontend/js/panel-movable.js:367 |
 | `panelFull` | frontend/js/panel-movable.js:418 |
-| `panelGripDown` | frontend/js/panel-movable.js:644 |
-| `panelGripKey` | frontend/js/panel-movable.js:695 |
-| `panelGripRoom` | frontend/js/panel-movable.js:552 |
-| `panelHeadDown` | frontend/js/panel-movable.js:561 |
+| `panelGripDown` | frontend/js/panel-movable.js:645 |
+| `panelGripKey` | frontend/js/panel-movable.js:696 |
+| `panelGripRoom` | frontend/js/panel-movable.js:553 |
+| `panelHeadDown` | frontend/js/panel-movable.js:562 |
 | `panelHeadOf` | frontend/js/panel-movable.js:296 |
+| `panelHeadSettle` | frontend/js/panel-movable.js:756 |
 | `panelId` | frontend/js/panel-movable.js:249 |
 | `panelInset` | frontend/js/panel-movable.js:346 |
 | `panelKeyDelta` | frontend/js/panel-movable.js:174 |
 | `panelLayout` | frontend/js/panel-movable.js:223 |
-| `panelMinHost` | frontend/js/panel-movable.js:741 |
-| `panelMinKey` | frontend/js/panel-movable.js:851 |
-| `panelMinPlace` | frontend/js/panel-movable.js:777 |
-| `panelMinTray` | frontend/js/panel-movable.js:763 |
-| `panelMinimise` | frontend/js/panel-movable.js:819 |
+| `panelMinHost` | frontend/js/panel-movable.js:742 |
+| `panelMinKey` | frontend/js/panel-movable.js:873 |
+| `panelMinPlace` | frontend/js/panel-movable.js:799 |
+| `panelMinTray` | frontend/js/panel-movable.js:785 |
+| `panelMinimise` | frontend/js/panel-movable.js:841 |
 | `panelMovableOn` | frontend/js/panel-movable.js:228 |
 | `panelOf` | frontend/js/panel-movable.js:238 |
 | `panelPinned` | frontend/js/panel-movable.js:134 |
@@ -5694,11 +5695,11 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelPushOn` | frontend/js/panel-movable.js:131 |
 | `panelPushSide` | frontend/js/panel-movable.js:143 |
 | `panelPushSync` | frontend/js/panel-movable.js:146 |
-| `panelPushToggle` | frontend/js/panel-movable.js:861 |
-| `panelReopen` | frontend/js/panel-movable.js:752 |
+| `panelPushToggle` | frontend/js/panel-movable.js:883 |
+| `panelReopen` | frontend/js/panel-movable.js:774 |
 | `panelReset` | frontend/js/panel-movable.js:422 |
 | `panelResetSize` | frontend/js/panel-movable.js:435 |
-| `panelRestore` | frontend/js/panel-movable.js:835 |
+| `panelRestore` | frontend/js/panel-movable.js:857 |
 | `panelRestoreOn` | frontend/js/panel-movable.js:171 |
 | `panelSafe` | frontend/js/panel-movable.js:97 |
 | `panelSave` | frontend/js/panel-movable.js:447 |
@@ -5713,10 +5714,10 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `panelStoreRead` | frontend/js/panel-movable.js:191 |
 | `panelStoreWrite` | frontend/js/panel-movable.js:199 |
 | `panelSync` | frontend/js/panel-movable.js:394 |
-| `panelTitle` | frontend/js/panel-movable.js:744 |
+| `panelTitle` | frontend/js/panel-movable.js:745 |
 | `panelUnsnap` | frontend/js/panel-movable.js:387 |
 | `panelWatchOpen` | frontend/js/panel-movable.js:401 |
-| `panelWindowResized` | frontend/js/panel-movable.js:873 |
+| `panelWindowResized` | frontend/js/panel-movable.js:895 |
 | `panelZoneFor` | frontend/js/panel-movable.js:167 |
 | `panelZoneRect` | frontend/js/panel-movable.js:80 |
 
@@ -21830,7 +21831,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14696)
+## Tests (14697)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23340,7 +23341,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 241 |
+| tests/test_ui_recipes.py | 242 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |

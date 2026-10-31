@@ -6614,3 +6614,69 @@ def test_a_popup_head_keeps_its_tools_with_close_at_the_end() -> None:
     )
     design = (ROOT / "docs" / "DESIGN.md").read_text(encoding="utf-8")
     assert "| A popup head's end group" in design and "`tests/test_ui_recipes.py` (`test_a_popup_head_keeps_its_tools_with_close_at_the_end`" in design
+
+
+def test_close_is_the_last_control_of_every_popup_head() -> None:
+    """INBOX 1498, the owner: "this order of buttons on the guide doesnt make
+    sense" (help, more, minimise, close, then a reset in its own square).
+    One order for every head: the actions (move aside, put back, restart), the
+    head's help and more, minimise, Close last, and no head button carries a
+    fill of its own at rest. `panelHeadSettle` (panel-movable.js) is the one
+    place the order is made for the buttons that file adds; this checks the
+    markup that is written by hand, and the settle itself."""
+    from html.parser import HTMLParser
+
+    class Heads(HTMLParser):
+        def __init__(self) -> None:
+            super().__init__()
+            self.stack: list[tuple[str, bool]] = []
+            self.heads: list[list[str]] = []
+            self.open_heads = 0
+
+        def handle_starttag(self, tag, attrs):
+            if tag in {"br", "img", "input", "meta", "link", "hr"}:
+                return
+            a = dict(attrs)
+            is_head = "dialog-head" in (a.get("class") or "").split()
+            self.stack.append((tag, is_head))
+            if is_head:
+                self.heads.append([])
+            if tag == "button" and any(h for _t, h in self.stack[:-1]) and self.heads:
+                self.heads[-1].append((a.get("aria-label") or a.get("title") or a.get("id") or "").strip())
+
+        def handle_endtag(self, tag):
+            while self.stack and self.stack[-1][0] != tag:
+                self.stack.pop()
+            if self.stack:
+                self.stack.pop()
+
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    parser = Heads()
+    parser.feed(html)
+    checked = 0
+    for buttons in parser.heads:
+        closers = [i for i, name in enumerate(buttons) if name.lower().startswith("close")]
+        if not closers:
+            continue
+        checked += 1
+        assert closers[-1] == len(buttons) - 1, f"a popup head puts a control after Close: {buttons}"
+        mins = [i for i, name in enumerate(buttons) if name.lower().startswith("minimi")]
+        assert not mins or mins[-1] == closers[-1] - 1, f"minimise is not just before Close: {buttons}"
+    assert checked >= 20, "the head parser found too few heads to mean anything"
+
+    js = (ROOT / "frontend" / "js" / "panel-movable.js").read_text(encoding="utf-8")
+    settle = js[js.index("function panelHeadSettle") : js.index("function panelCloseBtn")]
+    assert "tail.insertBefore(st.min, closeBtn)" in settle, "minimise goes directly before Close"
+    assert '"[data-help-for], .menu-wrap, .atlas-menu"' in settle, "reset and push go before the head's help and more"
+    assert js.count("panelHeadSettle(panel, st);") == 1 and "panelHeadSettle(panel, st);\n  if (st.min) {" in js, "every adopt settles the head"
+
+    # No head button has a fill of its own at rest (hover, focus and pressed may).
+    head_buttons = re.compile(r"\.(?:dialog-head-btn|panel-reset|panel-push|panel-min|sheet-close)\b")
+    states = re.compile(r":(?:hover|focus|focus-visible|active)|\[aria-(?:expanded|pressed)|:disabled|\[disabled")
+    for path in sorted((ROOT / "frontend" / "css").glob("*.css")):
+        text = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for sel, body in re.findall(r"([^{}@]+)\{([^{}]*)\}", text):
+            rest = [s.strip() for s in sel.split(",") if head_buttons.search(s) and not states.search(s) and ".hidden" not in s]
+            fill = re.search(r"(?:^|;)\s*background(?:-color)?:\s*([^;]+)", body)
+            if rest and fill and not re.fullmatch(r"none|transparent|inherit|initial|unset", fill.group(1).strip()):
+                raise AssertionError(f"{path.name}: {rest[0][:70]} fills a head button at rest ({fill.group(1).strip()[:40]})")

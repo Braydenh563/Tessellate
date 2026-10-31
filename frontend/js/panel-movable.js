@@ -527,6 +527,7 @@ function panelAdopt(panel) {
       }
     }
   }
+  panelHeadSettle(panel, st);
   if (st.min) {
     const label = panelTitle(panel);
     st.min.setAttribute("aria-label", `Minimise ${label}`);
@@ -744,6 +745,27 @@ function panelMinHost(panel) {
 function panelTitle(panel) {
   const el = panel.querySelector(".dialog-head-title");
   return el ? el.textContent.trim().replace(/\s+/g, " ") || "Panel" : "Panel";
+}
+//: **One order for every popup head** (INBOX 1498, the owner: "this order of
+//: buttons on the guide doesnt make sense"): the actions this file adds (move
+//: the app aside, put back in the middle) first, then the head's own help and
+//: more, then minimise, and Close last. The reset sat after Close in a head
+//: with no actions wrapper (1491), and beside help in the others, so no two
+//: popups agreed. Idempotent, so every adopt can run it; it moves nothing that
+//: is already in place, which keeps a focused button focused.
+function panelHeadSettle(panel, st) {
+  const head = panelHeadOf(panel);
+  const closeBtn = panelCloseBtn(panel);
+  if (!head || !closeBtn || !st.reset || !st.push) return;
+  const tail = closeBtn.parentElement;
+  if (st.min && st.min.nextElementSibling !== closeBtn) tail.insertBefore(st.min, closeBtn);
+  let host = [...head.querySelectorAll("[data-help-for], .menu-wrap, .atlas-menu")].find((el) => !el.closest(".panel-reset, .panel-push"));
+  while (host && host.parentElement !== head && host.parentElement !== tail) host = host.parentElement;
+  const ref = host || st.min || closeBtn;
+  const box = ref.parentElement;
+  if (ref.previousElementSibling === st.reset && st.reset.previousElementSibling === st.push) return;
+  box.insertBefore(st.push, ref);
+  box.insertBefore(st.reset, ref);
 }
 function panelCloseBtn(panel) {
   const head = panelHeadOf(panel);
