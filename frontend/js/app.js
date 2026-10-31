@@ -1192,7 +1192,14 @@ function startApp() {
 // The per-tab data loads switchTab performs, without the tab-switching itself.
 // Kept beside switchTab's own dispatch so the two can't drift apart.
 async function refreshActiveTab() {
-  const name = localStorage.getItem("activeTab") || "notes";
+  //: The tab on screen, not the stored name. Every load opens on the Dashboard
+  //: (`revealTab("dashboard")`, phone-shell.js) and `looksReady` has just
+  //: restored the notebook's mirrored `activeTab` over it, so the stored name
+  //: could say "notes" under a Dashboard that nothing drew (blind test 1031:
+  //: blank after unlock, no /statistics). The stored name is set back to what
+  //: is shown, so the readers of `activeTab` agree with the screen.
+  const name = document.body.dataset.tab || "dashboard";
+  prefs.set("activeTab", name);
   //: The tab on screen may be one whose code arrives on demand (A1), and this
   //: is the boot-time call that loads its data: `renderGraph`, `loadDocuments`
   //: and `loadLibrary` below are all defined in a file that is fetched here.
