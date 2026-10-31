@@ -3137,7 +3137,14 @@ def _summary(out: _Answer, question: str, terms: list[str], firsts: list[Sentenc
     notes, none holding every word asked, says what it is about and how many
     notes before the first quote (INBOX 729), so the quotes read as one
     answer rather than as sentences joined by "Also"."""
-    subject = _asked_span(question, terms)
+    #: Only the words some note holds are the lead's subject ("plumber 9988",
+    #: when no note holds "9988", was "notes that bear on plumber 9988" and then,
+    #: at the close, "these notes do not talk about 9988"; audit 1031 N36).
+    found: set[str] = set()
+    for view in out.views.values():
+        found |= view.words | view.title_words | view.filed_words
+    held = [t for t in terms if _stem(t) in found or t in found]
+    subject = _asked_span(question, held or terms)
     count = len({s.note_id for s in firsts})
     if count < 2 or not subject:
         return

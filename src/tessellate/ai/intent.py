@@ -292,6 +292,11 @@ def _mash_word(word: str) -> bool:
 
     if len(word) < 4 or not word.isalpha() or spelling.is_word(word) or _laughs(word):
         return False
+    #: The tests below read Latin letters ("no vowel at all"): a word in kana,
+    #: Han, Hangul, Cyrillic or Greek has none of a, e, i, o, u and is not a mash
+    #: (audit 1031 N43: "ゴルフについて何を書いた" was answered "I couldn't make that out").
+    if any(ord(c) > 0x24F for c in word):
+        return False
     vowels = sum(c in "aeiou" for c in word) / len(word)
     if _REPEAT.search(word[:40]):
         return True
