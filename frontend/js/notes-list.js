@@ -1797,45 +1797,6 @@ function whyThisResultChip(entry) {
   return badge;
 }
 
-// One call per settled query, not per keystroke: the caller debounces, and a
-// reply that arrives after the box has moved on is dropped rather than
-// painting reasons for a query nobody is looking at any more.
-async function refreshNoteSearchWhy() {
-  const asked = noteSearch;
-  if (!asked) {
-    noteSearchWhy.clear();
-    return;
-  }
-  // What the person is looking at, when that is unambiguous: one note opened
-  // out in the list is the app's own "open note", and it is what makes the
-  // third signal (distance over the links) mean anything. Two open rows, or
-  // none, is not a context, and passing a guess would put "linked to the open
-  // note" on a note linked to something nobody is reading.
-  const open =
-    editingId || (expandedRows.size === 1 ? [...expandedRows][0] : null);
-  let body;
-  try {
-    // 50 is the endpoint's own ceiling (`routes_search.MAX_LIMIT`): a search
-    // box shows a page, not a notebook, and a note past the fiftieth best
-    // match simply carries no reason chip rather than a wrong one.
-    body = await apiJson(
-      `/search?q=${encodeURIComponent(asked)}&kind=note,board,map&limit=50` +
-        (open ? `&entry_id=${open}` : "")
-    );
-  } catch {
-    // The list is already rendered and already correct; the reasons are the
-    // only thing missing, so a failed call leaves the notes alone.
-    return;
-  }
-  if (noteSearch !== asked) return;
-  noteSearchWhy.clear();
-  for (const hit of body?.hits || []) noteSearchWhy.set(hit.id, hit);
-  noteSearchCorrection = body?.corrected
-    ? { asked, corrected: body.corrected, ids: new Set((body.hits || []).map((hit) => hit.id)) }
-    : null;
-  renderEntries();
-}
-
 // Sort comparator for the chosen mode (Wave J). Pinned always floats to
 // the top first, matching the server's own ordering.
 function noteEditedTime(entry) {
@@ -2930,8 +2891,8 @@ function paintEntriesProgress(list = true) {
   _entriesProgressTimer = null;
   renderStatusBar(); // the notebook's size changed, and the bar reads it here
   //: A list nobody can see is not painted (perf-1031 item 1: six repaints,
-  //: 1.4 s at 4x, behind the Dashboard on a reload). `flushEntriesPaint`
-  //: draws it once, from `revealTab`, when the Notes tab is shown.
+  //: 1.4 s at 4x, behind the Dashboard on a reload). `revealTab`
+  //: (navigation.js) draws it once, when the Notes tab is shown.
   if (list) renderEntriesWhenShown();
 }
 
@@ -2941,10 +2902,6 @@ function paintEntriesProgress(list = true) {
 function renderEntriesWhenShown() {
   if ($("tab-notes").classList.contains("hidden")) $("entry-list").dataset.stale = "1";
   else renderEntries();
-}
-
-function flushEntriesPaint() {
-  if ($("entry-list").dataset.stale) renderEntries();
 }
 
 //: **Past this many rows a page that is not the last repaints the count, not

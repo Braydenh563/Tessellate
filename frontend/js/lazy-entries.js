@@ -61,7 +61,7 @@ installStandIns({
   screenContext: ["screenContext"],
   mathEditor: ["openMathEditor"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
-  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue"],
+  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy"],
   quickAdd: ["reminderComposeAdd"],
   loadFailed: ["surfaceFailed"],
   appearancePanel: ["openAppearancePanel"],

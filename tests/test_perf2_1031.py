@@ -15,13 +15,12 @@ def test_a_list_nobody_can_see_is_not_repainted_as_pages_arrive():
     # map index answer ask `renderEntriesWhenShown`; the reveal draws it once.
     notes = frontend_text("notes-list.js")
     assert "renderEntriesWhenShown();" in _body(notes, "function paintEntriesProgress(", "function renderEntriesWhenShown")
-    gate = _body(notes, "function renderEntriesWhenShown()", "function flushEntriesPaint()")
+    gate = _body(notes, "function renderEntriesWhenShown()", "const ENTRIES_PROGRESS_LIST_MAX")
     assert 'classList.contains("hidden")' in gate and 'dataset.stale = "1"' in gate
-    assert "renderEntries()" in _body(notes, "function flushEntriesPaint()", "async function loadEntries")
     assert "renderEntriesWhenShown();" in _body(notes, "function ensureMapChipsFor", "\n}\n")
     assert "renderEntriesWhenShown()" in frontend_text("spaces-find.js")
     reveal = _body(frontend_text("navigation.js"), "function revealTab(name)", "window.nameMarkBuddyTabChanged")
-    assert 'if (name === "notes") flushEntriesPaint();' in reveal
+    assert 'if (name === "notes" && $("entry-list").dataset.stale) renderEntries();' in reveal
 
 
 def test_a_real_render_clears_the_owed_paint():
@@ -104,3 +103,22 @@ def test_orphans_are_counted_against_the_link_ends_not_per_note(client):
     assert book["links"] == 3  # a-b, c-c, d-a
     assert book["orphans"] == 1  # g alone (d is archived, so it is not in the count at all)
     assert not [s for s in seen if "count(entries.id)" in s and "EXISTS" in s.upper()]
+
+
+def test_search_reasons_are_drawn_into_the_rows_on_screen():
+    # Each settled note search rebuilt the list a second time only to add the
+    # "why this result" lines (180 ms a rebuild at 4x, 2,000 notes). Without a
+    # typo correction the reasons now go into the rows already there; with one,
+    # the listed notes change, so that case still redraws. The function sits in
+    # the lazy notes-lazy.js (its stand-in is in lazy-entries.js) so the boot
+    # scripts do not grow.
+    lazy = frontend_text("notes-lazy.js")
+    refresh = _body(lazy, "async function refreshNoteSearchWhy()", "function paintSearchWhy()")
+    assert "if (noteSearchCorrectionShown || (noteSearchCorrection && noRows)) renderEntries();" in refresh
+    assert "else paintSearchWhy();" in refresh
+    assert refresh.rstrip().endswith("}")
+    paint = lazy[lazy.index("function paintSearchWhy()") :]
+    assert ":not(.row-shell)" in paint and "whyThisResultChip(" in paint and '"entry-why"' in paint
+    assert '":scope > .entry-meta"' in paint and ".after(line)" in paint
+    assert "refreshNoteSearchWhy" in frontend_text("lazy-entries.js")
+    assert "async function refreshNoteSearchWhy" not in _body(frontend_text("notes-list.js"), "function whyThisResultChip", "function noteEditedTime")
