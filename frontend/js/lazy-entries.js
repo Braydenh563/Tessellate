@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: The plain head's disc, fetched only when the faces failed (`plainHead`).
+  plainHead: ["/css/plain-head-lazy.css"],
   //: Every popup panel draggable by its head and resizable from its corner (INBOX 1427): see panel-movable.js.
   panelMovable: ["/css/panel-movable-lazy.css", "/js/panel-movable.js"],
   //: The activity panel and the run folds it shares with Settings, Tasks (task-steps.js).
@@ -141,6 +143,7 @@ function plainHead(holder, name) {
   initial.className = "plain-head";
   initial.textContent = String(name || "?").trim().charAt(0).toUpperCase() || "?";
   holder.replaceChildren(initial);
+  ensureModule("plainHead");
 }
 
 function runCharacterJob(fn, args = []) {

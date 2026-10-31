@@ -6367,7 +6367,7 @@ async function wbMapTidy({ onlyBranch = null, quiet = false } = {}) {
   //: half of pressing Tab and must never move the view while someone is
   //: typing, and a tidy whose result already fits is a view nobody asked to
   //: have changed.
-  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbFrameMapOnOpen();
+  if (onlyBranch == null && wbMapSpillsOffCanvas()) wbFrameSpilledMap();
   await wbSaveBulkMove(origin);
   return origin.size;
 }
@@ -6433,6 +6433,16 @@ async function wbMapTidyFresh() {
     wbRecordDepth -= 1;
   }
   wbFrameMapOnOpen();
+}
+
+//: A whole-map tidy that spilled fits the map, as it always did; only a narrow
+//: canvas (`wbMapFrameScales`) takes the phone frame, where a fit reads at 4px.
+//: On desktop `wbFrameMapOnOpen` would jump a large map to its root at 1:1
+//: instead of showing all of it.
+function wbFrameSpilledMap() {
+  const container = document.getElementById("whiteboard-container");
+  if (container && wbMapFrameScales(container).open < 1) wbFrameMapOnOpen();
+  else wbZoomToFit({ animate: false });
 }
 
 //: Is any part of the map outside the canvas right now? Read off the rendered

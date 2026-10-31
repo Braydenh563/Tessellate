@@ -137,6 +137,7 @@ CSS_FILES = [
     CSS_DIR / "forced-colors-lazy.css",
     #: The meaning-search notice (app.js `LAZY_MODULES.semanticNotice`).
     CSS_DIR / "semantic-notice-lazy.css",
+    CSS_DIR / "plain-head-lazy.css",
 ]
 
 

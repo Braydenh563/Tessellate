@@ -296,6 +296,26 @@ Checked against the running app, not assumed:
   target, persisted per-document (`docWordGoal:<id>` in localStorage), with
   progress shown against it.
 - **AI chat bar inside the document**, **Pointer:** [DOCUMENTS_PLAN.md](DOCUMENTS_PLAN.md) "Placed from INBOX, 2026-10-03 (INBOX 409)" closed the bar's design; the conversational shape (ask without proposing an edit) is `scratchpad/audit1005/features.md` section 11 Phase G. Partly there. `doc-ai-panel` already
+
+1481. **The owner, 2026-10-31 15:05 local, verbatim:** "privat chat sessions might be good??" (screenshots of the same reference app: a "Nobody" chat, "No memory or skill activation. Temporary session, won't be saved.", a pill toggle under the title and a mark at the top left while it is on; the chat's title menu: Rename, Copy chat, PDF, Settings, Delete chat; the composer's "+" menu: Attach files, Documents, Prompt; a Prompt popup with Inject, Persona and Group tabs.) Recommendation taken: a private chat in Chat (a toggle in the composer's menu and the chat's title menu, and "Private chat" in the palette): nothing is saved to the chat history, no learned facts or memory are written or read, the usage ledger skips it, a quiet mark sits in the head while it is on, and closing it discards it after one confirm if it has messages. Next free agent.
+
+1480. **The owner, 2026-10-31 15:03 local (screenshots, no words, the same reference app):** a Model comparison popup (Mode: Blind, Parallel, Shuffle, Save, Reset as tile buttons; Type: Chat, Agent, Search, Research; a row per model with an x and "+ Add model"; a timeout field, Scoreboard, Start), then the run: columns "Model A" and "Model B" each with its time, expand, an inference-settings drop (Thinking, Temperature, Max tokens) and close, the same prompt in each, "Vote A" and "Vote B" under them, and Score, Tie, Reveal, Reset in a row above the composer, whose "Chat prompts" button opens grouped sample prompts (Featured, Visual, Visual explain). Recommendation taken: Tessellate's model comparison (grep "compare" in CODEMAP; the bench) takes the blind A and B with votes and reveal, the settings drop per column, and the grouped sample prompts. Placed here at triage to keep INBOX under twenty.
+
+1324. **The owner, 2026-10-19, verbatim.** "also is the ask ai quick link accurate if the composer can compensate?? also keep improving the composer and integrating it in the whole app, expand it, improve understanding, improve language and sentence generation, expand responses, make it smarter, have it flawless and robust, have every single possible response in all of its roles (guide, chat, popup agent, agent, ask, other integrated features) be very good and more."
+     Standing. Done (composer1324): "Ask AI" link is now "Ask your notes"; 40-question grade with no model 23 to 32 fully good (scratchpad/composer1324-grades.md). Open: fact questions answered with a quote, "five notes" showing one, "From today:" labels, compare as a table, fragment joins (archive/agent-remaining/composer1324-1019.md).
+
+~~1441. Dates in answers.~~ **Built 2026-10-29.** Moved to HISTORY.md, "Moved from the plans, 2026-10-29 (dates 1441)".
+
+172 (part). **Web links the AI writes, "better and more modern cool".**
+Decided and built in Phase 3: decision 12 below. Both forms, chosen by where
+the link sits.
+
+The owner's reports this plan owns, moved whole from INBOX.md with their numbers (never reused). Each becomes a phase row when its phase is written; until then this list is the phase.
+
+~~45. The Ask sub-tab.~~ **Folded into 63 and closed with it, 2026-10-05.**
+
+1315. **The owner, 2026-10-19, verbatim.** "keep improving the composer and companions and atlas as well. just keep doing what youre doing. Im going to go and do some uni work now so Ill leave you to it.. leep using lean-workflow"
+     Standing: composer (CHAT_PLAN), companion and Atlas rows stay in the away queue after the bugs.
   edits a selection or the whole document and shows the result as a proposal.
   What's missing is the *conversational* shape: ask a question about the
   document without it proposing an edit.

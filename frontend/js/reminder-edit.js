@@ -61,6 +61,8 @@ function reminderEditForm(reminder) {
   alertSelect.setAttribute("aria-label", "Alert");
   const row = document.createElement("div");
   row.className = "row";
+  //: One gap under the fields (INBOX 1468: Save sat flush under them, 0px).
+  row.style.marginTop = "var(--space-2)";
   row.appendChild(
     smallButton("Save", "", async () => {
       const text = textInput.value.trim();
@@ -68,15 +70,27 @@ function reminderEditForm(reminder) {
         toast("A reminder needs text and a time.", "info");
         return;
       }
+      //: **The time goes only when it changed** (INBOX 1468). An overdue
+      //: reminder's own past time was sent back on every Save and refused as a
+      //: past date, so no overdue or repeating-overdue reminder could be edited.
+      const timeChanged = dueInput.value !== toLocalInputValue(reminder.due_at);
+      const before = { text: reminder.text, priority: reminder.priority || "normal", recurring: reminder.recurring || "none", alert_minutes: alertNow };
+      const after = { text, priority: prioritySelect.value, recurring: recurringSelect.value, alert_minutes: Number(alertSelect.value) };
+      if (timeChanged) {
+        before.due_at = reminder.due_at;
+        after.due_at = new Date(dueInput.value).toISOString();
+      }
       editingReminderId = null;
-      const before = { text: reminder.text, due_at: reminder.due_at, priority: reminder.priority || "normal", recurring: reminder.recurring || "none", alert_minutes: alertNow };
-      await reminderPutUndoably(reminder.id, "Edited a reminder", before, {
-        text,
-        due_at: new Date(dueInput.value).toISOString(),
-        priority: prioritySelect.value,
-        recurring: recurringSelect.value,
-        alert_minutes: Number(alertSelect.value),
-      });
+      try {
+        await reminderPutUndoably(reminder.id, "Edited a reminder", before, after);
+      } catch (error) {
+        //: A refusal (a new time already gone) says why and keeps the form.
+        editingReminderId = reminder.id;
+        if (error.isLockout) return;
+        toast(error.message || "Couldn't save that reminder.", true);
+        dueInput.setAttribute("aria-invalid", "true");
+        dueInput.focus();
+      }
     }, false)
   );
   row.appendChild(

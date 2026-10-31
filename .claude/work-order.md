@@ -45,7 +45,7 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] INBOX 1467 drag reorder, copy, drag anywhere, tray (agent objmove-1031)
 - [x] INBOX 1466 Writing room, Mermaid, Questions with no model (agent writing-1031)
 - [x] OPEN B45, B48 whiteboard rows (agent wbopen-1031): 13 built, .drawio export; 11 left in its remaining list
-- [ ] Companion: Fable pass after companion-1031 hands over (owner named Fable)
+- [!] Companion: Fable pass: waits on the owner typing "use Fable for the companion" (order 4: Fable only when named in a typed message for that task)
 - [>] Audit 1028 K rows (hub: K14, K23, K28, K38 done; K33 won't fix; K27, K35 left)
 - [x] UI review of the 1031 merges (ux-auditor: 6 high, 6 medium, 6 low)
 - [x] Fix the UI review findings (agent uxfix-1031)
@@ -59,10 +59,16 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] Composer leftovers: Z58 rest, run distance naming, closing quotes, casing, overview routing, F13, F14 (agent composer3-1031)
 - [x] Blind-test leftovers: double first-steps fetch, bell Get started, unclear labels, back to writing, real drag (agent labels-1031)
 - [x] Mind map at phone width: template framing, toasts, title, fab overlap (agent mapphone-1031)
-- [ ] Boot and tab duplicate fetches, avatar fallback, Notes sub-tab memory (agent dupfetch-1031)
-- [ ] Independent review of 5aab070..96a23e7 (reviewer, Opus)
+- [x] Boot and tab duplicate fetches, avatar fallback, Notes sub-tab memory (agent dupfetch-1031)
+- [x] Independent review of 5aab070..96a23e7 (reviewer, Opus)
 - [ ] Composer round four: total time, uni overview phrasings, superlatives, count plus latest, article in leads (agent composer4-1031)
 - [ ] Leftover-list polish: back-to-top under fab, Library hints, objmove L2 and L3, wbopen rows (agent polish5-1031)
+- [ ] INBOX 1468 reminder save and edit (agent remfix-1031)
+- [ ] INBOX 1469 and 1470 submenus, picture-card drag (agent submenu-1031)
+- [ ] INBOX 1471, 1472, 1474, 1475 graph popup toggle, snap zones, dock push, minimise pills (agent snapgraph-1031)
+- [ ] INBOX 1473 per-span live preview (agent livepreview-1031) and equation field (agent mathfield-1031)
+- [ ] INBOX 1476 to 1478 chips, model picker, popup anatomy and glass (agent chips-1031)
+- [ ] Perf audit findings (perf-1031.md)
 - [ ] Plan phases (ROADMAP table order)
 - [ ] BACKLOG
 - [>] Graph G3/S2 2,000-note layout (merged e154ab9); docs audit 1028 rows (merged ece0113); shellux and wb1313 agents running

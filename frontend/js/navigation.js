@@ -40,6 +40,11 @@ function wireLongPress(target, handler, { selector = null } = {}) {
       };
       const timer = setTimeout(() => {
         cancel();
+        //: A card the hold has lifted (obj-drag.js) and moved is a drag; one held still is this menu.
+        if (typeof objDragNow !== "undefined" && objDragNow?.live) {
+          if (objDragNow.moved) return;
+          objDragFinish(true);
+        }
         //: **The lift-off is swallowed.** A hold ends like every other touch,
         //: with a click, and the element under it is the element the hold was
         //: about: measured on the graph at 390, holding a node opened its menu
@@ -2434,6 +2439,21 @@ function scrollTopTargetEl() {
 // and positioned by its own CSS instead), clamped so the button can never
 // end up outside the visible viewport no matter how tall the panel's box
 // actually is.
+//: On a phone the page's floating New button (`.dock-fab`, z 44) is fixed over
+//: the list's foot, at the same right edge, and sat on the half of this button
+//: that the panel's own bottom left under it (measured at 390 on Notes: the
+//: arrow at y 710 to 754, the fab at 730 to 774, `elementFromPoint` at its
+//: centre answered the fab). The button goes one step above the fab instead.
+const DOCK_FABS = document.getElementsByClassName("dock-fab");
+function aboveDockFab() {
+  if (!window.matchMedia("(max-width: 599.98px)").matches) return 0;
+  for (const fab of DOCK_FABS) {
+    const r = fab.getBoundingClientRect();
+    if (r.width && r.height) return window.innerHeight - r.top + spacingPx("--space-3", 8);
+  }
+  return 0;
+}
+
 function positionScrollTopForNested(button, tab) {
   // Chat reparents it into .chat-dock (the MutationObserver below), where that
   // container's CSS positions it: inline right/bottom would fight that.
@@ -2473,7 +2493,7 @@ function positionScrollTopForNested(button, tab) {
   const right = `${Math.max(margin, window.innerWidth - edge + margin + scrollbarClearance)}px`;
   if (button.style.right !== right) button.style.right = right;
 
-  const bottom = `${Math.max(margin, window.innerHeight - Math.min(rect.bottom, window.innerHeight) + margin)}px`;
+  const bottom = `${Math.max(margin, window.innerHeight - Math.min(rect.bottom, window.innerHeight) + margin, aboveDockFab())}px`;
   //: Only when it moved: an inline-style write invalidates style even when
   //: the value is the same, and this runs on every scroll frame.
   if (button.style.bottom !== bottom) button.style.bottom = bottom;
