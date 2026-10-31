@@ -101,3 +101,30 @@ def test_graph_search_keys_share_a_redraw():
     body = _between(js, "function graphSearchTyped() {", "$(\"graph-search\").addEventListener(\"input\"")
     assert body.index("if (wait <= 0)") < body.index("setTimeout(")
     assert "clearTimeout(typed.timer)" in body
+
+
+def test_a_widget_that_settles_clears_its_stall_timer():
+    # The pending timer held the closure, and through it the widget body, for 20 s
+    # after the person left: +630 detached nodes and +25 listeners a Dashboard visit.
+    js = frontend_text("dashboard.js")
+    body = _between(js, "function mountWidgetBody(widget, body) {", "//: **Back on the dashboard")
+    assert "clearTimeout(stall)" in body
+    assert "stall = setTimeout(" in body
+
+
+def test_render_functions_do_not_add_page_level_listeners():
+    # A listener on document or window made inside a render function is added again
+    # every render and holds the closure (and what it names) for the page's life.
+    # `mountDocToolbarControls` runs once at load: the one allowed.
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "frontend" / "js"
+    found = []
+    for path in sorted(root.glob("*.js")):
+        text = path.read_text(encoding="utf-8")
+        for fn in re.finditer(r"(?ms)^(?:async )?function ((?:render|draw|paint|mount)\w*)\(.*?\n\}\n", text):
+            for line in fn.group(0).splitlines():
+                if re.search(r"\b(document|window)\.addEventListener\(", line) and "once" not in line:
+                    found.append(f"{path.name}:{fn.group(1)}")
+    assert found == ["documents.js:mountDocToolbarControls"], found

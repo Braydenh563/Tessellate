@@ -1746,11 +1746,20 @@ function mountWidgetBody(widget, body) {
   };
   waiting.observe(body, { childList: true });
   let settled = false;
+  //: Cleared when the widget settles: a pending timer holds this closure, and
+  //: through it the body, for the whole stall time (20 s) after the person has
+  //: left (perf 1031 row 22: +630 detached nodes per Dashboard visit).
+  let stall = 0;
+  const done = () => {
+    settled = true;
+    clearTimeout(stall);
+    unskeleton();
+  };
   const drawn = Promise.resolve()
     .then(() => widget.render(body))
-    .then(() => { settled = true; unskeleton(); })
-    .catch(() => { settled = true; unskeleton(); failed("Couldn't load this widget."); });
-  setTimeout(() => {
+    .then(done)
+    .catch(() => { done(); failed("Couldn't load this widget."); });
+  stall = setTimeout(() => {
     if (!settled && !body.querySelector(":scope > :not(.skeleton)")) {
       unskeleton();
       failed("This is taking longer than it should.");
