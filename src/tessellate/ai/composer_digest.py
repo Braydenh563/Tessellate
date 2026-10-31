@@ -463,11 +463,13 @@ def only_note_lines() -> frozenset[str]:
 
 #: Said in place of the "only note" claim when only the words were searched
 #: (blind test 2026-10-31, item 3), worded in turn like the claim it replaces.
+#: Kept short: the line is beside an answer, not part of it (gold 11 lost
+#: six points to a twelve-word one).
 ONLY_WORDS = (
-    "Only one note uses those words; notes that say it differently need search by meaning.",
-    "Only one note has those exact words; search by meaning finds notes worded another way.",
-    "That is the only one with those words; notes put differently need search by meaning.",
-    "Only one note matches those words so far; search by meaning would catch other wordings.",
+    "Only one note uses those words; search by meaning finds others.",
+    "Only one note has those words; search by meaning finds more.",
+    "That is the only one with those words; search by meaning finds others.",
+    "Only one note matches those words; search by meaning finds more.",
 )
 
 
