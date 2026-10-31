@@ -86,9 +86,14 @@ let lastChatImageAttachments = [];
 //: words one button; the remove x stays its sibling.
 function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
   const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip att-chip";
+  //: **Staged is a pill, sent is a card** (INBOX 1476, the owner: the grey slab
+  //: is not "very clean and dynamic"). A chip with a remove x is waiting in a
+  //: composer: one quiet line, the glyph, the name cut at about 14 characters,
+  //: the kind in brackets, the x. Sent, it keeps the two-line card.
+  const pill = !!onRemove;
+  chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
   chipEl.dataset.state = state;
-  chipEl.title = title || name;
+  chipEl.title = title || (pill && size ? `${name}, ${formatFileSize(size)}` : name);
   let tile;
   if (thumb) {
     tile = document.createElement("img");
@@ -116,12 +121,13 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
   const facts = document.createElement("span");
   facts.className = "att-chip-facts";
   const kind = fileKindLabel("", name);
-  facts.textContent =
+  const factsLine =
     state === "uploading"
       ? `Uploading ${Math.round(progress * 100)}%`
       : state === "error"
         ? error || "Could not attach"
         : factsText || [kind, formatFileSize(size)].filter(Boolean).join(" · ");
+  facts.textContent = pill && state === "ready" ? `[${(factsText || kind || "File").split(" · ")[0]}]` : factsLine;
   const body = document.createElement("span");
   body.className = "att-chip-body";
   body.append(nameEl, facts);
@@ -590,31 +596,22 @@ function renderSelectionAttachment() {
   box.replaceChildren();
   box.classList.toggle("hidden", !attachedSelection);
   if (!attachedSelection) return;
-  const chipEl = document.createElement("span");
-  chipEl.className = "chip attachment-chip";
-  //: The full passage on hover. A chip can only show a few words of it, and
+  //: The full passage on hover: a pill can only name where it is from, and
   //: "which selection is this?" is the one question it has to answer.
-  chipEl.title = attachedSelection.text;
-  const label = document.createElement("span");
-  const words = attachedSelection.text.replace(/\s+/g, " ").trim();
-  const shown = words.length > 42 ? `${words.slice(0, 41)}…` : words;
-  //: A page's reading (the OCR workspace, INBOX 717) has a file and a page,
-  //: not a line in an editor.
-  setLabel(label, attachedSelection.kind === "reading"
-    ? `ph:scan ${attachedSelection.title}: “${shown}”`
-    : `ph:text-aa ${attachedSelection.title} · line ${attachedSelection.line}: “${shown}”`);
-  const remove = document.createElement("button");
-  remove.className = "attachment-remove";
-  remove.type = "button";
-  setLabel(remove, "ph:x");
-  remove.title = "Don't send this with your message";
-  remove.setAttribute("aria-label", remove.title);
-  remove.addEventListener("click", () => {
-    clearSelectionAttachment();
-    announce("Selection removed.");
-  });
-  chipEl.append(label, remove);
-  box.appendChild(chipEl);
+  const reading = attachedSelection.kind === "reading";
+  box.appendChild(
+    attachmentChip({
+      name: attachedSelection.title,
+      icon: reading ? "ph-scan" : "ph-text-aa",
+      facts: reading ? "Reading" : `line ${attachedSelection.line}`,
+      title: `${attachedSelection.title}${reading ? "" : `, line ${attachedSelection.line}`}: “${attachedSelection.text.replace(/\s+/g, " ").trim().slice(0, 300)}”`,
+      removeTitle: "Don't send this with your message",
+      onRemove: () => {
+        clearSelectionAttachment();
+        announce("Selection removed.");
+      },
+    }),
+  );
 }
 
 //: **Re-validated at send, not trusted from when it was attached.** This is

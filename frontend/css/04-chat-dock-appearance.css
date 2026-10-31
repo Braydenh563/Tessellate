@@ -3251,19 +3251,6 @@ span > .chip {
   flex: 0 0 auto;
 }
 
-.attachment-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: 22rem;
-}
-
-.attachment-chip>span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* **The one attachment chip** (DESIGN.md "An attachment chip"). The owner:
    "better modern and proffessional this app styled attachment chips". A tile
    (the picture, or the kind's glyph), the name with its extension kept when
@@ -3271,6 +3258,8 @@ span > .chip {
    what went wrong), a thin bar while it uploads and a round x. Chat, the
    popup agent and any later composer build it with `attachmentChip()`. */
 .att-chip {
+  display: inline-flex;
+  align-items: center;
   max-width: 16rem;
   min-width: 0;
   gap: var(--space-3);
@@ -3397,20 +3386,49 @@ span > .chip {
 .att-chip-x:is(:hover, :focus-visible) {
   color: var(--error);
 }
-
-.attachment-remove {
+/* **Staged, the pill** (INBOX 1476, the owner: "very clean and dynamic"): a
+   chip with a remove x is one control-height line on the accent wash, no
+   border; the glyph, the name cut at 14 characters, the kind in brackets, the
+   x. Under 820px the buttons keep their 44px target and overhang it. */
+.att-chip-pill {
+  max-width: 100%;
+  min-height: var(--control-h-lg);
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
   border: 0;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  font-weight: 700;
-  line-height: 1;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
 }
-
-.attachment-remove:is(:hover, :focus-visible),
-.attachment-remove:is(:focus-visible, :has(:focus-visible)) {
-  color: var(--error);
+.att-chip-pill .att-chip-tile {
+  width: 1.25rem;
+  background: none;
+  font-size: var(--text-md);
+}
+.att-chip-pill img.att-chip-tile {
+  border-radius: inherit;
+}
+.att-chip-pill :is(.att-chip-open, .att-chip-x) {
+  gap: var(--space-2);
+  margin: calc((var(--control-h-lg) - var(--target-min)) / 2) 0;
+  padding: 0;
+  border-radius: inherit;
+}
+.att-chip-pill .att-chip-body {
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.att-chip-pill .att-chip-name {
+  font-weight: 500;
+}
+.att-chip-pill .att-chip-stem {
+  max-width: 14ch;
+}
+.att-chip-pill:has(> .att-chip-open:is(:hover, :focus-visible)) {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.att-chip-pill[data-state="error"] {
+  background: color-mix(in srgb, var(--error) 14%, transparent);
 }
 
 /* --- the writing room -------------------------------------------------------- */

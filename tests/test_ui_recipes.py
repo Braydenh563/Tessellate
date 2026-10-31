@@ -3067,6 +3067,7 @@ def test_a_segmented_track_is_rounded_by_the_table() -> None:
 #: is the selector as it is written, the value is why it earns the shape.
 PILL_CONTROLS = {
     ".icon-btn": "a round icon button is a circle, not a pill",
+    ".att-chip-pill": "the staged attachment chip, one quiet line (INBOX 1476, the owner: very clean and dynamic)",
     ".lightbox-close": "a round button over a photo",
     ".lightbox-nav": "a round button over a photo",
     ".chat-jump-latest": "floats over the thread, the floating-action shape",
@@ -6063,7 +6064,7 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     a second file chip (the old `attachment-chip-image` card is gone)."""
     attach = frontend_text("chat-attach.js")
     assert attach.count("function attachmentChip(") == 1
-    builder = attach[attach.index("function attachmentChip(") :][:2600]
+    builder = attach[attach.index("function attachmentChip(") :][:3400]
     for needle in (
         '"att-chip-stem"',
         '"att-chip-ext"',
@@ -6094,6 +6095,29 @@ def test_one_attachment_chip_serves_chat_and_the_popup_agent() -> None:
     commit = palette[palette.index("async function agentCommitFiles(") :][:1800]
     assert 'method: "DELETE"' in commit
     assert "agentStageFiles(" in frontend_text("settings-wiring.js")
+
+
+def test_a_staged_chip_is_one_quiet_pill() -> None:
+    """DESIGN.md, "A file waiting on the next message" (INBOX 1476, the owner:
+    the grey slab is not "very clean and dynamic"): a chip with a remove x is
+    the `.att-chip-pill`, and the selection, OCR and web-page chips that were
+    hand-built `.attachment-chip` slabs are built by `attachmentChip` too."""
+    attach = frontend_text("chat-attach.js")
+    builder = attach[attach.index("function attachmentChip(") :][:3400]
+    assert "const pill = !!onRemove;" in builder
+    assert "att-chip-pill" in builder
+    selection = attach[attach.index("function renderSelectionAttachment(") :][:1600]
+    assert "attachmentChip(" in selection
+    assert "attachmentChip(" in frontend_text("chat.js")[frontend_text("chat.js").index("function renderWebPageAttachment(") :][:900]
+    for name in ("chat-attach.js", "chat.js"):
+        assert "attachment-chip" not in frontend_text(name), name
+        assert "attachment-remove" not in frontend_text(name), name
+    css = (ROOT / "frontend" / "css" / "04-chat-dock-appearance.css").read_text(encoding="utf-8")
+    pill = css[css.index(".att-chip-pill {") :][:400]
+    for needle in ("min-height: var(--control-h-lg)", "border: 0", "var(--radius-pill)", "var(--accent-soft)"):
+        assert needle in pill, needle
+    assert "max-width: 14ch" in css[css.index(".att-chip-pill .att-chip-stem {") :][:80]
+    assert ".attachment-chip" not in css and ".attachment-remove" not in css
 
 
 def test_a_notebook_item_on_a_message_is_the_one_file_card() -> None:
