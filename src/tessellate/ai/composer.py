@@ -2858,14 +2858,20 @@ def _versus_lead(out: _Answer, question: str, own: list[list[NoteView]]) -> bool
     return versus is not None
 
 
-def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
-    """A line that counts each side, each side its own short list, then what
-    speaks of both."""
-    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
+def _compare_shares(stems, own, picks) -> tuple[list, list, list]:  # noqa: ANN001
+    """What is said of side A only, side B only, and both."""
     a_only = [s for s in picks[0] if own[0] or not (stems[1] & set(s.words))][:3]
     b_only = [s for s in picks[1] if own[1] or not (stems[0] & set(s.words))][:3]
     #: What speaks of both is not a line already said under a side.
     both = [s for s in picks[0] if stems[1] & set(s.words) and s not in a_only and s not in b_only][:2]
+    return a_only, b_only, both
+
+
+def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meaning_for, question: str = "") -> bool:  # noqa: ANN001
+    """A line that counts each side, each side its own short list, then what
+    speaks of both."""
+    terms, stems, own, picks = _side_picks(sides, views, meaning_for)
+    a_only, b_only, both = _compare_shares(stems, own, picks)
     if not (a_only or b_only):
         return False
     if not _length_lead(out, question, own) and not _versus_lead(out, question, own):
@@ -3258,9 +3264,6 @@ def _say_open(out: _Answer, view: NoteView, tasks: list, wanted: set[str]) -> No
         out.item(s, list(wanted))
 
 
-_DAY_AND_MONTH = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", re.I)
-
-
 def _until_note(out: _Answer, question: str, views: list[NoteView], today: date) -> bool:
     """"How many days until the dentist": the day is in a note, so the
     count is from today to the nearest day the note on the subject names
@@ -3315,22 +3318,12 @@ def _days_named(view: NoteView, today: date, tense: str) -> list[tuple[date, int
     for fact in factgraph.facts(note):
         if fact.kind != "date" or not fact.when or fact.when[2] != "day":
             continue
-        day = _fact_day(fact, today, tense) if ahead else fact.when[0]
+        day = composer_versus.fact_day(fact, today, tense) if ahead else fact.when[0]
         if ahead and told_as_past(str(note.get("content") or ""), fact.start):
             continue
         if day >= today if ahead else day <= today:
             dated.append((day, fact.start))
     return dated
-
-
-def _fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgraph fact
-    """A dated fact's day; "Mum turns 60 on 3 December", written last year:
-    a day and month with no year is the next (or last) one from today."""
-    phrase = str(fact.attrs.get("phrase") or "")
-    if _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
-        again = when_words.span(phrase, today, tense)
-        return again[0] if again else fact.when[0]
-    return fact.when[0]
 
 
 def told_as_past(content: str, at: int) -> bool:

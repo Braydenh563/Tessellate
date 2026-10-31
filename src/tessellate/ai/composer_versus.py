@@ -19,6 +19,8 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from tessellate.ai import when
+
 #: What each comparison word ranks by (`by`), which end wins (`low`: the least
 #: is first), and the template key that says it. "age" ranks by the day a note
 #: was written, "ahead" by the days a note names that are still to come, and
@@ -143,10 +145,23 @@ def figure_of(view, shared: str | None = None):  # noqa: ANN001, ANN202
     return amount, text, money, at
 
 
+_DAY_AND_MONTH = re.compile(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b", re.I)
+
+
+def fact_day(fact, today: date, tense: str) -> date:  # noqa: ANN001  # a factgraph fact
+    """A dated fact's day; "Mum turns 60 on 3 December", written last year:
+    a day and month with no year is the next (or last) one from today."""
+    phrase = str(fact.attrs.get("phrase") or "")
+    if _DAY_AND_MONTH.search(phrase) and not re.search(r"\d{4}", phrase):
+        again = when.span(phrase, today, tense)
+        return again[0] if again else fact.when[0]
+    return fact.when[0]
+
+
 def dates_of(view, today: date) -> list[tuple[date, str, int]]:  # noqa: ANN001
     """The days a note names that are still to come, each with how it is said
     ("14 November", "April 2027"); a day told as past is not one."""
-    from tessellate.ai import composer, recognise
+    from tessellate.ai import recognise
 
     note, facts = _facts(view)
     content = str(note.get("content") or "")
@@ -155,7 +170,7 @@ def dates_of(view, today: date) -> list[tuple[date, str, int]]:  # noqa: ANN001
         if fact.kind != "date" or not fact.when or recognise.told_as_past(_sentence(content, fact.start)):
             continue
         grain = fact.when[2]
-        day = composer._fact_day(fact, today, "future") if grain == "day" else fact.when[0]  # noqa: SLF001
+        day = fact_day(fact, today, "future") if grain == "day" else fact.when[0]
         if (fact.when[1] if grain != "day" else day) >= today:
             days.append((day, _said_day(day, grain, today), fact.start))
     return sorted(days)

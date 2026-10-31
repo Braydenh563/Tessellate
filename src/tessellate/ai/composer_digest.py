@@ -371,6 +371,15 @@ def _week_first() -> int:
     return config.week_first_day(loaded) if loaded is not None else 0
 
 
+def _gone_distance(gap: int, week: bool, close: bool) -> str:
+    """How far back a gone day is, as the rule table keys it."""
+    if gap <= 1 or close:
+        return "close"
+    if gap < 7 and not week:
+        return "week"
+    return "near" if gap < 35 else "far" if gap < 183 else "distant"
+
+
 def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
     """A day (or a week from its first day) that has gone by, said by the
     rule table: `on` is its exact form ("on 20 July", "in the week of 13 July")."""
@@ -387,8 +396,7 @@ def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
         return f"{on}, {echoed}" if gap > 1 else rel
     #: Last week is close, said as "last week", except to "when did I":
     #: only today and yesterday go without their date there.
-    distance = ("close" if gap <= 1 or (last_week and not exact) else "week" if gap < 7 and not week
-                else "near" if gap < 35 else "far" if gap < 183 else "distant")
+    distance = _gone_distance(gap, week, last_week and not exact)
     name = _DAY_NAMES[start.weekday()]
     weekday = f"on {name}" if start >= this_monday else f"last {name}"
     month = composer._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
@@ -4573,6 +4581,25 @@ _PERSON_NOUNS = frozenset(
 _CHIP_WORD = re.compile(r"[\w'&-]+")
 
 
+def _chip_hits(wanted: list[str], lower: list[str]) -> list[int]:
+    """Where in the question the topic's words were typed; none unless each one was."""
+
+    def means(term: str, word: str) -> bool:
+        return word == term or composer._stem(word) == composer._stem(term) or term in composer.subject_terms(word)  # noqa: SLF001
+
+    hits = [i for i, w in enumerate(lower) if any(means(t, w) for t in wanted)]
+    if not hits or not all(any(means(t, lower[i]) for i in hits) for t in wanted):
+        return []
+    return hits
+
+
+def _chip_owner(lower: list[str], first: int, last: int) -> str:
+    """The "my" or "the" a chip's subject carries, from the word before it."""
+    before = lower[first - 1] if first else ""
+    owner = {"my": "my", "your": "my", "our": "our", "the": "the"}.get(before, "")
+    return "my" if not owner and lower[last] in _PERSON_NOUNS else owner
+
+
 def _chip_subject(topic: str, question: str) -> str:
     """The subject a chip asks about, in the person's own words (INBOX 1483:
     "What's the latest on university friend?" for "my uni friend"): the
@@ -4582,13 +4609,8 @@ def _chip_subject(topic: str, question: str) -> str:
     their "my" stays "my"."""
     asked = _CHIP_WORD.findall(question)
     lower = [w.lower() for w in asked]
-    wanted = topic.lower().split()
-
-    def means(term: str, word: str) -> bool:
-        return word == term or composer._stem(word) == composer._stem(term) or term in composer.subject_terms(word)  # noqa: SLF001
-
-    hits = [i for i, w in enumerate(lower) if any(means(t, w) for t in wanted)]
-    if not hits or not all(any(means(t, lower[i]) for i in hits) for t in wanted):
+    hits = _chip_hits(topic.lower().split(), lower)
+    if not hits:
         return topic
     #: "did I miss the bus": what they did is not what it is about.
     while len(hits) > 1 and lower[hits[0] - 1 : hits[0]] == ["i"]:
@@ -4598,11 +4620,7 @@ def _chip_subject(topic: str, question: str) -> str:
         return topic
     cased = {w.lower(): w for w in topic.split()}
     span = " ".join(cased.get(w.lower(), w) for w in asked[first : last + 1])
-    before = lower[first - 1] if first else ""
-    owner = {"my": "my", "your": "my", "our": "our", "the": "the"}.get(before, "")
-    if not owner and lower[last] in _PERSON_NOUNS:
-        owner = "my"
-    return f"{owner} {span}".strip()
+    return f"{_chip_owner(lower, first, last)} {span}".strip()
 
 
 #: Questions about the subject asked, by the answer's shape: what an answer
