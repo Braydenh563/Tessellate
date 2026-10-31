@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 6997, frontend ids 2595, CSS sections 506, backend routes 632, backend modules 7689, test files 1635, tests 14200, plan headings 990.
+Counts: frontend functions 6997, frontend ids 2595, CSS sections 506, backend routes 632, backend modules 7689, test files 1635, tests 14201, plan headings 990.
 
 ## Frontend functions (6997)
 
@@ -127,39 +127,39 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterMenuExit` | frontend/js/menus.js:700 |
-| `buildMenuGroupButton` | frontend/js/menus.js:1367 |
-| `buildMenuItemButton` | frontend/js/menus.js:1337 |
-| `cardOpener` | frontend/js/menus.js:392 |
+| `afterMenuExit` | frontend/js/menus.js:708 |
+| `buildMenuGroupButton` | frontend/js/menus.js:1375 |
+| `buildMenuItemButton` | frontend/js/menus.js:1345 |
+| `cardOpener` | frontend/js/menus.js:400 |
 | `closeActionMenus` | frontend/js/menus.js:70 |
 | `closeActionMenusOnScroll` | frontend/js/menus.js:25 |
 | `closeHelpPopovers` | frontend/js/menus.js:240 |
-| `docBacklinkContext` | frontend/js/menus.js:1115 |
-| `entryOverflowMenu` | frontend/js/menus.js:1532 |
-| `escapeAndCapMenu` | frontend/js/menus.js:749 |
-| `escapeMenuIfClipped` | frontend/js/menus.js:648 |
-| `escapeMenuToBody` | frontend/js/menus.js:670 |
-| `fitActionMenuInWindow` | frontend/js/menus.js:439 |
-| `focusMenuItem` | frontend/js/menus.js:561 |
-| `generateEntryTitle` | frontend/js/menus.js:1224 |
-| `historyActorLabel` | frontend/js/menus.js:1158 |
+| `docBacklinkContext` | frontend/js/menus.js:1123 |
+| `entryOverflowMenu` | frontend/js/menus.js:1540 |
+| `escapeAndCapMenu` | frontend/js/menus.js:757 |
+| `escapeMenuIfClipped` | frontend/js/menus.js:656 |
+| `escapeMenuToBody` | frontend/js/menus.js:678 |
+| `fitActionMenuInWindow` | frontend/js/menus.js:447 |
+| `focusMenuItem` | frontend/js/menus.js:569 |
+| `generateEntryTitle` | frontend/js/menus.js:1232 |
+| `historyActorLabel` | frontend/js/menus.js:1166 |
 | `inlineActionIs` | frontend/js/menus.js:8 |
-| `isEditConflict` | frontend/js/menus.js:1971 |
-| `menuClippingAncestor` | frontend/js/menus.js:575 |
-| `menuExitMs` | frontend/js/menus.js:707 |
-| `menuSidePlan` | frontend/js/menus.js:417 |
+| `isEditConflict` | frontend/js/menus.js:1979 |
+| `menuClippingAncestor` | frontend/js/menus.js:583 |
+| `menuExitMs` | frontend/js/menus.js:715 |
+| `menuSidePlan` | frontend/js/menus.js:425 |
 | `nearestScrollParent` | frontend/js/menus.js:123 |
-| `openActionMenu` | frontend/js/menus.js:459 |
-| `placeEscapedMenu` | frontend/js/menus.js:615 |
+| `openActionMenu` | frontend/js/menus.js:467 |
+| `placeEscapedMenu` | frontend/js/menus.js:623 |
 | `placeHelpPopover` | frontend/js/menus.js:154 |
-| `removeEntryTitle` | frontend/js/menus.js:1248 |
-| `restoreEscapedMenu` | frontend/js/menus.js:714 |
-| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:695 |
-| `toggleEntryPrivacy` | frontend/js/menus.js:1181 |
-| `wireEscapedActionMenu` | frontend/js/menus.js:818 |
-| `wireEscapedMenuResize` | frontend/js/menus.js:1098 |
-| `wireHelpPopover` | frontend/js/menus.js:293 |
-| `wireMenuKeyboard` | frontend/js/menus.js:1276 |
+| `removeEntryTitle` | frontend/js/menus.js:1256 |
+| `restoreEscapedMenu` | frontend/js/menus.js:722 |
+| `restoreEscapedMenuAfterExit` | frontend/js/menus.js:703 |
+| `toggleEntryPrivacy` | frontend/js/menus.js:1189 |
+| `wireEscapedActionMenu` | frontend/js/menus.js:826 |
+| `wireEscapedMenuResize` | frontend/js/menus.js:1106 |
+| `wireHelpPopover` | frontend/js/menus.js:301 |
+| `wireMenuKeyboard` | frontend/js/menus.js:1284 |
 
 ### frontend/js/lightbox.js (3)
 
@@ -21258,7 +21258,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14200)
+## Tests (14201)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -21973,7 +21973,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_help_controls.py | 19 |
 | tests/test_help_coverage.py | 6 |
 | tests/test_help_emphasis.py | 5 |
-| tests/test_help_popover_in_dialogs.py | 4 |
+| tests/test_help_popover_in_dialogs.py | 5 |
 | tests/test_help_retrieval.py | 8 |
 | tests/test_help_search.py | 3 |
 | tests/test_help_settings_paths.py | 8 |

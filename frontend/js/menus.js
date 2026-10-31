@@ -256,16 +256,24 @@ document.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape") return;
+  if (event.key !== "Escape" || !openHelpPopovers.size) return;
   //: Marked so a handler further down this same press can tell it was spent
   //: closing a popover (the Graph's full-screen exit: one Escape closes the
   //: '?' and the map stays full screen, as the hand-wired Graph help did).
-  if (openHelpPopovers.size) event.helpPopoverSpent = true;
+  event.helpPopoverSpent = true;
   //: A "?" open inside a modal takes this Escape for itself: without the
   //: default, the press also asked the dialog to close, and the Quick note
   //: went with its help (INBOX 667). The next Escape closes the dialog.
   if ([...openHelpPopovers].some((entry) => entry.panel.closest("dialog[open]"))) event.preventDefault();
+  //: **This press is the popover's alone, in every dialog** (dashcls-1031:
+  //: Escape in Settings' '?' closed the whole Settings). The overlays close on
+  //: their own document listeners, loaded after this one, and only some read
+  //: `helpPopoverSpent`; stopping the press here is the one place that covers
+  //: them all. Focus goes back to the '?' so the next Escape has a home.
+  event.stopImmediatePropagation();
+  const opener = [...openHelpPopovers].pop()?.trigger;
   closeHelpPopovers();
+  if (opener?.isConnected) opener.focus({ preventScroll: true });
 });
 window.addEventListener("resize", () => {
   for (const entry of openHelpPopovers) placeHelpPopover(entry.panel, entry.trigger);
