@@ -2166,6 +2166,77 @@ function gcTickSnaps(s) {
   return (s.drawCost || 0) > GC_GLIDE_COST_MS;
 }
 
+//: **A layout that is cooling is drawn a few times a second, not every tick**
+//: (perf3 1031, lagfix item 4: the owner saw 51 draws a second on a layout
+//: still cooling). Below `GC_COOL_ALPHA` the notes only shift a few pixels a
+//: tick (measured: 1 to 22 screen px at alpha 0.001, never under half a pixel
+//: while a few notes keep settling), so a draw per tick, every 16 ms on a fast
+//: machine, buys nothing the eye can follow. Such a tick is drawn when the
+//: notes have moved `GC_COOL_MOVE_PX` from where they were last drawn, and
+//: at most every `GC_COOL_DRAW_MS` (80 ms, 12 a second); a draw held back is made when that time
+//: is up, so the map never rests a step behind the layout.
+const GC_COOL_ALPHA = 0.05;
+const GC_COOL_MOVE_PX = 0.5;
+const GC_COOL_DRAW_MS = 80;
+
+//: Points every note at the tick's position and answers how far (document
+//: units) the one furthest from where it was last drawn now is.
+function gcAimNodes(s, positions, count) {
+  let drift = 0;
+  for (let i = 0; i < count; i++) {
+    const node = s.nodes[i];
+    // A node being dragged is authoritative on this side: its position
+    // came from the pointer this frame and the worker's copy is one
+    // message behind.
+    if (node === s.dragNode) continue;
+    // From where the last glide was headed (or, the first time, from
+    // where the note is), to the new tick.
+    node._fromX = node._toX === undefined ? node.x : node._toX;
+    node._fromY = node._toY === undefined ? node.y : node._toY;
+    node._toX = positions[i * 2];
+    node._toY = positions[i * 2 + 1];
+    drift = Math.max(drift, Math.abs(node._toX - node.x), Math.abs(node._toY - node.y));
+  }
+  return drift;
+}
+
+//: A cooling layout, the notes not in the hand.
+const gcCooling = (s) => s.alpha < GC_COOL_ALPHA && !s.dragNode;
+
+//: Whether a tick puts the notes at its place at once rather than gliding to
+//: it. A cooling layout does: a glide asks for a frame per display frame
+//: until it ends, and ticks arriving every 16 ms keep restarting it, so the
+//: cap below would hold the ticks' draws back and the glides would draw at
+//: the display's rate anyway (synthetic ticks at 62 a second: 279 draws in 4 s).
+const gcTickSettles = (s) => gcTickSnaps(s) || gcCooling(s);
+
+//: Drawn.
+function gcDrawTick(s, now) {
+  s.lastTickDraw = now;
+  s.heldDrift = 0;
+  gcRequestDraw(s);
+}
+
+//: What a tick asks of the canvas. `heldDrift` adds up what ticks moved the
+//: notes since the last draw (more than the true gap, never less), so a map
+//: that settles at each tick (`gcTickSettles`) cannot wander off unseen.
+function gcTickDraw(s, now, drift) {
+  s.heldDrift = (s.heldDrift || 0) + drift;
+  if (!gcCooling(s)) return gcDrawTick(s, now);
+  if (s.heldDrift * (s.transform?.k || 1) < GC_COOL_MOVE_PX || s.coolTimer) return;
+  const wait = (s.lastTickDraw || 0) + GC_COOL_DRAW_MS - now;
+  if (wait <= 0) return gcDrawTick(s, now);
+  s.coolTimer = setTimeout(() => {
+    s.coolTimer = 0;
+    gcDrawTick(s, performance.now());
+  }, wait);
+}
+
+//: At rest, whatever the last ticks moved and no draw showed is drawn.
+function gcDrawHeld(s) {
+  if (s.heldDrift) gcDrawTick(s, performance.now());
+}
+
 //: Moves every note the share of the way from the tick before to the last
 //: one that the time since the last one says, over the interval that brought
 //: it, and reports whether there is more of the glide to draw. A note in the hand, and a note a new
@@ -5213,29 +5284,17 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
           const smoothed = s.tickGap ? s.tickGap * 0.8 + gap * 0.2 : gap;
           s.tickGap = Math.min(GC_GLIDE_MAX_MS, Math.max(GC_GLIDE_MIN_MS, smoothed));
         }
-        for (let i = 0; i < count; i++) {
-          const node = s.nodes[i];
-          // A node being dragged is authoritative on this side: its position
-          // came from the pointer this frame and the worker's copy is one
-          // message behind.
-          if (node === s.dragNode) continue;
-          // From where the last glide was headed (or, the first time, from
-          // where the note is), to the new tick.
-          node._fromX = node._toX === undefined ? node.x : node._toX;
-          node._fromY = node._toY === undefined ? node.y : node._toY;
-          node._toX = positions[i * 2];
-          node._toY = positions[i * 2 + 1];
-        }
+        const drift = gcAimNodes(s, positions, count);
         s.glideFrom = now;
         s.glideMs = 0;
         s.gliding = true;
-        if (gcTickSnaps(s)) gcGlideFinish(s);
+        if (gcTickSettles(s)) gcGlideFinish(s);
         // The positions moved, so the hit-test index is stale. Marked here
         // rather than at the end of every draw: a settled map redraws on
         // hover without anything having moved, and rebuilding a 2,000-point
         // quadtree per pointermove for nothing is a millisecond a frame.
         s.quadtreeDirty = true;
-        gcRequestDraw(s);
+        gcTickDraw(s, now, drift);
         // **Framed twice: once straight away, once when it settles.**
         //
         // The SVG renderer framed the map exactly once, when the simulation
@@ -5293,6 +5352,7 @@ function gcStartWorker(nodes, edges, world, s = gcTab, viewSeed = null) {
         //: At rest is where the last tick said: the glide is finished here,
         //: not by the next paint, so the fit below frames the final shape.
         gcGlideFinish(s);
+        gcDrawHeld(s);
         //: What just came to rest, so the next render of exactly these
         //: inputs can hold it instead of settling it again (`gcStartWorker`).
         s.settledSig = s.layoutSig;

@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7084, frontend ids 2602, CSS sections 507, backend routes 632, backend modules 7857, test files 1673, tests 14481, plan headings 990.
+Counts: frontend functions 7090, frontend ids 2602, CSS sections 507, backend routes 632, backend modules 7859, test files 1674, tests 14488, plan headings 990.
 
-## Frontend functions (7084)
+## Frontend functions (7090)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -4105,12 +4105,13 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `explainNote` | frontend/js/gesture-kit.js:239 |
 | `openChatModelPanel` | frontend/js/gesture-kit.js:54 |
 
-### frontend/js/graph-canvas.js (167)
+### frontend/js/graph-canvas.js (173)
 
 | Name | File:line |
 |---|---|
-| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4393 |
-| `gcArriving` | frontend/js/graph-canvas.js:6842 |
+| `gcAimNodes` | frontend/js/graph-canvas.js:2184 |
+| `gcArmTouchLasso` | frontend/js/graph-canvas.js:4464 |
+| `gcArriving` | frontend/js/graph-canvas.js:6902 |
 | `gcArrows` | frontend/js/graph-canvas.js:872 |
 | `gcAutoFitDone` | frontend/js/graph-canvas.js:192 |
 | `gcAutoFitTurnedOn` | frontend/js/graph-canvas.js:1926 |
@@ -4118,164 +4119,169 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `gcBornAlpha` | frontend/js/graph-canvas.js:1970 |
 | `gcBowPoint` | frontend/js/graph-canvas.js:886 |
 | `gcBoxLineCount` | frontend/js/graph-canvas.js:743 |
-| `gcBoxPoints` | frontend/js/graph-canvas.js:4410 |
-| `gcCachedPositions` | frontend/js/graph-canvas.js:5487 |
+| `gcBoxPoints` | frontend/js/graph-canvas.js:4481 |
+| `gcCachedPositions` | frontend/js/graph-canvas.js:5547 |
 | `gcClampBox` | frontend/js/graph-canvas.js:657 |
-| `gcClickNode` | frontend/js/graph-canvas.js:5013 |
+| `gcClickNode` | frontend/js/graph-canvas.js:5084 |
 | `gcClipEdge` | frontend/js/graph-canvas.js:730 |
-| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4668 |
+| `gcCloseNodeMenu` | frontend/js/graph-canvas.js:4739 |
+| `gcCooling` | frontend/js/graph-canvas.js:2204 |
 | `gcCurvedLinks` | frontend/js/graph-canvas.js:841 |
-| `gcDraw` | frontend/js/graph-canvas.js:2612 |
-| `gcDrawComposed` | frontend/js/graph-canvas.js:2425 |
-| `gcDrawDrift` | frontend/js/graph-canvas.js:3496 |
-| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3509 |
-| `gcDrawLabels` | frontend/js/graph-canvas.js:3569 |
+| `gcDraw` | frontend/js/graph-canvas.js:2683 |
+| `gcDrawComposed` | frontend/js/graph-canvas.js:2496 |
+| `gcDrawDrift` | frontend/js/graph-canvas.js:3567 |
+| `gcDrawEdgeHover` | frontend/js/graph-canvas.js:3580 |
+| `gcDrawHeld` | frontend/js/graph-canvas.js:2236 |
+| `gcDrawLabels` | frontend/js/graph-canvas.js:3640 |
 | `gcDrawLeaving` | frontend/js/graph-canvas.js:2033 |
 | `gcDrawLeavingLines` | frontend/js/graph-canvas.js:2024 |
-| `gcDrawLight` | frontend/js/graph-canvas.js:2533 |
+| `gcDrawLight` | frontend/js/graph-canvas.js:2604 |
 | `gcDrawNebulae` | frontend/js/graph-canvas.js:1196 |
-| `gcDrawPill` | frontend/js/graph-canvas.js:3546 |
-| `gcDrawSelection` | frontend/js/graph-canvas.js:4449 |
+| `gcDrawPill` | frontend/js/graph-canvas.js:3617 |
+| `gcDrawSelection` | frontend/js/graph-canvas.js:4520 |
+| `gcDrawTick` | frontend/js/graph-canvas.js:2214 |
 | `gcDrawTopicHulls` | frontend/js/graph-canvas.js:1359 |
-| `gcDrawTrace` | frontend/js/graph-canvas.js:3745 |
+| `gcDrawTrace` | frontend/js/graph-canvas.js:3816 |
 | `gcDrawTreemap` | frontend/js/graph-canvas.js:1245 |
-| `gcDropTargetFor` | frontend/js/graph-canvas.js:5008 |
+| `gcDropTargetFor` | frontend/js/graph-canvas.js:5079 |
 | `gcEaseOut` | frontend/js/graph-canvas.js:2058 |
-| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3828 |
+| `gcEdgeAtWorld` | frontend/js/graph-canvas.js:3899 |
 | `gcEdgeLook` | frontend/js/graph-canvas.js:909 |
 | `gcEdgeStyle` | frontend/js/graph-canvas.js:944 |
-| `gcEl` | frontend/js/graph-canvas.js:2266 |
+| `gcEl` | frontend/js/graph-canvas.js:2337 |
 | `gcEllipsize` | frontend/js/graph-canvas.js:1285 |
 | `gcEnsureCanvas` | frontend/js/graph-canvas.js:994 |
-| `gcExportPng` | frontend/js/graph-canvas.js:2337 |
+| `gcExportPng` | frontend/js/graph-canvas.js:2408 |
 | `gcFadeStep` | frontend/js/graph-canvas.js:2138 |
 | `gcFadeToward` | frontend/js/graph-canvas.js:2125 |
-| `gcFillSparks` | frontend/js/graph-canvas.js:3476 |
+| `gcFillSparks` | frontend/js/graph-canvas.js:3547 |
 | `gcFilterChip` | frontend/js/graph-canvas.js:1454 |
 | `gcFitInsets` | frontend/js/graph-canvas.js:1888 |
-| `gcFrameIntro` | frontend/js/graph-canvas.js:5502 |
-| `gcGlideFinish` | frontend/js/graph-canvas.js:2192 |
-| `gcGlideStep` | frontend/js/graph-canvas.js:2173 |
+| `gcFrameIntro` | frontend/js/graph-canvas.js:5562 |
+| `gcGlideFinish` | frontend/js/graph-canvas.js:2263 |
+| `gcGlideStep` | frontend/js/graph-canvas.js:2244 |
 | `gcHexToRgb` | frontend/js/graph-canvas.js:1091 |
 | `gcHideTopic` | frontend/js/graph-canvas.js:1531 |
-| `gcHighlight` | frontend/js/graph-canvas.js:2291 |
-| `gcHoverCardEl` | frontend/js/graph-canvas.js:4830 |
-| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4795 |
-| `gcHoverCardFill` | frontend/js/graph-canvas.js:4853 |
-| `gcHoverCardFrame` | frontend/js/graph-canvas.js:4908 |
+| `gcHighlight` | frontend/js/graph-canvas.js:2362 |
+| `gcHoverCardEl` | frontend/js/graph-canvas.js:4901 |
+| `gcHoverCardFacts` | frontend/js/graph-canvas.js:4866 |
+| `gcHoverCardFill` | frontend/js/graph-canvas.js:4924 |
+| `gcHoverCardFrame` | frontend/js/graph-canvas.js:4979 |
 | `gcHoverChanged` | frontend/js/graph-canvas.js:2066 |
 | `gcHoverGrow` | frontend/js/graph-canvas.js:2077 |
 | `gcHoverStep` | frontend/js/graph-canvas.js:2085 |
 | `gcHubSpokeMin` | frontend/js/graph-canvas.js:407 |
 | `gcIsNote` | frontend/js/graph-canvas.js:379 |
 | `gcKeyboardId` | frontend/js/graph-canvas.js:204 |
-| `gcLabelCut` | frontend/js/graph-canvas.js:3706 |
+| `gcLabelCut` | frontend/js/graph-canvas.js:3777 |
 | `gcLabelPlates` | frontend/js/graph-canvas.js:853 |
-| `gcLabelText` | frontend/js/graph-canvas.js:3716 |
-| `gcLabelWidth` | frontend/js/graph-canvas.js:3674 |
+| `gcLabelText` | frontend/js/graph-canvas.js:3787 |
+| `gcLabelWidth` | frontend/js/graph-canvas.js:3745 |
 | `gcLabelZoom` | frontend/js/graph-canvas.js:860 |
-| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6267 |
-| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6313 |
-| `gcLightFrame` | frontend/js/graph-canvas.js:2526 |
+| `gcLegendEdgeKey` | frontend/js/graph-canvas.js:6327 |
+| `gcLegendSizeKey` | frontend/js/graph-canvas.js:6373 |
+| `gcLightFrame` | frontend/js/graph-canvas.js:2597 |
 | `gcLineGrid` | frontend/js/graph-canvas.js:674 |
 | `gcLinkKindHidden` | frontend/js/graph-canvas.js:1445 |
 | `gcLinkKindRows` | frontend/js/graph-canvas.js:1470 |
-| `gcLinkSpark` | frontend/js/graph-canvas.js:3431 |
+| `gcLinkSpark` | frontend/js/graph-canvas.js:3502 |
 | `gcLinkWidth` | frontend/js/graph-canvas.js:866 |
 | `gcLitAlpha` | frontend/js/graph-canvas.js:2131 |
 | `gcMarkLeaving` | frontend/js/graph-canvas.js:1989 |
 | `gcMaxDegree` | frontend/js/graph-canvas.js:248 |
 | `gcMixRgb` | frontend/js/graph-canvas.js:1107 |
 | `gcMs` | frontend/js/graph-canvas.js:339 |
-| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3804 |
+| `gcNodeAtWorld` | frontend/js/graph-canvas.js:3875 |
 | `gcNodeSprite` | frontend/js/graph-canvas.js:1142 |
 | `gcNoteDrawCost` | frontend/js/graph-canvas.js:2162 |
-| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5060 |
+| `gcOpenNodeTarget` | frontend/js/graph-canvas.js:5131 |
 | `gcOpenTopic` | frontend/js/graph-canvas.js:1751 |
 | `gcOverlayBoxes` | frontend/js/graph-canvas.js:1866 |
 | `gcPaintCore` | frontend/js/graph-canvas.js:1120 |
-| `gcPaintLayer` | frontend/js/graph-canvas.js:2407 |
-| `gcPinSelection` | frontend/js/graph-canvas.js:4504 |
+| `gcPaintLayer` | frontend/js/graph-canvas.js:2478 |
+| `gcPinSelection` | frontend/js/graph-canvas.js:4575 |
 | `gcPlaceLabels` | frontend/js/graph-canvas.js:500 |
 | `gcPlacePill` | frontend/js/graph-canvas.js:790 |
 | `gcPlateAtWorld` | frontend/js/graph-canvas.js:1723 |
 | `gcPlateTitle` | frontend/js/graph-canvas.js:1730 |
-| `gcPointInPolygon` | frontend/js/graph-canvas.js:4372 |
-| `gcPositionsSig` | frontend/js/graph-canvas.js:5472 |
-| `gcPost` | frontend/js/graph-canvas.js:5092 |
+| `gcPointInPolygon` | frontend/js/graph-canvas.js:4443 |
+| `gcPositionsSig` | frontend/js/graph-canvas.js:5532 |
+| `gcPost` | frontend/js/graph-canvas.js:5163 |
 | `gcPruneSimilarity` | frontend/js/graph-canvas.js:443 |
-| `gcQuadAt` | frontend/js/graph-canvas.js:3421 |
+| `gcQuadAt` | frontend/js/graph-canvas.js:3492 |
 | `gcRadius` | frontend/js/graph-canvas.js:264 |
 | `gcReadTokens` | frontend/js/graph-canvas.js:318 |
 | `gcRefitForPanels` | frontend/js/graph-canvas.js:1918 |
-| `gcRelinkPairs` | frontend/js/graph-canvas.js:6822 |
+| `gcRelinkPairs` | frontend/js/graph-canvas.js:6882 |
 | `gcRenameTopicInline` | frontend/js/graph-canvas.js:1652 |
 | `gcRenderFilterChips` | frontend/js/graph-canvas.js:1483 |
-| `gcRequestDraw` | frontend/js/graph-canvas.js:2222 |
-| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2248 |
-| `gcReshuffle` | frontend/js/graph-canvas.js:5145 |
+| `gcRequestDraw` | frontend/js/graph-canvas.js:2293 |
+| `gcRequestMinimapFrame` | frontend/js/graph-canvas.js:2319 |
+| `gcReshuffle` | frontend/js/graph-canvas.js:5216 |
 | `gcResize` | frontend/js/graph-canvas.js:957 |
-| `gcReveal` | frontend/js/graph-canvas.js:6867 |
-| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6855 |
+| `gcReveal` | frontend/js/graph-canvas.js:6927 |
+| `gcRevealAfterBalance` | frontend/js/graph-canvas.js:6915 |
 | `gcRimShare` | frontend/js/graph-canvas.js:1115 |
-| `gcRuleDomain` | frontend/js/graph-canvas.js:6053 |
-| `gcRuleKey` | frontend/js/graph-canvas.js:6035 |
-| `gcRuleScale` | frontend/js/graph-canvas.js:6059 |
-| `gcSavePositions` | frontend/js/graph-canvas.js:5475 |
+| `gcRuleDomain` | frontend/js/graph-canvas.js:6113 |
+| `gcRuleKey` | frontend/js/graph-canvas.js:6095 |
+| `gcRuleScale` | frontend/js/graph-canvas.js:6119 |
+| `gcSavePositions` | frontend/js/graph-canvas.js:5535 |
 | `gcSaveTopicName` | frontend/js/graph-canvas.js:1624 |
-| `gcSearchOver` | frontend/js/graph-canvas.js:2280 |
+| `gcSearchOver` | frontend/js/graph-canvas.js:2351 |
 | `gcSeatTopicPlates` | frontend/js/graph-canvas.js:1307 |
-| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5638 |
-| `gcSelectedNodes` | frontend/js/graph-canvas.js:4528 |
-| `gcSelectionChanged` | frontend/js/graph-canvas.js:4482 |
+| `gcSeedBesideNeighbours` | frontend/js/graph-canvas.js:5698 |
+| `gcSelectedNodes` | frontend/js/graph-canvas.js:4599 |
+| `gcSelectionChanged` | frontend/js/graph-canvas.js:4553 |
 | `gcSetAutoFitDone` | frontend/js/graph-canvas.js:196 |
 | `gcSetHovered` | frontend/js/graph-canvas.js:208 |
-| `gcShape` | frontend/js/graph-canvas.js:5128 |
-| `gcShowEmpty` | frontend/js/graph-canvas.js:5584 |
-| `gcShowEveryNote` | frontend/js/graph-canvas.js:5613 |
-| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4725 |
+| `gcShape` | frontend/js/graph-canvas.js:5199 |
+| `gcShowEmpty` | frontend/js/graph-canvas.js:5644 |
+| `gcShowEveryNote` | frontend/js/graph-canvas.js:5673 |
+| `gcShowNodeMenu` | frontend/js/graph-canvas.js:4796 |
 | `gcShowTopic` | frontend/js/graph-canvas.js:1537 |
 | `gcSimilarityBand` | frontend/js/graph-canvas.js:486 |
 | `gcSimilarityCutoff` | frontend/js/graph-canvas.js:820 |
 | `gcSmooth` | frontend/js/graph-canvas.js:2120 |
-| `gcStartWorker` | frontend/js/graph-canvas.js:5171 |
+| `gcStartWorker` | frontend/js/graph-canvas.js:5242 |
 | `gcStill` | frontend/js/graph-canvas.js:349 |
-| `gcStop` | frontend/js/graph-canvas.js:5096 |
+| `gcStop` | frontend/js/graph-canvas.js:5167 |
 | `gcSurface` | frontend/js/graph-canvas.js:43 |
-| `gcTabHidden` | frontend/js/graph-canvas.js:2214 |
+| `gcTabHidden` | frontend/js/graph-canvas.js:2285 |
+| `gcTickDraw` | frontend/js/graph-canvas.js:2223 |
+| `gcTickSettles` | frontend/js/graph-canvas.js:2211 |
 | `gcTickSnaps` | frontend/js/graph-canvas.js:2165 |
-| `gcTogglePin` | frontend/js/graph-canvas.js:4347 |
-| `gcTooltip` | frontend/js/graph-canvas.js:4960 |
-| `gcTooltipMatches` | frontend/js/graph-canvas.js:4985 |
+| `gcTogglePin` | frontend/js/graph-canvas.js:4418 |
+| `gcTooltip` | frontend/js/graph-canvas.js:5031 |
+| `gcTooltipMatches` | frontend/js/graph-canvas.js:5056 |
 | `gcTopicColour` | frontend/js/graph-canvas.js:1758 |
 | `gcTopicCore` | frontend/js/graph-canvas.js:1745 |
 | `gcTopicMembers` | frontend/js/graph-canvas.js:1738 |
 | `gcTreeFrameNodes` | frontend/js/graph-canvas.js:1239 |
-| `gcTreeIndex` | frontend/js/graph-canvas.js:3790 |
+| `gcTreeIndex` | frontend/js/graph-canvas.js:3861 |
 | `gcTweenFromPrior` | frontend/js/graph-canvas.js:1940 |
-| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6815 |
-| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2324 |
-| `gcWireInteraction` | frontend/js/graph-canvas.js:3880 |
-| `gcWireLasso` | frontend/js/graph-canvas.js:4414 |
-| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4672 |
-| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4532 |
-| `gcWorkerParams` | frontend/js/graph-canvas.js:5103 |
-| `gcWorldFor` | frontend/js/graph-canvas.js:5535 |
-| `gcWorldPoint` | frontend/js/graph-canvas.js:3814 |
-| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5075 |
-| `graphLegendRove` | frontend/js/graph-canvas.js:6078 |
-| `graphPaneColour` | frontend/js/graph-canvas.js:6607 |
-| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6743 |
-| `graphPaneEnsure` | frontend/js/graph-canvas.js:6585 |
-| `graphPaneFollow` | frontend/js/graph-canvas.js:6697 |
-| `graphPaneWire` | frontend/js/graph-canvas.js:6752 |
-| `graphRenderLegend` | frontend/js/graph-canvas.js:6095 |
-| `graphRenderStats` | frontend/js/graph-canvas.js:6337 |
-| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6385 |
-| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6412 |
-| `graphWireTimePlay` | frontend/js/graph-canvas.js:6451 |
-| `renderGraphCanvas` | frontend/js/graph-canvas.js:5669 |
-| `renderGraphPane` | frontend/js/graph-canvas.js:6613 |
+| `gcUnlinkPairs` | frontend/js/graph-canvas.js:6875 |
+| `gcVisibleAtTime` | frontend/js/graph-canvas.js:2395 |
+| `gcWireInteraction` | frontend/js/graph-canvas.js:3951 |
+| `gcWireLasso` | frontend/js/graph-canvas.js:4485 |
+| `gcWireNodeMenu` | frontend/js/graph-canvas.js:4743 |
+| `gcWireSelectionDock` | frontend/js/graph-canvas.js:4603 |
+| `gcWorkerParams` | frontend/js/graph-canvas.js:5174 |
+| `gcWorldFor` | frontend/js/graph-canvas.js:5595 |
+| `gcWorldPoint` | frontend/js/graph-canvas.js:3885 |
+| `gcWriteUnresolved` | frontend/js/graph-canvas.js:5146 |
+| `graphLegendRove` | frontend/js/graph-canvas.js:6138 |
+| `graphPaneColour` | frontend/js/graph-canvas.js:6667 |
+| `graphPaneDocumentNote` | frontend/js/graph-canvas.js:6803 |
+| `graphPaneEnsure` | frontend/js/graph-canvas.js:6645 |
+| `graphPaneFollow` | frontend/js/graph-canvas.js:6757 |
+| `graphPaneWire` | frontend/js/graph-canvas.js:6812 |
+| `graphRenderLegend` | frontend/js/graph-canvas.js:6155 |
+| `graphRenderStats` | frontend/js/graph-canvas.js:6397 |
+| `graphSyncLayoutChip` | frontend/js/graph-canvas.js:6445 |
+| `graphSyncTimeSlider` | frontend/js/graph-canvas.js:6472 |
+| `graphWireTimePlay` | frontend/js/graph-canvas.js:6511 |
+| `renderGraphCanvas` | frontend/js/graph-canvas.js:5729 |
+| `renderGraphPane` | frontend/js/graph-canvas.js:6673 |
 
 ### frontend/js/graph-worker.js (103)
 
@@ -11901,7 +11907,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | `/{turn_id}/pin` | PUT | `pin_ask_turn` | src/tessellate/api/routes_ask_history.py:164 |
 | `PYODIDE_PATH + '{name}'` | GET | `pyodide_file` | src/tessellate/api/run_sandbox.py:1592 |
 
-## Backend modules (7857)
+## Backend modules (7859)
 
 Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excluding `vendor/`, grouped by file.
 
@@ -13160,47 +13166,47 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | Name | File:line |
 |---|---|
 | `Group` | src/tessellate/ai/composer_frame.py:46 |
-| `_base` | src/tessellate/ai/composer_frame.py:589 |
-| `_by_link` | src/tessellate/ai/composer_frame.py:573 |
-| `_by_meaning` | src/tessellate/ai/composer_frame.py:559 |
-| `_by_word` | src/tessellate/ai/composer_frame.py:566 |
-| `_clipped` | src/tessellate/ai/composer_frame.py:282 |
+| `_base` | src/tessellate/ai/composer_frame.py:594 |
+| `_by_link` | src/tessellate/ai/composer_frame.py:578 |
+| `_by_meaning` | src/tessellate/ai/composer_frame.py:564 |
+| `_by_word` | src/tessellate/ai/composer_frame.py:571 |
+| `_clipped` | src/tessellate/ai/composer_frame.py:287 |
 | `_components` | src/tessellate/ai/composer_frame.py:82 |
-| `_diary_name` | src/tessellate/ai/composer_frame.py:402 |
-| `_feeling_name` | src/tessellate/ai/composer_frame.py:395 |
-| `_first_line` | src/tessellate/ai/composer_frame.py:445 |
+| `_diary_name` | src/tessellate/ai/composer_frame.py:407 |
+| `_feeling_name` | src/tessellate/ai/composer_frame.py:400 |
+| `_first_line` | src/tessellate/ai/composer_frame.py:450 |
 | `_joined` | src/tessellate/ai/composer_frame.py:111 |
-| `_link_said` | src/tessellate/ai/composer_frame.py:513 |
+| `_link_said` | src/tessellate/ai/composer_frame.py:518 |
 | `_links` | src/tessellate/ai/composer_frame.py:76 |
-| `_lower` | src/tessellate/ai/composer_frame.py:201 |
-| `_named_by_clause` | src/tessellate/ai/composer_frame.py:471 |
-| `_named_by_subject` | src/tessellate/ai/composer_frame.py:453 |
-| `_names` | src/tessellate/ai/composer_frame.py:502 |
-| `_plain` | src/tessellate/ai/composer_frame.py:239 |
-| `_plain_lower` | src/tessellate/ai/composer_frame.py:209 |
-| `_presented` | src/tessellate/ai/composer_frame.py:355 |
-| `_relation` | src/tessellate/ai/composer_frame.py:599 |
-| `_sayer` | src/tessellate/ai/composer_frame.py:580 |
+| `_lower` | src/tessellate/ai/composer_frame.py:206 |
+| `_named_by_clause` | src/tessellate/ai/composer_frame.py:476 |
+| `_named_by_subject` | src/tessellate/ai/composer_frame.py:458 |
+| `_names` | src/tessellate/ai/composer_frame.py:507 |
+| `_plain` | src/tessellate/ai/composer_frame.py:244 |
+| `_plain_lower` | src/tessellate/ai/composer_frame.py:214 |
+| `_presented` | src/tessellate/ai/composer_frame.py:360 |
+| `_relation` | src/tessellate/ai/composer_frame.py:604 |
+| `_sayer` | src/tessellate/ai/composer_frame.py:585 |
 | `_score` | src/tessellate/ai/composer_frame.py:68 |
 | `_tag_list` | src/tessellate/ai/composer_frame.py:60 |
 | `_tag_pairs` | src/tessellate/ai/composer_frame.py:99 |
 | `_tags` | src/tessellate/ai/composer_frame.py:64 |
-| `_title_of` | src/tessellate/ai/composer_frame.py:243 |
-| `_titled` | src/tessellate/ai/composer_frame.py:258 |
-| `_whole_clause` | src/tessellate/ai/composer_frame.py:265 |
-| `bind_lower` | src/tessellate/ai/composer_frame.py:193 |
-| `group_line` | src/tessellate/ai/composer_frame.py:522 |
+| `_title_of` | src/tessellate/ai/composer_frame.py:248 |
+| `_titled` | src/tessellate/ai/composer_frame.py:263 |
+| `_whole_clause` | src/tessellate/ai/composer_frame.py:270 |
+| `bind_lower` | src/tessellate/ai/composer_frame.py:198 |
+| `group_line` | src/tessellate/ai/composer_frame.py:527 |
 | `groups` | src/tessellate/ai/composer_frame.py:145 |
-| `lower_name` | src/tessellate/ai/composer_frame.py:335 |
-| `note_label` | src/tessellate/ai/composer_frame.py:322 |
-| `note_title` | src/tessellate/ai/composer_frame.py:312 |
-| `note_words` | src/tessellate/ai/composer_frame.py:181 |
-| `own_title` | src/tessellate/ai/composer_frame.py:340 |
+| `lower_name` | src/tessellate/ai/composer_frame.py:340 |
+| `note_label` | src/tessellate/ai/composer_frame.py:327 |
+| `note_title` | src/tessellate/ai/composer_frame.py:317 |
+| `note_words` | src/tessellate/ai/composer_frame.py:186 |
+| `own_title` | src/tessellate/ai/composer_frame.py:345 |
 | `plain_snippet` | src/tessellate/ai/composer_frame.py:167 |
-| `reasons` | src/tessellate/ai/composer_frame.py:612 |
-| `short_name` | src/tessellate/ai/composer_frame.py:421 |
+| `reasons` | src/tessellate/ai/composer_frame.py:617 |
+| `short_name` | src/tessellate/ai/composer_frame.py:426 |
 | `themes` | src/tessellate/ai/composer_frame.py:126 |
-| `topic_words` | src/tessellate/ai/composer_frame.py:546 |
+| `topic_words` | src/tessellate/ai/composer_frame.py:551 |
 
 ### src/tessellate/ai/composer_lines.py (3)
 
@@ -14798,7 +14804,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `count` | src/tessellate/ai/notebook_filters.py:177 |
 | `read` | src/tessellate/ai/notebook_filters.py:83 |
 
-### src/tessellate/ai/notebook_stats.py (59)
+### src/tessellate/ai/notebook_stats.py (61)
 
 | Name | File:line |
 |---|---|
@@ -14823,16 +14829,18 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_month_keys` | src/tessellate/ai/notebook_stats.py:980 |
 | `_most_linked` | src/tessellate/ai/notebook_stats.py:537 |
 | `_named_count` | src/tessellate/ai/notebook_stats.py:454 |
-| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1227 |
+| `_names_a_thing` | src/tessellate/ai/notebook_stats.py:1264 |
 | `_narrowed_count` | src/tessellate/ai/notebook_stats.py:299 |
 | `_no_repeats` | src/tessellate/ai/notebook_stats.py:338 |
 | `_note_count` | src/tessellate/ai/notebook_stats.py:505 |
-| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1017 |
+| `_note_pass` | src/tessellate/ai/notebook_stats.py:1045 |
+| `_notebook_block` | src/tessellate/ai/notebook_stats.py:1066 |
+| `_notes_fingerprint` | src/tessellate/ai/notebook_stats.py:1029 |
 | `_notes_per_category` | src/tessellate/ai/notebook_stats.py:436 |
 | `_orphans` | src/tessellate/ai/notebook_stats.py:571 |
 | `_plural` | src/tessellate/ai/notebook_stats.py:95 |
 | `_recent_count` | src/tessellate/ai/notebook_stats.py:652 |
-| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1067 |
+| `_reminder_block` | src/tessellate/ai/notebook_stats.py:1104 |
 | `_same_text` | src/tessellate/ai/notebook_stats.py:717 |
 | `_span_words` | src/tessellate/ai/notebook_stats.py:954 |
 | `_stale_notes` | src/tessellate/ai/notebook_stats.py:769 |
@@ -14846,21 +14854,21 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `_untagged` | src/tessellate/ai/notebook_stats.py:401 |
 | `_untitled` | src/tessellate/ai/notebook_stats.py:706 |
 | `_visible` | src/tessellate/ai/notebook_stats.py:72 |
-| `_week_counts` | src/tessellate/ai/notebook_stats.py:1127 |
-| `_week_daily` | src/tessellate/ai/notebook_stats.py:1145 |
+| `_week_counts` | src/tessellate/ai/notebook_stats.py:1164 |
+| `_week_daily` | src/tessellate/ai/notebook_stats.py:1182 |
 | `_whole_notebook` | src/tessellate/ai/notebook_stats.py:310 |
 | `_window` | src/tessellate/ai/notebook_stats.py:633 |
 | `_window_words` | src/tessellate/ai/notebook_stats.py:615 |
 | `_word_count` | src/tessellate/ai/notebook_stats.py:678 |
 | `_words` | src/tessellate/ai/notebook_stats.py:976 |
-| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1089 |
+| `_words_added_by_edits` | src/tessellate/ai/notebook_stats.py:1126 |
 | `answer` | src/tessellate/ai/notebook_stats.py:248 |
 | `answer_chat` | src/tessellate/ai/notebook_stats.py:243 |
 | `by_order` | src/tessellate/ai/notebook_stats.py:234 |
 | `looks_like_a_question_about_the_notebook` | src/tessellate/ai/notebook_stats.py:213 |
-| `page` | src/tessellate/ai/notebook_stats.py:1185 |
-| `week_review` | src/tessellate/ai/notebook_stats.py:1171 |
-| `week_start` | src/tessellate/ai/notebook_stats.py:1082 |
+| `page` | src/tessellate/ai/notebook_stats.py:1222 |
+| `week_review` | src/tessellate/ai/notebook_stats.py:1208 |
+| `week_start` | src/tessellate/ai/notebook_stats.py:1119 |
 
 ### src/tessellate/ai/notebook_tasks.py (5)
 
@@ -21562,7 +21570,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14481)
+## Tests (14488)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22681,7 +22689,8 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_pending_note_rows.py | 5 |
 | tests/test_per_model_context_window.py | 8 |
 | tests/test_perf2_1031.py | 6 |
-| tests/test_perf3_1031.py | 4 |
+| tests/test_perf3_1031.py | 7 |
+| tests/test_perf3_graph_1031.py | 4 |
 | tests/test_perf_budget.py | 2 |
 | tests/test_perf_hot_paths.py | 10 |
 | tests/test_perf_mode.py | 3 |

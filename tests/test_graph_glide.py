@@ -46,6 +46,7 @@ SCRIPT = "\n".join(
         re.search(r"^const GC_GLIDE_MAX_MS = \d+;", CANVAS, re.M).group(0),
         _function("gcGlideStep"),
         _function("gcGlideFinish"),
+        _function("gcAimNodes"),  # the tick body points the notes through it (perf3-1031)
         "function onTick(s, positions) {\n  const count = s.nodes.length;\n" + _tick_body() + "\n}",
         """
 function run(glide, tickMs, jitter) {
