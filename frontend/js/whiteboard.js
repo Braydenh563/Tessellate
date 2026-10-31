@@ -13311,6 +13311,16 @@ function wbExportColour(value) {
 //: its words, which is not the box itself on a map topic. `null` for an
 //: element that is not drawn (a topic culled off screen), so the caller can
 //: fall back to one that is.
+//: A text box's, sticky's or card's fill as painted: its `bg` at its `bg_alpha`
+//: (INBOX 1486). "" leaves the stylesheet's own paper; 0 is a real answer (the
+//: fill is see-through) and an absent value is solid, as it always was.
+function wbPaperPaint(data) {
+  const bg = data?.bg || "";
+  const alpha = data?.bg_alpha;
+  if (!bg || bg === "transparent" || alpha == null || alpha >= 1) return bg;
+  return `color-mix(in srgb, ${bg} ${Math.round(Math.max(0, alpha) * 100)}%, transparent)`;
+}
+
 function wbExportPaint(el, inkEl) {
   if (!el) return null;
   const style = getComputedStyle(el);
@@ -23514,7 +23524,7 @@ function renderWbObjects(canvas) {
       // outer object div, which is what `.wb-object-text`'s own default
       // background/border style, so an unset value falls back to the CSS
       // default rather than an empty override.
-      el.style("background", d.data.bg || "").style("border-color", d.data.border_color || "");
+      el.style("background", wbPaperPaint(d.data)).style("border-color", d.data.border_color || "");
       // Asked for directly ("objects are also difficult and annoying to
       // move around"): `.wb-text-content` fills the entire box and both
       // the filter above and its own pointerdown handler below correctly
@@ -23743,7 +23753,7 @@ function renderWbObjects(canvas) {
       //: sticky's edge is its lift, never a drawn border.
       if (sticky) this.style.setProperty("--wb-paper", d.data.bg || WB_STICKY_PAPERS[0].value);
       else this.style.removeProperty("--wb-paper");
-      el.style("background", d.data.bg || "").style("border-color", sticky ? "" : d.data.border_color || "");
+      el.style("background", wbPaperPaint(d.data)).style("border-color", sticky ? "" : d.data.border_color || "");
       const textEl = el.select(".wb-text-content");
       //: **A sticker** (MINDMAP_PLAN.md decision 44): an emoji with no card,
       //: its glyph sized to its box, so resizing it is resizing the emoji.

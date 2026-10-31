@@ -744,7 +744,7 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
     else if (o.kind === "text") {
       const filled = hex(d.bg) || hex(d.border_color);
       const look = font(d.font_size, d.bold, d.italic, d.underline, d.color);
-      if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
+      if (filled) vertex(`object:${o.id}`, `rounded=0;whiteSpace=wrap;html=0;${hex(d.bg) ? `fillColor=${hex(d.bg)};${d.bg_alpha != null && d.bg_alpha < 1 ? `fillOpacity=${Math.round(d.bg_alpha * 100)};` : ""}` : ""}${hex(d.border_color) ? `strokeColor=${hex(d.border_color)};` : ""}${look}`, d.content || "", b);
       else vertex(`object:${o.id}`, `text;whiteSpace=wrap;html=0;align=left;verticalAlign=top;${look}`, d.content || "", b);
     } else if (o.kind === "image" || o.kind === "table") skip(o.kind === "image" ? "pictures" : "tables");
     else skip("other items");
@@ -1374,8 +1374,34 @@ const wbDiagramDialogState = { target: null, timer: 0 };
 
 //: The drawing already made for this item's source in the theme in force, as
 //: an image address, or "": export and the thumbnail are synchronous.
+//: The look a diagram object stored (INBOX 1486): its fill colour (`bg`), the
+//: fill's opacity (`bg_alpha`) and the line's (`line_alpha`); null when it
+//: stored none, which draws as every diagram always did.
+function wbDiagramLook(obj) {
+  const x = obj?.data || {};
+  const look = {};
+  if (x.bg && x.bg !== "transparent") look.fill = x.bg;
+  if (x.bg_alpha != null) look.fillAlpha = x.bg_alpha;
+  if (x.line_alpha != null) look.lineAlpha = x.line_alpha;
+  return Object.keys(look).length ? look : null;
+}
+
+//: The colour and the strength a diagram's fill shows when it stored none,
+//: for the Format panel's Fill row and slider: the accent at the default share.
+function wbDiagramFillColour(data) {
+  if (data?.bg && data.bg !== "transparent") return data.bg;
+  const accent = wbHexColour(getComputedStyle(document.documentElement).getPropertyValue("--accent").trim());
+  return accent || "#4664f0";
+}
+
+function wbDiagramFillShare() {
+  const strong = document.documentElement.dataset.contrast === "on";
+  //: The lazy module may not be in yet, so the same two numbers stand by.
+  return globalThis.mermaidFillShare?.(strong) ?? (strong ? 0.28 : 0.16);
+}
+
 function wbDiagramDataUrl(obj) {
-  const known = typeof mermaidKnown === "function" ? mermaidKnown(obj?.data?.mermaid || "") : null;
+  const known = typeof mermaidKnown === "function" ? mermaidKnown(obj?.data?.mermaid || "", wbDiagramLook(obj)) : null;
   return known?.svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(known.svg)}` : "";
 }
 
@@ -1392,10 +1418,10 @@ function wbPaintDiagram(node, d) {
   const source = d.data?.mermaid || "";
   node.setAttribute("aria-label", `Mermaid ${wbMermaidKind(source) || ""} diagram`.replace("  ", " "));
   ensureModule("mermaid").then(() => {
-    const key = `${source}\u0000${mermaidThemeNow().key}`;
+    const key = `${source}\u0000${mermaidThemeNow(wbDiagramLook(d)).key}`;
     if (node._wbDiagramKey === key) return;
     node._wbDiagramKey = key;
-    mermaidRequest(source).then((result) => {
+    mermaidRequest(source, wbDiagramLook(d)).then((result) => {
       if (node._wbDiagramKey !== key) return;
       const url = wbDiagramDataUrl(d);
       const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "", draggable: false }) : null;
@@ -1448,9 +1474,10 @@ function wbDiagramPreview() {
   const source = document.getElementById("wb-diagram-text")?.value || "";
   const well = document.getElementById("wb-diagram-preview");
   if (!well) return;
-  ensureModule("mermaid").then(() => mermaidRequest(source)).then((result) => {
+  const shown = { data: { ...(wbDiagramDialogState.target?.data || {}), mermaid: source } };
+  ensureModule("mermaid").then(() => mermaidRequest(source, wbDiagramLook(shown))).then((result) => {
     if ((document.getElementById("wb-diagram-text")?.value || "") !== source) return;
-    const url = wbDiagramDataUrl({ data: { mermaid: source } });
+    const url = wbDiagramDataUrl(shown);
     const img = url ? Object.assign(document.createElement("img"), { src: url, alt: "Preview of the diagram" }) : null;
     well.replaceChildren(img || Object.assign(document.createElement("p"), { className: "muted", textContent: result?.error || "Nothing to draw yet." }));
   });
