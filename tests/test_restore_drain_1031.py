@@ -92,3 +92,20 @@ def test_a_restore_with_a_request_in_flight_is_refused_and_touches_nothing(clien
     assert sorted(e["content"] for e in entries) == ["after", "kept"]
     restored = client.post("/backups/restore", json={"name": name})
     assert restored.status_code == 200
+
+
+def test_an_open_stream_that_holds_no_session_does_not_hold_a_restore(client, monkeypatch):
+    """The unlock check's session closes when the handler returns, so a
+    stream (the Tasks panel keeps `/jobs/stream` open a minute) is not a
+    request in flight, and a restore under it goes ahead at once (E2E
+    first-run restore sat at "Restoring…" for the whole wait, then 409)."""
+    monkeypatch.setattr(routes_backups, "RESTORE_JOB_WAIT_SECONDS", 2.0)
+    _save(client, "kept")
+    name = client.post("/backups").json()["name"]
+    with client.stream("GET", "/jobs/stream?seconds=5") as stream:
+        next(stream.iter_lines())
+        assert deps.requests_in_flight() == 0
+        started = time.monotonic()
+        restored = client.post("/backups/restore", json={"name": name})
+        assert restored.status_code == 200, restored.text
+        assert time.monotonic() - started < 1.5

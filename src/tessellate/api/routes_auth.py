@@ -697,11 +697,15 @@ NO_PASSWORD_ELSEWHERE = "Set a password on the computer Tessellate runs on first
 
 def require_unlock(
     request: Request,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session, scope="function"),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
 ) -> None:
-    """Dependency that gates every data route once a password exists."""
+    """Dependency that gates every data route once a password exists.
+
+    Its session closes when the handler returns, not when the response ends,
+    so a stream that holds no session of its own (`/jobs/stream`, a minute)
+    is not a request in flight that a restore must wait for (audit 1031 BK5)."""
     if _no_password_yet(request, session):
         return  # setup not done yet, nothing to protect
     idle_ttl = config.get_preference("session_idle_ttl_minutes", _SESSION_IDLE_TTL // 60) * 60
@@ -711,7 +715,7 @@ def require_unlock(
 
 def require_unlock_media(
     request: Request,
-    session: Session = Depends(get_session),
+    session: Session = Depends(get_session, scope="function"),
     config: ConfigManager = Depends(get_config),
     x_auth_token: str | None = Header(default=None),
     memorymap_media: str | None = Cookie(default=None),
