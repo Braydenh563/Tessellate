@@ -392,8 +392,6 @@ def test_the_palette_offers_a_how_question_without_its_question_mark():
     the same answer as the same line with a "?", so the palette offers both to
     the Guide; a command's own name ("how to use focus") is still a command."""
 
-    import re
-
     from tests._app_js import app_js_text
 
     app = app_js_text()

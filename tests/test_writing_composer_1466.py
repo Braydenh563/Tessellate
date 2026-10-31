@@ -19,8 +19,10 @@ from tessellate.ai import composer_write as cw
 TODAY = date(2026, 10, 30)
 
 PROSE = [
-    "We met with the supplier on Monday. Basically, they said the price will go up by 5 percent. "
-    "In order to keep costs down, we should use the old stock first. I think we should also ask for a discount.",
+    (
+        "We met with the supplier on Monday. Basically, they said the price will go up by 5 percent. "
+        "In order to keep costs down, we should use the old stock first. I think we should also ask for a discount."
+    ),
     "The garden needs work. Actually the fence is broken; the shed roof leaks. We should fix the fence first.",
     "# Trip\n\nFlights are booked for May. The hotel is near the station. We still need travel insurance.",
     "Dr. Lee moved the appointment to Friday. I need to bring the scan. Parking is behind the clinic.",

@@ -100,9 +100,9 @@ def work_area() -> tuple[int, int, int, int] | None:
         return None
     try:
         import ctypes
-        from ctypes import wintypes
+        import ctypes.wintypes
 
-        rect = wintypes.RECT()
+        rect = ctypes.wintypes.RECT()
         # SPI_GETWORKAREA: what a window may use without covering the taskbar.
         if not ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(rect), 0):
             return None

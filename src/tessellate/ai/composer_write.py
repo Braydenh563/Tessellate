@@ -120,8 +120,24 @@ _WORD_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in sorted(_PLAIN, key
 #: The joints a long sentence is split at, best first.
 _JOINTS = (";", ", but ", ", so ", ", and ", ", because ", ", which ")
 
-_HEADING = re.compile(r"^\s{0,3}(#{1,6})\s+(.*\S)\s*$")
-_ITEM = re.compile(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(.*\S)\s*$")
+
+class _Line:
+    """A line pattern matched on the line with its trailing space cut off.
+
+    The text is user-typed, so a pattern ending in `\\s*$` after `.*\\S` can
+    backtrack polynomially on a long run of tabs; cutting the tail first and
+    starting the text group on `\\S` leaves one way to match, so it is linear.
+    """
+
+    def __init__(self, pattern: str) -> None:
+        self._rx = re.compile(pattern)
+
+    def match(self, line: str) -> re.Match[str] | None:
+        return self._rx.match(line.rstrip())
+
+
+_HEADING = _Line(r"^\s{0,3}(#{1,6})\s+(\S.*)$")
+_ITEM = _Line(r"^(\s*)(?:([-*+])|(\d{1,3})[.)])\s+(?:\[[ xX]\]\s+)?(\S.*)$")
 #: A full stop that is not a sentence's end: a title, an initial, "e.g.".
 _ABBREVIATIONS = ("e.g.", "i.e.", "etc.", "vs.", "mr.", "mrs.", "ms.", "dr.", "st.", "approx.")
 _STOP = frozenset(
@@ -145,9 +161,12 @@ class Pass:
 
 def sentences(text: str) -> list[str]:
     """The sentences of a run of prose, in order, as written."""
+    folded = " ".join((text or "").split())
+    if not folded:
+        return []
     out: list[str] = []
     buf = ""
-    for piece in re.split(r"(?<=[.!?])\s+", " ".join((text or "").split())):
+    for piece in re.split(r"(?<=[.!?])\s+", folded):
         buf = f"{buf} {piece}".strip() if buf else piece
         if buf.split()[-1].lower() not in _ABBREVIATIONS and not re.search(r"\b[A-Z]\.$", buf):
             out.append(buf)
@@ -200,7 +219,7 @@ def trim(text: str) -> str:
     """A sentence without its fillers or a joining opener, spaces folded."""
     out = _FILLERS.sub("", text)
     out = _LEADS.sub("", out.strip())
-    out = re.sub(r"\s+([,.;:!?])", r"\1", " ".join(out.split()))
+    out = re.sub(r" ([,.;:!?])", r"\1", " ".join(out.split()))  # single spaces only after the fold
     return _cap(out.strip(" ,")) if out.strip(" ,") else text.strip()
 
 

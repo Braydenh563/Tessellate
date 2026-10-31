@@ -163,7 +163,7 @@ def timeline_panel(session: Session, start: date, end: date, today: date) -> dic
         return None
     span, first = (end - start).days + 1, start
     if span == 1:
-        by, size, slot, labels = "hour", 24, (lambda d: d.hour), ("00:00", "23:00")
+        by, size, slot = "hour", 24, (lambda d: d.hour)
     elif span <= _STRIP_DAYS:
         by, size, slot = "day", span, (lambda d: (d.date() - start).days)
     elif span <= _STRIP_WEEKS:
@@ -177,7 +177,7 @@ def timeline_panel(session: Session, start: date, end: date, today: date) -> dic
     for stamp in stamps:
         if 0 <= slot(stamp) < size:
             points[slot(stamp)] += 1
-    ends = labels if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
+    ends = ("00:00", "23:00") if by == "hour" else (_strip_day(first, today), _strip_day(end, today))
     return {"type": "panel", "panel": "timeline", "by": by, "title": f"Notes per {by}", "points": points, "from": ends[0], "to": ends[1]}
 
 
