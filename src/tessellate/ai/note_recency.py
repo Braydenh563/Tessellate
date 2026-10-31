@@ -7,6 +7,9 @@ from __future__ import annotations
 import re
 
 _NEWEST = frozenset({"last", "latest", "newest", "recent"})
+#: The other end of the order: "my 3 oldest baking notes". "first" is one only
+#: beside a count ("my first 2 baking notes"); alone it names a note's place.
+_OLDEST = frozenset({"oldest", "earliest"})
 _NOUNS = frozenset({"note", "notes", "entry", "entries", "thing", "things", "one", "ones", "page", "pages"})
 _PLURAL = frozenset({"notes", "entries", "things", "ones", "pages"})
 _MARKS = frozenset({"about", "on", "regarding", "concerning", "mentioning", "re", "for", "with", "around"})
@@ -30,19 +33,36 @@ _WORD = re.compile(r"[a-z0-9']+")
 class Recent:
     """What a "latest ... about X" request asks for: how many notes and the subject (may be empty)."""
 
-    __slots__ = ("count", "said_count", "subject")
+    __slots__ = ("count", "oldest", "said_count", "subject")
 
-    def __init__(self, count: int, subject: str, said_count: bool) -> None:
-        self.count, self.subject, self.said_count = count, subject, said_count
+    def __init__(self, count: int, subject: str, said_count: bool, oldest: bool = False) -> None:
+        self.count, self.subject, self.said_count, self.oldest = count, subject, said_count, oldest
+
+
+def _is_count(word: str) -> bool:
+    return word in _COUNTS or (word.isdigit() and 0 < int(word) < 1000)
+
+
+def _order_word(words: list[str]) -> int:
+    """Where the word that orders the notes sits, -1 for none."""
+    for i, w in enumerate(words):
+        if w in _NEWEST or w in _OLDEST or (w == "first" and i + 1 < len(words) and _is_count(words[i + 1])):
+            return i
+    return -1
 
 
 def _after_newest(words: list[str]) -> tuple[int, list[str]] | None:
-    """Where the newest-word sits and the words after it; None for no such word
-    or a time window ("last week")."""
-    at = next((i for i, w in enumerate(words) if w in _NEWEST), -1)
+    """Where the order word sits and the words after it, with a count said
+    before it ("my 2 latest notes") moved after it; None for no such word or
+    a time window ("last week")."""
+    at = _order_word(words)
     if at < 0 or (at + 1 < len(words) and words[at + 1] in _TIME_AFTER):
         return None
-    return at, words[at + 1:]
+    rest = words[at + 1:]
+    before = words[:at - 1] if at and words[at - 1] == "most" else words[:at]
+    if before and _is_count(before[-1]) and not (rest and _is_count(rest[0])):
+        rest = [before[-1], *rest]
+    return at, rest
 
 
 def _leading_count(rest: list[str]) -> tuple[int, list[str]]:
@@ -76,4 +96,4 @@ def recency(text: str, *, bare: bool = False) -> Recent | None:
     subject = _subject_of(rest)
     if not subject and not count and not bare:
         return None
-    return Recent(count or (_DEFAULT_MANY if noun in _PLURAL else 1), subject, bool(count))
+    return Recent(count or (_DEFAULT_MANY if noun in _PLURAL else 1), subject, bool(count), words[at] in _OLDEST or words[at] == "first")

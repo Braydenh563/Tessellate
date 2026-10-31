@@ -16,7 +16,7 @@ from __future__ import annotations
 import re
 from datetime import date, timedelta
 
-from tessellate.ai import composer, composer_versus, filed_name, realise, recognise, utilities
+from tessellate.ai import composer, composer_versus, filed_name, note_recency, realise, recognise, utilities
 
 #: At most this many lines under the opening; the rest are on the right.
 SHOWN = 8
@@ -214,6 +214,18 @@ def list_order(question: str) -> str | None:
     return "oldest" if found.group("old") else "newest"
 
 
+def counted_order(question: str) -> tuple[bool, int, str] | None:
+    """`(oldest, how many, subject)` of "my 2 latest baking notes", "the 3 oldest
+    notes", "my first two notes about Atlas": a count said, at one end of the
+    order, of the notes on a subject (every note when the end is the oldest).
+    A "which note is the oldest" is the versus lead's, not this."""
+    q = _q(question)
+    found = note_recency.recency(q)
+    if found is None or not found.said_count or not (found.subject or found.oldest) or composer_versus.asks(q):
+        return None
+    return found.oldest, found.count, found.subject
+
+
 def kind(question: str) -> str | None:
     """Which computed shape `question` is, or None."""
     q = _q(question)
@@ -223,6 +235,8 @@ def kind(question: str) -> str | None:
         return "until"
     if list_order(q):
         return "ordered"
+    if counted_order(q):
+        return "counted"
     if _ORDER.match(q):
         return "order"
     if _MENTION.match(q):
@@ -348,6 +362,25 @@ def _order(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     out.lines.append(line)
     for view, sentence in ((va, sa), (vb, sb)):
         _cite(out, view, sentence, line)
+    return True
+
+
+def _counted(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
+    """The notes at one end of the order, as many as were asked for: "Your two
+    newest notes about baking:", each by its title and day."""
+    oldest, count, subject = counted_order(asked) or (False, 0, "")
+    wanted = {composer._stem(w) for w in subject.split()}  # noqa: SLF001
+    named = [v for v in views if v.sentences and wanted <= {composer._stem(w) for w in (*v.words, *v.title_words, *v.filed_words)}]  # noqa: SLF001
+    members = sorted(named, key=lambda v: (v.written or date.min, v.rank), reverse=not oldest)[:min(count, SHOWN)]
+    if not members:
+        return False
+    lines = [(f"{_title(view)}, {_day(view.written, today)}" if view.written else _title(view), view, view.sentences[0]) for view in members]
+    end = "oldest" if oldest else "newest"
+    many = len(members) > 1
+    head = f"Your {realise.count_word(len(members)) + ' ' if many else ''}{end} {'notes' if many else 'note'}"
+    _block(out, head + (f" about {subject}:" if subject else ":"), lines)
+    if len(members) < count:
+        out.lines.append(f"That is all there are{' on that' if subject else ''}.")
     return True
 
 
@@ -729,7 +762,7 @@ def _holding(out, asked: str, views: list, today: date) -> bool:  # noqa: ANN001
     return True
 
 
-_SHAPES = {"until": _until, "order": _order, "which": _which, "ordered": _ordered, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
+_SHAPES = {"until": _until, "order": _order, "which": _which, "ordered": _ordered, "counted": _counted, "mentions": _mentions, "listed": _listed, "dates": _dates, "due_for": _due_for, "holding": _holding}
 
 
 def answer(out, which: str, asked: str, views: list, today: date) -> bool:  # noqa: ANN001

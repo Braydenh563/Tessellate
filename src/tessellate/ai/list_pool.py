@@ -13,7 +13,7 @@ import itertools
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import composer_lists, composer_versus
+from tessellate.ai import composer, composer_lists, composer_versus
 from tessellate.core.database import LIKE_ESCAPE, Category, Entry, like_escape
 
 #: Notes read for one computed answer: the list's count and the mentions are
@@ -70,6 +70,19 @@ def _in_order(session: Session, question: str) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live()).order_by(first).limit(LIST_LIMIT)))
 
 
+def _counting(session: Session, question: str) -> list[Entry]:
+    """The notes a "my 2 latest baking notes" question counts from: those that
+    name every word of its subject (as a word or the start of one, in the text
+    or a tag), at the end of the order asked."""
+    oldest, _, subject = composer_lists.counted_order(question) or (False, 0, "")
+    words = [composer._stem(w).rstrip("e") for w in subject.split() if len(w) > 2]  # noqa: SLF001
+    if any(not w.isascii() for w in words):
+        return []
+    clauses = [func.lower(Entry.content).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) | func.lower(Entry.tags).like(f"%{like_escape(w)}%", escape=LIKE_ESCAPE) for w in words]
+    first = Entry.created_at.asc() if oldest else Entry.created_at.desc()
+    return list(session.scalars(select(Entry).where(*_live(), *clauses).order_by(first).limit(LIST_LIMIT)))
+
+
 def _dated(session: Session) -> list[Entry]:
     return list(session.scalars(select(Entry).where(*_live(), Entry.content.op("GLOB")("*[0-9]*")).order_by(Entry.created_at.desc()).limit(DATED_LIMIT)))
 
@@ -97,6 +110,8 @@ def pool(session: Session, question: str, entries: list) -> list:
         found = _in_order(session, question)
     elif which == "which":
         found = _naming(session, question)
+    elif which == "counted":
+        found = _counting(session, question)
     elif which in ("dates", "due_for"):
         found = _dated(session)
     elif which == "holding":

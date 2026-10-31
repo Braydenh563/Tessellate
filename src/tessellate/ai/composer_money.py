@@ -652,9 +652,19 @@ def _dimension_of(word: str) -> tuple[str | None, bool]:
     return _DIMENSION_WORDS.get(word) or (named[0] if named and named[0] != "temperature" else None), bool(named)
 
 
+#: "Total time", "how much time in total", "how long altogether": the same
+#: bare total as "what is my total time".
+_BARE_TOTAL = re.compile(r"^(?:(?:my|our|the) )?total (?P<noun>distance|weight|time)(?P<rest>(?: [^?!.]*)?)\W*$|^how (?:much time|long) (?:in total|altogether|overall|all up)\W*$", re.I)
+
+
+def _totalled(q: str) -> str:
+    found = _BARE_TOTAL.match(q.strip())
+    return f"what is my total {found.group('noun') or 'time'}{found.group('rest') or ''}" if found else q
+
+
 def _measure_asked(q: str) -> _Measure | None:
     """The dimension, the unit asked, the doing verb and the rest, or None."""
-    m = _MEASURE.match(q)
+    m = _MEASURE.match(_totalled(q))
     if not m:
         return None
     word = (m.group("far") or m.group("long") or m.group("noun") or m.group("unit")).lower()
@@ -667,7 +677,9 @@ def _measure_asked(q: str) -> _Measure | None:
     if not doer and not m.group("noun") or word in _CALENDAR or _one_day(m.group("rest")):
         return None
     verb = doer.group("verb").lower() if doer and doer.group("verb").lower() not in _ANY_VERB else ""
-    return _Measure(dimension, word if named else "", _BASE.get(verb, verb), doer.group("after") if doer else m.group("rest"))
+    #: "total time spent on sourdough": "spent" is the sum's own word, not a doing to match.
+    rest = re.sub(r"^\s*(?:spent|taken|logged|recorded)\b", "", m.group("rest"))
+    return _Measure(dimension, word if named else "", _BASE.get(verb, verb), doer.group("after") if doer else rest)
 
 
 def _one_short_vowel(verb: str) -> bool:
@@ -712,6 +724,14 @@ def _measures_line(items: list[Item], unit: str, tail: str) -> str:
     return f"Your notes record {total}{tail}: {_listed([f'{name} {_figure(v, unit)}' for name, v in ranked])}."
 
 
+def _which_measure(items: list[Item], noun: str) -> str:
+    """A total of every {noun} in the notebook adds unlike things together
+    ("85 days: Spanish, Passport, Sourdough"): the subject is asked for."""
+    names = list(dict.fromkeys(_note_name(i.view) for i in items))
+    shown = ", ".join(names[:3]) + (f" and {len(names) - 3} more" if len(names) > 3 else "")
+    return f"Total {noun} of what? Your notes give {noun}s for {shown}. Say which, for example “my total {noun} on {names[0]}”."
+
+
 def _measure(out, asked: _Measure, views: list, today: date) -> bool:  # noqa: ANN001
     win = _window_asked(asked.after, today, views)
     subject, said = _subject(asked.after)
@@ -720,6 +740,11 @@ def _measure(out, asked: _Measure, views: list, today: date) -> bool:  # noqa: A
     items = _items(views, win, subject, dimension=asked.dimension, forms=frozenset(_forms(asked.verb) if asked.verb else ()))
     if not items:
         out.lines.append(f"I found no {asked.unit or _DIMENSION_NOUN[asked.dimension]}{tail} in your notes.")
+        return True
+    if not (asked.verb or asked.unit or subject or win):
+        said = _which_measure(items, _DIMENSION_NOUN[asked.dimension])
+        out.lines.append(said)
+        _cite_all(out, items[:3], said)
         return True
     unit = _unit_of(items, asked.dimension, asked.unit)
     line = _measures_line(items, unit, tail)

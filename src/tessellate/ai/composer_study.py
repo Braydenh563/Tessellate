@@ -607,6 +607,12 @@ def _lists_a_time(topic: str) -> bool:
     return bool(_LISTING.match(topic)) and recognise.without_windows(topic) != topic
 
 
+def _shows_the_lot(question: str) -> bool:
+    from tessellate.ai import composer_digest  # on first use: the digest loads this module
+
+    return composer_digest.shows_the_lot(question)
+
+
 def open_named(ctx: Ctx) -> Reply | None:
     """Ask cannot open things itself, but it can point: "open my lecture
     notes" is the links to the notes that name it. Chat answers the same
@@ -618,6 +624,10 @@ def open_named(ctx: Ctx) -> Reply | None:
     #: "show me notes about X" is a listing Chat draws with previews (the
     #: tool's rows); only a verb that opens is answered the same in both.
     if not ctx.ask and found.group("verb").lower().startswith("show"):
+        return None
+    #: "pull up my uni notes", "show me all of my university notes": the notes
+    #: on a subject, said whole (the overview), not links to pick from.
+    if ctx.ask and found.group("verb").lower().split()[0] in ("show", "pull", "bring") and _shows_the_lot(ctx.asked or ctx.question or ""):
         return None
     topic = found.group("t")
     if _OPEN_NOT.match(topic) or _lists_a_time(topic) or re.match(r"^(?:it|that|this)\b", topic, re.I):

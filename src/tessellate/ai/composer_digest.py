@@ -446,16 +446,29 @@ def only_words_line(claim: str) -> str:
     return ONLY_WORDS[turn % len(ONLY_WORDS)]
 
 
+#: What a review is of (`_reviewed_word`): the only nouns `only_kind` is said with.
+_REVIEWED_WORDS = "film|movie|book|show|series|album|game"
+
+
 def is_only_claim(line: str) -> bool:
-    """Whether a paragraph is that closing claim ("only note", "only review")."""
+    """Whether a paragraph is that closing claim: a wording the composer
+    emits ("only note", "only film review"), never any line that has "only"
+    in it ("Only one reminder is due on Friday.")."""
     line = line.strip()
     if line in only_note_lines():
         return True
-    return any(re.fullmatch(re.escape(str(t)).replace(r"\{noun\}", ".+?"), line) for t in _only_kinds())
+    fills = {"noun": rf"(?:{_REVIEWED_WORDS}) review", "topic": r"[^\n.]+?"}
+    return any(re.fullmatch(re.sub(r"\\\{(\w+)\\\}", lambda m: fills[m.group(1)], re.escape(template)), line) for template in _only_templates())
 
 
-def _only_kinds() -> list[str]:
-    return [v for table in (_BASE, *VOICES.values()) if (v := table.get("only_kind")) and isinstance(v, str)]
+def _only_templates() -> list[str]:
+    """The `only_kind` and `only_one` wordings, in every voice."""
+    said: list[str] = []
+    for table in (_BASE, *VOICES.values()):
+        for key in ("only_kind", "only_one"):
+            value = table.get(key)
+            said += [value] if isinstance(value, str) else list(value or ())
+    return said
 
 
 class _Phrases(dict):
@@ -584,6 +597,18 @@ _ASKING = _stems(
 #: subject's missing word.
 _VERBS = _stems("spend spent buy get make do go like want need try see say use pay cost")
 
+#: "show me my study notes", "pull up my uni notes": the notes on a subject, said whole.
+_SHOW_NOTES = (
+    r"^\s*(?:please )?(?:show|give|get|bring up|pull up|find)(?: me)? (?:all )?(?:of )?(?:my|the) (?!(?:last|latest|newest|recent|first|oldest|next)\b)[\w&'-]+(?: [\w&'-]+)?\s+(?:notes|entries)\s*[.?!]*$"
+)
+
+
+def shows_the_lot(question: str) -> bool:
+    """Whether `question` asks to be shown a subject's notes ("show me all of
+    my university notes"): in Ask that is the overview, not a find."""
+    return re.match(_SHOW_NOTES, " ".join((question or "").split()), re.I) is not None
+
+
 _ASKS = {
     "compare": re.compile(r"^\s*+(?:the\s+)?(?P<a>[\w' -]{2,30}?)\s+or\s+(?:the\s+)?(?P<b>[\w' -]{2,30}?)\s*\??\s*$", re.I),
     "who": re.compile(r"^\s*who(?:'s| is| was)\s+(?P<name>[A-Za-z][\w' -]{0,30}?)\s*\??\s*$", re.I),
@@ -601,7 +626,7 @@ _ASKS = {
         #: "what about social connections" asks for the lot (INBOX 1420).
         r"^\s*(?:and |so )?what about (?:my |the )?\w+(?: \w+)?\s*\??\s*$|\bwhat do i know (?:about|on)\b|"
         #: "show me my study notes": the notes on a subject, said whole, not one fact from one of them.
-        r"^\s*(?:please )?(?:show|give|get|bring up|pull up|find)(?: me)? (?:all )?(?:of )?(?:my|the) (?!(?:last|latest|newest|recent|first|oldest|next)\b)[\w&'-]+(?: [\w&'-]+)?\s+(?:notes|entries)\s*[.?!]*$",
+        + _SHOW_NOTES,
         re.I,
     ),
 }
@@ -4196,7 +4221,7 @@ def _tie(question: str, members: list) -> tuple[list, str, list] | None:
 
 
 _PLACE = re.compile(r"\b(?:the )?(driving range|range|gym|pool|court|course|track|studio|climbing wall|park)\b", re.I)
-_REVIEWED = re.compile(r"\b(film|movie|book|show|series|album|game)s?\b", re.I)
+_REVIEWED = re.compile(rf"\b({_REVIEWED_WORDS})s?\b", re.I)
 
 
 def _note_offer(label: str, text: str) -> dict:

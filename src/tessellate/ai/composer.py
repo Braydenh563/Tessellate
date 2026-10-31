@@ -2882,9 +2882,18 @@ def _compare(out: _Answer, sides: tuple[str, str], views: list[NoteView], meanin
     return True
 
 
+_LEADING_ARTICLE = re.compile(r"^(?:the|a|an|my|our|your)\s+(?=\S)", re.I)
+
+
+def heading_name(label: str) -> str:
+    """A side's name where a sentence or a heading starts with it: "the Lisbon
+    trip" is "Lisbon trip" there (mid-sentence it keeps its "the")."""
+    return _LEADING_ARTICLE.sub("", label.strip(), count=1)
+
+
 def _compare_side(out: _Answer, label: str, side: list, side_terms) -> None:  # noqa: ANN001
     """One side's heading and its lines."""
-    out.t("para", "bold").asked(label).t("bold")
+    out.t("para", "bold").asked(heading_name(label)).t("bold")
     #: The lead said each side's count ("one mentions Lisbon and two
     #: mention Porto"); the heading does not say it again (decision 52).
     if not side:

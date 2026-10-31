@@ -25,8 +25,13 @@ from datetime import date
 #: "money" by the figures it holds.
 _RELATIONS: dict[str, tuple[str, bool, str]] = {
     "cheaper": ("money", True, "is_cheaper"),
-    "cheapest": ("money", True, "is_cheaper"),
+    "cheapest": ("money", True, "is_cheapest"),
+    "least expensive": ("money", True, "is_cheapest"),
     "more expensive": ("money", False, "costs_more"),
+    "most expensive": ("money", False, "costs_most"),
+    "priciest": ("money", False, "costs_most"),
+    "costliest": ("money", False, "costs_most"),
+    "dearest": ("money", False, "costs_most"),
     "less expensive": ("money", True, "is_cheaper"),
     "pricier": ("money", False, "costs_more"),
     "costlier": ("money", False, "costs_more"),
@@ -38,6 +43,8 @@ _RELATIONS: dict[str, tuple[str, bool, str]] = {
     "nearer": ("ahead", True, "comes_first"),
     "closer": ("ahead", True, "comes_first"),
     "later": ("ahead", False, "comes_later"),
+    "furthest away": ("ahead", False, "comes_last"),
+    "farthest away": ("ahead", False, "comes_last"),
     "further away": ("ahead", False, "comes_later"),
     "farther away": ("ahead", False, "comes_later"),
     "older": ("age", True, "is_older"),
@@ -46,6 +53,13 @@ _RELATIONS: dict[str, tuple[str, bool, str]] = {
     "newest": ("age", False, "is_newest"),
     "more recent": ("age", False, "is_newer"),
     "most recent": ("age", False, "is_newest"),
+}
+#: Three or more ranked, the comparative is said as the superlative:
+#: "A is cheaper" of two, "A is the cheapest" of three (the question's own
+#: word wins when it is already one: "which is the cheapest" of two).
+_SUPERLATIVE = {
+    "is_cheaper": "is_cheapest", "costs_more": "costs_most", "comes_later": "comes_last",
+    "is_older": "is_oldest", "is_newer": "is_newest",
 }
 #: Said of notes, these rank by the day written, not by a day ahead.
 _NOTE_AGE = {"earliest": "oldest", "latest": "newest", "first": "oldest", "last": "newest"}
@@ -71,6 +85,9 @@ _COST_CUE = re.compile(r"\b(?:cost|costs|budget|price|priced|total|paid|pay|fee|
 #: digest's one-line form (`line`) says the same words.
 SAID = {
     "is_cheaper": " is cheaper: ",
+    "is_cheapest": " is the cheapest: ",
+    "costs_most": " costs the most: ",
+    "comes_last": " comes last: ",
     "costs_more": " costs more: ",
     "comes_first": " comes first: ",
     "comes_later": " comes later: ",
@@ -92,7 +109,7 @@ def relation(word: str, note_noun: bool) -> tuple[str, bool, str] | None:
     elif low in ("earliest", "first"):
         low = "sooner"
     elif low in ("latest", "last"):
-        low = "later"
+        return ("ahead", False, "comes_last")
     return _RELATIONS.get(low)
 
 
@@ -209,7 +226,9 @@ def _ranked(kind: str, notes: list, today: date, low: bool) -> list[Row]:  # noq
 
 def _versus(key: str, rows: list[Row]) -> Versus | None:
     """None when fewer than two notes are ranked or the first two tie."""
-    return Versus(key, rows) if len(rows) >= 2 and rows[0].key != rows[1].key else None
+    if len(rows) < 2 or rows[0].key == rows[1].key:
+        return None
+    return Versus(_SUPERLATIVE.get(key, key) if len(rows) > 2 else key, rows)
 
 
 def _asked_word(question: str) -> str:
