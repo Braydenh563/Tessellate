@@ -829,6 +829,7 @@ function revealTab(name) {
     $(`tab-${tab}`).classList.toggle("hidden", tab !== name);
   }
   scheduleUndoBar();
+  if (name === "notes") flushEntriesPaint();
   // `documents` is a sub-view of Library, there is no `data-tab="documents"`
   // button in the tab bar, so the name that determines which button is active
   // must be "library" whenever we are showing the documents pane. Without

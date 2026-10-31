@@ -4647,8 +4647,14 @@ function mountGutterFor(textarea) {
   };
   if (textarea.isConnected) copyMetrics();
   else requestAnimationFrame(copyMetrics);
-  textarea.addEventListener("input", () => renderDocGutter(textarea));
-  for (const type of ["focus", "blur", "keyup", "mouseup"]) textarea.addEventListener(type, () => renderDocGutter(textarea));
+  //: Hidden is checked on this gutter first: `renderDocGutter` walks every
+  //: `.doc-gutter` in the page before it looks at one (394 ms over 61 keys in
+  //: a 14k-node page, perf-1031 item 2), so a hidden gutter costs no key.
+  const paint = () => {
+    if (!gutter.classList.contains("hidden")) renderDocGutter(textarea);
+  };
+  textarea.addEventListener("input", paint);
+  for (const type of ["focus", "blur", "keyup", "mouseup"]) textarea.addEventListener(type, paint);
   textarea.addEventListener("scroll", () => {
     if (!gutter.classList.contains("hidden")) gutter.scrollTop = textarea.scrollTop;
   });
