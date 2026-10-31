@@ -94,3 +94,4 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [ ] INBOX 1487 notes mentioning X, 1490 unplaced asks and web search (agent composer6-1031)
 - [ ] INBOX 1488 Writing room with no model (agent writing2-1031)
 - [ ] INBOX 1489 nested faint surfaces (after basered: lean, three agents at most)
+- [ ] Fable deep analysis, one Fable at a time (owner named it): extras, notes, composer, ai, harness, shell, board, docs, code, graph, backend, ux, perf, then architecture and the ranked file (agent/audit-1031)
