@@ -32,22 +32,28 @@
 //: (INBOX 1434): DESIGN.md `panelMovable`.
 const PANEL_KEY = "tessellate.panels";
 const PANEL_STEP = 16;
-const PANEL_KEEP = 64;
 const PANEL_MIN_W = 280;
 const PANEL_MIN_H = 160;
 const PANEL_MEDIA = "(min-width: 600px) and (pointer: fine)";
 const PANEL_SKIP = "button, a, input, select, textarea, summary, [contenteditable], .panel-grip";
 const PANEL_STATE = new WeakMap();
-const PANEL_EDGE = 24;
+//: INBOX 1472: a band from the very edge (0px, and past it when the pointer is
+//: captured outside the window) in to 48px. It was 24 with `x >= vw - 24`, which
+//: the last pixel column (`vw - 1`) made 23 on the right and bottom.
+const PANEL_EDGE = 48;
 const PANEL_ZONES = ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"];
+//: INBOX 1474 (split screen): the narrowest the app may be squeezed to.
+const PANEL_PUSH_MIN = 640;
 
 //: Pure maths, kept apart so tests/test_panel_movable.py can run it in node.
-function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH) {
-  const dx = nx - ox;
-  const dy = ny - oy;
-  const keep = Math.min(PANEL_KEEP, rect.width);
-  const left = Math.min(Math.max(rect.left + dx, keep - rect.width), vw - keep);
-  const top = Math.min(Math.max(rect.top + dy, 0), Math.max(0, vh - headH));
+//: **A panel stays inside the free area** (INBOX 1474, the owner: "I can drag
+//: the attach panel behind the sidebar"): `safe` is the window minus the
+//: sidebar, the status bar and any panel docked to a side (`panelSafe`), and
+//: the whole panel stays in it when it fits, else its top left does.
+function panelClampMove(rect, ox, oy, nx, ny, vw, vh, headH, safe) {
+  const b = safe || { left: 0, top: 0, right: vw, bottom: vh };
+  const left = Math.min(Math.max(rect.left + nx - ox, b.left), Math.max(b.left, b.right - rect.width));
+  const top = Math.min(Math.max(rect.top + ny - oy, 0), Math.max(0, b.bottom - Math.max(rect.height, headH)));
   return { x: ox + (left - rect.left), y: oy + (top - rect.top) };
 }
 function panelClampSize(rect, w, h, vw, vh) {
@@ -61,9 +67,9 @@ function panelClampSize(rect, w, h, vw, vh) {
 //: when two meet.
 function panelSnapZone(x, y, vw, vh) {
   const l = x <= PANEL_EDGE;
-  const r = x >= vw - PANEL_EDGE;
+  const r = x >= vw - 1 - PANEL_EDGE;
   const t = y <= PANEL_EDGE;
-  const b = y >= vh - PANEL_EDGE;
+  const b = y >= vh - 1 - PANEL_EDGE;
   //: The top band is read by thirds so one gesture always gives one height:
   //: the middle third maximises, the outer thirds are the top quarters.
   if (t) return x < vw / 3 ? "tl" : x > (2 * vw) / 3 ? "tr" : "max";
@@ -85,9 +91,10 @@ function panelZoneRect(zone, vw, vh, inset, safe) {
   const south = zone === "bottom" || zone === "bl" || zone === "br";
   return { left: east ? sr - inset - w : sx + inset, top: south ? sb - inset - h : sy + inset, width: w, height: h };
 }
-//: The window minus the top bar, the status bar and a side tab rail, read
-//: when a drag starts or a dock is fitted, never per move.
-function panelSafe(vw, vh) {
+//: The window minus the top bar, the status bar, a side tab rail, a sidebar
+//: and the panels docked to a side, read when a drag starts or a dock is
+//: fitted, never per move. `except` is the panel being placed.
+function panelSafe(vw, vh, except, ignore = "") {
   const safe = { left: 0, top: 0, right: vw, bottom: vh };
   const seen = (id) => {
     const el = document.getElementById(id);
@@ -98,8 +105,63 @@ function panelSafe(vw, vh) {
   const tabs = seen("tab-bar");
   if (bar) safe.top = Math.max(0, Math.round(bar.bottom));
   if (foot) safe.bottom = Math.min(vh, Math.round(foot.top));
-  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2) safe.left = Math.round(tabs.right);
+  if (tabs && tabs.height > tabs.width && tabs.left < vw / 2 && ignore !== "left") safe.left = Math.round(tabs.right);
+  const sides = [...document.querySelectorAll("aside.sidebar-panel")].filter((el) => !(except && el.contains(except)));
+  const docked = [...document.querySelectorAll(".panel-movable-on")].filter((el) => el !== except && PANEL_STATE.get(el)?.dock);
+  for (const el of [...sides, ...docked]) {
+    if (!panelShown(el)) continue;
+    const r = el.getBoundingClientRect();
+    const zone = PANEL_STATE.get(el)?.dock || "";
+    if (zone === "max" || zone === "bottom" || r.width >= vw - 2 || (el.tagName === "ASIDE" && r.height <= r.width)) continue;
+    const west = r.left + r.width / 2 < vw / 2;
+    //: A side the app is about to be pushed away from is not an obstacle.
+    if (ignore === (west ? "left" : "right")) continue;
+    if (west) safe.left = Math.max(safe.left, Math.round(r.right));
+    else safe.right = Math.min(safe.right, Math.round(r.left));
+  }
   return safe;
+}
+//: **Split screen** (INBOX 1474, the owner: "there's no point in docking if it
+//: hides half the screen"). A panel docked to the left or right half pushes the
+//: app aside: `--dock-push-left/right` on the root, read by `body`'s padding
+//: (panel-movable-lazy.css, eased with `--ui-base`, instant with motion off).
+//: Corner docks, the bottom and the maximise never push, and a panel that is
+//: not fixed to the window (it would ride the push) does not either. One
+//: preference, Settings, Appearance, and the head's toggle both write it.
+function panelPushOn() {
+  return prefs.get("panel-push", "on") !== "off";
+}
+function panelPinned(panel) {
+  for (let el = panel; el && el !== document.body; el = el.parentElement) {
+    if (getComputedStyle(el).position === "fixed") return true;
+  }
+  return false;
+}
+function panelShown(el) {
+  return el.getClientRects().length > 0 && !el.closest("[data-panel-min]");
+}
+function panelPushSide(panel, zone) {
+  return (zone === "left" || zone === "right") && panelMovableOn() && panelPinned(panel) ? zone : "";
+}
+function panelPushSync() {
+  const vw = window.innerWidth;
+  let l = 0;
+  let r = 0;
+  for (const el of document.querySelectorAll(".panel-movable-on")) {
+    const st = PANEL_STATE.get(el);
+    const side = st && panelShown(el) ? panelPushSide(el, st.dock) : "";
+    if (st && st.push) st.push.hidden = !side;
+    if (st && st.push) st.push.setAttribute("aria-pressed", String(panelPushOn()));
+    if (!side || !panelPushOn()) continue;
+    const b = el.getBoundingClientRect();
+    if (side === "left") l = Math.max(l, Math.round(b.right));
+    else r = Math.max(r, Math.round(vw - b.left));
+  }
+  if (vw - l - r < PANEL_PUSH_MIN) l = r = 0;
+  const root = document.documentElement;
+  root.style.setProperty("--dock-push-left", `${l}px`);
+  root.style.setProperty("--dock-push-right", `${r}px`);
+  root.toggleAttribute("data-dock-push", l + r > 0);
 }
 //: `data-panel-zones="left right max"` on a panel limits its zones.
 function panelZoneFor(panel, zone) {
@@ -194,7 +256,7 @@ function panelId(panel) {
 function panelSt(panel) {
   let st = PANEL_STATE.get(panel);
   if (!st) {
-    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, skip: false };
+    st = { x: 0, y: 0, w: null, h: null, dock: "", pre: null, nat: null, id: panelId(panel), grip: null, reset: null, push: null, min: null, skip: false };
     PANEL_STATE.set(panel, st);
   }
   return st;
@@ -240,13 +302,12 @@ function panelClamp(panel, st) {
   const vh = window.innerHeight;
   const head = panelHeadOf(panel);
   const headH = head ? head.offsetHeight : 40;
+  const safe = panelSafe(vw, vh, panel);
   const place = () => {
     const r = panel.getBoundingClientRect();
-    //: Whole panel inside the window when it fits (a drag may park it half
-    //: off, a window resize or a reload brings it back), else its head.
-    const left = Math.min(Math.max(r.left, 0), Math.max(0, vw - r.width));
-    const top = Math.min(Math.max(r.top, 0), Math.max(0, vh - Math.max(r.height, headH)));
-    const m = panelClampMove(r, st.x, st.y, st.x + left - r.left, st.y + top - r.top, vw, vh, headH);
+    //: Whole panel inside the free area when it fits (a window resize or a
+    //: reload brings it back), else its top left.
+    const m = panelClampMove(r, st.x, st.y, st.x, st.y, vw, vh, headH, safe);
     if (m.x === st.x && m.y === st.y) return;
     st.x = m.x;
     st.y = m.y;
@@ -304,7 +365,7 @@ function panelShowZone(r) {
 //: Fill the dock zone: size first, then one rect read to learn where the
 //: centred layout put it, and translate the difference.
 function panelFit(panel, st) {
-  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight));
+  const z = panelZoneRect(st.dock, window.innerWidth, window.innerHeight, panelInset(), panelSafe(window.innerWidth, window.innerHeight, panel, panelPushOn() ? panelPushSide(panel, st.dock) : ""));
   if (!z) {
     st.dock = "";
     return;
@@ -316,6 +377,7 @@ function panelFit(panel, st) {
   st.x += z.left - r.left;
   st.y += z.top - r.top;
   panelApply(panel, st);
+  panelPushSync();
 }
 function panelDock(panel, st, zone) {
   if (!st.dock) st.pre = { w: st.w, h: st.h };
@@ -340,7 +402,7 @@ function panelWatchOpen(panel) {
   if (typeof IntersectionObserver === "undefined") return;
   PANEL_LIVE.watch ||= new IntersectionObserver((list) => {
     for (const en of list) {
-      if (en.isIntersecting || panelRestoreOn()) continue;
+      if (en.isIntersecting || panelRestoreOn() || en.target.closest("[data-panel-min]")) continue;
       const st = panelSt(en.target);
       st.x = st.y = 0;
       st.w = st.h = null;
@@ -349,6 +411,7 @@ function panelWatchOpen(panel) {
       panelApply(en.target, st);
       panelSync(en.target);
     }
+    panelPushSync();
   });
   PANEL_LIVE.watch.observe(panel);
 }
@@ -365,6 +428,7 @@ function panelReset(panel) {
   panelApply(panel, st);
   if (st.id) panelStoreWrite(st.id, null);
   panelSync(panel);
+  panelPushSync();
 }
 //: The grip's double-click: the size goes back, the place stays (a docked
 //: panel is all size, so it goes back to the middle like the head's).
@@ -385,6 +449,7 @@ function panelSave(panel) {
   if (st.id) panelStoreWrite(st.id, st, panelLayout(panel));
   panelScrimLift(panel, st);
   panelSync(panel);
+  panelPushSync();
 }
 //: Adopt a panel once: restore, add the grip. Cheap to call again.
 function panelAdopt(panel) {
@@ -429,7 +494,38 @@ function panelAdopt(panel) {
       btn.appendChild(icon);
       (actions || head).insertBefore(btn, actions ? actions.firstChild : null);
       st.reset = btn;
+      const push = document.createElement("button");
+      push.type = "button";
+      push.className = "icon-only ghost small dialog-head-btn panel-push";
+      push.setAttribute("aria-label", "Move the app aside while docked");
+      push.title = "Move the app aside while this panel is docked to a side";
+      push.hidden = true;
+      const pushIcon = document.createElement("i");
+      pushIcon.className = "ph ph-columns";
+      pushIcon.setAttribute("aria-hidden", "true");
+      push.appendChild(pushIcon);
+      (actions || head).insertBefore(push, btn);
+      st.push = push;
+      if (panelPinned(panel)) {
+        const min = document.createElement("button");
+        min.type = "button";
+        min.className = "icon-only ghost small dialog-head-btn panel-min";
+        const minIcon = document.createElement("i");
+        minIcon.className = "ph ph-minus";
+        minIcon.setAttribute("aria-hidden", "true");
+        min.appendChild(minIcon);
+        min.addEventListener("click", () => panelMinimise(panel));
+        const close = panelCloseBtn(panel);
+        if (close) close.parentElement.insertBefore(min, close);
+        else (actions || head).appendChild(min);
+        st.min = min;
+      }
     }
+  }
+  if (st.min) {
+    const label = panelTitle(panel);
+    st.min.setAttribute("aria-label", `Minimise ${label}`);
+    st.min.title = `Minimise ${label} (Shift+Escape)`;
   }
   panelSync(panel);
   if (!st.grip || !st.grip.isConnected || st.grip.parentElement !== panel) {
@@ -469,7 +565,11 @@ function panelHeadDown(e) {
   const vh = window.innerHeight;
   const hh = head.offsetHeight;
   const inset = panelInset();
-  const safe = panelSafe(vw, vh);
+  const safe = panelSafe(vw, vh, panel);
+  //: With the push on, a side dock is laid against the window's own edge: the
+  //: sidebar and the rail beside it are pushed over with the rest of the app.
+  const pushing = panelPushOn() && panelPinned(panel);
+  const sideSafe = { left: pushing ? panelSafe(vw, vh, panel, "left") : safe, right: pushing ? panelSafe(vw, vh, panel, "right") : safe };
   let moved = 0;
   let x0 = e.clientX;
   let y0 = e.clientY;
@@ -487,6 +587,7 @@ function panelHeadDown(e) {
       const fx = (x0 - rect.left) / rect.width;
       panelUnsnap(st);
       panelApply(panel, st);
+      panelPushSync();
       const r = panel.getBoundingClientRect();
       st.x += ev.clientX - fx * r.width - r.left;
       st.y += ev.clientY - (y0 - rect.top) - r.top;
@@ -496,7 +597,7 @@ function panelHeadDown(e) {
       x0 = ev.clientX;
       y0 = ev.clientY;
     }
-    const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh);
+    const m = panelClampMove(rect, ox, oy, ox + ev.clientX - x0, oy + ev.clientY - y0, vw, vh, hh, safe);
     st.x = m.x;
     st.y = m.y;
     panel.style.translate = `${m.x}px ${m.y}px`;
@@ -509,7 +610,7 @@ function panelHeadDown(e) {
     const z = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (z !== zone) {
       zone = z;
-      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, safe) : null);
+      panelShowZone(z ? panelZoneRect(z, vw, vh, inset, sideSafe[z] || safe) : null);
     }
   };
   const done = (ev) => {
@@ -517,6 +618,9 @@ function panelHeadDown(e) {
     head.removeEventListener("pointerup", done);
     head.removeEventListener("pointercancel", done);
     panel.classList.remove("panel-moving");
+    //: The drop reads the pointer where it was let go, not the last move: a
+    //: flick to the very edge can end with no move event at the edge.
+    if (ev.type === "pointerup" && moved > 4) zone = panelZoneFor(panel, panelSnapZone(ev.clientX, ev.clientY, vw, vh));
     if (zone) panelShowZone(null);
     if (zone && ev.type === "pointerup") panelDock(panel, st, zone);
     panelSave(panel);
@@ -613,17 +717,158 @@ function panelGripKey(e) {
     st.y += before.top - after.top;
   } else {
     const head = panelHeadOf(panel);
-    const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40);
+    const m = panelClampMove(before, st.x, st.y, st.x + d.dx, st.y + d.dy, vw, vh, head ? head.offsetHeight : 40, panelSafe(vw, vh, panel));
     st.x = m.x;
     st.y = m.y;
   }
   panelApply(panel, st);
   panelSave(panel);
 }
+//: **Minimise** (INBOX 1475, the owner: "popups should have a minimise button
+//: with a popup or indicator somewhere so the user can open it up or close the
+//: popup"). A pinned panel (a dialog or overlay) hides with its state kept and
+//: shows as a pill in `#panel-min-tray`, floating above the composer at the
+//: content's bottom left; the pill restores it, its x closes it. A dialog is
+//: re-opened non-modal while hidden (a modal one would keep the app inert) and
+//: modal again on restore; the `close` it fires is swallowed so the panel's own
+//: close handling does not run. Shift+Escape minimises from the keyboard.
+const PANEL_MIN = new Map();
+function panelMinHost(panel) {
+  return panel.closest("dialog") || panelScrimOf(panel) || panel;
+}
+function panelTitle(panel) {
+  const el = panel.querySelector(".dialog-head-title");
+  return el ? el.textContent.trim().replace(/\s+/g, " ") || "Panel" : "Panel";
+}
+function panelCloseBtn(panel) {
+  const head = panelHeadOf(panel);
+  return head && head.querySelector('button[aria-label^="Close"], button[title^="Close"], button[data-close]');
+}
+function panelReopen(host, modal) {
+  const quiet = (e) => {
+    if (e.target !== host) return;
+    e.stopPropagation();
+    window.removeEventListener("close", quiet, true);
+  };
+  window.addEventListener("close", quiet, true);
+  host.close();
+  if (modal) host.showModal();
+  else host.show();
+}
+function panelMinTray() {
+  let tray = document.getElementById("panel-min-tray");
+  if (!tray) {
+    tray = document.createElement("div");
+    tray.id = "panel-min-tray";
+    tray.setAttribute("role", "group");
+    tray.setAttribute("aria-label", "Minimised panels");
+    tray.setAttribute("popover", "manual");
+    document.body.appendChild(tray);
+  }
+  return tray;
+}
+//: Above the chat composer when it is on screen, else above the status bar, at
+//: the left of the page the reader is on.
+function panelMinPlace() {
+  const tray = document.getElementById("panel-min-tray");
+  if (!tray) return;
+  const shown = (el) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
+  const page = shown(document.querySelector("#app-main > .tab-page:not(.hidden)"));
+  const dock = shown(document.querySelector(".chat-dock"));
+  const foot = shown(document.getElementById("status-bar"));
+  const gap = parseFloat(getComputedStyle(tray).paddingLeft) || 8;
+  const left = (dock || page || { left: 0 }).left + gap;
+  const floor = dock ? dock.top : foot ? foot.top : window.innerHeight;
+  tray.style.left = `${Math.round(left)}px`;
+  tray.style.bottom = `${Math.round(window.innerHeight - floor + gap)}px`;
+}
+function panelChip(panel, host) {
+  const title = panelTitle(panel);
+  const chip = document.createElement("span");
+  chip.className = "minimised-pill";
+  const open = document.createElement("button");
+  open.type = "button";
+  open.className = "minimised-pill-open";
+  open.setAttribute("aria-label", `Restore ${title}`);
+  const glyph = panel.querySelector(".dialog-head-title .ph");
+  const icon = document.createElement("i");
+  icon.className = glyph ? [...glyph.classList].filter((c) => c !== "ph-lead").join(" ") : "ph ph-app-window";
+  icon.setAttribute("aria-hidden", "true");
+  const name = document.createElement("span");
+  name.textContent = title;
+  open.append(icon, name);
+  open.addEventListener("click", () => panelRestore(host));
+  const x = document.createElement("button");
+  x.type = "button";
+  x.className = "minimised-pill-x";
+  x.setAttribute("aria-label", `Close ${title}`);
+  x.title = `Close ${title}`;
+  const xi = document.createElement("i");
+  xi.className = "ph ph-x";
+  xi.setAttribute("aria-hidden", "true");
+  x.appendChild(xi);
+  x.addEventListener("click", () => panelRestore(host, true));
+  chip.append(open, x);
+  return chip;
+}
+function panelMinimise(panel) {
+  const host = panelMinHost(panel);
+  if (PANEL_MIN.has(host)) return;
+  const modal = host.tagName === "DIALOG" && host.matches(":modal");
+  const chip = panelChip(panel, host);
+  PANEL_MIN.set(host, { panel, chip, modal });
+  host.setAttribute("data-panel-min", "");
+  host.inert = true;
+  if (host.tagName === "DIALOG" && host.open) panelReopen(host, false);
+  const tray = panelMinTray();
+  tray.appendChild(chip);
+  if (!tray.matches(":popover-open")) tray.showPopover();
+  panelMinPlace();
+  panelPushSync();
+  chip.querySelector(".minimised-pill-open").focus({ preventScroll: true });
+}
+function panelRestore(host, close = false) {
+  const m = PANEL_MIN.get(host);
+  if (!m) return;
+  PANEL_MIN.delete(host);
+  m.chip.remove();
+  host.removeAttribute("data-panel-min");
+  host.inert = false;
+  if (!PANEL_MIN.size) panelMinTray().hidePopover();
+  if (host.tagName === "DIALOG" && host.open && m.modal) panelReopen(host, true);
+  const gone = host.tagName === "DIALOG" ? !host.open : host.classList.contains("hidden");
+  if (gone) return;
+  panelPushSync();
+  const btn = close ? panelCloseBtn(m.panel) : panelSt(m.panel).min;
+  if (btn) btn.focus({ preventScroll: true });
+  if (close) (btn ? btn.click() : host.tagName === "DIALOG" && host.close());
+}
+function panelMinKey(e) {
+  if (e.key !== "Escape" || !e.shiftKey || !(e.target instanceof Element)) return;
+  const host = e.target.closest('dialog, [role="dialog"]');
+  const head = host && host.querySelector(".dialog-head");
+  const panel = head && panelOf(head);
+  if (!panel || !panelSt(panel).min) return;
+  e.preventDefault();
+  e.stopPropagation();
+  panelMinimise(panel);
+}
+function panelPushToggle() {
+  const on = !panelPushOn();
+  prefs.set("panel-push", on ? "on" : "off");
+  const box = document.getElementById("panel-push-toggle");
+  if (box) box.checked = on;
+  document.querySelectorAll(".panel-movable-on").forEach((panel) => {
+    const st = panelSt(panel);
+    if (st.dock && panel.getClientRects().length) panelFit(panel, st);
+  });
+  panelPushSync();
+}
 let panelResizeTimer = 0;
 function panelWindowResized() {
   clearTimeout(panelResizeTimer);
   panelResizeTimer = setTimeout(() => {
+    if (PANEL_MIN.size) panelMinPlace();
     const on = panelMovableOn();
     document.querySelectorAll(".panel-movable-on").forEach((panel) => {
       const st = panelSt(panel);
@@ -640,6 +885,9 @@ function panelWindowResized() {
 }
 if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener("focusin", (e) => { const p = panelOf(e.target); if (p) panelAdopt(p); }, true);
+  document.addEventListener("keydown", panelMinKey, true);
+  //: A pill rides above the page the reader is on: put it back after a tab change.
+  document.addEventListener("click", () => { if (PANEL_MIN.size) setTimeout(panelMinPlace, 250); }, true);
   document.addEventListener("pointerover", (e) => {
     const t = e.target;
     if (t instanceof Element && t.closest(".dialog-head")) { const p = panelOf(t); if (p) panelAdopt(p); }
@@ -659,6 +907,7 @@ if (typeof document !== "undefined" && document.addEventListener) {
     const btn = e.target instanceof Element && e.target.closest(".panel-reset");
     const panel = btn && panelOf(btn);
     if (panel) panelReset(panel);
+    if (e.target instanceof Element && e.target.closest(".panel-push")) panelPushToggle();
   }, true);
   document.addEventListener("dblclick", (e) => {
     if (!(e.target instanceof Element)) return;

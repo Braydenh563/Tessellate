@@ -37,6 +37,10 @@ const out = {
   up: a.panelClampMove(rect, 0, 0, 0, -5000, 1000, 800, 40),
   down: a.panelClampMove(rect, 0, 0, 0, 5000, 1000, 800, 40),
   free: a.panelClampMove(rect, 10, 20, 50, 60, 1000, 800, 40),
+  underSidebar: a.panelClampMove(rect, 0, 0, -5000, 0, 1000, 800, 40, { left: 316, top: 0, right: 1000, bottom: 800 }),
+  underStatus: a.panelClampMove(rect, 0, 0, 0, 5000, 1000, 800, 40, { left: 0, top: 0, right: 1000, bottom: 760 }),
+  beforeDock: a.panelClampMove(rect, 0, 0, 5000, 0, 1000, 800, 40, { left: 0, top: 0, right: 600, bottom: 800 }),
+  tooWide: a.panelClampMove({ left: 300, top: 100, width: 900, height: 400 }, 0, 0, -5000, 0, 1000, 800, 40, { left: 316, top: 0, right: 1000, bottom: 800 }),
   tiny: a.panelClampSize(rect, 10, 10, 1000, 800),
   huge: a.panelClampSize(rect, 9999, 9999, 1000, 800),
   narrow: a.panelClampSize({ left: 0, top: 0, width: 200, height: 100 }, 10, 10, 1000, 800),
@@ -57,7 +61,7 @@ out.dockRead = a.panelStoreRead("dock-me");
 a.panelStoreWrite("odd", { x: 0, y: 0, w: null, h: null, dock: "sideways" });
 out.dockBad = a.panelStoreRead("odd");
 out.zones = {};
-for (const [n, x, y] of [["mid", 500, 400], ["l", 3, 400], ["r", 997, 400], ["t", 500, 2], ["b", 500, 799], ["tl", 5, 5], ["tr", 995, 5], ["bl", 5, 795], ["br", 995, 795], ["edgeIn", 24, 400], ["edgeOut", 25, 400], ["topThirdL", 200, 2], ["topThirdR", 800, 2], ["topMidEdge", 340, 2]]) out.zones[n] = a.panelSnapZone(x, y, 1000, 800);
+for (const [n, x, y] of [["mid", 500, 400], ["l", 3, 400], ["r", 997, 400], ["t", 500, 2], ["b", 500, 799], ["tl", 5, 5], ["tr", 995, 5], ["bl", 5, 795], ["br", 995, 795], ["edgeIn", 48, 400], ["edgeOut", 49, 400], ["edge0", 0, 400], ["rEdge", 999, 400], ["bEdge", 500, 799], ["rBand", 951, 400], ["rOut", 950, 400], ["cornerSq", 47, 752], ["topThirdL", 200, 2], ["topThirdR", 800, 2], ["topMidEdge", 340, 2]]) out.zones[n] = a.panelSnapZone(x, y, 1000, 800);
 out.rects = {};
 for (const z of ["left", "right", "max", "bottom", "tl", "tr", "bl", "br"]) out.rects[z] = a.panelZoneRect(z, 1000, 800, 12);
 out.noRect = a.panelZoneRect("", 1000, 800, 12);
@@ -105,10 +109,16 @@ def maths() -> dict:
 @node
 def test_a_head_never_leaves_the_window(maths) -> None:
     # 500 wide at left 300 in a 1000 window: 64px stays visible either side
-    assert maths["farRight"] == {"x": 636, "y": 0}
-    assert maths["farLeft"] == {"x": -736, "y": 0}
+    # INBOX 1474: the whole panel stays in the free area (it used to park half
+    # off the window, which let a panel sit under a sidebar)
+    assert maths["farRight"] == {"x": 200, "y": 0}
+    assert maths["farLeft"] == {"x": -300, "y": 0}
     assert maths["up"] == {"x": 0, "y": -100}
-    assert maths["down"] == {"x": 0, "y": 660}
+    assert maths["down"] == {"x": 0, "y": 300}
+    assert maths["underSidebar"] == {"x": 16, "y": 0}
+    assert maths["underStatus"] == {"x": 0, "y": 260}
+    assert maths["beforeDock"] == {"x": -200, "y": 0}
+    assert maths["tooWide"] == {"x": 16, "y": 0}
     assert maths["free"] == {"x": 50, "y": 60}
 
 
@@ -184,8 +194,12 @@ def test_snap_zones_follow_the_pointer_to_an_edge_or_corner(maths) -> None:
     assert z["mid"] == ""
     assert (z["l"], z["r"], z["t"], z["b"]) == ("left", "right", "max", "bottom")
     assert (z["tl"], z["tr"], z["bl"], z["br"]) == ("tl", "tr", "bl", "br")
-    # 24px is inside the zone, 25px is not
+    # 48px is inside the zone, 49px is not; the very edge (0 and the last pixel)
+    # counts on every side, and the band is 48px wide on the right too
     assert z["edgeIn"] == "left" and z["edgeOut"] == ""
+    assert (z["edge0"], z["rEdge"], z["bEdge"]) == ("left", "right", "bottom")
+    assert (z["rBand"], z["rOut"]) == ("right", "")
+    assert z["cornerSq"] == "bl"
     # the top band is read by thirds: one gesture, one height
     assert (z["topThirdL"], z["topThirdR"], z["topMidEdge"]) == ("tl", "tr", "max")
 
@@ -233,3 +247,56 @@ def test_the_reset_button_and_the_snap_preview_are_recipe_shaped() -> None:
     assert "dialog-head-btn" in js and "ph-arrow-counter-clockwise" in js
     assert "panel-snap-preview" in js and "pointer-events: none" in css
     assert "backdrop-filter" not in css
+
+
+def test_the_free_area_is_the_window_less_sidebars_the_status_bar_and_docked_panels() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    body = js[js.index("function panelSafe(") : js.index("//: `data-panel-zones=")]
+    assert 'aside.sidebar-panel' in body and "status-bar" in body and ".panel-movable-on" in body
+    assert "panelClampMove(" in js[js.index("function panelClamp(") : js.index("function panelClamp(") + 900]
+
+
+def test_a_side_dock_pushes_the_app_aside_with_one_pref_and_two_controls() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
+    html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
+    rows = (ROOT / "frontend" / "js" / "settings-rows.js").read_text(encoding="utf-8")
+    # only a left or right dock, only a panel fixed to the window, one pref
+    body = js[js.index("function panelPushSide(") : js.index("function panelPushSync(")]
+    assert 'zone === "left" || zone === "right"' in body and "panelPinned(panel)" in body
+    assert 'prefs.get("panel-push", "on") !== "off"' in js
+    assert "PANEL_PUSH_MIN" in js and "--dock-push-left" in js and "--dock-push-right" in js
+    # the pages take the margins, eased with the motion token, none under reduced motion
+    assert "#app-main > *" in css and "margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px)" in css
+    assert "transition: margin-inline var(--ui-base)" in css and "prefers-reduced-motion: reduce" in css
+    # the head button and the Settings row
+    assert 'push.className = "icon-only ghost small dialog-head-btn panel-push"' in js
+    assert 'push.setAttribute("aria-label", "Move the app aside while docked")' in js
+    assert 'id="panel-push-toggle"' in html
+    assert '{ key: "panel-push", id: "panel-push-toggle", on: "on", off: "off", base: "on" }' in rows
+    assert '["panel-push-toggle", "panel-push"]' in rows
+    # a side the app is pushed away from is not an obstacle to the dock itself
+    assert 'ignore === (west ? "left" : "right")' in js
+
+
+def test_a_pinned_panel_minimises_to_a_pill_above_the_composer() -> None:
+    js = SRC.read_text(encoding="utf-8")
+    css = (ROOT / "frontend" / "css" / "panel-movable-lazy.css").read_text(encoding="utf-8")
+    # the button sits before Close, named for the panel
+    assert 'min.className = "icon-only ghost small dialog-head-btn panel-min"' in js
+    assert "close.parentElement.insertBefore(min, close)" in js
+    assert 'st.min.setAttribute("aria-label", `Minimise ${label}`)' in js
+    # the pill: glyph, name, a small x that closes; the button restores
+    assert 'chip.className = "minimised-pill"' in js and "minimised-pill-open" in js and "minimised-pill-x" in js
+    assert 'x.setAttribute("aria-label", `Close ${title}`)' in js
+    # state is kept: the host is hidden, never emptied; a dialog is re-opened quietly
+    assert 'host.setAttribute("data-panel-min", "")' in js and "innerHTML" not in js
+    assert 'window.addEventListener("close", quiet, true)' in js
+    assert 'e.key !== "Escape" || !e.shiftKey' in js
+    # above the composer, else the status bar
+    assert '".chat-dock"' in js and 'getElementById("status-bar")' in js
+    # the recipe's look, from tokens
+    assert "[data-panel-min] {\n  visibility: hidden;" in css and 'tray.setAttribute("popover", "manual")' in js
+    for token in ("--radius-pill", "--card", "--border", "--shadow-md"):
+        assert f"var({token})" in css
+    assert "min-height: calc(var(--control-h-lg) + var(--space-4))" in css

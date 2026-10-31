@@ -3104,6 +3104,8 @@ PILL_CONTROLS = {
     ".chat-dock-controls .seg": "the chat composer's row is pills",
     ".chat-dock-controls .seg button": "the chat composer's row is pills",
     ".chat-context-pill": "the context meter in the chat composer's row",
+    ".minimised-pill": "a minimised panel's pill (INBOX 1475, the owner's reference: a rounded pill with the glyph, the name and an x)",
+    ".minimised-pill-x": "the round x inside that pill",
     "#notif-btn.has-unread::after": "an unread dot",
     ".notif-unread-chip": "a count badge",
     ".selection-bar button": "a floating bar over a canvas",

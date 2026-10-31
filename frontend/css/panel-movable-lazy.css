@@ -85,7 +85,9 @@
   display: none;
 }
 @media not ((min-width: 600px) and (pointer: fine)) {
-  .panel-reset {
+  .panel-reset,
+  .panel-push,
+  .panel-min {
     display: none;
   }
 }
@@ -98,4 +100,97 @@
 }
 dialog[data-panel-moved]::backdrop {
   background: transparent;
+}
+
+/* Split screen (INBOX 1474): a panel docked to a side pushes the app aside.
+   `panel-movable.js` writes the two lengths on the root; the pages' side margins
+   (the top bar and the status bar keep the full width, which the status bar
+   needs: its two fixed zones are 801px wide) read them, eased with the motion token (instant with interface animations
+   off, `--ui-base` is 0s there) and not at all under reduced motion. */
+@media (min-width: 600px) and (pointer: fine) {
+  #app-main > * {
+    margin-inline: var(--dock-push-left, 0px) var(--dock-push-right, 0px);
+    /* A page's edge really is a box changing size with its content in it:
+       a transform would slide the page under the docked panel instead of
+       making room, and it moves only on a dock, never during a drag. */
+    transition: margin-inline var(--ui-base) var(--ease-out);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-main > * {
+    transition: none;
+  }
+}
+
+/* Minimise (INBOX 1475): the hidden panel keeps its state; the pills sit in a
+   row above the composer at the content's bottom left (`panelMinPlace` writes
+   the left and bottom with the CSSOM). A dark raised pill, a hairline border,
+   the panel's glyph, its name and a small x. */
+[data-panel-min] {
+  visibility: hidden;
+  pointer-events: none;
+}
+/* A manual popover: the top layer puts the pills above the page without a
+   z-index, and it is shown only while there is a pill. */
+#panel-min-tray {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  max-width: calc(100vw - var(--space-6) * 2);
+  pointer-events: none;
+}
+#panel-min-tray:popover-open {
+  display: flex;
+}
+.minimised-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: calc(var(--control-h-lg) + var(--space-4));
+  padding: 0 var(--space-2) 0 var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+}
+.minimised-pill button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.minimised-pill-open span {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.minimised-pill-x {
+  justify-content: center;
+  width: var(--target-min);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+}
+.minimised-pill-x:hover,
+.minimised-pill-x:focus-visible {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.minimised-pill button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
