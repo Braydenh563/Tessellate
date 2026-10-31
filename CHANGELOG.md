@@ -6,6 +6,7 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Design (UX review 1031): the shared picture control (grip, align button, their keys, hit area and ground) has its row in DESIGN.md's recipe index and a lint in tests/test_ui_recipes.py; the Guide says to Tab to the corner.
 - Chat attachment cards (UX review 1031): the facts line holds 4.65:1 in light and 5.11:1 in dark when the card is hovered or focused (it was 4.12 and 3.85), and the open button is named by its verb ("Preview note, Weekly review"), not only by a tooltip on its span.
 - Settings (UX review 1031): the desktop companion switch and its help button share a row at 390px (the row was 524.7px wide in a 263.6px one and the label was cut), the label wrapping instead.
 - Companion window and previews (UX review 1031): the desktop companion window is see-through to the root element (the pale rectangle round it is gone), its menu takes the arrow keys, and a search hit shows at most two lines of title and of snippet, with the title not said twice; a picture's width and alignment (`|300|right`) no longer show in a Library card, a Timeline row, the companion's search or a label, which read the picture's caption or name.
