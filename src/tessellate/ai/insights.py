@@ -24,7 +24,7 @@ dashboard, `routes_insights`); they are never filed as facts on their own.
 Confirm and Not right (decision 60). Every insight line carries both.
 Confirm writes a fact the person vouched for (a `derived_facts` row of kind
 "confirmed", model "you"), said from then on as their own word, never
-re-hedged: "Golf is a hobby of yours (confirmed by you, 10 October)." Not
+re-hedged: "Golf is a hobby of yours, as you told me on 10 October." Not
 right records a "dismiss_insight" correction; that insight and its
 near-variants (the same rule about the same subject, whatever the count or
 the dates) are not shown again. `key` is what makes two lines variants.
@@ -356,9 +356,21 @@ def _said(insight: Insight) -> str:
 
 
 def confirmed_line(said: str, on: date) -> str:
-    """The person's own word, with its source: "Golf is a hobby of yours
-    (confirmed by you, 10 October)."."""
-    return f"{said.rstrip('.')} (confirmed by you, {on.day} {_MONTHS[on.month - 1]})."
+    """The person's own word, with its source, as a person says it (INBOX
+    1483, the owner: "(confirmed by you, 11 October)" read as a record):
+    "Golf is a hobby of yours, as you told me on 10 October."."""
+    return f"{said.rstrip('.')}, as you told me on {on.day} {_MONTHS[on.month - 1]}."
+
+
+#: A line confirmed before INBOX 1483, stored as it was said then.
+_OLD_CONFIRMED = re.compile(r"^(?P<said>.*?) \(confirmed by you, (?P<on>\d{1,2} [A-Z][a-z]+)\)\.$")
+
+
+def _said_now(line: str) -> str:
+    """A stored confirmed line in today's words: "X (confirmed by you, 10
+    October)." is "X, as you told me on 10 October."."""
+    old = _OLD_CONFIRMED.match(line or "")
+    return f"{old['said']}, as you told me on {old['on']}." if old else line
 
 
 @dataclass
@@ -395,7 +407,7 @@ def memory(session) -> Memory:  # noqa: ANN001
         except ValueError:
             continue
         if payload.get("key"):
-            confirmed[payload["key"]] = {"line": row.text, "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or []}
+            confirmed[payload["key"]] = {"line": _said_now(row.text), "id": row.id, "measured": payload.get("measured", ""), "note_ids": payload.get("note_ids") or []}
     return Memory(frozenset(dismissed - set(confirmed)), confirmed)
 
 

@@ -273,15 +273,20 @@ _ASKS_CURRENT = re.compile(
 #: referred based on context or perceived user speech patterns or emotion").
 #: The register is the question's; the distance is the day's from today:
 #: "close" is today or yesterday (said relatively only, in every register),
-#: "near" within five weeks, "far" within six months, "distant" beyond (by
-#: its month). One table, never a branch per case (composer-1031).
+#: "week" two to six days back (by its weekday), "near" within five weeks,
+#: "far" within six months, "distant" beyond. INBOX 1483 (the owner: "it
+#: sounds wierd and not natural"): the relative time leads and the date
+#: follows only where it helps ("three weeks ago, on 8 October", "back in
+#: July", "last Tuesday"), never a bracketed "(three weeks ago)" after a
+#: date; "when did I" keeps the date first, said as a person would ("on 8
+#: October, about three weeks ago"). One table, never a branch per case.
 _REGISTER: ContextVar[str] = ContextVar("digest_register", default="plain")
 _SAY_WHEN: dict[str, dict[str, str]] = {
-    "plain": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})", "distant": "back in {month}"},
-    "casual": {"close": "{rel}", "near": "{rel}", "far": "back in {month}", "distant": "back in {month}"},
-    "exact": {"close": "{rel}", "near": "{on} ({rel})", "far": "{on} ({rel})", "distant": "{on} ({rel})"},
+    "plain": {"close": "{rel}", "week": "{weekday}", "near": "{rel}, {on}", "far": "back in {month}", "distant": "back in {month}"},
+    "casual": {"close": "{rel}", "week": "{weekday}", "near": "{rel}", "far": "back in {month}", "distant": "back in {month}"},
+    "exact": {"close": "{rel}", "week": "{on_weekday}", "near": "{on}, {about}", "far": "{on}, {about}", "distant": "{on}, {about}"},
     #: "How long ago did I ...": the distance first, then the date.
-    "ago": {"close": "{rel}", "near": "{rel}, {on}", "far": "{rel}, {on}", "distant": "{rel}, {on}"},
+    "ago": {"close": "{rel}", "week": "{rel}, {on_weekday}", "near": "{rel}, {on}", "far": "{rel}, {on}", "distant": "{rel}, {on}"},
 }
 #: "When did I ...", "what date ...": the exact date first, every time.
 _EXACT = re.compile(r"^\W*(?:when (?:did|was|were|have|had|is|are)|what (?:date|day)|which (?:date|day))\b", re.I)
@@ -342,6 +347,20 @@ def _ago(day: date, today: date) -> str:
     return "a year ago" if years <= 1 else f"{realise.count_word(years)} years ago"
 
 
+def _about_ago(gap: int) -> str:
+    """How far back, rounded as a person rounds after "about": 86 days is
+    "about three months ago", never "about two months ago" (`_ago` counts
+    whole units gone, for a phrase said without "about")."""
+    if gap < 35:
+        weeks = max(round(gap / 7), 1)
+        return "about a week ago" if weeks == 1 else f"about {realise.count_word(weeks)} weeks ago"
+    months = round(gap / 30.44)
+    if months < 12:
+        return "about a month ago" if months <= 1 else f"about {realise.count_word(months)} months ago"
+    years = round(gap / 365.25)
+    return "about a year ago" if years <= 1 else f"about {realise.count_word(years)} years ago"
+
+
 def _week_first() -> int:
     """The person's first day of the week (0 Monday), from the settings the
     app has loaded; Monday with none (a unit test, a prompt before start)."""
@@ -360,14 +379,22 @@ def _when_gone(on: str, start: date, today: date, week: bool = False) -> str:
     last_week = week and this_monday - timedelta(days=7) <= start < this_monday
     rel = "last week" if last_week else _ago(start, today)
     exact = _REGISTER.get() == "exact"
-    #: Last week is close, said as "last week", except to "when did I":
-    #: only today and yesterday go without their date there.
-    distance = "close" if gap <= 1 or (last_week and not exact) else "near" if gap < 35 else "far" if gap < 183 else "distant"
     echoed = _echoed(start, today)
     if echoed and not exact:
         return echoed
+    if echoed:
+        #: "When did I ... last week": the date, then their own words.
+        return f"{on}, {echoed}" if gap > 1 else rel
+    #: Last week is close, said as "last week", except to "when did I":
+    #: only today and yesterday go without their date there.
+    distance = ("close" if gap <= 1 or (last_week and not exact) else "week" if gap < 7 and not week
+                else "near" if gap < 35 else "far" if gap < 183 else "distant")
+    name = _DAY_NAMES[start.weekday()]
+    weekday = f"on {name}" if start >= this_monday else f"last {name}"
     month = composer._MONTHS[start.month - 1] + ("" if start.year == today.year else f" {start.year}")
-    return _SAY_WHEN[_REGISTER.get()][distance].format(on=on, rel=echoed or rel, month=month)
+    about = _about_ago(gap) if rel.endswith(" ago") else rel
+    return _SAY_WHEN[_REGISTER.get()][distance].format(
+        on=on, rel=rel, month=month, weekday=weekday, on_weekday=f"on {name} {_day(start, today)}", about=about)
 
 
 #: A phrase's date clause, marked ‹...› whole: kept when the question is
@@ -725,7 +752,9 @@ def _from_source(view, fact: str, today: date) -> str:  # noqa: ANN001
     if noun and view.title:
         return f"{fact}, from your {noun} **{view.title}**."
     if view.written is None or not _TIMED.get() and not getattr(view, "titled", False):
-        return f"{fact}, from one of your notes."
+        #: The citation mark says which note (INBOX 1483: "chill :D,¹ from
+        #: one of your notes" read as a tail on the person's own words).
+        return f"{fact}."
     #: Not again when the fact already says the day it was written.
     when = f", written on {_day(view.written, today)}" if _TIMED.get() and f"on {_day(view.written, today)}" not in fact else ""
     if not getattr(view, "titled", False):
@@ -1048,7 +1077,7 @@ def _pin(text: str, written: date) -> str:
 
 #: A weekday said alone ("moved to Friday", "on Monday", "next Tuesday"):
 #: the note's week tells which, so it is said with its date once read.
-_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|(?:mornings|afternoons|evenings|nights)\b|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
+_WEEK_SAID = re.compile(r"\s*,?\s*(?:(?:in )?the week of|back in|[\w-]+ (?:weeks?|months?|years?) ago|(?:mornings|afternoons|evenings|nights)\b|(?:next|this|last) week|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b)", re.I)
 _WEEKDAY_ALONE = re.compile(r"^(?P<pre>on )?(?:(?:this|next|last) )?(?P<day>(?:mon|tues|wednes|thurs|fri|satur|sun)day)$", re.I)
 
 
@@ -1068,6 +1097,10 @@ def _pin_weekdays(text: str, written: date, today: date, gone: list[str]) -> str
         #: "Thursday next week", "Friday 11 September": its week or date is said already.
         if not alone or _WEEK_SAID.match(text[found.end:]):
             continue
+        #: "On Tuesday", said by `_when_gone` for a "today" of this week, is
+        #: the note's day already, never read again as another week's.
+        if any(found.text.lower() in g.lower() for g in gone):
+            continue
         day = found.value.date() if isinstance(found.value, datetime) else found.value
         said = f"{alone.group('pre') or ''}{alone.group('day').capitalize()} {_day(day, today)}"
         if day < today:
@@ -1082,15 +1115,21 @@ _COPULA_PAST = {"is": "was", "are": "were", "am": "was", "'s": " was", "'re": " 
 def _said_gone(text: str, gone: list[str]) -> str:
     """A sentence about a time gone by in the past tense ("your uni days ...
     were Tuesday and Thursday"), its one time said first when the sentence
-    is the person's own ("In the week of 13 July (three months ago), your
-    uni days were ..."), as the owner wrote it (INBOX 1461)."""
+    is the person's own ("Back in July, your uni days were ...", "Three
+    weeks ago, on 8 October, you missed the bus"), as the owner wrote it
+    (INBOX 1461, 1483)."""
     if not gone:
         return text
     text = re.sub(r"\b(is|are|am)\b", lambda m: _COPULA_PAST[m.group(1).lower()], text)
     phrase = gone[0]
-    if len(gone) == 1 and phrase.startswith(("on ", "in ", "back in ")) and re.match(r"(?:you|your)\b", text, re.I) and phrase in text:
+    if len(gone) == 1 and re.match(r"(?:you|your)\b", text, re.I) and phrase in text:
         rest = re.sub(r"\s{2,}", " ", text.replace(f" {phrase}", "", 1)).strip(" ,")
         return f"{phrase}, {rest[:1].lower()}{rest[1:]}"
+    for phrase in gone:
+        if ", " in phrase:
+            #: An aside closes before the words go on: "three weeks ago, on
+            #: 8 October, for prototyping".
+            text = re.sub(rf"{re.escape(phrase)}(?= \w)", f"{phrase},", text, count=1)
     return text
 
 
@@ -1124,6 +1163,9 @@ _UNDATED = date(2000, 1, 1)
 #: in the past ("just bought"), never "just two left", which is "only".
 _LAUGHED = re.compile(r"(?<![\s,])[\s,]*\b(?:(?:ha|he){2,}h?|lo+l+|lmf?a+o+|rofl|xd+)\b[.!]*", re.I)
 _EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u200D]+")
+#: A typed face is an emoji too (INBOX 1483: "so it was chill :D,¹"), never
+#: a time ("10:30") or a link ("https://"): it stands alone between spaces.
+_FACE = re.compile(r"\s+(?:[:;=][-']?[)(DPpOo3/\\|\]\[]+|<3+|\^_?\^)(?=$|\s|[.,!?])")
 _JUST = re.compile(
     r"\b(?:just|literally|finally just)\s+(?=(?:\w+ed|bought|got|went|made|found|sold|paid|spent|won|lost|had|took|saw|met|"
     r"left|came|ran|did|began|set|put|read|heard|told|gave|sent|built|broke|fell|felt|kept|wrote)\b)",
@@ -1132,7 +1174,7 @@ _JUST = re.compile(
 
 
 def _unfilled(text: str) -> str:
-    text = _EMOJI.sub("", _LAUGHED.sub("", text))
+    text = _FACE.sub("", _EMOJI.sub("", _LAUGHED.sub("", text)))
     return re.sub(r"\s{2,}", " ", _JUST.sub("", text)).strip()
 
 
@@ -1591,7 +1633,11 @@ def _recent(written: date | None, today: date | None) -> str:
 
 #: A day's shorthand that opens on a thing ("golf practice after work"), not
 #: on the person, a place ("at Mia's barbecue") or a time.
-_SHORTHAND = re.compile(r"^(?!(?:you|your|at|in|on|with|after|before|from|for|during|to|by|this|last|next|the day)\b)[a-z]", re.I)
+#: A day said first by `_when_gone` ("back in July, ...", "three weeks
+#: ago, on 8 October, ...", "yesterday, ...") leads a clause, never a fragment.
+_SHORTHAND = re.compile(
+    r"^(?!(?:you|your|at|in|on|with|after|before|from|for|during|to|by|this|last|next|the day|back in|yesterday,|"
+    r"[\w-]+ (?:days?|weeks?|months?|years?) ago)\b)[a-z]", re.I)
 
 
 _HERE_ARE = re.compile(r"^here(?:'s| is| are)\s+((?:some|a few|a list of|a|an)\s+)?", re.I)
@@ -1916,7 +1962,8 @@ _PLACE_NOUN = re.compile(r"^(library|gym|pool|office|park|bus|train|cafe|range|s
 
 _LIFT = re.compile(r"^(squats?|bench(?: press(?:es)?)?|deadlifts?|rows?|overhead press(?:es)?|presses|curls?|lunges?)\s+(up to\s+)?(\d.+)$", re.I)
 _LIFTED = {"squat": "squatted", "bench": "benched", "deadlift": "deadlifted", "row": "rowed", "overhead": "overhead pressed", "press": "pressed", "curl": "curled", "lunge": "lunged"}
-_BODY_PART = re.compile(r"^(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
+#: "Back in July, ..." is a day said first (INBOX 1483), not how a back felt.
+_BODY_PART = re.compile(r"^(?!back in\b)(knees?|back|shoulders?|legs?|arms?|ankles?|hips?|wrists?|neck|feet|foot|hamstrings?|calves|elbows?)\b", re.I)
 _PLANNED_FOR = re.compile(r"^\s*(\S+(?:\s+\S+)*?)\s+(planned|booked|set|moved|pencilled in)\s+(for|to)\s+(.+)$", re.I)
 _WEEKDAY_WORD = re.compile(r"\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b")
 
@@ -2183,7 +2230,8 @@ def _a_sentence(body: str) -> bool:
 
 
 _MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december")
-_FOR_MONTH = re.compile(r"\b(?:for|in|by|until) (" + "|".join(m.capitalize() for m in _MONTHS) + r")\b")
+#: Not "back in July", a month gone by (INBOX 1483).
+_FOR_MONTH = re.compile(r"\b(?<![Bb]ack )(?:for|in|by|until) (" + "|".join(m.capitalize() for m in _MONTHS) + r")\b")
 
 
 #: What a price is per: two prices on different periods ("$1,200 a month",
@@ -3124,11 +3172,14 @@ def _event_lead(out: _Out, lead: Fact, today: date) -> bool:
     body = re.sub(r"(\w) ((?:discounted|reduced|marked down|down|on sale) from\b)", r"\1, \2", body)
     if len(body.split()) < 2:
         return False
-    said = _day(day, today)
-    out.lines.append(f"On {said} you {body}.")
+    said = f"on {_day(day, today)}"
+    #: Said as a person would (INBOX 1483): "On 8 October, about three weeks
+    #: ago, you ...", "Yesterday, you ...", never a bare date to "when did I".
+    when = _when_gone(said, day, today) if today and day < today else said
+    out.lines.append(f"{when[:1].upper()}{when[1:]}, you {body}.")
     row = _row(out.lines[-1], lead)
-    #: The mark sits after the day it vouches for ("On 17 July[1] you ...").
-    row["anchor"] = f"On {said}"
+    #: The mark sits after the day it vouches for ("On 17 July[1], you ...").
+    row["anchor"] = out.lines[-1].split(",", 1)[0]
     out.rows.append(row)
     return True
 
@@ -4478,8 +4529,7 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
     members = [v for v in views if v.id in cited]
     topic = _topic(question, members) if members else ""
     if topic and topic != "this" and len(topic) <= 40:
-        #: The subject as the person typed it, with its "the" ("the dentist").
-        topic = f"the {topic}" if re.search(rf"\bthe {re.escape(topic)}\b", question, re.I) else topic
+        topic = _chip_subject(topic, question)
         said += [q.format(t=topic) for q in _NEXT_ABOUT.get(kind, _NEXT_ABOUT["fact"])]
     seen = {_ask_key(question)}
     out = []
@@ -4488,6 +4538,46 @@ def _next_asks(kind: str, question: str, rows: list[dict]) -> list[str]:
             seen.add(_ask_key(q))
             out.append(q)
     return out[:3]
+
+
+#: Nouns for a person, said with "my" in a chip when the question gave
+#: none ("uni friend" is "my uni friend").
+_PERSON_NOUNS = frozenset(
+    "friend mate mum mom dad brother sister partner boss teacher tutor girlfriend boyfriend wife husband flatmate "
+    "roommate housemate cousin aunt uncle son daughter colleague coworker mentor therapist coach grandma grandpa nan".split())
+_CHIP_WORD = re.compile(r"[\w'&-]+")
+
+
+def _chip_subject(topic: str, question: str) -> str:
+    """The subject a chip asks about, in the person's own words (INBOX 1483:
+    "What's the latest on university friend?" for "my uni friend"): the
+    words they typed for it, with their "my" or "the", never the search's
+    expansion ("university" for "uni") or the verb they did ("miss bus" for
+    "did I miss the bus" is "the bus"). A chip is the person speaking, so
+    their "my" stays "my"."""
+    asked = _CHIP_WORD.findall(question)
+    lower = [w.lower() for w in asked]
+    wanted = topic.lower().split()
+
+    def means(term: str, word: str) -> bool:
+        return word == term or composer._stem(word) == composer._stem(term) or term in composer.subject_terms(word)  # noqa: SLF001
+
+    hits = [i for i, w in enumerate(lower) if any(means(t, w) for t in wanted)]
+    if not hits or not all(any(means(t, lower[i]) for i in hits) for t in wanted):
+        return topic
+    #: "did I miss the bus": what they did is not what it is about.
+    while len(hits) > 1 and lower[hits[0] - 1 : hits[0]] == ["i"]:
+        hits = hits[1:]
+    first, last = hits[0], hits[-1]
+    if last - first > 4:
+        return topic
+    cased = {w.lower(): w for w in topic.split()}
+    span = " ".join(cased.get(w.lower(), w) for w in asked[first : last + 1])
+    before = lower[first - 1] if first else ""
+    owner = {"my": "my", "your": "my", "our": "our", "the": "the"}.get(before, "")
+    if not owner and lower[last] in _PERSON_NOUNS:
+        owner = "my"
+    return f"{owner} {span}".strip()
 
 
 #: Questions about the subject asked, by the answer's shape: what an answer

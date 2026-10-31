@@ -268,8 +268,10 @@ def test_hashtags_and_today_are_tidied():
     text = composer_digest.answer("what have I saved about pottery?", _pottery(), today=TODAY)["text"]
     assert "#" not in text
     #: A note's own "today" is said against the day it was written, as the
-    #: date and how far back (INBOX 1461, newer than 1441's undated line).
-    assert "today" not in text and "2 September (a month ago), you trimmed your first bowl." in text
+    #: date and how far back (INBOX 1461, newer than 1441's undated line);
+    #: since INBOX 1483 a day five weeks back is said by its month, never
+    #: "2 September (a month ago)".
+    assert "today" not in text and "Back in September, you trimmed your first bowl." in text, text
 
 
 @pytest.mark.parametrize(("question", "subject"), [
@@ -293,7 +295,8 @@ def test_the_owners_when_question_leads_with_the_day():
     answered with the note as written, then its day."""
     item = next(a for a in FIXTURE["answers"] if a["n"] == 21)
     result = _answer(item)
-    assert result["text"] == "On 17 July you bought a gaming mouse, discounted from $150 to $68."
+    #: The date first, then how far back in words (INBOX 1483).
+    assert result["text"] == "On 17 July, about three months ago, you bought a gaming mouse, discounted from $150 to $68."
     row = result["grounding"][0]
     #: The mark sits after the day: "On 17 July[1] you bought ...".
     assert row["anchor"] == "On 17 July" and row["source"].startswith("You just bought")
@@ -302,11 +305,13 @@ def test_the_owners_when_question_leads_with_the_day():
 @pytest.mark.parametrize(
     ("question", "note", "said"),
     [
-        ("when did I buy the kindle", "I just bought a new Kindle yesterday lol \U0001F602", "On 16 July you bought a Kindle."),
-        ("when did I run the 5k", "Finally finished the 5k run today!!", "On 17 July you finally finished the 5k run."),
-        ("when did i see Sam", "Saw Sam at the cafe \U0001F642", "On 17 July you saw Sam at the cafe."),
-        ("when did I book flights", "I've just booked flights to Lisbon haha", "On 17 July you booked flights to Lisbon."),
-        ("when did I get my phone??", "Got a new iPhone lmao", "On 17 July you got an iPhone."),
+        #: "On 17 July, about three months ago, you ...": INBOX 1483 moved
+        #: the bare date to the date and how far back, as a person says it.
+        ("when did I buy the kindle", "I just bought a new Kindle yesterday lol \U0001F602", "On 16 July, about three months ago, you bought a Kindle."),
+        ("when did I run the 5k", "Finally finished the 5k run today!!", "On 17 July, about three months ago, you finally finished the 5k run."),
+        ("when did i see Sam", "Saw Sam at the cafe \U0001F642", "On 17 July, about three months ago, you saw Sam at the cafe."),
+        ("when did I book flights", "I've just booked flights to Lisbon haha", "On 17 July, about three months ago, you booked flights to Lisbon."),
+        ("when did I get my phone??", "Got a new iPhone lmao", "On 17 July, about three months ago, you got an iPhone."),
     ],
 )
 def test_a_when_question_says_the_day_then_what_happened_without_the_asides(question, note, said):

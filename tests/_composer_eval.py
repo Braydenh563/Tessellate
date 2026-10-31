@@ -193,8 +193,8 @@ def trace_failures(result: dict, question: str, notes: list[dict], on: date, ask
                 failures.append(f"not how the question reads: {text!r}")
         elif kind == "confirmed":
             #: The person's own word on an insight (decision 60): its source
-            #: is in the line, "confirmed by you, <date>".
-            if "(confirmed by you, " not in text:
+            #: is in the line, ", as you told me on <date>." (INBOX 1483).
+            if ", as you told me on " not in text:
                 failures.append(f"a confirmed line with no source: {text!r}")
         elif kind == "computed":
             #: Worked out from the question alone (CHAT_PLAN decision 41): the

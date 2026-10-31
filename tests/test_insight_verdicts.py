@@ -34,7 +34,8 @@ def test_a_confirmed_insight_is_said_as_the_persons_word_never_hedged():
         result = composer.compose(question, GOLF, today=TODAY, learned=known)
         assert result["parts"][0] == ("confirmed", line), question
         assert "may be" not in result["text"] and "keeps coming up" not in result["text"], question
-    assert line == "Golf is a hobby of yours (confirmed by you, 6 October)."
+    #: Said as a person says it (INBOX 1483), never "(confirmed by you, 6 October)".
+    assert line == "Golf is a hobby of yours, as you told me on 6 October."
 
 
 def test_a_dismissed_insight_is_not_said_in_twenty_turns():
@@ -71,7 +72,7 @@ def test_confirm_on_the_route_answers_the_next_turn_as_a_fact(client, session):
     done = client.post("/insights/confirm", json=pattern)
     assert done.status_code == 201
     line = done.json()["line"]
-    assert line.startswith("Golf is a hobby of yours (confirmed by you, ")
+    assert line.startswith("Golf is a hobby of yours, as you told me on ")
     row = session.scalars(select(DerivedFact).where(DerivedFact.kind == "confirmed")).one()
     assert row.model == "you" and row.edited_by_user and row.original_text == pattern["text"]
     #: The Patterns line now says it as confirmed, with no buttons.

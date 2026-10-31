@@ -510,7 +510,7 @@ class InsightVerdict(BaseModel):
 @router.post("/confirm", status_code=201)
 def confirm_insight(body: InsightVerdict, session: Session = Depends(get_session)) -> dict:
     """Confirm: the insight is written as a fact the person vouched for,
-    "confirmed by you, <date>", and said that way from the next turn on."""
+    "..., as you told me on <date>.", and said that way from the next turn on."""
     from tessellate.ai import insights
 
     try:

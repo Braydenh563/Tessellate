@@ -2965,8 +2965,8 @@ def _said_insight(out: _Answer, insight) -> None:  # noqa: ANN001
 
 def _confirmed_lead(out: _Answer, question: str, terms: list[str]) -> bool:
     """A question about a subject the person confirmed an insight on opens
-    with their word, as a fact (decision 60): "Golf is a hobby of yours
-    (confirmed by you, 10 October)." False when none matches."""
+    with their word, as a fact (decision 60): "Golf is a hobby of yours,
+    as you told me on 10 October." False when none matches."""
     known = _LEARNED.get()
     if not known or not known.confirmed:
         return False
