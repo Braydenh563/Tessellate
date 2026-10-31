@@ -26,7 +26,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from tessellate.core import jobs
+from tessellate.core import jobs, paths
 
 logger = logging.getLogger("tessellate.docreader")
 
@@ -46,7 +46,6 @@ def read_document_and_store(attachment_id: int) -> str | None:
     on a thread, exactly as `caption_and_store` is split from
     `caption_in_background`.
     """
-    import os
 
     from tessellate.ai import captioning
     from tessellate.core import deps, docview
@@ -62,18 +61,15 @@ def read_document_and_store(attachment_id: int) -> str | None:
         # file from paying for a model call to produce what is already there.
         if row.ocr_text and row.caption:
             return row.caption
-        #: The same containment check `routes_files._within_dir` makes, in
-        #: the shape CodeQL's `Path::SafeAccessCheck` recognises: a
-        #: `stored_name` reaches here through a database round trip, which
-        #: that analysis tracks as tainted regardless. A name that escapes the
-        #: uploads directory is a bug or an attack, and a background pass is
-        #: not the place to act on either, so it declines and says so once.
-        base = os.path.realpath(str(deps.get_config().uploads_dir))
-        candidate = os.path.realpath(os.path.join(base, row.stored_name or ""))
-        if not candidate.startswith(base):
+        #: A `stored_name` reaches here through a database round trip. A name
+        #: that escapes the uploads directory is a bug or an attack, and a
+        #: background pass is not the place to act on either, so it declines
+        #: and says so once.
+        try:
+            path = paths.contained(deps.get_config().uploads_dir, row.stored_name or "")
+        except paths.OutsideFolder:
             logger.warning("refusing to read an attachment outside the uploads directory")
             return None
-        path = Path(candidate)
         if not path.is_file():
             return None
 

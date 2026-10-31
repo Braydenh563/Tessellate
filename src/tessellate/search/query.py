@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from tessellate.ai import recognise
+from tessellate.core import clock
 
 #: The filter keys `understand()` always returns, so every caller can index
 #: the dict rather than `.get()` it. Named here rather than inline because
@@ -492,7 +493,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     text = (question or "").strip()
     if not text:
         return Understood(subject="")
-    today = (now.date() if isinstance(now, datetime) else now) or date.today()
+    today = (now.date() if isinstance(now, datetime) else now) or clock.today()
 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.

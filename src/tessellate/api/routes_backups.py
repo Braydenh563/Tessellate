@@ -218,7 +218,9 @@ def restore_backup(body: RestoreBody, request: Request) -> dict:
     return {"restored": body.name, "signed_out": True}
 
 
-@router.delete("/backups/{name}")
+#: `:path`, so a name with a slash reaches the handler and is "not found" as on
+#: every other spelling, not a 405 from no route (audit 1031 BK9).
+@router.delete("/backups/{name:path}")
 def delete_backup(name: str) -> dict:
     # Only a file inside backups/ dies; a name that reaches outside is "not found".
     path = backup.backup_path(name, deps.get_config().data_dir)

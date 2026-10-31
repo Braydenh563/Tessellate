@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import importlib
 import json
-import os
 import logging
 import re
 import threading
@@ -48,7 +47,7 @@ from tessellate.core.database import (
     utcnow,
     like_escape,
 )
-from tessellate.core import events
+from tessellate.core import events, paths
 from tessellate.core.lookahead import Ahead
 from tessellate.entry import link_facts, timewords
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
@@ -1537,11 +1536,10 @@ def _upload_path(uploads_dir: Path, stored_name: str) -> Path:
     already treats as "leave the file") when the name reaches outside the
     folder: a stored name comes from the database, and a restored database
     is not trusted (audit 1028 K7)."""
-    base = os.path.join(os.path.realpath(str(uploads_dir)), "")
-    candidate = os.path.realpath(os.path.join(base, stored_name))
-    if not candidate.startswith(base):
-        raise OSError("attachment path outside the uploads folder")
-    return Path(candidate)
+    try:
+        return paths.contained(uploads_dir, stored_name)
+    except paths.OutsideFolder:
+        raise OSError("attachment path outside the uploads folder") from None
 
 
 def delete_attachment(

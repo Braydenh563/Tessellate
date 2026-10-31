@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from tessellate.api.schemas import SpaceResponse, SpaceCreate, SpaceUpdate
-from tessellate.core import deps
+from tessellate.core import deps, paths
 from tessellate.core.database import Base, Category, Entry, Space, workspace_scoped_models
 from tessellate.core.deps import get_session, impersonate_workspace
 from tessellate.entry.cleantext import clean_name, is_blank, name_key
@@ -27,17 +27,12 @@ _ICON_RE = re.compile(r"^ph-[a-z0-9-]{1,40}$")
 
 _MAX_NAME_LEN = 60
 
-def _slugify(name: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-")
-    return slug[:49] or "space"
-
-
 def _generate_space_id(name: str, session: Session) -> str:
     """Server-generated id: slugify(name), de-duplicated with a numeric
     suffix. Chosen over validating a client-supplied id because the
     reserved-sentinel and charset rules a client id would need are exactly
     the rules a generated-and-deduped slug satisfies for free."""
-    base = _slugify(name)
+    base = paths.slug(name, 49, ascii_only=True, fallback="space")
     existing = {row[0] for row in session.query(Space.id).all()}
     candidate = base
     n = 2

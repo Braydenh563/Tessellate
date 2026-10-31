@@ -981,6 +981,15 @@ def _register_error_handlers(app: FastAPI) -> None:
         """A number beyond what the store holds (an id or offset above 2^63)
         names nothing: a refused request, not a server fault (audit 1030 A41)."""
         error_logger.info("a number was too large: %s", exc)
+        #: An id in the address that no row can have names nothing, the same
+        #: answer `/entries/-1` gives (audit 1031 BK9); only a number the
+        #: person typed into a field is a refused request.
+        raw = [str(v) for v in (_request.scope.get("path_params") or {}).values()]
+        if any(v.lstrip("-").isdigit() and abs(int(v)) >= 2**63 for v in raw):
+            return JSONResponse(
+                status_code=404,
+                content={"detail": "That could not be found.", "code": "not_found", "hint": None},
+            )
         return JSONResponse(
             status_code=422,
             content={"detail": "That number is too large.", "code": "invalid", "hint": None, "fields": []},

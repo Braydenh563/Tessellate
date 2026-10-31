@@ -35,7 +35,7 @@ from tessellate import __version__
 from tessellate.ai import budget as run_budget
 from tessellate.ai import backend_hint, librarian, memory, presets, skill_composer, skills
 from tessellate.api.routes_categories import CATEGORY_PALETTE_KEYS
-from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, security
+from tessellate.core import backup, backup_bundle, deps, embedmodels, events, extras, jobruns, jobs, logbuffer, paths, security
 from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
 from tessellate.core.deps import get_session
@@ -2782,12 +2782,6 @@ def export_json(session: Session = Depends(get_session)) -> Response:
     )
 
 
-def _slug(text: str, length: int = 30) -> str:
-    """A filesystem-safe slice of a note's first words."""
-    cleaned = re.sub(r"[^\w\s-]", "", text)[:length].strip()
-    return re.sub(r"[\s]+", "-", cleaned) or "note"
-
-
 def build_markdown_export(session: Session, ids: list[int] | None = None) -> bytes:
     """The zip itself, as bytes, with nothing HTTP about it.
 
@@ -2817,7 +2811,7 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
             folder = (
                 "_recycle-bin"
                 if entry.is_deleted
-                else _slug(cat_name, 40)
+                else paths.slug(cat_name)
             )
             tags = manager.entry_tags(entry)
             front = [
@@ -2839,7 +2833,7 @@ def build_markdown_export(session: Session, ids: list[int] | None = None) -> byt
                 readable = readable[end:].lstrip("\n")
             front.append("---")
             body = "\n".join(front) + f"\n\n{readable}\n"
-            archive.writestr(f"{folder}/{entry.id}-{_slug(readable)}.md", body)
+            archive.writestr(f"{folder}/{entry.id}-{paths.slug(readable, 30)}.md", body)
     detail = "markdown" if ids is None else f"markdown, {len(entries)} selected"
     manager.log_action(session, "exported", "data", detail=detail)
     session.commit()

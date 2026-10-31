@@ -73,7 +73,7 @@ from tessellate.ai.grounding import (
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import chat_extra
 from tessellate.api.schemas import EntryOut
-from tessellate.core import activity, background, deps, docview, model_gate, private_turn
+from tessellate.core import activity, background, clock, deps, docview, model_gate, private_turn
 from tessellate.core.database import (
     LIKE_ESCAPE,
     Attachment,
@@ -3286,7 +3286,7 @@ def _reply_seed(req: _StreamRequest) -> tuple[list[str], str]:
     history = req.history or []
     recent = [str(turn.get("answer") or "") for turn in history[-phrasing.RECENT :]]
     salt = composer.Dialogue.from_history(history).salt
-    return recent, f"{salt}:{date.today().isoformat()}:{req.body.attempt}"
+    return recent, f"{salt}:{clock.today().isoformat()}:{req.body.attempt}"
 
 
 def _welcome(req: _StreamRequest, seed: str, recent: list[str]) -> str:

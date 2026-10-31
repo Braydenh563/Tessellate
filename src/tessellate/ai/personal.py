@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from tessellate.ai import realise
+from tessellate.core import clock
 
 _REL = (
     r"sister|brother|mum|mom|mother|dad|father|partner|wife|husband|boyfriend|girlfriend|son|daughter|"
@@ -176,7 +177,7 @@ def answer(question: str, notes: Callable[[], list[dict]] | list[dict], today: d
     if kind is None:
         return None
     held = facts(notes() if callable(notes) else notes)
-    today = today or date.today()
+    today = today or clock.today()
     said = _SAY[kind[0]](kind[1], held, today)
     return _result(*said) if said else None
 
