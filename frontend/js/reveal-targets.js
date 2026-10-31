@@ -201,12 +201,18 @@ const REVEAL_TARGETS = {
   "notes-questions": { tab: "notes", open: () => showNotesSection("questions"), el: "questions", flash: false },
   "library-bin": {
     tab: "library",
+    //: The bin itself, not the Library home with a box ticked (audit 1031
+    //: N49): the Bin kind is chosen, and the address says so (`#/library/bin`).
     open: () => {
       const box = $("library-show-binned");
       if (box && !box.checked) {
         box.checked = true;
         box.dispatchEvent(new Event("change", { bubbles: true }));
       }
+      libraryKind = "archived";
+      renderLibraryFilters();
+      renderLibrary();
+      recordTabVisit("library", "library-bin");
     },
     el: "library-filter-menu",
   },

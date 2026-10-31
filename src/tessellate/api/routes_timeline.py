@@ -32,7 +32,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import Select, String, and_, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import utilities
+from tessellate.core import cjk
 from tessellate.core.database import Document, Entry, EntryDate, EntryProperty, Reminder, Space, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import manager
@@ -341,7 +341,7 @@ def _place_documents(documents_found: list, placed: list[dict], scale: str, spac
             "parent_id": None,
             "pinned": False,
             "space": spaces.get(document.workspace_id, document.workspace_id),
-            "words": utilities.word_count(document.content),
+            "words": cjk.word_count(document.content),
             "links": 0,
             "preview": _clip(_first_line(document.content or "")),
             "title": document.title or "Untitled",

@@ -28,6 +28,7 @@ from tessellate.ai import backend_hint, extractor, filing_certainty, janitor, le
 from tessellate.ai import tensions as tensions_module
 from tessellate.ai.ollama_client import OllamaError
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers, safe_filename
 from tessellate.api.edit_conflicts import content_hash, entity_tag, refuse_if_stale, refuse_unless_match
 from tessellate.api.schemas import (
     AttachmentOut,
@@ -175,7 +176,7 @@ def _to_out(
             LinkOut(
                 link_id=link.id,
                 entry_id=other.id,
-                preview=_preview(manager.readable_content(other)),
+                preview=_connection_label(other, 60),
                 reason=link.reason,
                 reason_confidence=link.reason_confidence,
                 # The one fact the merged list could never carry. See
@@ -1223,7 +1224,7 @@ def filing_status(entry_id: int, session: Session = Depends(get_session)) -> dic
         if other is not None:
             similar = {
                 "id": other.id,
-                "preview": _preview(manager.readable_content(other)),
+                "preview": _connection_label(other, 60),
             }
     state = getattr(entry, "filing_state", "done") or "done"
     category = manager.category_name_for(session, entry)
@@ -2742,9 +2743,16 @@ def get_entry(
     entry_id: int,
     response: Response,
     deleted: bool = False,
+    open: bool = False,  # noqa: A002 - the query word is the contract
     session: Session = Depends(get_session),
 ) -> EntryOut:
     """One entry. `?deleted=true` also reaches into the bin.
+
+    **Only `?open=1` counts as an open** (audit 1031 N5). The graph hover card,
+    the swipe sheet, the chat agent and the image layout all read a note this
+    way without a person reading it, and each bumped "Views", the "most used"
+    sort and the Continue pill; a read is not an open unless the caller says
+    a person is looking at the note.
 
     The bin used to be a panel that listed every deleted note with its full
     text, so "read a binned note before deciding whether to restore it" came
@@ -2762,7 +2770,7 @@ def get_entry(
     entry = _existing_entry(session, entry_id)
     if entry.is_deleted and not deleted:
         raise HTTPException(status_code=404, detail="That note could not be found.")
-    if not entry.is_deleted:
+    if open and not entry.is_deleted:
         entry.access_count += 1  # opening an entry counts as using it
         #: And on which day (WORLD_CLASS_PLAN section 17 row 5): "most opened
         #: this month" cannot be read off an all-time count.
@@ -2775,6 +2783,7 @@ def get_entry(
         # pill pointing at whatever was newest. Same guard as the count: a
         # note read on its way out of the bin has not been come back to.
         entry.last_opened_at = utcnow()
+    if not entry.is_deleted:
         # A private note has no audit trail at all otherwise, encrypted at
         # rest and invisible to the AI is the whole promise, but nothing
         # recorded *when* one was actually opened and decrypted for
@@ -2809,19 +2818,6 @@ def _refuse_while_sealed(entry) -> None:  # noqa: ANN001
         raise HTTPException(status_code=409, detail="Unlock first.")
 
 
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands.
-
-    Same rule `routes_documents.py`'s own `_safe_filename` already enforces
-    for a document: not shared, because the two files don't otherwise
-    import from each other and a title-to-filename sanitiser is small
-    enough that a shared module for it would be the premature abstraction.
-    """
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "note"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
-
-
 @router.get("/{entry_id}/export.md")
 def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Response:
     """One note's own text, as a download, BACKLOG.md §95 item D.14: "Full
@@ -2847,9 +2843,7 @@ def export_entry(entry_id: int, session: Session = Depends(get_session)) -> Resp
     return Response(
         content=body,
         media_type="text/markdown; charset=utf-8",
-        headers={
-            "Content-Disposition": f'attachment; filename="{_safe_filename(title, "md")}"'
-        },
+        headers=attachment_headers(safe_filename(title, "md")),
     )
 
 
@@ -3844,7 +3838,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             # this: the *fact* of the connection is not secret, its content
             # is. Same rule as the Library's own file-usage chips.
             "preview": (
-                "Private note" if other.is_private else _connection_label(other)
+                _connection_label(other)
             ),
             "is_private": bool(other.is_private),
             **_connection_cue(session, other),
@@ -3893,7 +3887,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
             incoming.append({
                 "link_id": None,
                 "id": other.id,
-                "preview": "Private note" if other.is_private else _connection_label(other),
+                "preview": _connection_label(other),
                 "is_private": bool(other.is_private),
                 **_connection_cue(session, other),
                 "reason": "Links to it" if row["how"] == "links to it" else "Mentions it",
@@ -3921,7 +3915,7 @@ def entry_connections(entry_id: int, session: Session = Depends(get_session)) ->
         outgoing.append({
             "link_id": None,
             "id": other.id,
-            "preview": "Private note" if other.is_private else _connection_label(other),
+            "preview": _connection_label(other),
             "is_private": bool(other.is_private),
             **_connection_cue(session, other),
             "reason": "Links to it",
@@ -3995,16 +3989,20 @@ def _wiki_link_targets_of(session: Session, entry: Entry) -> list[Entry]:
     return found
 
 
-def _connection_label(entry) -> str:  # noqa: ANN001
-    """What one note is called on another note's Connections list.
+def _connection_label(entry, length: int = 80) -> str:  # noqa: ANN001
+    """What one note is called on another note's Connections list, its link
+    chips and the near-duplicate line: the one place a note is named from
+    outside itself, so the private-note rule (`manager.PRIVATE_LABEL`) lives
+    here and nowhere else.
 
     A note's own leading `# Heading` is what it calls itself, so that is the
     label when it wrote one, `_preview` alone hands back "# Connections probe
     B\noven temperatures", which renders on a single-line row as the hash, the
     title and the first line of the body run together.
     """
-    text = manager.readable_content(entry)
-    return manager.plain_label(text, 80)
+    if entry.is_private:
+        return manager.PRIVATE_LABEL
+    return manager.plain_label(manager.readable_content(entry), length)
 
 
 def _connected_files(session: Session, text: str) -> list[dict]:

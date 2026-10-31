@@ -37,7 +37,8 @@ def test_the_bar_is_one_line_in_the_notes_tab_above_the_list():
 def test_the_card_is_a_lazy_file_not_a_boot_script():
     assert "capture-card.js" in LAZY_PIECES
     assert "capture-card.js" not in {p.name for p in app_js_files()}
-    assert "/js/capture-card.js" in (JS / "notes-list.js").read_text(encoding="utf-8")
+    assert '"/js/capture-card.js"' in (JS / "lazy-entries.js").read_text(encoding="utf-8")
+    assert 'ensureModule("captureCard")' in (JS / "notes-list.js").read_text(encoding="utf-8")
     assert "<script src=\"/js/capture-card" not in INDEX  # fetched on first focus, never a <script>
 
 

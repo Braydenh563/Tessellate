@@ -51,7 +51,8 @@ def test_the_note_named_comes_before_the_notes_that_link_to_it():
     entries = [_note(20 - i, f"# Note {i}\n\nSee [[Alpha project]] for more.") for i in range(8)]
     entries.append(_note(1, "# Alpha project\n\nThe plan."))
     got = _run(entries, "Alph")
-    assert got[0] == "# Alpha project", got
+    #: The inserted text has no heading marker (audit 1031 N34); the ranking is what this pins.
+    assert got[0] == "Alpha project", got
     assert len(got) == 6
 
 
@@ -61,14 +62,14 @@ def test_an_opening_line_that_holds_the_words_beats_a_mention_in_the_body():
         _note(2, "# The alpha release\n\nNotes."),
         _note(1, "# Alpha plan\n\nNotes."),
     ]
-    assert _run(entries, "alpha") == ["# Alpha plan", "# The alpha release", "# Weekly review"]
+    assert _run(entries, "alpha") == ["Alpha plan", "The alpha release", "Weekly review"]
 
 
 def test_with_nothing_typed_the_list_keeps_its_own_order():
     entries = [_note(3, "# C"), _note(2, "# B"), _note(1, "# A")]
-    assert _run(entries, "") == ["# C", "# B", "# A"]
+    assert _run(entries, "") == ["C", "B", "A"]
 
 
 def test_private_notes_are_still_never_offered():
     entries = [{"id": 1, "content": "# Alpha secret", "is_private": True}, _note(2, "# Alpha open")]
-    assert _run(entries, "alpha") == ["# Alpha open"]
+    assert _run(entries, "alpha") == ["Alpha open"]

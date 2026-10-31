@@ -50,6 +50,7 @@ from sqlalchemy import event, or_, select, text
 from sqlalchemy.orm import Session
 
 from tessellate.ai import variants
+from tessellate.core import cjk
 from tessellate.core.database import Attachment, EmbeddingRecord, Entry, EntryLink, Reminder
 from tessellate.entry.highlights import has_highlight
 from tessellate.entry.properties import strip as strip_properties
@@ -779,6 +780,7 @@ def _narrow(
     until,  # noqa: ANN001
     flags: list[str] | tuple[str, ...],
     tags: list[str] | tuple[str, ...],
+    substrings: list[str] | tuple[str, ...] = (),
 ) -> None:
     """The filters every raw index query shares, applied in SQL.
 
@@ -815,6 +817,12 @@ def _narrow(
     for index, tag in enumerate(tags):
         sql.append(f"AND instr(lower(tags), :tag{index}) > 0")
         params[f"tag{index}"] = tag.lower()
+    #: A word of an unsegmented script (Japanese, Chinese) is one token to the
+    #: tokenizer, so it is found as a substring of the row's own text instead
+    #: (notes audit 1031 N2). No index to grow; measured 9.5 ms over 5,000 notes.
+    for index, piece in enumerate(substrings):
+        sql.append(f"AND instr(lower(title || ' ' || body || ' ' || tags), :sub{index}) > 0")
+        params[f"sub{index}"] = piece.lower()
 
 
 def _candidates(
@@ -827,6 +835,7 @@ def _candidates(
     depth: int,
     flags: list[str] | tuple[str, ...] = (),
     tags: list[str] | tuple[str, ...] = (),
+    substrings: list[str] | tuple[str, ...] = (),
 ) -> list[dict]:
     """The keyword pass: one query, every kind, filters applied in SQL.
 
@@ -841,7 +850,7 @@ def _candidates(
         "FROM search_index WHERE search_index MATCH :expr"
     ]
     params: dict = {"expr": expression, "depth": depth}
-    _narrow(sql, params, kinds, space, since, until, flags, tags)
+    _narrow(sql, params, kinds, space, since, until, flags, tags, substrings)
     sql.append("ORDER BY score LIMIT :depth")
     rows = session.execute(text(" ".join(sql)), params).mappings().all()
     return [dict(row) for row in rows]
@@ -856,6 +865,7 @@ def _filter_only(
     depth: int,
     tags: list[str] | tuple[str, ...] = (),
     flags: list[str] | tuple[str, ...] = (),
+    substrings: list[str] | tuple[str, ...] = (),
 ) -> list[dict]:
     """The rows a query with no words at all asks for.
 
@@ -870,7 +880,7 @@ def _filter_only(
         "0.0 AS score FROM search_index WHERE 1 = 1"
     ]
     params: dict = {"depth": depth}
-    _narrow(sql, params, kinds, space, since, until, flags, tags)
+    _narrow(sql, params, kinds, space, since, until, flags, tags, substrings)
     sql.append("ORDER BY written DESC, rowid DESC LIMIT :depth")
     rows = session.execute(text(" ".join(sql)), params).mappings().all()
     return [dict(row) for row in rows]
@@ -892,15 +902,20 @@ def _keyword_pass(
     space: str | tuple[str, ...] | None,
     depth: int,
 ) -> list[dict]:
+    #: Words of an unsegmented script cannot be tokenised, so they are matched
+    #: as substrings beside the MATCH for the rest (notes audit 1031 N2).
+    plain = [term for term in terms if not cjk.has(term)]
+    phrases = [phrase for phrase in asked.phrases if not cjk.has(phrase)]
+    substrings = [term for term in terms if cjk.has(term)] + [p.strip() for p in asked.phrases if cjk.has(p)]
+    wanted_is, _has = _flag_filters(asked)
     for mode in ("all", "prefix", "any"):
-        expression = _match_expression(terms, asked.phrases, asked.excluded, mode, _title_terms(asked))
+        expression = _match_expression(plain, phrases, asked.excluded, mode, _title_terms(asked))
         if not expression:
-            return []
-        wanted_is, _has = _flag_filters(asked)
+            return _substring_rows(session, asked, substrings, kinds, space, depth, wanted_is) if substrings else []
         try:
             rows = _candidates(
                 session, expression, kinds, space, asked.since, asked.until, depth,
-                flags=wanted_is, tags=asked.filters["tag"],
+                flags=wanted_is, tags=asked.filters["tag"], substrings=substrings,
             )
         except Exception:  # noqa: BLE001  # a malformed MATCH is a typed query, not a bug
             # The expression is built from what somebody typed, so it stays
@@ -912,6 +927,16 @@ def _keyword_pass(
         if rows:
             return rows
     return []
+
+
+def _substring_rows(session: Session, asked, substrings: list[str], kinds: list[str], space, depth: int, flags: list[str]) -> list[dict]:  # noqa: ANN001
+    """Rows whose text holds every unsegmented-script word, newest first; the
+    words to leave out are dropped here, as in the filter-only path."""
+    rows = _filter_only(
+        session, kinds, space, asked.since, asked.until, depth,
+        tags=asked.filters["tag"], flags=flags, substrings=substrings,
+    )
+    return [row for row in rows if not _mentions(row, asked.excluded)] if asked.excluded else rows
 
 
 def _hops_from(session: Session, root_id: int, wanted: set[int]) -> dict[int, int]:
@@ -987,7 +1012,19 @@ def _explain_words(weight: float, row: dict, terms: list[str]) -> tuple[float, s
     tags = (row.get("tags") or "").lower()
     if tags and any(term in tags for term in terms):
         return weight, "matched a tag"
-    return weight, "matched your words"
+    return weight, _where_in_body(row.get("body") or "", terms)
+
+
+def _where_in_body(body: str, terms: list[str]) -> str:
+    """Which part of a longer note carried the words (audit 1031 N19): a
+    title-less note's opening line is what the list shows as its name, so a
+    hit there says so; a one-line note has no "where" to say."""
+    lines = [line.lower() for line in body.splitlines() if line.strip()]
+    if len(lines) < 2 or not terms:
+        return "matched your words"
+    if any(term in lines[0] for term in terms):
+        return "matched the first line"
+    return "matched the text" if any(term in " ".join(lines[1:]) for term in terms) else "matched your words"
 
 
 def _explain(scores: dict[str, float], row: dict, terms: list[str], hop: int | None) -> list[str]:
@@ -1153,9 +1190,52 @@ def _plan_terms(q: str, asked) -> tuple:  # noqa: ANN001
     return subject, terms
 
 
+def _in_scope(session: Session, asked) -> tuple[str | None, list[str]]:  # noqa: ANN001
+    """What `in:`, `space:` and `cat:` name: (a space id or None, category names).
+
+    `in:Work` is a space when one has that id or name and a category when none
+    does, which is how the Notes filter box has always read it (audit 1031 N1);
+    `cat:` and `category:` are always a category.
+    """
+    names = list(asked.categories)
+    space = None
+    if asked.filters["space"]:
+        from tessellate.core.database import Space
+
+        known = {}
+        for space_id, name in session.execute(select(Space.id, Space.name)):
+            known[space_id.lower()] = space_id
+            known.setdefault(name.lower(), space_id)
+        for value in asked.filters["space"]:
+            found = known.get(value.lower())
+            if found is None:
+                names.append(value)
+            elif space is None:
+                space = found
+    return space, names
+
+
 def _search_space(session: Session, context: dict, asked) -> str | None:  # noqa: ANN001
-    space = context.get("space") or (asked.filters["space"][0] if asked.filters["space"] else None)
-    return space or _session_space(session)
+    return context.get("space") or _in_scope(session, asked)[0] or _session_space(session)
+
+
+def _by_category(session: Session, rows: list, asked) -> list:  # noqa: ANN001
+    """Only the notes filed under a category `in:` or `cat:` named."""
+    wanted = {name.casefold() for name in _in_scope(session, asked)[1]}
+    if not wanted:
+        return rows
+    from tessellate.core.database import Category, Entry
+
+    ids = [row["ref_id"] for row in rows if row["kind"] in search_index.ENTRY_KINDS]
+    filed = {}
+    if ids:
+        filed = {
+            entry_id: str(name).casefold()
+            for entry_id, name in session.execute(
+                select(Entry.id, Category.name).join(Category, Category.id == Entry.category_id).where(Entry.id.in_(ids))
+            )
+        }
+    return [row for row in rows if row["kind"] in search_index.ENTRY_KINDS and filed.get(row["ref_id"]) in wanted]
 
 
 def _candidate_rows(session: Session, q: str, subject: str, terms: list, asked, wanted_kinds: list, space, hybrid: bool, limit: int, depth: int) -> tuple:  # noqa: ANN001
@@ -1228,7 +1308,7 @@ def _filter_rows(session: Session, rows: list, asked) -> list:  # noqa: ANN001
     rows = _by_flags_and_title(rows, asked, wanted_is)
     if wanted_has:
         rows = _having(session, rows, wanted_has)
-    return _without(_by_tags(rows, asked), asked)
+    return _without(_by_tags(_by_category(session, rows, asked), asked), asked)
 
 
 #: How a negated operator rules a row out, matched as the positive ones match.
@@ -1330,7 +1410,7 @@ def search(
     # be the search box answering a question nobody put. The Notes list is
     # already showing every note when the box is empty; a search that also
     # returns every note is not an answer, it is noise with a scrollbar.
-    if not (terms or asked.phrases or any(asked.filters.values()) or asked.has_range):
+    if not (terms or asked.phrases or any(asked.filters.values()) or asked.categories or asked.has_range):
         return []
     rows, terms = _candidate_rows(session, q, subject, terms, asked, wanted_kinds, space, hybrid, limit, depth)
     rows = _filter_rows(session, rows, asked) if rows else rows

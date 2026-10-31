@@ -442,6 +442,8 @@ function renderEditForm(li, entry) {
             });
             break;
           } catch (error) {
+            //: The server is gone (audit 1031 N47): the edit is kept on this device like a new note and goes in by itself.
+            if (error instanceof TypeError && (await holdNoteEdit(entry.id, { ...after, base_hash: base, ai_assisted: textarea.dataset.aiTouched === "1" }))) return;
             if (!isEditConflict(error)) throw error;
             const current = error.detail.current;
             const answer = await editConflictPrompt({ noun: "note", mine: after.content, theirs: current.content || "" });
@@ -466,6 +468,7 @@ function renderEditForm(li, entry) {
         toast("Note saved.");
         offerWikiRename(entry.id, await saved?.json?.().catch(() => null));
         await refreshEntries([entry.id]);
+        focusNoteRow(entry.id); // the Save button went with the form (audit 1031 N11)
         pushEntryPutUndo(entry.id, "Edited a note", before, after);
       },
       false
@@ -528,7 +531,7 @@ function renderEditForm(li, entry) {
   count.className = "char-count muted note-edit-count note-edit-counts";
   count.setAttribute("aria-live", "polite");
   const recount = () => {
-    const words = countWords(stripFrontmatter(`${titleInput.value}
+    const words = wordCount(stripFrontmatter(`${titleInput.value}
 ${textarea.value}`));
     const minutes = words / 220;
     const read = !words ? "" : minutes < 1 ? " · under a min" : ` · ${Math.round(minutes)} min read`;
@@ -591,6 +594,22 @@ ${textarea.value}`));
   textarea.addEventListener("input", () => renderEntryAttachmentChips(textarea, chipsHost));
   renderRelatedWhileEditing(li, entry);
   renderNoteBookmarksWhileEditing(li, entry);
+}
+
+//: Hold an edit the server could not take and close the form on it. False
+//: when it cannot be held (storage full or blocked), so the form stays and
+//: says what failed.
+async function holdNoteEdit(id, body) {
+  await ensureModule("quickNote");
+  if (!noteEditOutboxAdd(id, body)) return false;
+  editingId = null;
+  noteFormDirty = false;
+  noteFormDraft = null;
+  forgetNoteEditLocally();
+  toast("Saved on this device. The change goes into your notebook as soon as the server answers.");
+  renderEntries();
+  focusNoteRow(id);
+  return true;
 }
 
 // Moved from notes-list.js (boot gzip): the edit form's Cancel and Escape are its callers.

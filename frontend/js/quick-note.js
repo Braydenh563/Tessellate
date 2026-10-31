@@ -66,6 +66,22 @@ function noteOutboxAdd(body) {
   return held;
 }
 
+//: **An edit is held like a new note** (audit 1031 N47): the same list, the
+//: same retry, the same notice. One held edit per note: the newest words go
+//: out with the `base_hash` of the text the form first opened on, so a change
+//: made elsewhere meanwhile is still refused, not overwritten.
+function noteEditOutboxAdd(id, body) {
+  const list = noteOutbox();
+  const earlier = list.find((item) => item.edit_id === id);
+  const held = { ...body, edit_id: id, client_key: earlier?.client_key || `e-${newNoteClientKey()}`, queued_at: Date.now() };
+  if (earlier) held.base_hash = earlier.base_hash;
+  const next = list.filter((item) => item !== earlier);
+  next.push(held);
+  const written = writeNoteOutbox(next);
+  scheduleNoteOutboxFlush();
+  return written;
+}
+
 //: Save a note, or hold it when the server is gone. Answers `{ saved }` or
 //: `{ queued: true }`; a refusal (a 4xx, a 5xx) is thrown as it would be.
 async function createNoteSafely(body) {
@@ -96,8 +112,16 @@ function flushNoteOutbox() {
   noteOutboxFlushing = (async () => {
     let sent = 0;
     for (const item of noteOutbox()) {
-      const { queued_at: _queuedAt, ...payload } = item;
+      const { queued_at: _queuedAt, edit_id: editId, ...payload } = item;
       try {
+        if (editId) {
+          const { client_key: _key, ...edit } = payload;
+          await apiJson(`/entries/${editId}`, { method: "PUT", body: JSON.stringify(edit), silent: true });
+          writeNoteOutbox(noteOutbox().filter((held) => held.client_key !== item.client_key));
+          sent += 1;
+          refreshEntries([editId]).catch(() => {});
+          continue;
+        }
         const saved = await apiJson("/entries", { method: "POST", body: JSON.stringify(payload), silent: true });
         writeNoteOutbox(noteOutbox().filter((held) => held.client_key !== item.client_key));
         sent += 1;
@@ -113,7 +137,7 @@ function flushNoteOutbox() {
       }
     }
     if (sent) {
-      toast(sent === 1 ? "The note kept on this device is in your notebook now." : `The ${sent} notes kept on this device are in your notebook now.`);
+      toast(sent === 1 ? "What was kept on this device is in your notebook now." : `The ${sent} things kept on this device are in your notebook now.`);
       loadEntries().catch(() => {});
     }
     return sent;
@@ -137,14 +161,15 @@ function returnNoteToCapture(content, reason) {
 function renderNoteOutbox() {
   const notice = $("note-outbox-notice");
   if (!notice) return;
-  const count = noteOutbox().length;
+  const held = noteOutbox();
+  const count = held.length;
   notice.classList.toggle("hidden", !count);
   if (!count) return;
   const text = notice.querySelector(".note-outbox-text");
-  setLabel(
-    text,
-    `ph:cloud-slash ${count === 1 ? "1 note is" : `${count} notes are`} kept on this device until the server answers.`,
-  );
+  const edits = held.filter((item) => item.edit_id).length;
+  const notes = count - edits;
+  const parts = [notes && (notes === 1 ? "1 note" : `${notes} notes`), edits && (edits === 1 ? "1 edit" : `${edits} edits`)].filter(Boolean);
+  setLabel(text, `ph:cloud-slash ${parts.join(" and ")} ${count === 1 ? "is" : "are"} kept on this device until the server answers.`);
 }
 
 //: A held note is a pending row at the top of `#entry-list`, in the note
@@ -157,7 +182,7 @@ function renderPendingNoteRows() {
   if (!list) return;
   for (const old of list.querySelectorAll(":scope > li.pending-note")) old.remove();
   const filtered = noteSearch || activeCategory || draftsOnly || favouritesOnly;
-  const held = filtered ? [] : noteOutbox();
+  const held = filtered ? [] : noteOutbox().filter((item) => !item.edit_id);
   if (!held.length) return;
   const rows = document.createDocumentFragment();
   //: Newest first, as the list is.
@@ -261,11 +286,26 @@ function announceSavedNote(saved, reminded = "", opts = {}) {
   toastAction(said + reminded, "Open", () => flashEntry(saved.id), { go: { open: "entry", id: saved.id } });
   //: In the list now, not when filing settles: measured, 2 to 4 s later
   //: on every tab but the dashboard when this waited on the watch.
-  refreshEntries([saved.id]).catch(() => {});
+  refreshEntries([saved.id]).then(() => flashSavedRow(saved.id)).catch(() => {});
   if (pending) watchFiling(saved);
   pushEntryCreateUndo(saved, opts.undoLabel || "Created a note");
   //: After this tick: a pad or dialog closes on the save's return.
   setTimeout(() => focusOpener(opts.opener), 0);
+}
+
+//: **Where the note went** (audit 1031 N10): the new row lights for a moment
+//: where the list is on screen, and is brought into view only if it is not,
+//: so a note filed below the favourites is still seen arriving. The Notes
+//: tab, its filters and the person's place are left alone; the toast's Open
+//: is the full jump.
+function flashSavedRow(id) {
+  const card = document.querySelector(`#entry-list li[data-id="${id}"]`);
+  if (!card || card.getClientRects().length === 0) return;
+  card.scrollIntoView({ block: "nearest", behavior: "auto" });
+  card.classList.remove("flash");
+  void card.offsetWidth;
+  card.classList.add("flash");
+  setTimeout(() => card.classList.remove("flash"), 2700);
 }
 
 //: A pad or dialog that closed on a save hands focus back to what opened it;

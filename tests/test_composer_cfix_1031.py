@@ -427,13 +427,14 @@ def test_the_opening_count_and_the_times_line_agree(notebook, question):
 # INBOX 1495. A Japanese line is never "1 word"; a long line is named by a short form; the head's dot.
 
 @pytest.mark.parametrize(("text", "words"), [
-    ("", 0), ("hello", 1), ("two words", 2), ("今日は雨", 4), ("考え：仕事を済ませてから、練習", 15),
+    ("", 0), ("hello", 1), ("two words", 2), ("今日は雨", 4), ("考え：仕事を済ませてから、練習", 13),
     ("buy 牛乳 and 卵", 5), ("  spaced   out  ", 2), ("カタカナ", 4), ("한국어 단어", 2),
 ])
 def test_a_word_count_counts_cjk_by_character(text, words):
     from tessellate.ai import utilities
+    from tessellate.core import cjk
 
-    assert utilities.word_count(text) == words
+    assert cjk.word_count(text) == words
     assert utilities.counts(text)["words"] == words
 
 

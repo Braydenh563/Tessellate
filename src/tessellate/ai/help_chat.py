@@ -1135,7 +1135,7 @@ HELP_TOPICS.extend(
                 "through notes, documents, boards, mind maps, files, links, reminders, "
                 "chats and recordings (by title and by what was said) at once, by your words and by meaning; each result wears "
                 "its kind, and the chips narrow it to one. Operators: tag:work, "
-                "in:work for a space, kind:chat, before:2026-01, after:2025-06-30, "
+                "in:work for a space or category, cat:work, kind:chat, before:2026-01, after:2025-06-30, "
                 "has:image, is:pinned, title:budget for titles only, is:deleted to look in the bin "
                 "(otherwise left out), a \"quoted phrase\", and -word or -tag:work (also -kind:, -is:, -title:) to leave something "
                 "out. A filter it does not know is named under the box. Numbers match as typed. The star saves a search as a row in the Notes sidebar. A small typo that "

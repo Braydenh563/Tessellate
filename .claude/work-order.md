@@ -103,6 +103,13 @@ tier: max (three agents at once, one Opus or Fable); Fable only as the owner's n
 - [x] PR 211 Tests and CodeQL alerts (agent ci-1031)
 - [x] Fable composer audit merged (50 rows, audit-1031-composer.md)
 - [x] Fable notes audit merged (50 rows, audit-1031-notes.md)
-- [ ] Notes fixes: audit-1031-notes N rows (agent nfix-1031, resumed)
+- [x] Notes fixes round 1 merged (nfix-1031: N1, N16, N25, N26, N28, N42, N44 and earlier rows); left N11 rest, N17, N20, N21, N27 (owner), N45, N46
 - [ ] Fable full audit suite: ai, harness, shell, board, docs, code, graph, backend, ux, perf, architecture, ranked (one Fable agent, wt-a-suite)
 - [ ] Composer fixes: audit-1031-composer C rows + INBOX 1495, 1496, 1497 (agent cfix-1031, resumed)
+- [ ] Companion at rest: AI1 + HR1 (about 130 animations idle, 540ms blocked per 5s at 4x; agent turn 1,003ms getAnimations + 165ms atlasRigRead), after a fix agent frees a slot
+- [ ] Fix the every row (all severities) of audit-1031-ai.md and audit-1031-harness.md (Sonnet agent per surface)
+- [ ] Fix every row (all severities, owner 16:45) of each later Fable surface as it lands (shell, board, docs, code, graph, backend, ux, perf, architecture)
+- [ ] PR 211 CI green on the head after each batch
+- [ ] Morning summary in HANDOVER, retro
+- [ ] Notes rows left: N11 rest, N17, N20, N21 (boot CSS bytes first), N45, N46
+- [ ] Then plans, OPEN.md, INBOX all done; then fix and implement items from the odysseus repo (owner 16:44)

@@ -276,7 +276,7 @@ function chatAttachmentStrip(attachments) {
       //: list already uses, so the same fact reads the same way everywhere it
       //: appears.
       if (item.text) {
-        const words = countWords(item.text);
+        const words = wordCount(item.text);
         const badge = document.createElement("button");
         badge.type = "button";
         badge.className = "chip msg-attachment-read-badge";
@@ -2645,7 +2645,7 @@ function rememberDraftVersion(text) {
   if (draftVersions.length && draftVersions[draftVersions.length - 1].text === trimmed) return;
   draftVersions.push({
     text: trimmed,
-    words: countWords(trimmed),
+    words: wordCount(trimmed),
     at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   });
   if (draftVersions.length > MAX_DRAFT_VERSIONS) draftVersions.shift();
@@ -2690,7 +2690,7 @@ function setDraftStatus(text, isError = false) {
 //: one function so every place that changes either box keeps both honest.
 function paneWordCount(id) {
   const text = ($(id)?.value || "").trim();
-  const words = countWords(text);
+  const words = wordCount(text);
   return words ? nounCount(words, "word") : "";
 }
 

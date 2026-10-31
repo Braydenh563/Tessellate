@@ -28,6 +28,7 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from tessellate.ai import arithmetic, recognise, study, utilities
+from tessellate.core import cjk
 from tessellate.ai import composer_compose as compose
 from tessellate.ai.composer_study import Ctx, Reply, topic_notes
 
@@ -252,7 +253,7 @@ def _pasted_count(text: str, mood: compose.Mood) -> Reply | None:
     body = ((quoted.group(1) or quoted.group(2)) if quoted else "") or ""
     if not body.strip():
         return None
-    words = utilities.word_count(body)
+    words = cjk.word_count(body)
     return _computed(compose.say("count_text", mood, words=f"{words} word{'s' if words != 1 else ''}", chars=f"{len(body)} characters",
                                  read=utilities.reading_time(words) or "a few seconds"), "the text you gave")
 

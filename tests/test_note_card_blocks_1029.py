@@ -82,3 +82,16 @@ def test_the_card_prose_changes_skip_a_fence() -> None:
     text = _decl("notes-list.js", "renderNoteText")
     assert "prose(" in text
     assert "terms, prose)" in text  # a column keeps the same step
+
+
+def test_a_plain_quote_draws_as_a_quote_on_a_card() -> None:
+    """Audit 1031 N26: "> quote" and ">> nested" showed as typed on a card while the
+    callout beside them was drawn. The card hands the quote to `mdQuoteElement` (the
+    document view's builder) and refills its body through itself, so a nested quote
+    nests and the search words stay marked. Measured in the app: a 3px bar, 12.8px
+    inset, the nested quote inside the first."""
+    body = _decl("notes-list.js", "renderNoteText")
+    assert "mdQuoteElement(quoted" in body and "renderNoteText(host" in body
+    assert "leave it to the inline pass" not in body
+    css = "\n".join(p.read_text(encoding="utf-8") for p in (ROOT / "frontend" / "css").glob("*.css"))
+    assert "#entry-list blockquote" in css

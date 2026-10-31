@@ -10,7 +10,7 @@ from __future__ import annotations
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from tessellate.ai import utilities
+from tessellate.core import cjk
 from tessellate.entry import manager
 
 from ._common import (
@@ -57,7 +57,7 @@ def _list_documents(session: Session, args: dict) -> dict:
             {
                 "id": d.id,
                 "title": d.title,
-                "words": utilities.word_count(d.content),
+                "words": cjk.word_count(d.content),
                 "updated_at": d.updated_at.isoformat(),
                 #: **Around the match, not the start of the document.**
                 #: Reported directly: "if the ai is searching for something,
@@ -209,7 +209,7 @@ def _create_document(session: Session, args: dict) -> dict:
     return {
         "id": document.id,
         "title": document.title,
-        "words": utilities.word_count(content),
+        "words": cjk.word_count(content),
         "label": f"ph:file-text Created the document “{_clip(title, 40)}”",
         # Same contract every other write follows, so the run summary can offer
         # an Undo beside it rather than listing a change nobody can take back.

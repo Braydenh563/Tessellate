@@ -20,7 +20,6 @@ FRONTEND = ROOT / "frontend"
 DOCS_JS = (FRONTEND / "js" / "documents.js").read_text(encoding="utf-8")
 CODEKIT_JS = (FRONTEND / "js" / "documents-codekit.js").read_text(encoding="utf-8")
 SETTINGS_JS = (FRONTEND / "js" / "settings-wiring.js").read_text(encoding="utf-8")
-PREFS_JS = (FRONTEND / "js" / "prefs.js").read_text(encoding="utf-8")
 INDEX = (FRONTEND / "index.html").read_text(encoding="utf-8")
 node = pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
 
@@ -33,8 +32,8 @@ def _function(source: str, name: str) -> str:
 
 def _run(names: list[tuple[str, str]], call: str):
     body = "\n".join(_function(src, name) for src, name in names)
-    #: `textCounts` counts words through the one helper (prefs.js, INBOX 1495).
-    counter = re.search(r"const CJK_CHARACTER = [^\n]+\n", PREFS_JS).group(0) + _function(PREFS_JS, "countWords")
+    #: `textCounts` counts words through the one helper (`wordCount`, settings-wiring.js).
+    counter = SETTINGS_JS[SETTINGS_JS.index("const WORD_PER_CHARACTER") : SETTINGS_JS.index("function textCounts(")]
     script = f"const TEXT_READING_WPM = 220;\n{counter}\n{body}\nconsole.log(JSON.stringify({call}));"
     out = subprocess.run(["node", "-e", script], capture_output=True, text=True, timeout=30, check=True)
     return json.loads(out.stdout)

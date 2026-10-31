@@ -58,7 +58,7 @@ function buildCaptureCard() {
   const composer = captureCardEl("div", "note-composer");
   composer.append(
     captureCardHead(),
-    captureCardEl("textarea", "capture-card-body", { rows: "3", placeholder: "Take a note…", "aria-label": "Note", "data-cc": "body" }),
+    captureCardEl("textarea", "capture-card-body", { id: "capture-card-body", rows: "3", placeholder: "Take a note…", "aria-label": "Note", "data-cc": "body", "data-autocorrect": "" }),
     captureItemsBox(),
     captureCardEl("input", "capture-card-tags", { type: "text", placeholder: "#tag1 #tag2", "aria-label": "Tags", autocomplete: "off", "data-cc": "tags" }),
   );
@@ -297,7 +297,7 @@ function openCaptureCard(from, type) {
   if (captureCard.root.hidden) showCaptureCard(from);
   const pick = type === "click" && Boolean(from?.closest?.("#capture-bar-picture"));
   //: The colour dots, the bell, the pictures and the tag suggestions are the second lazy file.
-  lazyScript("/js/capture-card-more.js").then(() => mountCaptureExtras(pick));
+  lazyScript("/js/capture-card-more.js").then((ok) => ok && mountCaptureExtras(pick));
 }
 
 function showCaptureCard(from) {

@@ -1611,9 +1611,17 @@ function renderCaptureFiles() {
 //: `wc` on one fixture. Here, not in documents.js, because the composer
 //: below counts at boot and the documents bundle is lazy.
 const TEXT_READING_WPM = 220;
+//: One word count for every surface (notes audit 1031 N15): a Han or kana character is a word of its own
+//: (`core/cjk.py` word_count is the server's twin), everything else is counted by its spaces.
+const WORD_PER_CHARACTER = /[\u2e80-\u2fdf\u3040-\u30ff\u31f0-\u31ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/g;
+function wordCount(text) {
+  const value = String(text || "").replace(/[ー・\u3000-\u303f\uff01-\uff0f\uff1a-\uff20\uff3b-\uff40\uff5b-\uff65]/g, " ");
+  return (value.match(WORD_PER_CHARACTER) || []).length + (value.replace(WORD_PER_CHARACTER, " ").match(/\S+/g) || []).length;
+}
+
 function textCounts(text) {
   const value = String(text || "");
-  const words = countWords(value);
+  const words = wordCount(value);
   const minutes = words / TEXT_READING_WPM;
   const read = !words ? "" : minutes < 1 ? "under a min" : minutes < 60 ? `${Math.round(minutes)} min read` : `${(minutes / 60).toFixed(1)}h read`;
   let chars = 0;

@@ -116,6 +116,12 @@ def _written_date(year: str | None, month: int, day: int, today: date):
     return nearest, DAY
 
 
+def _day_of_month(m, t):
+    shift = {"last": -1, "next": 1, "this": 0}[m.group(2).lower()]
+    month = _add_months(t.replace(day=1), shift)
+    return date(month.year, month.month, int(m.group(1))), DAY
+
+
 def _weekday_late(m, t):
     return _weekday(m, t)
 
@@ -144,6 +150,9 @@ _RULES: list[tuple[str, object]] = [
     (r"last week", lambda m, t: (_monday(t) - timedelta(days=7), WEEK)),
     (r"next week", lambda m, t: (_monday(t) + timedelta(days=7), WEEK)),
     (r"this week", lambda m, t: (_monday(t), WEEK)),
+    #: "the 14th of next month": that day, not the month (audit 1031 N8).
+    (r"the (\d{1,2})(?:st|nd|rd|th)(?: day)? of (last|next|this) month",
+     _day_of_month),
     (r"last month", lambda m, t: (_add_months(t, -1), MONTH)),
     (r"next month", lambda m, t: (_add_months(t, 1), MONTH)),
     (r"this month", lambda m, t: (t, MONTH)),

@@ -13048,7 +13048,7 @@ $("doc-ai-result").addEventListener("input", () => {
 function syncDocAiPanel() {
   const verb = docAiVerb();
   const selection = ($("doc-ai-panel").dataset.selection || "").trim();
-  const wordCount = countWords(selection);
+  const selectionWords = wordCount(selection);
 
   const runLabel = { edit: "Suggest an edit", write: "Write it", remove: "Remove it" }[verb];
   setLabel($("doc-ai-run"), `ph:sparkle ${runLabel}`);
@@ -13064,15 +13064,15 @@ function syncDocAiPanel() {
 
   if (verb === "write") {
     $("doc-ai-scope").textContent = selection
-      ? `Inserting new text directly after the ${wordCount} selected word(s).`
+      ? `Inserting new text directly after the ${selectionWords} selected word(s).`
       : "Inserting new text at the end of the document.";
   } else if (verb === "remove") {
     $("doc-ai-scope").textContent = selection
-      ? `Removing the ${wordCount} selected word(s): or say what to remove from within them.`
+      ? `Removing the ${selectionWords} selected word(s): or say what to remove from within them.`
       : "Say what to remove from the whole document.";
   } else {
     $("doc-ai-scope").textContent = selection
-      ? `Rewriting the ${wordCount} selected word(s).`
+      ? `Rewriting the ${selectionWords} selected word(s).`
       : "Rewriting the whole document. Select some text first to work on just that.";
   }
 
@@ -17455,25 +17455,9 @@ const DOC_PROSE_RULES = [
   },
 ];
 
-//: **Unambiguous typos only.** Every entry here is a string that is not a word
-//: in any English text, which is the bar an automatic replacement has to
-//: clear, because the cost of being wrong is that the app silently changed
-//: something the writer meant. `alot` is in; `dont` is not (an apostrophe is a
-//: style choice, and in a code block it is a quote).
-const DOC_AUTOCORRECT = {
-  teh: "the", adn: "and", taht: "that", tehn: "then", thsi: "this",
-  thier: "their", recieve: "receive", recieved: "received", seperate: "separate",
-  seperated: "separated", occured: "occurred", occuring: "occurring",
-  definately: "definitely", wich: "which", becuase: "because", becasue: "because",
-  alot: "a lot", accomodate: "accommodate", acheive: "achieve", acheived: "achieved",
-  arguement: "argument", beleive: "believe", calender: "calendar",
-  concious: "conscious", embarass: "embarrass", enviroment: "environment",
-  existance: "existence", goverment: "government", independant: "independent",
-  neccessary: "necessary", occassion: "occasion", persistant: "persistent",
-  publically: "publicly", recomend: "recommend", refered: "referred",
-  succesful: "successful", tommorow: "tomorrow", untill: "until",
-  wierd: "weird", writting: "writing", youre: "you're", ot: "to",
-};
+//: One table for the notes and the documents (audit 1031 N42): `AUTOCORRECT_TYPOS`, autocorrect.js,
+//: which this bundle loads first. Two copies had drifted, 42 rows against 89.
+const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;
 
 const DOC_LONG_SENTENCE_WORDS = 45;
 

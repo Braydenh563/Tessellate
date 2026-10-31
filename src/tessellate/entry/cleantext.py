@@ -46,3 +46,16 @@ def name_key(text: str | None) -> str:
     """What two names are compared by: the same name whatever its case,
     spacing, or invisible characters (a joiner included)."""
     return " ".join("".join(ch for ch in text or "" if not _format(ch)).split()).casefold()
+
+
+def import_path(name: str | None, fallback: str = "") -> str:
+    """The name an imported note remembers as its `source_path` (audit 1031
+    N22): forward slashes, relative, no `.` or `..` step, no invisible
+    characters, 500 at most. A browser's directory picker sends `vault/a.md`,
+    which stays; `../../evil.md` becomes `evil.md`."""
+    parts = [
+        piece
+        for piece in strip_invisible(str(name or "")).replace("\\", "/").split("/")
+        if piece.strip() and piece.strip() not in (".", "..")
+    ]
+    return "/".join(parts)[:500] or fallback

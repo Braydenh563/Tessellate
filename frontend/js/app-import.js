@@ -63,6 +63,10 @@ for (const spec of APP_IMPORTS) {
     $(spec.input).click();
   });
   $(spec.input)?.addEventListener("change", () => importFromApp(spec));
+  //: This file loads lazily when the Data pane opens, so a file chosen before
+  //: it arrived fired its `change` with no listener and was dropped without a
+  //: word. Whatever is already chosen is imported now.
+  if ($(spec.input)?.files?.length) importFromApp(spec);
 }
 
 // --- The import report (WORLD_CLASS 25b) ------------------------------------

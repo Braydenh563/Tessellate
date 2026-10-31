@@ -293,7 +293,7 @@ def test_reading_a_live_note_still_counts_as_using_it(client, session):
     every note that is not in the bin."""
     entry = _note(session, "Very much in use.")
     before = session.get(Entry, entry.id).access_count
-    client.get(f"/entries/{entry.id}?deleted=true")
+    client.get(f"/entries/{entry.id}?deleted=true&open=1")
     session.expire_all()
     assert session.get(Entry, entry.id).access_count == before + 1
 
