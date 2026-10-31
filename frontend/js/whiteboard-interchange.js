@@ -785,7 +785,7 @@ function wbBoardToDrawio(state, { title = "Board", box = null, hidden = null } =
   }
   const shapes = cells.filter((c) => c.includes('vertex="1"')).length;
   const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<mxfile host="Tessellate">' +
-    `<diagram name="${esc(title).slice(0, 120)}" id="page1"><mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0">` +
+    `<diagram name="${esc(String(title).slice(0, 120))}" id="page1"><mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" math="0" shadow="0">` +
     `<root><mxCell id="0"/><mxCell id="1" parent="0"/>${cells.join("")}</root></mxGraphModel></diagram></mxfile>\n`;
   return { xml, shapes, links: cells.length - shapes, skipped };
 }
