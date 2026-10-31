@@ -84,3 +84,76 @@ def test_i4_the_folded_more_button_is_named_sort_and_view():
     body = _function_body(text, "nameFoldedButton")
     assert '"Sort and view"' in body and "aria-label" in body
     assert "nameFoldedButton(menu" in _function_body(text, "foldZoneIntoMenu")
+
+
+@pytest.mark.parametrize(("question", "topic"), [
+    ("Where do I see questions my notes leave open?", "open-questions"),
+    ("where are the questions my notes leave open", "open-questions"),
+    ("which questions are still unanswered in my notes", "open-questions"),
+    ("What questions have I left unanswered?", "open-questions"),
+    ("How do I put my notes in my own order?", "object-move"),
+    ("put my notes in my own order", "object-move"),
+    ("can I arrange my notes my own way", "object-move"),
+    ("How do I make a diagram?", "make-a-diagram"),
+    ("make a diagram of my trip", "make-a-diagram"),
+    ("how can I draw a diagram without a model", "make-a-diagram"),
+])
+def test_i5_the_guide_answers_the_blind_testers_three_goals(client, question, topic):
+    """`client` boots the app, which installs the act reader: "put my notes in
+    my own order" read as the append act ("put X in Y") only with it."""
+    from tessellate.ai import help_chat
+
+    assert help_chat.topics_for(question)[0]["id"] == topic, [t["id"] for t in help_chat.topics_for(question)]
+
+
+@needs_node
+def test_i6_read_notes_now_says_what_it_read_and_found():
+    out = run(["questions-view.js"], """
+    __out([questionsReadSummary(3, 2), questionsReadSummary(1, 1), questionsReadSummary(0, 0), questionsReadSummary(4, -1)]);
+    """)
+    assert out == ["Read 3 notes, found 2 new questions.", "Read 1 note, found 1 new question.",
+                   "Read 0 notes, found 0 new questions.", "Read 4 notes, found 0 new questions."]
+
+
+def test_i6_the_empty_state_says_a_question_mark_is_what_counts():
+    text = (JS / "questions-view.js").read_text(encoding="utf-8")
+    assert "end in a question mark" in text and "A to-do is not a question" in text
+    assert "toast(questionsReadSummary(" in text
+
+
+@needs_node
+def test_i7_housekeeping_that_worked_is_not_a_bell_row_but_its_failure_is():
+    out = run(["chat-tasks.js"], """
+    globalThis.QUIET_TASK_KINDS = new Set(["job-warm", "job-warm-filing", "reindex"]);
+    const ended = (kind, outcome) => taskEndingIsUpkeep({ kind, outcome });
+    __out([ended("warm", "completed"), ended("warm", "failed"), ended("reindex", "completed"), ended("import", "completed"), ended("", "completed")]);
+    """)
+    assert out == [True, False, True, False, False]
+
+
+@needs_node
+def test_i7_the_filings_to_check_line_needs_a_running_model():
+    out = run(["notes-lazy.js"], """
+    const wanted = (status) => { globalThis.modelStatus = status; return reviewNudgeWanted(); };
+    __out([wanted(null), wanted({ ollama_running: false }), wanted({ ollama_running: true })]);
+    """)
+    assert out == [False, False, True]
+
+
+@needs_node
+def test_i8_a_greeting_made_for_an_empty_notebook_is_not_kept_once_notes_exist():
+    source = _function_body((JS / "dashboard.js").read_text(encoding="utf-8"), "greetingCacheSlot") + "\n}\n"
+    out = run([], source + """
+    globalThis.prefsCache = { display_name: "Sam" };
+    const when = new Date(2026, 9, 31, 9, 0);
+    const slot = (count) => { globalThis.allEntries = Array.from({ length: count }, () => ({})); return greetingCacheSlot(when); };
+    __out([slot(0) === slot(0), slot(0) === slot(3), slot(3) === slot(9), slot(1) === slot(3)]);
+    """)
+    assert out == [True, False, True, False]
+
+
+def test_i9_the_tidy_button_says_what_its_number_counts_and_most_used_says_what_x4_is():
+    tidy = (JS / "tidy.js").read_text(encoding="utf-8")
+    assert '${count.textContent} ${body.total === 1 ? "thing" : "things"} to look at' in tidy
+    status = (JS / "status.js").read_text(encoding="utf-8")
+    assert "Opened or asked about" in status and "count.title" in status

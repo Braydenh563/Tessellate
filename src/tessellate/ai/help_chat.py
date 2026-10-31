@@ -2680,7 +2680,7 @@ _HOW_FRAME = re.compile(r"^\s*(?:how (?:do|can|would|should) (?:i|you)|how to|ca
 #: branch to a mind map" is that surface's own how-to, not a note act.
 _OTHER_SURFACE = re.compile(
     r"\b(?:graph|board|whiteboard|canvas|sticky|map|mind ?map|branch|document|chat|category|categories|timeline|"
-    r"library|palette|tab|folder|space|file|photo|template|word)s?\b", re.I)
+    r"library|palette|tab|folder|space|file|photo|template|word|order|sort|arrange|reorder|diagram|flowchart)s?\b", re.I)
 
 
 def _act_of(question: str) -> tuple[str, bool] | None:

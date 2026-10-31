@@ -283,7 +283,11 @@ function greetingCacheSlot(now = new Date()) {
   // too: renaming yourself in Settings invalidates the cached greeting so the
   // AI writes a fresh one addressed to the new name.
   const name = ((prefsCache && prefsCache.display_name) || "").trim();
-  return `${now.toDateString()}|${now.getHours()}|${name}`;
+  //: And how much of a notebook there is (none, a few, many): a line composed
+  //: for an empty one ("Your first note is waiting") was kept for the hour
+  //: after three notes were written (blind test 2026-10-31).
+  const notes = typeof allEntries === "undefined" ? 0 : Math.min(allEntries.length, 3);
+  return `${now.toDateString()}|${now.getHours()}|${name}|${notes}`;
 }
 
 function cachedGreetingPhrase(now = new Date()) {

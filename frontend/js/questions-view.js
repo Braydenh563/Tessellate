@@ -74,7 +74,7 @@ function questionRow(item) {
 //: Icon, title, sentence per state: the empty state recipe (`.empty-state`,
 //: 02-chat-graph.css), as Recordings uses it. Open also gets the one action.
 const QUESTIONS_EMPTY = {
-  open: ["ph-question", "No open questions", "Read notes now finds the questions your notes ask."],
+  open: ["ph-question", "No open questions", "Read notes now finds lines that end in a question mark. A to-do is not a question."],
   answered: ["ph-check-circle", "Nothing answered yet", "When a later note answers a question, it moves here."],
   dropped: ["ph-minus-circle", "Nothing dropped", "A question you drop because it no longer matters is kept here."],
 };
@@ -107,6 +107,13 @@ function questionsEmpty(state) {
     li.appendChild(read);
   }
   return li;
+}
+
+//: "Read 3 notes, found 2 new questions." The toast box is a polite live region, so it is also spoken.
+function questionsReadSummary(scanned, found) {
+  const notes = Number(scanned) || 0;
+  const questions = Math.max(0, Number(found) || 0);
+  return `Read ${notes} note${notes === 1 ? "" : "s"}, found ${questions} new question${questions === 1 ? "" : "s"}.`;
 }
 
 async function loadQuestions({ more = false } = {}) {
@@ -152,6 +159,7 @@ async function loadQuestions({ more = false } = {}) {
   }
   questionsView.offset += items.length;
   const counts = reply.counts || {};
+  questionsView.openCount = counts.open || 0;
   //: The counts ride on the select's rows (INBOX 665), "Answered (2)", and
   //: a state with none reads as its word alone.
   for (const option of $("questions-state").options) {
@@ -200,10 +208,13 @@ function initQuestionsView() {
   $("questions-refresh").addEventListener("click", async (event) => {
     const button = event.currentTarget;
     setBusy(button, true, "Reading\u2026");
+    const before = questionsView.openCount || 0;
     const reply = await apiJson("/night/run", { method: "POST", body: JSON.stringify({ budget: 20000 }) }).catch(() => null);
     setBusy(button, false);
     if (reply?.paused) toast("Reading is paused in Settings, What it learned.", "info");
-    loadQuestions();
+    await loadQuestions();
+    //: The result, said (blind test 2026-10-31: pressing it changed nothing on screen).
+    if (reply && !reply.paused) toast(questionsReadSummary(reply.scanned, (questionsView.openCount || 0) - before), "info");
   });
   $("questions-more").addEventListener("click", () => loadQuestions({ more: true }));
   $("questions-ask").addEventListener("click", () => {
