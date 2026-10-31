@@ -2,9 +2,9 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7026, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7760, test files 1655, tests 14330, plan headings 990.
+Counts: frontend functions 7043, frontend ids 2596, CSS sections 506, backend routes 632, backend modules 7760, test files 1656, tests 14335, plan headings 990.
 
-## Frontend functions (7026)
+## Frontend functions (7043)
 
 Top-level `function name(`, `async function name(` and `const name = (` in `frontend/js/` and `frontend/sw.js`, in index.html's script order; lazily loaded files after, by name. Rows sorted by name within each file.
 
@@ -82,15 +82,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `afterCharacters` | frontend/js/lazy-entries.js:118 |
-| `charactersArrived` | frontend/js/lazy-entries.js:158 |
-| `charactersLost` | frontend/js/lazy-entries.js:127 |
-| `emblemHead` | frontend/js/lazy-entries.js:135 |
-| `installCharacterStandIns` | frontend/js/lazy-entries.js:175 |
-| `loadCharactersIdle` | frontend/js/lazy-entries.js:169 |
-| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:195 |
-| `plainHead` | frontend/js/lazy-entries.js:141 |
-| `runCharacterJob` | frontend/js/lazy-entries.js:149 |
+| `afterCharacters` | frontend/js/lazy-entries.js:121 |
+| `charactersArrived` | frontend/js/lazy-entries.js:161 |
+| `charactersLost` | frontend/js/lazy-entries.js:130 |
+| `emblemHead` | frontend/js/lazy-entries.js:138 |
+| `installCharacterStandIns` | frontend/js/lazy-entries.js:178 |
+| `loadCharactersIdle` | frontend/js/lazy-entries.js:172 |
+| `nameMarkBuddyShowing` | frontend/js/lazy-entries.js:198 |
+| `plainHead` | frontend/js/lazy-entries.js:144 |
+| `runCharacterJob` | frontend/js/lazy-entries.js:152 |
 
 ### frontend/js/note-cards.js (39)
 
@@ -442,88 +442,88 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `aiWritingTrace` | frontend/js/chat.js:2141 |
-| `applyCompression` | frontend/js/chat.js:2001 |
+| `aiWritingTrace` | frontend/js/chat.js:2135 |
+| `applyCompression` | frontend/js/chat.js:1995 |
 | `askAboutPage` | frontend/js/chat.js:1405 |
 | `assistantLabel` | frontend/js/chat.js:55 |
 | `assistantMessageActions` | frontend/js/chat.js:128 |
 | `atlasSuggestion` | frontend/js/chat.js:615 |
-| `batteryModeOn` | frontend/js/chat.js:2043 |
+| `batteryModeOn` | frontend/js/chat.js:2037 |
 | `bodyTextWithCitations` | frontend/js/chat.js:117 |
 | `bookmarkWebResult` | frontend/js/chat.js:1208 |
 | `buildWebResultRow` | frontend/js/chat.js:1085 |
 | `chatEmptySettle` | frontend/js/chat.js:636 |
 | `chatHistoryToSend` | frontend/js/chat.js:39 |
 | `chatMessageActions` | frontend/js/chat.js:68 |
-| `chatTranscriptText` | frontend/js/chat.js:1933 |
+| `chatTranscriptText` | frontend/js/chat.js:1927 |
 | `citeWebPage` | frontend/js/chat.js:1462 |
 | `clearChatEmptyState` | frontend/js/chat.js:764 |
 | `clearWebSearchHistory` | frontend/js/chat.js:1276 |
 | `closeWebReader` | frontend/js/chat.js:834 |
 | `compactTokens` | frontend/js/chat.js:461 |
-| `compressChatContext` | frontend/js/chat.js:1961 |
-| `compressSizeText` | frontend/js/chat.js:1982 |
+| `compressChatContext` | frontend/js/chat.js:1955 |
+| `compressSizeText` | frontend/js/chat.js:1976 |
 | `continueRunControls` | frontend/js/chat.js:197 |
 | `copyToClipboard` | frontend/js/chat.js:525 |
 | `copyViaTextarea` | frontend/js/chat.js:485 |
 | `copyWebLink` | frontend/js/chat.js:1200 |
-| `fillPersonaMark` | frontend/js/chat.js:1739 |
+| `fillPersonaMark` | frontend/js/chat.js:1733 |
 | `flashCopied` | frontend/js/chat.js:507 |
 | `forkFromBubble` | frontend/js/chat.js:581 |
-| `livingInterval` | frontend/js/chat.js:2127 |
-| `loadResponseModes` | frontend/js/chat.js:1694 |
+| `livingInterval` | frontend/js/chat.js:2121 |
+| `loadResponseModes` | frontend/js/chat.js:1688 |
 | `loadWebSearchHistory` | frontend/js/chat.js:1251 |
 | `manualPauseControls` | frontend/js/chat.js:243 |
 | `messageMetaLine` | frontend/js/chat.js:311 |
 | `metaItem` | frontend/js/chat.js:277 |
-| `mountChatActionsMenu` | frontend/js/chat.js:1880 |
+| `mountChatActionsMenu` | frontend/js/chat.js:1874 |
 | `openWebPageExternally` | frontend/js/chat.js:1196 |
 | `openWebReader` | frontend/js/chat.js:1422 |
-| `personaOptions` | frontend/js/chat.js:1756 |
-| `progressLine` | frontend/js/chat.js:2469 |
-| `progressMotionWanted` | frontend/js/chat.js:2079 |
-| `progressPhaseText` | frontend/js/chat.js:2337 |
+| `personaOptions` | frontend/js/chat.js:1750 |
+| `progressLine` | frontend/js/chat.js:2463 |
+| `progressMotionWanted` | frontend/js/chat.js:2073 |
+| `progressPhaseText` | frontend/js/chat.js:2331 |
 | `pushWebSearchHistory` | frontend/js/chat.js:1260 |
-| `reducedMotionWanted` | frontend/js/chat.js:2049 |
+| `reducedMotionWanted` | frontend/js/chat.js:2043 |
 | `refreshWebSearxngStrip` | frontend/js/chat.js:1005 |
 | `regenerateFromBubble` | frontend/js/chat.js:563 |
 | `regenerateLastAnswer` | frontend/js/chat.js:608 |
 | `removeChatBubble` | frontend/js/chat.js:471 |
-| `renderChatContextMeter` | frontend/js/chat.js:1834 |
+| `renderChatContextMeter` | frontend/js/chat.js:1828 |
 | `renderChatEmptyState` | frontend/js/chat.js:646 |
-| `renderChatTurnCount` | frontend/js/chat.js:1860 |
-| `renderChatUsage` | frontend/js/chat.js:1817 |
-| `renderCompressionState` | frontend/js/chat.js:2014 |
-| `renderModelContextBox` | frontend/js/chat.js:1555 |
-| `renderModelHealthNote` | frontend/js/chat.js:1657 |
-| `renderModelSpec` | frontend/js/chat.js:1585 |
+| `renderChatTurnCount` | frontend/js/chat.js:1854 |
+| `renderChatUsage` | frontend/js/chat.js:1811 |
+| `renderCompressionState` | frontend/js/chat.js:2008 |
+| `renderModelContextBox` | frontend/js/chat.js:1549 |
+| `renderModelHealthNote` | frontend/js/chat.js:1651 |
+| `renderModelSpec` | frontend/js/chat.js:1579 |
 | `renderWebPageAttachment` | frontend/js/chat.js:1489 |
 | `renderWebPanelMenu` | frontend/js/chat.js:939 |
 | `renderWebSearchHistory` | frontend/js/chat.js:1285 |
 | `rewriteAnswerWith` | frontend/js/chat.js:572 |
 | `runWebSearch` | frontend/js/chat.js:1320 |
-| `scheduleThinkingWordTick` | frontend/js/chat.js:2255 |
-| `setResponseMode` | frontend/js/chat.js:1717 |
+| `scheduleThinkingWordTick` | frontend/js/chat.js:2249 |
+| `setResponseMode` | frontend/js/chat.js:1711 |
 | `setWebEngineDot` | frontend/js/chat.js:925 |
 | `setWebSearxngRunning` | frontend/js/chat.js:990 |
-| `showCompressReview` | frontend/js/chat.js:1989 |
-| `startThinkingWordRotation` | frontend/js/chat.js:2283 |
-| `stopThinkingWordRotation` | frontend/js/chat.js:2305 |
+| `showCompressReview` | frontend/js/chat.js:1983 |
+| `startThinkingWordRotation` | frontend/js/chat.js:2277 |
+| `stopThinkingWordRotation` | frontend/js/chat.js:2299 |
 | `stopWebRequest` | frontend/js/chat.js:819 |
-| `togglePersonaPrompt` | frontend/js/chat.js:1809 |
+| `togglePersonaPrompt` | frontend/js/chat.js:1803 |
 | `toggleWebPanel` | frontend/js/chat.js:847 |
-| `toolPhaseVerb` | frontend/js/chat.js:2352 |
-| `typingDots` | frontend/js/chat.js:2366 |
+| `toolPhaseVerb` | frontend/js/chat.js:2346 |
+| `typingDots` | frontend/js/chat.js:2360 |
 | `webEngineWords` | frontend/js/chat.js:908 |
-| `webPageContextBlock` | frontend/js/chat.js:1520 |
+| `webPageContextBlock` | frontend/js/chat.js:1514 |
 | `webPageMarkdown` | frontend/js/chat.js:1429 |
 | `webQueryTerms` | frontend/js/chat.js:1072 |
 | `webReaderIsOpen` | frontend/js/chat.js:830 |
 | `webRequestEnd` | frontend/js/chat.js:809 |
 | `webRequestStart` | frontend/js/chat.js:800 |
 | `webResultMark` | frontend/js/chat.js:1051 |
-| `wheelScrollsHorizontally` | frontend/js/chat.js:2190 |
-| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2223 |
+| `wheelScrollsHorizontally` | frontend/js/chat.js:2184 |
+| `wireHorizontalWheelScrolling` | frontend/js/chat.js:2217 |
 
 ### frontend/js/chat-agent.js (76)
 
@@ -610,134 +610,134 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 
 | Name | File:line |
 |---|---|
-| `appendRunResumeControls` | frontend/js/chat-attach.js:1279 |
-| `attachBoardToChat` | frontend/js/chat-attach.js:464 |
-| `attachChatFiles` | frontend/js/chat-attach.js:280 |
-| `attachDocumentToChat` | frontend/js/chat-attach.js:510 |
-| `attachImageFiles` | frontend/js/chat-attach.js:192 |
-| `attachLibraryFile` | frontend/js/chat-attach.js:418 |
-| `attachSelectionContext` | frontend/js/chat-attach.js:558 |
-| `attachedNotes` | frontend/js/chat-attach.js:705 |
+| `appendRunResumeControls` | frontend/js/chat-attach.js:1277 |
+| `attachBoardToChat` | frontend/js/chat-attach.js:471 |
+| `attachChatFiles` | frontend/js/chat-attach.js:287 |
+| `attachDocumentToChat` | frontend/js/chat-attach.js:517 |
+| `attachImageFiles` | frontend/js/chat-attach.js:199 |
+| `attachLibraryFile` | frontend/js/chat-attach.js:425 |
+| `attachSelectionContext` | frontend/js/chat-attach.js:565 |
+| `attachedNotes` | frontend/js/chat-attach.js:703 |
 | `attachmentChip` | frontend/js/chat-attach.js:87 |
-| `buildFollowupStrip` | frontend/js/chat-attach.js:2719 |
-| `chatDeleteUndo` | frontend/js/chat-attach.js:3051 |
-| `chatDockMoreOpen` | frontend/js/chat-attach.js:1218 |
-| `chatQueueShow` | frontend/js/chat-attach.js:1417 |
-| `chatSendTurn` | frontend/js/chat-attach.js:1426 |
-| `chatTidyTyped` | frontend/js/chat-attach.js:1388 |
-| `chatTurnObjects` | frontend/js/chat-attach.js:713 |
-| `chatWriteRecord` | frontend/js/chat-attach.js:3077 |
-| `clearSelectionAttachment` | frontend/js/chat-attach.js:582 |
-| `closeChatDockMore` | frontend/js/chat-attach.js:1255 |
+| `buildFollowupStrip` | frontend/js/chat-attach.js:2717 |
+| `chatDeleteUndo` | frontend/js/chat-attach.js:3049 |
+| `chatDockMoreOpen` | frontend/js/chat-attach.js:1216 |
+| `chatQueueShow` | frontend/js/chat-attach.js:1415 |
+| `chatSendTurn` | frontend/js/chat-attach.js:1424 |
+| `chatTidyTyped` | frontend/js/chat-attach.js:1386 |
+| `chatTurnObjects` | frontend/js/chat-attach.js:711 |
+| `chatWriteRecord` | frontend/js/chat-attach.js:3075 |
+| `clearSelectionAttachment` | frontend/js/chat-attach.js:589 |
+| `closeChatDockMore` | frontend/js/chat-attach.js:1253 |
 | `closeExtractPreview` | frontend/js/chat-attach.js:54 |
-| `closeNotePicker` | frontend/js/chat-attach.js:1203 |
-| `commitStagedImages` | frontend/js/chat-attach.js:232 |
-| `deleteChatTurn` | frontend/js/chat-attach.js:2825 |
-| `deleteCurrentChat` | frontend/js/chat-attach.js:3025 |
-| `exportChatMarkdown` | frontend/js/chat-attach.js:3082 |
-| `flattenNoteMarkdown` | frontend/js/chat-attach.js:742 |
-| `followupChain` | frontend/js/chat-attach.js:2748 |
-| `followupMatches` | frontend/js/chat-attach.js:2746 |
-| `followupParent` | frontend/js/chat-attach.js:2739 |
-| `followupTrail` | frontend/js/chat-attach.js:2765 |
-| `importChatDocuments` | frontend/js/chat-attach.js:322 |
-| `isImageFile` | frontend/js/chat-attach.js:273 |
-| `isStreamingConversation` | frontend/js/chat-attach.js:2953 |
-| `keepUnreadableChatFile` | frontend/js/chat-attach.js:293 |
-| `markFollowup` | frontend/js/chat-attach.js:2789 |
-| `mountChatTimer` | frontend/js/chat-attach.js:2879 |
-| `newChatConversation` | frontend/js/chat-attach.js:2973 |
-| `noteLabel` | frontend/js/chat-attach.js:719 |
-| `noteNamePlain` | frontend/js/chat-attach.js:779 |
-| `notePickerColumns` | frontend/js/chat-attach.js:1066 |
-| `notePickerEmpty` | frontend/js/chat-attach.js:1030 |
-| `notePickerFacts` | frontend/js/chat-attach.js:876 |
-| `notePickerKeydown` | frontend/js/chat-attach.js:1080 |
-| `notePickerOpen` | frontend/js/chat-attach.js:1212 |
-| `notePickerPage` | frontend/js/chat-attach.js:1047 |
-| `notePickerRoving` | frontend/js/chat-attach.js:1056 |
-| `notePickerShape` | frontend/js/chat-attach.js:886 |
-| `notePickerUsedIn` | frontend/js/chat-attach.js:868 |
-| `offerFollowups` | frontend/js/chat-attach.js:2647 |
-| `offerReminder` | frontend/js/chat-attach.js:2586 |
-| `openChatDockMore` | frontend/js/chat-attach.js:1231 |
+| `closeNotePicker` | frontend/js/chat-attach.js:1201 |
+| `commitStagedImages` | frontend/js/chat-attach.js:239 |
+| `deleteChatTurn` | frontend/js/chat-attach.js:2823 |
+| `deleteCurrentChat` | frontend/js/chat-attach.js:3023 |
+| `exportChatMarkdown` | frontend/js/chat-attach.js:3080 |
+| `flattenNoteMarkdown` | frontend/js/chat-attach.js:740 |
+| `followupChain` | frontend/js/chat-attach.js:2746 |
+| `followupMatches` | frontend/js/chat-attach.js:2744 |
+| `followupParent` | frontend/js/chat-attach.js:2737 |
+| `followupTrail` | frontend/js/chat-attach.js:2763 |
+| `importChatDocuments` | frontend/js/chat-attach.js:329 |
+| `isImageFile` | frontend/js/chat-attach.js:280 |
+| `isStreamingConversation` | frontend/js/chat-attach.js:2951 |
+| `keepUnreadableChatFile` | frontend/js/chat-attach.js:300 |
+| `markFollowup` | frontend/js/chat-attach.js:2787 |
+| `mountChatTimer` | frontend/js/chat-attach.js:2877 |
+| `newChatConversation` | frontend/js/chat-attach.js:2971 |
+| `noteLabel` | frontend/js/chat-attach.js:717 |
+| `noteNamePlain` | frontend/js/chat-attach.js:777 |
+| `notePickerColumns` | frontend/js/chat-attach.js:1064 |
+| `notePickerEmpty` | frontend/js/chat-attach.js:1028 |
+| `notePickerFacts` | frontend/js/chat-attach.js:874 |
+| `notePickerKeydown` | frontend/js/chat-attach.js:1078 |
+| `notePickerOpen` | frontend/js/chat-attach.js:1210 |
+| `notePickerPage` | frontend/js/chat-attach.js:1045 |
+| `notePickerRoving` | frontend/js/chat-attach.js:1054 |
+| `notePickerShape` | frontend/js/chat-attach.js:884 |
+| `notePickerUsedIn` | frontend/js/chat-attach.js:866 |
+| `offerFollowups` | frontend/js/chat-attach.js:2645 |
+| `offerReminder` | frontend/js/chat-attach.js:2584 |
+| `openChatDockMore` | frontend/js/chat-attach.js:1229 |
 | `openExtractPreview` | frontend/js/chat-attach.js:22 |
-| `openNotePicker` | frontend/js/chat-attach.js:1168 |
-| `paintChatTimer` | frontend/js/chat-attach.js:2892 |
-| `plainText` | frontend/js/chat-attach.js:757 |
-| `promptTitle` | frontend/js/chat-attach.js:3069 |
-| `reattachStreamingTurn` | frontend/js/chat-attach.js:2964 |
-| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2699 |
-| `releaseChatComposer` | frontend/js/chat-attach.js:2923 |
-| `renderAttachments` | frontend/js/chat-attach.js:832 |
-| `renderBoardAttachments` | frontend/js/chat-attach.js:477 |
-| `renderDocumentAttachments` | frontend/js/chat-attach.js:523 |
-| `renderFileAttachments` | frontend/js/chat-attach.js:427 |
-| `renderFollowups` | frontend/js/chat-attach.js:2685 |
-| `renderImageAttachments` | frontend/js/chat-attach.js:159 |
-| `renderSelectionAttachment` | frontend/js/chat-attach.js:587 |
-| `revalidateSelection` | frontend/js/chat-attach.js:634 |
-| `saveFollowups` | frontend/js/chat-attach.js:2808 |
-| `selectionContextBlock` | frontend/js/chat-attach.js:685 |
-| `sendChatMessage` | frontend/js/chat-attach.js:1397 |
-| `setActiveChoice` | frontend/js/chat-attach.js:765 |
-| `setNoteLabel` | frontend/js/chat-attach.js:789 |
-| `setNotePickerSource` | frontend/js/chat-attach.js:1141 |
-| `startChatTimer` | frontend/js/chat-attach.js:2904 |
-| `stopChatTimer` | frontend/js/chat-attach.js:2913 |
+| `openNotePicker` | frontend/js/chat-attach.js:1166 |
+| `paintChatTimer` | frontend/js/chat-attach.js:2890 |
+| `plainText` | frontend/js/chat-attach.js:755 |
+| `promptTitle` | frontend/js/chat-attach.js:3067 |
+| `reattachStreamingTurn` | frontend/js/chat-attach.js:2962 |
+| `refreshFollowupVisibility` | frontend/js/chat-attach.js:2697 |
+| `releaseChatComposer` | frontend/js/chat-attach.js:2921 |
+| `renderAttachments` | frontend/js/chat-attach.js:830 |
+| `renderBoardAttachments` | frontend/js/chat-attach.js:484 |
+| `renderDocumentAttachments` | frontend/js/chat-attach.js:530 |
+| `renderFileAttachments` | frontend/js/chat-attach.js:434 |
+| `renderFollowups` | frontend/js/chat-attach.js:2683 |
+| `renderImageAttachments` | frontend/js/chat-attach.js:166 |
+| `renderSelectionAttachment` | frontend/js/chat-attach.js:594 |
+| `revalidateSelection` | frontend/js/chat-attach.js:632 |
+| `saveFollowups` | frontend/js/chat-attach.js:2806 |
+| `selectionContextBlock` | frontend/js/chat-attach.js:683 |
+| `sendChatMessage` | frontend/js/chat-attach.js:1395 |
+| `setActiveChoice` | frontend/js/chat-attach.js:763 |
+| `setNoteLabel` | frontend/js/chat-attach.js:787 |
+| `setNotePickerSource` | frontend/js/chat-attach.js:1139 |
+| `startChatTimer` | frontend/js/chat-attach.js:2902 |
+| `stopChatTimer` | frontend/js/chat-attach.js:2911 |
 
 ### frontend/js/sheets-selects.js (51)
 
 | Name | File:line |
 |---|---|
-| `aiNameNow` | frontend/js/sheets-selects.js:2266 |
-| `annotateSliders` | frontend/js/sheets-selects.js:1019 |
+| `aiNameNow` | frontend/js/sheets-selects.js:2270 |
+| `annotateSliders` | frontend/js/sheets-selects.js:1023 |
 | `applySidebarSheetMode` | frontend/js/sheets-selects.js:203 |
 | `applySidebarWidth` | frontend/js/sheets-selects.js:100 |
 | `applyWebPanelWidth` | frontend/js/sheets-selects.js:512 |
-| `builtinPersonas` | frontend/js/sheets-selects.js:2365 |
-| `builtinThinkingWords` | frontend/js/sheets-selects.js:2315 |
-| `clampToolbarMenu` | frontend/js/sheets-selects.js:1492 |
-| `dateFieldFace` | frontend/js/sheets-selects.js:1048 |
+| `builtinPersonas` | frontend/js/sheets-selects.js:2369 |
+| `builtinThinkingWords` | frontend/js/sheets-selects.js:2319 |
+| `clampToolbarMenu` | frontend/js/sheets-selects.js:1496 |
+| `dateFieldFace` | frontend/js/sheets-selects.js:1052 |
 | `eachSidebar` | frontend/js/sheets-selects.js:196 |
-| `editedMarker` | frontend/js/sheets-selects.js:1957 |
-| `enhanceAllSelects` | frontend/js/sheets-selects.js:1030 |
-| `enhanceDateField` | frontend/js/sheets-selects.js:1058 |
+| `editedMarker` | frontend/js/sheets-selects.js:1961 |
+| `enhanceAllSelects` | frontend/js/sheets-selects.js:1034 |
+| `enhanceDateField` | frontend/js/sheets-selects.js:1062 |
 | `enhanceSelect` | frontend/js/sheets-selects.js:719 |
-| `focusSelect` | frontend/js/sheets-selects.js:1121 |
-| `formatTokens` | frontend/js/sheets-selects.js:1720 |
+| `focusSelect` | frontend/js/sheets-selects.js:1125 |
+| `formatTokens` | frontend/js/sheets-selects.js:1724 |
 | `initResizableSidebars` | frontend/js/sheets-selects.js:461 |
 | `initSidebarSheetDismissal` | frontend/js/sheets-selects.js:266 |
-| `kebabMenu` | frontend/js/sheets-selects.js:1343 |
+| `kebabMenu` | frontend/js/sheets-selects.js:1347 |
 | `labelledMenu` | frontend/js/sheets-selects.js:626 |
 | `layoutIsStacked` | frontend/js/sheets-selects.js:42 |
 | `layoutIsTablet` | frontend/js/sheets-selects.js:79 |
-| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1691 |
-| `listFilter` | frontend/js/sheets-selects.js:1255 |
-| `loadChatSuggestions` | frontend/js/sheets-selects.js:2193 |
-| `loadConversationList` | frontend/js/sheets-selects.js:1789 |
+| `lightboxReadingsFor` | frontend/js/sheets-selects.js:1695 |
+| `listFilter` | frontend/js/sheets-selects.js:1259 |
+| `loadChatSuggestions` | frontend/js/sheets-selects.js:2197 |
+| `loadConversationList` | frontend/js/sheets-selects.js:1793 |
 | `makeMenuItem` | frontend/js/sheets-selects.js:606 |
 | `makeSidebarResizable` | frontend/js/sheets-selects.js:322 |
 | `makeWebPanelResizable` | frontend/js/sheets-selects.js:549 |
-| `menuRowFits` | frontend/js/sheets-selects.js:1322 |
-| `openConversation` | frontend/js/sheets-selects.js:1965 |
-| `openKebabSheet` | frontend/js/sheets-selects.js:1169 |
-| `parseServerTime` | frontend/js/sheets-selects.js:1729 |
-| `personaDisplayName` | frontend/js/sheets-selects.js:2272 |
-| `relativeTime` | frontend/js/sheets-selects.js:1739 |
-| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1600 |
+| `menuRowFits` | frontend/js/sheets-selects.js:1326 |
+| `openConversation` | frontend/js/sheets-selects.js:1969 |
+| `openKebabSheet` | frontend/js/sheets-selects.js:1173 |
+| `parseServerTime` | frontend/js/sheets-selects.js:1733 |
+| `personaDisplayName` | frontend/js/sheets-selects.js:2276 |
+| `relativeTime` | frontend/js/sheets-selects.js:1743 |
+| `replaceOpenToolbarMenus` | frontend/js/sheets-selects.js:1604 |
 | `resetWebPanelWidth` | frontend/js/sheets-selects.js:530 |
-| `rowActions` | frontend/js/sheets-selects.js:1230 |
+| `rowActions` | frontend/js/sheets-selects.js:1234 |
 | `selectFaceText` | frontend/js/sheets-selects.js:710 |
-| `shortModelName` | frontend/js/sheets-selects.js:1646 |
+| `shortModelName` | frontend/js/sheets-selects.js:1650 |
 | `sidebarDefault` | frontend/js/sheets-selects.js:23 |
 | `sidebarFittedWidth` | frontend/js/sheets-selects.js:86 |
 | `sidebarWidth` | frontend/js/sheets-selects.js:25 |
-| `sortConversations` | frontend/js/sheets-selects.js:1776 |
-| `thinkingWordsFor` | frontend/js/sheets-selects.js:2331 |
+| `sortConversations` | frontend/js/sheets-selects.js:1780 |
+| `thinkingWordsFor` | frontend/js/sheets-selects.js:2335 |
 | `trackSeparatorValue` | frontend/js/sheets-selects.js:301 |
-| `wantsThinkingWords` | frontend/js/sheets-selects.js:2352 |
-| `watchForSelects` | frontend/js/sheets-selects.js:1133 |
+| `wantsThinkingWords` | frontend/js/sheets-selects.js:2356 |
+| `watchForSelects` | frontend/js/sheets-selects.js:1137 |
 | `webPanelIsNarrow` | frontend/js/sheets-selects.js:496 |
 | `webPanelMaxWidth` | frontend/js/sheets-selects.js:506 |
 | `wireInPlaceSheetDismissal` | frontend/js/sheets-selects.js:248 |
@@ -1176,19 +1176,19 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `_namesSignature` | frontend/js/ai-tools.js:65 |
 | `applyEmbeddingBackend` | frontend/js/ai-tools.js:778 |
 | `applyFeatureModel` | frontend/js/ai-tools.js:365 |
-| `applyPalette` | frontend/js/ai-tools.js:1186 |
-| `applyRestoredLook` | frontend/js/ai-tools.js:1121 |
+| `applyPalette` | frontend/js/ai-tools.js:1189 |
+| `applyRestoredLook` | frontend/js/ai-tools.js:1124 |
 | `clearEmbeddingBackendLatch` | frontend/js/ai-tools.js:825 |
 | `featureModelChoiceLabel` | frontend/js/ai-tools.js:359 |
 | `featureModelMenuItem` | frontend/js/ai-tools.js:402 |
 | `featureModelRow` | frontend/js/ai-tools.js:341 |
 | `featureModelState` | frontend/js/ai-tools.js:349 |
 | `fillModelSelect` | frontend/js/ai-tools.js:69 |
-| `lookFromOtherWindow` | frontend/js/ai-tools.js:1156 |
+| `lookFromOtherWindow` | frontend/js/ai-tools.js:1159 |
 | `looksLikeEmbeddingModel` | frontend/js/ai-tools.js:774 |
-| `mirroredUiKeys` | frontend/js/ai-tools.js:934 |
+| `mirroredUiKeys` | frontend/js/ai-tools.js:937 |
 | `placeChatModelPanel` | frontend/js/ai-tools.js:221 |
-| `pullLookFromNotebook` | frontend/js/ai-tools.js:1142 |
+| `pullLookFromNotebook` | frontend/js/ai-tools.js:1145 |
 | `renderAutonomousModelPicker` | frontend/js/ai-tools.js:533 |
 | `renderChatActiveModelBadge` | frontend/js/ai-tools.js:146 |
 | `renderChatModelPicker` | frontend/js/ai-tools.js:102 |
@@ -1198,15 +1198,15 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `renderReindex` | frontend/js/ai-tools.js:710 |
 | `renderUtilityModelPicker` | frontend/js/ai-tools.js:266 |
 | `renderVisionModelPicker` | frontend/js/ai-tools.js:289 |
-| `saveUiState` | frontend/js/ai-tools.js:992 |
-| `seedUiStateFromServer` | frontend/js/ai-tools.js:1069 |
+| `saveUiState` | frontend/js/ai-tools.js:995 |
+| `seedUiStateFromServer` | frontend/js/ai-tools.js:1072 |
 | `syncEmbeddingPickerState` | frontend/js/ai-tools.js:647 |
 | `syncFeatureModelSelects` | frontend/js/ai-tools.js:436 |
 | `taskElapsed` | frontend/js/ai-tools.js:31 |
-| `uiStateFingerprint` | frontend/js/ai-tools.js:981 |
-| `uiStatePayload` | frontend/js/ai-tools.js:968 |
-| `uiStateRememberSynced` | frontend/js/ai-tools.js:1110 |
-| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1037 |
+| `uiStateFingerprint` | frontend/js/ai-tools.js:984 |
+| `uiStatePayload` | frontend/js/ai-tools.js:971 |
+| `uiStateRememberSynced` | frontend/js/ai-tools.js:1113 |
+| `watchMirroredUiKeys` | frontend/js/ai-tools.js:1040 |
 | `wireFeatureModelSelects` | frontend/js/ai-tools.js:496 |
 | `wireReindexButton` | frontend/js/ai-tools.js:689 |
 
@@ -5210,6 +5210,28 @@ Top-level `function name(`, `async function name(` and `const name = (` in `fron
 | `benchStatusLine` | frontend/js/model-bench.js:88 |
 | `renderModelBench` | frontend/js/model-bench.js:100 |
 | `runModelBench` | frontend/js/model-bench.js:138 |
+
+### frontend/js/model-menu.js (17)
+
+| Name | File:line |
+|---|---|
+| `applyModelQuery` | frontend/js/model-menu.js:156 |
+| `decorateModelMenu` | frontend/js/model-menu.js:278 |
+| `modelCountLabel` | frontend/js/model-menu.js:55 |
+| `modelMenuAct` | frontend/js/model-menu.js:228 |
+| `modelMenuGroup` | frontend/js/model-menu.js:117 |
+| `modelMenuItem` | frontend/js/model-menu.js:60 |
+| `modelMenuKeys` | frontend/js/model-menu.js:244 |
+| `modelMenuLabel` | frontend/js/model-menu.js:109 |
+| `modelMenuList` | frontend/js/model-menu.js:27 |
+| `modelMenuPin` | frontend/js/model-menu.js:86 |
+| `modelMenuRemember` | frontend/js/model-menu.js:322 |
+| `modelMenuRender` | frontend/js/model-menu.js:180 |
+| `modelMenuSave` | frontend/js/model-menu.js:36 |
+| `modelMenuSearch` | frontend/js/model-menu.js:255 |
+| `modelMenuStops` | frontend/js/model-menu.js:211 |
+| `modelMenuWalk` | frontend/js/model-menu.js:216 |
+| `modelSource` | frontend/js/model-menu.js:45 |
 
 ### frontend/js/nav-history.js (11)
 
@@ -10662,7 +10684,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Library -> Contents: an outline (INBOX 496) | frontend/css/01-forms-settings.css:2470 |
 | Library → Documents | frontend/css/03-dashboard-widgets.css:4008 |
 | Library → Whiteboards | frontend/css/03-dashboard-widgets.css:4033 |
-| Live preview | frontend/css/04-chat-dock-appearance.css:4638 |
+| Live preview | frontend/css/04-chat-dock-appearance.css:4616 |
 | MICRO-ANIMATIONS | frontend/css/07-whiteboard-misc.css:668 |
 | Midnight: deep navy and gold (Brief 95, INBOX 858: "truly good themes"). | frontend/css/05-sidebars-themes.css:3522 |
 | Ocean: cool teal and deep blue. Crisp rather than cosy. | frontend/css/05-sidebars-themes.css:3330 |
@@ -10717,10 +10739,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | Settings, About, Maintenance (settings-controls.js, renderMaintenance). | frontend/css/01-forms-settings.css:6201 |
 | Settings: a section's intro sits under its heading, not above it | frontend/css/08-consistency.css:4570 |
 | TENSIONS: THE DISAGREEMENT REVIEW | frontend/css/inbox-lazy.css:244 |
-| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5645 |
+| THE CHAT ON A PHONE, MEASURED | frontend/css/04-chat-dock-appearance.css:5623 |
 | THE OCR WORKSPACE | frontend/css/07-whiteboard-misc.css:5425 |
 | THE QUIET SIDE OF THE BUTTON RAMP: A RUN OF ROW ACTIONS | frontend/css/08-consistency.css:2320 |
-| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5692 |
+| THE WRITE WITH AI ROW, ON A NARROW COLUMN | frontend/css/04-chat-dock-appearance.css:5670 |
 | THE WRITING PHASE: nodes, and an edge drawing itself | frontend/css/01-forms-settings.css:4965 |
 | Technical mono: a cool graphite ground, monospace for the numbers and | frontend/css/05-sidebars-themes.css:3683 |
 | Templates (INBOX 715) | frontend/css/library-lazy.css:3546 |
@@ -10817,11 +10839,11 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | activity, as a timeline rather than as cards | frontend/css/library-lazy.css:3213 |
 | an embedded document, drawn as a card (INBOX 421 b) | frontend/css/05-sidebars-themes.css:6136 |
 | and inside a small phone | frontend/css/05-sidebars-themes.css:5910 |
-| appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1953 |
+| appearance settings: grouped, scannable rows | frontend/css/04-chat-dock-appearance.css:1947 |
 | assistant message layout | frontend/css/05-sidebars-themes.css:4417 |
-| attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2828 |
+| attaching notes to a chat message | frontend/css/04-chat-dock-appearance.css:2822 |
 | back / forward through pages | frontend/css/00-tokens-shell.css:4082 |
-| back-to-top button | frontend/css/04-chat-dock-appearance.css:2647 |
+| back-to-top button | frontend/css/04-chat-dock-appearance.css:2641 |
 | band 2 (820 to 1200): the tabs keep their names, set small | frontend/css/10-responsive.css:61 |
 | band 2: 820-1100, iPad landscape and small laptops | frontend/css/07-whiteboard-misc.css:9810 |
 | band 3 (600 to 820): the tab strip fits on its own row | frontend/css/10-responsive.css:20 |
@@ -10833,7 +10855,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | band 4: the settings sheet's head may wrap, but not be squashed | frontend/css/10-responsive.css:924 |
 | boot splash | frontend/css/00-tokens-shell.css:4104 |
 | callouts ("specialised boxes and frames") | frontend/css/05-sidebars-themes.css:1250 |
-| category rename / delete | frontend/css/04-chat-dock-appearance.css:2716 |
+| category rename / delete | frontend/css/04-chat-dock-appearance.css:2710 |
 | chat dock density pass (§37C) | frontend/css/04-chat-dock-appearance.css:1281 |
 | chat page layout | frontend/css/04-chat-dock-appearance.css:480 |
 | chat panel: answer and raw records side by side | frontend/css/01-forms-settings.css:1055 |
@@ -10850,7 +10872,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | dashboard quick links | frontend/css/03-dashboard-widgets.css:1484 |
 | dashboard widgets, de-vibecoded | frontend/css/08-consistency.css:4238 |
 | document formatting toolbar | frontend/css/05-sidebars-themes.css:1946 |
-| documents tab | frontend/css/04-chat-dock-appearance.css:3718 |
+| documents tab | frontend/css/04-chat-dock-appearance.css:3696 |
 | documents: outline, live stats, and where the file actually is | frontend/css/05-sidebars-themes.css:2812 |
 | documents: the comments panel (DOCUMENTS_PLAN Phase 5 item 1) | frontend/css/05-sidebars-themes.css:3103 |
 | drag to delete (INBOX 660) | frontend/css/library-lazy.css:3511 |
@@ -10865,19 +10887,19 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | filter help (the list inside `#search-help-hint`, a `.help-body`) | frontend/css/05-sidebars-themes.css:651 |
 | finding a setting (§36B) | frontend/css/06-timeline-dialogs.css:1379 |
 | finding your way about inside Settings (INBOX 444) | frontend/css/01-forms-settings.css:5724 |
-| first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2295 |
+| first-run onboarding tour | frontend/css/04-chat-dock-appearance.css:2289 |
 | forms | frontend/css/01-forms-settings.css:224 |
 | glass reaches the floating chrome that sat outside it | frontend/css/08-consistency.css:2663 |
 | glass restraint (UI_MODERNISATION_PLAN.md, Phase 3) | frontend/css/07-whiteboard-misc.css:7891 |
 | graph minimap | frontend/css/02-chat-graph.css:3637 |
 | graph polish | frontend/css/03-dashboard-widgets.css:3465 |
 | graph: depth, halos and legible labels | frontend/css/04-chat-dock-appearance.css:1516 |
-| graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1559 |
+| graph: physics sliders + node popup | frontend/css/04-chat-dock-appearance.css:1553 |
 | heading hierarchy (§35L) | frontend/css/01-forms-settings.css:1 |
 | held space pans, from any tool | frontend/css/07-whiteboard-misc.css:4942 |
 | help | frontend/css/sketch-pad.css:591 |
-| help guide accordion | frontend/css/04-chat-dock-appearance.css:2354 |
-| help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2386 |
+| help guide accordion | frontend/css/04-chat-dock-appearance.css:2348 |
+| help mini AI chat (item 40's second half) | frontend/css/04-chat-dock-appearance.css:2380 |
 | hovering a node | frontend/css/02-chat-graph.css:1306 |
 | icon-only buttons are square, everywhere | frontend/css/07-whiteboard-misc.css:3454 |
 | left-aligned button lists stay left-aligned | frontend/css/07-whiteboard-misc.css:3715 |
@@ -10885,7 +10907,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | live clock (reminders tab) | frontend/css/01-forms-settings.css:3674 |
 | lock screen (Phase 4) | frontend/css/01-forms-settings.css:2058 |
 | map nodes and their edges (MINDMAP_PLAN.md §5, Phase 2) | frontend/css/07-whiteboard-misc.css:8153 |
-| markdown tables | frontend/css/04-chat-dock-appearance.css:1891 |
+| markdown tables | frontend/css/04-chat-dock-appearance.css:1885 |
 | meeting notes (§17) | frontend/css/02-chat-graph.css:1670 |
 | model cards: the Models screen's suggested downloads (INBOX 444) | frontend/css/01-forms-settings.css:5872 |
 | more than one route between the same two notes | frontend/css/02-chat-graph.css:1194 |
@@ -10933,7 +10955,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | rows instead of cards | frontend/css/00-tokens-shell.css:2282 |
 | rules recovered from inline style attributes (audit of §40) | frontend/css/07-whiteboard-misc.css:1098 |
 | saved filters | frontend/css/05-sidebars-themes.css:664 |
-| screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2700 |
+| screen-reader-only announcements | frontend/css/04-chat-dock-appearance.css:2694 |
 | scrollbars | frontend/css/07-whiteboard-misc.css:3609 |
 | search match highlighting | frontend/css/05-sidebars-themes.css:351 |
 | settings / model manager | frontend/css/01-forms-settings.css:2014 |
@@ -10945,7 +10967,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | sidebar heading rows | frontend/css/05-sidebars-themes.css:75 |
 | space dialogs | frontend/css/07-whiteboard-misc.css:2609 |
 | space switcher (top bar) | frontend/css/07-whiteboard-misc.css:2424 |
-| spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1951 |
+| spacious density (third option alongside comfortable/compact) | frontend/css/04-chat-dock-appearance.css:1945 |
 | status and foot | frontend/css/sketch-pad.css:497 |
 | tab navigation (Wave A; pill style inside the top bar in Wave L) | frontend/css/00-tokens-shell.css:3502 |
 | text inputs (§36B) | frontend/css/01-forms-settings.css:225 |
@@ -10978,7 +11000,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the app's one help popover | frontend/css/03-dashboard-widgets.css:4052 |
 | the app's own dropdown | frontend/css/07-whiteboard-misc.css:3768 |
 | the arrange zone, once it is inside the overflow menu | frontend/css/07-whiteboard-misc.css:9828 |
-| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4894 |
+| the assistant's head and its three verbs (the owner, 2026-09-24: | frontend/css/04-chat-dock-appearance.css:4872 |
 | the assistant's three verbs (INBOX 192) | frontend/css/09-editor.css:635 |
 | the attachment card (INBOX 440 (2), DESIGN.md "A file attached to a | frontend/css/05-sidebars-themes.css:423 |
 | the bar's three zones | frontend/css/00-tokens-shell.css:3248 |
@@ -10994,10 +11016,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the chat sidebar on a phone | frontend/css/02-chat-graph.css:4892 |
 | the chat toolbar, grouped (§36B) | frontend/css/06-timeline-dialogs.css:1454 |
 | the citation peek (INBOX 80) | frontend/css/02-chat-graph.css:3911 |
-| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4489 |
+| the code editor: gutter + monospace | frontend/css/04-chat-dock-appearance.css:4467 |
 | the code panel, one compact header and a padded body (the owner, | frontend/css/library-lazy.css:5004 |
 | the composer dock (asked for directly) | frontend/css/04-chat-dock-appearance.css:885 |
-| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5272 |
+| the composer, as one surface | frontend/css/04-chat-dock-appearance.css:5250 |
 | the connections rail (WORLD_CLASS_PLAN D2; `renderNotesRail`) | frontend/css/04-chat-dock-appearance.css:290 |
 | the context bar (WHITEBOARD_PLAN.md Phase 2, decision 2) | frontend/css/07-whiteboard-misc.css:7087 |
 | the context bar's folded groups (`wbFoldContextBar`) | frontend/css/library-lazy.css:6901 |
@@ -11005,10 +11027,10 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the dashboard's greeting banner, on a phone | frontend/css/07-whiteboard-misc.css:10473 |
 | the dashboard's quick actions stop wrapping | frontend/css/07-whiteboard-misc.css:10447 |
 | the dashboard's three densities | frontend/css/07-whiteboard-misc.css:11137 |
-| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3563 |
+| the desk's own rows (WORLD_CLASS_PLAN D16) | frontend/css/04-chat-dock-appearance.css:3541 |
 | the dialog | frontend/css/sketch-pad.css:9 |
 | the dock (UI_MODERNISATION_PLAN.md Phase 8) | frontend/css/07-whiteboard-misc.css:9274 |
-| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4154 |
+| the dock above the editor | frontend/css/04-chat-dock-appearance.css:4132 |
 | the dock row below 1100 | frontend/css/07-whiteboard-misc.css:9879 |
 | the document editor's instruments | frontend/css/05-sidebars-themes.css:4651 |
 | the document history, side by side (DOCUMENTS 24 row 4, Brief 76) | frontend/css/library-lazy.css:4829 |
@@ -11029,7 +11051,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the graph's floating controls clear its New note (INBOX 430) | frontend/css/10-responsive.css:2250 |
 | the graph's legend: one container, not a pill in a box | frontend/css/08-consistency.css:3115 |
 | the graph's options panel | frontend/css/08-consistency.css:3333 |
-| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5750 |
+| the guided tour (DESIGN.md, "A guided tour step") | frontend/css/04-chat-dock-appearance.css:5728 |
 | the head: identity, one fact as a dot, an all-icon group | frontend/css/03-dashboard-widgets.css:995 |
 | the help popover is a popover, not a page (INBOX 206) | frontend/css/08-consistency.css:2543 |
 | the in-app confirm dialog (§35F) | frontend/css/06-timeline-dialogs.css:1114 |
@@ -11087,18 +11109,18 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | the trace strip | frontend/css/04-chat-dock-appearance.css:1 |
 | the two radio-backed segmented bars | frontend/css/03-dashboard-widgets.css:3547 |
 | the two whiteboard controls that never joined the strip | frontend/css/07-whiteboard-misc.css:3372 |
-| the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2515 |
+| the web-search engine picker | frontend/css/04-chat-dock-appearance.css:2509 |
 | the whiteboard top bar and the documents editor join the families | frontend/css/07-whiteboard-misc.css:7925 |
 | the whiteboard's panels are one surface each | frontend/css/07-whiteboard-misc.css:3572 |
 | the whiteboard's tools become a bottom strip | frontend/css/07-whiteboard-misc.css:10407 |
-| the writing room | frontend/css/04-chat-dock-appearance.css:3416 |
+| the writing room | frontend/css/04-chat-dock-appearance.css:3394 |
 | tools & features browser | frontend/css/03-dashboard-widgets.css:1772 |
 | tools and page | frontend/css/sketch-pad.css:390 |
 | top bar polish | frontend/css/05-sidebars-themes.css:4372 |
 | transcluded notes (![[note]]) | frontend/css/05-sidebars-themes.css:1593 |
 | two-up cards in tablet portrait | frontend/css/07-whiteboard-misc.css:10046 |
 | type to filter a long list (row 1643, `listFilter` in sheets-selects.js) | frontend/css/08-consistency.css:10741 |
-| user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1920 |
+| user-tunable corner rounding | frontend/css/04-chat-dock-appearance.css:1914 |
 | web panel (search + reader) | frontend/css/03-dashboard-widgets.css:960 |
 | what a wide screen is for | frontend/css/00-tokens-shell.css:3602 |
 | what it learned (WORLD_CLASS_PLAN I9) | frontend/css/01-forms-settings.css:5571 |
@@ -11118,7 +11140,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/01-forms-settings.css | 6278 |
 | frontend/css/02-chat-graph.css | 5325 |
 | frontend/css/03-dashboard-widgets.css | 4835 |
-| frontend/css/04-chat-dock-appearance.css | 6569 |
+| frontend/css/04-chat-dock-appearance.css | 6547 |
 | frontend/css/05-sidebars-themes.css | 6269 |
 | frontend/css/06-timeline-dialogs.css | 3682 |
 | frontend/css/07-whiteboard-misc.css | 11994 |
@@ -11130,6 +11152,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/ask-compose-lazy.css | 258 |
 | frontend/css/atlas-lazy.css | 62 |
 | frontend/css/captions-lazy.css | 95 |
+| frontend/css/chip-bar-lazy.css | 22 |
 | frontend/css/companion-throw-lazy.css | 32 |
 | frontend/css/companion-travel-lazy.css | 106 |
 | frontend/css/dash-night-lazy.css | 29 |
@@ -11151,6 +11174,7 @@ Banner comments (`/* ===` or `/* ---`) in `frontend/css/*.css`, sorted by title.
 | frontend/css/math-editor-lazy.css | 108 |
 | frontend/css/meetings-lazy.css | 562 |
 | frontend/css/mermaid-lazy.css | 68 |
+| frontend/css/model-menu-lazy.css | 107 |
 | frontend/css/motion-still.css | 94 |
 | frontend/css/nav-history-lazy.css | 169 |
 | frontend/css/objmove-lazy.css | 120 |
@@ -14143,55 +14167,55 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_about_the_guide` | src/tessellate/ai/help_chat.py:2949 |
-| `_act_of` | src/tessellate/ai/help_chat.py:2688 |
-| `_aliased_topics` | src/tessellate/ai/help_chat.py:2727 |
-| `_aware` | src/tessellate/ai/help_chat.py:3409 |
-| `_beyond` | src/tessellate/ai/help_chat.py:3235 |
-| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2619 |
-| `_guide_lead` | src/tessellate/ai/help_chat.py:3323 |
-| `_guide_opening` | src/tessellate/ai/help_chat.py:3339 |
-| `_help_sentences` | src/tessellate/ai/help_chat.py:3306 |
-| `_keyword_in` | src/tessellate/ai/help_chat.py:2609 |
-| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2541 |
-| `_keyword_regex` | src/tessellate/ai/help_chat.py:2605 |
-| `_matching_topics` | src/tessellate/ai/help_chat.py:2767 |
-| `_meaning_topics` | src/tessellate/ai/help_chat.py:2847 |
-| `_normalise_keys` | src/tessellate/ai/help_chat.py:2564 |
-| `_nothing_matched` | src/tessellate/ai/help_chat.py:3159 |
-| `_off_topic` | src/tessellate/ai/help_chat.py:2999 |
-| `_outside_the_app` | src/tessellate/ai/help_chat.py:2967 |
-| `_place` | src/tessellate/ai/help_chat.py:3280 |
-| `_preference` | src/tessellate/ai/help_chat.py:3362 |
-| `_prompt_for` | src/tessellate/ai/help_chat.py:3062 |
-| `_read_as` | src/tessellate/ai/help_chat.py:3481 |
-| `_reading_topics` | src/tessellate/ai/help_chat.py:2710 |
-| `_repaired` | src/tessellate/ai/help_chat.py:2756 |
-| `_second_sentence` | src/tessellate/ai/help_chat.py:3310 |
-| `_state_line` | src/tessellate/ai/help_chat.py:3371 |
-| `_stated_lead` | src/tessellate/ai/help_chat.py:3380 |
-| `_tab_topics` | src/tessellate/ai/help_chat.py:3048 |
-| `answer` | src/tessellate/ai/help_chat.py:3561 |
-| `answer_stream` | src/tessellate/ai/help_chat.py:3496 |
-| `badges_for` | src/tessellate/ai/help_chat.py:2935 |
-| `composed_answer` | src/tessellate/ai/help_chat.py:3391 |
-| `help_block_for` | src/tessellate/ai/help_chat.py:3642 |
-| `help_listing` | src/tessellate/ai/help_chat.py:2906 |
-| `help_sentences` | src/tessellate/ai/help_chat.py:3289 |
-| `names_app` | src/tessellate/ai/help_chat.py:3626 |
-| `offline_answer` | src/tessellate/ai/help_chat.py:3427 |
-| `social_reply` | src/tessellate/ai/help_chat.py:3239 |
-| `source_names` | src/tessellate/ai/help_chat.py:2902 |
-| `system_answer` | src/tessellate/ai/help_chat.py:2884 |
-| `topic_title` | src/tessellate/ai/help_chat.py:2870 |
-| `topics_for` | src/tessellate/ai/help_chat.py:3006 |
+| `_about_the_guide` | src/tessellate/ai/help_chat.py:2951 |
+| `_act_of` | src/tessellate/ai/help_chat.py:2690 |
+| `_aliased_topics` | src/tessellate/ai/help_chat.py:2729 |
+| `_aware` | src/tessellate/ai/help_chat.py:3411 |
+| `_beyond` | src/tessellate/ai/help_chat.py:3237 |
+| `_edit_distance_at_most_one` | src/tessellate/ai/help_chat.py:2621 |
+| `_guide_lead` | src/tessellate/ai/help_chat.py:3325 |
+| `_guide_opening` | src/tessellate/ai/help_chat.py:3341 |
+| `_help_sentences` | src/tessellate/ai/help_chat.py:3308 |
+| `_keyword_in` | src/tessellate/ai/help_chat.py:2611 |
+| `_keyword_pattern` | src/tessellate/ai/help_chat.py:2543 |
+| `_keyword_regex` | src/tessellate/ai/help_chat.py:2607 |
+| `_matching_topics` | src/tessellate/ai/help_chat.py:2769 |
+| `_meaning_topics` | src/tessellate/ai/help_chat.py:2849 |
+| `_normalise_keys` | src/tessellate/ai/help_chat.py:2566 |
+| `_nothing_matched` | src/tessellate/ai/help_chat.py:3161 |
+| `_off_topic` | src/tessellate/ai/help_chat.py:3001 |
+| `_outside_the_app` | src/tessellate/ai/help_chat.py:2969 |
+| `_place` | src/tessellate/ai/help_chat.py:3282 |
+| `_preference` | src/tessellate/ai/help_chat.py:3364 |
+| `_prompt_for` | src/tessellate/ai/help_chat.py:3064 |
+| `_read_as` | src/tessellate/ai/help_chat.py:3483 |
+| `_reading_topics` | src/tessellate/ai/help_chat.py:2712 |
+| `_repaired` | src/tessellate/ai/help_chat.py:2758 |
+| `_second_sentence` | src/tessellate/ai/help_chat.py:3312 |
+| `_state_line` | src/tessellate/ai/help_chat.py:3373 |
+| `_stated_lead` | src/tessellate/ai/help_chat.py:3382 |
+| `_tab_topics` | src/tessellate/ai/help_chat.py:3050 |
+| `answer` | src/tessellate/ai/help_chat.py:3563 |
+| `answer_stream` | src/tessellate/ai/help_chat.py:3498 |
+| `badges_for` | src/tessellate/ai/help_chat.py:2937 |
+| `composed_answer` | src/tessellate/ai/help_chat.py:3393 |
+| `help_block_for` | src/tessellate/ai/help_chat.py:3644 |
+| `help_listing` | src/tessellate/ai/help_chat.py:2908 |
+| `help_sentences` | src/tessellate/ai/help_chat.py:3291 |
+| `names_app` | src/tessellate/ai/help_chat.py:3628 |
+| `offline_answer` | src/tessellate/ai/help_chat.py:3429 |
+| `social_reply` | src/tessellate/ai/help_chat.py:3241 |
+| `source_names` | src/tessellate/ai/help_chat.py:2904 |
+| `system_answer` | src/tessellate/ai/help_chat.py:2886 |
+| `topic_title` | src/tessellate/ai/help_chat.py:2872 |
+| `topics_for` | src/tessellate/ai/help_chat.py:3008 |
 
 ### src/tessellate/ai/help_topics_more.py (2)
 
 | Name | File:line |
 |---|---|
-| `_act_topic` | src/tessellate/ai/help_topics_more.py:2954 |
-| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3080 |
+| `_act_topic` | src/tessellate/ai/help_topics_more.py:2956 |
+| `_slash_commands_topic` | src/tessellate/ai/help_topics_more.py:3082 |
 
 ### src/tessellate/ai/inbox.py (8)
 
@@ -21376,7 +21400,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:336 |
 | `settings_from` | src/tessellate/search/websearch.py:321 |
 
-## Tests (14330)
+## Tests (14335)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -22337,6 +22361,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_gate.py | 4 |
 | tests/test_model_json_deep_nesting.py | 5 |
 | tests/test_model_manager_choice.py | 6 |
+| tests/test_model_menu.py | 4 |
 | tests/test_model_offer.py | 2 |
 | tests/test_model_sizes.py | 5 |
 | tests/test_model_specs.py | 17 |
@@ -22851,7 +22876,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_typo_routing.py | 4 |
 | tests/test_ui_1017b.py | 7 |
 | tests/test_ui_batch_726.py | 13 |
-| tests/test_ui_recipes.py | 231 |
+| tests/test_ui_recipes.py | 232 |
 | tests/test_ui_signatures.py | 2 |
 | tests/test_ui_state.py | 6 |
 | tests/test_ui_targets_1029b.py | 9 |
@@ -23744,7 +23769,7 @@ Every `##` and `###` heading in `docs/ROADMAP.md` and `docs/roadmap/*.md`, excep
 | Phases | docs/roadmap/DOCUMENTS_PLAN.md:1274 |
 | Phases 0 to 6: built | docs/roadmap/UI_MODERNISATION_PLAN.md:216 |
 | Phases, each with the gate it is finished against | docs/roadmap/MINDMAP_PLAN.md:1296 |
-| Placed (last 20, newest first) | docs/roadmap/INBOX.md:283 |
+| Placed (last 20, newest first) | docs/roadmap/INBOX.md:295 |
 | Placed from Brief 40, 2026-10-10 (does the MCP server work) | docs/roadmap/AGENT_SKILLS_REFORM.md:345 |
 | Placed from Brief 40, 2026-10-10 (research and placement) | docs/roadmap/BACKLOG.md:4167 |
 | Placed from Brief 40, 2026-10-10 (the phone over HTTPS) | docs/roadmap/WORLD_CLASS_PLAN.md:3128 |

@@ -6104,7 +6104,7 @@ def test_a_staged_chip_is_one_quiet_pill() -> None:
     hand-built `.attachment-chip` slabs are built by `attachmentChip` too."""
     attach = frontend_text("chat-attach.js")
     builder = attach[attach.index("function attachmentChip(") :][:3400]
-    assert "const pill = !!onRemove;" in builder
+    assert "const pill = onRemove !== undefined;" in builder
     assert "att-chip-pill" in builder
     selection = attach[attach.index("function renderSelectionAttachment(") :][:1600]
     assert "attachmentChip(" in selection

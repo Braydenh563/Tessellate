@@ -1529,12 +1529,6 @@ body.scroll-top-visible #tab-notes .layout > .tab-main {
   opacity: 0.34;
 }
 
-.graph-node text.graph-pin-badge {
-  font-size: var(--text-xs);
-  stroke: none;
-  pointer-events: none;
-}
-
 .graph-node text.graph-label {
   font-weight: 500;
   fill: var(--ink);
@@ -3319,27 +3313,6 @@ span > .chip {
 .att-chip[data-state="error"] .att-chip-facts {
   color: var(--error);
 }
-.att-chip-bar {
-  position: absolute;
-  inset: auto var(--space-2) 0;
-  width: auto;
-  height: 3px;
-  appearance: none;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  accent-color: var(--accent);
-}
-.att-chip-bar::-webkit-progress-bar {
-  background: transparent;
-}
-.att-chip-bar::-webkit-progress-value {
-  background: var(--accent);
-  border-radius: var(--radius-sm);
-}
-.att-chip-bar::-moz-progress-bar {
-  background: var(--accent);
-}
 /* A notebook card (`notebookCard`): tile and words are one left-aligned button
    (a centred one overflowed both ways, the black bar's cut), the x its sibling. */
 .att-chip-open {
@@ -3391,7 +3364,6 @@ span > .chip {
    border; the glyph, the name cut at 14 characters, the kind in brackets, the
    x. Under 820px the buttons keep their 44px target and overhang it. */
 .att-chip-pill {
-  max-width: 100%;
   min-height: var(--control-h-lg);
   gap: var(--space-2);
   padding: 0 var(--space-2) 0 var(--space-3);
@@ -3402,9 +3374,6 @@ span > .chip {
 .att-chip-pill .att-chip-tile {
   width: 1.25rem;
   background: none;
-  font-size: var(--text-md);
-}
-.att-chip-pill img.att-chip-tile {
   border-radius: inherit;
 }
 .att-chip-pill :is(.att-chip-open, .att-chip-x) {
@@ -3414,21 +3383,12 @@ span > .chip {
   border-radius: inherit;
 }
 .att-chip-pill .att-chip-body {
-  flex-direction: row;
+  flex-flow: row;
   align-items: baseline;
   gap: var(--space-2);
 }
-.att-chip-pill .att-chip-name {
-  font-weight: 500;
-}
 .att-chip-pill .att-chip-stem {
   max-width: 14ch;
-}
-.att-chip-pill:has(> .att-chip-open:is(:hover, :focus-visible)) {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.att-chip-pill[data-state="error"] {
-  background: color-mix(in srgb, var(--error) 14%, transparent);
 }
 
 /* --- the writing room -------------------------------------------------------- */

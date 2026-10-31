@@ -74,6 +74,10 @@ CSS_FILES = [
     CSS_DIR / "utilities-lazy.css",
     #: What the app draws into a reply beside its words (reply-kit.js, INBOX 1300 C06).
     CSS_DIR / "reply-kit-lazy.css",
+    #: The staged chip's upload bar (chat-attach.js `attachmentChip` loads it).
+    CSS_DIR / "chip-bar-lazy.css",
+    #: The composer's model picker (`LAZY_MODULES.modelMenu`, INBOX 1477).
+    CSS_DIR / "model-menu-lazy.css",
     #: The live captions dock (captions.js, Brief 82).
     CSS_DIR / "captions-lazy.css",
     #: The Notes tab's Questions view (questions-view.js loads it).

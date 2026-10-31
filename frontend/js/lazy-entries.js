@@ -17,6 +17,8 @@ Object.assign(LAZY_MODULES, {
   libraryPick: ["/js/library-pick.js"],
   statusPanels: ["/js/status-panels.js"],
   featureModelSheet: ["/js/feature-model-sheet.js"],
+  //: The composer's model picker: search, Recent, a row per source, pins (model-menu.js's header; INBOX 1477).
+  modelMenu: ["/css/model-menu-lazy.css", "/js/model-menu.js"],
   //: The dashboard's Loose ends, While you were away and day digest widgets.
   dashLazy: ["/css/dash-orphans-lazy.css", "/css/dash-night-lazy.css", "/js/dash-orphans.js", "/js/dash-night.js", "/js/dash-day.js"],
   //: What the app draws into a reply beside its words (reply-kit.js's header).
@@ -50,6 +52,7 @@ Object.assign(LAZY_MODULES, {
   characters: ["/js/avatars.js", "/js/atlas.js", "/js/characters-ready.js"],
 });
 setTimeout(() => ensureModule("loadFailed"), 3000);
+setTimeout(() => ensureModule("modelMenu"), 3000);
 installStandIns({
   settingsPanes: ["renderTasks", "renderTaskHistory", "renderHealthBlock", "renderSamplingRows", "renderPersonas", "savePersonaList"],
   noteActions: ["openImprove", "closeImprove", "runImprove", "applyImprove", "reevaluateEntry", "attachFileTo", "attachFromLibrary"],

@@ -724,6 +724,7 @@ function enhanceSelect(select) {
   if (select.multiple || select.size > 1) return;
   if (select.closest("[data-no-select-enhance]")) return;
   select.setAttribute(SELECT_ENHANCED, "1");
+  const rich = select.classList.contains("feature-model-select");
 
   const shell = document.createElement("span");
   shell.className = "select-shell";
@@ -896,6 +897,8 @@ function enhanceSelect(select) {
         menu.appendChild(buildOptionRow(node));
       }
     }
+    //: A model picker is drawn in the picker's own shape (model-menu.js, lazy, INBOX 1477).
+    if (rich && typeof decorateModelMenu === "function") decorateModelMenu(menu, select, opener);
     syncValue();
   };
 
@@ -903,6 +906,7 @@ function enhanceSelect(select) {
     event.stopPropagation();
     if (select.disabled) return;
     if (menu.classList.contains("hidden")) {
+      if (rich && typeof decorateModelMenu !== "function") ensureModule("modelMenu").then(() => menu.classList.contains("hidden") || rebuild());
       rebuild();
       openActionMenu(menu, opener);
       focusMenuItem(menu.querySelector(".is-chosen"), menu);

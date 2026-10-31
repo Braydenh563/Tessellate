@@ -87,10 +87,10 @@ let lastChatImageAttachments = [];
 function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, state = "ready", progress = 0, error = "", title, removeTitle, onRemove }) {
   const chipEl = document.createElement("span");
   //: **Staged is a pill, sent is a card** (INBOX 1476, the owner: the grey slab
-  //: is not "very clean and dynamic"). A chip with a remove x is waiting in a
+  //: is not "very clean and dynamic"). A staged chip (`onRemove` given, null while it uploads) is waiting in a
   //: composer: one quiet line, the glyph, the name cut at about 14 characters,
   //: the kind in brackets, the x. Sent, it keeps the two-line card.
-  const pill = !!onRemove;
+  const pill = onRemove !== undefined;
   chipEl.className = `chip att-chip${pill ? " att-chip-pill" : ""}`;
   chipEl.dataset.state = state;
   chipEl.title = title || (pill && size ? `${name}, ${formatFileSize(size)}` : name);
@@ -142,6 +142,7 @@ function attachmentChip({ name, size, thumb, icon, facts: factsText, onOpen, sta
     chipEl.append(open);
   } else chipEl.append(tile, body);
   if (state === "uploading") {
+    lazyScript("/css/chip-bar-lazy.css");
     const bar = document.createElement("progress");
     bar.className = "att-chip-bar";
     bar.max = 100;
