@@ -17,7 +17,7 @@ from collections.abc import Callable
 from datetime import date
 from typing import NamedTuple
 
-from tessellate.ai import composer, composer_lists, factgraph, realise, recognise
+from tessellate.ai import composer, composer_doings, composer_lists, factgraph, realise, recognise
 from tessellate.ai import when as when_words
 
 _DID = re.compile(r"^(?:did|have|has)\s+(?:i|we)\s+(?:already\s+|yet\s+|ever\s+)?(.+)$", re.I)
@@ -1026,8 +1026,14 @@ def _by_words(out, tokens: list[str], views: list, today: date) -> bool | None: 
         for slot in SLOTS:
             if (ask := slot.ask(tokens)) is not None:
                 return _value(out, slot, ask, views, today)
-    if len(tokens) > 4 and tokens[0] == "how" and tokens[1] == "often" and tokens[2] in _AUX and tokens[3] in _SELF and _often(out, tokens[4:], views, today):
+    return True if tokens[:1] == ["how"] and _how(out, tokens, views, today) else None
+
+
+def _how(out, tokens: list[str], views: list, today: date) -> bool:  # noqa: ANN001
+    """A doing counted from the lines that say it was done (audit 1030 Z23),
+    how often the notes are filed under a subject, or how old a thing is."""
+    if composer_doings.answer(out, " ".join(tokens), views, today):
         return True
-    if len(tokens) > 3 and tokens[:2] == ["how", "old"] and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today):
+    if len(tokens) > 4 and tokens[1] == "often" and tokens[2] in _AUX and tokens[3] in _SELF and _often(out, tokens[4:], views, today):
         return True
-    return None
+    return len(tokens) > 3 and tokens[1] == "old" and tokens[2] in ("is", "are", "was") and _old(out, tokens[3:], views, today)

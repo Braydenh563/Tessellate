@@ -45,6 +45,8 @@ _OVERDUE = re.compile(
 _PLAN = re.compile(
     rf"^{_LEAD}(?:help me |can you |could you |let'?s |lets )?(?:plan|organi[sz]e|schedule|map out|sort out|prioriti[sz]e|structure|arrange|lay out)\s+(?:out\s+)?(?P<t>.*)$|"
     rf"^{_LEAD}what should i (?:do|work on|focus on|tackle|start with)(?P<s>.*)$|"
+    #: "spread these over the week", "how should I spread my tasks this week" (audit 1030 Z57).
+    rf"^{_LEAD}(?:how (?:should|do|can|could) i |help me |can you )?spread (?:out )?(?P<sp>.*)$|"
     rf"^{_LEAD}(?:what does|how does) (?P<w>my (?:week|day|schedule|weekend|month))(?: look| looks)?(?: like)?.*$|"
     rf"^{_LEAD}(?:my |the )?(?P<a>week ahead|day ahead|agenda|schedule)(?: for (?P<af>.+))?$|"
     rf"^{_LEAD}(?:give me |show me )?(?:an? )?(?:agenda|schedule|plan|timetable) for (?P<g>.+)$", re.I)
@@ -462,7 +464,9 @@ def _tasks(ctx: Ctx, start: date, end: date) -> list[tuple[str, dict, bool]]:
 def _busiest(found: list[Event], days: list[date], load: dict) -> str:
     busiest = max(days, key=lambda d: (load[d], -days.index(d)))
     free = [d for d in days if load[d] == 0 and d.weekday() < 5]
-    return f"Busiest day: {_long(busiest)} with {load[busiest]}." + (f" Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "")
+    #: One item is not a busy day (audit 1030 Z57: "Busiest day: Saturday with 1").
+    said = f"Busiest day: {_long(busiest)} with {load[busiest]}." if load[busiest] > 1 else ""
+    return " ".join(s for s in (said, f"Free weekdays: {', '.join(f'{d:%A}' for d in free)}." if free else "") if s)
 
 
 def _task_groups(tasks: list) -> list[str]:
@@ -474,19 +478,36 @@ def _task_groups(tasks: list) -> list[str]:
     return lines
 
 
+def _units(undated: list) -> list[str]:
+    """The open items grouped by their note, as one errand each: a shopping
+    list is one trip, not four (audit 1030 Z57). A note's one item is said
+    as itself, more as the note's title and how many."""
+    by_note: dict[int, list] = {}
+    for task, note, _d in undated:
+        by_note.setdefault(note["id"], [note]).append(task)
+    return [rows[1] if len(rows) == 2 else f"{study.title_of(str(rows[0].get('content') or ''))} ({len(rows) - 1})" for rows in by_note.values()]
+
+
 def _spread_line(undated: list, days: list[date], load: dict) -> list[str]:
-    work = [d for d in days if d.weekday() < 5] or days
+    """Each note's items on the lightest day, a day taking a second note only
+    once every day has one; the weekdays when two or more are left, else
+    every day (a Friday's "this week" is Friday to Sunday)."""
+    weekdays = [d for d in days if d.weekday() < 5]
+    work = weekdays if len(weekdays) > 1 else days
     placed: dict[date, list[str]] = {}
-    for task in undated:
-        day = min(work, key=lambda d: (load[d], d))
-        load[day] += 1
-        placed.setdefault(day, []).append(task)
-    return ["", "A way to spread them over the lighter days: " + "; ".join(f"{d:%A}: {', '.join(t)}" for d, t in sorted(placed.items())) + "."]
+    for unit in _units(undated):
+        day = min(work, key=lambda d: (load[d] + len(placed.get(d, ())), len(placed.get(d, ())), d))
+        placed.setdefault(day, []).append(unit)
+    said = "; ".join(f"{d:%A}: {', '.join(u)}" for d, u in sorted(placed.items()))
+    if len(placed) == 1:
+        day, units = next(iter(placed.items()))
+        return ["", f"{day:%A} is the lightest day for {', '.join(units)}."]
+    return ["", f"A way to spread them over the lighter days: {said}."]
 
 
 def _task_lines(tasks: list, days: list[date], load: dict) -> list[str]:
     lines = _task_groups(tasks)
-    undated = [t[0] for t in tasks if not t[2]]
+    undated = [t for t in tasks if not t[2]]
     if len(days) > 1 and undated:
         lines += _spread_line(undated, days, load)
     return lines
@@ -504,8 +525,8 @@ def _plan(ctx: Ctx, win: tuple[date, date, str]) -> Reply:
     lines += _grouped(found, today, limit=10) if found else ["", "Nothing is dated in that time."]
     if overdue:
         lines += ["", "**Overdue**"] + [e.line(overdue=True) for e in overdue[:4]]
-    if len(days) > 1 and found:
-        lines += ["", _busiest(found, days, load)]
+    if len(days) > 1 and found and (busy := _busiest(found, days, load)):
+        lines += ["", busy]
     if tasks:
         lines += _task_lines(tasks, days, load)
     elif not found and not overdue:

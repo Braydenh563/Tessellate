@@ -6,6 +6,10 @@ project follows a "waves and phases" development history (see the milestones
 below). Versioning is `0.x` while the app stabilises.
 
 ## [Unreleased]
+- Answers from your notes (composer-1031, Z57): planning the week keeps each note's open items together on one day (a shopping list is one trip) and spreads the notes over the days left, Saturday and Sunday too when only Friday is a weekday; one item is not called the busiest day; no opener goes before a lead that starts with its time ("Let us lay it out. this weekend").
+- Answers from your notes (composer-1031, Z23): "how often do I run", "how many times did I run" and "how much did I run in October" count the lines that say you ran, each on its own day, with the distance summed ("You ran three times, on 3 October (5 km), 17 October (8 km) and 25 October (6 km), about every 11 days"); a habit line answers "how often do I go to the gym" ("Three times a week: Monday, Wednesday and Friday").
+- Answers from your notes (composer-1031, Z58): a comparison reads like against like ("Lisbon vs Tokyo" is the Lisbon trip against the Tokyo trip, not the packing list), and "Lisbon or Tokyo, which is cheaper" is read as a comparison.
+- Ask: "Try again" on an answer from your notes rewords the answer itself again; since the closing offer became the chips (INBOX 1466) every retry had come back word for word.
 - Answers from your notes (composer-1031, Z27): "what's due soon", "coming up", "what's on my plate" and "anything due soon" share one window, the next two weeks, so they list the same items (it was seven days for one and fourteen for the other).
 - Answers from your notes (composer-1031, Z59): "what am I learning" and "what have I been studying" find a line opening "Learning ..." across every note when search finds none; the streak line says "writing streak".
 - Answers from your notes (hub fix 1031): a name keeps its capital when a note's shorthand is said back as your own clause ("the Lisbon trip"); a weekday followed by a part of the day ("Wednesday afternoons") is not pinned to a date; an overview's summary line sits outside the five told lines, so "Show five more" counts what is folded.

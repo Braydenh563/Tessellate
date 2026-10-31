@@ -3616,7 +3616,9 @@ def _digest_for(req: _StreamRequest, prepared: dict, follow, current: list, rest
     try:
         return composer.offered(composer_digest.answer(
             follow.question if restated else req.question, current, today=today,
-            voice=_answer_voice(), turn=len(req.history or []),
+            #: A retry rewords the answer itself: since the closing offer became the
+            #: chips (INBOX 1466) the body is the only thing "Try again" can change.
+            voice=_answer_voice(), turn=len(req.history or []) + req.body.attempt,
             insight=_insight_level(), learned=_insight_memory(req.session), known=_verdicts(req.session),
         ), req.question)
     except Exception:  # noqa: BLE001  # the composer's answer stands
