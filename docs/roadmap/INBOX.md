@@ -34,6 +34,10 @@ with its owner named in the entry.
 
 ## Open items
 
+1471. **The owner, 2026-10-31, verbatim:** "I think that if i click on a graph node and it shows the popup, if I click on the same one again the popup should   close". Agent snapgraph-1031.
+
+1472. **The owner, 2026-10-31, verbatim:** "also the way in which the anchor borders show when I drag a panel to an edge or screen corner is a little wierd, like it has to be sort of there but not right at the edge otherwise it wont show". Agent snapgraph-1031.
+
 1468. **The owner, 2026-10-31, verbatim (screenshot: Reminders, Overdue 1, "Do my tax return when I get home" open for editing, 20/10/2026 08:00 PM, Normal, Once, No alert, Save sits flush under the fields):** "I cant save or edit an overdue reminder or possible regular reminders??also the save button has no vertical gap above". Agent remfix-1031.
 
 1469. **The owner, 2026-10-31, verbatim (screenshot: a Library picture card's row menu, 15 items: Open full size, Copy markdown reference, Write a description, Type the text in this picture, Rename, Save a copy, Describe with AI, Read text with AI, Read text (Tesseract OCR), See text on the page, Copy card, Move up, Move down, Add to tray, Delete):** "should some long dropdown menus have grouped items that open a side on on click or hover??" Recommendation taken (order 3): yes, a `kebabMenu` submenu row for groups in menus over about ten items (text and AI actions), opening to the side on hover or click, Right arrow and Enter by keyboard, a nested sheet on touch. Agent submenu-1031.
