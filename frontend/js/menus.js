@@ -1817,11 +1817,12 @@ function entryOverflowMenu(entry) {
         title: "Start a chat about this note and what it connects to",
         run: () => askAtlasAboutNote(entry),
       },
-      {
+      //: Left off with no model: translating needs one (INBOX 1488).
+      ...(aiIsOff() ? [] : [{
         label: "ph:translate Translate",
         title: "Open this note in the Writing room, set to translate",
         run: () => translateNoteInDesk(entry),
-      },
+      }]),
     ];
 
     const addItems = [

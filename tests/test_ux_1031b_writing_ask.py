@@ -20,25 +20,28 @@ def _js(name: str) -> str:
 def test_the_no_model_banner_and_help_name_only_the_modes_that_need_a_model():
     banner = _js("status.js")
     assert "nothing can be drafted" not in banner
-    assert "Only Carry on and Translate need one; the rest works by rule." in banner
+    assert "Carry on and Translate are off; the rest writes by rule." in banner
     html = (ROOT / "frontend" / "index.html").read_text(encoding="utf-8")
     body = " ".join(html[html.index('id="draft-help-body"'):].split("</div>", 1)[0].split())
     assert "Drafting and Refine need a model" not in body
-    assert "Carry on and Translate need a model connected" in body
+    assert "Carry on and Translate need a model connected" in body and "left off" in body
 
 
-def test_a_chip_that_needs_no_model_clears_the_needs_a_model_line():
-    agent = _js("chat-agent.js")
-    click = agent[agent.index("function renderDraftQuickstarts"):agent.index("function markDraftQuickstart")]
-    assert click.index('setDraftStatus("");') < click.index("if (aiIsOff() && start.model) setDraftStatus(")
+def test_a_chip_press_clears_the_line_left_by_the_last_one():
+    """Moved to writing-desk.js with the chips (INBOX 1488); with no model the
+    chips that need one are not drawn, so there is no "needs a model" line to
+    leave, and the clear stays for the status a refused pass wrote."""
+    desk = _js("writing-desk.js")
+    click = desk[desk.index("function renderDraftQuickstarts"):desk.index("function markDraftQuickstart")]
+    assert 'setDraftStatus("");' in click and "needs a model" not in click
     assert 'setDraftStatus("");' in _js("wiring.js")[_js("wiring.js").index('if (id === "draft-kind")'):][:700]
 
 
 def test_the_quick_start_chips_expose_their_state_and_include_the_diagram():
-    agent = _js("chat-agent.js")
-    table = agent[agent.index("const DRAFT_QUICKSTARTS"):agent.index("];", agent.index("const DRAFT_QUICKSTARTS"))]
+    desk = _js("writing-desk.js")
+    table = desk[desk.index("const DRAFT_QUICKSTARTS"):desk.index("];", desk.index("const DRAFT_QUICKSTARTS"))]
     assert 'kind: "diagram"' in table and 'label: "Make a diagram"' in table
-    assert 'chip.setAttribute("aria-pressed", String(on));' in agent
+    assert 'chip.setAttribute("aria-pressed", String(on));' in desk
 
 
 def test_the_draft_is_announced_as_updated_only_when_it_changed():

@@ -17,3 +17,11 @@
   overflow: auto;
   max-width: 100%;
 }
+
+/* One line on what the writer does with no model (INBOX 1488); shown only
+   then, so it is a sentence under the controls and not a banner. */
+.draft-rule-line {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}

@@ -49,44 +49,49 @@ def _run(script: str):
 # --- X20 --------------------------------------------------------------------
 
 
-def _chip_note() -> str:
-    """The offline line a chip press runs, inlined in its click handler (one
-    function less in the boot scripts' gzip total)."""
-    chips = _function(CHAT_AGENT, "renderDraftQuickstarts")
-    line = re.search(r"^\s*(if \(aiIsOff\(\) && start\.model\) setDraftStatus\(.*\);)$", chips, re.M)
-    assert line, "the chip press no longer says why"
-    return f"function chipNote(start) {{ {line.group(1)} }}\n"
+WRITING_DESK = (JS / "writing-desk.js").read_text(encoding="utf-8")
+
+
+def _chips_offered(off: bool) -> list[str]:
+    """The labels `renderDraftQuickstarts` draws, run on stubs, model off or on."""
+    table = WRITING_DESK[WRITING_DESK.index("const DRAFT_QUICKSTARTS") : WRITING_DESK.index("];", WRITING_DESK.index("const DRAFT_QUICKSTARTS")) + 2]
+    script = (
+        table
+        + "\n"
+        + _function(WRITING_DESK, "renderDraftQuickstarts")
+        + f"""
+        const made = [];
+        const host = {{ replaceChildren() {{ made.length = 0; }}, appendChild(c) {{ made.push(c.label); }}, children: [] }};
+        const $ = () => host;
+        globalThis.document = {{ createElement: () => ({{ dataset: {{}}, addEventListener() {{}} }}) }};
+        const setLabel = (chip, text) => {{ chip.label = text.replace(/^ph:\\S+ /, ""); }};
+        const aiIsOff = () => {str(off).lower()};
+        const markDraftQuickstart = () => {{}};
+        renderDraftQuickstarts();
+        console.log(JSON.stringify(made));
+        """
+    )
+    return _run(script)
 
 
 @needs_node
-def test_a_quick_start_chip_says_why_when_no_model_is_connected() -> None:
-    """INBOX 1466 moved the intent: with no model the composer does most chips
-    by rule, so only a chip that needs a model (Carry on writing, Translate)
-    says why; the others say nothing until Draft is pressed."""
-    script = (
-        _chip_note()
-        + """
-        const AI_OFFLINE_HINT = "Connect a model in Settings";
-        const said = [];
-        const setDraftStatus = (text, isError) => said.push([text, !!isError]);
-        let off = true;
-        const aiIsOff = () => off;
-        chipNote({ label: "Carry on writing", model: 1 });
-        chipNote({ label: "Prose to bullets" });
-        off = false;
-        chipNote({ label: "Translate", model: 1 });
-        console.log(JSON.stringify(said));
-        """
-    )
-    assert _run(script) == [["Carry on writing needs a model. Connect a model in Settings.", False]]
+def test_with_no_model_the_chips_that_need_one_are_left_off_and_the_rule_ones_come_on() -> None:
+    """INBOX 1488 moved the intent of X20: a chip that needs a model used to
+    stay and say why when pressed; the owner asked that what is useless with
+    no model not be an option, so it is not drawn, and a model puts it back."""
+    off, on = _chips_offered(True), _chips_offered(False)
+    assert "Carry on writing" not in off and "Translate" not in off
+    assert {"Tidy and spellcheck", "Say it plainly", "Make it formal"} <= set(off)
+    assert "Carry on writing" in on and "Translate" in on
+    assert not {"Tidy and spellcheck", "Make it formal"} & set(on)
+    assert on.count("Say it plainly") == 1 and off.count("Say it plainly") == 1
 
 
 def test_only_the_chips_that_need_a_model_are_marked() -> None:
-    starts = CHAT_AGENT[CHAT_AGENT.index("const DRAFT_QUICKSTARTS") : CHAT_AGENT.index("];", CHAT_AGENT.index("const DRAFT_QUICKSTARTS"))]
-    marked = re.findall(r'kind: "(\w+)", model: 1', starts)
-    assert marked == ["continue", "translate"]
-    sentence = re.search(r"`\$\{reason\}\. \$\{AI_OFFLINE_HINT\}\.`", STATUS)
-    assert sentence, "the gate's sentence this one must match moved"
+    starts = WRITING_DESK[WRITING_DESK.index("const DRAFT_QUICKSTARTS") : WRITING_DESK.index("];", WRITING_DESK.index("const DRAFT_QUICKSTARTS"))]
+    marked = re.findall(r'kind: "(\w+)"(?:, tone: "\w+")?, only: "model"', starts)
+    assert marked == ["continue", "rewrite", "translate"]
+    assert re.findall(r'kind: "(\w+)", only: "rule"', starts) == ["tidy", "plain", "formal"]
 
 
 # --- X24 --------------------------------------------------------------------

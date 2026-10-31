@@ -153,10 +153,11 @@ SOURCES = [
 def test_write_up_is_dated_grouped_and_names_each_note():
     out = cw.write_up("met supplier, price going up. need to decide on stock", SOURCES, TODAY)
     assert out.startswith("# Met supplier\n\nMet supplier, price going up. Need to decide on stock.")
-    # Oldest first, grouped by month when the notes span more than one.
-    assert out.index("## September 2026") < out.index("**Budget review**, written on 2 September:") < out.index("## October 2026")
-    assert "**Supplier call**, written last week:" in out
-    assert "**Buy seeds**, written yesterday:" in out
+    # Oldest first, under a heading for each day when the notes span days
+    # (INBOX 1488 moved this from months: the owner asked for dates).
+    assert out.index("## Wednesday 2 September") < out.index("**Budget review**:") < out.index("## Tuesday 20 October")
+    assert out.index("## Tuesday 20 October") < out.index("**Supplier call**:") < out.index("## Thursday 29 October")
+    assert out.index("## Thursday 29 October") < out.index("**Buy seeds**:")
     # Each note's key points, not its opening pasted whole.
     assert "- We have 2000 left for stock" in out and "Budget review: we have" not in out
     assert "- They will raise prices in June" in out
@@ -173,7 +174,7 @@ def test_write_up_is_dated_grouped_and_names_each_note():
 def test_write_up_from_notes_alone_is_titled_from_them(sources, title):
     out = cw.write_up("", sources, TODAY)
     assert out.startswith(title + "\n")
-    assert "## " not in out  # one month, or undated: no month headings
+    assert "## " not in out  # one day, or undated: no day headings
 
 
 @pytest.mark.parametrize(
@@ -185,7 +186,9 @@ def test_write_up_from_notes_alone_is_titled_from_them(sources, title):
         ("turn it into bullet points", "bullets"), ("as a list", "bullets"),
         ("write it out as paragraphs", "expand"),
         ("make a flowchart", "diagram"), ("turn this into a timeline", "diagram"), ("draw a mind map", "diagram"),
-        ("make it sound formal", ""), ("add a joke", ""),
+        ("make it sound formal", "formal"), ("more professional", "formal"),
+        ("fix the spelling", "tidy"), ("tidy it up", "tidy"), ("proofread", "tidy"), ("clean it up", "tidy"),
+        ("add a joke", ""), ("make it friendlier", ""),
     ],
 )
 def test_a_refine_instruction_picks_the_pass_or_none(instruction, kind):
@@ -201,12 +204,12 @@ def test_carrying_on_and_translating_say_they_need_a_model(kind):
 
 
 def test_an_instruction_the_composer_cannot_do_says_what_it_can():
-    done = cw.compose(kind="note", thoughts="", draft="My draft.", instruction="make it sound formal", today=TODAY)
-    assert done.text == "" and "shorter, a summary, plain words" in done.message
+    done = cw.compose(kind="note", thoughts="", draft="My draft.", instruction="add a joke", today=TODAY)
+    assert done.text == "" and "shorter, add a summary, as bullets" in done.message
 
 
 def test_a_rewrite_in_any_voice_but_plain_needs_a_model_and_plain_works():
-    assert cw.compose(kind="rewrite", tone="formal", thoughts="", draft="We utilised it.", today=TODAY).text == ""
+    assert cw.compose(kind="rewrite", tone="friendly", thoughts="", draft="We utilised it.", today=TODAY).text == ""
     assert cw.compose(kind="rewrite", tone="plain", thoughts="", draft="We utilised it.", today=TODAY).text == "We used it."
 
 

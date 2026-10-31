@@ -1936,9 +1936,11 @@ Link to another note with [[its first few words]]."></textarea>
             <p>Your own words stay in the box: nothing here overwrites what
               you typed, Undo steps back through every pass, and every draft
               Atlas produced is kept under the box so you can go back to one.
-              Carry on and Translate need a model connected: with none, pressing
-              them says so and offers Set up a model. Every other mode, and
-              Refine's shorter, writes by plain rule, marked From your words.
+              Carry on and Translate need a model connected: with none they are
+              left off and the notice above offers Connect a model. Every other
+              mode writes by plain rule, marked From your words, and Refine
+              takes shorter, add a summary, as bullets, as a list, as prose,
+              plain, formal, tidy up or a diagram.
               Suggest a title takes the title from your
               own words, and Split into notes cuts the text at its headings
               and paragraphs.</p>
@@ -1994,15 +1996,23 @@ Link to another note with [[its first few words]]."></textarea>
                 <select id="draft-kind" class="small-select" aria-label="What to write"
                   title="What Atlas does with what is in the box">
                   <option value="note">Draft a note</option>
-                  <option value="continue">Continue the draft</option>
-                  <option value="rewrite">Rewrite the draft</option>
+                  <!-- `data-gate` (INBOX 1488, writing-desk.js `syncDraftGate`):
+                       "model" is offered only with a model connected, "rule"
+                       only without one, for what the composer does by plain
+                       rule. The rule-only ones start `hidden` so a desk with a
+                       model never shows them while the script loads. -->
+                  <option value="tidy" data-gate="rule" hidden>Tidy and spellcheck</option>
+                  <option value="continue" data-gate="model">Continue the draft</option>
+                  <option value="rewrite" data-gate="model">Rewrite the draft</option>
+                  <option value="plain" data-gate="rule" hidden>Say it plainly</option>
+                  <option value="formal" data-gate="rule" hidden>Make it formal</option>
                   <option value="expand">Bullets to prose</option>
                   <option value="bullets">Prose to bullets</option>
                   <option value="diagram">Make a diagram</option>
                   <!-- Translation through the same model (INBOX 405); the
                        codes are drafter.TRANSLATE_LANGUAGES', which drops any
                        other. -->
-                  <optgroup label="Translate into">
+                  <optgroup label="Translate into" data-gate="model">
                     <option value="translate-en">English</option>
                     <option value="translate-es">Spanish</option>
                     <option value="translate-fr">French</option>
@@ -2028,15 +2038,15 @@ Link to another note with [[its first few words]]."></textarea>
                   title="The voice to write in">
                   <option value="mine">My voice</option>
                   <option value="plain">Plain</option>
-                  <option value="friendly">Friendly</option>
+                  <option value="friendly" data-gate="model">Friendly</option>
                   <option value="formal">Formal</option>
-                  <option value="punchy">Punchy</option>
+                  <option value="punchy" data-gate="model">Punchy</option>
                 </select>
                 <select id="draft-length" class="small-select" aria-label="Length"
                   title="How long the draft should be">
                   <option value="short">Short</option>
                   <option value="medium" selected>Medium</option>
-                  <option value="long">Long</option>
+                  <option value="long" data-gate="model">Long</option>
                 </select>
                 <button id="draft-add-source" class="ghost small" type="button"
                   title="Write from notes you already have, up to six of them"><i class="ph ph-note ph-lead" aria-hidden="true"></i> Use notes</button>
@@ -2046,6 +2056,9 @@ Link to another note with [[its first few words]]."></textarea>
                    the fact back. -->
               <div class="row draft-sources hidden" id="draft-sources"
                 aria-label="Notes this draft is written from"></div>
+              <!-- One line on what the writer does with no model, shown only
+                   then (writing-desk.js `syncDraftGate`). -->
+              <p id="draft-rule-line" class="muted draft-rule-line hidden">With no model the writer works by rule: tidy, notes by date, bullets and prose, plain or formal, diagrams.</p>
               <p id="draft-status" class="status" role="status"></p>
             </div>
             <div class="draft-column">
@@ -2063,7 +2076,7 @@ Link to another note with [[its first few words]]."></textarea>
                   <!-- With no model a pass is composed by rule (INBOX 1466), and
                        says so the way a composed answer does (`#answered-by`). -->
                   <span id="draft-by" class="chip item-label answer-model hidden"
-                    title="Atlas wrote this by plain rule, with no model: every word is yours or a joining word">From your words</span>
+                    title="Written by plain rule with no model: your words tidied, regrouped or reshaped, every word yours or a joining word">From your words</span>
                   <span id="draft-count" class="muted"></span>
                 </span>
               </div>
@@ -2095,6 +2108,7 @@ Link to another note with [[its first few words]]."></textarea>
               <div class="row draft-controls draft-refine-row ask-composer">
                 <input id="draft-instruction" type="text" maxlength="300"
                   placeholder="Refine: “make it shorter”, “add a summary”…"
+                  data-offline-placeholder="Refine: “shorter”, “add a summary”, “as bullets”, “formal”, “tidy it up”"
                   aria-label="An instruction for the next pass">
                 <button id="draft-refine" class="ghost" type="button"
                   title="Run this instruction over the draft"><i class="ph ph-sparkle ph-lead" aria-hidden="true"></i> Refine</button>
