@@ -59,8 +59,11 @@ def test_a_restore_is_one_step_not_a_confirm():
     body = _body("docHistoryRow")
     assert "restoreDocVersionWithUndo(entry)" in body
     assert "Restore it" not in body
-    #: Outside the editor's history, so Ctrl+Z does not undo it twice.
-    assert "addToHistory.of(false)" in _body("docWriteOutsideHistory")
+    #: Outside the editor's history, so Ctrl+Z does not undo it twice. The
+    #: write takes a `keep` flag since replace-all's undo (audit 1031 DC4) keeps
+    #: its own step; a restore leaves it at its default, outside the history.
+    assert "function docWriteOutsideHistory(text, keep = false)" in APP
+    assert "addToHistory.of(keep)" in _body("docWriteOutsideHistory")
 
 
 def test_a_fix_is_its_own_step_in_the_editor():

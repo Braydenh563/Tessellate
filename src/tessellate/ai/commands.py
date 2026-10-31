@@ -88,7 +88,12 @@ _MAX_NOTES = 50
 _POLITE = ("please ", "pls ", "plz ", "kindly ", "can you ", "could you ", "would you ", "will you ", "can u ", "could u ",
            "i want you to ", "i need you to ", "i'd like you to ", "i would like you to ", "i want to ",
            "i'd like to ", "i would like to ", "go ahead and ", "if you could ", "if you can ", "when you can, ", "when you can ",
-           "let's ", "lets ", "ok so ", "okay so ", "ok ", "okay ", "just ", "also ", "so ", "and ", "then ")
+           "let's ", "lets ", "ok so ", "okay so ", "ok ", "okay ", "just ", "also ", "so ", "and ", "then ",
+           #: A wish said casually is the same request (INBOX 1507: "i wanna make a
+           #: note" was searched for, not made). "let me know" stays a question.
+           "i wanna ", "i wana ", "wanna ", "i'd love to ", "i would love to ", "can i ", "could i ", "may i ",
+           "lemme ", "let me ", "i need to ", "help me ", "i gotta ", "i have to ", "i'm gonna ", "im gonna ",
+           "i'm going to ", "im going to ", "gonna ")
 _TRAILING = (" please", " pls", " plz", " for me", " thanks", " thank you so much", " thank you", " ty", " thx", " now", " if you can",
              " when you can", " if you could")
 #: Said of when: it is a due hint, never part of the words an act writes ("call
@@ -280,7 +285,10 @@ def _reminder(text: str, now: datetime, locale: str | None = None) -> dict | Non
     about = rest.lower().startswith("about ")
     rest = _without_lead(rest, ("to ", "2 ", "about ", "that ", "for "))
     if not rest:
-        return None
+        if "reminder" not in head:
+            return None  # "ping me" alone is not yet a request
+        #: "set a reminder" alone: asked what and when (INBOX 1507).
+        return {"intent": "reminder", "text": "", "said": "", "due_at": None, "time_given": False, "no_subject": ""}
     rest = reminder_parser.unhedged(rest)
     parsed = reminder_parser.parse_relative(rest, now) or when.parse_reminder_text(rest, now, locale=locale)
     if parsed is not None:
@@ -487,8 +495,20 @@ def _note_at_the_end(rest: str) -> dict | None:
     return None
 
 
+#: An act with nothing to write is still the act: asked for its words, never
+#: read as a search of the notes (INBOX 1507).
+_BARE_NOTE = frozenset({
+    "make a note", "take a note", "new note", "quick note", "create a note", "write a note", "add a note",
+    "save a note", "make note", "start a note", "start a new note", "make a new note", "create a new note",
+    "write a new note", "note to self", "write something down", "jot something down", "note something down",
+    "write it down", "jot it down", "make a quick note", "take a quick note",
+})
+
+
 def _new_note(text: str) -> dict | None:
     low = text.lower()
+    if low.strip(" .:-") in _BARE_NOTE:
+        return {"intent": "new_note", "content": "", "no_subject": True}
     for head, needs_colon in _NOTE_HEADS_NEW:
         if not (low.startswith(head + " ") or low.startswith(head + ":")):
             continue
@@ -1302,6 +1322,8 @@ def _plan_reminder(session: Session, parsed: dict, note_ids: list[int] | None) -
     from tessellate.core.config import user_now
 
     due = parsed["due_at"]
+    if due is None:
+        return {"line": _ASK_WHAT_AND_WHEN}
     when_said = reminder_when(due, user_now(deps.get_config()).replace(tzinfo=None), bool(parsed.get("clock_unsaid")))
     if parsed.get("no_subject"):
         #: Only a time was said: the words are asked, not stored as "5pm".
@@ -1380,6 +1402,8 @@ def _plan_tag_or_move(session: Session, parsed: dict, note_ids: list[int] | None
 
 
 def _plan_new_note(session: Session, parsed: dict) -> dict:
+    if parsed.get("no_subject"):
+        return {"line": "What should the note say? Send it as “make a note: …” and I'll save it."}
     steps = [{"name": "create_note", "arguments": {"content": parsed["content"]}}]
     card = _card(f"Make a new note: “{_clip(parsed['content'], 80)}”", steps)
     if _has_note_saying(session, parsed["content"]):
@@ -1466,11 +1490,17 @@ def _ahead(due: datetime, now: datetime) -> bool:
         return True
 
 
+#: "set a reminder" with nothing after it (INBOX 1507).
+_ASK_WHAT_AND_WHEN = "What should I remind you about, and when? Say it as “remind me to call Sam on Friday at 9”."
+
+
 def ask_when_for(parsed: dict) -> str:
     """The one question a reminder with no time asks: when, or which day
     for a day that does not exist (audit 1028 E26)."""
     if parsed.get("impossible"):
         return f"There is no {parsed['impossible']}. Which day should I remind you on?"
+    if not (parsed.get("said") or parsed.get("text")):
+        return _ASK_WHAT_AND_WHEN
     return ask_when(parsed.get("said") or parsed["text"])
 
 
