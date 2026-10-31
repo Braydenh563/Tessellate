@@ -102,7 +102,7 @@
  "tag-manager.js::raf": 1,
  "tidy.js::mutation-observer": 1,
  "timeline-ticks.js::resize-observer": 1,
- "timeline.js::raf": 3,
+ "timeline.js::raf": 2,
  "tour.js::raf": 4,
  "update-dialogs.js::mutation-observer": 1,
  "utility-tools.js::interval": 1,

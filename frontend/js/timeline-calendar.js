@@ -671,7 +671,7 @@ function timelineCalOpenDay(key) {
   const show = (section) => {
     const box = $("timeline-scroll");
     box.scrollTop += section.getBoundingClientRect().top - box.getBoundingClientRect().top;
-    section.querySelector(".timeline-row")?.focus({ preventScroll: true });
+    timelineFocusFirstIn(section, { preventScroll: true });
   };
   const section = find();
   if (section) return show(section);
