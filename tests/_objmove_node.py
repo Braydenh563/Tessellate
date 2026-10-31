@@ -21,11 +21,12 @@ const files = JSON.parse(process.argv[1]);
 const log = [];
 const handlers = {};
 const ctx = {
-  handlers,
+  sortEntries: (entries) => entries, noteSort: "newest",
+  handlers, addEventListener: () => {}, removeEventListener: () => {},
   console, Math, Number, Object, Set, Map, JSON, Date, Array, String, RegExp, Promise, Boolean,
   log,
   document: {
-    execCommand: () => true, activeElement: null, documentElement: { dataset: {} },
+    execCommand: () => true, activeElement: null, querySelector: () => null, querySelectorAll: () => [], documentElement: { dataset: {} },
     addEventListener: (type, fn) => { (handlers[type] = handlers[type] || []).push(fn); }, removeEventListener: () => {},
   },
   allEntries: [{ id: 5, title: "", content: "# Five\n\nbody" }],

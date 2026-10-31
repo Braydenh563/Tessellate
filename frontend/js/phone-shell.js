@@ -682,6 +682,7 @@ const PHONE_STATUS_ROWS = [
   { id: "status-find", label: "ph:magnifying-glass Find" },
   //: INBOX 896: the bar's button opens a sheet itself when it has no box.
   { id: "status-lan", label: "ph:wifi-high Other devices" },
+  { id: "status-tray", label: "ph:tray Tray" },
   //: `live`: the row's words are the control's own as the menu opens (the
   //: Local chip's verdict, row 1641).
   { id: "privacy-chip", label: "ph:shield-check Privacy record", live: true },

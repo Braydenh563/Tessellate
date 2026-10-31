@@ -154,4 +154,4 @@ function objRender(ref, dest) {
 //: The rest of the object-move scripts ride with this one, in this order (each
 //: only calls upwards at load); `lazyScript` is app.js's own loader, which keeps
 //: dynamic scripts in order.
-["/js/obj-order.js", "/js/obj-drag.js", "/js/obj-reorder.js", "/js/obj-clip.js"].forEach(lazyScript);
+["/js/obj-order.js", "/js/obj-drag.js", "/js/obj-reorder.js", "/js/obj-clip.js", "/js/obj-carry.js", "/js/obj-tray.js"].forEach(lazyScript);

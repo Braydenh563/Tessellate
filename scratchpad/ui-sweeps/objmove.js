@@ -178,9 +178,134 @@ async function copy(page) {
   say('Ctrl+Z takes the last one back', await nodes());
 }
 
+// Parts 4 and 5: carry a card anywhere, and the tray.
+async function openTray(page) {
+  if (await page.evaluate(() => document.getElementById('obj-tray').classList.contains('hidden'))) { await page.click('#status-tray'); await page.waitForTimeout(500); }
+}
+async function trayState(page) {
+  return page.evaluate(() => ({ held: objTray.length, badge: document.querySelector('#status-tray .status-tray-count').textContent, label: document.getElementById('status-tray').getAttribute('aria-label'), stored: JSON.parse(sessionStorage.getItem('obj-tray') || '[]').length }));
+}
+async function ghostState(page) {
+  return page.evaluate(() => ({ ghost: !!document.querySelector('.obj-ghost'), targets: [...document.querySelectorAll('.obj-target')].map((e) => e.id || e.className.split(' ')[0]), tab: document.querySelector('#tab-bar [aria-selected="true"]')?.dataset.tab }));
+}
+async function box(page, sel) {
+  return page.evaluate((sel) => { const r = document.querySelector(sel).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel);
+}
+async function carry(page) {
+  const notes = SURFACES.notes;
+  await page.evaluate(() => { sessionStorage.removeItem('obj-tray'); objTray = []; objTrayPaint(); attachedNoteIds.length = 0; });
+  await notes.tab(page); await page.waitForTimeout(2000);
+  // 1. a card dragged to the tray control
+  const first = await center(page, notes.unit, 0);
+  const tray = await box(page, '#status-tray');
+  await drag(page, first, tray, { release: false });
+  say('carry to tray: mid-drag', await ghostState(page));
+  await page.mouse.up(); await page.waitForTimeout(400);
+  say('carry to tray: after drop', await trayState(page));
+  say('carry to tray: ghost left behind', await ghostState(page));
+  // 2. Escape over a target: nothing happens
+  const second = await center(page, notes.unit, 1);
+  await drag(page, second, tray, { release: false });
+  await page.keyboard.press('Escape'); await page.mouse.up(); await page.waitForTimeout(300);
+  say('Escape over the tray: held', (await trayState(page)).held);
+  // 3. a drop nowhere
+  const third = await center(page, notes.unit, 2);
+  await drag(page, third, { x: 700, y: 40 });
+  await page.waitForTimeout(300);
+  say('drop on nothing: held', (await trayState(page)).held);
+  say('drop on nothing: order of the list', await keys(page, notes));
+  // 3b. out of the list and back in: carried, then reordering again
+  const orderBefore = JSON.stringify(await keys(page, notes));
+  const out1 = await center(page, notes.unit, 0); const back = await center(page, notes.unit, 2);
+  await page.mouse.move(out1.x, out1.y); await page.mouse.down(); await page.waitForTimeout(220);
+  await page.mouse.move(out1.x + 8, out1.y + 8, { steps: 3 });
+  await page.mouse.move(tray.x, tray.y, { steps: 10 }); await page.waitForTimeout(120);
+  const outState = await page.evaluate(() => ({ gap: !!document.querySelector('.obj-gap'), target: !!document.querySelector('.obj-target') }));
+  await page.mouse.move(back.x, back.y, { steps: 12 }); await page.waitForTimeout(150);
+  const inState = await page.evaluate(() => ({ gap: !!document.querySelector('.obj-gap'), target: !!document.querySelector('.obj-target') }));
+  await page.keyboard.press('Escape'); await page.mouse.up(); await page.waitForTimeout(300);
+  say('out of the list: gap/target', outState);
+  say('back over the list: gap/target', inState);
+  say('Escape after out and back: order, sort', [JSON.stringify(await keys(page, notes)) === orderBefore, (await sortState(page, notes)).select]);
+  // 4. hover the Chat tab 500 ms mid-drag, then drop on the composer
+  const fourth = await center(page, notes.unit, 3);
+  const chatTab = await box(page, '#tab-btn-chat');
+  await page.mouse.move(fourth.x, fourth.y); await page.mouse.down(); await page.waitForTimeout(220);
+  await page.mouse.move(fourth.x + 8, fourth.y + 8, { steps: 3 });
+  await page.mouse.move(chatTab.x, chatTab.y, { steps: 12 });
+  await page.waitForTimeout(250);
+  say('hover a tab 250 ms: page', (await ghostState(page)).tab);
+  await page.waitForTimeout(450);
+  say('hover a tab 700 ms: page', (await ghostState(page)).tab);
+  const input = await box(page, '#chat-input');
+  await page.mouse.move(input.x, input.y, { steps: 10 });
+  await page.waitForTimeout(150);
+  say('over the composer', await ghostState(page));
+  await page.mouse.up(); await page.waitForTimeout(600);
+  say('dropped on the composer: staged', await chatCounts(page));
+  // 5. the tray survives a page change
+  say('tray after the tab change', await trayState(page));
+  // 6. open the tray and drag an item onto the reminder form
+  await page.evaluate(() => switchTab('reminders')); await page.waitForTimeout(1200);
+  await openTray(page);
+  say('tray open: rows', await page.evaluate(() => [...document.querySelectorAll('#obj-tray .obj-tray-item')].map((e) => e.dataset.obj)));
+  const item = await box(page, '#obj-tray .obj-tray-item .obj-tray-use');
+  const field = await box(page, '#reminder-magic');
+  await page.fill('#reminder-magic', '');
+  await drag(page, item, field);
+  await page.waitForTimeout(500);
+  say('dropped on the reminder form: text', await page.inputValue('#reminder-magic'));
+  say('tray keeps the item after a drag out', (await trayState(page)).held);
+  // 7. item remove and clear all
+  await page.evaluate(() => { objTrayAdd(objRef('document', 4, 'Second')); objTrayAdd(objRef('board', 7, 'Third')); });
+  await openTray(page);
+  const before = (await trayState(page)).held;
+  await page.click('#obj-tray .obj-tray-item button:not(.obj-tray-use)'); await page.waitForTimeout(300);
+  say('remove one: held before/after', [before, (await trayState(page)).held]);
+  await page.click('#obj-tray .obj-tray-head button'); await page.waitForTimeout(300);
+  say('clear all: held, stored', await trayState(page));
+}
+async function board(page) {
+  // a note from the tray onto an open board's canvas
+  await page.evaluate(() => { switchTab('library'); }); await page.waitForTimeout(800);
+  await page.evaluate(() => document.querySelector('#library-subtabs [data-target="library-view-whiteboard"]').click()); await page.waitForTimeout(1500);
+  await page.evaluate(() => [...document.querySelectorAll('#library-boards-grid > .library-board-card')].find((c) => (c.dataset.obj || '').startsWith('board:')).click());
+  await page.waitForTimeout(2500);
+  //: A note the board does not hold yet, so the count moves.
+  await page.evaluate(() => { sessionStorage.removeItem('obj-tray'); objTray = []; const held = wbState.nodes.map((n) => n.entry_id); const free = allEntries.find((e) => !held.includes(e.id)); objTrayAdd(objRef('note', free.id, 'Tray note')); objTrayAdd(objRef('document', 4, 'Tray doc')); });
+  const counts = () => page.evaluate(() => ({ nodes: wbState.nodes.length, objects: wbState.objects ? wbState.objects.length : -1 }));
+  const b0 = await counts();
+  await openTray(page);
+  const items = await page.evaluate(() => [...document.querySelectorAll('#obj-tray .obj-tray-use')].map((e) => { const r = e.getBoundingClientRect(); return { x: r.left + 40, y: r.top + r.height / 2 }; }));
+  const canvas = await box(page, '#whiteboard-container');
+  await drag(page, items[0], { x: canvas.x + 80, y: canvas.y + 40 });
+  await page.waitForTimeout(1500);
+  const b1 = await counts();
+  say('drop a note on the board: nodes before/after', [b0.nodes, b1.nodes]);
+  await openTray(page);
+  const items2 = await page.evaluate(() => [...document.querySelectorAll('#obj-tray .obj-tray-use')].map((e) => { const r = e.getBoundingClientRect(); return { x: r.left + 40, y: r.top + r.height / 2 }; }));
+  await drag(page, items2[1], { x: canvas.x - 120, y: canvas.y + 100 });
+  await page.waitForTimeout(1500);
+  const b2 = await counts();
+  say('drop a document on the board: objects before/after', [b1.objects, b2.objects]);
+  await page.keyboard.press('Control+Z'); await page.waitForTimeout(600);
+  say('Ctrl+Z after the drop', await counts());
+  say('Escape mid-drag over the board: items', await (async () => {
+    await openTray(page);
+    const it = await page.evaluate(() => { const r = document.querySelector('#obj-tray .obj-tray-use').getBoundingClientRect(); return { x: r.left + 40, y: r.top + r.height / 2 }; });
+    const had = await counts();
+    await drag(page, it, { x: canvas.x, y: canvas.y + 150 }, { release: false });
+    await page.keyboard.press('Escape'); await page.mouse.up(); await page.waitForTimeout(500);
+    return [had, await counts()];
+  })());
+  await page.evaluate(() => { objTray = []; objTrayChanged(); });
+}
+
 (async () => {
   const { browser, page } = await boot({ permissions: ['clipboard-read', 'clipboard-write'] });
   if (PART === 'all' || PART === 'reorder') await reorder(page);
   if (PART === 'all' || PART === 'copy') await copy(page);
+  if (PART === 'all' || PART === 'drag' || PART === 'tray') await carry(page);
+  if (PART === 'all' || PART === 'drag' || PART === 'tray') await board(page);
   await browser.close();
 })();

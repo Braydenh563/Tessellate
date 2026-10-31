@@ -45,3 +45,61 @@ html.obj-dragging * {
   cursor: grabbing !important;
   user-select: none !important;
 }
+
+/* A place that would take the card being carried. */
+.obj-target {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* The tray: a count on the status bar's control, and its panel. */
+#status-tray .status-tray-count {
+  margin-inline-start: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--accent);
+}
+.obj-tray {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 16rem;
+  max-width: min(24rem, 90vw);
+}
+.obj-tray.hidden {
+  display: none;
+}
+.obj-tray-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.obj-tray-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-block-size: 20rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.obj-tray-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.obj-tray-use {
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.obj-tray-empty {
+  margin: 0;
+  font-size: var(--text-sm);
+}

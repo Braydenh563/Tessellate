@@ -6238,6 +6238,7 @@ PANEL_FIXED_HTML = {
     "timeline-month-pop": "an anchored month picker, no head",
     "status-clock-detail": "an anchored readout, no head",
     "lan-popover": "an anchored readout, no head",
+    "obj-tray": "an anchored list held by a status bar control (INBOX 1467), with its own head row",
     "chat-model-panel": "an anchored picker, no head",
     "palette-overlay": "a legacy wrapper whose card is the command palette",
     "sketch-overlay": "the full-window drawing surface",
@@ -6368,5 +6369,10 @@ def test_a_card_is_one_reference_and_a_list_reorders_by_drag() -> None:
     clip = (js / "obj-clip.js").read_text(encoding="utf-8")
     assert "OBJ_MENU_ROWS" in clip and "function objPasteAt" in clip and 'addEventListener("copy"' in clip
     assert "`objKebabRows`" in design and "`wbPlaceNote`" in design
+    tray = (js / "obj-tray.js").read_text(encoding="utf-8")
+    assert "sessionStorage" in tray and "wireHelpPopover" in tray and "OBJ_MENU_ROWS.push" in tray
+    carry = (js / "obj-carry.js").read_text(encoding="utf-8")
+    assert "OBJ_NAV_HOLD_MS = 500" in carry and "OBJ_MODES.carry" in carry and "objPasteAt" in carry
+    assert "`OBJ_MODES.carry`" in design and "`#obj-tray`" in design
     edge = (js / "drag-edge.js").read_text(encoding="utf-8")
     assert "/js/obj-ref.js" in edge and "/css/objmove-lazy.css" in edge

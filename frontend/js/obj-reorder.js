@@ -115,7 +115,16 @@ function objReorderDrop(g) {
   if (g.index !== g.start) objReorderCommit(g.surface.def, g.ref, g.keys, g.start, g.index);
 }
 
-OBJ_MODES.reorder = { grab: objReorderGrab, begin: objReorderBegin, update: objReorderUpdate, drop: objReorderDrop, cancel: objReorderRelease };
+//: Past a margin outside its own list the card is being carried, not reordered.
+const OBJ_LEAVE_PX = 24;
+
+function objReorderRoute(g) {
+  const box = g.surface.list.getBoundingClientRect();
+  const out = g.x < box.left - OBJ_LEAVE_PX || g.x > box.right + OBJ_LEAVE_PX || g.y < box.top - OBJ_LEAVE_PX || g.y > box.bottom + OBJ_LEAVE_PX;
+  return out ? "carry" : "reorder";
+}
+
+OBJ_MODES.reorder = { grab: objReorderGrab, begin: objReorderBegin, update: objReorderUpdate, drop: objReorderDrop, cancel: objReorderRelease, route: objReorderRoute };
 
 //: --- The keyboard ----------------------------------------------------------------
 //: Alt+Up and Alt+Down on a focused card move it one place; the page says so.

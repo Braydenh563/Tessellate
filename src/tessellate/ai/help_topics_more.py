@@ -1991,7 +1991,8 @@ MORE_TOPICS.extend(
                 "reorder", "drag to reorder", "custom order", "move a card", "change the order",
                 "put in order", "alt arrow", "drag a note", "drag a document", "drag a board",
                 "drag an image", "sort my own way", "copy a note", "paste a note", "copy a card",
-                "paste into chat", "paste on a board",
+                "paste into chat", "paste on a board", "tray", "drag a card to chat", "drag a note onto a board",
+                "carry a card", "hold a card",
             ),
             "body": (
                 "Drag a card to put a list in your own order: Notes, and Library's "
@@ -2003,7 +2004,14 @@ MORE_TOPICS.extend(
                 "press Ctrl+C (Cmd+C on a Mac), or choose Copy in its menu: a toast "
                 "names it. Ctrl+V then attaches it in the chat box, puts a card on an "
                 "open whiteboard, or writes its link in a note, a document or a "
-                "reminder."
+                "reminder. You can also carry a card: press and hold, then drag it "
+                "onto the chat box, an open note or document, a whiteboard, the "
+                "reminder box or the tray, which outline when they would take it; "
+                "rest on a page tab for half a second to open that page without "
+                "letting go. Escape, or letting go over nothing, changes nothing. "
+                "The tray in the status bar holds a few cards while you change pages: "
+                "drop cards on it or choose Add to tray, then drag them out or click "
+                "one to paste it where you were typing."
             ),
             "badge": {"label": "Library", "tab": "library"},
         },
@@ -2500,7 +2508,7 @@ TOPIC_META: dict[str, dict] = {
     "line-verdicts": {"title": "Wrong fact and Pin as true", "path": "Ask or Chat, a numbered mark in an answer"},
     "answer-pictures": {"title": "Pictures in answers", "path": "Chat tab, or Ask in the Notes tab, Grounded in"},
     "library-skills": {"title": "AI skills in the Library", "path": "Library tab, AI skills"},
-    "object-move": {"title": "Moving, copying and pasting cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C"},
+    "object-move": {"title": "Moving, copying and carrying cards", "path": "Notes tab, or Library tab, drag a card or press Ctrl+C; the tray in the status bar"},
     "ocr-engine": {"title": "Tesseract and the reading language", "path": "The OCR workspace, the reader button"},
     "time-and-recency": {"title": "Dates and recent notes in answers", "path": "Chat tab, or Ask on the Notes tab"},
     "model-downloads": {"title": "Downloading a model", "path": "Settings, Models, Suggested downloads"},

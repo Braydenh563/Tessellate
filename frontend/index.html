@@ -9077,6 +9077,14 @@ Link to another note with [[its first few words]]."></textarea>
            was worse than invisible: the engine behind it had no doorway at all.
            Its own slot key so it can be hidden on its own from Settings. -->
       <button id="status-find" class="status-item" type="button" data-status-slot="find"></button>
+      <!-- The tray (INBOX 1467): a few cards held while you go to another page.
+           A card is dropped on it, or added from its menu; obj-tray.js fills
+           the count and the panel below. -->
+      <button id="status-tray" class="status-item" type="button" data-status-slot="tray"
+        aria-haspopup="dialog" aria-expanded="false" aria-controls="obj-tray"
+        aria-label="Tray, empty" title="Tray: hold cards to paste or drag somewhere else">
+        <i class="ph ph-tray" aria-hidden="true"></i><span class="status-tray-count hidden" aria-hidden="true"></span>
+      </button>
       <!-- Other devices (INBOX 896, the owner: "a lan icon in the bottom status
            bar"): whether a phone on this network can open the app right now,
            its colour the answer (open, closed on this network, off), and a
@@ -9156,6 +9164,8 @@ Link to another note with [[its first few words]]."></textarea>
   <!-- The status bar's Other devices panel (INBOX 896), a help popover by
        recipe (`wireHelpPopover`, lan-watch.js draws it) and a sheet on a
        phone. Outside the footer for the reason the menu above gives. -->
+  <div id="obj-tray" class="obj-tray hidden" role="dialog" aria-label="Tray"></div>
+
   <div id="lan-popover" class="lan-panel hidden" role="dialog" aria-label="Other devices" data-this-computer="hide"></div>
 
   <!-- The undo stack, made visible. Same shape, same placement rules and the

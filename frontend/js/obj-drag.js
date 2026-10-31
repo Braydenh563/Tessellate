@@ -4,7 +4,8 @@
 // so a click, a double click, a scroll flick and a text selection are
 // untouched. While live a small ghost card follows the pointer and the
 // current mode (`OBJ_MODES`: obj-reorder.js's `reorder`, obj-carry.js's
-// `carry`) decides what the pointer is over. Escape or a press of another
+// `carry`) decides what the pointer is over, and may hand the gesture to another
+// mode (`route`). Escape or a press of another
 // button ends it with no change. Mouse and pen only: a finger on a card is
 // a scroll, and a long-press drag for touch is left for a device that can
 // check it.
@@ -36,7 +37,9 @@ function objGhostMake(ref) {
 //: The modes' `grab(hit)` may add to it (the reorder mode's surface).
 function objDragSeed(event) {
   if (event.button !== 0 || event.pointerType === "touch" || event.defaultPrevented) return null;
-  if (event.target.closest?.(OBJ_NO_GRAB)) return null;
+  const control = event.target.closest?.(OBJ_NO_GRAB);
+  //: A tray item is a button you click to paste and also drag out.
+  if (control && !control.matches(".obj-tray-use")) return null;
   const hit = objCardAt(event.target);
   if (!hit) return null;
   const mode = Object.keys(OBJ_MODES).find((name) => OBJ_MODES[name].grab?.(hit));
@@ -105,7 +108,18 @@ function objDragSchedule(g) {
 
 function objDragFrame(g) {
   g.ghost.style.transform = `translate(${g.x + 14}px, ${g.y + 16}px)`;
+  objDragRoute(g);
   OBJ_MODES[g.mode].update(g);
+}
+
+//: A card dragged out of its own list stops reordering and starts carrying,
+//: and dragged back in it reorders again: the mode names the one it wants next.
+function objDragRoute(g) {
+  const next = OBJ_MODES[g.mode].route?.(g);
+  if (!next || next === g.mode) return;
+  OBJ_MODES[g.mode].cancel(g);
+  g.mode = next;
+  OBJ_MODES[next].begin(g);
 }
 
 //: A held pointer at a scroller's top or bottom edge keeps scrolling it, so a
