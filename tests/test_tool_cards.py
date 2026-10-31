@@ -234,6 +234,9 @@ def test_a_result_that_is_not_a_dict_is_survivable():
 # --- end to end, through the agent loop ---------------------------------------
 
 
+#: The questions below are not ones the engine reads itself: "what did I buy?"
+#: is answered from the notes (the composer, 2026-10), so the agent's rounds
+#: would never run; these tests are about the agent's own tool event.
 def _events(client, question, **body):
     with client.stream("POST", "/chat/stream", json={"question": question, **body}) as r:
         return [json.loads(line) for line in r.iter_lines() if line.strip()]
@@ -246,7 +249,7 @@ def test_the_tool_event_carries_its_cards(ai_client, fake_ollama, app_state):
     fake_ollama.tool_script = [
         [{"name": "search_notes", "arguments": {"query": "milk"}}],
     ]
-    events = _events(ai_client, "what did I buy?", use_tools=True)
+    events = _events(ai_client, "use your tools to look over my notebook for milk", use_tools=True)
     tool = next(e for e in events if e["type"] == "tool")
     assert tool["tool"] == "search_notes"
     note_cards = [group for group in tool["cards"] if group["kind"] == "note"]
@@ -260,6 +263,6 @@ def test_touched_is_still_sent_beside_the_cards(ai_client, fake_ollama, app_stat
     stays."""
     ai_client.post("/entries", json={"content": "Bought milk and eggs"})
     fake_ollama.tool_script = [[{"name": "search_notes", "arguments": {"query": "milk"}}]]
-    events = _events(ai_client, "what did I buy?", use_tools=True)
+    events = _events(ai_client, "use your tools to look over my notebook for milk", use_tools=True)
     tool = next(e for e in events if e["type"] == "tool")
     assert tool["touched"], "the older field is still populated"
