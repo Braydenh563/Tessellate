@@ -549,51 +549,7 @@ which is its own slow cost when the next session reads it. The same three sympto
 console are the signature: one real error, then `X is not defined` and
 `Cannot access Y before initialization` from everything declared after it.
 
-## How to proceed after PR 149 (the owner asked, 2026-09-14)
-
-The full answer is `docs/ROADMAP.md`, "How to proceed after PR 149",
-written for PR 144 and brought forward on 2026-09-20: the plan table with where each plan stands,
-the ordered queue (speed budget H7, the professional-use block BACKLOG
-115, `agent-remaining/OPEN.md` surface by surface with each plan's open
-phase, UI Phase 11, then WORLD_CLASS_PLAN 18's horizon H1 to H8), and the
-rules that do not change. In one breath: every open item now lives in
-exactly one of INBOX (the owner's reports), `OPEN.md` (what the agents
-left, 134 bullets by surface), a plan's open phase, or BACKLOG; nothing
-open lives in HANDOVER or HISTORY. A session starts by reading CLAUDE.md,
-this file's standing orders and Now line, INBOX, then `OPEN.md` and the
-plan for the surface in hand. Brief 33 in SESSION_BRIEFS is the next
-session's brief.
-
-**Now (2026-09-26, 0.3.3 released on the branch, Opus orchestrating): INBOX
-426 is built and closed, and the docs say so.** The round: Atlas redrawn to
-the owner's reference sheets in two looks with moods and poses, the corner
-companion (it perches on any panel, rides with it, reacts, and can be a
-character of your own), a face for every person, optional sign-in on this
-computer, the Documents toolbar and focus-mode fixes, Library Activity, the
-tour's per-frame follow, the `--accent-text` token, and the app.js split
-into 23 files (warm boot about 28ms slower, cold the same, 3.6% more bytes on
-the wire). The README has Atlas at its title and 25 screenshots retaken on
-this head (`readmeshots.js`, `atlasreadme.js` (removed 2026-10-12, recoverable from git history), `pngshrink.py` (removed 2026-10-12, recoverable from git history)).
-
-**Next:** INBOX 427, the owner's two calls (Atlas's anatomy after rounds 3
-and 4; the companion's pin near an edge). Then `agent-remaining/OPEN.md`,
-"Left by the 0.3.3 agents", top down (the two the README pass found, the
-agent's Atlas head and the heading-case rule, are both fixed).
-
-**The 2026-09-21 Now blocks** (the app saying true things about itself; the
-guided tour's third fix, CI's cancel-in-progress, the unsigned commits) are
-in HISTORY.md, "Moved from HANDOVER, 2026-09-26".
-
-**Previously (2026-09-19 night):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-21 (third pass)".
-
-**Previously (2026-09-14 midday):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-21 (third pass)".
-
-**Previously (2026-09-14 early and 2026-09-13 night):** moved to HISTORY.md,
-"Moved from HANDOVER, 2026-09-21 (second pass)".
-
-**Previously (2026-09-13 evening and midday):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-21".
-
-**Previously (2026-09-13 morning to midday):** moved to HISTORY.md, "Moved from HANDOVER, 2026-09-13 night".
+(The PR 149 plan and the session records to 2026-09-26 moved to HISTORY.md, "Moved from HANDOVER", 2026-10-31.)
 
 ## Earlier sessions
 
