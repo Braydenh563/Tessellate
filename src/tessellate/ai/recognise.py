@@ -2596,6 +2596,13 @@ _ARRANGED = re.compile(
     r"rescheduled|postponed|pushed|due|will|going to|gonna|next|upcoming|deadline|need|needs|have to|has to)\b", re.I)
 
 
+def set_for_later(sentence: str) -> bool:
+    """Whether a sentence sets a thing up for its day ("Booked for 14
+    November", "moved to Friday", "due Friday"): the day it names is ahead of
+    the note, and it is not a thing that happened."""
+    return bool(_ARRANGED.search(sentence or ""))
+
+
 def told_as_past(sentence: str) -> bool:
     """Whether a sentence tells of something that happened ("Slept badly on
     Tuesday.", "Went to the gym on Monday"), not a thing set for its day
