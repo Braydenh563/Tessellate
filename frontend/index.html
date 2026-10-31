@@ -1346,7 +1346,7 @@
       your progress toward it as you write.
     </p>
     <label for="doc-word-goal-input">Goal (0 to clear)</label>
-    <input type="number" id="doc-word-goal-input" min="0" step="1" inputmode="numeric" autocomplete="off">
+    <input type="number" id="doc-word-goal-input" min="0" max="1000000" step="1" inputmode="numeric" autocomplete="off">
     <div class="row right space-dialog-actions">
       <button type="button" class="ghost small" data-close-dialog="doc-word-goal-dialog">Cancel</button>
       <button type="button" class="accent small" id="doc-word-goal-submit">Set goal</button>
@@ -6258,7 +6258,7 @@ Link to another note with [[its first few words]]."></textarea>
           </div>
           <div id="library-overview" class="library-overview" role="group"
             aria-label="Your notebook at a glance"></div>
-          <div id="library-filters" class="library-filters" role="group"
+          <div id="library-filters" class="library-filters edge-fade" role="group"
             aria-label="Filter by kind"></div>
           <!-- Two strips that appear only when they have something to say: the
                bin's own controls when you are looking at the bin, and the bulk

@@ -402,9 +402,25 @@ function syncEdgeFade(bar) {
   bar.classList.toggle("fade-end", hidden - bar.scrollLeft > 1);
 }
 
-for (const bar of document.querySelectorAll(".edge-fade")) {
+//: **One recipe for a strip that scrolls** (1031 UX6: the launch row held 760
+//: px in 338, the Library filters 1,234, with no sign of it). Wired once: the
+//: fade follows the scroll, and the tab you choose is brought into view
+//: (read from the fade classes the last sync left, so a strip that fits costs
+//: no layout, as `revealActiveTab` does). A strip a script builds calls this
+//: itself; the markup's own are wired by the loop below.
+function edgeFadeWire(bar) {
+  if (!bar || bar.dataset.fadeWired) return;
+  bar.dataset.fadeWired = "1";
   syncEdgeFade(bar);
   bar.addEventListener("scroll", () => syncEdgeFade(bar), { passive: true });
+  bar.addEventListener("click", (event) => {
+    const pick = event.target.closest?.("button, [role=tab]");
+    if (pick && bar.contains(pick) && /(^|\s)fade-(start|end)(\s|$)/.test(bar.className)) pick.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+}
+
+for (const bar of document.querySelectorAll(".edge-fade")) {
+  edgeFadeWire(bar);
   if (typeof ResizeObserver !== "undefined") {
     // Fires when a hidden (0-width) strip becomes visible on tab switch,
     // same as content changing width, no extra wiring needed per tab.

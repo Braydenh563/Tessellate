@@ -1413,13 +1413,14 @@ function renderQuickLinks() {
   //: line it covers nothing, which was the fault of the ⋯ this row had once.
   head.append(heading, kebabMenu(dashCustomiseItems().filter((item) => item.group === "quick"), "Quick access options"));
   const row = document.createElement("div");
-  row.className = "launch-row launch-row-start";
+  row.className = "launch-row launch-row-start edge-fade";
   const tints = quickTints();
   quickAccessCurrent().forEach((link, index) => row.appendChild(quickLinkButton(link, quickTintKey(link.id, index, tints))));
   const group = document.createElement("div");
   group.className = "launch-group";
   group.append(head, row);
   box.replaceChildren(group);
+  window.edgeFadeWire?.(row);
 }
 
 //: **The note you were last in**, the menu's Continue row (INBOX 60). Most
