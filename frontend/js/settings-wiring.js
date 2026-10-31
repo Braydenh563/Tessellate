@@ -1884,9 +1884,10 @@ document.addEventListener("paste", async (e) => {
   const items = (e.clipboardData || e.originalEvent.clipboardData).items;
   const files = [];
   for (const item of items) {
-    if (item.kind === 'file') {
-      files.push(item.getAsFile());
-    }
+    //: `getAsFile` answers null for a file item the browser will not hand over
+    //: (seen in the owner's log 2026-10-31: `null.type` in the filter below).
+    const file = item.kind === "file" ? item.getAsFile() : null;
+    if (file) files.push(file);
   }
   if (!files.length) return;
   //: A spreadsheet or Word copy carries a picture of what it copied beside
