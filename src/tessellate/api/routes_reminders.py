@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers
 from tessellate.api.schemas import not_blank
 from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import func, select
@@ -374,7 +375,7 @@ def _ics_response(session: Session, reminders: list[Reminder], filename: str) ->
     return Response(
         content=body.encode("utf-8"),
         media_type="text/calendar; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers=attachment_headers(filename),
     )
 
 

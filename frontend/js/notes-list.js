@@ -60,14 +60,45 @@ async function noteFormMayClose() {
 
 //: The keyboard back on a note's row after a redraw, unless it went somewhere.
 function focusNoteRow(id) {
-  requestAnimationFrame(() => {
-    const active = document.activeElement;
-    if (active && active !== document.body && active.isConnected) return;
+  restoreFocusTo(() => {
     const row = document.querySelector(`#entry-list > li[data-id="${id}"]`);
-    if (!row) return;
+    if (!row) return null;
     for (const other of document.querySelectorAll("#entry-list > li[tabindex='0']")) other.tabIndex = -1;
     row.tabIndex = 0;
-    row.focus({ preventScroll: true });
+    return row;
+  });
+}
+
+//: **One focus contract after an act** (audit 1031 N11): when an act leaves
+//: the keyboard on the page (the control it was on went away or was hidden),
+//: it goes to `target`, a node or a function that finds one after the redraw.
+//: Nothing moves if the person has already gone somewhere else, so a tab
+//: change does not pull focus into a hidden tab. Hidden counts as lost: the
+//: browser only moves focus off a node just hidden after this frame.
+function restoreFocusTo(target) {
+  requestAnimationFrame(() => {
+    const here = document.activeElement;
+    if (here && here !== document.body && here.isConnected && here.checkVisibility?.() !== false) return;
+    const el = target instanceof Node ? target : target();
+    if (el?.isConnected && el.checkVisibility?.() !== false) el.focus({ preventScroll: true });
+  });
+}
+
+//: The control of a note's row that holds the keyboard, as classes (without
+//: the state ones: "is-favourite" flips with the act) to find it in the redrawn row.
+function heldNoteControl() {
+  const el = document.activeElement;
+  const li = el?.closest?.("#entry-list > li[data-id]");
+  return li && { id: li.dataset.id, cls: [...el.classList].filter((t) => !t.startsWith("is-")).join(".") };
+}
+
+function restoreNoteControl(held) {
+  if (!held) return;
+  restoreFocusTo(() => {
+    const li = document.querySelector(`#entry-list > li[data-id="${held.id}"]`);
+    //: Else the row itself (Save changes closed its form), which a script may focus.
+    if (li && !li.hasAttribute("tabindex")) li.tabIndex = -1;
+    return (held.cls && li?.querySelector(`.${held.cls}`)) || li;
   });
 }
 
@@ -182,7 +213,7 @@ function liveQueryIds(q) {
 //: nothing), and `GET /search` (`search/query.py`) has all three. They are
 //: asked of the engine, the way `type:` and `prop:` are asked of
 //: `/entries/query`, and the list keeps its own order and its own look.
-const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space):(?:"[^"]{1,200}"|[^\s"]+))/gi;
+const ENGINE_QUERY_RE = /(^|\s)((?:kind|has|space|is(?=:(?:archived|done|open|urgent|clipped)(?:\s|$))):(?:"[^"]{1,200}"|[^\s"]+))/gi;
 //: One object for this file's engine state (the global-scope ratchet counts
 //: top-level `let`s): `ids` answers `q`, `pending` is the question in the air,
 //: `capped` says the engine's page (50) was full, `semanticFor` is the box text
@@ -192,19 +223,27 @@ const noteEngine = { q: "", ids: null, pending: "", capped: false, semanticFor: 
 
 //: The ids the engine gives for these operators, or null while it is asked.
 //: Notes only (`kind=note`) unless the terms name a kind themselves.
+//: Every page of the engine's answer, up to 500 notes (audit 1031 N16); `more` is true only if page ten had more.
+async function enginePages(q, kind) {
+  const ids = new Set();
+  let more = false;
+  for (let page = 1; page <= 10; page++) {
+    const body = await apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50&page=${page}`, { silent: true });
+    for (const hit of body.hits || []) if (hit.kind === "note") ids.add(hit.id);
+    if (!(more = Boolean(body.more))) break;
+  }
+  return { ids, more };
+}
+
 function engineQueryIds(q) {
   if (noteEngine.q === q && noteEngine.ids) return noteEngine.ids;
   if (noteEngine.pending !== q) {
     noteEngine.pending = q;
     const kind = /(^|\s)kind:/i.test(q) ? "" : "&kind=note";
-    apiJson(`/search?q=${encodeURIComponent(q)}${kind}&limit=50`, { silent: true })
-      .then((body) => {
+    enginePages(q, kind)
+      .then(({ ids, more }) => {
         if (noteEngine.pending !== q) return;
-        const hits = (body.hits || []).filter((hit) => hit.kind === "note");
-        noteEngine.q = q;
-        noteEngine.ids = new Set(hits.map((hit) => hit.id));
-        noteEngine.capped = (body.hits || []).length >= 50;
-        noteEngine.pending = "";
+        Object.assign(noteEngine, { q, ids, capped: more, pending: "" });
         renderEntries();
       })
       .catch(() => {
@@ -244,6 +283,18 @@ function showNotesFilter(query) {
   search.dispatchEvent(new Event("input"));
   search.focus();
 }
+
+//: A feature that needs the meaning engine says so when it is not ready (audit 1031 N25);
+//: a still-warming engine is not a missing one.
+function meaningEngineMissing() {
+  return Boolean(modelStatus) && modelStatus.embedding_ready === false && !modelStatus.embedding_warming;
+}
+
+const MEANING_ENGINE_WORDS = "The meaning engine is not ready, so only the words are compared. Set it up in Settings, Models.";
+
+//: The `is:` words the filter knows (`matchesSearch` below). Any other is a typo or a
+//: filter that does not exist, and an empty list says so (audit 1031 N18).
+const NOTE_FLAGS = "pinned favourite favourites favorite starred private linked draft drafts untagged untitled review".split(" ");
 
 function parseNoteQuery(raw) {
   const query = {
@@ -308,37 +359,6 @@ function parseNoteQuery(raw) {
     else query.words.push(lower);
   }
   return query;
-}
-
-//: KG7: a structural query's bar over the list: how many, and the same notes
-//: as a table and on the graph.
-function liveQueryBar(visible) {
-  const list = $("entry-list");
-  let bar = list.parentElement?.querySelector(":scope > .note-query-bar");
-  const parsed = noteSearch ? parseNoteQuery(noteSearch) : null;
-  const live = Boolean(parsed) && (parsed.structural.length > 0 || parsed.engine.length > 0);
-  if (!live) {
-    bar?.remove();
-    return;
-  }
-  if (!bar) {
-    bar = document.createElement("div");
-    bar.className = "row note-query-bar";
-    list.before(bar);
-  }
-  const ids = visible.map((e) => e.id);
-  const count = document.createElement("span");
-  count.className = "muted";
-  //: The engine answers one page (50); a full page says so rather than
-  //: letting the count pass for the whole of a larger answer.
-  count.textContent = parsed.engine.length > 0 && noteEngine.capped
-    ? `The first ${ids.length} notes that match this query`
-    : `${nounCount(ids.length, "note")} match this query`;
-  bar.replaceChildren(
-    count,
-    smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
-    smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
-  );
 }
 
 function noteQueryIsEmpty(query) {
@@ -423,7 +443,7 @@ function matchesSearch(entry) {
     //: kept because it is in this app's own help text, in saved filters people
     //: already have, and in muscle memory. Two spellings of one flag is a
     //: smaller cost than breaking a filter somebody saved.
-    if ((flag === "pinned" || flag === "favourite" || flag === "favourites") && !entry.pinned) {
+    if (/^(pinned|favou?rites?|starred)$/.test(flag) && !entry.pinned) {
       return false;
     }
     if (flag === "private" && !entry.is_private) return false;
@@ -431,6 +451,9 @@ function matchesSearch(entry) {
     if (flag === "linked" && !(entry.links || []).length && !/\[\[[^\]\n]{1,120}\]\]/.test(entry.content || "")) return false;
     if ((flag === "draft" || flag === "drafts") && !entry.is_draft) return false;
     if (flag === "untagged" && tags.length) return false;
+    if (flag === "untitled" && entry.title) return false;
+    //: A word that is no filter narrows to nothing, and the empty list says so (`noMatchHint`).
+    if (!NOTE_FLAGS.includes(flag)) return false;
     //: The review queue (section 17, row 1): unsure or Uncategorised filings
     //: nobody has decided on (`entryNeedsReview`, above).
     if (flag === "review" && !entryNeedsReview(entry)) return false;
@@ -1563,8 +1586,12 @@ function renderNoteText(element, text, terms, prose = (s) => s) {
         i = j;
         continue;
       }
-      // An ordinary blockquote, not a callout: leave it to the inline pass
-      // exactly as it was written, rather than eating the "> " markers.
+      //: A plain quote draws as one (audit 1031 N26); its body goes back through this
+      //: function, so nested quotes nest and search words stay marked.
+      flush();
+      element.appendChild(mdQuoteElement(quoted, (host, body) => renderNoteText(host, body.join("\n"), terms, prose)));
+      i = j;
+      continue;
     }
 
     //: **A task reads as a task** (qa-1005): "- [x] Beta invite list" was the
@@ -2205,9 +2232,21 @@ $("notes-expand-all")?.addEventListener("click", toggleExpandAllRows);
 $("notes-view-rows")?.addEventListener("click", () => setNotesViewMode("rows"));
 $("notes-view-cards")?.addEventListener("click", () => setNotesViewMode("cards"));
 //: The capture bar's card is the lazy capture-card.js (INBOX 1479), fetched on the first focus or click.
+//: Offline the file is not there (and the failed fetch is forgotten, app.js `lazyScript`), so the bar says
+//: so once and points at the Capture section, whose box is in the page already.
+//: Fetched a few seconds after boot too, while the server answers: the service worker keeps only what
+//: the page has already asked for, so a card never opened before going offline would not be there.
+setTimeout(() => navigator.connection?.saveData || ensureModule("captureCard"), 4000);
+function captureCardNeedsConnection(event) {
+  if (event.type === "input") return;
+  lazyLoadFailed("The capture bar");
+}
 for (const type of ["focusin", "click", "input"]) {
   $("capture-bar-row")?.addEventListener(type, (event) => {
-    Promise.all(["/css/capture-card-lazy.css", "/js/capture-card.js"].map(lazyScript)).then(() => openCaptureCard(event.target, event.type));
+    ensureModule("captureCard").then((loaded) => {
+      if (loaded) openCaptureCard(event.target, event.type);
+      else captureCardNeedsConnection(event);
+    });
   });
 }
 
@@ -2315,9 +2354,33 @@ function resetNoteList(list) {
   return keep;
 }
 
+//: The filter words outlive a reload in this tab (audit 1031 N44), read here at load
+//: because the first render runs before the later wiring files and would forget them.
+try {
+  noteEngine.remembered = sessionStorage.getItem("note-filter") || "";
+  if (noteEngine.remembered) {
+    $("note-search").value = noteEngine.remembered;
+    noteSearch = noteEngine.remembered;
+    $("save-search").classList.remove("hidden");
+  }
+} catch {
+  /* storage blocked: an empty box, as before */
+}
+function rememberNoteFilter(words) {
+  if (words === noteEngine.remembered) return;
+  noteEngine.remembered = words;
+  try {
+    if (words) sessionStorage.setItem("note-filter", words);
+    else sessionStorage.removeItem("note-filter");
+  } catch {
+    /* storage blocked: this page only */
+  }
+}
+
 //: `appendOnly` (a page arriving into a long list) draws nothing unless the rows can be added.
 function renderEntries(appendOnly = false) {
   const list = $("entry-list");
+  rememberNoteFilter(noteSearch);
   // Drafts stay out of All/category views entirely, user-reported: they
   // should only show up in the Drafts filter until saved as a real note.
   const visible = libraryVisibleRows();
@@ -2390,6 +2453,7 @@ function renderEntries(appendOnly = false) {
   const notebookEmpty = allEntries.length === 0;
   empty.classList.toggle("hidden", !notebookEmpty);
   noMatch.classList.toggle("hidden", notebookEmpty || visible.length > 0);
+  noMatchHint(noMatch);
 
   renderWindowed(
     list,
@@ -2966,7 +3030,10 @@ async function loadEntries() {
   //: throws, and a throw used to leave the skeletons and then the empty state
   //: on screen: "Your notebook is empty" is a claim about the person's own
   //: notes that a failed GET is no basis for. See `surfaceFailed`.
-  return loadSurface($("empty-message"), "your notes", _loadEntries);
+  const held = heldNoteControl();
+  const result = await loadSurface($("empty-message"), "your notes", _loadEntries);
+  restoreNoteControl(held);
+  return result;
 }
 
 async function _loadEntries() {
@@ -3137,7 +3204,9 @@ async function refreshEntries(ids) {
   ensureMapChipsFor(rows, generation);
   renderStatusBar();
   renderSidebar();
+  const held = heldNoteControl();
   renderEntries();
+  restoreNoteControl(held);
   //: Categories the AI filed into since the last read need their ids.
   loadCategories();
   fillCategoryOptions($("entry-category"), null);

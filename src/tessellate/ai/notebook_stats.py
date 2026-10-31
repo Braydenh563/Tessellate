@@ -42,7 +42,7 @@ from datetime import date, datetime, time, timedelta
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.orm import Session, aliased
 
-from tessellate.ai import composer_frame, spelling
+from tessellate.ai import composer_frame, plain_words, spelling
 from tessellate.core.database import Category, Document, Entry, EntryLink, EntryRevision, Reminder, utcnow
 from tessellate.entry import manager
 
@@ -326,13 +326,7 @@ _SUBJECT_AFTER = re.compile(r"\bnotes?\b.*\b(?:about|mention(?:s|ing)?|tagged|on
 
 #: Words that say nothing about what a note is about, left out of the most
 #: written-about words: function words and the ones every note shares.
-_PLAIN = frozenset(
-    """the a an and or but of to in on at for with from by is are was were be been it its
-    this that these those i me my we our you your he she they them his her their not no
-    do did does done have has had will would can could should so if then than as up out
-    just also very more most some any all one two three get got go went make made need
-    about into over after before when what which who how there here note notes today""".split()
-)
+_PLAIN = plain_words.PLAIN
 
 
 def _no_repeats(notes: int) -> str:

@@ -8336,7 +8336,7 @@ function mediaReadingBadge(row) {
     badge.title = "Nothing has been transcribed from this yet";
     return badge;
   }
-  const words = reading.split(/\s+/).length;
+  const words = wordCount(reading);
   badge.className = "chip item-label library-read-badge is-read is-ok";
   chipWords(badge, `Read · ${words.toLocaleString()} words`);
   badge.title = "Open the reader to see it beside the page";
@@ -8359,7 +8359,7 @@ function mediaReadingBadge(row) {
 function mediaReadingSummary(row) {
   const reading = mediaReading(row);
   if (!reading) return null;
-  const words = reading.split(/\s+/).filter(Boolean).length;
+  const words = wordCount(reading);
   //: First sentence, or the first line if the reading has no sentence in it, 
   //: a table of figures, a slide title, a scan of a form. Capped, because a
   //: "sentence" in a bad transcription can run for a paragraph, and the cap is

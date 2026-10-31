@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from tessellate.ai.embeddings import bytes_to_vector, similar_pairs
 from tessellate.api import bounds
+from tessellate.core import cjk
 from tessellate.core import deps
 from tessellate.core.database import Attachment, Document, EmbeddingRecord, Entry, EntryLink, EntryProperty, NoteType
 from tessellate.core.deps import get_session
@@ -666,7 +667,7 @@ def _add_attachment_nodes(
 
 def _word_count(text: str | None) -> int:
     """Words in a note's text, for the map's size-by-length rule."""
-    return len((text or "").split())
+    return cjk.word_count(text)
 
 
 #: What `/graph` reads of a note: the node's fields, the label's text (the

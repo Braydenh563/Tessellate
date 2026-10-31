@@ -76,6 +76,33 @@ def write(text: str, props: dict[str, object]) -> str:
     return "---\n" + "\n".join(lines) + "\n---\n" + body
 
 
+_TITLE_LINE = re.compile(r"title\s*:", re.IGNORECASE)
+
+
+def lift_title(text: str) -> str:
+    """A `title:` in the block becomes the note's heading (audit 1031 N12).
+
+    Done once, at save, by the reader that knows where the block ends, so a
+    note written with frontmatter is no longer untitled beside a chip that
+    spells its title. The other properties keep their lines; a note that
+    names itself (its body opens with a heading, or with the title's own
+    words) is left as written."""
+    text = str(text or "")
+    end = block_end(text)
+    found = {key.lower(): value for key, value in read_block(text).items()} if end else {}
+    title = " ".join(((found.get("title") or [""])[0]).split())
+    if not title:
+        return text
+    block, body = text[:end], text[end:]
+    first = next((line.strip() for line in body.splitlines() if line.strip()), "")
+    if first.startswith("#") or first == title:
+        return text
+    lines = [line for line in block.splitlines(keepends=True) if not _TITLE_LINE.match(line)]
+    head = "".join(lines) if any(line.strip() for line in lines[1:-1]) else ""
+    rest = body.lstrip("\n")
+    return f"{head}# {title}\n\n{rest}" if rest.strip() else f"{head}# {title}\n"
+
+
 #: WORLD_CLASS_PLAN D5's built-in kinds: the five a notebook starts with, so
 #: "this note is a person" is one pick rather than a type to design first.
 #: Each colour is what the graph's "Note type" rule paints (`routes_graph`).

@@ -807,8 +807,21 @@ function stripFrontmatter(text) {
   return source;
 }
 
+//: What a one-line preview cannot draw (audit 1031 N38): a fence's own line,
+//: a block formula, a table's divider row and its pipes. One pass for both
+//: preview helpers (`notePreviewText` here, `stripMarkdownPreview` in
+//: navigation.js), so a table reads "a · b" in the timeline, the rail, the
+//: dashboard and chat alike, and never as "| a | b | |---|---|".
+function previewBlocks(text) {
+  return String(text || "")
+    .replace(/^(```|~~~)[^\n]*\n([\s\S]*?)(?:\n\1[^\n]*|(?![\s\S]))/gm, "$2")
+    .replace(/\$\$[\s\S]*?\$\$/g, "formula")
+    .replace(/^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(?:\|[ \t]*:?-{2,}:?[ \t]*)*\|?[ \t]*$/gm, "")
+    .replace(/^[ \t]*\|(.*)\|[ \t]*$/gm, (_row, cells) => cells.split("|").map((cell) => cell.trim()).filter(Boolean).join(" · "));
+}
+
 function notePreviewText(content) {
-  return stripFrontmatter(content || "")
+  return previewBlocks(stripFrontmatter(content || ""))
     .replace(/[\u202a-\u202e\u2066-\u2069]/g, "") // bidi controls reorder a label (N20)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/\[\[([^[\]]{1,120})\]\]/g, "$1")

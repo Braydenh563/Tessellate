@@ -28,6 +28,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
+from tessellate.core import cjk
 from tessellate.core.database import (
     Attachment,
     AuditLog,
@@ -235,7 +236,7 @@ def _documents(session: Session, q: str = "") -> list[dict]:
     rows = session.scalars(stmt.order_by(Document.updated_at.desc()).limit(PER_KIND_LIMIT))
     items = []
     for doc in rows:
-        words = len(doc.content.split())
+        words = cjk.word_count(doc.content)
         items.append(
             {
                 "kind": "document",

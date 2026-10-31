@@ -28,7 +28,7 @@ def test_opening_an_entry_stamps_when(client):
     made = client.post("/entries", json={"content": "A note to come back to"}).json()
     assert client.get("/entries", params={"limit": 5}).json()[0]["last_opened_at"] is None
 
-    opened = client.get(f"/entries/{made['id']}").json()
+    opened = client.get(f"/entries/{made['id']}?open=1").json()
     assert opened["last_opened_at"], "opening an entry did not record when"
     assert opened["access_count"] == 1
 
@@ -40,7 +40,7 @@ def test_the_older_note_wins_once_you_open_it(client):
     first = client.post("/entries", json={"content": "The older note"}).json()
     second = client.post("/entries", json={"content": "The newer note"}).json()
 
-    client.get(f"/entries/{first['id']}")
+    client.get(f"/entries/{first['id']}?open=1")
 
     rows = {row["id"]: row for row in client.get("/entries", params={"limit": 50}).json()}
 
@@ -84,3 +84,13 @@ def test_the_pill_ranks_on_both_and_says_so():
     assert "Opens the note you opened or edited most recently" in source, (
         "the pill's hint no longer matches what it ranks on"
     )
+
+
+def test_a_plain_read_is_not_an_open(client):
+    """Audit 1031 N5: the hover card, the swipe sheet and the chat agent read a
+    note without a person opening it, so only `?open=1` counts."""
+    made = client.post("/entries", json={"content": "a note read in passing", "category": "Misc"}).json()
+    client.get(f"/entries/{made['id']}")
+    peeked = client.get(f"/entries/{made['id']}").json()
+    assert peeked["access_count"] == 0 and peeked["last_opened_at"] is None
+    assert client.get(f"/entries/{made['id']}?open=1").json()["access_count"] == 1

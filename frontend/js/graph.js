@@ -2445,7 +2445,7 @@ async function openGraphPopup(event, node) {
   graphPopupAnchor = { x: event.clientX, y: event.clientY };
   placeGraphPopup();
 
-  const entry = await apiJson(`/entries/${node.id}`).catch(() => null);
+  const entry = await apiJson(`/entries/${node.id}?open=1`).catch(() => null);
   if (!entry || graphPopupId !== node.id) {
     if (graphPopupId === node.id) {
       $("graph-popup-content").value = "";
@@ -3349,7 +3349,7 @@ function graphPopupActionList(entry) {
       run: async () => {
         const related = await apiJson(`/entries/${entry.id}/related`).catch(() => []);
         if (!related.length) {
-          toast("No similar notes found.");
+          toast(meaningEngineMissing() ? "No similar notes found: the meaning engine is not ready. Set it up in Settings, Models." : "No similar notes found.");
           return;
         }
         // Reuse the existing highlight pass by searching for these ids.

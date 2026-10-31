@@ -3,6 +3,8 @@
 // cap. Loads straight after app.js: later scripts name these functions at
 // load (a widget table's `render`, a listener), so the stand-ins must exist.
 Object.assign(LAZY_MODULES, {
+  //: The capture bar's card (capture-card.js; notes-list.js opens it on the first focus).
+  captureCard: ["/css/capture-card-lazy.css", "/js/capture-card.js"],
   chatPrivate: ["/css/chat-private-lazy.css", "/js/chat-private.js"],
   //: The plain head's disc, fetched only when the faces failed (`plainHead`).
   plainHead: ["/css/plain-head-lazy.css"],
@@ -71,7 +73,7 @@ installStandIns({
   mathEditor: ["openMathEditor"],
   mathField: ["openMathInPlace"],
   gestureKit: ["openChatModelPanel", "editChatAnswer", "explainNote", "commitExtractPreview"],
-  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy"],
+  notesLazy: ["toggleRowExpanded", "nudgeUntaggedNotes", "nudgeReviewQueue", "refreshNoteSearchWhy", "noMatchHint", "liveQueryBar"],
   quickAdd: ["reminderComposeAdd"],
   loadFailed: ["surfaceFailed"],
   appearancePanel: ["openAppearancePanel"],
@@ -199,4 +201,23 @@ function nameMarkBuddyShowing() {
     choice = "off";
   }
   return choice !== "off" || !!document.getElementById("nm-buddy");
+}
+
+//: What a person reads when a lazy file could not be fetched; said once a few
+//: seconds, not per keystroke. Callers that need the file check the boolean
+//: `lazyScript` / `ensureModule` resolve with and call this when it is false.
+function lazyLoadFailed(what = "That part of Tessellate") {
+  if (Date.now() - (lazyLoadFailed.at || 0) < 4000) return;
+  lazyLoadFailed.at = Date.now();
+  toast(`${what} needs a connection the first time. Try again once you are back online.`);
+}
+
+//: **A lazy bundle's "when the page is ready" is now.** A file loaded on first
+//: use missed its `DOMContentLoaded` listener (the Library sub-tabs had no
+//: handler), so wiring runs at once when the document is parsed. A microtask,
+//: not a direct call: the wiring reads `let` bindings declared further down
+//: its file, which a direct call reached before they existed.
+function onDomReady(fn) {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
+  else queueMicrotask(fn);
 }

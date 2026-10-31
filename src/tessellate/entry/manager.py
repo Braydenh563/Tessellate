@@ -51,6 +51,7 @@ from tessellate.core.database import (
 from tessellate.core import events
 from tessellate.core.lookahead import Ahead
 from tessellate.entry import link_facts, timewords
+from tessellate.entry.cleantext import clean_name, is_blank, name_key
 from tessellate.entry.tagnames import normalise_tags
 
 # Where entries land when no AI is available or the AI can't decide.
@@ -146,6 +147,27 @@ def entry_space(entry: Entry) -> str:
     return getattr(entry, "workspace_id", None) or "default"
 
 
+#: The longest a category name may be; `/categories` refuses more, and now
+#: every other writer clips to it instead of storing 300 characters.
+#: **The one private-note rule** (audit 1031 N3, N23, N40): a private note's
+#: words show in its own row and editor and nowhere else. Anything that points
+#: at it (a link chip, the Connections sheet, the near-duplicate line) calls it
+#: this, vault open or locked; the search never indexes it and the `[[` picker
+#: leaves it out.
+PRIVATE_LABEL = "Private note"
+
+
+MAX_CATEGORY_LENGTH = 100
+
+
+def category_label(name: str | None) -> str:
+    """A category name as it is stored (audit 1031 N6): invisible characters
+    gone, spacing collapsed, ends trimmed, clipped to 100, and a blank name is
+    Uncategorised. The one rule every writer shares, as `normalise_tags` is for
+    tags, so a note route cannot make a name `/categories` would refuse."""
+    return clean_name(name)[:MAX_CATEGORY_LENGTH].strip() or UNCATEGORISED
+
+
 def get_or_create_category(
     session: Session, name: str, workspace_id: str | None = None
 ) -> Category:
@@ -186,13 +208,24 @@ def get_or_create_category(
     # one space (the session's, or the column default); the lookup now asks
     # the same space the insert would write to.
     workspace_id = category_space(session, workspace_id)
+    name = category_label(name)
 
     def _find() -> Category | None:
-        return session.scalar(
+        exact = session.scalar(
             select(Category).where(
                 Category.name == name, Category.workspace_id == workspace_id
             )
         )
+        if exact is not None:
+            return exact
+        # "work" is "Work": the first spelling made is the one kept, as tags do.
+        wanted = name_key(name)
+        for other in session.scalars(
+            select(Category).where(Category.workspace_id == workspace_id).order_by(Category.id)
+        ):
+            if name_key(other.name) == wanted:
+                return other
+        return None
 
     category = _find()
     if category is not None:
@@ -276,9 +309,11 @@ def create_entry(
     in batches. `dates=False` leaves the date phrases to a caller that sets
     `created_at` first and calls `record_dates` itself (an import), so the
     note is not read for dates twice."""
+    from tessellate.entry.properties import lift_title
+
     category = get_or_create_category(session, category_name)
     entry = Entry(
-        content=content,
+        content=lift_title(content),
         category_id=category.id,
         # The schema normalises an HTTP write; this is every other writer
         # (the AI tools, imports, passive capture), held to the same rule.
@@ -661,8 +696,12 @@ def _update_entry_fields(
     tags: list[str] | None = None,
 ) -> Entry:
     """The edit itself. One write, one `edited` event; see `update_entry`."""
+    from tessellate.entry.properties import lift_title
+
     was = events.entry_state(entry)
     changed = []
+    if content is not None:
+        content = lift_title(content)
     if content is not None and entry.is_private:
         #: Whoever the caller is, a private note's text lands encrypted.
         stored = content_for_entry(entry, content)
@@ -2557,9 +2596,9 @@ def rename_category(session: Session, category_id: int, new_name: str) -> dict:
     category = session.get(Category, category_id)
     if category is None:
         raise ValueError("That category no longer exists.")
-    new_name = new_name.strip()
-    if not new_name:
+    if is_blank(new_name):
         raise ValueError("A category needs a name.")
+    new_name = category_label(new_name)
     if new_name == category.name:
         return {"renamed": False, "merged": False, "moved": 0}
 
@@ -2568,13 +2607,23 @@ def rename_category(session: Session, category_id: int, new_name: str) -> dict:
     # view merged it into the default space's "Garden" and both uni notes
     # then read as Uncategorised in uni (measured 2026-10-03). In another
     # space the name is simply free, so this is a plain rename.
-    existing = session.scalar(
-        select(Category).where(
-            Category.name == new_name,
-            Category.workspace_id == category_space(session, category.workspace_id),
-        )
+    wanted = name_key(new_name)
+    existing = next(
+        (
+            other
+            for other in session.scalars(
+                select(Category)
+                .where(
+                    Category.workspace_id == category_space(session, category.workspace_id),
+                    Category.id != category.id,
+                )
+                .order_by(Category.id)
+            )
+            if name_key(other.name) == wanted
+        ),
+        None,
     )
-    if existing is not None and existing.id != category.id:
+    if existing is not None:
         # Merge: move the entries across, then drop the now-empty category.
         moved = _reassign(session, category.id, existing.id)
         log_action(session, "edited", "category", existing.id, f"merged {category.name} → {new_name}")

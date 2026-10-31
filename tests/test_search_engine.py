@@ -681,3 +681,43 @@ def test_the_finders_empty_state_reads_the_index_not_the_chips():
     empty = empty[: empty.index(";")]
     assert "finderIndexTotals" in empty and "finderCounts" not in empty
     assert "finderIndexTotals = body.counts" in source
+
+
+#: Audit 1031 N1: the Notes filter box reads `in:` and `cat:` as a category; the finder
+#: read `in:` only as a space, so `in:Money` found nothing there. One rule now: `in:` names
+#: a space or, when no space has the name, a category; `cat:` and `category:` always mean one.
+def _categorised(session):
+    from tessellate.entry import manager
+
+    work = _note(session, "invoice for the harbour job")
+    home = _note(session, "invoice for the boiler")
+    for entry, name in ((work, "Money"), (home, "Household")):
+        entry.category_id = manager.get_or_create_category(session, name).id
+    session.commit()
+    return work, home
+
+
+def test_cat_and_category_are_an_operator_not_a_word():
+    u = understand('cat:Money category:"Home office" invoice')
+    assert u.categories == ["Money", "Home office"]
+    assert u.subject == "invoice"
+    assert u.has_operators
+    assert "cat:" not in " ".join(u.notices)
+
+
+def test_in_names_a_category_when_no_space_has_the_name(session):
+    work, home = _categorised(session)
+    assert _hit_ids(session, "in:Money invoice") == {("note", work.id)}
+    assert _hit_ids(session, "in:money invoice") == {("note", work.id)}
+    assert _hit_ids(session, "cat:Household invoice") == {("note", home.id)}
+    assert _hit_ids(session, "cat:household") == {("note", home.id)}
+
+
+def test_in_still_names_a_space_that_exists(session):
+    from tessellate.core.database import Space
+
+    work, _home = _categorised(session)
+    session.add(Space(id="elsewhere", name="Elsewhere"))
+    session.commit()
+    assert _hit_ids(session, "in:Elsewhere invoice") == set()
+    assert _hit_ids(session, "in:Money invoice") == {("note", work.id)}

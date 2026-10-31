@@ -27,6 +27,7 @@ from tessellate.ai.embeddings import (
     EmbeddingService,
     bytes_to_vector,
 )
+from tessellate.core import cjk
 from tessellate.core.database import LIKE_ESCAPE, EmbeddingRecord, Entry, EntryDate, like_escape, link_strength
 from tessellate.search import query as query_understanding
 
@@ -159,6 +160,8 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
         Entry.is_private == False,  # noqa: E712
         Entry.is_board == False,  # noqa: E712
     )
+    if any(cjk.has(term) for term in terms):
+        return _substring_entries(session, terms, base, limit)
 
     def matching(require_all: bool, words: list[str] | None = None) -> dict[int, float]:
         # `terms` are pre-filtered to \W-stripped words by `_meaningful_terms`,
@@ -214,6 +217,17 @@ def keyword_search(session: Session, query: str, limit: int = 10) -> list[Entry]
 
     entries.sort(key=sort_key)
     return entries[:limit]
+
+
+def _substring_entries(session: Session, terms: list[str], base: tuple, limit: int) -> list[Entry]:
+    """Notes holding every term as a substring, newest first: the way a word of
+    Japanese or Chinese is found, since the tokenizer reads a whole run of it as
+    one word (notes audit 1031 N2). No index to grow; one scan of the notes."""
+    wanted = [
+        or_(func.instr(func.lower(Entry.content), term.lower()) > 0, func.instr(func.lower(Entry.tags), term.lower()) > 0)
+        for term in terms
+    ]
+    return list(session.scalars(select(Entry).where(*base, *wanted).order_by(Entry.id.desc()).limit(limit)))
 
 
 # A query word this long or longer is also tried as a prefix when nothing

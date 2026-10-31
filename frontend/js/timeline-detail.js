@@ -77,7 +77,7 @@ async function timelineRowDetail(detail, row) {
     })
   );
 
-  const entry = await apiJson(`/entries/${row.id}`).catch(() => null);
+  const entry = await apiJson(`/entries/${row.id}?open=1`).catch(() => null);
   // The row may have been closed, or the feed repainted, while this was in
   // flight; writing into a detached node would be invisible and confusing.
   if (!detail.isConnected) return;

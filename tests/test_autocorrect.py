@@ -162,10 +162,12 @@ def test_the_dictionary_and_a_word_put_back_are_never_rewritten():
 
 def test_the_table_holds_the_editors_and_the_owners_typos():
     docs = (JS / "documents.js").read_text(encoding="utf-8")
-    body = docs[docs.index("const DOC_AUTOCORRECT = {") : docs.index("};", docs.index("const DOC_AUTOCORRECT = {"))]
-    editor = set(re.findall(r"(\w+): \"", body))
+    #: Audit 1031 N42: the documents' own copy (42 rows, which had drifted from this
+    #: table's 89) is gone; the editor's rows are this table's first block, kept by name.
+    assert "const DOC_AUTOCORRECT = AUTOCORRECT_TYPOS;" in docs
+    assert 'const DOC_AUTOCORRECT = {' not in docs
     table = set(_node(["Object.keys(AUTOCORRECT_TYPOS)"])[0])
-    assert editor <= table
+    assert {"teh", "adn", "taht", "recieve", "alot", "youre", "ot", "writting", "untill"} <= table
     #: Brief 90's fixtures: the owner's own slips, the unambiguous ones.
     assert {"everwhere", "proffesionalising", "hwo", "cna", "mroe", "somthing", "featrues"} <= table
     #: A real word is never a key: the cost of being wrong is a silent change.

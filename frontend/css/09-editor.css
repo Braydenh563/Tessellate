@@ -173,8 +173,9 @@
    it was somebody else's words. It now wears what the live view draws on the
    same lines (`.cm-md-quote` in documents.js), so the two views of one
    document agree. A callout is a `.callout`, not a bare `blockquote`, and
-   keeps its own rule. */
-#doc-preview blockquote {
+   keeps its own rule. A note card's quote wears it too (audit 1031 N26). */
+#doc-preview blockquote,
+#entry-list blockquote {
   margin: var(--space-4) 0;
   padding: 0 0 0 var(--space-5);
   border-left: 3px solid color-mix(in srgb, var(--muted) 70%, transparent);

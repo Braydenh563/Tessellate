@@ -19,13 +19,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from fastapi.responses import StreamingResponse
 
 from tessellate.api import paging
+from tessellate.api.downloads import attachment_headers, safe_filename
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from tessellate.api.edit_conflicts import content_hash, refuse_if_stale
 from tessellate.ai import drafter, utilities, vision_ocr
-from tessellate.core import activity, deps, docexport, docmeta, docview, filetypes, syntaxcheck
+from tessellate.core import activity, cjk, deps, docexport, docmeta, docview, filetypes, syntaxcheck
 from tessellate.core.config import user_now
 from tessellate.core.database import (
     LIKE_ESCAPE,
@@ -903,13 +904,6 @@ def unarchive_document(document_id: int, session: Session = Depends(get_session)
     return _summary(document)
 
 
-def _safe_filename(title: str, extension: str) -> str:
-    """A title is user text; it must not steer where the file lands."""
-    cleaned = re.sub(r"[^\w\s-]", "", title).strip() or "document"
-    cleaned = re.sub(r"[\s_]+", "-", cleaned)[:60]
-    return f"{cleaned}.{extension}"
-
-
 class LinkBody(BaseModel):
     entry_id: int
 
@@ -1085,11 +1079,7 @@ def export_markdown(
     return Response(
         content=body,
         media_type=media_type,
-        headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, kind.ext)}"'
-            )
-        },
+        headers=attachment_headers(safe_filename(document.title, kind.ext, "document")),
     )
 
 
@@ -1126,9 +1116,7 @@ def export_bundle(
         content=data,
         media_type="application/zip",
         headers={
-            "Content-Disposition": (
-                f'attachment; filename="{_safe_filename(document.title, "zip")}"'
-            ),
+            **attachment_headers(safe_filename(document.title, "zip", "document")),
             #: What travelled, for the frontend's own message and for a test
             #: that wants the answer without opening the archive.
             "X-Assets": str(len(carried)),
@@ -1349,9 +1337,9 @@ def document_revisions(
     #: Newest first, and each row is compared with the version that *came
     #: after* it: for the newest revision that is the document as it stands
     #: now, which is why this walks with `newer` seeded from the document.
-    newer_words = len((document.content or "").split())
+    newer_words = cjk.word_count(document.content)
     for row in rows:
-        words = len((row.content or "").split())
+        words = cjk.word_count(row.content)
         out.append(
             DocumentRevisionOut(
                 id=row.id,

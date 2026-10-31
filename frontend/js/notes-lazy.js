@@ -3,7 +3,8 @@
 // (tests/test_static_compression.py). A row's expand chevron (reached only by
 // a click) and the bell's weekly untagged and review nudges (after the
 // notebook loads). No caller reads a return value, so stand-ins
-// (`notesLazy`, lazy-entries.js) fetch this file on first use.
+// (`notesLazy`, lazy-entries.js) fetch this file on first use. The empty-filter hint and the
+// engine query's bar moved here (audit 1031, gzip budget): both draw after a render.
 
 function toggleRowExpanded(id) {
   const open = !expandedRows.has(id);
@@ -155,4 +156,42 @@ function paintSearchWhy() {
     line.append(badge);
     li.querySelector(":scope > .entry-meta")?.after(line);
   }
+}
+
+function noMatchHint(box) {
+  const line = box.querySelector(".muted");
+  const bad = noteSearch && parseNoteQuery(noteSearch).flags.find((flag) => !NOTE_FLAGS.includes(flag));
+  line.dataset.was ??= line.textContent;
+  line.textContent = bad ? `No filter named is:${bad}. Try is:favourite, is:private, is:linked, is:draft, is:untagged, is:untitled or is:review.` : line.dataset.was;
+}
+
+//: KG7: a structural query's bar over the list: how many, and the same notes
+//: as a table and on the graph.
+function liveQueryBar(visible) {
+  const list = $("entry-list");
+  let bar = list.parentElement?.querySelector(":scope > .note-query-bar");
+  const parsed = noteSearch ? parseNoteQuery(noteSearch) : null;
+  const live = Boolean(parsed) && (parsed.structural.length > 0 || parsed.engine.length > 0);
+  if (!live) {
+    bar?.remove();
+    return;
+  }
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.className = "row note-query-bar";
+    list.before(bar);
+  }
+  const ids = visible.map((e) => e.id);
+  const count = document.createElement("span");
+  count.className = "muted";
+  //: Up to ten pages of 50 are read; past that it says so rather than
+  //: letting the count pass for the whole of a larger answer.
+  count.textContent = parsed.engine.length > 0 && noteEngine.capped
+    ? `The first ${ids.length} notes that match this query, add words to narrow it`
+    : `${nounCount(ids.length, "note")} match this query`;
+  bar.replaceChildren(
+    count,
+    smallButton("ph:table Table", "These notes as a table, their properties as columns", () => openQueryTable(ids)),
+    smallButton("ph:graph Show on graph", "Light these notes on the graph", () => showQueryOnGraph(ids)),
+  );
 }

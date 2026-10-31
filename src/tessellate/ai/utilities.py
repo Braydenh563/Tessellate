@@ -29,6 +29,7 @@ from datetime import date, datetime
 from typing import NamedTuple
 
 from tessellate.ai import arithmetic, recognise
+from tessellate.core import cjk
 from tessellate.ai import when as when_words
 
 # --- units -----------------------------------------------------------------------
@@ -858,7 +859,7 @@ def counts(text: str) -> dict:
     (a word is a run of non-space, a character a code point, a line a
     newline), and the reading time in minutes."""
     text = str(text or "")
-    words = len(text.split())
+    words = cjk.word_count(text)
     return {
         "words": words,
         "chars": len(text),

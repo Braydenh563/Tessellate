@@ -889,7 +889,7 @@ function replyFoldLong(answer) {
     if (!block.matches("p, pre, blockquote")) continue;
     const text = block.textContent.trim();
     if (text.length < REPLY_FOLD_CHARS) continue;
-    const words = text.split(/\s+/).length;
+    const words = wordCount(text);
     const fold = document.createElement("details");
     fold.className = "agent-step long-fold";
     const summary = document.createElement("summary");
@@ -999,7 +999,7 @@ function replyNoteCard(id, name) {
   title.textContent = content ? noteLabel({ content: head }, 60) : name || "A note";
   const facts = document.createElement("span");
   facts.className = "embed-card-meta";
-  const words = content ? plainText(content).split(/\s+/).filter(Boolean).length : 0;
+  const words = content ? wordCount(plainText(content)) : 0;
   facts.textContent = [
     "Note",
     entry?.category,

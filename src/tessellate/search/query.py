@@ -99,6 +99,11 @@ class Understood:
     #: operator. Reported beside the results rather than swallowed (audit
     #: 1029 N16: `has:attachment` matched nothing and said nothing).
     notices: list[str] = field(default_factory=list)
+    #: `cat:Work` and `category:"Home office"`, the notes filed under any of
+    #: these (audit 1031 N1: the Notes filter box always read them; the finder
+    #: treated `cat:` as a word). Not in `filters` because the index has no
+    #: category column: the engine checks them against the notes themselves.
+    categories: list[str] = field(default_factory=list)
 
     @property
     def has_range(self) -> bool:
@@ -111,6 +116,7 @@ class Understood:
             or bool(self.phrases)
             or bool(self.excluded)
             or any(self.without.values())
+            or bool(self.categories)
         )
 
 
@@ -312,6 +318,21 @@ _EXCLUDED = re.compile(r"(?<!\S)-([\w][\w'-]*)")
 _NEGATED = re.compile(r'(?<!\S)-(' + "|".join(_OPERATOR_NAMES) + r'):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
 
 
+_CATEGORY = re.compile(r'(?<!\S)(?:cat|category):(?:"([^"]*)"|(\S+))', re.IGNORECASE)
+
+
+def _take_categories(text: str) -> tuple[str, list[str]]:
+    """Lift `cat:` and `category:` out of a query: the rest and the names."""
+    names: list[str] = []
+
+    def take(match: re.Match) -> str:
+        raw = match.group(1) if match.group(1) is not None else match.group(2)
+        names.extend(name for name in _split_values(raw) if name not in names)
+        return " "
+
+    return _CATEGORY.sub(take, text), names
+
+
 def _take_negated(text: str) -> tuple[str, dict[str, list[str]]]:
     """Lift `-name:value` operators out of a query: the rest and what to drop."""
     without = _empty_filters()
@@ -427,7 +448,7 @@ def operator_notices(remainder: str, filters: dict[str, list[str]]) -> list[str]
     for match in _UNKNOWN_OPERATOR.finditer(remainder):
         name = match.group(1).lower()
         if name not in _NOT_OPERATORS:
-            notices.append(f"No filter called {name}:, so it was searched as words. Filters: tag, kind, in, is, has, title, before, after.")
+            notices.append(f"No filter called {name}:, so it was searched as words. Filters: tag, kind, in, cat, is, has, title, before, after.")
     return notices
 
 
@@ -476,6 +497,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # Operators first: they carry their own dates, and a `before:2026-01-01`
     # left in the text would be read a second time by the time pass below.
     text, without = _take_negated(text)
+    text, categories = _take_categories(text)
     remainder, filters, phrases, excluded, since, until = _parse_operators(text)
     operator_dates = since is not None or until is not None
     remainder, since, until, phrase, soft = _read_window(remainder, today, locale, operator_dates, since, until)
@@ -496,7 +518,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
     # range: `kind:document before:2026-01-01` has a constraint to apply, and
     # answering it with "every note in the window" would drop the one thing
     # the person actually typed.
-    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded)
+    time_only = since is not None and not _has_content(subject) and not _constrained(filters, without, phrases, excluded, categories)
     return Understood(
         subject=subject if _has_content(subject) else "",
         since=since,
@@ -509,6 +531,7 @@ def understand(question: str, now: datetime | date | None = None, locale: str | 
         excluded=excluded,
         without=without,
         notices=operator_notices(remainder, filters),
+        categories=categories,
     )
 
 
@@ -521,9 +544,9 @@ _FILLER = frozenset(
 )
 
 
-def _constrained(filters: dict, without: dict, phrases: list, excluded: list) -> bool:
+def _constrained(filters: dict, without: dict, phrases: list, excluded: list, categories: list) -> bool:
     """Whether the query named any operator, phrase or unwanted word."""
-    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded)
+    return any(filters.values()) or any(without.values()) or bool(phrases) or bool(excluded) or bool(categories)
 
 
 def _has_content(subject: str) -> bool:

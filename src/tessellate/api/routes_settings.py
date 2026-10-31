@@ -40,6 +40,7 @@ from tessellate.core.config import default_preferences
 from tessellate.core.database import AuditLog, Category, Entry, EntryLink, utcnow
 from tessellate.core.deps import get_session
 from tessellate.entry import importer, manager
+from tessellate.entry.cleantext import import_path
 from tessellate.search import searxng_manager, websearch
 from tessellate.api.this_computer import REFUSAL, is_another_device, this_computer_only
 
@@ -3274,7 +3275,7 @@ def _import_markdown_files(files: list[UploadFile], session: Session) -> dict:
         #: relative path as the filename when the picker was a directory
         #: picker, and the bare name otherwise; both are relative, which is
         #: the only kind stored.
-        relative = name.lstrip("/")[:500]
+        relative = import_path(name, "imported.md")
         seen = known.get(relative)
         if seen is not None and (seen is _PRIVATE or _text_hash(body.strip()) in seen):
             already += 1
@@ -3400,7 +3401,7 @@ def _create_document_notes(session: Session, sections: list[str], source_name: s
             ai_confidence=100,
         )
         entry.user_filed = True  # this file said where it came from, not the janitor
-        entry.source_path = (source_name or "document")[:500]
+        entry.source_path = import_path(source_name, "document")
         session.commit()
         deps.store_quietly(session, entry)
         ids.append(entry.id)

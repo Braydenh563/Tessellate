@@ -1202,11 +1202,15 @@ async function openHistoryEntry(entry) {
       //: `library-view-media:files`: the view and, for the media view, its
       //: kind (library.js records both).
       const [target, kind] = (entry.section || "library-view-documents").split(":");
-      document
-        .querySelector(
-          `#library-subtabs button[data-target="${target}"]${kind ? `[data-media-kind="${kind}"]` : ""}`
-        )
-        ?.click();
+      //: The bin is a view of All, not a sub-tab of its own (`#/library/bin`).
+      if (target === "library-bin") await revealFeature("library-bin");
+      else {
+        document
+          .querySelector(
+            `#library-subtabs button[data-target="${target}"]${kind ? `[data-media-kind="${kind}"]` : ""}`
+          )
+          ?.click();
+      }
     }
   } else if (entry.tab === "chat" && entry.section) {
     if (entry.section.startsWith("conv:")) {
@@ -2164,7 +2168,7 @@ function tabPlaceholder(page, on) {
 // outright rather than matching opening/closing pairs, which handles a
 // truncated run the same way as a complete one.
 function stripMarkdownPreview(text) {
-  return text
+  return previewBlocks(text)
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/^>\s?/gm, "")
     .replace(/^[-*+]\s+/gm, "")
