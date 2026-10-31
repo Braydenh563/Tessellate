@@ -307,7 +307,8 @@ def vision_ocr_and_store(upload_id: int, image_path: Path, force: bool = False) 
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None  # deleted (or its upload never committed) before this ran
-        if upload.vision_ocr_text and not force:
+        if upload.vision_ocr_text is not None and not force:
+            #: "" is a finished read that found no text, not an unread file.
             return upload.vision_ocr_text
         original = upload.original_name
     model = deps.get_model_manager().resolve_vision_model(deps.get_ollama())
@@ -375,8 +376,8 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None  # deleted before this ran
-        if upload.vision_ocr_text and not force:
-            return upload.vision_ocr_text
+        if upload.vision_ocr_text is not None and not force:
+            return upload.vision_ocr_text or None
         original = upload.original_name
 
     # Outside the session: both of these are slow (a converter, then a model
@@ -409,7 +410,9 @@ def pdf_vision_ocr_and_store(upload_id: int, pdf_path: Path, force: bool = False
         upload = session.get(MediaUpload, upload_id)
         if upload is None:
             return None
-        upload.vision_ocr_text = text or None
+        #: "" (not NULL) records a scan the model read and found blank, so
+        #: filing the note again does not read it again (INBOX 1484).
+        upload.vision_ocr_text = text
         upload.vision_ocr_model = model if text else None
         session.commit()
     taskhistory.record(
