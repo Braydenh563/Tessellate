@@ -51580,3 +51580,5 @@ Fixed:
 
 1471. **The owner, 2026-10-31, verbatim:** "I think that if i click on a graph node and it shows the popup, if I click on the same one again the popup should   close". Agent snapgraph-1031.
 
+1484. **The owner, 2026-10-31 15:20 local, verbatim (screenshot: a note "Gary The Moss Monster :D" with a drawing; Activity, Agent runs: "Reading an image with the vision m... Done, 360788550d354869a83c5ac4d884c51d.png"):** "I changed the alignment of an image in the note and it started reading it again?" Recommendation taken: an image is read once per file (its content hash); an edit to the note that only moves, aligns or resizes an image (or changes any text around it) never queues a new read; only a new or replaced picture does. Agent imgread-1031. **Fixed 22eb875.** A saved reading of "" (no text found) counted as unread and the in-memory guard forgot on restart; NULL alone is unread now. Measured: 5 of 8 new tests failed on the base (4 queued a read per save after a restart), 8 of 8 pass.
+
