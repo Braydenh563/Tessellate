@@ -2,7 +2,7 @@
 
 Generated 2026-10-31 by `python scripts/codemap.py` from the repository. Every row is `name | file:line`: grep this file, then `sed -n 'A,Bp'` the lines you need. A stale map fails `tests/test_codemap_fresh.py`.
 
-Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8158, test files 1753, tests 15199, plan headings 989, app scripts 28, boot scripts 36, script files 208.
+Counts: frontend functions 7466, frontend ids 2623, CSS sections 514, backend routes 633, backend modules 8158, test files 1753, tests 15200, plan headings 989, app scripts 28, boot scripts 36, script files 208.
 
 ## Frontend functions (7466)
 
@@ -20038,10 +20038,10 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 
 | Name | File:line |
 |---|---|
-| `_watch` | src/tessellate/core/deadline.py:56 |
-| `current` | src/tessellate/core/deadline.py:47 |
-| `guard` | src/tessellate/core/deadline.py:63 |
-| `seconds_for` | src/tessellate/core/deadline.py:52 |
+| `_watch` | src/tessellate/core/deadline.py:60 |
+| `current` | src/tessellate/core/deadline.py:51 |
+| `guard` | src/tessellate/core/deadline.py:67 |
+| `seconds_for` | src/tessellate/core/deadline.py:56 |
 
 ### src/tessellate/core/deps.py (36)
 
@@ -22411,7 +22411,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | `search_web` | src/tessellate/search/websearch.py:338 |
 | `settings_from` | src/tessellate/search/websearch.py:323 |
 
-## Tests (15199)
+## Tests (15200)
 
 `def test_` lines in each `tests/test_*.py`.
 
@@ -23414,7 +23414,7 @@ Module-level `def`, `async def` and `class` in `src/tessellate/**/*.py`, excludi
 | tests/test_model_cards.py | 24 |
 | tests/test_model_connect_timeout.py | 2 |
 | tests/test_model_context_z70.py | 2 |
-| tests/test_model_deadline_1029.py | 9 |
+| tests/test_model_deadline_1029.py | 10 |
 | tests/test_model_delete.py | 3 |
 | tests/test_model_gate.py | 4 |
 | tests/test_model_json_deep_nesting.py | 5 |

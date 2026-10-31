@@ -30,6 +30,10 @@ DEADLINES: dict[tuple[str, str], float] = {
     ("POST", "/entries/{entry_id}/reevaluate"): 30.0,
     ("POST", "/chat/followups"): 15.0,
     ("POST", "/voice/summarize"): 30.0,
+    #: The answer with no stream and no Stop button (the API's and an MCP
+    #: client's route): a hung runner held it 25 s and more (audit 1031 HR3).
+    #: The page's own chat is `/chat/stream`, which stays out.
+    ("POST", "/chat"): 60.0,
     ("POST", "/help/ask"): 30.0,
     ("POST", "/insights/digest"): 30.0,
     #: Decorations: a banner or a note beside a pair never waits for a model.
